@@ -16,6 +16,7 @@ import WeeklyNavigation from "@/components/WeeklyNavigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Utensils } from "lucide-react";
+import type { Meal, ShoppingItem, Ingredient } from "@/types/meal";
 
 const MealPlan = () => {
   const { generateMealPlan, isGenerating } = useAIMealPlan();
@@ -53,7 +54,7 @@ const MealPlan = () => {
 
   const getCurrentDayOfWeek = () => {
     const today = new Date();
-    const currentDay = today.getDay() === 0 ? 7 : today.getDay(); // Convert Sunday from 0 to 7
+    const currentDay = today.getDay() === 0 ? 7 : today.getDay();
     const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     return days[currentDay - 1];
   };
@@ -70,13 +71,13 @@ const MealPlan = () => {
     toast.success("Regenerating your meal plan...");
   };
 
-  const handleShowRecipe = (meal: any) => {
+  const handleShowRecipe = (meal: Meal) => {
     console.log('Showing recipe for meal:', meal);
     setSelectedMeal(meal);
     setShowRecipeDialog(true);
   };
 
-  const handleExchangeMeal = (meal: any, index: number) => {
+  const handleExchangeMeal = (meal: Meal, index: number) => {
     const alternatives = [
       {
         name: "Grilled Chicken Salad",
@@ -106,16 +107,17 @@ const MealPlan = () => {
   const handleShowShoppingList = () => {
     if (!currentWeekPlan?.dailyMeals) return;
     
-    const shoppingItems = currentWeekPlan.dailyMeals
+    const shoppingItems: ShoppingItem[] = currentWeekPlan.dailyMeals
       .filter(meal => meal.day_number === selectedDayNumber)
-      .flatMap(meal => 
-        (meal.ingredients || []).map((ingredient: any) => ({
+      .flatMap(meal => {
+        const ingredients = Array.isArray(meal.ingredients) ? meal.ingredients : [];
+        return ingredients.map((ingredient: any) => ({
           name: ingredient.name || 'Unknown ingredient',
           quantity: ingredient.quantity || "1",
           unit: ingredient.unit || "serving",
           category: getCategoryForIngredient(ingredient.name || '')
-        }))
-      );
+        }));
+      });
     
     setSelectedMeal({ items: shoppingItems });
     setShowShoppingDialog(true);
@@ -140,24 +142,34 @@ const MealPlan = () => {
   };
 
   // Get meals for selected day
-  const todaysMeals = currentWeekPlan?.dailyMeals
+  const todaysMeals: Meal[] = currentWeekPlan?.dailyMeals
     ?.filter(meal => meal.day_number === selectedDayNumber)
-    ?.map(meal => ({
-      type: meal.meal_type,
-      time: getMealTime(meal.meal_type),
-      name: meal.name,
-      calories: meal.calories || 0,
-      protein: meal.protein || 0,
-      carbs: meal.carbs || 0,
-      fat: meal.fat || 0,
-      ingredients: meal.ingredients || [],
-      instructions: meal.instructions || [],
-      cookTime: meal.cook_time || 0,
-      prepTime: meal.prep_time || 0,
-      servings: meal.servings || 1,
-      image: getMealEmoji(meal.meal_type),
-      youtubeId: meal.youtube_search_term || "dQw4w9WgXcQ"
-    })) || [];
+    ?.map(meal => {
+      const ingredients: Ingredient[] = Array.isArray(meal.ingredients) 
+        ? meal.ingredients 
+        : [];
+      
+      const instructions: string[] = Array.isArray(meal.instructions)
+        ? meal.instructions
+        : [];
+
+      return {
+        type: meal.meal_type,
+        time: getMealTime(meal.meal_type),
+        name: meal.name,
+        calories: meal.calories || 0,
+        protein: meal.protein || 0,
+        carbs: meal.carbs || 0,
+        fat: meal.fat || 0,
+        ingredients,
+        instructions,
+        cookTime: meal.cook_time || 0,
+        prepTime: meal.prep_time || 0,
+        servings: meal.servings || 1,
+        image: getMealEmoji(meal.meal_type),
+        youtubeId: meal.youtube_search_term || "dQw4w9WgXcQ"
+      };
+    }) || [];
 
   const getMealTime = (mealType: string) => {
     const times: { [key: string]: string } = {
@@ -179,15 +191,23 @@ const MealPlan = () => {
     return emojis[mealType.toLowerCase()] || '🍽️';
   };
 
+  // Calculate weekly overview from actual data
   const weeklyOverview = [
-    { day: "Mon", calories: 1760, status: selectedDayNumber === 1 ? "current" as const : "planned" as const },
-    { day: "Tue", calories: 1820, status: selectedDayNumber === 2 ? "current" as const : "planned" as const },
-    { day: "Wed", calories: 1780, status: selectedDayNumber === 3 ? "current" as const : "planned" as const },
-    { day: "Thu", calories: 1850, status: selectedDayNumber === 4 ? "current" as const : "planned" as const },
-    { day: "Fri", calories: 1790, status: selectedDayNumber === 5 ? "current" as const : "planned" as const },
-    { day: "Sat", calories: 1900, status: selectedDayNumber === 6 ? "current" as const : "planned" as const },
-    { day: "Sun", calories: 1750, status: selectedDayNumber === 7 ? "current" as const : "planned" as const }
+    { day: "Mon", calories: getDayCalories(1), status: selectedDayNumber === 1 ? "current" as const : "planned" as const },
+    { day: "Tue", calories: getDayCalories(2), status: selectedDayNumber === 2 ? "current" as const : "planned" as const },
+    { day: "Wed", calories: getDayCalories(3), status: selectedDayNumber === 3 ? "current" as const : "planned" as const },
+    { day: "Thu", calories: getDayCalories(4), status: selectedDayNumber === 4 ? "current" as const : "planned" as const },
+    { day: "Fri", calories: getDayCalories(5), status: selectedDayNumber === 5 ? "current" as const : "planned" as const },
+    { day: "Sat", calories: getDayCalories(6), status: selectedDayNumber === 6 ? "current" as const : "planned" as const },
+    { day: "Sun", calories: getDayCalories(7), status: selectedDayNumber === 7 ? "current" as const : "planned" as const }
   ];
+
+  function getDayCalories(dayNumber: number): number {
+    if (!currentWeekPlan?.dailyMeals) return 0;
+    return currentWeekPlan.dailyMeals
+      .filter(meal => meal.day_number === dayNumber)
+      .reduce((sum, meal) => sum + (meal.calories || 0), 0);
+  }
 
   const totalCalories = todaysMeals.reduce((sum, meal) => sum + meal.calories, 0);
   const totalProtein = todaysMeals.reduce((sum, meal) => sum + meal.protein, 0);
@@ -270,7 +290,6 @@ const MealPlan = () => {
             </div>
           </div>
         ) : (
-          // No meal plan state
           <Card className="p-12 bg-white/80 backdrop-blur-sm border-0 shadow-lg text-center">
             <Utensils className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-800 mb-2">No Meal Plan Yet</h3>

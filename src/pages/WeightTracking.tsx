@@ -20,7 +20,7 @@ const WeightTracking = () => {
   const weightData = weightEntries.map(entry => ({
     date: entry.recorded_at,
     weight: parseFloat(entry.weight.toString()),
-    target: profile?.weight ? parseFloat(profile.weight.toString()) - 5 : 70 // Target 5kg less than current
+    target: profile?.weight ? parseFloat(profile.weight.toString()) - 5 : 70
   }));
 
   // Calculate monthly progress
@@ -40,7 +40,7 @@ const WeightTracking = () => {
     }
     
     return acc;
-  }, []).slice(-5); // Last 5 months
+  }, []).slice(-5);
 
   const currentWeight = weightEntries.length > 0 ? parseFloat(weightEntries[0].weight.toString()) : profile?.weight || 0;
   const startWeight = weightEntries.length > 0 ? parseFloat(weightEntries[weightEntries.length - 1].weight.toString()) : currentWeight;
@@ -56,6 +56,13 @@ const WeightTracking = () => {
       });
       setNewWeight("");
     }
+  };
+
+  const formatTooltipValue = (value: any) => {
+    if (typeof value === 'number') {
+      return value.toFixed(1);
+    }
+    return '0.0';
   };
 
   return (
@@ -167,7 +174,7 @@ const WeightTracking = () => {
                       <Tooltip 
                         labelFormatter={(value) => new Date(value).toLocaleDateString()}
                         formatter={(value, name) => [
-                          `${value} kg`,
+                          `${formatTooltipValue(value)} kg`,
                           name === 'weight' ? 'Actual Weight' : 'Target Weight'
                         ]}
                       />
@@ -220,7 +227,7 @@ const WeightTracking = () => {
                       <XAxis dataKey="month" />
                       <YAxis />
                       <Tooltip 
-                        formatter={(value) => [`${value.toFixed(1)} kg`, 'Weight Loss']}
+                        formatter={(value) => [`${formatTooltipValue(value)} kg`, 'Weight Loss']}
                       />
                       <Bar 
                         dataKey="loss" 

@@ -3,6 +3,43 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
+export interface MealIngredient {
+  name: string;
+  quantity: string;
+  unit: string;
+}
+
+export interface DailyMeal {
+  id: string;
+  weekly_plan_id: string;
+  day_number: number;
+  meal_type: string;
+  name: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  ingredients: MealIngredient[];
+  instructions: string[];
+  prep_time: number;
+  cook_time: number;
+  servings: number;
+  youtube_search_term?: string;
+  image_url?: string;
+}
+
+export interface WeeklyMealPlan {
+  id: string;
+  user_id: string;
+  week_start_date: string;
+  total_calories: number;
+  total_protein: number;
+  total_carbs: number;
+  total_fat: number;
+  generation_prompt: any;
+  created_at: string;
+}
+
 export const useDynamicMealPlan = (weekOffset: number = 0) => {
   const { user } = useAuth();
 
@@ -48,9 +85,24 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
         return null;
       }
 
+      // Parse ingredients if they're stored as JSON strings
+      const processedMeals = (dailyMeals || []).map(meal => ({
+        ...meal,
+        ingredients: Array.isArray(meal.ingredients) 
+          ? meal.ingredients 
+          : typeof meal.ingredients === 'string' 
+            ? JSON.parse(meal.ingredients || '[]')
+            : [],
+        instructions: Array.isArray(meal.instructions)
+          ? meal.instructions
+          : typeof meal.instructions === 'string'
+            ? JSON.parse(meal.instructions || '[]')
+            : []
+      })) as DailyMeal[];
+
       return {
-        weeklyPlan,
-        dailyMeals: dailyMeals || []
+        weeklyPlan: weeklyPlan as WeeklyMealPlan,
+        dailyMeals: processedMeals
       };
     },
     enabled: !!user?.id,
