@@ -50,43 +50,43 @@ function App() {
               
               {/* Protected Routes - Require auth and basic profile */}
               <Route path="/dashboard" element={
-                <ProtectedRoute>
+                <ProtectedRoute requireProfile={true}>
                   <Dashboard />
                 </ProtectedRoute>
               } />
               
               <Route path="/profile" element={
-                <ProtectedRoute>
+                <ProtectedRoute requireProfile={true}>
                   <Profile />
                 </ProtectedRoute>
               } />
               
               <Route path="/meal-plan" element={
-                <ProtectedRoute>
+                <ProtectedRoute requireProfile={true}>
                   <MealPlan />
                 </ProtectedRoute>
               } />
               
               <Route path="/exercise" element={
-                <ProtectedRoute>
+                <ProtectedRoute requireProfile={true}>
                   <Exercise />
                 </ProtectedRoute>
               } />
               
               <Route path="/weight-tracking" element={
-                <ProtectedRoute>
+                <ProtectedRoute requireProfile={true}>
                   <WeightTracking />
                 </ProtectedRoute>
               } />
               
               <Route path="/calorie-checker" element={
-                <ProtectedRoute>
+                <ProtectedRoute requireProfile={true}>
                   <CalorieChecker />
                 </ProtectedRoute>
               } />
               
               <Route path="/ai-chat" element={
-                <ProtectedRoute>
+                <ProtectedRoute requireProfile={true}>
                   <AIChatPage />
                 </ProtectedRoute>
               } />

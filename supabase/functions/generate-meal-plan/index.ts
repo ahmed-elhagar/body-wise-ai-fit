@@ -16,36 +16,59 @@ serve(async (req) => {
   try {
     const { userProfile, preferences } = await req.json();
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY');
 
     if (!openAIApiKey) {
       throw new Error('OpenAI API key not configured');
     }
 
-    console.log('Generating meal plan for user:', userProfile.id);
+    if (!supabaseUrl || !supabaseAnonKey) {
+      throw new Error('Supabase configuration missing');
+    }
+
+    // Create a Supabase client
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+    console.log('Generating meal plan for user:', userProfile?.id);
     console.log('Preferences:', preferences);
 
-    const prompt = `Generate a personalized 7-day meal plan for a ${userProfile.age} year old ${userProfile.gender} with the following details:
-    - Height: ${userProfile.height}cm, Weight: ${userProfile.weight}kg
-    - Fitness Goal: ${userProfile.fitness_goal}
-    - Activity Level: ${userProfile.activity_level}
-    - Body Shape: ${userProfile.body_shape}
-    - Allergies: ${userProfile.allergies?.join(', ') || 'None'}
-    - Dietary Restrictions: ${userProfile.dietary_restrictions?.join(', ') || 'None'}
-    - Preferred Foods: ${userProfile.preferred_foods?.join(', ') || 'Various'}
-    - Nationality: ${userProfile.nationality}
-    - Preferred Cuisine: ${preferences.cuisine || 'Various'}
-    - Max Prep Time: ${preferences.maxPrepTime} minutes
+    // Check if user has generations remaining
+    if (userProfile?.id) {
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('ai_generations_remaining')
+        .eq('id', userProfile.id)
+        .single();
+        
+      if (profileError) {
+        console.error('Error checking AI generations remaining:', profileError);
+        throw new Error('Failed to check AI generations remaining');
+      }
+      
+      if (profile.ai_generations_remaining <= 0) {
+        throw new Error('You have reached your AI generation limit. Please contact admin to increase your limit.');
+      }
+    }
 
-    Create a comprehensive meal plan with breakfast, lunch, dinner, and 2 snacks for each day. Include:
-    - Exact calorie counts per meal
-    - Macro breakdown (protein, carbs, fat in grams)
-    - Detailed ingredient lists with quantities
-    - Step-by-step cooking instructions
+    // Create a simpler prompt to reduce token usage
+    const prompt = `Generate a personalized 3-day meal plan for a ${userProfile?.age || 'adult'} year old ${userProfile?.gender || 'person'} with the following details:
+    - Height: ${userProfile?.height || 'average'}cm, Weight: ${userProfile?.weight || 'average'}kg
+    - Fitness Goal: ${userProfile?.fitness_goal || 'general health'}
+    - Activity Level: ${userProfile?.activity_level || 'moderate'}
+    - Allergies: ${userProfile?.allergies?.join(', ') || 'None'}
+    - Dietary Restrictions: ${userProfile?.dietary_restrictions?.join(', ') || 'None'}
+    - Preferred Cuisine: ${preferences?.cuisine || 'Various'}
+    - Max Prep Time: ${preferences?.maxPrepTime || '30'} minutes
+    
+    Create a simple meal plan with breakfast, lunch, dinner, and 1 snack for each day. Include:
+    - Calories per meal
+    - Macro breakdown (protein, carbs, fat)
+    - Basic ingredient lists
+    - Simple cooking instructions
     - Prep and cook times
-    - High-quality meal images (use placeholder URLs for now)
-    - Cultural preferences based on nationality
 
-    Format as JSON with this exact structure:
+    Format as JSON with this structure:
     {
       "weekSummary": {
         "totalCalories": number,
@@ -67,34 +90,19 @@ serve(async (req) => {
               "protein": number,
               "carbs": number,
               "fat": number,
-              "ingredients": [
-                {
-                  "name": "ingredient name",
-                  "quantity": "amount",
-                  "unit": "unit"
-                }
-              ],
-              "instructions": [
-                "Step 1: detailed instruction",
-                "Step 2: detailed instruction"
-              ],
+              "ingredients": [{"name": "ingredient", "quantity": "amount", "unit": "unit"}],
+              "instructions": ["Step 1", "Step 2"],
               "prepTime": number,
               "cookTime": number,
-              "servings": 1,
-              "imageUrl": "https://placeholder-image-url.com/meal.jpg",
-              "alternatives": [
-                {
-                  "name": "Alternative meal name",
-                  "calories": number,
-                  "reason": "Similar calories and nutrition profile"
-                }
-              ]
+              "servings": 1
             }
           ]
         }
       ]
     }`;
 
+    console.log('Sending request to OpenAI with smaller prompt');
+    
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -102,13 +110,13 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-4o-mini', // Use a smaller model to avoid rate limits
         messages: [
           { role: 'system', content: 'You are a professional nutritionist and meal planning expert. Always respond with valid JSON only. Be precise with nutritional data and cooking instructions.' },
           { role: 'user', content: prompt }
         ],
         temperature: 0.7,
-        max_tokens: 4000,
+        max_tokens: 2000, // Reduced token count
       }),
     });
 
@@ -130,6 +138,20 @@ serve(async (req) => {
     try {
       generatedPlan = JSON.parse(data.choices[0].message.content);
       console.log('Meal plan parsed successfully');
+      
+      // If user exists, decrement their AI generations count
+      if (userProfile?.id) {
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ 
+            ai_generations_remaining: supabase.rpc('decrement_function', { value: 1 }) 
+          })
+          .eq('id', userProfile.id);
+          
+        if (updateError) {
+          console.error('Failed to update AI generations remaining:', updateError);
+        }
+      }
     } catch (parseError) {
       console.error('Failed to parse OpenAI response as JSON:', parseError);
       console.error('Raw content:', data.choices[0].message.content);

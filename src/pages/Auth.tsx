@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,10 +22,11 @@ const Auth = () => {
   const navigate = useNavigate();
 
   // Redirect if already logged in
-  if (user) {
-    navigate('/dashboard');
-    return null;
-  }
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
 
   const validateForm = () => {
     if (!email || !password) {
@@ -53,9 +54,11 @@ const Auth = () => {
     setLoading(true);
     try {
       await signIn(email, password);
+      toast.success('Sign in successful!');
       navigate('/dashboard');
     } catch (error: any) {
       console.error('Sign in error:', error);
+      toast.error(error.message || 'Failed to sign in');
     } finally {
       setLoading(false);
     }
@@ -71,13 +74,23 @@ const Auth = () => {
         first_name: firstName, 
         last_name: lastName 
       });
-      navigate('/onboarding');
+      toast.success('Account created! You will be redirected to complete your profile.');
+      // Short delay before navigating to onboarding
+      setTimeout(() => {
+        navigate('/onboarding');
+      }, 1500);
     } catch (error: any) {
       console.error('Sign up error:', error);
+      toast.error(error.message || 'Failed to sign up');
     } finally {
       setLoading(false);
     }
   };
+
+  // If already logged in, don't render the form
+  if (user) {
+    return null; // The useEffect will handle the redirect
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4">

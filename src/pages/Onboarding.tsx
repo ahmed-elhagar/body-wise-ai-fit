@@ -50,18 +50,17 @@ const Onboarding = () => {
           activity_level: formData.activity_level as any,
           allergies: formData.allergies,
           preferred_foods: formData.preferred_foods,
-          dietary_restrictions: formData.dietary_restrictions
+          dietary_restrictions: formData.dietary_restrictions,
+          onboarding_completed: true // Mark onboarding as completed
         };
 
-        await new Promise<void>((resolve, reject) => {
-          updateProfile(profileData);
-          // Wait a bit to ensure profile is updated
-          setTimeout(() => {
-            toast.success('Profile completed successfully!');
-            navigate('/dashboard');
-            resolve();
-          }, 1000);
-        });
+        console.log("Saving profile data:", profileData);
+        
+        await updateProfile(profileData);
+        
+        // Wait for the profile to be updated before navigating
+        toast.success('Profile completed successfully!');
+        navigate('/dashboard');
 
       } catch (error) {
         console.error('Error updating profile:', error);
@@ -96,6 +95,8 @@ const Onboarding = () => {
       case 3:
         return (
           <OnboardingStep3 
+            formData={formData}
+            updateFormData={updateFormData}
             handleArrayInput={handleArrayInput}
           />
         );

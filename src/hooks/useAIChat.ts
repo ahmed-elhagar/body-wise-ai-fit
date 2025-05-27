@@ -6,7 +6,7 @@ import { useProfile } from './useProfile';
 import { toast } from 'sonner';
 import { useState } from 'react';
 
-interface ChatMessage {
+export interface ChatMessage {
   id: string;
   message_type: 'user' | 'assistant';
   message?: string;
@@ -28,55 +28,81 @@ export const useAIChat = () => {
 
       console.log('Sending message:', message);
       console.log('Current chat history:', chatHistory);
+      console.log('Current user profile:', profile);
 
-      const { data, error } = await supabase.functions.invoke('fitness-chat', {
-        body: {
-          message,
-          userProfile: profile,
-          chatHistory: chatHistory
+      try {
+        const { data, error } = await supabase.functions.invoke('fitness-chat', {
+          body: {
+            message,
+            userProfile: profile || {}, // Ensure we always send an object even if profile is null
+            chatHistory: chatHistory.map(msg => ({
+              message_type: msg.message_type,
+              message: msg.message,
+              response: msg.response,
+              created_at: msg.created_at
+            }))
+          }
+        });
+
+        if (error) {
+          console.error('AI chat error:', error);
+          throw error;
         }
-      });
 
-      if (error) {
-        console.error('AI chat error:', error);
+        console.log('AI response received:', data);
+
+        // Log the chat interaction with proper JSON serialization
+        try {
+          // Prepare data for JSON storage
+          const promptData = {
+            message,
+            chatHistory: chatHistory.map(msg => ({
+              message_type: msg.message_type,
+              message: msg.message,
+              response: msg.response,
+              created_at: msg.created_at
+            }))
+          };
+
+          const responseData = {
+            response: data.response
+          };
+
+          await supabase
+            .from('ai_generation_logs')
+            .insert({
+              user_id: user.id,
+              generation_type: 'fitness_chat',
+              status: 'completed',
+              prompt_data: promptData,
+              response_data: responseData
+            });
+        } catch (logError) {
+          console.error('Failed to log chat interaction:', logError);
+          // Don't throw here, as the main functionality worked
+        }
+
+        // Update local chat history
+        const newUserMessage: ChatMessage = { 
+          id: Date.now().toString(), 
+          message_type: 'user', 
+          message, 
+          created_at: new Date().toISOString() 
+        };
+        const newAiMessage: ChatMessage = { 
+          id: (Date.now() + 1).toString(), 
+          message_type: 'assistant', 
+          response: data.response, 
+          created_at: new Date().toISOString() 
+        };
+        
+        setChatHistory(prev => [...prev, newUserMessage, newAiMessage]);
+
+        return data.response;
+      } catch (error) {
+        console.error('Error in AI chat:', error);
         throw error;
       }
-
-      console.log('AI response received:', data);
-
-      // Log the chat interaction with proper JSON serialization
-      try {
-        await supabase
-          .from('ai_generation_logs')
-          .insert({
-            user_id: user.id,
-            generation_type: 'fitness_chat',
-            status: 'completed',
-            prompt_data: JSON.parse(JSON.stringify({ message, chatHistory })), // Ensure proper JSON serialization
-            response_data: JSON.parse(JSON.stringify({ response: data.response }))
-          });
-      } catch (logError) {
-        console.error('Failed to log chat interaction:', logError);
-        // Don't throw here, as the main functionality worked
-      }
-
-      // Update local chat history
-      const newUserMessage: ChatMessage = { 
-        id: Date.now().toString(), 
-        message_type: 'user', 
-        message, 
-        created_at: new Date().toISOString() 
-      };
-      const newAiMessage: ChatMessage = { 
-        id: (Date.now() + 1).toString(), 
-        message_type: 'assistant', 
-        response: data.response, 
-        created_at: new Date().toISOString() 
-      };
-      
-      setChatHistory(prev => [...prev, newUserMessage, newAiMessage]);
-
-      return data.response;
     },
     onError: (error: any) => {
       console.error('Error in AI chat:', error);
