@@ -4,14 +4,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useProfile } from './useProfile';
 import { toast } from 'sonner';
+import { useState } from 'react';
 
 export const useAIChat = () => {
   const { user } = useAuth();
   const { profile } = useProfile();
   const queryClient = useQueryClient();
+  const [chatHistory, setChatHistory] = useState<any[]>([]);
 
   const sendMessage = useMutation({
-    mutationFn: async ({ message, chatHistory }: { message: string; chatHistory?: any[] }) => {
+    mutationFn: async ({ message, chatHistory: currentHistory }: { message: string; chatHistory?: any[] }) => {
       if (!user?.id) {
         throw new Error('Please sign in to use AI chat');
       }
@@ -20,7 +22,7 @@ export const useAIChat = () => {
         body: {
           message,
           userProfile: profile,
-          chatHistory: chatHistory || []
+          chatHistory: currentHistory || chatHistory
         }
       });
 
@@ -33,9 +35,15 @@ export const useAIChat = () => {
           user_id: user.id,
           generation_type: 'fitness_chat',
           status: 'completed',
-          prompt_data: { message, chatHistory },
+          prompt_data: { message, chatHistory: currentHistory || chatHistory },
           response_data: { response: data.response }
         });
+
+      // Update local chat history
+      const newUserMessage = { message_type: 'user', message, created_at: new Date().toISOString() };
+      const newAiMessage = { message_type: 'assistant', response: data.response, created_at: new Date().toISOString() };
+      
+      setChatHistory(prev => [...prev, newUserMessage, newAiMessage]);
 
       return data.response;
     },
@@ -46,7 +54,8 @@ export const useAIChat = () => {
   });
 
   return {
-    sendMessage: sendMessage.mutate,
-    isLoading: sendMessage.isPending,
+    sendMessage: (message: string) => sendMessage.mutate({ message, chatHistory }),
+    isSending: sendMessage.isPending,
+    chatHistory,
   };
 };
