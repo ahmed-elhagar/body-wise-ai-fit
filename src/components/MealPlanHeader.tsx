@@ -4,12 +4,20 @@ import { ArrowLeft, RefreshCw, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface MealPlanHeaderProps {
+  currentDate: string;
+  currentDay: string;
   onShowAIDialog: () => void;
   onRegeneratePlan: () => void;
   isGenerating: boolean;
 }
 
-const MealPlanHeader = ({ onShowAIDialog, onRegeneratePlan, isGenerating }: MealPlanHeaderProps) => {
+const MealPlanHeader = ({ 
+  currentDate, 
+  currentDay, 
+  onShowAIDialog, 
+  onRegeneratePlan, 
+  isGenerating 
+}: MealPlanHeaderProps) => {
   const navigate = useNavigate();
 
   return (
@@ -24,7 +32,8 @@ const MealPlanHeader = ({ onShowAIDialog, onRegeneratePlan, isGenerating }: Meal
         </Button>
         <div>
           <h1 className="text-3xl font-bold text-gray-800">Meal Plan</h1>
-          <p className="text-gray-600">Tuesday, January 30, 2024</p>
+          <p className="text-gray-600">{currentDate}</p>
+          <p className="text-sm text-fitness-primary font-medium">{currentDay}</p>
         </div>
       </div>
       <div className="flex space-x-2">
@@ -40,8 +49,8 @@ const MealPlanHeader = ({ onShowAIDialog, onRegeneratePlan, isGenerating }: Meal
           disabled={isGenerating}
           className="bg-fitness-gradient hover:opacity-90 text-white"
         >
-          <RefreshCw className="w-4 h-4 mr-2" />
-          Regenerate Plan
+          <RefreshCw className={`w-4 h-4 mr-2 ${isGenerating ? 'animate-spin' : ''}`} />
+          {isGenerating ? 'Regenerating...' : 'Regenerate Plan'}
         </Button>
       </div>
     </div>
