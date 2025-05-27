@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,7 @@ const MealPlan = () => {
   const { mealPlans, isLoading: isLoadingPlans } = useMealPlans();
   
   const [showAIDialog, setShowAIDialog] = useState(false);
-  const [selectedMeal, setSelectedMeal] = useState(null);
+  const [selectedMeal, setSelectedMeal] = useState<any>(null);
   const [showRecipeDialog, setShowRecipeDialog] = useState(false);
   const [showShoppingDialog, setShowShoppingDialog] = useState(false);
   const [showExchangeDialog, setShowExchangeDialog] = useState(false);
@@ -59,11 +60,11 @@ const MealPlan = () => {
   const handleShowShoppingList = () => {
     // Generate shopping list from current meals
     const shoppingItems = todaysMeals.flatMap(meal => 
-      meal.ingredients.map(ingredient => ({
-        name: ingredient,
-        quantity: "1",
-        unit: "serving",
-        category: getCategoryForIngredient(ingredient)
+      (meal.ingredients || []).map(ingredient => ({
+        name: typeof ingredient === 'string' ? ingredient : ingredient.name || 'Unknown ingredient',
+        quantity: typeof ingredient === 'string' ? "1" : ingredient.quantity || "1",
+        unit: typeof ingredient === 'string' ? "serving" : ingredient.unit || "serving",
+        category: getCategoryForIngredient(typeof ingredient === 'string' ? ingredient : ingredient.name || '')
       }))
     );
     
@@ -136,7 +137,14 @@ const MealPlan = () => {
       protein: 25,
       carbs: 45,
       fat: 12,
-      ingredients: ["Rolled oats", "Greek yogurt", "Banana", "Almonds", "Honey", "Chia seeds"],
+      ingredients: [
+        { name: "Rolled oats", quantity: "1/2", unit: "cup" },
+        { name: "Greek yogurt", quantity: "1/4", unit: "cup" },
+        { name: "Banana", quantity: "1", unit: "medium" },
+        { name: "Almonds", quantity: "1", unit: "tbsp" },
+        { name: "Honey", quantity: "1", unit: "tsp" },
+        { name: "Chia seeds", quantity: "1", unit: "tsp" }
+      ],
       instructions: [
         "Cook oats according to package instructions",
         "Stir in Greek yogurt and honey", 
@@ -156,7 +164,13 @@ const MealPlan = () => {
       protein: 8,
       carbs: 28,
       fat: 4,
-      ingredients: ["Spinach", "Apple", "Banana", "Protein powder", "Almond milk"],
+      ingredients: [
+        { name: "Spinach", quantity: "1", unit: "cup" },
+        { name: "Apple", quantity: "1/2", unit: "medium" },
+        { name: "Banana", quantity: "1/2", unit: "medium" },
+        { name: "Protein powder", quantity: "1", unit: "scoop" },
+        { name: "Almond milk", quantity: "1", unit: "cup" }
+      ],
       instructions: [
         "Add all ingredients to blender",
         "Blend until smooth",
@@ -176,7 +190,15 @@ const MealPlan = () => {
       protein: 38,
       carbs: 42,
       fat: 18,
-      ingredients: ["Grilled chicken", "Quinoa", "Cucumber", "Tomatoes", "Feta", "Olive oil", "Lemon"],
+      ingredients: [
+        { name: "Grilled chicken", quantity: "4", unit: "oz" },
+        { name: "Quinoa", quantity: "1/2", unit: "cup" },
+        { name: "Cucumber", quantity: "1/2", unit: "medium" },
+        { name: "Tomatoes", quantity: "1/2", unit: "cup" },
+        { name: "Feta", quantity: "2", unit: "tbsp" },
+        { name: "Olive oil", quantity: "1", unit: "tbsp" },
+        { name: "Lemon", quantity: "1/2", unit: "medium" }
+      ],
       instructions: [
         "Cook quinoa according to package instructions",
         "Grill chicken breast and slice",
@@ -197,7 +219,10 @@ const MealPlan = () => {
       protein: 6,
       carbs: 15,
       fat: 10,
-      ingredients: ["Raw almonds", "Green apple"],
+      ingredients: [
+        { name: "Raw almonds", quantity: "20", unit: "pieces" },
+        { name: "Green apple", quantity: "1", unit: "small" }
+      ],
       instructions: [
         "Wash and slice apple",
         "Serve with measured portion of almonds"
@@ -216,7 +241,14 @@ const MealPlan = () => {
       protein: 35,
       carbs: 25,
       fat: 22,
-      ingredients: ["Salmon fillet", "Broccoli", "Sweet potato", "Asparagus", "Olive oil", "Herbs"],
+      ingredients: [
+        { name: "Salmon fillet", quantity: "5", unit: "oz" },
+        { name: "Broccoli", quantity: "1", unit: "cup" },
+        { name: "Sweet potato", quantity: "1", unit: "medium" },
+        { name: "Asparagus", quantity: "6", unit: "spears" },
+        { name: "Olive oil", quantity: "1", unit: "tbsp" },
+        { name: "Herbs", quantity: "1", unit: "tsp" }
+      ],
       instructions: [
         "Preheat oven to 400°F",
         "Season salmon with herbs and olive oil",
@@ -242,7 +274,7 @@ const MealPlan = () => {
   ];
 
   const totalCalories = todaysMeals.reduce((sum, meal) => sum + meal.calories, 0);
-  const totalProtein = todaysMeals.reduce((sum, meal) => sum + parseInt(meal.protein), 0);
+  const totalProtein = todaysMeals.reduce((sum, meal) => sum + meal.protein, 0);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
@@ -428,14 +460,14 @@ const MealPlan = () => {
 
                         {/* Ingredients */}
                         <div className="flex flex-wrap gap-2">
-                          {meal.ingredients.slice(0, 4).map((ingredient, idx) => (
+                          {(meal.ingredients || []).slice(0, 4).map((ingredient, idx) => (
                             <Badge key={idx} variant="outline" className="text-xs bg-gray-50">
-                              {ingredient}
+                              {typeof ingredient === 'string' ? ingredient : ingredient.name}
                             </Badge>
                           ))}
-                          {meal.ingredients.length > 4 && (
+                          {(meal.ingredients || []).length > 4 && (
                             <Badge variant="outline" className="text-xs bg-gray-50">
-                              +{meal.ingredients.length - 4} more
+                              +{(meal.ingredients || []).length - 4} more
                             </Badge>
                           )}
                         </div>

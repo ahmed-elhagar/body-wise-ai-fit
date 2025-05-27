@@ -33,6 +33,10 @@ interface MealRecipeDialogProps {
 const MealRecipeDialog = ({ meal, isOpen, onClose }: MealRecipeDialogProps) => {
   if (!meal) return null;
 
+  // Ensure arrays exist with fallbacks
+  const ingredients = meal.ingredients || [];
+  const instructions = meal.instructions || [];
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -98,29 +102,37 @@ const MealRecipeDialog = ({ meal, isOpen, onClose }: MealRecipeDialogProps) => {
             {/* Ingredients */}
             <div>
               <h3 className="text-lg font-semibold mb-3">Ingredients</h3>
-              <div className="space-y-2">
-                {meal.ingredients.map((ingredient, index) => (
-                  <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                    <span className="font-medium">{ingredient.name}</span>
-                    <Badge variant="outline">{ingredient.quantity} {ingredient.unit}</Badge>
-                  </div>
-                ))}
-              </div>
+              {ingredients.length > 0 ? (
+                <div className="space-y-2">
+                  {ingredients.map((ingredient, index) => (
+                    <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                      <span className="font-medium">{ingredient.name}</span>
+                      <Badge variant="outline">{ingredient.quantity} {ingredient.unit}</Badge>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-sm">No ingredients available</p>
+              )}
             </div>
 
             {/* Instructions */}
             <div>
               <h3 className="text-lg font-semibold mb-3">Instructions</h3>
-              <div className="space-y-3">
-                {meal.instructions.map((instruction, index) => (
-                  <div key={index} className="flex items-start">
-                    <div className="bg-fitness-primary text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-1 flex-shrink-0">
-                      {index + 1}
+              {instructions.length > 0 ? (
+                <div className="space-y-3">
+                  {instructions.map((instruction, index) => (
+                    <div key={index} className="flex items-start">
+                      <div className="bg-fitness-primary text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-1 flex-shrink-0">
+                        {index + 1}
+                      </div>
+                      <p className="text-gray-700">{instruction}</p>
                     </div>
-                    <p className="text-gray-700">{instruction}</p>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-sm">No instructions available</p>
+              )}
             </div>
           </div>
         </div>
