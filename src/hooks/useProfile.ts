@@ -4,25 +4,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
 
-export interface UserProfile {
-  id: string;
-  email?: string;
-  first_name?: string;
-  last_name?: string;
-  height?: number;
-  weight?: number;
-  gender?: 'male' | 'female' | 'other';
-  age?: number;
-  nationality?: string;
-  body_shape?: 'ectomorph' | 'mesomorph' | 'endomorph';
-  activity_level?: 'sedentary' | 'lightly_active' | 'moderately_active' | 'very_active' | 'extremely_active';
-  fitness_goal?: 'weight_loss' | 'weight_gain' | 'muscle_gain' | 'maintenance' | 'endurance';
-  allergies?: string[];
-  health_conditions?: string[];
-  preferred_foods?: string[];
-  dietary_restrictions?: string[];
-}
-
 export const useProfile = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -39,13 +20,13 @@ export const useProfile = () => {
         .single();
 
       if (error) throw error;
-      return data as UserProfile;
+      return data;
     },
     enabled: !!user?.id,
   });
 
   const updateProfileMutation = useMutation({
-    mutationFn: async (profileData: Partial<UserProfile>) => {
+    mutationFn: async (profileData: any) => {
       if (!user?.id) throw new Error('No user ID');
 
       const { data, error } = await supabase

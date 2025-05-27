@@ -7,22 +7,34 @@ import { Loader2 } from 'lucide-react';
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requireProfile?: boolean;
+  adminOnly?: boolean;
 }
 
-export default function ProtectedRoute({ children, requireProfile = true }: ProtectedRouteProps) {
-  const { user, loading: authLoading } = useAuth();
+export default function ProtectedRoute({ 
+  children, 
+  requireProfile = true, 
+  adminOnly = false 
+}: ProtectedRouteProps) {
+  const { user, loading: authLoading, isAdmin } = useAuth();
   const { profile, isLoading: profileLoading } = useProfile();
 
   if (authLoading || profileLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-fitness-primary" />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin text-fitness-primary mx-auto mb-4" />
+          <p className="text-gray-600">Loading...</p>
+        </div>
       </div>
     );
   }
 
   if (!user) {
     return <Navigate to="/auth" replace />;
+  }
+
+  if (adminOnly && !isAdmin) {
+    return <Navigate to="/dashboard" replace />;
   }
 
   // Check if profile is complete (required fields)
