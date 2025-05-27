@@ -12,11 +12,14 @@ interface ProtectedRouteProps {
 
 export default function ProtectedRoute({ 
   children, 
-  requireProfile = true, 
+  requireProfile = false, 
   adminOnly = false 
 }: ProtectedRouteProps) {
   const { user, loading: authLoading, isAdmin } = useAuth();
   const { profile, isLoading: profileLoading } = useProfile();
+
+  console.log('ProtectedRoute - Auth state:', { user: !!user, authLoading, profileLoading, isAdmin });
+  console.log('ProtectedRoute - Profile:', profile);
 
   if (authLoading || profileLoading) {
     return (
@@ -29,22 +32,22 @@ export default function ProtectedRoute({
     );
   }
 
+  // If no user, redirect to auth
   if (!user) {
+    console.log('ProtectedRoute - No user, redirecting to auth');
     return <Navigate to="/auth" replace />;
   }
 
+  // Check admin access
   if (adminOnly && !isAdmin) {
+    console.log('ProtectedRoute - Admin required but user is not admin');
     return <Navigate to="/dashboard" replace />;
   }
 
-  // Only check for profile completion if explicitly required and profile exists
-  // Allow users to access the app even with incomplete profiles unless specifically requiring complete profile
-  if (requireProfile && profile) {
-    // Check for truly essential fields only
-    const hasEssentialInfo = profile.first_name && profile.last_name;
-    
-    // Only redirect to onboarding if completely missing essential profile data
-    if (!hasEssentialInfo) {
+  // If profile is required but doesn't exist or lacks essential fields
+  if (requireProfile) {
+    if (!profile || !profile.first_name || !profile.last_name) {
+      console.log('ProtectedRoute - Profile required but missing essential fields');
       return <Navigate to="/onboarding" replace />;
     }
   }

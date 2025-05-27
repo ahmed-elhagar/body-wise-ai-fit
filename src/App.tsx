@@ -16,6 +16,7 @@ import MealPlan from "./pages/MealPlan";
 import Exercise from "./pages/Exercise";
 import WeightTracking from "./pages/WeightTracking";
 import CalorieChecker from "./pages/CalorieChecker";
+import AIChatPage from "./pages/AIChatPage";
 import AdminPanel from "./pages/AdminPanel";
 import NotFound from "./pages/NotFound";
 
@@ -23,6 +24,7 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: 1,
     },
   },
 });
@@ -32,18 +34,21 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <AuthProvider>
-          <Toaster />
+          <Toaster position="top-right" />
           <BrowserRouter>
             <Routes>
+              {/* Public Routes */}
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
               
+              {/* Onboarding Route - Requires auth but not complete profile */}
               <Route path="/onboarding" element={
                 <ProtectedRoute requireProfile={false}>
                   <Onboarding />
                 </ProtectedRoute>
               } />
               
+              {/* Protected Routes - Require auth and basic profile */}
               <Route path="/dashboard" element={
                 <ProtectedRoute>
                   <Dashboard />
@@ -80,12 +85,20 @@ function App() {
                 </ProtectedRoute>
               } />
               
+              <Route path="/ai-chat" element={
+                <ProtectedRoute>
+                  <AIChatPage />
+                </ProtectedRoute>
+              } />
+              
+              {/* Admin Route */}
               <Route path="/admin" element={
                 <ProtectedRoute adminOnly={true}>
                   <AdminPanel />
                 </ProtectedRoute>
               } />
               
+              {/* 404 and Catch-all */}
               <Route path="/404" element={<NotFound />} />
               <Route path="*" element={<Navigate to="/404" replace />} />
             </Routes>

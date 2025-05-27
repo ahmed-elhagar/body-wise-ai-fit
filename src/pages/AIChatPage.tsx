@@ -1,180 +1,158 @@
 
-import { useState, useRef, useEffect } from "react";
-import { Card } from "@/components/ui/card";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Send, Bot, User, Loader2 } from "lucide-react";
+import { Card } from "@/components/ui/card";
 import { useAIChat } from "@/hooks/useAIChat";
-import { useProfile } from "@/hooks/useProfile";
+import Navigation from "@/components/Navigation";
+import { Send, Bot, User, Trash2 } from "lucide-react";
 
 const AIChatPage = () => {
-  const navigate = useNavigate();
-  const { profile } = useProfile();
-  const { chatHistory, sendMessage, isSending } = useAIChat();
   const [message, setMessage] = useState("");
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { sendMessage, isSending, chatHistory, clearHistory } = useAIChat();
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [chatHistory]);
-
-  const handleSendMessage = () => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     if (!message.trim() || isSending) return;
     
     sendMessage(message);
     setMessage("");
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center">
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/dashboard')}
-              className="mr-4"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
+      <Navigation />
+      
+      <div className="md:ml-64 p-4 md:p-8">
+        <div className="max-w-4xl mx-auto">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="text-3xl font-bold text-gray-800">FitGenie AI Coach</h1>
-              <p className="text-gray-600">Your personal AI fitness and nutrition assistant</p>
+              <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                AI Fitness Chat 🤖
+              </h1>
+              <p className="text-gray-600">
+                Ask questions about fitness, nutrition, or get personalized advice
+              </p>
             </div>
-          </div>
-          <div className="flex items-center space-x-2 text-green-600">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span className="text-sm">Online</span>
-          </div>
-        </div>
-
-        {/* Chat Container */}
-        <Card className="h-[70vh] flex flex-col bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-          {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-4">
-            {/* Welcome Message */}
-            {(!chatHistory || chatHistory.length === 0) && (
-              <div className="flex items-start space-x-3">
-                <div className="w-8 h-8 bg-fitness-gradient rounded-full flex items-center justify-center">
-                  <Bot className="w-5 h-5 text-white" />
-                </div>
-                <div className="bg-gray-100 rounded-lg p-4 max-w-md">
-                  <p className="text-gray-800">
-                    Hi {profile?.first_name}! 👋 I'm FitGenie, your AI fitness coach. 
-                    I'm here to help you with personalized workout plans, nutrition advice, 
-                    and answer any fitness-related questions you have. How can I assist you today?
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Chat Messages */}
-            {chatHistory?.map((msg, index) => (
-              <div
-                key={index}
-                className={`flex items-start space-x-3 ${
-                  msg.message_type === 'user' ? 'flex-row-reverse space-x-reverse' : ''
-                }`}
+            
+            {chatHistory.length > 0 && (
+              <Button
+                variant="outline"
+                onClick={clearHistory}
+                className="flex items-center space-x-2"
               >
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                  msg.message_type === 'user' 
-                    ? 'bg-fitness-primary' 
-                    : 'bg-fitness-gradient'
-                }`}>
-                  {msg.message_type === 'user' ? (
-                    <User className="w-5 h-5 text-white" />
-                  ) : (
-                    <Bot className="w-5 h-5 text-white" />
-                  )}
-                </div>
-                <div className={`rounded-lg p-4 max-w-md ${
-                  msg.message_type === 'user'
-                    ? 'bg-fitness-primary text-white'
-                    : 'bg-gray-100 text-gray-800'
-                }`}>
-                  <p className="whitespace-pre-wrap">
-                    {msg.message_type === 'user' ? msg.message : msg.response}
+                <Trash2 className="w-4 h-4" />
+                <span>Clear Chat</span>
+              </Button>
+            )}
+          </div>
+
+          {/* Chat Area */}
+          <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg mb-6">
+            <div className="h-96 overflow-y-auto mb-4 space-y-4">
+              {chatHistory.length === 0 ? (
+                <div className="text-center text-gray-500 mt-8">
+                  <Bot className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                  <p>Start a conversation with your AI fitness coach!</p>
+                  <p className="text-sm mt-2">
+                    Try asking: "What's a good workout for beginners?" or "How many calories should I eat?"
                   </p>
                 </div>
-              </div>
-            ))}
-
-            {/* Loading Indicator */}
-            {isSending && (
-              <div className="flex items-start space-x-3">
-                <div className="w-8 h-8 bg-fitness-gradient rounded-full flex items-center justify-center">
-                  <Bot className="w-5 h-5 text-white" />
-                </div>
-                <div className="bg-gray-100 rounded-lg p-4">
-                  <div className="flex items-center space-x-2">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span className="text-gray-600">FitGenie is thinking...</span>
+              ) : (
+                chatHistory.map((chat) => (
+                  <div
+                    key={chat.id}
+                    className={`flex items-start space-x-3 ${
+                      chat.message_type === 'user' ? 'justify-end' : 'justify-start'
+                    }`}
+                  >
+                    {chat.message_type === 'assistant' && (
+                      <div className="w-8 h-8 bg-fitness-gradient rounded-full flex items-center justify-center flex-shrink-0">
+                        <Bot className="w-4 h-4 text-white" />
+                      </div>
+                    )}
+                    
+                    <div
+                      className={`max-w-xs md:max-w-md p-3 rounded-lg ${
+                        chat.message_type === 'user'
+                          ? 'bg-fitness-gradient text-white'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}
+                    >
+                      <p className="text-sm leading-relaxed">
+                        {chat.message_type === 'user' ? chat.message : chat.response}
+                      </p>
+                    </div>
+                    
+                    {chat.message_type === 'user' && (
+                      <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center flex-shrink-0">
+                        <User className="w-4 h-4 text-white" />
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+              
+              {isSending && (
+                <div className="flex items-start space-x-3">
+                  <div className="w-8 h-8 bg-fitness-gradient rounded-full flex items-center justify-center">
+                    <Bot className="w-4 h-4 text-white" />
+                  </div>
+                  <div className="bg-gray-100 p-3 rounded-lg">
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Input Area */}
-          <div className="border-t p-4">
-            <div className="flex space-x-2">
+            {/* Message Input */}
+            <form onSubmit={handleSubmit} className="flex space-x-3">
               <Input
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Ask me anything about fitness, nutrition, or workouts..."
+                placeholder="Ask me anything about fitness..."
                 className="flex-1"
                 disabled={isSending}
               />
               <Button
-                onClick={handleSendMessage}
-                disabled={!message.trim() || isSending}
-                className="bg-fitness-gradient hover:opacity-90 text-white"
+                type="submit"
+                disabled={isSending || !message.trim()}
+                className="bg-fitness-gradient hover:opacity-90"
               >
                 <Send className="w-4 h-4" />
               </Button>
-            </div>
-            <p className="text-xs text-gray-500 mt-2">
-              Press Enter to send, Shift+Enter for new line
-            </p>
-          </div>
-        </Card>
+            </form>
+          </Card>
 
-        {/* Quick Actions */}
-        <div className="mt-4 flex flex-wrap gap-2">
-          {[
-            "Create a workout plan for me",
-            "What should I eat for breakfast?",
-            "How can I lose weight safely?",
-            "Best exercises for building muscle",
-            "Help me with my nutrition goals"
-          ].map((suggestion, index) => (
-            <Button
-              key={index}
-              variant="outline"
-              size="sm"
-              onClick={() => setMessage(suggestion)}
-              className="bg-white/80 hover:bg-gray-50"
-              disabled={isSending}
-            >
-              {suggestion}
-            </Button>
-          ))}
+          {/* Quick Questions */}
+          <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Quick Questions
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {[
+                "What's a good beginner workout routine?",
+                "How many calories should I eat to lose weight?",
+                "What are the best protein sources?",
+                "How often should I exercise per week?"
+              ].map((question, index) => (
+                <Button
+                  key={index}
+                  variant="outline"
+                  onClick={() => setMessage(question)}
+                  className="text-left justify-start h-auto p-3 text-sm"
+                  disabled={isSending}
+                >
+                  {question}
+                </Button>
+              ))}
+            </div>
+          </Card>
         </div>
       </div>
     </div>

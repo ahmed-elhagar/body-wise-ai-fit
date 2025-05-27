@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { useProfile } from "@/hooks/useProfile";
+import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -16,23 +16,44 @@ const Auth = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   
-  const { signIn, signUp } = useAuth();
-  const { profile } = useProfile();
+  const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect if already logged in
+  if (user) {
+    navigate('/dashboard');
+    return null;
+  }
+
+  const validateForm = () => {
+    if (!email || !password) {
+      toast.error('Email and password are required');
+      return false;
+    }
+    
+    if (password.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return false;
+    }
+    
+    if (isSignUp && (!firstName || !lastName)) {
+      toast.error('First name and last name are required');
+      return false;
+    }
+    
+    return true;
+  };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    if (!validateForm()) return;
     
+    setLoading(true);
     try {
       await signIn(email, password);
-      // Check if user has essential profile info
-      if (profile && profile.first_name && profile.last_name) {
-        navigate('/dashboard');
-      } else {
-        navigate('/onboarding');
-      }
+      navigate('/dashboard');
     } catch (error: any) {
       console.error('Sign in error:', error);
     } finally {
@@ -42,12 +63,14 @@ const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    if (!validateForm()) return;
     
+    setLoading(true);
     try {
-      await signUp(email, password, { first_name: firstName, last_name: lastName });
-      toast.success('Account created successfully! Please check your email to verify your account.');
-      // After signup, redirect to onboarding to complete profile
+      await signUp(email, password, { 
+        first_name: firstName, 
+        last_name: lastName 
+      });
       navigate('/onboarding');
     } catch (error: any) {
       console.error('Sign up error:', error);
@@ -58,78 +81,123 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4">
-      <Card className="w-full max-w-md p-8 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+      <Card className="w-full max-w-md p-8 bg-white/90 backdrop-blur-sm border-0 shadow-2xl">
         <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-fitness-gradient rounded-full flex items-center justify-center mx-auto mb-4">
+            <User className="w-8 h-8 text-white" />
+          </div>
           <h1 className="text-3xl font-bold bg-fitness-gradient bg-clip-text text-transparent">
             FitGenius AI
           </h1>
           <p className="text-gray-600 mt-2">
-            Your AI-powered fitness companion
+            {isSignUp ? 'Create your account' : 'Welcome back!'}
           </p>
         </div>
 
-        <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-4">
+        <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-6">
           {isSignUp && (
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="firstName">First Name</Label>
+              <div className="space-y-2">
+                <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">
+                  First Name
+                </Label>
                 <Input
                   id="firstName"
                   type="text"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
+                  placeholder="John"
+                  className="h-11"
                   required
                 />
               </div>
-              <div>
-                <Label htmlFor="lastName">Last Name</Label>
+              <div className="space-y-2">
+                <Label htmlFor="lastName" className="text-sm font-medium text-gray-700">
+                  Last Name
+                </Label>
                 <Input
                   id="lastName"
                   type="text"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
+                  placeholder="Doe"
+                  className="h-11"
                   required
                 />
               </div>
             </div>
           )}
           
-          <div>
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+              Email Address
+            </Label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="john@example.com"
+                className="h-11 pl-10"
+                required
+              />
+            </div>
           </div>
           
-          <div>
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+          <div className="space-y-2">
+            <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+              Password
+            </Label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="h-11 pl-10 pr-10"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
           </div>
 
           <Button 
             type="submit" 
-            className="w-full bg-fitness-gradient hover:opacity-90"
+            className="w-full h-11 bg-fitness-gradient hover:opacity-90 text-white font-medium shadow-lg"
             disabled={loading}
           >
-            {loading ? "Loading..." : (isSignUp ? "Sign Up" : "Sign In")}
+            {loading ? (
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span>Please wait...</span>
+              </div>
+            ) : (
+              isSignUp ? "Create Account" : "Sign In"
+            )}
           </Button>
         </form>
 
         <div className="text-center mt-6">
           <Button
             variant="ghost"
-            onClick={() => setIsSignUp(!isSignUp)}
-            className="text-sm"
+            onClick={() => {
+              setIsSignUp(!isSignUp);
+              setEmail("");
+              setPassword("");
+              setFirstName("");
+              setLastName("");
+            }}
+            className="text-sm hover:bg-gray-100"
           >
             {isSignUp 
               ? "Already have an account? Sign in" 
