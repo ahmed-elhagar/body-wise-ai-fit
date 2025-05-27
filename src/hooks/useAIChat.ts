@@ -12,6 +12,7 @@ interface ChatMessage {
   message?: string;
   response?: string;
   created_at: string;
+  [key: string]: any; // Add index signature for JSON compatibility
 }
 
 export const useAIChat = () => {
@@ -43,7 +44,7 @@ export const useAIChat = () => {
 
       console.log('AI response received:', data);
 
-      // Log the chat interaction
+      // Log the chat interaction with proper JSON serialization
       try {
         await supabase
           .from('ai_generation_logs')
@@ -51,8 +52,8 @@ export const useAIChat = () => {
             user_id: user.id,
             generation_type: 'fitness_chat',
             status: 'completed',
-            prompt_data: { message, chatHistory },
-            response_data: { response: data.response }
+            prompt_data: JSON.parse(JSON.stringify({ message, chatHistory })), // Ensure proper JSON serialization
+            response_data: JSON.parse(JSON.stringify({ response: data.response }))
           });
       } catch (logError) {
         console.error('Failed to log chat interaction:', logError);
