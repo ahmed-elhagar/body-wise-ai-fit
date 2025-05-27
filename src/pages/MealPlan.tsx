@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { useAIMealPlan } from "@/hooks/useAIMealPlan";
@@ -167,7 +166,7 @@ const MealPlan = () => {
         prepTime: meal.prep_time || 0,
         servings: meal.servings || 1,
         image: getMealEmoji(meal.meal_type),
-        youtubeId: meal.youtube_search_term || "dQw4w9WgXcQ"
+        youtubeId: meal.youtube_search_term || "dQw4w9WgXcQ" // Fixed: Added required youtubeId property
       };
     }) || [];
 
