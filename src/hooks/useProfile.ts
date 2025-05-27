@@ -22,10 +22,15 @@ export const useProfile = () => {
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .maybeSingle(); // Use maybeSingle instead of single to handle no data case
+        .maybeSingle();
 
       if (error) {
         console.error('Profile fetch error:', error);
+        // Don't throw error if profile doesn't exist yet
+        if (error.code === 'PGRST116') {
+          console.log('No profile found, returning null');
+          return null;
+        }
         throw error;
       }
       
@@ -34,7 +39,13 @@ export const useProfile = () => {
     },
     enabled: !!user?.id,
     staleTime: 1000 * 60 * 5, // 5 minutes
-    retry: 1,
+    retry: (failureCount, error: any) => {
+      // Don't retry if it's a "no rows" error
+      if (error?.code === 'PGRST116') {
+        return false;
+      }
+      return failureCount < 1;
+    },
   });
 
   const updateProfileMutation = useMutation({

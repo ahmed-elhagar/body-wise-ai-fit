@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -29,9 +30,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .select('role')
         .eq('user_id', userId)
         .eq('role', 'admin')
-        .maybeSingle(); // Use maybeSingle instead of expecting exact results
+        .maybeSingle();
       
-      if (error) {
+      if (error && error.code !== 'PGRST116') {
         console.error('Admin check error:', error);
         setIsAdmin(false);
         return;
@@ -56,9 +57,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setSession(session);
         setUser(session?.user ?? null);
         
+        // Only check admin status after setting user, not in the callback
         if (session?.user) {
-          // Check if user is admin
-          await checkAdminStatus(session.user.id);
+          // Use setTimeout to avoid blocking the auth state change
+          setTimeout(() => {
+            checkAdminStatus(session.user.id);
+          }, 0);
         } else {
           setIsAdmin(false);
         }
@@ -75,7 +79,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       // Check admin status on initial load
       if (session?.user) {
-        await checkAdminStatus(session.user.id);
+        setTimeout(() => {
+          checkAdminStatus(session.user.id);
+        }, 0);
       }
       setLoading(false);
     });

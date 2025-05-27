@@ -38,8 +38,8 @@ export default function ProtectedRoute({
     }
   }, [user, authLoading, profileLoading, isAdmin, profile, requireProfile]);
 
-  // Show loading while checking authentication or profile (only if profile is required)
-  if (authLoading || (requireProfile && profileLoading)) {
+  // Show loading only while authentication is loading
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
         <div className="text-center">
@@ -60,6 +60,18 @@ export default function ProtectedRoute({
   if (adminOnly && !isAdmin) {
     console.log('ProtectedRoute - Admin required but user is not admin');
     return <Navigate to="/dashboard" replace />;
+  }
+
+  // If profile is required, show loading while profile is loading
+  if (requireProfile && profileLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin text-fitness-primary mx-auto mb-4" />
+          <p className="text-gray-600">Loading profile...</p>
+        </div>
+      </div>
+    );
   }
 
   // If profile is required but doesn't exist or lacks essential fields
