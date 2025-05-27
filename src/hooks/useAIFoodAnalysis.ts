@@ -17,18 +17,16 @@ export const useAIFoodAnalysis = () => {
 
       if (error) throw error;
 
-      // Save to database
-      const { error: saveError } = await supabase
-        .from('ai_food_analysis')
+      // Log the analysis in ai_generation_logs
+      await supabase
+        .from('ai_generation_logs')
         .insert({
           user_id: user.id,
-          image_url: imageUrl,
-          food_items: data.analysis.foodItems,
-          total_calories: data.analysis.totalNutrition.calories,
-          analysis_confidence: data.analysis.confidence
+          generation_type: 'food_analysis',
+          status: 'completed',
+          prompt_data: { imageUrl, imageBase64: imageBase64 ? '[base64_data]' : null },
+          response_data: data.analysis
         });
-
-      if (saveError) throw saveError;
 
       return data.analysis;
     },
