@@ -4,11 +4,31 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Play, Clock, Target, Youtube, Home, Dumbbell } from "lucide-react";
+import { ArrowLeft, Play, Clock, Target, Youtube, Home, Dumbbell, Sparkles } from "lucide-react";
+import { useExercisePrograms } from "@/hooks/useExercisePrograms";
+import { useAIExercise } from "@/hooks/useAIExercise";
+import { useState } from "react";
+import { toast } from "sonner";
 
 const Exercise = () => {
   const navigate = useNavigate();
+  const { programs } = useExercisePrograms();
+  const { generateExerciseProgram, isGenerating } = useAIExercise();
+  const [showAIDialog, setShowAIDialog] = useState(false);
 
+  const handleGenerateProgram = () => {
+    const preferences = {
+      duration: "4",
+      equipment: "Basic home equipment",
+      workoutDays: "3-4 days per week",
+      difficulty: "beginner"
+    };
+    
+    generateExerciseProgram(preferences);
+    toast.success("Generating your personalized exercise program...");
+  };
+
+  // Mock data for demonstration - replace with real data from programs
   const todaysWorkout = {
     name: "Upper Body Strength",
     duration: "45 minutes",
@@ -137,137 +157,160 @@ const Exercise = () => {
             </Button>
             <div>
               <h1 className="text-3xl font-bold text-gray-800">Exercise Program</h1>
-              <p className="text-gray-600">Today's workout session</p>
+              <p className="text-gray-600">
+                {programs && programs.length > 0 ? "Your personalized workout" : "Generate your workout plan"}
+              </p>
             </div>
           </div>
           <div className="flex space-x-2">
+            <Button 
+              onClick={handleGenerateProgram}
+              disabled={isGenerating}
+              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              {isGenerating ? 'Generating...' : 'AI Generate'}
+            </Button>
             <Badge variant="outline" className="bg-white/80">
               <Home className="w-3 h-3 mr-1" />
               Home Workout
             </Badge>
-            <Badge variant="outline" className="bg-white/80">
-              <Dumbbell className="w-3 h-3 mr-1" />
-              Equipment Required
-            </Badge>
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-4 gap-6">
-          {/* Workout Summary */}
-          <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Today's Workout</h3>
-            <div className="space-y-4">
-              <div>
-                <h4 className="font-medium text-gray-800">{todaysWorkout.name}</h4>
-                <p className="text-sm text-gray-600">{todaysWorkout.level}</p>
+        {programs && programs.length > 0 ? (
+          <div className="grid lg:grid-cols-4 gap-6">
+            {/* Workout Summary */}
+            <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Today's Workout</h3>
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-medium text-gray-800">{todaysWorkout.name}</h4>
+                  <p className="text-sm text-gray-600">{todaysWorkout.level}</p>
+                </div>
+                
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Duration</span>
+                    <span className="text-sm font-medium">{todaysWorkout.duration}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Calories</span>
+                    <span className="text-sm font-medium">{todaysWorkout.burnedCalories}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Equipment</span>
+                    <span className="text-sm font-medium">{todaysWorkout.equipment}</span>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm text-gray-600">Progress</span>
+                    <span className="text-sm font-medium">
+                      {todaysWorkout.completedExercises}/{todaysWorkout.totalExercises}
+                    </span>
+                  </div>
+                  <Progress value={progressPercentage} className="h-2" />
+                </div>
+
+                <Button className="w-full bg-fitness-gradient hover:opacity-90 text-white">
+                  <Play className="w-4 h-4 mr-2" />
+                  Continue Workout
+                </Button>
+              </div>
+            </Card>
+
+            {/* Exercise List */}
+            <div className="lg:col-span-3">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-gray-800">Exercise List</h2>
+                <Badge variant="outline" className="bg-white/80">
+                  {exercises.length} exercises
+                </Badge>
               </div>
               
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Duration</span>
-                  <span className="text-sm font-medium">{todaysWorkout.duration}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Calories</span>
-                  <span className="text-sm font-medium">{todaysWorkout.burnedCalories}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Equipment</span>
-                  <span className="text-sm font-medium">{todaysWorkout.equipment}</span>
-                </div>
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-600">Progress</span>
-                  <span className="text-sm font-medium">
-                    {todaysWorkout.completedExercises}/{todaysWorkout.totalExercises}
-                  </span>
-                </div>
-                <Progress value={progressPercentage} className="h-2" />
-              </div>
-
-              <Button className="w-full bg-fitness-gradient hover:opacity-90 text-white">
-                <Play className="w-4 h-4 mr-2" />
-                Continue Workout
-              </Button>
-            </div>
-          </Card>
-
-          {/* Exercise List */}
-          <div className="lg:col-span-3">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-gray-800">Exercise List</h2>
-              <Badge variant="outline" className="bg-white/80">
-                {exercises.length} exercises
-              </Badge>
-            </div>
-            
-            <div className="space-y-4">
-              {exercises.map((exercise, index) => (
-                <Card 
-                  key={index} 
-                  className={`p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 ${
-                    exercise.completed ? 'bg-green-50/80' : ''
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                        exercise.completed 
-                          ? 'bg-green-500 text-white' 
-                          : 'bg-gray-200 text-gray-600'
-                      }`}>
-                        {exercise.completed ? '✓' : index + 1}
+              <div className="space-y-4">
+                {exercises.map((exercise, index) => (
+                  <Card 
+                    key={index} 
+                    className={`p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 ${
+                      exercise.completed ? 'bg-green-50/80' : ''
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                          exercise.completed 
+                            ? 'bg-green-500 text-white' 
+                            : 'bg-gray-200 text-gray-600'
+                        }`}>
+                          {exercise.completed ? '✓' : index + 1}
+                        </div>
+                        
+                        <div className="flex-1">
+                          <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                            {exercise.name}
+                          </h3>
+                          <div className="flex items-center space-x-4 text-sm text-gray-600 mb-2">
+                            <span>{exercise.sets} sets × {exercise.reps} reps</span>
+                            <span className="flex items-center">
+                              <Clock className="w-3 h-3 mr-1" />
+                              {exercise.duration}
+                            </span>
+                            <span className="flex items-center">
+                              <Target className="w-3 h-3 mr-1" />
+                              {exercise.muscleGroup}
+                            </span>
+                          </div>
+                          <Badge variant="outline" className="text-xs">
+                            {exercise.equipment}
+                          </Badge>
+                        </div>
                       </div>
                       
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-800 mb-1">
-                          {exercise.name}
-                        </h3>
-                        <div className="flex items-center space-x-4 text-sm text-gray-600 mb-2">
-                          <span>{exercise.sets} sets × {exercise.reps} reps</span>
-                          <span className="flex items-center">
-                            <Clock className="w-3 h-3 mr-1" />
-                            {exercise.duration}
-                          </span>
-                          <span className="flex items-center">
-                            <Target className="w-3 h-3 mr-1" />
-                            {exercise.muscleGroup}
-                          </span>
-                        </div>
-                        <Badge variant="outline" className="text-xs">
-                          {exercise.equipment}
-                        </Badge>
-                      </div>
-                    </div>
-                    
-                    <div className="flex space-x-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="bg-white/80"
-                        onClick={() => window.open(`https://www.youtube.com/watch?v=${exercise.videoId}`, '_blank')}
-                      >
-                        <Youtube className="w-4 h-4 mr-1" />
-                        Tutorial
-                      </Button>
-                      {!exercise.completed && (
+                      <div className="flex space-x-2">
                         <Button
                           size="sm"
-                          className="bg-fitness-gradient hover:opacity-90 text-white"
+                          variant="outline"
+                          className="bg-white/80"
+                          onClick={() => window.open(`https://www.youtube.com/watch?v=${exercise.videoId}`, '_blank')}
                         >
-                          <Play className="w-4 h-4 mr-1" />
-                          Start
+                          <Youtube className="w-4 h-4 mr-1" />
+                          Tutorial
                         </Button>
-                      )}
+                        {!exercise.completed && (
+                          <Button
+                            size="sm"
+                            className="bg-fitness-gradient hover:opacity-90 text-white"
+                          >
+                            <Play className="w-4 h-4 mr-1" />
+                            Start
+                          </Button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </Card>
-              ))}
+                  </Card>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          // No programs state
+          <Card className="p-12 bg-white/80 backdrop-blur-sm border-0 shadow-lg text-center">
+            <Dumbbell className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">No Exercise Program Yet</h3>
+            <p className="text-gray-600 mb-6">Generate your personalized AI exercise program to get started</p>
+            <Button 
+              onClick={handleGenerateProgram}
+              disabled={isGenerating}
+              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              {isGenerating ? 'Generating...' : 'Generate AI Exercise Program'}
+            </Button>
+          </Card>
+        )}
 
         {/* Weekly Program */}
         <Card className="mt-8 p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">

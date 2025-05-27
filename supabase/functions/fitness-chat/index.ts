@@ -20,43 +20,38 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    console.log("Processing chat request:", { message, userProfile });
-    
-    // Build conversation history for context
-    const messages = [
-      { 
-        role: 'system', 
-        content: `You are FitGenie, an AI fitness and nutrition coach. You have access to the user's profile:
+    console.log('Processing chat request:', { 
+      message, 
+      userProfile: userProfile ? { 
+        id: userProfile.id, 
+        age: userProfile.age, 
+        gender: userProfile.gender,
+        fitness_goal: userProfile.fitness_goal 
+      } : null 
+    });
+
+    // Create system message with user context
+    const systemMessage = `You are FitGenie, an AI fitness and nutrition coach. You have access to the user's profile:
         - Age: ${userProfile?.age || 'Unknown'}, Gender: ${userProfile?.gender || 'Unknown'}
         - Height: ${userProfile?.height || 'Unknown'}cm, Weight: ${userProfile?.weight || 'Unknown'}kg
-        - Fitness Goal: ${userProfile?.fitness_goal || 'Unknown'}
-        - Activity Level: ${userProfile?.activity_level || 'Unknown'}
-        - Body Shape: ${userProfile?.body_shape || 'Unknown'}
+        - Fitness Goal: ${userProfile?.fitness_goal || 'general health'}
+        - Activity Level: ${userProfile?.activity_level || 'moderate'}
+        - Body Shape: ${userProfile?.body_shape || 'average'}
+        - Nationality: ${userProfile?.nationality || 'International'}
         - Health Conditions: ${userProfile?.health_conditions?.join(', ') || 'None'}
         - Allergies: ${userProfile?.allergies?.join(', ') || 'None'}
         
-        Provide personalized, evidence-based advice on fitness, nutrition, and wellness. Be encouraging, motivational, and practical. Keep responses concise but helpful.`
-      }
+        Provide personalized, evidence-based advice on fitness, nutrition, and wellness. Be encouraging, motivational, and practical. Keep responses concise but helpful. Consider cultural preferences when giving nutrition advice.`;
+
+    // Build messages array
+    const messages = [
+      { role: 'system', content: systemMessage },
+      ...(chatHistory || []),
+      { role: 'user', content: message }
     ];
-    
-    // Add message history if available
-    if (chatHistory && Array.isArray(chatHistory) && chatHistory.length > 0) {
-      const formattedHistory = chatHistory.slice(-10).map(chat => {
-        if (chat.message_type === 'user') {
-          return { role: 'user', content: chat.message || '' };
-        } else {
-          return { role: 'assistant', content: chat.response || '' };
-        }
-      });
-      messages.push(...formattedHistory);
-    }
-    
-    // Add current user message
-    messages.push({ role: 'user', content: message });
 
-    console.log("Sending messages to OpenAI:", JSON.stringify(messages));
+    console.log('Sending messages to OpenAI:', messages);
 
-    // Use a smaller model to avoid quota limits
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -64,37 +59,46 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini', // Use a smaller model that's less likely to hit rate limits
-        messages,
+        model: 'gpt-4o-mini',
+        messages: messages,
         temperature: 0.7,
-        max_tokens: 500,
+        max_tokens: 1000,
       }),
     });
 
     if (!response.ok) {
-      const errorData = await response.text();
-      console.error('OpenAI API error:', response.status, errorData);
-      throw new Error(`OpenAI API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error('OpenAI API error:', response.status, errorText);
+      
+      if (response.status === 429) {
+        throw new Error('OpenAI API rate limit exceeded. Please try again in a few minutes.');
+      } else if (response.status === 401) {
+        throw new Error('OpenAI API key is invalid. Please check your API key configuration.');
+      } else {
+        throw new Error(`OpenAI API error: ${response.status}`);
+      }
     }
 
     const data = await response.json();
-    console.log("Received response from OpenAI:", data);
     
-    // Properly check for the existence of data before accessing properties
-    if (!data || !data.choices || data.choices.length === 0 || !data.choices[0].message) {
-      throw new Error('Invalid response structure from OpenAI');
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      console.error('Invalid OpenAI response structure:', data);
+      throw new Error('Invalid response from OpenAI API');
     }
-    
-    const assistantResponse = data.choices[0].message.content;
 
-    return new Response(JSON.stringify({ response: assistantResponse }), {
+    const aiResponse = data.choices[0].message.content;
+
+    return new Response(JSON.stringify({ 
+      response: aiResponse,
+      usage: data.usage 
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
     console.error('Error in fitness chat:', error);
     return new Response(JSON.stringify({ 
-      error: error.message,
-      details: error.toString() 
+      error: error.message || 'Failed to process chat request',
+      details: error.toString()
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
