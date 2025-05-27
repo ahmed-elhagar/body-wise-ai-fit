@@ -3,12 +3,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Heart } from "lucide-react";
+import { OnboardingFormData } from "@/hooks/useOnboardingForm";
 
 interface OnboardingStep3Props {
+  formData: OnboardingFormData;
+  updateFormData: (field: string, value: string | string[]) => void;
   handleArrayInput: (field: string, value: string) => void;
 }
 
-const OnboardingStep3 = ({ handleArrayInput }: OnboardingStep3Props) => {
+const OnboardingStep3 = ({ formData, updateFormData, handleArrayInput }: OnboardingStep3Props) => {
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="text-center mb-8">
@@ -24,6 +27,7 @@ const OnboardingStep3 = ({ handleArrayInput }: OnboardingStep3Props) => {
           <Label htmlFor="allergies">Food Allergies</Label>
           <Input
             id="allergies"
+            value={formData.allergies.join(', ')}
             placeholder="e.g., nuts, dairy, gluten (comma-separated)"
             onChange={(e) => handleArrayInput("allergies", e.target.value)}
           />
@@ -33,6 +37,7 @@ const OnboardingStep3 = ({ handleArrayInput }: OnboardingStep3Props) => {
           <Label htmlFor="preferred_foods">Preferred Foods</Label>
           <Textarea
             id="preferred_foods"
+            value={formData.preferred_foods.join(', ')}
             placeholder="Foods you enjoy eating (comma-separated)"
             onChange={(e) => handleArrayInput("preferred_foods", e.target.value)}
             rows={3}
@@ -43,6 +48,7 @@ const OnboardingStep3 = ({ handleArrayInput }: OnboardingStep3Props) => {
           <Label htmlFor="dietary_restrictions">Dietary Restrictions</Label>
           <Input
             id="dietary_restrictions"
+            value={formData.dietary_restrictions.join(', ')}
             placeholder="e.g., vegetarian, vegan, keto (comma-separated)"
             onChange={(e) => handleArrayInput("dietary_restrictions", e.target.value)}
           />

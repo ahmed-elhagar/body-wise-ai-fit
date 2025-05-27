@@ -11,23 +11,37 @@ export const useProfile = () => {
   const { data: profile, isLoading, error } = useQuery({
     queryKey: ['profile', user?.id],
     queryFn: async () => {
-      if (!user?.id) throw new Error('No user ID');
+      if (!user?.id) {
+        console.log('No user ID available for profile fetch');
+        return null;
+      }
+      
+      console.log('Fetching profile for user:', user.id);
       
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle(); // Use maybeSingle instead of single to handle no data case
 
-      if (error) throw error;
+      if (error) {
+        console.error('Profile fetch error:', error);
+        throw error;
+      }
+      
+      console.log('Profile fetch result:', data);
       return data;
     },
     enabled: !!user?.id,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: 1,
   });
 
   const updateProfileMutation = useMutation({
     mutationFn: async (profileData: any) => {
       if (!user?.id) throw new Error('No user ID');
+
+      console.log('Updating profile with data:', profileData);
 
       const { data, error } = await supabase
         .from('profiles')
@@ -39,10 +53,16 @@ export const useProfile = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Profile update error:', error);
+        throw error;
+      }
+      
+      console.log('Profile updated successfully:', data);
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      queryClient.setQueryData(['profile', user?.id], data);
       queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
       toast.success('Profile updated successfully!');
     },

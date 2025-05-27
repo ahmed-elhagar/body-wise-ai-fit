@@ -25,7 +25,8 @@ export default function ProtectedRoute({
       authLoading, 
       profileLoading,
       isAdmin,
-      profile: !!profile
+      profile: !!profile,
+      requireProfile
     });
     
     if (profile) {
@@ -35,9 +36,10 @@ export default function ProtectedRoute({
         onboardingCompleted: profile.onboarding_completed
       });
     }
-  }, [user, authLoading, profileLoading, isAdmin, profile]);
+  }, [user, authLoading, profileLoading, isAdmin, profile, requireProfile]);
 
-  if (authLoading || profileLoading) {
+  // Show loading while checking authentication or profile (only if profile is required)
+  if (authLoading || (requireProfile && profileLoading)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
         <div className="text-center">
@@ -62,14 +64,14 @@ export default function ProtectedRoute({
 
   // If profile is required but doesn't exist or lacks essential fields
   if (requireProfile) {
-    // No profile data at all
+    // No profile data at all, redirect to onboarding
     if (!profile) {
       console.log('ProtectedRoute - No profile found, redirecting to onboarding');
       return <Navigate to="/onboarding" replace />;
     }
     
-    // Profile exists but missing essential data
-    if (!profile.first_name || !profile.last_name || profile.onboarding_completed === false) {
+    // Profile exists but missing essential data or onboarding not completed
+    if (!profile.first_name || !profile.last_name || profile.onboarding_completed !== true) {
       console.log('ProtectedRoute - Profile incomplete, redirecting to onboarding');
       return <Navigate to="/onboarding" replace />;
     }

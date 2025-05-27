@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,6 +21,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
+  const checkAdminStatus = async (userId: string) => {
+    try {
+      console.log('Checking admin status for user:', userId);
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .eq('role', 'admin')
+        .maybeSingle(); // Use maybeSingle instead of expecting exact results
+      
+      if (error) {
+        console.error('Admin check error:', error);
+        setIsAdmin(false);
+        return;
+      }
+      
+      const isUserAdmin = !!data;
+      console.log('Admin check result:', isUserAdmin);
+      setIsAdmin(isUserAdmin);
+    } catch (error) {
+      console.error('Admin check failed:', error);
+      setIsAdmin(false);
+    }
+  };
+
   useEffect(() => {
     console.log('AuthProvider - Setting up auth state listener');
     
@@ -33,22 +57,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Check if user is admin using setTimeout to avoid blocking
-          setTimeout(async () => {
-            try {
-              const { data, error } = await supabase
-                .from('user_roles')
-                .select('role')
-                .eq('user_id', session.user.id)
-                .eq('role', 'admin');
-              
-              setIsAdmin(!!data && data.length > 0);
-              console.log('Admin check result:', !!data && data.length > 0);
-            } catch (error) {
-              console.log('Admin check failed:', error);
-              setIsAdmin(false);
-            }
-          }, 0);
+          // Check if user is admin
+          await checkAdminStatus(session.user.id);
         } else {
           setIsAdmin(false);
         }
@@ -58,31 +68,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     );
 
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       console.log('Initial session:', { user: session?.user?.email });
       setSession(session);
       setUser(session?.user ?? null);
       
       // Check admin status on initial load
       if (session?.user) {
-        setTimeout(async () => {
-          try {
-            const { data, error } = await supabase
-              .from('user_roles')
-              .select('role')
-              .eq('user_id', session.user.id)
-              .eq('role', 'admin');
-            
-            setIsAdmin(!!data && data.length > 0);
-          } catch (error) {
-            console.log('Initial admin check failed:', error);
-            setIsAdmin(false);
-          }
-          setLoading(false);
-        }, 0);
-      } else {
-        setLoading(false);
+        await checkAdminStatus(session.user.id);
       }
+      setLoading(false);
     });
 
     return () => {
