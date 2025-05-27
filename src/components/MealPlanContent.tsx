@@ -44,12 +44,12 @@ const MealPlanContent = ({
         </div>
         
         <div className="space-y-4">
-          {todaysMeals.map((meal, index) => (
+          {todaysMeals.map((meal: Meal, index) => (
             <MealCard
               key={index}
               meal={meal}
               onShowRecipe={onShowRecipe}
-              onExchangeMeal={(mealToExchange) => onExchangeMeal(mealToExchange, index)}
+              onExchangeMeal={(mealToExchange: Meal) => onExchangeMeal(mealToExchange, index)}
             />
           ))}
         </div>
