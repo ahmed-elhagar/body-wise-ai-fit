@@ -16,7 +16,6 @@ import MealPlan from "./pages/MealPlan";
 import Exercise from "./pages/Exercise";
 import WeightTracking from "./pages/WeightTracking";
 import CalorieChecker from "./pages/CalorieChecker";
-import AIChatPage from "./pages/AIChatPage";
 import AdminPanel from "./pages/AdminPanel";
 import NotFound from "./pages/NotFound";
 
@@ -78,12 +77,6 @@ function App() {
               <Route path="/calorie-checker" element={
                 <ProtectedRoute>
                   <CalorieChecker />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/ai-chat" element={
-                <ProtectedRoute>
-                  <AIChatPage />
                 </ProtectedRoute>
               } />
               

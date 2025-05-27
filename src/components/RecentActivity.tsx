@@ -28,7 +28,7 @@ const RecentActivity = () => {
     })) || []),
     ...(programs?.slice(0, 2).map(program => ({
       type: 'exercise',
-      title: `Created ${program.name} program`,
+      title: `Created ${program.program_name} program`,
       time: program.created_at,
       badge: 'Exercise',
       color: 'bg-purple-500'
