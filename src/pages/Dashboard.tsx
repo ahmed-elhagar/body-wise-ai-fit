@@ -5,11 +5,19 @@ import Navigation from "@/components/Navigation";
 import DashboardStats from "@/components/DashboardStats";
 import QuickActions from "@/components/QuickActions";
 import RecentActivity from "@/components/RecentActivity";
-import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Loader2, LogOut } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { profile, isLoading } = useProfile();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
 
   if (isLoading) {
     return (
@@ -27,14 +35,24 @@ const Dashboard = () => {
       <Navigation />
       
       <div className="md:ml-64 p-4 md:p-8">
-        {/* Welcome Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            Welcome back, {profile?.first_name || 'User'}! 👋
-          </h1>
-          <p className="text-gray-600">
-            Here's your fitness journey overview for today.
-          </p>
+        {/* Welcome Header with Sign Out */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">
+              Welcome back, {profile?.first_name || 'User'}! 👋
+            </h1>
+            <p className="text-gray-600">
+              Here's your fitness journey overview for today.
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            onClick={handleSignOut}
+            className="flex items-center space-x-2"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>Sign Out</span>
+          </Button>
         </div>
 
         {/* Dashboard Stats */}

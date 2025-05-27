@@ -7,10 +7,13 @@ import { useWeightTracking } from "@/hooks/useWeightTracking";
 
 const DashboardStats = () => {
   const { profile } = useProfile();
-  const { weightEntries } = useWeightTracking();
+  const { weightEntries, isLoading: weightLoading } = useWeightTracking();
 
-  const currentWeight = weightEntries?.[0]?.weight;
-  const previousWeight = weightEntries?.[1]?.weight;
+  console.log('Profile data:', profile);
+  console.log('Weight entries:', weightEntries);
+
+  const currentWeight = weightEntries && weightEntries.length > 0 ? weightEntries[0]?.weight : null;
+  const previousWeight = weightEntries && weightEntries.length > 1 ? weightEntries[1]?.weight : null;
   const weightChange = currentWeight && previousWeight ? currentWeight - previousWeight : null;
 
   const getGoalBadgeColor = (goal?: string) => {
@@ -23,6 +26,18 @@ const DashboardStats = () => {
     }
   };
 
+  const calculateBMI = () => {
+    if (!profile?.height || !currentWeight) return null;
+    return (currentWeight / Math.pow(profile.height / 100, 2)).toFixed(1);
+  };
+
+  const getBMICategory = (bmi: number) => {
+    if (bmi < 18.5) return 'Underweight';
+    if (bmi < 25) return 'Normal';
+    if (bmi < 30) return 'Overweight';
+    return 'Obese';
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
@@ -30,7 +45,15 @@ const DashboardStats = () => {
           <div>
             <p className="text-sm text-gray-600">Current Weight</p>
             <p className="text-2xl font-bold text-gray-800">
-              {currentWeight ? `${currentWeight} kg` : '—'}
+              {weightLoading ? (
+                "Loading..."
+              ) : currentWeight ? (
+                `${currentWeight} kg`
+              ) : profile?.weight ? (
+                `${profile.weight} kg`
+              ) : (
+                '—'
+              )}
             </p>
             {weightChange && (
               <p className={`text-sm ${weightChange > 0 ? 'text-red-500' : 'text-green-500'}`}>
@@ -49,22 +72,16 @@ const DashboardStats = () => {
           <div>
             <p className="text-sm text-gray-600">BMI</p>
             <p className="text-2xl font-bold text-gray-800">
-              {profile?.height && currentWeight 
-                ? ((currentWeight / Math.pow(profile.height / 100, 2)).toFixed(1))
-                : '—'
-              }
+              {(() => {
+                const bmi = calculateBMI();
+                return bmi || '—';
+              })()}
             </p>
             <p className="text-sm text-gray-500">
-              {profile?.height && currentWeight 
-                ? (() => {
-                    const bmi = currentWeight / Math.pow(profile.height / 100, 2);
-                    if (bmi < 18.5) return 'Underweight';
-                    if (bmi < 25) return 'Normal';
-                    if (bmi < 30) return 'Overweight';
-                    return 'Obese';
-                  })()
-                : 'Calculate BMI'
-              }
+              {(() => {
+                const bmi = calculateBMI();
+                return bmi ? getBMICategory(parseFloat(bmi)) : 'Complete profile';
+              })()}
             </p>
           </div>
           <div className="w-12 h-12 bg-fitness-gradient rounded-full flex items-center justify-center">

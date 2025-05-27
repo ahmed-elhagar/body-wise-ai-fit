@@ -18,10 +18,15 @@ export const useWeightTracking = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: weightEntries, isLoading } = useQuery({
+  const { data: weightEntries, isLoading, error } = useQuery({
     queryKey: ['weight-entries', user?.id],
     queryFn: async () => {
-      if (!user?.id) throw new Error('No user ID');
+      if (!user?.id) {
+        console.log('No user ID available for weight entries');
+        return [];
+      }
+      
+      console.log('Fetching weight entries for user:', user.id);
       
       const { data, error } = await supabase
         .from('weight_entries')
@@ -29,7 +34,12 @@ export const useWeightTracking = () => {
         .eq('user_id', user.id)
         .order('recorded_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Weight entries fetch error:', error);
+        throw error;
+      }
+      
+      console.log('Weight entries data:', data);
       return data as WeightEntry[];
     },
     enabled: !!user?.id,
@@ -62,8 +72,9 @@ export const useWeightTracking = () => {
   });
 
   return {
-    weightEntries,
+    weightEntries: weightEntries || [],
     isLoading,
+    error,
     addWeightEntry: addWeightEntry.mutate,
     isAdding: addWeightEntry.isPending,
   };
