@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { useAIMealPlan } from "@/hooks/useAIMealPlan";
@@ -79,9 +80,10 @@ const MealPlan = () => {
   const handleExchangeMeal = (meal: Meal, index: number) => {
     const alternatives = [
       {
+        type: "lunch",
+        time: "1:00 PM",
         name: "Grilled Chicken Salad",
         calories: meal.calories + 10,
-        reason: "Lighter protein option with similar nutrition",
         protein: meal.protein,
         carbs: meal.carbs - 5,
         fat: meal.fat,
@@ -95,7 +97,9 @@ const MealPlan = () => {
         ],
         prepTime: 10,
         cookTime: 15,
-        servings: 1
+        servings: 1,
+        image: "🥗",
+        youtubeId: "dQw4w9WgXcQ"
       }
     ];
     
@@ -166,7 +170,7 @@ const MealPlan = () => {
         prepTime: meal.prep_time || 0,
         servings: meal.servings || 1,
         image: getMealEmoji(meal.meal_type),
-        youtubeId: meal.youtube_search_term || "dQw4w9WgXcQ" // Fixed: Added required youtubeId property
+        youtubeId: meal.youtube_search_term || "dQw4w9WgXcQ"
       };
     }) || [];
 
