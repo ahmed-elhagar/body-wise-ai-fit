@@ -57,10 +57,10 @@ export const useAIMealPlan = () => {
           user_id: user.id,
           week_start_date: weekStartDate.toISOString().split('T')[0],
           generation_prompt: preferences,
-          total_calories: data.generatedPlan.totalNutrition?.calories || 0,
-          total_protein: data.generatedPlan.totalNutrition?.protein || 0,
-          total_carbs: data.generatedPlan.totalNutrition?.carbs || 0,
-          total_fat: data.generatedPlan.totalNutrition?.fat || 0
+          total_calories: data.generatedPlan.weekSummary?.totalCalories || 0,
+          total_protein: data.generatedPlan.weekSummary?.totalProtein || 0,
+          total_carbs: data.generatedPlan.weekSummary?.totalCarbs || 0,
+          total_fat: data.generatedPlan.weekSummary?.totalFat || 0
         })
         .select()
         .single();
@@ -68,26 +68,30 @@ export const useAIMealPlan = () => {
       if (weeklyError) throw weeklyError;
 
       // Save daily meals
-      for (const [dayIndex, dayMeals] of data.generatedPlan.meals.entries()) {
-        for (const [mealType, meal] of Object.entries(dayMeals)) {
-          await supabase
-            .from('daily_meals')
-            .upsert({
-              weekly_plan_id: weeklyPlan.id,
-              day_number: dayIndex + 1,
-              meal_type: mealType,
-              name: meal.name,
-              calories: meal.calories,
-              protein: meal.protein,
-              carbs: meal.carbs,
-              fat: meal.fat,
-              ingredients: meal.ingredients,
-              instructions: meal.instructions,
-              prep_time: meal.prepTime,
-              cook_time: meal.cookTime,
-              servings: meal.servings,
-              youtube_search_term: meal.youtubeSearchTerm
-            });
+      if (data.generatedPlan.days) {
+        for (const day of data.generatedPlan.days) {
+          if (day.meals) {
+            for (const meal of day.meals) {
+              await supabase
+                .from('daily_meals')
+                .upsert({
+                  weekly_plan_id: weeklyPlan.id,
+                  day_number: day.dayNumber,
+                  meal_type: meal.type,
+                  name: meal.name || 'Unnamed Meal',
+                  calories: meal.calories || 0,
+                  protein: meal.protein || 0,
+                  carbs: meal.carbs || 0,
+                  fat: meal.fat || 0,
+                  ingredients: meal.ingredients || [],
+                  instructions: meal.instructions || [],
+                  prep_time: meal.prepTime || 0,
+                  cook_time: meal.cookTime || 0,
+                  servings: meal.servings || 1,
+                  youtube_search_term: meal.youtubeSearchTerm || null
+                });
+            }
+          }
         }
       }
 
