@@ -49,7 +49,7 @@ const MealPlanContent = ({
               key={index}
               meal={meal}
               onShowRecipe={onShowRecipe}
-              onExchangeMeal={(meal) => onExchangeMeal(meal, index)}
+              onExchangeMeal={(mealToExchange) => onExchangeMeal(mealToExchange, index)}
             />
           ))}
         </div>
