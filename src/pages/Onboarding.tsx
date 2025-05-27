@@ -4,6 +4,8 @@ import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
+import { useOnboardingForm } from "@/hooks/useOnboardingForm";
+import { validateOnboardingStep } from "@/utils/onboardingValidation";
 import OnboardingHeader from "@/components/onboarding/OnboardingHeader";
 import OnboardingNavigation from "@/components/onboarding/OnboardingNavigation";
 import OnboardingStep1 from "@/components/onboarding/OnboardingStep1";
@@ -14,42 +16,13 @@ const Onboarding = () => {
   const navigate = useNavigate();
   const { updateProfile, isUpdating } = useProfile();
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({
-    // Basic Info
-    first_name: "",
-    last_name: "",
-    age: "",
-    gender: "",
-    height: "",
-    weight: "",
-    nationality: "",
-    // Health & Goals
-    body_shape: "",
-    health_conditions: [] as string[],
-    fitness_goal: "",
-    activity_level: "",
-    // Nutrition
-    allergies: [] as string[],
-    preferred_foods: [] as string[],
-    dietary_restrictions: [] as string[]
-  });
+  const { formData, updateFormData, handleArrayInput } = useOnboardingForm();
 
   const totalSteps = 3;
   const progress = (step / totalSteps) * 100;
 
   const isStepValid = (): boolean => {
-    switch (step) {
-      case 1:
-        return Boolean(formData.first_name && formData.last_name && formData.age && 
-               formData.gender && formData.height && formData.weight && 
-               formData.nationality && formData.body_shape);
-      case 2:
-        return Boolean(formData.fitness_goal && formData.activity_level);
-      case 3:
-        return true; // Optional step
-      default:
-        return false;
-    }
+    return validateOnboardingStep(step, formData);
   };
 
   const handleNext = () => {
@@ -88,15 +61,6 @@ const Onboarding = () => {
     if (step > 1) {
       setStep(step - 1);
     }
-  };
-
-  const updateFormData = (field: string, value: string | string[]) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleArrayInput = (field: string, value: string) => {
-    const items = value.split(',').map(item => item.trim()).filter(item => item.length > 0);
-    updateFormData(field, items);
   };
 
   const renderStepContent = () => {

@@ -3,12 +3,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Target } from "lucide-react";
+import { OnboardingFormData } from "@/hooks/useOnboardingForm";
 
 interface OnboardingStep2Props {
-  formData: {
-    fitness_goal: string;
-    activity_level: string;
-  };
+  formData: OnboardingFormData;
   updateFormData: (field: string, value: string) => void;
   handleArrayInput: (field: string, value: string) => void;
 }

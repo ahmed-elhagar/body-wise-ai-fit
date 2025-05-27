@@ -4,18 +4,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { User } from "lucide-react";
 import BodyShapeSelector from "@/components/BodyShapeSelector";
+import { OnboardingFormData } from "@/hooks/useOnboardingForm";
 
 interface OnboardingStep1Props {
-  formData: {
-    first_name: string;
-    last_name: string;
-    age: string;
-    gender: string;
-    height: string;
-    weight: string;
-    nationality: string;
-    body_shape: string;
-  };
+  formData: OnboardingFormData;
   updateFormData: (field: string, value: string) => void;
 }
 
