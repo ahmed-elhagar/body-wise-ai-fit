@@ -1,5 +1,5 @@
 
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useProfile } from './useProfile';
@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 export const useAIMealPlan = () => {
   const { user } = useAuth();
   const { profile } = useProfile();
+  const queryClient = useQueryClient();
 
   const generateMealPlan = useMutation({
     mutationFn: async (preferences: any) => {
@@ -35,8 +36,11 @@ export const useAIMealPlan = () => {
       }
 
       if (!data || !data.generatedPlan) {
+        console.error('No meal plan in response:', data);
         throw new Error('No meal plan was generated');
       }
+
+      console.log('Generated meal plan:', data.generatedPlan);
 
       // Save to database
       const { error: saveError } = await supabase
@@ -50,8 +54,9 @@ export const useAIMealPlan = () => {
 
       if (saveError) {
         console.error('Error saving meal plan:', saveError);
-        // Don't throw here, as the generation was successful
         toast.error('Meal plan generated but not saved to database');
+      } else {
+        console.log('Meal plan saved to database successfully');
       }
 
       return data.generatedPlan;
@@ -59,11 +64,12 @@ export const useAIMealPlan = () => {
     onSuccess: (data) => {
       console.log('Meal plan generated successfully:', data);
       toast.success('AI meal plan generated successfully!');
+      queryClient.invalidateQueries({ queryKey: ['meal-plans', user?.id] });
     },
     onError: (error: any) => {
       console.error('Error generating meal plan:', error);
       const errorMessage = error.message || 'Failed to generate meal plan';
-      toast.error(errorMessage);
+      toast.error(`Error: ${errorMessage}`);
     },
   });
 
@@ -71,5 +77,6 @@ export const useAIMealPlan = () => {
     generateMealPlan: generateMealPlan.mutate,
     isGenerating: generateMealPlan.isPending,
     error: generateMealPlan.error,
+    data: generateMealPlan.data,
   };
 };

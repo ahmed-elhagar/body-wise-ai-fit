@@ -9,12 +9,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Clock, Users, ChefHat, ShoppingCart, RefreshCw, Sparkles, Loader2 } from "lucide-react";
 import { useAIMealPlan } from "@/hooks/useAIMealPlan";
+import { useMealPlans } from "@/hooks/useMealPlans";
 import { toast } from "sonner";
+import MealRecipeDialog from "@/components/MealRecipeDialog";
+import ShoppingListDialog from "@/components/ShoppingListDialog";
+import MealExchangeDialog from "@/components/MealExchangeDialog";
 
 const MealPlan = () => {
   const navigate = useNavigate();
   const { generateMealPlan, isGenerating } = useAIMealPlan();
+  const { mealPlans, isLoading: isLoadingPlans } = useMealPlans();
+  
   const [showAIDialog, setShowAIDialog] = useState(false);
+  const [selectedMeal, setSelectedMeal] = useState(null);
+  const [showRecipeDialog, setShowRecipeDialog] = useState(false);
+  const [showShoppingDialog, setShowShoppingDialog] = useState(false);
+  const [showExchangeDialog, setShowExchangeDialog] = useState(false);
+  const [generatedMealPlan, setGeneratedMealPlan] = useState(null);
+  
   const [aiPreferences, setAiPreferences] = useState({
     duration: "1",
     cuisine: "",
@@ -23,49 +35,158 @@ const MealPlan = () => {
   });
 
   const handleGenerateAIPlan = () => {
+    console.log('Generating AI meal plan with preferences:', aiPreferences);
     generateMealPlan(aiPreferences);
     setShowAIDialog(false);
-    toast.success("AI is generating your personalized meal plan!");
   };
 
+  const handleRegeneratePlan = () => {
+    if (aiPreferences) {
+      console.log('Regenerating meal plan');
+      generateMealPlan(aiPreferences);
+      toast.success("Regenerating your meal plan...");
+    } else {
+      toast.error("Please generate a plan first");
+    }
+  };
+
+  const handleShowRecipe = (meal: any) => {
+    console.log('Showing recipe for meal:', meal);
+    setSelectedMeal(meal);
+    setShowRecipeDialog(true);
+  };
+
+  const handleShowShoppingList = () => {
+    // Generate shopping list from current meals
+    const shoppingItems = todaysMeals.flatMap(meal => 
+      meal.ingredients.map(ingredient => ({
+        name: ingredient,
+        quantity: "1",
+        unit: "serving",
+        category: getCategoryForIngredient(ingredient)
+      }))
+    );
+    
+    setSelectedMeal({ items: shoppingItems });
+    setShowShoppingDialog(true);
+  };
+
+  const handleExchangeMeal = (meal: any) => {
+    const alternatives = [
+      {
+        name: "Grilled Chicken Salad",
+        calories: meal.calories + 10,
+        reason: "Lighter protein option with similar nutrition",
+        protein: meal.protein,
+        carbs: meal.carbs - 5,
+        fat: meal.fat
+      },
+      {
+        name: "Turkey Wrap",
+        calories: meal.calories - 20,
+        reason: "Lower calorie alternative with lean protein",
+        protein: meal.protein + 2,
+        carbs: meal.carbs,
+        fat: meal.fat - 3
+      },
+      {
+        name: "Vegetarian Bowl",
+        calories: meal.calories + 5,
+        reason: "Plant-based option with similar macros",
+        protein: meal.protein - 8,
+        carbs: meal.carbs + 10,
+        fat: meal.fat
+      }
+    ];
+    
+    setSelectedMeal({ current: meal, alternatives });
+    setShowExchangeDialog(true);
+  };
+
+  const handleMealExchange = (alternative: any) => {
+    toast.success(`Meal exchanged to ${alternative.name}`);
+    // Here you would update the meal plan with the new meal
+  };
+
+  const getCategoryForIngredient = (ingredient: string) => {
+    const categories = {
+      'protein': ['chicken', 'salmon', 'beef', 'turkey', 'eggs', 'tofu'],
+      'dairy': ['milk', 'cheese', 'yogurt', 'butter'],
+      'vegetables': ['broccoli', 'spinach', 'tomatoes', 'cucumber', 'asparagus'],
+      'fruits': ['apple', 'banana', 'berries'],
+      'grains': ['rice', 'quinoa', 'oats', 'bread'],
+      'pantry': ['oil', 'salt', 'pepper', 'herbs', 'spices']
+    };
+    
+    for (const [category, items] of Object.entries(categories)) {
+      if (items.some(item => ingredient.toLowerCase().includes(item))) {
+        return category;
+      }
+    }
+    return 'other';
+  };
+
+  // Sample data - in real app this would come from the AI generated plan
   const todaysMeals = [
     {
       type: "Breakfast",
       time: "8:00 AM",
       name: "Protein-Packed Oatmeal Bowl",
       calories: 420,
-      protein: "25g",
-      carbs: "45g",
-      fat: "12g",
+      protein: 25,
+      carbs: 45,
+      fat: 12,
       ingredients: ["Rolled oats", "Greek yogurt", "Banana", "Almonds", "Honey", "Chia seeds"],
-      cookTime: "10 min",
+      instructions: [
+        "Cook oats according to package instructions",
+        "Stir in Greek yogurt and honey", 
+        "Top with sliced banana, almonds, and chia seeds"
+      ],
+      cookTime: 10,
+      prepTime: 5,
       servings: 1,
+      imageUrl: "https://images.unsplash.com/photo-1517982103973-9d9dda2ac4a8?w=500",
       image: "🥣"
     },
     {
       type: "Mid-Morning Snack",
-      time: "10:30 AM",
+      time: "10:30 AM", 
       name: "Green Smoothie",
       calories: 180,
-      protein: "8g",
-      carbs: "28g",
-      fat: "4g",
+      protein: 8,
+      carbs: 28,
+      fat: 4,
       ingredients: ["Spinach", "Apple", "Banana", "Protein powder", "Almond milk"],
-      cookTime: "5 min",
+      instructions: [
+        "Add all ingredients to blender",
+        "Blend until smooth",
+        "Serve immediately"
+      ],
+      cookTime: 5,
+      prepTime: 2,
       servings: 1,
+      imageUrl: "https://images.unsplash.com/photo-1610970881699-44a5587cabec?w=500",
       image: "🥤"
     },
     {
       type: "Lunch",
       time: "1:00 PM",
-      name: "Mediterranean Chicken Bowl",
+      name: "Mediterranean Chicken Bowl", 
       calories: 520,
-      protein: "38g",
-      carbs: "42g",
-      fat: "18g",
+      protein: 38,
+      carbs: 42,
+      fat: 18,
       ingredients: ["Grilled chicken", "Quinoa", "Cucumber", "Tomatoes", "Feta", "Olive oil", "Lemon"],
-      cookTime: "25 min",
+      instructions: [
+        "Cook quinoa according to package instructions",
+        "Grill chicken breast and slice",
+        "Dice cucumber and tomatoes", 
+        "Combine all ingredients and dress with olive oil and lemon"
+      ],
+      cookTime: 25,
+      prepTime: 10,
       servings: 1,
+      imageUrl: "https://images.unsplash.com/photo-1546549032-9571cd6b27df?w=500",
       image: "🥗"
     },
     {
@@ -73,12 +194,18 @@ const MealPlan = () => {
       time: "4:00 PM",
       name: "Almonds & Apple",
       calories: 160,
-      protein: "6g",
-      carbs: "15g",
-      fat: "10g",
+      protein: 6,
+      carbs: 15,
+      fat: 10,
       ingredients: ["Raw almonds", "Green apple"],
-      cookTime: "0 min",
+      instructions: [
+        "Wash and slice apple",
+        "Serve with measured portion of almonds"
+      ],
+      cookTime: 0,
+      prepTime: 2,
       servings: 1,
+      imageUrl: "https://images.unsplash.com/photo-1619546813926-a78fa6372cd2?w=500",
       image: "🍎"
     },
     {
@@ -86,12 +213,20 @@ const MealPlan = () => {
       time: "7:00 PM",
       name: "Baked Salmon with Vegetables",
       calories: 480,
-      protein: "35g",
-      carbs: "25g",
-      fat: "22g",
+      protein: 35,
+      carbs: 25,
+      fat: 22,
       ingredients: ["Salmon fillet", "Broccoli", "Sweet potato", "Asparagus", "Olive oil", "Herbs"],
-      cookTime: "30 min",
+      instructions: [
+        "Preheat oven to 400°F",
+        "Season salmon with herbs and olive oil",
+        "Cut vegetables and toss with olive oil",
+        "Bake salmon and vegetables for 20-25 minutes"
+      ],
+      cookTime: 30,
+      prepTime: 10,
       servings: 1,
+      imageUrl: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=500",
       image: "🐟"
     }
   ];
@@ -199,7 +334,10 @@ const MealPlan = () => {
                 </div>
               </DialogContent>
             </Dialog>
-            <Button className="bg-fitness-gradient hover:opacity-90 text-white">
+            <Button 
+              onClick={handleRegeneratePlan}
+              className="bg-fitness-gradient hover:opacity-90 text-white"
+            >
               <RefreshCw className="w-4 h-4 mr-2" />
               Regenerate Plan
             </Button>
@@ -219,7 +357,10 @@ const MealPlan = () => {
                 <p className="text-sm text-blue-700 mb-1">Total Protein</p>
                 <p className="text-2xl font-bold text-blue-800">{totalProtein}g</p>
               </div>
-              <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white">
+              <Button 
+                onClick={handleShowShoppingList}
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+              >
                 <ShoppingCart className="w-4 h-4 mr-2" />
                 Shopping List
               </Button>
@@ -261,15 +402,15 @@ const MealPlan = () => {
                           </div>
                           <div className="text-center">
                             <p className="text-sm text-gray-600">Protein</p>
-                            <p className="font-semibold text-green-600">{meal.protein}</p>
+                            <p className="font-semibold text-green-600">{meal.protein}g</p>
                           </div>
                           <div className="text-center">
                             <p className="text-sm text-gray-600">Carbs</p>
-                            <p className="font-semibold text-blue-600">{meal.carbs}</p>
+                            <p className="font-semibold text-blue-600">{meal.carbs}g</p>
                           </div>
                           <div className="text-center">
                             <p className="text-sm text-gray-600">Fat</p>
-                            <p className="font-semibold text-orange-600">{meal.fat}</p>
+                            <p className="font-semibold text-orange-600">{meal.fat}g</p>
                           </div>
                         </div>
 
@@ -277,7 +418,7 @@ const MealPlan = () => {
                         <div className="flex items-center space-x-4 text-sm text-gray-600 mb-3">
                           <div className="flex items-center">
                             <Clock className="w-4 h-4 mr-1" />
-                            {meal.cookTime}
+                            {meal.cookTime}min
                           </div>
                           <div className="flex items-center">
                             <Users className="w-4 h-4 mr-1" />
@@ -302,11 +443,21 @@ const MealPlan = () => {
                     </div>
                     
                     <div className="flex flex-col space-y-2">
-                      <Button size="sm" variant="outline" className="bg-white/80">
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="bg-white/80"
+                        onClick={() => handleShowRecipe(meal)}
+                      >
                         <ChefHat className="w-4 h-4 mr-1" />
                         Recipe
                       </Button>
-                      <Button size="sm" variant="outline" className="bg-white/80">
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="bg-white/80"
+                        onClick={() => handleExchangeMeal(meal)}
+                      >
                         Exchange
                       </Button>
                     </div>
@@ -339,6 +490,27 @@ const MealPlan = () => {
           </div>
         </Card>
       </div>
+
+      {/* Dialogs */}
+      <MealRecipeDialog
+        meal={selectedMeal}
+        isOpen={showRecipeDialog}
+        onClose={() => setShowRecipeDialog(false)}
+      />
+
+      <ShoppingListDialog
+        items={selectedMeal?.items || []}
+        isOpen={showShoppingDialog}
+        onClose={() => setShowShoppingDialog(false)}
+      />
+
+      <MealExchangeDialog
+        currentMeal={selectedMeal?.current}
+        alternatives={selectedMeal?.alternatives || []}
+        isOpen={showExchangeDialog}
+        onClose={() => setShowExchangeDialog(false)}
+        onExchange={handleMealExchange}
+      />
     </div>
   );
 };

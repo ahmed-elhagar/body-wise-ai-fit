@@ -21,6 +21,9 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
+    console.log('Generating meal plan for user:', userProfile.id);
+    console.log('Preferences:', preferences);
+
     const prompt = `Generate a personalized 7-day meal plan for a ${userProfile.age} year old ${userProfile.gender} with the following details:
     - Height: ${userProfile.height}cm, Weight: ${userProfile.weight}kg
     - Fitness Goal: ${userProfile.fitness_goal}
@@ -30,16 +33,19 @@ serve(async (req) => {
     - Dietary Restrictions: ${userProfile.dietary_restrictions?.join(', ') || 'None'}
     - Preferred Foods: ${userProfile.preferred_foods?.join(', ') || 'Various'}
     - Nationality: ${userProfile.nationality}
+    - Preferred Cuisine: ${preferences.cuisine || 'Various'}
+    - Max Prep Time: ${preferences.maxPrepTime} minutes
 
     Create a comprehensive meal plan with breakfast, lunch, dinner, and 2 snacks for each day. Include:
     - Exact calorie counts per meal
     - Macro breakdown (protein, carbs, fat in grams)
-    - Detailed ingredient lists
-    - Cooking instructions
+    - Detailed ingredient lists with quantities
+    - Step-by-step cooking instructions
     - Prep and cook times
+    - High-quality meal images (use placeholder URLs for now)
     - Cultural preferences based on nationality
 
-    Format as JSON with this structure:
+    Format as JSON with this exact structure:
     {
       "weekSummary": {
         "totalCalories": number,
@@ -56,16 +62,33 @@ serve(async (req) => {
           "meals": [
             {
               "type": "breakfast",
-              "name": "meal name",
+              "name": "Meal Name",
               "calories": number,
               "protein": number,
               "carbs": number,
               "fat": number,
-              "ingredients": ["ingredient1", "ingredient2"],
-              "instructions": "step by step cooking instructions",
+              "ingredients": [
+                {
+                  "name": "ingredient name",
+                  "quantity": "amount",
+                  "unit": "unit"
+                }
+              ],
+              "instructions": [
+                "Step 1: detailed instruction",
+                "Step 2: detailed instruction"
+              ],
               "prepTime": number,
               "cookTime": number,
-              "servings": 1
+              "servings": 1,
+              "imageUrl": "https://placeholder-image-url.com/meal.jpg",
+              "alternatives": [
+                {
+                  "name": "Alternative meal name",
+                  "calories": number,
+                  "reason": "Similar calories and nutrition profile"
+                }
+              ]
             }
           ]
         }
@@ -81,22 +104,47 @@ serve(async (req) => {
       body: JSON.stringify({
         model: 'gpt-4o',
         messages: [
-          { role: 'system', content: 'You are a professional nutritionist and meal planning expert. Always respond with valid JSON only.' },
+          { role: 'system', content: 'You are a professional nutritionist and meal planning expert. Always respond with valid JSON only. Be precise with nutritional data and cooking instructions.' },
           { role: 'user', content: prompt }
         ],
         temperature: 0.7,
+        max_tokens: 4000,
       }),
     });
 
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('OpenAI API error:', response.status, errorText);
+      throw new Error(`OpenAI API error: ${response.status}`);
+    }
+
     const data = await response.json();
-    const generatedPlan = JSON.parse(data.choices[0].message.content);
+    console.log('OpenAI response received');
+
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      console.error('Invalid OpenAI response structure:', data);
+      throw new Error('Invalid response from OpenAI API');
+    }
+
+    let generatedPlan;
+    try {
+      generatedPlan = JSON.parse(data.choices[0].message.content);
+      console.log('Meal plan parsed successfully');
+    } catch (parseError) {
+      console.error('Failed to parse OpenAI response as JSON:', parseError);
+      console.error('Raw content:', data.choices[0].message.content);
+      throw new Error('Failed to parse AI response as JSON');
+    }
 
     return new Response(JSON.stringify({ generatedPlan }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
     console.error('Error generating meal plan:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ 
+      error: error.message || 'Failed to generate meal plan',
+      details: error.toString()
+    }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
