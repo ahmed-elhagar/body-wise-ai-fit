@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useProfile } from "@/hooks/useProfile";
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -17,6 +18,7 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   
   const { signIn, signUp } = useAuth();
+  const { profile } = useProfile();
   const navigate = useNavigate();
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -25,7 +27,12 @@ const Auth = () => {
     
     try {
       await signIn(email, password);
-      navigate('/dashboard');
+      // Check if user has essential profile info
+      if (profile && profile.first_name && profile.last_name) {
+        navigate('/dashboard');
+      } else {
+        navigate('/onboarding');
+      }
     } catch (error: any) {
       console.error('Sign in error:', error);
     } finally {
@@ -40,6 +47,8 @@ const Auth = () => {
     try {
       await signUp(email, password, { first_name: firstName, last_name: lastName });
       toast.success('Account created successfully! Please check your email to verify your account.');
+      // After signup, redirect to onboarding to complete profile
+      navigate('/onboarding');
     } catch (error: any) {
       console.error('Sign up error:', error);
     } finally {

@@ -25,7 +25,7 @@ const Onboarding = () => {
     return validateOnboardingStep(step, formData);
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (!isStepValid()) {
       toast.error('Please fill in all required fields');
       return;
@@ -35,25 +35,38 @@ const Onboarding = () => {
       setStep(step + 1);
     } else {
       // Save user data to Supabase
-      const profileData = {
-        first_name: formData.first_name,
-        last_name: formData.last_name,
-        age: formData.age ? parseInt(formData.age) : undefined,
-        gender: formData.gender as any,
-        height: formData.height ? parseFloat(formData.height) : undefined,
-        weight: formData.weight ? parseFloat(formData.weight) : undefined,
-        nationality: formData.nationality,
-        body_shape: formData.body_shape as any,
-        health_conditions: formData.health_conditions,
-        fitness_goal: formData.fitness_goal as any,
-        activity_level: formData.activity_level as any,
-        allergies: formData.allergies,
-        preferred_foods: formData.preferred_foods,
-        dietary_restrictions: formData.dietary_restrictions
-      };
+      try {
+        const profileData = {
+          first_name: formData.first_name,
+          last_name: formData.last_name,
+          age: formData.age ? parseInt(formData.age) : undefined,
+          gender: formData.gender as any,
+          height: formData.height ? parseFloat(formData.height) : undefined,
+          weight: formData.weight ? parseFloat(formData.weight) : undefined,
+          nationality: formData.nationality,
+          body_shape: formData.body_shape as any,
+          health_conditions: formData.health_conditions,
+          fitness_goal: formData.fitness_goal as any,
+          activity_level: formData.activity_level as any,
+          allergies: formData.allergies,
+          preferred_foods: formData.preferred_foods,
+          dietary_restrictions: formData.dietary_restrictions
+        };
 
-      updateProfile(profileData);
-      navigate('/dashboard');
+        await new Promise<void>((resolve, reject) => {
+          updateProfile(profileData);
+          // Wait a bit to ensure profile is updated
+          setTimeout(() => {
+            toast.success('Profile completed successfully!');
+            navigate('/dashboard');
+            resolve();
+          }, 1000);
+        });
+
+      } catch (error) {
+        console.error('Error updating profile:', error);
+        toast.error('Failed to save profile. Please try again.');
+      }
     }
   };
 

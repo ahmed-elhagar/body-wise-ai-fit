@@ -37,20 +37,16 @@ export default function ProtectedRoute({
     return <Navigate to="/dashboard" replace />;
   }
 
-  // Check if profile is complete (required fields)
-  const isProfileComplete = profile && 
-    profile.first_name && 
-    profile.last_name && 
-    profile.age && 
-    profile.gender && 
-    profile.height && 
-    profile.weight && 
-    profile.body_shape && 
-    profile.fitness_goal && 
-    profile.activity_level;
-
-  if (requireProfile && !isProfileComplete) {
-    return <Navigate to="/onboarding" replace />;
+  // Only check for profile completion if explicitly required and profile exists
+  // Allow users to access the app even with incomplete profiles unless specifically requiring complete profile
+  if (requireProfile && profile) {
+    // Check for truly essential fields only
+    const hasEssentialInfo = profile.first_name && profile.last_name;
+    
+    // Only redirect to onboarding if completely missing essential profile data
+    if (!hasEssentialInfo) {
+      return <Navigate to="/onboarding" replace />;
+    }
   }
 
   return <>{children}</>;
