@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -9,26 +8,31 @@ import { Textarea } from "@/components/ui/textarea";
 import { useNavigate } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 import { ArrowRight, ArrowLeft, User, Target, Heart } from "lucide-react";
+import { useProfile } from "@/hooks/useProfile";
+import { toast } from "sonner";
 
 const Onboarding = () => {
   const navigate = useNavigate();
+  const { updateProfile, isUpdating } = useProfile();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     // Basic Info
-    name: "",
+    first_name: "",
+    last_name: "",
     age: "",
     gender: "",
     height: "",
     weight: "",
-    // Health & Goals
-    healthConditions: "",
-    fitnessGoal: "",
-    activityLevel: "",
-    // Nutrition
-    allergies: "",
-    preferredFoods: "",
     nationality: "",
-    dietaryRestrictions: ""
+    // Health & Goals
+    body_shape: "",
+    health_conditions: [] as string[],
+    fitness_goal: "",
+    activity_level: "",
+    // Nutrition
+    allergies: [] as string[],
+    preferred_foods: [] as string[],
+    dietary_restrictions: [] as string[]
   });
 
   const totalSteps = 3;
@@ -38,8 +42,25 @@ const Onboarding = () => {
     if (step < totalSteps) {
       setStep(step + 1);
     } else {
-      // Save user data and navigate to dashboard
-      localStorage.setItem('userProfile', JSON.stringify(formData));
+      // Save user data to Supabase
+      const profileData = {
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        age: formData.age ? parseInt(formData.age) : undefined,
+        gender: formData.gender as any,
+        height: formData.height ? parseFloat(formData.height) : undefined,
+        weight: formData.weight ? parseFloat(formData.weight) : undefined,
+        nationality: formData.nationality,
+        body_shape: formData.body_shape as any,
+        health_conditions: formData.health_conditions,
+        fitness_goal: formData.fitness_goal as any,
+        activity_level: formData.activity_level as any,
+        allergies: formData.allergies,
+        preferred_foods: formData.preferred_foods,
+        dietary_restrictions: formData.dietary_restrictions
+      };
+
+      updateProfile(profileData);
       navigate('/dashboard');
     }
   };
@@ -50,8 +71,13 @@ const Onboarding = () => {
     }
   };
 
-  const updateFormData = (field: string, value: string) => {
+  const updateFormData = (field: string, value: string | string[]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleArrayInput = (field: string, value: string) => {
+    const items = value.split(',').map(item => item.trim()).filter(item => item.length > 0);
+    updateFormData(field, items);
   };
 
   const renderStepContent = () => {
@@ -69,12 +95,21 @@ const Onboarding = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="name">Full Name</Label>
+                <Label htmlFor="first_name">First Name</Label>
                 <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => updateFormData("name", e.target.value)}
-                  placeholder="Enter your name"
+                  id="first_name"
+                  value={formData.first_name}
+                  onChange={(e) => updateFormData("first_name", e.target.value)}
+                  placeholder="Enter your first name"
+                />
+              </div>
+              <div>
+                <Label htmlFor="last_name">Last Name</Label>
+                <Input
+                  id="last_name"
+                  value={formData.last_name}
+                  onChange={(e) => updateFormData("last_name", e.target.value)}
+                  placeholder="Enter your last name"
                 />
               </div>
               <div>
@@ -129,6 +164,19 @@ const Onboarding = () => {
                   placeholder="Enter your weight"
                 />
               </div>
+              <div>
+                <Label htmlFor="body_shape">Body Shape</Label>
+                <Select onValueChange={(value) => updateFormData("body_shape", value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select body shape" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ectomorph">Ectomorph (Naturally thin)</SelectItem>
+                    <SelectItem value="mesomorph">Mesomorph (Athletic build)</SelectItem>
+                    <SelectItem value="endomorph">Endomorph (Naturally curvy)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
         );
@@ -146,45 +194,43 @@ const Onboarding = () => {
 
             <div className="space-y-4">
               <div>
-                <Label htmlFor="fitnessGoal">Primary Fitness Goal</Label>
-                <Select onValueChange={(value) => updateFormData("fitnessGoal", value)}>
+                <Label htmlFor="fitness_goal">Primary Fitness Goal</Label>
+                <Select onValueChange={(value) => updateFormData("fitness_goal", value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select your goal" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="weight-loss">Weight Loss</SelectItem>
-                    <SelectItem value="muscle-gain">Muscle Gain</SelectItem>
+                    <SelectItem value="weight_loss">Weight Loss</SelectItem>
+                    <SelectItem value="muscle_gain">Muscle Gain</SelectItem>
                     <SelectItem value="maintenance">Weight Maintenance</SelectItem>
                     <SelectItem value="endurance">Improve Endurance</SelectItem>
-                    <SelectItem value="strength">Build Strength</SelectItem>
-                    <SelectItem value="general-health">General Health</SelectItem>
+                    <SelectItem value="weight_gain">Weight Gain</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div>
-                <Label htmlFor="activityLevel">Current Activity Level</Label>
-                <Select onValueChange={(value) => updateFormData("activityLevel", value)}>
+                <Label htmlFor="activity_level">Current Activity Level</Label>
+                <Select onValueChange={(value) => updateFormData("activity_level", value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select activity level" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="sedentary">Sedentary (little to no exercise)</SelectItem>
-                    <SelectItem value="light">Light (1-3 days/week)</SelectItem>
-                    <SelectItem value="moderate">Moderate (3-5 days/week)</SelectItem>
-                    <SelectItem value="active">Active (6-7 days/week)</SelectItem>
-                    <SelectItem value="very-active">Very Active (2x per day)</SelectItem>
+                    <SelectItem value="lightly_active">Lightly Active (1-3 days/week)</SelectItem>
+                    <SelectItem value="moderately_active">Moderately Active (3-5 days/week)</SelectItem>
+                    <SelectItem value="very_active">Very Active (6-7 days/week)</SelectItem>
+                    <SelectItem value="extremely_active">Extremely Active (2x per day)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div>
-                <Label htmlFor="healthConditions">Health Conditions</Label>
+                <Label htmlFor="health_conditions">Health Conditions</Label>
                 <Textarea
-                  id="healthConditions"
-                  value={formData.healthConditions}
-                  onChange={(e) => updateFormData("healthConditions", e.target.value)}
-                  placeholder="Any health conditions, injuries, or medical considerations (optional)"
+                  id="health_conditions"
+                  placeholder="Any health conditions, injuries, or medical considerations (comma-separated)"
+                  onChange={(e) => handleArrayInput("health_conditions", e.target.value)}
                   rows={3}
                 />
               </div>
@@ -208,40 +254,28 @@ const Onboarding = () => {
                 <Label htmlFor="allergies">Food Allergies</Label>
                 <Input
                   id="allergies"
-                  value={formData.allergies}
-                  onChange={(e) => updateFormData("allergies", e.target.value)}
-                  placeholder="e.g., nuts, dairy, gluten (optional)"
+                  placeholder="e.g., nuts, dairy, gluten (comma-separated)"
+                  onChange={(e) => handleArrayInput("allergies", e.target.value)}
                 />
               </div>
 
               <div>
-                <Label htmlFor="preferredFoods">Preferred Foods</Label>
+                <Label htmlFor="preferred_foods">Preferred Foods</Label>
                 <Textarea
-                  id="preferredFoods"
-                  value={formData.preferredFoods}
-                  onChange={(e) => updateFormData("preferredFoods", e.target.value)}
-                  placeholder="Foods you enjoy eating (helps with meal planning)"
+                  id="preferred_foods"
+                  placeholder="Foods you enjoy eating (comma-separated)"
+                  onChange={(e) => handleArrayInput("preferred_foods", e.target.value)}
                   rows={3}
                 />
               </div>
 
               <div>
-                <Label htmlFor="dietaryRestrictions">Dietary Restrictions</Label>
-                <Select onValueChange={(value) => updateFormData("dietaryRestrictions", value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select dietary preference" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    <SelectItem value="vegetarian">Vegetarian</SelectItem>
-                    <SelectItem value="vegan">Vegan</SelectItem>
-                    <SelectItem value="keto">Keto</SelectItem>
-                    <SelectItem value="paleo">Paleo</SelectItem>
-                    <SelectItem value="mediterranean">Mediterranean</SelectItem>
-                    <SelectItem value="halal">Halal</SelectItem>
-                    <SelectItem value="kosher">Kosher</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="dietary_restrictions">Dietary Restrictions</Label>
+                <Input
+                  id="dietary_restrictions"
+                  placeholder="e.g., vegetarian, vegan, keto (comma-separated)"
+                  onChange={(e) => handleArrayInput("dietary_restrictions", e.target.value)}
+                />
               </div>
             </div>
           </div>
@@ -282,6 +316,7 @@ const Onboarding = () => {
 
             <Button
               onClick={handleNext}
+              disabled={isUpdating}
               className="bg-fitness-gradient hover:opacity-90 text-white flex items-center space-x-2"
             >
               <span>{step === totalSteps ? 'Complete Setup' : 'Next'}</span>

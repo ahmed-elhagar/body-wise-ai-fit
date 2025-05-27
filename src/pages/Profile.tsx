@@ -4,60 +4,128 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, User, Save, Settings } from "lucide-react";
+import { ArrowLeft, User, Save, Settings, LogOut } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useProfile } from "@/hooks/useProfile";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 const Profile = () => {
   const navigate = useNavigate();
-  const [profile, setProfile] = useState({
-    name: "",
+  const { profile, updateProfile, isLoading, isUpdating } = useProfile();
+  const { signOut } = useAuth();
+  const [formData, setFormData] = useState({
+    first_name: "",
+    last_name: "",
     age: "",
     gender: "",
     height: "",
     weight: "",
-    healthConditions: "",
-    fitnessGoal: "",
-    activityLevel: "",
-    allergies: "",
-    preferredFoods: "",
     nationality: "",
-    dietaryRestrictions: ""
+    body_shape: "",
+    health_conditions: [] as string[],
+    fitness_goal: "",
+    activity_level: "",
+    allergies: [] as string[],
+    preferred_foods: [] as string[],
+    dietary_restrictions: [] as string[]
   });
 
   useEffect(() => {
-    // Load profile from localStorage
-    const savedProfile = localStorage.getItem('userProfile');
-    if (savedProfile) {
-      setProfile(JSON.parse(savedProfile));
+    if (profile) {
+      setFormData({
+        first_name: profile.first_name || "",
+        last_name: profile.last_name || "",
+        age: profile.age?.toString() || "",
+        gender: profile.gender || "",
+        height: profile.height?.toString() || "",
+        weight: profile.weight?.toString() || "",
+        nationality: profile.nationality || "",
+        body_shape: profile.body_shape || "",
+        health_conditions: profile.health_conditions || [],
+        fitness_goal: profile.fitness_goal || "",
+        activity_level: profile.activity_level || "",
+        allergies: profile.allergies || [],
+        preferred_foods: profile.preferred_foods || [],
+        dietary_restrictions: profile.dietary_restrictions || []
+      });
     }
-  }, []);
+  }, [profile]);
 
   const handleSave = () => {
-    localStorage.setItem('userProfile', JSON.stringify(profile));
-    navigate('/dashboard');
+    const profileData = {
+      first_name: formData.first_name,
+      last_name: formData.last_name,
+      age: formData.age ? parseInt(formData.age) : undefined,
+      gender: formData.gender as any,
+      height: formData.height ? parseFloat(formData.height) : undefined,
+      weight: formData.weight ? parseFloat(formData.weight) : undefined,
+      nationality: formData.nationality,
+      body_shape: formData.body_shape as any,
+      health_conditions: formData.health_conditions,
+      fitness_goal: formData.fitness_goal as any,
+      activity_level: formData.activity_level as any,
+      allergies: formData.allergies,
+      preferred_foods: formData.preferred_foods,
+      dietary_restrictions: formData.dietary_restrictions
+    };
+
+    updateProfile(profileData);
   };
 
-  const updateProfile = (field: string, value: string) => {
-    setProfile(prev => ({ ...prev, [field]: value }));
+  const updateFormData = (field: string, value: string | string[]) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
+
+  const handleArrayInput = (field: string, value: string) => {
+    const items = value.split(',').map(item => item.trim()).filter(item => item.length > 0);
+    updateFormData(field, items);
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fitness-primary mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header */}
-        <div className="flex items-center mb-8">
-          <Button
-            variant="ghost"
-            onClick={() => navigate('/dashboard')}
-            className="mr-4"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800">Profile Settings</h1>
-            <p className="text-gray-600">Manage your personal information and preferences</p>
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center">
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/dashboard')}
+              className="mr-4"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-800">Profile Settings</h1>
+              <p className="text-gray-600">Manage your personal information and preferences</p>
+            </div>
           </div>
+          <Button
+            variant="outline"
+            onClick={handleSignOut}
+            className="flex items-center space-x-2"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>Sign Out</span>
+          </Button>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
@@ -68,24 +136,26 @@ const Profile = () => {
                 <User className="w-12 h-12 text-white" />
               </div>
               <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                {profile.name || "Your Name"}
+                {formData.first_name && formData.last_name 
+                  ? `${formData.first_name} ${formData.last_name}` 
+                  : "Your Name"}
               </h3>
               <p className="text-gray-600 mb-4">
-                {profile.age ? `${profile.age} years old` : "Age not set"}
+                {formData.age ? `${formData.age} years old` : "Age not set"}
               </p>
               
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div className="bg-gray-50 p-3 rounded-lg">
                   <p className="text-gray-600">Height</p>
-                  <p className="font-semibold">{profile.height || "—"} cm</p>
+                  <p className="font-semibold">{formData.height || "—"} cm</p>
                 </div>
                 <div className="bg-gray-50 p-3 rounded-lg">
                   <p className="text-gray-600">Weight</p>
-                  <p className="font-semibold">{profile.weight || "—"} kg</p>
+                  <p className="font-semibold">{formData.weight || "—"} kg</p>
                 </div>
                 <div className="bg-gray-50 p-3 rounded-lg col-span-2">
                   <p className="text-gray-600">Goal</p>
-                  <p className="font-semibold capitalize">{profile.fitnessGoal?.replace('-', ' ') || "Not set"}</p>
+                  <p className="font-semibold capitalize">{formData.fitness_goal?.replace('_', ' ') || "Not set"}</p>
                 </div>
               </div>
             </div>
@@ -102,12 +172,21 @@ const Profile = () => {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="name">Full Name</Label>
+                  <Label htmlFor="first_name">First Name</Label>
                   <Input
-                    id="name"
-                    value={profile.name}
-                    onChange={(e) => updateProfile("name", e.target.value)}
-                    placeholder="Enter your name"
+                    id="first_name"
+                    value={formData.first_name}
+                    onChange={(e) => updateFormData("first_name", e.target.value)}
+                    placeholder="Enter your first name"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="last_name">Last Name</Label>
+                  <Input
+                    id="last_name"
+                    value={formData.last_name}
+                    onChange={(e) => updateFormData("last_name", e.target.value)}
+                    placeholder="Enter your last name"
                   />
                 </div>
                 <div>
@@ -115,18 +194,31 @@ const Profile = () => {
                   <Input
                     id="age"
                     type="number"
-                    value={profile.age}
-                    onChange={(e) => updateProfile("age", e.target.value)}
+                    value={formData.age}
+                    onChange={(e) => updateFormData("age", e.target.value)}
                     placeholder="Enter your age"
                   />
+                </div>
+                <div>
+                  <Label htmlFor="gender">Gender</Label>
+                  <Select value={formData.gender} onValueChange={(value) => updateFormData("gender", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select gender" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="male">Male</SelectItem>
+                      <SelectItem value="female">Female</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label htmlFor="height">Height (cm)</Label>
                   <Input
                     id="height"
                     type="number"
-                    value={profile.height}
-                    onChange={(e) => updateProfile("height", e.target.value)}
+                    value={formData.height}
+                    onChange={(e) => updateFormData("height", e.target.value)}
                     placeholder="Enter your height"
                   />
                 </div>
@@ -135,8 +227,8 @@ const Profile = () => {
                   <Input
                     id="weight"
                     type="number"
-                    value={profile.weight}
-                    onChange={(e) => updateProfile("weight", e.target.value)}
+                    value={formData.weight}
+                    onChange={(e) => updateFormData("weight", e.target.value)}
                     placeholder="Enter your weight"
                   />
                 </div>
@@ -144,10 +236,23 @@ const Profile = () => {
                   <Label htmlFor="nationality">Nationality</Label>
                   <Input
                     id="nationality"
-                    value={profile.nationality}
-                    onChange={(e) => updateProfile("nationality", e.target.value)}
+                    value={formData.nationality}
+                    onChange={(e) => updateFormData("nationality", e.target.value)}
                     placeholder="Your nationality"
                   />
+                </div>
+                <div>
+                  <Label htmlFor="body_shape">Body Shape</Label>
+                  <Select value={formData.body_shape} onValueChange={(value) => updateFormData("body_shape", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select body shape" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ectomorph">Ectomorph</SelectItem>
+                      <SelectItem value="mesomorph">Mesomorph</SelectItem>
+                      <SelectItem value="endomorph">Endomorph</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </Card>
@@ -161,11 +266,41 @@ const Profile = () => {
               
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="healthConditions">Health Conditions</Label>
+                  <Label htmlFor="fitness_goal">Fitness Goal</Label>
+                  <Select value={formData.fitness_goal} onValueChange={(value) => updateFormData("fitness_goal", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select your goal" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="weight_loss">Weight Loss</SelectItem>
+                      <SelectItem value="muscle_gain">Muscle Gain</SelectItem>
+                      <SelectItem value="maintenance">Weight Maintenance</SelectItem>
+                      <SelectItem value="endurance">Improve Endurance</SelectItem>
+                      <SelectItem value="weight_gain">Weight Gain</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="activity_level">Activity Level</Label>
+                  <Select value={formData.activity_level} onValueChange={(value) => updateFormData("activity_level", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select activity level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sedentary">Sedentary</SelectItem>
+                      <SelectItem value="lightly_active">Lightly Active</SelectItem>
+                      <SelectItem value="moderately_active">Moderately Active</SelectItem>
+                      <SelectItem value="very_active">Very Active</SelectItem>
+                      <SelectItem value="extremely_active">Extremely Active</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="health_conditions">Health Conditions</Label>
                   <Textarea
-                    id="healthConditions"
-                    value={profile.healthConditions}
-                    onChange={(e) => updateProfile("healthConditions", e.target.value)}
+                    id="health_conditions"
+                    value={formData.health_conditions.join(', ')}
+                    onChange={(e) => handleArrayInput("health_conditions", e.target.value)}
                     placeholder="Any health conditions or medical considerations"
                     rows={3}
                   />
@@ -185,19 +320,28 @@ const Profile = () => {
                   <Label htmlFor="allergies">Food Allergies</Label>
                   <Input
                     id="allergies"
-                    value={profile.allergies}
-                    onChange={(e) => updateProfile("allergies", e.target.value)}
+                    value={formData.allergies.join(', ')}
+                    onChange={(e) => handleArrayInput("allergies", e.target.value)}
                     placeholder="e.g., nuts, dairy, gluten"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="preferredFoods">Preferred Foods</Label>
+                  <Label htmlFor="preferred_foods">Preferred Foods</Label>
                   <Textarea
-                    id="preferredFoods"
-                    value={profile.preferredFoods}
-                    onChange={(e) => updateProfile("preferredFoods", e.target.value)}
+                    id="preferred_foods"
+                    value={formData.preferred_foods.join(', ')}
+                    onChange={(e) => handleArrayInput("preferred_foods", e.target.value)}
                     placeholder="Foods you enjoy eating"
                     rows={3}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="dietary_restrictions">Dietary Restrictions</Label>
+                  <Input
+                    id="dietary_restrictions"
+                    value={formData.dietary_restrictions.join(', ')}
+                    onChange={(e) => handleArrayInput("dietary_restrictions", e.target.value)}
+                    placeholder="e.g., vegetarian, vegan, keto"
                   />
                 </div>
               </div>
@@ -207,10 +351,11 @@ const Profile = () => {
             <div className="flex justify-end">
               <Button
                 onClick={handleSave}
+                disabled={isUpdating}
                 className="bg-fitness-gradient hover:opacity-90 text-white px-8"
               >
                 <Save className="w-4 h-4 mr-2" />
-                Save Changes
+                {isUpdating ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>
           </div>
