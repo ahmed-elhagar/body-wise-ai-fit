@@ -15,6 +15,7 @@ import MealPlan from "./pages/MealPlan";
 import Exercise from "./pages/Exercise";
 import WeightTracking from "./pages/WeightTracking";
 import CalorieChecker from "./pages/CalorieChecker";
+import AIChatPage from "./pages/AIChatPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,7 +31,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/onboarding" element={
-              <ProtectedRoute>
+              <ProtectedRoute requireProfile={false}>
                 <Onboarding />
               </ProtectedRoute>
             } />
@@ -62,6 +63,11 @@ const App = () => (
             <Route path="/calorie-checker" element={
               <ProtectedRoute>
                 <CalorieChecker />
+              </ProtectedRoute>
+            } />
+            <Route path="/ai-chat" element={
+              <ProtectedRoute>
+                <AIChatPage />
               </ProtectedRoute>
             } />
             <Route path="*" element={<NotFound />} />

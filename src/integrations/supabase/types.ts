@@ -9,6 +9,120 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      ai_exercise_generations: {
+        Row: {
+          created_at: string
+          difficulty_level: string | null
+          duration_weeks: number | null
+          generated_program: Json | null
+          id: string
+          prompt: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          difficulty_level?: string | null
+          duration_weeks?: number | null
+          generated_program?: Json | null
+          id?: string
+          prompt: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          difficulty_level?: string | null
+          duration_weeks?: number | null
+          generated_program?: Json | null
+          id?: string
+          prompt?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ai_food_analysis: {
+        Row: {
+          analysis_confidence: number | null
+          created_at: string
+          food_items: Json | null
+          id: string
+          image_url: string | null
+          total_calories: number | null
+          user_id: string
+        }
+        Insert: {
+          analysis_confidence?: number | null
+          created_at?: string
+          food_items?: Json | null
+          id?: string
+          image_url?: string | null
+          total_calories?: number | null
+          user_id: string
+        }
+        Update: {
+          analysis_confidence?: number | null
+          created_at?: string
+          food_items?: Json | null
+          id?: string
+          image_url?: string | null
+          total_calories?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ai_meal_generations: {
+        Row: {
+          created_at: string
+          generated_plan: Json | null
+          id: string
+          prompt: string
+          user_id: string
+          week_start_date: string
+        }
+        Insert: {
+          created_at?: string
+          generated_plan?: Json | null
+          id?: string
+          prompt: string
+          user_id: string
+          week_start_date: string
+        }
+        Update: {
+          created_at?: string
+          generated_plan?: Json | null
+          id?: string
+          prompt?: string
+          user_id?: string
+          week_start_date?: string
+        }
+        Relationships: []
+      }
+      chat_messages: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          message_type: string | null
+          response: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          message_type?: string | null
+          response?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          message_type?: string | null
+          response?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       exercise_programs: {
         Row: {
           created_at: string | null

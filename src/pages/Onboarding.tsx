@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -10,6 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { ArrowRight, ArrowLeft, User, Target, Heart } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
+import BodyShapeSelector from "@/components/BodyShapeSelector";
 
 const Onboarding = () => {
   const navigate = useNavigate();
@@ -38,7 +40,27 @@ const Onboarding = () => {
   const totalSteps = 3;
   const progress = (step / totalSteps) * 100;
 
+  const isStepValid = () => {
+    switch (step) {
+      case 1:
+        return formData.first_name && formData.last_name && formData.age && 
+               formData.gender && formData.height && formData.weight && 
+               formData.nationality && formData.body_shape;
+      case 2:
+        return formData.fitness_goal && formData.activity_level;
+      case 3:
+        return true; // Optional step
+      default:
+        return false;
+    }
+  };
+
   const handleNext = () => {
+    if (!isStepValid()) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
     if (step < totalSteps) {
       setStep(step + 1);
     } else {
@@ -95,36 +117,39 @@ const Onboarding = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="first_name">First Name</Label>
+                <Label htmlFor="first_name">First Name *</Label>
                 <Input
                   id="first_name"
                   value={formData.first_name}
                   onChange={(e) => updateFormData("first_name", e.target.value)}
                   placeholder="Enter your first name"
+                  required
                 />
               </div>
               <div>
-                <Label htmlFor="last_name">Last Name</Label>
+                <Label htmlFor="last_name">Last Name *</Label>
                 <Input
                   id="last_name"
                   value={formData.last_name}
                   onChange={(e) => updateFormData("last_name", e.target.value)}
                   placeholder="Enter your last name"
+                  required
                 />
               </div>
               <div>
-                <Label htmlFor="age">Age</Label>
+                <Label htmlFor="age">Age *</Label>
                 <Input
                   id="age"
                   type="number"
                   value={formData.age}
                   onChange={(e) => updateFormData("age", e.target.value)}
                   placeholder="Enter your age"
+                  required
                 />
               </div>
               <div>
-                <Label htmlFor="gender">Gender</Label>
-                <Select onValueChange={(value) => updateFormData("gender", value)}>
+                <Label htmlFor="gender">Gender *</Label>
+                <Select onValueChange={(value) => updateFormData("gender", value)} required>
                   <SelectTrigger>
                     <SelectValue placeholder="Select gender" />
                   </SelectTrigger>
@@ -136,47 +161,45 @@ const Onboarding = () => {
                 </Select>
               </div>
               <div>
-                <Label htmlFor="nationality">Nationality</Label>
+                <Label htmlFor="nationality">Nationality *</Label>
                 <Input
                   id="nationality"
                   value={formData.nationality}
                   onChange={(e) => updateFormData("nationality", e.target.value)}
                   placeholder="Your nationality"
+                  required
                 />
               </div>
               <div>
-                <Label htmlFor="height">Height (cm)</Label>
+                <Label htmlFor="height">Height (cm) *</Label>
                 <Input
                   id="height"
                   type="number"
                   value={formData.height}
                   onChange={(e) => updateFormData("height", e.target.value)}
                   placeholder="Enter your height"
+                  required
                 />
               </div>
-              <div>
-                <Label htmlFor="weight">Weight (kg)</Label>
+              <div className="md:col-span-2">
+                <Label htmlFor="weight">Weight (kg) *</Label>
                 <Input
                   id="weight"
                   type="number"
                   value={formData.weight}
                   onChange={(e) => updateFormData("weight", e.target.value)}
                   placeholder="Enter your weight"
+                  required
                 />
               </div>
-              <div>
-                <Label htmlFor="body_shape">Body Shape</Label>
-                <Select onValueChange={(value) => updateFormData("body_shape", value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select body shape" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ectomorph">Ectomorph (Naturally thin)</SelectItem>
-                    <SelectItem value="mesomorph">Mesomorph (Athletic build)</SelectItem>
-                    <SelectItem value="endomorph">Endomorph (Naturally curvy)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            </div>
+
+            <div className="mt-6">
+              <BodyShapeSelector
+                value={formData.body_shape}
+                onChange={(value) => updateFormData("body_shape", value)}
+                gender={formData.gender}
+              />
             </div>
           </div>
         );
@@ -194,8 +217,8 @@ const Onboarding = () => {
 
             <div className="space-y-4">
               <div>
-                <Label htmlFor="fitness_goal">Primary Fitness Goal</Label>
-                <Select onValueChange={(value) => updateFormData("fitness_goal", value)}>
+                <Label htmlFor="fitness_goal">Primary Fitness Goal *</Label>
+                <Select onValueChange={(value) => updateFormData("fitness_goal", value)} required>
                   <SelectTrigger>
                     <SelectValue placeholder="Select your goal" />
                   </SelectTrigger>
@@ -210,8 +233,8 @@ const Onboarding = () => {
               </div>
 
               <div>
-                <Label htmlFor="activity_level">Current Activity Level</Label>
-                <Select onValueChange={(value) => updateFormData("activity_level", value)}>
+                <Label htmlFor="activity_level">Current Activity Level *</Label>
+                <Select onValueChange={(value) => updateFormData("activity_level", value)} required>
                   <SelectTrigger>
                     <SelectValue placeholder="Select activity level" />
                   </SelectTrigger>
@@ -226,7 +249,7 @@ const Onboarding = () => {
               </div>
 
               <div>
-                <Label htmlFor="health_conditions">Health Conditions</Label>
+                <Label htmlFor="health_conditions">Health Conditions (Optional)</Label>
                 <Textarea
                   id="health_conditions"
                   placeholder="Any health conditions, injuries, or medical considerations (comma-separated)"
@@ -246,7 +269,7 @@ const Onboarding = () => {
                 <Heart className="w-8 h-8 text-white" />
               </div>
               <h2 className="text-2xl font-bold text-gray-800 mb-2">Nutrition Preferences</h2>
-              <p className="text-gray-600">Tell us about your dietary preferences</p>
+              <p className="text-gray-600">Tell us about your dietary preferences (Optional)</p>
             </div>
 
             <div className="space-y-4">
@@ -288,11 +311,11 @@ const Onboarding = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 py-8">
-      <div className="container mx-auto px-4 max-w-2xl">
+      <div className="container mx-auto px-4 max-w-4xl">
         {/* Progress Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold text-gray-800">Setup Your Profile</h1>
+            <h1 className="text-2xl font-bold text-gray-800">Complete Your Profile</h1>
             <span className="text-sm text-gray-600">Step {step} of {totalSteps}</span>
           </div>
           <Progress value={progress} className="h-2" />
@@ -316,7 +339,7 @@ const Onboarding = () => {
 
             <Button
               onClick={handleNext}
-              disabled={isUpdating}
+              disabled={isUpdating || !isStepValid()}
               className="bg-fitness-gradient hover:opacity-90 text-white flex items-center space-x-2"
             >
               <span>{step === totalSteps ? 'Complete Setup' : 'Next'}</span>

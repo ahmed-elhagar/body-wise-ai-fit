@@ -1,12 +1,32 @@
-
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Clock, Users, ChefHat, ShoppingCart, RefreshCw } from "lucide-react";
+import { ArrowLeft, Clock, Users, ChefHat, ShoppingCart, RefreshCw, Sparkles, Loader2 } from "lucide-react";
+import { useAIMealPlan } from "@/hooks/useAIMealPlan";
+import { toast } from "sonner";
 
 const MealPlan = () => {
   const navigate = useNavigate();
+  const { generateMealPlan, isGenerating } = useAIMealPlan();
+  const [showAIDialog, setShowAIDialog] = useState(false);
+  const [aiPreferences, setAiPreferences] = useState({
+    duration: "1",
+    cuisine: "",
+    maxPrepTime: "30",
+    mealTypes: "5"
+  });
+
+  const handleGenerateAIPlan = () => {
+    generateMealPlan(aiPreferences);
+    setShowAIDialog(false);
+    toast.success("AI is generating your personalized meal plan!");
+  };
 
   const todaysMeals = [
     {
@@ -107,10 +127,83 @@ const MealPlan = () => {
               <p className="text-gray-600">Tuesday, January 30, 2024</p>
             </div>
           </div>
-          <Button className="bg-fitness-gradient hover:opacity-90 text-white">
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Regenerate Plan
-          </Button>
+          <div className="flex space-x-2">
+            <Dialog open={showAIDialog} onOpenChange={setShowAIDialog}>
+              <DialogTrigger asChild>
+                <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white">
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  AI Generate
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Generate AI Meal Plan</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div>
+                    <Label htmlFor="duration">Plan Duration</Label>
+                    <Select value={aiPreferences.duration} onValueChange={(value) => 
+                      setAiPreferences(prev => ({ ...prev, duration: value }))
+                    }>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">1 Week</SelectItem>
+                        <SelectItem value="2">2 Weeks</SelectItem>
+                        <SelectItem value="4">1 Month</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="cuisine">Preferred Cuisine (Optional)</Label>
+                    <Input
+                      value={aiPreferences.cuisine}
+                      onChange={(e) => setAiPreferences(prev => ({ ...prev, cuisine: e.target.value }))}
+                      placeholder="e.g., Mediterranean, Asian, Italian"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="maxPrepTime">Max Prep Time (minutes)</Label>
+                    <Select value={aiPreferences.maxPrepTime} onValueChange={(value) => 
+                      setAiPreferences(prev => ({ ...prev, maxPrepTime: value }))
+                    }>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="15">15 minutes</SelectItem>
+                        <SelectItem value="30">30 minutes</SelectItem>
+                        <SelectItem value="60">1 hour</SelectItem>
+                        <SelectItem value="120">2 hours</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button 
+                    onClick={handleGenerateAIPlan} 
+                    disabled={isGenerating}
+                    className="w-full bg-fitness-gradient hover:opacity-90 text-white"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        Generate Plan
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+            <Button className="bg-fitness-gradient hover:opacity-90 text-white">
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Regenerate Plan
+            </Button>
+          </div>
         </div>
 
         <div className="grid lg:grid-cols-4 gap-6">
