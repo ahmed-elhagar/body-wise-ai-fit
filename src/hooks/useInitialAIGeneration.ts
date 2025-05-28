@@ -14,6 +14,7 @@ export const useInitialAIGeneration = () => {
   const { generateExerciseProgram, isGenerating: isExerciseGenerating } = useAIExercise();
   const [hasTriggeredGeneration, setHasTriggeredGeneration] = useState(false);
   const [isGeneratingContent, setIsGeneratingContent] = useState(false);
+  const [generationStatus, setGenerationStatus] = useState<string>('');
   const generationAttempted = useRef(false);
 
   useEffect(() => {
@@ -29,6 +30,8 @@ export const useInitialAIGeneration = () => {
       generationAttempted.current = true;
 
       try {
+        setGenerationStatus('Checking existing content...');
+        
         // Check if user already has any content
         const [mealPlansResult, exerciseProgramsResult] = await Promise.all([
           supabase
@@ -48,63 +51,99 @@ export const useInitialAIGeneration = () => {
 
         // If user has no content, generate both meal plan and exercise program
         if (!hasMealPlans || !hasExercisePrograms) {
-          console.log('Generating initial content for new user');
+          console.log('Generating initial personalized content for new user');
           setHasTriggeredGeneration(true);
           setIsGeneratingContent(true);
           
+          // Enhanced default preferences based on user profile
           const defaultMealPreferences = {
             duration: "1",
             cuisine: profile.nationality || "International",
             maxPrepTime: "30",
-            mealTypes: "5"
+            mealTypes: "5",
+            dietaryGoal: profile.fitness_goal || "maintenance",
+            allergies: profile.allergies || [],
+            restrictions: profile.dietary_restrictions || []
           };
 
           const defaultExercisePreferences = {
             duration: "4",
-            equipment: "Basic home equipment",
-            workoutDays: "3-4 days per week",
-            difficulty: "beginner"
+            equipment: "Basic home equipment and gym options",
+            workoutDays: profile.activity_level === 'sedentary' ? "2-3 days per week" :
+                         profile.activity_level === 'very_active' ? "5-6 days per week" :
+                         "3-4 days per week",
+            difficulty: profile.activity_level === 'sedentary' ? "beginner" :
+                       profile.activity_level === 'very_active' ? "advanced" :
+                       "intermediate",
+            fitnessGoal: profile.fitness_goal || "general_fitness"
           };
 
-          toast.success('Welcome! Generating your personalized content...');
+          toast.success('Welcome! Generating your personalized AI content based on your profile...');
 
-          // Generate in sequence to avoid overwhelming the system
           try {
             if (!hasMealPlans) {
-              await generateMealPlan(defaultMealPreferences);
+              setGenerationStatus('Creating your personalized meal plan...');
+              console.log('Generating meal plan with preferences:', defaultMealPreferences);
+              
+              await new Promise((resolve, reject) => {
+                generateMealPlan(defaultMealPreferences);
+                // Wait a bit for the mutation to complete
+                setTimeout(() => {
+                  resolve(true);
+                }, 1000);
+              });
+              
+              // Wait for meal plan generation to complete
+              await new Promise(resolve => setTimeout(resolve, 3000));
             }
             
-            // Small delay before generating exercise program
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
             if (!hasExercisePrograms) {
-              await generateExerciseProgram(defaultExercisePreferences);
+              setGenerationStatus('Creating your personalized exercise program...');
+              console.log('Generating exercise program with preferences:', defaultExercisePreferences);
+              
+              await new Promise((resolve, reject) => {
+                generateExerciseProgram(defaultExercisePreferences);
+                // Wait a bit for the mutation to complete
+                setTimeout(() => {
+                  resolve(true);
+                }, 1000);
+              });
+              
+              // Wait for exercise program generation to complete
+              await new Promise(resolve => setTimeout(resolve, 3000));
             }
             
             setIsGeneratingContent(false);
-            toast.success('Your personalized content is ready!');
+            setGenerationStatus('');
+            toast.success('🎉 Your personalized content is ready! Explore your meal plans and workouts.');
+            
           } catch (error) {
             console.error('Error during content generation:', error);
             setIsGeneratingContent(false);
+            setGenerationStatus('');
             toast.error('There was an issue generating your content. You can create it manually from the respective pages.');
           }
+        } else {
+          console.log('User already has existing content, skipping initial generation');
         }
         
       } catch (error) {
         console.error('Error during initial generation check:', error);
         setIsGeneratingContent(false);
+        setGenerationStatus('');
         generationAttempted.current = false; // Allow retry
       }
     };
 
-    // Small delay to ensure profile is fully loaded
-    const timeoutId = setTimeout(triggerInitialGeneration, 1500);
+    // Delay to ensure profile is fully loaded and avoid rapid triggers
+    const timeoutId = setTimeout(triggerInitialGeneration, 2000);
     
     return () => clearTimeout(timeoutId);
-  }, [user?.id, profile, generateMealPlan, generateExerciseProgram]);
+  }, [user?.id, profile?.onboarding_completed, profile?.first_name, generateMealPlan, generateExerciseProgram]);
 
   return { 
     hasTriggeredGeneration, 
-    isGeneratingContent: isGeneratingContent || isMealPlanGenerating || isExerciseGenerating 
+    isGeneratingContent: isGeneratingContent || isMealPlanGenerating || isExerciseGenerating,
+    generationStatus
   };
 };

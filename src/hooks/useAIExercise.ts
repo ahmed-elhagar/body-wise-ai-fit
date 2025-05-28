@@ -33,15 +33,26 @@ export const useAIExercise = () => {
         }
         
         if (profileData.ai_generations_remaining <= 0) {
-          throw new Error('You have reached your AI generation limit. Please contact admin to increase your limit.');
+          throw new Error('You have reached your AI generation limit (5 generations max). Please contact admin to increase your limit.');
         }
 
-        console.log('Generating exercise program with preferences:', preferences);
+        console.log('Generating exercise program with enhanced prompt for user:', user.id);
 
+        // Call the improved edge function
         const { data, error } = await supabase.functions.invoke('generate-exercise-program', {
           body: {
-            userProfile: profile,
-            preferences
+            userProfile: {
+              ...profile,
+              id: user.id,
+              email: user.email
+            },
+            preferences: {
+              duration: preferences.duration || "4",
+              equipment: preferences.equipment || "Basic home equipment",
+              workoutDays: preferences.workoutDays || "3-4 days per week",
+              difficulty: preferences.difficulty || "beginner",
+              ...preferences
+            }
           }
         });
 
@@ -51,8 +62,10 @@ export const useAIExercise = () => {
         }
 
         if (!data || !data.generatedProgram) {
-          throw new Error('No exercise program was generated');
+          throw new Error('No exercise program was generated. Please try again.');
         }
+
+        console.log('Generated exercise program structure:', data.generatedProgram);
 
         // Decrement AI generations
         const { error: updateError } = await supabase
@@ -67,7 +80,7 @@ export const useAIExercise = () => {
           console.error('Failed to update AI generations remaining:', updateError);
         }
 
-        // Save to database
+        // Save to database with enhanced structure
         const weekStartDate = new Date();
         weekStartDate.setDate(weekStartDate.getDate() - weekStartDate.getDay());
         
@@ -76,71 +89,94 @@ export const useAIExercise = () => {
           .upsert({
             user_id: user.id,
             week_start_date: weekStartDate.toISOString().split('T')[0],
-            program_name: data.generatedProgram.programOverview?.name || 'Custom AI Program',
+            program_name: data.generatedProgram.programOverview?.name || 'AI Generated Program',
             difficulty_level: data.generatedProgram.programOverview?.difficulty || 'intermediate',
             total_estimated_calories: 0,
-            generation_prompt: preferences
+            generation_prompt: {
+              userProfile: profile,
+              preferences,
+              generatedAt: new Date().toISOString()
+            }
           })
           .select()
           .single();
 
-        if (weeklyError) throw weeklyError;
+        if (weeklyError) {
+          console.error('Error saving weekly program:', weeklyError);
+          throw weeklyError;
+        }
 
-        // Save daily workouts and exercises
-        if (data.generatedProgram.weeks && data.generatedProgram.weeks[0]?.workouts) {
-          for (const workout of data.generatedProgram.weeks[0].workouts) {
-            const { data: dailyWorkout, error: workoutError } = await supabase
-              .from('daily_workouts')
-              .upsert({
-                weekly_program_id: weeklyProgram.id,
-                day_number: workout.day,
-                workout_name: workout.workoutName,
-                estimated_duration: workout.estimatedDuration,
-                estimated_calories: workout.estimatedCalories,
-                muscle_groups: workout.exercises?.map((ex: any) => ex.muscleGroups).flat() || []
-              })
-              .select()
-              .single();
+        console.log('Saved weekly exercise program:', weeklyProgram);
 
-            if (workoutError) throw workoutError;
+        // Save daily workouts and exercises with enhanced structure
+        if (data.generatedProgram.weeks && Array.isArray(data.generatedProgram.weeks)) {
+          console.log(`Saving ${data.generatedProgram.weeks.length} weeks of workouts`);
+          
+          const firstWeek = data.generatedProgram.weeks[0];
+          if (firstWeek?.workouts && Array.isArray(firstWeek.workouts)) {
+            for (const workout of firstWeek.workouts) {
+              const { data: dailyWorkout, error: workoutError } = await supabase
+                .from('daily_workouts')
+                .upsert({
+                  weekly_program_id: weeklyProgram.id,
+                  day_number: workout.day,
+                  workout_name: workout.workoutName || 'Daily Workout',
+                  estimated_duration: workout.estimatedDuration || 45,
+                  estimated_calories: workout.estimatedCalories || 250,
+                  muscle_groups: workout.exercises?.map((ex: any) => ex.muscleGroups).flat() || []
+                })
+                .select()
+                .single();
 
-            // Save exercises for this workout
-            if (workout.exercises) {
-              for (const [exerciseIndex, exercise] of workout.exercises.entries()) {
-                await supabase
-                  .from('exercises')
-                  .upsert({
-                    daily_workout_id: dailyWorkout.id,
-                    name: exercise.name,
-                    sets: exercise.sets,
-                    reps: exercise.reps,
-                    rest_seconds: exercise.restSeconds,
-                    muscle_groups: exercise.muscleGroups,
-                    instructions: exercise.instructions,
-                    youtube_search_term: exercise.youtubeSearchTerm,
-                    difficulty: exercise.difficulty,
-                    equipment: exercise.equipment,
-                    order_number: exerciseIndex + 1
-                  });
+              if (workoutError) {
+                console.error('Error saving workout:', workoutError);
+                continue;
+              }
+
+              // Save exercises for this workout
+              if (workout.exercises && Array.isArray(workout.exercises)) {
+                for (const [exerciseIndex, exercise] of workout.exercises.entries()) {
+                  const { error: exerciseError } = await supabase
+                    .from('exercises')
+                    .upsert({
+                      daily_workout_id: dailyWorkout.id,
+                      name: exercise.name || 'Exercise',
+                      sets: exercise.sets || 3,
+                      reps: exercise.reps || '10-12',
+                      rest_seconds: exercise.restSeconds || 60,
+                      muscle_groups: exercise.muscleGroups || [],
+                      instructions: exercise.instructions || 'Perform exercise as demonstrated',
+                      youtube_search_term: exercise.youtubeSearchTerm || null,
+                      difficulty: exercise.difficulty || 'beginner',
+                      equipment: exercise.equipment || 'none',
+                      order_number: exerciseIndex + 1
+                    });
+
+                  if (exerciseError) {
+                    console.error('Error saving exercise:', exerciseError);
+                  }
+                }
               }
             }
           }
         }
 
+        console.log('Exercise program generation completed successfully');
         return data.generatedProgram;
       } catch (error: any) {
-        console.error('Error generating exercise program:', error);
+        console.error('Error in exercise program generation workflow:', error);
         throw error;
       }
     },
-    onSuccess: () => {
-      toast.success('AI exercise program generated successfully!');
+    onSuccess: (data) => {
+      toast.success('AI exercise program generated successfully! Your personalized workout plan is ready.');
       queryClient.invalidateQueries({ queryKey: ['exercise-programs'] });
+      queryClient.invalidateQueries({ queryKey: ['weekly-exercise-programs'] });
       queryClient.invalidateQueries({ queryKey: ['profile'] });
     },
     onError: (error: any) => {
-      console.error('Error generating exercise program:', error);
-      toast.error(`Error: ${error.message}`);
+      console.error('Exercise program generation failed:', error);
+      toast.error(`Failed to generate exercise program: ${error.message}`);
     },
   });
 

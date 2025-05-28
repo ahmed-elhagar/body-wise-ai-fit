@@ -33,15 +33,26 @@ export const useAIMealPlan = () => {
         }
         
         if (profileData.ai_generations_remaining <= 0) {
-          throw new Error('You have reached your AI generation limit. Please contact admin to increase your limit.');
+          throw new Error('You have reached your AI generation limit (5 generations max). Please contact admin to increase your limit.');
         }
 
-        console.log('Generating meal plan with preferences:', preferences);
+        console.log('Generating meal plan with enhanced prompt for user:', user.id);
 
+        // Call the improved edge function
         const { data, error } = await supabase.functions.invoke('generate-meal-plan', {
           body: {
-            userProfile: profile,
-            preferences
+            userProfile: {
+              ...profile,
+              id: user.id,
+              email: user.email
+            },
+            preferences: {
+              duration: preferences.duration || "1",
+              cuisine: preferences.cuisine || profile.nationality || "International",
+              maxPrepTime: preferences.maxPrepTime || "30",
+              mealTypes: preferences.mealTypes || "5",
+              ...preferences
+            }
           }
         });
 
@@ -51,8 +62,10 @@ export const useAIMealPlan = () => {
         }
 
         if (!data || !data.generatedPlan) {
-          throw new Error('No meal plan was generated');
+          throw new Error('No meal plan was generated. Please try again.');
         }
+
+        console.log('Generated meal plan structure:', data.generatedPlan);
 
         // Decrement AI generations
         const { error: updateError } = await supabase
@@ -65,10 +78,9 @@ export const useAIMealPlan = () => {
           
         if (updateError) {
           console.error('Failed to update AI generations remaining:', updateError);
-          // Don't throw, just log the error
         }
 
-        // Save to database
+        // Save to database with enhanced structure
         const weekStartDate = new Date();
         weekStartDate.setDate(weekStartDate.getDate() - weekStartDate.getDay());
         
@@ -77,7 +89,11 @@ export const useAIMealPlan = () => {
           .upsert({
             user_id: user.id,
             week_start_date: weekStartDate.toISOString().split('T')[0],
-            generation_prompt: preferences,
+            generation_prompt: {
+              userProfile: profile,
+              preferences,
+              generatedAt: new Date().toISOString()
+            },
             total_calories: data.generatedPlan.weekSummary?.totalCalories || 0,
             total_protein: data.generatedPlan.weekSummary?.totalProtein || 0,
             total_carbs: data.generatedPlan.weekSummary?.totalCarbs || 0,
@@ -86,14 +102,21 @@ export const useAIMealPlan = () => {
           .select()
           .single();
 
-        if (weeklyError) throw weeklyError;
+        if (weeklyError) {
+          console.error('Error saving weekly plan:', weeklyError);
+          throw weeklyError;
+        }
 
-        // Save daily meals
-        if (data.generatedPlan.days) {
+        console.log('Saved weekly meal plan:', weeklyPlan);
+
+        // Save daily meals with enhanced data structure
+        if (data.generatedPlan.days && Array.isArray(data.generatedPlan.days)) {
+          console.log(`Saving ${data.generatedPlan.days.length} days of meals`);
+          
           for (const day of data.generatedPlan.days) {
-            if (day.meals) {
+            if (day.meals && Array.isArray(day.meals)) {
               for (const meal of day.meals) {
-                await supabase
+                const { error: mealError } = await supabase
                   .from('daily_meals')
                   .upsert({
                     weekly_plan_id: weeklyPlan.id,
@@ -109,27 +132,34 @@ export const useAIMealPlan = () => {
                     prep_time: meal.prepTime || 0,
                     cook_time: meal.cookTime || 0,
                     servings: meal.servings || 1,
-                    youtube_search_term: meal.youtubeSearchTerm || null
+                    youtube_search_term: meal.youtubeSearchTerm || null,
+                    alternatives: meal.alternatives || []
                   });
+
+                if (mealError) {
+                  console.error('Error saving meal:', mealError);
+                }
               }
             }
           }
         }
 
+        console.log('Meal plan generation completed successfully');
         return data.generatedPlan;
       } catch (error: any) {
-        console.error('Error generating meal plan:', error);
+        console.error('Error in meal plan generation workflow:', error);
         throw error;
       }
     },
-    onSuccess: () => {
-      toast.success('AI meal plan generated successfully!');
+    onSuccess: (data) => {
+      toast.success('AI meal plan generated successfully! Your personalized plan is ready.');
       queryClient.invalidateQueries({ queryKey: ['meal-plans'] });
+      queryClient.invalidateQueries({ queryKey: ['weekly-meal-plan'] });
       queryClient.invalidateQueries({ queryKey: ['profile'] });
     },
     onError: (error: any) => {
-      console.error('Error generating meal plan:', error);
-      toast.error(`Error: ${error.message}`);
+      console.error('Meal plan generation failed:', error);
+      toast.error(`Failed to generate meal plan: ${error.message}`);
     },
   });
 

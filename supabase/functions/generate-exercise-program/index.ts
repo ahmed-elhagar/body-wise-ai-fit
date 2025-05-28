@@ -20,61 +20,94 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    const prompt = `Generate a personalized exercise program for a ${userProfile.age} year old ${userProfile.gender} with:
-    - Fitness Goal: ${userProfile.fitness_goal}
-    - Activity Level: ${userProfile.activity_level}
-    - Body Shape: ${userProfile.body_shape}
-    - Health Conditions: ${userProfile.health_conditions?.join(', ') || 'None'}
-    - Equipment: ${preferences.equipment || 'Bodyweight, Basic home equipment'}
-    - Duration: ${preferences.duration || '4 weeks'}
-    - Workout Days: ${preferences.workoutDays || '3-4 days per week'}
+    console.log('Generating exercise program for user:', userProfile?.id);
 
-    Create a comprehensive program with:
-    - Weekly workout schedule
-    - Exercise details with sets, reps, rest periods
-    - Progression plan
-    - YouTube video suggestions for each exercise
-    - Muscle groups targeted
-    - Estimated calories burned
+    // Enhanced structured prompt for exercise program
+    const prompt = `You are a certified personal trainer creating a personalized exercise program. Generate a comprehensive workout plan with the following specifications:
 
-    Format as JSON:
+USER PROFILE:
+- Age: ${userProfile?.age} years old
+- Gender: ${userProfile?.gender}
+- Weight: ${userProfile?.weight}kg, Height: ${userProfile?.height}cm
+- Fitness Goal: ${userProfile?.fitness_goal}
+- Activity Level: ${userProfile?.activity_level}
+- Body Shape: ${userProfile?.body_shape}
+- Health Conditions: ${userProfile?.health_conditions?.join(', ') || 'None'}
+
+PREFERENCES:
+- Equipment: ${preferences?.equipment || 'Basic home equipment'}
+- Duration: ${preferences?.duration || '4'} weeks
+- Workout Days: ${preferences?.workoutDays || '3-4 days per week'}
+- Difficulty: ${preferences?.difficulty || 'Beginner to Intermediate'}
+
+REQUIREMENTS:
+- Create both HOME and GYM workout options
+- Include progressive overload principles
+- Provide YouTube search terms for exercise demonstrations
+- Include warm-up and cool-down routines
+- Account for health conditions and limitations
+- Provide alternative exercises for accessibility
+
+RESPONSE FORMAT - Return ONLY valid JSON in this exact structure:
+{
+  "programOverview": {
+    "name": "Personalized Fitness Program",
+    "duration": "4 weeks",
+    "difficulty": "intermediate",
+    "description": "Complete program description",
+    "goals": ["goal1", "goal2"],
+    "equipment": ["equipment1", "equipment2"]
+  },
+  "weeks": [
     {
-      "programOverview": {
-        "name": "program name",
-        "duration": "X weeks",
-        "difficulty": "beginner/intermediate/advanced",
-        "description": "brief description"
-      },
-      "weeks": [
+      "weekNumber": 1,
+      "focus": "Foundation Building",
+      "workouts": [
         {
-          "weekNumber": 1,
-          "focus": "week focus",
-          "workouts": [
+          "day": 1,
+          "dayName": "Monday",
+          "workoutName": "Upper Body Strength",
+          "type": "home",
+          "estimatedDuration": 45,
+          "estimatedCalories": 300,
+          "warmUp": [
+            {"name": "Light cardio", "duration": 5, "instructions": "March in place"}
+          ],
+          "exercises": [
             {
-              "day": 1,
-              "dayName": "Monday",
-              "workoutName": "Upper Body Strength",
-              "estimatedDuration": 45,
-              "estimatedCalories": 300,
-              "exercises": [
-                {
-                  "name": "Push-ups",
-                  "sets": 3,
-                  "reps": "10-12",
-                  "restSeconds": 60,
-                  "muscleGroups": ["chest", "triceps"],
-                  "instructions": "detailed form instructions",
-                  "youtubeSearchTerm": "proper push up form",
-                  "difficulty": "beginner",
-                  "equipment": "none"
-                }
-              ]
+              "name": "Push-ups",
+              "sets": 3,
+              "reps": "10-12",
+              "restSeconds": 60,
+              "muscleGroups": ["chest", "triceps", "shoulders"],
+              "instructions": "Keep body straight, lower chest to floor",
+              "youtubeSearchTerm": "proper push up form beginner",
+              "difficulty": "beginner",
+              "equipment": "none",
+              "alternatives": ["Wall push-ups", "Knee push-ups"]
             }
+          ],
+          "coolDown": [
+            {"name": "Chest stretch", "duration": 30, "instructions": "Hold for 30 seconds"}
           ]
         }
       ]
-    }`;
+    }
+  ],
+  "nutritionTips": [
+    "Stay hydrated during workouts",
+    "Eat protein within 30 minutes post-workout"
+  ],
+  "progressTracking": {
+    "metrics": ["weight", "reps", "sets", "duration"],
+    "schedule": "Track weekly progress"
+  }
+}
 
+Ensure exercises are appropriate for the user's fitness level and health conditions.`;
+
+    console.log('Sending request to OpenAI for exercise program');
+    
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -84,22 +117,57 @@ serve(async (req) => {
       body: JSON.stringify({
         model: 'gpt-4o',
         messages: [
-          { role: 'system', content: 'You are a certified personal trainer and exercise physiologist. Always respond with valid JSON only.' },
+          { 
+            role: 'system', 
+            content: 'You are a certified personal trainer and exercise physiologist. Always respond with valid JSON only. Create safe, effective workouts appropriate for the user\'s fitness level. Ensure all JSON is properly formatted.' 
+          },
           { role: 'user', content: prompt }
         ],
-        temperature: 0.7,
+        temperature: 0.3,
+        max_tokens: 4000,
       }),
     });
 
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('OpenAI API error:', response.status, errorText);
+      throw new Error(`OpenAI API error: ${response.status}`);
+    }
+
     const data = await response.json();
-    const generatedProgram = JSON.parse(data.choices[0].message.content);
+    console.log('OpenAI exercise response received');
+
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      throw new Error('Invalid response from OpenAI API');
+    }
+
+    let generatedProgram;
+    try {
+      const content = data.choices[0].message.content;
+      // Clean the response to ensure it's valid JSON
+      const cleanedContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      generatedProgram = JSON.parse(cleanedContent);
+      console.log('Exercise program parsed successfully');
+    } catch (parseError) {
+      console.error('Failed to parse OpenAI response:', parseError);
+      console.error('Raw content:', data.choices[0].message.content);
+      throw new Error('Failed to parse AI response. Please try again.');
+    }
+
+    // Validate the generated program structure
+    if (!generatedProgram.weeks || !Array.isArray(generatedProgram.weeks)) {
+      throw new Error('Invalid exercise program structure received from AI');
+    }
 
     return new Response(JSON.stringify({ generatedProgram }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
     console.error('Error generating exercise program:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ 
+      error: error.message || 'Failed to generate exercise program',
+      details: error.toString()
+    }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

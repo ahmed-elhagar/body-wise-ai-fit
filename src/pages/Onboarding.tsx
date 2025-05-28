@@ -34,7 +34,7 @@ const Onboarding = () => {
     if (step < totalSteps) {
       setStep(step + 1);
     } else {
-      // Save user data to Supabase
+      // Save user data to Supabase and trigger AI generation
       try {
         const profileData = {
           first_name: formData.first_name,
@@ -51,19 +51,20 @@ const Onboarding = () => {
           allergies: formData.allergies,
           preferred_foods: formData.preferred_foods,
           dietary_restrictions: formData.dietary_restrictions,
-          onboarding_completed: true // Mark onboarding as completed
+          onboarding_completed: true, // Mark onboarding as completed
+          ai_generations_remaining: 5 // Set initial AI generation credits
         };
 
-        console.log("Onboarding - Saving complete profile data:", profileData);
+        console.log("Onboarding - Saving complete profile data and preparing AI generation:", profileData);
         
         await updateProfile(profileData);
         
-        toast.success('Profile completed successfully! Redirecting to dashboard...');
+        toast.success('🎉 Profile completed! Redirecting to dashboard where your AI content will be generated...');
         
-        // Small delay to ensure the profile update is processed
+        // Navigate to dashboard where initial AI generation will trigger
         setTimeout(() => {
           navigate('/dashboard', { replace: true });
-        }, 1000);
+        }, 1500);
 
       } catch (error) {
         console.error('Onboarding - Error updating profile:', error);
