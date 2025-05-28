@@ -58,8 +58,9 @@ const Onboarding = () => {
         
         await updateProfile(profileData);
         
-        // Wait for the profile to be updated before navigating
-        toast.success('Profile completed successfully!');
+        toast.success('Profile completed successfully! Generating your personalized content...');
+        
+        // Navigate to dashboard where initial AI generation will be triggered
         navigate('/dashboard');
 
       } catch (error) {

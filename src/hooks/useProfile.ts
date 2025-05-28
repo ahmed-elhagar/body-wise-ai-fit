@@ -35,6 +35,13 @@ export const useProfile = () => {
       }
       
       console.log('Profile fetch result:', data);
+      
+      // Ensure we're only getting data for the current user
+      if (data && data.id !== user.id) {
+        console.error('Profile data mismatch - received data for different user');
+        return null;
+      }
+      
       return data;
     },
     enabled: !!user?.id,

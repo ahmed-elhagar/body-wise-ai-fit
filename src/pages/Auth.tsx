@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
@@ -19,14 +20,28 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   
   const { signIn, signUp, user } = useAuth();
+  const { profile } = useProfile();
   const navigate = useNavigate();
 
-  // Redirect if already logged in
+  // Redirect logic for authenticated users
   useEffect(() => {
-    if (user) {
-      navigate('/dashboard');
+    if (user && profile !== undefined) {
+      console.log('Auth - User authenticated, checking profile:', {
+        userId: user.id,
+        hasProfile: !!profile,
+        onboardingCompleted: profile?.onboarding_completed
+      });
+      
+      // If no profile or onboarding not completed, redirect to onboarding
+      if (!profile || !profile.onboarding_completed) {
+        console.log('Auth - Redirecting to onboarding');
+        navigate('/onboarding');
+      } else {
+        console.log('Auth - Redirecting to dashboard');
+        navigate('/dashboard');
+      }
     }
-  }, [user, navigate]);
+  }, [user, profile, navigate]);
 
   const validateForm = () => {
     if (!email || !password) {
@@ -54,8 +69,8 @@ const Auth = () => {
     setLoading(true);
     try {
       await signIn(email, password);
-      toast.success('Sign in successful!');
-      navigate('/dashboard');
+      console.log('Sign in successful');
+      // Navigation will be handled by useEffect
     } catch (error: any) {
       console.error('Sign in error:', error);
       toast.error(error.message || 'Failed to sign in');
@@ -74,11 +89,9 @@ const Auth = () => {
         first_name: firstName, 
         last_name: lastName 
       });
-      toast.success('Account created! You will be redirected to complete your profile.');
-      // Short delay before navigating to onboarding
-      setTimeout(() => {
-        navigate('/onboarding');
-      }, 1500);
+      console.log('Sign up successful, will redirect to onboarding');
+      toast.success('Account created! Please complete your profile.');
+      // Navigation will be handled by useEffect after user state updates
     } catch (error: any) {
       console.error('Sign up error:', error);
       toast.error(error.message || 'Failed to sign up');
@@ -89,7 +102,14 @@ const Auth = () => {
 
   // If already logged in, don't render the form
   if (user) {
-    return null; // The useEffect will handle the redirect
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-fitness-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Redirecting...</p>
+        </div>
+      </div>
+    );
   }
 
   return (

@@ -26,11 +26,13 @@ export default function ProtectedRoute({
       profileLoading,
       isAdmin,
       profile: !!profile,
-      requireProfile
+      requireProfile,
+      userId: user?.id
     });
     
     if (profile) {
       console.log('Profile details:', { 
+        userId: profile.id,
         hasFirstName: !!profile.first_name,
         hasLastName: !!profile.last_name,
         onboardingCompleted: profile.onboarding_completed
@@ -83,8 +85,12 @@ export default function ProtectedRoute({
     }
     
     // Profile exists but missing essential data or onboarding not completed
-    if (!profile.first_name || !profile.last_name || profile.onboarding_completed !== true) {
-      console.log('ProtectedRoute - Profile incomplete, redirecting to onboarding');
+    if (!profile.first_name || !profile.last_name || !profile.onboarding_completed) {
+      console.log('ProtectedRoute - Profile incomplete, redirecting to onboarding', {
+        hasFirstName: !!profile.first_name,
+        hasLastName: !!profile.last_name,
+        onboardingCompleted: profile.onboarding_completed
+      });
       return <Navigate to="/onboarding" replace />;
     }
   }

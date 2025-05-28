@@ -53,9 +53,13 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
   const { data: currentWeekPlan, isLoading } = useQuery({
     queryKey: ['weekly-meal-plan', user?.id, weekOffset],
     queryFn: async () => {
-      if (!user?.id) return null;
+      if (!user?.id) {
+        console.log('No user ID for meal plan fetch');
+        return null;
+      }
       
       const weekStartDate = getWeekStartDate(weekOffset);
+      console.log('Fetching meal plan for user:', user.id, 'week:', weekStartDate);
       
       const { data: weeklyPlan, error: weeklyError } = await supabase
         .from('weekly_meal_plans')
@@ -70,6 +74,16 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
       }
 
       if (!weeklyPlan) {
+        console.log('No meal plan found for user:', user.id, 'week:', weekStartDate);
+        return null;
+      }
+
+      // Double check user isolation
+      if (weeklyPlan.user_id !== user.id) {
+        console.error('Meal plan user mismatch:', {
+          planUserId: weeklyPlan.user_id,
+          currentUserId: user.id
+        });
         return null;
       }
 
@@ -100,12 +114,19 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
             : []
       })) as DailyMeal[];
 
+      console.log('Meal plan loaded successfully:', {
+        userId: user.id,
+        planId: weeklyPlan.id,
+        mealsCount: processedMeals.length
+      });
+
       return {
         weeklyPlan: weeklyPlan as WeeklyMealPlan,
         dailyMeals: processedMeals
       };
     },
     enabled: !!user?.id,
+    staleTime: 1000 * 60 * 10, // 10 minutes
   });
 
   return {

@@ -1,6 +1,7 @@
 
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { useInitialAIGeneration } from "@/hooks/useInitialAIGeneration";
 import Navigation from "@/components/Navigation";
 import DashboardStats from "@/components/DashboardStats";
 import QuickActions from "@/components/QuickActions";
@@ -13,6 +14,9 @@ const Dashboard = () => {
   const { user, signOut } = useAuth();
   const { profile, isLoading } = useProfile();
   const navigate = useNavigate();
+  
+  // Automatically generate initial content for new users
+  useInitialAIGeneration();
 
   const handleSignOut = async () => {
     await signOut();
@@ -43,6 +47,9 @@ const Dashboard = () => {
             </h1>
             <p className="text-gray-600">
               Here's your fitness journey overview for today.
+            </p>
+            <p className="text-sm text-gray-500 mt-1">
+              User ID: {user?.id} | AI Generations Remaining: {profile?.ai_generations_remaining || 0}
             </p>
           </div>
           <Button
