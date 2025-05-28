@@ -1,10 +1,10 @@
-
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { useSessionManager } from '@/hooks/useSessionManager';
 
 // Pages
 import Index from "./pages/Index";
@@ -30,6 +30,9 @@ const queryClient = new QueryClient({
 });
 
 function App() {
+  // Initialize session manager
+  useSessionManager();
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>

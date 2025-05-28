@@ -22,6 +22,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
+  // Force clear all cached data
+  const clearAllData = () => {
+    console.log('useAuth - Clearing all cached data');
+    
+    // Clear React Query cache
+    if (window.queryClient) {
+      window.queryClient.clear();
+    }
+    
+    // Clear localStorage and sessionStorage
+    const keysToKeep = ['theme'];
+    const localStorageKeys = Object.keys(localStorage);
+    localStorageKeys.forEach(key => {
+      if (!keysToKeep.includes(key)) {
+        localStorage.removeItem(key);
+      }
+    });
+    
+    const sessionStorageKeys = Object.keys(sessionStorage);
+    sessionStorageKeys.forEach(key => {
+      if (!keysToKeep.includes(key)) {
+        sessionStorage.removeItem(key);
+      }
+    });
+  };
+
   const checkAdminStatus = async (userId: string) => {
     try {
       console.log('useAuth - Checking admin status for user:', userId);
@@ -47,8 +73,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const validateSession = async (currentSession: Session | null) => {
+    if (!currentSession) return false;
+    
+    try {
+      // Verify session is still valid by making a simple authenticated request
+      const { error } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', currentSession.user.id)
+        .maybeSingle();
+      
+      if (error) {
+        console.log('useAuth - Session validation failed:', error);
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('useAuth - Session validation error:', error);
+      return false;
+    }
+  };
+
   useEffect(() => {
     console.log('useAuth - Setting up auth state listener');
+    
+    // Clear all data on app start
+    clearAllData();
     
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -59,12 +111,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           userId: session?.user?.id 
         });
         
-        setSession(session);
-        setUser(session?.user ?? null);
+        if (event === 'SIGNED_OUT' || !session) {
+          console.log('useAuth - User signed out, clearing all data');
+          setSession(null);
+          setUser(null);
+          setIsAdmin(false);
+          clearAllData();
+          setLoading(false);
+          return;
+        }
         
-        // Check admin status after setting user, not in the callback
+        // Validate session before accepting it
+        const isValid = await validateSession(session);
+        if (!isValid) {
+          console.log('useAuth - Invalid session detected, forcing logout');
+          await supabase.auth.signOut();
+          clearAllData();
+          setLoading(false);
+          return;
+        }
+        
+        console.log('useAuth - Setting valid session for user:', session.user.id);
+        setSession(session);
+        setUser(session.user);
+        
+        // Check admin status after setting user
         if (session?.user) {
-          // Use setTimeout to avoid blocking the auth state change
           setTimeout(() => {
             checkAdminStatus(session.user.id);
           }, 0);
@@ -76,21 +148,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     );
 
-    // Get initial session
+    // Get initial session and validate it
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      console.log('useAuth - Initial session:', { 
+      console.log('useAuth - Initial session check:', { 
         userEmail: session?.user?.email,
         userId: session?.user?.id 
       });
-      setSession(session);
-      setUser(session?.user ?? null);
       
-      // Check admin status on initial load
-      if (session?.user) {
-        setTimeout(() => {
-          checkAdminStatus(session.user.id);
-        }, 0);
+      if (session) {
+        const isValid = await validateSession(session);
+        if (!isValid) {
+          console.log('useAuth - Initial session invalid, signing out');
+          await supabase.auth.signOut();
+          clearAllData();
+          setLoading(false);
+          return;
+        }
+        
+        setSession(session);
+        setUser(session.user);
+        
+        if (session.user) {
+          setTimeout(() => {
+            checkAdminStatus(session.user.id);
+          }, 0);
+        }
       }
+      
       setLoading(false);
     });
 
@@ -102,6 +186,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     console.log('useAuth - Attempting sign in for:', email);
+    
+    // Clear any existing data before signing in
+    clearAllData();
+    
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -119,6 +207,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signUp = async (email: string, password: string, userData?: any) => {
     console.log('useAuth - Attempting sign up for:', email);
+    
+    // Clear any existing data before signing up
+    clearAllData();
+    
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -140,10 +232,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signOut = async () => {
     console.log('useAuth - Attempting sign out for user:', user?.email);
     
-    // Clear all state immediately to prevent data leakage
+    // Clear state immediately to prevent data leakage
     setUser(null);
     setSession(null);
     setIsAdmin(false);
+    clearAllData();
     
     const { error } = await supabase.auth.signOut();
     if (error) {

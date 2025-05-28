@@ -9,6 +9,36 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      active_sessions: {
+        Row: {
+          created_at: string
+          id: string
+          ip_address: string | null
+          last_activity: string
+          session_id: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          last_activity?: string
+          session_id: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          last_activity?: string
+          session_id?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       ai_generation_logs: {
         Row: {
           created_at: string | null
@@ -401,6 +431,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_old_sessions: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       create_admin_user: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -409,12 +443,20 @@ export type Database = {
         Args: { user_id: string }
         Returns: boolean
       }
+      force_logout_all_users: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _user_id: string
           _role: Database["public"]["Enums"]["app_role"]
         }
         Returns: boolean
+      }
+      invalidate_all_user_sessions: {
+        Args: { target_user_id: string }
+        Returns: undefined
       }
       reset_ai_generations: {
         Args: { target_user_id: string; new_count?: number }

@@ -58,6 +58,13 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
         return null;
       }
       
+      // Verify session is valid
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session || session.user.id !== user.id) {
+        console.error('useDynamicMealPlan - Session mismatch or expired');
+        throw new Error('Authentication required');
+      }
+      
       const weekStartDate = getWeekStartDate(weekOffset);
       console.log('useDynamicMealPlan - Fetching meal plan for user:', user.id, 'Email:', user.email, 'week:', weekStartDate);
       
@@ -78,16 +85,17 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
         return null;
       }
 
-      // Critical: Double check user isolation
+      // CRITICAL: Double check user isolation
       if (weeklyPlan.user_id !== user.id) {
         console.error('CRITICAL: Meal plan user mismatch!', {
           planUserId: weeklyPlan.user_id,
           currentUserId: user.id,
           currentUserEmail: user.email
         });
-        return null;
+        throw new Error('Data integrity violation - meal plan user mismatch');
       }
 
+      // Fetch meals with additional user verification
       const { data: dailyMeals, error: mealsError } = await supabase
         .from('daily_meals')
         .select('*')
@@ -98,6 +106,15 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
       if (mealsError) {
         console.error('useDynamicMealPlan - Error fetching daily meals:', mealsError);
         return null;
+      }
+
+      // Verify all meals belong to the current user's plan
+      if (dailyMeals && dailyMeals.length > 0) {
+        const invalidMeal = dailyMeals.find(meal => meal.weekly_plan_id !== weeklyPlan.id);
+        if (invalidMeal) {
+          console.error('CRITICAL: Invalid meal found in results!', invalidMeal);
+          throw new Error('Data integrity violation - invalid meal data');
+        }
       }
 
       // Parse ingredients if they're stored as JSON strings
@@ -128,7 +145,15 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
       };
     },
     enabled: !!user?.id,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 2, // Reduce to 2 minutes
+    retry: (failureCount, error: any) => {
+      // Don't retry authentication or data integrity errors
+      if (error?.message?.includes('Authentication required') || 
+          error?.message?.includes('Data integrity violation')) {
+        return false;
+      }
+      return failureCount < 1;
+    },
   });
 
   return {

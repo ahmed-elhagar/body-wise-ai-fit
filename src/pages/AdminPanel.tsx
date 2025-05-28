@@ -8,13 +8,15 @@ import { Badge } from "@/components/ui/badge";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Users, TrendingUp, Activity, Crown } from "lucide-react";
+import { Loader2, Users, TrendingUp, Activity, Crown, LogOut, Shield } from "lucide-react";
 import Navigation from "@/components/Navigation";
+import { useSessionManager } from "@/hooks/useSessionManager";
 
 const AdminPanel = () => {
   const [selectedUserId, setSelectedUserId] = useState("");
   const [newGenerationLimit, setNewGenerationLimit] = useState("");
   const queryClient = useQueryClient();
+  const { forceLogoutAllUsers } = useSessionManager();
 
   // Fetch all users with their profiles
   const { data: users, isLoading: usersLoading } = useQuery({
@@ -39,6 +41,20 @@ const AdminPanel = () => {
         .select('*')
         .order('created_at', { ascending: false })
         .limit(50);
+
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Fetch active sessions
+  const { data: activeSessions, isLoading: sessionsLoading } = useQuery({
+    queryKey: ['admin-sessions'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('active_sessions')
+        .select('*')
+        .order('last_activity', { ascending: false });
 
       if (error) throw error;
       return data || [];
@@ -70,7 +86,15 @@ const AdminPanel = () => {
     },
   });
 
-  if (usersLoading || logsLoading) {
+  // Force logout all users
+  const forceLogoutMutation = useMutation({
+    mutationFn: forceLogoutAllUsers,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-sessions'] });
+    },
+  });
+
+  if (usersLoading || logsLoading || sessionsLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
         <Navigation />
@@ -86,19 +110,37 @@ const AdminPanel = () => {
   const totalUsers = users?.length || 0;
   const totalGenerations = logs?.length || 0;
   const activeUsers = users?.filter(user => user.ai_generations_remaining > 0).length || 0;
+  const totalActiveSessions = activeSessions?.length || 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       <Navigation />
       <div className="md:ml-64 p-8">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-center mb-8">
-            <Crown className="w-8 h-8 text-yellow-500 mr-3" />
-            <h1 className="text-3xl font-bold text-gray-800">Admin Panel</h1>
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center">
+              <Crown className="w-8 h-8 text-yellow-500 mr-3" />
+              <h1 className="text-3xl font-bold text-gray-800">Admin Panel</h1>
+            </div>
+            
+            {/* Force Logout All Users Button */}
+            <Button
+              onClick={() => forceLogoutMutation.mutate()}
+              disabled={forceLogoutMutation.isPending}
+              variant="destructive"
+              className="flex items-center space-x-2"
+            >
+              {forceLogoutMutation.isPending ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <LogOut className="w-4 h-4" />
+              )}
+              <span>Force Logout All Users</span>
+            </Button>
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
               <div className="flex items-center">
                 <Users className="w-8 h-8 text-blue-500 mr-3" />
@@ -121,7 +163,17 @@ const AdminPanel = () => {
 
             <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
               <div className="flex items-center">
-                <TrendingUp className="w-8 h-8 text-purple-500 mr-3" />
+                <Shield className="w-8 h-8 text-purple-500 mr-3" />
+                <div>
+                  <p className="text-sm text-gray-600">Active Sessions</p>
+                  <p className="text-2xl font-bold text-gray-800">{totalActiveSessions}</p>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+              <div className="flex items-center">
+                <TrendingUp className="w-8 h-8 text-orange-500 mr-3" />
                 <div>
                   <p className="text-sm text-gray-600">Total AI Generations</p>
                   <p className="text-2xl font-bold text-gray-800">{totalGenerations}</p>
@@ -172,6 +224,33 @@ const AdminPanel = () => {
                   Update Limit
                 </Button>
               </div>
+            </div>
+          </Card>
+
+          {/* Active Sessions Table */}
+          <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg mb-8">
+            <h2 className="text-xl font-semibold mb-4">Active Sessions</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-2">User ID</th>
+                    <th className="text-left py-2">Session ID</th>
+                    <th className="text-left py-2">Last Activity</th>
+                    <th className="text-left py-2">User Agent</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {activeSessions?.map((session) => (
+                    <tr key={session.id} className="border-b">
+                      <td className="py-2 font-mono text-xs">{session.user_id.slice(0, 8)}...</td>
+                      <td className="py-2 font-mono text-xs">{session.session_id.slice(0, 8)}...</td>
+                      <td className="py-2">{new Date(session.last_activity).toLocaleString()}</td>
+                      <td className="py-2 max-w-xs truncate">{session.user_agent || 'Unknown'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </Card>
 
