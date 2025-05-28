@@ -32,15 +32,17 @@ const FoodDatabaseSearch = ({ onAddFood }: FoodDatabaseSearchProps) => {
     queryFn: async () => {
       if (!searchTerm || searchTerm.length < 2) return [];
       
+      // Use raw query since the table is not in the generated types yet
       const { data, error } = await supabase
-        .from('food_database')
-        .select('*')
-        .ilike('name', `%${searchTerm}%`)
-        .order('confidence_score', { ascending: false })
+        .rpc('search_food_database', { search_term: searchTerm })
         .limit(10);
 
-      if (error) throw error;
-      return data as FoodItem[];
+      if (error) {
+        console.log('Food search error:', error);
+        return [];
+      }
+      
+      return (data || []) as FoodItem[];
     },
     enabled: searchTerm.length >= 2,
   });
