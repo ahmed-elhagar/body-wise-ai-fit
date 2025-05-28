@@ -10,10 +10,12 @@ import DaySelector from "@/components/DaySelector";
 import EmptyMealPlan from "@/components/EmptyMealPlan";
 import MealPlanContent from "@/components/MealPlanContent";
 import { useMealPlanLogic } from "@/hooks/useMealPlanLogic";
+import { useInitialAIGeneration } from "@/hooks/useInitialAIGeneration";
 import { formatDate, getCurrentDayOfWeek, transformDailyMealsToMeals } from "@/utils/mealPlanUtils";
 import { toast } from "sonner";
 
 const MealPlan = () => {
+  const { isGeneratingContent } = useInitialAIGeneration();
   const {
     showAIDialog,
     selectedMeal,
@@ -69,12 +71,15 @@ const MealPlan = () => {
   const totalCalories = todaysMeals.reduce((sum, meal) => sum + meal.calories, 0);
   const totalProtein = todaysMeals.reduce((sum, meal) => sum + meal.protein, 0);
 
-  if (isLoading) {
+  // Show loading screen if data is being loaded or initial content is being generated
+  if (isLoading || isGeneratingContent) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
         <div className="text-center">
           <div className="w-12 h-12 animate-spin border-4 border-fitness-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading meal plan...</p>
+          <p className="text-gray-600">
+            {isGeneratingContent ? "Generating your personalized meal plan..." : "Loading meal plan..."}
+          </p>
         </div>
       </div>
     );

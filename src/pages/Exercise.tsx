@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Play, Clock, Target, Youtube, Home, Dumbbell, Sparkles } from "lucide-react";
 import { useExercisePrograms } from "@/hooks/useExercisePrograms";
 import { useAIExercise } from "@/hooks/useAIExercise";
+import { useInitialAIGeneration } from "@/hooks/useInitialAIGeneration";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -14,6 +15,7 @@ const Exercise = () => {
   const navigate = useNavigate();
   const { programs } = useExercisePrograms();
   const { generateExerciseProgram, isGenerating } = useAIExercise();
+  const { isGeneratingContent } = useInitialAIGeneration();
   const [showAIDialog, setShowAIDialog] = useState(false);
 
   const handleGenerateProgram = () => {
@@ -27,6 +29,18 @@ const Exercise = () => {
     generateExerciseProgram(preferences);
     toast.success("Generating your personalized exercise program...");
   };
+
+  // Show loading screen if data is being loaded or initial content is being generated
+  if (isGeneratingContent) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+        <div className="text-center">
+          <div className="w-12 h-12 animate-spin border-4 border-fitness-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-gray-600">Generating your personalized exercise program...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Mock data for demonstration - replace with real data from programs
   const todaysWorkout = {

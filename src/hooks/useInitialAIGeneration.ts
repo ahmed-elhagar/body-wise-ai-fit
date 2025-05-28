@@ -1,20 +1,24 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useAuth } from './useAuth';
 import { useProfile } from './useProfile';
 import { useAIMealPlan } from './useAIMealPlan';
+import { useAIExercise } from './useAIExercise';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
 export const useInitialAIGeneration = () => {
   const { user } = useAuth();
   const { profile } = useProfile();
-  const { generateMealPlan } = useAIMealPlan();
+  const { generateMealPlan, isGenerating: isMealPlanGenerating } = useAIMealPlan();
+  const { generateExerciseProgram, isGenerating: isExerciseGenerating } = useAIExercise();
   const [hasTriggeredGeneration, setHasTriggeredGeneration] = useState(false);
+  const [isGeneratingContent, setIsGeneratingContent] = useState(false);
+  const generationAttempted = useRef(false);
 
   useEffect(() => {
     const triggerInitialGeneration = async () => {
-      if (!user?.id || !profile || hasTriggeredGeneration) return;
+      if (!user?.id || !profile || generationAttempted.current) return;
       
       // Only trigger if onboarding is completed and we have essential profile data
       if (!profile.onboarding_completed || !profile.first_name || !profile.last_name) {
@@ -22,43 +26,70 @@ export const useInitialAIGeneration = () => {
       }
 
       console.log('Checking if initial AI generation needed for user:', user.id);
+      generationAttempted.current = true;
 
       try {
-        // Check if user already has meal plans
-        const { data: existingMealPlans } = await supabase
-          .from('weekly_meal_plans')
-          .select('id')
-          .eq('user_id', user.id)
-          .limit(1);
+        // Check if user already has any content
+        const [mealPlansResult, exerciseProgramsResult] = await Promise.all([
+          supabase
+            .from('weekly_meal_plans')
+            .select('id')
+            .eq('user_id', user.id)
+            .limit(1),
+          supabase
+            .from('weekly_exercise_programs')
+            .select('id')
+            .eq('user_id', user.id)
+            .limit(1)
+        ]);
 
-        // Check if user already has exercise programs
-        const { data: existingExercisePrograms } = await supabase
-          .from('weekly_exercise_programs')
-          .select('id')
-          .eq('user_id', user.id)
-          .limit(1);
+        const hasMealPlans = mealPlansResult.data && mealPlansResult.data.length > 0;
+        const hasExercisePrograms = exerciseProgramsResult.data && exerciseProgramsResult.data.length > 0;
 
-        // If user has no meal plans, generate initial ones
-        if (!existingMealPlans || existingMealPlans.length === 0) {
-          console.log('Generating initial meal plan for new user');
+        // If user has no content, generate both meal plan and exercise program
+        if (!hasMealPlans || !hasExercisePrograms) {
+          console.log('Generating initial content for new user');
           setHasTriggeredGeneration(true);
+          setIsGeneratingContent(true);
           
-          const defaultPreferences = {
+          const defaultMealPreferences = {
             duration: "1",
             cuisine: profile.nationality || "",
             maxPrepTime: "30",
             mealTypes: "5"
           };
 
-          toast.success('Welcome! Generating your personalized meal plan...');
-          generateMealPlan(defaultPreferences);
-        }
+          const defaultExercisePreferences = {
+            duration: "4",
+            equipment: "Basic home equipment",
+            workoutDays: "3-4 days per week",
+            difficulty: "beginner"
+          };
 
-        // TODO: Add exercise program generation when implemented
-        // Similar logic for exercise programs
+          toast.success('Welcome! Generating your personalized content...');
+
+          // Generate both in parallel
+          const promises = [];
+          
+          if (!hasMealPlans) {
+            promises.push(generateMealPlan(defaultMealPreferences));
+          }
+          
+          if (!hasExercisePrograms) {
+            promises.push(generateExerciseProgram(defaultExercisePreferences));
+          }
+
+          // Wait for both to complete
+          await Promise.all(promises);
+          
+          setIsGeneratingContent(false);
+          toast.success('Your personalized content is ready!');
+        }
         
       } catch (error) {
-        console.error('Error checking for initial generation:', error);
+        console.error('Error during initial generation:', error);
+        setIsGeneratingContent(false);
+        generationAttempted.current = false; // Allow retry
       }
     };
 
@@ -66,7 +97,10 @@ export const useInitialAIGeneration = () => {
     const timeoutId = setTimeout(triggerInitialGeneration, 1000);
     
     return () => clearTimeout(timeoutId);
-  }, [user?.id, profile, generateMealPlan, hasTriggeredGeneration]);
+  }, [user?.id, profile, generateMealPlan, generateExerciseProgram]);
 
-  return { hasTriggeredGeneration };
+  return { 
+    hasTriggeredGeneration, 
+    isGeneratingContent: isGeneratingContent || isMealPlanGenerating || isExerciseGenerating 
+  };
 };
