@@ -1,3 +1,4 @@
+
 import MealRecipeDialog from "@/components/MealRecipeDialog";
 import ShoppingListDialog from "@/components/ShoppingListDialog";
 import MealExchangeDialog from "@/components/MealExchangeDialog";
@@ -8,14 +9,19 @@ import WeeklyNavigation from "@/components/WeeklyNavigation";
 import DaySelector from "@/components/DaySelector";
 import EmptyMealPlan from "@/components/EmptyMealPlan";
 import MealPlanContent from "@/components/MealPlanContent";
+import WeeklyMealPlanView from "@/components/WeeklyMealPlanView";
 import Navigation from "@/components/Navigation";
 import { useMealPlanLogic } from "@/hooks/useMealPlanLogic";
 import { useInitialAIGeneration } from "@/hooks/useInitialAIGeneration";
 import { formatDate, getCurrentDayOfWeek, transformDailyMealsToMeals } from "@/utils/mealPlanUtils";
 import { toast } from "sonner";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Calendar, Grid } from "lucide-react";
 
 const MealPlan = () => {
   const { isGeneratingContent, hasExistingContent } = useInitialAIGeneration();
+  const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
   const {
     showAIDialog,
     selectedMeal,
@@ -72,6 +78,17 @@ const MealPlan = () => {
   const totalCalories = todaysMeals.reduce((sum, meal) => sum + meal.calories, 0);
   const totalProtein = todaysMeals.reduce((sum, meal) => sum + meal.protein, 0);
 
+  const handleWeeklyMealExchange = (meal: any, dayNumber: number, mealIndex: number) => {
+    // Convert to the format expected by the existing exchange handler
+    const mealId = currentWeekPlan?.dailyMeals?.find(m => 
+      m.day_number === dayNumber && 
+      m.name === meal.name
+    )?.id;
+    
+    setSelectedMeal({ current: meal, index: mealIndex, mealId });
+    setShowExchangeDialog(true);
+  };
+
   // Show loading screen only if data is being loaded AND we're not sure about existing content
   if (isLoading && hasExistingContent === null) {
     return (
@@ -121,26 +138,65 @@ const MealPlan = () => {
             weekStartDate={currentWeekStart}
           />
 
-          <DaySelector
-            selectedDayNumber={selectedDayNumber}
-            onDaySelect={setSelectedDayNumber}
-          />
+          {/* View Mode Toggle */}
+          {currentWeekPlan && (
+            <div className="mb-6 flex justify-center">
+              <div className="bg-white/80 backdrop-blur-sm rounded-lg p-1 shadow-lg">
+                <Button
+                  variant={viewMode === 'daily' ? 'default' : 'ghost'}
+                  className={`${viewMode === 'daily' ? 'bg-fitness-gradient text-white' : ''}`}
+                  onClick={() => setViewMode('daily')}
+                >
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Daily View
+                </Button>
+                <Button
+                  variant={viewMode === 'weekly' ? 'default' : 'ghost'}
+                  className={`${viewMode === 'weekly' ? 'bg-fitness-gradient text-white' : ''}`}
+                  onClick={() => setViewMode('weekly')}
+                >
+                  <Grid className="w-4 h-4 mr-2" />
+                  Weekly View
+                </Button>
+              </div>
+            </div>
+          )}
 
           {currentWeekPlan && todaysMeals.length > 0 ? (
-            <MealPlanContent
-              selectedDayNumber={selectedDayNumber}
-              todaysMeals={todaysMeals}
-              totalCalories={totalCalories}
-              totalProtein={totalProtein}
-              onShowShoppingList={handleShowShoppingList}
-              onShowRecipe={handleShowRecipe}
-              onExchangeMeal={handleExchangeMeal}
-            />
+            <>
+              {viewMode === 'daily' && (
+                <>
+                  <DaySelector
+                    selectedDayNumber={selectedDayNumber}
+                    onDaySelect={setSelectedDayNumber}
+                  />
+                  <MealPlanContent
+                    selectedDayNumber={selectedDayNumber}
+                    todaysMeals={todaysMeals}
+                    totalCalories={totalCalories}
+                    totalProtein={totalProtein}
+                    onShowShoppingList={handleShowShoppingList}
+                    onShowRecipe={handleShowRecipe}
+                    onExchangeMeal={handleExchangeMeal}
+                  />
+                </>
+              )}
+              
+              {viewMode === 'weekly' && (
+                <WeeklyMealPlanView
+                  weeklyPlan={currentWeekPlan}
+                  onShowRecipe={handleShowRecipe}
+                  onExchangeMeal={handleWeeklyMealExchange}
+                />
+              )}
+            </>
           ) : (
             <EmptyMealPlan onShowAIDialog={() => setShowAIDialog(true)} />
           )}
 
-          <WeeklyOverview weeklyData={weeklyOverview} />
+          {viewMode === 'daily' && (
+            <WeeklyOverview weeklyData={weeklyOverview} />
+          )}
         </div>
 
         <AIGenerationDialog
