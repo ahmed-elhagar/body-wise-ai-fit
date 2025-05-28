@@ -2,14 +2,13 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
-import { Plus, Loader2 } from "lucide-react";
+import { Sparkles, Loader2, Plus, Utensils } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface AddSnackDialogProps {
   isOpen: boolean;
@@ -17,193 +16,155 @@ interface AddSnackDialogProps {
   selectedDay: number;
   weeklyPlanId: string | null;
   onSnackAdded: () => void;
+  currentDayCalories: number;
+  targetDayCalories: number;
 }
 
-const AddSnackDialog = ({ isOpen, onClose, selectedDay, weeklyPlanId, onSnackAdded }: AddSnackDialogProps) => {
+const AddSnackDialog = ({ 
+  isOpen, 
+  onClose, 
+  selectedDay, 
+  weeklyPlanId, 
+  onSnackAdded,
+  currentDayCalories,
+  targetDayCalories
+}: AddSnackDialogProps) => {
   const { user } = useAuth();
-  const [isAdding, setIsAdding] = useState(false);
-  const [snackData, setSnackData] = useState({
-    name: '',
-    calories: '',
-    protein: '',
-    carbs: '',
-    fat: '',
-    ingredients: '',
-    instructions: ''
-  });
+  const { profile } = useProfile();
+  const { t, isRTL } = useLanguage();
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedSnack, setGeneratedSnack] = useState<any>(null);
 
-  const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  const dayNames = isRTL ? [
+    t('day.monday'), t('day.tuesday'), t('day.wednesday'), 
+    t('day.thursday'), t('day.friday'), t('day.saturday'), t('day.sunday')
+  ] : [
+    t('day.monday'), t('day.tuesday'), t('day.wednesday'), 
+    t('day.thursday'), t('day.friday'), t('day.saturday'), t('day.sunday')
+  ];
 
-  const handleAddSnack = async () => {
-    if (!user || !weeklyPlanId || !snackData.name.trim()) {
-      toast.error('Please fill in the snack name');
+  const remainingCalories = Math.max(0, targetDayCalories - currentDayCalories);
+
+  const handleGenerateAISnack = async () => {
+    if (!user || !weeklyPlanId) {
+      toast.error(t('addSnack.error'));
       return;
     }
 
-    setIsAdding(true);
+    if (remainingCalories < 50) {
+      toast.error('Not enough calories remaining for a snack');
+      return;
+    }
+
+    setIsGenerating(true);
     
     try {
-      const ingredientsArray = snackData.ingredients.split(',').map(ing => ({
-        name: ing.trim(),
-        quantity: '1',
-        unit: 'serving'
-      }));
-
-      const instructionsArray = snackData.instructions.split(',').map(inst => inst.trim());
-
-      const { error } = await supabase
-        .from('daily_meals')
-        .insert({
-          weekly_plan_id: weeklyPlanId,
-          day_number: selectedDay,
-          meal_type: 'snack',
-          name: snackData.name,
-          calories: parseInt(snackData.calories) || 0,
-          protein: parseFloat(snackData.protein) || 0,
-          carbs: parseFloat(snackData.carbs) || 0,
-          fat: parseFloat(snackData.fat) || 0,
-          ingredients: ingredientsArray,
-          instructions: instructionsArray,
-          prep_time: 5,
-          cook_time: 0,
-          servings: 1
-        });
+      const { data, error } = await supabase.functions.invoke('generate-ai-snack', {
+        body: {
+          userProfile: profile,
+          dayNumber: selectedDay,
+          remainingCalories,
+          weeklyPlanId
+        }
+      });
 
       if (error) {
-        console.error('Error adding snack:', error);
-        toast.error('Failed to add snack');
+        console.error('Error generating AI snack:', error);
+        toast.error(t('addSnack.error'));
         return;
       }
 
-      toast.success('Snack added successfully!');
-      setSnackData({
-        name: '',
-        calories: '',
-        protein: '',
-        carbs: '',
-        fat: '',
-        ingredients: '',
-        instructions: ''
-      });
+      setGeneratedSnack(data.snack);
+      toast.success(t('addSnack.success'));
       onSnackAdded();
       onClose();
+      
     } catch (error) {
-      console.error('Error adding snack:', error);
-      toast.error('Failed to add snack');
+      console.error('Error generating AI snack:', error);
+      toast.error(t('addSnack.error'));
     } finally {
-      setIsAdding(false);
+      setIsGenerating(false);
     }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className={`max-w-lg mx-4 sm:mx-auto ${isRTL ? 'text-right' : 'text-left'}`}>
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Plus className="w-5 h-5 text-fitness-primary" />
-            Add Custom Snack to {dayNames[selectedDay - 1]}
+          <DialogTitle className={`flex items-center gap-2 text-lg sm:text-xl ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <Sparkles className="w-5 h-5 text-fitness-primary" />
+            {t('addSnack.title')} - {dayNames[selectedDay - 1]}
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="snack-name">Snack Name</Label>
-            <Input
-              id="snack-name"
-              value={snackData.name}
-              onChange={(e) => setSnackData(prev => ({ ...prev, name: e.target.value }))}
-              placeholder="e.g., Greek Yogurt with Berries"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label htmlFor="calories">Calories</Label>
-              <Input
-                id="calories"
-                type="number"
-                value={snackData.calories}
-                onChange={(e) => setSnackData(prev => ({ ...prev, calories: e.target.value }))}
-                placeholder="150"
-              />
+        <div className="space-y-4 sm:space-y-6">
+          {/* Calories Information Card */}
+          <Card className="p-4 bg-gradient-to-r from-fitness-primary/10 to-pink-100">
+            <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                <Utensils className="w-6 h-6 text-fitness-primary" />
+                <div>
+                  <h3 className="font-semibold text-gray-800">
+                    {t('addSnack.caloriesRemaining')}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    {currentDayCalories} / {targetDayCalories} {t('mealPlan.calPerDay')}
+                  </p>
+                </div>
+              </div>
+              <div className="text-2xl font-bold text-fitness-primary">
+                {remainingCalories}
+              </div>
             </div>
-            <div>
-              <Label htmlFor="protein">Protein (g)</Label>
-              <Input
-                id="protein"
-                type="number"
-                value={snackData.protein}
-                onChange={(e) => setSnackData(prev => ({ ...prev, protein: e.target.value }))}
-                placeholder="10"
-              />
+          </Card>
+
+          {remainingCalories < 50 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-600 mb-4">
+                You've reached your calorie target for today!
+              </p>
+              <Button variant="outline" onClick={onClose} className="w-full sm:w-auto">
+                {t('addSnack.cancel')}
+              </Button>
             </div>
-          </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="text-center py-6">
+                <div className="w-16 h-16 bg-fitness-gradient rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Sparkles className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                  AI-Powered Snack Generation
+                </h3>
+                <p className="text-gray-600 text-sm px-4">
+                  Our AI will create a healthy snack that fits perfectly within your remaining {remainingCalories} calories for today.
+                </p>
+              </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label htmlFor="carbs">Carbs (g)</Label>
-              <Input
-                id="carbs"
-                type="number"
-                value={snackData.carbs}
-                onChange={(e) => setSnackData(prev => ({ ...prev, carbs: e.target.value }))}
-                placeholder="20"
-              />
+              <div className={`flex gap-3 pt-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                <Button variant="outline" onClick={onClose} className="flex-1">
+                  {t('addSnack.cancel')}
+                </Button>
+                <Button 
+                  onClick={handleGenerateAISnack} 
+                  disabled={isGenerating}
+                  className="flex-1 bg-fitness-gradient text-white"
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      {t('addSnack.generating')}
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      {t('addSnack.generateSnack')}
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
-            <div>
-              <Label htmlFor="fat">Fat (g)</Label>
-              <Input
-                id="fat"
-                type="number"
-                value={snackData.fat}
-                onChange={(e) => setSnackData(prev => ({ ...prev, fat: e.target.value }))}
-                placeholder="5"
-              />
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="ingredients">Ingredients (comma separated)</Label>
-            <Input
-              id="ingredients"
-              value={snackData.ingredients}
-              onChange={(e) => setSnackData(prev => ({ ...prev, ingredients: e.target.value }))}
-              placeholder="Greek yogurt, blueberries, honey"
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="instructions">Instructions (comma separated)</Label>
-            <Input
-              id="instructions"
-              value={snackData.instructions}
-              onChange={(e) => setSnackData(prev => ({ ...prev, instructions: e.target.value }))}
-              placeholder="Mix yogurt with berries, drizzle honey"
-            />
-          </div>
-
-          <div className="flex gap-3 pt-4">
-            <Button variant="outline" onClick={onClose} className="flex-1">
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleAddSnack} 
-              disabled={isAdding || !snackData.name.trim()}
-              className="flex-1 bg-fitness-gradient text-white"
-            >
-              {isAdding ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Adding...
-                </>
-              ) : (
-                <>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Snack
-                </>
-              )}
-            </Button>
-          </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

@@ -18,9 +18,11 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar, Grid, Plus } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const MealPlan = () => {
   const { isGeneratingContent, hasExistingContent } = useInitialAIGeneration();
+  const { t, isRTL } = useLanguage();
   const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
   const [showAddSnackDialog, setShowAddSnackDialog] = useState(false);
   const {
@@ -58,6 +60,18 @@ const MealPlan = () => {
 
   // Get meals for selected day
   const todaysMeals = transformDailyMealsToMeals(currentWeekPlan?.dailyMeals || [], selectedDayNumber);
+
+  // Calculate daily calories
+  const getDayCalories = (dayNumber: number): number => {
+    if (!currentWeekPlan?.dailyMeals) return 0;
+    return currentWeekPlan.dailyMeals
+      .filter(meal => meal.day_number === dayNumber)
+      .reduce((sum, meal) => sum + (meal.calories || 0), 0);
+  };
+
+  const currentDayCalories = getDayCalories(selectedDayNumber);
+  const targetDayCalories = currentWeekPlan?.weeklyPlan?.total_calories ? 
+    Math.round(currentWeekPlan.weeklyPlan.total_calories / 7) : 2000;
 
   // Calculate weekly overview from actual data
   const getDayCalories = (dayNumber: number): number => {
@@ -99,12 +113,12 @@ const MealPlan = () => {
   // Show loading screen only if data is being loaded AND we're not sure about existing content
   if (isLoading && hasExistingContent === null) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex">
+      <div className={`min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex ${isRTL ? 'rtl' : 'ltr'}`}>
         <Navigation />
-        <div className="flex-1 ml-0 md:ml-64 flex items-center justify-center">
+        <div className={`flex-1 ${isRTL ? 'mr-0 md:mr-64' : 'ml-0 md:ml-64'} flex items-center justify-center`}>
           <div className="text-center">
             <div className="w-12 h-12 animate-spin border-4 border-fitness-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading meal plan...</p>
+            <p className="text-gray-600">{t('mealPlan.loading')}</p>
           </div>
         </div>
       </div>
@@ -114,12 +128,12 @@ const MealPlan = () => {
   // Show generation screen only if actively generating
   if (isGeneratingContent && hasExistingContent === false) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex">
+      <div className={`min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex ${isRTL ? 'rtl' : 'ltr'}`}>
         <Navigation />
-        <div className="flex-1 ml-0 md:ml-64 flex items-center justify-center">
+        <div className={`flex-1 ${isRTL ? 'mr-0 md:mr-64' : 'ml-0 md:ml-64'} flex items-center justify-center`}>
           <div className="text-center">
             <div className="w-12 h-12 animate-spin border-4 border-fitness-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p className="text-gray-600">Generating your personalized meal plan...</p>
+            <p className="text-gray-600">{t('mealPlan.generating')}</p>
           </div>
         </div>
       </div>
@@ -132,10 +146,10 @@ const MealPlan = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex">
+    <div className={`min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex ${isRTL ? 'rtl' : 'ltr'}`}>
       <Navigation />
-      <div className="flex-1 ml-0 md:ml-64 transition-all duration-300">
-        <div className="container mx-auto px-4 py-8">
+      <div className={`flex-1 ${isRTL ? 'mr-0 md:mr-64' : 'ml-0 md:ml-64'} transition-all duration-300`}>
+        <div className="container mx-auto px-4 py-4 sm:py-8">
           <MealPlanHeader
             currentDate={formatDate(today)}
             currentDay={getCurrentDayOfWeek()}
@@ -155,31 +169,36 @@ const MealPlan = () => {
           {/* View Mode Toggle and Add Snack Button */}
           {currentWeekPlan && (
             <div className="mb-6 flex justify-center">
-              <div className="bg-white/80 backdrop-blur-sm rounded-lg p-1 shadow-lg flex items-center gap-2">
-                <Button
-                  variant={viewMode === 'daily' ? 'default' : 'ghost'}
-                  className={`${viewMode === 'daily' ? 'bg-fitness-gradient text-white' : ''}`}
-                  onClick={() => setViewMode('daily')}
-                >
-                  <Calendar className="w-4 h-4 mr-2" />
-                  Daily View
-                </Button>
-                <Button
-                  variant={viewMode === 'weekly' ? 'default' : 'ghost'}
-                  className={`${viewMode === 'weekly' ? 'bg-fitness-gradient text-white' : ''}`}
-                  onClick={() => setViewMode('weekly')}
-                >
-                  <Grid className="w-4 h-4 mr-2" />
-                  Weekly View
-                </Button>
+              <div className="bg-white/80 backdrop-blur-sm rounded-lg p-1 shadow-lg flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
+                <div className="flex w-full sm:w-auto">
+                  <Button
+                    variant={viewMode === 'daily' ? 'default' : 'ghost'}
+                    className={`flex-1 sm:flex-initial ${viewMode === 'daily' ? 'bg-fitness-gradient text-white' : ''}`}
+                    onClick={() => setViewMode('daily')}
+                    size="sm"
+                  >
+                    <Calendar className="w-4 h-4 mr-2" />
+                    {t('mealPlan.dailyView')}
+                  </Button>
+                  <Button
+                    variant={viewMode === 'weekly' ? 'default' : 'ghost'}
+                    className={`flex-1 sm:flex-initial ${viewMode === 'weekly' ? 'bg-fitness-gradient text-white' : ''}`}
+                    onClick={() => setViewMode('weekly')}
+                    size="sm"
+                  >
+                    <Grid className="w-4 h-4 mr-2" />
+                    {t('mealPlan.weeklyView')}
+                  </Button>
+                </div>
                 {viewMode === 'daily' && (
                   <Button
                     variant="outline"
-                    className="ml-2 border-fitness-primary text-fitness-primary hover:bg-fitness-primary hover:text-white"
+                    className="w-full sm:w-auto mt-2 sm:mt-0 sm:ml-2 border-fitness-primary text-fitness-primary hover:bg-fitness-primary hover:text-white"
                     onClick={() => setShowAddSnackDialog(true)}
+                    size="sm"
                   >
                     <Plus className="w-4 h-4 mr-2" />
-                    Add Snack
+                    {t('mealPlan.addSnack')}
                   </Button>
                 )}
               </div>
@@ -238,6 +257,8 @@ const MealPlan = () => {
           selectedDay={selectedDayNumber}
           weeklyPlanId={currentWeekPlan?.weeklyPlan?.id || null}
           onSnackAdded={handleSnackAdded}
+          currentDayCalories={currentDayCalories}
+          targetDayCalories={targetDayCalories}
         />
 
         <MealRecipeDialog
