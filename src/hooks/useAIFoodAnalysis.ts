@@ -4,15 +4,29 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
 
+const convertFileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      resolve(result);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
+
 export const useAIFoodAnalysis = () => {
   const { user } = useAuth();
 
-  const analyzeFood = useMutation({
-    mutationFn: async ({ imageBase64, imageUrl }: { imageBase64?: string; imageUrl?: string }) => {
+  const mutation = useMutation({
+    mutationFn: async (file: File) => {
       if (!user?.id) throw new Error('User not authenticated');
 
+      const imageBase64 = await convertFileToBase64(file);
+
       const { data, error } = await supabase.functions.invoke('analyze-food-image', {
-        body: { imageBase64, imageUrl }
+        body: { imageBase64 }
       });
 
       if (error) throw error;
@@ -24,7 +38,7 @@ export const useAIFoodAnalysis = () => {
           user_id: user.id,
           generation_type: 'food_analysis',
           status: 'completed',
-          prompt_data: { imageUrl, imageBase64: imageBase64 ? '[base64_data]' : null },
+          prompt_data: { imageBase64: '[base64_data]' },
           response_data: data.analysis
         });
 
@@ -40,7 +54,8 @@ export const useAIFoodAnalysis = () => {
   });
 
   return {
-    analyzeFood: analyzeFood.mutate,
-    isAnalyzing: analyzeFood.isPending,
+    analyzeFood: mutation.mutate,
+    isAnalyzing: mutation.isPending,
+    analysisResult: mutation.data,
   };
 };

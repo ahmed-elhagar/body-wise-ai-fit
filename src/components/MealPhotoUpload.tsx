@@ -107,38 +107,44 @@ const MealPhotoUpload = () => {
               <div className="text-center">
                 <p className="text-sm text-gray-600">Calories</p>
                 <Badge variant="outline" className="text-lg font-semibold">
-                  {analysisResult.calories}
+                  {analysisResult.totalNutrition?.calories || 0}
                 </Badge>
               </div>
               <div className="text-center">
                 <p className="text-sm text-gray-600">Protein</p>
                 <Badge variant="outline" className="text-lg font-semibold text-green-600">
-                  {analysisResult.protein}g
+                  {analysisResult.totalNutrition?.protein || 0}g
                 </Badge>
               </div>
               <div className="text-center">
                 <p className="text-sm text-gray-600">Carbs</p>
                 <Badge variant="outline" className="text-lg font-semibold text-blue-600">
-                  {analysisResult.carbs}g
+                  {analysisResult.totalNutrition?.carbs || 0}g
                 </Badge>
               </div>
               <div className="text-center">
                 <p className="text-sm text-gray-600">Fat</p>
                 <Badge variant="outline" className="text-lg font-semibold text-orange-600">
-                  {analysisResult.fat}g
+                  {analysisResult.totalNutrition?.fat || 0}g
                 </Badge>
               </div>
             </div>
-            {analysisResult.foods && (
+            {analysisResult.foodItems && analysisResult.foodItems.length > 0 && (
               <div>
                 <p className="text-sm font-medium text-gray-700 mb-2">Detected Foods:</p>
                 <div className="flex flex-wrap gap-2">
-                  {analysisResult.foods.map((food, index) => (
+                  {analysisResult.foodItems.map((food: any, index: number) => (
                     <Badge key={index} variant="secondary">
-                      {food}
+                      {food.name}
                     </Badge>
                   ))}
                 </div>
+              </div>
+            )}
+            {analysisResult.recommendations && (
+              <div className="mt-3 p-3 bg-blue-50 rounded border border-blue-200">
+                <p className="text-sm text-blue-800 font-medium">Recommendations:</p>
+                <p className="text-sm text-blue-700">{analysisResult.recommendations}</p>
               </div>
             )}
           </div>
