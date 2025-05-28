@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface LanguageContextType {
@@ -82,6 +81,9 @@ const translations = {
     'mealPlan.loading': 'Loading meal plan...',
     'mealPlan.generating': 'Generating your personalized meal plan...',
     'mealPlan.daysMeals': '\'s Meals',
+    'mealPlan.generateImage': "Generate Image",
+    'mealPlan.calToday': "cal today",
+    'mealPlan.proteinToday': "protein today",
     
     // Add Snack Dialog
     'addSnack.title': 'Add AI-Generated Snack',
@@ -210,6 +212,9 @@ const translations = {
     'mealPlan.loading': 'تحميل خطة الوجبات...',
     'mealPlan.generating': 'إنشاء خطة وجباتك المخصصة...',
     'mealPlan.daysMeals': 'وجبات ',
+    'mealPlan.generateImage': "إنشاء صورة",
+    'mealPlan.calToday': "سعرة اليوم",
+    'mealPlan.proteinToday': "بروتين اليوم",
     
     // Add Snack Dialog
     'addSnack.title': 'إضافة وجبة خفيفة بالذكاء الاصطناعي',
