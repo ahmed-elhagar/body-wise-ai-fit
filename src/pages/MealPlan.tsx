@@ -90,6 +90,11 @@ const MealPlan = () => {
     setShowExchangeDialog(true);
   };
 
+  // Get diet type and weekly calories from the weekly plan
+  const dietType = currentWeekPlan?.weeklyPlan?.generation_prompt?.dietType || 
+                   currentWeekPlan?.weeklyPlan?.generation_prompt?.preferences?.dietType;
+  const totalWeeklyCalories = currentWeekPlan?.weeklyPlan?.total_calories;
+
   // Show loading screen only if data is being loaded AND we're not sure about existing content
   if (isLoading && hasExistingContent === null) {
     return (
@@ -131,6 +136,8 @@ const MealPlan = () => {
             onShowAIDialog={() => setShowAIDialog(true)}
             onRegeneratePlan={handleRegeneratePlan}
             isGenerating={isGenerating}
+            dietType={dietType}
+            totalWeeklyCalories={totalWeeklyCalories}
           />
 
           <WeeklyNavigation
