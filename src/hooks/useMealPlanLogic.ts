@@ -45,33 +45,15 @@ export const useMealPlanLogic = () => {
   };
 
   const handleExchangeMeal = (meal: Meal, index: number) => {
-    const alternatives = [
-      {
-        type: "lunch",
-        time: "1:00 PM",
-        name: "Grilled Chicken Salad",
-        calories: meal.calories + 10,
-        protein: meal.protein,
-        carbs: meal.carbs - 5,
-        fat: meal.fat,
-        ingredients: [
-          { name: "Grilled chicken breast", quantity: "4", unit: "oz" },
-          { name: "Mixed greens", quantity: "2", unit: "cups" }
-        ],
-        instructions: [
-          "Season and grill chicken breast until cooked through",
-          "Combine greens and top with sliced chicken"
-        ],
-        prepTime: 10,
-        cookTime: 15,
-        servings: 1,
-        image: "🥗",
-        youtubeId: "dQw4w9WgXcQ"
-      }
-    ];
-    
-    setSelectedMeal({ current: meal, alternatives, index });
+    console.log('Opening meal exchange for:', meal.name);
+    setSelectedMeal({ current: meal, index });
     setShowExchangeDialog(true);
+  };
+
+  const handleMealExchange = (alternative: any) => {
+    console.log('Exchanging meal with:', alternative.name);
+    toast.success(`Meal exchanged to ${alternative.name}!`);
+    // Here you could update the meal plan in the database if needed
   };
 
   const handleShowShoppingList = () => {
@@ -121,6 +103,7 @@ export const useMealPlanLogic = () => {
     handleRegeneratePlan,
     handleShowRecipe,
     handleExchangeMeal,
+    handleMealExchange,
     handleShowShoppingList,
     
     // Utilities

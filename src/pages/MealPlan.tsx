@@ -1,4 +1,3 @@
-
 import MealRecipeDialog from "@/components/MealRecipeDialog";
 import ShoppingListDialog from "@/components/ShoppingListDialog";
 import MealExchangeDialog from "@/components/MealExchangeDialog";
@@ -40,6 +39,7 @@ const MealPlan = () => {
     handleRegeneratePlan,
     handleShowRecipe,
     handleExchangeMeal,
+    handleMealExchange,
     handleShowShoppingList
   } = useMealPlanLogic();
 
@@ -166,10 +166,9 @@ const MealPlan = () => {
 
         <MealExchangeDialog
           currentMeal={selectedMeal?.current}
-          alternatives={selectedMeal?.alternatives || []}
           isOpen={showExchangeDialog}
           onClose={() => setShowExchangeDialog(false)}
-          onExchange={() => toast.success("Meal exchanged successfully!")}
+          onExchange={handleMealExchange}
         />
       </div>
     </div>

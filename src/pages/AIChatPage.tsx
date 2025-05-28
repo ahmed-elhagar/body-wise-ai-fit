@@ -1,16 +1,17 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useAIChat } from "@/hooks/useAIChat";
 import Navigation from "@/components/Navigation";
-import { Send, Bot, User, Trash2, Copy, Check } from "lucide-react";
+import MealPhotoUpload from "@/components/MealPhotoUpload";
+import { Send, Bot, User, Trash2, Copy, Check, Camera } from "lucide-react";
 
 const AIChatPage = () => {
   const [message, setMessage] = useState("");
   const { sendMessage, isSending, chatHistory, clearHistory } = useAIChat();
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+  const [showMealUpload, setShowMealUpload] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -158,17 +159,35 @@ const AIChatPage = () => {
               </p>
             </div>
             
-            {chatHistory.length > 0 && (
+            <div className="flex items-center space-x-2">
               <Button
                 variant="outline"
-                onClick={clearHistory}
+                onClick={() => setShowMealUpload(!showMealUpload)}
                 className="flex items-center space-x-2"
               >
-                <Trash2 className="w-4 h-4" />
-                <span>Clear Chat</span>
+                <Camera className="w-4 h-4" />
+                <span>Analyze Meal</span>
               </Button>
-            )}
+              
+              {chatHistory.length > 0 && (
+                <Button
+                  variant="outline"
+                  onClick={clearHistory}
+                  className="flex items-center space-x-2"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>Clear Chat</span>
+                </Button>
+              )}
+            </div>
           </div>
+
+          {/* Meal Photo Upload */}
+          {showMealUpload && (
+            <div className="mb-6">
+              <MealPhotoUpload />
+            </div>
+          )}
 
           {/* Chat Area */}
           <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg mb-6">
