@@ -1,5 +1,6 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useProfile } from './useProfile';
 
 export interface OnboardingFormData {
   // Basic Info
@@ -43,6 +44,31 @@ const initialFormData: OnboardingFormData = {
 
 export const useOnboardingForm = () => {
   const [formData, setFormData] = useState<OnboardingFormData>(initialFormData);
+  const { profile } = useProfile();
+
+  // Pre-populate form with existing profile data
+  useEffect(() => {
+    if (profile) {
+      console.log('Onboarding - Pre-populating form with profile data:', profile);
+      setFormData(prev => ({
+        ...prev,
+        first_name: profile.first_name || "",
+        last_name: profile.last_name || "",
+        age: profile.age ? profile.age.toString() : "",
+        gender: profile.gender || "",
+        height: profile.height ? profile.height.toString() : "",
+        weight: profile.weight ? profile.weight.toString() : "",
+        nationality: profile.nationality || "",
+        body_shape: profile.body_shape || "",
+        health_conditions: profile.health_conditions || [],
+        fitness_goal: profile.fitness_goal || "",
+        activity_level: profile.activity_level || "",
+        allergies: profile.allergies || [],
+        preferred_foods: profile.preferred_foods || [],
+        dietary_restrictions: profile.dietary_restrictions || []
+      }));
+    }
+  }, [profile]);
 
   const updateFormData = (field: string, value: string | string[]) => {
     setFormData(prev => ({ ...prev, [field]: value }));

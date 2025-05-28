@@ -25,7 +25,11 @@ const OnboardingStep2 = ({ formData, updateFormData, handleArrayInput }: Onboard
       <div className="space-y-4">
         <div>
           <Label htmlFor="fitness_goal">Primary Fitness Goal *</Label>
-          <Select onValueChange={(value) => updateFormData("fitness_goal", value)} required>
+          <Select 
+            value={formData.fitness_goal}
+            onValueChange={(value) => updateFormData("fitness_goal", value)} 
+            required
+          >
             <SelectTrigger>
               <SelectValue placeholder="Select your goal" />
             </SelectTrigger>
@@ -41,7 +45,11 @@ const OnboardingStep2 = ({ formData, updateFormData, handleArrayInput }: Onboard
 
         <div>
           <Label htmlFor="activity_level">Current Activity Level *</Label>
-          <Select onValueChange={(value) => updateFormData("activity_level", value)} required>
+          <Select 
+            value={formData.activity_level}
+            onValueChange={(value) => updateFormData("activity_level", value)} 
+            required
+          >
             <SelectTrigger>
               <SelectValue placeholder="Select activity level" />
             </SelectTrigger>
@@ -59,6 +67,7 @@ const OnboardingStep2 = ({ formData, updateFormData, handleArrayInput }: Onboard
           <Label htmlFor="health_conditions">Health Conditions (Optional)</Label>
           <Textarea
             id="health_conditions"
+            value={formData.health_conditions.join(', ')}
             placeholder="Any health conditions, injuries, or medical considerations (comma-separated)"
             onChange={(e) => handleArrayInput("health_conditions", e.target.value)}
             rows={3}

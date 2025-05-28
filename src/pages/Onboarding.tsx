@@ -54,17 +54,19 @@ const Onboarding = () => {
           onboarding_completed: true // Mark onboarding as completed
         };
 
-        console.log("Saving profile data:", profileData);
+        console.log("Onboarding - Saving complete profile data:", profileData);
         
         await updateProfile(profileData);
         
-        toast.success('Profile completed successfully! Generating your personalized content...');
+        toast.success('Profile completed successfully! Redirecting to dashboard...');
         
-        // Navigate to dashboard where initial AI generation will be triggered
-        navigate('/dashboard');
+        // Small delay to ensure the profile update is processed
+        setTimeout(() => {
+          navigate('/dashboard', { replace: true });
+        }, 1000);
 
       } catch (error) {
-        console.error('Error updating profile:', error);
+        console.error('Onboarding - Error updating profile:', error);
         toast.error('Failed to save profile. Please try again.');
       }
     }

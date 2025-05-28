@@ -56,7 +56,11 @@ const OnboardingStep1 = ({ formData, updateFormData }: OnboardingStep1Props) => 
         </div>
         <div>
           <Label htmlFor="gender">Gender *</Label>
-          <Select onValueChange={(value) => updateFormData("gender", value)} required>
+          <Select 
+            value={formData.gender} 
+            onValueChange={(value) => updateFormData("gender", value)} 
+            required
+          >
             <SelectTrigger>
               <SelectValue placeholder="Select gender" />
             </SelectTrigger>
