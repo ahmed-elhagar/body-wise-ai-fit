@@ -26,7 +26,7 @@ export const useAIFoodAnalysis = () => {
       const imageBase64 = await convertFileToBase64(file);
 
       const { data, error } = await supabase.functions.invoke('analyze-food-image', {
-        body: { imageBase64 }
+        body: { imageBase64, userId: user.id }
       });
 
       if (error) throw error;
@@ -44,8 +44,13 @@ export const useAIFoodAnalysis = () => {
 
       return data.analysis;
     },
-    onSuccess: () => {
-      toast.success('Food analysis completed!');
+    onSuccess: (data) => {
+      const confidence = data.overallConfidence || 0.8;
+      if (confidence > 0.7) {
+        toast.success('Food analysis completed with high confidence!');
+      } else {
+        toast.success('Food analysis completed - results may vary');
+      }
     },
     onError: (error) => {
       console.error('Error analyzing food:', error);

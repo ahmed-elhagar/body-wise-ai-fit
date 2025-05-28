@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Camera, Upload, Loader2 } from "lucide-react";
+import { Camera, Upload, Loader2, Eye } from "lucide-react";
 import { useAIFoodAnalysis } from "@/hooks/useAIFoodAnalysis";
 
 const MealPhotoUpload = () => {
@@ -43,7 +43,7 @@ const MealPhotoUpload = () => {
           Analyze Your Meal
         </h3>
         <p className="text-gray-600 mb-6">
-          Upload a photo of your meal and get instant nutrition analysis
+          Upload a photo of your meal and get instant nutrition analysis with AI-powered food recognition
         </p>
 
         {!previewUrl ? (
@@ -94,15 +94,57 @@ const MealPhotoUpload = () => {
                   Analyzing...
                 </>
               ) : (
-                'Analyze Nutrition'
+                <>
+                  <Eye className="w-4 h-4 mr-2" />
+                  Analyze Nutrition
+                </>
               )}
             </Button>
           </div>
         )}
 
         {analysisResult && (
-          <div className="mt-6 p-4 bg-green-50 rounded-lg border border-green-200">
-            <h4 className="font-semibold text-green-800 mb-3">Analysis Results</h4>
+          <div className="mt-6 p-4 bg-green-50 rounded-lg border border-green-200 text-left">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="font-semibold text-green-800">Analysis Results</h4>
+              {analysisResult.overallConfidence && (
+                <Badge 
+                  variant={analysisResult.overallConfidence > 0.7 ? "default" : "secondary"}
+                  className="text-xs"
+                >
+                  {Math.round(analysisResult.overallConfidence * 100)}% confidence
+                </Badge>
+              )}
+            </div>
+
+            {/* Analyzed Image Display */}
+            {analysisResult.imageData && (
+              <div className="mb-4">
+                <img
+                  src={analysisResult.imageData}
+                  alt="Analyzed meal"
+                  className="w-full h-32 object-cover rounded border"
+                />
+              </div>
+            )}
+
+            {/* Meal Information */}
+            <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
+              {analysisResult.mealType && (
+                <div>
+                  <span className="font-medium text-gray-700">Type:</span>
+                  <span className="ml-1 capitalize">{analysisResult.mealType}</span>
+                </div>
+              )}
+              {analysisResult.cuisineType && (
+                <div>
+                  <span className="font-medium text-gray-700">Cuisine:</span>
+                  <span className="ml-1 capitalize">{analysisResult.cuisineType}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Total Nutrition */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
               <div className="text-center">
                 <p className="text-sm text-gray-600">Calories</p>
@@ -129,21 +171,31 @@ const MealPhotoUpload = () => {
                 </Badge>
               </div>
             </div>
+
+            {/* Individual Food Items */}
             {analysisResult.foodItems && analysisResult.foodItems.length > 0 && (
-              <div>
+              <div className="mb-4">
                 <p className="text-sm font-medium text-gray-700 mb-2">Detected Foods:</p>
-                <div className="flex flex-wrap gap-2">
+                <div className="space-y-2">
                   {analysisResult.foodItems.map((food: any, index: number) => (
-                    <Badge key={index} variant="secondary">
-                      {food.name}
-                    </Badge>
+                    <div key={index} className="flex justify-between items-center p-2 bg-white rounded border">
+                      <div>
+                        <span className="font-medium">{food.name}</span>
+                        <span className="text-sm text-gray-600 ml-2">({food.quantity})</span>
+                      </div>
+                      <div className="text-sm text-gray-700">
+                        {food.calories}cal • {food.protein}g protein
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
             )}
+
+            {/* Recommendations */}
             {analysisResult.recommendations && (
               <div className="mt-3 p-3 bg-blue-50 rounded border border-blue-200">
-                <p className="text-sm text-blue-800 font-medium">Recommendations:</p>
+                <p className="text-sm text-blue-800 font-medium">Nutritionist Recommendations:</p>
                 <p className="text-sm text-blue-700">{analysisResult.recommendations}</p>
               </div>
             )}

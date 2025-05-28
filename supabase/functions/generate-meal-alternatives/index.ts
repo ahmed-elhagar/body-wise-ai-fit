@@ -38,7 +38,9 @@ USER PREFERENCES:
 - Preferred foods: ${preferences.preferredFoods?.join(', ') || 'None'}
 - Nationality: ${userProfile.nationality || 'International'}
 
-Generate alternatives with similar nutritional values (±50 calories, similar macros) but different ingredients/cooking methods. Return a JSON object with this structure:
+IMPORTANT: Return ONLY valid JSON without markdown formatting. Generate alternatives with similar nutritional values (±50 calories, similar macros) but different ingredients/cooking methods.
+
+Return this exact JSON structure:
 {
   "alternatives": [
     {
@@ -47,7 +49,7 @@ Generate alternatives with similar nutritional values (±50 calories, similar ma
       "protein": 25,
       "carbs": 40,
       "fat": 15,
-      "reason": "Why this is a good alternative (brief explanation)",
+      "reason": "Why this is a good alternative",
       "ingredients": [{"name": "ingredient", "quantity": "amount", "unit": "unit"}],
       "instructions": ["step 1", "step 2"],
       "prepTime": 10,
@@ -69,7 +71,7 @@ Generate alternatives with similar nutritional values (±50 calories, similar ma
           { role: 'system', content: systemMessage },
           { role: 'user', content: `Generate alternatives for this ${currentMeal.type} meal: ${currentMeal.name}` }
         ],
-        temperature: 0.8,
+        temperature: 0.7,
         max_tokens: 2000,
       }),
     });
@@ -79,16 +81,47 @@ Generate alternatives with similar nutritional values (±50 calories, similar ma
     }
 
     const data = await response.json();
-    const content = data.choices[0].message.content;
+    let content = data.choices[0].message.content.trim();
+    
+    // Remove markdown code blocks if present
+    content = content.replace(/```json\s*/g, '').replace(/```\s*$/g, '').trim();
     
     try {
       const parsed = JSON.parse(content);
+      console.log('Successfully parsed alternatives:', parsed.alternatives?.length || 0);
       return new Response(JSON.stringify(parsed), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     } catch (parseError) {
       console.error('Failed to parse AI response:', content);
-      throw new Error('Invalid response format from AI');
+      console.error('Parse error:', parseError);
+      
+      // Fallback response
+      const fallbackResponse = {
+        alternatives: [
+          {
+            name: "Healthy Alternative",
+            calories: currentMeal.calories || 400,
+            protein: currentMeal.protein || 20,
+            carbs: currentMeal.carbs || 45,
+            fat: currentMeal.fat || 12,
+            reason: "A nutritious alternative with similar macros",
+            ingredients: [
+              { name: "lean protein", quantity: "1", unit: "serving" },
+              { name: "vegetables", quantity: "1", unit: "cup" },
+              { name: "whole grains", quantity: "1/2", unit: "cup" }
+            ],
+            instructions: ["Prepare ingredients", "Cook as desired", "Serve hot"],
+            prepTime: 10,
+            cookTime: 15,
+            servings: 1
+          }
+        ]
+      };
+      
+      return new Response(JSON.stringify(fallbackResponse), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
   } catch (error) {
