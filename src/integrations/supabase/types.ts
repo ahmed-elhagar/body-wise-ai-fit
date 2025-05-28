@@ -237,6 +237,57 @@ export type Database = {
           },
         ]
       }
+      food_database: {
+        Row: {
+          calories_per_unit: number
+          carbs_per_unit: number
+          confidence_score: number | null
+          created_at: string | null
+          cuisine_type: string | null
+          fat_per_unit: number
+          fiber_per_unit: number | null
+          id: string
+          last_analyzed: string | null
+          name: string
+          protein_per_unit: number
+          source: string | null
+          sugar_per_unit: number | null
+          unit_type: string
+        }
+        Insert: {
+          calories_per_unit?: number
+          carbs_per_unit?: number
+          confidence_score?: number | null
+          created_at?: string | null
+          cuisine_type?: string | null
+          fat_per_unit?: number
+          fiber_per_unit?: number | null
+          id?: string
+          last_analyzed?: string | null
+          name: string
+          protein_per_unit?: number
+          source?: string | null
+          sugar_per_unit?: number | null
+          unit_type?: string
+        }
+        Update: {
+          calories_per_unit?: number
+          carbs_per_unit?: number
+          confidence_score?: number | null
+          created_at?: string | null
+          cuisine_type?: string | null
+          fat_per_unit?: number
+          fiber_per_unit?: number | null
+          id?: string
+          last_analyzed?: string | null
+          name?: string
+          protein_per_unit?: number
+          source?: string | null
+          sugar_per_unit?: number | null
+          unit_type?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           activity_level: string | null
@@ -447,6 +498,26 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      gtrgm_compress: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_decompress: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_in: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_options: {
+        Args: { "": unknown }
+        Returns: undefined
+      }
+      gtrgm_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
       has_role: {
         Args: {
           _user_id: string
@@ -461,6 +532,34 @@ export type Database = {
       reset_ai_generations: {
         Args: { target_user_id: string; new_count?: number }
         Returns: undefined
+      }
+      search_food_database: {
+        Args: { search_term: string }
+        Returns: {
+          id: string
+          name: string
+          calories_per_unit: number
+          protein_per_unit: number
+          carbs_per_unit: number
+          fat_per_unit: number
+          fiber_per_unit: number
+          sugar_per_unit: number
+          unit_type: string
+          confidence_score: number
+          cuisine_type: string
+        }[]
+      }
+      set_limit: {
+        Args: { "": number }
+        Returns: number
+      }
+      show_limit: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      show_trgm: {
+        Args: { "": string }
+        Returns: string[]
       }
     }
     Enums: {

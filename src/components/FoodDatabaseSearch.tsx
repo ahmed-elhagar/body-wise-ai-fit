@@ -32,9 +32,12 @@ const FoodDatabaseSearch = ({ onAddFood }: FoodDatabaseSearchProps) => {
     queryFn: async () => {
       if (!searchTerm || searchTerm.length < 2) return [];
       
-      // Use raw query since the table is not in the generated types yet
+      // Use direct query to the food_database table
       const { data, error } = await supabase
-        .rpc('search_food_database', { search_term: searchTerm })
+        .from('food_database')
+        .select('id, name, calories_per_unit, protein_per_unit, carbs_per_unit, fat_per_unit, unit_type, confidence_score, cuisine_type')
+        .ilike('name', `%${searchTerm}%`)
+        .order('confidence_score', { ascending: false })
         .limit(10);
 
       if (error) {
