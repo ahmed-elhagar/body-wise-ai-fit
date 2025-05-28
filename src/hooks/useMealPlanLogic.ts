@@ -137,6 +137,7 @@ export const useMealPlanLogic = () => {
     
     // Setters
     setShowAIDialog,
+    setSelectedMeal,
     setShowRecipeDialog,
     setShowShoppingDialog,
     setShowExchangeDialog,
