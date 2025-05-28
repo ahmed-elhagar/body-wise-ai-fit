@@ -16,13 +16,14 @@ import {
   Settings,
   Menu,
   X,
-  Shield
+  Shield,
+  LogOut
 } from "lucide-react";
 
 const Navigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAdmin } = useAuth();
+  const { isAdmin, signOut } = useAuth();
   const { profile } = useProfile();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -42,6 +43,15 @@ const Navigation = () => {
 
   const isActive = (path: string) => location.pathname === path;
 
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate('/auth');
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
+  };
+
   return (
     <>
       {/* Mobile Menu Button */}
@@ -56,9 +66,9 @@ const Navigation = () => {
         </Button>
       </div>
 
-      {/* Sidebar */}
+      {/* Sidebar - Fixed positioning */}
       <div className={`
-        fixed left-0 top-0 h-full w-64 bg-white/90 backdrop-blur-sm border-r border-gray-200 z-40 transform transition-transform duration-300 ease-in-out
+        fixed left-0 top-0 h-full w-64 bg-white/95 backdrop-blur-sm border-r border-gray-200 z-40 transform transition-transform duration-300 ease-in-out
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
         md:translate-x-0
       `}>
@@ -79,7 +89,7 @@ const Navigation = () => {
           )}
         </div>
 
-        <nav className="px-4 space-y-2">
+        <nav className="px-4 space-y-2 flex-1">
           {navigationItems.map((item) => (
             <Button
               key={item.path}
@@ -100,7 +110,15 @@ const Navigation = () => {
           ))}
         </nav>
 
-        <div className="absolute bottom-4 left-4 right-4">
+        <div className="absolute bottom-4 left-4 right-4 space-y-2">
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-red-600 hover:bg-red-50"
+            onClick={handleSignOut}
+          >
+            <LogOut className="w-5 h-5 mr-3" />
+            Sign Out
+          </Button>
           <div className="p-3 bg-gray-50 rounded-lg text-center">
             <Settings className="w-5 h-5 mx-auto mb-2 text-gray-600" />
             <p className="text-xs text-gray-600">

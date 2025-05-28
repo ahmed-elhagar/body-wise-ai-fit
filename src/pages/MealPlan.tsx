@@ -9,6 +9,7 @@ import WeeklyNavigation from "@/components/WeeklyNavigation";
 import DaySelector from "@/components/DaySelector";
 import EmptyMealPlan from "@/components/EmptyMealPlan";
 import MealPlanContent from "@/components/MealPlanContent";
+import Navigation from "@/components/Navigation";
 import { useMealPlanLogic } from "@/hooks/useMealPlanLogic";
 import { useInitialAIGeneration } from "@/hooks/useInitialAIGeneration";
 import { formatDate, getCurrentDayOfWeek, transformDailyMealsToMeals } from "@/utils/mealPlanUtils";
@@ -74,84 +75,90 @@ const MealPlan = () => {
   // Show loading screen if data is being loaded or initial content is being generated
   if (isLoading || isGeneratingContent) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-        <div className="text-center">
-          <div className="w-12 h-12 animate-spin border-4 border-fitness-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-gray-600">
-            {isGeneratingContent ? "Generating your personalized meal plan..." : "Loading meal plan..."}
-          </p>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex">
+        <Navigation />
+        <div className="flex-1 ml-0 md:ml-64 flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-12 h-12 animate-spin border-4 border-fitness-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p className="text-gray-600">
+              {isGeneratingContent ? "Generating your personalized meal plan..." : "Loading meal plan..."}
+            </p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-      <div className="container mx-auto px-4 py-8">
-        <MealPlanHeader
-          currentDate={formatDate(today)}
-          currentDay={getCurrentDayOfWeek()}
-          onShowAIDialog={() => setShowAIDialog(true)}
-          onRegeneratePlan={handleRegeneratePlan}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex">
+      <Navigation />
+      <div className="flex-1 ml-0 md:ml-64 transition-all duration-300">
+        <div className="container mx-auto px-4 py-8">
+          <MealPlanHeader
+            currentDate={formatDate(today)}
+            currentDay={getCurrentDayOfWeek()}
+            onShowAIDialog={() => setShowAIDialog(true)}
+            onRegeneratePlan={handleRegeneratePlan}
+            isGenerating={isGenerating}
+          />
+
+          <WeeklyNavigation
+            currentWeekOffset={currentWeekOffset}
+            onWeekChange={setCurrentWeekOffset}
+            weekStartDate={currentWeekStart}
+          />
+
+          <DaySelector
+            selectedDayNumber={selectedDayNumber}
+            onDaySelect={setSelectedDayNumber}
+          />
+
+          {currentWeekPlan && todaysMeals.length > 0 ? (
+            <MealPlanContent
+              selectedDayNumber={selectedDayNumber}
+              todaysMeals={todaysMeals}
+              totalCalories={totalCalories}
+              totalProtein={totalProtein}
+              onShowShoppingList={handleShowShoppingList}
+              onShowRecipe={handleShowRecipe}
+              onExchangeMeal={handleExchangeMeal}
+            />
+          ) : (
+            <EmptyMealPlan onShowAIDialog={() => setShowAIDialog(true)} />
+          )}
+
+          <WeeklyOverview weeklyData={weeklyOverview} />
+        </div>
+
+        <AIGenerationDialog
+          isOpen={showAIDialog}
+          onClose={() => setShowAIDialog(false)}
+          preferences={aiPreferences}
+          onPreferencesChange={setAiPreferences}
+          onGenerate={handleGenerateAIPlan}
           isGenerating={isGenerating}
         />
 
-        <WeeklyNavigation
-          currentWeekOffset={currentWeekOffset}
-          onWeekChange={setCurrentWeekOffset}
-          weekStartDate={currentWeekStart}
+        <MealRecipeDialog
+          meal={selectedMeal}
+          isOpen={showRecipeDialog}
+          onClose={() => setShowRecipeDialog(false)}
         />
 
-        <DaySelector
-          selectedDayNumber={selectedDayNumber}
-          onDaySelect={setSelectedDayNumber}
+        <ShoppingListDialog
+          items={selectedMeal?.items || []}
+          isOpen={showShoppingDialog}
+          onClose={() => setShowShoppingDialog(false)}
         />
 
-        {currentWeekPlan && todaysMeals.length > 0 ? (
-          <MealPlanContent
-            selectedDayNumber={selectedDayNumber}
-            todaysMeals={todaysMeals}
-            totalCalories={totalCalories}
-            totalProtein={totalProtein}
-            onShowShoppingList={handleShowShoppingList}
-            onShowRecipe={handleShowRecipe}
-            onExchangeMeal={handleExchangeMeal}
-          />
-        ) : (
-          <EmptyMealPlan onShowAIDialog={() => setShowAIDialog(true)} />
-        )}
-
-        <WeeklyOverview weeklyData={weeklyOverview} />
+        <MealExchangeDialog
+          currentMeal={selectedMeal?.current}
+          alternatives={selectedMeal?.alternatives || []}
+          isOpen={showExchangeDialog}
+          onClose={() => setShowExchangeDialog(false)}
+          onExchange={() => toast.success("Meal exchanged successfully!")}
+        />
       </div>
-
-      <AIGenerationDialog
-        isOpen={showAIDialog}
-        onClose={() => setShowAIDialog(false)}
-        preferences={aiPreferences}
-        onPreferencesChange={setAiPreferences}
-        onGenerate={handleGenerateAIPlan}
-        isGenerating={isGenerating}
-      />
-
-      <MealRecipeDialog
-        meal={selectedMeal}
-        isOpen={showRecipeDialog}
-        onClose={() => setShowRecipeDialog(false)}
-      />
-
-      <ShoppingListDialog
-        items={selectedMeal?.items || []}
-        isOpen={showShoppingDialog}
-        onClose={() => setShowShoppingDialog(false)}
-      />
-
-      <MealExchangeDialog
-        currentMeal={selectedMeal?.current}
-        alternatives={selectedMeal?.alternatives || []}
-        isOpen={showExchangeDialog}
-        onClose={() => setShowExchangeDialog(false)}
-        onExchange={() => toast.success("Meal exchanged successfully!")}
-      />
     </div>
   );
 };

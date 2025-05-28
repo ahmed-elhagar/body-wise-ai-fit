@@ -12,6 +12,7 @@ const DashboardStats = () => {
   console.log('Profile data:', profile);
   console.log('Weight entries:', weightEntries);
 
+  // Get the most recent weight entry that belongs to the current user
   const currentWeight = weightEntries && weightEntries.length > 0 ? weightEntries[0]?.weight : null;
   const previousWeight = weightEntries && weightEntries.length > 1 ? weightEntries[1]?.weight : null;
   const weightChange = currentWeight && previousWeight ? currentWeight - previousWeight : null;
@@ -27,8 +28,9 @@ const DashboardStats = () => {
   };
 
   const calculateBMI = () => {
-    if (!profile?.height || !currentWeight) return null;
-    return (currentWeight / Math.pow(profile.height / 100, 2)).toFixed(1);
+    const weight = currentWeight || profile?.weight;
+    if (!profile?.height || !weight) return null;
+    return (weight / Math.pow(profile.height / 100, 2)).toFixed(1);
   };
 
   const getBMICategory = (bmi: number) => {

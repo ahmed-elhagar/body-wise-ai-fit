@@ -54,7 +54,7 @@ export const useInitialAIGeneration = () => {
           
           const defaultMealPreferences = {
             duration: "1",
-            cuisine: profile.nationality || "",
+            cuisine: profile.nationality || "International",
             maxPrepTime: "30",
             mealTypes: "5"
           };
@@ -68,33 +68,37 @@ export const useInitialAIGeneration = () => {
 
           toast.success('Welcome! Generating your personalized content...');
 
-          // Generate both in parallel
-          const promises = [];
-          
-          if (!hasMealPlans) {
-            promises.push(generateMealPlan(defaultMealPreferences));
+          // Generate in sequence to avoid overwhelming the system
+          try {
+            if (!hasMealPlans) {
+              await generateMealPlan(defaultMealPreferences);
+            }
+            
+            // Small delay before generating exercise program
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            if (!hasExercisePrograms) {
+              await generateExerciseProgram(defaultExercisePreferences);
+            }
+            
+            setIsGeneratingContent(false);
+            toast.success('Your personalized content is ready!');
+          } catch (error) {
+            console.error('Error during content generation:', error);
+            setIsGeneratingContent(false);
+            toast.error('There was an issue generating your content. You can create it manually from the respective pages.');
           }
-          
-          if (!hasExercisePrograms) {
-            promises.push(generateExerciseProgram(defaultExercisePreferences));
-          }
-
-          // Wait for both to complete
-          await Promise.all(promises);
-          
-          setIsGeneratingContent(false);
-          toast.success('Your personalized content is ready!');
         }
         
       } catch (error) {
-        console.error('Error during initial generation:', error);
+        console.error('Error during initial generation check:', error);
         setIsGeneratingContent(false);
         generationAttempted.current = false; // Allow retry
       }
     };
 
     // Small delay to ensure profile is fully loaded
-    const timeoutId = setTimeout(triggerInitialGeneration, 1000);
+    const timeoutId = setTimeout(triggerInitialGeneration, 1500);
     
     return () => clearTimeout(timeoutId);
   }, [user?.id, profile, generateMealPlan, generateExerciseProgram]);
