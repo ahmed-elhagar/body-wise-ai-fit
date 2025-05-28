@@ -13,10 +13,9 @@ import { toast } from "sonner";
 
 const Exercise = () => {
   const navigate = useNavigate();
-  const { programs } = useExercisePrograms();
+  const { programs, isLoading } = useExercisePrograms();
   const { generateExerciseProgram, isGenerating } = useAIExercise();
-  const { isGeneratingContent } = useInitialAIGeneration();
-  const [showAIDialog, setShowAIDialog] = useState(false);
+  const { isGeneratingContent, hasExistingContent } = useInitialAIGeneration();
 
   const handleGenerateProgram = () => {
     const preferences = {
@@ -30,8 +29,20 @@ const Exercise = () => {
     toast.success("Generating your personalized exercise program...");
   };
 
-  // Show loading screen if data is being loaded or initial content is being generated
-  if (isGeneratingContent) {
+  // Show loading screen only if data is being loaded AND we're not sure about existing content
+  if (isLoading && hasExistingContent === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+        <div className="text-center">
+          <div className="w-12 h-12 animate-spin border-4 border-fitness-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your exercise program...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show generation screen only if actively generating
+  if (isGeneratingContent && hasExistingContent === false) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
         <div className="text-center">

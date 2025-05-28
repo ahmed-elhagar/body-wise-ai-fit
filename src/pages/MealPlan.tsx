@@ -16,7 +16,7 @@ import { formatDate, getCurrentDayOfWeek, transformDailyMealsToMeals } from "@/u
 import { toast } from "sonner";
 
 const MealPlan = () => {
-  const { isGeneratingContent } = useInitialAIGeneration();
+  const { isGeneratingContent, hasExistingContent } = useInitialAIGeneration();
   const {
     showAIDialog,
     selectedMeal,
@@ -72,17 +72,30 @@ const MealPlan = () => {
   const totalCalories = todaysMeals.reduce((sum, meal) => sum + meal.calories, 0);
   const totalProtein = todaysMeals.reduce((sum, meal) => sum + meal.protein, 0);
 
-  // Show loading screen if data is being loaded or initial content is being generated
-  if (isLoading || isGeneratingContent) {
+  // Show loading screen only if data is being loaded AND we're not sure about existing content
+  if (isLoading && hasExistingContent === null) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex">
         <Navigation />
         <div className="flex-1 ml-0 md:ml-64 flex items-center justify-center">
           <div className="text-center">
             <div className="w-12 h-12 animate-spin border-4 border-fitness-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p className="text-gray-600">
-              {isGeneratingContent ? "Generating your personalized meal plan..." : "Loading meal plan..."}
-            </p>
+            <p className="text-gray-600">Loading meal plan...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show generation screen only if actively generating
+  if (isGeneratingContent && hasExistingContent === false) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex">
+        <Navigation />
+        <div className="flex-1 ml-0 md:ml-64 flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-12 h-12 animate-spin border-4 border-fitness-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p className="text-gray-600">Generating your personalized meal plan...</p>
           </div>
         </div>
       </div>

@@ -9,10 +9,10 @@ import { Loader2 } from "lucide-react";
 
 const Dashboard = () => {
   const { profile } = useProfile();
-  const { isGeneratingContent, generationStatus } = useInitialAIGeneration();
+  const { isGeneratingContent, generationStatus, hasExistingContent } = useInitialAIGeneration();
 
-  // Show loading screen if AI content is being generated
-  if (isGeneratingContent) {
+  // Show loading screen only if AI content is being generated for first time users
+  if (isGeneratingContent && hasExistingContent === false) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex">
         <Navigation />
