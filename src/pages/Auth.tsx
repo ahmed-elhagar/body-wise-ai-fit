@@ -20,28 +20,35 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   
   const { signIn, signUp, user } = useAuth();
-  const { profile } = useProfile();
+  const { profile, isLoading: profileLoading } = useProfile();
   const navigate = useNavigate();
 
   // Redirect logic for authenticated users
   useEffect(() => {
-    if (user && profile !== undefined) {
-      console.log('Auth - User authenticated, checking profile:', {
-        userId: user.id,
-        hasProfile: !!profile,
-        onboardingCompleted: profile?.onboarding_completed
-      });
-      
-      // If no profile or onboarding not completed, redirect to onboarding
-      if (!profile || !profile.onboarding_completed) {
-        console.log('Auth - Redirecting to onboarding');
-        navigate('/onboarding');
-      } else {
-        console.log('Auth - Redirecting to dashboard');
-        navigate('/dashboard');
-      }
+    if (!user) return;
+
+    console.log('Auth - User authenticated, checking redirect:', {
+      userId: user.id,
+      hasProfile: !!profile,
+      profileLoading,
+      onboardingCompleted: profile?.onboarding_completed
+    });
+    
+    // If profile is still loading, wait
+    if (profileLoading) {
+      console.log('Auth - Profile still loading, waiting...');
+      return;
     }
-  }, [user, profile, navigate]);
+
+    // User exists, now decide where to redirect based on profile state
+    if (!profile || !profile.onboarding_completed || !profile.first_name || !profile.last_name) {
+      console.log('Auth - Redirecting to onboarding (incomplete profile)');
+      navigate('/onboarding', { replace: true });
+    } else {
+      console.log('Auth - Redirecting to dashboard (complete profile)');
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, profile, profileLoading, navigate]);
 
   const validateForm = () => {
     if (!email || !password) {
@@ -100,8 +107,21 @@ const Auth = () => {
     }
   };
 
-  // If already logged in, don't render the form
-  if (user) {
+  // Show loading if user exists and we're determining where to redirect
+  if (user && (profileLoading || (!profile && profileLoading !== false))) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-fitness-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Redirecting...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If user is authenticated and we've determined the profile state, let useEffect handle redirect
+  // This prevents the auth form from briefly showing before redirect
+  if (user && !profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
         <div className="text-center">
