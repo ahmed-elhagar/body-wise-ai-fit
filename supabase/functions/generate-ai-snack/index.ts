@@ -105,14 +105,14 @@ Return ONLY valid JSON with this exact structure:
       throw new Error('Invalid snack data generated');
     }
 
-    // Save the snack to the database using 'other' as meal type since 'snack' is not allowed
+    // Save the snack to the database using 'dinner' as meal type (using an existing valid type)
     const { data: savedSnack, error: saveError } = await supabase
       .from('daily_meals')
       .insert({
         weekly_plan_id: weeklyPlanId,
         day_number: dayNumber,
-        meal_type: 'other', // Changed from 'snack' to 'other' to match database constraints
-        name: `${snackData.name} (Snack)`, // Add "(Snack)" to name for clarity
+        meal_type: 'dinner', // Using dinner as the meal type since 'snack' isn't allowed
+        name: `🍎 ${snackData.name}`, // Add snack emoji to distinguish it
         calories: snackData.calories || 0,
         protein: snackData.protein || 0,
         carbs: snackData.carbs || 0,
