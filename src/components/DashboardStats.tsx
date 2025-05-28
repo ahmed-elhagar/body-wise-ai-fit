@@ -12,10 +12,14 @@ const DashboardStats = () => {
   console.log('Dashboard - Profile data:', profile);
   console.log('Dashboard - Weight entries:', weightEntries);
 
-  // Get the most recent weight entry for the current user
-  const currentWeight = weightEntries && weightEntries.length > 0 ? weightEntries[0]?.weight : null;
+  // Prioritize weight tracking data over profile weight
+  const currentWeight = weightEntries && weightEntries.length > 0 ? weightEntries[0]?.weight : profile?.weight;
   const previousWeight = weightEntries && weightEntries.length > 1 ? weightEntries[1]?.weight : null;
   const weightChange = currentWeight && previousWeight ? currentWeight - previousWeight : null;
+
+  // Use weight tracking data as primary source, fallback to profile
+  const displayWeight = currentWeight || profile?.weight;
+  const heightInMeters = profile?.height ? profile.height / 100 : null;
 
   const getGoalBadgeColor = (goal?: string) => {
     switch (goal) {
@@ -28,10 +32,8 @@ const DashboardStats = () => {
   };
 
   const calculateBMI = () => {
-    // Use current weight from weight tracking if available, otherwise use profile weight
-    const weight = currentWeight || profile?.weight;
-    if (!profile?.height || !weight) return null;
-    return (weight / Math.pow(profile.height / 100, 2)).toFixed(1);
+    if (!heightInMeters || !displayWeight) return null;
+    return (displayWeight / Math.pow(heightInMeters, 2)).toFixed(1);
   };
 
   const getBMICategory = (bmi: number) => {
@@ -50,10 +52,8 @@ const DashboardStats = () => {
             <p className="text-2xl font-bold text-gray-800">
               {weightLoading ? (
                 "Loading..."
-              ) : currentWeight ? (
-                `${currentWeight} kg`
-              ) : profile?.weight ? (
-                `${profile.weight} kg`
+              ) : displayWeight ? (
+                `${displayWeight} kg`
               ) : (
                 '—'
               )}
@@ -61,6 +61,11 @@ const DashboardStats = () => {
             {weightChange && (
               <p className={`text-sm ${weightChange > 0 ? 'text-red-500' : 'text-green-500'}`}>
                 {weightChange > 0 ? '+' : ''}{weightChange.toFixed(1)} kg
+              </p>
+            )}
+            {!weightChange && weightEntries && weightEntries.length === 1 && (
+              <p className="text-xs text-gray-500">
+                From weight tracking
               </p>
             )}
           </div>
