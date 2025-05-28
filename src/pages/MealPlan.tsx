@@ -35,6 +35,7 @@ const MealPlan = () => {
     isLoading,
     isGenerating,
     setShowAIDialog,
+    setSelectedMeal,
     setShowRecipeDialog,
     setShowShoppingDialog,
     setShowExchangeDialog,
