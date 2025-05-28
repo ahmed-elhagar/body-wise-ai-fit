@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -32,81 +33,85 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 
 function App() {
   return (
-    <LanguageProvider>
-      <QueryClientProvider client={queryClient}>
-        <div className="min-h-screen bg-background text-foreground">
-          <Router>
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
-              
-              {/* Onboarding Route - Requires auth but not complete profile */}
-              <Route path="/onboarding" element={
-                <ProtectedRoute requireProfile={false}>
-                  <Onboarding />
-                </ProtectedRoute>
-              } />
-              
-              {/* Protected Routes - Require auth and basic profile */}
-              <Route path="/dashboard" element={
-                <ProtectedRoute requireProfile={true}>
-                  <Dashboard />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/profile" element={
-                <ProtectedRoute requireProfile={true}>
-                  <Profile />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/meal-plan" element={
-                <ProtectedRoute requireProfile={true}>
-                  <MealPlan />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/exercise" element={
-                <ProtectedRoute requireProfile={true}>
-                  <Exercise />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/weight-tracking" element={
-                <ProtectedRoute requireProfile={true}>
-                  <WeightTracking />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/calorie-checker" element={
-                <ProtectedRoute requireProfile={true}>
-                  <CalorieChecker />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/ai-chat" element={
-                <ProtectedRoute requireProfile={true}>
-                  <AIChatPage />
-                </ProtectedRoute>
-              } />
-              
-              {/* Admin Route */}
-              <Route path="/admin" element={
-                <ProtectedRoute adminOnly={true}>
-                  <AdminPanel />
-                </ProtectedRoute>
-              } />
-              
-              {/* 404 and Catch-all */}
-              <Route path="/404" element={<NotFound />} />
-              <Route path="*" element={<Navigate to="/404" replace />} />
-            </Routes>
-          </Router>
-        </div>
-        <Toaster />
-      </QueryClientProvider>
-    </LanguageProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <LanguageProvider>
+          <TooltipProvider>
+            <div className="min-h-screen bg-background text-foreground">
+              <Router>
+                <Routes>
+                  {/* Public Routes */}
+                  <Route path="/" element={<Index />} />
+                  <Route path="/auth" element={<Auth />} />
+                  
+                  {/* Onboarding Route - Requires auth but not complete profile */}
+                  <Route path="/onboarding" element={
+                    <ProtectedRoute requireProfile={false}>
+                      <Onboarding />
+                    </ProtectedRoute>
+                  } />
+                  
+                  {/* Protected Routes - Require auth and basic profile */}
+                  <Route path="/dashboard" element={
+                    <ProtectedRoute requireProfile={true}>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/profile" element={
+                    <ProtectedRoute requireProfile={true}>
+                      <Profile />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/meal-plan" element={
+                    <ProtectedRoute requireProfile={true}>
+                      <MealPlan />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/exercise" element={
+                    <ProtectedRoute requireProfile={true}>
+                      <Exercise />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/weight-tracking" element={
+                    <ProtectedRoute requireProfile={true}>
+                      <WeightTracking />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/calorie-checker" element={
+                    <ProtectedRoute requireProfile={true}>
+                      <CalorieChecker />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/ai-chat" element={
+                    <ProtectedRoute requireProfile={true}>
+                      <AIChatPage />
+                    </ProtectedRoute>
+                  } />
+                  
+                  {/* Admin Route */}
+                  <Route path="/admin" element={
+                    <ProtectedRoute adminOnly={true}>
+                      <AdminPanel />
+                    </ProtectedRoute>
+                  } />
+                  
+                  {/* 404 and Catch-all */}
+                  <Route path="/404" element={<NotFound />} />
+                  <Route path="*" element={<Navigate to="/404" replace />} />
+                </Routes>
+              </Router>
+            </div>
+            <Toaster />
+          </TooltipProvider>
+        </LanguageProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 
