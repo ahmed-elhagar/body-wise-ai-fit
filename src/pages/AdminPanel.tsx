@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,13 +9,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2, Users, TrendingUp, Activity, Crown, LogOut, Shield } from "lucide-react";
 import Navigation from "@/components/Navigation";
-import { useSessionManager } from "@/hooks/useSessionManager";
+import { useAuth } from "@/hooks/useAuth";
 
 const AdminPanel = () => {
   const [selectedUserId, setSelectedUserId] = useState("");
   const [newGenerationLimit, setNewGenerationLimit] = useState("");
   const queryClient = useQueryClient();
-  const { forceLogoutAllUsers } = useSessionManager();
+  const { forceLogoutAllUsers } = useAuth();
 
   // Fetch all users with their profiles
   const { data: users, isLoading: usersLoading } = useQuery({
