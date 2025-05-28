@@ -54,12 +54,12 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
     queryKey: ['weekly-meal-plan', user?.id, weekOffset],
     queryFn: async () => {
       if (!user?.id) {
-        console.log('No user ID for meal plan fetch');
+        console.log('useDynamicMealPlan - No user ID for meal plan fetch');
         return null;
       }
       
       const weekStartDate = getWeekStartDate(weekOffset);
-      console.log('Fetching meal plan for user:', user.id, 'week:', weekStartDate);
+      console.log('useDynamicMealPlan - Fetching meal plan for user:', user.id, 'Email:', user.email, 'week:', weekStartDate);
       
       const { data: weeklyPlan, error: weeklyError } = await supabase
         .from('weekly_meal_plans')
@@ -69,20 +69,21 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
         .maybeSingle();
 
       if (weeklyError) {
-        console.error('Error fetching weekly plan:', weeklyError);
+        console.error('useDynamicMealPlan - Error fetching weekly plan:', weeklyError);
         return null;
       }
 
       if (!weeklyPlan) {
-        console.log('No meal plan found for user:', user.id, 'week:', weekStartDate);
+        console.log('useDynamicMealPlan - No meal plan found for user:', user.id, 'week:', weekStartDate);
         return null;
       }
 
-      // Double check user isolation
+      // Critical: Double check user isolation
       if (weeklyPlan.user_id !== user.id) {
-        console.error('Meal plan user mismatch:', {
+        console.error('CRITICAL: Meal plan user mismatch!', {
           planUserId: weeklyPlan.user_id,
-          currentUserId: user.id
+          currentUserId: user.id,
+          currentUserEmail: user.email
         });
         return null;
       }
@@ -95,7 +96,7 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
         .order('meal_type', { ascending: true });
 
       if (mealsError) {
-        console.error('Error fetching daily meals:', mealsError);
+        console.error('useDynamicMealPlan - Error fetching daily meals:', mealsError);
         return null;
       }
 
@@ -114,8 +115,9 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
             : []
       })) as DailyMeal[];
 
-      console.log('Meal plan loaded successfully:', {
+      console.log('useDynamicMealPlan - Meal plan loaded successfully:', {
         userId: user.id,
+        userEmail: user.email,
         planId: weeklyPlan.id,
         mealsCount: processedMeals.length
       });
@@ -126,7 +128,7 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
       };
     },
     enabled: !!user?.id,
-    staleTime: 1000 * 60 * 10, // 10 minutes
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   return {

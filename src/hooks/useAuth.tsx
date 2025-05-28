@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const checkAdminStatus = async (userId: string) => {
     try {
-      console.log('Checking admin status for user:', userId);
+      console.log('useAuth - Checking admin status for user:', userId);
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
@@ -33,31 +33,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .maybeSingle();
       
       if (error && error.code !== 'PGRST116') {
-        console.error('Admin check error:', error);
+        console.error('useAuth - Admin check error:', error);
         setIsAdmin(false);
         return;
       }
       
       const isUserAdmin = !!data;
-      console.log('Admin check result:', isUserAdmin);
+      console.log('useAuth - Admin check result for user:', userId, 'isAdmin:', isUserAdmin);
       setIsAdmin(isUserAdmin);
     } catch (error) {
-      console.error('Admin check failed:', error);
+      console.error('useAuth - Admin check failed:', error);
       setIsAdmin(false);
     }
   };
 
   useEffect(() => {
-    console.log('AuthProvider - Setting up auth state listener');
+    console.log('useAuth - Setting up auth state listener');
     
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', { event, user: session?.user?.email });
+        console.log('useAuth - Auth state changed:', { 
+          event, 
+          userEmail: session?.user?.email,
+          userId: session?.user?.id 
+        });
+        
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Only check admin status after setting user, not in the callback
+        // Check admin status after setting user, not in the callback
         if (session?.user) {
           // Use setTimeout to avoid blocking the auth state change
           setTimeout(() => {
@@ -73,7 +78,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Get initial session
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      console.log('Initial session:', { user: session?.user?.email });
+      console.log('useAuth - Initial session:', { 
+        userEmail: session?.user?.email,
+        userId: session?.user?.id 
+      });
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -87,30 +95,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
 
     return () => {
-      console.log('AuthProvider - Cleaning up subscription');
+      console.log('useAuth - Cleaning up subscription');
       subscription.unsubscribe();
     };
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    console.log('Attempting sign in for:', email);
+    console.log('useAuth - Attempting sign in for:', email);
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error) {
-      console.error('Sign in error:', error);
+      console.error('useAuth - Sign in error:', error);
       toast.error(error.message);
       throw error;
     }
     
-    console.log('Sign in successful');
+    console.log('useAuth - Sign in successful for:', email);
     toast.success('Welcome back!');
   };
 
   const signUp = async (email: string, password: string, userData?: any) => {
-    console.log('Attempting sign up for:', email);
+    console.log('useAuth - Attempting sign up for:', email);
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -120,25 +128,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
 
     if (error) {
-      console.error('Sign up error:', error);
+      console.error('useAuth - Sign up error:', error);
       toast.error(error.message);
       throw error;
     }
     
-    console.log('Sign up successful');
+    console.log('useAuth - Sign up successful for:', email);
     toast.success('Account created successfully!');
   };
 
   const signOut = async () => {
-    console.log('Attempting sign out');
+    console.log('useAuth - Attempting sign out for user:', user?.email);
+    
+    // Clear all state immediately to prevent data leakage
+    setUser(null);
+    setSession(null);
+    setIsAdmin(false);
+    
     const { error } = await supabase.auth.signOut();
     if (error) {
-      console.error('Sign out error:', error);
+      console.error('useAuth - Sign out error:', error);
       toast.error(error.message);
       throw error;
     }
     
-    console.log('Sign out successful');
+    console.log('useAuth - Sign out successful');
     toast.success('Signed out successfully');
   };
 

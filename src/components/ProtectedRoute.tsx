@@ -20,25 +20,38 @@ export default function ProtectedRoute({
   const { profile, isLoading: profileLoading } = useProfile();
 
   useEffect(() => {
-    console.log('ProtectedRoute - Auth state:', { 
-      user: !!user, 
+    console.log('ProtectedRoute - Current state:', { 
+      userExists: !!user,
+      userId: user?.id,
+      userEmail: user?.email, 
       authLoading, 
       profileLoading,
       isAdmin,
-      profile: !!profile,
+      profileExists: !!profile,
       requireProfile,
-      userId: user?.id
+      adminOnly
     });
     
     if (profile) {
-      console.log('Profile details:', { 
-        userId: profile.id,
+      console.log('ProtectedRoute - Profile details:', { 
+        profileUserId: profile.id,
+        profileEmail: profile.email,
         hasFirstName: !!profile.first_name,
         hasLastName: !!profile.last_name,
         onboardingCompleted: profile.onboarding_completed
       });
     }
-  }, [user, authLoading, profileLoading, isAdmin, profile, requireProfile]);
+
+    // Validate that profile belongs to current user
+    if (user && profile && profile.id !== user.id) {
+      console.error('CRITICAL: User/Profile mismatch detected!', {
+        currentUserId: user.id,
+        currentUserEmail: user.email,
+        profileUserId: profile.id,
+        profileEmail: profile.email
+      });
+    }
+  }, [user, authLoading, profileLoading, isAdmin, profile, requireProfile, adminOnly]);
 
   // Show loading only while authentication is loading
   if (authLoading) {
@@ -82,6 +95,13 @@ export default function ProtectedRoute({
     if (!profile) {
       console.log('ProtectedRoute - No profile found, redirecting to onboarding');
       return <Navigate to="/onboarding" replace />;
+    }
+    
+    // Validate profile belongs to current user
+    if (profile.id !== user.id) {
+      console.error('ProtectedRoute - Profile/User ID mismatch, forcing logout');
+      // This is a critical security issue - force logout
+      return <Navigate to="/auth" replace />;
     }
     
     // Profile exists but missing essential data or onboarding not completed

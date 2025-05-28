@@ -16,7 +16,7 @@ export const useProfile = () => {
         return null;
       }
       
-      console.log('Fetching profile for user:', user.id);
+      console.log('Fetching profile for user:', user.id, 'Email:', user.email);
       
       const { data, error } = await supabase
         .from('profiles')
@@ -28,24 +28,29 @@ export const useProfile = () => {
         console.error('Profile fetch error:', error);
         // Don't throw error if profile doesn't exist yet
         if (error.code === 'PGRST116') {
-          console.log('No profile found, returning null');
+          console.log('No profile found for user:', user.id, 'returning null');
           return null;
         }
         throw error;
       }
       
-      console.log('Profile fetch result:', data);
+      console.log('Profile fetch result for user:', user.id, 'Data:', data);
       
-      // Ensure we're only getting data for the current user
+      // Critical: Ensure we're only getting data for the current user
       if (data && data.id !== user.id) {
-        console.error('Profile data mismatch - received data for different user');
+        console.error('CRITICAL: Profile data mismatch!', {
+          requestedUserId: user.id,
+          receivedUserId: data.id,
+          requestedEmail: user.email,
+          receivedEmail: data.email
+        });
         return null;
       }
       
       return data;
     },
     enabled: !!user?.id,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 2, // Reduce cache time to 2 minutes for better data freshness
     retry: (failureCount, error: any) => {
       // Don't retry if it's a "no rows" error
       if (error?.code === 'PGRST116') {
@@ -59,12 +64,13 @@ export const useProfile = () => {
     mutationFn: async (profileData: any) => {
       if (!user?.id) throw new Error('No user ID');
 
-      console.log('Updating profile with data:', profileData);
+      console.log('Updating profile for user:', user.id, 'with data:', profileData);
 
       const { data, error } = await supabase
         .from('profiles')
         .upsert({ 
           id: user.id, 
+          email: user.email, // Ensure email is consistent
           ...profileData,
           updated_at: new Date().toISOString()
         })
@@ -76,12 +82,15 @@ export const useProfile = () => {
         throw error;
       }
       
-      console.log('Profile updated successfully:', data);
+      console.log('Profile updated successfully for user:', user.id, 'Data:', data);
       return data;
     },
     onSuccess: (data) => {
-      queryClient.setQueryData(['profile', user?.id], data);
-      queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
+      // Clear all cached data to prevent stale data issues
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ['weekly-meal-plan'] });
+      queryClient.invalidateQueries({ queryKey: ['meal-plans'] });
+      queryClient.invalidateQueries({ queryKey: ['weight-entries'] });
       toast.success('Profile updated successfully!');
     },
     onError: (error) => {

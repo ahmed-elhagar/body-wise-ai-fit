@@ -9,6 +9,7 @@ import RecentActivity from "@/components/RecentActivity";
 import { Button } from "@/components/ui/button";
 import { Loader2, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 const Dashboard = () => {
   const { user, signOut } = useAuth();
@@ -18,7 +19,26 @@ const Dashboard = () => {
   // Automatically generate initial content for new users
   useInitialAIGeneration();
 
+  // Debug user/profile matching
+  useEffect(() => {
+    if (user && profile) {
+      console.log('Dashboard - User/Profile verification:', {
+        userId: user.id,
+        userEmail: user.email,
+        profileId: profile.id,
+        profileEmail: profile.email,
+        profileName: `${profile.first_name} ${profile.last_name}`,
+        match: user.id === profile.id
+      });
+
+      if (user.id !== profile.id) {
+        console.error('CRITICAL: Dashboard user/profile mismatch detected!');
+      }
+    }
+  }, [user, profile]);
+
   const handleSignOut = async () => {
+    console.log('Dashboard - Signing out user:', user?.email);
     await signOut();
     navigate('/');
   };
@@ -43,13 +63,13 @@ const Dashboard = () => {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-800 mb-2">
-              Welcome back, {profile?.first_name || 'User'}! 👋
+              Welcome back, {profile?.first_name || user?.email || 'User'}! 👋
             </h1>
             <p className="text-gray-600">
               Here's your fitness journey overview for today.
             </p>
             <p className="text-sm text-gray-500 mt-1">
-              User ID: {user?.id} | AI Generations Remaining: {profile?.ai_generations_remaining || 0}
+              Logged in as: {user?.email} | AI Generations Remaining: {profile?.ai_generations_remaining || 0}
             </p>
           </div>
           <Button
