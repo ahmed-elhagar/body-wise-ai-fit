@@ -12,13 +12,15 @@ const DashboardStats = () => {
   console.log('Dashboard - Profile data:', profile);
   console.log('Dashboard - Weight entries:', weightEntries);
 
-  // Prioritize weight tracking data over profile weight
-  const currentWeight = weightEntries && weightEntries.length > 0 ? weightEntries[0]?.weight : profile?.weight;
+  // Always prioritize weight tracking data over profile weight
+  const currentWeight = weightEntries && weightEntries.length > 0 ? weightEntries[0]?.weight : null;
   const previousWeight = weightEntries && weightEntries.length > 1 ? weightEntries[1]?.weight : null;
   const weightChange = currentWeight && previousWeight ? currentWeight - previousWeight : null;
 
-  // Use weight tracking data as primary source, fallback to profile
+  // Only show profile weight if no weight tracking data exists
   const displayWeight = currentWeight || profile?.weight;
+  const weightSource = currentWeight ? 'tracking' : 'profile';
+  
   const heightInMeters = profile?.height ? profile.height / 100 : null;
 
   const getGoalBadgeColor = (goal?: string) => {
@@ -63,9 +65,9 @@ const DashboardStats = () => {
                 {weightChange > 0 ? '+' : ''}{weightChange.toFixed(1)} kg
               </p>
             )}
-            {!weightChange && weightEntries && weightEntries.length === 1 && (
+            {displayWeight && (
               <p className="text-xs text-gray-500">
-                From weight tracking
+                {weightSource === 'tracking' ? 'From weight tracking' : 'From profile'}
               </p>
             )}
           </div>

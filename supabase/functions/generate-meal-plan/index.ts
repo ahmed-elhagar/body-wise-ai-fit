@@ -46,29 +46,24 @@ serve(async (req) => {
     const dailyCalories = Math.round(bmr * activityMultiplier);
     console.log('Calculated daily calories:', dailyCalories);
 
-    // Enhanced prompt with EXTREMELY strict requirements
-    const prompt = `You are a professional nutritionist AI. You MUST create a complete 7-day meal plan with EXACTLY 35 meals (7 days × 5 meals per day).
-
-CRITICAL REQUIREMENTS - FAILURE MEANS COMPLETE REJECTION:
-1. EXACTLY 7 days (Monday=1 to Sunday=7)
-2. EXACTLY 5 meals per day (breakfast, lunch, dinner, snack1, snack2)
-3. TOTAL: 35 meals - NO EXCEPTIONS
-4. Valid JSON only - no markdown, no text before/after
-5. All meal types must be present for each day
+    // Enhanced prompt with strict JSON requirements
+    const prompt = `Generate a complete 7-day meal plan with EXACTLY 35 meals (7 days × 5 meals per day: breakfast, lunch, dinner, snack1, snack2).
 
 USER PROFILE:
 - Age: ${userProfile?.age}, Gender: ${userProfile?.gender}
 - Weight: ${userProfile?.weight}kg, Height: ${userProfile?.height}cm
 - Goal: ${userProfile?.fitness_goal}, Activity: ${userProfile?.activity_level}
 - Nationality: ${userProfile?.nationality}
-- Health: ${userProfile?.health_conditions?.join(', ') || 'None'}
-- Allergies: ${userProfile?.allergies?.join(', ') || 'None'}
-- Restrictions: ${userProfile?.dietary_restrictions?.join(', ') || 'None'}
-- Preferences: ${userProfile?.preferred_foods?.join(', ') || 'Various'}
+- Target: ${dailyCalories} calories daily
 
-TARGET: ${dailyCalories} calories daily
+CRITICAL REQUIREMENTS:
+1. EXACTLY 7 days (Monday to Sunday)
+2. EXACTLY 5 meals per day
+3. TOTAL: 35 meals - NO EXCEPTIONS
+4. Valid JSON only - no markdown formatting
+5. All nutritional values must be numbers
 
-Return ONLY this JSON structure - NO OTHER TEXT:
+Return ONLY this JSON structure:
 
 {
   "weekSummary": {
@@ -87,7 +82,7 @@ Return ONLY this JSON structure - NO OTHER TEXT:
       "meals": [
         {
           "type": "breakfast",
-          "name": "Foul Medames with Whole Wheat Pita",
+          "name": "Egyptian Breakfast",
           "calories": ${Math.round(dailyCalories * 0.25)},
           "protein": 15,
           "carbs": 45,
@@ -95,98 +90,97 @@ Return ONLY this JSON structure - NO OTHER TEXT:
           "fiber": 6,
           "sugar": 12,
           "ingredients": [
-            {"name": "fava beans", "quantity": "1", "unit": "cup", "calories": 180, "protein": 12, "carbs": 33, "fat": 1},
-            {"name": "whole wheat pita", "quantity": "1", "unit": "piece", "calories": 170, "protein": 6, "carbs": 35, "fat": 2}
+            {"name": "eggs", "quantity": "2", "unit": "pieces", "calories": 140, "protein": 12, "carbs": 1, "fat": 10},
+            {"name": "bread", "quantity": "2", "unit": "slices", "calories": 160, "protein": 6, "carbs": 30, "fat": 2}
           ],
-          "instructions": ["Soak fava beans overnight", "Cook until tender", "Season with cumin and lemon", "Serve with pita"],
+          "instructions": ["Cook eggs", "Toast bread", "Serve together"],
           "prepTime": 10,
-          "cookTime": 20,
+          "cookTime": 5,
           "servings": 1,
-          "youtubeSearchTerm": "traditional foul medames recipe",
+          "youtubeSearchTerm": "egyptian breakfast recipe",
           "cuisine": "${userProfile?.nationality || 'international'}",
           "difficulty": "easy"
         },
         {
-          "type": "lunch", 
-          "name": "Grilled Chicken Salad",
+          "type": "lunch",
+          "name": "Grilled Chicken with Rice",
           "calories": ${Math.round(dailyCalories * 0.30)},
           "protein": 35,
-          "carbs": 15,
+          "carbs": 45,
           "fat": 12,
-          "fiber": 8,
-          "sugar": 8,
+          "fiber": 4,
+          "sugar": 3,
           "ingredients": [
             {"name": "chicken breast", "quantity": "150", "unit": "g", "calories": 165, "protein": 31, "carbs": 0, "fat": 4},
-            {"name": "mixed greens", "quantity": "2", "unit": "cups", "calories": 20, "protein": 2, "carbs": 4, "fat": 0}
+            {"name": "rice", "quantity": "80", "unit": "g", "calories": 130, "protein": 3, "carbs": 28, "fat": 0}
           ],
-          "instructions": ["Season chicken", "Grill until cooked", "Mix with fresh greens", "Add dressing"],
-          "prepTime": 15,
-          "cookTime": 20,
+          "instructions": ["Season chicken", "Grill chicken", "Cook rice", "Serve together"],
+          "prepTime": 10,
+          "cookTime": 25,
           "servings": 1,
-          "youtubeSearchTerm": "healthy grilled chicken salad",
+          "youtubeSearchTerm": "grilled chicken rice",
           "cuisine": "${userProfile?.nationality || 'international'}",
           "difficulty": "medium"
         },
         {
           "type": "dinner",
-          "name": "Baked Fish with Vegetables", 
+          "name": "Fish with Vegetables",
           "calories": ${Math.round(dailyCalories * 0.30)},
-          "protein": 40,
+          "protein": 30,
           "carbs": 20,
           "fat": 15,
           "fiber": 6,
-          "sugar": 5,
+          "sugar": 8,
           "ingredients": [
-            {"name": "white fish fillet", "quantity": "200", "unit": "g", "calories": 220, "protein": 35, "carbs": 0, "fat": 8},
-            {"name": "mixed vegetables", "quantity": "1", "unit": "cup", "calories": 50, "protein": 2, "carbs": 10, "fat": 0}
+            {"name": "fish fillet", "quantity": "150", "unit": "g", "calories": 150, "protein": 25, "carbs": 0, "fat": 5},
+            {"name": "vegetables", "quantity": "200", "unit": "g", "calories": 50, "protein": 3, "carbs": 10, "fat": 0}
           ],
-          "instructions": ["Season fish", "Bake with vegetables", "Serve with lemon"],
-          "prepTime": 10,
-          "cookTime": 25,
+          "instructions": ["Season fish", "Steam vegetables", "Cook fish", "Serve together"],
+          "prepTime": 15,
+          "cookTime": 20,
           "servings": 1,
-          "youtubeSearchTerm": "baked fish with vegetables",
+          "youtubeSearchTerm": "fish with vegetables",
           "cuisine": "${userProfile?.nationality || 'international'}",
           "difficulty": "medium"
         },
         {
           "type": "snack1",
-          "name": "Greek Yogurt with Nuts",
+          "name": "Yogurt with Nuts",
           "calories": ${Math.round(dailyCalories * 0.08)},
-          "protein": 12,
-          "carbs": 8,
+          "protein": 8,
+          "carbs": 12,
           "fat": 6,
           "fiber": 2,
-          "sugar": 6,
+          "sugar": 10,
           "ingredients": [
-            {"name": "greek yogurt", "quantity": "150", "unit": "g", "calories": 100, "protein": 10, "carbs": 6, "fat": 0},
-            {"name": "almonds", "quantity": "15", "unit": "g", "calories": 87, "protein": 3, "carbs": 3, "fat": 8}
+            {"name": "yogurt", "quantity": "100", "unit": "g", "calories": 80, "protein": 6, "carbs": 8, "fat": 2},
+            {"name": "nuts", "quantity": "10", "unit": "g", "calories": 60, "protein": 2, "carbs": 2, "fat": 5}
           ],
           "instructions": ["Mix yogurt with nuts"],
           "prepTime": 2,
           "cookTime": 0,
           "servings": 1,
-          "youtubeSearchTerm": "healthy yogurt snack",
+          "youtubeSearchTerm": "yogurt nuts snack",
           "cuisine": "general",
           "difficulty": "easy"
         },
         {
           "type": "snack2",
-          "name": "Apple with Peanut Butter",
+          "name": "Fruit",
           "calories": ${Math.round(dailyCalories * 0.07)},
-          "protein": 4,
-          "carbs": 15,
-          "fat": 8,
-          "fiber": 4,
-          "sugar": 12,
+          "protein": 1,
+          "carbs": 20,
+          "fat": 0,
+          "fiber": 3,
+          "sugar": 15,
           "ingredients": [
-            {"name": "apple", "quantity": "1", "unit": "medium", "calories": 95, "protein": 0, "carbs": 25, "fat": 0},
-            {"name": "peanut butter", "quantity": "1", "unit": "tbsp", "calories": 94, "protein": 4, "carbs": 3, "fat": 8}
+            {"name": "apple", "quantity": "1", "unit": "medium", "calories": 80, "protein": 0, "carbs": 21, "fat": 0}
           ],
-          "instructions": ["Slice apple", "Serve with peanut butter"],
-          "prepTime": 2,
+          "instructions": ["Wash apple", "Eat fresh"],
+          "prepTime": 1,
           "cookTime": 0,
           "servings": 1,
-          "youtubeSearchTerm": "apple peanut butter snack",
+          "youtubeSearchTerm": "healthy fruit snack",
           "cuisine": "general",
           "difficulty": "easy"
         }
@@ -195,11 +189,9 @@ Return ONLY this JSON structure - NO OTHER TEXT:
   ]
 }
 
-CRITICAL: You MUST generate ALL 7 DAYS following this exact pattern. Copy the structure above for days 2-7, changing meal names but keeping the same format. Each day must have EXACTLY 5 meals. The response must contain EXACTLY 35 meals total.
+Generate all 7 days following this exact pattern. Each day must have exactly 5 meals. Vary the meal names and ingredients but keep the same structure and nutritional targets.`;
 
-ABSOLUTELY NO TEXT BEFORE OR AFTER THE JSON. START WITH { AND END WITH }.`;
-
-    console.log('Sending request to OpenAI with enhanced 7-day strict prompt');
+    console.log('Sending request to OpenAI...');
     
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -212,12 +204,12 @@ ABSOLUTELY NO TEXT BEFORE OR AFTER THE JSON. START WITH { AND END WITH }.`;
         messages: [
           { 
             role: 'system', 
-            content: `You are a strict nutritionist AI. You MUST respond with ONLY valid JSON containing exactly 7 days with exactly 5 meals each (35 total meals). No markdown, no explanations, no extra text. Start with { and end with }. Generate meals suitable for ${userProfile?.nationality || 'international'} cuisine preferences. Focus on ${userProfile?.fitness_goal || 'balanced nutrition'}.` 
+            content: `You are a professional nutritionist. Generate EXACTLY 7 days with EXACTLY 5 meals each (35 total meals). Return ONLY valid JSON with no markdown formatting. Focus on ${userProfile?.nationality || 'international'} cuisine for ${userProfile?.fitness_goal || 'balanced nutrition'}.` 
           },
           { role: 'user', content: prompt }
         ],
         temperature: 0.1,
-        max_tokens: 8000,
+        max_tokens: 12000,
       }),
     });
 
@@ -236,28 +228,46 @@ ABSOLUTELY NO TEXT BEFORE OR AFTER THE JSON. START WITH { AND END WITH }.`;
 
     let generatedPlan;
     try {
-      const content = data.choices[0].message.content;
-      console.log('Raw OpenAI content preview:', content.substring(0, 200) + '...');
+      const content = data.choices[0].message.content.trim();
+      console.log('Raw content preview:', content.substring(0, 300) + '...');
       
-      const cleanedContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      // Clean the content more thoroughly
+      let cleanedContent = content;
+      
+      // Remove markdown code blocks
+      cleanedContent = cleanedContent.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+      
+      // Remove any text before the first {
+      const firstBrace = cleanedContent.indexOf('{');
+      if (firstBrace > 0) {
+        cleanedContent = cleanedContent.substring(firstBrace);
+      }
+      
+      // Remove any text after the last }
+      const lastBrace = cleanedContent.lastIndexOf('}');
+      if (lastBrace < cleanedContent.length - 1) {
+        cleanedContent = cleanedContent.substring(0, lastBrace + 1);
+      }
+      
+      console.log('Cleaned content preview:', cleanedContent.substring(0, 300) + '...');
+      
       generatedPlan = JSON.parse(cleanedContent);
       console.log('Meal plan parsed successfully');
-      console.log('Plan structure check - days:', generatedPlan.days?.length);
+      
     } catch (parseError) {
       console.error('Failed to parse OpenAI response:', parseError);
       console.error('Raw content:', data.choices[0].message.content);
-      throw new Error('Failed to parse AI response. Please try again.');
+      throw new Error('Failed to parse AI response. The response was not valid JSON.');
     }
 
-    // ULTRA STRICT validation
+    // Strict validation
     if (!generatedPlan.days || !Array.isArray(generatedPlan.days)) {
-      console.error('Invalid plan structure - days not array:', generatedPlan);
       throw new Error('Invalid meal plan structure: days must be an array');
     }
 
     if (generatedPlan.days.length !== 7) {
-      console.error('CRITICAL: Generated plan has', generatedPlan.days.length, 'days instead of 7');
-      throw new Error(`STRICT REQUIREMENT VIOLATION: Must contain exactly 7 days, got ${generatedPlan.days.length}`);
+      console.error('Generated plan has', generatedPlan.days.length, 'days instead of 7');
+      throw new Error(`Must contain exactly 7 days, got ${generatedPlan.days.length}`);
     }
 
     let totalMeals = 0;
@@ -267,7 +277,6 @@ ABSOLUTELY NO TEXT BEFORE OR AFTER THE JSON. START WITH { AND END WITH }.`;
         throw new Error(`Day ${i + 1} meals must be an array`);
       }
       if (day.meals.length !== 5) {
-        console.error(`Day ${i + 1} has ${day.meals.length} meals instead of 5:`, day.meals.map(m => m.type));
         throw new Error(`Day ${i + 1} must have exactly 5 meals, got ${day.meals.length}`);
       }
       
@@ -284,8 +293,7 @@ ABSOLUTELY NO TEXT BEFORE OR AFTER THE JSON. START WITH { AND END WITH }.`;
     }
 
     if (totalMeals !== 35) {
-      console.error('CRITICAL: Total meals is', totalMeals, 'instead of 35');
-      throw new Error(`STRICT REQUIREMENT VIOLATION: Must have exactly 35 meals total, got ${totalMeals}`);
+      throw new Error(`Must have exactly 35 meals total, got ${totalMeals}`);
     }
 
     // Ensure dietType exists
@@ -381,56 +389,6 @@ ABSOLUTELY NO TEXT BEFORE OR AFTER THE JSON. START WITH { AND END WITH }.`;
     }
 
     console.log(`✅ MEAL SAVING COMPLETE: ${totalMealsSaved} meals saved, ${failedMeals} failed out of 35 expected`);
-
-    if (totalMealsSaved < 30) {
-      console.error('WARNING: Less than 30 meals saved, this is critical!');
-    }
-
-    // Populate food database efficiently
-    const foodItems = new Map();
-    
-    for (const day of generatedPlan.days) {
-      for (const meal of day.meals) {
-        if (meal.ingredients && Array.isArray(meal.ingredients)) {
-          for (const ingredient of meal.ingredients) {
-            const ingredientKey = ingredient.name.toLowerCase();
-            if (!foodItems.has(ingredientKey)) {
-              foodItems.set(ingredientKey, {
-                name: ingredient.name,
-                calories_per_unit: ingredient.calories || 0,
-                protein_per_unit: ingredient.protein || 0,
-                carbs_per_unit: ingredient.carbs || 0,
-                fat_per_unit: ingredient.fat || 0,
-                fiber_per_unit: 0,
-                sugar_per_unit: 0,
-                unit_type: ingredient.unit || 'serving',
-                confidence_score: 0.8,
-                cuisine_type: meal.cuisine || userProfile?.nationality || 'international',
-                source: 'ai_ingredient'
-              });
-            }
-          }
-        }
-      }
-    }
-
-    if (foodItems.size > 0) {
-      const foodItemsArray = Array.from(foodItems.values());
-      console.log(`Inserting ${foodItemsArray.length} food items into database`);
-      
-      const { error: foodError } = await supabase
-        .from('food_database')
-        .upsert(foodItemsArray, { 
-          onConflict: 'name',
-          ignoreDuplicates: true 
-        });
-
-      if (foodError) {
-        console.error('Error inserting food items:', foodError);
-      } else {
-        console.log('Food database populated successfully');
-      }
-    }
 
     console.log('=== MEAL PLAN GENERATION COMPLETE ===');
     console.log(`✅ SUCCESS: Generated ${generatedPlan.days.length} days with ${totalMealsSaved} meals`);
