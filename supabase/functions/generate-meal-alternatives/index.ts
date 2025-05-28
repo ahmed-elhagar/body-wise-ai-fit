@@ -38,7 +38,7 @@ USER PREFERENCES:
 - Preferred foods: ${preferences.preferredFoods?.join(', ') || 'None'}
 - Nationality: ${userProfile.nationality || 'International'}
 
-IMPORTANT: Return ONLY valid JSON without markdown formatting. Generate alternatives with similar nutritional values (±50 calories, similar macros) but different ingredients/cooking methods.
+CRITICAL: Return ONLY valid JSON without markdown formatting. All numeric values must be numbers (not strings with "g" suffix).
 
 Return this exact JSON structure:
 {
@@ -69,7 +69,7 @@ Return this exact JSON structure:
         model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: systemMessage },
-          { role: 'user', content: `Generate alternatives for this ${currentMeal.type} meal: ${currentMeal.name}` }
+          { role: 'user', content: `Generate alternatives for this ${currentMeal.type} meal: ${currentMeal.name}. Remember: return only valid JSON with numeric values (no "g" suffixes).` }
         ],
         temperature: 0.7,
         max_tokens: 2000,
@@ -86,34 +86,95 @@ Return this exact JSON structure:
     // Remove markdown code blocks if present
     content = content.replace(/```json\s*/g, '').replace(/```\s*$/g, '').trim();
     
+    // Fix common JSON issues - remove "g" suffixes from numeric values
+    content = content.replace(/"protein":\s*"?(\d+)g?"?,/g, '"protein": $1,');
+    content = content.replace(/"carbs":\s*"?(\d+)g?"?,/g, '"carbs": $1,');
+    content = content.replace(/"fat":\s*"?(\d+)g?"?,/g, '"fat": $1,');
+    
     try {
       const parsed = JSON.parse(content);
-      console.log('Successfully parsed alternatives:', parsed.alternatives?.length || 0);
-      return new Response(JSON.stringify(parsed), {
+      
+      // Validate the structure
+      if (!parsed.alternatives || !Array.isArray(parsed.alternatives)) {
+        throw new Error('Invalid response structure');
+      }
+      
+      // Ensure all alternatives have required fields
+      const validatedAlternatives = parsed.alternatives.map((alt: any) => ({
+        name: alt.name || 'Healthy Alternative',
+        calories: typeof alt.calories === 'number' ? alt.calories : parseInt(alt.calories) || currentMeal.calories,
+        protein: typeof alt.protein === 'number' ? alt.protein : parseInt(alt.protein) || currentMeal.protein,
+        carbs: typeof alt.carbs === 'number' ? alt.carbs : parseInt(alt.carbs) || currentMeal.carbs,
+        fat: typeof alt.fat === 'number' ? alt.fat : parseInt(alt.fat) || currentMeal.fat,
+        reason: alt.reason || 'A nutritious alternative with similar macros',
+        ingredients: Array.isArray(alt.ingredients) ? alt.ingredients : [
+          { name: "lean protein", quantity: "1", unit: "serving" },
+          { name: "vegetables", quantity: "1", unit: "cup" },
+          { name: "whole grains", quantity: "1/2", unit: "cup" }
+        ],
+        instructions: Array.isArray(alt.instructions) ? alt.instructions : [
+          "Prepare ingredients according to recipe",
+          "Cook as desired",
+          "Serve hot and enjoy"
+        ],
+        prepTime: alt.prepTime || 10,
+        cookTime: alt.cookTime || 15,
+        servings: alt.servings || 1
+      }));
+      
+      console.log('Successfully parsed alternatives:', validatedAlternatives.length);
+      return new Response(JSON.stringify({ alternatives: validatedAlternatives }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     } catch (parseError) {
       console.error('Failed to parse AI response:', content);
       console.error('Parse error:', parseError);
       
-      // Fallback response
+      // Fallback response with properly structured alternatives
       const fallbackResponse = {
         alternatives: [
           {
-            name: "Healthy Alternative",
+            name: `Healthy ${currentMeal.type} Alternative`,
             calories: currentMeal.calories || 400,
             protein: currentMeal.protein || 20,
             carbs: currentMeal.carbs || 45,
             fat: currentMeal.fat || 12,
-            reason: "A nutritious alternative with similar macros",
+            reason: "A nutritious alternative with similar macronutrients",
             ingredients: [
-              { name: "lean protein", quantity: "1", unit: "serving" },
-              { name: "vegetables", quantity: "1", unit: "cup" },
-              { name: "whole grains", quantity: "1/2", unit: "cup" }
+              { name: "lean protein source", quantity: "1", unit: "serving" },
+              { name: "fresh vegetables", quantity: "1", unit: "cup" },
+              { name: "whole grain", quantity: "1/2", unit: "cup" }
             ],
-            instructions: ["Prepare ingredients", "Cook as desired", "Serve hot"],
+            instructions: [
+              "Prepare all ingredients",
+              "Cook protein and vegetables",
+              "Serve with whole grain",
+              "Season to taste"
+            ],
             prepTime: 10,
             cookTime: 15,
+            servings: 1
+          },
+          {
+            name: `Mediterranean ${currentMeal.type}`,
+            calories: Math.round(currentMeal.calories * 0.95) || 380,
+            protein: currentMeal.protein || 18,
+            carbs: currentMeal.carbs || 42,
+            fat: currentMeal.fat || 14,
+            reason: "Mediterranean-inspired alternative with healthy fats",
+            ingredients: [
+              { name: "olive oil", quantity: "1", unit: "tbsp" },
+              { name: "fresh herbs", quantity: "2", unit: "tbsp" },
+              { name: "lean protein", quantity: "1", unit: "serving" }
+            ],
+            instructions: [
+              "Heat olive oil in pan",
+              "Add protein and cook",
+              "Garnish with fresh herbs",
+              "Serve immediately"
+            ],
+            prepTime: 8,
+            cookTime: 12,
             servings: 1
           }
         ]
