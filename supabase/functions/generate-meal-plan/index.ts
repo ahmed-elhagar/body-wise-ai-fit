@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
@@ -12,6 +11,40 @@ const corsHeaders = {
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+// Function to generate meal image
+async function generateMealImage(mealName: string, ingredients: string[]): Promise<string | null> {
+  try {
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+    if (!openAIApiKey) return null;
+
+    const prompt = `Professional food photography of ${mealName}${ingredients.length > 0 ? ` with ${ingredients.slice(0, 3).join(', ')}` : ''}, beautifully plated on a white ceramic plate, natural lighting, overhead view, restaurant quality presentation, appetizing, high resolution, clean background`;
+
+    const response = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'dall-e-3',
+        prompt: prompt,
+        n: 1,
+        size: '1024x1024',
+        quality: 'standard',
+        style: 'natural'
+      }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      return data.data[0].url;
+    }
+  } catch (error) {
+    console.error('Error generating image for', mealName, ':', error);
+  }
+  return null;
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -46,7 +79,7 @@ serve(async (req) => {
     const dailyCalories = Math.round(bmr * activityMultiplier);
     console.log('Calculated daily calories:', dailyCalories);
 
-    // Enhanced prompt with strict JSON requirements
+    // Enhanced prompt with cultural cuisine focus and detailed requirements
     const prompt = `Generate a complete 7-day meal plan with EXACTLY 35 meals (7 days × 5 meals per day: breakfast, lunch, dinner, snack1, snack2).
 
 USER PROFILE:
@@ -62,6 +95,9 @@ CRITICAL REQUIREMENTS:
 3. TOTAL: 35 meals - NO EXCEPTIONS
 4. Valid JSON only - no markdown formatting
 5. All nutritional values must be numbers
+6. Focus on ${userProfile?.nationality || 'international'} cuisine with authentic local dishes
+7. Include detailed cooking instructions and cultural context
+8. Provide comprehensive ingredient lists with exact measurements
 
 Return ONLY this JSON structure:
 
@@ -72,7 +108,7 @@ Return ONLY this JSON structure:
     "totalProtein": 700,
     "totalCarbs": 2100,
     "totalFat": 490,
-    "dietType": "Weight Loss"
+    "dietType": "${userProfile?.fitness_goal === 'weight_loss' ? 'Weight Loss' : 'Balanced'}"
   },
   "days": [
     {
@@ -82,114 +118,39 @@ Return ONLY this JSON structure:
       "meals": [
         {
           "type": "breakfast",
-          "name": "Egyptian Breakfast",
+          "name": "Traditional ${userProfile?.nationality || 'International'} Breakfast",
           "calories": ${Math.round(dailyCalories * 0.25)},
-          "protein": 15,
-          "carbs": 45,
-          "fat": 8,
-          "fiber": 6,
-          "sugar": 12,
-          "ingredients": [
-            {"name": "eggs", "quantity": "2", "unit": "pieces", "calories": 140, "protein": 12, "carbs": 1, "fat": 10},
-            {"name": "bread", "quantity": "2", "unit": "slices", "calories": 160, "protein": 6, "carbs": 30, "fat": 2}
-          ],
-          "instructions": ["Cook eggs", "Toast bread", "Serve together"],
-          "prepTime": 10,
-          "cookTime": 5,
-          "servings": 1,
-          "youtubeSearchTerm": "egyptian breakfast recipe",
-          "cuisine": "${userProfile?.nationality || 'international'}",
-          "difficulty": "easy"
-        },
-        {
-          "type": "lunch",
-          "name": "Grilled Chicken with Rice",
-          "calories": ${Math.round(dailyCalories * 0.30)},
-          "protein": 35,
+          "protein": 20,
           "carbs": 45,
           "fat": 12,
-          "fiber": 4,
-          "sugar": 3,
-          "ingredients": [
-            {"name": "chicken breast", "quantity": "150", "unit": "g", "calories": 165, "protein": 31, "carbs": 0, "fat": 4},
-            {"name": "rice", "quantity": "80", "unit": "g", "calories": 130, "protein": 3, "carbs": 28, "fat": 0}
-          ],
-          "instructions": ["Season chicken", "Grill chicken", "Cook rice", "Serve together"],
-          "prepTime": 10,
-          "cookTime": 25,
-          "servings": 1,
-          "youtubeSearchTerm": "grilled chicken rice",
-          "cuisine": "${userProfile?.nationality || 'international'}",
-          "difficulty": "medium"
-        },
-        {
-          "type": "dinner",
-          "name": "Fish with Vegetables",
-          "calories": ${Math.round(dailyCalories * 0.30)},
-          "protein": 30,
-          "carbs": 20,
-          "fat": 15,
-          "fiber": 6,
-          "sugar": 8,
-          "ingredients": [
-            {"name": "fish fillet", "quantity": "150", "unit": "g", "calories": 150, "protein": 25, "carbs": 0, "fat": 5},
-            {"name": "vegetables", "quantity": "200", "unit": "g", "calories": 50, "protein": 3, "carbs": 10, "fat": 0}
-          ],
-          "instructions": ["Season fish", "Steam vegetables", "Cook fish", "Serve together"],
-          "prepTime": 15,
-          "cookTime": 20,
-          "servings": 1,
-          "youtubeSearchTerm": "fish with vegetables",
-          "cuisine": "${userProfile?.nationality || 'international'}",
-          "difficulty": "medium"
-        },
-        {
-          "type": "snack1",
-          "name": "Yogurt with Nuts",
-          "calories": ${Math.round(dailyCalories * 0.08)},
-          "protein": 8,
-          "carbs": 12,
-          "fat": 6,
-          "fiber": 2,
-          "sugar": 10,
-          "ingredients": [
-            {"name": "yogurt", "quantity": "100", "unit": "g", "calories": 80, "protein": 6, "carbs": 8, "fat": 2},
-            {"name": "nuts", "quantity": "10", "unit": "g", "calories": 60, "protein": 2, "carbs": 2, "fat": 5}
-          ],
-          "instructions": ["Mix yogurt with nuts"],
-          "prepTime": 2,
-          "cookTime": 0,
-          "servings": 1,
-          "youtubeSearchTerm": "yogurt nuts snack",
-          "cuisine": "general",
-          "difficulty": "easy"
-        },
-        {
-          "type": "snack2",
-          "name": "Fruit",
-          "calories": ${Math.round(dailyCalories * 0.07)},
-          "protein": 1,
-          "carbs": 20,
-          "fat": 0,
-          "fiber": 3,
+          "fiber": 8,
           "sugar": 15,
+          "description": "A nutritious and culturally authentic breakfast to start your day",
           "ingredients": [
-            {"name": "apple", "quantity": "1", "unit": "medium", "calories": 80, "protein": 0, "carbs": 21, "fat": 0}
+            {"name": "main ingredient", "quantity": "100", "unit": "g", "calories": 120, "protein": 8, "carbs": 20, "fat": 3},
+            {"name": "secondary ingredient", "quantity": "50", "unit": "g", "calories": 80, "protein": 4, "carbs": 15, "fat": 2}
           ],
-          "instructions": ["Wash apple", "Eat fresh"],
-          "prepTime": 1,
-          "cookTime": 0,
+          "instructions": [
+            "Step 1: Detailed preparation instruction",
+            "Step 2: Cooking method with timing",
+            "Step 3: Plating and serving suggestions"
+          ],
+          "prepTime": 10,
+          "cookTime": 15,
           "servings": 1,
-          "youtubeSearchTerm": "healthy fruit snack",
-          "cuisine": "general",
-          "difficulty": "easy"
+          "youtubeSearchTerm": "${userProfile?.nationality || 'traditional'} breakfast recipe",
+          "cuisine": "${userProfile?.nationality || 'international'}",
+          "difficulty": "easy",
+          "tips": "Chef tips for best results",
+          "nutritionBenefits": "Health benefits of this meal",
+          "culturalInfo": "Cultural significance and variations"
         }
       ]
     }
   ]
 }
 
-Generate all 7 days following this exact pattern. Each day must have exactly 5 meals. Vary the meal names and ingredients but keep the same structure and nutritional targets.`;
+Generate all 7 days following this exact pattern. Each day must have exactly 5 meals. Vary the meal names and ingredients but keep authentic ${userProfile?.nationality || 'international'} flavors and traditional cooking methods.`;
 
     console.log('Sending request to OpenAI...');
     
@@ -204,12 +165,12 @@ Generate all 7 days following this exact pattern. Each day must have exactly 5 m
         messages: [
           { 
             role: 'system', 
-            content: `You are a professional nutritionist. Generate EXACTLY 7 days with EXACTLY 5 meals each (35 total meals). Return ONLY valid JSON with no markdown formatting. Focus on ${userProfile?.nationality || 'international'} cuisine for ${userProfile?.fitness_goal || 'balanced nutrition'}.` 
+            content: `You are a professional nutritionist specializing in ${userProfile?.nationality || 'international'} cuisine. Generate EXACTLY 7 days with EXACTLY 5 meals each (35 total meals). Return ONLY valid JSON with no markdown formatting. Focus on authentic cultural dishes with detailed instructions and nutritional information.` 
           },
           { role: 'user', content: prompt }
         ],
-        temperature: 0.1,
-        max_tokens: 12000,
+        temperature: 0.2,
+        max_tokens: 16000,
       }),
     });
 
@@ -348,7 +309,7 @@ Generate all 7 days following this exact pattern. Each day must have exactly 5 m
 
     console.log('Weekly plan saved with ID:', weeklyPlan.id);
 
-    // Save ALL 35 meals systematically
+    // Save ALL 35 meals systematically with enhanced data and images
     let totalMealsSaved = 0;
     let failedMeals = 0;
 
@@ -358,6 +319,10 @@ Generate all 7 days following this exact pattern. Each day must have exactly 5 m
       
       for (let mealIndex = 0; mealIndex < day.meals.length; mealIndex++) {
         const meal = day.meals[mealIndex];
+        
+        // Generate image for the meal
+        const ingredientNames = (meal.ingredients || []).map((ing: any) => ing.name || '');
+        const imageUrl = await generateMealImage(meal.name || 'meal', ingredientNames);
         
         const { error: mealError } = await supabase
           .from('daily_meals')
@@ -376,7 +341,8 @@ Generate all 7 days following this exact pattern. Each day must have exactly 5 m
             cook_time: meal.cookTime || 0,
             servings: meal.servings || 1,
             youtube_search_term: meal.youtubeSearchTerm || null,
-            alternatives: meal.alternatives || []
+            alternatives: meal.alternatives || [],
+            image_url: imageUrl
           });
 
         if (mealError) {
@@ -384,6 +350,9 @@ Generate all 7 days following this exact pattern. Each day must have exactly 5 m
           failedMeals++;
         } else {
           totalMealsSaved++;
+          if (imageUrl) {
+            console.log(`✅ Meal ${meal.name} saved with AI-generated image`);
+          }
         }
       }
     }

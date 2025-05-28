@@ -32,26 +32,31 @@ const MealPlanContent = ({
   ];
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
-      <div className="lg:col-span-1 lg:order-1 order-2">
-        <DailySummary
-          totalCalories={totalCalories}
-          totalProtein={totalProtein}
-          onShowShoppingList={onShowShoppingList}
-        />
+    <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 sm:gap-6">
+      {/* Summary sidebar - responsive order and width */}
+      <div className="xl:col-span-1 order-2 xl:order-1">
+        <div className="sticky top-4">
+          <DailySummary
+            totalCalories={totalCalories}
+            totalProtein={totalProtein}
+            onShowShoppingList={onShowShoppingList}
+          />
+        </div>
       </div>
 
-      <div className="lg:col-span-3 lg:order-2 order-1">
-        <div className={`flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 ${isRTL ? 'text-right' : 'text-left'}`}>
+      {/* Main content area */}
+      <div className="xl:col-span-3 order-1 xl:order-2">
+        <div className={`flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-4 md:mb-6 ${isRTL ? 'text-right' : 'text-left'}`}>
           <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2 sm:mb-0">
             {isRTL ? `${t('mealPlan.daysMeals')}${dayNames[selectedDayNumber - 1]}` : `${dayNames[selectedDayNumber - 1]}${t('mealPlan.daysMeals')}`}
           </h2>
-          <Badge variant="outline" className="bg-white/80 self-start sm:self-auto">
+          <Badge variant="outline" className="bg-white/80 self-start sm:self-auto text-xs sm:text-sm">
             {todaysMeals.length} {t('mealPlan.mealsPlanned')}
           </Badge>
         </div>
         
-        <div className="space-y-3 sm:space-y-4">
+        {/* Meals grid - responsive */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
           {todaysMeals.map((meal: Meal, index) => (
             <MealCard
               key={index}

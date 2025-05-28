@@ -1,4 +1,3 @@
-
 import MealRecipeDialog from "@/components/MealRecipeDialog";
 import ShoppingListDialog from "@/components/ShoppingListDialog";
 import MealExchangeDialog from "@/components/MealExchangeDialog";
@@ -143,7 +142,7 @@ const MealPlan = () => {
     <div className={`min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex ${isRTL ? 'rtl' : 'ltr'}`}>
       <Navigation />
       <div className={`flex-1 ${isRTL ? 'mr-0 md:mr-64' : 'ml-0 md:ml-64'} transition-all duration-300`}>
-        <div className="container mx-auto px-4 py-4 sm:py-8">
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4 md:py-8">
           <MealPlanHeader
             currentDate={formatDate(today)}
             currentDay={getCurrentDayOfWeek()}
@@ -160,14 +159,14 @@ const MealPlan = () => {
             weekStartDate={currentWeekStart}
           />
 
-          {/* View Mode Toggle and Add Snack Button */}
+          {/* View Mode Toggle and Add Snack Button - Enhanced responsiveness */}
           {currentWeekPlan && (
-            <div className="mb-6 flex justify-center">
-              <div className="bg-white/80 backdrop-blur-sm rounded-lg p-1 shadow-lg flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
+            <div className="mb-4 sm:mb-6 flex justify-center">
+              <div className="bg-white/80 backdrop-blur-sm rounded-lg p-1 shadow-lg flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full max-w-2xl">
                 <div className="flex w-full sm:w-auto">
                   <Button
                     variant={viewMode === 'daily' ? 'default' : 'ghost'}
-                    className={`flex-1 sm:flex-initial ${viewMode === 'daily' ? 'bg-fitness-gradient text-white' : ''}`}
+                    className={`flex-1 sm:flex-initial text-sm ${viewMode === 'daily' ? 'bg-fitness-gradient text-white' : ''}`}
                     onClick={() => setViewMode('daily')}
                     size="sm"
                   >
@@ -176,7 +175,7 @@ const MealPlan = () => {
                   </Button>
                   <Button
                     variant={viewMode === 'weekly' ? 'default' : 'ghost'}
-                    className={`flex-1 sm:flex-initial ${viewMode === 'weekly' ? 'bg-fitness-gradient text-white' : ''}`}
+                    className={`flex-1 sm:flex-initial text-sm ${viewMode === 'weekly' ? 'bg-fitness-gradient text-white' : ''}`}
                     onClick={() => setViewMode('weekly')}
                     size="sm"
                   >
@@ -187,7 +186,7 @@ const MealPlan = () => {
                 {viewMode === 'daily' && (
                   <Button
                     variant="outline"
-                    className="w-full sm:w-auto mt-2 sm:mt-0 sm:ml-2 border-fitness-primary text-fitness-primary hover:bg-fitness-primary hover:text-white"
+                    className="w-full sm:w-auto sm:min-w-[140px] text-sm border-fitness-primary text-fitness-primary hover:bg-fitness-primary hover:text-white"
                     onClick={() => setShowAddSnackDialog(true)}
                     size="sm"
                   >
