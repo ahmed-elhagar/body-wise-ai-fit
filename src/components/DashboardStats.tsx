@@ -12,14 +12,17 @@ const DashboardStats = () => {
   console.log('Dashboard - Profile data:', profile);
   console.log('Dashboard - Weight entries:', weightEntries);
 
-  // Always prioritize weight tracking data over profile weight
-  const currentWeight = weightEntries && weightEntries.length > 0 ? weightEntries[0]?.weight : null;
-  const previousWeight = weightEntries && weightEntries.length > 1 ? weightEntries[1]?.weight : null;
-  const weightChange = currentWeight && previousWeight ? currentWeight - previousWeight : null;
-
-  // Only show profile weight if no weight tracking data exists
-  const displayWeight = currentWeight || profile?.weight;
-  const weightSource = currentWeight ? 'tracking' : 'profile';
+  // Use profile weight as primary source, fallback to weight tracking if profile weight doesn't exist
+  const profileWeight = profile?.weight;
+  const latestTrackedWeight = weightEntries && weightEntries.length > 0 ? weightEntries[0]?.weight : null;
+  const previousTrackedWeight = weightEntries && weightEntries.length > 1 ? weightEntries[1]?.weight : null;
+  
+  // Primary weight source is profile, secondary is tracking data
+  const displayWeight = profileWeight || latestTrackedWeight;
+  const weightSource = profileWeight ? 'profile' : 'tracking';
+  
+  // Calculate weight change only if we have tracking data
+  const weightChange = latestTrackedWeight && previousTrackedWeight ? latestTrackedWeight - previousTrackedWeight : null;
   
   const heightInMeters = profile?.height ? profile.height / 100 : null;
 
@@ -67,7 +70,7 @@ const DashboardStats = () => {
             )}
             {displayWeight && (
               <p className="text-xs text-gray-500">
-                {weightSource === 'tracking' ? 'From weight tracking' : 'From profile'}
+                {weightSource === 'profile' ? 'From profile' : 'From weight tracking'}
               </p>
             )}
           </div>

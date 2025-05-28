@@ -11,6 +11,33 @@ interface BodyShapeSelectorProps {
 const BodyShapeSelector = ({ value, onChange, gender }: BodyShapeSelectorProps) => {
   const bodyShapes = [
     {
+      id: 'ectomorph',
+      name: 'Ectomorph',
+      description: 'Naturally thin, fast metabolism',
+      maleIcon: '🚶‍♂️',
+      femaleIcon: '🚶‍♀️',
+      characteristics: ['Lean build', 'Fast metabolism', 'Difficulty gaining weight'],
+      dietFocus: 'High calorie, nutrient-dense foods, frequent meals'
+    },
+    {
+      id: 'mesomorph',
+      name: 'Mesomorph',
+      description: 'Athletic build, gains muscle easily',
+      maleIcon: '🏋️‍♂️',
+      femaleIcon: '🏋️‍♀️',
+      characteristics: ['Muscular build', 'Gains muscle easily', 'Moderate metabolism'],
+      dietFocus: 'Balanced macros, moderate calories, pre/post workout nutrition'
+    },
+    {
+      id: 'endomorph',
+      name: 'Endomorph',
+      description: 'Larger frame, slower metabolism',
+      maleIcon: '👨‍💼',
+      femaleIcon: '👩‍💼',
+      characteristics: ['Larger frame', 'Slower metabolism', 'Gains weight easily'],
+      dietFocus: 'Lower carbs, higher protein, portion control'
+    },
+    {
       id: 'apple',
       name: 'Apple Shape',
       description: 'Weight carried around midsection',
@@ -36,24 +63,6 @@ const BodyShapeSelector = ({ value, onChange, gender }: BodyShapeSelectorProps) 
       femaleIcon: '⏳',
       characteristics: ['Balanced shoulders/hips', 'Defined waist', 'Proportionate build'],
       dietFocus: 'Balanced macronutrients, portion control'
-    },
-    {
-      id: 'rectangle',
-      name: 'Rectangle Shape',
-      description: 'Straight, athletic build',
-      maleIcon: '📱',
-      femaleIcon: '📱',
-      characteristics: ['Similar waist/hip measurements', 'Athletic build', 'Less defined waist'],
-      dietFocus: 'Higher protein for muscle definition'
-    },
-    {
-      id: 'inverted_triangle',
-      name: 'Inverted Triangle',
-      description: 'Broader shoulders, narrower hips',
-      maleIcon: '🔺',
-      femaleIcon: '🔺',
-      characteristics: ['Broad shoulders', 'Narrow waist', 'Slim hips'],
-      dietFocus: 'Balanced diet with healthy carbs for lower body'
     }
   ];
 
