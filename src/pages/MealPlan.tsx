@@ -1,3 +1,4 @@
+
 import MealRecipeDialog from "@/components/MealRecipeDialog";
 import ShoppingListDialog from "@/components/ShoppingListDialog";
 import MealExchangeDialog from "@/components/MealExchangeDialog";
@@ -74,13 +75,6 @@ const MealPlan = () => {
     Math.round(currentWeekPlan.weeklyPlan.total_calories / 7) : 2000;
 
   // Calculate weekly overview from actual data
-  const getDayCalories = (dayNumber: number): number => {
-    if (!currentWeekPlan?.dailyMeals) return 0;
-    return currentWeekPlan.dailyMeals
-      .filter(meal => meal.day_number === dayNumber)
-      .reduce((sum, meal) => sum + (meal.calories || 0), 0);
-  };
-
   const weeklyOverview = [
     { day: "Mon", calories: getDayCalories(1), status: selectedDayNumber === 1 ? "current" as const : "planned" as const },
     { day: "Tue", calories: getDayCalories(2), status: selectedDayNumber === 2 ? "current" as const : "planned" as const },
