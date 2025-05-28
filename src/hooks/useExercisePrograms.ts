@@ -13,7 +13,13 @@ export const useExercisePrograms = () => {
       
       const { data, error } = await supabase
         .from('weekly_exercise_programs')
-        .select('*')
+        .select(`
+          *,
+          daily_workouts:daily_workouts(
+            *,
+            exercises:exercises(*)
+          )
+        `)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
