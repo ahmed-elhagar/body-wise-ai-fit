@@ -36,9 +36,9 @@ export const useAIMealPlan = () => {
           throw new Error('You have reached your AI generation limit (5 generations max). Please contact admin to increase your limit.');
         }
 
-        console.log('Generating meal plan with enhanced prompt for user:', user.id);
+        console.log('Generating enhanced 7-day meal plan for user:', user.id);
 
-        // Call the improved edge function
+        // Call the enhanced edge function
         const { data, error } = await supabase.functions.invoke('generate-meal-plan', {
           body: {
             userProfile: {
@@ -47,10 +47,10 @@ export const useAIMealPlan = () => {
               email: user.email
             },
             preferences: {
-              duration: preferences.duration || "1",
+              duration: "7", // Force 7 days
               cuisine: preferences.cuisine || profile.nationality || "International",
               maxPrepTime: preferences.maxPrepTime || "30",
-              mealTypes: preferences.mealTypes || "5",
+              mealTypes: "5", // Force 5 meals per day
               ...preferences
             }
           }
@@ -65,7 +65,19 @@ export const useAIMealPlan = () => {
           throw new Error('No meal plan was generated. Please try again.');
         }
 
-        console.log('Generated meal plan structure:', data.generatedPlan);
+        console.log('Generated 7-day meal plan structure:', data.generatedPlan);
+
+        // Validate the plan has 7 days
+        if (!data.generatedPlan.days || data.generatedPlan.days.length !== 7) {
+          throw new Error('Generated plan must contain exactly 7 days');
+        }
+
+        // Validate each day has 5 meals
+        for (const day of data.generatedPlan.days) {
+          if (!day.meals || day.meals.length !== 5) {
+            throw new Error(`Day ${day.dayNumber} must have exactly 5 meals`);
+          }
+        }
 
         // Decrement AI generations
         const { error: updateError } = await supabase
@@ -109,9 +121,9 @@ export const useAIMealPlan = () => {
 
         console.log('Saved weekly meal plan:', weeklyPlan);
 
-        // Save daily meals with enhanced data structure
+        // Save all 7 days of meals (5 meals per day = 35 total meals)
         if (data.generatedPlan.days && Array.isArray(data.generatedPlan.days)) {
-          console.log(`Saving ${data.generatedPlan.days.length} days of meals`);
+          console.log(`Saving ${data.generatedPlan.days.length} days with ${data.generatedPlan.days.reduce((total, day) => total + (day.meals?.length || 0), 0)} total meals`);
           
           for (const day of data.generatedPlan.days) {
             if (day.meals && Array.isArray(day.meals)) {
@@ -144,22 +156,23 @@ export const useAIMealPlan = () => {
           }
         }
 
-        console.log('Meal plan generation completed successfully');
+        console.log('Enhanced 7-day meal plan generation completed successfully');
         return data.generatedPlan;
       } catch (error: any) {
-        console.error('Error in meal plan generation workflow:', error);
+        console.error('Error in enhanced meal plan generation workflow:', error);
         throw error;
       }
     },
     onSuccess: (data) => {
-      toast.success('AI meal plan generated successfully! Your personalized plan is ready.');
+      toast.success('🎉 7-day AI meal plan generated successfully! Your personalized weekly plan with food database is ready.');
       queryClient.invalidateQueries({ queryKey: ['meal-plans'] });
       queryClient.invalidateQueries({ queryKey: ['weekly-meal-plan'] });
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ['food-search'] });
     },
     onError: (error: any) => {
-      console.error('Meal plan generation failed:', error);
-      toast.error(`Failed to generate meal plan: ${error.message}`);
+      console.error('Enhanced meal plan generation failed:', error);
+      toast.error(`Failed to generate 7-day meal plan: ${error.message}`);
     },
   });
 
