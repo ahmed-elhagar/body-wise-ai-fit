@@ -19,13 +19,14 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
-  const { signIn, signUp, user } = useAuth();
+  const { signIn, signUp, user, loading: authLoading } = useAuth();
   const { profile, isLoading: profileLoading } = useProfile();
   const navigate = useNavigate();
 
   // Redirect logic for authenticated users
   useEffect(() => {
-    if (!user) return;
+    // Don't redirect if still loading auth or if no user
+    if (authLoading || !user) return;
 
     console.log('Auth - User authenticated, checking redirect:', {
       userId: user.id,
@@ -34,7 +35,7 @@ const Auth = () => {
       onboardingCompleted: profile?.onboarding_completed
     });
     
-    // If profile is still loading, wait
+    // If profile is still loading, wait a bit more
     if (profileLoading) {
       console.log('Auth - Profile still loading, waiting...');
       return;
@@ -48,7 +49,7 @@ const Auth = () => {
       console.log('Auth - Redirecting to dashboard (complete profile)');
       navigate('/dashboard', { replace: true });
     }
-  }, [user, profile, profileLoading, navigate]);
+  }, [user, profile, profileLoading, authLoading, navigate]);
 
   const validateForm = () => {
     if (!email || !password) {
@@ -77,7 +78,6 @@ const Auth = () => {
     try {
       await signIn(email, password);
       console.log('Sign in successful');
-      // Navigation will be handled by useEffect
     } catch (error: any) {
       console.error('Sign in error:', error);
       toast.error(error.message || 'Failed to sign in');
@@ -98,7 +98,6 @@ const Auth = () => {
       });
       console.log('Sign up successful, will redirect to onboarding');
       toast.success('Account created! Please complete your profile.');
-      // Navigation will be handled by useEffect after user state updates
     } catch (error: any) {
       console.error('Sign up error:', error);
       toast.error(error.message || 'Failed to sign up');
@@ -108,20 +107,7 @@ const Auth = () => {
   };
 
   // Show loading if user exists and we're determining where to redirect
-  if (user && (profileLoading || (!profile && profileLoading !== false))) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-fitness-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Redirecting...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // If user is authenticated and we've determined the profile state, let useEffect handle redirect
-  // This prevents the auth form from briefly showing before redirect
-  if (user && !profileLoading) {
+  if (user && (authLoading || profileLoading)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
         <div className="text-center">
@@ -227,9 +213,9 @@ const Auth = () => {
           <Button 
             type="submit" 
             className="w-full h-11 bg-fitness-gradient hover:opacity-90 text-white font-medium shadow-lg"
-            disabled={loading}
+            disabled={loading || authLoading}
           >
-            {loading ? (
+            {loading || authLoading ? (
               <div className="flex items-center space-x-2">
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 <span>Please wait...</span>
@@ -251,6 +237,7 @@ const Auth = () => {
               setLastName("");
             }}
             className="text-sm hover:bg-gray-100"
+            disabled={loading || authLoading}
           >
             {isSignUp 
               ? "Already have an account? Sign in" 

@@ -31,29 +31,9 @@ export default function ProtectedRoute({
       requireProfile,
       adminOnly
     });
-    
-    if (profile) {
-      console.log('ProtectedRoute - Profile details:', { 
-        profileUserId: profile.id,
-        profileEmail: profile.email,
-        hasFirstName: !!profile.first_name,
-        hasLastName: !!profile.last_name,
-        onboardingCompleted: profile.onboarding_completed
-      });
-    }
-
-    // Validate that profile belongs to current user
-    if (user && profile && profile.id !== user.id) {
-      console.error('CRITICAL: User/Profile mismatch detected!', {
-        currentUserId: user.id,
-        currentUserEmail: user.email,
-        profileUserId: profile.id,
-        profileEmail: profile.email
-      });
-    }
   }, [user, authLoading, profileLoading, isAdmin, profile, requireProfile, adminOnly]);
 
-  // Show loading only while authentication is loading
+  // Show loading while authentication is being determined
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
@@ -77,8 +57,13 @@ export default function ProtectedRoute({
     return <Navigate to="/dashboard" replace />;
   }
 
-  // If profile is required, show loading while profile is loading
-  if (requireProfile && profileLoading) {
+  // If profile is not required, show content immediately
+  if (!requireProfile) {
+    return <>{children}</>;
+  }
+
+  // Profile is required - show loading while profile loads
+  if (profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
         <div className="text-center">
@@ -89,30 +74,22 @@ export default function ProtectedRoute({
     );
   }
 
-  // If profile is required but doesn't exist or lacks essential fields
-  if (requireProfile) {
-    // No profile data at all, redirect to onboarding
-    if (!profile) {
-      console.log('ProtectedRoute - No profile found, redirecting to onboarding');
-      return <Navigate to="/onboarding" replace />;
-    }
-    
-    // Validate profile belongs to current user
-    if (profile.id !== user.id) {
-      console.error('ProtectedRoute - Profile/User ID mismatch, forcing logout');
-      // This is a critical security issue - force logout
-      return <Navigate to="/auth" replace />;
-    }
-    
-    // Profile exists but missing essential data or onboarding not completed
-    if (!profile.first_name || !profile.last_name || !profile.onboarding_completed) {
-      console.log('ProtectedRoute - Profile incomplete, redirecting to onboarding', {
-        hasFirstName: !!profile.first_name,
-        hasLastName: !!profile.last_name,
-        onboardingCompleted: profile.onboarding_completed
-      });
-      return <Navigate to="/onboarding" replace />;
-    }
+  // Profile is required but doesn't exist
+  if (!profile) {
+    console.log('ProtectedRoute - No profile found, redirecting to onboarding');
+    return <Navigate to="/onboarding" replace />;
+  }
+  
+  // Validate profile belongs to current user
+  if (profile.id !== user.id) {
+    console.error('ProtectedRoute - Profile/User ID mismatch, forcing logout');
+    return <Navigate to="/auth" replace />;
+  }
+  
+  // Profile exists but missing essential data or onboarding not completed
+  if (!profile.first_name || !profile.last_name || !profile.onboarding_completed) {
+    console.log('ProtectedRoute - Profile incomplete, redirecting to onboarding');
+    return <Navigate to="/onboarding" replace />;
   }
 
   return <>{children}</>;
