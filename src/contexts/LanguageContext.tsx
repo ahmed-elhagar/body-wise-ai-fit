@@ -18,6 +18,11 @@ const translations = {
     'nav.profile': 'Profile',
     'nav.calorieChecker': 'Calorie Checker',
     'nav.aiChat': 'AI Chat',
+    'nav.adminPanel': 'Admin Panel',
+    'nav.signOut': 'Sign Out',
+    'nav.aiCallsLeft': 'AI calls left',
+    'nav.welcomeBack': 'Welcome back!',
+    'nav.aiPoweredFitness': 'AI-Powered Fitness Companion',
     
     // Dashboard
     'dashboard.welcome': 'Welcome back',
@@ -31,6 +36,36 @@ const translations = {
     'dashboard.completeProfile': 'Complete profile',
     'dashboard.setYourGoal': 'Set your goal',
     'dashboard.notSet': 'Not set',
+    'dashboard.trackProgress': 'Track your fitness journey and achieve your goals with AI-powered insights.',
+    'dashboard.generatingContent': 'Generating Your Personalized Content',
+    'dashboard.generatingDescription': 'Our AI is creating your customized meal plans and exercise programs based on your profile...',
+    'dashboard.pleaseWait': 'This may take 30-60 seconds. Please don\'t refresh the page.',
+    
+    // Quick Actions
+    'quickActions.title': 'Quick Actions',
+    'quickActions.logWeight': 'Log Weight',
+    'quickActions.trackProgress': 'Track your progress',
+    'quickActions.logFood': 'Log Food',
+    'quickActions.checkCalories': 'Check calories',
+    'quickActions.mealPlan': 'Meal Plan',
+    'quickActions.viewWeeklyMeals': 'View weekly meals',
+    'quickActions.workout': 'Workout',
+    'quickActions.startExercising': 'Start exercising',
+    'quickActions.updateGoals': 'Update Goals',
+    'quickActions.modifyTargets': 'Modify your targets',
+    'quickActions.schedule': 'Schedule',
+    'quickActions.planWeek': 'Plan your week',
+    
+    // Recent Activity
+    'recentActivity.title': 'Recent Activity',
+    'recentActivity.noActivity': 'No activity yet. Start by logging your weight or creating a meal plan!',
+    'recentActivity.loggedWeight': 'Logged weight',
+    'recentActivity.createdMealPlan': 'Created meal plan for week of',
+    'recentActivity.createdProgram': 'Created',
+    'recentActivity.program': 'program',
+    'recentActivity.badges.weight': 'Weight',
+    'recentActivity.badges.nutrition': 'Nutrition',
+    'recentActivity.badges.exercise': 'Exercise',
     
     // Meal Plan
     'mealPlan.title': 'Meal Plan',
@@ -46,6 +81,7 @@ const translations = {
     'mealPlan.mealsPlanned': 'meals planned',
     'mealPlan.loading': 'Loading meal plan...',
     'mealPlan.generating': 'Generating your personalized meal plan...',
+    'mealPlan.daysMeals': '\'s Meals',
     
     // Add Snack Dialog
     'addSnack.title': 'Add AI-Generated Snack',
@@ -83,7 +119,23 @@ const translations = {
     'day.thursday': 'Thursday',
     'day.friday': 'Friday',
     'day.saturday': 'Saturday',
-    'day.sunday': 'Sunday'
+    'day.sunday': 'Sunday',
+    
+    // Common
+    'common.loading': 'Loading...',
+    'common.error': 'Error',
+    'common.success': 'Success',
+    'common.cancel': 'Cancel',
+    'common.save': 'Save',
+    'common.delete': 'Delete',
+    'common.edit': 'Edit',
+    'common.add': 'Add',
+    'common.remove': 'Remove',
+    'common.kg': 'kg',
+    'common.calories': 'calories',
+    'common.protein': 'protein',
+    'common.carbs': 'carbs',
+    'common.fat': 'fat'
   },
   ar: {
     // Navigation
@@ -94,6 +146,11 @@ const translations = {
     'nav.profile': 'الملف الشخصي',
     'nav.calorieChecker': 'فاحص السعرات',
     'nav.aiChat': 'الدردشة الذكية',
+    'nav.adminPanel': 'لوحة الإدارة',
+    'nav.signOut': 'تسجيل الخروج',
+    'nav.aiCallsLeft': 'استدعاءات الذكاء الاصطناعي المتبقية',
+    'nav.welcomeBack': 'مرحباً بعودتك!',
+    'nav.aiPoweredFitness': 'مساعد اللياقة بالذكاء الاصطناعي',
     
     // Dashboard
     'dashboard.welcome': 'مرحباً بعودتك',
@@ -107,6 +164,36 @@ const translations = {
     'dashboard.completeProfile': 'أكمل الملف الشخصي',
     'dashboard.setYourGoal': 'حدد هدفك',
     'dashboard.notSet': 'غير محدد',
+    'dashboard.trackProgress': 'تتبع رحلة لياقتك وحقق أهدافك بالذكاء الاصطناعي.',
+    'dashboard.generatingContent': 'إنشاء المحتوى المخصص لك',
+    'dashboard.generatingDescription': 'الذكاء الاصطناعي ينشئ خطط الوجبات وبرامج التمارين المخصصة بناءً على ملفك الشخصي...',
+    'dashboard.pleaseWait': 'قد يستغرق هذا 30-60 ثانية. يرجى عدم تحديث الصفحة.',
+    
+    // Quick Actions
+    'quickActions.title': 'الإجراءات السريعة',
+    'quickActions.logWeight': 'تسجيل الوزن',
+    'quickActions.trackProgress': 'تتبع تقدمك',
+    'quickActions.logFood': 'تسجيل الطعام',
+    'quickActions.checkCalories': 'فحص السعرات',
+    'quickActions.mealPlan': 'خطة الوجبات',
+    'quickActions.viewWeeklyMeals': 'عرض الوجبات الأسبوعية',
+    'quickActions.workout': 'التمرين',
+    'quickActions.startExercising': 'بدء التمرين',
+    'quickActions.updateGoals': 'تحديث الأهداف',
+    'quickActions.modifyTargets': 'تعديل أهدافك',
+    'quickActions.schedule': 'الجدولة',
+    'quickActions.planWeek': 'خطط أسبوعك',
+    
+    // Recent Activity
+    'recentActivity.title': 'النشاط الأخير',
+    'recentActivity.noActivity': 'لا يوجد نشاط بعد. ابدأ بتسجيل وزنك أو إنشاء خطة وجبات!',
+    'recentActivity.loggedWeight': 'سجل الوزن',
+    'recentActivity.createdMealPlan': 'أنشأ خطة وجبات لأسبوع',
+    'recentActivity.createdProgram': 'أنشأ',
+    'recentActivity.program': 'برنامج',
+    'recentActivity.badges.weight': 'الوزن',
+    'recentActivity.badges.nutrition': 'التغذية',
+    'recentActivity.badges.exercise': 'التمرين',
     
     // Meal Plan
     'mealPlan.title': 'خطة الوجبات',
@@ -122,6 +209,7 @@ const translations = {
     'mealPlan.mealsPlanned': 'وجبات مخططة',
     'mealPlan.loading': 'تحميل خطة الوجبات...',
     'mealPlan.generating': 'إنشاء خطة وجباتك المخصصة...',
+    'mealPlan.daysMeals': 'وجبات ',
     
     // Add Snack Dialog
     'addSnack.title': 'إضافة وجبة خفيفة بالذكاء الاصطناعي',
@@ -159,7 +247,23 @@ const translations = {
     'day.thursday': 'الخميس',
     'day.friday': 'الجمعة',
     'day.saturday': 'السبت',
-    'day.sunday': 'الأحد'
+    'day.sunday': 'الأحد',
+    
+    // Common
+    'common.loading': 'جاري التحميل...',
+    'common.error': 'خطأ',
+    'common.success': 'نجح',
+    'common.cancel': 'إلغاء',
+    'common.save': 'حفظ',
+    'common.delete': 'حذف',
+    'common.edit': 'تعديل',
+    'common.add': 'إضافة',
+    'common.remove': 'إزالة',
+    'common.kg': 'كيلو',
+    'common.calories': 'سعرات',
+    'common.protein': 'بروتين',
+    'common.carbs': 'كربوهيدرات',
+    'common.fat': 'دهون'
   }
 };
 

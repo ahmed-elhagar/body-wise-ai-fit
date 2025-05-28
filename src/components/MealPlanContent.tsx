@@ -44,7 +44,7 @@ const MealPlanContent = ({
       <div className="lg:col-span-3 lg:order-2 order-1">
         <div className={`flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 ${isRTL ? 'text-right' : 'text-left'}`}>
           <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2 sm:mb-0">
-            {dayNames[selectedDayNumber - 1]}'s Meals
+            {isRTL ? `${t('mealPlan.daysMeals')}${dayNames[selectedDayNumber - 1]}` : `${dayNames[selectedDayNumber - 1]}${t('mealPlan.daysMeals')}`}
           </h2>
           <Badge variant="outline" className="bg-white/80 self-start sm:self-auto">
             {todaysMeals.length} {t('mealPlan.mealsPlanned')}
