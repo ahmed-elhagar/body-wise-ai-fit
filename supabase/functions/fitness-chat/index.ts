@@ -27,30 +27,50 @@ serve(async (req) => {
         age: userProfile.age, 
         gender: userProfile.gender,
         fitness_goal: userProfile.fitness_goal 
-      } : null 
+      } : null,
+      historyLength: chatHistory?.length || 0
     });
 
-    // Create system message with user context
-    const systemMessage = `You are FitGenie, an AI fitness and nutrition coach. You have access to the user's profile:
-        - Age: ${userProfile?.age || 'Unknown'}, Gender: ${userProfile?.gender || 'Unknown'}
-        - Height: ${userProfile?.height || 'Unknown'}cm, Weight: ${userProfile?.weight || 'Unknown'}kg
-        - Fitness Goal: ${userProfile?.fitness_goal || 'general health'}
-        - Activity Level: ${userProfile?.activity_level || 'moderate'}
-        - Body Shape: ${userProfile?.body_shape || 'average'}
-        - Nationality: ${userProfile?.nationality || 'International'}
-        - Health Conditions: ${userProfile?.health_conditions?.join(', ') || 'None'}
-        - Allergies: ${userProfile?.allergies?.join(', ') || 'None'}
-        
-        Provide personalized, evidence-based advice on fitness, nutrition, and wellness. Be encouraging, motivational, and practical. Keep responses concise but helpful. Consider cultural preferences when giving nutrition advice.`;
+    // Create comprehensive system message with user context
+    const systemMessage = `You are FitGenie, an expert AI fitness and nutrition coach. You provide personalized, evidence-based advice with a friendly and motivational tone.
 
-    // Build messages array
+USER PROFILE:
+- Age: ${userProfile?.age || 'Unknown'}, Gender: ${userProfile?.gender || 'Unknown'}
+- Height: ${userProfile?.height || 'Unknown'}cm, Weight: ${userProfile?.weight || 'Unknown'}kg
+- Fitness Goal: ${userProfile?.fitness_goal || 'general health'}
+- Activity Level: ${userProfile?.activity_level || 'moderate'}
+- Body Shape: ${userProfile?.body_shape || 'average'}
+- Nationality: ${userProfile?.nationality || 'International'}
+- Health Conditions: ${userProfile?.health_conditions?.join(', ') || 'None specified'}
+- Allergies: ${userProfile?.allergies?.join(', ') || 'None specified'}
+
+RESPONSE GUIDELINES:
+1. Be conversational, supportive, and motivating
+2. Provide actionable, specific advice
+3. Use proper formatting with headers (##), bold text (**), and bullet points (-) for clarity
+4. Consider cultural preferences for nutrition advice
+5. Ask follow-up questions to better understand user needs
+6. Reference previous conversation context when relevant
+7. Break down complex information into digestible sections
+8. Include practical tips and realistic expectations
+
+Always format your responses with:
+- Clear headings for different sections
+- Bold text for key points
+- Numbered or bulleted lists for steps/tips
+- Encouraging and positive language`;
+
+    // Build messages array with proper conversation history
     const messages = [
       { role: 'system', content: systemMessage },
       ...(chatHistory || []),
       { role: 'user', content: message }
     ];
 
-    console.log('Sending messages to OpenAI:', messages);
+    console.log('Sending messages to OpenAI:', {
+      messageCount: messages.length,
+      userMessage: message
+    });
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -62,7 +82,9 @@ serve(async (req) => {
         model: 'gpt-4o-mini',
         messages: messages,
         temperature: 0.7,
-        max_tokens: 1000,
+        max_tokens: 1500,
+        presence_penalty: 0.1,
+        frequency_penalty: 0.1,
       }),
     });
 
@@ -71,11 +93,11 @@ serve(async (req) => {
       console.error('OpenAI API error:', response.status, errorText);
       
       if (response.status === 429) {
-        throw new Error('OpenAI API rate limit exceeded. Please try again in a few minutes.');
+        throw new Error('Our AI coach is currently busy. Please try again in a few minutes.');
       } else if (response.status === 401) {
-        throw new Error('OpenAI API key is invalid. Please check your API key configuration.');
+        throw new Error('AI service configuration error. Please contact support.');
       } else {
-        throw new Error(`OpenAI API error: ${response.status}`);
+        throw new Error(`AI service temporarily unavailable (${response.status}). Please try again.`);
       }
     }
 
@@ -83,7 +105,7 @@ serve(async (req) => {
     
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
       console.error('Invalid OpenAI response structure:', data);
-      throw new Error('Invalid response from OpenAI API');
+      throw new Error('Invalid response from AI service');
     }
 
     const aiResponse = data.choices[0].message.content;

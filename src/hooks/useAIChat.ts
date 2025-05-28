@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useProfile } from './useProfile';
 import { toast } from 'sonner';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export interface ChatMessage {
   id: string;
@@ -20,6 +20,27 @@ export const useAIChat = () => {
   const { profile } = useProfile();
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
 
+  // Load chat history from localStorage on mount
+  useEffect(() => {
+    if (user?.id) {
+      const savedHistory = localStorage.getItem(`chat_history_${user.id}`);
+      if (savedHistory) {
+        try {
+          setChatHistory(JSON.parse(savedHistory));
+        } catch (error) {
+          console.error('Failed to load chat history:', error);
+        }
+      }
+    }
+  }, [user?.id]);
+
+  // Save chat history to localStorage whenever it changes
+  useEffect(() => {
+    if (user?.id && chatHistory.length > 0) {
+      localStorage.setItem(`chat_history_${user.id}`, JSON.stringify(chatHistory));
+    }
+  }, [chatHistory, user?.id]);
+
   const sendMessage = useMutation({
     mutationFn: async (message: string) => {
       if (!user?.id) {
@@ -27,20 +48,21 @@ export const useAIChat = () => {
       }
 
       console.log('Sending message:', message);
-      console.log('Current chat history:', chatHistory);
+      console.log('Current chat history length:', chatHistory.length);
       console.log('Current user profile:', profile);
 
       try {
+        // Convert chat history to the format expected by the API
+        const apiChatHistory = chatHistory.map(msg => ({
+          role: msg.message_type === 'user' ? 'user' : 'assistant',
+          content: msg.message_type === 'user' ? msg.message : msg.response
+        }));
+
         const { data, error } = await supabase.functions.invoke('fitness-chat', {
           body: {
             message,
             userProfile: profile || {}, // Ensure we always send an object even if profile is null
-            chatHistory: chatHistory.map(msg => ({
-              message_type: msg.message_type,
-              message: msg.message,
-              response: msg.response,
-              created_at: msg.created_at
-            }))
+            chatHistory: apiChatHistory
           }
         });
 
@@ -56,12 +78,7 @@ export const useAIChat = () => {
           // Prepare data for JSON storage
           const promptData = {
             message,
-            chatHistory: chatHistory.map(msg => ({
-              message_type: msg.message_type,
-              message: msg.message,
-              response: msg.response,
-              created_at: msg.created_at
-            }))
+            chatHistory: apiChatHistory
           };
 
           const responseData = {
@@ -112,6 +129,9 @@ export const useAIChat = () => {
 
   const clearHistory = () => {
     setChatHistory([]);
+    if (user?.id) {
+      localStorage.removeItem(`chat_history_${user.id}`);
+    }
   };
 
   return {
