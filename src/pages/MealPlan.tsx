@@ -1,4 +1,3 @@
-
 import MealRecipeDialog from "@/components/MealRecipeDialog";
 import ShoppingListDialog from "@/components/ShoppingListDialog";
 import MealExchangeDialog from "@/components/MealExchangeDialog";
@@ -10,6 +9,7 @@ import DaySelector from "@/components/DaySelector";
 import EmptyMealPlan from "@/components/EmptyMealPlan";
 import MealPlanContent from "@/components/MealPlanContent";
 import WeeklyMealPlanView from "@/components/WeeklyMealPlanView";
+import AddSnackDialog from "@/components/AddSnackDialog";
 import Navigation from "@/components/Navigation";
 import { useMealPlanLogic } from "@/hooks/useMealPlanLogic";
 import { useInitialAIGeneration } from "@/hooks/useInitialAIGeneration";
@@ -17,11 +17,12 @@ import { formatDate, getCurrentDayOfWeek, transformDailyMealsToMeals } from "@/u
 import { toast } from "sonner";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Calendar, Grid } from "lucide-react";
+import { Calendar, Grid, Plus } from "lucide-react";
 
 const MealPlan = () => {
   const { isGeneratingContent, hasExistingContent } = useInitialAIGeneration();
   const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
+  const [showAddSnackDialog, setShowAddSnackDialog] = useState(false);
   const {
     showAIDialog,
     selectedMeal,
@@ -125,6 +126,11 @@ const MealPlan = () => {
     );
   }
 
+  const handleSnackAdded = () => {
+    // Refresh the meal plan data
+    window.location.reload();
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex">
       <Navigation />
@@ -146,10 +152,10 @@ const MealPlan = () => {
             weekStartDate={currentWeekStart}
           />
 
-          {/* View Mode Toggle */}
+          {/* View Mode Toggle and Add Snack Button */}
           {currentWeekPlan && (
             <div className="mb-6 flex justify-center">
-              <div className="bg-white/80 backdrop-blur-sm rounded-lg p-1 shadow-lg">
+              <div className="bg-white/80 backdrop-blur-sm rounded-lg p-1 shadow-lg flex items-center gap-2">
                 <Button
                   variant={viewMode === 'daily' ? 'default' : 'ghost'}
                   className={`${viewMode === 'daily' ? 'bg-fitness-gradient text-white' : ''}`}
@@ -166,6 +172,16 @@ const MealPlan = () => {
                   <Grid className="w-4 h-4 mr-2" />
                   Weekly View
                 </Button>
+                {viewMode === 'daily' && (
+                  <Button
+                    variant="outline"
+                    className="ml-2 border-fitness-primary text-fitness-primary hover:bg-fitness-primary hover:text-white"
+                    onClick={() => setShowAddSnackDialog(true)}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Snack
+                  </Button>
+                )}
               </div>
             </div>
           )}
@@ -214,6 +230,14 @@ const MealPlan = () => {
           onPreferencesChange={setAiPreferences}
           onGenerate={handleGenerateAIPlan}
           isGenerating={isGenerating}
+        />
+
+        <AddSnackDialog
+          isOpen={showAddSnackDialog}
+          onClose={() => setShowAddSnackDialog(false)}
+          selectedDay={selectedDayNumber}
+          weeklyPlanId={currentWeekPlan?.weeklyPlan?.id || null}
+          onSnackAdded={handleSnackAdded}
         />
 
         <MealRecipeDialog
