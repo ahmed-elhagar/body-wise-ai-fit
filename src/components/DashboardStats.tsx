@@ -9,10 +9,10 @@ const DashboardStats = () => {
   const { profile } = useProfile();
   const { weightEntries, isLoading: weightLoading } = useWeightTracking();
 
-  console.log('Profile data:', profile);
-  console.log('Weight entries:', weightEntries);
+  console.log('Dashboard - Profile data:', profile);
+  console.log('Dashboard - Weight entries:', weightEntries);
 
-  // Get the most recent weight entry that belongs to the current user
+  // Get the most recent weight entry for the current user
   const currentWeight = weightEntries && weightEntries.length > 0 ? weightEntries[0]?.weight : null;
   const previousWeight = weightEntries && weightEntries.length > 1 ? weightEntries[1]?.weight : null;
   const weightChange = currentWeight && previousWeight ? currentWeight - previousWeight : null;
@@ -28,6 +28,7 @@ const DashboardStats = () => {
   };
 
   const calculateBMI = () => {
+    // Use current weight from weight tracking if available, otherwise use profile weight
     const weight = currentWeight || profile?.weight;
     if (!profile?.height || !weight) return null;
     return (weight / Math.pow(profile.height / 100, 2)).toFixed(1);
