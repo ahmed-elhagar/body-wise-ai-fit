@@ -11,6 +11,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, metadata?: any) => Promise<void>;
   signOut: () => Promise<void>;
+  forceLogoutAllUsers: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -158,6 +159,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const forceLogoutAllUsers = async () => {
+    try {
+      const { error } = await supabase.rpc('force_logout_all_users');
+      if (error) throw error;
+      
+      toast.success('All users have been logged out successfully');
+      console.log('useAuth - Force logout all users successful');
+    } catch (error: any) {
+      console.error('useAuth - Force logout all users error:', error);
+      toast.error(`Failed to logout all users: ${error.message}`);
+      throw new Error(error.message || 'Failed to logout all users');
+    }
+  };
+
   const value = {
     user,
     loading,
@@ -165,6 +180,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     signIn,
     signUp,
     signOut,
+    forceLogoutAllUsers,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
