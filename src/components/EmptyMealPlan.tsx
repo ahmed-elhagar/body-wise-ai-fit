@@ -12,8 +12,14 @@ const EmptyMealPlan = ({ onGenerate }: EmptyMealPlanProps) => {
   const { t } = useLanguage();
 
   const handleRefresh = () => {
+    console.log('🔄 EmptyMealPlan: Force refresh triggered');
     // Force a hard refresh to clear any cached data
     window.location.reload();
+  };
+
+  const handleGenerate = () => {
+    console.log('🚀 EmptyMealPlan: Generate plan triggered');
+    onGenerate();
   };
 
   return (
@@ -24,7 +30,7 @@ const EmptyMealPlan = ({ onGenerate }: EmptyMealPlanProps) => {
       
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
         <Button 
-          onClick={onGenerate}
+          onClick={handleGenerate}
           className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white"
         >
           <Sparkles className="w-4 h-4 mr-2" />
@@ -37,12 +43,13 @@ const EmptyMealPlan = ({ onGenerate }: EmptyMealPlanProps) => {
           className="bg-white/50"
         >
           <RefreshCw className="w-4 h-4 mr-2" />
-          {t('loading')}
+          Refresh Page
         </Button>
       </div>
       
-      <div className="mt-4 text-sm text-gray-500">
+      <div className="mt-4 text-sm text-gray-500 space-y-1">
         <p>If you just generated a plan, try refreshing the page or check the current week.</p>
+        <p className="text-xs">Debug: Check console for detailed meal plan loading information.</p>
       </div>
     </Card>
   );

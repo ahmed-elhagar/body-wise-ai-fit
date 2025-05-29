@@ -36,6 +36,18 @@ export const useMealPlanState = () => {
 
   const weekStartDate = getWeekStartDate(currentWeekOffset);
 
+  // Enhanced logging for debugging
+  console.log('🔍 MEAL PLAN STATE DEBUG:', {
+    currentWeekOffset,
+    selectedDayNumber,
+    hasWeeklyPlan: !!currentWeekPlan?.weeklyPlan,
+    hasDailyMeals: !!currentWeekPlan?.dailyMeals,
+    dailyMealsCount: currentWeekPlan?.dailyMeals?.length || 0,
+    isLoading,
+    error: error?.message,
+    weekStartDate: weekStartDate.toDateString()
+  });
+
   // Log any errors for debugging
   if (error) {
     console.error('useDynamicMealPlan error:', error);
@@ -65,11 +77,18 @@ export const useMealPlanState = () => {
     youtube_search_term: dailyMeal.youtube_search_term
   }), []);
 
-  // Memoized today's meals with better filtering
+  // Memoized today's meals with better filtering and debugging
   const todaysMeals = useMemo(() => {
     const todaysDailyMeals = currentWeekPlan?.dailyMeals?.filter(meal => 
       meal.day_number === selectedDayNumber
     ) || [];
+    
+    console.log('🍽️ TODAY\'S MEALS DEBUG:', {
+      selectedDayNumber,
+      totalDailyMeals: currentWeekPlan?.dailyMeals?.length || 0,
+      filteredMealsCount: todaysDailyMeals.length,
+      meals: todaysDailyMeals.map(m => ({ day: m.day_number, type: m.meal_type, name: m.name }))
+    });
     
     return todaysDailyMeals.map(convertDailyMealToMeal);
   }, [currentWeekPlan?.dailyMeals, selectedDayNumber, convertDailyMealToMeal]);
