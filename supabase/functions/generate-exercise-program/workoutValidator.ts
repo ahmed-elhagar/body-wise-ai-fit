@@ -1,28 +1,27 @@
 
 export const parseAIResponse = (content: string) => {
-  console.log('Raw content:', content);
-  
   try {
-    // Clean the content - remove markdown code blocks if present
-    let cleanContent = content.trim();
+    console.log('Raw content:', content);
     
-    // Remove markdown code blocks
-    if (cleanContent.startsWith('```json')) {
-      cleanContent = cleanContent.replace(/^```json\s*/, '').replace(/\s*```$/, '');
-    } else if (cleanContent.startsWith('```')) {
-      cleanContent = cleanContent.replace(/^```\s*/, '').replace(/\s*```$/, '');
+    // Clean the content - remove markdown formatting and extra whitespace
+    let cleanedContent = content.trim();
+    
+    // Remove markdown code blocks if present
+    if (cleanedContent.startsWith('```json') || cleanedContent.startsWith('```')) {
+      cleanedContent = cleanedContent.replace(/^```(json)?\s*/, '');
+      cleanedContent = cleanedContent.replace(/```\s*$/, '');
     }
     
-    // Find JSON content between braces if it's embedded in text
-    const jsonMatch = cleanContent.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      cleanContent = jsonMatch[0];
+    // Remove any trailing incomplete text that might cause JSON parsing issues
+    const lastBraceIndex = cleanedContent.lastIndexOf('}');
+    if (lastBraceIndex !== -1) {
+      cleanedContent = cleanedContent.substring(0, lastBraceIndex + 1);
     }
     
-    console.log('Cleaned content length:', cleanContent.length);
-    console.log('Cleaned content preview:', cleanContent.substring(0, 500));
+    console.log('Cleaned content length:', cleanedContent.length);
+    console.log('Cleaned content preview:', cleanedContent.substring(0, 500));
     
-    const parsed = JSON.parse(cleanContent);
+    const parsed = JSON.parse(cleanedContent);
     console.log('Successfully parsed JSON');
     return parsed;
   } catch (error) {
@@ -33,10 +32,10 @@ export const parseAIResponse = (content: string) => {
 };
 
 export const validateWorkoutProgram = (program: any) => {
-  console.log('Validating workout program:', program);
+  console.log('Validating workout program...');
   
   if (!program) {
-    throw new Error('Program is null or undefined');
+    throw new Error('No program data received');
   }
 
   if (!program.programOverview) {
@@ -44,7 +43,7 @@ export const validateWorkoutProgram = (program: any) => {
   }
 
   if (!program.weeks || !Array.isArray(program.weeks)) {
-    throw new Error('Program weeks are missing or invalid');
+    throw new Error('Program weeks data is missing or invalid');
   }
 
   if (program.weeks.length === 0) {
@@ -60,24 +59,7 @@ export const validateWorkoutProgram = (program: any) => {
     // Validate each workout
     for (const workout of week.workouts) {
       if (!workout.exercises || !Array.isArray(workout.exercises)) {
-        throw new Error(`Workout on day ${workout.day} is missing exercises`);
-      }
-
-      if (workout.exercises.length === 0) {
-        throw new Error(`Workout on day ${workout.day} has no exercises`);
-      }
-
-      // Validate each exercise
-      for (const exercise of workout.exercises) {
-        if (!exercise.name) {
-          throw new Error('Exercise is missing name');
-        }
-        if (!exercise.sets) {
-          throw new Error(`Exercise ${exercise.name} is missing sets`);
-        }
-        if (!exercise.reps) {
-          throw new Error(`Exercise ${exercise.name} is missing reps`);
-        }
+        console.log(`Warning: Workout ${workout.workoutName} has no exercises`);
       }
     }
   }

@@ -23,7 +23,7 @@ export const useExerciseProgramQuery = (weekOffset: number = 0, workoutType: "ho
         weekOffset,
         workoutType,
         targetWeekStart: targetWeekStartString,
-        userId: user.id
+        userId: user.id.substring(0, 8) + '...'
       });
 
       // First try to get existing program for this specific week and workout type
@@ -54,7 +54,7 @@ export const useExerciseProgramQuery = (weekOffset: number = 0, workoutType: "ho
         return null;
       }
 
-      console.log('✅ Found program:', existingProgram.program_name);
+      console.log('✅ Found program:', existingProgram.program_name, 'with', existingProgram.daily_workouts?.length || 0, 'workouts');
 
       // Transform data and handle rest days
       const transformedProgram = {
@@ -65,8 +65,12 @@ export const useExerciseProgramQuery = (weekOffset: number = 0, workoutType: "ho
         daily_workouts: generateWeeklyWorkouts(existingProgram.daily_workouts || [], workoutType)
       } as ExerciseProgram;
 
+      console.log('✅ Transformed program with', transformedProgram.daily_workouts?.length, 'daily workouts');
+
       return transformedProgram;
     },
     enabled: !!user?.id,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
   });
 };

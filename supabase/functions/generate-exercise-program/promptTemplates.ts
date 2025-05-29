@@ -1,3 +1,4 @@
+
 export const createHomeWorkoutPrompt = (userData: any, preferences: any) => {
   return `You are a certified personal trainer creating a HOME WORKOUT program. Generate ONLY exercises that can be done at home with NO GYM EQUIPMENT.
 
@@ -6,46 +7,25 @@ USER PROFILE:
 - Gender: ${userData?.gender}
 - Weight: ${userData?.weight}kg, Height: ${userData?.height}cm
 - Fitness Goal: ${preferences?.goalType}
-- Activity Level: ${userData?.activity_level}
 - Fitness Level: ${preferences?.fitnessLevel}
 - Available Time: ${preferences?.availableTime} minutes per session
-- Health Conditions: ${userData?.health_conditions?.join(', ') || 'None'}
 
 STRICT HOME WORKOUT REQUIREMENTS:
-- ONLY bodyweight exercises (push-ups, squats, lunges, planks, burpees, mountain climbers, jumping jacks, etc.)
+- ONLY bodyweight exercises (push-ups, squats, lunges, planks, burpees)
 - ONLY resistance bands exercises (if mentioned)
 - ONLY light dumbbells exercises (if mentioned)
-- NO gym machines whatsoever
-- NO barbells or heavy equipment
-- NO gym-specific equipment
+- NO gym machines, barbells, or heavy equipment
 - Exercises must be doable in a small living space
-- Focus on functional movements and compound bodyweight exercises
 
-ABSOLUTELY FORBIDDEN EQUIPMENT/EXERCISES:
-- Leg press machine or any leg press variations
-- Bench press, lat pulldown, leg press, cable machines
-- Smith machine, squat rack, power rack
-- Barbells, heavy weights, gym machines
-- Any exercise requiring a gym membership
-- Pull-up bars (unless specifically mentioned as available)
-- Any machine-based exercises
-
-ALLOWED EQUIPMENT ONLY:
-- Bodyweight movements: push-ups, squats, lunges, planks, burpees, mountain climbers
-- Resistance bands: band pulls, band squats, band rows (optional)
-- Light dumbbells 5-20lbs: dumbbell curls, shoulder press, chest press (optional)
-- Yoga mat for floor exercises (optional)
-- Chair for tricep dips (household item)
-
-RESPONSE FORMAT - Return ONLY valid JSON:
+RESPONSE FORMAT - Return ONLY valid JSON (keep it concise):
 {
   "programOverview": {
     "name": "Home Bodyweight Program",
     "duration": "4 weeks",
     "difficulty": "${preferences?.fitnessLevel}",
-    "description": "Complete home workout program using only bodyweight and minimal equipment",
-    "goals": ["${preferences?.goalType}", "improve_fitness"],
-    "equipment": ["bodyweight", "resistance_bands_optional", "light_dumbbells_optional"]
+    "description": "Complete home workout program using only bodyweight",
+    "goals": ["${preferences?.goalType}"],
+    "equipment": ["bodyweight"]
   },
   "weeks": [
     {
@@ -65,9 +45,9 @@ RESPONSE FORMAT - Return ONLY valid JSON:
               "sets": 3,
               "reps": "8-12",
               "restSeconds": 60,
-              "muscleGroups": ["chest", "triceps", "shoulders"],
-              "instructions": "Keep body straight, lower chest to floor, push up explosively",
-              "youtubeSearchTerm": "proper push up form bodyweight",
+              "muscleGroups": ["chest", "triceps"],
+              "instructions": "Keep body straight, lower chest to floor, push up",
+              "youtubeSearchTerm": "proper push up form",
               "difficulty": "${preferences?.fitnessLevel}",
               "equipment": "bodyweight",
               "orderNumber": 1
@@ -77,21 +57,21 @@ RESPONSE FORMAT - Return ONLY valid JSON:
               "sets": 3,
               "reps": "6-10",
               "restSeconds": 60,
-              "muscleGroups": ["shoulders", "triceps"],
+              "muscleGroups": ["shoulders"],
               "instructions": "Form inverted V, lower head toward floor, push up",
-              "youtubeSearchTerm": "pike push up bodyweight shoulder exercise",
+              "youtubeSearchTerm": "pike push up",
               "difficulty": "${preferences?.fitnessLevel}",
               "equipment": "bodyweight",
               "orderNumber": 2
             },
             {
-              "name": "Tricep Dips (Chair)",
+              "name": "Tricep Dips",
               "sets": 3,
               "reps": "8-12",
               "restSeconds": 60,
-              "muscleGroups": ["triceps", "shoulders"],
-              "instructions": "Use chair or couch, lower body down, push up",
-              "youtubeSearchTerm": "chair tricep dips bodyweight",
+              "muscleGroups": ["triceps"],
+              "instructions": "Use chair, lower body down, push up",
+              "youtubeSearchTerm": "chair tricep dips",
               "difficulty": "${preferences?.fitnessLevel}",
               "equipment": "chair",
               "orderNumber": 3
@@ -99,12 +79,12 @@ RESPONSE FORMAT - Return ONLY valid JSON:
           ]
         },
         {
-          "day": 2,
-          "dayName": "Tuesday",
+          "day": 3,
+          "dayName": "Wednesday",
           "workoutName": "Lower Body Bodyweight",
           "estimatedDuration": ${preferences?.availableTime || 45},
           "estimatedCalories": 300,
-          "muscleGroups": ["legs", "glutes", "core"],
+          "muscleGroups": ["legs", "glutes"],
           "exercises": [
             {
               "name": "Bodyweight Squats",
@@ -112,8 +92,8 @@ RESPONSE FORMAT - Return ONLY valid JSON:
               "reps": "15-20",
               "restSeconds": 60,
               "muscleGroups": ["quadriceps", "glutes"],
-              "instructions": "Feet shoulder-width apart, lower hips back and down, stand up",
-              "youtubeSearchTerm": "bodyweight squat proper form",
+              "instructions": "Feet shoulder-width apart, lower hips back and down",
+              "youtubeSearchTerm": "bodyweight squat form",
               "difficulty": "${preferences?.fitnessLevel}",
               "equipment": "bodyweight",
               "orderNumber": 1
@@ -123,9 +103,9 @@ RESPONSE FORMAT - Return ONLY valid JSON:
               "sets": 3,
               "reps": "10-12 each leg",
               "restSeconds": 60,
-              "muscleGroups": ["quadriceps", "glutes", "hamstrings"],
-              "instructions": "Step forward, lower back knee toward floor, push back up",
-              "youtubeSearchTerm": "bodyweight lunges proper form",
+              "muscleGroups": ["quadriceps", "glutes"],
+              "instructions": "Step forward, lower back knee toward floor",
+              "youtubeSearchTerm": "bodyweight lunges",
               "difficulty": "${preferences?.fitnessLevel}",
               "equipment": "bodyweight",
               "orderNumber": 2
@@ -135,9 +115,9 @@ RESPONSE FORMAT - Return ONLY valid JSON:
               "sets": 3,
               "reps": "15-20",
               "restSeconds": 45,
-              "muscleGroups": ["glutes", "hamstrings"],
-              "instructions": "Lie on back, lift hips up, squeeze glutes at top",
-              "youtubeSearchTerm": "glute bridge bodyweight exercise",
+              "muscleGroups": ["glutes"],
+              "instructions": "Lie on back, lift hips up, squeeze glutes",
+              "youtubeSearchTerm": "glute bridge exercise",
               "difficulty": "${preferences?.fitnessLevel}",
               "equipment": "bodyweight",
               "orderNumber": 3
@@ -145,47 +125,47 @@ RESPONSE FORMAT - Return ONLY valid JSON:
           ]
         },
         {
-          "day": 3,
-          "dayName": "Wednesday",
-          "workoutName": "Lower Body Power",
+          "day": 5,
+          "dayName": "Friday",
+          "workoutName": "Full Body Circuit",
           "estimatedDuration": ${preferences?.availableTime || 45},
-          "estimatedCalories": 320,
-          "muscleGroups": ["legs", "glutes", "core"],
+          "estimatedCalories": 350,
+          "muscleGroups": ["full_body"],
           "exercises": [
             {
-              "name": "Jump Squats",
+              "name": "Burpees",
               "sets": 3,
-              "reps": "10-15",
+              "reps": "5-10",
               "restSeconds": 90,
-              "muscleGroups": ["quadriceps", "glutes", "calves"],
-              "instructions": "Squat down then explode up jumping as high as possible",
-              "youtubeSearchTerm": "jump squat bodyweight plyometric",
+              "muscleGroups": ["full_body"],
+              "instructions": "Squat, jump back to plank, push-up, jump forward, jump up",
+              "youtubeSearchTerm": "burpee exercise",
               "difficulty": "${preferences?.fitnessLevel}",
               "equipment": "bodyweight",
               "orderNumber": 1
             },
             {
-              "name": "Single Leg Squats (Pistol Progression)",
+              "name": "Mountain Climbers",
               "sets": 3,
-              "reps": "5-8 each leg",
-              "restSeconds": 90,
-              "muscleGroups": ["quadriceps", "glutes", "core"],
-              "instructions": "Stand on one leg, squat down as far as possible, return to standing",
-              "youtubeSearchTerm": "single leg squat bodyweight progression",
+              "reps": "20-30",
+              "restSeconds": 60,
+              "muscleGroups": ["core", "cardio"],
+              "instructions": "Plank position, alternate bringing knees to chest",
+              "youtubeSearchTerm": "mountain climbers exercise",
               "difficulty": "${preferences?.fitnessLevel}",
               "equipment": "bodyweight",
               "orderNumber": 2
             },
             {
-              "name": "Bulgarian Split Squats",
+              "name": "Plank",
               "sets": 3,
-              "reps": "10-12 each leg",
+              "reps": "30-60 seconds",
               "restSeconds": 60,
-              "muscleGroups": ["quadriceps", "glutes", "hamstrings"],
-              "instructions": "Rear foot elevated on chair, squat down on front leg",
-              "youtubeSearchTerm": "bulgarian split squat bodyweight",
+              "muscleGroups": ["core"],
+              "instructions": "Hold body straight from head to heels",
+              "youtubeSearchTerm": "plank exercise",
               "difficulty": "${preferences?.fitnessLevel}",
-              "equipment": "chair",
+              "equipment": "bodyweight",
               "orderNumber": 3
             }
           ]
@@ -195,12 +175,7 @@ RESPONSE FORMAT - Return ONLY valid JSON:
   ]
 }
 
-IMPORTANT: Replace ANY leg press, bench press, or machine exercise with appropriate bodyweight alternatives:
-- Instead of leg press → use squats, lunges, or jump squats
-- Instead of bench press → use push-ups or pike push-ups
-- Instead of machine exercises → use bodyweight or resistance band alternatives
-
-Create a complete 4-week program with ONLY bodyweight, resistance bands, and light dumbbell exercises. NO GYM EQUIPMENT ALLOWED.`;
+Create a focused 1-week program with 3 workout days. Keep JSON response under 3000 characters.`;
 };
 
 export const createGymWorkoutPrompt = (userData: any, preferences: any) => {
@@ -211,26 +186,23 @@ USER PROFILE:
 - Gender: ${userData?.gender}
 - Weight: ${userData?.weight}kg, Height: ${userData?.height}cm
 - Fitness Goal: ${preferences?.goalType}
-- Activity Level: ${userData?.activity_level}
 - Fitness Level: ${preferences?.fitnessLevel}
 - Available Time: ${preferences?.availableTime} minutes per session
-- Health Conditions: ${userData?.health_conditions?.join(', ') || 'None'}
 
 GYM WORKOUT REQUIREMENTS:
 - Full access to gym equipment: barbells, dumbbells, machines, cables
 - Progressive overload with proper weight training
 - Compound and isolation movements
-- 4-week progressive program with 4-5 workout days per week
 
-RESPONSE FORMAT - Return ONLY valid JSON:
+RESPONSE FORMAT - Return ONLY valid JSON (keep it concise):
 {
   "programOverview": {
     "name": "Gym Training Program",
     "duration": "4 weeks",
     "difficulty": "${preferences?.fitnessLevel}",
     "description": "Complete gym workout program with progressive overload",
-    "goals": ["${preferences?.goalType}", "strength_building"],
-    "equipment": ["barbells", "dumbbells", "machines", "cables"]
+    "goals": ["${preferences?.goalType}"],
+    "equipment": ["barbells", "dumbbells", "machines"]
   },
   "weeks": [
     {
@@ -243,16 +215,16 @@ RESPONSE FORMAT - Return ONLY valid JSON:
           "workoutName": "Upper Body Strength",
           "estimatedDuration": ${preferences?.availableTime || 45},
           "estimatedCalories": 350,
-          "muscleGroups": ["chest", "back", "shoulders", "arms"],
+          "muscleGroups": ["chest", "back", "shoulders"],
           "exercises": [
             {
               "name": "Bench Press",
               "sets": 3,
               "reps": "8-10",
               "restSeconds": 90,
-              "muscleGroups": ["chest", "triceps", "shoulders"],
+              "muscleGroups": ["chest", "triceps"],
               "instructions": "Lower bar to chest, press up explosively",
-              "youtubeSearchTerm": "bench press proper form",
+              "youtubeSearchTerm": "bench press form",
               "difficulty": "${preferences?.fitnessLevel}",
               "equipment": "barbell",
               "orderNumber": 1
@@ -268,6 +240,110 @@ RESPONSE FORMAT - Return ONLY valid JSON:
               "difficulty": "${preferences?.fitnessLevel}",
               "equipment": "cable_machine",
               "orderNumber": 2
+            },
+            {
+              "name": "Dumbbell Shoulder Press",
+              "sets": 3,
+              "reps": "10-12",
+              "restSeconds": 90,
+              "muscleGroups": ["shoulders"],
+              "instructions": "Press dumbbells overhead, keep core tight",
+              "youtubeSearchTerm": "dumbbell shoulder press",
+              "difficulty": "${preferences?.fitnessLevel}",
+              "equipment": "dumbbells",
+              "orderNumber": 3
+            }
+          ]
+        },
+        {
+          "day": 3,
+          "dayName": "Wednesday",
+          "workoutName": "Lower Body Strength",
+          "estimatedDuration": ${preferences?.availableTime || 45},
+          "estimatedCalories": 400,
+          "muscleGroups": ["legs", "glutes"],
+          "exercises": [
+            {
+              "name": "Squat",
+              "sets": 3,
+              "reps": "8-10",
+              "restSeconds": 90,
+              "muscleGroups": ["quads", "glutes"],
+              "instructions": "Keep chest up, lower until thighs parallel",
+              "youtubeSearchTerm": "squat proper form",
+              "difficulty": "${preferences?.fitnessLevel}",
+              "equipment": "barbell",
+              "orderNumber": 1
+            },
+            {
+              "name": "Leg Press",
+              "sets": 3,
+              "reps": "10-12",
+              "restSeconds": 90,
+              "muscleGroups": ["quads", "glutes"],
+              "instructions": "Push platform with feet, don't lock knees",
+              "youtubeSearchTerm": "leg press form",
+              "difficulty": "${preferences?.fitnessLevel}",
+              "equipment": "machine",
+              "orderNumber": 2
+            },
+            {
+              "name": "Leg Curl",
+              "sets": 3,
+              "reps": "10-12",
+              "restSeconds": 60,
+              "muscleGroups": ["hamstrings"],
+              "instructions": "Curl pad towards glutes",
+              "youtubeSearchTerm": "leg curl form",
+              "difficulty": "${preferences?.fitnessLevel}",
+              "equipment": "machine",
+              "orderNumber": 3
+            }
+          ]
+        },
+        {
+          "day": 5,
+          "dayName": "Friday",
+          "workoutName": "Full Body",
+          "estimatedDuration": ${preferences?.availableTime || 45},
+          "estimatedCalories": 450,
+          "muscleGroups": ["full_body"],
+          "exercises": [
+            {
+              "name": "Deadlift",
+              "sets": 3,
+              "reps": "6-8",
+              "restSeconds": 120,
+              "muscleGroups": ["back", "legs"],
+              "instructions": "Keep back straight, lift by extending hips",
+              "youtubeSearchTerm": "deadlift proper form",
+              "difficulty": "${preferences?.fitnessLevel}",
+              "equipment": "barbell",
+              "orderNumber": 1
+            },
+            {
+              "name": "Seated Row",
+              "sets": 3,
+              "reps": "10-12",
+              "restSeconds": 90,
+              "muscleGroups": ["back", "biceps"],
+              "instructions": "Pull handles to waist, squeeze shoulder blades",
+              "youtubeSearchTerm": "seated row form",
+              "difficulty": "${preferences?.fitnessLevel}",
+              "equipment": "cable_machine",
+              "orderNumber": 2
+            },
+            {
+              "name": "Plank",
+              "sets": 3,
+              "reps": "30-45 seconds",
+              "restSeconds": 60,
+              "muscleGroups": ["core"],
+              "instructions": "Hold body straight from head to heels",
+              "youtubeSearchTerm": "plank exercise",
+              "difficulty": "${preferences?.fitnessLevel}",
+              "equipment": "bodyweight",
+              "orderNumber": 3
             }
           ]
         }
@@ -276,5 +352,5 @@ RESPONSE FORMAT - Return ONLY valid JSON:
   ]
 }
 
-Create a complete 4-week program with proper gym exercises.`;
+Create a focused 1-week program with 3 workout days. Keep JSON response under 3000 characters.`;
 };

@@ -32,7 +32,14 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    console.log('Generating exercise program for:', { userData: userData?.userId, preferences });
+    console.log('Generating exercise program for:', { 
+      userData: userData?.userId, 
+      preferences: {
+        workoutType: preferences?.workoutType,
+        goalType: preferences?.goalType,
+        fitnessLevel: preferences?.fitnessLevel
+      }
+    });
 
     // Determine workout type - default to 'home' if not specified
     const workoutType = preferences?.workoutType || 'home';
@@ -51,16 +58,16 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-4o-mini', // Use faster model for better performance
         messages: [
           { 
             role: 'system', 
-            content: `You are a certified personal trainer. Always respond with valid JSON only. Create safe, effective workouts appropriate for the specified environment (${workoutType}).` 
+            content: `You are a certified personal trainer. Always respond with valid JSON only. Create safe, effective workouts appropriate for the specified environment (${workoutType}). Keep responses concise and under 3000 characters.` 
           },
           { role: 'user', content: selectedPrompt }
         ],
         temperature: 0.3,
-        max_tokens: 4000,
+        max_tokens: 2000, // Reduced token limit for faster response
       }),
     });
 
@@ -92,16 +99,18 @@ serve(async (req) => {
     // Store the program in the database
     const weeklyProgram = await storeWorkoutProgram(supabase, generatedProgram, userData, preferencesWithType);
 
+    console.log('✅ Exercise program generated and stored successfully');
+
     return new Response(JSON.stringify({ 
       success: true,
       programId: weeklyProgram.id,
       workoutType,
-      generatedProgram 
+      message: 'Exercise program generated successfully'
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error generating exercise program:', error);
+    console.error('❌ Error generating exercise program:', error);
     return new Response(JSON.stringify({ 
       error: error.message || 'Failed to generate exercise program',
       details: error.toString()
