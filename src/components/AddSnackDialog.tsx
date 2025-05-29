@@ -10,6 +10,7 @@ import AddSnackHeader from "./add-snack/AddSnackHeader";
 import CalorieProgressCard from "./add-snack/CalorieProgressCard";
 import TargetReachedState from "./add-snack/TargetReachedState";
 import SnackGenerationSection from "./add-snack/SnackGenerationSection";
+import SnackGenerationProgress from "./add-snack/SnackGenerationProgress";
 
 interface AddSnackDialogProps {
   isOpen: boolean;
@@ -34,6 +35,7 @@ const AddSnackDialog = ({
   const { profile } = useProfile();
   const { t, isRTL } = useLanguage();
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generationStep, setGenerationStep] = useState('');
 
   // Calculate dynamic target calories from profile if available
   const getDynamicTargetCalories = () => {
@@ -104,6 +106,7 @@ const AddSnackDialog = ({
     setIsGenerating(true);
     
     try {
+      setGenerationStep('analyzing');
       console.log('🍎 Generating AI snack with enhanced params:', {
         userProfile: profile,
         dayNumber: selectedDay,
@@ -112,6 +115,9 @@ const AddSnackDialog = ({
         currentDayCalories,
         targetCalories: dynamicTargetCalories
       });
+
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setGenerationStep('creating');
 
       const { data, error } = await supabase.functions.invoke('generate-ai-snack', {
         body: {
@@ -130,6 +136,9 @@ const AddSnackDialog = ({
         return;
       }
 
+      setGenerationStep('saving');
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       console.log('✅ AI snack generated successfully:', data);
       toast.success(t('addSnack.success'));
       onSnackAdded();
@@ -140,6 +149,7 @@ const AddSnackDialog = ({
       toast.error(t('addSnack.error'));
     } finally {
       setIsGenerating(false);
+      setGenerationStep('');
     }
   };
 
@@ -154,7 +164,9 @@ const AddSnackDialog = ({
             targetDayCalories={dynamicTargetCalories}
           />
 
-          {remainingCalories < 50 ? (
+          {isGenerating ? (
+            <SnackGenerationProgress step={generationStep} />
+          ) : remainingCalories < 50 ? (
             <TargetReachedState onClose={onClose} />
           ) : (
             <SnackGenerationSection

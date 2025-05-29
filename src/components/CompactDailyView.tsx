@@ -32,16 +32,34 @@ const CompactDailyView = ({
     return <EmptyDailyState onGenerate={onGenerate} />;
   }
 
-  // Group meals by type for better organization
+  // Enhanced meal grouping with proper snack handling
   const mealsByType = {
-    breakfast: todaysMeals.filter(meal => (meal.meal_type || meal.type) === 'breakfast'),
-    lunch: todaysMeals.filter(meal => (meal.meal_type || meal.type) === 'lunch'),
-    dinner: todaysMeals.filter(meal => (meal.meal_type || meal.type) === 'dinner'),
+    breakfast: todaysMeals.filter(meal => {
+      const mealType = meal.meal_type || meal.type;
+      return mealType === 'breakfast' && !meal.name?.includes('🍎');
+    }),
+    lunch: todaysMeals.filter(meal => {
+      const mealType = meal.meal_type || meal.type;
+      return mealType === 'lunch' && !meal.name?.includes('🍎');
+    }),
+    dinner: todaysMeals.filter(meal => {
+      const mealType = meal.meal_type || meal.type;
+      return mealType === 'dinner' && !meal.name?.includes('🍎');
+    }),
     snack: todaysMeals.filter(meal => 
-      (meal.meal_type || meal.type)?.includes('snack') || 
-      meal.name?.includes('🍎')
+      meal.name?.includes('🍎') || 
+      (meal.meal_type || meal.type)?.includes('snack')
     )
   };
+
+  console.log('🍽️ Meal grouping debug:', {
+    totalMeals: todaysMeals.length,
+    breakfast: mealsByType.breakfast.length,
+    lunch: mealsByType.lunch.length,
+    dinner: mealsByType.dinner.length,
+    snack: mealsByType.snack.length,
+    snackMeals: mealsByType.snack.map(m => ({ name: m.name, type: m.meal_type }))
+  });
 
   return (
     <div className="space-y-3" role="main" aria-label={t('todaysMeals')}>

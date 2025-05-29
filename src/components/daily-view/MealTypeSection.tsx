@@ -19,7 +19,23 @@ const MealTypeSection = ({
 }: MealTypeSectionProps) => {
   const { t, isRTL } = useLanguage();
 
-  if (meals.length === 0) return null;
+  // Filter meals properly to avoid snacks appearing in dinner section
+  const filteredMeals = meals.filter(meal => {
+    if (mealType === 'snack') {
+      // Only show meals that are explicitly snacks (have 🍎 emoji or snack in name)
+      return meal.name?.includes('🍎') || 
+             (meal.meal_type || meal.type)?.includes('snack');
+    } else if (mealType === 'dinner') {
+      // Exclude snacks from dinner section
+      return !meal.name?.includes('🍎') && 
+             !(meal.meal_type || meal.type)?.includes('snack');
+    } else {
+      // For breakfast and lunch, show normally
+      return (meal.meal_type || meal.type) === mealType;
+    }
+  });
+
+  if (filteredMeals.length === 0) return null;
 
   const getMealTypeColor = (mealType: string) => {
     switch (mealType) {
@@ -41,7 +57,7 @@ const MealTypeSection = ({
     }
   };
 
-  const sectionCalories = meals.reduce((sum, meal) => sum + (meal.calories || 0), 0);
+  const sectionCalories = filteredMeals.reduce((sum, meal) => sum + (meal.calories || 0), 0);
   const colorClasses = getMealTypeColor(mealType);
 
   return (
@@ -61,7 +77,7 @@ const MealTypeSection = ({
 
       {/* Compact Meals Grid */}
       <div className="space-y-1">
-        {meals.map((meal, index) => (
+        {filteredMeals.map((meal, index) => (
           <CompactMealCard
             key={`${meal.id}-${index}`}
             meal={meal}
