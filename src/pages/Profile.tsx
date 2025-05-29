@@ -5,7 +5,8 @@ import { useProfile } from "@/hooks/useProfile";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import ProfileSidebar from "@/components/profile/ProfileSidebar";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { ProfileAppSidebar } from "@/components/profile/ProfileAppSidebar";
 import BasicInfoCard from "@/components/profile/BasicInfoCard";
 import HealthGoalsCard from "@/components/profile/HealthGoalsCard";
 import AccountSettingsCard from "@/components/profile/AccountSettingsCard";
@@ -99,143 +100,88 @@ const Profile = () => {
   return (
     <ProtectedRoute requireProfile>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-        <div className="w-full max-w-7xl mx-auto px-4 py-6">
-          {/* Header */}
-          <div className="mb-6">
-            <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-2">Your Profile</h1>
-            <p className="text-sm lg:text-base text-gray-600">Manage your personal information and preferences</p>
-          </div>
-
-          {/* Enhanced Profile Promotion Card */}
-          {profileCompleteness < 100 && (
-            <Card className="mb-6 p-4 lg:p-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white">
-              <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4 lg:justify-between">
-                <div className="flex items-start gap-3 lg:gap-4 flex-1">
-                  <Sparkles className="w-6 h-6 lg:w-8 lg:h-8 mt-1 lg:mt-0 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-lg lg:text-xl font-semibold mb-1">Complete Your Enhanced Profile</h3>
-                    <p className="text-blue-100 text-sm lg:text-base">
-                      Unlock personalized AI recommendations with our comprehensive health assessment
-                    </p>
-                    <p className="text-xs lg:text-sm text-blue-200 mt-1">
-                      Profile completion: {profileCompleteness}%
-                    </p>
-                  </div>
+        <SidebarProvider>
+          <div className="min-h-screen flex w-full">
+            <ProfileAppSidebar 
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              formData={formData}
+              user={user}
+              isAdmin={isAdmin}
+            />
+            <SidebarInset className="flex-1">
+              <div className="w-full max-w-4xl mx-auto px-4 py-6">
+                {/* Header */}
+                <div className="mb-6">
+                  <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-2">Your Profile</h1>
+                  <p className="text-sm lg:text-base text-gray-600">Manage your personal information and preferences</p>
                 </div>
-                <Button
-                  onClick={() => navigate('/enhanced-profile')}
-                  variant="secondary"
-                  className="bg-white text-blue-600 hover:bg-blue-50 w-full lg:w-auto flex-shrink-0"
-                >
-                  Get Started
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </div>
-            </Card>
-          )}
 
-          {/* Mobile Tab Navigation */}
-          <div className="block lg:hidden mb-6">
-            <div className="flex bg-white rounded-lg p-1 shadow-lg">
-              <Button
-                variant={activeTab === "profile" ? "default" : "ghost"}
-                size="sm"
-                className={`flex-1 text-xs ${activeTab === "profile" ? "bg-fitness-gradient text-white" : ""}`}
-                onClick={() => setActiveTab("profile")}
-              >
-                Profile
-              </Button>
-              <Button
-                variant={activeTab === "account" ? "default" : "ghost"}
-                size="sm"
-                className={`flex-1 text-xs ${activeTab === "account" ? "bg-fitness-gradient text-white" : ""}`}
-                onClick={() => setActiveTab("account")}
-              >
-                Account
-              </Button>
-            </div>
-          </div>
+                {/* Enhanced Profile Promotion Card */}
+                {profileCompleteness < 100 && (
+                  <Card className="mb-6 p-4 lg:p-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+                    <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4 lg:justify-between">
+                      <div className="flex items-start gap-3 lg:gap-4 flex-1">
+                        <Sparkles className="w-6 h-6 lg:w-8 lg:h-8 mt-1 lg:mt-0 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-lg lg:text-xl font-semibold mb-1">Complete Your Enhanced Profile</h3>
+                          <p className="text-blue-100 text-sm lg:text-base">
+                            Unlock personalized AI recommendations with our comprehensive health assessment
+                          </p>
+                          <p className="text-xs lg:text-sm text-blue-200 mt-1">
+                            Profile completion: {profileCompleteness}%
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        onClick={() => navigate('/enhanced-profile')}
+                        variant="secondary"
+                        className="bg-white text-blue-600 hover:bg-blue-50 w-full lg:w-auto flex-shrink-0"
+                      >
+                        Get Started
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </Button>
+                    </div>
+                  </Card>
+                )}
 
-          {/* Main Layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Desktop Sidebar */}
-            <div className="hidden lg:block lg:col-span-4 xl:col-span-3">
-              <div className="sticky top-6">
-                <ProfileSidebar
-                  activeTab={activeTab}
-                  setActiveTab={setActiveTab}
-                  formData={formData}
-                  user={user}
-                  isAdmin={isAdmin}
-                />
-              </div>
-            </div>
+                {/* Main Content */}
+                <div className="space-y-6">
+                  {activeTab === "profile" && (
+                    <>
+                      <BasicInfoCard formData={formData} updateFormData={updateFormData} />
+                      <HealthGoalsCard 
+                        formData={formData} 
+                        updateFormData={updateFormData}
+                        handleArrayInput={handleArrayInput}
+                      />
+                      <div className="flex justify-end">
+                        <Button 
+                          onClick={handleSave}
+                          disabled={isUpdating}
+                          className="bg-fitness-gradient w-full lg:w-auto"
+                        >
+                          {isUpdating ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Saving...
+                            </>
+                          ) : (
+                            'Save Changes'
+                          )}
+                        </Button>
+                      </div>
+                    </>
+                  )}
 
-            {/* Main Content Area */}
-            <div className="lg:col-span-8 xl:col-span-9 space-y-6">
-              {activeTab === "profile" && (
-                <>
-                  <BasicInfoCard formData={formData} updateFormData={updateFormData} />
-                  <HealthGoalsCard 
-                    formData={formData} 
-                    updateFormData={updateFormData}
-                    handleArrayInput={handleArrayInput}
-                  />
-                  <div className="flex justify-end">
-                    <Button 
-                      onClick={handleSave}
-                      disabled={isUpdating}
-                      className="bg-fitness-gradient w-full lg:w-auto"
-                    >
-                      {isUpdating ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Saving...
-                        </>
-                      ) : (
-                        'Save Changes'
-                      )}
-                    </Button>
-                  </div>
-                </>
-              )}
-
-              {activeTab === "account" && (
-                <AccountSettingsCard user={user} />
-              )}
-            </div>
-          </div>
-
-          {/* Mobile Profile Summary */}
-          <div className="block lg:hidden mt-6">
-            <Card className="p-4 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-fitness-gradient rounded-full flex items-center justify-center mx-auto mb-3">
-                  <span className="text-white font-bold text-lg">
-                    {formData.first_name ? formData.first_name.charAt(0).toUpperCase() : user?.email?.charAt(0)?.toUpperCase()}
-                  </span>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-1">
-                  {formData.first_name && formData.last_name 
-                    ? `${formData.first_name} ${formData.last_name}` 
-                    : "Complete your profile"}
-                </h3>
-                <p className="text-sm text-gray-600 mb-3">{user?.email}</p>
-                
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div className="bg-gray-50 p-2 rounded-lg">
-                    <p className="text-gray-600">Height</p>
-                    <p className="font-semibold">{formData.height || "—"} cm</p>
-                  </div>
-                  <div className="bg-gray-50 p-2 rounded-lg">
-                    <p className="text-gray-600">Weight</p>
-                    <p className="font-semibold">{formData.weight || "—"} kg</p>
-                  </div>
+                  {activeTab === "account" && (
+                    <AccountSettingsCard user={user} />
+                  )}
                 </div>
               </div>
-            </Card>
+            </SidebarInset>
           </div>
-        </div>
+        </SidebarProvider>
       </div>
     </ProtectedRoute>
   );
