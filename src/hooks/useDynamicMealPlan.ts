@@ -60,7 +60,13 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
       }
       
       const weekStartDate = getWeekStartDate(weekOffset).toISOString().split('T')[0];
-      console.log('useDynamicMealPlan - Fetching meal plan for user:', user.id, 'Email:', user.email, 'week:', weekStartDate);
+      console.log('🔍 MEAL PLAN FETCH DEBUG:', {
+        userId: user.id,
+        userEmail: user.email,
+        weekOffset,
+        weekStartDate,
+        today: new Date().toISOString().split('T')[0]
+      });
       
       const { data: weeklyPlan, error: weeklyError } = await supabase
         .from('weekly_meal_plans')
@@ -75,7 +81,17 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
       }
 
       if (!weeklyPlan) {
-        console.log('useDynamicMealPlan - No meal plan found for user:', user.id, 'week:', weekStartDate);
+        console.log('🔍 NO MEAL PLAN FOUND - Checking all plans for user:', user.id);
+        
+        // Debug: Check what meal plans exist for this user
+        const { data: allPlans } = await supabase
+          .from('weekly_meal_plans')
+          .select('id, week_start_date, created_at')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+        
+        console.log('🔍 All meal plans for user:', allPlans);
+        
         return null;
       }
 
@@ -89,6 +105,12 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
         throw new Error('Data integrity violation - meal plan user mismatch');
       }
 
+      console.log('✅ Found meal plan:', {
+        planId: weeklyPlan.id,
+        weekStartDate: weeklyPlan.week_start_date,
+        totalCalories: weeklyPlan.total_calories
+      });
+
       // Fetch meals with additional user verification
       const { data: dailyMeals, error: mealsError } = await supabase
         .from('daily_meals')
@@ -101,6 +123,11 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
         console.error('useDynamicMealPlan - Error fetching daily meals:', mealsError);
         return null;
       }
+
+      console.log('✅ Found daily meals:', {
+        count: dailyMeals?.length || 0,
+        meals: dailyMeals?.map(m => ({ day: m.day_number, type: m.meal_type, name: m.name }))
+      });
 
       // Verify all meals belong to the current user's plan
       if (dailyMeals && dailyMeals.length > 0) {
@@ -126,11 +153,12 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
             : []
       })) as DailyMeal[];
 
-      console.log('useDynamicMealPlan - Meal plan loaded successfully:', {
+      console.log('✅ useDynamicMealPlan - Meal plan loaded successfully:', {
         userId: user.id,
         userEmail: user.email,
         planId: weeklyPlan.id,
-        mealsCount: processedMeals.length
+        mealsCount: processedMeals.length,
+        weekStartDate: weeklyPlan.week_start_date
       });
 
       return {
