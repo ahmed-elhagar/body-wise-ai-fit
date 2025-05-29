@@ -1,3 +1,4 @@
+
 export const commonTranslations = {
   // Navigation and general
   'home': 'الرئيسية',
@@ -17,6 +18,7 @@ export const commonTranslations = {
   'success': 'نجح',
   'cancel': 'إلغاء',
   'save': 'حفظ',
+  'saving': 'جاري الحفظ',
   'delete': 'حذف',
   'edit': 'تعديل',
   'close': 'إغلاق',
