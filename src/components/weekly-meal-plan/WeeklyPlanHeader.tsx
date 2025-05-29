@@ -14,10 +14,13 @@ const WeeklyPlanHeader = ({ dietType, weeklyCalories, weeklyProtein }: WeeklyPla
   const { t, isRTL } = useLanguage();
 
   const getDietTypeColor = (dietType: string) => {
-    if (dietType.includes('Vegetarian') || dietType.includes('نباتي')) return 'bg-green-100 text-green-800 border-green-200';
-    if (dietType.includes('Keto') || dietType.includes('كيتو')) return 'bg-purple-100 text-purple-800 border-purple-200';
-    if (dietType.includes('High Protein') || dietType.includes('عالي البروتين')) return 'bg-blue-100 text-blue-800 border-blue-200';
-    return 'bg-gray-100 text-gray-800 border-gray-200';
+    if (dietType.includes('Vegetarian') || dietType.includes('نباتي')) 
+      return 'bg-green-100 text-green-800 border-green-200 hover:bg-green-200';
+    if (dietType.includes('Keto') || dietType.includes('كيتو')) 
+      return 'bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-200';
+    if (dietType.includes('High Protein') || dietType.includes('عالي البروتين')) 
+      return 'bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200';
+    return 'bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-200';
   };
 
   return (
@@ -28,17 +31,20 @@ const WeeklyPlanHeader = ({ dietType, weeklyCalories, weeklyProtein }: WeeklyPla
             <Utensils className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h3 className="text-xl font-bold text-gray-800">{t('weeklyMealPlan')}</h3>
-            <p className="text-sm text-gray-600">{t('personalizedPlan')}</p>
+            <h3 className="text-xl font-bold text-gray-800">{t('mealPlan.weeklyMealPlan')}</h3>
+            <p className="text-sm text-gray-600">{t('mealPlan.personalizedPlan')}</p>
           </div>
         </div>
         <div className={`flex flex-col items-end gap-2 ${isRTL ? 'items-start' : 'items-end'}`}>
-          <Badge className={`${getDietTypeColor(dietType)} font-semibold px-4 py-2 text-sm`}>
+          <Badge 
+            variant="outline"
+            className={`${getDietTypeColor(dietType)} font-semibold px-4 py-2 text-sm transition-colors`}
+          >
             {dietType}
           </Badge>
           {weeklyCalories > 0 && (
-            <div className="text-sm text-gray-600">
-              {Math.round(weeklyCalories / 7)} {t('calPerDay')}
+            <div className="text-sm text-gray-600 font-medium">
+              {Math.round(weeklyCalories / 7)} {t('mealPlan.calPerDay')}
             </div>
           )}
         </div>
@@ -47,17 +53,17 @@ const WeeklyPlanHeader = ({ dietType, weeklyCalories, weeklyProtein }: WeeklyPla
       {/* Weekly Stats */}
       {(weeklyCalories > 0 || weeklyProtein > 0) && (
         <div className="grid grid-cols-2 gap-4 mt-6">
-          <div className="bg-gradient-to-r from-red-50 to-red-100 p-4 rounded-lg">
+          <div className="bg-gradient-to-r from-red-50 to-red-100 p-4 rounded-lg border border-red-200">
             <div className={`flex items-center gap-2 mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <Flame className="w-4 h-4 text-red-600" />
-              <span className="text-sm font-medium text-red-700">{t('weeklyCalories')}</span>
+              <span className="text-sm font-medium text-red-700">{t('mealPlan.weeklyCalories')}</span>
             </div>
             <span className="text-2xl font-bold text-red-800">{weeklyCalories.toLocaleString()}</span>
           </div>
-          <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg">
+          <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
             <div className={`flex items-center gap-2 mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <TrendingUp className="w-4 h-4 text-green-600" />
-              <span className="text-sm font-medium text-green-700">{t('weeklyProtein')}</span>
+              <span className="text-sm font-medium text-green-700">{t('mealPlan.weeklyProtein')}</span>
             </div>
             <span className="text-2xl font-bold text-green-800">{weeklyProtein}g</span>
           </div>

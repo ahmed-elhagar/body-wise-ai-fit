@@ -22,12 +22,38 @@ const MealItem = ({ meal, mealIndex, dayNumber, onShowRecipe, onExchangeMeal }: 
       case 'breakfast': return '🌅';
       case 'lunch': return '🌞';
       case 'dinner': return '🌙';
-      case 'snack': return '🍎';
+      case 'snack':
+      case 'snack1':
+      case 'snack2': return '🍎';
       default: return '🍽️';
     }
   };
 
-  const isSnack = meal.name.includes('🍎');
+  const getMealTypeBadgeColor = (mealType: string, mealName: string) => {
+    const isSnack = mealName.includes('🍎') || mealType.toLowerCase().includes('snack');
+    if (isSnack) return 'bg-green-100 text-green-800 border-green-200 hover:bg-green-200';
+    
+    switch (mealType.toLowerCase()) {
+      case 'breakfast': return 'bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-200';
+      case 'lunch': return 'bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-200';
+      case 'dinner': return 'bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-200';
+      default: return 'bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200';
+    }
+  };
+
+  const getMealTypeLabel = (mealType: string, mealName: string) => {
+    const isSnack = mealName.includes('🍎') || mealType.toLowerCase().includes('snack');
+    if (isSnack) return t('mealPlan.snack');
+    
+    switch (mealType.toLowerCase()) {
+      case 'breakfast': return t('mealPlan.breakfast');
+      case 'lunch': return t('mealPlan.lunch');
+      case 'dinner': return t('mealPlan.dinner');
+      default: return t(`mealPlan.${mealType.toLowerCase()}`) || mealType;
+    }
+  };
+
+  const isSnack = meal.name.includes('🍎') || meal.meal_type.toLowerCase().includes('snack');
 
   return (
     <div className="p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg hover:from-fitness-primary/5 hover:to-pink-50 transition-all duration-200 group/meal">
@@ -37,13 +63,13 @@ const MealItem = ({ meal, mealIndex, dayNumber, onShowRecipe, onExchangeMeal }: 
           <div className={`flex items-center gap-2 mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
             <span className="text-lg">{getMealTypeIcon(meal.meal_type, meal.name)}</span>
             <Badge 
-              variant="secondary" 
-              className={`text-xs ${isSnack ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}
+              variant="outline" 
+              className={`text-xs font-medium transition-colors ${getMealTypeBadgeColor(meal.meal_type, meal.name)}`}
             >
-              {isSnack ? t('snack') : t(meal.meal_type.toLowerCase())}
+              {getMealTypeLabel(meal.meal_type, meal.name)}
             </Badge>
-            <span className="text-xs text-gray-500">
-              {(meal.prep_time || 0) + (meal.cook_time || 0)} {t('min')}
+            <span className="text-xs text-gray-500 font-medium">
+              {(meal.prep_time || 0) + (meal.cook_time || 0)} {t('mealPlan.min')}
             </span>
           </div>
           
@@ -54,17 +80,17 @@ const MealItem = ({ meal, mealIndex, dayNumber, onShowRecipe, onExchangeMeal }: 
           
           {/* Nutrition Grid */}
           <div className="grid grid-cols-3 gap-2 text-xs mb-3">
-            <div className="bg-white/80 p-2 rounded text-center">
+            <div className="bg-white/80 p-2 rounded text-center border border-red-100">
               <span className="font-medium text-red-600">{meal.calories || 0}</span>
-              <div className="text-gray-500">{t('cal')}</div>
+              <div className="text-gray-500">{t('mealPlan.cal')}</div>
             </div>
-            <div className="bg-white/80 p-2 rounded text-center">
+            <div className="bg-white/80 p-2 rounded text-center border border-green-100">
               <span className="font-medium text-green-600">{meal.protein || 0}g</span>
-              <div className="text-gray-500">{t('protein')}</div>
+              <div className="text-gray-500">{t('mealPlan.protein')}</div>
             </div>
-            <div className="bg-white/80 p-2 rounded text-center">
+            <div className="bg-white/80 p-2 rounded text-center border border-blue-100">
               <span className="font-medium text-blue-600">{meal.carbs || 0}g</span>
-              <div className="text-gray-500">{t('carbs')}</div>
+              <div className="text-gray-500">{t('mealPlan.carbs')}</div>
             </div>
           </div>
         </div>

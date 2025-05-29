@@ -28,11 +28,14 @@ const DayMealCard = ({ dayName, dayNumber, dayMeals, onShowRecipe, onExchangeMea
           {dayName}
         </h4>
         <div className={`flex flex-col gap-1 ${isRTL ? 'items-start' : 'items-end'}`}>
-          <Badge variant="outline" className="bg-fitness-primary/10 text-fitness-primary font-semibold">
+          <Badge 
+            variant="outline" 
+            className="bg-fitness-primary/10 text-fitness-primary border-fitness-primary/20 font-semibold hover:bg-fitness-primary/20 transition-colors"
+          >
             {dayCalories} {t('mealPlan.cal')}
           </Badge>
           {dayProtein > 0 && (
-            <span className="text-xs text-gray-600">{dayProtein}g {t('mealPlan.protein')}</span>
+            <span className="text-xs text-gray-600 font-medium">{dayProtein}g {t('mealPlan.protein')}</span>
           )}
         </div>
       </div>

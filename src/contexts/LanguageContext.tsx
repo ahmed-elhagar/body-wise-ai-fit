@@ -15,9 +15,25 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
+// Flatten nested objects for translation lookup
+const flattenTranslations = (obj: any, prefix = ''): Record<string, string> => {
+  const flattened: Record<string, string> = {};
+  
+  Object.keys(obj).forEach(key => {
+    const newKey = prefix ? `${prefix}.${key}` : key;
+    if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
+      Object.assign(flattened, flattenTranslations(obj[key], newKey));
+    } else {
+      flattened[newKey] = obj[key];
+    }
+  });
+  
+  return flattened;
+};
+
 const translations: Record<Language, Record<string, string>> = {
-  en: enTranslations,
-  ar: arTranslations
+  en: flattenTranslations(enTranslations),
+  ar: flattenTranslations(arTranslations)
 };
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

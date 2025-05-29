@@ -28,7 +28,8 @@ serve(async (req) => {
       .from('daily_meals')
       .select('*')
       .eq('weekly_plan_id', weeklyPlanId)
-      .order('day_number', { ascending: true });
+      .order('day_number', { ascending: true })
+      .order('meal_type', { ascending: true });
 
     if (fetchError) {
       throw new Error(`Failed to fetch meals: ${fetchError.message}`);
@@ -38,12 +39,18 @@ serve(async (req) => {
       throw new Error('No meals found to shuffle');
     }
 
-    // Group meals by type (breakfast, lunch, dinner, snack1, snack2)
+    // Group meals by type (breakfast, lunch, dinner, snack)
     const mealsByType = currentMeals.reduce((acc, meal) => {
-      if (!acc[meal.meal_type]) {
-        acc[meal.meal_type] = [];
+      // Normalize snack types to just "snack"
+      let mealType = meal.meal_type;
+      if (mealType.startsWith('snack') || meal.name.includes('🍎')) {
+        mealType = 'snack';
       }
-      acc[meal.meal_type].push(meal);
+      
+      if (!acc[mealType]) {
+        acc[mealType] = [];
+      }
+      acc[mealType].push(meal);
       return acc;
     }, {});
 
@@ -67,15 +74,47 @@ serve(async (req) => {
       const mealsOfType = mealsByType[mealType];
       const shuffledMealsOfType = shuffleArray(mealsOfType);
       
-      // Reassign to days (ensure we have 7 meals for 7 days)
-      daysInWeek.forEach((dayNumber, index) => {
-        if (shuffledMealsOfType[index]) {
-          shuffledMeals.push({
-            ...shuffledMealsOfType[index],
-            day_number: dayNumber
+      // Handle snacks separately - they might have different quantities per day
+      if (mealType === 'snack') {
+        // Group snacks by day first
+        const snacksByDay = {};
+        mealsOfType.forEach(meal => {
+          if (!snacksByDay[meal.day_number]) {
+            snacksByDay[meal.day_number] = [];
+          }
+          snacksByDay[meal.day_number].push(meal);
+        });
+        
+        // Get all snacks and shuffle them
+        const allSnacks = Object.values(snacksByDay).flat();
+        const shuffledSnacks = shuffleArray(allSnacks);
+        
+        // Redistribute shuffled snacks maintaining the same structure
+        let snackIndex = 0;
+        Object.keys(snacksByDay).forEach(dayNum => {
+          const daySnacks = snacksByDay[dayNum];
+          daySnacks.forEach((_, index) => {
+            if (shuffledSnacks[snackIndex]) {
+              shuffledMeals.push({
+                ...shuffledSnacks[snackIndex],
+                day_number: parseInt(dayNum),
+                meal_type: daySnacks[index].meal_type // Keep original meal_type (snack1, snack2, etc.)
+              });
+              snackIndex++;
+            }
           });
-        }
-      });
+        });
+      } else {
+        // For other meal types, assign one per day
+        daysInWeek.forEach((dayNumber, index) => {
+          if (shuffledMealsOfType[index]) {
+            shuffledMeals.push({
+              ...shuffledMealsOfType[index],
+              day_number: dayNumber
+            });
+          }
+        });
+      }
     });
 
     console.log(`🔄 Shuffling ${shuffledMeals.length} meals across 7 days`);
@@ -84,7 +123,10 @@ serve(async (req) => {
     const updatePromises = shuffledMeals.map(meal => 
       supabaseClient
         .from('daily_meals')
-        .update({ day_number: meal.day_number })
+        .update({ 
+          day_number: meal.day_number,
+          meal_type: meal.meal_type
+        })
         .eq('id', meal.id)
     );
 

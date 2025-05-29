@@ -20,6 +20,31 @@ export const mealPlan = {
   exchange: "Exchange",
   shoppingList: "Shopping List",
   todaysSummary: "Today's Summary",
+  
+  // Week navigation
+  thisWeek: "This Week",
+  lastWeek: "Last Week", 
+  nextWeek: "Next Week",
+  weeksAgo: "weeks ago",
+  weeksAhead: "weeks ahead",
+  previousWeek: "Previous Week",
+  
+  // Stats and summaries
+  weeklyMealPlan: "Weekly Meal Plan",
+  personalizedPlan: "Personalized for you",
+  calPerDay: "cal/day",
+  weeklyCalories: "Weekly Calories",
+  weeklyProtein: "Weekly Protein",
+  noMealsPlanned: "No meals planned",
+  cal: "cal",
+  min: "min",
+  
+  // Meal types
+  breakfast: "Breakfast",
+  lunch: "Lunch", 
+  dinner: "Dinner",
+  snack: "Snack",
+  
   mealType: {
     breakfast: "Breakfast",
     lunch: "Lunch",
