@@ -1,3 +1,4 @@
+
 export const arTranslations = {
   // Navigation and general
   'home': 'الرئيسية',
@@ -50,6 +51,15 @@ export const arTranslations = {
   'nav.aiCallsLeft': 'استدعاءات ذكية متبقية',
   'nav.aiPoweredFitness': 'لياقة مدعومة بالذكاء الاصطناعي',
 
+  // Days of the week
+  'day.saturday': 'السبت',
+  'day.sunday': 'الأحد',
+  'day.monday': 'الاثنين',
+  'day.tuesday': 'الثلاثاء',
+  'day.wednesday': 'الأربعاء',
+  'day.thursday': 'الخميس',
+  'day.friday': 'الجمعة',
+
   // Dashboard specific
   'dashboard.welcome': 'مرحباً',
   'dashboard.trackProgress': 'تتبع رحلة لياقتك واصل إلى أهدافك',
@@ -89,6 +99,7 @@ export const arTranslations = {
   'common.lbs': 'رطل',
 
   // Meal Plan specific
+  'mealPlan.calories': 'سعرات حرارية',
   'mealPlan.noActivePlan': 'لا توجد خطة وجبات نشطة',
   'mealPlan.personalizedProfile': 'أنشئ خطة وجباتك الشخصية بناءً على ملفك الشخصي',
   'mealPlan.generateAIMealPlan': 'إنشاء خطة وجبات بالذكاء الاصطناعي',
@@ -98,6 +109,7 @@ export const arTranslations = {
   'mealPlan.weeklyViewHelper': 'نظرة عامة على أسبوعك بالكامل',
   'mealPlan.thisWeek': 'هذا الأسبوع',
   'mealPlan.lastWeek': 'الأسبوع الماضي',
+  'mealPlan.nextWeek': 'الأسبوع القادم',
   'mealPlan.weeksAgo': 'أسابيع مضت',
   'mealPlan.weeksAhead': 'أسابيع قادمة',
   'mealPlan.previousWeek': 'السابق',
@@ -106,8 +118,6 @@ export const arTranslations = {
   'mealPlan.noMealsPlanned': 'لا توجد وجبات مخططة',
   'mealPlan.generationFailed': 'فشل في إنشاء خطة الوجبات. يرجى المحاولة مرة أخرى.',
   'mealPlan.generatedSuccessfully': 'تم إنشاء خطة الوجبات بنجاح!',
-
-  // AI Generation Dialog
   'mealPlan.sevenDayCompletePlan': 'خطة كاملة لـ 7 أيام',
   'mealPlan.mealsTotal': 'إجمالي الوجبات',
   'mealPlan.foodDatabaseIntegration': 'تكامل قاعدة بيانات الطعام',
@@ -122,25 +132,6 @@ export const arTranslations = {
   'mealPlan.maxPrepTime': 'الحد الأقصى لوقت التحضير',
   'mealPlan.minutes': 'دقائق',
   'mealPlan.generateSevenDayPlan': 'إنشاء خطة 7 أيام',
-
-  // Cuisine options
-  'cuisine.mixed': 'مختلط دولي',
-  'cuisine.american': 'أمريكي',
-  'cuisine.italian': 'إيطالي',
-  'cuisine.mexican': 'مكسيكي',
-  'cuisine.asian': 'آسيوي',
-  'cuisine.mediterranean': 'البحر المتوسط',
-  'cuisine.middleEastern': 'شرق أوسطي',
-  'cuisine.indian': 'هندي',
-  'cuisine.french': 'فرنسي',
-  'cuisine.chinese': 'صيني',
-  'cuisine.japanese': 'ياباني',
-  'cuisine.thai': 'تايلندي',
-  'cuisine.greek': 'يوناني',
-  'cuisine.spanish': 'إسباني',
-  'cuisine.moroccan': 'مغربي',
-  'cuisine.lebanese': 'لبناني',
-  'cuisine.turkish': 'تركي',
 
   // Add Snack Dialog
   'addSnack.title': 'إضافة وجبة خفيفة ذكية',
@@ -164,35 +155,28 @@ export const arTranslations = {
   'addSnack.error': 'فشل في إنشاء الوجبة الخفيفة. يرجى المحاولة مرة أخرى.',
   'addSnack.success': 'تم إضافة الوجبة الخفيفة الذكية بنجاح!',
   'addSnack.notEnoughCalories': 'لا توجد سعرات كافية متبقية لوجبة خفيفة صحية.',
+  'addSnack.currentCalories': 'السعرات الحالية',
+  'addSnack.targetCalories': 'السعرات المستهدفة',
+  'addSnack.remainingCalories': 'السعرات المتبقية',
 
-  // Days of the week
-  'day.saturday': 'السبت',
-  'day.sunday': 'الأحد',
-  'day.monday': 'الاثنين',
-  'day.tuesday': 'الثلاثاء',
-  'day.wednesday': 'الأربعاء',
-  'day.thursday': 'الخميس',
-  'day.friday': 'الجمعة',
-
-  // Diet types
-  'balanced': 'متوازن',
-  'vegetarian': 'نباتي',
-  'keto': 'كيتو',
-  'highProtein': 'عالي البروتين',
-
-  // Weekly stats
-  'weeklyMealPlan': 'خطة الوجبات الأسبوعية',
-  'personalizedPlan': 'شخصية لأهدافك',
-  'weeklyCalories': 'السعرات الأسبوعية',
-  'weeklyProtein': 'البروتين الأسبوعي',
-  'calPerDay': 'سعرة/يوم',
-
-  // Common phrases
-  'noMealPlan': 'لم يتم العثور على خطة وجبات',
-  'generateFirstPlan': 'أنشئ خطة وجباتك الشخصية الأولى',
-  'generateMealPlan': 'إنشاء خطة وجبات',
-  'generatedSuccessfully': 'تم الإنشاء بنجاح!',
-  'noMealPlanToShuffle': 'لم يتم العثور على خطة وجبات للخلط',
+  // Cuisine options
+  'cuisine.mixed': 'مختلط دولي',
+  'cuisine.american': 'أمريكي',
+  'cuisine.italian': 'إيطالي',
+  'cuisine.mexican': 'مكسيكي',
+  'cuisine.asian': 'آسيوي',
+  'cuisine.mediterranean': 'البحر المتوسط',
+  'cuisine.middleEastern': 'شرق أوسطي',
+  'cuisine.indian': 'هندي',
+  'cuisine.french': 'فرنسي',
+  'cuisine.chinese': 'صيني',
+  'cuisine.japanese': 'ياباني',
+  'cuisine.thai': 'تايلندي',
+  'cuisine.greek': 'يوناني',
+  'cuisine.spanish': 'إسباني',
+  'cuisine.moroccan': 'مغربي',
+  'cuisine.lebanese': 'لبناني',
+  'cuisine.turkish': 'تركي',
 
   // Meal types
   'breakfast': 'الإفطار',
@@ -207,9 +191,29 @@ export const arTranslations = {
   'totalTime': 'الوقت الإجمالي',
   'servings': 'الحصص',
 
+  // Diet types
+  'balanced': 'متوازن',
+  'vegetarian': 'نباتي',
+  'keto': 'كيتو',
+  'highProtein': 'عالي البروتين',
+
+  // Weekly stats
+  'weeklyMealPlan': 'خطة الوجبات الأسبوعية',
+  'personalizedPlan': 'شخصية لأهدافك',
+  'weeklyCalories': 'السعرات الأسبوعية',
+  'weeklyProtein': 'البروتين الأسبوعي',
+  'calPerDay': 'سعرة/يوم',
+
   // Daily view translations
   'todaysSummary': 'ملخص اليوم',
   'noMealsToday': 'لا توجد وجبات مخططة لليوم',
   'generateNewPlan': 'أنشئ خطة وجباتك الأولى للبدء',
   'shoppingList': 'قائمة التسوق',
+
+  // Common phrases
+  'noMealPlan': 'لم يتم العثور على خطة وجبات',
+  'generateFirstPlan': 'أنشئ خطة وجباتك الشخصية الأولى',
+  'generateMealPlan': 'إنشاء خطة وجبات',
+  'generatedSuccessfully': 'تم الإنشاء بنجاح!',
+  'noMealPlanToShuffle': 'لم يتم العثور على خطة وجبات للخلط'
 };
