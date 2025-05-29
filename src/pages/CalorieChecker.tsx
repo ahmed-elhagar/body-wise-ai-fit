@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Camera, Search, Heart, BarChart3, Menu } from "lucide-react";
+import { ArrowLeft, Camera, Search, Heart, BarChart3 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useLanguage } from "@/contexts/LanguageContext";
 import FoodPhotoAnalyzer from "@/components/calorie/FoodPhotoAnalyzer";
@@ -10,7 +10,6 @@ import EnhancedFoodSearch from "@/components/calorie/EnhancedFoodSearch";
 import FoodConsumptionTracker from "@/components/calorie/FoodConsumptionTracker";
 import { useFoodDatabase } from "@/hooks/useFoodDatabase";
 import AddFoodDialog from "@/components/calorie/AddFoodDialog";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const CalorieChecker = () => {
   const navigate = useNavigate();
@@ -65,7 +64,7 @@ const CalorieChecker = () => {
   const activeViewData = views.find(view => view.id === activeView);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+    <div className={`min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 ${!isMobile ? 'ml-64' : ''}`}>
       {/* Header Section */}
       <div className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
