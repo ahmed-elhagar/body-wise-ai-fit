@@ -266,17 +266,3 @@ export const ExerciseListEnhanced = ({
     </div>
   );
 };
-
-const handleStartEdit = (exercise: any) => {
-  setEditingExercise(exercise.id);
-  setEditData({
-    sets: exercise.actual_sets || exercise.sets || 0,
-    reps: exercise.actual_reps || exercise.reps || '',
-    notes: exercise.notes || ''
-  });
-};
-
-const handleSaveProgress = (exerciseId: string) => {
-  onExerciseProgressUpdate(exerciseId, editData.sets, editData.reps, editData.notes);
-  setEditingExercise(null);
-};

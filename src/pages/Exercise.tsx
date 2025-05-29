@@ -1,3 +1,4 @@
+
 import MealPlanLayout from "@/components/MealPlanLayout";
 import { useExerciseProgramPage } from "@/hooks/useExerciseProgramPage";
 import { ExerciseProgramLoadingStates } from "@/components/exercise/ExerciseProgramLoadingStates";
@@ -27,6 +28,7 @@ const Exercise = () => {
     completedExercises,
     totalExercises,
     progressPercentage,
+    isRestDay,
     error,
     
     // Computed
@@ -50,6 +52,7 @@ const Exercise = () => {
     isGenerating,
     todaysWorkoutsCount: todaysWorkouts?.length || 0,
     todaysExercisesCount: todaysExercises?.length || 0,
+    isRestDay,
     error: error?.message
   });
 

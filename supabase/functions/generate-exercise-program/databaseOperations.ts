@@ -1,5 +1,5 @@
 
-import { addDays, format, startOfWeek } from 'date-fns';
+import { addDays, format, startOfWeek } from 'https://esm.sh/date-fns@3.6.0';
 
 export const storeWorkoutProgram = async (
   supabase: any,
