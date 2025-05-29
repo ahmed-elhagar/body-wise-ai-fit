@@ -24,7 +24,10 @@ export const generateMealPlanPrompt = (userProfile: UserProfile, preferences: Pr
   const allergies = userProfile?.allergies?.length ? userProfile.allergies.join(', ') : 'None';
   const restrictions = userProfile?.dietary_restrictions?.length ? userProfile.dietary_restrictions.join(', ') : 'None';
   const maxPrepTime = parseInt(preferences?.maxPrepTime || '45');
-  const cuisine = preferences?.cuisine || `${nationality} cuisine`;
+  
+  // Handle cuisine selection - if 'mixed' is selected, use nationality-based cuisine
+  const selectedCuisine = preferences?.cuisine || 'mixed';
+  const cuisine = selectedCuisine === 'mixed' ? `${nationality} cuisine` : selectedCuisine;
   
   const mealTypes = includeSnacks 
     ? 'breakfast, lunch, dinner, snack1, snack2' 

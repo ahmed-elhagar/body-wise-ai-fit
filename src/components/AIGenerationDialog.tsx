@@ -36,7 +36,7 @@ const AIGenerationDialog = ({
   const { t } = useLanguage();
 
   const cuisineOptions = [
-    { value: '', label: t('cuisine.mixed') },
+    { value: 'mixed', label: t('cuisine.mixed') },
     { value: 'Mediterranean', label: t('cuisine.mediterranean') },
     { value: 'Asian', label: t('cuisine.asian') },
     { value: 'Mexican', label: t('cuisine.mexican') },
@@ -108,7 +108,7 @@ const AIGenerationDialog = ({
           <div>
             <Label htmlFor="cuisine">{t('mealPlan.preferredCuisine')}</Label>
             <Select 
-              value={preferences.cuisine} 
+              value={preferences.cuisine || 'mixed'} 
               onValueChange={(value) => onPreferencesChange({ ...preferences, cuisine: value })}
             >
               <SelectTrigger className="mt-1">
