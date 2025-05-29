@@ -18,27 +18,27 @@ const Dashboard = () => {
   // Show loading screen only if AI content is being generated for first time users
   if (isGeneratingContent && hasExistingContent === false) {
     return (
-      <div className={`min-h-screen bg-gradient-to-br from-fitness-soft-blue via-white to-fitness-soft-purple flex ${isRTL ? 'rtl' : 'ltr'}`}>
+      <div className={`min-h-screen bg-fitness-neutral-50 flex ${isRTL ? 'rtl' : 'ltr'}`}>
         <Navigation />
         <div className={`flex-1 ${isRTL ? 'mr-0 md:mr-72' : 'ml-0 md:ml-72'} flex items-center justify-center p-4`}>
-          <div className="text-center max-w-md px-6 py-8 bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20">
-            <div className="w-20 h-20 bg-fitness-gradient rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl animate-pulse-glow">
-              <Loader2 className="w-10 h-10 text-white animate-spin" />
+          <div className="text-center max-w-md px-6 py-8 bg-white rounded-2xl shadow-sm border border-fitness-neutral-100">
+            <div className="w-16 h-16 bg-fitness-primary rounded-xl flex items-center justify-center mx-auto mb-6">
+              <Loader2 className="w-8 h-8 text-white animate-spin" />
             </div>
-            <h2 className="text-2xl md:text-3xl font-bold bg-fitness-gradient bg-clip-text text-transparent mb-4">
+            <h2 className="text-xl font-semibold text-fitness-neutral-800 mb-3">
               {t('dashboard.generatingContent')}
             </h2>
-            <p className="text-gray-600 mb-8 text-base leading-relaxed">
+            <p className="text-fitness-neutral-600 mb-6 text-sm leading-relaxed">
               {t('dashboard.generatingDescription')}
             </p>
             {generationStatus && (
-              <div className="bg-fitness-soft-blue border border-blue-200 px-6 py-3 rounded-2xl">
+              <div className="bg-fitness-soft-blue border border-blue-100 px-4 py-2 rounded-lg">
                 <p className="text-sm text-blue-700 font-medium">
                   {generationStatus}
                 </p>
               </div>
             )}
-            <div className="mt-8 text-xs text-gray-500 font-medium">
+            <div className="mt-6 text-xs text-fitness-neutral-500 font-medium">
               {t('dashboard.pleaseWait')}
             </div>
           </div>
@@ -48,33 +48,33 @@ const Dashboard = () => {
   }
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br from-fitness-soft-blue via-white to-fitness-soft-purple flex ${isRTL ? 'rtl' : 'ltr'}`}>
+    <div className={`min-h-screen bg-fitness-neutral-50 flex ${isRTL ? 'rtl' : 'ltr'}`}>
       <Navigation />
       <div className={`flex-1 ${isRTL ? 'mr-0 md:mr-72' : 'ml-0 md:ml-72'} transition-all duration-300`}>
         <div className="container mx-auto px-4 py-6 max-w-7xl">
-          {/* Enhanced Header Section */}
-          <div className="mb-8">
+          {/* Header Section */}
+          <div className="mb-6">
             <DashboardHeader />
           </div>
 
-          {/* Enhanced Stats Grid */}
-          <div className="mb-8">
+          {/* Stats Grid */}
+          <div className="mb-6">
             <StatsGrid />
           </div>
 
-          {/* Enhanced Main Content Grid with better proportions */}
+          {/* Main Content Grid */}
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-            {/* Quick Actions - More prominent */}
+            {/* Quick Actions */}
             <div className="xl:col-span-4 order-1">
               <QuickActionsGrid />
             </div>
 
-            {/* Activity Feed - Takes more space */}
+            {/* Activity Feed */}
             <div className="xl:col-span-8 order-2">
               <ActivityFeed />
             </div>
 
-            {/* Progress Overview - Full width at bottom */}
+            {/* Progress Overview */}
             <div className="xl:col-span-12 order-3">
               <ProgressOverview />
             </div>
