@@ -160,11 +160,30 @@ export const useOnboardingProgress = () => {
     console.log('useOnboardingProgress - Marking step complete:', step);
     
     const stepData: OnboardingProgressInput = {};
-    const completedField = `${step}_completed` as keyof OnboardingProgressInput;
-    const completedAtField = `${step}_completed_at` as keyof OnboardingProgressInput;
+    const timestamp = new Date().toISOString();
     
-    stepData[completedField] = true as any;
-    stepData[completedAtField] = new Date().toISOString() as any;
+    // Use proper type-safe assignment
+    switch (step) {
+      case 'basic_info':
+        stepData.basic_info_completed = true;
+        stepData.basic_info_completed_at = timestamp;
+        break;
+      case 'health_assessment':
+        stepData.health_assessment_completed = true;
+        stepData.health_assessment_completed_at = timestamp;
+        break;
+      case 'goals_setup':
+        stepData.goals_setup_completed = true;
+        stepData.goals_setup_completed_at = timestamp;
+        break;
+      case 'preferences':
+        stepData.preferences_completed = true;
+        stepData.preferences_completed_at = timestamp;
+        break;
+      default:
+        console.warn('Unknown step:', step);
+        return;
+    }
     
     try {
       const result = await updateProgressMutation.mutateAsync(stepData);
