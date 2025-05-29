@@ -1,7 +1,7 @@
 
 import { ExerciseHeader } from "./ExerciseHeader";
-import { WorkoutTypeToggle } from "./WorkoutTypeToggle";
 import { ExerciseDaySelector } from "./ExerciseDaySelector";
+import { WeeklyExerciseNavigation } from "./WeeklyExerciseNavigation";
 import { TodaysWorkoutCard } from "./TodaysWorkoutCard";
 import { ExerciseListEnhanced } from "./ExerciseListEnhanced";
 import { ExerciseProgramSelector } from "./ExerciseProgramSelector";
@@ -11,9 +11,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ExerciseProgramPageContentProps {
   currentDate: Date;
-  currentDay: string;
+  weekStartDate: Date;
   selectedDayNumber: number;
   setSelectedDayNumber: (day: number) => void;
+  currentWeekOffset: number;
+  setCurrentWeekOffset: (offset: number) => void;
   currentProgram: ExerciseProgram | null;
   workoutType: "home" | "gym";
   setWorkoutType: (type: "home" | "gym") => void;
@@ -28,15 +30,19 @@ interface ExerciseProgramPageContentProps {
   setAiPreferences: (prefs: ExercisePreferences) => void;
   handleGenerateAIProgram: (preferences: ExercisePreferences) => void;
   handleRegenerateProgram: () => void;
+  handleExerciseComplete: (exerciseId: string) => void;
+  handleExerciseProgressUpdate: (exerciseId: string, sets: number, reps: string, notes?: string) => void;
   isGenerating: boolean;
   refetch: () => void;
 }
 
 export const ExerciseProgramPageContent = ({
   currentDate,
-  currentDay,
+  weekStartDate,
   selectedDayNumber,
   setSelectedDayNumber,
+  currentWeekOffset,
+  setCurrentWeekOffset,
   currentProgram,
   workoutType,
   setWorkoutType,
@@ -51,6 +57,8 @@ export const ExerciseProgramPageContent = ({
   setAiPreferences,
   handleGenerateAIProgram,
   handleRegenerateProgram,
+  handleExerciseComplete,
+  handleExerciseProgressUpdate,
   isGenerating,
   refetch
 }: ExerciseProgramPageContentProps) => {
@@ -61,6 +69,13 @@ export const ExerciseProgramPageContent = ({
         onGenerateProgram={handleRegenerateProgram}
         isGenerating={isGenerating}
         onShowAIDialog={() => setShowAIDialog(true)}
+      />
+
+      {/* Weekly Navigation */}
+      <WeeklyExerciseNavigation
+        currentWeekOffset={currentWeekOffset}
+        setCurrentWeekOffset={setCurrentWeekOffset}
+        weekStartDate={weekStartDate}
       />
 
       {/* Workout Type Tabs */}
@@ -97,10 +112,8 @@ export const ExerciseProgramPageContent = ({
                 <ExerciseListEnhanced 
                   exercises={todaysExercises}
                   isLoading={false}
-                  onExerciseComplete={(exerciseId) => {
-                    console.log('Exercise completed:', exerciseId);
-                    refetch();
-                  }}
+                  onExerciseComplete={handleExerciseComplete}
+                  onExerciseProgressUpdate={handleExerciseProgressUpdate}
                 />
               </div>
             </div>
@@ -136,10 +149,8 @@ export const ExerciseProgramPageContent = ({
                 <ExerciseListEnhanced 
                   exercises={todaysExercises}
                   isLoading={false}
-                  onExerciseComplete={(exerciseId) => {
-                    console.log('Exercise completed:', exerciseId);
-                    refetch();
-                  }}
+                  onExerciseComplete={handleExerciseComplete}
+                  onExerciseProgressUpdate={handleExerciseProgressUpdate}
                 />
               </div>
             </div>

@@ -155,32 +155,38 @@ export type Database = {
       }
       daily_workouts: {
         Row: {
+          completed: boolean | null
           created_at: string | null
           day_number: number
           estimated_calories: number | null
           estimated_duration: number | null
           id: string
           muscle_groups: string[] | null
+          updated_at: string | null
           weekly_program_id: string
           workout_name: string
         }
         Insert: {
+          completed?: boolean | null
           created_at?: string | null
           day_number: number
           estimated_calories?: number | null
           estimated_duration?: number | null
           id?: string
           muscle_groups?: string[] | null
+          updated_at?: string | null
           weekly_program_id: string
           workout_name: string
         }
         Update: {
+          completed?: boolean | null
           created_at?: string | null
           day_number?: number
           estimated_calories?: number | null
           estimated_duration?: number | null
           id?: string
           muscle_groups?: string[] | null
+          updated_at?: string | null
           weekly_program_id?: string
           workout_name?: string
         }
@@ -196,6 +202,10 @@ export type Database = {
       }
       exercises: {
         Row: {
+          actual_reps: string | null
+          actual_sets: number | null
+          completed: boolean | null
+          created_at: string | null
           daily_workout_id: string
           difficulty: string | null
           equipment: string | null
@@ -203,13 +213,19 @@ export type Database = {
           instructions: string | null
           muscle_groups: string[] | null
           name: string
+          notes: string | null
           order_number: number | null
           reps: string | null
           rest_seconds: number | null
           sets: number | null
+          updated_at: string | null
           youtube_search_term: string | null
         }
         Insert: {
+          actual_reps?: string | null
+          actual_sets?: number | null
+          completed?: boolean | null
+          created_at?: string | null
           daily_workout_id: string
           difficulty?: string | null
           equipment?: string | null
@@ -217,13 +233,19 @@ export type Database = {
           instructions?: string | null
           muscle_groups?: string[] | null
           name: string
+          notes?: string | null
           order_number?: number | null
           reps?: string | null
           rest_seconds?: number | null
           sets?: number | null
+          updated_at?: string | null
           youtube_search_term?: string | null
         }
         Update: {
+          actual_reps?: string | null
+          actual_sets?: number | null
+          completed?: boolean | null
+          created_at?: string | null
           daily_workout_id?: string
           difficulty?: string | null
           equipment?: string | null
@@ -231,10 +253,12 @@ export type Database = {
           instructions?: string | null
           muscle_groups?: string[] | null
           name?: string
+          notes?: string | null
           order_number?: number | null
           reps?: string | null
           rest_seconds?: number | null
           sets?: number | null
+          updated_at?: string | null
           youtube_search_term?: string | null
         }
         Relationships: [
@@ -433,33 +457,45 @@ export type Database = {
       weekly_exercise_programs: {
         Row: {
           created_at: string | null
+          current_week: number | null
           difficulty_level: string | null
           generation_prompt: Json | null
           id: string
           program_name: string
+          status: string | null
           total_estimated_calories: number | null
+          updated_at: string | null
           user_id: string
           week_start_date: string
+          workout_type: string | null
         }
         Insert: {
           created_at?: string | null
+          current_week?: number | null
           difficulty_level?: string | null
           generation_prompt?: Json | null
           id?: string
           program_name: string
+          status?: string | null
           total_estimated_calories?: number | null
+          updated_at?: string | null
           user_id: string
           week_start_date: string
+          workout_type?: string | null
         }
         Update: {
           created_at?: string | null
+          current_week?: number | null
           difficulty_level?: string | null
           generation_prompt?: Json | null
           id?: string
           program_name?: string
+          status?: string | null
           total_estimated_calories?: number | null
+          updated_at?: string | null
           user_id?: string
           week_start_date?: string
+          workout_type?: string | null
         }
         Relationships: []
       }
@@ -549,6 +585,19 @@ export type Database = {
       force_logout_all_users: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      get_current_exercise_program: {
+        Args: { user_id_param: string }
+        Returns: {
+          id: string
+          program_name: string
+          difficulty_level: string
+          workout_type: string
+          current_week: number
+          week_start_date: string
+          created_at: string
+          daily_workouts_count: number
+        }[]
       }
       gtrgm_compress: {
         Args: { "": unknown }

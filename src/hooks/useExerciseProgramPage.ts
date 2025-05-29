@@ -20,7 +20,8 @@ export interface ExercisePreferences {
 export type { ExerciseProgram } from './useExerciseProgramData';
 
 export const useExerciseProgramPage = () => {
-  const [selectedDayNumber, setSelectedDayNumber] = useState(1);
+  const [selectedDayNumber, setSelectedDayNumber] = useState(new Date().getDay() || 7); // Auto-select current day
+  const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
   const [workoutType, setWorkoutType] = useState<"home" | "gym">("home");
   const [showAIDialog, setShowAIDialog] = useState(false);
   const [aiPreferences, setAiPreferences] = useState<ExercisePreferences>({
@@ -36,13 +37,13 @@ export const useExerciseProgramPage = () => {
     difficulty: "beginner"
   });
 
-  const { currentProgram, isLoading, error, refetch } = useExerciseProgramData(0);
+  const { currentProgram, isLoading, error, refetch, completeExercise, updateExerciseProgress } = useExerciseProgramData(currentWeekOffset);
   const { generateExerciseProgram, isGenerating } = useAIExercise();
 
   const currentDate = new Date();
-  const currentDay = format(currentDate, 'EEEE');
+  const weekStartDate = addDays(startOfWeek(currentDate), currentWeekOffset * 7);
 
-  // Get today's workouts
+  // Get today's workouts based on selected day
   const todaysWorkouts = useMemo(() => {
     if (!currentProgram?.daily_workouts) return [];
     return currentProgram.daily_workouts.filter(
@@ -94,10 +95,28 @@ export const useExerciseProgramPage = () => {
     }));
   };
 
+  const handleExerciseComplete = async (exerciseId: string) => {
+    try {
+      await completeExercise(exerciseId);
+    } catch (error) {
+      console.error('Error completing exercise:', error);
+    }
+  };
+
+  const handleExerciseProgressUpdate = async (exerciseId: string, sets: number, reps: string, notes?: string) => {
+    try {
+      await updateExerciseProgress(exerciseId, sets, reps, notes);
+    } catch (error) {
+      console.error('Error updating exercise progress:', error);
+    }
+  };
+
   return {
     // State
     selectedDayNumber,
     setSelectedDayNumber,
+    currentWeekOffset,
+    setCurrentWeekOffset,
     workoutType,
     setWorkoutType: handleWorkoutTypeChange,
     showAIDialog,
@@ -118,12 +137,14 @@ export const useExerciseProgramPage = () => {
     
     // Computed
     currentDate,
-    currentDay,
+    weekStartDate,
     
     // Handlers
     handleGenerateAIProgram,
     handleRegenerateProgram,
     handleWorkoutTypeChange,
+    handleExerciseComplete,
+    handleExerciseProgressUpdate,
     refetch
   };
 };

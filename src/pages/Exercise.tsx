@@ -10,6 +10,8 @@ const Exercise = () => {
     // State
     selectedDayNumber,
     setSelectedDayNumber,
+    currentWeekOffset,
+    setCurrentWeekOffset,
     workoutType,
     setWorkoutType,
     showAIDialog,
@@ -30,17 +32,21 @@ const Exercise = () => {
     
     // Computed
     currentDate,
-    currentDay,
+    weekStartDate,
     
     // Handlers
     handleGenerateAIProgram,
     handleRegenerateProgram,
+    handleExerciseComplete,
+    handleExerciseProgressUpdate,
     refetch
   } = useExerciseProgramPage();
 
   console.log('🎯 Exercise Page - Debug State:', {
     hasCurrentProgram: !!currentProgram,
     workoutType: currentProgram?.workout_type || workoutType,
+    currentWeekOffset,
+    selectedDayNumber,
     isLoading,
     isGenerating,
     todaysWorkoutsCount: todaysWorkouts?.length || 0,
@@ -70,9 +76,11 @@ const Exercise = () => {
     <MealPlanLayout>
       <ExerciseProgramPageContent
         currentDate={currentDate}
-        currentDay={currentDay}
+        weekStartDate={weekStartDate}
         selectedDayNumber={selectedDayNumber}
         setSelectedDayNumber={setSelectedDayNumber}
+        currentWeekOffset={currentWeekOffset}
+        setCurrentWeekOffset={setCurrentWeekOffset}
         currentProgram={currentProgram}
         workoutType={workoutType}
         setWorkoutType={setWorkoutType}
@@ -87,6 +95,8 @@ const Exercise = () => {
         setAiPreferences={setAiPreferences}
         handleGenerateAIProgram={handleGenerateAIProgram}
         handleRegenerateProgram={handleRegenerateProgram}
+        handleExerciseComplete={handleExerciseComplete}
+        handleExerciseProgressUpdate={handleExerciseProgressUpdate}
         isGenerating={isGenerating}
         refetch={refetch}
       />
