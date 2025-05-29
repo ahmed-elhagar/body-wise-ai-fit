@@ -49,14 +49,16 @@ const WeeklyMealPlanView = ({ weeklyPlan, onShowRecipe, onExchangeMeal }: Weekly
   const weeklyCalories = weeklyPlan?.weeklyPlan?.total_calories || weeklyPlan?.total_calories || 0;
   const weeklyProtein = weeklyPlan?.weeklyPlan?.total_protein || weeklyPlan?.total_protein || 0;
 
-  // FIXED: Access the dailyMeals correctly from the data structure
+  // Access the dailyMeals correctly from the data structure
   const dailyMealsData = weeklyPlan?.dailyMeals || [];
 
-  console.log('🔍 WeeklyMealPlanView Debug:', {
+  console.log('🔍 WeeklyMealPlanView Debug - FIXED:', {
     weeklyPlan: weeklyPlan,
     dailyMealsData: dailyMealsData,
     mealsCount: dailyMealsData.length,
-    weeklyPlanStructure: weeklyPlan?.weeklyPlan ? 'nested' : 'flat'
+    weeklyPlanStructure: weeklyPlan?.weeklyPlan ? 'nested' : 'flat',
+    weeklyCalories,
+    weeklyProtein
   });
 
   return (
@@ -72,6 +74,12 @@ const WeeklyMealPlanView = ({ weeklyPlan, onShowRecipe, onExchangeMeal }: Weekly
         {dayNames.map((dayName, index) => {
           const dayNumber = index + 1;
           const dayMeals = getMealsByDay(dayNumber);
+          
+          console.log(`📅 Day ${dayNumber} (${dayName}) meals:`, {
+            dayNumber,
+            dayMeals: dayMeals,
+            mealsCount: dayMeals.length
+          });
           
           return (
             <DayMealCard

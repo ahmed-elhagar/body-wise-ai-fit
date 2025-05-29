@@ -81,7 +81,7 @@ const MealPlanMainContent = ({
         <EmptyMealPlan onGenerate={onGenerate} />
       ) : viewMode === 'weekly' ? (
         <WeeklyMealPlanView
-          weeklyPlan={currentWeekPlan.weeklyPlan}
+          weeklyPlan={currentWeekPlan}
           onShowRecipe={onShowRecipe}
           onExchangeMeal={onExchangeMeal}
         />
