@@ -36,7 +36,9 @@ export const generateMealPlanPrompt = (userProfile: UserProfile, preferences: Pr
   const totalMeals = includeSnacks ? 35 : 21;
   const mealsPerDay = includeSnacks ? 5 : 3;
 
-  return `You are a professional nutritionist specializing in ${cuisine}. Create a complete 7-day meal plan with EXACTLY ${totalMeals} meals (${mealsPerDay} meals per day for 7 days).
+  return `You are a professional nutritionist specializing in ${cuisine}. Create a BASIC 7-day meal plan with EXACTLY ${totalMeals} meals (${mealsPerDay} meals per day for 7 days).
+
+IMPORTANT: Generate ONLY basic meal information. Detailed recipes will be fetched separately on-demand.
 
 USER PROFILE:
 - Age: ${userProfile?.age}, Gender: ${userProfile?.gender}
@@ -51,7 +53,6 @@ PREFERENCES:
 - Cuisine: ${cuisine}
 - Max Prep Time: ${maxPrepTime} minutes per meal
 - Include Snacks: ${includeSnacks ? 'Yes' : 'No'}
-- Focus: Authentic ${cuisine} dishes with proper nutrition
 
 CRITICAL REQUIREMENTS:
 1. EXACTLY 7 days starting from Saturday (day 1) to Friday (day 7)
@@ -59,28 +60,25 @@ CRITICAL REQUIREMENTS:
 3. Total meals: ${totalMeals} (no more, no less)
 4. Return ONLY valid JSON - no markdown or code blocks
 5. All nutritional values must be numbers (not strings)
-6. Each meal prep time must be ≤ ${maxPrepTime} minutes
-7. Include detailed ingredients with measurements
-8. Provide comprehensive cooking instructions
-9. Consider allergies and dietary restrictions
-10. Include realistic YouTube search terms for each meal
-11. Provide detailed descriptions for AI image generation
+6. BASIC meal info only - no detailed ingredients, instructions, or cooking details
+7. Consider allergies and dietary restrictions
+8. Realistic prep times ≤ ${maxPrepTime} minutes
 
 ${includeSnacks ? `
 MEAL DISTRIBUTION WITH SNACKS:
-- Breakfast: ${Math.round(dailyCalories * 0.25)} calories (≤ ${maxPrepTime} min prep)
-- Lunch: ${Math.round(dailyCalories * 0.35)} calories (≤ ${maxPrepTime} min prep)
-- Dinner: ${Math.round(dailyCalories * 0.30)} calories (≤ ${maxPrepTime} min prep)
-- Snack1: ${Math.round(dailyCalories * 0.05)} calories (≤ 10 min prep)
-- Snack2: ${Math.round(dailyCalories * 0.05)} calories (≤ 10 min prep)
+- Breakfast: ${Math.round(dailyCalories * 0.25)} calories
+- Lunch: ${Math.round(dailyCalories * 0.35)} calories  
+- Dinner: ${Math.round(dailyCalories * 0.30)} calories
+- Snack1: ${Math.round(dailyCalories * 0.05)} calories
+- Snack2: ${Math.round(dailyCalories * 0.05)} calories
 ` : `
 MEAL DISTRIBUTION WITHOUT SNACKS:
-- Breakfast: ${Math.round(dailyCalories * 0.30)} calories (≤ ${maxPrepTime} min prep)
-- Lunch: ${Math.round(dailyCalories * 0.40)} calories (≤ ${maxPrepTime} min prep)
-- Dinner: ${Math.round(dailyCalories * 0.30)} calories (≤ ${maxPrepTime} min prep)
+- Breakfast: ${Math.round(dailyCalories * 0.30)} calories
+- Lunch: ${Math.round(dailyCalories * 0.40)} calories
+- Dinner: ${Math.round(dailyCalories * 0.30)} calories
 `}
 
-Return this EXACT JSON structure:
+Return this EXACT JSON structure with BASIC meal info only:
 
 {
   "weekSummary": {
@@ -110,32 +108,11 @@ Return this EXACT JSON structure:
           "fiber": 8,
           "sugar": 12,
           "description": "Nutritious ${cuisine} breakfast to start your day",
-          "imagePrompt": "Professional food photography of [meal name], beautifully plated, natural lighting, appetizing presentation, ${cuisine} style",
-          "ingredients": [
-            {
-              "name": "main ingredient",
-              "quantity": "100",
-              "unit": "g",
-              "calories": 150,
-              "protein": 12,
-              "carbs": 20,
-              "fat": 5
-            }
-          ],
-          "instructions": [
-            "Step 1: Detailed preparation with timing (${Math.floor(maxPrepTime * 0.3)} min)",
-            "Step 2: Cooking method with temperature (${Math.floor(maxPrepTime * 0.6)} min)",
-            "Step 3: Plating and serving suggestions (${Math.floor(maxPrepTime * 0.1)} min)"
-          ],
-          "prepTime": ${Math.min(Math.floor(maxPrepTime * 0.4), 10)},
-          "cookTime": ${Math.min(Math.floor(maxPrepTime * 0.6), maxPrepTime - 10)},
+          "prepTime": ${Math.min(Math.floor(maxPrepTime * 0.4), 15)},
+          "cookTime": ${Math.min(Math.floor(maxPrepTime * 0.6), maxPrepTime - 15)},
           "servings": 1,
-          "youtubeSearchTerm": "${cuisine} breakfast recipe how to make",
           "cuisine": "${cuisine}",
-          "difficulty": "easy",
-          "tips": "Chef tips for best results within ${maxPrepTime} minutes",
-          "nutritionBenefits": "Health benefits of key ingredients",
-          "culturalInfo": "Cultural significance and variations"
+          "difficulty": "easy"
         }${includeSnacks ? `,
         {
           "type": "snack1",
@@ -147,18 +124,14 @@ Return this EXACT JSON structure:
           "fiber": 2,
           "sugar": 3,
           "description": "Light and healthy snack",
-          "imagePrompt": "Professional food photography of healthy snack, beautifully presented, ${cuisine} style",
-          "ingredients": [...],
-          "instructions": ["Quick preparation in 5 minutes"],
           "prepTime": 5,
           "cookTime": 0,
           "servings": 1,
-          "youtubeSearchTerm": "healthy ${cuisine} snack recipe",
           "cuisine": "${cuisine}",
           "difficulty": "easy"
         },
         {
-          "type": "snack2",
+          "type": "snack2", 
           "name": "Another Healthy ${cuisine} Snack",
           "calories": ${Math.round(dailyCalories * 0.05)},
           "protein": 3,
@@ -167,13 +140,9 @@ Return this EXACT JSON structure:
           "fiber": 2,
           "sugar": 3,
           "description": "Light and healthy evening snack",
-          "imagePrompt": "Professional food photography of healthy snack, beautifully presented, ${cuisine} style",
-          "ingredients": [...],
-          "instructions": ["Quick preparation in 5 minutes"],
           "prepTime": 5,
           "cookTime": 0,
           "servings": 1,
-          "youtubeSearchTerm": "healthy ${cuisine} evening snack",
           "cuisine": "${cuisine}",
           "difficulty": "easy"
         }` : ''}
@@ -182,5 +151,5 @@ Return this EXACT JSON structure:
   ]
 }
 
-Generate all 7 days following this pattern. Each day must have exactly ${mealsPerDay} meals with the specified types. Focus on authentic ${cuisine} while meeting nutritional requirements, prep time constraints (≤ ${maxPrepTime} min), and avoiding allergens. Make sure YouTube search terms are specific and likely to return actual cooking videos.`;
+Generate all 7 days following this pattern. Each day must have exactly ${mealsPerDay} meals with the specified types. Focus on authentic ${cuisine} while meeting nutritional requirements and avoiding allergens. Keep it SIMPLE - detailed recipes will be fetched separately when needed.`;
 };
