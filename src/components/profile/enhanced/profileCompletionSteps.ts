@@ -6,7 +6,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 export const useProfileCompletionSteps = (completionScore: number) => {
   const { profile } = useProfile();
-  const { assessment } = useHealthAssessment();
+  const { assessment, isAssessmentComplete } = useHealthAssessment();
   const { progress } = useOnboardingProgress();
   const { t } = useLanguage();
 
@@ -18,19 +18,6 @@ export const useProfileCompletionSteps = (completionScore: number) => {
                                 profile?.weight && 
                                 profile?.nationality && 
                                 profile?.body_shape);
-
-  // Properly check health assessment completion based on required fields
-  const isHealthAssessmentComplete = !!(assessment && 
-                                       assessment.stress_level && 
-                                       assessment.sleep_quality && 
-                                       assessment.energy_level &&
-                                       assessment.work_schedule && 
-                                       assessment.exercise_history &&
-                                       assessment.commitment_level &&
-                                       assessment.nutrition_knowledge &&
-                                       assessment.cooking_skills &&
-                                       assessment.time_availability &&
-                                       assessment.timeline_expectation);
 
   const isGoalsComplete = !!(profile?.fitness_goal && 
                             profile?.activity_level);
@@ -49,7 +36,7 @@ export const useProfileCompletionSteps = (completionScore: number) => {
       key: 'health_assessment',
       title: t('healthAssessment') || 'Health Assessment',
       description: t('healthConditionsLifestyleData') || 'Health conditions and lifestyle data',
-      completed: isHealthAssessmentComplete,
+      completed: isAssessmentComplete,
     },
     {
       key: 'goals_setup',
@@ -70,7 +57,7 @@ export const useProfileCompletionSteps = (completionScore: number) => {
 
   console.log('Profile completion steps analysis:', {
     isBasicInfoComplete,
-    isHealthAssessmentComplete,
+    isHealthAssessmentComplete: isAssessmentComplete,
     isGoalsComplete,
     isPreferencesComplete,
     completionScore,
@@ -78,18 +65,7 @@ export const useProfileCompletionSteps = (completionScore: number) => {
     nextIncompleteStep: nextIncompleteStep?.key,
     completedSteps,
     assessmentExists: !!assessment,
-    assessmentData: assessment ? {
-      stress_level: assessment.stress_level,
-      sleep_quality: assessment.sleep_quality,
-      energy_level: assessment.energy_level,
-      work_schedule: assessment.work_schedule,
-      exercise_history: assessment.exercise_history,
-      commitment_level: assessment.commitment_level,
-      nutrition_knowledge: assessment.nutrition_knowledge,
-      cooking_skills: assessment.cooking_skills,
-      time_availability: assessment.time_availability,
-      timeline_expectation: assessment.timeline_expectation
-    } : null
+    assessmentComplete: isAssessmentComplete,
   });
 
   return {
