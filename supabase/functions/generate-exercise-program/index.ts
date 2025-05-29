@@ -73,7 +73,7 @@ serve(async (req) => {
       });
     }
 
-    // Create log entry with valid status
+    // Create log entry with valid status - using 'active' instead of 'started'
     console.log('📝 Creating generation log...');
     const { data: logEntry, error: logError } = await supabase
       .from('ai_generation_logs')
