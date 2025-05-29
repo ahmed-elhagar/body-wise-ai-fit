@@ -31,83 +31,23 @@ const FoodDatabaseSearch = ({ onAddFood }: FoodDatabaseSearchProps) => {
   const [searchTerm, setSearchTerm] = useState("");
 
   const { data: foodItems, isLoading } = useQuery({
-    queryKey: ['comprehensive-food-search', searchTerm],
+    queryKey: ['centralized-food-search', searchTerm],
     queryFn: async () => {
       if (!searchTerm || searchTerm.length < 2) return [];
       
-      // Search in food_items table (where AI-generated meals are stored)
-      const { data: foodItemsData, error: foodItemsError } = await supabase
-        .from('food_items')
-        .select('id, name, calories_per_100g, protein_per_100g, carbs_per_100g, fat_per_100g, serving_size_g, serving_description, confidence_score, cuisine_type, category, verified')
-        .ilike('name', `%${searchTerm}%`)
-        .order('confidence_score', { ascending: false })
-        .limit(10);
-
-      if (foodItemsError) {
-        console.log('Food items search error:', foodItemsError);
-      }
-
-      // Search in food_database table (legacy/original database)
-      const { data: foodDatabaseData, error: foodDatabaseError } = await supabase
-        .from('food_database')
-        .select('id, name, calories_per_unit, protein_per_unit, carbs_per_unit, fat_per_unit, unit_type, confidence_score, cuisine_type')
-        .ilike('name', `%${searchTerm}%`)
-        .order('confidence_score', { ascending: false })
-        .limit(5);
-
-      if (foodDatabaseError) {
-        console.log('Food database search error:', foodDatabaseError);
-      }
-
-      // Combine and format results
-      const combinedResults: FoodItem[] = [];
-
-      // Add food_items results
-      if (foodItemsData) {
-        combinedResults.push(...foodItemsData.map(item => ({
-          id: item.id,
-          name: item.name,
-          calories_per_100g: item.calories_per_100g || 0,
-          protein_per_100g: item.protein_per_100g || 0,
-          carbs_per_100g: item.carbs_per_100g || 0,
-          fat_per_100g: item.fat_per_100g || 0,
-          serving_size_g: item.serving_size_g || 100,
-          serving_description: item.serving_description,
-          confidence_score: item.confidence_score || 0.8,
-          cuisine_type: item.cuisine_type || 'general',
-          category: item.category || 'general',
-          verified: item.verified || false
-        })));
-      }
-
-      // Add food_database results (converted to per 100g format)
-      if (foodDatabaseData) {
-        combinedResults.push(...foodDatabaseData.map(item => ({
-          id: item.id,
-          name: item.name,
-          calories_per_100g: item.calories_per_unit || 0,
-          protein_per_100g: item.protein_per_unit || 0,
-          carbs_per_100g: item.carbs_per_unit || 0,
-          fat_per_100g: item.fat_per_unit || 0,
-          serving_size_g: 100,
-          serving_description: `1 ${item.unit_type || 'serving'}`,
-          confidence_score: item.confidence_score || 0.8,
-          cuisine_type: item.cuisine_type || 'general',
-          category: 'general',
-          verified: false
-        })));
-      }
-
-      // Remove duplicates based on name (case insensitive)
-      const uniqueResults = combinedResults.filter((item, index, self) => 
-        index === self.findIndex(t => t.name.toLowerCase() === item.name.toLowerCase())
-      );
-
-      // Sort by confidence score and verified status
-      return uniqueResults.sort((a, b) => {
-        if (a.verified !== b.verified) return a.verified ? -1 : 1;
-        return (b.confidence_score || 0) - (a.confidence_score || 0);
+      // Use the optimized search function that only searches food_items
+      const { data, error } = await supabase.rpc('search_food_items', {
+        search_term: searchTerm,
+        category_filter: null,
+        limit_count: 15
       });
+
+      if (error) {
+        console.error('Food search error:', error);
+        return [];
+      }
+
+      return data || [];
     },
     enabled: searchTerm.length >= 2,
   });
@@ -140,7 +80,7 @@ const FoodDatabaseSearch = ({ onAddFood }: FoodDatabaseSearchProps) => {
         {foodItems && foodItems.length > 0 && (
           <div className="space-y-3 max-h-96 overflow-y-auto">
             <p className="text-sm text-gray-600">
-              Found {foodItems.length} items from comprehensive food database
+              Found {foodItems.length} items from centralized food database
             </p>
             {foodItems.map((food) => (
               <div
@@ -151,7 +91,7 @@ const FoodDatabaseSearch = ({ onAddFood }: FoodDatabaseSearchProps) => {
                   <div className="flex items-center space-x-2 mb-1">
                     <h4 className="font-medium text-gray-900 capitalize">{food.name}</h4>
                     <Badge variant="outline" className="text-xs">
-                      {Math.round((food.confidence_score || 0) * 100)}% match
+                      {Math.round((food.similarity_score || 0) * 100)}% match
                     </Badge>
                     {food.verified && (
                       <Badge variant="default" className="text-xs bg-green-100 text-green-700">
