@@ -30,7 +30,7 @@ export const storeWorkoutProgram = async (
     await deleteExistingPrograms(supabase, userId, workoutType, weekStartDate);
 
     // Small delay to ensure database consistency
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 200));
 
     // Create new weekly program record
     const weeklyProgram = await createWeeklyProgram(
@@ -43,7 +43,13 @@ export const storeWorkoutProgram = async (
     );
 
     // Store daily workouts and exercises
-    await storeWorkoutPrograms(supabase, generatedProgram, weeklyProgram.id);
+    const result = await storeWorkoutPrograms(supabase, generatedProgram, weeklyProgram.id);
+    
+    console.log('✅ Program storage complete:', {
+      programId: weeklyProgram.id,
+      workoutsCreated: result.totalWorkoutsCreated,
+      exercisesCreated: result.totalExercisesCreated
+    });
 
     return weeklyProgram;
     

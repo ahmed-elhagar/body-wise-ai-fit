@@ -6,7 +6,14 @@ export const generateWeeklyWorkouts = (workouts: any[], type: "home" | "gym"): D
   const restDays = type === "home" ? [3, 6, 7] : [4, 7]; // Wed, Sat, Sun for home; Thu, Sun for gym
   
   return weekDays.map(dayNumber => {
-    const existingWorkout = workouts.find(w => w.day_number === dayNumber);
+    // Only look for workouts that have actual exercises and are not empty placeholders
+    const existingWorkout = workouts.find(w => 
+      w.day_number === dayNumber && 
+      w.id && 
+      !w.id.startsWith('empty-') && 
+      !w.id.startsWith('rest-')
+    );
+    
     const isRestDay = restDays.includes(dayNumber);
     
     if (isRestDay) {
@@ -33,7 +40,7 @@ export const generateWeeklyWorkouts = (workouts: any[], type: "home" | "gym"): D
       };
     }
     
-    // Return empty workout day if no data
+    // Return empty workout day if no real data
     return {
       id: `empty-${dayNumber}`,
       weekly_program_id: '',
@@ -44,4 +51,19 @@ export const generateWeeklyWorkouts = (workouts: any[], type: "home" | "gym"): D
       is_rest_day: false
     };
   });
+};
+
+// Helper function to check if a workout has real data
+export const hasRealWorkoutData = (workout: DailyWorkout): boolean => {
+  return workout && 
+         !workout.id.startsWith('empty-') && 
+         !workout.id.startsWith('rest-') &&
+         workout.exercises && 
+         workout.exercises.length > 0;
+};
+
+// Helper function to check if a day is a rest day
+export const isRestDay = (dayNumber: number, workoutType: "home" | "gym"): boolean => {
+  const restDays = workoutType === "home" ? [3, 6, 7] : [4, 7];
+  return restDays.includes(dayNumber);
 };

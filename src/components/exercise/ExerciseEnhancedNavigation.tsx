@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
 import { format, addDays } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { hasRealWorkoutData, isRestDay } from "@/utils/exerciseDataUtils";
 
 interface ExerciseEnhancedNavigationProps {
   currentWeekOffset: number;
@@ -30,24 +31,18 @@ export const ExerciseEnhancedNavigation = ({
 }: ExerciseEnhancedNavigationProps) => {
   const { t } = useLanguage();
   const shortDayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  
-  // Define rest days based on workout type
-  const getRestDays = (type: "home" | "gym") => {
-    return type === "home" ? [3, 6, 7] : [4, 7]; // Wed, Sat, Sun for home; Thu, Sun for gym
-  };
 
-  const restDays = getRestDays(workoutType);
-
-  // Check if day has workout data
+  // Check if day has real workout data (not empty placeholders)
   const hasWorkoutData = (dayNumber: number) => {
     if (!currentProgram?.daily_workouts) return false;
-    return currentProgram.daily_workouts.some((workout: any) => 
-      workout.day_number === dayNumber && !workout.is_rest_day
+    const dayWorkout = currentProgram.daily_workouts.find((workout: any) => 
+      workout.day_number === dayNumber
     );
+    return dayWorkout ? hasRealWorkoutData(dayWorkout) : false;
   };
 
-  const isRestDay = (dayNumber: number) => {
-    return restDays.includes(dayNumber);
+  const isDayRestDay = (dayNumber: number) => {
+    return isRestDay(dayNumber, workoutType);
   };
 
   const formatWeekRange = (startDate: Date) => {
@@ -141,7 +136,7 @@ export const ExerciseEnhancedNavigation = ({
           {shortDayNames.map((day, index) => {
             const dayNumber = index + 1;
             const isSelected = selectedDayNumber === dayNumber;
-            const isRest = isRestDay(dayNumber);
+            const isRest = isDayRestDay(dayNumber);
             const hasData = hasWorkoutData(dayNumber);
             
             return (

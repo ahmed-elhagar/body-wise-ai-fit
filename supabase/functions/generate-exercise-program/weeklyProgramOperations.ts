@@ -9,36 +9,36 @@ export const deleteExistingPrograms = async (
 ) => {
   console.log('🧹 Cleaning up existing programs for user:', userId.substring(0, 8) + '...', 'week:', weekStartDate, 'type:', workoutType);
   
-  // Get all existing programs to delete
-  const { data: existingPrograms, error: fetchError } = await supabase
-    .from('weekly_exercise_programs')
-    .select('id')
-    .eq('user_id', userId)
-    .eq('workout_type', workoutType)
-    .eq('week_start_date', weekStartDate);
+  try {
+    // Get all existing programs to delete with better error handling
+    const { data: existingPrograms, error: fetchError } = await supabase
+      .from('weekly_exercise_programs')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('workout_type', workoutType)
+      .eq('week_start_date', weekStartDate);
 
-  if (fetchError) {
-    console.error('❌ Error fetching existing programs:', fetchError);
-    throw new Error('Failed to fetch existing programs: ' + fetchError.message);
-  }
+    if (fetchError) {
+      console.error('❌ Error fetching existing programs:', fetchError);
+      throw new Error('Failed to fetch existing programs: ' + fetchError.message);
+    }
 
-  if (existingPrograms && existingPrograms.length > 0) {
-    console.log('🔄 Found', existingPrograms.length, 'existing programs to delete');
-    
-    for (const program of existingPrograms) {
-      console.log('🗑️ Deleting program:', program.id);
+    if (existingPrograms && existingPrograms.length > 0) {
+      console.log('🔄 Found', existingPrograms.length, 'existing programs to delete');
       
-      // Get all workouts for this program
+      const programIds = existingPrograms.map(p => p.id);
+      
+      // Get all workouts for these programs
       const { data: workouts, error: workoutFetchError } = await supabase
         .from('daily_workouts')
         .select('id')
-        .eq('weekly_program_id', program.id);
+        .in('weekly_program_id', programIds);
         
       if (!workoutFetchError && workouts && workouts.length > 0) {
         const workoutIds = workouts.map(w => w.id);
-        console.log('🗑️ Deleting', workoutIds.length, 'workouts');
+        console.log('🗑️ Deleting', workoutIds.length, 'workouts and their exercises');
         
-        // Delete all exercises for these workouts
+        // Delete all exercises for these workouts first
         const { error: exerciseDeleteError } = await supabase
           .from('exercises')
           .delete()
@@ -46,6 +46,7 @@ export const deleteExistingPrograms = async (
           
         if (exerciseDeleteError) {
           console.error('❌ Error deleting exercises:', exerciseDeleteError);
+          throw new Error('Failed to delete exercises: ' + exerciseDeleteError.message);
         } else {
           console.log('✅ Deleted exercises for workouts');
         }
@@ -54,30 +55,34 @@ export const deleteExistingPrograms = async (
         const { error: workoutDeleteError } = await supabase
           .from('daily_workouts')
           .delete()
-          .eq('weekly_program_id', program.id);
+          .in('weekly_program_id', programIds);
           
         if (workoutDeleteError) {
           console.error('❌ Error deleting workouts:', workoutDeleteError);
+          throw new Error('Failed to delete workouts: ' + workoutDeleteError.message);
         } else {
-          console.log('✅ Deleted workouts for program');
+          console.log('✅ Deleted workouts for programs');
         }
       }
       
-      // Finally delete the program
+      // Finally delete the programs
       const { error: programDeleteError } = await supabase
         .from('weekly_exercise_programs')
         .delete()
-        .eq('id', program.id);
+        .in('id', programIds);
         
       if (programDeleteError) {
-        console.error('❌ Error deleting program:', programDeleteError);
-        throw new Error('Failed to delete existing program: ' + programDeleteError.message);
+        console.error('❌ Error deleting programs:', programDeleteError);
+        throw new Error('Failed to delete existing programs: ' + programDeleteError.message);
       } else {
-        console.log('✅ Deleted program:', program.id);
+        console.log('✅ Deleted', programIds.length, 'programs');
       }
+    } else {
+      console.log('📭 No existing programs found to delete');
     }
-  } else {
-    console.log('📭 No existing programs found to delete');
+  } catch (error) {
+    console.error('❌ Error in deleteExistingPrograms:', error);
+    throw error;
   }
 };
 
@@ -90,40 +95,46 @@ export const createWeeklyProgram = async (
   workoutType: string
 ) => {
   console.log('🆕 Creating new program...');
-  const { data: weeklyProgram, error: weeklyError } = await supabase
-    .from('weekly_exercise_programs')
-    .insert({
-      user_id: userData.userId,
-      program_name: generatedProgram.programOverview?.name || `${workoutType === 'gym' ? 'Gym' : 'Home'} Fitness Program`,
-      difficulty_level: preferences?.fitnessLevel || 'beginner',
-      week_start_date: weekStartDate,
-      workout_type: workoutType,
-      current_week: 1,
-      status: 'active',
-      generation_prompt: {
-        workoutType,
-        preferences: {
-          goalType: preferences?.goalType,
-          fitnessLevel: preferences?.fitnessLevel,
-          availableTime: preferences?.availableTime
-        },
-        userData: {
-          age: userData?.age,
-          gender: userData?.gender,
-          weight: userData?.weight,
-          height: userData?.height
-        },
-        weekStartDate
-      }
-    })
-    .select()
-    .single();
+  
+  try {
+    const { data: weeklyProgram, error: weeklyError } = await supabase
+      .from('weekly_exercise_programs')
+      .insert({
+        user_id: userData.userId,
+        program_name: generatedProgram.programOverview?.name || `${workoutType === 'gym' ? 'Gym' : 'Home'} Fitness Program`,
+        difficulty_level: preferences?.fitnessLevel || 'beginner',
+        week_start_date: weekStartDate,
+        workout_type: workoutType,
+        current_week: 1,
+        status: 'active',
+        generation_prompt: {
+          workoutType,
+          preferences: {
+            goalType: preferences?.goalType,
+            fitnessLevel: preferences?.fitnessLevel,
+            availableTime: preferences?.availableTime
+          },
+          userData: {
+            age: userData?.age,
+            gender: userData?.gender,
+            weight: userData?.weight,
+            height: userData?.height
+          },
+          weekStartDate
+        }
+      })
+      .select()
+      .single();
 
-  if (weeklyError) {
-    console.error('❌ Error creating weekly program:', weeklyError);
-    throw new Error('Failed to save weekly program: ' + weeklyError.message);
+    if (weeklyError) {
+      console.error('❌ Error creating weekly program:', weeklyError);
+      throw new Error('Failed to save weekly program: ' + weeklyError.message);
+    }
+
+    console.log('✅ Created weekly program:', weeklyProgram.program_name, 'ID:', weeklyProgram.id);
+    return weeklyProgram;
+  } catch (error) {
+    console.error('❌ Error in createWeeklyProgram:', error);
+    throw error;
   }
-
-  console.log('✅ Created weekly program:', weeklyProgram.program_name, 'ID:', weeklyProgram.id);
-  return weeklyProgram;
 };
