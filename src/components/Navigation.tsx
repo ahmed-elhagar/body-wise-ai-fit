@@ -40,7 +40,7 @@ const Navigation = () => {
   ];
 
   if (isAdmin) {
-    navigationItems.push({ icon: Shield, label: t('nav.adminPanel'), path: "/admin" });
+    navigationItems.push({ icon: Shield, label: t('nav.adminPanel'), path: "/admin-panel" });
   }
 
   const isActive = (path: string) => location.pathname === path;

@@ -63,7 +63,7 @@ function App() {
                   </ProtectedRoute>
                 } />
                 <Route path="/onboarding" element={<Onboarding />} />
-                <Route path="/admin" element={
+                <Route path="/admin-panel" element={
                   <ProtectedRoute requireProfile adminOnly>
                     <AdminPanel />
                   </ProtectedRoute>
