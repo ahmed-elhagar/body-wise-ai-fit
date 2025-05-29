@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useDynamicMealPlan } from "@/hooks/useDynamicMealPlan";
 import { useAIMealPlan } from "@/hooks/useAIMealPlan";
-import { getCurrentSaturdayDay, getWeekStartDate } from "@/utils/mealPlanUtils";
+import { getCurrentSaturdayDay, getWeekStartDate, getCategoryForIngredient } from "@/utils/mealPlanUtils";
 import MealPlanLayout from "@/components/MealPlanLayout";
 import MealPlanLoadingScreen from "@/components/MealPlanLoadingScreen";
 import MealPlanHeader from "@/components/MealPlanHeader";
@@ -33,6 +33,12 @@ const MealPlan = () => {
   const [showExchangeDialog, setShowExchangeDialog] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
   const [selectedMealIndex, setSelectedMealIndex] = useState<number>(-1);
+  const [aiPreferences, setAiPreferences] = useState({
+    duration: '7',
+    cuisine: '',
+    maxPrepTime: '30',
+    mealTypes: 'all'
+  });
 
   const { generateMealPlan, isGenerating } = useAIMealPlan();
   const { currentWeekPlan, isLoading } = useDynamicMealPlan(currentWeekOffset);
@@ -63,12 +69,28 @@ const MealPlan = () => {
   const totalCalories = todaysMeals.reduce((sum, meal) => sum + (meal.calories || 0), 0);
   const totalProtein = todaysMeals.reduce((sum, meal) => sum + (meal.protein || 0), 0);
 
+  // Convert meals to shopping items
+  const convertMealsToShoppingItems = (meals: Meal[]) => {
+    const items: any[] = [];
+    meals.forEach(meal => {
+      meal.ingredients.forEach((ingredient: any) => {
+        items.push({
+          name: ingredient.name || ingredient,
+          quantity: ingredient.quantity || '1',
+          unit: ingredient.unit || 'piece',
+          category: getCategoryForIngredient(ingredient.name || ingredient)
+        });
+      });
+    });
+    return items;
+  };
+
   const handleRegeneratePlan = () => {
     setShowAIDialog(true);
   };
 
-  const handleGenerateAIPlan = (preferences: any) => {
-    generateMealPlan(preferences);
+  const handleGenerateAIPlan = () => {
+    generateMealPlan(aiPreferences);
     setShowAIDialog(false);
   };
 
@@ -167,8 +189,10 @@ const MealPlan = () => {
         )}
 
         <AIGenerationDialog
-          open={showAIDialog}
-          onOpenChange={setShowAIDialog}
+          isOpen={showAIDialog}
+          onClose={() => setShowAIDialog(false)}
+          preferences={aiPreferences}
+          onPreferencesChange={setAiPreferences}
           onGenerate={handleGenerateAIPlan}
           isGenerating={isGenerating}
         />
@@ -176,16 +200,20 @@ const MealPlan = () => {
         <AddSnackDialog
           isOpen={showAddSnackDialog}
           onClose={() => setShowAddSnackDialog(false)}
-          onAdd={() => {
+          selectedDay={selectedDayNumber}
+          weeklyPlanId={currentWeekPlan?.weeklyPlan?.id || null}
+          onSnackAdded={() => {
             refetch();
             setShowAddSnackDialog(false);
           }}
+          currentDayCalories={totalCalories}
+          targetDayCalories={2000}
         />
 
         <ShoppingListDialog
           isOpen={showShoppingListDialog}
           onClose={() => setShowShoppingListDialog(false)}
-          meals={todaysMeals}
+          items={convertMealsToShoppingItems(todaysMeals)}
         />
 
         {selectedMeal && (
