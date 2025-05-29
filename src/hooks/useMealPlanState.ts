@@ -101,11 +101,12 @@ export const useMealPlanState = () => {
       await generateMealPlan(aiPreferences);
       setShowAIDialog(false);
       
-      // Force refresh after successful generation - with proper delay
-      setTimeout(() => {
-        console.log('🔄 Forcing meal plan refetch after generation...');
-        refetchMealPlan?.();
-      }, 3000); // Increased delay to ensure database consistency
+      // CRITICAL FIX: Force immediate refetch after successful generation
+      console.log('🔄 Forcing immediate meal plan refetch after generation...');
+      setTimeout(async () => {
+        await refetchMealPlan?.();
+        console.log('✅ Meal plan refetch completed');
+      }, 2000); // Reduced delay for faster feedback
       
     } catch (error) {
       console.error('❌ Generation failed:', error);
@@ -125,10 +126,10 @@ export const useMealPlanState = () => {
     setShowExchangeDialog(true);
   };
 
-  const refetch = () => {
+  const refetch = async () => {
     console.log('🔄 Manual refetch triggered');
     // Force reload the meal plan data
-    refetchMealPlan?.();
+    await refetchMealPlan?.();
   };
 
   return {

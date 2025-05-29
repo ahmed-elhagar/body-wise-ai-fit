@@ -82,7 +82,7 @@ const translations: Translations = {
   'day.thursday': { en: 'Thursday', ar: 'الخميس' },
   'day.friday': { en: 'Friday', ar: 'الجمعة' },
 
-  // Meal Plan
+  // Meal Plan - Enhanced with missing translations
   'mealPlan.title': { en: 'Meal Plan', ar: 'خطة الوجبات' },
   'mealPlan.loading': { en: 'Loading meal plan...', ar: 'تحميل خطة الوجبات...' },
   'mealPlan.generating': { en: 'Generating your personalized meal plan...', ar: 'إنشاء خطة الوجبات الشخصية...' },
@@ -93,6 +93,7 @@ const translations: Translations = {
   'mealPlan.daysMeals': { en: "'s Meals", ar: 'وجبات ' },
   'mealPlan.mealsPlanned': { en: 'meals planned', ar: 'وجبة مخططة' },
   'mealPlan.previousWeek': { en: 'Previous', ar: 'السابق' },
+  'mealPlan.nextWeek': { en: 'Next', ar: 'التالي' },
   'mealPlan.thisWeek': { en: 'This Week', ar: 'هذا الأسبوع' },
   'mealPlan.lastWeek': { en: 'Last Week', ar: 'الأسبوع الماضي' },
   'mealPlan.nextWeekNav': { en: 'Next Week', ar: 'الأسبوع القادم' },
@@ -155,6 +156,8 @@ const translations: Translations = {
   'mealPlan.generateSevenDayPlan': { en: 'Generate 7-Day Plan', ar: 'إنشاء خطة لـ 7 أيام' },
   'mealPlan.creatingPersonalized': { en: 'Creating your personalized meal plan...', ar: 'إنشاء خطة الوجبات الشخصية...' },
   'mealPlan.mayTakeTime': { en: 'This may take a few moments', ar: 'قد يستغرق هذا بضع لحظات' },
+  'mealPlan.regeneratePlan': { en: 'Regenerate Plan', ar: 'إعادة توليد الخطة' },
+  'mealPlan.shuffleMeals': { en: 'Shuffle Meals', ar: 'خلط الوجبات' },
 
   // Cuisine options
   'cuisine.mediterranean': { en: 'Mediterranean', ar: 'متوسطي' },

@@ -184,8 +184,8 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
       };
     },
     enabled: !!user?.id,
-    staleTime: 1000 * 60 * 1, // Reduced to 1 minute for testing
-    cacheTime: 1000 * 60 * 2, // 2 minutes cache
+    staleTime: 1000 * 60 * 1, // 1 minute
+    gcTime: 1000 * 60 * 2, // 2 minutes cache (fixed from cacheTime)
     retry: (failureCount, error: any) => {
       if (error?.message?.includes('Authentication required') || 
           error?.message?.includes('Data integrity violation')) {
