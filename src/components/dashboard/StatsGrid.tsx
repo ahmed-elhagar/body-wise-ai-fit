@@ -10,8 +10,7 @@ import {
   TrendingUp,
   TrendingDown,
   Minus,
-  Flame,
-  Zap
+  Flame
 } from "lucide-react";
 
 const StatsGrid = () => {
@@ -81,58 +80,43 @@ const StatsGrid = () => {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
       {stats.map((stat, index) => {
         const TrendIcon = getTrendIcon(stat.changeType);
         const IconComponent = stat.icon;
 
         return (
-          <Card key={index} className={`relative overflow-hidden bg-gradient-to-br ${stat.bgGradient} border-2 ${stat.borderColor} shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 rounded-xl`}>
-            {/* Background Pattern */}
-            <div className="absolute top-0 right-0 w-16 h-16 opacity-10">
-              <div className={`w-full h-full bg-gradient-to-br ${stat.gradient} rounded-full transform translate-x-4 -translate-y-4`}></div>
+          <Card key={index} className={`relative overflow-hidden bg-gradient-to-br ${stat.bgGradient} border ${stat.borderColor} shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 rounded-lg p-3`}>
+            {/* Header */}
+            <div className={`flex items-center justify-between mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <div className={`w-6 h-6 bg-gradient-to-br ${stat.gradient} rounded-md flex items-center justify-center shadow-sm`}>
+                <IconComponent className="w-3 h-3 text-white" />
+              </div>
+              <div className={`text-right ${isRTL ? 'text-left' : ''}`}>
+                <div className="text-xs text-gray-600 font-medium">
+                  {stat.title}
+                </div>
+              </div>
             </div>
 
-            <div className="relative p-3 sm:p-4">
-              {/* Header */}
-              <div className={`flex items-center justify-between mb-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                <div className={`w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br ${stat.gradient} rounded-lg flex items-center justify-center shadow-lg transform rotate-3 hover:rotate-0 transition-transform duration-300`}>
-                  <IconComponent className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                </div>
-                <div className={`text-right ${isRTL ? 'text-left' : ''}`}>
-                  <div className="text-xs text-gray-600 font-medium uppercase tracking-wide">
-                    {stat.title}
-                  </div>
-                </div>
-              </div>
-
-              {/* Main Value */}
-              <div className={`mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-xl sm:text-2xl font-bold text-gray-800">
-                    {stat.value}
-                  </span>
-                  <span className="text-xs sm:text-sm font-medium text-gray-600">
-                    {stat.unit}
-                  </span>
-                </div>
-              </div>
-
-              {/* Trend Indicator */}
-              <div className={`flex items-center gap-1.5 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                <Badge className={`${getTrendColor(stat.changeType)} border px-1.5 py-0.5 text-xs font-semibold rounded-md`}>
-                  <TrendIcon className="w-2.5 h-2.5 mr-0.5" />
-                  {stat.change !== 0 ? `${Math.abs(stat.change)}%` : 'No change'}
-                </Badge>
-                <span className="text-xs text-gray-500 font-medium">
-                  vs last week
+            {/* Main Value */}
+            <div className={`mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
+              <div className="flex items-baseline gap-1">
+                <span className="text-lg font-bold text-gray-800">
+                  {stat.value}
+                </span>
+                <span className="text-xs font-medium text-gray-600">
+                  {stat.unit}
                 </span>
               </div>
+            </div>
 
-              {/* Energy indicator */}
-              <div className="absolute bottom-2 right-2">
-                <div className="w-1.5 h-1.5 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full animate-pulse"></div>
-              </div>
+            {/* Trend Indicator */}
+            <div className={`flex items-center gap-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <Badge className={`${getTrendColor(stat.changeType)} border text-xs font-semibold rounded-md px-1.5 py-0.5`}>
+                <TrendIcon className="w-2 h-2 mr-0.5" />
+                {stat.change !== 0 ? `${Math.abs(stat.change)}%` : 'No change'}
+              </Badge>
             </div>
           </Card>
         );

@@ -20,7 +20,7 @@ const Dashboard = () => {
     return (
       <div className={`min-h-screen bg-fitness-neutral-50 flex ${isRTL ? 'rtl' : 'ltr'}`}>
         <Navigation />
-        <div className={`flex-1 ${isRTL ? 'mr-0 md:mr-72' : 'ml-0 md:ml-72'} flex items-center justify-center p-4`}>
+        <div className={`flex-1 ${isRTL ? 'mr-0 md:mr-64' : 'ml-0 md:ml-64'} flex items-center justify-center p-4`}>
           <div className="text-center max-w-md px-6 py-8 bg-white rounded-2xl shadow-sm border border-fitness-neutral-100">
             <div className="w-16 h-16 bg-fitness-primary rounded-xl flex items-center justify-center mx-auto mb-6">
               <Loader2 className="w-8 h-8 text-white animate-spin" />
@@ -50,20 +50,20 @@ const Dashboard = () => {
   return (
     <div className={`min-h-screen bg-fitness-neutral-50 flex ${isRTL ? 'rtl' : 'ltr'}`}>
       <Navigation />
-      <div className={`flex-1 ${isRTL ? 'mr-0 md:mr-72' : 'ml-0 md:ml-72'} transition-all duration-300`}>
-        <div className="container mx-auto px-4 py-6 max-w-7xl">
+      <div className={`flex-1 ${isRTL ? 'mr-0 md:mr-64' : 'ml-0 md:ml-64'} transition-all duration-300`}>
+        <div className="container mx-auto px-3 py-4 max-w-7xl">
           {/* Header Section */}
-          <div className="mb-6">
+          <div className="mb-4">
             <DashboardHeader />
           </div>
 
           {/* Stats Grid */}
-          <div className="mb-6">
+          <div className="mb-4">
             <StatsGrid />
           </div>
 
           {/* Main Content Grid */}
-          <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
             {/* Quick Actions */}
             <div className="xl:col-span-4 order-1">
               <QuickActionsGrid />
