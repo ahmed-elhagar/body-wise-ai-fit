@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { AuthProvider } from '@/hooks/useAuth';
+import ProtectedRoute from '@/components/ProtectedRoute';
 import Dashboard from './pages/Dashboard';
 import MealPlan from './pages/MealPlan';
 import Exercise from './pages/Exercise';
@@ -26,15 +27,47 @@ function App() {
           <LanguageProvider>
             <BrowserRouter>
               <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/meal-plan" element={<MealPlan />} />
-                <Route path="/exercise" element={<Exercise />} />
-                <Route path="/weight-tracking" element={<WeightTracking />} />
-                <Route path="/calorie-checker" element={<CalorieChecker />} />
-                <Route path="/profile" element={<Profile />} />
+                <Route path="/" element={
+                  <ProtectedRoute requireProfile>
+                    <Dashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="/dashboard" element={
+                  <ProtectedRoute requireProfile>
+                    <Dashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="/meal-plan" element={
+                  <ProtectedRoute requireProfile>
+                    <MealPlan />
+                  </ProtectedRoute>
+                } />
+                <Route path="/exercise" element={
+                  <ProtectedRoute requireProfile>
+                    <Exercise />
+                  </ProtectedRoute>
+                } />
+                <Route path="/weight-tracking" element={
+                  <ProtectedRoute requireProfile>
+                    <WeightTracking />
+                  </ProtectedRoute>
+                } />
+                <Route path="/calorie-checker" element={
+                  <ProtectedRoute requireProfile>
+                    <CalorieChecker />
+                  </ProtectedRoute>
+                } />
+                <Route path="/profile" element={
+                  <ProtectedRoute requireProfile>
+                    <Profile />
+                  </ProtectedRoute>
+                } />
                 <Route path="/onboarding" element={<Onboarding />} />
-                <Route path="/admin-panel" element={<AdminPanel />} />
+                <Route path="/admin" element={
+                  <ProtectedRoute requireProfile adminOnly>
+                    <AdminPanel />
+                  </ProtectedRoute>
+                } />
               </Routes>
               
               {/* Global components */}

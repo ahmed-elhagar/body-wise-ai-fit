@@ -51,10 +51,25 @@ export default function ProtectedRoute({
     return <Navigate to="/auth" replace />;
   }
 
-  // Check admin access
-  if (adminOnly && !isAdmin) {
-    console.log('ProtectedRoute - Admin required but user is not admin');
-    return <Navigate to="/dashboard" replace />;
+  // Check admin access - but don't block while admin status is being determined
+  if (adminOnly) {
+    // If auth is still loading, wait
+    if (authLoading) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+          <div className="text-center">
+            <Loader2 className="w-12 h-12 animate-spin text-fitness-primary mx-auto mb-4" />
+            <p className="text-gray-600">Checking permissions...</p>
+          </div>
+        </div>
+      );
+    }
+    
+    // If definitely not admin, redirect
+    if (!isAdmin) {
+      console.log('ProtectedRoute - Admin required but user is not admin');
+      return <Navigate to="/dashboard" replace />;
+    }
   }
 
   // If profile is not required, show content immediately
