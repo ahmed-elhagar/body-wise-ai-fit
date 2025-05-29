@@ -1,11 +1,13 @@
 
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MessageSquare, Send, X } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { MessageSquare, Send, CheckCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -16,35 +18,65 @@ interface FeedbackFormProps {
 }
 
 const FeedbackForm = ({ isOpen, onClose }: FeedbackFormProps) => {
-  const [category, setCategory] = useState('');
-  const [message, setMessage] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [formData, setFormData] = useState({
+    category: '',
+    message: '',
+    userEmail: user?.email || ''
+  });
+
+  const categories = [
+    { value: 'bug', label: 'Bug Report' },
+    { value: 'feature', label: 'Feature Request' },
+    { value: 'improvement', label: 'Improvement Suggestion' },
+    { value: 'ui', label: 'UI/UX Feedback' },
+    { value: 'performance', label: 'Performance Issue' },
+    { value: 'other', label: 'Other' }
+  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !category || !message.trim()) return;
+    
+    if (!formData.category || !formData.message.trim()) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
 
     setIsSubmitting(true);
-    
+
     try {
       const { error } = await supabase
         .from('user_feedback')
         .insert({
-          user_id: user.id,
-          category,
-          message: message.trim(),
-          user_email: user.email,
+          user_id: user?.id || '00000000-0000-0000-0000-000000000000',
+          category: formData.category,
+          message: formData.message.trim(),
+          user_email: formData.userEmail || null,
           page_url: window.location.href,
-          user_agent: navigator.userAgent
+          user_agent: navigator.userAgent,
+          status: 'open'
         });
 
       if (error) throw error;
 
-      toast.success('Feedback submitted successfully!');
-      setMessage('');
-      setCategory('');
-      onClose();
+      setIsSubmitted(true);
+      toast.success('Feedback submitted successfully! Thank you for helping us improve.');
+      
+      // Reset form
+      setFormData({
+        category: '',
+        message: '',
+        userEmail: user?.email || ''
+      });
+      
+      // Close dialog after delay
+      setTimeout(() => {
+        setIsSubmitted(false);
+        onClose();
+      }, 2000);
+
     } catch (error) {
       console.error('Failed to submit feedback:', error);
       toast.error('Failed to submit feedback. Please try again.');
@@ -53,68 +85,109 @@ const FeedbackForm = ({ isOpen, onClose }: FeedbackFormProps) => {
     }
   };
 
-  if (!isOpen) return null;
+  const handleClose = () => {
+    if (!isSubmitting) {
+      setIsSubmitted(false);
+      onClose();
+    }
+  };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span className="flex items-center gap-2">
-              <MessageSquare className="w-5 h-5" />
-              Send Feedback
-            </span>
-            <Button variant="ghost" size="sm" onClick={onClose}>
-              <X className="w-4 h-4" />
-            </Button>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <MessageSquare className="w-5 h-5 text-blue-600" />
+            Share Your Feedback
+          </DialogTitle>
+        </DialogHeader>
+
+        {isSubmitted ? (
+          <Card className="p-6 text-center bg-green-50 border-green-200">
+            <CheckCircle className="w-12 h-12 text-green-600 mx-auto mb-3" />
+            <h3 className="font-semibold text-green-800 mb-2">Thank You!</h3>
+            <p className="text-green-700 text-sm">
+              Your feedback has been submitted successfully. We appreciate your input!
+            </p>
+          </Card>
+        ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="category">Category</Label>
-              <Select value={category} onValueChange={setCategory}>
+              <Label htmlFor="category">Category *</Label>
+              <Select
+                value={formData.category}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
+              >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select feedback type" />
+                  <SelectValue placeholder="Select feedback category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="bug">Bug Report</SelectItem>
-                  <SelectItem value="feature">Feature Request</SelectItem>
-                  <SelectItem value="improvement">Improvement</SelectItem>
-                  <SelectItem value="general">General Feedback</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category.value} value={category.value}>
+                      {category.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <Label htmlFor="message">Message</Label>
+              <Label htmlFor="message">Message *</Label>
               <Textarea
                 id="message"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Tell us what's on your mind..."
+                placeholder="Please describe your feedback, bug report, or suggestion in detail..."
+                value={formData.message}
+                onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
                 rows={4}
-                className="resize-none"
+                required
               />
             </div>
 
-            <div className="flex gap-2">
+            {!user && (
+              <div>
+                <Label htmlFor="email">Email (optional)</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="your.email@example.com"
+                  value={formData.userEmail}
+                  onChange={(e) => setFormData(prev => ({ ...prev, userEmail: e.target.value }))}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Optional: Provide your email if you'd like us to follow up
+                </p>
+              </div>
+            )}
+
+            <div className="flex gap-3 pt-2">
               <Button
-                type="submit"
-                disabled={!category || !message.trim() || isSubmitting}
+                type="button"
+                variant="outline"
+                onClick={handleClose}
+                disabled={isSubmitting}
                 className="flex-1"
               >
-                <Send className="w-4 h-4 mr-2" />
-                {isSubmitting ? 'Submitting...' : 'Submit'}
-              </Button>
-              <Button type="button" variant="outline" onClick={onClose}>
                 Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting || !formData.category || !formData.message.trim()}
+                className="flex-1"
+              >
+                {isSubmitting ? (
+                  'Submitting...'
+                ) : (
+                  <>
+                    <Send className="w-4 h-4 mr-2" />
+                    Submit
+                  </>
+                )}
               </Button>
             </div>
           </form>
-        </CardContent>
-      </Card>
-    </div>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 };
 

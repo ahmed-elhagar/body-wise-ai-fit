@@ -1,55 +1,59 @@
 
 import { test, expect } from '@playwright/test';
 
-test.describe('Onboarding Flow', () => {
-  test.beforeEach(async ({ page }) => {
+test.describe('User Onboarding Flow', () => {
+  test('should complete full onboarding process', async ({ page }) => {
     await page.goto('/onboarding');
-  });
 
-  test('should complete onboarding process', async ({ page }) => {
-    // Step 1: Personal Info
+    // Step 1: Basic Information
     await page.fill('[data-testid="first-name"]', 'John');
     await page.fill('[data-testid="last-name"]', 'Doe');
-    await page.fill('[data-testid="email"]', 'john.doe@example.com');
-    await page.selectOption('[data-testid="gender"]', 'male');
     await page.fill('[data-testid="age"]', '30');
-    await page.click('[data-testid="next-button"]');
+    await page.selectOption('[data-testid="gender"]', 'male');
+    await page.click('[data-testid="next-step"]');
 
-    // Step 2: Physical Info
-    await page.fill('[data-testid="height"]', '180');
+    // Step 2: Physical Information
+    await page.fill('[data-testid="height"]', '175');
     await page.fill('[data-testid="weight"]', '75');
-    await page.selectOption('[data-testid="activity-level"]', 'moderately_active');
-    await page.selectOption('[data-testid="fitness-goal"]', 'weight_loss');
-    await page.click('[data-testid="next-button"]');
+    await page.selectOption('[data-testid="activity-level"]', 'moderate');
+    await page.selectOption('[data-testid="fitness-goal"]', 'maintain');
+    await page.click('[data-testid="next-step"]');
 
     // Step 3: Preferences
-    await page.selectOption('[data-testid="nationality"]', 'American');
-    await page.click('[data-testid="dietary-vegetarian"]');
-    await page.click('[data-testid="submit-button"]');
+    await page.selectOption('[data-testid="nationality"]', 'international');
+    await page.click('[data-testid="dietary-restriction-vegetarian"]');
+    await page.click('[data-testid="finish-onboarding"]');
 
     // Should redirect to dashboard
     await expect(page).toHaveURL('/dashboard');
+    await expect(page.locator('[data-testid="welcome-message"]')).toBeVisible();
   });
 
   test('should validate required fields', async ({ page }) => {
-    await page.click('[data-testid="next-button"]');
+    await page.goto('/onboarding');
+    
+    // Try to proceed without filling required fields
+    await page.click('[data-testid="next-step"]');
     
     // Should show validation errors
     await expect(page.locator('[data-testid="error-first-name"]')).toBeVisible();
-    await expect(page.locator('[data-testid="error-email"]')).toBeVisible();
+    await expect(page.locator('[data-testid="error-age"]')).toBeVisible();
   });
 
-  test('should navigate between steps', async ({ page }) => {
-    // Fill first step and proceed
-    await page.fill('[data-testid="first-name"]', 'John');
-    await page.fill('[data-testid="email"]', 'john@example.com');
-    await page.click('[data-testid="next-button"]');
-
-    // Should be on step 2
-    await expect(page.locator('[data-testid="step-indicator-2"]')).toHaveClass(/active/);
-
+  test('should save progress between steps', async ({ page }) => {
+    await page.goto('/onboarding');
+    
+    // Fill step 1
+    await page.fill('[data-testid="first-name"]', 'Jane');
+    await page.fill('[data-testid="age"]', '25');
+    await page.selectOption('[data-testid="gender"]', 'female');
+    await page.click('[data-testid="next-step"]');
+    
     // Go back to step 1
-    await page.click('[data-testid="back-button"]');
-    await expect(page.locator('[data-testid="step-indicator-1"]')).toHaveClass(/active/);
+    await page.click('[data-testid="previous-step"]');
+    
+    // Values should be preserved
+    await expect(page.locator('[data-testid="first-name"]')).toHaveValue('Jane');
+    await expect(page.locator('[data-testid="age"]')).toHaveValue('25');
   });
 });

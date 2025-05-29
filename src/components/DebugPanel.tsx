@@ -1,92 +1,176 @@
 
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Bug, ChevronDown, Database, Zap, User, Settings } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { Eye, EyeOff, Bug, Database, Zap } from 'lucide-react';
+import { useProfile } from '@/hooks/useProfile';
+import { supabase } from '@/integrations/supabase/client';
 
 const DebugPanel = () => {
-  const [isVisible, setIsVisible] = useState(false);
-  const { user, isAdmin } = useAuth();
+  const [isOpen, setIsOpen] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const { user, session } = useAuth();
+  const { data: profile } = useProfile();
 
-  // Only show for admins
-  if (!isAdmin) return null;
+  // Only show debug panel in development or for admin users
+  const shouldShow = import.meta.env.DEV || profile?.user_roles?.some(role => role.role === 'admin');
+
+  if (!shouldShow) return null;
 
   const debugInfo = {
-    userId: user?.id,
-    userEmail: user?.email,
-    timestamp: new Date().toISOString(),
-    userAgent: navigator.userAgent,
-    viewport: `${window.innerWidth}x${window.innerHeight}`,
-    url: window.location.href
+    user: {
+      id: user?.id || 'Not authenticated',
+      email: user?.email || 'No email',
+      authenticated: !!user,
+      sessionValid: !!session,
+    },
+    profile: {
+      onboardingCompleted: profile?.onboarding_completed || false,
+      aiGenerationsRemaining: profile?.ai_generations_remaining || 0,
+      preferredLanguage: profile?.preferred_language || 'en',
+    },
+    system: {
+      environment: import.meta.env.MODE,
+      supabaseUrl: import.meta.env.VITE_SUPABASE_URL ? 'Configured' : 'Missing',
+      buildTime: new Date().toISOString(),
+    }
   };
 
-  const toggleVisibility = () => setIsVisible(!isVisible);
-
-  if (!isVisible) {
-    return (
-      <Button
-        onClick={toggleVisibility}
-        variant="outline"
-        size="sm"
-        className="fixed bottom-4 right-4 z-50 bg-red-500/10 border-red-500/20"
-      >
-        <Bug className="w-4 h-4" />
-        Debug
-      </Button>
-    );
-  }
+  const clearAllData = async () => {
+    if (confirm('Clear all local storage data? This will log you out.')) {
+      localStorage.clear();
+      sessionStorage.clear();
+      await supabase.auth.signOut();
+      window.location.reload();
+    }
+  };
 
   return (
-    <Card className="fixed bottom-4 right-4 z-50 w-80 max-h-96 overflow-y-auto bg-black/90 text-white border-red-500/20">
-      <CardHeader className="pb-2">
-        <CardTitle className="flex items-center justify-between text-sm">
-          <span className="flex items-center gap-2">
-            <Bug className="w-4 h-4" />
-            Debug Panel
-          </span>
+    <div className="fixed bottom-4 right-4 z-50">
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <CollapsibleTrigger asChild>
           <Button
-            onClick={toggleVisibility}
-            variant="ghost"
-            size="sm"
-            className="h-6 w-6 p-0"
-          >
-            <EyeOff className="w-3 h-3" />
-          </Button>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="text-xs space-y-2">
-        <div className="grid grid-cols-2 gap-2">
-          <Badge variant="outline" className="justify-start">
-            <Database className="w-3 h-3 mr-1" />
-            DB: Connected
-          </Badge>
-          <Badge variant="outline" className="justify-start">
-            <Zap className="w-3 h-3 mr-1" />
-            API: Active
-          </Badge>
-        </div>
-        
-        <div className="space-y-1">
-          <div><strong>User:</strong> {debugInfo.userEmail}</div>
-          <div><strong>ID:</strong> {debugInfo.userId?.slice(0, 8)}...</div>
-          <div><strong>Time:</strong> {new Date(debugInfo.timestamp).toLocaleTimeString()}</div>
-          <div><strong>Viewport:</strong> {debugInfo.viewport}</div>
-        </div>
-
-        <div className="pt-2 border-t border-gray-700">
-          <Button
-            onClick={() => console.log('Full Debug Info:', debugInfo)}
             variant="outline"
             size="sm"
-            className="w-full text-xs"
+            className="bg-black/80 text-white border-gray-600 hover:bg-black/90"
           >
-            Log Full Info
+            <Bug className="w-4 h-4 mr-2" />
+            Debug
+            <ChevronDown className={`w-4 h-4 ml-2 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
           </Button>
-        </div>
-      </CardContent>
-    </Card>
+        </CollapsibleTrigger>
+        
+        <CollapsibleContent>
+          <Card className="mt-2 p-4 bg-black/90 text-white border-gray-600 min-w-80 max-w-96">
+            <div className="space-y-4">
+              {/* User Section */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <User className="w-4 h-4" />
+                  <span className="font-semibold">Authentication</span>
+                </div>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span>Status:</span>
+                    <Badge variant={debugInfo.user.authenticated ? 'default' : 'destructive'}>
+                      {debugInfo.user.authenticated ? 'Authenticated' : 'Not authenticated'}
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Session:</span>
+                    <Badge variant={debugInfo.user.sessionValid ? 'default' : 'destructive'}>
+                      {debugInfo.user.sessionValid ? 'Valid' : 'Invalid'}
+                    </Badge>
+                  </div>
+                  {showAdvanced && (
+                    <>
+                      <div className="text-xs text-gray-400 break-all">
+                        ID: {debugInfo.user.id}
+                      </div>
+                      <div className="text-xs text-gray-400 break-all">
+                        Email: {debugInfo.user.email}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Profile Section */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Database className="w-4 h-4" />
+                  <span className="font-semibold">Profile</span>
+                </div>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span>Onboarding:</span>
+                    <Badge variant={debugInfo.profile.onboardingCompleted ? 'default' : 'secondary'}>
+                      {debugInfo.profile.onboardingCompleted ? 'Complete' : 'Incomplete'}
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>AI Credits:</span>
+                    <Badge variant={debugInfo.profile.aiGenerationsRemaining > 0 ? 'default' : 'destructive'}>
+                      {debugInfo.profile.aiGenerationsRemaining}
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Language:</span>
+                    <span className="text-gray-300">{debugInfo.profile.preferredLanguage}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* System Section */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Settings className="w-4 h-4" />
+                  <span className="font-semibold">System</span>
+                </div>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span>Environment:</span>
+                    <Badge variant={debugInfo.system.environment === 'development' ? 'default' : 'secondary'}>
+                      {debugInfo.system.environment}
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Supabase:</span>
+                    <Badge variant={debugInfo.system.supabaseUrl === 'Configured' ? 'default' : 'destructive'}>
+                      {debugInfo.system.supabaseUrl}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="space-y-2 pt-2 border-t border-gray-600">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowAdvanced(!showAdvanced)}
+                  className="w-full text-xs"
+                >
+                  {showAdvanced ? 'Hide Advanced' : 'Show Advanced'}
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={clearAllData}
+                  className="w-full text-xs"
+                >
+                  <Zap className="w-3 h-3 mr-1" />
+                  Clear All Data
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </CollapsibleContent>
+      </Collapsible>
+    </div>
   );
 };
 
