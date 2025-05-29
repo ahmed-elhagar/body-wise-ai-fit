@@ -50,7 +50,7 @@ export const useAIExercise = () => {
         weekStartDate = format(startOfWeek(new Date()), 'yyyy-MM-dd');
       }
 
-      // Enhanced user data with better defaults
+      // Enhanced user data with better defaults and language support
       const userData = {
         userId: profile.id,
         age: profile.age || 25,
@@ -63,7 +63,7 @@ export const useAIExercise = () => {
         preferred_language: userLanguage
       };
 
-      // Enhanced preferences with better equipment mapping
+      // Enhanced preferences with better equipment mapping and language
       const transformedRequest = {
         workoutType: request.workoutType || 'home',
         goalType: request.goalType || userData.fitness_goal,
@@ -110,7 +110,7 @@ export const useAIExercise = () => {
       return data;
     },
     onSuccess: (data) => {
-      // Invalidate all exercise-related queries
+      // Invalidate all exercise-related queries for fresh data
       queryClient.invalidateQueries({ queryKey: ['exercise-programs'] });
       queryClient.invalidateQueries({ queryKey: ['exercise-program'] });
       
