@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState } from 'react';
 
 type Language = 'en' | 'ar';
@@ -132,7 +131,43 @@ const translations: Translations = {
   'mealPlan.keto': { en: 'Keto Diet', ar: 'نظام كيتو' },
   'mealPlan.highProtein': { en: 'High Protein Diet', ar: 'نظام عالي البروتين' },
   'mealPlan.balanced': { en: 'Balanced Diet', ar: 'نظام متوازن' },
-  'mealPlan.noActivePlan': { en: 'No active meal plan found', ar: 'لم يتم العثور على خطة وجبات نشطة' }
+  'mealPlan.noActivePlan': { en: 'No active meal plan found', ar: 'لم يتم العثور على خطة وجبات نشطة' },
+  
+  // AI Generation Dialog
+  'mealPlan.generateAIMealPlan': { en: 'Generate AI Meal Plan', ar: 'إنشاء خطة وجبات ذكية' },
+  'mealPlan.sevenDayCompletePlan': { en: '7-Day Complete Plan', ar: 'خطة كاملة لـ 7 أيام' },
+  'mealPlan.mealsTotal': { en: '21-35 meals total (based on snacks)', ar: '21-35 وجبة إجمالية (حسب الوجبات الخفيفة)' },
+  'mealPlan.personalizedProfile': { en: 'Personalized to your profile', ar: 'مخصصة لملفك الشخصي' },
+  'mealPlan.foodDatabaseIntegration': { en: 'Food Database Integration', ar: 'تكامل قاعدة بيانات الطعام' },
+  'mealPlan.automaticallyPopulates': { en: 'Automatically populates nutrition data', ar: 'ملء تلقائي لبيانات التغذية' },
+  'mealPlan.enablesQuickSearch': { en: 'Enables quick food search', ar: 'تمكين البحث السريع عن الطعام' },
+  'mealPlan.storesNutritionalData': { en: 'Stores nutritional data', ar: 'تخزين البيانات الغذائية' },
+  'mealPlan.includeSnacks': { en: 'Include Snacks (35 meals)', ar: 'تضمين الوجبات الخفيفة (35 وجبة)' },
+  'mealPlan.withSnacksDesc': { en: 'Includes 2 healthy snacks per day (35 total meals)', ar: 'يتضمن وجبتين خفيفتين صحيتين يومياً (35 وجبة إجمالية)' },
+  'mealPlan.withoutSnacksDesc': { en: 'Main meals only: breakfast, lunch, dinner (21 total meals)', ar: 'الوجبات الرئيسية فقط: إفطار، غداء، عشاء (21 وجبة إجمالية)' },
+  'mealPlan.preferredCuisine': { en: 'Preferred Cuisine', ar: 'المطبخ المفضل' },
+  'mealPlan.cuisinePlaceholder': { en: 'e.g., Mediterranean, Asian, Mexican', ar: 'مثل: متوسطي، آسيوي، مكسيكي' },
+  'mealPlan.leaveEmptyNationality': { en: 'Leave empty to use your nationality from profile', ar: 'اتركه فارغاً لاستخدام جنسيتك من الملف الشخصي' },
+  'mealPlan.maxPrepTime': { en: 'Maximum Preparation Time', ar: 'أقصى وقت للتحضير' },
+  'mealPlan.minutes': { en: 'minutes', ar: 'دقيقة' },
+  'mealPlan.hour': { en: 'hour', ar: 'ساعة' },
+  'mealPlan.hours': { en: 'hours', ar: 'ساعات' },
+  'mealPlan.generateSevenDayPlan': { en: 'Generate 7-Day Plan', ar: 'إنشاء خطة لـ 7 أيام' },
+  'mealPlan.creatingPersonalized': { en: 'Creating your personalized meal plan...', ar: 'إنشاء خطة الوجبات الشخصية...' },
+  'mealPlan.mayTakeTime': { en: 'This may take a few moments', ar: 'قد يستغرق هذا بضع لحظات' },
+
+  // Cuisine options
+  'cuisine.mediterranean': { en: 'Mediterranean', ar: 'متوسطي' },
+  'cuisine.asian': { en: 'Asian', ar: 'آسيوي' },
+  'cuisine.mexican': { en: 'Mexican', ar: 'مكسيكي' },
+  'cuisine.italian': { en: 'Italian', ar: 'إيطالي' },
+  'cuisine.indian': { en: 'Indian', ar: 'هندي' },
+  'cuisine.middleEastern': { en: 'Middle Eastern', ar: 'شرق أوسطي' },
+  'cuisine.american': { en: 'American', ar: 'أمريكي' },
+  'cuisine.french': { en: 'French', ar: 'فرنسي' },
+  'cuisine.japanese': { en: 'Japanese', ar: 'ياباني' },
+  'cuisine.thai': { en: 'Thai', ar: 'تايلاندي' },
+  'cuisine.mixed': { en: 'Mixed/International', ar: 'مختلط/عالمي' }
 };
 
 interface LanguageContextType {

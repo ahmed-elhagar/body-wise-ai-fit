@@ -35,6 +35,20 @@ const AIGenerationDialog = ({
 }: AIGenerationDialogProps) => {
   const { t } = useLanguage();
 
+  const cuisineOptions = [
+    { value: '', label: t('cuisine.mixed') },
+    { value: 'Mediterranean', label: t('cuisine.mediterranean') },
+    { value: 'Asian', label: t('cuisine.asian') },
+    { value: 'Mexican', label: t('cuisine.mexican') },
+    { value: 'Italian', label: t('cuisine.italian') },
+    { value: 'Indian', label: t('cuisine.indian') },
+    { value: 'Middle Eastern', label: t('cuisine.middleEastern') },
+    { value: 'American', label: t('cuisine.american') },
+    { value: 'French', label: t('cuisine.french') },
+    { value: 'Japanese', label: t('cuisine.japanese') },
+    { value: 'Thai', label: t('cuisine.thai') }
+  ];
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
@@ -51,7 +65,7 @@ const AIGenerationDialog = ({
               <span className="font-medium text-sm text-purple-800">{t('mealPlan.sevenDayCompletePlan')}</span>
             </div>
             <p className="text-xs text-purple-700">
-              • {t('mealPlan.mealsTotal')}
+              • {t('mealPlan.mealsTotal')}<br/>
               • {t('mealPlan.personalizedProfile')}
             </p>
           </div>
@@ -62,8 +76,8 @@ const AIGenerationDialog = ({
               <span className="font-medium text-sm text-blue-800">{t('mealPlan.foodDatabaseIntegration')}</span>
             </div>
             <p className="text-xs text-blue-700">
-              • {t('mealPlan.automaticallyPopulates')}
-              • {t('mealPlan.enablesQuickSearch')}
+              • {t('mealPlan.automaticallyPopulates')}<br/>
+              • {t('mealPlan.enablesQuickSearch')}<br/>
               • {t('mealPlan.storesNutritionalData')}
             </p>
           </div>
@@ -93,12 +107,21 @@ const AIGenerationDialog = ({
 
           <div>
             <Label htmlFor="cuisine">{t('mealPlan.preferredCuisine')}</Label>
-            <Input
-              value={preferences.cuisine}
-              onChange={(e) => onPreferencesChange({ ...preferences, cuisine: e.target.value })}
-              placeholder={t('mealPlan.cuisinePlaceholder')}
-              className="mt-1"
-            />
+            <Select 
+              value={preferences.cuisine} 
+              onValueChange={(value) => onPreferencesChange({ ...preferences, cuisine: value })}
+            >
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder={t('mealPlan.cuisinePlaceholder')} />
+              </SelectTrigger>
+              <SelectContent className="bg-white border shadow-lg z-50">
+                {cuisineOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <p className="text-xs text-gray-500 mt-1">{t('mealPlan.leaveEmptyNationality')}</p>
           </div>
           
@@ -111,10 +134,12 @@ const AIGenerationDialog = ({
               <SelectTrigger className="mt-1">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white border shadow-lg z-50">
                 <SelectItem value="15">15 {t('mealPlan.minutes')}</SelectItem>
                 <SelectItem value="30">30 {t('mealPlan.minutes')}</SelectItem>
+                <SelectItem value="45">45 {t('mealPlan.minutes')}</SelectItem>
                 <SelectItem value="60">1 {t('mealPlan.hour')}</SelectItem>
+                <SelectItem value="90">1.5 {t('mealPlan.hours')}</SelectItem>
                 <SelectItem value="120">2 {t('mealPlan.hours')}</SelectItem>
               </SelectContent>
             </Select>
