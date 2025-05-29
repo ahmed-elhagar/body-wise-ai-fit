@@ -40,14 +40,15 @@ serve(async (req) => {
     const dailyCalories = calculateDailyCalories(userProfile);
     console.log('Calculated daily calories:', dailyCalories);
 
-    // Calculate number of meals based on snacks preference
-    const includeSnacks = preferences.includeSnacks !== false;
+    // CRITICAL FIX: Get includeSnacks from preferences, with proper default
+    const includeSnacks = preferences?.includeSnacks !== false && preferences?.includeSnacks !== 'false';
     const mealsPerDay = includeSnacks ? 5 : 3;
     const totalMeals = mealsPerDay * 7;
     
+    console.log(`🍽️ GENERATION CONFIG: includeSnacks=${includeSnacks} (from preferences: ${preferences?.includeSnacks})`);
     console.log(`Generating ${totalMeals} meals (${mealsPerDay} meals/day, snacks: ${includeSnacks})`);
 
-    // Generate optimized AI prompt
+    // Generate optimized AI prompt with correct snacks setting
     const prompt = generateMealPlanPrompt(userProfile, preferences, dailyCalories, includeSnacks);
 
     console.log('Sending OPTIMIZED request to OpenAI...');

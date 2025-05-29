@@ -89,6 +89,7 @@ export type Database = {
           name: string
           prep_time: number | null
           protein: number | null
+          recipe_fetched: boolean | null
           servings: number | null
           weekly_plan_id: string
           youtube_search_term: string | null
@@ -109,6 +110,7 @@ export type Database = {
           name: string
           prep_time?: number | null
           protein?: number | null
+          recipe_fetched?: boolean | null
           servings?: number | null
           weekly_plan_id: string
           youtube_search_term?: string | null
@@ -129,6 +131,7 @@ export type Database = {
           name?: string
           prep_time?: number | null
           protein?: number | null
+          recipe_fetched?: boolean | null
           servings?: number | null
           weekly_plan_id?: string
           youtube_search_term?: string | null

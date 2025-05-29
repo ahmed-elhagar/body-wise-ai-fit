@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -34,8 +33,9 @@ export const useMealPlanState = () => {
 
   const weekStartDate = getWeekStartDate(currentWeekOffset);
 
-  // Enhanced conversion from DailyMeal to Meal type
+  // Enhanced conversion from DailyMeal to Meal type - CRITICAL: preserve database ID
   const convertDailyMealToMeal = (dailyMeal: any): Meal => ({
+    id: dailyMeal.id, // CRITICAL: Include database ID for recipe generation
     type: dailyMeal.meal_type || 'meal',
     time: dailyMeal.meal_type === 'breakfast' ? '08:00' : 
           dailyMeal.meal_type === 'lunch' ? '12:00' :
@@ -99,6 +99,7 @@ export const useMealPlanState = () => {
   };
 
   const handleShowRecipe = (meal: Meal) => {
+    console.log('🍳 Opening recipe for meal:', { id: meal.id, name: meal.name });
     setSelectedMeal(meal);
     setShowRecipeDialog(true);
   };

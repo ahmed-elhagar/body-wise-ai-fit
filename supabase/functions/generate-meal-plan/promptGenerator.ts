@@ -29,12 +29,16 @@ export const generateMealPlanPrompt = (userProfile: UserProfile, preferences: Pr
   const selectedCuisine = preferences?.cuisine || 'mixed';
   const cuisine = selectedCuisine === 'mixed' ? `${nationality} cuisine` : selectedCuisine;
   
-  const mealTypes = includeSnacks 
+  // CRITICAL: Use the includeSnacks parameter from the function call, not preferences
+  const actualIncludeSnacks = includeSnacks;
+  const mealTypes = actualIncludeSnacks 
     ? 'breakfast, lunch, dinner, snack1, snack2' 
     : 'breakfast, lunch, dinner';
   
-  const totalMeals = includeSnacks ? 35 : 21;
-  const mealsPerDay = includeSnacks ? 5 : 3;
+  const totalMeals = actualIncludeSnacks ? 35 : 21;
+  const mealsPerDay = actualIncludeSnacks ? 5 : 3;
+
+  console.log(`🍽️ PROMPT GENERATION: includeSnacks=${actualIncludeSnacks}, totalMeals=${totalMeals}, mealsPerDay=${mealsPerDay}`);
 
   return `You are a professional nutritionist specializing in ${cuisine}. Create a BASIC 7-day meal plan with EXACTLY ${totalMeals} meals (${mealsPerDay} meals per day for 7 days).
 
@@ -52,7 +56,7 @@ USER PROFILE:
 PREFERENCES:
 - Cuisine: ${cuisine}
 - Max Prep Time: ${maxPrepTime} minutes per meal
-- Include Snacks: ${includeSnacks ? 'Yes' : 'No'}
+- Include Snacks: ${actualIncludeSnacks ? 'Yes' : 'No'}
 
 CRITICAL REQUIREMENTS:
 1. EXACTLY 7 days starting from Saturday (day 1) to Friday (day 7)
@@ -64,7 +68,7 @@ CRITICAL REQUIREMENTS:
 7. Consider allergies and dietary restrictions
 8. Realistic prep times ≤ ${maxPrepTime} minutes
 
-${includeSnacks ? `
+${actualIncludeSnacks ? `
 MEAL DISTRIBUTION WITH SNACKS:
 - Breakfast: ${Math.round(dailyCalories * 0.25)} calories
 - Lunch: ${Math.round(dailyCalories * 0.35)} calories  
@@ -88,7 +92,7 @@ Return this EXACT JSON structure with BASIC meal info only:
     "totalCarbs": ${Math.round(dailyCalories * 7 * 0.50 / 4)},
     "totalFat": ${Math.round(dailyCalories * 7 * 0.35 / 9)},
     "dietType": "${userProfile?.fitness_goal === 'weight_loss' ? 'Weight Loss' : userProfile?.fitness_goal === 'muscle_gain' ? 'Muscle Building' : 'Balanced Nutrition'}",
-    "includeSnacks": ${includeSnacks},
+    "includeSnacks": ${actualIncludeSnacks},
     "maxPrepTime": ${maxPrepTime},
     "cuisine": "${cuisine}"
   },
@@ -101,7 +105,7 @@ Return this EXACT JSON structure with BASIC meal info only:
         {
           "type": "breakfast",
           "name": "Traditional ${cuisine} Breakfast",
-          "calories": ${Math.round(dailyCalories * (includeSnacks ? 0.25 : 0.30))},
+          "calories": ${Math.round(dailyCalories * (actualIncludeSnacks ? 0.25 : 0.30))},
           "protein": 25,
           "carbs": 45,
           "fat": 15,
@@ -113,7 +117,7 @@ Return this EXACT JSON structure with BASIC meal info only:
           "servings": 1,
           "cuisine": "${cuisine}",
           "difficulty": "easy"
-        }${includeSnacks ? `,
+        }${actualIncludeSnacks ? `,
         {
           "type": "snack1",
           "name": "Healthy ${cuisine} Snack",

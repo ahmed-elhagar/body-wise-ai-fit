@@ -23,7 +23,13 @@ const MealRecipeDialog = ({ isOpen, onClose, meal }: MealRecipeDialogProps) => {
   const hasDetailedRecipe = detailedMeal?.ingredients?.length > 0 && detailedMeal?.instructions?.length > 0;
 
   const handleGenerateRecipe = async () => {
-    const result = await generateRecipe(meal.id || '');
+    // Ensure we have a meal ID before trying to generate recipe
+    if (!meal.id) {
+      console.error('No meal ID available for recipe generation');
+      return;
+    }
+    
+    const result = await generateRecipe(meal.id);
     if (result) {
       setDetailedMeal(result);
     }
@@ -95,8 +101,8 @@ const MealRecipeDialog = ({ isOpen, onClose, meal }: MealRecipeDialogProps) => {
             </Card>
           </div>
 
-          {/* Generate Recipe Button */}
-          {!hasDetailedRecipe && (
+          {/* Generate Recipe Button - Only show if we have meal ID */}
+          {!hasDetailedRecipe && meal.id && (
             <Card className="p-6 text-center bg-gradient-to-r from-fitness-primary/10 to-pink-100">
               <div className="space-y-4">
                 <div className="flex justify-center">
@@ -131,6 +137,15 @@ const MealRecipeDialog = ({ isOpen, onClose, meal }: MealRecipeDialogProps) => {
                   )}
                 </Button>
               </div>
+            </Card>
+          )}
+
+          {/* Show message if no meal ID available */}
+          {!hasDetailedRecipe && !meal.id && (
+            <Card className="p-6 text-center bg-gray-50">
+              <p className="text-gray-600">
+                Recipe generation not available for this meal. Please regenerate your meal plan to enable detailed recipes.
+              </p>
             </Card>
           )}
 
