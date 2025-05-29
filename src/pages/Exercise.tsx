@@ -9,7 +9,7 @@ import { ExerciseHeader } from "@/components/exercise/ExerciseHeader";
 import { WorkoutSummaryCard } from "@/components/exercise/WorkoutSummaryCard";
 import { ExerciseList } from "@/components/exercise/ExerciseList";
 import { WeeklyProgramOverview } from "@/components/exercise/WeeklyProgramOverview";
-import { EmptyExerciseState } from "@/components/exercise/EmptyExerciseState";
+import { ExerciseProgramSelector } from "@/components/exercise/ExerciseProgramSelector";
 
 const Exercise = () => {
   const { programs, isLoading } = useExercisePrograms();
@@ -21,21 +21,9 @@ const Exercise = () => {
   const currentProgram = programs?.[0];
   const { workouts, exercises, isLoading: workoutsLoading } = useDailyWorkouts(currentProgram?.id, selectedDay);
 
-  const handleGenerateProgram = () => {
-    const preferences = {
-      goalType: "general_fitness",
-      fitnessLevel: "beginner",
-      availableTime: "4",
-      preferredWorkouts: ["strength", "cardio"],
-      targetMuscleGroups: ["full_body"],
-      equipment: ["Basic home equipment"],
-      duration: "4",
-      workoutDays: "3-4 days per week",
-      difficulty: "beginner"
-    };
-    
+  const handleGenerateProgram = (preferences: any) => {
     generateExerciseProgram(preferences);
-    toast.success("Generating your personalized exercise program...");
+    toast.success(`Generating your personalized ${preferences.workoutType} exercise program...`);
   };
 
   // Show loading screen only if data is being loaded AND we're not sure about existing content
@@ -72,7 +60,7 @@ const Exercise = () => {
       <div className="container mx-auto px-4 py-8">
         <ExerciseHeader 
           currentProgram={currentProgram}
-          onGenerateProgram={handleGenerateProgram}
+          onGenerateProgram={() => {}} // We'll handle this in the selector now
           isGenerating={isGenerating}
         />
 
@@ -92,7 +80,7 @@ const Exercise = () => {
             />
           </div>
         ) : (
-          <EmptyExerciseState 
+          <ExerciseProgramSelector 
             onGenerateProgram={handleGenerateProgram}
             isGenerating={isGenerating}
           />

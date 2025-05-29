@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Play } from "lucide-react";
+import { ProgramTypeIndicator } from "./ProgramTypeIndicator";
 
 interface WorkoutSummaryCardProps {
   currentWorkout: any;
@@ -19,9 +20,16 @@ export const WorkoutSummaryCard = ({
   totalExercises, 
   progressPercentage 
 }: WorkoutSummaryCardProps) => {
+  // Determine workout type from program data or workout type
+  const workoutType = currentWorkout?.type || currentProgram?.workout_type || "home";
+
   return (
     <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-      <h3 className="text-lg font-semibold text-gray-800 mb-4">Today's Workout</h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-gray-800">Today's Workout</h3>
+        <ProgramTypeIndicator type={workoutType} />
+      </div>
+      
       <div className="space-y-4">
         <div>
           <h4 className="font-medium text-gray-800">{currentWorkout?.workout_name || 'Rest Day'}</h4>
