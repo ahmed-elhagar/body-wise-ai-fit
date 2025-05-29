@@ -1,10 +1,12 @@
 
 import { useProfile } from "@/hooks/useProfile";
 import { useHealthAssessment } from "@/hooks/useHealthAssessment";
+import { useOnboardingProgress } from "@/hooks/useOnboardingProgress";
 
 export const useProfileCompletionScore = () => {
   const { profile } = useProfile();
   const { assessment } = useHealthAssessment();
+  const { progress } = useOnboardingProgress();
 
   const calculateCompletionScore = () => {
     let totalFields = 0;
@@ -40,36 +42,51 @@ export const useProfileCompletionScore = () => {
       }
     });
 
-    // Health Assessment (12 key fields)
-    if (assessment) {
-      const assessmentFields = [
-        'stress_level', 'sleep_quality', 'energy_level', 'work_schedule',
-        'exercise_history', 'nutrition_knowledge', 'cooking_skills', 'time_availability',
-        'timeline_expectation', 'commitment_level'
-      ];
-      
-      assessmentFields.forEach(field => {
-        totalFields++;
+    // Health Assessment (key fields)
+    const healthAssessmentFields = [
+      'stress_level', 'sleep_quality', 'energy_level', 'work_schedule',
+      'exercise_history', 'nutrition_knowledge', 'cooking_skills', 'time_availability',
+      'timeline_expectation', 'commitment_level'
+    ];
+    
+    healthAssessmentFields.forEach(field => {
+      totalFields++;
+      if (assessment) {
         const value = assessment[field as keyof typeof assessment];
         if (value !== null && value !== undefined && value !== '') {
           completedFields++;
         }
-      });
+      }
+    });
 
-      // Assessment array fields
-      const assessmentArrayFields = ['chronic_conditions', 'medications', 'primary_motivation', 'specific_goals'];
-      assessmentArrayFields.forEach(field => {
-        totalFields++;
+    // Assessment array fields
+    const assessmentArrayFields = ['chronic_conditions', 'medications', 'primary_motivation', 'specific_goals'];
+    assessmentArrayFields.forEach(field => {
+      totalFields++;
+      if (assessment) {
         const value = assessment[field as keyof typeof assessment] as string[];
         if (value && Array.isArray(value) && value.length > 0) {
           completedFields++;
         }
-      });
-    } else {
-      totalFields += 14; // Add assessment fields to total even if not completed
-    }
+      }
+    });
 
-    return Math.round((completedFields / totalFields) * 100);
+    // Onboarding progress fields
+    totalFields += 2; // preferences_completed, profile_review_completed
+    if (progress?.preferences_completed) completedFields++;
+    if (progress?.profile_review_completed) completedFields++;
+
+    const score = Math.round((completedFields / totalFields) * 100);
+    console.log('Profile completion calculation:', {
+      completedFields,
+      totalFields,
+      score,
+      profile: !!profile,
+      assessment: !!assessment,
+      progress: !!progress
+    });
+    
+    return score;
   };
 
   return {

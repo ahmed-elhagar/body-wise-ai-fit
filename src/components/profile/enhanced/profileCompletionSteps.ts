@@ -15,26 +15,37 @@ export const useProfileCompletionSteps = (completionScore: number) => {
       key: 'basic_info',
       title: t('basicInformation'),
       description: t('personalDetailsAndMeasurements'),
-      completed: profile?.first_name && profile?.last_name && profile?.age && profile?.gender && 
-                 profile?.height && profile?.weight && profile?.nationality && profile?.body_shape,
+      completed: !!(profile?.first_name && 
+                   profile?.last_name && 
+                   profile?.age && 
+                   profile?.gender && 
+                   profile?.height && 
+                   profile?.weight && 
+                   profile?.nationality && 
+                   profile?.body_shape),
     },
     {
       key: 'health_assessment',
       title: t('healthAssessment'),
       description: t('healthConditionsLifestyleData'),
-      completed: !!assessment && 
-                 assessment.stress_level !== null && 
-                 assessment.sleep_quality !== null && 
-                 assessment.energy_level !== null &&
-                 assessment.work_schedule && 
-                 assessment.exercise_history &&
-                 assessment.commitment_level !== null,
+      completed: !!(assessment && 
+                   assessment.stress_level !== null && 
+                   assessment.sleep_quality !== null && 
+                   assessment.energy_level !== null &&
+                   assessment.work_schedule && 
+                   assessment.exercise_history &&
+                   assessment.commitment_level !== null &&
+                   assessment.nutrition_knowledge &&
+                   assessment.cooking_skills &&
+                   assessment.time_availability &&
+                   assessment.timeline_expectation),
     },
     {
       key: 'goals_setup',
       title: t('goalsObjectives'),
       description: t('fitnessGoalsTargetAchievements'),
-      completed: profile?.fitness_goal && profile?.activity_level,
+      completed: !!(profile?.fitness_goal && 
+                   profile?.activity_level),
     },
     {
       key: 'preferences',
@@ -46,12 +57,20 @@ export const useProfileCompletionSteps = (completionScore: number) => {
       key: 'profile_review',
       title: t('profileReview'),
       description: t('finalReviewConfirmation'),
-      completed: completionScore >= 80,
+      completed: completionScore >= 85, // Increased threshold for better completion tracking
     },
   ];
 
   const nextIncompleteStep = steps.find(step => !step.completed);
   const completedSteps = steps.filter(step => step.completed).length;
+
+  console.log('Profile completion steps:', {
+    steps: steps.map(s => ({ key: s.key, completed: s.completed })),
+    nextIncompleteStep: nextIncompleteStep?.key,
+    completedSteps,
+    totalSteps: steps.length,
+    completionScore
+  });
 
   return {
     steps,

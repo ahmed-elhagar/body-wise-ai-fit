@@ -6,6 +6,7 @@ import EnhancedBasicInfoForm from "./EnhancedBasicInfoForm";
 import EnhancedGoalsForm from "./EnhancedGoalsForm";
 import HealthAssessmentForm from "./HealthAssessmentForm";
 import EnhancedProfileOverview from "./EnhancedProfileOverview";
+import EnhancedSettingsForm from "./EnhancedSettingsForm";
 
 interface EnhancedProfileTabsContainerProps {
   activeTab: string;
@@ -84,11 +85,7 @@ const EnhancedProfileTabsContainer = ({
         </TabsContent>
 
         <TabsContent value="settings" className="p-6 m-0">
-          <div className="text-center py-12">
-            <Settings className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-600 mb-2">{t('settings')} {t('comingSoon')}</h3>
-            <p className="text-gray-500">{t('configureAppPreferences')}</p>
-          </div>
+          <EnhancedSettingsForm />
         </TabsContent>
       </div>
     </Tabs>
