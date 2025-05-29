@@ -59,13 +59,15 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
         throw new Error('Authentication required');
       }
       
-      // Use STANDARDIZED week calculation
-      const weekStartDate = getWeekStartDate(weekOffset).toISOString().split('T')[0];
-      console.log('🔍 MEAL PLAN FETCH - USING STANDARDIZED CALCULATION:', {
+      // Use CONSISTENT week calculation with date-fns
+      const weekStartDate = getWeekStartDate(weekOffset);
+      const weekStartDateStr = weekStartDate.toISOString().split('T')[0];
+      
+      console.log('🎯 MEAL PLAN FETCH - CONSISTENT DATE CALCULATION:', {
         userId: user.id,
         userEmail: user.email,
         weekOffset,
-        weekStartDate,
+        weekStartDate: weekStartDateStr,
         today: new Date().toISOString().split('T')[0]
       });
       
@@ -73,7 +75,7 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
         .from('weekly_meal_plans')
         .select('*')
         .eq('user_id', user.id)
-        .eq('week_start_date', weekStartDate)
+        .eq('week_start_date', weekStartDateStr)
         .maybeSingle();
 
       if (weeklyError) {
@@ -92,7 +94,7 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
           .order('created_at', { ascending: false });
         
         console.log('🔍 All meal plans for user:', {
-          searchedDate: weekStartDate,
+          searchedDate: weekStartDateStr,
           userPlans: allPlans?.map(p => ({ 
             id: p.id, 
             week_start_date: p.week_start_date, 
@@ -175,7 +177,7 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
         planId: weeklyPlan.id,
         mealsCount: processedMeals.length,
         weekStartDate: weeklyPlan.week_start_date,
-        searchedDate: weekStartDate
+        searchedDate: weekStartDateStr
       });
 
       return {
@@ -184,8 +186,8 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
       };
     },
     enabled: !!user?.id,
-    staleTime: 1000 * 60 * 1, // 1 minute
-    gcTime: 1000 * 60 * 2, // 2 minutes cache (fixed from cacheTime)
+    staleTime: 0, // CRITICAL FIX: Always fetch fresh data
+    gcTime: 1000 * 10, // Keep in cache for only 10 seconds
     retry: (failureCount, error: any) => {
       if (error?.message?.includes('Authentication required') || 
           error?.message?.includes('Data integrity violation')) {
@@ -193,6 +195,8 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
       }
       return failureCount < 1;
     },
+    refetchOnWindowFocus: true, // Refetch when window gains focus
+    refetchOnMount: true, // Always refetch on mount
   });
 
   return {

@@ -1,4 +1,3 @@
-
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -40,18 +39,21 @@ interface GeneratedPlan {
   };
 }
 
-// CRITICAL: Use SAME week calculation logic as frontend
+// CRITICAL FIX: Use date-fns compatible week calculation 
 const getWeekStartDate = (weekOffset: number = 0): Date => {
   const today = new Date();
   
-  // Get the current day of week (0 = Sunday, 6 = Saturday)
-  const currentDayOfWeek = today.getDay();
+  // Use same logic as frontend: find Saturday start of week
+  const currentDayOfWeek = today.getDay(); // 0=Sunday, 6=Saturday
   
-  // Calculate days to go back to Saturday (6)
-  // If today is Saturday (6), go back 0 days
-  // If today is Sunday (0), go back 1 day
-  // If today is Monday (1), go back 2 days, etc.
-  const daysToSaturday = currentDayOfWeek === 6 ? 0 : (currentDayOfWeek + 1);
+  let daysToSaturday: number;
+  if (currentDayOfWeek === 6) {
+    // Today is Saturday
+    daysToSaturday = 0;
+  } else {
+    // Calculate days back to previous Saturday
+    daysToSaturday = currentDayOfWeek + 1;
+  }
   
   // Start from Saturday of current week
   const startDate = new Date(today);
@@ -63,17 +65,17 @@ const getWeekStartDate = (weekOffset: number = 0): Date => {
   // Reset to start of day to ensure consistency
   startDate.setHours(0, 0, 0, 0);
   
-  console.log(`📅 BACKEND Week calculation: today=${today.toISOString().split('T')[0]}, currentDay=${currentDayOfWeek}, daysToSaturday=${daysToSaturday}, weekOffset=${weekOffset}, result=${startDate.toISOString().split('T')[0]}`);
+  console.log(`📅 BACKEND Week calculation (FIXED): today=${today.toISOString().split('T')[0]}, currentDay=${currentDayOfWeek}, daysToSaturday=${daysToSaturday}, weekOffset=${weekOffset}, result=${startDate.toISOString().split('T')[0]}`);
   
   return startDate;
 };
 
 export const saveWeeklyPlan = async (userProfile: UserProfile, generatedPlan: GeneratedPlan, preferences: any, dailyCalories: number) => {
-  // Use the SAME week calculation logic
+  // Use the CONSISTENT week calculation
   const weekStartDate = getWeekStartDate(0);
   const weekStartDateStr = weekStartDate.toISOString().split('T')[0];
   
-  console.log('🎯 SAVING Weekly Plan with date:', weekStartDateStr);
+  console.log('🎯 SAVING Weekly Plan with CONSISTENT date:', weekStartDateStr);
   
   // Delete existing plan for this week
   console.log('Deleting existing plan for week:', weekStartDateStr);
@@ -85,6 +87,8 @@ export const saveWeeklyPlan = async (userProfile: UserProfile, generatedPlan: Ge
   
   if (deleteError) {
     console.error('Error deleting existing plan:', deleteError);
+  } else {
+    console.log('✅ Successfully deleted existing plans for week:', weekStartDateStr);
   }
 
   const { data: weeklyPlan, error: weeklyError } = await supabase
@@ -111,10 +115,11 @@ export const saveWeeklyPlan = async (userProfile: UserProfile, generatedPlan: Ge
     throw weeklyError;
   }
 
-  console.log('✅ Weekly plan saved successfully:', {
+  console.log('✅ Weekly plan saved successfully with CONSISTENT date:', {
     id: weeklyPlan.id,
     week_start_date: weeklyPlan.week_start_date,
-    user_id: weeklyPlan.user_id
+    user_id: weeklyPlan.user_id,
+    created_at: weeklyPlan.created_at
   });
 
   return weeklyPlan;

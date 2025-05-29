@@ -98,19 +98,35 @@ export const useMealPlanState = () => {
       console.log('🚀 Starting AI meal plan generation with preferences:', aiPreferences);
       
       // This generates completely new AI-powered meal plan with user preferences
-      await generateMealPlan(aiPreferences);
-      setShowAIDialog(false);
+      const result = await generateMealPlan(aiPreferences);
       
-      // CRITICAL FIX: Force immediate refetch after successful generation
-      console.log('🔄 Forcing immediate meal plan refetch after generation...');
-      setTimeout(async () => {
+      if (result?.success) {
+        setShowAIDialog(false);
+        
+        // ENHANCED FIX: Immediate and delayed refetch with invalidation
+        console.log('✅ Generation successful, forcing immediate refetch...');
+        
+        // Immediate refetch
         await refetchMealPlan?.();
-        console.log('✅ Meal plan refetch completed');
-      }, 2000); // Reduced delay for faster feedback
+        
+        // Additional refetch after short delay to ensure consistency
+        setTimeout(async () => {
+          console.log('🔄 Secondary refetch for consistency...');
+          await refetchMealPlan?.();
+        }, 1500);
+        
+        // Final refetch after longer delay
+        setTimeout(async () => {
+          console.log('🔄 Final refetch to ensure data visibility...');
+          await refetchMealPlan?.();
+        }, 3000);
+        
+        toast.success("✨ Meal plan generated successfully!");
+      }
       
     } catch (error) {
       console.error('❌ Generation failed:', error);
-      // Error is already handled in useAIMealPlan hook
+      toast.error("Failed to generate meal plan. Please try again.");
     }
   };
 
@@ -159,7 +175,7 @@ export const useMealPlanState = () => {
     currentWeekPlan,
     isLoading,
     isGenerating,
-    isShuffling, // New state for shuffle operation
+    isShuffling,
     weekStartDate,
     todaysMeals,
     totalCalories,
