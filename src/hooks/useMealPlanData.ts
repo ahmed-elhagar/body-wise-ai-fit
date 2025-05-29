@@ -66,7 +66,7 @@ export const useMealPlanData = (weekOffset: number = 0) => {
           calculatedWeek: weekStartDate.toDateString()
         });
         
-        // Try to find the specific week first
+        // Try to find the specific week first with better error handling
         const { data: weeklyPlan, error: weeklyError } = await supabase
           .from('weekly_meal_plans')
           .select('*')
@@ -87,7 +87,7 @@ export const useMealPlanData = (weekOffset: number = 0) => {
             .from('weekly_meal_plans')
             .select('id, week_start_date, created_at, total_calories')
             .eq('user_id', user.id)
-            .order('created_at', { ascending: false });
+            .order('week_start_date', { ascending: false });
           
           console.log('🔍 ALL USER MEAL PLANS:', {
             searchedDate: weekStartDateStr,
@@ -110,7 +110,7 @@ export const useMealPlanData = (weekOffset: number = 0) => {
           userId: weeklyPlan.user_id
         });
 
-        // Fetch meals for the found plan
+        // Fetch meals for the found plan with better error handling
         const { data: dailyMeals, error: mealsError } = await supabase
           .from('daily_meals')
           .select('*')
@@ -134,20 +134,31 @@ export const useMealPlanData = (weekOffset: number = 0) => {
           })) || []
         });
 
-        // Process meals data
-        const processedMeals = (dailyMeals || []).map(meal => ({
-          ...meal,
-          ingredients: Array.isArray(meal.ingredients) 
-            ? meal.ingredients 
-            : typeof meal.ingredients === 'string' 
-              ? JSON.parse(meal.ingredients || '[]')
-              : [],
-          instructions: Array.isArray(meal.instructions)
-            ? meal.instructions
-            : typeof meal.instructions === 'string'
-              ? JSON.parse(meal.instructions || '[]')
-              : []
-        })) as DailyMeal[];
+        // Process meals data with better error handling
+        const processedMeals = (dailyMeals || []).map(meal => {
+          try {
+            return {
+              ...meal,
+              ingredients: Array.isArray(meal.ingredients) 
+                ? meal.ingredients 
+                : typeof meal.ingredients === 'string' 
+                  ? JSON.parse(meal.ingredients || '[]')
+                  : [],
+              instructions: Array.isArray(meal.instructions)
+                ? meal.instructions
+                : typeof meal.instructions === 'string'
+                  ? JSON.parse(meal.instructions || '[]')
+                  : []
+            };
+          } catch (parseError) {
+            console.error('Error parsing meal data:', parseError, meal);
+            return {
+              ...meal,
+              ingredients: [],
+              instructions: []
+            };
+          }
+        }) as DailyMeal[];
 
         console.log('✅ MEAL PLAN LOADED SUCCESSFULLY:', {
           userId: user.id,
@@ -168,16 +179,15 @@ export const useMealPlanData = (weekOffset: number = 0) => {
       }
     },
     enabled: !!user?.id,
-    staleTime: 5000, // Reduced stale time for more frequent updates
-    gcTime: 30000, // Reduced cache time
+    staleTime: 3000, // Reduced stale time for more frequent updates
+    gcTime: 20000, // Reduced cache time
     retry: (failureCount, error) => {
       // Don't retry on authentication errors
       if (error?.message?.includes('JWT')) return false;
       return failureCount < 2;
     },
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: true,
     refetchOnMount: true,
-    // Add better invalidation
     refetchOnReconnect: true
   });
 };

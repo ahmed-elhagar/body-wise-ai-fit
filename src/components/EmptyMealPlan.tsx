@@ -12,6 +12,7 @@ const EmptyMealPlan = ({ onGenerate }: EmptyMealPlanProps) => {
   const { t } = useLanguage();
 
   const handleRefresh = () => {
+    // Force a hard refresh to clear any cached data
     window.location.reload();
   };
 
@@ -36,7 +37,7 @@ const EmptyMealPlan = ({ onGenerate }: EmptyMealPlanProps) => {
           className="bg-white/50"
         >
           <RefreshCw className="w-4 h-4 mr-2" />
-          Refresh Page
+          {t('loading')}
         </Button>
       </div>
       
