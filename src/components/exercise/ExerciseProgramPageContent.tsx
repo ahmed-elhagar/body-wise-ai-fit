@@ -95,6 +95,7 @@ export const ExerciseProgramPageContent = ({
         totalExercises={totalExercises}
         progressPercentage={progressPercentage}
         selectedDayNumber={selectedDayNumber}
+        currentWeekOffset={currentWeekOffset}
         onExerciseComplete={handleExerciseComplete}
         onExerciseProgressUpdate={handleExerciseProgressUpdate}
         onGenerateAIProgram={handleGenerateAIProgram}

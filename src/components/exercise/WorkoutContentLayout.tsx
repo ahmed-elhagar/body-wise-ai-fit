@@ -13,6 +13,7 @@ interface WorkoutContentLayoutProps {
   progressPercentage: number;
   currentProgram: any;
   selectedDayNumber: number;
+  currentWeekOffset: number;
   onExerciseComplete: (exerciseId: string) => void;
   onExerciseProgressUpdate: (exerciseId: string, sets: number, reps: string, notes?: string) => void;
   isRestDay?: boolean;
@@ -25,6 +26,7 @@ export const WorkoutContentLayout = ({
   progressPercentage,
   currentProgram,
   selectedDayNumber,
+  currentWeekOffset,
   onExerciseComplete,
   onExerciseProgressUpdate,
   isRestDay
@@ -43,7 +45,18 @@ export const WorkoutContentLayout = ({
 
   return (
     <div className="space-y-4">
-      {/* Quick Actions - Sticky at top */}
+      {/* Progress Tracker - Top position for better visibility */}
+      <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+        <ExerciseProgressTracker
+          currentProgram={currentProgram}
+          selectedDay={selectedDayNumber}
+          currentWeekOffset={currentWeekOffset}
+          completedExercises={completedExercises}
+          totalExercises={totalExercises}
+        />
+      </div>
+
+      {/* Quick Actions - Sticky below progress */}
       <div className="sticky top-4 z-10">
         <ExerciseQuickActions
           isWorkoutActive={workoutSession.isActive}
@@ -72,36 +85,32 @@ export const WorkoutContentLayout = ({
           />
         </div>
 
-        {/* Sidebar with Progress and Motivation */}
+        {/* Sidebar with Motivation and Today's Summary */}
         <div className="lg:col-span-1 space-y-4">
-          {/* Progress Summary */}
+          {/* Today's Progress Summary */}
           <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
-            <div className="text-center space-y-2">
-              <h3 className="font-semibold text-gray-800">
-                {t('exercise.todaysProgress')}
-              </h3>
-              <div className="text-2xl font-bold text-blue-600">
-                {completedExercises}/{totalExercises}
+            <div className="text-center space-y-3">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
+                <span className="text-2xl font-bold text-blue-600">
+                  {totalExercises > 0 ? Math.round(progressPercentage) : 0}%
+                </span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div>
+                <h3 className="font-semibold text-gray-800 mb-1">
+                  {t('exercise.todaysProgress')}
+                </h3>
+                <div className="text-sm text-gray-600">
+                  {completedExercises}/{totalExercises} {t('exercise.exercises')}
+                </div>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-3">
                 <div 
-                  className="bg-blue-500 rounded-full h-2 transition-all duration-500"
+                  className="bg-gradient-to-r from-blue-500 to-purple-500 rounded-full h-3 transition-all duration-500 ease-out"
                   style={{ width: `${progressPercentage}%` }}
                 />
               </div>
-              <div className="text-sm text-gray-600">
-                {Math.round(progressPercentage)}% {t('exercise.completed').toLowerCase()}
-              </div>
             </div>
           </div>
-
-          {/* Progress Tracker */}
-          <ExerciseProgressTracker
-            currentProgram={currentProgram}
-            selectedDay={selectedDayNumber}
-            completedExercises={completedExercises}
-            totalExercises={totalExercises}
-          />
 
           {/* Motivation Card */}
           <ExerciseMotivationCard

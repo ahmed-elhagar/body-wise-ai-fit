@@ -15,6 +15,7 @@ interface WorkoutTypeTabsProps {
   totalExercises: number;
   progressPercentage: number;
   selectedDayNumber: number;
+  currentWeekOffset: number;
   onExerciseComplete: (exerciseId: string) => void;
   onExerciseProgressUpdate: (exerciseId: string, sets: number, reps: string, notes?: string) => void;
   onGenerateAIProgram: (preferences: ExercisePreferences) => void;
@@ -31,6 +32,7 @@ export const WorkoutTypeTabs = ({
   totalExercises,
   progressPercentage,
   selectedDayNumber,
+  currentWeekOffset,
   onExerciseComplete,
   onExerciseProgressUpdate,
   onGenerateAIProgram,
@@ -51,6 +53,7 @@ export const WorkoutTypeTabs = ({
           progressPercentage={progressPercentage}
           currentProgram={currentProgram}
           selectedDayNumber={selectedDayNumber}
+          currentWeekOffset={currentWeekOffset}
           onExerciseComplete={onExerciseComplete}
           onExerciseProgressUpdate={onExerciseProgressUpdate}
           isRestDay={isRestDay}

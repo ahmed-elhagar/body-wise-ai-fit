@@ -1,4 +1,3 @@
-
 export const exerciseTranslations = {
   // Exercise specific translations - Enhanced and Complete
   'exercise.selectDay': 'Select Day',
@@ -131,4 +130,23 @@ export const exerciseTranslations = {
   'exercise.motivation.perfect': 'Perfect! You\'ve completed everything! 🎉',
   'exercise.motivation.restWell': 'Rest well today! Recovery is part of the journey! 😌',
   'exercise.motivation.getStarted': 'Ready to get started? Your body will thank you! 💯',
+  
+  // Additional translations for better coverage
+  min: 'min',
+  cal: 'cal',
+  today: 'Today',
+  workouts: 'Workouts',
+  week: 'Week',
+  weekProgress: 'Week Progress',
+  
+  // Day names
+  day: {
+    monday: 'Monday',
+    tuesday: 'Tuesday', 
+    wednesday: 'Wednesday',
+    thursday: 'Thursday',
+    friday: 'Friday',
+    saturday: 'Saturday',
+    sunday: 'Sunday'
+  }
 };

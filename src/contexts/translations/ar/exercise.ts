@@ -1,4 +1,3 @@
-
 export const exerciseTranslations = {
   // Exercise specific translations - Enhanced and Complete
   'exercise.selectDay': 'اختر اليوم',
@@ -131,4 +130,23 @@ export const exerciseTranslations = {
   'exercise.motivation.perfect': 'مثالي! لقد أكملت كل شيء! 🎉',
   'exercise.motivation.restWell': 'استرح جيداً اليوم! التعافي جزء من الرحلة! 😌',
   'exercise.motivation.getStarted': 'مستعد للبدء؟ جسدك سيشكرك! 💯',
+  
+  // Additional translations for better coverage  
+  min: 'دقيقة',
+  cal: 'سعرة',
+  today: 'اليوم',
+  workouts: 'التمارين',
+  week: 'الأسبوع',
+  weekProgress: 'تقدم الأسبوع',
+  
+  // Day names in Arabic
+  day: {
+    monday: 'الإثنين',
+    tuesday: 'الثلاثاء',
+    wednesday: 'الأربعاء', 
+    thursday: 'الخميس',
+    friday: 'الجمعة',
+    saturday: 'السبت',
+    sunday: 'الأحد'
+  }
 };
