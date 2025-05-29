@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, Plus } from "lucide-react";
+import { Search, Plus, Database } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -30,10 +30,30 @@ interface FoodDatabaseSearchProps {
 const FoodDatabaseSearch = ({ onAddFood }: FoodDatabaseSearchProps) => {
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { data: foodItems, isLoading } = useQuery({
+  // Check total food items count for debugging
+  const { data: totalCount } = useQuery({
+    queryKey: ['food-items-count'],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('food_items')
+        .select('*', { count: 'exact', head: true });
+      
+      if (error) {
+        console.error('Error getting food count:', error);
+        return 0;
+      }
+      
+      console.log('Total food items in database:', count);
+      return count || 0;
+    },
+  });
+
+  const { data: foodItems, isLoading, error } = useQuery({
     queryKey: ['centralized-food-search', searchTerm],
     queryFn: async () => {
       if (!searchTerm || searchTerm.length < 2) return [];
+      
+      console.log('Searching for:', searchTerm);
       
       // Use the optimized search function that only searches food_items
       const { data, error } = await supabase.rpc('search_food_items', {
@@ -44,13 +64,45 @@ const FoodDatabaseSearch = ({ onAddFood }: FoodDatabaseSearchProps) => {
 
       if (error) {
         console.error('Food search error:', error);
-        return [];
+        throw error;
       }
 
+      console.log('Search results:', data);
       return data || [];
     },
     enabled: searchTerm.length >= 2,
   });
+
+  // Show database status if empty
+  if (totalCount === 0) {
+    return (
+      <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+        <div className="text-center space-y-4">
+          <Database className="w-12 h-12 text-gray-400 mx-auto" />
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">Food Database Empty</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              The food database is currently empty. Foods will be automatically added when you:
+            </p>
+            <div className="text-left space-y-2 max-w-md mx-auto">
+              <div className="flex items-center text-sm text-gray-600">
+                <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                Use AI photo analysis to analyze food images
+              </div>
+              <div className="flex items-center text-sm text-gray-600">
+                <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                Generate meal plans (meals get added to database)
+              </div>
+              <div className="flex items-center text-sm text-gray-600">
+                <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                Manually add foods through the system
+              </div>
+            </div>
+          </div>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
@@ -58,6 +110,11 @@ const FoodDatabaseSearch = ({ onAddFood }: FoodDatabaseSearchProps) => {
         <div className="flex items-center space-x-2">
           <Search className="w-5 h-5 text-gray-400" />
           <h3 className="text-lg font-semibold text-gray-800">Food Database Search</h3>
+          {totalCount !== undefined && (
+            <Badge variant="outline" className="text-xs">
+              {totalCount} foods available
+            </Badge>
+          )}
         </div>
         
         <div className="relative">
@@ -69,6 +126,14 @@ const FoodDatabaseSearch = ({ onAddFood }: FoodDatabaseSearchProps) => {
             className="pl-4"
           />
         </div>
+
+        {error && (
+          <div className="text-center py-4">
+            <p className="text-sm text-red-600">
+              Search error: {error.message}
+            </p>
+          </div>
+        )}
 
         {isLoading && searchTerm.length >= 2 && (
           <div className="text-center py-4">
@@ -131,11 +196,11 @@ const FoodDatabaseSearch = ({ onAddFood }: FoodDatabaseSearchProps) => {
           </div>
         )}
 
-        {searchTerm.length >= 2 && foodItems && foodItems.length === 0 && !isLoading && (
+        {searchTerm.length >= 2 && foodItems && foodItems.length === 0 && !isLoading && !error && (
           <div className="text-center py-8 text-gray-500">
             <Search className="w-8 h-8 mx-auto mb-2 text-gray-400" />
             <p>No foods found for "{searchTerm}"</p>
-            <p className="text-sm">Try uploading a photo for AI analysis first!</p>
+            <p className="text-sm mt-2">Try different keywords or use AI photo analysis!</p>
           </div>
         )}
       </div>
