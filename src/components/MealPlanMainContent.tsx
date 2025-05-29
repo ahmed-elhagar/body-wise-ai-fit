@@ -23,7 +23,6 @@ interface MealPlanMainContentProps {
   
   // Actions
   onAddSnack: () => void;
-  onFinalizePlan: () => void;
   onGenerate: () => void;
   
   // Data
@@ -47,7 +46,6 @@ const MealPlanMainContent = ({
   viewMode,
   onViewModeChange,
   onAddSnack,
-  onFinalizePlan,
   onGenerate,
   currentWeekPlan,
   todaysMeals,
@@ -76,7 +74,6 @@ const MealPlanMainContent = ({
         viewMode={viewMode}
         onViewModeChange={onViewModeChange}
         onAddSnack={onAddSnack}
-        onFinalizePlan={onFinalizePlan}
         showAddSnack={viewMode === 'daily' && currentWeekPlan !== null}
       />
 
