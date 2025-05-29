@@ -6,7 +6,7 @@ interface MealPlanLayoutProps {
   children: React.ReactNode;
 }
 
-const MealPlanLayout = ({ MealPlanLayoutProps }: MealPlanLayoutProps) => {
+const MealPlanLayout = ({ children }: MealPlanLayoutProps) => {
   const { isRTL } = useLanguage();
 
   return (
