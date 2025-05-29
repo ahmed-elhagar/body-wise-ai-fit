@@ -37,7 +37,7 @@ const CompactHealthAssessmentForm = () => {
 
   useEffect(() => {
     if (assessment) {
-      console.log('CompactHealthAssessmentForm - Loading existing assessment data:', assessment);
+      console.log('CompactHealthAssessmentForm - Loading assessment:', assessment);
       setFormData({
         chronic_conditions: assessment.chronic_conditions || [],
         medications: assessment.medications || [],
@@ -101,6 +101,7 @@ const CompactHealthAssessmentForm = () => {
     
     if (missingFields.length > 0) {
       toast.error('Please complete all required fields');
+      console.log('Missing required fields:', missingFields);
       return;
     }
     
@@ -108,15 +109,17 @@ const CompactHealthAssessmentForm = () => {
       const scores = calculateScores();
       const assessmentData = { ...formData, ...scores };
       
-      console.log('CompactHealthAssessmentForm - Submitting assessment data:', assessmentData);
+      console.log('CompactHealthAssessmentForm - Submitting:', assessmentData);
       
       await saveAssessment(assessmentData);
+      console.log('CompactHealthAssessmentForm - Assessment saved, marking step complete');
       await markStepComplete('health_assessment');
       
-      console.log('CompactHealthAssessmentForm - All operations completed successfully');
+      toast.success('Health assessment completed successfully!');
       
     } catch (error) {
-      console.error('CompactHealthAssessmentForm - Failed to save health assessment:', error);
+      console.error('CompactHealthAssessmentForm - Save failed:', error);
+      toast.error('Failed to save health assessment. Please try again.');
     }
   };
 
@@ -128,10 +131,10 @@ const CompactHealthAssessmentForm = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-3">
-        {/* Health Conditions - Single Row */}
+        {/* Health Conditions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
-            <Label className="text-xs">Chronic Conditions (comma separated)</Label>
+            <Label className="text-xs">Chronic Conditions</Label>
             <Input
               placeholder="e.g., diabetes, hypertension"
               value={formData.chronic_conditions.join(', ')}
@@ -150,10 +153,10 @@ const CompactHealthAssessmentForm = () => {
           </div>
         </div>
 
-        {/* Wellness Metrics - Three columns */}
+        {/* Wellness Metrics */}
         <div className="grid grid-cols-3 gap-3">
           <div>
-            <Label className="text-xs">Stress Level: {formData.stress_level}</Label>
+            <Label className="text-xs">Stress: {formData.stress_level}</Label>
             <Slider
               value={[formData.stress_level]}
               onValueChange={(value) => setFormData(prev => ({ ...prev, stress_level: value[0] }))}
@@ -164,7 +167,7 @@ const CompactHealthAssessmentForm = () => {
             />
           </div>
           <div>
-            <Label className="text-xs">Sleep Quality: {formData.sleep_quality}</Label>
+            <Label className="text-xs">Sleep: {formData.sleep_quality}</Label>
             <Slider
               value={[formData.sleep_quality]}
               onValueChange={(value) => setFormData(prev => ({ ...prev, sleep_quality: value[0] }))}
@@ -175,7 +178,7 @@ const CompactHealthAssessmentForm = () => {
             />
           </div>
           <div>
-            <Label className="text-xs">Energy Level: {formData.energy_level}</Label>
+            <Label className="text-xs">Energy: {formData.energy_level}</Label>
             <Slider
               value={[formData.energy_level]}
               onValueChange={(value) => setFormData(prev => ({ ...prev, energy_level: value[0] }))}
@@ -187,7 +190,7 @@ const CompactHealthAssessmentForm = () => {
           </div>
         </div>
 
-        {/* Lifestyle - Two columns */}
+        {/* Lifestyle */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <Label className="text-xs">Work Schedule *</Label>
@@ -220,7 +223,7 @@ const CompactHealthAssessmentForm = () => {
           </div>
         </div>
 
-        {/* Knowledge & Skills - Two columns */}
+        {/* Knowledge & Skills */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <Label className="text-xs">Nutrition Knowledge *</Label>
@@ -250,7 +253,7 @@ const CompactHealthAssessmentForm = () => {
           </div>
         </div>
 
-        {/* Goals - Two columns */}
+        {/* Goals */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <Label className="text-xs">Time Availability *</Label>
@@ -295,11 +298,11 @@ const CompactHealthAssessmentForm = () => {
           />
         </div>
 
-        {/* Primary Motivation - Fixed to handle spaces */}
+        {/* Primary Motivation - Fixed spacing issue */}
         <div>
-          <Label className="text-xs">Primary Motivation (optional)</Label>
+          <Label className="text-xs">Primary Motivation</Label>
           <Textarea
-            placeholder="e.g., weight loss, muscle gain, health improvement"
+            placeholder="Describe what motivates you to achieve your fitness goals"
             value={formData.primary_motivation.join(', ')}
             onChange={(e) => handleArrayInput('primary_motivation', e.target.value)}
             className="text-sm h-16 resize-none"

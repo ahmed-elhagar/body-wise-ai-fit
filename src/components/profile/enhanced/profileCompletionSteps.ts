@@ -19,13 +19,14 @@ export const useProfileCompletionSteps = (completionScore: number) => {
                                 profile?.nationality && 
                                 profile?.body_shape);
 
+  // Fixed: Proper health assessment completion check
   const isHealthAssessmentComplete = !!(assessment && 
-                                       assessment.stress_level !== null && 
-                                       assessment.sleep_quality !== null && 
-                                       assessment.energy_level !== null &&
+                                       assessment.stress_level && 
+                                       assessment.sleep_quality && 
+                                       assessment.energy_level &&
                                        assessment.work_schedule && 
                                        assessment.exercise_history &&
-                                       assessment.commitment_level !== null &&
+                                       assessment.commitment_level &&
                                        assessment.nutrition_knowledge &&
                                        assessment.cooking_skills &&
                                        assessment.time_availability &&
@@ -34,10 +35,9 @@ export const useProfileCompletionSteps = (completionScore: number) => {
   const isGoalsComplete = !!(profile?.fitness_goal && 
                             profile?.activity_level);
 
-  // Check progress table for preferences completion
   const isPreferencesComplete = progress?.preferences_completed || false;
 
-  // Remove profile review step - only 4 steps now
+  // Only 3 steps now (removed profile review)
   const steps = [
     {
       key: 'basic_info',
@@ -72,13 +72,24 @@ export const useProfileCompletionSteps = (completionScore: number) => {
     isBasicInfoComplete,
     isHealthAssessmentComplete,
     isGoalsComplete,
-    isPreferencesComplete: isPreferencesComplete,
+    isPreferencesComplete,
     completionScore,
     steps: steps.map(s => ({ key: s.key, completed: s.completed })),
     nextIncompleteStep: nextIncompleteStep?.key,
     completedSteps,
-    progressData: progress,
-    assessmentData: !!assessment
+    assessmentExists: !!assessment,
+    assessmentData: assessment ? {
+      stress_level: assessment.stress_level,
+      sleep_quality: assessment.sleep_quality,
+      energy_level: assessment.energy_level,
+      work_schedule: assessment.work_schedule,
+      exercise_history: assessment.exercise_history,
+      commitment_level: assessment.commitment_level,
+      nutrition_knowledge: assessment.nutrition_knowledge,
+      cooking_skills: assessment.cooking_skills,
+      time_availability: assessment.time_availability,
+      timeline_expectation: assessment.timeline_expectation
+    } : null
   });
 
   return {

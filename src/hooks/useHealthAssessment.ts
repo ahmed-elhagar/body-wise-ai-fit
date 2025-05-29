@@ -53,7 +53,7 @@ export const useHealthAssessment = () => {
         throw error;
       }
       
-      console.log('useHealthAssessment - Fetched assessment:', data);
+      console.log('useHealthAssessment - Fetched assessment data:', data);
       return data as HealthAssessment | null;
     },
     enabled: !!user?.id,
@@ -65,7 +65,6 @@ export const useHealthAssessment = () => {
 
       console.log('useHealthAssessment - Saving assessment data:', assessmentData);
 
-      // Ensure arrays are properly formatted
       const cleanedData = {
         ...assessmentData,
         user_id: user.id,
@@ -86,63 +85,35 @@ export const useHealthAssessment = () => {
         }
       });
 
-      console.log('useHealthAssessment - Cleaned data to save:', cleanedData);
+      console.log('useHealthAssessment - Final cleaned data:', cleanedData);
 
-      // Check if assessment exists
-      const { data: existing } = await supabase
+      // Always use upsert to handle both insert and update
+      const { data, error } = await supabase
         .from('health_assessments')
-        .select('id')
-        .eq('user_id', user.id)
-        .maybeSingle();
+        .upsert(cleanedData, { 
+          onConflict: 'user_id',
+          ignoreDuplicates: false 
+        })
+        .select()
+        .single();
 
-      let result;
-      if (existing) {
-        // Update existing
-        const { data, error } = await supabase
-          .from('health_assessments')
-          .update(cleanedData)
-          .eq('user_id', user.id)
-          .select()
-          .single();
-
-        if (error) {
-          console.error('Update error:', error);
-          throw error;
-        }
-        result = data;
-        console.log('useHealthAssessment - Updated existing assessment:', result);
-      } else {
-        // Insert new
-        const { data, error } = await supabase
-          .from('health_assessments')
-          .insert(cleanedData)
-          .select()
-          .single();
-
-        if (error) {
-          console.error('Insert error:', error);
-          throw error;
-        }
-        result = data;
-        console.log('useHealthAssessment - Created new assessment:', result);
+      if (error) {
+        console.error('useHealthAssessment - Upsert error:', error);
+        throw error;
       }
-
-      return result;
+      
+      console.log('useHealthAssessment - Assessment saved successfully:', data);
+      return data;
     },
     onSuccess: (data) => {
-      console.log('useHealthAssessment - Assessment saved successfully:', data);
-      // Invalidate and refetch all related queries
+      console.log('useHealthAssessment - Assessment saved, invalidating queries');
       queryClient.invalidateQueries({ queryKey: ['health-assessment'] });
       queryClient.invalidateQueries({ queryKey: ['onboarding-progress'] });
       queryClient.invalidateQueries({ queryKey: ['profile'] });
-      
-      // Force refetch
-      refetch();
-      
       toast.success('Health assessment saved successfully!');
     },
     onError: (error) => {
-      console.error('useHealthAssessment - Error saving assessment:', error);
+      console.error('useHealthAssessment - Save error:', error);
       toast.error('Failed to save health assessment. Please try again.');
     },
   });

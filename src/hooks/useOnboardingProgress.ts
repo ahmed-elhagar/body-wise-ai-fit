@@ -53,9 +53,8 @@ export const useOnboardingProgress = () => {
     mutationFn: async (progressData: Partial<OnboardingProgress>) => {
       if (!user?.id) throw new Error('No user ID');
 
-      console.log('useOnboardingProgress - Updating progress with data:', progressData);
+      console.log('useOnboardingProgress - Updating progress:', progressData);
 
-      // First check if record exists
       const { data: existing } = await supabase
         .from('onboarding_progress')
         .select('*')
@@ -63,7 +62,6 @@ export const useOnboardingProgress = () => {
         .maybeSingle();
 
       if (existing) {
-        // Update existing record
         const { data, error } = await supabase
           .from('onboarding_progress')
           .update({
@@ -78,10 +76,9 @@ export const useOnboardingProgress = () => {
           console.error('Progress update error:', error);
           throw error;
         }
-        console.log('useOnboardingProgress - Updated existing progress:', data);
+        console.log('useOnboardingProgress - Updated progress:', data);
         return data;
       } else {
-        // Create new record with defaults - now only 4 steps
         const { data, error } = await supabase
           .from('onboarding_progress')
           .insert({
@@ -93,7 +90,7 @@ export const useOnboardingProgress = () => {
             profile_review_completed: false,
             completion_percentage: 0,
             current_step: 1,
-            total_steps: 4, // Changed from 5 to 4
+            total_steps: 4, // Only 4 steps now
             started_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
             ...progressData,
@@ -105,7 +102,7 @@ export const useOnboardingProgress = () => {
           console.error('Progress insert error:', error);
           throw error;
         }
-        console.log('useOnboardingProgress - Created new progress:', data);
+        console.log('useOnboardingProgress - Created progress:', data);
         return data;
       }
     },
@@ -127,7 +124,6 @@ export const useOnboardingProgress = () => {
     stepData[`${step}_completed`] = true;
     stepData[`${step}_completed_at`] = new Date().toISOString();
     
-    // Calculate completion percentage based on current progress - now only 4 steps
     const currentProgress = progress || {
       basic_info_completed: false,
       health_assessment_completed: false,
@@ -135,10 +131,9 @@ export const useOnboardingProgress = () => {
       preferences_completed: false,
     };
     
-    // Update the specific step we're marking complete
     const updatedProgress = { ...currentProgress, [`${step}_completed`]: true };
     
-    const totalSteps = 4; // Changed from 5 to 4 (removed profile_review)
+    const totalSteps = 4; // Only 4 steps now
     const completedSteps = [
       updatedProgress.basic_info_completed,
       updatedProgress.health_assessment_completed,
@@ -150,7 +145,6 @@ export const useOnboardingProgress = () => {
     stepData.current_step = Math.min(completedSteps + 1, totalSteps);
     stepData.total_steps = totalSteps;
     
-    // If all steps are complete, mark overall completion
     if (completedSteps === totalSteps) {
       stepData.completed_at = new Date().toISOString();
     }
@@ -159,7 +153,7 @@ export const useOnboardingProgress = () => {
     
     try {
       const result = await updateProgressMutation.mutateAsync(stepData);
-      console.log('useOnboardingProgress - Step marked complete successfully:', result);
+      console.log('useOnboardingProgress - Step completed successfully:', result);
       return result;
     } catch (error) {
       console.error('useOnboardingProgress - Failed to mark step complete:', error);

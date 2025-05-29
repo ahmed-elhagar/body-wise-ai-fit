@@ -143,7 +143,6 @@ const Profile = () => {
                   )}
                 </div>
                 
-                {/* Quick Actions */}
                 <div className="flex gap-2">
                   {isAdmin && (
                     <Button
@@ -168,7 +167,6 @@ const Profile = () => {
                 </div>
               </div>
               
-              {/* Unsaved Changes Warning */}
               {hasUnsavedChanges && (
                 <Alert className="mb-2 border-yellow-200 bg-yellow-50 p-2">
                   <AlertCircle className="h-3 w-3 text-yellow-600" />
@@ -197,18 +195,17 @@ const Profile = () => {
                     </div>
                   </div>
                   
-                  {/* Compact Stats */}
                   <div className="grid grid-cols-4 gap-2">
                     <div className="bg-gray-50 p-1 rounded text-center">
-                      <p className="text-gray-600 text-xs">{t('height')}</p>
+                      <p className="text-gray-600 text-xs">Height</p>
                       <p className="font-semibold text-xs">{formData.height || "—"}</p>
                     </div>
                     <div className="bg-gray-50 p-1 rounded text-center">
-                      <p className="text-gray-600 text-xs">{t('weight')}</p>
+                      <p className="text-gray-600 text-xs">Weight</p>
                       <p className="font-semibold text-xs">{formData.weight || "—"}</p>
                     </div>
                     <div className="bg-gray-50 p-1 rounded text-center">
-                      <p className="text-gray-600 text-xs">{t('goal')}</p>
+                      <p className="text-gray-600 text-xs">Goal</p>
                       <p className="font-semibold text-xs capitalize">{formData.fitness_goal?.replace('_', ' ') || "—"}</p>
                     </div>
                     <div className="bg-gray-50 p-1 rounded text-center">
@@ -225,9 +222,9 @@ const Profile = () => {
               <ProfileCompletionCard onStepClick={handleStepClick} />
             </div>
 
-            {/* Main Content with Compact Tabs - Now only 4 tabs */}
+            {/* Main Content with Compact Tabs - Only 5 tabs */}
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-              <TabsList className="grid w-full grid-cols-4 mb-3 h-auto p-1">
+              <TabsList className="grid w-full grid-cols-5 mb-3 h-auto p-1">
                 <TabsTrigger value="overview" className="flex flex-col items-center gap-1 p-1 text-xs">
                   <Eye className="w-3 h-3" />
                   <span>Overview</span>
