@@ -1,4 +1,3 @@
-
 export const commonTranslations = {
   // Navigation and general
   'home': 'Home',
@@ -75,4 +74,29 @@ export const commonTranslations = {
   'vegetarian': 'Vegetarian',
   'keto': 'Keto',
   'highProtein': 'High Protein',
+
+  // Enhanced Profile translations
+  'enhancedProfile': 'Enhanced Profile',
+  'completeProfileForPersonalization': 'Complete your profile for personalized AI recommendations',
+  'profileCompletion': 'Profile Completion',
+  'nextStep': 'Next step',
+  'continue': 'Continue',
+  'basicInformation': 'Basic Information',
+  'personalDetailsAndMeasurements': 'Personal details and physical measurements',
+  'healthAssessment': 'Health Assessment',
+  'healthConditionsLifestyleData': 'Health conditions, lifestyle, and wellness data',
+  'goalsObjectives': 'Goals & Objectives',
+  'fitnessGoalsTargetAchievements': 'Fitness goals and target achievements',
+  'preferences': 'Preferences',
+  'appSettingsNotificationPreferences': 'App settings and notification preferences',
+  'profileReview': 'Profile Review',
+  'finalReviewConfirmation': 'Final review and confirmation',
+  'profileComplete': 'Profile Complete!',
+  'allSetForFitnessJourney': 'You\'re all set to make the most of your fitness journey.',
+  'overview': 'Overview',
+  'basic': 'Basic',
+  'health': 'Health',
+  'goals': 'Goals',
+  'preferencesSettings': 'Preferences & Settings',
+  'configureAppPreferences': 'Configure your app preferences, notification settings, and privacy options.',
 };

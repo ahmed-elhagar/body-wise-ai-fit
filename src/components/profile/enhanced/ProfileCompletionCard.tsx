@@ -1,4 +1,3 @@
-
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -6,6 +5,7 @@ import { CheckCircle, Circle, ArrowRight } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import { useHealthAssessment } from "@/hooks/useHealthAssessment";
 import { useOnboardingProgress } from "@/hooks/useOnboardingProgress";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ProfileCompletionCardProps {
   onStepClick: (step: string) => void;
@@ -15,6 +15,7 @@ const ProfileCompletionCard = ({ onStepClick }: ProfileCompletionCardProps) => {
   const { profile } = useProfile();
   const { assessment } = useHealthAssessment();
   const { progress } = useOnboardingProgress();
+  const { t } = useLanguage();
 
   // Calculate accurate completion score based on actual data
   const calculateCompletionScore = () => {
@@ -70,33 +71,33 @@ const ProfileCompletionCard = ({ onStepClick }: ProfileCompletionCardProps) => {
   const steps = [
     {
       key: 'basic_info',
-      title: 'Basic Information',
-      description: 'Personal details and physical measurements',
+      title: t('basicInformation'),
+      description: t('personalDetailsAndMeasurements'),
       completed: profile?.first_name && profile?.last_name && profile?.age && profile?.gender && 
                  profile?.height && profile?.weight && profile?.nationality,
     },
     {
       key: 'health_assessment',
-      title: 'Health Assessment',
-      description: 'Health conditions, lifestyle, and wellness data',
+      title: t('healthAssessment'),
+      description: t('healthConditionsLifestyleData'),
       completed: !!assessment && assessment.stress_level && assessment.sleep_quality && assessment.energy_level,
     },
     {
       key: 'goals_setup',
-      title: 'Goals & Objectives',
-      description: 'Fitness goals and target achievements',
+      title: t('goalsObjectives'),
+      description: t('fitnessGoalsTargetAchievements'),
       completed: profile?.fitness_goal && profile?.activity_level,
     },
     {
       key: 'preferences',
-      title: 'Preferences',
-      description: 'App settings and notification preferences',
+      title: t('preferences'),
+      description: t('appSettingsNotificationPreferences'),
       completed: progress?.preferences_completed || false,
     },
     {
       key: 'profile_review',
-      title: 'Profile Review',
-      description: 'Final review and confirmation',
+      title: t('profileReview'),
+      description: t('finalReviewConfirmation'),
       completed: completionScore >= 80,
     },
   ];
@@ -108,14 +109,14 @@ const ProfileCompletionCard = ({ onStepClick }: ProfileCompletionCardProps) => {
       <div className="p-4">
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-semibold text-gray-800">Profile Completion</h3>
+            <h3 className="text-lg font-semibold text-gray-800">{t('profileCompletion')}</h3>
             <span className="text-2xl font-bold text-blue-600">{completionScore}%</span>
           </div>
           <Progress value={completionScore} className="h-3 mb-4" />
           
           {completionScore < 100 && nextIncompleteStep && (
             <div className="bg-white/60 rounded-lg p-3 mb-4">
-              <p className="text-sm text-gray-600 mb-2">Next step:</p>
+              <p className="text-sm text-gray-600 mb-2">{t('nextStep')}:</p>
               <div className="space-y-2">
                 <p className="font-medium text-gray-800 text-sm">{nextIncompleteStep.title}</p>
                 <p className="text-xs text-gray-600">{nextIncompleteStep.description}</p>
@@ -124,7 +125,7 @@ const ProfileCompletionCard = ({ onStepClick }: ProfileCompletionCardProps) => {
                   size="sm"
                   className="bg-blue-600 hover:bg-blue-700 w-full"
                 >
-                  Continue <ArrowRight className="w-4 h-4 ml-1" />
+                  {t('continue')} <ArrowRight className="w-4 h-4 ml-1" />
                 </Button>
               </div>
             </div>
@@ -166,8 +167,8 @@ const ProfileCompletionCard = ({ onStepClick }: ProfileCompletionCardProps) => {
           <div className="mt-4 text-center">
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
               <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-2" />
-              <p className="font-medium text-green-800">Profile Complete!</p>
-              <p className="text-sm text-green-600">You're all set to make the most of your fitness journey.</p>
+              <p className="font-medium text-green-800">{t('profileComplete')}</p>
+              <p className="text-sm text-green-600">{t('allSetForFitnessJourney')}</p>
             </div>
           </div>
         )}

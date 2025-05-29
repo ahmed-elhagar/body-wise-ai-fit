@@ -3,6 +3,7 @@ import { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface EnhancedProfileMobileLayoutProps {
   children: ReactNode;
@@ -10,20 +11,21 @@ interface EnhancedProfileMobileLayoutProps {
   onStepChange: (step: string) => void;
 }
 
-const steps = [
-  { id: 'overview', label: 'Overview', icon: '📊' },
-  { id: 'basic', label: 'Basic Info', icon: '👤' },
-  { id: 'health', label: 'Health', icon: '❤️' },
-  { id: 'goals', label: 'Goals', icon: '🎯' },
-  { id: 'settings', label: 'Settings', icon: '⚙️' },
-];
-
 const EnhancedProfileMobileLayout = ({ 
   children, 
   currentStep, 
   onStepChange 
 }: EnhancedProfileMobileLayoutProps) => {
   const navigate = useNavigate();
+  const { t, isRTL } = useLanguage();
+
+  const steps = [
+    { id: 'overview', label: t('overview'), icon: '📊' },
+    { id: 'basic', label: t('basic'), icon: '👤' },
+    { id: 'health', label: t('health'), icon: '❤️' },
+    { id: 'goals', label: t('goals'), icon: '🎯' },
+    { id: 'settings', label: t('settings'), icon: '⚙️' },
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
@@ -37,10 +39,10 @@ const EnhancedProfileMobileLayout = ({
               onClick={() => navigate('/profile')}
               className="p-0 h-auto hover:text-blue-600"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
+              <ArrowLeft className={`w-4 h-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+              {t('back')}
             </Button>
-            <h1 className="text-lg font-semibold text-gray-800 truncate mx-4">Enhanced Profile</h1>
+            <h1 className="text-lg font-semibold text-gray-800 truncate mx-4">{t('enhancedProfile')}</h1>
             <div className="w-12" /> {/* Spacer for centering */}
           </div>
           

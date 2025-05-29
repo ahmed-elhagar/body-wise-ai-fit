@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { BarChart3, User, Heart, Target, Settings, Loader2 } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 import BasicInfoCard from "@/components/profile/BasicInfoCard";
 import HealthGoalsCard from "@/components/profile/HealthGoalsCard";
 import HealthAssessmentForm from "./HealthAssessmentForm";
@@ -27,28 +28,30 @@ const EnhancedProfileTabs = ({
   handleSave,
   isUpdating,
 }: EnhancedProfileTabsProps) => {
+  const { t } = useLanguage();
+
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab}>
       <TabsList className="grid w-full grid-cols-5 mb-6">
         <TabsTrigger value="overview" className="flex items-center text-xs lg:text-sm">
           <BarChart3 className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
-          <span className="hidden sm:inline">Overview</span>
+          <span className="hidden sm:inline">{t('overview')}</span>
         </TabsTrigger>
         <TabsTrigger value="basic" className="flex items-center text-xs lg:text-sm">
           <User className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
-          <span className="hidden sm:inline">Basic</span>
+          <span className="hidden sm:inline">{t('basic')}</span>
         </TabsTrigger>
         <TabsTrigger value="health" className="flex items-center text-xs lg:text-sm">
           <Heart className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
-          <span className="hidden sm:inline">Health</span>
+          <span className="hidden sm:inline">{t('health')}</span>
         </TabsTrigger>
         <TabsTrigger value="goals" className="flex items-center text-xs lg:text-sm">
           <Target className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
-          <span className="hidden sm:inline">Goals</span>
+          <span className="hidden sm:inline">{t('goals')}</span>
         </TabsTrigger>
         <TabsTrigger value="settings" className="flex items-center text-xs lg:text-sm">
           <Settings className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
-          <span className="hidden sm:inline">Settings</span>
+          <span className="hidden sm:inline">{t('settings')}</span>
         </TabsTrigger>
       </TabsList>
 
@@ -67,10 +70,10 @@ const EnhancedProfileTabs = ({
             {isUpdating ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Saving...
+                {t('saving')}...
               </>
             ) : (
-              'Save Changes'
+              t('save')
             )}
           </Button>
         </div>
@@ -95,10 +98,10 @@ const EnhancedProfileTabs = ({
             {isUpdating ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Saving...
+                {t('saving')}...
               </>
             ) : (
-              'Save Changes'
+              t('save')
             )}
           </Button>
         </div>
@@ -106,11 +109,10 @@ const EnhancedProfileTabs = ({
 
       <TabsContent value="settings" className="mt-6">
         <Card className="p-6">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Preferences & Settings</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">{t('preferencesSettings')}</h2>
           <p className="text-gray-600">
-            Configure your app preferences, notification settings, and privacy options.
+            {t('configureAppPreferences')}
           </p>
-          {/* Preferences form will be implemented later */}
         </Card>
       </TabsContent>
     </Tabs>

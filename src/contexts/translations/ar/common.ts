@@ -1,4 +1,3 @@
-
 export const commonTranslations = {
   // Navigation and general
   'home': 'الرئيسية',
@@ -75,4 +74,29 @@ export const commonTranslations = {
   'vegetarian': 'نباتي',
   'keto': 'كيتو',
   'highProtein': 'عالي البروتين',
+
+  // Enhanced Profile translations
+  'enhancedProfile': 'الملف الشخصي المحسن',
+  'completeProfileForPersonalization': 'أكمل ملفك الشخصي للحصول على توصيات ذكية مخصصة',
+  'profileCompletion': 'اكتمال الملف الشخصي',
+  'nextStep': 'الخطوة التالية',
+  'continue': 'متابعة',
+  'basicInformation': 'المعلومات الأساسية',
+  'personalDetailsAndMeasurements': 'التفاصيل الشخصية والقياسات الجسدية',
+  'healthAssessment': 'تقييم الصحة',
+  'healthConditionsLifestyleData': 'الحالات الصحية ونمط الحياة وبيانات العافية',
+  'goalsObjectives': 'الأهداف والغايات',
+  'fitnessGoalsTargetAchievements': 'أهداف اللياقة والإنجازات المستهدفة',
+  'preferences': 'التفضيلات',
+  'appSettingsNotificationPreferences': 'إعدادات التطبيق وتفضيلات الإشعارات',
+  'profileReview': 'مراجعة الملف الشخصي',
+  'finalReviewConfirmation': 'المراجعة النهائية والتأكيد',
+  'profileComplete': 'اكتمل الملف الشخصي!',
+  'allSetForFitnessJourney': 'أنت مستعد الآن لتحقيق أقصى استفادة من رحلة لياقتك.',
+  'overview': 'نظرة عامة',
+  'basic': 'أساسي',
+  'health': 'الصحة',
+  'goals': 'الأهداف',
+  'preferencesSettings': 'التفضيلات والإعدادات',
+  'configureAppPreferences': 'قم بتكوين تفضيلات التطبيق وإعدادات الإشعارات وخيارات الخصوصية.',
 };
