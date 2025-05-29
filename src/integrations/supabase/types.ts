@@ -325,12 +325,160 @@ export type Database = {
         }
         Relationships: []
       }
+      health_assessments: {
+        Row: {
+          assessment_type: string
+          chronic_conditions: string[] | null
+          commitment_level: number | null
+          completed_at: string | null
+          cooking_skills: string | null
+          created_at: string | null
+          energy_level: number | null
+          exercise_history: string | null
+          health_score: number | null
+          id: string
+          injuries: string[] | null
+          medications: string[] | null
+          nutrition_knowledge: string | null
+          physical_limitations: string[] | null
+          primary_motivation: string[] | null
+          readiness_score: number | null
+          risk_score: number | null
+          sleep_quality: number | null
+          specific_goals: string[] | null
+          stress_level: number | null
+          time_availability: string | null
+          timeline_expectation: string | null
+          updated_at: string | null
+          user_id: string
+          work_schedule: string | null
+        }
+        Insert: {
+          assessment_type?: string
+          chronic_conditions?: string[] | null
+          commitment_level?: number | null
+          completed_at?: string | null
+          cooking_skills?: string | null
+          created_at?: string | null
+          energy_level?: number | null
+          exercise_history?: string | null
+          health_score?: number | null
+          id?: string
+          injuries?: string[] | null
+          medications?: string[] | null
+          nutrition_knowledge?: string | null
+          physical_limitations?: string[] | null
+          primary_motivation?: string[] | null
+          readiness_score?: number | null
+          risk_score?: number | null
+          sleep_quality?: number | null
+          specific_goals?: string[] | null
+          stress_level?: number | null
+          time_availability?: string | null
+          timeline_expectation?: string | null
+          updated_at?: string | null
+          user_id: string
+          work_schedule?: string | null
+        }
+        Update: {
+          assessment_type?: string
+          chronic_conditions?: string[] | null
+          commitment_level?: number | null
+          completed_at?: string | null
+          cooking_skills?: string | null
+          created_at?: string | null
+          energy_level?: number | null
+          exercise_history?: string | null
+          health_score?: number | null
+          id?: string
+          injuries?: string[] | null
+          medications?: string[] | null
+          nutrition_knowledge?: string | null
+          physical_limitations?: string[] | null
+          primary_motivation?: string[] | null
+          readiness_score?: number | null
+          risk_score?: number | null
+          sleep_quality?: number | null
+          specific_goals?: string[] | null
+          stress_level?: number | null
+          time_availability?: string | null
+          timeline_expectation?: string | null
+          updated_at?: string | null
+          user_id?: string
+          work_schedule?: string | null
+        }
+        Relationships: []
+      }
+      onboarding_progress: {
+        Row: {
+          basic_info_completed: boolean | null
+          basic_info_completed_at: string | null
+          completed_at: string | null
+          completion_percentage: number | null
+          current_step: number | null
+          goals_setup_completed: boolean | null
+          goals_setup_completed_at: string | null
+          health_assessment_completed: boolean | null
+          health_assessment_completed_at: string | null
+          id: string
+          preferences_completed: boolean | null
+          preferences_completed_at: string | null
+          profile_review_completed: boolean | null
+          profile_review_completed_at: string | null
+          started_at: string | null
+          total_steps: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          basic_info_completed?: boolean | null
+          basic_info_completed_at?: string | null
+          completed_at?: string | null
+          completion_percentage?: number | null
+          current_step?: number | null
+          goals_setup_completed?: boolean | null
+          goals_setup_completed_at?: string | null
+          health_assessment_completed?: boolean | null
+          health_assessment_completed_at?: string | null
+          id?: string
+          preferences_completed?: boolean | null
+          preferences_completed_at?: string | null
+          profile_review_completed?: boolean | null
+          profile_review_completed_at?: string | null
+          started_at?: string | null
+          total_steps?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          basic_info_completed?: boolean | null
+          basic_info_completed_at?: string | null
+          completed_at?: string | null
+          completion_percentage?: number | null
+          current_step?: number | null
+          goals_setup_completed?: boolean | null
+          goals_setup_completed_at?: string | null
+          health_assessment_completed?: boolean | null
+          health_assessment_completed_at?: string | null
+          id?: string
+          preferences_completed?: boolean | null
+          preferences_completed_at?: string | null
+          profile_review_completed?: boolean | null
+          profile_review_completed_at?: string | null
+          started_at?: string | null
+          total_steps?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           activity_level: string | null
           age: number | null
           ai_generations_remaining: number | null
           allergies: string[] | null
+          bio: string | null
           body_shape: string | null
           created_at: string | null
           dietary_restrictions: string[] | null
@@ -341,11 +489,16 @@ export type Database = {
           health_conditions: string[] | null
           height: number | null
           id: string
+          last_health_assessment_date: string | null
           last_name: string | null
+          location: string | null
           nationality: string | null
           onboarding_completed: boolean | null
           preferred_foods: string[] | null
           preferred_language: string | null
+          profile_completion_score: number | null
+          profile_visibility: string | null
+          timezone: string | null
           updated_at: string | null
           weight: number | null
         }
@@ -354,6 +507,7 @@ export type Database = {
           age?: number | null
           ai_generations_remaining?: number | null
           allergies?: string[] | null
+          bio?: string | null
           body_shape?: string | null
           created_at?: string | null
           dietary_restrictions?: string[] | null
@@ -364,11 +518,16 @@ export type Database = {
           health_conditions?: string[] | null
           height?: number | null
           id: string
+          last_health_assessment_date?: string | null
           last_name?: string | null
+          location?: string | null
           nationality?: string | null
           onboarding_completed?: boolean | null
           preferred_foods?: string[] | null
           preferred_language?: string | null
+          profile_completion_score?: number | null
+          profile_visibility?: string | null
+          timezone?: string | null
           updated_at?: string | null
           weight?: number | null
         }
@@ -377,6 +536,7 @@ export type Database = {
           age?: number | null
           ai_generations_remaining?: number | null
           allergies?: string[] | null
+          bio?: string | null
           body_shape?: string | null
           created_at?: string | null
           dietary_restrictions?: string[] | null
@@ -387,11 +547,16 @@ export type Database = {
           health_conditions?: string[] | null
           height?: number | null
           id?: string
+          last_health_assessment_date?: string | null
           last_name?: string | null
+          location?: string | null
           nationality?: string | null
           onboarding_completed?: boolean | null
           preferred_foods?: string[] | null
           preferred_language?: string | null
+          profile_completion_score?: number | null
+          profile_visibility?: string | null
+          timezone?: string | null
           updated_at?: string | null
           weight?: number | null
         }
@@ -433,6 +598,141 @@ export type Database = {
           user_agent?: string | null
           user_email?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      user_goals: {
+        Row: {
+          category: string
+          created_at: string | null
+          current_value: number | null
+          description: string | null
+          difficulty: string | null
+          goal_type: string
+          id: string
+          milestones: Json | null
+          notes: string | null
+          priority: string | null
+          start_date: string
+          status: string
+          tags: string[] | null
+          target_date: string | null
+          target_unit: string | null
+          target_value: number | null
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          current_value?: number | null
+          description?: string | null
+          difficulty?: string | null
+          goal_type: string
+          id?: string
+          milestones?: Json | null
+          notes?: string | null
+          priority?: string | null
+          start_date?: string
+          status?: string
+          tags?: string[] | null
+          target_date?: string | null
+          target_unit?: string | null
+          target_value?: number | null
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          current_value?: number | null
+          description?: string | null
+          difficulty?: string | null
+          goal_type?: string
+          id?: string
+          milestones?: Json | null
+          notes?: string | null
+          priority?: string | null
+          start_date?: string
+          status?: string
+          tags?: string[] | null
+          target_date?: string | null
+          target_unit?: string | null
+          target_value?: number | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_preferences: {
+        Row: {
+          ai_suggestions: boolean | null
+          automatic_exercise_planning: boolean | null
+          automatic_meal_planning: boolean | null
+          created_at: string | null
+          data_sharing_analytics: boolean | null
+          data_sharing_research: boolean | null
+          email_notifications: boolean | null
+          id: string
+          marketing_emails: boolean | null
+          meal_reminder_times: Json | null
+          measurement_units: string | null
+          preferred_language: string | null
+          profile_visibility: string | null
+          progress_reminders: boolean | null
+          push_notifications: boolean | null
+          sms_notifications: boolean | null
+          theme_preference: string | null
+          updated_at: string | null
+          user_id: string
+          workout_reminder_time: string | null
+        }
+        Insert: {
+          ai_suggestions?: boolean | null
+          automatic_exercise_planning?: boolean | null
+          automatic_meal_planning?: boolean | null
+          created_at?: string | null
+          data_sharing_analytics?: boolean | null
+          data_sharing_research?: boolean | null
+          email_notifications?: boolean | null
+          id?: string
+          marketing_emails?: boolean | null
+          meal_reminder_times?: Json | null
+          measurement_units?: string | null
+          preferred_language?: string | null
+          profile_visibility?: string | null
+          progress_reminders?: boolean | null
+          push_notifications?: boolean | null
+          sms_notifications?: boolean | null
+          theme_preference?: string | null
+          updated_at?: string | null
+          user_id: string
+          workout_reminder_time?: string | null
+        }
+        Update: {
+          ai_suggestions?: boolean | null
+          automatic_exercise_planning?: boolean | null
+          automatic_meal_planning?: boolean | null
+          created_at?: string | null
+          data_sharing_analytics?: boolean | null
+          data_sharing_research?: boolean | null
+          email_notifications?: boolean | null
+          id?: string
+          marketing_emails?: boolean | null
+          meal_reminder_times?: Json | null
+          measurement_units?: string | null
+          preferred_language?: string | null
+          profile_visibility?: string | null
+          progress_reminders?: boolean | null
+          push_notifications?: boolean | null
+          sms_notifications?: boolean | null
+          theme_preference?: string | null
+          updated_at?: string | null
+          user_id?: string
+          workout_reminder_time?: string | null
         }
         Relationships: []
       }
@@ -573,6 +873,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_profile_completion_score: {
+        Args: { user_id_param: string }
+        Returns: number
+      }
       check_and_use_ai_generation: {
         Args: {
           user_id_param: string
