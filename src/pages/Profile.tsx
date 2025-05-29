@@ -10,7 +10,9 @@ import { ProfileAppSidebar } from "@/components/profile/ProfileAppSidebar";
 import BasicInfoCard from "@/components/profile/BasicInfoCard";
 import HealthGoalsCard from "@/components/profile/HealthGoalsCard";
 import AccountSettingsCard from "@/components/profile/AccountSettingsCard";
-import { Sparkles, ArrowRight, Loader2 } from "lucide-react";
+import ProfileOverviewCard from "@/components/profile/ProfileOverviewCard";
+import ProfileGoalsCard from "@/components/profile/ProfileGoalsCard";
+import { Sparkles, ArrowRight, Loader2, Edit } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -18,7 +20,8 @@ const Profile = () => {
   const { user, isAdmin } = useAuth();
   const { profile, updateProfile, isUpdating, isLoading } = useProfile();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("profile");
+  const [activeTab, setActiveTab] = useState("overview");
+  const [isEditMode, setIsEditMode] = useState(false);
 
   const [formData, setFormData] = useState({
     first_name: '',
@@ -78,10 +81,22 @@ const Profile = () => {
       };
       
       updateProfile(profileData);
+      setIsEditMode(false);
+      setActiveTab("overview");
     } catch (error) {
       console.error('Error saving profile:', error);
       toast.error('Failed to save profile changes');
     }
+  };
+
+  const handleEditProfile = () => {
+    setIsEditMode(true);
+    setActiveTab("profile");
+  };
+
+  const handleEditGoals = () => {
+    setIsEditMode(true);
+    setActiveTab("goals");
   };
 
   const profileCompleteness = profile?.profile_completion_score || 0;
@@ -108,17 +123,23 @@ const Profile = () => {
               formData={formData}
               user={user}
               isAdmin={isAdmin}
+              isEditMode={isEditMode}
+              setIsEditMode={setIsEditMode}
             />
             <SidebarInset className="flex-1">
               <div className="w-full max-w-4xl mx-auto px-4 py-6">
                 {/* Header */}
                 <div className="mb-6">
-                  <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-2">Your Profile</h1>
-                  <p className="text-sm lg:text-base text-gray-600">Manage your personal information and preferences</p>
+                  <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-2">
+                    {isEditMode ? 'Edit Profile' : 'Your Profile'}
+                  </h1>
+                  <p className="text-sm lg:text-base text-gray-600">
+                    {isEditMode ? 'Update your personal information and preferences' : 'View your personal information and preferences'}
+                  </p>
                 </div>
 
                 {/* Enhanced Profile Promotion Card */}
-                {profileCompleteness < 100 && (
+                {profileCompleteness < 100 && !isEditMode && (
                   <Card className="mb-6 p-4 lg:p-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white">
                     <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4 lg:justify-between">
                       <div className="flex items-start gap-3 lg:gap-4 flex-1">
@@ -147,34 +168,86 @@ const Profile = () => {
 
                 {/* Main Content */}
                 <div className="space-y-6">
-                  {activeTab === "profile" && (
+                  {activeTab === "overview" && !isEditMode && (
+                    <>
+                      <ProfileOverviewCard formData={formData} onEdit={handleEditProfile} />
+                      <ProfileGoalsCard formData={formData} onEdit={handleEditGoals} />
+                    </>
+                  )}
+
+                  {(activeTab === "profile" || (isEditMode && activeTab === "profile")) && (
                     <>
                       <BasicInfoCard formData={formData} updateFormData={updateFormData} />
+                      {isEditMode && (
+                        <div className="flex gap-3 justify-end">
+                          <Button 
+                            onClick={() => {
+                              setIsEditMode(false);
+                              setActiveTab("overview");
+                            }}
+                            variant="outline"
+                            className="w-full lg:w-auto"
+                          >
+                            Cancel
+                          </Button>
+                          <Button 
+                            onClick={handleSave}
+                            disabled={isUpdating}
+                            className="bg-fitness-gradient w-full lg:w-auto"
+                          >
+                            {isUpdating ? (
+                              <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Saving...
+                              </>
+                            ) : (
+                              'Save Changes'
+                            )}
+                          </Button>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {(activeTab === "goals" || (isEditMode && activeTab === "goals")) && (
+                    <>
                       <HealthGoalsCard 
                         formData={formData} 
                         updateFormData={updateFormData}
                         handleArrayInput={handleArrayInput}
                       />
-                      <div className="flex justify-end">
-                        <Button 
-                          onClick={handleSave}
-                          disabled={isUpdating}
-                          className="bg-fitness-gradient w-full lg:w-auto"
-                        >
-                          {isUpdating ? (
-                            <>
-                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                              Saving...
-                            </>
-                          ) : (
-                            'Save Changes'
-                          )}
-                        </Button>
-                      </div>
+                      {isEditMode && (
+                        <div className="flex gap-3 justify-end">
+                          <Button 
+                            onClick={() => {
+                              setIsEditMode(false);
+                              setActiveTab("overview");
+                            }}
+                            variant="outline"
+                            className="w-full lg:w-auto"
+                          >
+                            Cancel
+                          </Button>
+                          <Button 
+                            onClick={handleSave}
+                            disabled={isUpdating}
+                            className="bg-fitness-gradient w-full lg:w-auto"
+                          >
+                            {isUpdating ? (
+                              <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Saving...
+                              </>
+                            ) : (
+                              'Save Changes'
+                            )}
+                          </Button>
+                        </div>
+                      )}
                     </>
                   )}
 
-                  {activeTab === "account" && (
+                  {activeTab === "account" && !isEditMode && (
                     <AccountSettingsCard user={user} />
                   )}
                 </div>

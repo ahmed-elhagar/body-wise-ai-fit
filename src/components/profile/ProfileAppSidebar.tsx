@@ -10,7 +10,7 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { User, Settings, Shield, LogOut } from "lucide-react";
+import { User, Settings, Shield, LogOut, Eye, Edit } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 
@@ -20,9 +20,19 @@ interface ProfileAppSidebarProps {
   formData: any;
   user: any;
   isAdmin: boolean;
+  isEditMode: boolean;
+  setIsEditMode: (mode: boolean) => void;
 }
 
-export function ProfileAppSidebar({ activeTab, setActiveTab, formData, user, isAdmin }: ProfileAppSidebarProps) {
+export function ProfileAppSidebar({ 
+  activeTab, 
+  setActiveTab, 
+  formData, 
+  user, 
+  isAdmin,
+  isEditMode,
+  setIsEditMode
+}: ProfileAppSidebarProps) {
   const { signOut } = useAuth();
   const navigate = useNavigate();
 
@@ -31,11 +41,28 @@ export function ProfileAppSidebar({ activeTab, setActiveTab, formData, user, isA
     navigate('/');
   };
 
+  const handleTabClick = (tab: string) => {
+    if (tab === "overview") {
+      setIsEditMode(false);
+    }
+    setActiveTab(tab);
+  };
+
   const menuItems = [
     {
-      title: "Profile Info",
+      title: "Overview",
+      icon: Eye,
+      key: "overview",
+    },
+    {
+      title: "Basic Info",
       icon: User,
       key: "profile",
+    },
+    {
+      title: "Health & Goals",
+      icon: Edit,
+      key: "goals",
     },
     {
       title: "Account Settings", 
@@ -92,7 +119,7 @@ export function ProfileAppSidebar({ activeTab, setActiveTab, formData, user, isA
           {menuItems.map((item) => (
             <SidebarMenuItem key={item.key}>
               <SidebarMenuButton
-                onClick={() => setActiveTab(item.key)}
+                onClick={() => handleTabClick(item.key)}
                 isActive={activeTab === item.key}
                 className="w-full justify-start"
               >
