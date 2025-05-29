@@ -2,6 +2,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useProfile } from './useProfile';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
 import { format, addDays, startOfWeek } from 'date-fns';
 
@@ -20,6 +21,7 @@ interface ExerciseProgramRequest {
 
 export const useAIExercise = () => {
   const { profile } = useProfile();
+  const { language, t } = useLanguage();
   const queryClient = useQueryClient();
 
   const generateExerciseProgram = useMutation({
@@ -28,12 +30,16 @@ export const useAIExercise = () => {
         throw new Error('Profile not found. Please complete your profile first.');
       }
 
+      // Get user's preferred language from profile or context
+      const userLanguage = profile.preferred_language || language || 'en';
+
       console.log('🚀 Starting exercise program generation with request:', {
         workoutType: request.workoutType,
         goalType: request.goalType,
         fitnessLevel: request.fitnessLevel,
         weekOffset: request.weekOffset,
-        weekStartDate: request.weekStartDate
+        weekStartDate: request.weekStartDate,
+        userLanguage
       });
 
       // Calculate week start date if not provided
@@ -55,7 +61,7 @@ export const useAIExercise = () => {
         fitness_goal: profile.fitness_goal || 'general fitness',
         activity_level: profile.activity_level || 'moderately_active',
         health_conditions: profile.health_conditions || [],
-        preferred_language: profile.preferred_language || 'en'
+        preferred_language: userLanguage
       };
 
       // Transform the request to match expected format
@@ -67,21 +73,18 @@ export const useAIExercise = () => {
         preferredWorkouts: request.preferredWorkouts || ['bodyweight', 'cardio'],
         targetMuscleGroups: request.targetMuscleGroups || ['full_body'],
         equipment: request.equipment || (request.workoutType === 'gym' ? ['barbells', 'dumbbells', 'machines'] : ['bodyweight']),
-        userLanguage: request.userLanguage || userData.preferred_language,
+        userLanguage: userLanguage,
         weekStartDate: weekStartDate,
         weekOffset: request.weekOffset
       };
 
-      console.log('📤 Sending request to edge function:', {
-        ...transformedRequest,
-        userId: userData.userId.substring(0, 8) + '...'
-      });
+      console.log('📤 Sending request to edge function with language:', userLanguage);
 
       const { data, error } = await supabase.functions.invoke('generate-exercise-program', {
         body: {
           userData,
           preferences: transformedRequest,
-          userLanguage: userData.preferred_language
+          userLanguage: userLanguage
         }
       });
 
@@ -103,25 +106,41 @@ export const useAIExercise = () => {
       queryClient.invalidateQueries({ queryKey: ['exercise-programs'] });
       queryClient.invalidateQueries({ queryKey: ['exercise-program'] });
       
-      toast.success(`${data.workoutType === 'gym' ? 'Gym' : 'Home'} exercise program generated successfully!`, {
-        description: `Created ${data.workoutsCreated || 0} workouts with ${data.exercisesCreated || 0} exercises`
-      });
+      const successMessage = language === 'ar' ? 
+        `تم إنشاء برنامج التمارين ${data.workoutType === 'gym' ? 'الصالة الرياضية' : 'المنزلية'} بنجاح!` :
+        `${data.workoutType === 'gym' ? 'Gym' : 'Home'} exercise program generated successfully!`;
+      
+      const description = language === 'ar' ? 
+        `تم إنشاء ${data.workoutsCreated || 0} تمارين مع ${data.exercisesCreated || 0} حركة` :
+        `Created ${data.workoutsCreated || 0} workouts with ${data.exercisesCreated || 0} exercises`;
+      
+      toast.success(successMessage, { description });
       console.log('✅ Exercise program generation completed successfully');
     },
     onError: (error) => {
       console.error('🚨 Exercise generation error:', error);
       
-      // Provide more specific error messages
-      let errorMessage = 'Failed to generate exercise program. Please try again.';
+      // Provide more specific error messages based on user language
+      let errorMessage = language === 'ar' ? 
+        'فشل في إنشاء برنامج التمارين. يرجى المحاولة مرة أخرى.' :
+        'Failed to generate exercise program. Please try again.';
       
       if (error.message.includes('Profile not found')) {
-        errorMessage = 'Please complete your profile before generating an exercise program.';
+        errorMessage = language === 'ar' ? 
+          'يرجى إكمال ملفك الشخصي قبل إنشاء برنامج التمارين.' :
+          'Please complete your profile before generating an exercise program.';
       } else if (error.message.includes('API key')) {
-        errorMessage = 'AI service is temporarily unavailable. Please try again later.';
+        errorMessage = language === 'ar' ? 
+          'خدمة الذكاء الاصطناعي غير متاحة مؤقتاً. يرجى المحاولة لاحقاً.' :
+          'AI service is temporarily unavailable. Please try again later.';
       } else if (error.message.includes('parse')) {
-        errorMessage = 'There was an issue processing your request. Please try again.';
+        errorMessage = language === 'ar' ? 
+          'حدثت مشكلة في معالجة طلبك. يرجى المحاولة مرة أخرى.' :
+          'There was an issue processing your request. Please try again.';
       } else if (error.message.includes('Authentication required')) {
-        errorMessage = 'Please sign in to generate exercise programs.';
+        errorMessage = language === 'ar' ? 
+          'يرجى تسجيل الدخول لإنشاء برامج التمارين.' :
+          'Please sign in to generate exercise programs.';
       }
       
       toast.error(errorMessage);

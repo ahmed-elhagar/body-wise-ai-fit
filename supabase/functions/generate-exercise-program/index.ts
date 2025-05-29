@@ -17,10 +17,13 @@ serve(async (req) => {
   }
 
   try {
-    const { userData, preferences } = await req.json();
+    const { userData, preferences, userLanguage } = await req.json();
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+    // Use userLanguage from request, fallback to userData, then default to 'en'
+    const finalUserLanguage = userLanguage || userData?.preferred_language || preferences?.userLanguage || 'en';
 
     console.log('🚀 Exercise generation request received:', {
       userId: userData?.userId?.substring(0, 8) + '...',
@@ -28,7 +31,8 @@ serve(async (req) => {
       weekStartDate: preferences?.weekStartDate,
       weekOffset: preferences?.weekOffset,
       goalType: preferences?.goalType,
-      fitnessLevel: preferences?.fitnessLevel
+      fitnessLevel: preferences?.fitnessLevel,
+      userLanguage: finalUserLanguage
     });
 
     if (!openAIApiKey) {
@@ -53,13 +57,29 @@ serve(async (req) => {
     if (!['home', 'gym'].includes(workoutType)) {
       throw new Error('Invalid workout type. Must be "home" or "gym"');
     }
+
+    // Enhance preferences with language information
+    const enhancedPreferences = {
+      ...preferences,
+      userLanguage: finalUserLanguage
+    };
+
+    // Enhance userData with language information
+    const enhancedUserData = {
+      ...userData,
+      preferred_language: finalUserLanguage
+    };
     
     // Choose the appropriate prompt based on workout type
     const selectedPrompt = workoutType === 'gym' 
-      ? createGymWorkoutPrompt(userData, preferences)
-      : createHomeWorkoutPrompt(userData, preferences);
+      ? createGymWorkoutPrompt(enhancedUserData, enhancedPreferences)
+      : createHomeWorkoutPrompt(enhancedUserData, enhancedPreferences);
     
-    console.log(`📤 Sending request to OpenAI for ${workoutType} exercise program`);
+    console.log(`📤 Sending request to OpenAI for ${workoutType} exercise program in ${finalUserLanguage}`);
+    
+    const systemMessage = finalUserLanguage === 'ar' 
+      ? `أنت مدرب شخصي معتمد ومتخصص في التمارين الرياضية. اكتب استجابتك بتنسيق JSON صحيح فقط. قم بإنشاء تمارين آمنة وفعالة لبيئة ${workoutType === 'gym' ? 'الصالة الرياضية' : 'المنزل'}. ركز على الشكل الصحيح والزيادة التدريجية والتعليمات الواضحة.`
+      : `You are a certified personal trainer and exercise specialist. Always respond with valid JSON only. Create safe, effective workouts for ${workoutType} environment. Focus on proper form, progressive overload, and clear instructions.`;
     
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -72,7 +92,7 @@ serve(async (req) => {
         messages: [
           { 
             role: 'system', 
-            content: `You are a certified personal trainer and exercise specialist. Always respond with valid JSON only. Create safe, effective workouts for ${workoutType} environment. Focus on proper form, progressive overload, and clear instructions.` 
+            content: systemMessage
           },
           { role: 'user', content: selectedPrompt }
         ],
@@ -101,16 +121,17 @@ serve(async (req) => {
     validateWorkoutProgram(generatedProgram);
     console.log('✅ Exercise program validation passed');
 
-    // Ensure preferences include the workout type and week information
-    const enhancedPreferences = {
-      ...preferences,
+    // Ensure preferences include the workout type, week information, and language
+    const finalEnhancedPreferences = {
+      ...enhancedPreferences,
       workoutType,
       weekStartDate: preferences?.weekStartDate,
-      weekOffset: preferences?.weekOffset
+      weekOffset: preferences?.weekOffset,
+      userLanguage: finalUserLanguage
     };
 
     // Store the program in the database
-    const weeklyProgram = await storeWorkoutProgram(supabase, generatedProgram, userData, enhancedPreferences);
+    const weeklyProgram = await storeWorkoutProgram(supabase, generatedProgram, enhancedUserData, finalEnhancedPreferences);
 
     console.log('🎉 Exercise program generated and stored successfully:', {
       programId: weeklyProgram.id,
@@ -118,8 +139,13 @@ serve(async (req) => {
       programName: weeklyProgram.program_name,
       weekStartDate: weeklyProgram.week_start_date,
       workoutsCreated: weeklyProgram.workoutsCreated,
-      exercisesCreated: weeklyProgram.exercisesCreated
+      exercisesCreated: weeklyProgram.exercisesCreated,
+      userLanguage: finalUserLanguage
     });
+
+    const successMessage = finalUserLanguage === 'ar'
+      ? `تم إنشاء وحفظ برنامج تمارين ${workoutType === 'gym' ? 'الصالة الرياضية' : 'المنزل'} بنجاح`
+      : `${workoutType === 'gym' ? 'Gym' : 'Home'} exercise program generated successfully`;
 
     return new Response(JSON.stringify({ 
       success: true,
@@ -129,7 +155,8 @@ serve(async (req) => {
       weekStartDate: weeklyProgram.week_start_date,
       workoutsCreated: weeklyProgram.workoutsCreated,
       exercisesCreated: weeklyProgram.exercisesCreated,
-      message: `${workoutType === 'gym' ? 'Gym' : 'Home'} exercise program generated successfully`
+      userLanguage: finalUserLanguage,
+      message: successMessage
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

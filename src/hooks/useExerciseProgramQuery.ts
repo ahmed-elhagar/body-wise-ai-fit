@@ -2,12 +2,14 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { addDays, startOfWeek, format } from 'date-fns';
 import { ExerciseProgram } from '@/types/exercise';
 import { generateWeeklyWorkouts } from '@/utils/exerciseDataUtils';
 
 export const useExerciseProgramQuery = (weekOffset: number = 0, workoutType: "home" | "gym" = "home") => {
   const { user } = useAuth();
+  const { language } = useLanguage();
 
   // Calculate the target week start date based on offset
   const currentDate = new Date();
@@ -15,7 +17,7 @@ export const useExerciseProgramQuery = (weekOffset: number = 0, workoutType: "ho
   const targetWeekStartString = format(targetWeekStart, 'yyyy-MM-dd');
 
   return useQuery({
-    queryKey: ['exercise-program', user?.id, weekOffset, workoutType, targetWeekStartString],
+    queryKey: ['exercise-program', user?.id, weekOffset, workoutType, targetWeekStartString, language],
     queryFn: async () => {
       if (!user?.id) throw new Error('No user ID');
       
@@ -23,7 +25,8 @@ export const useExerciseProgramQuery = (weekOffset: number = 0, workoutType: "ho
         weekOffset,
         workoutType,
         targetWeekStart: targetWeekStartString,
-        userId: user.id.substring(0, 8) + '...'
+        userId: user.id.substring(0, 8) + '...',
+        userLanguage: language
       });
 
       // First try to get existing program for this specific week and workout type
@@ -65,7 +68,7 @@ export const useExerciseProgramQuery = (weekOffset: number = 0, workoutType: "ho
         daily_workouts: generateWeeklyWorkouts(existingProgram.daily_workouts || [], workoutType)
       } as ExerciseProgram;
 
-      console.log('✅ Transformed program with', transformedProgram.daily_workouts?.length, 'daily workouts (including rest days)');
+      console.log('✅ Transformed program with', transformedProgram.daily_workouts?.length, 'daily workouts (including rest days) for language:', language);
 
       return transformedProgram;
     },
