@@ -77,15 +77,14 @@ const AddSnackDialog = ({
   const dynamicTargetCalories = getDynamicTargetCalories();
   const remainingCalories = Math.max(0, dynamicTargetCalories - currentDayCalories);
 
-  console.log('🍎 AddSnackDialog - Enhanced Debug:', {
+  console.log('🍎 AddSnackDialog - Debug:', {
     currentDayCalories,
     originalTarget: targetDayCalories,
     dynamicTarget: dynamicTargetCalories,
     remainingCalories,
     weeklyPlanId,
     selectedDay,
-    language,
-    userProfile: !!profile
+    language
   });
 
   const handleGenerateAISnack = async () => {
@@ -142,17 +141,8 @@ const AddSnackDialog = ({
       
       if (data?.success) {
         toast.success(data.message || t('mealPlan.addSnack.success'));
-        
-        // Close dialog immediately and refresh data
         onClose();
-        
-        // Trigger immediate refresh
         onSnackAdded();
-        
-        // Force a hard refresh after a short delay to ensure data is updated
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
       } else {
         console.error('❌ Generation failed:', data?.error);
         toast.error(data?.error || t('mealPlan.addSnack.error'));

@@ -46,9 +46,9 @@ const SnackGenerationSection = ({
         <Button
           onClick={onGenerate}
           disabled={isGenerating}
-          className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+          className={`flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 ${isRTL ? 'flex-row-reverse' : ''}`}
         >
-          <Sparkles className="w-5 h-5 mr-2" />
+          <Sparkles className={`w-5 h-5 ${isRTL ? 'ml-2' : 'mr-2'}`} />
           {t('mealPlan.addSnack.generateAISnack')}
         </Button>
         

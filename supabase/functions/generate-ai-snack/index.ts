@@ -119,11 +119,11 @@ serve(async (req) => {
     const carbs = Math.round((targetCalories * 0.50) / 4); // 50% from carbs  
     const fat = Math.round((targetCalories * 0.30) / 9); // 30% from fat
 
-    // Create the snack object with proper structure - FIXED meal_type to 'snack'
+    // Create the snack object with proper structure
     const snackData = {
       weekly_plan_id: weeklyPlanId,
       day_number: day,
-      meal_type: 'snack', // This is now allowed due to the updated constraint
+      meal_type: 'snack', // This should now work with the updated constraint
       name: selectedSnack.name,
       calories: targetCalories,
       protein: protein,
