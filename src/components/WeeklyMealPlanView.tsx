@@ -66,8 +66,17 @@ const WeeklyMealPlanView = ({ weeklyPlan, onShowRecipe, onExchangeMeal }: Weekly
   };
 
   const dietType = getDietType();
-  const weeklyCalories = weeklyPlan?.weeklyPlan?.total_calories || 0;
-  const weeklyProtein = weeklyPlan?.weeklyPlan?.total_protein || 0;
+  const weeklyCalories = weeklyPlan?.weeklyPlan?.total_calories || weeklyPlan?.total_calories || 0;
+  const weeklyProtein = weeklyPlan?.weeklyPlan?.total_protein || weeklyPlan?.total_protein || 0;
+
+  // Fix: Access the dailyMeals correctly
+  const dailyMealsData = weeklyPlan?.dailyMeals || [];
+
+  console.log('🔍 WeeklyMealPlanView Debug:', {
+    weeklyPlan: weeklyPlan,
+    dailyMealsData: dailyMealsData,
+    mealsCount: dailyMealsData.length
+  });
 
   return (
     <div className="space-y-6">

@@ -1,7 +1,7 @@
 
 import { Card } from "@/components/ui/card";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import MealCardImage from "@/components/meal-card/MealCardImage";
 import NutritionGrid from "@/components/meal-card/NutritionGrid";
 import MealDetails from "@/components/meal-card/MealDetails";
@@ -15,6 +15,7 @@ interface Ingredient {
 }
 
 interface Meal {
+  id?: string;
   type: string;
   time: string;
   name: string;
@@ -29,6 +30,7 @@ interface Meal {
   servings: number;
   imageUrl?: string;
   image: string;
+  image_url?: string; // Database field
 }
 
 interface MealCardProps {
@@ -39,8 +41,23 @@ interface MealCardProps {
 
 const MealCard = ({ meal, onShowRecipe, onExchangeMeal }: MealCardProps) => {
   const { isRTL } = useLanguage();
-  const [mealImage, setMealImage] = useState<string | null>(meal.imageUrl || null);
+  
+  // Enhanced image state management
+  const [mealImage, setMealImage] = useState<string | null>(
+    meal.image_url || meal.imageUrl || null
+  );
   const [isLoadingImage, setIsLoadingImage] = useState(false);
+
+  // Update image when meal data changes (e.g., after recipe generation)
+  useEffect(() => {
+    if (meal.image_url && meal.image_url !== mealImage) {
+      console.log(`📸 Updating meal image for ${meal.name}:`, {
+        oldImage: mealImage,
+        newImage: meal.image_url
+      });
+      setMealImage(meal.image_url);
+    }
+  }, [meal.image_url, meal.imageUrl]);
 
   const generateMealImage = async () => {
     if (isLoadingImage || mealImage) return;

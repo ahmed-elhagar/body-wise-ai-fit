@@ -13,9 +13,10 @@ interface MealRecipeDialogProps {
   isOpen: boolean;
   onClose: () => void;
   meal: Meal;
+  onRecipeGenerated?: () => void; // New callback for when recipe is generated
 }
 
-const MealRecipeDialog = ({ isOpen, onClose, meal }: MealRecipeDialogProps) => {
+const MealRecipeDialog = ({ isOpen, onClose, meal, onRecipeGenerated }: MealRecipeDialogProps) => {
   const { t } = useLanguage();
   const { generateRecipe, isGeneratingRecipe } = useMealRecipe();
   const [detailedMeal, setDetailedMeal] = useState<any>(null);
@@ -31,7 +32,13 @@ const MealRecipeDialog = ({ isOpen, onClose, meal }: MealRecipeDialogProps) => {
     
     const result = await generateRecipe(meal.id);
     if (result) {
+      console.log('✅ Recipe generated, updating detailed meal:', result);
       setDetailedMeal(result);
+      
+      // Notify parent component that recipe was generated so it can refresh the UI
+      if (onRecipeGenerated) {
+        onRecipeGenerated();
+      }
     }
   };
 
@@ -66,11 +73,11 @@ const MealRecipeDialog = ({ isOpen, onClose, meal }: MealRecipeDialogProps) => {
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Meal Image */}
-          {detailedMeal?.image_url && (
+          {/* Enhanced Meal Image with updated image_url */}
+          {(detailedMeal?.image_url || meal.image_url) && (
             <div className="w-full h-64 rounded-lg overflow-hidden">
               <img 
-                src={detailedMeal.image_url} 
+                src={detailedMeal?.image_url || meal.image_url} 
                 alt={meal.name}
                 className="w-full h-full object-cover"
               />

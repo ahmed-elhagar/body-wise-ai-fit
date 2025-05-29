@@ -36,7 +36,7 @@ const MealPlan = () => {
     currentWeekPlan,
     isLoading,
     isGenerating,
-    isShuffling, // New state for shuffle operation
+    isShuffling,
     weekStartDate,
     todaysMeals,
     totalCalories,
@@ -59,6 +59,12 @@ const MealPlan = () => {
   });
 
   const currentDay = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+
+  // Handle recipe generation callback to refresh UI
+  const handleRecipeGenerated = () => {
+    console.log('🔄 Recipe generated, refreshing meal plan data...');
+    refetch();
+  };
 
   // Show loading state during generation OR shuffling
   if (isGenerating) {
@@ -138,10 +144,12 @@ const MealPlan = () => {
           selectedMeal={selectedMeal}
           showExchangeDialog={showExchangeDialog}
           onCloseExchangeDialog={() => setShowExchangeDialog(false)}
+          selectedMealIndex={selectedMealIndex}
           onExchange={() => {
             refetch();
             setShowExchangeDialog(false);
           }}
+          onRecipeGenerated={handleRecipeGenerated}
         />
       </div>
     </MealPlanLayout>

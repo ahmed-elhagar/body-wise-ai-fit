@@ -1,9 +1,9 @@
 
-import AIGenerationDialog from "@/components/AIGenerationDialog";
-import AddSnackDialog from "@/components/AddSnackDialog";
-import ShoppingListDialog from "@/components/ShoppingListDialog";
-import MealRecipeDialog from "@/components/MealRecipeDialog";
-import MealExchangeDialog from "@/components/MealExchangeDialog";
+import AIGenerationDialog from "./AIGenerationDialog";
+import AddSnackDialog from "./AddSnackDialog";
+import ShoppingListDialog from "./ShoppingListDialog";
+import MealRecipeDialog from "./MealRecipeDialog";
+import MealExchangeDialog from "./MealExchangeDialog";
 import type { Meal } from "@/types/meal";
 
 interface MealPlanDialogsProps {
@@ -37,7 +37,11 @@ interface MealPlanDialogsProps {
   // Exchange Dialog
   showExchangeDialog: boolean;
   onCloseExchangeDialog: () => void;
+  selectedMealIndex: number;
   onExchange: () => void;
+  
+  // New callback for recipe generation
+  onRecipeGenerated?: () => void;
 }
 
 const MealPlanDialogs = ({
@@ -62,7 +66,9 @@ const MealPlanDialogs = ({
   selectedMeal,
   showExchangeDialog,
   onCloseExchangeDialog,
-  onExchange
+  selectedMealIndex,
+  onExchange,
+  onRecipeGenerated
 }: MealPlanDialogsProps) => {
   return (
     <>
@@ -96,6 +102,7 @@ const MealPlanDialogs = ({
           isOpen={showRecipeDialog}
           onClose={onCloseRecipeDialog}
           meal={selectedMeal}
+          onRecipeGenerated={onRecipeGenerated}
         />
       )}
 
@@ -103,7 +110,8 @@ const MealPlanDialogs = ({
         <MealExchangeDialog
           isOpen={showExchangeDialog}
           onClose={onCloseExchangeDialog}
-          currentMeal={selectedMeal}
+          meal={selectedMeal}
+          mealIndex={selectedMealIndex}
           onExchange={onExchange}
         />
       )}
