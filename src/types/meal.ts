@@ -6,6 +6,7 @@ export interface Ingredient {
 }
 
 export interface Meal {
+  id?: string; // Add optional id property to match database structure
   type: string;
   time: string;
   name: string;
