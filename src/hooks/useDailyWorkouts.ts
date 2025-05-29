@@ -3,11 +3,11 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
-export const useDailyWorkouts = (weeklyProgramId?: string, dayNumber: number = 1) => {
+export const useDailyWorkouts = (weeklyProgramId?: string, dayNumber: number = 1, workoutType: "home" | "gym" = "home") => {
   const { user } = useAuth();
 
   const { data: workouts, isLoading: workoutsLoading, error: workoutsError } = useQuery({
-    queryKey: ['daily-workouts', weeklyProgramId, dayNumber],
+    queryKey: ['daily-workouts', weeklyProgramId, dayNumber, workoutType],
     queryFn: async () => {
       if (!weeklyProgramId) return [];
       
@@ -16,6 +16,7 @@ export const useDailyWorkouts = (weeklyProgramId?: string, dayNumber: number = 1
         .select('*')
         .eq('weekly_program_id', weeklyProgramId)
         .eq('day_number', dayNumber)
+        .eq('type', workoutType)
         .order('created_at', { ascending: true });
 
       if (error) throw error;

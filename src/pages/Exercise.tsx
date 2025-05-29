@@ -10,16 +10,18 @@ import { WorkoutSummaryCard } from "@/components/exercise/WorkoutSummaryCard";
 import { ExerciseList } from "@/components/exercise/ExerciseList";
 import { WeeklyProgramOverview } from "@/components/exercise/WeeklyProgramOverview";
 import { ExerciseProgramSelector } from "@/components/exercise/ExerciseProgramSelector";
+import { WorkoutTypeToggle } from "@/components/exercise/WorkoutTypeToggle";
 
 const Exercise = () => {
   const { programs, isLoading } = useExercisePrograms();
   const { generateExerciseProgram, isGenerating } = useAIExercise();
   const { isGeneratingContent, hasExistingContent } = useInitialAIGeneration();
   const [selectedDay, setSelectedDay] = useState(1);
+  const [workoutType, setWorkoutType] = useState<"home" | "gym">("home");
   
   // Get the current week's program (most recent)
   const currentProgram = programs?.[0];
-  const { workouts, exercises, isLoading: workoutsLoading } = useDailyWorkouts(currentProgram?.id, selectedDay);
+  const { workouts, exercises, isLoading: workoutsLoading } = useDailyWorkouts(currentProgram?.id, selectedDay, workoutType);
 
   const handleGenerateProgram = (preferences: any) => {
     generateExerciseProgram(preferences);
@@ -65,19 +67,27 @@ const Exercise = () => {
         />
 
         {currentProgram && workouts ? (
-          <div className="grid lg:grid-cols-4 gap-6">
-            <WorkoutSummaryCard
-              currentWorkout={currentWorkout}
-              currentProgram={currentProgram}
-              completedExercises={completedExercises}
-              totalExercises={totalExercises}
-              progressPercentage={progressPercentage}
+          <div className="space-y-6">
+            <WorkoutTypeToggle 
+              workoutType={workoutType}
+              onWorkoutTypeChange={setWorkoutType}
             />
+            
+            <div className="grid lg:grid-cols-4 gap-6">
+              <WorkoutSummaryCard
+                currentWorkout={currentWorkout}
+                currentProgram={currentProgram}
+                completedExercises={completedExercises}
+                totalExercises={totalExercises}
+                progressPercentage={progressPercentage}
+                workoutType={workoutType}
+              />
 
-            <ExerciseList 
-              exercises={exercises}
-              workoutsLoading={workoutsLoading}
-            />
+              <ExerciseList 
+                exercises={exercises}
+                workoutsLoading={workoutsLoading}
+              />
+            </div>
           </div>
         ) : (
           <ExerciseProgramSelector 
@@ -90,6 +100,7 @@ const Exercise = () => {
           currentProgram={currentProgram}
           selectedDay={selectedDay}
           onDaySelect={setSelectedDay}
+          workoutType={workoutType}
         />
       </div>
     </div>

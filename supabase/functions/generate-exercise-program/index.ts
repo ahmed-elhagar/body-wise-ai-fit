@@ -20,10 +20,10 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    console.log('Generating exercise program for:', { workoutType, preferences });
+    console.log('Generating dual exercise program for:', { workoutType, preferences });
 
     // Enhanced structured prompt for both home and gym programs
-    const prompt = `You are a certified personal trainer creating a personalized ${workoutType.toUpperCase()} exercise program. Generate a comprehensive workout plan with the following specifications:
+    const prompt = `You are a certified personal trainer creating personalized exercise programs. Generate a comprehensive workout plan that includes BOTH home and gym alternatives for each day. 
 
 USER PROFILE:
 - Age: ${userData?.age} years old
@@ -35,41 +35,27 @@ USER PROFILE:
 - Available Time: ${preferences?.availableTime} minutes per session
 - Health Conditions: ${userData?.health_conditions?.join(', ') || 'None'}
 
-WORKOUT TYPE: ${workoutType.toUpperCase()}
-${workoutType === 'home' ? `
-HOME WORKOUT SPECIFICATIONS:
-- Focus on bodyweight exercises and minimal equipment
-- Include resistance bands, dumbbells (if available), and household items
-- Provide alternatives for different fitness levels
-- Consider space limitations
-- Include exercises that can be done in small spaces
-` : `
-GYM WORKOUT SPECIFICATIONS:
-- Utilize full gym equipment (barbells, dumbbells, machines, cables)
-- Include progressive overload principles
-- Focus on compound movements and isolation exercises
-- Provide proper form cues and safety tips
-- Include equipment alternatives if machines are occupied
-`}
-
-REQUIREMENTS:
-- Create a 4-week progressive program
-- Include proper warm-up and cool-down routines
+PROGRAM REQUIREMENTS:
+- Create a 4-week progressive program with 4-5 workout days per week
+- For EACH workout day, provide BOTH home and gym versions
+- Home workouts: bodyweight exercises, minimal equipment, resistance bands
+- Gym workouts: full equipment access, progressive overload, compound movements
+- Include proper warm-up and cool-down routines for both versions
 - Provide YouTube search terms for exercise demonstrations
 - Account for health conditions and limitations
-- Include alternative exercises for accessibility
-- Focus on ${preferences?.goalType} goals
 
 RESPONSE FORMAT - Return ONLY valid JSON in this exact structure:
 {
   "programOverview": {
-    "name": "${workoutType === 'home' ? 'Home' : 'Gym'} Fitness Program",
+    "name": "Dual Environment Fitness Program",
     "duration": "4 weeks",
     "difficulty": "${preferences?.fitnessLevel}",
-    "workoutType": "${workoutType}",
-    "description": "Complete ${workoutType} program description tailored for ${preferences?.goalType}",
+    "description": "Complete fitness program with both home and gym options for maximum flexibility",
     "goals": ["${preferences?.goalType}", "improve_fitness"],
-    "equipment": ${JSON.stringify(preferences?.equipment || [])}
+    "equipment": {
+      "home": ["bodyweight", "resistance_bands", "dumbbells_optional"],
+      "gym": ["full_gym_equipment", "barbells", "machines", "cables"]
+    }
   },
   "weeks": [
     {
@@ -79,31 +65,60 @@ RESPONSE FORMAT - Return ONLY valid JSON in this exact structure:
         {
           "day": 1,
           "dayName": "Monday",
-          "workoutName": "${workoutType === 'home' ? 'Home Upper Body' : 'Gym Upper Body Strength'}",
-          "type": "${workoutType}",
-          "estimatedDuration": ${preferences?.availableTime || 45},
-          "estimatedCalories": ${workoutType === 'gym' ? 350 : 280},
-          "muscleGroups": ["chest", "back", "shoulders", "arms"],
-          "warmUp": [
-            {"name": "Light cardio", "duration": 5, "instructions": "${workoutType === 'home' ? 'March in place or jumping jacks' : 'Treadmill or stationary bike'}"}
-          ],
-          "exercises": [
-            {
-              "name": "${workoutType === 'home' ? 'Push-ups' : 'Bench Press'}",
-              "sets": 3,
-              "reps": "${preferences?.fitnessLevel === 'beginner' ? '8-10' : '10-12'}",
-              "restSeconds": 60,
-              "muscleGroups": ["chest", "triceps", "shoulders"],
-              "instructions": "${workoutType === 'home' ? 'Keep body straight, lower chest to floor' : 'Lower bar to chest, press up explosively'}",
-              "youtubeSearchTerm": "${workoutType === 'home' ? 'proper push up form beginner' : 'bench press proper form'}",
-              "difficulty": "${preferences?.fitnessLevel}",
-              "equipment": "${workoutType === 'home' ? 'none' : 'barbell'}",
-              "alternatives": ${JSON.stringify(workoutType === 'home' ? ["Wall push-ups", "Knee push-ups"] : ["Dumbbell press", "Machine chest press"])}
-            }
-          ],
-          "coolDown": [
-            {"name": "Chest stretch", "duration": 30, "instructions": "Hold for 30 seconds"}
-          ]
+          "homeWorkout": {
+            "workoutName": "Home Upper Body Foundation",
+            "type": "home",
+            "estimatedDuration": ${preferences?.availableTime || 45},
+            "estimatedCalories": 280,
+            "muscleGroups": ["chest", "back", "shoulders", "arms"],
+            "warmUp": [
+              {"name": "Arm circles", "duration": 30, "instructions": "Forward and backward arm circles"}
+            ],
+            "exercises": [
+              {
+                "name": "Push-ups",
+                "sets": 3,
+                "reps": "${preferences?.fitnessLevel === 'beginner' ? '8-10' : '10-12'}",
+                "restSeconds": 60,
+                "muscleGroups": ["chest", "triceps", "shoulders"],
+                "instructions": "Keep body straight, lower chest to floor",
+                "youtubeSearchTerm": "proper push up form beginner",
+                "difficulty": "${preferences?.fitnessLevel}",
+                "equipment": "none",
+                "alternatives": ["Wall push-ups", "Knee push-ups"]
+              }
+            ],
+            "coolDown": [
+              {"name": "Chest stretch", "duration": 30, "instructions": "Hold for 30 seconds"}
+            ]
+          },
+          "gymWorkout": {
+            "workoutName": "Gym Upper Body Strength",
+            "type": "gym",
+            "estimatedDuration": ${preferences?.availableTime || 45},
+            "estimatedCalories": 350,
+            "muscleGroups": ["chest", "back", "shoulders", "arms"],
+            "warmUp": [
+              {"name": "Treadmill warm-up", "duration": 5, "instructions": "Light cardio at moderate pace"}
+            ],
+            "exercises": [
+              {
+                "name": "Bench Press",
+                "sets": 3,
+                "reps": "${preferences?.fitnessLevel === 'beginner' ? '8-10' : '10-12'}",
+                "restSeconds": 90,
+                "muscleGroups": ["chest", "triceps", "shoulders"],
+                "instructions": "Lower bar to chest, press up explosively",
+                "youtubeSearchTerm": "bench press proper form",
+                "difficulty": "${preferences?.fitnessLevel}",
+                "equipment": "barbell",
+                "alternatives": ["Dumbbell press", "Machine chest press"]
+              }
+            ],
+            "coolDown": [
+              {"name": "Chest stretch", "duration": 30, "instructions": "Hold for 30 seconds"}
+            ]
+          }
         }
       ]
     }
@@ -111,18 +126,18 @@ RESPONSE FORMAT - Return ONLY valid JSON in this exact structure:
   "nutritionTips": [
     "Stay hydrated during workouts",
     "Eat protein within 30 minutes post-workout",
-    "${workoutType === 'gym' ? 'Consider pre-workout nutrition for energy' : 'Keep water nearby during home workouts'}"
+    "Adjust nutrition based on workout intensity"
   ],
   "progressTracking": {
     "metrics": ["weight", "reps", "sets", "duration"],
     "schedule": "Track weekly progress",
-    "tips": "${workoutType === 'home' ? 'Take progress photos and measure body measurements' : 'Log weights and track strength gains'}"
+    "tips": "Compare performance between home and gym workouts to optimize your routine"
   }
 }
 
-Create a complete 4-week program with 4-5 workouts per week. Ensure exercises are appropriate for ${workoutType} environment and the user's fitness level.`;
+Create a complete 4-week program with both home and gym options for each workout day. Ensure exercises are appropriate for each environment and the user's fitness level.`;
 
-    console.log('Sending request to OpenAI for exercise program');
+    console.log('Sending request to OpenAI for dual exercise program');
     
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -135,12 +150,12 @@ Create a complete 4-week program with 4-5 workouts per week. Ensure exercises ar
         messages: [
           { 
             role: 'system', 
-            content: `You are a certified personal trainer and exercise physiologist specializing in ${workoutType} workouts. Always respond with valid JSON only. Create safe, effective workouts appropriate for the user's fitness level and ${workoutType} environment. Ensure all JSON is properly formatted.` 
+            content: `You are a certified personal trainer and exercise physiologist. Always respond with valid JSON only. Create safe, effective workouts with both home and gym options for maximum flexibility. Ensure all JSON is properly formatted.` 
           },
           { role: 'user', content: prompt }
         ],
         temperature: 0.3,
-        max_tokens: 4000,
+        max_tokens: 6000,
       }),
     });
 
@@ -151,7 +166,7 @@ Create a complete 4-week program with 4-5 workouts per week. Ensure exercises ar
     }
 
     const data = await response.json();
-    console.log('OpenAI exercise response received');
+    console.log('OpenAI dual exercise response received');
 
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
       throw new Error('Invalid response from OpenAI API');
@@ -163,7 +178,7 @@ Create a complete 4-week program with 4-5 workouts per week. Ensure exercises ar
       // Clean the response to ensure it's valid JSON
       const cleanedContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       generatedProgram = JSON.parse(cleanedContent);
-      console.log('Exercise program parsed successfully');
+      console.log('Dual exercise program parsed successfully');
     } catch (parseError) {
       console.error('Failed to parse OpenAI response:', parseError);
       console.error('Raw content:', data.choices[0].message.content);
@@ -179,7 +194,7 @@ Create a complete 4-week program with 4-5 workouts per week. Ensure exercises ar
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error generating exercise program:', error);
+    console.error('Error generating dual exercise program:', error);
     return new Response(JSON.stringify({ 
       error: error.message || 'Failed to generate exercise program',
       details: error.toString()

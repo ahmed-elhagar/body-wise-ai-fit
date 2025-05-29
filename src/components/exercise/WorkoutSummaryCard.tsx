@@ -11,6 +11,7 @@ interface WorkoutSummaryCardProps {
   completedExercises: number;
   totalExercises: number;
   progressPercentage: number;
+  workoutType: "home" | "gym";
 }
 
 export const WorkoutSummaryCard = ({ 
@@ -18,11 +19,9 @@ export const WorkoutSummaryCard = ({
   currentProgram, 
   completedExercises, 
   totalExercises, 
-  progressPercentage 
+  progressPercentage,
+  workoutType 
 }: WorkoutSummaryCardProps) => {
-  // Determine workout type from program data or workout type
-  const workoutType = currentWorkout?.type || currentProgram?.workout_type || "home";
-
   return (
     <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
       <div className="flex items-center justify-between mb-4">
@@ -33,7 +32,7 @@ export const WorkoutSummaryCard = ({
       <div className="space-y-4">
         <div>
           <h4 className="font-medium text-gray-800">{currentWorkout?.workout_name || 'Rest Day'}</h4>
-          <p className="text-sm text-gray-600">{currentProgram.difficulty_level}</p>
+          <p className="text-sm text-gray-600">{currentProgram?.difficulty_level}</p>
         </div>
         
         <div className="space-y-3">
