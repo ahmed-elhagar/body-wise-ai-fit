@@ -23,7 +23,7 @@ const ProfileSidebar = ({ activeTab, setActiveTab, formData, user, isAdmin }: Pr
   };
 
   return (
-    <Card className="p-6 bg-white/90 backdrop-blur-sm border-0 shadow-lg">
+    <Card className="p-6 bg-white/90 backdrop-blur-sm border-0 shadow-lg w-full">
       {/* Profile Header */}
       <div className="text-center mb-6">
         <div className="w-20 h-20 bg-fitness-gradient rounded-full flex items-center justify-center mx-auto mb-4">
@@ -31,29 +31,31 @@ const ProfileSidebar = ({ activeTab, setActiveTab, formData, user, isAdmin }: Pr
             {formData.first_name ? formData.first_name.charAt(0).toUpperCase() : user?.email?.charAt(0)?.toUpperCase()}
           </span>
         </div>
-        <h3 className="text-lg font-semibold text-gray-800 mb-1">
+        <h3 className="text-lg font-semibold text-gray-800 mb-1 break-words">
           {formData.first_name && formData.last_name 
             ? `${formData.first_name} ${formData.last_name}` 
             : "Your Name"}
         </h3>
-        <p className="text-sm text-gray-600 mb-1">{user?.email}</p>
+        <p className="text-sm text-gray-600 mb-1 break-all">{user?.email}</p>
         {formData.age && (
           <p className="text-sm text-gray-600 mb-4">{formData.age} years old</p>
         )}
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-2 gap-3 text-sm mb-6">
-        <div className="bg-gray-50 p-3 rounded-lg text-center">
-          <p className="text-gray-600 text-xs">Height</p>
-          <p className="font-semibold">{formData.height || "—"} cm</p>
-        </div>
-        <div className="bg-gray-50 p-3 rounded-lg text-center">
-          <p className="text-gray-600 text-xs">Weight</p>
-          <p className="font-semibold">{formData.weight || "—"} kg</p>
+      <div className="grid grid-cols-1 gap-3 text-sm mb-6">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-gray-50 p-3 rounded-lg text-center">
+            <p className="text-gray-600 text-xs">Height</p>
+            <p className="font-semibold">{formData.height || "—"} cm</p>
+          </div>
+          <div className="bg-gray-50 p-3 rounded-lg text-center">
+            <p className="text-gray-600 text-xs">Weight</p>
+            <p className="font-semibold">{formData.weight || "—"} kg</p>
+          </div>
         </div>
         {formData.fitness_goal && (
-          <div className="bg-gray-50 p-3 rounded-lg col-span-2 text-center">
+          <div className="bg-gray-50 p-3 rounded-lg text-center">
             <p className="text-gray-600 text-xs">Goal</p>
             <p className="font-semibold capitalize text-sm">{formData.fitness_goal?.replace('_', ' ')}</p>
           </div>

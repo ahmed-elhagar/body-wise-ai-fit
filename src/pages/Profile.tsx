@@ -99,25 +99,25 @@ const Profile = () => {
   return (
     <ProtectedRoute requireProfile>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-        <div className="container mx-auto px-4 py-4 sm:py-8 max-w-7xl">
+        <div className="w-full max-w-7xl mx-auto px-4 py-6">
           {/* Header */}
-          <div className="mb-6 sm:mb-8">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">Your Profile</h1>
-            <p className="text-sm sm:text-base text-gray-600">Manage your personal information and preferences</p>
+          <div className="mb-6">
+            <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-2">Your Profile</h1>
+            <p className="text-sm lg:text-base text-gray-600">Manage your personal information and preferences</p>
           </div>
 
           {/* Enhanced Profile Promotion Card */}
           {profileCompleteness < 100 && (
-            <Card className="mb-6 sm:mb-8 p-4 sm:p-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:justify-between">
-                <div className="flex items-start gap-3 sm:gap-4 flex-1">
-                  <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 mt-1 sm:mt-0 flex-shrink-0" />
+            <Card className="mb-6 p-4 lg:p-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+              <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4 lg:justify-between">
+                <div className="flex items-start gap-3 lg:gap-4 flex-1">
+                  <Sparkles className="w-6 h-6 lg:w-8 lg:h-8 mt-1 lg:mt-0 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-lg sm:text-xl font-semibold mb-1">Complete Your Enhanced Profile</h3>
-                    <p className="text-blue-100 text-sm sm:text-base">
+                    <h3 className="text-lg lg:text-xl font-semibold mb-1">Complete Your Enhanced Profile</h3>
+                    <p className="text-blue-100 text-sm lg:text-base">
                       Unlock personalized AI recommendations with our comprehensive health assessment
                     </p>
-                    <p className="text-xs sm:text-sm text-blue-200 mt-1">
+                    <p className="text-xs lg:text-sm text-blue-200 mt-1">
                       Profile completion: {profileCompleteness}%
                     </p>
                   </div>
@@ -125,7 +125,7 @@ const Profile = () => {
                 <Button
                   onClick={() => navigate('/enhanced-profile')}
                   variant="secondary"
-                  className="bg-white text-blue-600 hover:bg-blue-50 w-full sm:w-auto flex-shrink-0"
+                  className="bg-white text-blue-600 hover:bg-blue-50 w-full lg:w-auto flex-shrink-0"
                 >
                   Get Started
                   <ArrowRight className="w-4 h-4 ml-2" />
@@ -156,11 +156,11 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* Main Layout - Fixed Grid System */}
-          <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-            {/* Desktop Sidebar - Fixed Width */}
-            <div className="hidden lg:block lg:w-80 lg:flex-shrink-0">
-              <div className="sticky top-4">
+          {/* Main Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Desktop Sidebar */}
+            <div className="hidden lg:block lg:col-span-4 xl:col-span-3">
+              <div className="sticky top-6">
                 <ProfileSidebar
                   activeTab={activeTab}
                   setActiveTab={setActiveTab}
@@ -171,8 +171,8 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* Main Content Area - Flexible Width */}
-            <div className="flex-1 min-w-0 space-y-4 sm:space-y-6">
+            {/* Main Content Area */}
+            <div className="lg:col-span-8 xl:col-span-9 space-y-6">
               {activeTab === "profile" && (
                 <>
                   <BasicInfoCard formData={formData} updateFormData={updateFormData} />
@@ -185,7 +185,7 @@ const Profile = () => {
                     <Button 
                       onClick={handleSave}
                       disabled={isUpdating}
-                      className="bg-fitness-gradient w-full sm:w-auto"
+                      className="bg-fitness-gradient w-full lg:w-auto"
                     >
                       {isUpdating ? (
                         <>
