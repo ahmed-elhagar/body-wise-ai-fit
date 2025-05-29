@@ -26,27 +26,59 @@ serve(async (req) => {
       );
     }
 
-    // Simulate snack generation logic here
+    // Enhanced snack generation logic based on user profile
+    const isArabic = language === 'ar';
+    
+    // Create culturally appropriate snacks
+    const arabicSnacks = [
+      { name: 'لوز محمص', nameEn: 'Roasted Almonds' },
+      { name: 'تمر وجوز', nameEn: 'Dates and Walnuts' },
+      { name: 'حمص مشوي', nameEn: 'Roasted Chickpeas' },
+      { name: 'زبادي بالعسل', nameEn: 'Honey Yogurt' },
+      { name: 'فاكهة مشكلة', nameEn: 'Mixed Fruits' }
+    ];
+
+    const englishSnacks = [
+      { name: 'Greek Yogurt with Berries', nameAr: 'زبادي يوناني بالتوت' },
+      { name: 'Mixed Nuts', nameAr: 'مكسرات مشكلة' },
+      { name: 'Apple with Peanut Butter', nameAr: 'تفاح بزبدة الفول السوداني' },
+      { name: 'Protein Smoothie', nameAr: 'عصير البروتين' },
+      { name: 'Cottage Cheese Bowl', nameAr: 'وعاء الجبن القريش' }
+    ];
+
+    const snackOptions = isArabic ? arabicSnacks : englishSnacks;
+    const selectedSnack = snackOptions[Math.floor(Math.random() * snackOptions.length)];
+
+    // Calculate nutritional values based on calories
+    const targetCalories = Math.min(calories, 300);
+    const protein = Math.round((targetCalories * 0.25) / 4); // 25% from protein
+    const carbs = Math.round((targetCalories * 0.45) / 4); // 45% from carbs  
+    const fat = Math.round((targetCalories * 0.30) / 9); // 30% from fat
+
     const snack = {
       id: `snack_${Date.now()}`,
-      name: language === 'ar' ? 'لوز محمص' : 'Roasted Almonds',
-      calories: Math.min(calories, 200),
-      protein: 6,
-      carbs: 6,
-      fat: 14,
+      name: selectedSnack.name,
+      calories: targetCalories,
+      protein: protein,
+      carbs: carbs,
+      fat: fat,
       prep_time: 5,
       meal_type: 'snack',
       day: day,
-      image_url: '/api/placeholder/300/200'
+      image_url: '/api/placeholder/300/200',
+      ingredients: isArabic ? ['مكونات طبيعية'] : ['Natural ingredients'],
+      instructions: isArabic ? ['تحضير سريع وسهل'] : ['Quick and easy preparation']
     };
 
     console.log('Generated snack:', snack);
+
+    const successMessage = isArabic ? 'تم إضافة الوجبة الخفيفة بنجاح!' : 'Snack added successfully!';
 
     return new Response(
       JSON.stringify({ 
         success: true,
         snack: snack,
-        message: language === 'ar' ? 'تم إضافة الوجبة الخفيفة بنجاح!' : 'Snack added successfully!'
+        message: successMessage
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

@@ -26,6 +26,13 @@ export const mealPlan = {
   recipe: "وصفة",
   exchange: "تبديل",
   generationFailed: "فشل في التوليد. يرجى المحاولة مرة أخرى.",
+  loadingMealPlan: "جاري تحميل خطة الوجبات...",
+  shufflingMeals: "جاري إعادة ترتيب الوجبات...",
+  shufflingMealsDesc: "نحن نعيد ترتيب خطة وجباتك بخيارات جديدة",
+  generatingMealPlan: "جاري توليد خطة الوجبات...",
+  generatingMealPlanDesc: "نحن ننشئ خطة وجباتك الشخصية",
+  pleaseWaitShuffle: "يرجى الانتظار بينما نعيد ترتيب وجباتك...",
+  pleaseWaitGenerate: "يرجى الانتظار بينما ننشئ خطة وجباتك...",
   
   // Week navigation
   thisWeek: "هذا الأسبوع",

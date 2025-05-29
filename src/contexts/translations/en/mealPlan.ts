@@ -20,6 +20,13 @@ export const mealPlan = {
   exchange: "Exchange",
   shoppingList: "Shopping List",
   todaysSummary: "Today's Summary",
+  loadingMealPlan: "Loading meal plan...",
+  shufflingMeals: "Shuffling meals...",
+  shufflingMealsDesc: "We're rearranging your meal plan with new options",
+  generatingMealPlan: "Generating meal plan...",
+  generatingMealPlanDesc: "We're creating your personalized meal plan",
+  pleaseWaitShuffle: "Please wait while we shuffle your meals...",
+  pleaseWaitGenerate: "Please wait while we generate your meal plan...",
   
   // Week navigation
   thisWeek: "This Week",

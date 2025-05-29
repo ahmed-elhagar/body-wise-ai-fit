@@ -33,7 +33,7 @@ const AddSnackDialog = ({
 }: AddSnackDialogProps) => {
   const { user } = useAuth();
   const { profile } = useProfile();
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL, language } = useLanguage();
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationStep, setGenerationStep] = useState('');
 
@@ -82,6 +82,7 @@ const AddSnackDialog = ({
     originalTarget: targetDayCalories,
     dynamicTarget: dynamicTargetCalories,
     remainingCalories,
+    language,
     profileData: {
       weight: profile?.weight,
       height: profile?.height,
@@ -94,12 +95,12 @@ const AddSnackDialog = ({
 
   const handleGenerateAISnack = async () => {
     if (!user || !weeklyPlanId) {
-      toast.error(t('addSnack.error'));
+      toast.error(t('mealPlan.addSnack.error'));
       return;
     }
 
     if (remainingCalories < 50) {
-      toast.error(t('addSnack.notEnoughCalories'));
+      toast.error(t('mealPlan.addSnack.notEnoughCalories'));
       return;
     }
 
@@ -109,11 +110,12 @@ const AddSnackDialog = ({
       setGenerationStep('analyzing');
       console.log('🍎 Generating AI snack with enhanced params:', {
         userProfile: profile,
-        dayNumber: selectedDay,
-        remainingCalories,
+        day: selectedDay,
+        calories: remainingCalories,
         weeklyPlanId,
         currentDayCalories,
-        targetCalories: dynamicTargetCalories
+        targetCalories: dynamicTargetCalories,
+        language
       });
 
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -122,17 +124,18 @@ const AddSnackDialog = ({
       const { data, error } = await supabase.functions.invoke('generate-ai-snack', {
         body: {
           userProfile: profile,
-          dayNumber: selectedDay,
-          remainingCalories,
+          day: selectedDay,
+          calories: remainingCalories,
           weeklyPlanId,
           currentDayCalories,
-          targetCalories: dynamicTargetCalories
+          targetCalories: dynamicTargetCalories,
+          language
         }
       });
 
       if (error) {
         console.error('❌ Error generating AI snack:', error);
-        toast.error(t('addSnack.error'));
+        toast.error(t('mealPlan.addSnack.error'));
         return;
       }
 
@@ -140,13 +143,13 @@ const AddSnackDialog = ({
       await new Promise(resolve => setTimeout(resolve, 500));
 
       console.log('✅ AI snack generated successfully:', data);
-      toast.success(t('addSnack.success'));
+      toast.success(t('mealPlan.addSnack.success'));
       onSnackAdded();
       onClose();
       
     } catch (error) {
       console.error('❌ Error generating AI snack:', error);
-      toast.error(t('addSnack.error'));
+      toast.error(t('mealPlan.addSnack.error'));
     } finally {
       setIsGenerating(false);
       setGenerationStep('');

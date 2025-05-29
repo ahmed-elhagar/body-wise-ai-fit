@@ -24,13 +24,13 @@ const DayMealCard = ({ dayName, dayNumber, dayMeals, onShowRecipe, onExchangeMea
     <Card className="p-6 bg-white/90 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 group">
       {/* Day Header */}
       <div className={`flex items-center justify-between mb-6 ${isRTL ? 'flex-row-reverse' : ''}`}>
-        <h4 className="text-lg font-bold text-gray-800 group-hover:text-fitness-primary transition-colors">
+        <h4 className="text-lg font-bold text-gray-800 group-hover:text-blue-600 transition-colors">
           {dayName}
         </h4>
         <div className={`flex flex-col gap-1 ${isRTL ? 'items-start' : 'items-end'}`}>
           <Badge 
-            variant="outline" 
-            className="bg-fitness-primary/10 text-fitness-primary border-fitness-primary/20 font-semibold hover:bg-fitness-primary/20 transition-colors"
+            variant="fitness" 
+            className="font-semibold hover:scale-105 transition-transform"
           >
             {dayCalories} {t('mealPlan.cal')}
           </Badge>
