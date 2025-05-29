@@ -1,34 +1,43 @@
 
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { Trophy, Target } from "lucide-react";
 
 interface TargetReachedStateProps {
   onClose: () => void;
 }
 
 const TargetReachedState = ({ onClose }: TargetReachedStateProps) => {
-  const { t } = useLanguage();
+  const { t, isRTL } = useLanguage();
 
   return (
-    <div className="text-center py-8">
-      <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-        <CheckCircle className="w-10 h-10 text-green-600" />
+    <Card className="p-6 bg-gradient-to-br from-yellow-50 to-orange-100 border-yellow-200 text-center">
+      <div className="w-16 h-16 mx-auto mb-4 bg-yellow-500 rounded-full flex items-center justify-center">
+        <Trophy className="w-8 h-8 text-white" />
       </div>
-      <h3 className="text-xl font-semibold text-gray-800 mb-3">
-        {t('addSnack.targetReached')}
-      </h3>
-      <p className="text-gray-600 mb-6 leading-relaxed">
-        {t('addSnack.targetReachedDesc')}
-      </p>
-      <Button 
-        variant="outline" 
-        onClick={onClose} 
-        className="w-full py-3 text-base font-medium"
+      
+      <div className="space-y-3">
+        <h3 className="text-lg font-bold text-yellow-800">
+          {t('mealPlan.addSnack.targetReached')}
+        </h3>
+        <p className="text-sm text-yellow-700">
+          {t('mealPlan.addSnack.targetReachedDesc')}
+        </p>
+        
+        <div className={`flex items-center justify-center gap-2 text-sm text-yellow-600 ${isRTL ? 'flex-row-reverse' : ''}`}>
+          <Target className="w-4 h-4" />
+          <span>{t('mealPlan.addSnack.notEnoughCalories')}</span>
+        </div>
+      </div>
+
+      <Button
+        onClick={onClose}
+        className="mt-4 bg-yellow-600 hover:bg-yellow-700 text-white"
       >
-        {t('addSnack.understood')}
+        {t('mealPlan.addSnack.cancel')}
       </Button>
-    </div>
+    </Card>
   );
 };
 

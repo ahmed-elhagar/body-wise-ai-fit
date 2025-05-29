@@ -1,7 +1,7 @@
 
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Sparkles } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { Sparkles } from "lucide-react";
 
 interface AddSnackHeaderProps {
   selectedDay: number;
@@ -10,22 +10,26 @@ interface AddSnackHeaderProps {
 const AddSnackHeader = ({ selectedDay }: AddSnackHeaderProps) => {
   const { t, isRTL } = useLanguage();
 
-  const dayNames = [
-    t('day.saturday'), t('day.sunday'), t('day.monday'), 
-    t('day.tuesday'), t('day.wednesday'), t('day.thursday'), t('day.friday')
-  ];
+  const getDayName = (dayNumber: number) => {
+    const days = ['saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+    return t(days[dayNumber - 1]);
+  };
 
   return (
-    <DialogHeader>
-      <DialogTitle className={`flex items-center gap-3 text-xl ${isRTL ? 'flex-row-reverse' : ''}`}>
-        <div className="w-10 h-10 bg-fitness-gradient rounded-full flex items-center justify-center shadow-lg">
-          <Sparkles className="w-5 h-5 text-white" />
+    <DialogHeader className={isRTL ? 'text-right' : 'text-left'}>
+      <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+        <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
+          <Sparkles className="w-6 h-6 text-white" />
         </div>
         <div>
-          <div className="font-bold text-gray-800">{t('addSnack.title')}</div>
-          <div className="text-sm font-normal text-gray-600">{dayNames[selectedDay - 1]}</div>
+          <DialogTitle className="text-xl font-bold text-gray-800">
+            {t('mealPlan.addSnack.title')}
+          </DialogTitle>
+          <p className="text-sm text-gray-600 mt-1">
+            {getDayName(selectedDay)} - {t('mealPlan.addSnack.description')}
+          </p>
         </div>
-      </DialogTitle>
+      </div>
     </DialogHeader>
   );
 };

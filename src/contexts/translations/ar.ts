@@ -10,5 +10,20 @@ export const arTranslations = {
   ...navigationTranslations,
   ...dashboardTranslations,
   ...exerciseTranslations,
-  ...mealPlan,
+  mealPlan: mealPlan,
+  
+  // Days of week
+  saturday: "السبت",
+  sunday: "الأحد", 
+  monday: "الإثنين",
+  tuesday: "الثلاثاء",
+  wednesday: "الأربعاء",
+  thursday: "الخميس",
+  friday: "الجمعة",
+  
+  // Diet types
+  balanced: "متوازن",
+  vegetarian: "نباتي",
+  keto: "كيتو",
+  highProtein: "عالي البروتين",
 };

@@ -49,6 +49,21 @@ export const mealPlan = {
   dinner: "عشاء",
   snack: "وجبة خفيفة",
   
+  // Days of week
+  saturday: "السبت",
+  sunday: "الأحد",
+  monday: "الإثنين",
+  tuesday: "الثلاثاء",
+  wednesday: "الأربعاء",
+  thursday: "الخميس",
+  friday: "الجمعة",
+  
+  // Diet types
+  balanced: "متوازن",
+  vegetarian: "نباتي",
+  keto: "كيتو",
+  highProtein: "عالي البروتين",
+  
   mealType: {
     breakfast: "فطور",
     lunch: "غداء", 
@@ -125,7 +140,12 @@ export const mealPlan = {
     error: "فشل في توليد الوجبة الخفيفة",
     notEnoughCalories: "لا توجد سعرات كافية متبقية للوجبة الخفيفة",
     targetReached: "تم الوصول لهدف السعرات اليومي!",
-    targetReachedDesc: "لقد وصلت لهدف السعرات اليومي. عمل رائع!"
+    targetReachedDesc: "لقد وصلت لهدف السعرات اليومي. عمل رائع!",
+    smartSnack: "وجبة خفيفة ذكية",
+    personalizedForYou: "مخصصة لك",
+    remainingCalories: "السعرات المتبقية",
+    perfectFit: "تناسب مثالي",
+    healthyChoice: "خيار صحي"
   },
   mealExchange: {
     title: "تبديل الوجبة",

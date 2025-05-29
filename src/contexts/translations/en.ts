@@ -10,5 +10,20 @@ export const enTranslations = {
   ...navigationTranslations,
   ...dashboardTranslations,
   ...exerciseTranslations,
-  ...mealPlan,
+  mealPlan: mealPlan,
+  
+  // Days of week
+  saturday: "Saturday",
+  sunday: "Sunday",
+  monday: "Monday", 
+  tuesday: "Tuesday",
+  wednesday: "Wednesday",
+  thursday: "Thursday",
+  friday: "Friday",
+  
+  // Diet types
+  balanced: "Balanced",
+  vegetarian: "Vegetarian",
+  keto: "Keto",
+  highProtein: "High Protein",
 };

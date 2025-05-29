@@ -45,6 +45,21 @@ export const mealPlan = {
   dinner: "Dinner",
   snack: "Snack",
   
+  // Days of week
+  saturday: "Saturday",
+  sunday: "Sunday",
+  monday: "Monday",
+  tuesday: "Tuesday",
+  wednesday: "Wednesday",
+  thursday: "Thursday",
+  friday: "Friday",
+  
+  // Diet types
+  balanced: "Balanced",
+  vegetarian: "Vegetarian",
+  keto: "Keto",
+  highProtein: "High Protein",
+  
   mealType: {
     breakfast: "Breakfast",
     lunch: "Lunch",
@@ -105,7 +120,12 @@ export const mealPlan = {
     error: "Failed to generate snack",
     notEnoughCalories: "Not enough calories remaining for a snack",
     targetReached: "Daily calorie target reached!",
-    targetReachedDesc: "You've reached your daily calorie goal. Great job!"
+    targetReachedDesc: "You've reached your daily calorie goal. Great job!",
+    smartSnack: "Smart Snack",
+    personalizedForYou: "Personalized for you",
+    remainingCalories: "Remaining calories",
+    perfectFit: "Perfect fit",
+    healthyChoice: "Healthy choice"
   },
   mealExchange: {
     title: "Exchange Meal",
