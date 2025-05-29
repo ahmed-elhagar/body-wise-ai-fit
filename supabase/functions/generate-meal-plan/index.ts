@@ -56,7 +56,7 @@ serve(async (req) => {
         messages: [
           { 
             role: 'system', 
-            content: `You are a professional nutritionist specializing in ${userProfile?.nationality || 'international'} cuisine. Generate EXACTLY 7 days starting from SATURDAY with EXACTLY 5 meals each (35 total meals). Return ONLY valid JSON with no markdown formatting. Focus on authentic cultural dishes with detailed instructions and nutritional information.` 
+            content: `You are a professional nutritionist specializing in ${userProfile?.nationality || 'international'} cuisine. Generate EXACTLY 7 days starting from SATURDAY with EXACTLY 5 meals each (35 total meals). Return ONLY valid JSON with no markdown formatting. Focus on authentic cultural dishes with detailed instructions, realistic YouTube search terms, and descriptive image prompts. Each meal must have proper nutritional information and cooking details.` 
           },
           { role: 'user', content: prompt }
         ],
@@ -120,7 +120,8 @@ serve(async (req) => {
     const weeklyPlan = await saveWeeklyPlan(userProfile, generatedPlan, preferences, dailyCalories);
     console.log('Weekly plan saved with ID:', weeklyPlan.id);
 
-    // Save all meals with images
+    // Save all meals with images (this will take time but runs in background)
+    console.log('Starting meal saving process...');
     const { totalMealsSaved } = await saveMealsToDatabase(generatedPlan, weeklyPlan.id);
 
     console.log(`✅ AI generations remaining: ${remainingGenerations}`);
@@ -128,8 +129,11 @@ serve(async (req) => {
     console.log(`✅ SUCCESS: Generated ${generatedPlan.days.length} days with ${totalMealsSaved} meals`);
     
     return new Response(JSON.stringify({ 
-      generatedPlan,
-      generationsRemaining: remainingGenerations
+      success: true,
+      weeklyPlanId: weeklyPlan.id,
+      totalMeals: totalMealsSaved,
+      generationsRemaining: remainingGenerations,
+      message: 'Meal plan generated successfully with images and YouTube links'
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
@@ -137,6 +141,7 @@ serve(async (req) => {
     console.error('=== MEAL PLAN GENERATION FAILED ===');
     console.error('Error details:', error);
     return new Response(JSON.stringify({ 
+      success: false,
       error: error.message || 'Failed to generate meal plan',
       details: error.toString()
     }), {

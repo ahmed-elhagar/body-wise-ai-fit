@@ -20,6 +20,7 @@ interface AIGeneratedPlan {
       fiber?: number;
       sugar?: number;
       description?: string;
+      imagePrompt?: string;
       ingredients: Array<{
         name: string;
         quantity: string;
@@ -54,9 +55,9 @@ export const saveMealsToDatabase = async (generatedPlan: AIGeneratedPlan, weekly
     
     for (const meal of day.meals) {
       try {
-        // Generate AI image for the meal
-        const ingredientNames = meal.ingredients?.map(ing => ing.name) || [];
-        const imageUrl = await getMealImageUrl(meal.name, ingredientNames.slice(0, 3));
+        // Generate AI image for the meal using the enhanced prompt
+        const imagePrompt = meal.imagePrompt || `Professional food photography of ${meal.name}, beautifully plated on a white plate, natural lighting, overhead view, appetizing presentation`;
+        const imageUrl = await getMealImageUrl(meal.name, imagePrompt);
         
         // Prepare meal data for database insertion
         const mealData = {
@@ -73,7 +74,7 @@ export const saveMealsToDatabase = async (generatedPlan: AIGeneratedPlan, weekly
           prep_time: meal.prepTime || 0,
           cook_time: meal.cookTime || 0,
           servings: meal.servings || 1,
-          youtube_search_term: meal.youtubeSearchTerm || `${meal.name} recipe`,
+          youtube_search_term: meal.youtubeSearchTerm || `${meal.name} recipe how to make`,
           image_url: imageUrl,
           alternatives: []
         };

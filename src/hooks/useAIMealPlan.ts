@@ -39,6 +39,11 @@ export const useAIMealPlan = () => {
       });
       console.log('Preferences:', preferences);
 
+      // Show immediate feedback
+      toast.loading('Generating your personalized 7-day meal plan...', {
+        duration: 60000, // 1 minute timeout
+      });
+
       const { data, error } = await supabase.functions.invoke('generate-meal-plan', {
         body: {
           userProfile: {
@@ -64,25 +69,35 @@ export const useAIMealPlan = () => {
         }
       });
 
+      // Dismiss loading toast
+      toast.dismiss();
+
       if (error) {
         console.error('❌ Supabase function error:', error);
         throw error;
       }
 
-      console.log('✅ Meal plan generated successfully!');
-      
-      // Show success message with generation count if available
-      if (data?.generationsRemaining !== undefined) {
-        toast.success(`Meal plan generated! ${data.generationsRemaining} AI generations remaining.`);
+      if (data?.success) {
+        console.log('✅ Meal plan generated successfully!');
+        
+        // Show success message with details
+        toast.success(
+          `🎉 Your 7-day meal plan is ready! Generated ${data.totalMeals} meals with images and cooking videos. ${data.generationsRemaining} AI generations remaining.`,
+          { duration: 5000 }
+        );
+        
+        // Force reload the meal plan data
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+        
       } else {
-        toast.success('Your personalized meal plan has been generated!');
+        throw new Error(data?.error || 'Failed to generate meal plan');
       }
-      
-      // Force reload the meal plan data
-      window.location.reload();
       
     } catch (error: any) {
       console.error('❌ Error generating meal plan:', error);
+      toast.dismiss(); // Dismiss any loading toasts
       
       // Handle specific error cases
       if (error.message?.includes('generations')) {

@@ -48,6 +48,8 @@ CRITICAL REQUIREMENTS:
 6. Include detailed ingredients with measurements
 7. Provide comprehensive cooking instructions
 8. Consider allergies and dietary restrictions
+9. Include realistic YouTube search terms for each meal
+10. Provide detailed descriptions for AI image generation
 
 MEAL DISTRIBUTION:
 - Breakfast: ${Math.round(dailyCalories * 0.25)} calories
@@ -83,6 +85,7 @@ Return this EXACT JSON structure:
           "fiber": 8,
           "sugar": 12,
           "description": "Nutritious ${nationality} breakfast to start your day",
+          "imagePrompt": "Professional food photography of [meal name], beautifully plated, natural lighting, appetizing presentation",
           "ingredients": [
             {
               "name": "main ingredient",
@@ -102,7 +105,7 @@ Return this EXACT JSON structure:
           "prepTime": 10,
           "cookTime": 15,
           "servings": 1,
-          "youtubeSearchTerm": "${nationality} breakfast recipe",
+          "youtubeSearchTerm": "${nationality} breakfast recipe how to make",
           "cuisine": "${nationality}",
           "difficulty": "easy",
           "tips": "Chef tips for best results",
@@ -114,5 +117,5 @@ Return this EXACT JSON structure:
   ]
 }
 
-Generate all 7 days following this pattern. Each day must have exactly 5 meals with the specified types. Focus on authentic ${nationality} cuisine while meeting nutritional requirements and avoiding allergens.`;
+Generate all 7 days following this pattern. Each day must have exactly 5 meals with the specified types. Focus on authentic ${nationality} cuisine while meeting nutritional requirements and avoiding allergens. Make sure YouTube search terms are specific and likely to return actual cooking videos.`;
 };
