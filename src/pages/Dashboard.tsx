@@ -18,23 +18,27 @@ const Dashboard = () => {
   // Show loading screen only if AI content is being generated for first time users
   if (isGeneratingContent && hasExistingContent === false) {
     return (
-      <div className={`min-h-screen bg-gray-50 flex ${isRTL ? 'rtl' : 'ltr'}`}>
+      <div className={`min-h-screen bg-gradient-to-br from-fitness-soft-blue via-white to-fitness-soft-purple flex ${isRTL ? 'rtl' : 'ltr'}`}>
         <Navigation />
-        <div className={`flex-1 ${isRTL ? 'mr-0 md:mr-64' : 'ml-0 md:ml-64'} flex items-center justify-center p-4`}>
-          <div className="text-center max-w-sm sm:max-w-md px-4">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-              <Loader2 className="w-8 h-8 sm:w-10 sm:h-10 text-white animate-spin" />
+        <div className={`flex-1 ${isRTL ? 'mr-0 md:mr-72' : 'ml-0 md:ml-72'} flex items-center justify-center p-4`}>
+          <div className="text-center max-w-md px-6 py-8 bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20">
+            <div className="w-20 h-20 bg-fitness-gradient rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl animate-pulse-glow">
+              <Loader2 className="w-10 h-10 text-white animate-spin" />
             </div>
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 mb-4">{t('dashboard.generatingContent')}</h2>
-            <p className="text-gray-600 mb-6 text-sm sm:text-base leading-relaxed">
+            <h2 className="text-2xl md:text-3xl font-bold bg-fitness-gradient bg-clip-text text-transparent mb-4">
+              {t('dashboard.generatingContent')}
+            </h2>
+            <p className="text-gray-600 mb-8 text-base leading-relaxed">
               {t('dashboard.generatingDescription')}
             </p>
             {generationStatus && (
-              <p className="text-sm text-blue-600 font-medium bg-blue-50 px-4 py-2 rounded-full">
-                {generationStatus}
-              </p>
+              <div className="bg-fitness-soft-blue border border-blue-200 px-6 py-3 rounded-2xl">
+                <p className="text-sm text-blue-700 font-medium">
+                  {generationStatus}
+                </p>
+              </div>
             )}
-            <div className="mt-8 text-xs text-gray-500">
+            <div className="mt-8 text-xs text-gray-500 font-medium">
               {t('dashboard.pleaseWait')}
             </div>
           </div>
@@ -44,34 +48,34 @@ const Dashboard = () => {
   }
 
   return (
-    <div className={`min-h-screen bg-gray-50 flex ${isRTL ? 'rtl' : 'ltr'}`}>
+    <div className={`min-h-screen bg-gradient-to-br from-fitness-soft-blue via-white to-fitness-soft-purple flex ${isRTL ? 'rtl' : 'ltr'}`}>
       <Navigation />
-      <div className={`flex-1 ${isRTL ? 'mr-0 md:mr-64' : 'ml-0 md:ml-64'} transition-all duration-300`}>
-        <div className="container mx-auto px-3 py-4 max-w-7xl">
-          {/* Header Section */}
-          <div className="mb-4">
+      <div className={`flex-1 ${isRTL ? 'mr-0 md:mr-72' : 'ml-0 md:ml-72'} transition-all duration-300`}>
+        <div className="container mx-auto px-4 py-6 max-w-7xl">
+          {/* Enhanced Header Section */}
+          <div className="mb-8">
             <DashboardHeader />
           </div>
 
-          {/* Stats Grid */}
-          <div className="mb-4">
+          {/* Enhanced Stats Grid */}
+          <div className="mb-8">
             <StatsGrid />
           </div>
 
-          {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* Left Column - Quick Actions */}
-            <div className="lg:col-span-1 order-1">
+          {/* Enhanced Main Content Grid with better proportions */}
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+            {/* Quick Actions - More prominent */}
+            <div className="xl:col-span-4 order-1">
               <QuickActionsGrid />
             </div>
 
-            {/* Right Column - Activity Feed */}
-            <div className="lg:col-span-2 order-2">
+            {/* Activity Feed - Takes more space */}
+            <div className="xl:col-span-8 order-2">
               <ActivityFeed />
             </div>
 
-            {/* Bottom - Progress Overview (Full width) */}
-            <div className="lg:col-span-3 order-3">
+            {/* Progress Overview - Full width at bottom */}
+            <div className="xl:col-span-12 order-3">
               <ProgressOverview />
             </div>
           </div>

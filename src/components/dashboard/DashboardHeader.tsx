@@ -2,7 +2,7 @@
 import { useProfile } from "@/hooks/useProfile";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Calendar } from "lucide-react";
+import { Sparkles, Calendar, TrendingUp } from "lucide-react";
 
 const DashboardHeader = () => {
   const { profile } = useProfile();
@@ -19,42 +19,64 @@ const DashboardHeader = () => {
 
   return (
     <div className="relative overflow-hidden">
-      {/* Background gradient - more subtle */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-purple-50/30 to-pink-50/50 rounded-xl"></div>
+      {/* Enhanced background with subtle animations */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white via-fitness-soft-blue to-fitness-soft-purple rounded-3xl opacity-60"></div>
+      <div className="absolute inset-0 bg-card-gradient rounded-3xl backdrop-blur-sm"></div>
+      
+      {/* Floating decoration */}
+      <div className="absolute top-4 right-6 w-24 h-24 bg-fitness-gradient rounded-full opacity-10 animate-float"></div>
+      <div className="absolute bottom-4 left-6 w-16 h-16 bg-fitness-secondary rounded-full opacity-10 animate-float" style={{ animationDelay: '1s' }}></div>
       
       {/* Content */}
-      <div className={`relative p-4 ${isRTL ? 'text-right' : 'text-left'}`}>
-        <div className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${isRTL ? 'sm:flex-row-reverse' : ''}`}>
-          <div className="flex-1">
-            {/* Date */}
-            <div className={`flex items-center gap-2 mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <Calendar className="w-3.5 h-3.5 text-gray-500" />
-              <span className="text-xs text-gray-600">{getCurrentDate()}</span>
+      <div className={`relative p-6 ${isRTL ? 'text-right' : 'text-left'}`}>
+        <div className={`flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 ${isRTL ? 'lg:flex-row-reverse' : ''}`}>
+          <div className="flex-1 space-y-4">
+            {/* Date with enhanced styling */}
+            <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <div className="w-8 h-8 bg-fitness-gradient rounded-xl flex items-center justify-center">
+                <Calendar className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-sm text-gray-600 font-medium bg-white/50 px-3 py-1 rounded-full">
+                {getCurrentDate()}
+              </span>
             </div>
             
-            {/* Welcome message */}
-            <div className="mb-3">
-              <h1 className="text-lg sm:text-xl font-semibold text-gray-800 mb-1">
-                {t('dashboard.welcome')}, {profile?.first_name || 'User'}! 👋
-              </h1>
-              <p className="text-gray-600 text-sm max-w-md">
+            {/* Enhanced welcome message */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <h1 className="text-2xl lg:text-3xl font-bold bg-fitness-gradient bg-clip-text text-transparent">
+                  {t('dashboard.welcome')}, {profile?.first_name || 'User'}!
+                </h1>
+                <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center animate-bounce">
+                  <span className="text-lg">👋</span>
+                </div>
+              </div>
+              <p className="text-gray-600 text-base max-w-2xl leading-relaxed">
                 {t('dashboard.trackProgress')}
               </p>
             </div>
 
-            {/* AI generations remaining */}
+            {/* Enhanced AI generations badge */}
             {profile?.ai_generations_remaining !== undefined && (
-              <Badge className="bg-blue-500 text-white border-0 px-2 py-1 text-xs">
-                <Sparkles className={`w-3 h-3 ${isRTL ? 'ml-1' : 'mr-1'}`} />
-                {t('dashboard.aiGenerationsRemaining')}: {profile.ai_generations_remaining}/5
-              </Badge>
+              <div className="inline-flex items-center gap-2 bg-fitness-gradient px-4 py-2 rounded-2xl shadow-lg">
+                <Sparkles className="w-4 h-4 text-white animate-pulse" />
+                <span className="text-white font-medium text-sm">
+                  {t('dashboard.aiGenerationsRemaining')}: {profile.ai_generations_remaining}/5
+                </span>
+              </div>
             )}
           </div>
 
-          {/* Profile avatar section - smaller */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-sm">
-              <span className="text-lg">🏆</span>
+          {/* Enhanced profile section */}
+          <div className="flex items-center gap-4">
+            <div className="hidden lg:flex flex-col items-center gap-2">
+              <div className="w-16 h-16 bg-fitness-gradient rounded-2xl flex items-center justify-center shadow-xl transform hover:scale-105 transition-transform">
+                <TrendingUp className="w-8 h-8 text-white" />
+              </div>
+              <span className="text-xs text-gray-600 font-medium">Progress</span>
+            </div>
+            <div className="w-14 h-14 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-xl transform hover:rotate-6 transition-transform">
+              <span className="text-2xl">🏆</span>
             </div>
           </div>
         </div>

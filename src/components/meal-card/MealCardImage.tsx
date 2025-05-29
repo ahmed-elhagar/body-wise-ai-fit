@@ -1,109 +1,85 @@
 
-import { Badge } from "@/components/ui/badge";
-import { ImageIcon } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
 import { useState } from "react";
+import { ImageIcon, ChefHat } from "lucide-react";
 
 interface MealCardImageProps {
-  meal: {
-    name: string;
-    type: string;
-    time: string;
-    ingredients: any[];
-  };
-  mealImage: string | null;
-  isLoadingImage: boolean;
-  onGenerateImage: () => void;
+  imageUrl?: string;
+  mealName: string;
+  mealType: string;
 }
 
-const MealCardImage = ({ meal, mealImage, isLoadingImage, onGenerateImage }: MealCardImageProps) => {
-  const { t } = useLanguage();
+const MealCardImage = ({ imageUrl, mealName, mealType }: MealCardImageProps) => {
+  const [imageError, setImageError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const getMealTypeIcon = (type: string) => {
-    if (meal.name.includes('🍎') || type === 'snack') return '🍎';
+  const getMealTypeGradient = (type: string) => {
     switch (type.toLowerCase()) {
-      case 'breakfast': return '🌅';
-      case 'lunch': return '🌞';
-      case 'dinner': return '🌙';
-      case 'snack': return '🍎';
-      default: return '🍽️';
+      case 'breakfast':
+        return 'from-orange-400 to-amber-500';
+      case 'lunch':
+        return 'from-green-400 to-emerald-500';
+      case 'dinner':
+        return 'from-purple-400 to-indigo-500';
+      case 'snack':
+        return 'from-pink-400 to-rose-500';
+      default:
+        return 'from-blue-400 to-cyan-500';
     }
   };
 
-  const getMealTypeColor = (type: string) => {
-    if (meal.name.includes('🍎') || type === 'snack') return 'bg-green-100 text-green-800';
-    switch (type.toLowerCase()) {
-      case 'breakfast': return 'bg-orange-100 text-orange-800';
-      case 'lunch': return 'bg-blue-100 text-blue-800';
-      case 'dinner': return 'bg-purple-100 text-purple-800';
-      case 'snack': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
+  if (!imageUrl || imageError) {
+    return (
+      <div className={`w-full h-40 sm:h-48 bg-gradient-to-br ${getMealTypeGradient(mealType)} rounded-2xl flex items-center justify-center relative overflow-hidden group`}>
+        {/* Animated background pattern */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-4 left-4 w-8 h-8 bg-white rounded-full opacity-50 animate-float"></div>
+          <div className="absolute bottom-6 right-6 w-6 h-6 bg-white rounded-full opacity-30 animate-float" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute top-1/2 right-8 w-4 h-4 bg-white rounded-full opacity-40 animate-float" style={{ animationDelay: '2s' }}></div>
+        </div>
+        
+        <div className="text-center z-10">
+          <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-3 backdrop-blur-sm transform group-hover:scale-110 transition-transform">
+            <ChefHat className="w-8 h-8 text-white" />
+          </div>
+          <p className="text-white font-semibold text-sm px-4 line-clamp-2 leading-tight">
+            {mealName}
+          </p>
+        </div>
 
-  const getMealTypeText = (type: string) => {
-    if (meal.name.includes('🍎') || type === 'snack') return t('mealPlan.snack');
-    switch (type.toLowerCase()) {
-      case 'breakfast': return t('mealPlan.breakfast');
-      case 'lunch': return t('mealPlan.lunch');
-      case 'dinner': return t('mealPlan.dinner');
-      case 'snack': return t('mealPlan.snack');
-      default: return type;
-    }
-  };
-
-  const isSnack = meal.name.includes('🍎') || meal.type === 'snack';
+        {/* Shimmer effect */}
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent transform -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="relative h-40 sm:h-48 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
-      {mealImage ? (
-        <img 
-          src={mealImage} 
-          alt={meal.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-        />
-      ) : isLoadingImage ? (
-        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-          <div className="animate-spin w-6 h-6 sm:w-8 sm:h-8 border-2 border-fitness-primary border-t-transparent rounded-full"></div>
-        </div>
-      ) : (
-        <div 
-          className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 cursor-pointer hover:from-gray-200 hover:to-gray-300 transition-colors"
-          onClick={onGenerateImage}
-        >
-          <div className="text-center">
-            <div className="text-3xl sm:text-4xl mb-2">{getMealTypeIcon(meal.type)}</div>
-            <ImageIcon className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400 mx-auto mb-1" />
-            <p className="text-xs text-gray-500 px-2">{t('mealPlan.generateImage')}</p>
-          </div>
+    <div className="relative w-full h-40 sm:h-48 rounded-2xl overflow-hidden group">
+      {isLoading && (
+        <div className={`absolute inset-0 bg-gradient-to-br ${getMealTypeGradient(mealType)} flex items-center justify-center`}>
+          <div className="w-8 h-8 bg-white/20 rounded-full animate-pulse"></div>
         </div>
       )}
       
-      {/* Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+      <img
+        src={imageUrl}
+        alt={mealName}
+        className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
+        onLoad={() => setIsLoading(false)}
+        onError={() => {
+          setImageError(true);
+          setIsLoading(false);
+        }}
+      />
       
-      {/* Meal Type Badge */}
-      <div className="absolute top-2 sm:top-3 left-2 sm:left-3">
-        <Badge className={`${getMealTypeColor(meal.type)} font-medium text-xs px-2 sm:px-3 py-1`}>
-          {getMealTypeText(meal.type)}
-        </Badge>
+      {/* Gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+      
+      {/* Meal name overlay */}
+      <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+        <p className="text-white font-medium text-sm line-clamp-2">
+          {mealName}
+        </p>
       </div>
-      
-      {/* Time Badge */}
-      <div className="absolute top-2 sm:top-3 right-2 sm:right-3">
-        <Badge variant="secondary" className="bg-black/20 text-white border-0 backdrop-blur-sm text-xs">
-          {meal.time}
-        </Badge>
-      </div>
-      
-      {/* AI Generated Badge for Snacks */}
-      {isSnack && (
-        <div className="absolute bottom-2 sm:bottom-3 left-2 sm:left-3">
-          <Badge variant="outline" className="text-xs bg-green-50/90 text-green-700 border-green-200 backdrop-blur-sm">
-            {t('mealPlan.aiGenerated')}
-          </Badge>
-        </div>
-      )}
     </div>
   );
 };

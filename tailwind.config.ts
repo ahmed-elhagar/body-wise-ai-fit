@@ -59,13 +59,20 @@ export default {
 					accent: '#06b6d4',
 					success: '#10b981',
 					warning: '#f59e0b',
-					danger: '#ef4444'
+					danger: '#ef4444',
+					'soft-blue': '#f0f4ff',
+					'soft-purple': '#f5f3ff',
+					'soft-green': '#f0fdf4',
+					'soft-orange': '#fff7ed',
+					'soft-red': '#fef2f2'
 				}
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
-				sm: 'calc(var(--radius) - 4px)'
+				sm: 'calc(var(--radius) - 4px)',
+				'2xl': '1rem',
+				'3xl': '1.5rem'
 			},
 			keyframes: {
 				'accordion-down': {
@@ -109,6 +116,22 @@ export default {
 					'50%': {
 						boxShadow: '0 0 30px rgba(99, 102, 241, 0.6)'
 					}
+				},
+				'float': {
+					'0%, 100%': {
+						transform: 'translateY(0px)'
+					},
+					'50%': {
+						transform: 'translateY(-4px)'
+					}
+				},
+				'shimmer': {
+					'0%': {
+						transform: 'translateX(-100%)'
+					},
+					'100%': {
+						transform: 'translateX(100%)'
+					}
 				}
 			},
 			animation: {
@@ -116,13 +139,26 @@ export default {
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'fade-in': 'fade-in 0.6s ease-out',
 				'slide-in': 'slide-in 0.5s ease-out',
-				'pulse-glow': 'pulse-glow 2s infinite'
+				'pulse-glow': 'pulse-glow 2s infinite',
+				'float': 'float 3s ease-in-out infinite',
+				'shimmer': 'shimmer 2s infinite'
 			},
 			backgroundImage: {
 				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
 				'fitness-gradient': 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%)',
 				'success-gradient': 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-				'card-gradient': 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)'
+				'card-gradient': 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.6) 100%)',
+				'soft-gradient': 'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%)'
+			},
+			backdropBlur: {
+				'xs': '2px',
+			},
+			spacing: {
+				'18': '4.5rem',
+				'88': '22rem',
+			},
+			fontSize: {
+				'2xs': '0.625rem',
 			}
 		}
 	},
