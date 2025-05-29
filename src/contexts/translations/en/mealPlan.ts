@@ -60,6 +60,11 @@ export const mealPlan = {
   keto: "Keto",
   highProtein: "High Protein",
   
+  // Missing translations that were showing as mealPlan.xyz
+  noMealPlan: "No Meal Plan Yet",
+  generateFirstPlan: "Let's create your first personalized meal plan",
+  aiPowered: "AI-powered personalized nutrition",
+  
   mealType: {
     breakfast: "Breakfast",
     lunch: "Lunch",

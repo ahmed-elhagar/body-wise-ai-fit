@@ -37,26 +37,26 @@ const MealPlanContent = ({
         </div>
         
         <h3 className="text-3xl font-bold text-gray-800 mb-3 bg-gradient-to-r from-fitness-primary to-pink-600 bg-clip-text text-transparent">
-          {t('noMealPlan')}
+          {t('mealPlan.noMealPlan')}
         </h3>
         
         <p className="text-gray-600 mb-8 max-w-md mx-auto leading-relaxed text-lg">
-          {t('generateFirstPlan')}
+          {t('mealPlan.generateFirstPlan')}
         </p>
         
         <div className="space-y-4">
           <Button 
             onClick={onGenerate} 
             className="bg-fitness-gradient hover:opacity-90 text-white shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 px-8 py-4 text-lg font-semibold rounded-2xl"
-            aria-label={t('generateMealPlan')}
+            aria-label={t('mealPlan.generateMealPlan')}
           >
             <Sparkles className="w-6 h-6 mr-3" />
-            {t('generateMealPlan')}
+            {t('mealPlan.generateMealPlan')}
           </Button>
           
           <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
             <Wand2 className="w-4 h-4" />
-            <span>AI-powered personalized nutrition</span>
+            <span>{t('mealPlan.aiPowered')}</span>
           </div>
         </div>
       </Card>
