@@ -1,6 +1,6 @@
 
 import { useMealPlanPage } from "@/hooks/useMealPlanPage";
-import MealPlanLoadingStates from "@/components/meal-plan/MealPlanLoadingStates";
+import { MealPlanLoadingStates } from "@/components/meal-plan/MealPlanLoadingStates";
 import MealPlanErrorState from "@/components/meal-plan/MealPlanErrorState";
 import MealPlanPageContent from "@/components/meal-plan/MealPlanPageContent";
 

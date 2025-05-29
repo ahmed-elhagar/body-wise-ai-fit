@@ -1,3 +1,4 @@
+
 export const exerciseTranslations = {
   // Exercise specific translations - Enhanced and Complete
   'exercise.selectDay': 'اختر اليوم',
@@ -50,7 +51,6 @@ export const exerciseTranslations = {
   'exercise.workoutType': 'نوع التمرين',
   'exercise.currentWeek': 'الأسبوع الحالي',
   'exercise.generateProgram': 'إنشاء برنامج تمارين',
-  'exercise.customizeProgram': 'تخصيص البرنامج',
   'exercise.generateNew': 'إنشاء جديد',
   'exercise.week': 'أسبوع',
   'exercise.thisWeek': 'هذا الأسبوع',
@@ -147,6 +147,7 @@ export const exerciseTranslations = {
   'day.friday': 'الجمعة',
   'day.saturday': 'السبت',
   'day.sunday': 'الأحد',
+  
   // New translations for enhanced loading and RTL support
   'exercise.customizeProgram': 'تخصيص برنامج التمارين بالذكاء الاصطناعي',
   'exercise.getPersonalizedPlan': 'احصل على خطة تمرين منزلية مخصصة بالذكاء الاصطناعي',

@@ -1,4 +1,3 @@
-
 export const mealPlanTranslations = {
   // Meal Plan specific
   'mealPlan.calories': 'سعرات حرارية',
@@ -98,5 +97,44 @@ export const mealPlanTranslations = {
   'generateFirstPlan': 'أنشئ خطة وجباتك الشخصية الأولى',
   'generateMealPlan': 'إنشاء خطة وجبات',
   'generatedSuccessfully': 'تم الإنشاء بنجاح!',
-  'noMealPlanToShuffle': 'لم يتم العثور على خطة وجبات للخلط'
+  'noMealPlanToShuffle': 'لم يتم العثور على خطة وجبات للخلط',
+
+  // Enhanced loading translations
+  'mealPlan.progress': 'التقدم',
+  'mealPlan.generatingMealPlan': 'إنشاء خطة وجباتك',
+  'mealPlan.generatingMealPlanDesc': 'الذكاء الاصطناعي ينشئ خطة وجبات شخصية لـ 7 أيام مصممة حسب تفضيلاتك الغذائية وأهدافك التغذوية',
+  'mealPlan.shufflingMeals': 'خلط وجباتك',
+  'mealPlan.shufflingMealsDesc': 'الذكاء الاصطناعي يعيد تنظيم خطة وجباتك ببدائل جديدة مع الحفاظ على توازنك الغذائي',
+  'mealPlan.loadingMealPlan': 'جاري تحميل خطة وجباتك...',
+  
+  // Generation steps
+  'mealPlan.analyzingProfile': 'تحليل ملفك الشخصي',
+  'mealPlan.analyzingProfileDesc': 'فهم تفضيلاتك الغذائية واحتياجاتك التغذوية',
+  'mealPlan.calculatingNutrition': 'حساب التغذية',
+  'mealPlan.calculatingNutritionDesc': 'تحديد التوزيع الأمثل للسعرات والعناصر الغذائية',
+  'mealPlan.selectingMeals': 'اختيار الوجبات',
+  'mealPlan.selectingMealsDesc': 'اختيار وصفات لذيذة تناسب تفضيلاتك',
+  'mealPlan.creatingWeeklyPlan': 'إنشاء الخطة الأسبوعية',
+  'mealPlan.creatingWeeklyPlanDesc': 'تنظيم وجباتك عبر الأسبوع',
+  'mealPlan.finalizingMealPlan': 'إنهاء خطة الوجبات',
+  'mealPlan.finalizingMealPlanDesc': 'إضافة اللمسات الأخيرة والتوازن الغذائي',
+  
+  // Shuffle steps
+  'mealPlan.analyzingCurrentPlan': 'تحليل الخطة الحالية',
+  'mealPlan.analyzingCurrentPlanDesc': 'مراجعة تفضيلات وجباتك الحالية',
+  'mealPlan.selectingAlternatives': 'اختيار البدائل',
+  'mealPlan.selectingAlternativesDesc': 'العثور على خيارات وجبات جديدة للتنويع',
+  'mealPlan.reorganizingWeek': 'إعادة تنظيم الأسبوع',
+  'mealPlan.reorganizingWeekDesc': 'توازن التغذية عبر جميع الأيام',
+  
+  // Wait messages
+  'mealPlan.pleaseWaitGenerate': 'يرجى الانتظار بينما ننشئ خطة وجباتك الشخصية...',
+  'mealPlan.pleaseWaitShuffle': 'يرجى الانتظار بينما نحدث وجباتك بخيارات جديدة...',
+  
+  'mealPlan.generating': 'جاري الإنشاء',
+  'mealPlan.hour': 'ساعة',
+  'mealPlan.hours': 'ساعات',
+  'mealPlan.creatingPersonalized': 'إنشاء خطة وجباتك الشخصية...',
+  'mealPlan.mayTakeTime': 'قد يستغرق هذا حتى دقيقتين',
+  'mealPlan.cuisinePlaceholder': 'اختر نوع المطبخ...'
 };

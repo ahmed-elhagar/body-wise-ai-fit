@@ -1,4 +1,3 @@
-
 export const mealPlanTranslations = {
   // Meal Plan specific
   'mealPlan.calories': 'calories',
@@ -98,5 +97,44 @@ export const mealPlanTranslations = {
   'generateFirstPlan': 'Generate your first personalized meal plan',
   'generateMealPlan': 'Generate Meal Plan',
   'generatedSuccessfully': 'Generated successfully!',
-  'noMealPlanToShuffle': 'No meal plan found to shuffle'
+  'noMealPlanToShuffle': 'No meal plan found to shuffle',
+
+  // Enhanced loading translations
+  'mealPlan.progress': 'Progress',
+  'mealPlan.generatingMealPlan': 'Generating Your Meal Plan',
+  'mealPlan.generatingMealPlanDesc': 'Our AI is creating a personalized 7-day meal plan tailored to your dietary preferences and nutritional goals',
+  'mealPlan.shufflingMeals': 'Shuffling Your Meals',
+  'mealPlan.shufflingMealsDesc': 'Our AI is reorganizing your meal plan with fresh alternatives while maintaining your nutritional balance',
+  'mealPlan.loadingMealPlan': 'Loading your meal plan...',
+  
+  // Generation steps
+  'mealPlan.analyzingProfile': 'Analyzing Your Profile',
+  'mealPlan.analyzingProfileDesc': 'Understanding your dietary preferences and nutritional needs',
+  'mealPlan.calculatingNutrition': 'Calculating Nutrition',
+  'mealPlan.calculatingNutritionDesc': 'Determining optimal calorie and macro distribution',
+  'mealPlan.selectingMeals': 'Selecting Meals',
+  'mealPlan.selectingMealsDesc': 'Choosing delicious recipes that match your preferences',
+  'mealPlan.creatingWeeklyPlan': 'Creating Weekly Plan',
+  'mealPlan.creatingWeeklyPlanDesc': 'Organizing your meals across the week',
+  'mealPlan.finalizingMealPlan': 'Finalizing Meal Plan',
+  'mealPlan.finalizingMealPlanDesc': 'Adding final touches and nutritional balance',
+  
+  // Shuffle steps
+  'mealPlan.analyzingCurrentPlan': 'Analyzing Current Plan',
+  'mealPlan.analyzingCurrentPlanDesc': 'Reviewing your existing meal preferences',
+  'mealPlan.selectingAlternatives': 'Selecting Alternatives',
+  'mealPlan.selectingAlternativesDesc': 'Finding fresh meal options for variety',
+  'mealPlan.reorganizingWeek': 'Reorganizing Week',
+  'mealPlan.reorganizingWeekDesc': 'Balancing nutrition across all days',
+  
+  // Wait messages
+  'mealPlan.pleaseWaitGenerate': 'Please wait while we create your personalized meal plan...',
+  'mealPlan.pleaseWaitShuffle': 'Please wait while we refresh your meals with new options...',
+  
+  'mealPlan.generating': 'Generating',
+  'mealPlan.hour': 'hour',
+  'mealPlan.hours': 'hours',
+  'mealPlan.creatingPersonalized': 'Creating your personalized meal plan...',
+  'mealPlan.mayTakeTime': 'This may take up to 2 minutes',
+  'mealPlan.cuisinePlaceholder': 'Select cuisine type...'
 };

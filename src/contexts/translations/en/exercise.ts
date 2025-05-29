@@ -1,3 +1,4 @@
+
 export const exerciseTranslations = {
   // Exercise specific translations - Enhanced and Complete
   'exercise.selectDay': 'Select Day',
@@ -50,7 +51,6 @@ export const exerciseTranslations = {
   'exercise.workoutType': 'Workout Type',
   'exercise.currentWeek': 'Current Week',
   'exercise.generateProgram': 'Generate Exercise Program',
-  'exercise.customizeProgram': 'Customize Program',
   'exercise.generateNew': 'Generate New',
   'exercise.week': 'Week',
   'exercise.thisWeek': 'This Week',
@@ -147,6 +147,7 @@ export const exerciseTranslations = {
   'day.friday': 'Friday',
   'day.saturday': 'Saturday',
   'day.sunday': 'Sunday',
+  
   // New translations for enhanced loading and RTL support
   'exercise.customizeProgram': 'Customize Your AI Exercise Program',
   'exercise.getPersonalizedPlan': 'Get a personalized home workout plan powered by AI',
