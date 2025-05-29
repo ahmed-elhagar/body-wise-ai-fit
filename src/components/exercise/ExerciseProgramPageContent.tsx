@@ -1,9 +1,9 @@
 
-import { TodaysWorkoutCard } from "./TodaysWorkoutCard";
 import { ExerciseListEnhanced } from "./ExerciseListEnhanced";
 import { ExerciseProgramSelector } from "./ExerciseProgramSelector";
 import { AIExerciseDialog } from "./AIExerciseDialog";
 import { ExerciseEnhancedNavigation } from "./ExerciseEnhancedNavigation";
+import { CompactWorkoutSummary } from "./CompactWorkoutSummary";
 import { ExerciseProgram, ExercisePreferences } from "@/hooks/useExerciseProgramPage";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Home, Building2 } from "lucide-react";
@@ -115,8 +115,8 @@ export const ExerciseProgramPageContent = ({
 
         <TabsContent value="home" className="mt-4 sm:mt-6">
           {currentProgram && currentProgram.workout_type === "home" ? (
-            <div className="grid lg:grid-cols-4 gap-4 sm:gap-6">
-              <TodaysWorkoutCard
+            <div className="space-y-4">
+              <CompactWorkoutSummary
                 todaysWorkouts={todaysWorkouts}
                 currentProgram={currentProgram}
                 completedExercises={completedExercises}
@@ -146,8 +146,8 @@ export const ExerciseProgramPageContent = ({
 
         <TabsContent value="gym" className="mt-4 sm:mt-6">
           {currentProgram && currentProgram.workout_type === "gym" ? (
-            <div className="grid lg:grid-cols-4 gap-4 sm:gap-6">
-              <TodaysWorkoutCard
+            <div className="space-y-4">
+              <CompactWorkoutSummary
                 todaysWorkouts={todaysWorkouts}
                 currentProgram={currentProgram}
                 completedExercises={completedExercises}

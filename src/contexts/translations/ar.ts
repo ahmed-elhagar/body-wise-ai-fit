@@ -183,6 +183,14 @@ export const arTranslations = {
   'exercise.core': 'الجذع',
   'exercise.cardio': 'كارديو',
   'exercise.fullBody': 'الجسم كامل',
+  'exercise.today': 'اليوم',
+  'exercise.workoutSummary': 'ملخص التمرين',
+  'exercise.estimatedTime': 'الوقت المقدر',
+  'exercise.estimatedCalories': 'السعرات المقدرة',
+  'exercise.muscleGroup': 'مجموعة العضلات',
+  'exercise.workoutName': 'اسم التمرين',
+  'exercise.rest': 'راحة',
+  'exercise.empty': 'فارغ',
 
   // Meal Plan specific
   'mealPlan.calories': 'سعرات حرارية',

@@ -183,6 +183,14 @@ export const enTranslations = {
   'exercise.core': 'Core',
   'exercise.cardio': 'Cardio',
   'exercise.fullBody': 'Full Body',
+  'exercise.today': 'Today',
+  'exercise.workoutSummary': 'Workout Summary',
+  'exercise.estimatedTime': 'Estimated Time',
+  'exercise.estimatedCalories': 'Estimated Calories',
+  'exercise.muscleGroup': 'Muscle Group',
+  'exercise.workoutName': 'Workout Name',
+  'exercise.rest': 'Rest',
+  'exercise.empty': 'Empty',
 
   // Meal Plan specific
   'mealPlan.calories': 'calories',
