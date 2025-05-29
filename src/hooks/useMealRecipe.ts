@@ -101,7 +101,7 @@ export const useMealRecipe = () => {
         throw error;
       }
       
-    } catch (error: any) => {
+    } catch (error: any) {
       console.error('❌ Error generating recipe:', error);
       toast.dismiss();
       
