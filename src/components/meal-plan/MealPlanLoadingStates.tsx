@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { ChefHat, Utensils } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -24,9 +24,10 @@ export const MealPlanLoadingStates = ({
 }: MealPlanLoadingStatesProps) => {
   const { t, isRTL } = useLanguage();
   
-  const generationSteps = getGenerationSteps(t);
-  const shuffleSteps = getShuffleSteps(t);
-  const steps = isShuffling ? shuffleSteps : generationSteps;
+  // Memoize steps to prevent constant recreation
+  const steps = useMemo(() => {
+    return isShuffling ? getShuffleSteps(t) : getGenerationSteps(t);
+  }, [isShuffling, t]);
   
   const { currentStep, progress } = useLoadingProgress(steps, isGenerating || isShuffling);
 

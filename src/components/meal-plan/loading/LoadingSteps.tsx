@@ -1,4 +1,5 @@
 
+import { memo } from "react";
 import { LoadingStepItem } from "./LoadingStepItem";
 import { LucideIcon } from "lucide-react";
 
@@ -14,8 +15,8 @@ interface LoadingStepsProps {
   currentStep: number;
 }
 
-export const LoadingSteps = ({ steps, currentStep }: LoadingStepsProps) => {
-  console.log('🔄 LoadingSteps render:', { 
+export const LoadingSteps = memo(({ steps, currentStep }: LoadingStepsProps) => {
+  console.log('🔄 LoadingSteps render (memoized):', { 
     totalSteps: steps.length, 
     currentStep,
     stepTitles: steps.map(s => s.title)
@@ -29,7 +30,7 @@ export const LoadingSteps = ({ steps, currentStep }: LoadingStepsProps) => {
         
         return (
           <LoadingStepItem
-            key={`${step.title}-${index}`}
+            key={index} // Use index instead of dynamic key
             icon={step.icon}
             title={step.title}
             description={step.description}
@@ -40,4 +41,6 @@ export const LoadingSteps = ({ steps, currentStep }: LoadingStepsProps) => {
       })}
     </div>
   );
-};
+});
+
+LoadingSteps.displayName = 'LoadingSteps';
