@@ -1,7 +1,7 @@
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Card } from "@/components/ui/card";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Scale } from "lucide-react";
 import { WeightEntry } from "@/hooks/useWeightTracking";
 
 interface WeightProgressChartProps {

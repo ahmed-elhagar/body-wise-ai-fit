@@ -8,7 +8,7 @@ interface WeightStatsCardsProps {
   weightEntries: WeightEntry[];
 }
 
-const WeightStatsCards = ({ weightEntries }: WeightStatsCardsCardsProps) => {
+const WeightStatsCards = ({ weightEntries }: WeightStatsCardsProps) => {
   const { profile } = useProfile();
 
   const currentWeight = weightEntries.length > 0 ? parseFloat(weightEntries[0].weight.toString()) : 0;

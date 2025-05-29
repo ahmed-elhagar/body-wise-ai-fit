@@ -48,12 +48,18 @@ export const useUserGoals = () => {
   });
 
   const createGoalMutation = useMutation({
-    mutationFn: async (goalData: Partial<UserGoal>) => {
+    mutationFn: async (goalData: Omit<UserGoal, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
       if (!user?.id) throw new Error('No user ID');
 
       const { data, error } = await supabase
         .from('user_goals')
-        .insert([{ ...goalData, user_id: user.id }])
+        .insert({ 
+          ...goalData, 
+          user_id: user.id,
+          current_value: goalData.current_value || 0,
+          milestones: goalData.milestones || [],
+          tags: goalData.tags || []
+        })
         .select()
         .single();
 
