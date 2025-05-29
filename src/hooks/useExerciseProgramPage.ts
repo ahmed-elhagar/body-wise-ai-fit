@@ -1,6 +1,6 @@
 
 import { useState, useMemo } from 'react';
-import { useExerciseProgramData, ExerciseProgram } from './useExerciseProgramData';
+import { useExerciseProgramData } from './useExerciseProgramData';
 import { useAIExercise } from './useAIExercise';
 import { addDays, format, startOfWeek } from 'date-fns';
 
@@ -17,7 +17,7 @@ export interface ExercisePreferences {
   difficulty: string;
 }
 
-export { ExerciseProgram };
+export type { ExerciseProgram } from './useExerciseProgramData';
 
 export const useExerciseProgramPage = () => {
   const [selectedDayNumber, setSelectedDayNumber] = useState(1);

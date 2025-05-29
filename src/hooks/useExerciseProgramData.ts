@@ -72,13 +72,21 @@ export const useExerciseProgramData = (weekOffset: number = 0) => {
 
       if (error && error.code !== 'PGRST116') throw error;
       
-      // Transform data to match interface with default workout_type
+      // Transform data to match interface with proper type handling
       if (data) {
         return {
           ...data,
-          workout_type: data.workout_type || "home",
+          workout_type: "home" as "home" | "gym", // Default to home since column doesn't exist yet
           current_week: 1,
-          daily_workouts_count: data.daily_workouts?.length || 0
+          daily_workouts_count: data.daily_workouts?.length || 0,
+          daily_workouts: data.daily_workouts?.map((workout: any) => ({
+            ...workout,
+            completed: false, // Default to false since column doesn't exist yet
+            exercises: workout.exercises?.map((exercise: any) => ({
+              ...exercise,
+              completed: false // Default to false since column doesn't exist yet
+            })) || []
+          })) || []
         } as ExerciseProgram;
       }
       
