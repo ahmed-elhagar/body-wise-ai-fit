@@ -32,13 +32,11 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    console.log('Generating exercise program for:', { 
-      userData: userData?.userId, 
-      preferences: {
-        workoutType: preferences?.workoutType,
-        goalType: preferences?.goalType,
-        fitnessLevel: preferences?.fitnessLevel
-      }
+    console.log('🚀 Generating exercise program for:', { 
+      userId: userData?.userId?.substring(0, 8) + '...', 
+      workoutType: preferences?.workoutType,
+      goalType: preferences?.goalType,
+      fitnessLevel: preferences?.fitnessLevel
     });
 
     // Determine workout type - default to 'home' if not specified
@@ -49,7 +47,7 @@ serve(async (req) => {
       ? createGymWorkoutPrompt(userData, preferences)
       : createHomeWorkoutPrompt(userData, preferences);
     
-    console.log(`Sending request to OpenAI for ${workoutType} exercise program`);
+    console.log(`📤 Sending request to OpenAI for ${workoutType} exercise program`);
     
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -58,37 +56,38 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini', // Use faster model for better performance
+        model: 'gpt-4o-mini',
         messages: [
           { 
             role: 'system', 
-            content: `You are a certified personal trainer. Always respond with valid JSON only. Create safe, effective workouts appropriate for the specified environment (${workoutType}). Keep responses concise and under 3000 characters.` 
+            content: `You are a certified personal trainer and exercise specialist. Always respond with valid JSON only. Create safe, effective workouts for ${workoutType} environment. Focus on proper form and progressive overload principles.` 
           },
           { role: 'user', content: selectedPrompt }
         ],
         temperature: 0.3,
-        max_tokens: 2000, // Reduced token limit for faster response
+        max_tokens: 3000,
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('OpenAI API error:', response.status, errorText);
-      throw new Error(`OpenAI API error: ${response.status}`);
+      console.error('❌ OpenAI API error:', response.status, errorText);
+      throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
-    console.log('OpenAI exercise response received');
+    console.log('📥 OpenAI exercise response received successfully');
 
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      throw new Error('Invalid response from OpenAI API');
+      throw new Error('Invalid response structure from OpenAI API');
     }
 
     // Parse and validate the AI response
     const generatedProgram = parseAIResponse(data.choices[0].message.content);
-    console.log('Exercise program parsed successfully');
+    console.log('✅ Exercise program parsed successfully');
 
     validateWorkoutProgram(generatedProgram);
+    console.log('✅ Exercise program validation passed');
 
     // Add workout type to preferences for storage
     const preferencesWithType = {
@@ -99,21 +98,40 @@ serve(async (req) => {
     // Store the program in the database
     const weeklyProgram = await storeWorkoutProgram(supabase, generatedProgram, userData, preferencesWithType);
 
-    console.log('✅ Exercise program generated and stored successfully');
+    console.log('🎉 Exercise program generated and stored successfully:', {
+      programId: weeklyProgram.id,
+      workoutType,
+      programName: weeklyProgram.program_name
+    });
 
     return new Response(JSON.stringify({ 
       success: true,
       programId: weeklyProgram.id,
       workoutType,
-      message: 'Exercise program generated successfully'
+      programName: weeklyProgram.program_name,
+      message: `${workoutType === 'gym' ? 'Gym' : 'Home'} exercise program generated successfully`
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
     console.error('❌ Error generating exercise program:', error);
+    
+    // Provide more specific error messages
+    let errorMessage = 'Failed to generate exercise program';
+    if (error.message.includes('OpenAI')) {
+      errorMessage = 'AI service error - please try again';
+    } else if (error.message.includes('parse')) {
+      errorMessage = 'Failed to process AI response - please try again';
+    } else if (error.message.includes('validation')) {
+      errorMessage = 'Generated program validation failed - please try again';
+    } else if (error.message.includes('database') || error.message.includes('Supabase')) {
+      errorMessage = 'Database error - please try again';
+    }
+    
     return new Response(JSON.stringify({ 
-      error: error.message || 'Failed to generate exercise program',
-      details: error.toString()
+      error: errorMessage,
+      details: error.message,
+      timestamp: new Date().toISOString()
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

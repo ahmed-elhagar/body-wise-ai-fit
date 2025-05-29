@@ -17,7 +17,7 @@ STRICT HOME WORKOUT REQUIREMENTS:
 - NO gym machines, barbells, or heavy equipment
 - Exercises must be doable in a small living space
 
-RESPONSE FORMAT - Return ONLY valid JSON (keep it concise):
+RESPONSE FORMAT - Return ONLY valid JSON:
 {
   "programOverview": {
     "name": "Home Bodyweight Program",
@@ -79,8 +79,8 @@ RESPONSE FORMAT - Return ONLY valid JSON (keep it concise):
           ]
         },
         {
-          "day": 3,
-          "dayName": "Wednesday",
+          "day": 2,
+          "dayName": "Tuesday",
           "workoutName": "Lower Body Bodyweight",
           "estimatedDuration": ${preferences?.availableTime || 45},
           "estimatedCalories": 300,
@@ -125,8 +125,8 @@ RESPONSE FORMAT - Return ONLY valid JSON (keep it concise):
           ]
         },
         {
-          "day": 5,
-          "dayName": "Friday",
+          "day": 4,
+          "dayName": "Thursday",
           "workoutName": "Full Body Circuit",
           "estimatedDuration": ${preferences?.availableTime || 45},
           "estimatedCalories": 350,
@@ -169,13 +169,57 @@ RESPONSE FORMAT - Return ONLY valid JSON (keep it concise):
               "orderNumber": 3
             }
           ]
+        },
+        {
+          "day": 5,
+          "dayName": "Friday",
+          "workoutName": "Core and Flexibility",
+          "estimatedDuration": ${preferences?.availableTime || 45},
+          "estimatedCalories": 200,
+          "muscleGroups": ["core", "flexibility"],
+          "exercises": [
+            {
+              "name": "Dead Bug",
+              "sets": 3,
+              "reps": "10 each side",
+              "restSeconds": 60,
+              "muscleGroups": ["core"],
+              "instructions": "Lie on back, opposite arm and leg extensions",
+              "youtubeSearchTerm": "dead bug exercise",
+              "difficulty": "${preferences?.fitnessLevel}",
+              "equipment": "bodyweight",
+              "orderNumber": 1
+            },
+            {
+              "name": "Bird Dog",
+              "sets": 3,
+              "reps": "10 each side",
+              "restSeconds": 60,
+              "muscleGroups": ["core", "back"],
+              "instructions": "On hands and knees, extend opposite arm and leg",
+              "youtubeSearchTerm": "bird dog exercise",
+              "difficulty": "${preferences?.fitnessLevel}",
+              "equipment": "bodyweight",
+              "orderNumber": 2
+            },
+            {
+              "name": "Child's Pose",
+              "sets": 1,
+              "reps": "30-60 seconds",
+              "restSeconds": 0,
+              "muscleGroups": ["flexibility"],
+              "instructions": "Sit back on heels, reach arms forward",
+              "youtubeSearchTerm": "child pose stretch",
+              "difficulty": "${preferences?.fitnessLevel}",
+              "equipment": "bodyweight",
+              "orderNumber": 3
+            }
+          ]
         }
       ]
     }
   ]
-}
-
-Create a focused 1-week program with 3 workout days. Keep JSON response under 3000 characters.`;
+}`;
 };
 
 export const createGymWorkoutPrompt = (userData: any, preferences: any) => {
@@ -194,7 +238,7 @@ GYM WORKOUT REQUIREMENTS:
 - Progressive overload with proper weight training
 - Compound and isolation movements
 
-RESPONSE FORMAT - Return ONLY valid JSON (keep it concise):
+RESPONSE FORMAT - Return ONLY valid JSON:
 {
   "programOverview": {
     "name": "Gym Training Program",
@@ -256,8 +300,8 @@ RESPONSE FORMAT - Return ONLY valid JSON (keep it concise):
           ]
         },
         {
-          "day": 3,
-          "dayName": "Wednesday",
+          "day": 2,
+          "dayName": "Tuesday",
           "workoutName": "Lower Body Strength",
           "estimatedDuration": ${preferences?.availableTime || 45},
           "estimatedCalories": 400,
@@ -302,12 +346,58 @@ RESPONSE FORMAT - Return ONLY valid JSON (keep it concise):
           ]
         },
         {
+          "day": 3,
+          "dayName": "Wednesday",
+          "workoutName": "Push Day",
+          "estimatedDuration": ${preferences?.availableTime || 45},
+          "estimatedCalories": 380,
+          "muscleGroups": ["chest", "shoulders", "triceps"],
+          "exercises": [
+            {
+              "name": "Incline Dumbbell Press",
+              "sets": 3,
+              "reps": "8-10",
+              "restSeconds": 90,
+              "muscleGroups": ["chest", "shoulders"],
+              "instructions": "Press dumbbells on incline bench",
+              "youtubeSearchTerm": "incline dumbbell press",
+              "difficulty": "${preferences?.fitnessLevel}",
+              "equipment": "dumbbells",
+              "orderNumber": 1
+            },
+            {
+              "name": "Overhead Press",
+              "sets": 3,
+              "reps": "8-10",
+              "restSeconds": 90,
+              "muscleGroups": ["shoulders", "triceps"],
+              "instructions": "Press barbell overhead from shoulders",
+              "youtubeSearchTerm": "overhead press form",
+              "difficulty": "${preferences?.fitnessLevel}",
+              "equipment": "barbell",
+              "orderNumber": 2
+            },
+            {
+              "name": "Tricep Dips",
+              "sets": 3,
+              "reps": "10-15",
+              "restSeconds": 60,
+              "muscleGroups": ["triceps"],
+              "instructions": "Lower body between parallel bars",
+              "youtubeSearchTerm": "tricep dips",
+              "difficulty": "${preferences?.fitnessLevel}",
+              "equipment": "bodyweight",
+              "orderNumber": 3
+            }
+          ]
+        },
+        {
           "day": 5,
           "dayName": "Friday",
-          "workoutName": "Full Body",
+          "workoutName": "Pull Day",
           "estimatedDuration": ${preferences?.availableTime || 45},
-          "estimatedCalories": 450,
-          "muscleGroups": ["full_body"],
+          "estimatedCalories": 370,
+          "muscleGroups": ["back", "biceps"],
           "exercises": [
             {
               "name": "Deadlift",
@@ -334,15 +424,15 @@ RESPONSE FORMAT - Return ONLY valid JSON (keep it concise):
               "orderNumber": 2
             },
             {
-              "name": "Plank",
+              "name": "Bicep Curls",
               "sets": 3,
-              "reps": "30-45 seconds",
+              "reps": "10-12",
               "restSeconds": 60,
-              "muscleGroups": ["core"],
-              "instructions": "Hold body straight from head to heels",
-              "youtubeSearchTerm": "plank exercise",
+              "muscleGroups": ["biceps"],
+              "instructions": "Curl dumbbells to shoulders",
+              "youtubeSearchTerm": "bicep curls form",
               "difficulty": "${preferences?.fitnessLevel}",
-              "equipment": "bodyweight",
+              "equipment": "dumbbells",
               "orderNumber": 3
             }
           ]
@@ -350,7 +440,5 @@ RESPONSE FORMAT - Return ONLY valid JSON (keep it concise):
       ]
     }
   ]
-}
-
-Create a focused 1-week program with 3 workout days. Keep JSON response under 3000 characters.`;
+}`;
 };
