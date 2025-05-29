@@ -139,14 +139,12 @@ export const exerciseTranslations = {
   week: 'Week',
   weekProgress: 'Week Progress',
   
-  // Day names
-  day: {
-    monday: 'Monday',
-    tuesday: 'Tuesday', 
-    wednesday: 'Wednesday',
-    thursday: 'Thursday',
-    friday: 'Friday',
-    saturday: 'Saturday',
-    sunday: 'Sunday'
-  }
+  // Day names - flattened to avoid nested objects
+  'day.monday': 'Monday',
+  'day.tuesday': 'Tuesday', 
+  'day.wednesday': 'Wednesday',
+  'day.thursday': 'Thursday',
+  'day.friday': 'Friday',
+  'day.saturday': 'Saturday',
+  'day.sunday': 'Sunday'
 };

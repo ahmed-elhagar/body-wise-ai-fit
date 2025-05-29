@@ -139,14 +139,12 @@ export const exerciseTranslations = {
   week: 'الأسبوع',
   weekProgress: 'تقدم الأسبوع',
   
-  // Day names in Arabic
-  day: {
-    monday: 'الإثنين',
-    tuesday: 'الثلاثاء',
-    wednesday: 'الأربعاء', 
-    thursday: 'الخميس',
-    friday: 'الجمعة',
-    saturday: 'السبت',
-    sunday: 'الأحد'
-  }
+  // Day names in Arabic - flattened to avoid nested objects
+  'day.monday': 'الإثنين',
+  'day.tuesday': 'الثلاثاء',
+  'day.wednesday': 'الأربعاء', 
+  'day.thursday': 'الخميس',
+  'day.friday': 'الجمعة',
+  'day.saturday': 'السبت',
+  'day.sunday': 'الأحد'
 };
