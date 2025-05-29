@@ -99,13 +99,17 @@ serve(async (req) => {
     console.log(`🍽️ GENERATION CONFIG: includeSnacks=${includeSnacks} (from preferences: ${preferences?.includeSnacks})`);
     console.log(`Generating ${totalMeals} meals (${mealsPerDay} meals/day, snacks: ${includeSnacks})`);
 
-    // Generate AI prompt
+    // Generate AI prompt with enhanced instructions
     const prompt = generateMealPlanPrompt(userProfile, preferences, dailyCalories, includeSnacks);
 
     console.log('Sending request to OpenAI...');
     
     let response;
     try {
+      const systemPrompt = includeSnacks 
+        ? `You are a professional nutritionist. Generate EXACTLY 7 days starting from SATURDAY with EXACTLY 5 meals each (breakfast, lunch, dinner, snack1, snack2) totaling 35 meals. Each meal MUST have: type, name, calories (number), protein, carbs, fat, ingredients (array), instructions (array), prepTime, cookTime, servings. Return ONLY valid JSON - no markdown. Focus on ${userProfile?.nationality || 'international'} cuisine with realistic prep times ≤${preferences?.maxPrepTime || 45} minutes.`
+        : `You are a professional nutritionist. Generate EXACTLY 7 days starting from SATURDAY with EXACTLY 3 meals each (breakfast, lunch, dinner) totaling 21 meals. Each meal MUST have: type, name, calories (number), protein, carbs, fat, ingredients (array), instructions (array), prepTime, cookTime, servings. Return ONLY valid JSON - no markdown. Focus on ${userProfile?.nationality || 'international'} cuisine with realistic prep times ≤${preferences?.maxPrepTime || 45} minutes.`;
+
       response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -115,10 +119,7 @@ serve(async (req) => {
         body: JSON.stringify({
           model: 'gpt-4o-mini',
           messages: [
-            { 
-              role: 'system', 
-              content: `You are a professional nutritionist. Generate EXACTLY 7 days starting from SATURDAY with ${includeSnacks ? 'EXACTLY 5 meals each (35 total)' : 'EXACTLY 3 meals each (21 total)'}. Return ONLY valid JSON - no markdown. Focus on ${userProfile?.nationality || 'international'} cuisine with realistic prep times ≤${preferences?.maxPrepTime || 45} minutes.` 
-            },
+            { role: 'system', content: systemPrompt },
             { role: 'user', content: prompt }
           ],
           temperature: 0.2,
@@ -184,7 +185,7 @@ serve(async (req) => {
     let generatedPlan;
     try {
       const content = data.choices[0].message.content.trim();
-      console.log('Raw OpenAI content:', content.substring(0, 500) + '...');
+      console.log('Raw OpenAI content preview:', content.substring(0, 500) + '...');
       
       // Clean JSON response
       let cleanedContent = content
@@ -209,6 +210,7 @@ serve(async (req) => {
       
     } catch (parseError) {
       console.error('Failed to parse OpenAI response:', parseError);
+      console.error('Raw content that failed to parse:', data.choices[0].message.content);
       return new Response(JSON.stringify({ 
         success: false,
         error: 'AI response format error',
@@ -219,16 +221,17 @@ serve(async (req) => {
       });
     }
 
-    // Validate the meal plan
+    // Validate the meal plan with enhanced error handling
     try {
       validateMealPlan(generatedPlan, includeSnacks);
-      console.log(`✅ VALIDATION PASSED - 7 days with ${totalMeals} total meals`);
+      console.log(`✅ VALIDATION PASSED - 7 days with ${totalMeals} expected meals`);
     } catch (validationError) {
       console.error('❌ Meal plan validation failed:', validationError);
+      console.error('Generated plan that failed validation:', JSON.stringify(generatedPlan, null, 2));
       return new Response(JSON.stringify({ 
         success: false,
         error: 'Generated plan validation failed',
-        details: 'AI generated an incomplete plan. Please try again.'
+        details: `AI generated an incomplete plan: ${validationError.message}. Please try again.`
       }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -298,7 +301,7 @@ serve(async (req) => {
     return new Response(JSON.stringify({ 
       success: false,
       error: 'Unexpected server error',
-      details: 'An unexpected error occurred. Please try again later.'
+      details: `An unexpected error occurred: ${error.message}. Please try again later.`
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
