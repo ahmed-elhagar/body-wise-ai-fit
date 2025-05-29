@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -29,7 +30,7 @@ export const useMealPlanState = () => {
 
   const { generateMealPlan, isGenerating } = useAIMealPlan();
   const { shuffleMeals, isShuffling } = useMealShuffle();
-  const { currentWeekPlan, isLoading } = useDynamicMealPlan(currentWeekOffset);
+  const { currentWeekPlan, isLoading, refetch: refetchMealPlan } = useDynamicMealPlan(currentWeekOffset);
 
   const weekStartDate = getWeekStartDate(currentWeekOffset);
 
@@ -92,10 +93,15 @@ export const useMealPlanState = () => {
     await shuffleMeals(currentWeekPlan.weeklyPlan.id);
   };
 
-  const handleGenerateAIPlan = () => {
+  const handleGenerateAIPlan = async () => {
     // This generates completely new AI-powered meal plan with user preferences
-    generateMealPlan(aiPreferences);
+    await generateMealPlan(aiPreferences);
     setShowAIDialog(false);
+    
+    // Force refresh after generation with a small delay
+    setTimeout(() => {
+      refetchMealPlan?.();
+    }, 1000);
   };
 
   const handleShowRecipe = (meal: Meal) => {
@@ -111,8 +117,8 @@ export const useMealPlanState = () => {
   };
 
   const refetch = () => {
-    // Force reload to get updated data
-    window.location.reload();
+    // Force reload the meal plan data
+    refetchMealPlan?.();
   };
 
   return {

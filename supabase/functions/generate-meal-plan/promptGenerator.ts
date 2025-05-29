@@ -32,7 +32,7 @@ export const generateMealPlanPrompt = (userProfile: UserProfile, preferences: Pr
   // CRITICAL: Use the includeSnacks parameter from the function call, not preferences
   const actualIncludeSnacks = includeSnacks;
   const mealTypes = actualIncludeSnacks 
-    ? 'breakfast, lunch, dinner, snack1, snack2' 
+    ? 'breakfast, lunch, dinner, snack, snack' 
     : 'breakfast, lunch, dinner';
   
   const totalMeals = actualIncludeSnacks ? 35 : 21;
@@ -67,14 +67,15 @@ CRITICAL REQUIREMENTS:
 6. BASIC meal info only - no detailed ingredients, instructions, or cooking details
 7. Consider allergies and dietary restrictions
 8. Realistic prep times ≤ ${maxPrepTime} minutes
+9. Use ONLY these meal types: breakfast, lunch, dinner${actualIncludeSnacks ? ', snack' : ''}
 
 ${actualIncludeSnacks ? `
 MEAL DISTRIBUTION WITH SNACKS:
 - Breakfast: ${Math.round(dailyCalories * 0.25)} calories
 - Lunch: ${Math.round(dailyCalories * 0.35)} calories  
 - Dinner: ${Math.round(dailyCalories * 0.30)} calories
-- Snack1: ${Math.round(dailyCalories * 0.05)} calories
-- Snack2: ${Math.round(dailyCalories * 0.05)} calories
+- Snack (morning): ${Math.round(dailyCalories * 0.05)} calories
+- Snack (evening): ${Math.round(dailyCalories * 0.05)} calories
 ` : `
 MEAL DISTRIBUTION WITHOUT SNACKS:
 - Breakfast: ${Math.round(dailyCalories * 0.30)} calories
@@ -119,7 +120,7 @@ Return this EXACT JSON structure with BASIC meal info only:
           "difficulty": "easy"
         }${actualIncludeSnacks ? `,
         {
-          "type": "snack1",
+          "type": "snack",
           "name": "Healthy ${cuisine} Snack",
           "calories": ${Math.round(dailyCalories * 0.05)},
           "protein": 3,
@@ -135,7 +136,7 @@ Return this EXACT JSON structure with BASIC meal info only:
           "difficulty": "easy"
         },
         {
-          "type": "snack2", 
+          "type": "snack", 
           "name": "Another Healthy ${cuisine} Snack",
           "calories": ${Math.round(dailyCalories * 0.05)},
           "protein": 3,

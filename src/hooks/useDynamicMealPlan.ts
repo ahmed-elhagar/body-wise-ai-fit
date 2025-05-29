@@ -44,7 +44,7 @@ export interface WeeklyMealPlan {
 export const useDynamicMealPlan = (weekOffset: number = 0) => {
   const { user } = useAuth();
 
-  const { data: currentWeekPlan, isLoading } = useQuery({
+  const { data: currentWeekPlan, isLoading, refetch } = useQuery({
     queryKey: ['weekly-meal-plan', user?.id, weekOffset],
     queryFn: async () => {
       if (!user?.id) {
@@ -152,6 +152,7 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
   return {
     currentWeekPlan,
     isLoading,
+    refetch,
     getWeekStartDate: (offset: number) => getWeekStartDate(offset)
   };
 };
