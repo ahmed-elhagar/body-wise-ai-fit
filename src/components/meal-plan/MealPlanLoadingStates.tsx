@@ -1,7 +1,8 @@
 
+import React from "react";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Chef, Brain, Target, Calendar, CheckCircle, Loader2, Utensils } from "lucide-react";
+import { ChefHat, Brain, Target, Calendar, CheckCircle, Loader2, Utensils } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useEffect, useState } from "react";
 
@@ -34,7 +35,7 @@ export const MealPlanLoadingStates = ({
       duration: 2500
     },
     {
-      icon: Chef,
+      icon: ChefHat,
       title: t('mealPlan.selectingMeals'),
       description: t('mealPlan.selectingMealsDesc'),
       duration: 3000
@@ -61,7 +62,7 @@ export const MealPlanLoadingStates = ({
       duration: 1500
     },
     {
-      icon: Chef,
+      icon: ChefHat,
       title: t('mealPlan.selectingAlternatives'),
       description: t('mealPlan.selectingAlternativesDesc'),
       duration: 2000
@@ -114,7 +115,7 @@ export const MealPlanLoadingStates = ({
   if (isGenerating || isShuffling) {
     const mainTitle = isShuffling ? t('mealPlan.shufflingMeals') : t('mealPlan.generatingMealPlan');
     const mainDescription = isShuffling ? t('mealPlan.shufflingMealsDesc') : t('mealPlan.generatingMealPlanDesc');
-    const mainIcon = isShuffling ? Utensils : Chef;
+    const mainIcon = isShuffling ? Utensils : ChefHat;
 
     return (
       <div className={`min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-green-50 to-emerald-100 ${isRTL ? 'rtl' : 'ltr'}`}>
