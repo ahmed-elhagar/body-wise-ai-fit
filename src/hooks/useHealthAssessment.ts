@@ -108,6 +108,7 @@ export const useHealthAssessment = () => {
     },
     onSuccess: (data) => {
       console.log('useHealthAssessment - Assessment saved successfully:', data);
+      // Invalidate all related queries to ensure fresh data
       queryClient.invalidateQueries({ queryKey: ['health-assessment'] });
       queryClient.invalidateQueries({ queryKey: ['onboarding-progress'] });
       queryClient.invalidateQueries({ queryKey: ['profile'] });

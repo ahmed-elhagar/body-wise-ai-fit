@@ -14,7 +14,7 @@ import ProfileCompletionCard from "@/components/profile/enhanced/ProfileCompleti
 import EnhancedBasicInfoForm from "@/components/profile/enhanced/EnhancedBasicInfoForm";
 import EnhancedGoalsForm from "@/components/profile/enhanced/EnhancedGoalsForm";
 import HealthAssessmentForm from "@/components/profile/enhanced/HealthAssessmentForm";
-import EnhancedSettingsForm from "@/components/profile/enhanced/EnhancedSettingsForm";
+import CompactSettingsForm from "@/components/profile/enhanced/CompactSettingsForm";
 import EnhancedProfileOverview from "@/components/profile/enhanced/EnhancedProfileOverview";
 import { useEnhancedProfile } from "@/hooks/useEnhancedProfile";
 import { toast } from "sonner";
@@ -133,136 +133,130 @@ const Profile = () => {
     <ProtectedRoute requireProfile={false}>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
         <div className={`${isRTL ? 'mr-16 lg:mr-64' : 'ml-16 lg:ml-64'} min-h-screen`}>
-          <div className="max-w-6xl mx-auto p-4 lg:p-6">
-            {/* Header Section */}
-            <div className="mb-6">
+          <div className="max-w-4xl mx-auto p-3 lg:p-4">
+            {/* Compact Header Section */}
+            <div className="mb-4">
               <div className="flex items-center gap-2 mb-2">
-                <h1 className="text-2xl lg:text-3xl font-bold text-gray-800">
+                <h1 className="text-xl lg:text-2xl font-bold text-gray-800">
                   {t('profile')}
                 </h1>
                 {completionPercentage >= 100 && (
-                  <CheckCircle className="w-6 h-6 text-green-500" />
+                  <CheckCircle className="w-5 h-5 text-green-500" />
                 )}
               </div>
-              <p className="text-sm lg:text-base text-gray-600">
-                Manage your personal information and preferences
-              </p>
               
               {/* Unsaved Changes Warning */}
               {hasUnsavedChanges && (
-                <Alert className="mt-4 border-yellow-200 bg-yellow-50">
+                <Alert className="mb-3 border-yellow-200 bg-yellow-50 p-2">
                   <AlertCircle className="h-4 w-4 text-yellow-600" />
-                  <AlertDescription className="text-yellow-800">
-                    You have unsaved changes. Make sure to save before switching sections.
+                  <AlertDescription className="text-yellow-800 text-sm">
+                    You have unsaved changes. Save before switching sections.
                   </AlertDescription>
                 </Alert>
               )}
               
-              {/* User Info Card */}
-              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 lg:p-6 border border-gray-200 my-6">
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 lg:w-20 lg:h-20 bg-fitness-gradient rounded-full flex items-center justify-center">
-                      <span className="text-white font-bold text-xl lg:text-2xl">
+              {/* Compact User Info */}
+              <div className="bg-white/80 backdrop-blur-sm rounded-lg p-3 border border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-fitness-gradient rounded-full flex items-center justify-center">
+                      <span className="text-white font-bold text-lg">
                         {formData.first_name ? formData.first_name.charAt(0).toUpperCase() : user?.email?.charAt(0)?.toUpperCase()}
                       </span>
                     </div>
                     <div>
-                      <h2 className="text-xl lg:text-2xl font-bold text-gray-800">
+                      <h2 className="text-lg font-bold text-gray-800">
                         {formData.first_name && formData.last_name 
                           ? `${formData.first_name} ${formData.last_name}` 
                           : "Welcome"}
                       </h2>
-                      <p className="text-gray-600">{user?.email}</p>
-                      {formData.age && (
-                        <p className="text-sm text-gray-500">{formData.age} years old • {formData.nationality}</p>
-                      )}
+                      <p className="text-sm text-gray-600">{user?.email}</p>
                     </div>
                   </div>
                   
                   {/* Quick Actions */}
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex gap-2">
                     {isAdmin && (
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => navigate('/admin')}
-                        className="bg-yellow-50 border-yellow-200 text-yellow-700 hover:bg-yellow-100"
+                        className="bg-yellow-50 border-yellow-200 text-yellow-700 hover:bg-yellow-100 text-xs"
                       >
-                        <Shield className="w-4 h-4 mr-2" />
-                        {t('adminPanel')}
+                        <Shield className="w-3 h-3 mr-1" />
+                        Admin
                       </Button>
                     )}
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={handleSignOut}
-                      className="text-red-600 hover:bg-red-50 border-red-200"
+                      className="text-red-600 hover:bg-red-50 border-red-200 text-xs"
                     >
-                      <LogOut className="w-4 h-4 mr-2" />
-                      {t('signOut')}
+                      <LogOut className="w-3 h-3 mr-1" />
+                      Sign Out
                     </Button>
                   </div>
                 </div>
                 
-                {/* Quick Stats */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
-                  <div className="bg-gray-50 p-3 rounded-lg text-center">
+                {/* Compact Stats */}
+                <div className="grid grid-cols-4 gap-2 mt-3">
+                  <div className="bg-gray-50 p-2 rounded text-center">
                     <p className="text-gray-600 text-xs">{t('height')}</p>
-                    <p className="font-semibold">{formData.height || "—"} cm</p>
+                    <p className="font-semibold text-sm">{formData.height || "—"}</p>
                   </div>
-                  <div className="bg-gray-50 p-3 rounded-lg text-center">
+                  <div className="bg-gray-50 p-2 rounded text-center">
                     <p className="text-gray-600 text-xs">{t('weight')}</p>
-                    <p className="font-semibold">{formData.weight || "—"} kg</p>
+                    <p className="font-semibold text-sm">{formData.weight || "—"}</p>
                   </div>
-                  <div className="bg-gray-50 p-3 rounded-lg text-center">
+                  <div className="bg-gray-50 p-2 rounded text-center">
                     <p className="text-gray-600 text-xs">{t('goal')}</p>
-                    <p className="font-semibold capitalize text-sm">{formData.fitness_goal?.replace('_', ' ') || "—"}</p>
+                    <p className="font-semibold text-xs capitalize">{formData.fitness_goal?.replace('_', ' ') || "—"}</p>
                   </div>
-                  <div className="bg-gray-50 p-3 rounded-lg text-center">
-                    <p className="text-gray-600 text-xs">{t('completion')}</p>
-                    <p className="font-semibold text-blue-600">{completionPercentage}%</p>
+                  <div className="bg-gray-50 p-2 rounded text-center">
+                    <p className="text-gray-600 text-xs">Progress</p>
+                    <p className="font-semibold text-sm text-blue-600">{completionPercentage}%</p>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Profile Completion Card */}
-            <div className="mb-6">
+            <div className="mb-4">
               <ProfileCompletionCard onStepClick={handleStepClick} />
             </div>
 
-            {/* Main Content with Tabs */}
+            {/* Main Content with Compact Tabs */}
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-              <TabsList className="grid w-full grid-cols-5 mb-6">
-                <TabsTrigger value="overview" className="flex items-center gap-1">
+              <TabsList className="grid w-full grid-cols-5 mb-4 h-auto p-1">
+                <TabsTrigger value="overview" className="flex flex-col items-center gap-1 p-2 text-xs">
                   <Eye className="w-4 h-4" />
-                  <span className="hidden sm:inline">{t('overview')}</span>
+                  <span>Overview</span>
                 </TabsTrigger>
-                <TabsTrigger value="basic" className="flex items-center gap-1">
+                <TabsTrigger value="basic" className="flex flex-col items-center gap-1 p-2 text-xs">
                   <User className="w-4 h-4" />
-                  <span className="hidden sm:inline">{t('basic')}</span>
+                  <span>Basic</span>
                 </TabsTrigger>
-                <TabsTrigger value="health" className="flex items-center gap-1">
+                <TabsTrigger value="health" className="flex flex-col items-center gap-1 p-2 text-xs">
                   <Heart className="w-4 h-4" />
-                  <span className="hidden sm:inline">{t('health')}</span>
+                  <span>Health</span>
                 </TabsTrigger>
-                <TabsTrigger value="goals" className="flex items-center gap-1">
+                <TabsTrigger value="goals" className="flex flex-col items-center gap-1 p-2 text-xs">
                   <Target className="w-4 h-4" />
-                  <span className="hidden sm:inline">{t('goals')}</span>
+                  <span>Goals</span>
                 </TabsTrigger>
-                <TabsTrigger value="settings" className="flex items-center gap-1">
+                <TabsTrigger value="settings" className="flex flex-col items-center gap-1 p-2 text-xs">
                   <Settings className="w-4 h-4" />
-                  <span className="hidden sm:inline">{t('settings')}</span>
+                  <span>Settings</span>
                 </TabsTrigger>
               </TabsList>
 
-              <div className="bg-white/60 backdrop-blur-sm rounded-xl border border-gray-200 min-h-[600px]">
-                <TabsContent value="overview" className="p-6 m-0">
+              <div className="bg-white/60 backdrop-blur-sm rounded-lg border border-gray-200">
+                <TabsContent value="overview" className="p-4 m-0">
                   <EnhancedProfileOverview />
                 </TabsContent>
 
-                <TabsContent value="basic" className="p-6 m-0">
+                <TabsContent value="basic" className="p-4 m-0">
                   <EnhancedBasicInfoForm
                     formData={formData}
                     updateFormData={updateFormData}
@@ -272,11 +266,11 @@ const Profile = () => {
                   />
                 </TabsContent>
 
-                <TabsContent value="health" className="p-6 m-0">
+                <TabsContent value="health" className="p-4 m-0">
                   <HealthAssessmentForm />
                 </TabsContent>
 
-                <TabsContent value="goals" className="p-6 m-0">
+                <TabsContent value="goals" className="p-4 m-0">
                   <EnhancedGoalsForm
                     formData={formData}
                     updateFormData={updateFormData}
@@ -287,8 +281,8 @@ const Profile = () => {
                   />
                 </TabsContent>
 
-                <TabsContent value="settings" className="p-6 m-0">
-                  <EnhancedSettingsForm />
+                <TabsContent value="settings" className="p-4 m-0">
+                  <CompactSettingsForm />
                 </TabsContent>
               </div>
             </Tabs>

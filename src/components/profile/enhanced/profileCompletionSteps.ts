@@ -34,6 +34,10 @@ export const useProfileCompletionSteps = (completionScore: number) => {
   const isGoalsComplete = !!(profile?.fitness_goal && 
                             profile?.activity_level);
 
+  // Check progress table for preferences completion
+  const isPreferencesComplete = progress?.preferences_completed || false;
+  const isProfileReviewComplete = progress?.profile_review_completed || completionScore >= 90;
+
   const steps = [
     {
       key: 'basic_info',
@@ -57,27 +61,31 @@ export const useProfileCompletionSteps = (completionScore: number) => {
       key: 'preferences',
       title: t('preferences') || 'Preferences',
       description: t('appSettingsNotificationPreferences') || 'App settings and notification preferences',
-      completed: progress?.preferences_completed || false,
+      completed: isPreferencesComplete,
     },
     {
       key: 'profile_review',
       title: t('profileReview') || 'Profile Review',
       description: t('finalReviewConfirmation') || 'Final review and confirmation',
-      completed: completionScore >= 85,
+      completed: isProfileReviewComplete,
     },
   ];
 
   const nextIncompleteStep = steps.find(step => !step.completed);
   const completedSteps = steps.filter(step => step.completed).length;
 
-  console.log('Profile completion steps:', {
+  console.log('Profile completion steps analysis:', {
     isBasicInfoComplete,
     isHealthAssessmentComplete,
     isGoalsComplete,
-    preferencesCompleted: progress?.preferences_completed,
+    isPreferencesComplete: isPreferencesComplete,
+    isProfileReviewComplete,
     completionScore,
     steps: steps.map(s => ({ key: s.key, completed: s.completed })),
-    nextIncompleteStep: nextIncompleteStep?.key
+    nextIncompleteStep: nextIncompleteStep?.key,
+    completedSteps,
+    progressData: progress,
+    assessmentData: !!assessment
   });
 
   return {

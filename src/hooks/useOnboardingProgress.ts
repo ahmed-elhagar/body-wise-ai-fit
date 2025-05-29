@@ -120,18 +120,29 @@ export const useOnboardingProgress = () => {
     stepData[`${step}_completed`] = true;
     stepData[`${step}_completed_at`] = new Date().toISOString();
     
-    // Calculate completion percentage
-    const totalSteps = 5;
-    const currentCompletedSteps = progress ? [
-      progress.basic_info_completed,
-      progress.health_assessment_completed,
-      progress.goals_setup_completed,
-      progress.preferences_completed,
-      progress.profile_review_completed
-    ].filter(Boolean).length : 0;
+    // Calculate completion percentage based on current progress
+    const currentProgress = progress || {
+      basic_info_completed: false,
+      health_assessment_completed: false,
+      goals_setup_completed: false,
+      preferences_completed: false,
+      profile_review_completed: false
+    };
     
-    stepData.completion_percentage = Math.round(((currentCompletedSteps + 1) / totalSteps) * 100);
-    stepData.current_step = Math.min(currentCompletedSteps + 2, totalSteps);
+    // Update the specific step we're marking complete
+    const updatedProgress = { ...currentProgress, [`${step}_completed`]: true };
+    
+    const totalSteps = 5;
+    const completedSteps = [
+      updatedProgress.basic_info_completed,
+      updatedProgress.health_assessment_completed,
+      updatedProgress.goals_setup_completed,
+      updatedProgress.preferences_completed,
+      updatedProgress.profile_review_completed
+    ].filter(Boolean).length;
+    
+    stepData.completion_percentage = Math.round((completedSteps / totalSteps) * 100);
+    stepData.current_step = Math.min(completedSteps + 1, totalSteps);
     
     console.log('useOnboardingProgress - Step data to save:', stepData);
     
@@ -141,7 +152,7 @@ export const useOnboardingProgress = () => {
   return {
     progress,
     isLoading,
-    updateProgress: updateProgressMutation.mutate,
+    updateProgress: updateProgressMutation.mutateAsync,
     markStepComplete,
     isUpdating: updateProgressMutation.isPending,
   };

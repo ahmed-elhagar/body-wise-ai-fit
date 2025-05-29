@@ -90,7 +90,6 @@ const HealthAssessmentForm = () => {
   };
 
   const validateForm = () => {
-    // Check required fields
     const requiredFields = [
       'work_schedule',
       'exercise_history', 
@@ -128,14 +127,14 @@ const HealthAssessmentForm = () => {
 
       console.log('HealthAssessmentForm - Submitting assessment data:', assessmentData);
       
-      // Save the assessment using the mutation
+      // Save the assessment using the mutation - WAIT for it to complete
       await saveAssessment(assessmentData);
 
-      // Mark the health assessment step as complete
+      // Mark the health assessment step as complete - WAIT for it to complete
       console.log('HealthAssessmentForm - Marking health assessment step as complete');
       await markStepComplete('health_assessment');
       
-      toast.success('Health assessment completed successfully!');
+      console.log('HealthAssessmentForm - All operations completed successfully');
       
     } catch (error) {
       console.error('HealthAssessmentForm - Failed to save health assessment:', error);
