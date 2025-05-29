@@ -26,7 +26,7 @@ export const useAIFoodAnalysis = () => {
       // Check AI generation credits first - using correct generation type
       const { data: creditCheck, error: creditError } = await supabase.rpc('check_and_use_ai_generation', {
         user_id_param: user.id,
-        generation_type_param: 'meal_analysis', // Changed from 'food_analysis' to match constraint
+        generation_type_param: 'food_analysis', // Changed back to 'food_analysis'
         prompt_data_param: { imageSize: file.size, fileName: file.name }
       });
 

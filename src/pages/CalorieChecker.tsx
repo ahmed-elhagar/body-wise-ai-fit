@@ -140,7 +140,7 @@ const CalorieChecker = () => {
                       <Menu className="w-5 h-5" />
                     </Button>
                   </SheetTrigger>
-                  <SheetContent side="left" className="p-0 w-80 z-50">
+                  <SheetContent side="left" className="p-0 w-80">
                     <SideMenu />
                   </SheetContent>
                 </Sheet>
@@ -178,17 +178,17 @@ const CalorieChecker = () => {
     );
   }
 
-  // Desktop Layout - Fixed to prevent overlapping
+  // Desktop Layout - Completely fixed layout without flex issues
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-      <div className="flex w-full">
-        {/* Desktop Sidebar - Fixed width */}
-        <div className="w-80 bg-white border-r border-gray-200 shadow-sm flex-shrink-0 h-screen sticky top-0">
+    <div className="h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 overflow-hidden">
+      <div className="h-full grid grid-cols-[320px_1fr]">
+        {/* Desktop Sidebar - Fixed width, no overlapping */}
+        <div className="bg-white border-r border-gray-200 shadow-sm overflow-y-auto">
           <SideMenu />
         </div>
 
         {/* Desktop Main Content - Takes remaining space */}
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex flex-col overflow-hidden">
           {/* Desktop Header */}
           <div className="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0">
             <div className="flex items-center justify-between">
@@ -207,7 +207,7 @@ const CalorieChecker = () => {
           </div>
 
           {/* Desktop Content - Scrollable */}
-          <div className="flex-1 p-6 overflow-auto">
+          <div className="flex-1 overflow-y-auto p-6">
             <div className="max-w-6xl mx-auto w-full">
               {activeViewData?.component}
             </div>
