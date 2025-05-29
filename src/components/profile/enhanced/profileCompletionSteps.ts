@@ -19,7 +19,7 @@ export const useProfileCompletionSteps = (completionScore: number) => {
                                 profile?.nationality && 
                                 profile?.body_shape);
 
-  // Fixed: Proper health assessment completion check
+  // Properly check health assessment completion based on required fields
   const isHealthAssessmentComplete = !!(assessment && 
                                        assessment.stress_level && 
                                        assessment.sleep_quality && 
@@ -37,7 +37,7 @@ export const useProfileCompletionSteps = (completionScore: number) => {
 
   const isPreferencesComplete = progress?.preferences_completed || false;
 
-  // Only 3 steps now (removed profile review)
+  // Only 4 steps now (removed profile review)
   const steps = [
     {
       key: 'basic_info',

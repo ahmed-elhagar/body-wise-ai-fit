@@ -43,7 +43,7 @@ export const useProfileCompletionScore = () => {
       totalFields++;
       if (assessment) {
         const value = assessment[field as keyof typeof assessment];
-        if (value !== null && value !== undefined && value !== '') {
+        if (value !== null && value !== undefined && value !== '' && value !== 0) {
           completedFields++;
         }
       }
@@ -62,14 +62,18 @@ export const useProfileCompletionScore = () => {
       hasProfile: !!profile,
       hasAssessment: !!assessment,
       hasProgress: !!progress,
-      assessmentFields: healthAssessmentFields.map(field => ({
-        field,
-        value: assessment?.[field as keyof typeof assessment],
-        completed: assessment && 
-                  assessment[field as keyof typeof assessment] !== null && 
-                  assessment[field as keyof typeof assessment] !== undefined && 
-                  assessment[field as keyof typeof assessment] !== ''
-      }))
+      assessmentData: assessment ? {
+        stress_level: assessment.stress_level,
+        sleep_quality: assessment.sleep_quality,
+        energy_level: assessment.energy_level,
+        work_schedule: assessment.work_schedule,
+        exercise_history: assessment.exercise_history,
+        nutrition_knowledge: assessment.nutrition_knowledge,
+        cooking_skills: assessment.cooking_skills,
+        time_availability: assessment.time_availability,
+        timeline_expectation: assessment.timeline_expectation,
+        commitment_level: assessment.commitment_level
+      } : null
     });
     
     return score;

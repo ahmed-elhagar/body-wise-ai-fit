@@ -65,6 +65,13 @@ export const useHealthAssessment = () => {
 
       console.log('useHealthAssessment - Saving assessment data:', assessmentData);
 
+      // Check if assessment already exists
+      const { data: existingAssessment } = await supabase
+        .from('health_assessments')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
       const cleanedData = {
         ...assessmentData,
         user_id: user.id,
@@ -87,23 +94,38 @@ export const useHealthAssessment = () => {
 
       console.log('useHealthAssessment - Final cleaned data:', cleanedData);
 
-      // Always use upsert to handle both insert and update
-      const { data, error } = await supabase
-        .from('health_assessments')
-        .upsert(cleanedData, { 
-          onConflict: 'user_id',
-          ignoreDuplicates: false 
-        })
-        .select()
-        .single();
+      let result;
+      if (existingAssessment) {
+        // Update existing assessment
+        const { data, error } = await supabase
+          .from('health_assessments')
+          .update(cleanedData)
+          .eq('id', existingAssessment.id)
+          .select()
+          .single();
 
-      if (error) {
-        console.error('useHealthAssessment - Upsert error:', error);
-        throw error;
+        if (error) {
+          console.error('useHealthAssessment - Update error:', error);
+          throw error;
+        }
+        result = data;
+      } else {
+        // Insert new assessment
+        const { data, error } = await supabase
+          .from('health_assessments')
+          .insert(cleanedData)
+          .select()
+          .single();
+
+        if (error) {
+          console.error('useHealthAssessment - Insert error:', error);
+          throw error;
+        }
+        result = data;
       }
       
-      console.log('useHealthAssessment - Assessment saved successfully:', data);
-      return data;
+      console.log('useHealthAssessment - Assessment saved successfully:', result);
+      return result;
     },
     onSuccess: (data) => {
       console.log('useHealthAssessment - Assessment saved, invalidating queries');
