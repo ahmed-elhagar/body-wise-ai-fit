@@ -1,125 +1,177 @@
 
-import { useMemo, useCallback } from "react";
-import { useProfile } from "@/hooks/useProfile";
-import type { Meal } from "@/types/meal";
+import { useMemo } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import type { DailyMeal, WeeklyMealPlan } from "./useMealPlanData";
 
-export const useMealPlanCalculations = (currentWeekPlan: any, selectedDayNumber: number) => {
-  const { profile } = useProfile();
+interface ShoppingItem {
+  name: string;
+  quantity: string;
+  unit: string;
+  category: string;
+}
 
-  // Memoized conversion from DailyMeal to Meal type
-  const convertDailyMealToMeal = useCallback((dailyMeal: any): Meal => ({
-    id: dailyMeal.id,
-    type: dailyMeal.meal_type || 'meal',
-    meal_type: dailyMeal.meal_type,
-    time: dailyMeal.meal_type === 'breakfast' ? '08:00' : 
-          dailyMeal.meal_type === 'lunch' ? '12:00' :
-          dailyMeal.meal_type === 'dinner' ? '18:00' : '15:00',
-    name: dailyMeal.name || 'Unnamed Meal',
-    calories: Math.round(dailyMeal.calories || 0),
-    protein: Math.round((dailyMeal.protein || 0) * 10) / 10,
-    carbs: Math.round((dailyMeal.carbs || 0) * 10) / 10,
-    fat: Math.round((dailyMeal.fat || 0) * 10) / 10,
-    ingredients: Array.isArray(dailyMeal.ingredients) ? dailyMeal.ingredients : [],
-    instructions: Array.isArray(dailyMeal.instructions) ? dailyMeal.instructions : [],
-    cookTime: dailyMeal.cook_time || 15,
-    prepTime: dailyMeal.prep_time || 10,
-    servings: dailyMeal.servings || 1,
-    image: dailyMeal.image_url || '',
-    image_url: dailyMeal.image_url || '',
-    youtubeId: dailyMeal.youtube_search_term || '',
-    youtube_search_term: dailyMeal.youtube_search_term
-  }), []);
+interface MealPlanCalculationsReturn {
+  todaysMeals: DailyMeal[];
+  totalCalories: number;
+  totalProtein: number;
+  targetDayCalories: number;
+  convertMealsToShoppingItems: (meals: DailyMeal[]) => ShoppingItem[];
+}
 
-  // Memoized today's meals with better filtering and debugging
+export const useMealPlanCalculations = (
+  currentWeekPlan: { weeklyPlan: WeeklyMealPlan; dailyMeals: DailyMeal[] } | null,
+  selectedDayNumber: number
+): MealPlanCalculationsReturn => {
+  const { language } = useLanguage();
+
+  // Get today's meals for the selected day
   const todaysMeals = useMemo(() => {
-    const todaysDailyMeals = currentWeekPlan?.dailyMeals?.filter(meal => 
-      meal.day_number === selectedDayNumber
-    ) || [];
+    if (!currentWeekPlan?.dailyMeals) return [];
     
-    console.log('🍽️ TODAY\'S MEALS DEBUG:', {
-      selectedDayNumber,
-      totalDailyMeals: currentWeekPlan?.dailyMeals?.length || 0,
-      filteredMealsCount: todaysDailyMeals.length,
-      meals: todaysDailyMeals.map(m => ({ day: m.day_number, type: m.meal_type, name: m.name, calories: m.calories }))
-    });
-    
-    return todaysDailyMeals.map(convertDailyMealToMeal);
-  }, [currentWeekPlan?.dailyMeals, selectedDayNumber, convertDailyMealToMeal]);
-  
-  // Enhanced nutrition calculations with proper data validation
+    return currentWeekPlan.dailyMeals.filter(meal => meal.day_number === selectedDayNumber);
+  }, [currentWeekPlan?.dailyMeals, selectedDayNumber]);
+
+  // Calculate total calories and protein for today
   const { totalCalories, totalProtein } = useMemo(() => {
-    const calories = todaysMeals.reduce((sum, meal) => {
-      const mealCalories = Number(meal.calories) || 0;
-      return sum + mealCalories;
-    }, 0);
+    const calories = todaysMeals.reduce((sum, meal) => sum + (meal.calories || 0), 0);
+    const protein = todaysMeals.reduce((sum, meal) => sum + (meal.protein || 0), 0);
     
-    const protein = todaysMeals.reduce((sum, meal) => {
-      const mealProtein = Number(meal.protein) || 0;
-      return sum + mealProtein;
-    }, 0);
+    return { totalCalories: calories, totalProtein: protein };
+  }, [todaysMeals]);
 
-    console.log('📊 NUTRITION CALCULATIONS:', {
-      selectedDay: selectedDayNumber,
-      mealsCount: todaysMeals.length,
-      totalCalories: calories,
-      totalProtein: protein,
-      mealBreakdown: todaysMeals.map(m => ({
-        name: m.name,
-        calories: m.calories,
-        protein: m.protein
-      }))
-    });
-    
-    return {
-      totalCalories: Math.round(calories),
-      totalProtein: Math.round(protein * 10) / 10
-    };
-  }, [todaysMeals, selectedDayNumber]);
-
-  // Calculate target calories from user profile
-  const getTargetDayCalories = useCallback(() => {
-    if (profile?.weight && profile?.height && profile?.age) {
-      const weight = Number(profile.weight);
-      const height = Number(profile.height);
-      const age = Number(profile.age);
-      
-      let bmr = 0;
-      if (profile.gender === 'male') {
-        bmr = 10 * weight + 6.25 * height - 5 * age + 5;
-      } else {
-        bmr = 10 * weight + 6.25 * height - 5 * age - 161;
-      }
-      
-      const activityMultipliers = {
-        'sedentary': 1.2,
-        'lightly_active': 1.375,
-        'moderately_active': 1.55,
-        'very_active': 1.725,
-        'extremely_active': 1.9
-      };
-      
-      const multiplier = activityMultipliers[profile.activity_level as keyof typeof activityMultipliers] || 1.375;
-      
-      let calorieAdjustment = 1;
-      if (profile.fitness_goal === 'lose_weight') {
-        calorieAdjustment = 0.85;
-      } else if (profile.fitness_goal === 'gain_weight') {
-        calorieAdjustment = 1.15;
-      }
-      
-      return Math.round(bmr * multiplier * calorieAdjustment);
+  // Calculate target daily calories (this could be enhanced with user profile data)
+  const targetDayCalories = useMemo(() => {
+    if (currentWeekPlan?.weeklyPlan?.total_calories) {
+      return Math.round(currentWeekPlan.weeklyPlan.total_calories / 7);
     }
-    
     return 2000; // Default fallback
-  }, [profile]);
+  }, [currentWeekPlan?.weeklyPlan?.total_calories]);
 
-  const targetDayCalories = getTargetDayCalories();
+  // Enhanced shopping list conversion with proper categorization
+  const convertMealsToShoppingItems = useMemo(() => {
+    return (meals: DailyMeal[]): ShoppingItem[] => {
+      const items: ShoppingItem[] = [];
+      
+      if (!meals || meals.length === 0) {
+        console.log('🛒 No meals provided for shopping list');
+        return items;
+      }
+
+      console.log('🛒 Converting meals to shopping items:', meals.length, 'meals');
+
+      meals.forEach((meal, mealIndex) => {
+        console.log(`🛒 Processing meal ${mealIndex + 1}:`, meal.name, 'ingredients:', meal.ingredients);
+        
+        if (meal.ingredients && Array.isArray(meal.ingredients)) {
+          meal.ingredients.forEach((ingredient, ingredientIndex) => {
+            // Handle both string and object ingredients
+            let ingredientData: { name: string; quantity?: string; unit?: string } = { name: '' };
+            
+            if (typeof ingredient === 'string') {
+              ingredientData = { name: ingredient, quantity: '1', unit: 'piece' };
+            } else if (ingredient && typeof ingredient === 'object') {
+              ingredientData = {
+                name: ingredient.name || `Ingredient ${ingredientIndex + 1}`,
+                quantity: ingredient.quantity || '1',
+                unit: ingredient.unit || 'piece'
+              };
+            }
+
+            if (ingredientData.name) {
+              // Categorize ingredients based on type
+              const category = categorizeIngredient(ingredientData.name, language);
+              
+              items.push({
+                name: ingredientData.name,
+                quantity: ingredientData.quantity || '1',
+                unit: ingredientData.unit || 'piece',
+                category
+              });
+              
+              console.log(`🛒 Added ingredient: ${ingredientData.name} (${ingredientData.quantity} ${ingredientData.unit}) - Category: ${category}`);
+            }
+          });
+        } else {
+          console.warn(`🛒 Meal "${meal.name}" has no valid ingredients array:`, meal.ingredients);
+        }
+      });
+
+      console.log('🛒 Total shopping items generated:', items.length);
+      return items;
+    };
+  }, [language]);
 
   return {
     todaysMeals,
     totalCalories,
     totalProtein,
     targetDayCalories,
-    convertDailyMealToMeal
+    convertMealsToShoppingItems
   };
+};
+
+// Helper function to categorize ingredients
+const categorizeIngredient = (ingredientName: string, language: string): string => {
+  const name = ingredientName.toLowerCase();
+  
+  // Define categories in both languages
+  const categories = {
+    en: {
+      proteins: ['chicken', 'beef', 'fish', 'egg', 'tofu', 'turkey', 'salmon', 'tuna', 'shrimp', 'lamb', 'pork'],
+      dairy: ['milk', 'cheese', 'yogurt', 'butter', 'cream', 'yoghurt'],
+      vegetables: ['tomato', 'onion', 'garlic', 'pepper', 'carrot', 'broccoli', 'spinach', 'lettuce', 'cucumber', 'potato'],
+      fruits: ['apple', 'banana', 'orange', 'berry', 'lemon', 'lime', 'grape', 'strawberry'],
+      grains: ['rice', 'bread', 'pasta', 'oats', 'quinoa', 'wheat', 'flour'],
+      spices: ['salt', 'pepper', 'oregano', 'basil', 'cinnamon', 'cumin', 'paprika', 'garlic powder'],
+      oils: ['olive oil', 'oil', 'butter', 'coconut oil'],
+      nuts: ['almond', 'walnut', 'cashew', 'peanut', 'pecan']
+    },
+    ar: {
+      proteins: ['دجاج', 'لحم', 'سمك', 'بيض', 'تونة', 'سلمون', 'جمبري', 'لحم ضأن'],
+      dairy: ['حليب', 'جبن', 'زبادي', 'زبدة', 'كريمة', 'لبن'],
+      vegetables: ['طماطم', 'بصل', 'ثوم', 'فلفل', 'جزر', 'بروكلي', 'سبانخ', 'خس', 'خيار', 'بطاطس'],
+      fruits: ['تفاح', 'موز', 'برتقال', 'توت', 'ليمون', 'عنب', 'فراولة'],
+      grains: ['أرز', 'خبز', 'مكرونة', 'شوفان', 'كينوا', 'قمح', 'دقيق'],
+      spices: ['ملح', 'فلفل', 'أوريجانو', 'ريحان', 'قرفة', 'كمون', 'بابريكا'],
+      oils: ['زيت زيتون', 'زيت', 'زبدة', 'زيت جوز الهند'],
+      nuts: ['لوز', 'جوز', 'كاجو', 'فول سوداني', 'جوز محمص']
+    }
+  };
+
+  const langCategories = categories[language as keyof typeof categories] || categories.en;
+
+  // Check each category
+  for (const [category, items] of Object.entries(langCategories)) {
+    if (items.some(item => name.includes(item))) {
+      // Return localized category names
+      const categoryNames = {
+        en: {
+          proteins: 'Proteins',
+          dairy: 'Dairy',
+          vegetables: 'Vegetables',
+          fruits: 'Fruits',
+          grains: 'Grains & Carbs',
+          spices: 'Spices & Seasonings',
+          oils: 'Oils & Fats',
+          nuts: 'Nuts & Seeds'
+        },
+        ar: {
+          proteins: 'البروتينات',
+          dairy: 'منتجات الألبان',
+          vegetables: 'الخضراوات',
+          fruits: 'الفواكه',
+          grains: 'الحبوب والكربوهيدرات',
+          spices: 'التوابل والبهارات',
+          oils: 'الزيوت والدهون',
+          nuts: 'المكسرات والبذور'
+        }
+      };
+
+      return categoryNames[language as keyof typeof categoryNames]?.[category as keyof typeof categoryNames.en] || 
+             categoryNames.en[category as keyof typeof categoryNames.en] || 
+             'Other';
+    }
+  }
+
+  return language === 'ar' ? 'أخرى' : 'Other';
 };

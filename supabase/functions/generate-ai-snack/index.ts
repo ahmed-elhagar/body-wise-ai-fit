@@ -45,20 +45,33 @@ serve(async (req) => {
       { 
         name: 'لوز محمص مع التمر', 
         nameEn: 'Roasted Almonds with Dates',
-        ingredients: ['لوز محمص', 'تمر منزوع النوى', 'رشة قرفة'],
-        instructions: ['قم بتقطيع التمر إلى قطع صغيرة', 'اخلط اللوز مع التمر', 'رش القرفة للنكهة']
+        ingredients: [
+          { name: 'لوز محمص', quantity: '30', unit: 'جرام' },
+          { name: 'تمر منزوع النوى', quantity: '3', unit: 'حبة' },
+          { name: 'قرفة مطحونة', quantity: '1/2', unit: 'ملعقة صغيرة' }
+        ],
+        instructions: ['قم بتقطيع التمر إلى قطع صغيرة', 'اخلط اللوز مع التمر', 'رش القرفة للنكهة', 'قدم في طبق صغير']
       },
       { 
         name: 'زبادي يوناني بالعسل والجوز', 
         nameEn: 'Greek Yogurt with Honey and Walnuts',
-        ingredients: ['زبادي يوناني', 'عسل طبيعي', 'جوز مقطع'],
-        instructions: ['ضع الزبادي في وعاء', 'أضف العسل والجوز', 'اخلط واستمتع']
+        ingredients: [
+          { name: 'زبادي يوناني', quantity: '150', unit: 'جرام' },
+          { name: 'عسل طبيعي', quantity: '1', unit: 'ملعقة كبيرة' },
+          { name: 'جوز مقطع', quantity: '20', unit: 'جرام' }
+        ],
+        instructions: ['ضع الزبادي في وعاء', 'أضف العسل والجوز من الأعلى', 'اخلط برفق واستمتع']
       },
       { 
         name: 'حمص مشوي بالبهارات', 
         nameEn: 'Spiced Roasted Chickpeas',
-        ingredients: ['حمص مسلوق', 'كمون', 'بابريكا', 'ملح'],
-        instructions: ['اشوي الحمص في الفرن', 'تبل بالبهارات', 'قدم دافئاً']
+        ingredients: [
+          { name: 'حمص مسلوق', quantity: '100', unit: 'جرام' },
+          { name: 'كمون مطحون', quantity: '1/2', unit: 'ملعقة صغيرة' },
+          { name: 'بابريكا', quantity: '1/2', unit: 'ملعقة صغيرة' },
+          { name: 'ملح', quantity: '1/4', unit: 'ملعقة صغيرة' }
+        ],
+        instructions: ['سخن الفرن على 200 درجة مئوية', 'اخلط الحمص مع البهارات', 'اشوي لمدة 15 دقيقة', 'قدم دافئاً']
       }
     ];
 
@@ -66,33 +79,47 @@ serve(async (req) => {
       { 
         name: 'Greek Yogurt Berry Bowl', 
         nameAr: 'وعاء الزبادي اليوناني بالتوت',
-        ingredients: ['Greek yogurt', 'Mixed berries', 'Honey', 'Granola'],
-        instructions: ['Place yogurt in bowl', 'Top with berries and granola', 'Drizzle with honey']
+        ingredients: [
+          { name: 'Greek yogurt', quantity: '150', unit: 'g' },
+          { name: 'Mixed berries', quantity: '80', unit: 'g' },
+          { name: 'Honey', quantity: '1', unit: 'tbsp' },
+          { name: 'Granola', quantity: '20', unit: 'g' }
+        ],
+        instructions: ['Place yogurt in bowl', 'Top with berries and granola', 'Drizzle with honey', 'Serve immediately']
       },
       { 
         name: 'Apple Slices with Almond Butter', 
         nameAr: 'شرائح التفاح بزبدة اللوز',
-        ingredients: ['Apple', 'Almond butter', 'Cinnamon'],
-        instructions: ['Slice apple into wedges', 'Serve with almond butter', 'Sprinkle with cinnamon']
+        ingredients: [
+          { name: 'Medium apple', quantity: '1', unit: 'piece' },
+          { name: 'Almond butter', quantity: '2', unit: 'tbsp' },
+          { name: 'Cinnamon powder', quantity: '1/4', unit: 'tsp' }
+        ],
+        instructions: ['Wash and slice apple into wedges', 'Arrange on plate', 'Serve with almond butter for dipping', 'Sprinkle with cinnamon']
       },
       { 
         name: 'Protein Energy Balls', 
         nameAr: 'كرات الطاقة بالبروتين',
-        ingredients: ['Oats', 'Protein powder', 'Peanut butter', 'Honey'],
-        instructions: ['Mix all ingredients', 'Form into balls', 'Refrigerate for 30 minutes']
+        ingredients: [
+          { name: 'Rolled oats', quantity: '50', unit: 'g' },
+          { name: 'Protein powder', quantity: '1', unit: 'scoop' },
+          { name: 'Peanut butter', quantity: '2', unit: 'tbsp' },
+          { name: 'Honey', quantity: '1', unit: 'tbsp' }
+        ],
+        instructions: ['Mix all ingredients in a bowl', 'Form mixture into small balls', 'Refrigerate for 30 minutes', 'Enjoy chilled']
       }
     ];
 
     const snackOptions = isArabic ? arabicSnacks : englishSnacks;
     const selectedSnack = snackOptions[Math.floor(Math.random() * snackOptions.length)];
 
-    // Calculate nutritional values based on calories
-    const targetCalories = Math.min(calories, 300);
-    const protein = Math.round((targetCalories * 0.25) / 4); // 25% from protein
-    const carbs = Math.round((targetCalories * 0.45) / 4); // 45% from carbs  
+    // Calculate nutritional values based on calories with more realistic values
+    const targetCalories = Math.min(calories, 350);
+    const protein = Math.round((targetCalories * 0.20) / 4); // 20% from protein
+    const carbs = Math.round((targetCalories * 0.50) / 4); // 50% from carbs  
     const fat = Math.round((targetCalories * 0.30) / 9); // 30% from fat
 
-    // Create the snack object
+    // Create the snack object with proper structure
     const snackData = {
       weekly_plan_id: weeklyPlanId,
       day_number: day,
@@ -107,8 +134,7 @@ serve(async (req) => {
       servings: 1,
       image_url: '/api/placeholder/300/200',
       ingredients: selectedSnack.ingredients,
-      instructions: selectedSnack.instructions,
-      created_at: new Date().toISOString()
+      instructions: selectedSnack.instructions
     };
 
     console.log('Saving snack to database:', snackData);
@@ -125,7 +151,8 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           error: isArabic ? 'خطأ في حفظ الوجبة الخفيفة' : 'Failed to save snack',
-          success: false 
+          success: false,
+          details: dbError.message
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
       );
@@ -150,7 +177,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         error: 'Internal server error',
-        success: false 
+        success: false,
+        details: error.message
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
