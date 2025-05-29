@@ -70,6 +70,21 @@ const MealPlan = () => {
     refetch();
   };
 
+  // Enhanced debugging output
+  console.log('🚀 MEAL PLAN PAGE - COMPREHENSIVE DEBUG:', {
+    currentWeekPlan: !!currentWeekPlan,
+    weeklyPlan: !!currentWeekPlan?.weeklyPlan,
+    dailyMeals: currentWeekPlan?.dailyMeals?.length || 0,
+    todaysMealsCount: todaysMeals?.length || 0,
+    isLoading,
+    isGenerating,
+    isShuffling,
+    error: error?.message,
+    weekOffset: currentWeekOffset,
+    selectedDay: selectedDayNumber,
+    weekStartDate: weekStartDate.toDateString()
+  });
+
   // Show loading state during generation OR shuffling
   if (isGenerating) {
     return (
@@ -118,6 +133,18 @@ const MealPlan = () => {
   return (
     <MealPlanLayout>
       <div className="space-y-4 sm:space-y-6">
+        {/* Debug info panel - remove this later */}
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm">
+          <p className="font-semibold mb-2">🐛 Debug Info:</p>
+          <p>• Week Plan: {currentWeekPlan?.weeklyPlan ? '✅' : '❌'}</p>
+          <p>• Daily Meals: {currentWeekPlan?.dailyMeals?.length || 0}</p>
+          <p>• Today's Meals: {todaysMeals?.length || 0}</p>
+          <p>• Week Offset: {currentWeekOffset}</p>
+          <p>• Selected Day: {selectedDayNumber}</p>
+          <p>• Loading: {isLoading ? 'Yes' : 'No'}</p>
+          <p>• Error: {error?.message || 'None'}</p>
+        </div>
+
         <MealPlanHeader
           currentDate={currentDate}
           currentDay={currentDay}

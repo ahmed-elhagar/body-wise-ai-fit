@@ -100,6 +100,66 @@ export const useMealPlanData = (weekOffset: number = 0) => {
             totalFound: allPlans?.length || 0
           });
           
+          // Try to find the closest week plan if no exact match
+          if (allPlans && allPlans.length > 0) {
+            console.log('🔄 Trying to find closest week plan...');
+            const closestPlan = allPlans[0]; // Most recent plan
+            console.log('🎯 Using closest plan:', {
+              planId: closestPlan.id,
+              weekStartDate: closestPlan.week_start_date,
+              searchedDate: weekStartDateStr
+            });
+            
+            // Fetch meals for the closest plan
+            const { data: dailyMeals, error: mealsError } = await supabase
+              .from('daily_meals')
+              .select('*')
+              .eq('weekly_plan_id', closestPlan.id)
+              .order('day_number', { ascending: true })
+              .order('meal_type', { ascending: true });
+
+            if (mealsError) {
+              console.error('❌ Error fetching meals for closest plan:', mealsError);
+              throw mealsError;
+            }
+
+            console.log('✅ Found meals for closest plan:', {
+              count: dailyMeals?.length || 0,
+              planId: closestPlan.id
+            });
+
+            // Process meals data
+            const processedMeals = (dailyMeals || []).map(meal => {
+              try {
+                return {
+                  ...meal,
+                  ingredients: Array.isArray(meal.ingredients) 
+                    ? meal.ingredients 
+                    : typeof meal.ingredients === 'string' 
+                      ? JSON.parse(meal.ingredients || '[]')
+                      : [],
+                  instructions: Array.isArray(meal.instructions)
+                    ? meal.instructions
+                    : typeof meal.instructions === 'string'
+                      ? JSON.parse(meal.instructions || '[]')
+                      : []
+                };
+              } catch (parseError) {
+                console.error('Error parsing meal data:', parseError, meal);
+                return {
+                  ...meal,
+                  ingredients: [],
+                  instructions: []
+                };
+              }
+            }) as DailyMeal[];
+
+            return {
+              weeklyPlan: closestPlan as WeeklyMealPlan,
+              dailyMeals: processedMeals
+            };
+          }
+          
           return null;
         }
 
