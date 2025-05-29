@@ -7,6 +7,15 @@ export const dashboardTranslations = {
   'dashboard.generatingContent': 'Generating Your Personalized Content',
   'dashboard.generatingDescription': 'We\'re creating your personalized meal plans and exercise programs. This may take a few moments.',
   'dashboard.pleaseWait': 'Please wait while we set up your fitness journey...',
+  'dashboard.currentWeight': 'Current Weight',
+  'dashboard.fromProfile': 'From Profile',
+  'dashboard.fromTracking': 'From Tracking',
+  'dashboard.bmiIndex': 'BMI Index',
+  'dashboard.fitnessGoal': 'Fitness Goal',
+  'dashboard.activityLevel': 'Activity Level',
+  'dashboard.setYourGoal': 'Set Your Goal',
+  'dashboard.notSet': 'Not Set',
+  'dashboard.completeProfile': 'Complete Profile',
 
   // Quick Actions
   'quickActions.title': 'Quick Actions',
@@ -33,4 +42,22 @@ export const dashboardTranslations = {
   'recentActivity.badges.weight': 'Weight',
   'recentActivity.badges.nutrition': 'Nutrition',
   'recentActivity.badges.exercise': 'Exercise',
+
+  // Goals and BMI
+  'goal.weightLoss': 'Weight Loss',
+  'goal.weightGain': 'Weight Gain',
+  'goal.muscleGain': 'Muscle Gain',
+  'goal.endurance': 'Endurance',
+  'bmi.underweight': 'Underweight',
+  'bmi.normal': 'Normal',
+  'bmi.overweight': 'Overweight',
+  'bmi.obese': 'Obese',
+  'activity.sedentary': 'Sedentary',
+  'activity.lightlyActive': 'Lightly Active',
+  'activity.moderatelyActive': 'Moderately Active',
+  'activity.veryActive': 'Very Active',
+  'activity.extremelyActive': 'Extremely Active',
+
+  // Common
+  'common.kg': 'kg',
 };
