@@ -3,10 +3,10 @@ import { useProfile } from "@/hooks/useProfile";
 import { useInitialAIGeneration } from "@/hooks/useInitialAIGeneration";
 import Navigation from "@/components/Navigation";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
-import StatsGrid from "@/components/dashboard/StatsGrid";
-import QuickActionsGrid from "@/components/dashboard/QuickActionsGrid";
+import EnhancedStatsGrid from "@/components/dashboard/EnhancedStatsGrid";
+import InteractiveProgressChart from "@/components/dashboard/InteractiveProgressChart";
+import EnhancedQuickActions from "@/components/dashboard/EnhancedQuickActions";
 import ActivityFeed from "@/components/dashboard/ActivityFeed";
-import ProgressOverview from "@/components/dashboard/ProgressOverview";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Loader2 } from "lucide-react";
 
@@ -57,27 +57,27 @@ const Dashboard = () => {
             <DashboardHeader />
           </div>
 
-          {/* Stats Grid */}
+          {/* Enhanced Stats Grid */}
           <div className="mb-6">
-            <StatsGrid />
+            <EnhancedStatsGrid />
           </div>
 
-          {/* Main Content - Side by Side Layout */}
+          {/* Main Content Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-            {/* Quick Actions - Compact */}
-            <div className="lg:col-span-1">
-              <QuickActionsGrid />
+            {/* Interactive Progress Chart - Takes 2 columns on large screens */}
+            <div className="lg:col-span-2">
+              <InteractiveProgressChart />
             </div>
 
-            {/* Activity Feed - Takes more space */}
-            <div className="lg:col-span-2">
-              <ActivityFeed />
+            {/* Enhanced Quick Actions - Takes 1 column */}
+            <div className="lg:col-span-1">
+              <EnhancedQuickActions />
             </div>
           </div>
 
-          {/* Progress Overview - Full width */}
+          {/* Activity Feed - Full width */}
           <div className="mb-6">
-            <ProgressOverview />
+            <ActivityFeed />
           </div>
         </div>
       </div>
