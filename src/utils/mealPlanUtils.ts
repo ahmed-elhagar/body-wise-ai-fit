@@ -1,3 +1,4 @@
+
 import { format, startOfWeek, addDays, addWeeks } from 'date-fns';
 
 export const getDayNames = (t: (key: string) => string) => {
@@ -34,6 +35,7 @@ export const getCategoryForIngredient = (ingredientName: string): string => {
   return 'Others';
 };
 
+// CRITICAL: Standardized week calculation - SAME logic for both generation and fetching
 export const getWeekStartDate = (weekOffset: number = 0): Date => {
   const today = new Date();
   
@@ -53,10 +55,10 @@ export const getWeekStartDate = (weekOffset: number = 0): Date => {
   // Add the week offset
   startDate.setDate(startDate.getDate() + (weekOffset * 7));
   
-  // Reset to start of day
+  // Reset to start of day to ensure consistency
   startDate.setHours(0, 0, 0, 0);
   
-  console.log(`📅 Week calculation: today=${today.toISOString().split('T')[0]}, currentDay=${currentDayOfWeek}, daysToSaturday=${daysToSaturday}, weekOffset=${weekOffset}, result=${startDate.toISOString().split('T')[0]}`);
+  console.log(`📅 STANDARDIZED Week calculation: today=${today.toISOString().split('T')[0]}, currentDay=${currentDayOfWeek}, daysToSaturday=${daysToSaturday}, weekOffset=${weekOffset}, result=${startDate.toISOString().split('T')[0]}`);
   
   return startDate;
 };

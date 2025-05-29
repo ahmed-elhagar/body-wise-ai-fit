@@ -95,17 +95,21 @@ export const useMealPlanState = () => {
 
   const handleGenerateAIPlan = async () => {
     try {
+      console.log('🚀 Starting AI meal plan generation with preferences:', aiPreferences);
+      
       // This generates completely new AI-powered meal plan with user preferences
       await generateMealPlan(aiPreferences);
       setShowAIDialog(false);
       
-      // Force refresh after successful generation
+      // Force refresh after successful generation - with proper delay
       setTimeout(() => {
+        console.log('🔄 Forcing meal plan refetch after generation...');
         refetchMealPlan?.();
-      }, 2000);
+      }, 3000); // Increased delay to ensure database consistency
+      
     } catch (error) {
+      console.error('❌ Generation failed:', error);
       // Error is already handled in useAIMealPlan hook
-      console.log("Generation failed - staying on dialog");
     }
   };
 
@@ -122,6 +126,7 @@ export const useMealPlanState = () => {
   };
 
   const refetch = () => {
+    console.log('🔄 Manual refetch triggered');
     // Force reload the meal plan data
     refetchMealPlan?.();
   };
