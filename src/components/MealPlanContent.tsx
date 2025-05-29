@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ChefHat, Plus } from "lucide-react";
+import { ChefHat, Plus, Sparkles } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import CompactDailyView from "@/components/CompactDailyView";
 import type { Meal } from "@/types/meal";
@@ -31,16 +31,21 @@ const MealPlanContent = ({
 
   if (!currentWeekPlan) {
     return (
-      <Card className="p-8 text-center bg-white/80 backdrop-blur-sm">
-        <ChefHat className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-        <h3 className="text-xl font-semibold text-gray-800 mb-2">
+      <Card className="p-8 text-center bg-gradient-to-br from-health-soft-blue to-white border-2 border-health-border-light shadow-health rounded-2xl backdrop-blur-sm">
+        <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-health-primary to-health-secondary rounded-2xl flex items-center justify-center shadow-health">
+          <ChefHat className="w-10 h-10 text-white" />
+        </div>
+        <h3 className="text-2xl font-bold text-health-text-primary mb-3">
           {t('noMealPlan')}
         </h3>
-        <p className="text-gray-600 mb-6">
+        <p className="text-health-text-secondary mb-8 max-w-md mx-auto leading-relaxed">
           {t('generateFirstPlan')}
         </p>
-        <Button onClick={onGenerate} className="bg-fitness-gradient text-white">
-          <Plus className="w-4 h-4 mr-2" />
+        <Button 
+          onClick={onGenerate} 
+          className="bg-health-gradient hover:opacity-90 text-white shadow-health hover:shadow-elevated transform hover:scale-105 transition-all duration-300 px-8 py-3 text-lg font-semibold rounded-xl"
+        >
+          <Sparkles className="w-5 h-5 mr-2" />
           {t('generateMealPlan')}
         </Button>
       </Card>

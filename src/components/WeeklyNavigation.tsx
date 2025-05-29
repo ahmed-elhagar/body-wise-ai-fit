@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface WeeklyNavigationProps {
@@ -38,33 +38,40 @@ const WeeklyNavigation = ({ currentWeekOffset, onWeekChange, weekStartDate }: We
   };
 
   return (
-    <Card className="mb-4 sm:mb-6 p-3 sm:p-4 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+    <Card className="mb-6 p-5 bg-gradient-to-br from-white to-health-soft border-2 border-health-border-light shadow-health rounded-2xl backdrop-blur-sm">
       <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
         <Button
           variant="outline"
           onClick={() => onWeekChange(currentWeekOffset - 1)}
-          className="bg-white/80 text-sm sm:text-base"
+          className="bg-white/90 hover:bg-health-soft-blue border-2 border-health-border hover:border-health-primary text-health-text-primary hover:text-health-primary font-medium px-4 py-2 rounded-xl shadow-soft hover:shadow-health transform hover:scale-105 transition-all duration-300"
           size="sm"
         >
-          <ChevronLeft className="w-4 h-4 mr-1" />
+          <ChevronLeft className="w-4 h-4 mr-2" />
           {t('mealPlan.previousWeek')}
         </Button>
 
-        <div className="text-center">
-          <h3 className="text-base sm:text-lg font-semibold text-gray-800">
-            {formatWeekRange(weekStartDate)}
-          </h3>
-          <p className="text-xs sm:text-sm text-gray-600">{getWeekStatus(currentWeekOffset)}</p>
+        <div className="text-center px-4">
+          <div className="flex items-center justify-center mb-2">
+            <div className="w-8 h-8 bg-health-gradient rounded-lg flex items-center justify-center mr-3 shadow-soft">
+              <Calendar className="w-4 h-4 text-white" />
+            </div>
+            <h3 className="text-lg font-bold text-health-text-primary">
+              {formatWeekRange(weekStartDate)}
+            </h3>
+          </div>
+          <p className="text-sm text-health-text-secondary font-medium bg-health-soft px-3 py-1 rounded-lg inline-block">
+            {getWeekStatus(currentWeekOffset)}
+          </p>
         </div>
 
         <Button
           variant="outline"
           onClick={() => onWeekChange(currentWeekOffset + 1)}
-          className="bg-white/80 text-sm sm:text-base"
+          className="bg-white/90 hover:bg-health-soft-blue border-2 border-health-border hover:border-health-primary text-health-text-primary hover:text-health-primary font-medium px-4 py-2 rounded-xl shadow-soft hover:shadow-health transform hover:scale-105 transition-all duration-300"
           size="sm"
         >
           {t('mealPlan.nextWeek')}
-          <ChevronRight className="w-4 h-4 ml-1" />
+          <ChevronRight className="w-4 h-4 ml-2" />
         </Button>
       </div>
     </Card>

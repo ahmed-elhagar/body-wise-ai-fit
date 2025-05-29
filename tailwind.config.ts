@@ -53,14 +53,32 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				// Enhanced Health & Fitness Color System
+				health: {
+					primary: '#2563eb',     // Vibrant Blue - Trust & Reliability
+					secondary: '#16a34a',   // Fresh Green - Health & Growth
+					accent: '#dc2626',      // Energy Red - Action & Motivation
+					warning: '#f59e0b',     // Amber - Caution & Energy
+					success: '#10b981',     // Emerald - Achievement & Success
+					info: '#3b82f6',        // Sky Blue - Information & Calm
+					soft: '#f8fafc',        // Very Light Gray - Background
+					'soft-blue': '#eff6ff', // Light Blue Background
+					'soft-green': '#f0fdf4', // Light Green Background
+					'soft-red': '#fef2f2',  // Light Red Background
+					border: '#e2e8f0',      // Soft Border Gray
+					'border-light': '#f1f5f9', // Lighter Border
+					'text-primary': '#1e293b',   // Dark Slate for Primary Text
+					'text-secondary': '#64748b', // Slate for Secondary Text
+					'text-muted': '#94a3b8',     // Light Slate for Muted Text
+				},
 				fitness: {
 					primary: '#2563eb',
-					secondary: '#64748b',
-					accent: '#059669',
-					success: '#16a34a',
-					warning: '#d97706',
+					secondary: '#16a34a',
+					accent: '#dc2626',
+					success: '#10b981',
+					warning: '#f59e0b',
 					danger: '#dc2626',
-					'soft-blue': '#f8fafc',
+					'soft-blue': '#eff6ff',
 					'soft-green': '#f0fdf4',
 					'soft-gray': '#f8fafc',
 					'neutral-50': '#fafafa',
@@ -116,17 +134,38 @@ export default {
 					'100%': {
 						transform: 'translateX(0)'
 					}
+				},
+				'pulse-soft': {
+					'0%, 100%': {
+						opacity: '1'
+					},
+					'50%': {
+						opacity: '0.8'
+					}
+				},
+				'bounce-gentle': {
+					'0%, 100%': {
+						transform: 'translateY(0)'
+					},
+					'50%': {
+						transform: 'translateY(-2px)'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'fade-in': 'fade-in 0.3s ease-out',
-				'slide-in': 'slide-in 0.3s ease-out'
+				'slide-in': 'slide-in 0.3s ease-out',
+				'pulse-soft': 'pulse-soft 2s ease-in-out infinite',
+				'bounce-gentle': 'bounce-gentle 1s ease-in-out infinite'
 			},
 			backgroundImage: {
 				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-				'health-gradient': 'linear-gradient(135deg, #2563eb 0%, #059669 100%)',
+				'health-gradient': 'linear-gradient(135deg, #2563eb 0%, #16a34a 100%)',
+				'success-gradient': 'linear-gradient(135deg, #10b981 0%, #16a34a 100%)',
+				'energy-gradient': 'linear-gradient(135deg, #f59e0b 0%, #dc2626 100%)',
+				'calm-gradient': 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
 				'neutral-gradient': 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)'
 			},
 			spacing: {
@@ -135,6 +174,12 @@ export default {
 			},
 			fontSize: {
 				'2xs': '0.625rem',
+			},
+			boxShadow: {
+				'health': '0 4px 14px 0 rgba(37, 99, 235, 0.15)',
+				'success': '0 4px 14px 0 rgba(16, 185, 129, 0.15)',
+				'soft': '0 2px 8px 0 rgba(0, 0, 0, 0.06)',
+				'elevated': '0 8px 32px 0 rgba(0, 0, 0, 0.12)',
 			}
 		}
 	},
