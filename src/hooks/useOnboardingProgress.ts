@@ -29,7 +29,7 @@ export const useOnboardingProgress = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: progress, isLoading } = useQuery({
+  const { data: progress, isLoading, refetch } = useQuery({
     queryKey: ['onboarding-progress', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
@@ -81,7 +81,7 @@ export const useOnboardingProgress = () => {
         console.log('useOnboardingProgress - Updated existing progress:', data);
         return data;
       } else {
-        // Create new record with defaults
+        // Create new record with defaults - now only 4 steps
         const { data, error } = await supabase
           .from('onboarding_progress')
           .insert({
@@ -93,7 +93,7 @@ export const useOnboardingProgress = () => {
             profile_review_completed: false,
             completion_percentage: 0,
             current_step: 1,
-            total_steps: 5,
+            total_steps: 4, // Changed from 5 to 4
             started_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
             ...progressData,
@@ -112,6 +112,7 @@ export const useOnboardingProgress = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['onboarding-progress'] });
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      refetch();
     },
     onError: (error) => {
       console.error('Error updating onboarding progress:', error);
@@ -126,29 +127,28 @@ export const useOnboardingProgress = () => {
     stepData[`${step}_completed`] = true;
     stepData[`${step}_completed_at`] = new Date().toISOString();
     
-    // Calculate completion percentage based on current progress
+    // Calculate completion percentage based on current progress - now only 4 steps
     const currentProgress = progress || {
       basic_info_completed: false,
       health_assessment_completed: false,
       goals_setup_completed: false,
       preferences_completed: false,
-      profile_review_completed: false
     };
     
     // Update the specific step we're marking complete
     const updatedProgress = { ...currentProgress, [`${step}_completed`]: true };
     
-    const totalSteps = 5;
+    const totalSteps = 4; // Changed from 5 to 4 (removed profile_review)
     const completedSteps = [
       updatedProgress.basic_info_completed,
       updatedProgress.health_assessment_completed,
       updatedProgress.goals_setup_completed,
       updatedProgress.preferences_completed,
-      updatedProgress.profile_review_completed
     ].filter(Boolean).length;
     
     stepData.completion_percentage = Math.round((completedSteps / totalSteps) * 100);
     stepData.current_step = Math.min(completedSteps + 1, totalSteps);
+    stepData.total_steps = totalSteps;
     
     // If all steps are complete, mark overall completion
     if (completedSteps === totalSteps) {
@@ -173,5 +173,6 @@ export const useOnboardingProgress = () => {
     updateProgress: updateProgressMutation.mutateAsync,
     markStepComplete,
     isUpdating: updateProgressMutation.isPending,
+    refetch,
   };
 };

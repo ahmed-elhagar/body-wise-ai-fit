@@ -36,8 +36,8 @@ export const useProfileCompletionSteps = (completionScore: number) => {
 
   // Check progress table for preferences completion
   const isPreferencesComplete = progress?.preferences_completed || false;
-  const isProfileReviewComplete = progress?.profile_review_completed || completionScore >= 90;
 
+  // Remove profile review step - only 4 steps now
   const steps = [
     {
       key: 'basic_info',
@@ -63,12 +63,6 @@ export const useProfileCompletionSteps = (completionScore: number) => {
       description: t('appSettingsNotificationPreferences') || 'App settings and notification preferences',
       completed: isPreferencesComplete,
     },
-    {
-      key: 'profile_review',
-      title: t('profileReview') || 'Profile Review',
-      description: t('finalReviewConfirmation') || 'Final review and confirmation',
-      completed: isProfileReviewComplete,
-    },
   ];
 
   const nextIncompleteStep = steps.find(step => !step.completed);
@@ -79,7 +73,6 @@ export const useProfileCompletionSteps = (completionScore: number) => {
     isHealthAssessmentComplete,
     isGoalsComplete,
     isPreferencesComplete: isPreferencesComplete,
-    isProfileReviewComplete,
     completionScore,
     steps: steps.map(s => ({ key: s.key, completed: s.completed })),
     nextIncompleteStep: nextIncompleteStep?.key,

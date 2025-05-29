@@ -17,10 +17,10 @@ const CompactHealthAssessmentForm = () => {
   const { markStepComplete } = useOnboardingProgress();
   
   const [formData, setFormData] = useState({
-    chronic_conditions: [],
-    medications: [],
-    injuries: [],
-    physical_limitations: [],
+    chronic_conditions: [] as string[],
+    medications: [] as string[],
+    injuries: [] as string[],
+    physical_limitations: [] as string[],
     stress_level: 5,
     sleep_quality: 7,
     energy_level: 7,
@@ -29,8 +29,8 @@ const CompactHealthAssessmentForm = () => {
     nutrition_knowledge: '',
     cooking_skills: '',
     time_availability: '',
-    primary_motivation: [],
-    specific_goals: [],
+    primary_motivation: [] as string[],
+    specific_goals: [] as string[],
     timeline_expectation: '',
     commitment_level: 7,
   });
@@ -295,14 +295,14 @@ const CompactHealthAssessmentForm = () => {
           />
         </div>
 
-        {/* Optional Goals */}
+        {/* Primary Motivation - Fixed to handle spaces */}
         <div>
           <Label className="text-xs">Primary Motivation (optional)</Label>
-          <Input
+          <Textarea
             placeholder="e.g., weight loss, muscle gain, health improvement"
             value={formData.primary_motivation.join(', ')}
             onChange={(e) => handleArrayInput('primary_motivation', e.target.value)}
-            className="text-sm h-8"
+            className="text-sm h-16 resize-none"
           />
         </div>
 

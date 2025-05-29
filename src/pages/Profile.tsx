@@ -78,9 +78,6 @@ const Profile = () => {
       case 'preferences':
         setActiveTab('settings');
         break;
-      case 'profile_review':
-        setActiveTab('overview');
-        break;
       default:
         setActiveTab('overview');
     }
@@ -228,9 +225,9 @@ const Profile = () => {
               <ProfileCompletionCard onStepClick={handleStepClick} />
             </div>
 
-            {/* Main Content with Compact Tabs */}
+            {/* Main Content with Compact Tabs - Now only 4 tabs */}
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-              <TabsList className="grid w-full grid-cols-5 mb-3 h-auto p-1">
+              <TabsList className="grid w-full grid-cols-4 mb-3 h-auto p-1">
                 <TabsTrigger value="overview" className="flex flex-col items-center gap-1 p-1 text-xs">
                   <Eye className="w-3 h-3" />
                   <span>Overview</span>

@@ -34,7 +34,7 @@ export const useHealthAssessment = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: assessment, isLoading } = useQuery({
+  const { data: assessment, isLoading, refetch } = useQuery({
     queryKey: ['health-assessment', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
@@ -65,19 +65,28 @@ export const useHealthAssessment = () => {
 
       console.log('useHealthAssessment - Saving assessment data:', assessmentData);
 
-      const dataToSave = {
+      // Ensure arrays are properly formatted
+      const cleanedData = {
         ...assessmentData,
         user_id: user.id,
         completed_at: new Date().toISOString(),
-        assessment_type: 'enhanced_profile'
+        assessment_type: 'enhanced_profile',
+        chronic_conditions: Array.isArray(assessmentData.chronic_conditions) ? assessmentData.chronic_conditions : [],
+        medications: Array.isArray(assessmentData.medications) ? assessmentData.medications : [],
+        injuries: Array.isArray(assessmentData.injuries) ? assessmentData.injuries : [],
+        physical_limitations: Array.isArray(assessmentData.physical_limitations) ? assessmentData.physical_limitations : [],
+        primary_motivation: Array.isArray(assessmentData.primary_motivation) ? assessmentData.primary_motivation : [],
+        specific_goals: Array.isArray(assessmentData.specific_goals) ? assessmentData.specific_goals : [],
       };
 
       // Remove undefined values
-      Object.keys(dataToSave).forEach(key => {
-        if (dataToSave[key as keyof typeof dataToSave] === undefined) {
-          delete dataToSave[key as keyof typeof dataToSave];
+      Object.keys(cleanedData).forEach(key => {
+        if (cleanedData[key as keyof typeof cleanedData] === undefined) {
+          delete cleanedData[key as keyof typeof cleanedData];
         }
       });
+
+      console.log('useHealthAssessment - Cleaned data to save:', cleanedData);
 
       // Check if assessment exists
       const { data: existing } = await supabase
@@ -91,7 +100,7 @@ export const useHealthAssessment = () => {
         // Update existing
         const { data, error } = await supabase
           .from('health_assessments')
-          .update(dataToSave)
+          .update(cleanedData)
           .eq('user_id', user.id)
           .select()
           .single();
@@ -106,7 +115,7 @@ export const useHealthAssessment = () => {
         // Insert new
         const { data, error } = await supabase
           .from('health_assessments')
-          .insert(dataToSave)
+          .insert(cleanedData)
           .select()
           .single();
 
@@ -122,9 +131,14 @@ export const useHealthAssessment = () => {
     },
     onSuccess: (data) => {
       console.log('useHealthAssessment - Assessment saved successfully:', data);
+      // Invalidate and refetch all related queries
       queryClient.invalidateQueries({ queryKey: ['health-assessment'] });
       queryClient.invalidateQueries({ queryKey: ['onboarding-progress'] });
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      
+      // Force refetch
+      refetch();
+      
       toast.success('Health assessment saved successfully!');
     },
     onError: (error) => {
@@ -138,5 +152,6 @@ export const useHealthAssessment = () => {
     isLoading,
     saveAssessment: saveAssessmentMutation.mutateAsync,
     isSaving: saveAssessmentMutation.isPending,
+    refetch,
   };
 };
