@@ -37,6 +37,13 @@ export const commonTranslations = {
   'recipe': 'وصفة',
   'exchange': 'تبديل',
 
+  // Additional missing translations
+  'todaysSummary': 'ملخص اليوم',
+  'shoppingList': 'قائمة التسوق',
+  'addSnack': 'إضافة وجبة خفيفة',
+  'snackAddedSuccessfully': 'تم إضافة الوجبة الخفيفة بنجاح!',
+  'failedToAddSnack': 'فشل في إضافة الوجبة الخفيفة',
+
   // Common phrases
   'kg': 'كغ',
   'lbs': 'رطل',

@@ -80,32 +80,32 @@ const StatsGrid = () => {
   };
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       {stats.map((stat, index) => {
         const TrendIcon = getTrendIcon(stat.changeType);
         const IconComponent = stat.icon;
 
         return (
-          <Card key={index} className={`relative overflow-hidden bg-gradient-to-br ${stat.bgGradient} border ${stat.borderColor} shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 rounded-lg p-3`}>
+          <Card key={index} className={`relative overflow-hidden bg-gradient-to-br ${stat.bgGradient} border ${stat.borderColor} shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 rounded-xl p-4`}>
             {/* Header */}
-            <div className={`flex items-center justify-between mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <div className={`w-6 h-6 bg-gradient-to-br ${stat.gradient} rounded-md flex items-center justify-center shadow-sm`}>
-                <IconComponent className="w-3 h-3 text-white" />
+            <div className={`flex items-center justify-between mb-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <div className={`w-8 h-8 bg-gradient-to-br ${stat.gradient} rounded-xl flex items-center justify-center shadow-md`}>
+                <IconComponent className="w-4 h-4 text-white" />
               </div>
               <div className={`text-right ${isRTL ? 'text-left' : ''}`}>
-                <div className="text-xs text-gray-600 font-medium">
+                <div className="text-xs text-gray-600 font-semibold leading-tight">
                   {stat.title}
                 </div>
               </div>
             </div>
 
             {/* Main Value */}
-            <div className={`mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
+            <div className={`mb-3 ${isRTL ? 'text-right' : 'text-left'}`}>
               <div className="flex items-baseline gap-1">
-                <span className="text-lg font-bold text-gray-800">
+                <span className="text-xl lg:text-2xl font-bold text-gray-800">
                   {stat.value}
                 </span>
-                <span className="text-xs font-medium text-gray-600">
+                <span className="text-sm font-medium text-gray-600">
                   {stat.unit}
                 </span>
               </div>
@@ -113,8 +113,8 @@ const StatsGrid = () => {
 
             {/* Trend Indicator */}
             <div className={`flex items-center gap-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <Badge className={`${getTrendColor(stat.changeType)} border text-xs font-semibold rounded-md px-1.5 py-0.5`}>
-                <TrendIcon className="w-2 h-2 mr-0.5" />
+              <Badge className={`${getTrendColor(stat.changeType)} border text-xs font-semibold rounded-lg px-2 py-0.5 hover:shadow-md transition-shadow`}>
+                <TrendIcon className="w-2.5 h-2.5 mr-1" />
                 {stat.change !== 0 ? `${Math.abs(stat.change)}%` : 'No change'}
               </Badge>
             </div>

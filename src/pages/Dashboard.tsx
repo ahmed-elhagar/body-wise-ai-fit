@@ -48,36 +48,36 @@ const Dashboard = () => {
   }
 
   return (
-    <div className={`min-h-screen bg-fitness-neutral-50 flex ${isRTL ? 'rtl' : 'ltr'}`}>
+    <div className={`min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex ${isRTL ? 'rtl' : 'ltr'}`}>
       <Navigation />
       <div className={`flex-1 ${isRTL ? 'mr-0 md:mr-64' : 'ml-0 md:ml-64'} transition-all duration-300`}>
-        <div className="container mx-auto px-3 py-4 max-w-7xl">
+        <div className="container mx-auto px-4 py-6 max-w-7xl">
           {/* Header Section */}
-          <div className="mb-4">
+          <div className="mb-6">
             <DashboardHeader />
           </div>
 
           {/* Stats Grid */}
-          <div className="mb-4">
+          <div className="mb-6">
             <StatsGrid />
           </div>
 
-          {/* Main Content Grid */}
-          <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
-            {/* Quick Actions */}
-            <div className="xl:col-span-4 order-1">
+          {/* Main Content - Side by Side Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            {/* Quick Actions - Compact */}
+            <div className="lg:col-span-1">
               <QuickActionsGrid />
             </div>
 
-            {/* Activity Feed */}
-            <div className="xl:col-span-8 order-2">
+            {/* Activity Feed - Takes more space */}
+            <div className="lg:col-span-2">
               <ActivityFeed />
             </div>
+          </div>
 
-            {/* Progress Overview */}
-            <div className="xl:col-span-12 order-3">
-              <ProgressOverview />
-            </div>
+          {/* Progress Overview - Full width */}
+          <div className="mb-6">
+            <ProgressOverview />
           </div>
         </div>
       </div>

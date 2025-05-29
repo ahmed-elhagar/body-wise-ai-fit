@@ -17,6 +17,14 @@ export const dashboardTranslations = {
   'dashboard.notSet': 'غير محدد',
   'dashboard.completeProfile': 'أكمل الملف الشخصي',
 
+  // Missing dashboard translations
+  'dashboard.goodMorning': 'صباح الخير',
+  'dashboard.goodAfternoon': 'مساء الخير',
+  'dashboard.goodEvening': 'مساء الخير',
+  'dashboard.goalProgress': 'تقدم الهدف',
+  'dashboard.workoutsWeek': 'تمارين هذا الأسبوع',
+  'dashboard.todayCalories': 'سعرات اليوم',
+
   // Quick Actions
   'quickActions.title': 'إجراءات سريعة',
   'quickActions.logWeight': 'تسجيل الوزن',

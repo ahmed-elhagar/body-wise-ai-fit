@@ -37,6 +37,13 @@ export const commonTranslations = {
   'recipe': 'Recipe',
   'exchange': 'Exchange',
 
+  // Additional missing translations
+  'todaysSummary': 'Today\'s Summary',
+  'shoppingList': 'Shopping List',
+  'addSnack': 'Add Snack',
+  'snackAddedSuccessfully': 'Snack added successfully!',
+  'failedToAddSnack': 'Failed to add snack',
+
   // Common phrases
   'kg': 'kg',
   'lbs': 'lbs',

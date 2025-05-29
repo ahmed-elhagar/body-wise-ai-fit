@@ -17,6 +17,14 @@ export const dashboardTranslations = {
   'dashboard.notSet': 'Not Set',
   'dashboard.completeProfile': 'Complete Profile',
 
+  // Missing dashboard translations
+  'dashboard.goodMorning': 'Good Morning',
+  'dashboard.goodAfternoon': 'Good Afternoon',
+  'dashboard.goodEvening': 'Good Evening',
+  'dashboard.goalProgress': 'Goal Progress',
+  'dashboard.workoutsWeek': 'Workouts This Week',
+  'dashboard.todayCalories': 'Today\'s Calories',
+
   // Quick Actions
   'quickActions.title': 'Quick Actions',
   'quickActions.logWeight': 'Log Weight',
