@@ -65,29 +65,7 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
         calculatedWeek: weekStartDate.toDateString()
       });
       
-      // First, check what meal plans exist for this user
-      const { data: allPlans, error: allPlansError } = await supabase
-        .from('weekly_meal_plans')
-        .select('id, week_start_date, created_at, user_id, total_calories')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-      
-      if (allPlansError) {
-        console.error('❌ Error fetching all plans:', allPlansError);
-      }
-      
-      console.log('🔍 ALL USER MEAL PLANS:', {
-        searchedDate: weekStartDateStr,
-        userPlans: allPlans?.map(p => ({ 
-          id: p.id, 
-          week_start_date: p.week_start_date, 
-          created_at: p.created_at,
-          total_calories: p.total_calories
-        })) || [],
-        totalFound: allPlans?.length || 0
-      });
-      
-      // Try to find the specific week
+      // Try to find the specific week first
       const { data: weeklyPlan, error: weeklyError } = await supabase
         .from('weekly_meal_plans')
         .select('*')
@@ -101,15 +79,37 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
       }
 
       if (!weeklyPlan) {
-        console.log('❌ NO MEAL PLAN FOUND for date:', weekStartDateStr);
-        console.log('Available dates:', allPlans?.map(p => p.week_start_date) || []);
+        console.log('❌ NO MEAL PLAN FOUND for exact date:', weekStartDateStr);
         
-        // If no plan found for exact date but plans exist, try the most recent one
+        // Check what meal plans exist for this user for debugging
+        const { data: allPlans } = await supabase
+          .from('weekly_meal_plans')
+          .select('id, week_start_date, created_at, total_calories')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+        
+        console.log('🔍 ALL USER MEAL PLANS:', {
+          searchedDate: weekStartDateStr,
+          userPlans: allPlans?.map(p => ({ 
+            id: p.id, 
+            week_start_date: p.week_start_date, 
+            created_at: p.created_at,
+            total_calories: p.total_calories
+          })) || [],
+          totalFound: allPlans?.length || 0
+        });
+        
+        // For non-current weeks, don't fallback to avoid confusion
+        if (weekOffset !== 0) {
+          console.log('⚠️ No meal plan for non-current week, returning null');
+          return null;
+        }
+        
+        // Only for current week (offset 0), try fallback to most recent plan
         if (allPlans && allPlans.length > 0) {
-          console.log('🔄 Trying most recent plan as fallback...');
+          console.log('🔄 Trying most recent plan as fallback for current week...');
           const mostRecentPlan = allPlans[0];
           
-          // Fetch meals for the most recent plan
           const { data: recentPlanMeals, error: recentMealsError } = await supabase
             .from('daily_meals')
             .select('*')
@@ -215,7 +215,7 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
     staleTime: 0, // Always fetch fresh data
     gcTime: 0, // Don't cache
     retry: 1,
-    refetchOnWindowFocus: true,
+    refetchOnWindowFocus: false, // Prevent excessive refetches
     refetchOnMount: true,
   });
 

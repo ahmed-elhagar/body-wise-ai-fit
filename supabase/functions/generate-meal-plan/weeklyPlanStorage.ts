@@ -40,13 +40,14 @@ interface GeneratedPlan {
   };
 }
 
-// CRITICAL FIX: Accept weekOffset parameter and use it consistently
+// CRITICAL FIX: Use exact same logic as frontend getWeekStartDate
 const getWeekStartDate = (weekOffset: number = 0): Date => {
   const today = new Date();
   
   // Use same logic as frontend: find Saturday start of week
   const currentDayOfWeek = today.getDay(); // 0=Sunday, 6=Saturday
   
+  // Calculate days to get to Saturday (start of week)
   let daysToSaturday: number;
   if (currentDayOfWeek === 6) {
     // Today is Saturday

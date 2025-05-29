@@ -52,6 +52,7 @@ export const useMealPlanState = () => {
     prepTime: dailyMeal.prep_time || 10,
     servings: dailyMeal.servings || 1,
     image: dailyMeal.image_url || '',
+    image_url: dailyMeal.image_url || '',
     youtubeId: dailyMeal.youtube_search_term || ''
   });
 
@@ -97,24 +98,21 @@ export const useMealPlanState = () => {
       console.log('🚀 Starting AI meal plan generation with preferences:', aiPreferences);
       console.log('🎯 Generating for week offset:', currentWeekOffset);
       
-      // Always generate for current week (offset 0) to ensure it appears
-      const result = await generateMealPlan(aiPreferences, { weekOffset: 0 });
+      // CRITICAL FIX: Generate for the currently selected week offset
+      const result = await generateMealPlan(aiPreferences, { weekOffset: currentWeekOffset });
       
       if (result?.success) {
         console.log('✅ Generation successful, result:', result);
         
         setShowAIDialog(false);
         
-        // Reset to current week to see the new plan
-        setCurrentWeekOffset(0);
-        
-        // Force immediate refetch with a delay to ensure database is updated
+        // Force immediate refetch to show the new plan
         setTimeout(async () => {
           console.log('🔄 Forcing refetch after generation...');
           await refetchMealPlan?.();
         }, 500);
         
-        // Additional refetch after longer delay
+        // Additional refetch after longer delay for consistency
         setTimeout(async () => {
           console.log('🔄 Secondary refetch for consistency...');
           await refetchMealPlan?.();

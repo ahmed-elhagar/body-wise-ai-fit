@@ -14,8 +14,8 @@ const WeeklyMealPlanView = ({ weeklyPlan, onShowRecipe, onExchangeMeal }: Weekly
   const { t } = useLanguage();
   
   const dayNames = [
-    t('day.monday'), t('day.tuesday'), t('day.wednesday'), 
-    t('day.thursday'), t('day.friday'), t('day.saturday'), t('day.sunday')
+    t('day.saturday'), t('day.sunday'), t('day.monday'), 
+    t('day.tuesday'), t('day.wednesday'), t('day.thursday'), t('day.friday')
   ];
   
   const getDietType = () => {
@@ -49,13 +49,14 @@ const WeeklyMealPlanView = ({ weeklyPlan, onShowRecipe, onExchangeMeal }: Weekly
   const weeklyCalories = weeklyPlan?.weeklyPlan?.total_calories || weeklyPlan?.total_calories || 0;
   const weeklyProtein = weeklyPlan?.weeklyPlan?.total_protein || weeklyPlan?.total_protein || 0;
 
-  // Fix: Access the dailyMeals correctly
+  // FIXED: Access the dailyMeals correctly from the data structure
   const dailyMealsData = weeklyPlan?.dailyMeals || [];
 
   console.log('🔍 WeeklyMealPlanView Debug:', {
     weeklyPlan: weeklyPlan,
     dailyMealsData: dailyMealsData,
-    mealsCount: dailyMealsData.length
+    mealsCount: dailyMealsData.length,
+    weeklyPlanStructure: weeklyPlan?.weeklyPlan ? 'nested' : 'flat'
   });
 
   return (
