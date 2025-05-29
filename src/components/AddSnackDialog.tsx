@@ -35,7 +35,60 @@ const AddSnackDialog = ({
   const { t, isRTL } = useLanguage();
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const remainingCalories = Math.max(0, targetDayCalories - currentDayCalories);
+  // Calculate dynamic target calories from profile if available
+  const getDynamicTargetCalories = () => {
+    if (profile?.weight && profile?.height && profile?.age) {
+      const weight = Number(profile.weight);
+      const height = Number(profile.height);
+      const age = Number(profile.age);
+      
+      let bmr = 0;
+      if (profile.gender === 'male') {
+        bmr = 10 * weight + 6.25 * height - 5 * age + 5;
+      } else {
+        bmr = 10 * weight + 6.25 * height - 5 * age - 161;
+      }
+      
+      const activityMultipliers = {
+        'sedentary': 1.2,
+        'lightly_active': 1.375,
+        'moderately_active': 1.55,
+        'very_active': 1.725,
+        'extremely_active': 1.9
+      };
+      
+      const multiplier = activityMultipliers[profile.activity_level as keyof typeof activityMultipliers] || 1.375;
+      
+      let calorieAdjustment = 1;
+      if (profile.fitness_goal === 'lose_weight') {
+        calorieAdjustment = 0.85;
+      } else if (profile.fitness_goal === 'gain_weight') {
+        calorieAdjustment = 1.15;
+      }
+      
+      return Math.round(bmr * multiplier * calorieAdjustment);
+    }
+    
+    return targetDayCalories || 2000;
+  };
+
+  const dynamicTargetCalories = getDynamicTargetCalories();
+  const remainingCalories = Math.max(0, dynamicTargetCalories - currentDayCalories);
+
+  console.log('🍎 AddSnackDialog - Calorie Analysis:', {
+    currentDayCalories,
+    originalTarget: targetDayCalories,
+    dynamicTarget: dynamicTargetCalories,
+    remainingCalories,
+    profileData: {
+      weight: profile?.weight,
+      height: profile?.height,
+      age: profile?.age,
+      gender: profile?.gender,
+      activityLevel: profile?.activity_level,
+      fitnessGoal: profile?.fitness_goal
+    }
+  });
 
   const handleGenerateAISnack = async () => {
     if (!user || !weeklyPlanId) {
@@ -51,11 +104,13 @@ const AddSnackDialog = ({
     setIsGenerating(true);
     
     try {
-      console.log('🍎 Generating AI snack with params:', {
+      console.log('🍎 Generating AI snack with enhanced params:', {
         userProfile: profile,
         dayNumber: selectedDay,
         remainingCalories,
-        weeklyPlanId
+        weeklyPlanId,
+        currentDayCalories,
+        targetCalories: dynamicTargetCalories
       });
 
       const { data, error } = await supabase.functions.invoke('generate-ai-snack', {
@@ -63,7 +118,9 @@ const AddSnackDialog = ({
           userProfile: profile,
           dayNumber: selectedDay,
           remainingCalories,
-          weeklyPlanId
+          weeklyPlanId,
+          currentDayCalories,
+          targetCalories: dynamicTargetCalories
         }
       });
 
@@ -94,7 +151,7 @@ const AddSnackDialog = ({
         <div className="space-y-6">
           <CalorieProgressCard 
             currentDayCalories={currentDayCalories}
-            targetDayCalories={targetDayCalories}
+            targetDayCalories={dynamicTargetCalories}
           />
 
           {remainingCalories < 50 ? (

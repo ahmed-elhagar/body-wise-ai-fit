@@ -1,6 +1,7 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useProfile } from "@/hooks/useProfile";
 import { useDynamicMealPlan } from "@/hooks/useDynamicMealPlan";
 import { useMealPlanActions } from "@/hooks/useMealPlanActions";
 import { getCurrentSaturdayDay, getWeekStartDate, getCategoryForIngredient } from "@/utils/mealPlanUtils";
@@ -8,6 +9,7 @@ import type { Meal } from "@/types/meal";
 
 export const useMealPlanState = () => {
   const { t } = useLanguage();
+  const { profile } = useProfile();
   const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
   const [selectedDayNumber, setSelectedDayNumber] = useState(getCurrentSaturdayDay());
   const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
@@ -48,11 +50,6 @@ export const useMealPlanState = () => {
     weekStartDate: weekStartDate.toDateString()
   });
 
-  // Log any errors for debugging
-  if (error) {
-    console.error('useDynamicMealPlan error:', error);
-  }
-
   // Memoized conversion from DailyMeal to Meal type
   const convertDailyMealToMeal = useCallback((dailyMeal: any): Meal => ({
     id: dailyMeal.id,
@@ -87,17 +84,80 @@ export const useMealPlanState = () => {
       selectedDayNumber,
       totalDailyMeals: currentWeekPlan?.dailyMeals?.length || 0,
       filteredMealsCount: todaysDailyMeals.length,
-      meals: todaysDailyMeals.map(m => ({ day: m.day_number, type: m.meal_type, name: m.name }))
+      meals: todaysDailyMeals.map(m => ({ day: m.day_number, type: m.meal_type, name: m.name, calories: m.calories }))
     });
     
     return todaysDailyMeals.map(convertDailyMealToMeal);
   }, [currentWeekPlan?.dailyMeals, selectedDayNumber, convertDailyMealToMeal]);
   
-  // Memoized nutrition calculations
-  const { totalCalories, totalProtein } = useMemo(() => ({
-    totalCalories: todaysMeals.reduce((sum, meal) => sum + (meal.calories || 0), 0),
-    totalProtein: todaysMeals.reduce((sum, meal) => sum + (meal.protein || 0), 0)
-  }), [todaysMeals]);
+  // Enhanced nutrition calculations with proper data validation
+  const { totalCalories, totalProtein } = useMemo(() => {
+    const calories = todaysMeals.reduce((sum, meal) => {
+      const mealCalories = Number(meal.calories) || 0;
+      return sum + mealCalories;
+    }, 0);
+    
+    const protein = todaysMeals.reduce((sum, meal) => {
+      const mealProtein = Number(meal.protein) || 0;
+      return sum + mealProtein;
+    }, 0);
+
+    console.log('📊 NUTRITION CALCULATIONS:', {
+      selectedDay: selectedDayNumber,
+      mealsCount: todaysMeals.length,
+      totalCalories: calories,
+      totalProtein: protein,
+      mealBreakdown: todaysMeals.map(m => ({
+        name: m.name,
+        calories: m.calories,
+        protein: m.protein
+      }))
+    });
+    
+    return {
+      totalCalories: Math.round(calories),
+      totalProtein: Math.round(protein * 10) / 10
+    };
+  }, [todaysMeals, selectedDayNumber]);
+
+  // Calculate target calories from user profile
+  const getTargetDayCalories = useCallback(() => {
+    if (profile?.weight && profile?.height && profile?.age) {
+      const weight = Number(profile.weight);
+      const height = Number(profile.height);
+      const age = Number(profile.age);
+      
+      let bmr = 0;
+      if (profile.gender === 'male') {
+        bmr = 10 * weight + 6.25 * height - 5 * age + 5;
+      } else {
+        bmr = 10 * weight + 6.25 * height - 5 * age - 161;
+      }
+      
+      const activityMultipliers = {
+        'sedentary': 1.2,
+        'lightly_active': 1.375,
+        'moderately_active': 1.55,
+        'very_active': 1.725,
+        'extremely_active': 1.9
+      };
+      
+      const multiplier = activityMultipliers[profile.activity_level as keyof typeof activityMultipliers] || 1.375;
+      
+      let calorieAdjustment = 1;
+      if (profile.fitness_goal === 'lose_weight') {
+        calorieAdjustment = 0.85;
+      } else if (profile.fitness_goal === 'gain_weight') {
+        calorieAdjustment = 1.15;
+      }
+      
+      return Math.round(bmr * multiplier * calorieAdjustment);
+    }
+    
+    return 2000; // Default fallback
+  }, [profile]);
+
+  const targetDayCalories = getTargetDayCalories();
 
   // Memoized shopping items conversion
   const convertMealsToShoppingItems = useCallback((meals: Meal[]) => {
@@ -175,6 +235,7 @@ export const useMealPlanState = () => {
     todaysMeals,
     totalCalories,
     totalProtein,
+    targetDayCalories,
     error,
     
     // Handlers

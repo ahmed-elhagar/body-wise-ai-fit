@@ -20,7 +20,7 @@ export const useMealPlanPage = () => {
   };
 
   // Enhanced debugging output for week-specific data
-  console.log('🚀 MEAL PLAN PAGE - WEEK-SPECIFIC DEBUG:', {
+  console.log('🚀 MEAL PLAN PAGE - ENHANCED DEBUG:', {
     currentWeekOffset: mealPlanState.currentWeekOffset,
     weekStartDate: mealPlanState.weekStartDate.toDateString(),
     hasWeeklyPlan: !!mealPlanState.currentWeekPlan?.weeklyPlan,
@@ -29,6 +29,9 @@ export const useMealPlanPage = () => {
     dailyMealsCount: mealPlanState.currentWeekPlan?.dailyMeals?.length || 0,
     todaysMealsCount: mealPlanState.todaysMeals?.length || 0,
     selectedDay: mealPlanState.selectedDayNumber,
+    totalCalories: mealPlanState.totalCalories,
+    totalProtein: mealPlanState.totalProtein,
+    targetDayCalories: mealPlanState.targetDayCalories,
     isLoading: mealPlanState.isLoading,
     error: mealPlanState.error?.message
   });

@@ -55,9 +55,9 @@ const MealPlanMainContent = ({
   onExchangeMeal
 }: MealPlanMainContentProps) => {
   return (
-    <div className="space-y-3 px-2 sm:px-4 max-w-7xl mx-auto">
+    <div className="space-y-2 px-2 sm:px-4 max-w-7xl mx-auto">
       {/* Compact Navigation Section */}
-      <div className="sticky top-0 z-10 bg-gray-50/95 backdrop-blur-sm -mx-2 sm:-mx-4 px-2 sm:px-4 py-2 border-b border-gray-200/50">
+      <div className="sticky top-0 z-10 bg-gray-50/95 backdrop-blur-sm -mx-2 sm:-mx-4 px-2 sm:px-4 py-1 border-b border-gray-200/50">
         <CompactNavigation
           currentWeekOffset={currentWeekOffset}
           onWeekChange={onWeekChange}
@@ -74,17 +74,19 @@ const MealPlanMainContent = ({
           <EmptyMealPlan onGenerate={onGenerate} />
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {/* Action Section with Summary - Only for weekly view */}
-          <ActionSection
-            viewMode={viewMode}
-            totalCalories={totalCalories}
-            totalProtein={totalProtein}
-            onShowShoppingList={onShowShoppingList}
-            onAddSnack={onAddSnack}
-            showAddSnack={false}
-            showShoppingList={false}
-          />
+          {viewMode === 'weekly' && (
+            <ActionSection
+              viewMode={viewMode}
+              totalCalories={totalCalories}
+              totalProtein={totalProtein}
+              onShowShoppingList={onShowShoppingList}
+              onAddSnack={onAddSnack}
+              showAddSnack={false}
+              showShoppingList={false}
+            />
+          )}
 
           {/* Main Content */}
           <div className="px-2 sm:px-0">
