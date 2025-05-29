@@ -98,10 +98,6 @@ export const useMealPlanState = () => {
     setShowExchangeDialog(true);
   };
 
-  const handleFinalizePlan = () => {
-    toast.success(t('mealPlan.planFinalized'));
-  };
-
   const refetch = () => {
     // Force reload to get updated data
     window.location.reload();
@@ -144,7 +140,6 @@ export const useMealPlanState = () => {
     handleGenerateAIPlan,
     handleShowRecipe,
     handleExchangeMeal,
-    handleFinalizePlan,
     refetch,
     convertMealsToShoppingItems
   };

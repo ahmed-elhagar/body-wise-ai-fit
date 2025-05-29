@@ -46,7 +46,6 @@ const MealPlan = () => {
     handleGenerateAIPlan,
     handleShowRecipe,
     handleExchangeMeal,
-    handleFinalizePlan,
     refetch,
     convertMealsToShoppingItems
   } = useMealPlanState();
@@ -96,7 +95,6 @@ const MealPlan = () => {
           viewMode={viewMode}
           onViewModeChange={setViewMode}
           onAddSnack={() => setShowAddSnackDialog(true)}
-          onFinalizePlan={handleFinalizePlan}
           onGenerate={() => setShowAIDialog(true)}
           currentWeekPlan={currentWeekPlan}
           todaysMeals={todaysMeals}

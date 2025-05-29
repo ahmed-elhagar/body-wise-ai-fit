@@ -20,6 +20,59 @@ const translations: Translations = {
   'nav.profile': { en: 'Profile', ar: 'الملف الشخصي' },
   'nav.aiChat': { en: 'AI Chat', ar: 'دردشة ذكية' },
   'nav.logout': { en: 'Logout', ar: 'تسجيل خروج' },
+  'nav.signOut': { en: 'Sign Out', ar: 'تسجيل خروج' },
+  'nav.welcomeBack': { en: 'Welcome back', ar: 'مرحباً بعودتك' },
+  'nav.aiCallsLeft': { en: 'AI calls left', ar: 'استدعاءات ذكية متبقية' },
+  'nav.aiPoweredFitness': { en: 'AI-Powered Fitness', ar: 'لياقة مدعومة بالذكاء الاصطناعي' },
+  'nav.adminPanel': { en: 'Admin Panel', ar: 'لوحة الإدارة' },
+
+  // Dashboard
+  'dashboard.welcome': { en: 'Welcome', ar: 'مرحباً' },
+  'dashboard.trackProgress': { en: 'Track your fitness progress', ar: 'تتبع تقدمك في اللياقة' },
+  'dashboard.aiGenerationsRemaining': { en: 'AI generations remaining', ar: 'الاستدعاءات الذكية المتبقية' },
+  'dashboard.currentWeight': { en: 'Current Weight', ar: 'الوزن الحالي' },
+  'dashboard.fromProfile': { en: 'From Profile', ar: 'من الملف الشخصي' },
+  'dashboard.bmiIndex': { en: 'BMI Index', ar: 'مؤشر كتلة الجسم' },
+  'dashboard.fitnessGoal': { en: 'Fitness Goal', ar: 'هدف اللياقة' },
+  'dashboard.activityLevel': { en: 'Activity Level', ar: 'مستوى النشاط' },
+  'dashboard.recentActivity': { en: 'Recent Activity', ar: 'النشاط الحديث' },
+  'dashboard.quickActions': { en: 'Quick Actions', ar: 'الإجراءات السريعة' },
+
+  // BMI Status
+  'bmi.underweight': { en: 'Underweight', ar: 'نقص وزن' },
+  'bmi.normal': { en: 'Normal', ar: 'طبيعي' },
+  'bmi.overweight': { en: 'Overweight', ar: 'زيادة وزن' },
+  'bmi.obese': { en: 'Obese', ar: 'سمنة' },
+
+  // Fitness Goals
+  'goal.weightLoss': { en: 'Weight Loss', ar: 'فقدان الوزن' },
+  'goal.muscleGain': { en: 'Muscle Gain', ar: 'زيادة العضلات' },
+  'goal.maintenance': { en: 'Maintenance', ar: 'المحافظة' },
+  'goal.endurance': { en: 'Endurance', ar: 'التحمل' },
+
+  // Activity Levels
+  'activity.sedentary': { en: 'Sedentary', ar: 'قليل الحركة' },
+  'activity.lightlyActive': { en: 'Lightly Active', ar: 'نشط بشكل خفيف' },
+  'activity.moderatelyActive': { en: 'Moderately Active', ar: 'نشط بشكل متوسط' },
+  'activity.veryActive': { en: 'Very Active', ar: 'نشط جداً' },
+  'activity.extremelyActive': { en: 'Extremely Active', ar: 'نشط للغاية' },
+
+  // Recent Activity
+  'recentActivity.title': { en: 'Recent Activity', ar: 'النشاط الحديث' },
+  'recentActivity.createdMealPlan': { en: 'Created meal plan', ar: 'تم إنشاء خطة الوجبات' },
+  'recentActivity.createdProgram': { en: 'Created program', ar: 'تم إنشاء برنامج' },
+  'recentActivity.loggedWeight': { en: 'Logged weight', ar: 'تم تسجيل الوزن' },
+  'recentActivity.badges.nutrition': { en: 'Nutrition', ar: 'التغذية' },
+  'recentActivity.badges.exercise': { en: 'Exercise', ar: 'التمارين' },
+  'recentActivity.badges.weight': { en: 'Weight', ar: 'الوزن' },
+  'recentActivity.program': { en: 'Personalized Fitness Program', ar: 'برنامج لياقة شخصي' },
+
+  // Common time expressions
+  'common.minutesAgo': { en: 'minutes ago', ar: 'دقائق مضت' },
+  'common.hoursAgo': { en: 'hours ago', ar: 'ساعات مضت' },
+  'common.dayAgo': { en: 'day ago', ar: 'يوم مضى' },
+  'common.daysAgo': { en: 'days ago', ar: 'أيام مضت' },
+  'common.kg': { en: 'kg', ar: 'كيلو' },
 
   // Days
   'day.saturday': { en: 'Saturday', ar: 'السبت' },
@@ -38,7 +91,6 @@ const translations: Translations = {
   'mealPlan.dailyView': { en: 'Daily View', ar: 'العرض اليومي' },
   'mealPlan.weeklyView': { en: 'Weekly View', ar: 'العرض الأسبوعي' },
   'mealPlan.addSnack': { en: 'Add Snack', ar: 'إضافة وجبة خفيفة' },
-  'mealPlan.finalizePlan': { en: 'Finalize Plan', ar: 'إنهاء الخطة' },
   'mealPlan.daysMeals': { en: "'s Meals", ar: 'وجبات ' },
   'mealPlan.mealsPlanned': { en: 'meals planned', ar: 'وجبة مخططة' },
   'mealPlan.previousWeek': { en: 'Previous', ar: 'السابق' },
@@ -64,6 +116,13 @@ const translations: Translations = {
   'mealPlan.cal': { en: 'cal', ar: 'سعرة' },
   'mealPlan.calPerDay': { en: 'cal/day', ar: 'سعرة/يوم' },
   'mealPlan.min': { en: 'min', ar: 'دقيقة' },
+  'mealPlan.serving': { en: 'serving', ar: 'حصة' },
+  'mealPlan.ingredients': { en: 'ingredients', ar: 'مكونات' },
+  'mealPlan.more': { en: 'more', ar: 'أكثر' },
+  'mealPlan.recipe': { en: 'Recipe', ar: 'الوصفة' },
+  'mealPlan.exchange': { en: 'Exchange', ar: 'استبدال' },
+  'mealPlan.generateImage': { en: 'Generate Image', ar: 'إنشاء صورة' },
+  'mealPlan.aiGenerated': { en: 'AI Generated', ar: 'مُولد بالذكاء الاصطناعي' },
   'mealPlan.snack': { en: 'Snack', ar: 'وجبة خفيفة' },
   'mealPlan.breakfast': { en: 'Breakfast', ar: 'إفطار' },
   'mealPlan.lunch': { en: 'Lunch', ar: 'غداء' },
@@ -73,8 +132,7 @@ const translations: Translations = {
   'mealPlan.keto': { en: 'Keto Diet', ar: 'نظام كيتو' },
   'mealPlan.highProtein': { en: 'High Protein Diet', ar: 'نظام عالي البروتين' },
   'mealPlan.balanced': { en: 'Balanced Diet', ar: 'نظام متوازن' },
-  'mealPlan.noActivePlan': { en: 'No active meal plan found', ar: 'لم يتم العثور على خطة وجبات نشطة' },
-  'mealPlan.planFinalized': { en: 'Meal plan finalized! Ready for the next step.', ar: 'تم إنهاء خطة الوجبات! جاهز للخطوة التالية.' }
+  'mealPlan.noActivePlan': { en: 'No active meal plan found', ar: 'لم يتم العثور على خطة وجبات نشطة' }
 };
 
 interface LanguageContextType {

@@ -1,13 +1,12 @@
 
 import { Button } from "@/components/ui/button";
-import { Calendar, Grid, Plus, CheckCircle } from "lucide-react";
+import { Calendar, Grid, Plus } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface MealPlanActionsProps {
   viewMode: 'daily' | 'weekly';
   onViewModeChange: (mode: 'daily' | 'weekly') => void;
   onAddSnack: () => void;
-  onFinalizePlan: () => void;
   showAddSnack: boolean;
 }
 
@@ -15,7 +14,6 @@ const MealPlanActions = ({
   viewMode, 
   onViewModeChange, 
   onAddSnack, 
-  onFinalizePlan,
   showAddSnack 
 }: MealPlanActionsProps) => {
   const { t } = useLanguage();
@@ -67,15 +65,6 @@ const MealPlanActions = ({
                 {t('mealPlan.addSnack')}
               </Button>
             )}
-            
-            <Button
-              className="flex-1 lg:flex-initial lg:min-w-[160px] text-sm bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-lg transition-all duration-200 transform hover:scale-105"
-              onClick={onFinalizePlan}
-              size="sm"
-            >
-              <CheckCircle className="w-4 h-4 mr-2" />
-              {t('mealPlan.finalizePlan')}
-            </Button>
           </div>
         </div>
       </div>
