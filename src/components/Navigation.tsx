@@ -69,7 +69,7 @@ const Navigation = () => {
         </Button>
       </div>
 
-      {/* Sidebar - Fixed positioning with RTL support */}
+      {/* Sidebar */}
       <div className={`
         fixed top-0 h-full w-64 bg-white/95 backdrop-blur-sm border-gray-200 z-40 transform transition-transform duration-300 ease-in-out
         ${isRTL ? 'right-0 border-l' : 'left-0 border-r'}
@@ -77,7 +77,7 @@ const Navigation = () => {
         md:translate-x-0
       `}>
         <div className="p-4 sm:p-6">
-          <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+          <div className={`flex items-center justify-between mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
             <h2 className={`text-xl sm:text-2xl font-bold bg-fitness-gradient bg-clip-text text-transparent ${isRTL ? 'text-right' : 'text-left'}`}>
               FitGenius AI
             </h2>
@@ -86,8 +86,9 @@ const Navigation = () => {
               <LanguageToggle />
             </div>
           </div>
+          
           {profile && (
-            <div className="mt-3 sm:mt-4 p-3 bg-fitness-gradient rounded-lg text-white">
+            <div className="mb-4 p-3 bg-fitness-gradient rounded-lg text-white">
               <p className={`text-sm opacity-90 ${isRTL ? 'text-right' : 'text-left'}`}>{t('nav.welcomeBack')}</p>
               <p className={`font-semibold ${isRTL ? 'text-right' : 'text-left'}`}>{profile.first_name}</p>
               <div className={`flex items-center mt-2 ${isRTL ? 'justify-end' : 'justify-start'}`}>

@@ -29,12 +29,9 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     if (profile?.preferred_language && profile.preferred_language !== language) {
       console.log('LanguageContext - Loading language from profile:', profile.preferred_language);
       setLanguageState(profile.preferred_language as Language);
-      
-      // Update document direction
-      document.documentElement.dir = profile.preferred_language === 'ar' ? 'rtl' : 'ltr';
-      document.documentElement.lang = profile.preferred_language;
+      updateDocumentDirection(profile.preferred_language as Language);
     }
-  }, [profile?.preferred_language, language]);
+  }, [profile?.preferred_language]);
 
   // Initialize language on first load from localStorage if no profile
   useEffect(() => {
@@ -42,25 +39,29 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const savedLanguage = localStorage.getItem('language') as Language;
       if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'ar')) {
         setLanguageState(savedLanguage);
-        document.documentElement.dir = savedLanguage === 'ar' ? 'rtl' : 'ltr';
-        document.documentElement.lang = savedLanguage;
+        updateDocumentDirection(savedLanguage);
       }
     }
   }, [profile]);
+
+  const updateDocumentDirection = (lang: Language) => {
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.lang = lang;
+    document.body.style.fontFamily = lang === 'ar' ? 'Cairo, sans-serif' : 'Inter, sans-serif';
+  };
 
   const setLanguage = async (lang: Language) => {
     console.log('LanguageContext - Setting language to:', lang);
     setLanguageState(lang);
     
     // Update document direction immediately
-    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-    document.documentElement.lang = lang;
+    updateDocumentDirection(lang);
     
     // Save to localStorage as backup
     localStorage.setItem('language', lang);
     
     // Update profile if available
-    if (profile) {
+    if (profile && updateProfile) {
       try {
         await updateProfile({ preferred_language: lang });
         console.log('LanguageContext - Language updated in profile');
@@ -91,7 +92,6 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 export const useLanguage = (): LanguageContextType => {
   const context = useContext(LanguageContext);
   if (context === undefined) {
-    // Instead of throwing an error immediately, provide a fallback
     console.error('useLanguage must be used within a LanguageProvider, using fallback');
     return {
       language: 'en',
