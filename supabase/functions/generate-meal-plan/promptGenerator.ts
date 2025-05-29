@@ -1,4 +1,6 @@
 
+import { MEAL_PLAN_PROMPTS } from '../../../src/utils/promptTemplates.ts';
+
 interface UserProfile {
   age?: number;
   gender?: string;
@@ -25,24 +27,35 @@ export const generateMealPlanPrompt = (userProfile: UserProfile, preferences: Pr
   const restrictions = userProfile?.dietary_restrictions?.length ? userProfile.dietary_restrictions.join(', ') : 'None';
   const maxPrepTime = parseInt(preferences?.maxPrepTime || '45');
   
-  // Handle cuisine selection - if 'mixed' is selected, use nationality-based cuisine
   const selectedCuisine = preferences?.cuisine || 'mixed';
   const cuisine = selectedCuisine === 'mixed' ? `${nationality} cuisine` : selectedCuisine;
   
-  // CRITICAL: Use the includeSnacks parameter from the function call, not preferences
-  const actualIncludeSnacks = includeSnacks;
-  const mealTypes = actualIncludeSnacks 
-    ? 'breakfast, lunch, dinner, snack, snack' 
-    : 'breakfast, lunch, dinner';
-  
-  const totalMeals = actualIncludeSnacks ? 35 : 21;
-  const mealsPerDay = actualIncludeSnacks ? 5 : 3;
+  const totalMeals = includeSnacks ? 35 : 21;
+  const mealsPerDay = includeSnacks ? 5 : 3;
 
-  console.log(`🍽️ PROMPT GENERATION: includeSnacks=${actualIncludeSnacks}, totalMeals=${totalMeals}, mealsPerDay=${mealsPerDay}`);
+  // Use DRY prompt templates
+  const systemPrompt = MEAL_PLAN_PROMPTS.SYSTEM_BASE
+    .replace('{totalMeals}', totalMeals.toString());
 
-  return `You are a professional nutritionist specializing in ${cuisine}. Create a BASIC 7-day meal plan with EXACTLY ${totalMeals} meals (${mealsPerDay} meals per day for 7 days).
+  const skeletonInstructions = MEAL_PLAN_PROMPTS.SKELETON_ONLY
+    .replace('{nationality}', nationality)
+    .replace('{maxPrepTime}', maxPrepTime.toString());
 
-IMPORTANT: Generate ONLY basic meal information. Detailed recipes will be fetched separately on-demand.
+  const distributionPrompt = includeSnacks 
+    ? MEAL_PLAN_PROMPTS.SNACK_DISTRIBUTION
+        .replace('{breakfast}', Math.round(dailyCalories * 0.25).toString())
+        .replace('{lunch}', Math.round(dailyCalories * 0.35).toString())
+        .replace('{dinner}', Math.round(dailyCalories * 0.30).toString())
+        .replace('{snack1}', Math.round(dailyCalories * 0.05).toString())
+        .replace('{snack2}', Math.round(dailyCalories * 0.05).toString())
+    : MEAL_PLAN_PROMPTS.NO_SNACK_DISTRIBUTION
+        .replace('{breakfast}', Math.round(dailyCalories * 0.30).toString())
+        .replace('{lunch}', Math.round(dailyCalories * 0.40).toString())
+        .replace('{dinner}', Math.round(dailyCalories * 0.30).toString());
+
+  console.log(`🍽️ PROMPT GENERATION: includeSnacks=${includeSnacks}, totalMeals=${totalMeals}, mealsPerDay=${mealsPerDay}`);
+
+  return `${systemPrompt} ${skeletonInstructions}
 
 USER PROFILE:
 - Age: ${userProfile?.age}, Gender: ${userProfile?.gender}
@@ -56,32 +69,20 @@ USER PROFILE:
 PREFERENCES:
 - Cuisine: ${cuisine}
 - Max Prep Time: ${maxPrepTime} minutes per meal
-- Include Snacks: ${actualIncludeSnacks ? 'Yes' : 'No'}
+- Include Snacks: ${includeSnacks ? 'Yes' : 'No'}
 
 CRITICAL REQUIREMENTS:
 1. EXACTLY 7 days starting from Saturday (day 1) to Friday (day 7)
-2. EXACTLY ${mealsPerDay} meals per day: ${mealTypes}
+2. EXACTLY ${mealsPerDay} meals per day: ${includeSnacks ? 'breakfast, lunch, dinner, snack, snack' : 'breakfast, lunch, dinner'}
 3. Total meals: ${totalMeals} (no more, no less)
 4. Return ONLY valid JSON - no markdown or code blocks
 5. All nutritional values must be numbers (not strings)
 6. BASIC meal info only - no detailed ingredients, instructions, or cooking details
 7. Consider allergies and dietary restrictions
 8. Realistic prep times ≤ ${maxPrepTime} minutes
-9. Use ONLY these meal types: breakfast, lunch, dinner${actualIncludeSnacks ? ', snack' : ''}
+9. Use ONLY these meal types: breakfast, lunch, dinner${includeSnacks ? ', snack' : ''}
 
-${actualIncludeSnacks ? `
-MEAL DISTRIBUTION WITH SNACKS:
-- Breakfast: ${Math.round(dailyCalories * 0.25)} calories
-- Lunch: ${Math.round(dailyCalories * 0.35)} calories  
-- Dinner: ${Math.round(dailyCalories * 0.30)} calories
-- Snack (morning): ${Math.round(dailyCalories * 0.05)} calories
-- Snack (evening): ${Math.round(dailyCalories * 0.05)} calories
-` : `
-MEAL DISTRIBUTION WITHOUT SNACKS:
-- Breakfast: ${Math.round(dailyCalories * 0.30)} calories
-- Lunch: ${Math.round(dailyCalories * 0.40)} calories
-- Dinner: ${Math.round(dailyCalories * 0.30)} calories
-`}
+${distributionPrompt}
 
 Return this EXACT JSON structure with BASIC meal info only:
 
@@ -93,7 +94,7 @@ Return this EXACT JSON structure with BASIC meal info only:
     "totalCarbs": ${Math.round(dailyCalories * 7 * 0.50 / 4)},
     "totalFat": ${Math.round(dailyCalories * 7 * 0.35 / 9)},
     "dietType": "${userProfile?.fitness_goal === 'weight_loss' ? 'Weight Loss' : userProfile?.fitness_goal === 'muscle_gain' ? 'Muscle Building' : 'Balanced Nutrition'}",
-    "includeSnacks": ${actualIncludeSnacks},
+    "includeSnacks": ${includeSnacks},
     "maxPrepTime": ${maxPrepTime},
     "cuisine": "${cuisine}"
   },
@@ -106,7 +107,7 @@ Return this EXACT JSON structure with BASIC meal info only:
         {
           "type": "breakfast",
           "name": "Traditional ${cuisine} Breakfast",
-          "calories": ${Math.round(dailyCalories * (actualIncludeSnacks ? 0.25 : 0.30))},
+          "calories": ${Math.round(dailyCalories * (includeSnacks ? 0.25 : 0.30))},
           "protein": 25,
           "carbs": 45,
           "fat": 15,
@@ -118,7 +119,7 @@ Return this EXACT JSON structure with BASIC meal info only:
           "servings": 1,
           "cuisine": "${cuisine}",
           "difficulty": "easy"
-        }${actualIncludeSnacks ? `,
+        }${includeSnacks ? `,
         {
           "type": "snack",
           "name": "Healthy ${cuisine} Snack",
