@@ -5,6 +5,7 @@ import MealPlanActions from "@/components/MealPlanActions";
 import MealPlanContent from "@/components/MealPlanContent";
 import EmptyMealPlan from "@/components/EmptyMealPlan";
 import WeeklyMealPlanView from "@/components/WeeklyMealPlanView";
+import DailySummary from "@/components/DailySummary";
 import type { Meal } from "@/types/meal";
 
 interface MealPlanMainContentProps {
@@ -88,15 +89,31 @@ const MealPlanMainContent = ({
           onExchangeMeal={onExchangeMeal}
         />
       ) : (
-        <MealPlanContent
-          selectedDayNumber={selectedDayNumber}
-          todaysMeals={todaysMeals}
-          totalCalories={totalCalories}
-          totalProtein={totalProtein}
-          onShowShoppingList={onShowShoppingList}
-          onShowRecipe={onShowRecipe}
-          onExchangeMeal={onExchangeMeal}
-        />
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Main Content - Takes 3/4 of the space */}
+          <div className="lg:col-span-3">
+            <MealPlanContent
+              selectedDayNumber={selectedDayNumber}
+              todaysMeals={todaysMeals}
+              totalCalories={totalCalories}
+              totalProtein={totalProtein}
+              onShowShoppingList={onShowShoppingList}
+              onShowRecipe={onShowRecipe}
+              onExchangeMeal={onExchangeMeal}
+            />
+          </div>
+          
+          {/* Daily Summary Sidebar - Takes 1/4 of the space */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-6">
+              <DailySummary
+                totalCalories={totalCalories}
+                totalProtein={totalProtein}
+                onShowShoppingList={onShowShoppingList}
+              />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
