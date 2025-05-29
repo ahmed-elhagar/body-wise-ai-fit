@@ -35,7 +35,7 @@ export const getCategoryForIngredient = (ingredientName: string): string => {
   return 'Others';
 };
 
-// ENHANCED: Completely rewritten week calculation for absolute consistency
+// ENHANCED: Fixed week calculation for absolute consistency
 export const getWeekStartDate = (weekOffset: number = 0): Date => {
   const today = new Date();
   
@@ -49,12 +49,13 @@ export const getWeekStartDate = (weekOffset: number = 0): Date => {
   const result = new Date(targetWeek);
   result.setHours(0, 0, 0, 0);
   
-  console.log('🎯 WEEK CALCULATION:', {
+  console.log('🎯 ENHANCED WEEK CALCULATION:', {
     today: today.toISOString().split('T')[0],
     todayDay: today.getDay(),
     weekOffset,
     startOfCurrentWeek: startOfCurrentWeek.toISOString().split('T')[0],
-    targetWeek: result.toISOString().split('T')[0]
+    targetWeek: result.toISOString().split('T')[0],
+    targetWeekFormatted: format(result, 'yyyy-MM-dd')
   });
   
   return result;

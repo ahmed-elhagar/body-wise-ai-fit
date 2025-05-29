@@ -53,21 +53,32 @@ const MealPlan = () => {
     handleRecipeGenerated
   } = useMealPlanPage();
 
-  // Show loading states
-  const loadingComponent = (
-    <MealPlanLoadingStates
-      isGenerating={isGenerating}
-      isShuffling={isShuffling}
-      isLoading={isLoading}
-    />
-  );
+  console.log('🎯 MealPlan Page - Debug State:', {
+    currentWeekOffset,
+    hasCurrentWeekPlan: !!currentWeekPlan,
+    isLoading,
+    isGenerating,
+    isShuffling,
+    todaysMealsCount: todaysMeals?.length || 0,
+    error: error?.message
+  });
 
-  if (loadingComponent) {
-    return loadingComponent;
+  // Check if we should show loading states
+  const shouldShowLoading = isLoading || isGenerating || isShuffling;
+  
+  if (shouldShowLoading) {
+    return (
+      <MealPlanLoadingStates
+        isGenerating={isGenerating}
+        isShuffling={isShuffling}
+        isLoading={isLoading}
+      />
+    );
   }
 
   // Show error state if there's an error
   if (error) {
+    console.error('🚨 MealPlan Page - Error detected:', error);
     return <MealPlanErrorState onRetry={refetch} />;
   }
 

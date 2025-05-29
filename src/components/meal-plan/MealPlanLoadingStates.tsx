@@ -15,6 +15,12 @@ const MealPlanLoadingStates = ({
 }: MealPlanLoadingStatesProps) => {
   const { t } = useLanguage();
 
+  console.log('🔄 MealPlanLoadingStates - Current state:', {
+    isGenerating,
+    isShuffling,
+    isLoading
+  });
+
   // Show loading state during generation OR shuffling
   if (isGenerating) {
     return <MealPlanLoadingScreen message={t('generating')} />;

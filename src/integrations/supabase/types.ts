@@ -144,6 +144,13 @@ export type Database = {
             referencedRelation: "weekly_meal_plans"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_daily_meals_weekly_plan"
+            columns: ["weekly_plan_id"]
+            isOneToOne: false
+            referencedRelation: "weekly_meal_plans"
+            referencedColumns: ["id"]
+          },
         ]
       }
       daily_workouts: {

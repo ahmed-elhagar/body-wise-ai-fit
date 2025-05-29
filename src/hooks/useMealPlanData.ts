@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { getWeekStartDate } from '@/utils/mealPlanUtils';
+import { format } from 'date-fns';
 
 export interface MealIngredient {
   name: string;
@@ -53,15 +54,16 @@ export const useMealPlanData = (weekOffset: number = 0) => {
       }
       
       try {
-        // Use CONSISTENT week calculation - EXACT week only
+        // Use CONSISTENT week calculation with proper date formatting
         const weekStartDate = getWeekStartDate(weekOffset);
-        const weekStartDateStr = weekStartDate.toISOString().split('T')[0];
+        const weekStartDateStr = format(weekStartDate, 'yyyy-MM-dd');
         
-        console.log('🎯 MEAL PLAN FETCH - EXACT WEEK ONLY:', {
+        console.log('🎯 MEAL PLAN FETCH - ENHANCED CONSISTENCY:', {
           userId: user.id,
           weekOffset,
           searchingForDate: weekStartDateStr,
-          today: new Date().toISOString().split('T')[0]
+          today: format(new Date(), 'yyyy-MM-dd'),
+          weekStartCalculated: weekStartDate.toISOString().split('T')[0]
         });
         
         // Fetch ONLY the exact week - no fallbacks
@@ -84,7 +86,7 @@ export const useMealPlanData = (weekOffset: number = 0) => {
             userId: user.id
           });
           
-          // Check what weeks exist for debugging
+          // Enhanced debugging - check what weeks exist
           const { data: allPlans } = await supabase
             .from('weekly_meal_plans')
             .select('id, week_start_date, total_calories')
@@ -93,11 +95,15 @@ export const useMealPlanData = (weekOffset: number = 0) => {
           
           console.log('🔍 AVAILABLE WEEKS FOR USER:', {
             searchedWeek: weekStartDateStr,
-            availableWeeks: allPlans?.map(p => p.week_start_date) || [],
+            availableWeeks: allPlans?.map(p => ({
+              date: p.week_start_date,
+              id: p.id,
+              calories: p.total_calories
+            })) || [],
             totalPlans: allPlans?.length || 0
           });
           
-          // Return null for no data - no fallbacks
+          // Return null for no data
           return null;
         }
 
@@ -125,10 +131,14 @@ export const useMealPlanData = (weekOffset: number = 0) => {
           weekOffset,
           planId: weeklyPlan.id,
           mealsCount: dailyMeals?.length || 0,
-          weekStartDate: weeklyPlan.week_start_date
+          weekStartDate: weeklyPlan.week_start_date,
+          mealsByDay: dailyMeals?.reduce((acc, meal) => {
+            acc[meal.day_number] = (acc[meal.day_number] || 0) + 1;
+            return acc;
+          }, {} as Record<number, number>)
         });
 
-        // Process meals data
+        // Process meals data with enhanced error handling
         const processedMeals = (dailyMeals || []).map(meal => {
           try {
             return {
@@ -164,11 +174,11 @@ export const useMealPlanData = (weekOffset: number = 0) => {
       }
     },
     enabled: !!user?.id,
-    staleTime: 1000, // Very short stale time for immediate updates
-    gcTime: 5000, // Short cache time
+    staleTime: 0, // Always fetch fresh data
+    gcTime: 2000, // Short cache time
     retry: (failureCount, error) => {
       // Don't retry on authentication errors
-      if (error?.message?.includes('JWT')) return false;
+      if (error?.message?.includes('JWT') || error?.message?.includes('auth')) return false;
       return failureCount < 2;
     },
     refetchOnWindowFocus: true,
