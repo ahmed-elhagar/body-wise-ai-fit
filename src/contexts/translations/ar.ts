@@ -1,4 +1,3 @@
-
 export const arTranslations = {
   // Navigation and general
   'home': 'الرئيسية',
@@ -27,10 +26,15 @@ export const arTranslations = {
   'submit': 'إرسال',
   'generating': 'جاري الإنشاء...',
   'min': 'دقيقة',
+  'mins': 'دقائق',
+  'minutes': 'دقائق',
   'snack': 'وجبة خفيفة',
   'cal': 'سعرة',
+  'calories': 'سعرات حرارية',
   'protein': 'بروتين',
   'carbs': 'كربوهيدرات',
+  'recipe': 'وصفة',
+  'exchange': 'تبديل',
 
   // Navigation specific
   'nav.dashboard': 'لوحة التحكم',
@@ -141,25 +145,34 @@ export const arTranslations = {
   // Add Snack Dialog
   'addSnack.title': 'إضافة وجبة خفيفة ذكية',
   'addSnack.subtitle': 'سيقترح الذكاء الاصطناعي الوجبة الخفيفة المثالية ليومك',
+  'addSnack.dailyProgress': 'التقدم اليومي',
+  'addSnack.calorieProgress': 'تقدم السعرات',
+  'addSnack.remaining': 'المتبقية',
+  'addSnack.excellentProgress': 'تقدم ممتاز!',
   'addSnack.quickPrep': 'سريع وسهل',
   'addSnack.quickPrepDesc': 'جاهز في أقل من 5 دقائق',
   'addSnack.nutritious': 'مغذي',
   'addSnack.nutritiousDesc': 'مليء بالفيتامينات والمعادن',
   'addSnack.perfectCalories': 'سعرات مثالية',
-  'addSnack.perfectCaloriesDesc': 'يناسب أهدافك اليومية للسعرات',
+  'addSnack.perfectCaloriesDesc': 'يناسب {calories} سعرة المتبقية',
+  'addSnack.aiPoweredTitle': 'إنشاء وجبة خفيفة بالذكاء الاصطناعي',
+  'addSnack.aiDescription': 'سيقوم الذكاء الاصطناعي بإنشاء وجبة خفيفة شخصية تناسب السعرات المتبقية وتفضيلاتك الغذائية.',
   'addSnack.generateSnack': 'إنشاء وجبة خفيفة ذكية',
-  'addSnack.currentCalories': 'السعرات الحالية',
-  'addSnack.targetCalories': 'السعرات المستهدفة',
-  'addSnack.remainingCalories': 'السعرات المتبقية',
+  'addSnack.targetReached': 'تم الوصول للهدف اليومي!',
+  'addSnack.targetReachedDesc': 'لقد وصلت لهدفك اليومي من السعرات. أحسنت في الالتزام بخطتك الغذائية!',
+  'addSnack.understood': 'مفهوم',
+  'addSnack.error': 'فشل في إنشاء الوجبة الخفيفة. يرجى المحاولة مرة أخرى.',
+  'addSnack.success': 'تم إضافة الوجبة الخفيفة الذكية بنجاح!',
+  'addSnack.notEnoughCalories': 'لا توجد سعرات كافية متبقية لوجبة خفيفة صحية.',
 
   // Days of the week
-  'saturday': 'السبت',
-  'sunday': 'الأحد',
-  'monday': 'الاثنين',
-  'tuesday': 'الثلاثاء',
-  'wednesday': 'الأربعاء',
-  'thursday': 'الخميس',
-  'friday': 'الجمعة',
+  'day.saturday': 'السبت',
+  'day.sunday': 'الأحد',
+  'day.monday': 'الاثنين',
+  'day.tuesday': 'الثلاثاء',
+  'day.wednesday': 'الأربعاء',
+  'day.thursday': 'الخميس',
+  'day.friday': 'الجمعة',
 
   // Diet types
   'balanced': 'متوازن',
@@ -179,5 +192,24 @@ export const arTranslations = {
   'generateFirstPlan': 'أنشئ خطة وجباتك الشخصية الأولى',
   'generateMealPlan': 'إنشاء خطة وجبات',
   'generatedSuccessfully': 'تم الإنشاء بنجاح!',
-  'noMealPlanToShuffle': 'لم يتم العثور على خطة وجبات للخلط'
+  'noMealPlanToShuffle': 'لم يتم العثور على خطة وجبات للخلط',
+
+  // Meal types
+  'breakfast': 'الإفطار',
+  'lunch': 'الغداء',
+  'dinner': 'العشاء',
+  'snack1': 'وجبة خفيفة صباحية',
+  'snack2': 'وجبة خفيفة مسائية',
+
+  // Time and preparation
+  'prepTime': 'وقت التحضير',
+  'cookTime': 'وقت الطبخ',
+  'totalTime': 'الوقت الإجمالي',
+  'servings': 'الحصص',
+
+  // Daily view translations
+  'todaysSummary': 'ملخص اليوم',
+  'noMealsToday': 'لا توجد وجبات مخططة لليوم',
+  'generateNewPlan': 'أنشئ خطة وجباتك الأولى للبدء',
+  'shoppingList': 'قائمة التسوق',
 };

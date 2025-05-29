@@ -1,4 +1,3 @@
-
 export const enTranslations = {
   // Navigation and general
   'home': 'Home',
@@ -27,10 +26,88 @@ export const enTranslations = {
   'submit': 'Submit',
   'generating': 'Generating...',
   'min': 'min',
+  'mins': 'mins',
+  'minutes': 'minutes',
   'snack': 'Snack',
   'cal': 'cal',
+  'calories': 'calories',
   'protein': 'Protein',
   'carbs': 'Carbs',
+  'recipe': 'Recipe',
+  'exchange': 'Exchange',
+
+  // Navigation specific
+
+  // Days of the week (with proper prefix)
+  'day.saturday': 'Saturday',
+  'day.sunday': 'Sunday', 
+  'day.monday': 'Monday',
+  'day.tuesday': 'Tuesday',
+  'day.wednesday': 'Wednesday',
+  'day.thursday': 'Thursday',
+  'day.friday': 'Friday',
+
+  // Meal plan specific
+  'mealPlan.calories': 'calories',
+  'mealPlan.noActivePlan': 'No Active Meal Plan',
+  'mealPlan.personalizedProfile': 'Create your personalized meal plan based on your profile',
+  'mealPlan.generateAIMealPlan': 'Generate AI Meal Plan',
+  'mealPlan.dailyView': 'Daily View',
+  'mealPlan.weeklyView': 'Weekly View',
+  'mealPlan.dailyViewHelper': 'View and manage today\'s meals',
+  'mealPlan.weeklyViewHelper': 'Overview of your entire week',
+  'mealPlan.thisWeek': 'This Week',
+  'mealPlan.lastWeek': 'Last Week',
+  'mealPlan.weeksAgo': 'weeks ago',
+  'mealPlan.weeksAhead': 'weeks ahead',
+  'mealPlan.previousWeek': 'Previous',
+  'mealPlan.shoppingList': 'Shopping List',
+  'mealPlan.addSnack': 'Add Snack',
+  'mealPlan.noMealsPlanned': 'No meals planned',
+  'mealPlan.generationFailed': 'Failed to generate meal plan. Please try again.',
+  'mealPlan.generatedSuccessfully': 'Meal plan generated successfully!',
+
+  // Add Snack Dialog - Enhanced translations
+  'addSnack.title': 'Add Smart Snack',
+  'addSnack.subtitle': 'AI will suggest the perfect snack for your day',
+  'addSnack.dailyProgress': 'Daily Progress',
+  'addSnack.calorieProgress': 'Calorie Progress',
+  'addSnack.remaining': 'Remaining',
+  'addSnack.excellentProgress': 'Excellent progress!',
+  'addSnack.quickPrep': 'Quick & Easy',
+  'addSnack.quickPrepDesc': 'Ready in under 5 minutes',
+  'addSnack.nutritious': 'Nutritious',
+  'addSnack.nutritiousDesc': 'Packed with vitamins and minerals',
+  'addSnack.perfectCalories': 'Perfect Calories',
+  'addSnack.perfectCaloriesDesc': 'Fits your {calories} remaining calories',
+  'addSnack.aiPoweredTitle': 'AI-Powered Snack Generation',
+  'addSnack.aiDescription': 'Our AI will create a personalized snack that perfectly fits your remaining calories and dietary preferences.',
+  'addSnack.generateSnack': 'Generate Smart Snack',
+  'addSnack.targetReached': 'Daily Target Reached!',
+  'addSnack.targetReachedDesc': 'You\'ve reached your daily calorie goal. Great job maintaining your nutrition plan!',
+  'addSnack.understood': 'Understood',
+  'addSnack.error': 'Failed to generate snack. Please try again.',
+  'addSnack.success': 'Smart snack added successfully!',
+  'addSnack.notEnoughCalories': 'Not enough remaining calories for a healthy snack.',
+
+  // Meal types
+  'breakfast': 'Breakfast',
+  'lunch': 'Lunch', 
+  'dinner': 'Dinner',
+  'snack1': 'Morning Snack',
+  'snack2': 'Afternoon Snack',
+
+  // Time and preparation
+  'prepTime': 'Prep Time',
+  'cookTime': 'Cook Time',
+  'totalTime': 'Total Time',
+  'servings': 'Servings',
+
+  // Daily view translations
+  'todaysSummary': 'Today\'s Summary',
+  'noMealsToday': 'No meals planned for today',
+  'generateNewPlan': 'Generate your first meal plan to get started',
+  'shoppingList': 'Shopping List',
 
   // Navigation specific
   'nav.dashboard': 'Dashboard',
