@@ -40,7 +40,7 @@ const MealItem = ({ meal, mealIndex, dayNumber, onShowRecipe, onExchangeMeal }: 
               variant="secondary" 
               className={`text-xs ${isSnack ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}
             >
-              {isSnack ? t('mealPlan.snack') : t(`mealPlan.${meal.meal_type.toLowerCase()}`)}
+              {isSnack ? t('snack') : t(meal.meal_type.toLowerCase())}
             </Badge>
             <span className="text-xs text-gray-500">
               {(meal.prep_time || 0) + (meal.cook_time || 0)} {t('mealPlan.min')}

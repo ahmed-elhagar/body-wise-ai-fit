@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Users, ChefHat, Plus } from "lucide-react";
+import { ChefHat, Plus } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import MealCard from "@/components/MealCard";
 import type { Meal } from "@/types/meal";
@@ -78,7 +78,7 @@ const MealPlanContent = ({
                   variant="outline" 
                   className="px-3 py-1 bg-fitness-gradient text-white border-0"
                 >
-                  {t(`mealType.${mealType}`)}
+                  {t(mealType)}
                 </Badge>
                 <div className="h-px bg-gray-200 flex-1" />
               </div>
@@ -113,7 +113,7 @@ const MealPlanContent = ({
                 variant="outline" 
                 className="px-3 py-1 bg-purple-gradient text-white border-0"
               >
-                {t('mealType.snacks')}
+                {t('snacks')}
               </Badge>
               <div className="h-px bg-gray-200 flex-1" />
             </div>
