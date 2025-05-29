@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { X, Plus, Loader2 } from "lucide-react";
 import { useHealthAssessment } from "@/hooks/useHealthAssessment";
 import { useOnboardingProgress } from "@/hooks/useOnboardingProgress";
+import { toast } from "sonner";
 
 const HealthAssessmentForm = () => {
   const { assessment, saveAssessment, isSaving } = useHealthAssessment();
@@ -85,17 +85,35 @@ const HealthAssessmentForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const assessmentData = {
-      ...formData,
-      assessment_type: 'enhanced_profile',
-      health_score: calculateHealthScore(),
-      readiness_score: calculateReadinessScore(),
-      risk_score: calculateRiskScore(),
-    };
+    try {
+      const assessmentData = {
+        ...formData,
+        assessment_type: 'enhanced_profile',
+        health_score: calculateHealthScore(),
+        readiness_score: calculateReadinessScore(),
+        risk_score: calculateRiskScore(),
+      };
 
-    console.log('Submitting health assessment data:', assessmentData);
-    await saveAssessment(assessmentData);
-    markStepComplete('health_assessment');
+      console.log('Submitting health assessment data:', assessmentData);
+      
+      await new Promise((resolve, reject) => {
+        saveAssessment(assessmentData, {
+          onSuccess: (data) => {
+            console.log('Health assessment saved successfully:', data);
+            toast.success('Health assessment saved successfully!');
+            markStepComplete('health_assessment');
+            resolve(data);
+          },
+          onError: (error) => {
+            console.error('Error saving health assessment:', error);
+            toast.error('Failed to save health assessment');
+            reject(error);
+          }
+        });
+      });
+    } catch (error) {
+      console.error('Failed to save health assessment:', error);
+    }
   };
 
   const calculateHealthScore = () => {

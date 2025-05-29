@@ -2,7 +2,7 @@
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Circle, ArrowRight } from "lucide-react";
+import { CheckCircle, Circle, ArrowRight, Target } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import { useHealthAssessment } from "@/hooks/useHealthAssessment";
 import { useOnboardingProgress } from "@/hooks/useOnboardingProgress";
@@ -128,75 +128,83 @@ const ProfileCompletionCard = ({ onStepClick }: ProfileCompletionCardProps) => {
   ];
 
   const nextIncompleteStep = steps.find(step => !step.completed);
+  const completedSteps = steps.filter(step => step.completed).length;
 
   return (
-    <Card className="bg-gradient-to-br from-blue-50 to-indigo-100 border-blue-200 overflow-hidden">
-      <div className="p-4">
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-semibold text-gray-800">{t('profileCompletion')}</h3>
-            <span className="text-2xl font-bold text-blue-600">{completionScore}%</span>
-          </div>
-          <Progress value={completionScore} className="h-3 mb-4" />
-          
-          {completionScore < 100 && nextIncompleteStep && (
-            <div className="bg-white/60 rounded-lg p-3 mb-4">
-              <p className="text-sm text-gray-600 mb-2">{t('nextStep')}:</p>
-              <div className="space-y-2">
-                <p className="font-medium text-gray-800 text-sm">{nextIncompleteStep.title}</p>
-                <p className="text-xs text-gray-600">{nextIncompleteStep.description}</p>
-                <Button 
-                  onClick={() => onStepClick(nextIncompleteStep.key)}
-                  size="sm"
-                  className="bg-blue-600 hover:bg-blue-700 w-full"
-                >
-                  {t('continue')} <ArrowRight className="w-4 h-4 ml-1" />
-                </Button>
+    <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 overflow-hidden">
+      <div className="p-4 lg:p-6">
+        <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+          {/* Left side - Progress info */}
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-3">
+              <Target className="w-6 h-6 text-blue-600" />
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800">{t('profileCompletion')}</h3>
+                <p className="text-sm text-gray-600">{completedSteps} of {steps.length} steps completed</p>
               </div>
+            </div>
+            
+            {completionScore < 100 && nextIncompleteStep && (
+              <div className="bg-white/60 rounded-lg p-3">
+                <p className="text-sm text-gray-600 mb-1">{t('nextStep')}:</p>
+                <p className="font-medium text-gray-800 text-sm">{nextIncompleteStep.title}</p>
+              </div>
+            )}
+            
+            {completionScore === 100 && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                  <p className="font-medium text-green-800 text-sm">{t('profileComplete')}</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Right side - Steps grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 lg:gap-3">
+            {steps.map((step, index) => (
+              <button
+                key={step.key}
+                onClick={() => onStepClick(step.key)}
+                className={`p-3 rounded-lg border transition-all duration-200 text-left hover:shadow-md ${
+                  step.completed 
+                    ? 'bg-green-50 border-green-200 hover:bg-green-100' 
+                    : 'bg-white/60 border-gray-200 hover:bg-white/80'
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  {step.completed ? (
+                    <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
+                  ) : (
+                    <Circle className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  )}
+                  <span className="text-xs font-medium text-gray-700">
+                    {index + 1}
+                  </span>
+                </div>
+                <p className={`text-xs font-medium line-clamp-2 ${
+                  step.completed ? 'text-green-800' : 'text-gray-700'
+                }`}>
+                  {step.title}
+                </p>
+              </button>
+            ))}
+          </div>
+
+          {/* Action button */}
+          {nextIncompleteStep && (
+            <div className="lg:ml-4">
+              <Button 
+                onClick={() => onStepClick(nextIncompleteStep.key)}
+                size="sm"
+                className="bg-blue-600 hover:bg-blue-700 w-full lg:w-auto"
+              >
+                {t('continue')} <ArrowRight className="w-4 h-4 ml-1" />
+              </Button>
             </div>
           )}
         </div>
-
-        <div className="space-y-2 max-h-64 overflow-y-auto">
-          {steps.map((step) => (
-            <div 
-              key={step.key}
-              className={`flex items-start p-3 rounded-lg cursor-pointer transition-colors ${
-                step.completed 
-                  ? 'bg-green-50 border border-green-200' 
-                  : 'bg-white/40 border border-gray-200 hover:bg-white/60'
-              }`}
-              onClick={() => onStepClick(step.key)}
-            >
-              <div className="flex-shrink-0 mt-0.5 mr-3">
-                {step.completed ? (
-                  <CheckCircle className="w-5 h-5 text-green-600" />
-                ) : (
-                  <Circle className="w-5 h-5 text-gray-400" />
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className={`font-medium text-sm ${step.completed ? 'text-green-800' : 'text-gray-700'}`}>
-                  {step.title}
-                </p>
-                <p className={`text-xs ${step.completed ? 'text-green-600' : 'text-gray-500'}`}>
-                  {step.description}
-                </p>
-              </div>
-              <ArrowRight className="w-4 h-4 text-gray-400 flex-shrink-0 mt-1" />
-            </div>
-          ))}
-        </div>
-
-        {completionScore === 100 && (
-          <div className="mt-4 text-center">
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-2" />
-              <p className="font-medium text-green-800">{t('profileComplete')}</p>
-              <p className="text-sm text-green-600">{t('allSetForFitnessJourney')}</p>
-            </div>
-          </div>
-        )}
       </div>
     </Card>
   );
