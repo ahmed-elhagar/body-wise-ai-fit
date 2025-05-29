@@ -1,4 +1,5 @@
 
+import MealPlanLayout from "@/components/MealPlanLayout";
 import { useExerciseProgramPage } from "@/hooks/useExerciseProgramPage";
 import { ExerciseProgramLoadingStates } from "@/components/exercise/ExerciseProgramLoadingStates";
 import { ExerciseProgramErrorState } from "@/components/exercise/ExerciseProgramErrorState";
@@ -7,12 +8,8 @@ import { ExerciseProgramPageContent } from "@/components/exercise/ExerciseProgra
 const Exercise = () => {
   const {
     // State
-    currentWeekOffset,
-    setCurrentWeekOffset,
     selectedDayNumber,
     setSelectedDayNumber,
-    workoutType,
-    setWorkoutType,
     showAIDialog,
     setShowAIDialog,
     aiPreferences,
@@ -22,7 +19,6 @@ const Exercise = () => {
     currentProgram,
     isLoading,
     isGenerating,
-    weekStartDate,
     todaysWorkouts,
     todaysExercises,
     completedExercises,
@@ -41,7 +37,6 @@ const Exercise = () => {
   } = useExerciseProgramPage();
 
   console.log('🎯 Exercise Page - Debug State:', {
-    currentWeekOffset,
     hasCurrentProgram: !!currentProgram,
     isLoading,
     isGenerating,
@@ -69,32 +64,28 @@ const Exercise = () => {
   }
 
   return (
-    <ExerciseProgramPageContent
-      currentDate={currentDate}
-      currentDay={currentDay}
-      onShowAIDialog={() => setShowAIDialog(true)}
-      onRegenerateProgram={handleRegenerateProgram}
-      isGenerating={isGenerating}
-      workoutType={workoutType}
-      setWorkoutType={setWorkoutType}
-      currentWeekOffset={currentWeekOffset}
-      setCurrentWeekOffset={setCurrentWeekOffset}
-      weekStartDate={weekStartDate}
-      selectedDayNumber={selectedDayNumber}
-      setSelectedDayNumber={setSelectedDayNumber}
-      currentProgram={currentProgram}
-      todaysWorkouts={todaysWorkouts}
-      todaysExercises={todaysExercises}
-      completedExercises={completedExercises}
-      totalExercises={totalExercises}
-      progressPercentage={progressPercentage}
-      showAIDialog={showAIDialog}
-      setShowAIDialog={setShowAIDialog}
-      aiPreferences={aiPreferences}
-      setAiPreferences={setAiPreferences}
-      handleGenerateAIProgram={handleGenerateAIProgram}
-      refetch={refetch}
-    />
+    <MealPlanLayout>
+      <ExerciseProgramPageContent
+        currentDate={currentDate}
+        currentDay={currentDay}
+        selectedDayNumber={selectedDayNumber}
+        setSelectedDayNumber={setSelectedDayNumber}
+        currentProgram={currentProgram}
+        todaysWorkouts={todaysWorkouts}
+        todaysExercises={todaysExercises}
+        completedExercises={completedExercises}
+        totalExercises={totalExercises}
+        progressPercentage={progressPercentage}
+        showAIDialog={showAIDialog}
+        setShowAIDialog={setShowAIDialog}
+        aiPreferences={aiPreferences}
+        setAiPreferences={setAiPreferences}
+        handleGenerateAIProgram={handleGenerateAIProgram}
+        handleRegenerateProgram={handleRegenerateProgram}
+        isGenerating={isGenerating}
+        refetch={refetch}
+      />
+    </MealPlanLayout>
   );
 };
 

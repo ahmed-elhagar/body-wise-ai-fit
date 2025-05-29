@@ -18,7 +18,6 @@ export interface ExercisePreferences {
 }
 
 export const useExerciseProgramPage = () => {
-  const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
   const [selectedDayNumber, setSelectedDayNumber] = useState(1);
   const [workoutType, setWorkoutType] = useState<"home" | "gym">("home");
   const [showAIDialog, setShowAIDialog] = useState(false);
@@ -35,15 +34,8 @@ export const useExerciseProgramPage = () => {
     difficulty: "beginner"
   });
 
-  const { currentProgram, isLoading, error, refetch } = useExerciseProgramData(currentWeekOffset);
+  const { currentProgram, isLoading, error, refetch } = useExerciseProgramData(0);
   const { generateExerciseProgram, isGenerating } = useAIExercise();
-
-  // Calculate week dates
-  const weekStartDate = useMemo(() => {
-    const today = new Date();
-    const weekStart = startOfWeek(today, { weekStartsOn: 1 }); // Monday
-    return addDays(weekStart, currentWeekOffset * 7);
-  }, [currentWeekOffset]);
 
   const currentDate = new Date();
   const currentDay = format(currentDate, 'EEEE');
@@ -91,8 +83,6 @@ export const useExerciseProgramPage = () => {
 
   return {
     // State
-    currentWeekOffset,
-    setCurrentWeekOffset,
     selectedDayNumber,
     setSelectedDayNumber,
     workoutType,
@@ -106,7 +96,6 @@ export const useExerciseProgramPage = () => {
     currentProgram,
     isLoading,
     isGenerating,
-    weekStartDate,
     todaysWorkouts,
     todaysExercises,
     completedExercises,

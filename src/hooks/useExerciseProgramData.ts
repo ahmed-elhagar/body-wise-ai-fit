@@ -12,6 +12,8 @@ export interface ExerciseProgram {
   week_start_date: string;
   created_at: string;
   daily_workouts_count: number;
+  total_estimated_calories?: number;
+  generation_prompt?: any;
   daily_workouts?: DailyWorkout[];
 }
 
@@ -69,7 +71,17 @@ export const useExerciseProgramData = (weekOffset: number = 0) => {
         .single();
 
       if (error && error.code !== 'PGRST116') throw error;
-      return data as ExerciseProgram | null;
+      
+      // Transform data to match interface
+      if (data) {
+        return {
+          ...data,
+          current_week: 1,
+          daily_workouts_count: data.daily_workouts?.length || 0
+        } as ExerciseProgram;
+      }
+      
+      return null;
     },
     enabled: !!user?.id,
   });

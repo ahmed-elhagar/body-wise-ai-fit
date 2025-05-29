@@ -1,16 +1,22 @@
 
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, RefreshCw } from "lucide-react";
+import { ArrowLeft, RefreshCw, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ProgramTypeIndicator } from "./ProgramTypeIndicator";
 
 interface ExerciseHeaderProps {
   currentProgram: any;
   onGenerateProgram: () => void;
+  onShowAIDialog: () => void;
   isGenerating: boolean;
 }
 
-export const ExerciseHeader = ({ currentProgram, onGenerateProgram, isGenerating }: ExerciseHeaderProps) => {
+export const ExerciseHeader = ({ 
+  currentProgram, 
+  onGenerateProgram, 
+  onShowAIDialog, 
+  isGenerating 
+}: ExerciseHeaderProps) => {
   const navigate = useNavigate();
   
   // Determine workout type from program data
@@ -38,15 +44,26 @@ export const ExerciseHeader = ({ currentProgram, onGenerateProgram, isGenerating
       </div>
       
       {currentProgram && (
-        <Button 
-          onClick={onGenerateProgram}
-          disabled={isGenerating}
-          variant="outline"
-          className="bg-white/80"
-        >
-          <RefreshCw className="w-4 h-4 mr-2" />
-          Generate New Program
-        </Button>
+        <div className="flex space-x-3">
+          <Button
+            onClick={onShowAIDialog}
+            disabled={isGenerating}
+            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white"
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            Customize Program
+          </Button>
+          
+          <Button 
+            onClick={onGenerateProgram}
+            disabled={isGenerating}
+            variant="outline"
+            className="bg-white/80"
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Generate New
+          </Button>
+        </div>
       )}
     </div>
   );
