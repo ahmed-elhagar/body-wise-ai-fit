@@ -15,6 +15,12 @@ interface LoadingStepsProps {
 }
 
 export const LoadingSteps = ({ steps, currentStep }: LoadingStepsProps) => {
+  console.log('🔄 LoadingSteps render:', { 
+    totalSteps: steps.length, 
+    currentStep,
+    stepTitles: steps.map(s => s.title)
+  });
+
   return (
     <div className="space-y-4">
       {steps.map((step, index) => {
@@ -23,7 +29,7 @@ export const LoadingSteps = ({ steps, currentStep }: LoadingStepsProps) => {
         
         return (
           <LoadingStepItem
-            key={index}
+            key={`${step.title}-${index}`}
             icon={step.icon}
             title={step.title}
             description={step.description}
