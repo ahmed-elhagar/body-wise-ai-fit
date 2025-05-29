@@ -23,22 +23,30 @@ export const useAIFoodAnalysis = () => {
     mutationFn: async (file: File) => {
       if (!user?.id) throw new Error('User not authenticated');
 
+      console.log('Starting AI food analysis...');
+
       // Check AI generation credits first - using correct generation type
       const { data: creditCheck, error: creditError } = await supabase.rpc('check_and_use_ai_generation', {
         user_id_param: user.id,
-        generation_type_param: 'food_analysis', // Changed back to 'food_analysis'
-        prompt_data_param: { imageSize: file.size, fileName: file.name }
+        generation_type_param: 'ai_chat', // Using existing constraint value
+        prompt_data_param: { 
+          type: 'food_analysis',
+          imageSize: file.size, 
+          fileName: file.name 
+        }
       });
 
       if (creditError) {
         console.error('Credit check error:', creditError);
-        throw creditError;
+        throw new Error('Failed to check AI generation credits');
       }
       
       const creditResult = creditCheck as any;
       if (!creditResult?.success) {
         throw new Error(creditResult?.error || 'AI generation limit reached');
       }
+
+      console.log('Credits checked, proceeding with analysis...');
 
       const imageBase64 = await convertFileToBase64(file);
 
@@ -51,7 +59,11 @@ export const useAIFoodAnalysis = () => {
 
         if (error) {
           console.error('Function invoke error:', error);
-          throw error;
+          throw new Error(`Analysis failed: ${error.message}`);
+        }
+
+        if (!data || !data.success) {
+          throw new Error(data?.error || 'Analysis failed');
         }
 
         console.log('Analysis response:', data);
@@ -90,7 +102,7 @@ export const useAIFoodAnalysis = () => {
       if (error.message.includes('limit reached')) {
         toast.error('AI generation limit reached. Please upgrade or wait for credits to reset.');
       } else {
-        toast.error('Failed to analyze food image. Please try again.');
+        toast.error(`Failed to analyze food image: ${error.message}`);
       }
     },
   });

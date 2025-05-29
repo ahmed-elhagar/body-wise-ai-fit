@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Camera, Search, Heart, BarChart3, Menu, X } from "lucide-react";
+import { ArrowLeft, Camera, Search, Heart, BarChart3, Menu } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useLanguage } from "@/contexts/LanguageContext";
 import FoodPhotoAnalyzer from "@/components/calorie/FoodPhotoAnalyzer";
@@ -21,7 +21,6 @@ const CalorieChecker = () => {
   const [selectedFood, setSelectedFood] = useState<any>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [activeView, setActiveView] = useState("today");
-  const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
 
   const handleSelectFood = (food: any) => {
     console.log('Selected food:', food);
@@ -65,152 +64,81 @@ const CalorieChecker = () => {
 
   const activeViewData = views.find(view => view.id === activeView);
 
-  const SideMenu = () => (
-    <div className="flex flex-col h-full bg-white">
-      {/* Header */}
-      <div className="p-4 border-b border-gray-100">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-800">Nutrition Tracker</h2>
-          {isMobile && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsSideMenuOpen(false)}
-              className="p-1"
-            >
-              <X className="w-5 h-5" />
-            </Button>
-          )}
-        </div>
-        <p className="text-sm text-gray-600 mt-1">Track your daily nutrition</p>
-      </div>
-
-      {/* Navigation */}
-      <div className="flex-1 p-4">
-        <div className="space-y-2">
-          {views.map((view) => {
-            const IconComponent = view.icon;
-            return (
-              <Button
-                key={view.id}
-                variant={activeView === view.id ? "default" : "ghost"}
-                onClick={() => {
-                  setActiveView(view.id);
-                  if (isMobile) setIsSideMenuOpen(false);
-                }}
-                className={`w-full justify-start gap-3 h-11 ${
-                  activeView === view.id 
-                    ? "bg-blue-600 text-white shadow-lg" 
-                    : "text-gray-700 hover:bg-gray-100"
-                }`}
-              >
-                <IconComponent className="w-5 h-5" />
-                <span className="font-medium">{view.label}</span>
-              </Button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Back to Dashboard */}
-      <div className="p-4 border-t border-gray-100">
-        <Button
-          variant="outline"
-          onClick={() => navigate('/dashboard')}
-          className="w-full justify-start gap-3"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Dashboard
-        </Button>
-      </div>
-    </div>
-  );
-
-  if (isMobile) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-        {/* Mobile Header */}
-        <div className="bg-white border-b border-gray-200 sticky top-0 z-50">
-          <div className="px-4 py-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Sheet open={isSideMenuOpen} onOpenChange={setIsSideMenuOpen}>
-                  <SheetTrigger asChild>
-                    <Button variant="ghost" size="sm" className="p-2">
-                      <Menu className="w-5 h-5" />
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent side="left" className="p-0 w-80">
-                    <SideMenu />
-                  </SheetContent>
-                </Sheet>
-                
-                <div>
-                  <h1 className="text-lg font-bold text-gray-800">
-                    {activeViewData?.label}
-                  </h1>
-                  <p className="text-xs text-gray-600">
-                    {activeView === "today" && "Track your daily intake"}
-                    {activeView === "search" && "Find foods in database"}
-                    {activeView === "scan" && "Scan food with AI"}
-                    {activeView === "favorites" && "Your saved foods"}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile Content */}
-        <div className="p-4">
-          {activeViewData?.component}
-        </div>
-
-        {/* Add Food Dialog */}
-        <AddFoodDialog
-          isOpen={isAddDialogOpen}
-          onClose={() => setIsAddDialogOpen(false)}
-          selectedFood={selectedFood}
-          onLogFood={handleLogFood}
-          isLogging={isLoggingConsumption}
-        />
-      </div>
-    );
-  }
-
-  // Desktop Layout - Completely fixed layout without flex issues
   return (
-    <div className="h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 overflow-hidden">
-      <div className="h-full grid grid-cols-[320px_1fr]">
-        {/* Desktop Sidebar - Fixed width, no overlapping */}
-        <div className="bg-white border-r border-gray-200 shadow-sm overflow-y-auto">
-          <SideMenu />
-        </div>
-
-        {/* Desktop Main Content - Takes remaining space */}
-        <div className="flex flex-col overflow-hidden">
-          {/* Desktop Header */}
-          <div className="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0">
-            <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      {/* Header Section */}
+      <div className="bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Top Bar */}
+          <div className="flex items-center justify-between py-4">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="outline"
+                onClick={() => navigate('/dashboard')}
+                className="flex items-center gap-2"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span className="hidden sm:inline">Back to Dashboard</span>
+              </Button>
+              
               <div>
-                <h1 className="text-2xl font-bold text-gray-800">
-                  {activeViewData?.label}
-                </h1>
-                <p className="text-sm text-gray-600 mt-1">
-                  {activeView === "today" && "Monitor your daily nutrition progress"}
-                  {activeView === "search" && "Search our comprehensive food database"}
-                  {activeView === "scan" && "Use AI to analyze food photos"}
-                  {activeView === "favorites" && "Access your favorite foods quickly"}
-                </p>
+                <h1 className="text-2xl font-bold text-gray-800">Nutrition Tracker</h1>
+                <p className="text-sm text-gray-600 hidden sm:block">Track your daily nutrition and analyze foods</p>
               </div>
             </div>
           </div>
 
-          {/* Desktop Content - Scrollable */}
-          <div className="flex-1 overflow-y-auto p-6">
-            <div className="max-w-6xl mx-auto w-full">
-              {activeViewData?.component}
+          {/* Navigation Tabs */}
+          <div className="border-t border-gray-100">
+            <nav className="flex space-x-8 py-4" aria-label="Tabs">
+              {views.map((view) => {
+                const IconComponent = view.icon;
+                return (
+                  <button
+                    key={view.id}
+                    onClick={() => setActiveView(view.id)}
+                    className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                      activeView === view.id
+                        ? "bg-blue-100 text-blue-700 border border-blue-200"
+                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                    }`}
+                  >
+                    <IconComponent className="w-4 h-4" />
+                    <span className="hidden sm:inline">{view.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          {/* Active View Header */}
+          <div className="mb-6">
+            <div className="flex items-center gap-3 mb-2">
+              {activeViewData && (
+                <>
+                  <activeViewData.icon className="w-6 h-6 text-blue-600" />
+                  <h2 className="text-xl font-semibold text-gray-800">
+                    {activeViewData.label}
+                  </h2>
+                </>
+              )}
             </div>
+            <p className="text-gray-600">
+              {activeView === "today" && "Monitor your daily nutrition progress and track consumed foods"}
+              {activeView === "search" && "Search our comprehensive food database to log your meals"}
+              {activeView === "scan" && "Use AI to analyze food photos and get nutrition information"}
+              {activeView === "favorites" && "Access your favorite foods and frequently logged items"}
+            </p>
+          </div>
+
+          {/* Active View Content */}
+          <div>
+            {activeViewData?.component}
           </div>
         </div>
       </div>
