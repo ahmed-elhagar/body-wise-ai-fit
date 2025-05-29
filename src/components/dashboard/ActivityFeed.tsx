@@ -45,7 +45,7 @@ const ActivityFeed = () => {
       title: `${t('recentActivity.createdMealPlan')} ${new Date(plan.week_start_date).toLocaleDateString()}`,
       time: plan.created_at,
       badge: t('recentActivity.badges.nutrition'),
-      description: `${plan.total_meals || 0} meals planned`
+      description: `Weekly meal plan`
     })) || []),
     ...(programs?.slice(0, 2).map(program => ({
       type: 'exercise',
@@ -58,48 +58,48 @@ const ActivityFeed = () => {
 
   if (activities.length === 0) {
     return (
-      <Card className="p-6 sm:p-8 bg-gradient-to-br from-white to-gray-50 border-0 shadow-lg">
-        <div className={`flex items-center gap-3 mb-6 ${isRTL ? 'flex-row-reverse' : ''}`}>
-          <div className="w-10 h-10 bg-fitness-gradient rounded-xl flex items-center justify-center">
-            <TrendingUp className="w-5 h-5 text-white" />
+      <Card className="p-4 sm:p-6 bg-gradient-to-br from-white to-gray-50 border-0 shadow-lg">
+        <div className={`flex items-center gap-3 mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+          <div className="w-8 h-8 bg-fitness-gradient rounded-xl flex items-center justify-center">
+            <TrendingUp className="w-4 h-4 text-white" />
           </div>
-          <h3 className="text-lg sm:text-xl font-bold text-gray-800">
+          <h3 className="text-base sm:text-lg font-bold text-gray-800">
             {t('recentActivity.title')}
           </h3>
         </div>
         
-        <div className="text-center py-12">
-          <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Activity className="w-10 h-10 text-gray-400" />
+        <div className="text-center py-8">
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+            <Activity className="w-8 h-8 text-gray-400" />
           </div>
-          <p className="text-gray-500 text-sm sm:text-base">{t('recentActivity.noActivity')}</p>
+          <p className="text-gray-500 text-sm">{t('recentActivity.noActivity')}</p>
         </div>
       </Card>
     );
   }
 
   return (
-    <Card className="p-6 sm:p-8 bg-gradient-to-br from-white to-gray-50 border-0 shadow-lg">
-      <div className={`flex items-center gap-3 mb-6 ${isRTL ? 'flex-row-reverse' : ''}`}>
-        <div className="w-10 h-10 bg-fitness-gradient rounded-xl flex items-center justify-center">
-          <TrendingUp className="w-5 h-5 text-white" />
+    <Card className="p-4 sm:p-6 bg-gradient-to-br from-white to-gray-50 border-0 shadow-lg">
+      <div className={`flex items-center gap-3 mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+        <div className="w-8 h-8 bg-fitness-gradient rounded-xl flex items-center justify-center">
+          <TrendingUp className="w-4 h-4 text-white" />
         </div>
-        <h3 className="text-lg sm:text-xl font-bold text-gray-800">
+        <h3 className="text-base sm:text-lg font-bold text-gray-800">
           {t('recentActivity.title')}
         </h3>
       </div>
       
-      <div className="space-y-4">
-        {activities.map((activity, index) => {
+      <div className="space-y-3">
+        {activities.slice(0, 4).map((activity, index) => {
           const IconComponent = getActivityIcon(activity.type);
           return (
-            <div key={index} className={`flex items-start gap-4 p-4 rounded-xl bg-white border border-gray-100 hover:shadow-md transition-all duration-200 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <div className={`w-12 h-12 ${getActivityColor(activity.type)} rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm`}>
-                <IconComponent className="w-6 h-6 text-white" />
+            <div key={index} className={`flex items-start gap-3 p-3 rounded-xl bg-white border border-gray-100 hover:shadow-md transition-all duration-200 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <div className={`w-10 h-10 ${getActivityColor(activity.type)} rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm`}>
+                <IconComponent className="w-5 h-5 text-white" />
               </div>
               
               <div className={`flex-1 min-w-0 ${isRTL ? 'text-right' : 'text-left'}`}>
-                <p className="font-medium text-gray-800 text-sm sm:text-base break-words mb-1">
+                <p className="font-medium text-gray-800 text-sm break-words mb-1">
                   {activity.title}
                 </p>
                 {activity.description && (

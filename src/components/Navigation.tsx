@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -80,7 +81,10 @@ const Navigation = () => {
             <h2 className={`text-xl sm:text-2xl font-bold bg-fitness-gradient bg-clip-text text-transparent ${isRTL ? 'text-right' : 'text-left'}`}>
               FitGenius AI
             </h2>
-            <LanguageToggle />
+            {/* Language Toggle - Prominent placement */}
+            <div className="bg-white shadow-sm rounded-lg p-1">
+              <LanguageToggle />
+            </div>
           </div>
           {profile && (
             <div className="mt-3 sm:mt-4 p-3 bg-fitness-gradient rounded-lg text-white">

@@ -7,7 +7,6 @@ import StatsGrid from "@/components/dashboard/StatsGrid";
 import QuickActionsGrid from "@/components/dashboard/QuickActionsGrid";
 import ActivityFeed from "@/components/dashboard/ActivityFeed";
 import ProgressOverview from "@/components/dashboard/ProgressOverview";
-import LanguageToggle from "@/components/LanguageToggle";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Loader2 } from "lucide-react";
 
@@ -48,33 +47,32 @@ const Dashboard = () => {
     <div className={`min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex ${isRTL ? 'rtl' : 'ltr'}`}>
       <Navigation />
       <div className={`flex-1 ${isRTL ? 'mr-0 md:mr-64' : 'ml-0 md:ml-64'} transition-all duration-300`}>
-        {/* Language Toggle */}
-        <div className={`p-4 ${isRTL ? 'text-left' : 'text-right'}`}>
-          <LanguageToggle />
-        </div>
-
-        <div className="container mx-auto px-4 py-4 sm:py-6 md:py-8 max-w-7xl">
-          {/* Header Section */}
-          <div className="mb-8">
+        <div className="container mx-auto px-4 py-4 sm:py-6 max-w-7xl">
+          {/* Header Section - Compact */}
+          <div className="mb-6">
             <DashboardHeader />
           </div>
 
-          {/* Stats Grid */}
-          <div className="mb-8">
+          {/* Stats Grid - Compact */}
+          <div className="mb-6">
             <StatsGrid />
           </div>
 
-          {/* Main Content Grid */}
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 sm:gap-8">
-            {/* Left Column - Main Content */}
-            <div className="xl:col-span-2 space-y-6 sm:space-y-8">
-              <ProgressOverview />
+          {/* Main Content Grid - Smart Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
+            {/* Left Column - Quick Actions (Mobile: Full width, Desktop: 5 cols) */}
+            <div className="lg:col-span-5 order-1 lg:order-1">
+              <QuickActionsGrid />
+            </div>
+
+            {/* Right Column - Activity Feed (Mobile: Full width, Desktop: 7 cols) */}
+            <div className="lg:col-span-7 order-2 lg:order-2">
               <ActivityFeed />
             </div>
 
-            {/* Right Column - Sidebar */}
-            <div className="xl:col-span-1">
-              <QuickActionsGrid />
+            {/* Bottom - Progress Overview (Mobile & Desktop: Full width) */}
+            <div className="lg:col-span-12 order-3">
+              <ProgressOverview />
             </div>
           </div>
         </div>

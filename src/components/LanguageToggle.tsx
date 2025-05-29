@@ -15,11 +15,11 @@ const LanguageToggle = () => {
       variant="ghost"
       size="sm"
       onClick={toggleLanguage}
-      className="flex items-center gap-2 text-sm"
+      className="flex items-center gap-2 text-sm hover:bg-fitness-primary/10 hover:text-fitness-primary transition-colors"
     >
       <Globe className="w-4 h-4" />
-      <span className="hidden sm:inline">
-        {language === 'en' ? 'العربية' : 'English'}
+      <span className="font-medium">
+        {language === 'en' ? 'عربي' : 'EN'}
       </span>
     </Button>
   );
