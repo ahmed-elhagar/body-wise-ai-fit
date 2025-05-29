@@ -4,10 +4,14 @@ import { ExerciseProgramSelector } from "./ExerciseProgramSelector";
 import { AIExerciseDialog } from "./AIExerciseDialog";
 import { ExerciseEnhancedNavigation } from "./ExerciseEnhancedNavigation";
 import { CompactWorkoutSummary } from "./CompactWorkoutSummary";
+import { ExerciseProgressTracker } from "./ExerciseProgressTracker";
+import { ExerciseMotivationCard } from "./ExerciseMotivationCard";
+import { ExerciseQuickActions } from "./ExerciseQuickActions";
 import { ExerciseProgram, ExercisePreferences } from "@/hooks/useExerciseProgramPage";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Home, Building2 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useWorkoutSession } from "@/hooks/useWorkoutSession";
 
 interface ExerciseProgramPageContentProps {
   currentDate: Date;
@@ -65,6 +69,7 @@ export const ExerciseProgramPageContent = ({
   isRestDay
 }: ExerciseProgramPageContentProps) => {
   const { t } = useLanguage();
+  const workoutSession = useWorkoutSession();
 
   // Check if current week has data for the selected workout type
   const hasDataForCurrentWeek = currentProgram && currentProgram.workout_type === workoutType;
@@ -75,6 +80,15 @@ export const ExerciseProgramPageContent = ({
       workoutType: workoutType
     };
     handleGenerateAIProgram(preferences);
+  };
+
+  const handleStartWorkout = () => {
+    workoutSession.startSession();
+  };
+
+  const handleCompleteExercise = (exerciseId: string) => {
+    workoutSession.completeExercise(exerciseId);
+    handleExerciseComplete(exerciseId);
   };
 
   return (
@@ -91,6 +105,19 @@ export const ExerciseProgramPageContent = ({
         hasDataForCurrentWeek={!!hasDataForCurrentWeek}
         onGenerateForWeek={handleGenerateForCurrentWeek}
       />
+
+      {/* Quick Actions */}
+      {hasDataForCurrentWeek && (
+        <ExerciseQuickActions
+          isWorkoutActive={workoutSession.isActive}
+          onStartWorkout={handleStartWorkout}
+          onPauseWorkout={workoutSession.pauseSession}
+          onRestartWorkout={workoutSession.resetSession}
+          onShareProgress={workoutSession.shareProgress}
+          canStart={totalExercises > 0}
+          isRestDay={isRestDay}
+        />
+      )}
 
       {/* Workout Type Tabs */}
       <Tabs value={workoutType} onValueChange={(value) => setWorkoutType(value as "home" | "gym")} className="w-full">
@@ -115,25 +142,44 @@ export const ExerciseProgramPageContent = ({
 
         <TabsContent value="home" className="mt-4 sm:mt-6">
           {currentProgram && currentProgram.workout_type === "home" ? (
-            <div className="space-y-4">
-              <CompactWorkoutSummary
-                todaysWorkouts={todaysWorkouts}
-                currentProgram={currentProgram}
-                completedExercises={completedExercises}
-                totalExercises={totalExercises}
-                progressPercentage={progressPercentage}
-                workoutType="home"
-                selectedDay={selectedDayNumber}
-                isRestDay={isRestDay}
-              />
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
+              {/* Main Content */}
+              <div className="lg:col-span-3 space-y-4">
+                <CompactWorkoutSummary
+                  todaysWorkouts={todaysWorkouts}
+                  currentProgram={currentProgram}
+                  completedExercises={completedExercises}
+                  totalExercises={totalExercises}
+                  progressPercentage={progressPercentage}
+                  workoutType="home"
+                  selectedDay={selectedDayNumber}
+                  isRestDay={isRestDay}
+                />
 
-              <ExerciseListEnhanced 
-                exercises={todaysExercises}
-                isLoading={false}
-                onExerciseComplete={handleExerciseComplete}
-                onExerciseProgressUpdate={handleExerciseProgressUpdate}
-                isRestDay={isRestDay}
-              />
+                <ExerciseListEnhanced 
+                  exercises={todaysExercises}
+                  isLoading={false}
+                  onExerciseComplete={handleCompleteExercise}
+                  onExerciseProgressUpdate={handleExerciseProgressUpdate}
+                  isRestDay={isRestDay}
+                />
+              </div>
+
+              {/* Sidebar */}
+              <div className="space-y-4">
+                <ExerciseProgressTracker
+                  currentProgram={currentProgram}
+                  selectedDay={selectedDayNumber}
+                  completedExercises={completedExercises}
+                  totalExercises={totalExercises}
+                />
+
+                <ExerciseMotivationCard
+                  completedExercises={completedExercises}
+                  totalExercises={totalExercises}
+                  isRestDay={isRestDay}
+                />
+              </div>
             </div>
           ) : (
             <ExerciseProgramSelector 
@@ -146,25 +192,44 @@ export const ExerciseProgramPageContent = ({
 
         <TabsContent value="gym" className="mt-4 sm:mt-6">
           {currentProgram && currentProgram.workout_type === "gym" ? (
-            <div className="space-y-4">
-              <CompactWorkoutSummary
-                todaysWorkouts={todaysWorkouts}
-                currentProgram={currentProgram}
-                completedExercises={completedExercises}
-                totalExercises={totalExercises}
-                progressPercentage={progressPercentage}
-                workoutType="gym"
-                selectedDay={selectedDayNumber}
-                isRestDay={isRestDay}
-              />
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
+              {/* Main Content */}
+              <div className="lg:col-span-3 space-y-4">
+                <CompactWorkoutSummary
+                  todaysWorkouts={todaysWorkouts}
+                  currentProgram={currentProgram}
+                  completedExercises={completedExercises}
+                  totalExercises={totalExercises}
+                  progressPercentage={progressPercentage}
+                  workoutType="gym"
+                  selectedDay={selectedDayNumber}
+                  isRestDay={isRestDay}
+                />
 
-              <ExerciseListEnhanced 
-                exercises={todaysExercises}
-                isLoading={false}
-                onExerciseComplete={handleExerciseComplete}
-                onExerciseProgressUpdate={handleExerciseProgressUpdate}
-                isRestDay={isRestDay}
-              />
+                <ExerciseListEnhanced 
+                  exercises={todaysExercises}
+                  isLoading={false}
+                  onExerciseComplete={handleCompleteExercise}
+                  onExerciseProgressUpdate={handleExerciseProgressUpdate}
+                  isRestDay={isRestDay}
+                />
+              </div>
+
+              {/* Sidebar */}
+              <div className="space-y-4">
+                <ExerciseProgressTracker
+                  currentProgram={currentProgram}
+                  selectedDay={selectedDayNumber}
+                  completedExercises={completedExercises}
+                  totalExercises={totalExercises}
+                />
+
+                <ExerciseMotivationCard
+                  completedExercises={completedExercises}
+                  totalExercises={totalExercises}
+                  isRestDay={isRestDay}
+                />
+              </div>
             </div>
           ) : (
             <ExerciseProgramSelector 
