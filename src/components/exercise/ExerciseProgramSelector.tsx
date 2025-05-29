@@ -1,188 +1,181 @@
 
 import { useState } from "react";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
-import { Home, Building2, Clock, Target, Zap } from "lucide-react";
+import { Sparkles, Home, Building2, Clock, Target } from "lucide-react";
+import { ExercisePreferences } from "@/hooks/useExerciseProgramPage";
 
 interface ExerciseProgramSelectorProps {
-  onGenerateProgram: (preferences: any) => void;
+  onGenerateProgram: (preferences: ExercisePreferences) => void;
   isGenerating: boolean;
+  workoutType?: "home" | "gym";
 }
 
-export const ExerciseProgramSelector = ({ onGenerateProgram, isGenerating }: ExerciseProgramSelectorProps) => {
-  const [selectedType, setSelectedType] = useState<"home" | "gym">("home");
-  const [fitnessGoal, setFitnessGoal] = useState("general_fitness");
-  const [fitnessLevel, setFitnessLevel] = useState("beginner");
-  const [availableTime, setAvailableTime] = useState("45");
+export const ExerciseProgramSelector = ({ 
+  onGenerateProgram, 
+  isGenerating,
+  workoutType = "home"
+}: ExerciseProgramSelectorProps) => {
+  const [selectedGoal, setSelectedGoal] = useState("general_fitness");
+  const [selectedLevel, setSelectedLevel] = useState("beginner");
+
+  const goals = [
+    { id: "weight_loss", label: "Weight Loss", icon: "🔥" },
+    { id: "muscle_gain", label: "Muscle Gain", icon: "💪" },
+    { id: "general_fitness", label: "General Fitness", icon: "⚡" },
+    { id: "endurance", label: "Endurance", icon: "🏃" }
+  ];
+
+  const levels = [
+    { id: "beginner", label: "Beginner", desc: "New to exercise" },
+    { id: "intermediate", label: "Intermediate", desc: "Some experience" },
+    { id: "advanced", label: "Advanced", desc: "Very experienced" }
+  ];
 
   const handleGenerate = () => {
-    const preferences = {
-      workoutType: selectedType,
-      goalType: fitnessGoal,
-      fitnessLevel,
-      availableTime,
-      preferredWorkouts: selectedType === "home" ? ["bodyweight", "cardio"] : ["strength", "cardio"],
+    const preferences: ExercisePreferences = {
+      workoutType,
+      goalType: selectedGoal,
+      fitnessLevel: selectedLevel,
+      availableTime: "45",
+      preferredWorkouts: workoutType === "gym" ? ["strength", "cardio"] : ["bodyweight", "cardio"],
       targetMuscleGroups: ["full_body"],
-      equipment: selectedType === "home" ? ["Basic home equipment", "Bodyweight"] : ["Full gym equipment"],
+      equipment: workoutType === "gym" 
+        ? ["barbells", "dumbbells", "machines", "cables"]
+        : ["bodyweight", "resistance_bands", "light_dumbbells"],
       duration: "4",
       workoutDays: "4-5 days per week",
-      difficulty: fitnessLevel
+      difficulty: selectedLevel
     };
     
     onGenerateProgram(preferences);
   };
 
   return (
-    <div className="space-y-6">
-      {/* Workout Type Selection */}
-      <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Choose Your Training Environment</h3>
-        <div className="grid md:grid-cols-2 gap-4">
-          <div
-            className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-300 ${
-              selectedType === "home" 
-                ? "border-fitness-primary bg-fitness-primary/10 shadow-md" 
-                : "border-gray-200 hover:border-gray-300"
-            }`}
-            onClick={() => setSelectedType("home")}
-          >
-            <div className="flex items-center space-x-3 mb-3">
-              <Home className="w-6 h-6 text-fitness-primary" />
-              <h4 className="font-semibold text-gray-800">Home Training</h4>
-            </div>
-            <p className="text-sm text-gray-600 mb-3">Perfect for beginners and those who prefer working out at home</p>
-            <div className="flex flex-wrap gap-2">
-              <Badge variant="outline" className="text-xs">Bodyweight</Badge>
-              <Badge variant="outline" className="text-xs">Minimal Equipment</Badge>
-              <Badge variant="outline" className="text-xs">Flexible Schedule</Badge>
-            </div>
-          </div>
-
-          <div
-            className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-300 ${
-              selectedType === "gym" 
-                ? "border-fitness-primary bg-fitness-primary/10 shadow-md" 
-                : "border-gray-200 hover:border-gray-300"
-            }`}
-            onClick={() => setSelectedType("gym")}
-          >
-            <div className="flex items-center space-x-3 mb-3">
-              <Building2 className="w-6 h-6 text-fitness-primary" />
-              <h4 className="font-semibold text-gray-800">Gym Training</h4>
-            </div>
-            <p className="text-sm text-gray-600 mb-3">Advanced workouts with full equipment access</p>
-            <div className="flex flex-wrap gap-2">
-              <Badge variant="outline" className="text-xs">Full Equipment</Badge>
-              <Badge variant="outline" className="text-xs">Progressive Overload</Badge>
-              <Badge variant="outline" className="text-xs">Advanced Training</Badge>
-            </div>
-          </div>
+    <div className="max-w-4xl mx-auto space-y-8">
+      <div className="text-center space-y-4">
+        <div className="flex items-center justify-center space-x-2 mb-4">
+          {workoutType === "home" ? (
+            <Home className="w-8 h-8 text-fitness-primary" />
+          ) : (
+            <Building2 className="w-8 h-8 text-fitness-primary" />
+          )}
+          <h1 className="text-3xl font-bold text-gray-800">
+            {workoutType === "home" ? "Home" : "Gym"} Exercise Program
+          </h1>
         </div>
-      </Card>
+        <p className="text-gray-600 text-lg">
+          Get a personalized {workoutType} workout plan powered by AI
+        </p>
+      </div>
 
-      {/* Fitness Goal Selection */}
-      <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">
-          <Target className="w-5 h-5 inline mr-2" />
-          Fitness Goal
-        </h3>
-        <RadioGroup value={fitnessGoal} onValueChange={setFitnessGoal} className="grid md:grid-cols-3 gap-4">
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="weight_loss" id="weight_loss" />
-            <Label htmlFor="weight_loss" className="cursor-pointer">Weight Loss</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="muscle_gain" id="muscle_gain" />
-            <Label htmlFor="muscle_gain" className="cursor-pointer">Muscle Gain</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="general_fitness" id="general_fitness" />
-            <Label htmlFor="general_fitness" className="cursor-pointer">General Fitness</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="strength" id="strength" />
-            <Label htmlFor="strength" className="cursor-pointer">Strength Building</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="endurance" id="endurance" />
-            <Label htmlFor="endurance" className="cursor-pointer">Endurance</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="flexibility" id="flexibility" />
-            <Label htmlFor="flexibility" className="cursor-pointer">Flexibility</Label>
-          </div>
-        </RadioGroup>
-      </Card>
-
-      {/* Fitness Level & Time */}
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-2 gap-8">
+        {/* Fitness Goal Selection */}
         <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">
-            <Zap className="w-5 h-5 inline mr-2" />
-            Fitness Level
+          <h3 className="text-xl font-semibold text-gray-800 mb-4">
+            What's your fitness goal?
           </h3>
-          <RadioGroup value={fitnessLevel} onValueChange={setFitnessLevel} className="space-y-3">
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="beginner" id="beginner" />
-              <Label htmlFor="beginner" className="cursor-pointer">Beginner (0-6 months)</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="intermediate" id="intermediate" />
-              <Label htmlFor="intermediate" className="cursor-pointer">Intermediate (6+ months)</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="advanced" id="advanced" />
-              <Label htmlFor="advanced" className="cursor-pointer">Advanced (2+ years)</Label>
-            </div>
-          </RadioGroup>
+          <div className="grid grid-cols-2 gap-3">
+            {goals.map((goal) => (
+              <Button
+                key={goal.id}
+                variant={selectedGoal === goal.id ? "default" : "outline"}
+                className={`h-20 flex-col space-y-2 ${
+                  selectedGoal === goal.id 
+                    ? "bg-fitness-gradient text-white" 
+                    : "bg-white/80 hover:bg-gray-50"
+                }`}
+                onClick={() => setSelectedGoal(goal.id)}
+              >
+                <span className="text-2xl">{goal.icon}</span>
+                <span className="text-sm font-medium">{goal.label}</span>
+              </Button>
+            ))}
+          </div>
         </Card>
 
+        {/* Fitness Level Selection */}
         <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">
-            <Clock className="w-5 h-5 inline mr-2" />
-            Available Time
+          <h3 className="text-xl font-semibold text-gray-800 mb-4">
+            What's your fitness level?
           </h3>
-          <RadioGroup value={availableTime} onValueChange={setAvailableTime} className="space-y-3">
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="30" id="time_30" />
-              <Label htmlFor="time_30" className="cursor-pointer">30 minutes per session</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="45" id="time_45" />
-              <Label htmlFor="time_45" className="cursor-pointer">45 minutes per session</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="60" id="time_60" />
-              <Label htmlFor="time_60" className="cursor-pointer">60 minutes per session</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="90" id="time_90" />
-              <Label htmlFor="time_90" className="cursor-pointer">90+ minutes per session</Label>
-            </div>
-          </RadioGroup>
+          <div className="space-y-3">
+            {levels.map((level) => (
+              <Button
+                key={level.id}
+                variant={selectedLevel === level.id ? "default" : "outline"}
+                className={`w-full justify-start h-16 ${
+                  selectedLevel === level.id 
+                    ? "bg-fitness-gradient text-white" 
+                    : "bg-white/80 hover:bg-gray-50"
+                }`}
+                onClick={() => setSelectedLevel(level.id)}
+              >
+                <div className="text-left">
+                  <div className="font-medium">{level.label}</div>
+                  <div className="text-sm opacity-80">{level.desc}</div>
+                </div>
+              </Button>
+            ))}
+          </div>
         </Card>
       </div>
 
+      {/* Program Features */}
+      <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+        <h3 className="text-xl font-semibold text-gray-800 mb-4">
+          Your {workoutType} program will include:
+        </h3>
+        <div className="grid md:grid-cols-3 gap-4">
+          <div className="flex items-center space-x-3">
+            <Clock className="w-5 h-5 text-fitness-primary" />
+            <span className="text-gray-700">45-min workouts</span>
+          </div>
+          <div className="flex items-center space-x-3">
+            <Target className="w-5 h-5 text-fitness-primary" />
+            <span className="text-gray-700">4-5 days per week</span>
+          </div>
+          <div className="flex items-center space-x-3">
+            <Sparkles className="w-5 h-5 text-fitness-primary" />
+            <span className="text-gray-700">AI-personalized exercises</span>
+          </div>
+        </div>
+        
+        <div className="mt-6 flex flex-wrap gap-2">
+          {workoutType === "home" ? (
+            <>
+              <Badge variant="secondary">Bodyweight exercises</Badge>
+              <Badge variant="secondary">No equipment needed</Badge>
+              <Badge variant="secondary">Small space friendly</Badge>
+            </>
+          ) : (
+            <>
+              <Badge variant="secondary">Full gym equipment</Badge>
+              <Badge variant="secondary">Progressive overload</Badge>
+              <Badge variant="secondary">Machine & free weights</Badge>
+            </>
+          )}
+        </div>
+      </Card>
+
       {/* Generate Button */}
       <div className="text-center">
-        <Button 
+        <Button
           onClick={handleGenerate}
           disabled={isGenerating}
           size="lg"
-          className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white px-8 py-3 text-lg"
+          className="bg-fitness-gradient hover:opacity-90 text-white px-8 py-4 text-lg"
         >
           {isGenerating ? (
             <>
-              <div className="w-5 h-5 animate-spin border-2 border-white border-t-transparent rounded-full mr-2" />
+              <div className="w-5 h-5 animate-spin border-2 border-white border-t-transparent rounded-full mr-3" />
               Generating Your Program...
             </>
           ) : (
             <>
-              <Target className="w-5 h-5 mr-2" />
-              Generate {selectedType === "home" ? "Home" : "Gym"} Program
+              <Sparkles className="w-5 h-5 mr-3" />
+              Generate My {workoutType === "home" ? "Home" : "Gym"} Program
             </>
           )}
         </Button>

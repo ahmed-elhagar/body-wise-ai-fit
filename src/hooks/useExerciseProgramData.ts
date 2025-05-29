@@ -72,10 +72,11 @@ export const useExerciseProgramData = (weekOffset: number = 0) => {
 
       if (error && error.code !== 'PGRST116') throw error;
       
-      // Transform data to match interface
+      // Transform data to match interface with default workout_type
       if (data) {
         return {
           ...data,
+          workout_type: data.workout_type || "home",
           current_week: 1,
           daily_workouts_count: data.daily_workouts?.length || 0
         } as ExerciseProgram;

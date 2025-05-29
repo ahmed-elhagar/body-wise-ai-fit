@@ -1,6 +1,6 @@
 
 import { useState, useMemo } from 'react';
-import { useExerciseProgramData } from './useExerciseProgramData';
+import { useExerciseProgramData, ExerciseProgram } from './useExerciseProgramData';
 import { useAIExercise } from './useAIExercise';
 import { addDays, format, startOfWeek } from 'date-fns';
 
@@ -16,6 +16,8 @@ export interface ExercisePreferences {
   workoutDays: string;
   difficulty: string;
 }
+
+export { ExerciseProgram };
 
 export const useExerciseProgramPage = () => {
   const [selectedDayNumber, setSelectedDayNumber] = useState(1);
@@ -81,12 +83,23 @@ export const useExerciseProgramPage = () => {
     handleGenerateAIProgram(preferences);
   };
 
+  const handleWorkoutTypeChange = (type: "home" | "gym") => {
+    setWorkoutType(type);
+    setAiPreferences(prev => ({
+      ...prev,
+      workoutType: type,
+      equipment: type === "gym" 
+        ? ["barbells", "dumbbells", "machines", "cables"]
+        : ["bodyweight", "resistance_bands", "light_dumbbells"]
+    }));
+  };
+
   return {
     // State
     selectedDayNumber,
     setSelectedDayNumber,
     workoutType,
-    setWorkoutType,
+    setWorkoutType: handleWorkoutTypeChange,
     showAIDialog,
     setShowAIDialog,
     aiPreferences,
@@ -110,6 +123,7 @@ export const useExerciseProgramPage = () => {
     // Handlers
     handleGenerateAIProgram,
     handleRegenerateProgram,
+    handleWorkoutTypeChange,
     refetch
   };
 };

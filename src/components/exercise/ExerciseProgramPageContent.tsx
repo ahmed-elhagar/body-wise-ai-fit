@@ -1,11 +1,13 @@
 
 import { ExerciseHeader } from "./ExerciseHeader";
+import { WorkoutTypeToggle } from "./WorkoutTypeToggle";
 import { ExerciseDaySelector } from "./ExerciseDaySelector";
 import { TodaysWorkoutCard } from "./TodaysWorkoutCard";
 import { ExerciseListEnhanced } from "./ExerciseListEnhanced";
 import { ExerciseProgramSelector } from "./ExerciseProgramSelector";
 import { AIExerciseDialog } from "./AIExerciseDialog";
 import { ExerciseProgram, ExercisePreferences } from "@/hooks/useExerciseProgramPage";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ExerciseProgramPageContentProps {
   currentDate: Date;
@@ -13,6 +15,8 @@ interface ExerciseProgramPageContentProps {
   selectedDayNumber: number;
   setSelectedDayNumber: (day: number) => void;
   currentProgram: ExerciseProgram | null;
+  workoutType: "home" | "gym";
+  setWorkoutType: (type: "home" | "gym") => void;
   todaysWorkouts: any[];
   todaysExercises: any[];
   completedExercises: number;
@@ -34,6 +38,8 @@ export const ExerciseProgramPageContent = ({
   selectedDayNumber,
   setSelectedDayNumber,
   currentProgram,
+  workoutType,
+  setWorkoutType,
   todaysWorkouts,
   todaysExercises,
   completedExercises,
@@ -49,7 +55,7 @@ export const ExerciseProgramPageContent = ({
   refetch
 }: ExerciseProgramPageContentProps) => {
   return (
-    <>
+    <div className="space-y-6">
       <ExerciseHeader 
         currentProgram={currentProgram}
         onGenerateProgram={handleRegenerateProgram}
@@ -57,41 +63,95 @@ export const ExerciseProgramPageContent = ({
         onShowAIDialog={() => setShowAIDialog(true)}
       />
 
-      {currentProgram ? (
-        <div className="space-y-6">
-          <ExerciseDaySelector
-            selectedDayNumber={selectedDayNumber}
-            setSelectedDayNumber={setSelectedDayNumber}
-            currentProgram={currentProgram}
-          />
+      {/* Workout Type Tabs */}
+      <Tabs value={workoutType} onValueChange={(value) => setWorkoutType(value as "home" | "gym")} className="w-full">
+        <TabsList className="grid w-full grid-cols-2 bg-white/80 backdrop-blur-sm">
+          <TabsTrigger value="home" className="data-[state=active]:bg-fitness-gradient data-[state=active]:text-white">
+            🏠 Home Workout
+          </TabsTrigger>
+          <TabsTrigger value="gym" className="data-[state=active]:bg-fitness-gradient data-[state=active]:text-white">
+            🏋️ Gym Workout
+          </TabsTrigger>
+        </TabsList>
 
-          <div className="grid lg:grid-cols-4 gap-6">
-            <TodaysWorkoutCard
-              todaysWorkouts={todaysWorkouts}
-              currentProgram={currentProgram}
-              completedExercises={completedExercises}
-              totalExercises={totalExercises}
-              progressPercentage={progressPercentage}
-              workoutType={currentProgram.workout_type}
-              selectedDay={selectedDayNumber}
-            />
+        <TabsContent value="home" className="mt-6">
+          {currentProgram && currentProgram.workout_type === "home" ? (
+            <div className="space-y-6">
+              <ExerciseDaySelector
+                selectedDayNumber={selectedDayNumber}
+                setSelectedDayNumber={setSelectedDayNumber}
+                currentProgram={currentProgram}
+              />
 
-            <ExerciseListEnhanced 
-              exercises={todaysExercises}
-              isLoading={false}
-              onExerciseComplete={(exerciseId) => {
-                console.log('Exercise completed:', exerciseId);
-                refetch();
-              }}
+              <div className="grid lg:grid-cols-4 gap-6">
+                <TodaysWorkoutCard
+                  todaysWorkouts={todaysWorkouts}
+                  currentProgram={currentProgram}
+                  completedExercises={completedExercises}
+                  totalExercises={totalExercises}
+                  progressPercentage={progressPercentage}
+                  workoutType={currentProgram.workout_type}
+                  selectedDay={selectedDayNumber}
+                />
+
+                <ExerciseListEnhanced 
+                  exercises={todaysExercises}
+                  isLoading={false}
+                  onExerciseComplete={(exerciseId) => {
+                    console.log('Exercise completed:', exerciseId);
+                    refetch();
+                  }}
+                />
+              </div>
+            </div>
+          ) : (
+            <ExerciseProgramSelector 
+              onGenerateProgram={(prefs) => handleGenerateAIProgram({...prefs, workoutType: "home"})}
+              isGenerating={isGenerating}
+              workoutType="home"
             />
-          </div>
-        </div>
-      ) : (
-        <ExerciseProgramSelector 
-          onGenerateProgram={handleGenerateAIProgram}
-          isGenerating={isGenerating}
-        />
-      )}
+          )}
+        </TabsContent>
+
+        <TabsContent value="gym" className="mt-6">
+          {currentProgram && currentProgram.workout_type === "gym" ? (
+            <div className="space-y-6">
+              <ExerciseDaySelector
+                selectedDayNumber={selectedDayNumber}
+                setSelectedDayNumber={setSelectedDayNumber}
+                currentProgram={currentProgram}
+              />
+
+              <div className="grid lg:grid-cols-4 gap-6">
+                <TodaysWorkoutCard
+                  todaysWorkouts={todaysWorkouts}
+                  currentProgram={currentProgram}
+                  completedExercises={completedExercises}
+                  totalExercises={totalExercises}
+                  progressPercentage={progressPercentage}
+                  workoutType={currentProgram.workout_type}
+                  selectedDay={selectedDayNumber}
+                />
+
+                <ExerciseListEnhanced 
+                  exercises={todaysExercises}
+                  isLoading={false}
+                  onExerciseComplete={(exerciseId) => {
+                    console.log('Exercise completed:', exerciseId);
+                    refetch();
+                  }}
+                />
+              </div>
+            </div>
+          ) : (
+            <ExerciseProgramSelector 
+              onGenerateProgram={(prefs) => handleGenerateAIProgram({...prefs, workoutType: "gym"})}
+              isGenerating={isGenerating}
+              workoutType="gym"
+            />
+          )}
+        </TabsContent>
+      </Tabs>
 
       <AIExerciseDialog
         open={showAIDialog}
@@ -101,6 +161,6 @@ export const ExerciseProgramPageContent = ({
         onGenerate={handleGenerateAIProgram}
         isGenerating={isGenerating}
       />
-    </>
+    </div>
   );
 };

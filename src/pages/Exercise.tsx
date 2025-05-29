@@ -10,6 +10,8 @@ const Exercise = () => {
     // State
     selectedDayNumber,
     setSelectedDayNumber,
+    workoutType,
+    setWorkoutType,
     showAIDialog,
     setShowAIDialog,
     aiPreferences,
@@ -38,6 +40,7 @@ const Exercise = () => {
 
   console.log('🎯 Exercise Page - Debug State:', {
     hasCurrentProgram: !!currentProgram,
+    workoutType: currentProgram?.workout_type || workoutType,
     isLoading,
     isGenerating,
     todaysWorkoutsCount: todaysWorkouts?.length || 0,
@@ -71,6 +74,8 @@ const Exercise = () => {
         selectedDayNumber={selectedDayNumber}
         setSelectedDayNumber={setSelectedDayNumber}
         currentProgram={currentProgram}
+        workoutType={workoutType}
+        setWorkoutType={setWorkoutType}
         todaysWorkouts={todaysWorkouts}
         todaysExercises={todaysExercises}
         completedExercises={completedExercises}
