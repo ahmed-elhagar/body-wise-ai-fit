@@ -170,7 +170,35 @@ const translations: Translations = {
   'cuisine.french': { en: 'French', ar: 'فرنسي' },
   'cuisine.japanese': { en: 'Japanese', ar: 'ياباني' },
   'cuisine.thai': { en: 'Thai', ar: 'تايلاندي' },
-  'cuisine.mixed': { en: 'Mixed/International', ar: 'مختلط/عالمي' }
+  'cuisine.mixed': { en: 'Mixed/International', ar: 'مختلط/عالمي' },
+
+  // Enhanced Add Snack Dialog translations
+  'addSnack.title': { en: 'Add Smart Snack', ar: 'إضافة وجبة خفيفة ذكية' },
+  'addSnack.dailyProgress': { en: 'Daily Progress', ar: 'التقدم اليومي' },
+  'addSnack.remaining': { en: 'Remaining', ar: 'متبقي' },
+  'addSnack.calorieProgress': { en: 'Calorie Progress', ar: 'تقدم السعرات' },
+  'addSnack.excellentProgress': { en: 'Excellent progress!', ar: 'تقدم ممتاز!' },
+  'addSnack.targetReached': { en: 'Daily Target Reached!', ar: 'تم الوصول للهدف اليومي!' },
+  'addSnack.targetReachedDesc': { en: 'You\'ve reached your daily calorie goal. Consider light exercise or save room for tomorrow!', ar: 'لقد وصلت لهدفك اليومي من السعرات. فكر في تمارين خفيفة أو احتفظ بمساحة للغد!' },
+  'addSnack.understood': { en: 'Understood', ar: 'مفهوم' },
+  'addSnack.aiPoweredTitle': { en: 'AI-Powered Smart Snack', ar: 'وجبة خفيفة ذكية بالذكاء الاصطناعي' },
+  'addSnack.aiDescription': { en: 'Get a perfectly balanced snack recommendation that fits your remaining calories and dietary preferences.', ar: 'احصل على توصية وجبة خفيفة متوازنة تماماً تناسب السعرات المتبقية وتفضيلاتك الغذائية.' },
+  'addSnack.quickPrep': { en: 'Quick Preparation', ar: 'تحضير سريع' },
+  'addSnack.quickPrepDesc': { en: 'Ready in 5 minutes or less', ar: 'جاهز في 5 دقائق أو أقل' },
+  'addSnack.nutritious': { en: 'Nutritious & Balanced', ar: 'مغذي ومتوازن' },
+  'addSnack.nutritiousDesc': { en: 'Optimized for your health goals', ar: 'محسن لأهدافك الصحية' },
+  'addSnack.perfectCalories': { en: 'Perfect Calorie Fit', ar: 'سعرات مثالية' },
+  'addSnack.perfectCaloriesDesc': { en: 'Matches your remaining {calories} calories', ar: 'يطابق السعرات المتبقية {calories}' },
+  'addSnack.cancel': { en: 'Cancel', ar: 'إلغاء' },
+  'addSnack.generateSnack': { en: 'Generate Snack', ar: 'إنشاء وجبة خفيفة' },
+  'addSnack.generating': { en: 'Generating...', ar: 'جاري الإنشاء...' },
+  'addSnack.success': { en: 'Snack added successfully!', ar: 'تمت إضافة الوجبة الخفيفة بنجاح!' },
+  'addSnack.error': { en: 'Failed to generate snack. Please try again.', ar: 'فشل في إنشاء الوجبة الخفيفة. حاول مرة أخرى.' },
+  'addSnack.notEnoughCalories': { en: 'Not enough calories remaining for a snack.', ar: 'لا توجد سعرات كافية متبقية للوجبة الخفيفة.' },
+
+  // Meal Plan Actions helper text
+  'mealPlan.dailyViewHelper': { en: 'View and manage meals for a specific day', ar: 'عرض وإدارة الوجبات ليوم محدد' },
+  'mealPlan.weeklyViewHelper': { en: 'Overview of your entire weekly meal plan', ar: 'نظرة عامة على خطة وجباتك الأسبوعية الكاملة' },
 };
 
 interface LanguageContextType {

@@ -74,7 +74,9 @@ const MealPlanMainContent = ({
         viewMode={viewMode}
         onViewModeChange={onViewModeChange}
         onAddSnack={onAddSnack}
+        onShowShoppingList={onShowShoppingList}
         showAddSnack={viewMode === 'daily' && currentWeekPlan !== null}
+        showShoppingList={currentWeekPlan !== null && (viewMode === 'daily' ? todaysMeals.length > 0 : true)}
       />
 
       {!currentWeekPlan ? (
