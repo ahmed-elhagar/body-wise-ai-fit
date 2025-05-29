@@ -15,16 +15,29 @@ export const createGymWorkoutBasePrompt = (userData: any, preferences: any) => {
 - الهدف الرياضي: ${preferences?.goalType || 'لياقة عامة'}
 - مستوى اللياقة: ${preferences?.fitnessLevel || 'مبتدئ'}
 - الوقت المتاح: ${preferences?.availableTime || 45} دقيقة لكل جلسة
+- الحالات الصحية: ${userData?.health_conditions?.join(', ') || 'لا توجد'}
 
 متطلبات البرنامج:
 - إنشاء برنامج لمدة أسبوع واحد فقط (7 أيام)
-- 4 أيام تدريب: الاثنين، الثلاثاء، الخميس، الجمعة (أيام 1، 2، 4، 5)
-- 3 أيام راحة: الأربعاء، السبت، والأحد (لا تضع تمارين لهذه الأيام)
-- استخدام معدات الصالة الرياضية (أوزان، آلات، كابلات)
-- 5-7 تمارين لكل يوم تدريب
-- تمارين مركبة وعزل
+- تحديد أيام التدريب وأيام الراحة بناءً على مستوى اللياقة والهدف
+- للمبتدئين: 3-4 أيام تدريب، 3-4 أيام راحة
+- للمتوسطين: 4-5 أيام تدريب، 2-3 أيام راحة
+- للمتقدمين: 5-6 أيام تدريب، 1-2 يوم راحة
+- استخدام معدات الصالة الرياضية (أوزان، آلات، كابلات، أجهزة القلب)
+- 5-8 تمارين لكل يوم تدريب
+- تمارين مركبة وعزل متنوعة
+- تدرج في الشدة والصعوبة حسب المستوى
+- تنويع المجموعات العضلية المستهدفة
+- تضمين تمارين الإحماء والتبريد
+- مراعاة الحالات الصحية إن وجدت
+
+إرشادات التدريب:
+- البدء بتمارين الإحماء (5-10 دقائق)
+- التركيز على التقنية الصحيحة
+- فترات راحة مناسبة بين المجموعات
+- انتهاء كل جلسة بتمارين التمدد
 - تعليمات واضحة وتفصيلية باللغة العربية
-- تدرج في الشدة والصعوبة
+- اقتراحات للتطوير التدريجي
 
 يجب أن يكون الرد بتنسيق JSON صحيح مع البنية التالية:
 ` : `
@@ -39,16 +52,31 @@ User Information:
 - Fitness Goal: ${preferences?.goalType || 'general fitness'}
 - Fitness Level: ${preferences?.fitnessLevel || 'beginner'}
 - Available Time: ${preferences?.availableTime || 45} minutes per session
+- Health Conditions: ${userData?.health_conditions?.join(', ') || 'none'}
 
 Program Requirements:
 - Create program for exactly ONE WEEK (7 days)
-- 4 training days: Monday, Tuesday, Thursday, Friday (days 1, 2, 4, 5)
-- 3 rest days: Wednesday, Saturday, Sunday (days 3, 6, 7) - DO NOT create workouts for these days
-- Use gym equipment (weights, machines, cables)
-- 5-7 exercises per training day
+- Determine training and rest days based on fitness level and goals
+- Beginners: 3-4 training days, 3-4 rest days
+- Intermediate: 4-5 training days, 2-3 rest days
+- Advanced: 5-6 training days, 1-2 rest days
+- Use gym equipment (weights, machines, cables, cardio equipment)
+- 5-8 exercises per training day
 - Mix of compound and isolation exercises
+- Progressive intensity and difficulty based on level
+- Target different muscle groups throughout the week
+- Include warm-up and cool-down exercises
+- Consider health conditions if any
+
+Training Guidelines:
+- Start with warm-up exercises (5-10 minutes)
+- Focus on proper form and technique
+- Appropriate rest periods between sets
+- End each session with stretching
 - Clear and detailed instructions in ${language === 'en' ? 'English' : language}
-- Progressive intensity and difficulty
+- Progressive improvement suggestions
+
+IMPORTANT: You must decide which days are training days and which are rest days based on the user's fitness level and goals. Do not use pre-defined patterns.
 
 Respond with valid JSON only in this exact structure:
 `;

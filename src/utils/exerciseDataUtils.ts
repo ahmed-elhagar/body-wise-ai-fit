@@ -3,30 +3,15 @@ import { DailyWorkout } from '@/types/exercise';
 
 export const generateWeeklyWorkouts = (workouts: any[], type: "home" | "gym"): DailyWorkout[] => {
   const weekDays = [1, 2, 3, 4, 5, 6, 7]; // Monday to Sunday
-  const restDays = type === "home" ? [3, 6, 7] : [4, 7]; // Wed, Sat, Sun for home; Thu, Sun for gym
   
   return weekDays.map(dayNumber => {
-    // Only look for workouts that have actual exercises and are not empty placeholders
+    // Look for workouts that have actual exercises and are not empty placeholders
     const existingWorkout = workouts.find(w => 
       w.day_number === dayNumber && 
       w.id && 
       !w.id.startsWith('empty-') && 
       !w.id.startsWith('rest-')
     );
-    
-    const isRestDay = restDays.includes(dayNumber);
-    
-    if (isRestDay) {
-      return {
-        id: `rest-${dayNumber}`,
-        weekly_program_id: '',
-        day_number: dayNumber,
-        workout_name: 'Rest Day',
-        completed: false,
-        exercises: [],
-        is_rest_day: true
-      };
-    }
     
     if (existingWorkout) {
       return {
@@ -40,15 +25,15 @@ export const generateWeeklyWorkouts = (workouts: any[], type: "home" | "gym"): D
       };
     }
     
-    // Return empty workout day if no real data
+    // If no workout found for this day, it's a rest day (as determined by AI)
     return {
-      id: `empty-${dayNumber}`,
+      id: `rest-${dayNumber}`,
       weekly_program_id: '',
       day_number: dayNumber,
-      workout_name: 'No Workout',
+      workout_name: 'Rest Day',
       completed: false,
       exercises: [],
-      is_rest_day: false
+      is_rest_day: true
     };
   });
 };
@@ -62,8 +47,23 @@ export const hasRealWorkoutData = (workout: DailyWorkout): boolean => {
          workout.exercises.length > 0;
 };
 
-// Helper function to check if a day is a rest day
-export const isRestDay = (dayNumber: number, workoutType: "home" | "gym"): boolean => {
-  const restDays = workoutType === "home" ? [3, 6, 7] : [4, 7];
-  return restDays.includes(dayNumber);
+// Helper function to check if a day is a rest day (now determined by AI response)
+export const isRestDay = (dayNumber: number, workouts: DailyWorkout[]): boolean => {
+  const workout = workouts.find(w => w.day_number === dayNumber);
+  return !workout || workout.is_rest_day || !hasRealWorkoutData(workout);
+};
+
+// Helper function to get training days from AI response
+export const getTrainingDays = (workouts: DailyWorkout[]): number[] => {
+  return workouts
+    .filter(w => hasRealWorkoutData(w) && !w.is_rest_day)
+    .map(w => w.day_number)
+    .sort((a, b) => a - b);
+};
+
+// Helper function to get rest days from AI response
+export const getRestDays = (workouts: DailyWorkout[]): number[] => {
+  const trainingDays = getTrainingDays(workouts);
+  const allDays = [1, 2, 3, 4, 5, 6, 7];
+  return allDays.filter(day => !trainingDays.includes(day));
 };
