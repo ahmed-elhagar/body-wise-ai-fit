@@ -1,4 +1,3 @@
-
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
@@ -42,7 +41,8 @@ export const ExerciseEnhancedNavigation = ({
   };
 
   const isDayRestDay = (dayNumber: number) => {
-    return isRestDay(dayNumber, workoutType);
+    if (!currentProgram?.daily_workouts) return false;
+    return isRestDay(dayNumber, currentProgram.daily_workouts);
   };
 
   const formatWeekRange = (startDate: Date) => {
