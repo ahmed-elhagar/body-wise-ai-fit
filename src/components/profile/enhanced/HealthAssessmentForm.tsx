@@ -129,24 +129,13 @@ const HealthAssessmentForm = () => {
       console.log('HealthAssessmentForm - Submitting assessment data:', assessmentData);
       
       // Save the assessment using the mutation
-      await new Promise((resolve, reject) => {
-        const unsubscribe = () => {};
-        
-        try {
-          saveAssessment(assessmentData);
-          // Since the mutation doesn't return a promise directly, we'll resolve immediately
-          // The actual success/error handling is done in the mutation callbacks
-          resolve(true);
-        } catch (error) {
-          reject(error);
-        }
-      });
+      await saveAssessment(assessmentData);
 
       // Mark the health assessment step as complete
       console.log('HealthAssessmentForm - Marking health assessment step as complete');
-      markStepComplete('health_assessment');
+      await markStepComplete('health_assessment');
       
-      toast.success('Health assessment saved successfully!');
+      toast.success('Health assessment completed successfully!');
       
     } catch (error) {
       console.error('HealthAssessmentForm - Failed to save health assessment:', error);

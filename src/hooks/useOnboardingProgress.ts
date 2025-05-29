@@ -135,13 +135,7 @@ export const useOnboardingProgress = () => {
     
     console.log('useOnboardingProgress - Step data to save:', stepData);
     
-    try {
-      await updateProgressMutation.mutateAsync(stepData);
-      console.log('useOnboardingProgress - Step marked complete successfully:', step);
-    } catch (error) {
-      console.error('useOnboardingProgress - Failed to mark step complete:', error);
-      throw error;
-    }
+    return updateProgressMutation.mutateAsync(stepData);
   };
 
   return {

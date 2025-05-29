@@ -39,6 +39,8 @@ export const useHealthAssessment = () => {
     queryFn: async () => {
       if (!user?.id) return null;
       
+      console.log('useHealthAssessment - Fetching assessment for user:', user.id);
+      
       const { data, error } = await supabase
         .from('health_assessments')
         .select('*')
@@ -46,7 +48,12 @@ export const useHealthAssessment = () => {
         .order('completed_at', { ascending: false })
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error('useHealthAssessment - Error fetching assessment:', error);
+        throw error;
+      }
+      
+      console.log('useHealthAssessment - Fetched assessment:', data);
       return data as HealthAssessment | null;
     },
     enabled: !!user?.id,
@@ -56,27 +63,58 @@ export const useHealthAssessment = () => {
     mutationFn: async (assessmentData: Partial<HealthAssessment>) => {
       if (!user?.id) throw new Error('No user ID');
 
+      console.log('useHealthAssessment - Saving assessment data:', assessmentData);
+
       const dataToSave = {
         ...assessmentData,
         user_id: user.id,
         completed_at: new Date().toISOString(),
       };
 
-      const { data, error } = await supabase
+      // Check if assessment exists
+      const { data: existing } = await supabase
         .from('health_assessments')
-        .upsert(dataToSave)
-        .select()
-        .single();
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
 
-      if (error) throw error;
-      return data;
+      let result;
+      if (existing) {
+        // Update existing
+        const { data, error } = await supabase
+          .from('health_assessments')
+          .update(dataToSave)
+          .eq('user_id', user.id)
+          .select()
+          .single();
+
+        if (error) throw error;
+        result = data;
+        console.log('useHealthAssessment - Updated existing assessment:', result);
+      } else {
+        // Insert new
+        const { data, error } = await supabase
+          .from('health_assessments')
+          .insert(dataToSave)
+          .select()
+          .single();
+
+        if (error) throw error;
+        result = data;
+        console.log('useHealthAssessment - Created new assessment:', result);
+      }
+
+      return result;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('useHealthAssessment - Assessment saved successfully:', data);
       queryClient.invalidateQueries({ queryKey: ['health-assessment'] });
+      queryClient.invalidateQueries({ queryKey: ['onboarding-progress'] });
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast.success('Health assessment saved successfully!');
     },
     onError: (error) => {
-      console.error('Error saving health assessment:', error);
+      console.error('useHealthAssessment - Error saving assessment:', error);
       toast.error('Failed to save health assessment');
     },
   });
@@ -84,7 +122,7 @@ export const useHealthAssessment = () => {
   return {
     assessment,
     isLoading,
-    saveAssessment: saveAssessmentMutation.mutate,
+    saveAssessment: saveAssessmentMutation.mutateAsync,
     isSaving: saveAssessmentMutation.isPending,
   };
 };
