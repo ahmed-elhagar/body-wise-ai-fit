@@ -22,7 +22,7 @@ serve(async (req) => {
   }
 
   try {
-    console.log('=== MEAL PLAN GENERATION DEBUG START ===');
+    console.log('=== ENHANCED MEAL PLAN GENERATION START ===');
     
     // Parse request body
     let userProfile, preferences;
@@ -30,6 +30,12 @@ serve(async (req) => {
       const body = await req.json();
       userProfile = body.userProfile;
       preferences = body.preferences;
+      console.log('📋 Request received:', {
+        userId: userProfile?.id,
+        language: preferences?.language || userProfile?.preferred_language || 'en',
+        includeSnacks: preferences?.includeSnacks,
+        cuisine: preferences?.cuisine
+      });
     } catch (error) {
       console.error('❌ Failed to parse request body:', error);
       return new Response(JSON.stringify({ 
@@ -67,9 +73,16 @@ serve(async (req) => {
       });
     }
 
-    console.log('User Profile:', JSON.stringify(userProfile, null, 2));
-    console.log('Preferences:', JSON.stringify(preferences, null, 2));
-    console.log('Week Offset from request:', preferences?.weekOffset || 0);
+    // Enhanced language detection
+    const language = preferences?.language || userProfile?.preferred_language || 'en';
+    const isArabic = language === 'ar';
+    
+    console.log('🌐 Language Configuration:', {
+      detectedLanguage: language,
+      isArabic,
+      userPreferredLanguage: userProfile?.preferred_language,
+      requestLanguage: preferences?.language
+    });
 
     // Check generations and get profile data
     let profileData;
@@ -89,18 +102,66 @@ serve(async (req) => {
     
     // Calculate daily calorie needs
     const dailyCalories = calculateDailyCalories(userProfile);
-    console.log('Calculated daily calories:', dailyCalories);
+    console.log('🔥 Calculated daily calories:', dailyCalories);
 
     // Get includeSnacks from preferences
     const includeSnacks = preferences?.includeSnacks !== false && preferences?.includeSnacks !== 'false';
     const mealsPerDay = includeSnacks ? 5 : 3;
     const totalMeals = mealsPerDay * 7;
     
-    console.log(`🍽️ GENERATION CONFIG: includeSnacks=${includeSnacks} (from preferences: ${preferences?.includeSnacks})`);
-    console.log(`Generating ${totalMeals} meals (${mealsPerDay} meals/day, snacks: ${includeSnacks})`);
+    console.log(`🍽️ ENHANCED GENERATION CONFIG:`, {
+      includeSnacks,
+      mealsPerDay,
+      totalMeals,
+      language,
+      isArabic
+    });
 
-    // Enhanced system prompt with strict JSON structure requirements
-    const systemPrompt = `You are a professional nutritionist AI. You MUST generate a meal plan in this EXACT JSON structure:
+    // Enhanced system prompt with language support
+    const systemPrompt = isArabic ? 
+      `أنت خبير تغذية مُحترف بالذكاء الاصطناعي. يجب عليك إنشاء خطة وجبات بهذا الهيكل JSON المحدد بالضبط:
+
+{
+  "days": [
+    {
+      "dayNumber": 1,
+      "dayName": "السبت",
+      "meals": [
+        {
+          "type": "breakfast",
+          "name": "اسم الوجبة",
+          "calories": 500,
+          "protein": 25,
+          "carbs": 60,
+          "fat": 20,
+          "ingredients": ["مكون1", "مكون2"],
+          "instructions": ["خطوة1", "خطوة2"],
+          "prepTime": 15,
+          "cookTime": 20,
+          "servings": 2
+        }
+      ]
+    }
+  ],
+  "weekSummary": {
+    "totalCalories": ${dailyCalories * 7},
+    "totalProtein": 700,
+    "totalCarbs": 2100,
+    "totalFat": 490,
+    "dietType": "متوازن"
+  }
+}
+
+المتطلبات الأساسية:
+1. أنشئ بالضبط 7 أيام بدءاً من السبت (رقم اليوم 1-7)
+2. كل يوم يجب أن يحتوي على ${mealsPerDay} وجبات بالضبط
+3. أنواع الوجبات: ${includeSnacks ? 'breakfast, lunch, dinner, snack1, snack2' : 'breakfast, lunch, dinner'}
+4. أرجع JSON صحيح فقط - بدون markdown، بدون تفسيرات
+5. جميع القيم الرقمية يجب أن تكون أرقام وليس نصوص
+6. ركز على المطبخ ${userProfile?.nationality || 'العالمي'}
+7. اجعل أسماء الوجبات والمكونات والتعليمات باللغة العربية` :
+
+      `You are a professional nutritionist AI. You MUST generate a meal plan in this EXACT JSON structure:
 
 {
   "days": [
@@ -139,12 +200,19 @@ CRITICAL REQUIREMENTS:
 3. Meal types: ${includeSnacks ? 'breakfast, lunch, dinner, snack1, snack2' : 'breakfast, lunch, dinner'}
 4. Return ONLY valid JSON - no markdown, no explanations
 5. All numeric values must be numbers, not strings
-6. Focus on ${userProfile?.nationality || 'international'} cuisine`;
+6. Focus on ${userProfile?.nationality || 'international'} cuisine
+7. Make meal names, ingredients, and instructions in English`;
 
-    // Generate AI prompt with enhanced instructions
-    const prompt = generateMealPlanPrompt(userProfile, preferences, dailyCalories, includeSnacks);
+    // Generate AI prompt with enhanced language support
+    const enhancedPreferences = {
+      ...preferences,
+      language,
+      locale: isArabic ? 'ar-SA' : 'en-US'
+    };
+    
+    const prompt = generateMealPlanPrompt(userProfile, enhancedPreferences, dailyCalories, includeSnacks);
 
-    console.log('Sending request to OpenAI with enhanced prompts...');
+    console.log('🤖 Sending enhanced request to OpenAI...');
     
     let response;
     try {
@@ -223,7 +291,7 @@ CRITICAL REQUIREMENTS:
     let generatedPlan;
     try {
       const content = data.choices[0].message.content.trim();
-      console.log('Raw OpenAI content preview:', content.substring(0, 500) + '...');
+      console.log('📝 Raw OpenAI content preview:', content.substring(0, 500) + '...');
       
       // Enhanced JSON cleaning
       let cleanedContent = content
@@ -246,7 +314,9 @@ CRITICAL REQUIREMENTS:
         hasDays: !!generatedPlan.days,
         daysCount: generatedPlan.days?.length || 0,
         firstDayMeals: generatedPlan.days?.[0]?.meals?.length || 0,
-        weekSummary: !!generatedPlan.weekSummary
+        weekSummary: !!generatedPlan.weekSummary,
+        language: language,
+        sampleMealName: generatedPlan.days?.[0]?.meals?.[0]?.name
       });
       
     } catch (parseError) {
@@ -265,7 +335,7 @@ CRITICAL REQUIREMENTS:
     // Validate the meal plan with enhanced error handling
     try {
       validateMealPlan(generatedPlan, includeSnacks);
-      console.log(`✅ VALIDATION PASSED - 7 days with ${totalMeals} expected meals`);
+      console.log(`✅ VALIDATION PASSED - 7 days with ${totalMeals} expected meals in ${language}`);
     } catch (validationError) {
       console.error('❌ Meal plan validation failed:', validationError);
       console.error('Generated plan that failed validation:', JSON.stringify(generatedPlan, null, 2));
@@ -282,13 +352,18 @@ CRITICAL REQUIREMENTS:
     // Decrement AI generations BEFORE saving
     const remainingGenerations = await decrementUserGenerations(userProfile, profileData);
 
-    // Save to database with detailed logging
-    console.log('📊 SAVING TO DATABASE...');
-    console.log('Week offset for saving:', preferences?.weekOffset || 0);
+    // Save to database with enhanced logging
+    console.log('💾 SAVING ENHANCED MEAL PLAN TO DATABASE...');
     
     let weeklyPlan;
     try {
-      weeklyPlan = await saveWeeklyPlan(userProfile, generatedPlan, preferences, dailyCalories);
+      // Add language info to preferences for storage
+      const enhancedPreferencesForStorage = {
+        ...enhancedPreferences,
+        generatedLanguage: language
+      };
+      
+      weeklyPlan = await saveWeeklyPlan(userProfile, generatedPlan, enhancedPreferencesForStorage, dailyCalories);
       console.log('✅ Weekly plan saved with ID:', weeklyPlan.id);
     } catch (dbError) {
       console.error('❌ Failed to save weekly plan:', dbError);
@@ -320,9 +395,14 @@ CRITICAL REQUIREMENTS:
       });
     }
 
-    console.log(`✅ GENERATION COMPLETE: ${totalMealsSaved} meals saved`);
-    console.log(`✅ AI generations remaining: ${remainingGenerations}`);
-    console.log('=== MEAL PLAN GENERATION DEBUG END ===');
+    console.log(`✅ ENHANCED GENERATION COMPLETE:`, {
+      totalMealsSaved,
+      remainingGenerations,
+      language,
+      isArabic,
+      includeSnacks
+    });
+    console.log('=== ENHANCED MEAL PLAN GENERATION END ===');
     
     return new Response(JSON.stringify({ 
       success: true,
@@ -332,12 +412,13 @@ CRITICAL REQUIREMENTS:
       generationsRemaining: remainingGenerations,
       includeSnacks: includeSnacks,
       weekOffset: preferences?.weekOffset || 0,
-      message: `✨ Optimized meal plan generated with ${totalMealsSaved} meals${includeSnacks ? ' including snacks' : ''}`
+      language: language,
+      message: `✨ ${isArabic ? 'تم إنشاء خطة وجبات محسّنة مع' : 'Enhanced meal plan generated with'} ${totalMealsSaved} ${isArabic ? 'وجبة' : 'meals'}${includeSnacks ? (isArabic ? ' تشمل وجبات خفيفة' : ' including snacks') : ''}`
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('=== MEAL PLAN GENERATION FAILED ===');
+    console.error('=== ENHANCED MEAL PLAN GENERATION FAILED ===');
     console.error('Error details:', error);
     return new Response(JSON.stringify({ 
       success: false,

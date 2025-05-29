@@ -1,36 +1,45 @@
 
-// Enhanced prompt templates for better JSON structure generation
+// Enhanced prompt templates for better JSON structure generation with multi-language support
 const MEAL_PLAN_PROMPTS = {
-  JSON_STRUCTURE_EXAMPLE: (includeSnacks: boolean) => `
+  JSON_STRUCTURE_EXAMPLE: (includeSnacks: boolean, language: string = 'en') => {
+    const isArabic = language === 'ar';
+    const sampleMealName = isArabic ? "عجة إسبانية" : "Spanish Omelette";
+    const sampleIngredients = isArabic ? ["بيض", "بطاطس", "بصل"] : ["eggs", "potatoes", "onion"];
+    const sampleInstructions = isArabic ? ["الخطوة 1", "الخطوة 2"] : ["Step 1", "Step 2"];
+    const snackName = isArabic ? "زبادي يوناني" : "Greek Yogurt";
+    const snackIngredients = isArabic ? ["زبادي يوناني", "عسل"] : ["Greek yogurt", "honey"];
+    const snackInstructions = isArabic ? ["اخلط الزبادي مع العسل"] : ["Mix yogurt with honey"];
+    
+    return `
 REQUIRED JSON STRUCTURE (copy this format exactly):
 {
   "days": [
     {
       "dayNumber": 1,
-      "dayName": "Saturday",
+      "dayName": "${isArabic ? 'السبت' : 'Saturday'}",
       "meals": [
         {
           "type": "breakfast",
-          "name": "Spanish Omelette",
+          "name": "${sampleMealName}",
           "calories": 500,
           "protein": 25,
           "carbs": 40,
           "fat": 30,
-          "ingredients": ["eggs", "potatoes", "onion"],
-          "instructions": ["Step 1", "Step 2"],
+          "ingredients": ${JSON.stringify(sampleIngredients)},
+          "instructions": ${JSON.stringify(sampleInstructions)},
           "prepTime": 15,
           "cookTime": 30,
           "servings": 2
         }${includeSnacks ? `,
         {
           "type": "snack1",
-          "name": "Greek Yogurt",
+          "name": "${snackName}",
           "calories": 150,
           "protein": 15,
           "carbs": 20,
           "fat": 5,
-          "ingredients": ["Greek yogurt", "honey"],
-          "instructions": ["Mix yogurt with honey"],
+          "ingredients": ${JSON.stringify(snackIngredients)},
+          "instructions": ${JSON.stringify(snackInstructions)},
           "prepTime": 2,
           "cookTime": 0,
           "servings": 1
@@ -38,29 +47,38 @@ REQUIRED JSON STRUCTURE (copy this format exactly):
       ]
     }
   ]
-}`,
+}`;
+  },
 
   MEAL_TYPES: (includeSnacks: boolean) => 
     includeSnacks ? 'breakfast, lunch, dinner, snack1, snack2' : 'breakfast, lunch, dinner',
   
-  SNACK_DISTRIBUTION: (breakfast: number, lunch: number, dinner: number, snack1: number, snack2: number) => `
-MEAL DISTRIBUTION WITH SNACKS:
-- Breakfast: ${breakfast} calories
-- Lunch: ${lunch} calories  
-- Dinner: ${dinner} calories
-- Snack 1 (morning): ${snack1} calories
-- Snack 2 (evening): ${snack2} calories`,
+  SNACK_DISTRIBUTION: (breakfast: number, lunch: number, dinner: number, snack1: number, snack2: number, language: string = 'en') => {
+    const isArabic = language === 'ar';
+    return `
+${isArabic ? 'توزيع الوجبات مع الوجبات الخفيفة:' : 'MEAL DISTRIBUTION WITH SNACKS:'}
+- ${isArabic ? 'الإفطار' : 'Breakfast'}: ${breakfast} ${isArabic ? 'سعرة حرارية' : 'calories'}
+- ${isArabic ? 'الغداء' : 'Lunch'}: ${lunch} ${isArabic ? 'سعرة حرارية' : 'calories'}
+- ${isArabic ? 'العشاء' : 'Dinner'}: ${dinner} ${isArabic ? 'سعرة حرارية' : 'calories'}
+- ${isArabic ? 'وجبة خفيفة (صباحية)' : 'Snack (morning)'}: ${snack1} ${isArabic ? 'سعرة حرارية' : 'calories'}
+- ${isArabic ? 'وجبة خفيفة (مسائية)' : 'Snack (evening)'}: ${snack2} ${isArabic ? 'سعرة حرارية' : 'calories'}`;
+  },
 
-  NO_SNACK_DISTRIBUTION: (breakfast: number, lunch: number, dinner: number) => `
-MEAL DISTRIBUTION WITHOUT SNACKS:
-- Breakfast: ${breakfast} calories
-- Lunch: ${lunch} calories
-- Dinner: ${dinner} calories`
+  NO_SNACK_DISTRIBUTION: (breakfast: number, lunch: number, dinner: number, language: string = 'en') => {
+    const isArabic = language === 'ar';
+    return `
+${isArabic ? 'توزيع الوجبات بدون وجبات خفيفة:' : 'MEAL DISTRIBUTION WITHOUT SNACKS:'}
+- ${isArabic ? 'الإفطار' : 'Breakfast'}: ${breakfast} ${isArabic ? 'سعرة حرارية' : 'calories'}
+- ${isArabic ? 'الغداء' : 'Lunch'}: ${lunch} ${isArabic ? 'سعرة حرارية' : 'calories'}
+- ${isArabic ? 'العشاء' : 'Dinner'}: ${dinner} ${isArabic ? 'سعرة حرارية' : 'calories'}`;
+  }
 };
 
 export const generateMealPlanPrompt = (userProfile: any, preferences: any, dailyCalories: number, includeSnacks: boolean) => {
   const mealsPerDay = includeSnacks ? 5 : 3;
   const totalMeals = mealsPerDay * 7;
+  const language = preferences?.language || userProfile?.preferred_language || 'en';
+  const isArabic = language === 'ar';
   
   // Calculate meal distribution
   let distribution;
@@ -70,19 +88,53 @@ export const generateMealPlanPrompt = (userProfile: any, preferences: any, daily
     const dinner = Math.round(dailyCalories * 0.30);
     const snack1 = Math.round(dailyCalories * 0.05);
     const snack2 = Math.round(dailyCalories * 0.05);
-    distribution = MEAL_PLAN_PROMPTS.SNACK_DISTRIBUTION(breakfast, lunch, dinner, snack1, snack2);
+    distribution = MEAL_PLAN_PROMPTS.SNACK_DISTRIBUTION(breakfast, lunch, dinner, snack1, snack2, language);
   } else {
     const breakfast = Math.round(dailyCalories * 0.25);
     const lunch = Math.round(dailyCalories * 0.40);
     const dinner = Math.round(dailyCalories * 0.35);
-    distribution = MEAL_PLAN_PROMPTS.NO_SNACK_DISTRIBUTION(breakfast, lunch, dinner);
+    distribution = MEAL_PLAN_PROMPTS.NO_SNACK_DISTRIBUTION(breakfast, lunch, dinner, language);
   }
 
-  return `Generate a 7-day meal plan starting from Saturday with the following requirements:
+  const promptLanguage = isArabic ? 
+    `أنشئ خطة وجبات لمدة 7 أيام تبدأ من يوم السبت مع المتطلبات التالية:
 
 ${distribution}
 
-${MEAL_PLAN_PROMPTS.JSON_STRUCTURE_EXAMPLE(includeSnacks)}
+${MEAL_PLAN_PROMPTS.JSON_STRUCTURE_EXAMPLE(includeSnacks, language)}
+
+المتطلبات الأساسية:
+1. أنشئ بالضبط 7 أيام (رقم اليوم: 1-7، بدءاً من السبت)
+2. كل يوم يجب أن يحتوي على ${mealsPerDay} وجبات بالضبط
+3. أنواع الوجبات: ${MEAL_PLAN_PROMPTS.MEAL_TYPES(includeSnacks)}
+4. أرجع JSON صحيح فقط يطابق الهيكل أعلاه
+5. بدون تنسيق markdown، بدون تفسيرات
+6. اجعل أسماء الوجبات والمكونات والتعليمات باللغة العربية
+
+ملف المستخدم:
+- العمر: ${userProfile?.age || 30}
+- الجنس: ${userProfile?.gender || 'غير محدد'}
+- الوزن: ${userProfile?.weight || 70}كجم
+- الطول: ${userProfile?.height || 170}سم
+- مستوى النشاط: ${userProfile?.activity_level || 'متوسط'}
+- الهدف الصحي: ${userProfile?.fitness_goal || 'المحافظة'}
+- الجنسية: ${userProfile?.nationality || 'دولي'}
+
+التفضيلات:
+- المطبخ: ${preferences?.cuisine || 'مختلط'}
+- وقت التحضير الأقصى: ${preferences?.maxPrepTime || 45} دقيقة
+- نوع النظام الغذائي: ${preferences?.mealTypes || 'جميع'}
+
+القيود الغذائية: ${userProfile?.dietary_restrictions?.join(', ') || 'لا يوجد'}
+الحساسية: ${userProfile?.allergies?.join(', ') || 'لا يوجد'}
+
+أنشئ ${totalMeals} وجبة إجمالية تتبع هيكل JSON المحدد أعلاه.` :
+
+    `Generate a 7-day meal plan starting from Saturday with the following requirements:
+
+${distribution}
+
+${MEAL_PLAN_PROMPTS.JSON_STRUCTURE_EXAMPLE(includeSnacks, language)}
 
 CRITICAL REQUIREMENTS:
 1. Generate EXACTLY 7 days (dayNumber: 1-7, starting Saturday)
@@ -90,6 +142,7 @@ CRITICAL REQUIREMENTS:
 3. Meal types: ${MEAL_PLAN_PROMPTS.MEAL_TYPES(includeSnacks)}
 4. Return ONLY valid JSON matching the structure above
 5. No markdown formatting, no explanations
+6. Make meal names, ingredients, and instructions in English
 
 User Profile:
 - Age: ${userProfile?.age || 30}
@@ -109,4 +162,6 @@ Dietary Restrictions: ${userProfile?.dietary_restrictions?.join(', ') || 'none'}
 Allergies: ${userProfile?.allergies?.join(', ') || 'none'}
 
 Generate ${totalMeals} meals total following the exact JSON structure shown above.`;
+
+  return promptLanguage;
 };

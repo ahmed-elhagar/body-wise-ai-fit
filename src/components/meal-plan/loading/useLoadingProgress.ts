@@ -14,6 +14,7 @@ export const useLoadingProgress = (steps: Step[], isActive: boolean) => {
   const [progress, setProgress] = useState(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<number>(0);
+  const stepsRef = useRef<Step[]>([]);
 
   const clearExistingInterval = useCallback(() => {
     if (intervalRef.current) {
@@ -21,6 +22,11 @@ export const useLoadingProgress = (steps: Step[], isActive: boolean) => {
       intervalRef.current = null;
     }
   }, []);
+
+  // Update steps ref when steps change
+  useEffect(() => {
+    stepsRef.current = steps;
+  }, [steps]);
 
   useEffect(() => {
     if (!isActive || steps.length === 0) {
@@ -40,14 +46,17 @@ export const useLoadingProgress = (steps: Step[], isActive: boolean) => {
     
     const totalDuration = steps.reduce((acc, step) => acc + step.duration, 0);
     
-    console.log('🔄 Loading progress started with stable interval:', {
+    console.log('🔄 Loading progress started with stable steps:', {
       totalSteps: steps.length,
       totalDuration,
-      stepDurations: steps.map(s => s.duration)
+      stepTitles: steps.map(s => s.title)
     });
 
     intervalRef.current = setInterval(() => {
       const elapsed = Date.now() - startTimeRef.current;
+      const currentSteps = stepsRef.current;
+      
+      if (currentSteps.length === 0) return;
       
       // Calculate overall progress (0-95% to leave room for completion)
       const progressValue = Math.min((elapsed / totalDuration) * 95, 95);
@@ -57,8 +66,8 @@ export const useLoadingProgress = (steps: Step[], isActive: boolean) => {
       let cumulativeDuration = 0;
       let newCurrentStep = 0;
       
-      for (let i = 0; i < steps.length; i++) {
-        cumulativeDuration += steps[i].duration;
+      for (let i = 0; i < currentSteps.length; i++) {
+        cumulativeDuration += currentSteps[i].duration;
         if (elapsed <= cumulativeDuration) {
           newCurrentStep = i;
           break;
@@ -67,7 +76,7 @@ export const useLoadingProgress = (steps: Step[], isActive: boolean) => {
       
       // If we've exceeded all step durations, stay on the last step
       if (elapsed > totalDuration) {
-        newCurrentStep = steps.length - 1;
+        newCurrentStep = currentSteps.length - 1;
         setProgress(95); // Cap at 95%
         clearExistingInterval();
         console.log('🔄 Loading progress completed - interval cleared');
@@ -80,16 +89,16 @@ export const useLoadingProgress = (steps: Step[], isActive: boolean) => {
         elapsed,
         progress: progressValue,
         currentStep: newCurrentStep,
-        stepTitle: steps[newCurrentStep]?.title
+        stepTitle: currentSteps[newCurrentStep]?.title
       });
 
-    }, 200); // Slightly slower interval for smoother progress
+    }, 150); // Stable interval
 
     return () => {
-      console.log('🔄 Loading progress cleanup - effect cleanup');
+      console.log('🔄 Loading progress cleanup');
       clearExistingInterval();
     };
-  }, [isActive, steps.length, clearExistingInterval]); // Remove steps from dependencies to prevent constant recreation
+  }, [isActive, clearExistingInterval]); // Removed steps from dependencies
 
   return { currentStep, progress };
 };
