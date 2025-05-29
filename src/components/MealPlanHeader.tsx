@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { Calendar, Sparkles, RotateCcw, Utensils } from "lucide-react";
+import { Calendar, Sparkles, RotateCcw, Utensils, Shuffle } from "lucide-react";
 
 interface MealPlanHeaderProps {
   currentDate: string;
@@ -10,6 +10,7 @@ interface MealPlanHeaderProps {
   onShowAIDialog: () => void;
   onRegeneratePlan: () => void;
   isGenerating: boolean;
+  isShuffling?: boolean;
   dietType?: string;
   totalWeeklyCalories?: number;
 }
@@ -20,6 +21,7 @@ const MealPlanHeader = ({
   onShowAIDialog, 
   onRegeneratePlan, 
   isGenerating,
+  isShuffling = false,
   dietType,
   totalWeeklyCalories
 }: MealPlanHeaderProps) => {
@@ -71,23 +73,43 @@ const MealPlanHeader = ({
         </div>
         
         <div className="flex flex-col sm:flex-row gap-3">
+          {/* SHUFFLE EXISTING MEALS - Professional shuffle functionality */}
           <Button
             onClick={onRegeneratePlan}
             variant="outline"
-            disabled={isGenerating}
-            className="bg-white/80 hover:bg-white"
+            disabled={isGenerating || isShuffling}
+            className="bg-white/80 hover:bg-white border-blue-200 hover:border-blue-300 text-blue-700 hover:text-blue-800"
           >
-            <RotateCcw className="w-4 h-4 mr-2" />
-            Regenerate Plan
+            {isShuffling ? (
+              <>
+                <RotateCcw className="w-4 h-4 mr-2 animate-spin" />
+                Shuffling...
+              </>
+            ) : (
+              <>
+                <Shuffle className="w-4 h-4 mr-2" />
+                Shuffle Weekly Meals
+              </>
+            )}
           </Button>
           
+          {/* GENERATE NEW AI PLAN - Full AI generation with preferences */}
           <Button
             onClick={onShowAIDialog}
-            disabled={isGenerating}
+            disabled={isGenerating || isShuffling}
             className="bg-fitness-gradient hover:opacity-90 text-white shadow-lg"
           >
-            <Sparkles className="w-4 h-4 mr-2" />
-            Generate AI Plan
+            {isGenerating ? (
+              <>
+                <RotateCcw className="w-4 h-4 mr-2 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4 mr-2" />
+                Generate New AI Plan
+              </>
+            )}
           </Button>
         </div>
       </div>

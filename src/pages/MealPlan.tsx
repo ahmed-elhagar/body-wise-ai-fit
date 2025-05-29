@@ -36,6 +36,7 @@ const MealPlan = () => {
     currentWeekPlan,
     isLoading,
     isGenerating,
+    isShuffling, // New state for shuffle operation
     weekStartDate,
     todaysMeals,
     totalCalories,
@@ -59,10 +60,16 @@ const MealPlan = () => {
 
   const currentDay = new Date().toLocaleDateString('en-US', { weekday: 'long' });
 
-  // Show loading state during generation
+  // Show loading state during generation OR shuffling
   if (isGenerating) {
     return (
       <MealPlanLoadingScreen message={t('mealPlan.generating')} />
+    );
+  }
+
+  if (isShuffling) {
+    return (
+      <MealPlanLoadingScreen message="Shuffling your meals across the week..." />
     );
   }
 
@@ -82,6 +89,7 @@ const MealPlan = () => {
           onShowAIDialog={() => setShowAIDialog(true)}
           onRegeneratePlan={handleRegeneratePlan}
           isGenerating={isGenerating}
+          isShuffling={isShuffling}
           dietType={currentWeekPlan?.weeklyPlan?.generation_prompt?.dietType}
           totalWeeklyCalories={currentWeekPlan?.weeklyPlan?.total_calories}
         />

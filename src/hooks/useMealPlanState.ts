@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useDynamicMealPlan } from "@/hooks/useDynamicMealPlan";
 import { useAIMealPlan } from "@/hooks/useAIMealPlan";
+import { useMealShuffle } from "@/hooks/useMealShuffle";
 import { getCurrentSaturdayDay, getWeekStartDate, getCategoryForIngredient } from "@/utils/mealPlanUtils";
 import type { Meal } from "@/types/meal";
 
@@ -21,13 +22,14 @@ export const useMealPlanState = () => {
   const [selectedMealIndex, setSelectedMealIndex] = useState<number>(-1);
   const [aiPreferences, setAiPreferences] = useState({
     duration: '7',
-    cuisine: '',
+    cuisine: 'mixed',
     maxPrepTime: '45',
     mealTypes: 'all',
     includeSnacks: true
   });
 
   const { generateMealPlan, isGenerating } = useAIMealPlan();
+  const { shuffleMeals, isShuffling } = useMealShuffle();
   const { currentWeekPlan, isLoading } = useDynamicMealPlan(currentWeekOffset);
 
   const weekStartDate = getWeekStartDate(currentWeekOffset);
@@ -79,11 +81,19 @@ export const useMealPlanState = () => {
     return items;
   };
 
-  const handleRegeneratePlan = () => {
-    setShowAIDialog(true);
+  // DISTINCT FUNCTIONALITY: Shuffle existing meals vs Generate new AI plan
+  const handleRegeneratePlan = async () => {
+    if (!currentWeekPlan?.weeklyPlan?.id) {
+      toast.error('No meal plan found to shuffle');
+      return;
+    }
+    
+    // This shuffles existing meals between days
+    await shuffleMeals(currentWeekPlan.weeklyPlan.id);
   };
 
   const handleGenerateAIPlan = () => {
+    // This generates completely new AI-powered meal plan with user preferences
     generateMealPlan(aiPreferences);
     setShowAIDialog(false);
   };
@@ -131,14 +141,15 @@ export const useMealPlanState = () => {
     currentWeekPlan,
     isLoading,
     isGenerating,
+    isShuffling, // New state for shuffle operation
     weekStartDate,
     todaysMeals,
     totalCalories,
     totalProtein,
     
-    // Handlers
-    handleRegeneratePlan,
-    handleGenerateAIPlan,
+    // Handlers - Now with distinct functionality
+    handleRegeneratePlan, // Shuffles existing meals
+    handleGenerateAIPlan, // Generates new AI plan
     handleShowRecipe,
     handleExchangeMeal,
     refetch,
