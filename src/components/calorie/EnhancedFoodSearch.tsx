@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,13 +14,16 @@ interface EnhancedFoodSearchProps {
 
 const EnhancedFoodSearch = ({ onSelectFood, showFavoritesOnly = false }: EnhancedFoodSearchProps) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const { searchFoodItems, favoriteFoods, isLoadingFavorites, addToFavorites, isAddingToFavorites } = useFoodDatabase();
   
-  const { data: searchResults, isLoading: isSearching } = searchFoodItems(searchTerm, selectedCategory);
+  const { data: searchResults, isLoading: isSearching } = searchFoodItems(
+    searchTerm, 
+    selectedCategory === "all" ? undefined : selectedCategory
+  );
 
   const categories = [
-    { value: '', label: 'All Categories' },
+    { value: 'all', label: 'All Categories' },
     { value: 'protein', label: 'Protein' },
     { value: 'vegetables', label: 'Vegetables' },
     { value: 'fruits', label: 'Fruits' },
