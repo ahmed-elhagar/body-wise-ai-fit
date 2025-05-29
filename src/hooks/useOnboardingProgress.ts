@@ -40,9 +40,9 @@ export const useOnboardingProgress = () => {
         .eq('user_id', user.id)
         .maybeSingle();
 
-      if (error) {
+      if (error && error.code !== 'PGRST116') {
         console.error('Error fetching onboarding progress:', error);
-        return null;
+        throw error;
       }
       return data as OnboardingProgress | null;
     },
@@ -74,7 +74,10 @@ export const useOnboardingProgress = () => {
           .select()
           .single();
 
-        if (error) throw error;
+        if (error) {
+          console.error('Progress update error:', error);
+          throw error;
+        }
         console.log('useOnboardingProgress - Updated existing progress:', data);
         return data;
       } else {
@@ -98,7 +101,10 @@ export const useOnboardingProgress = () => {
           .select()
           .single();
 
-        if (error) throw error;
+        if (error) {
+          console.error('Progress insert error:', error);
+          throw error;
+        }
         console.log('useOnboardingProgress - Created new progress:', data);
         return data;
       }
@@ -144,9 +150,21 @@ export const useOnboardingProgress = () => {
     stepData.completion_percentage = Math.round((completedSteps / totalSteps) * 100);
     stepData.current_step = Math.min(completedSteps + 1, totalSteps);
     
+    // If all steps are complete, mark overall completion
+    if (completedSteps === totalSteps) {
+      stepData.completed_at = new Date().toISOString();
+    }
+    
     console.log('useOnboardingProgress - Step data to save:', stepData);
     
-    return updateProgressMutation.mutateAsync(stepData);
+    try {
+      const result = await updateProgressMutation.mutateAsync(stepData);
+      console.log('useOnboardingProgress - Step marked complete successfully:', result);
+      return result;
+    } catch (error) {
+      console.error('useOnboardingProgress - Failed to mark step complete:', error);
+      throw error;
+    }
   };
 
   return {

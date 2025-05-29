@@ -13,7 +13,7 @@ import ProfileLoadingState from "@/components/profile/ProfileLoadingState";
 import ProfileCompletionCard from "@/components/profile/enhanced/ProfileCompletionCard";
 import EnhancedBasicInfoForm from "@/components/profile/enhanced/EnhancedBasicInfoForm";
 import EnhancedGoalsForm from "@/components/profile/enhanced/EnhancedGoalsForm";
-import HealthAssessmentForm from "@/components/profile/enhanced/HealthAssessmentForm";
+import CompactHealthAssessmentForm from "@/components/profile/enhanced/CompactHealthAssessmentForm";
 import CompactSettingsForm from "@/components/profile/enhanced/CompactSettingsForm";
 import EnhancedProfileOverview from "@/components/profile/enhanced/EnhancedProfileOverview";
 import { useEnhancedProfile } from "@/hooks/useEnhancedProfile";
@@ -133,130 +133,132 @@ const Profile = () => {
     <ProtectedRoute requireProfile={false}>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
         <div className={`${isRTL ? 'mr-16 lg:mr-64' : 'ml-16 lg:ml-64'} min-h-screen`}>
-          <div className="max-w-4xl mx-auto p-3 lg:p-4">
-            {/* Compact Header Section */}
-            <div className="mb-4">
-              <div className="flex items-center gap-2 mb-2">
-                <h1 className="text-xl lg:text-2xl font-bold text-gray-800">
-                  {t('profile')}
-                </h1>
-                {completionPercentage >= 100 && (
-                  <CheckCircle className="w-5 h-5 text-green-500" />
-                )}
+          <div className="max-w-5xl mx-auto p-2 lg:p-3">
+            {/* Compact Header */}
+            <div className="mb-3">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <h1 className="text-lg lg:text-xl font-bold text-gray-800">
+                    {t('profile')}
+                  </h1>
+                  {completionPercentage >= 100 && (
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                  )}
+                </div>
+                
+                {/* Quick Actions */}
+                <div className="flex gap-2">
+                  {isAdmin && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate('/admin')}
+                      className="bg-yellow-50 border-yellow-200 text-yellow-700 hover:bg-yellow-100 text-xs h-7"
+                    >
+                      <Shield className="w-3 h-3 mr-1" />
+                      Admin
+                    </Button>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSignOut}
+                    className="text-red-600 hover:bg-red-50 border-red-200 text-xs h-7"
+                  >
+                    <LogOut className="w-3 h-3 mr-1" />
+                    Sign Out
+                  </Button>
+                </div>
               </div>
               
               {/* Unsaved Changes Warning */}
               {hasUnsavedChanges && (
-                <Alert className="mb-3 border-yellow-200 bg-yellow-50 p-2">
-                  <AlertCircle className="h-4 w-4 text-yellow-600" />
-                  <AlertDescription className="text-yellow-800 text-sm">
+                <Alert className="mb-2 border-yellow-200 bg-yellow-50 p-2">
+                  <AlertCircle className="h-3 w-3 text-yellow-600" />
+                  <AlertDescription className="text-yellow-800 text-xs">
                     You have unsaved changes. Save before switching sections.
                   </AlertDescription>
                 </Alert>
               )}
               
               {/* Compact User Info */}
-              <div className="bg-white/80 backdrop-blur-sm rounded-lg p-3 border border-gray-200">
+              <div className="bg-white/80 backdrop-blur-sm rounded-lg p-2 border border-gray-200">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-fitness-gradient rounded-full flex items-center justify-center">
-                      <span className="text-white font-bold text-lg">
+                  <div className="flex items-center gap-2">
+                    <div className="w-10 h-10 bg-fitness-gradient rounded-full flex items-center justify-center">
+                      <span className="text-white font-bold text-sm">
                         {formData.first_name ? formData.first_name.charAt(0).toUpperCase() : user?.email?.charAt(0)?.toUpperCase()}
                       </span>
                     </div>
                     <div>
-                      <h2 className="text-lg font-bold text-gray-800">
+                      <h2 className="text-sm font-bold text-gray-800">
                         {formData.first_name && formData.last_name 
                           ? `${formData.first_name} ${formData.last_name}` 
                           : "Welcome"}
                       </h2>
-                      <p className="text-sm text-gray-600">{user?.email}</p>
+                      <p className="text-xs text-gray-600">{user?.email}</p>
                     </div>
                   </div>
                   
-                  {/* Quick Actions */}
-                  <div className="flex gap-2">
-                    {isAdmin && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => navigate('/admin')}
-                        className="bg-yellow-50 border-yellow-200 text-yellow-700 hover:bg-yellow-100 text-xs"
-                      >
-                        <Shield className="w-3 h-3 mr-1" />
-                        Admin
-                      </Button>
-                    )}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleSignOut}
-                      className="text-red-600 hover:bg-red-50 border-red-200 text-xs"
-                    >
-                      <LogOut className="w-3 h-3 mr-1" />
-                      Sign Out
-                    </Button>
-                  </div>
-                </div>
-                
-                {/* Compact Stats */}
-                <div className="grid grid-cols-4 gap-2 mt-3">
-                  <div className="bg-gray-50 p-2 rounded text-center">
-                    <p className="text-gray-600 text-xs">{t('height')}</p>
-                    <p className="font-semibold text-sm">{formData.height || "—"}</p>
-                  </div>
-                  <div className="bg-gray-50 p-2 rounded text-center">
-                    <p className="text-gray-600 text-xs">{t('weight')}</p>
-                    <p className="font-semibold text-sm">{formData.weight || "—"}</p>
-                  </div>
-                  <div className="bg-gray-50 p-2 rounded text-center">
-                    <p className="text-gray-600 text-xs">{t('goal')}</p>
-                    <p className="font-semibold text-xs capitalize">{formData.fitness_goal?.replace('_', ' ') || "—"}</p>
-                  </div>
-                  <div className="bg-gray-50 p-2 rounded text-center">
-                    <p className="text-gray-600 text-xs">Progress</p>
-                    <p className="font-semibold text-sm text-blue-600">{completionPercentage}%</p>
+                  {/* Compact Stats */}
+                  <div className="grid grid-cols-4 gap-2">
+                    <div className="bg-gray-50 p-1 rounded text-center">
+                      <p className="text-gray-600 text-xs">{t('height')}</p>
+                      <p className="font-semibold text-xs">{formData.height || "—"}</p>
+                    </div>
+                    <div className="bg-gray-50 p-1 rounded text-center">
+                      <p className="text-gray-600 text-xs">{t('weight')}</p>
+                      <p className="font-semibold text-xs">{formData.weight || "—"}</p>
+                    </div>
+                    <div className="bg-gray-50 p-1 rounded text-center">
+                      <p className="text-gray-600 text-xs">{t('goal')}</p>
+                      <p className="font-semibold text-xs capitalize">{formData.fitness_goal?.replace('_', ' ') || "—"}</p>
+                    </div>
+                    <div className="bg-gray-50 p-1 rounded text-center">
+                      <p className="text-gray-600 text-xs">Progress</p>
+                      <p className="font-semibold text-xs text-blue-600">{completionPercentage}%</p>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Profile Completion Card */}
-            <div className="mb-4">
+            <div className="mb-3">
               <ProfileCompletionCard onStepClick={handleStepClick} />
             </div>
 
             {/* Main Content with Compact Tabs */}
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-              <TabsList className="grid w-full grid-cols-5 mb-4 h-auto p-1">
-                <TabsTrigger value="overview" className="flex flex-col items-center gap-1 p-2 text-xs">
-                  <Eye className="w-4 h-4" />
+              <TabsList className="grid w-full grid-cols-5 mb-3 h-auto p-1">
+                <TabsTrigger value="overview" className="flex flex-col items-center gap-1 p-1 text-xs">
+                  <Eye className="w-3 h-3" />
                   <span>Overview</span>
                 </TabsTrigger>
-                <TabsTrigger value="basic" className="flex flex-col items-center gap-1 p-2 text-xs">
-                  <User className="w-4 h-4" />
+                <TabsTrigger value="basic" className="flex flex-col items-center gap-1 p-1 text-xs">
+                  <User className="w-3 h-3" />
                   <span>Basic</span>
                 </TabsTrigger>
-                <TabsTrigger value="health" className="flex flex-col items-center gap-1 p-2 text-xs">
-                  <Heart className="w-4 h-4" />
+                <TabsTrigger value="health" className="flex flex-col items-center gap-1 p-1 text-xs">
+                  <Heart className="w-3 h-3" />
                   <span>Health</span>
                 </TabsTrigger>
-                <TabsTrigger value="goals" className="flex flex-col items-center gap-1 p-2 text-xs">
-                  <Target className="w-4 h-4" />
+                <TabsTrigger value="goals" className="flex flex-col items-center gap-1 p-1 text-xs">
+                  <Target className="w-3 h-3" />
                   <span>Goals</span>
                 </TabsTrigger>
-                <TabsTrigger value="settings" className="flex flex-col items-center gap-1 p-2 text-xs">
-                  <Settings className="w-4 h-4" />
+                <TabsTrigger value="settings" className="flex flex-col items-center gap-1 p-1 text-xs">
+                  <Settings className="w-3 h-3" />
                   <span>Settings</span>
                 </TabsTrigger>
               </TabsList>
 
               <div className="bg-white/60 backdrop-blur-sm rounded-lg border border-gray-200">
-                <TabsContent value="overview" className="p-4 m-0">
+                <TabsContent value="overview" className="p-3 m-0">
                   <EnhancedProfileOverview />
                 </TabsContent>
 
-                <TabsContent value="basic" className="p-4 m-0">
+                <TabsContent value="basic" className="p-3 m-0">
                   <EnhancedBasicInfoForm
                     formData={formData}
                     updateFormData={updateFormData}
@@ -266,11 +268,11 @@ const Profile = () => {
                   />
                 </TabsContent>
 
-                <TabsContent value="health" className="p-4 m-0">
-                  <HealthAssessmentForm />
+                <TabsContent value="health" className="p-3 m-0">
+                  <CompactHealthAssessmentForm />
                 </TabsContent>
 
-                <TabsContent value="goals" className="p-4 m-0">
+                <TabsContent value="goals" className="p-3 m-0">
                   <EnhancedGoalsForm
                     formData={formData}
                     updateFormData={updateFormData}
@@ -281,7 +283,7 @@ const Profile = () => {
                   />
                 </TabsContent>
 
-                <TabsContent value="settings" className="p-4 m-0">
+                <TabsContent value="settings" className="p-3 m-0">
                   <CompactSettingsForm />
                 </TabsContent>
               </div>

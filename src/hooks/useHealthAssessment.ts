@@ -48,7 +48,7 @@ export const useHealthAssessment = () => {
         .order('completed_at', { ascending: false })
         .maybeSingle();
 
-      if (error) {
+      if (error && error.code !== 'PGRST116') {
         console.error('useHealthAssessment - Error fetching assessment:', error);
         throw error;
       }
@@ -69,7 +69,15 @@ export const useHealthAssessment = () => {
         ...assessmentData,
         user_id: user.id,
         completed_at: new Date().toISOString(),
+        assessment_type: 'enhanced_profile'
       };
+
+      // Remove undefined values
+      Object.keys(dataToSave).forEach(key => {
+        if (dataToSave[key as keyof typeof dataToSave] === undefined) {
+          delete dataToSave[key as keyof typeof dataToSave];
+        }
+      });
 
       // Check if assessment exists
       const { data: existing } = await supabase
@@ -88,7 +96,10 @@ export const useHealthAssessment = () => {
           .select()
           .single();
 
-        if (error) throw error;
+        if (error) {
+          console.error('Update error:', error);
+          throw error;
+        }
         result = data;
         console.log('useHealthAssessment - Updated existing assessment:', result);
       } else {
@@ -99,7 +110,10 @@ export const useHealthAssessment = () => {
           .select()
           .single();
 
-        if (error) throw error;
+        if (error) {
+          console.error('Insert error:', error);
+          throw error;
+        }
         result = data;
         console.log('useHealthAssessment - Created new assessment:', result);
       }
@@ -108,7 +122,6 @@ export const useHealthAssessment = () => {
     },
     onSuccess: (data) => {
       console.log('useHealthAssessment - Assessment saved successfully:', data);
-      // Invalidate all related queries to ensure fresh data
       queryClient.invalidateQueries({ queryKey: ['health-assessment'] });
       queryClient.invalidateQueries({ queryKey: ['onboarding-progress'] });
       queryClient.invalidateQueries({ queryKey: ['profile'] });
@@ -116,7 +129,7 @@ export const useHealthAssessment = () => {
     },
     onError: (error) => {
       console.error('useHealthAssessment - Error saving assessment:', error);
-      toast.error('Failed to save health assessment');
+      toast.error('Failed to save health assessment. Please try again.');
     },
   });
 
