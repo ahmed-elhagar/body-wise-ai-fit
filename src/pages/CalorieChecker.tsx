@@ -24,11 +24,13 @@ const CalorieChecker = () => {
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
 
   const handleSelectFood = (food: any) => {
+    console.log('Selected food:', food);
     setSelectedFood(food);
     setIsAddDialogOpen(true);
   };
 
   const handleLogFood = (logData: any) => {
+    console.log('Logging food data:', logData);
     logConsumption(logData);
     setIsAddDialogOpen(false);
     setSelectedFood(null);
@@ -128,7 +130,7 @@ const CalorieChecker = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
         {/* Mobile Header */}
-        <div className="bg-white border-b border-gray-200 sticky top-0 z-40">
+        <div className="bg-white border-b border-gray-200 sticky top-0 z-50">
           <div className="px-4 py-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -138,7 +140,7 @@ const CalorieChecker = () => {
                       <Menu className="w-5 h-5" />
                     </Button>
                   </SheetTrigger>
-                  <SheetContent side="left" className="p-0 w-80">
+                  <SheetContent side="left" className="p-0 w-80 z-50">
                     <SideMenu />
                   </SheetContent>
                 </Sheet>
@@ -176,37 +178,39 @@ const CalorieChecker = () => {
     );
   }
 
-  // Desktop Layout
+  // Desktop Layout - Fixed to prevent overlapping
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex">
-      {/* Desktop Sidebar */}
-      <div className="w-80 bg-white border-r border-gray-200 shadow-sm">
-        <SideMenu />
-      </div>
-
-      {/* Desktop Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Desktop Header */}
-        <div className="bg-white border-b border-gray-200 px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-800">
-                {activeViewData?.label}
-              </h1>
-              <p className="text-sm text-gray-600 mt-1">
-                {activeView === "today" && "Monitor your daily nutrition progress"}
-                {activeView === "search" && "Search our comprehensive food database"}
-                {activeView === "scan" && "Use AI to analyze food photos"}
-                {activeView === "favorites" && "Access your favorite foods quickly"}
-              </p>
-            </div>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      <div className="flex w-full">
+        {/* Desktop Sidebar - Fixed width */}
+        <div className="w-80 bg-white border-r border-gray-200 shadow-sm flex-shrink-0 h-screen sticky top-0">
+          <SideMenu />
         </div>
 
-        {/* Desktop Content */}
-        <div className="flex-1 p-6 overflow-auto">
-          <div className="max-w-6xl mx-auto">
-            {activeViewData?.component}
+        {/* Desktop Main Content - Takes remaining space */}
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Desktop Header */}
+          <div className="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-800">
+                  {activeViewData?.label}
+                </h1>
+                <p className="text-sm text-gray-600 mt-1">
+                  {activeView === "today" && "Monitor your daily nutrition progress"}
+                  {activeView === "search" && "Search our comprehensive food database"}
+                  {activeView === "scan" && "Use AI to analyze food photos"}
+                  {activeView === "favorites" && "Access your favorite foods quickly"}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Desktop Content - Scrollable */}
+          <div className="flex-1 p-6 overflow-auto">
+            <div className="max-w-6xl mx-auto w-full">
+              {activeViewData?.component}
+            </div>
           </div>
         </div>
       </div>

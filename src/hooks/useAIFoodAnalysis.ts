@@ -23,14 +23,17 @@ export const useAIFoodAnalysis = () => {
     mutationFn: async (file: File) => {
       if (!user?.id) throw new Error('User not authenticated');
 
-      // Check AI generation credits first
+      // Check AI generation credits first - using correct generation type
       const { data: creditCheck, error: creditError } = await supabase.rpc('check_and_use_ai_generation', {
         user_id_param: user.id,
-        generation_type_param: 'food_analysis',
+        generation_type_param: 'meal_analysis', // Changed from 'food_analysis' to match constraint
         prompt_data_param: { imageSize: file.size, fileName: file.name }
       });
 
-      if (creditError) throw creditError;
+      if (creditError) {
+        console.error('Credit check error:', creditError);
+        throw creditError;
+      }
       
       const creditResult = creditCheck as any;
       if (!creditResult?.success) {
@@ -40,23 +43,32 @@ export const useAIFoodAnalysis = () => {
       const imageBase64 = await convertFileToBase64(file);
 
       try {
+        console.log('Calling analyze-food-image function...');
+        
         const { data, error } = await supabase.functions.invoke('analyze-food-image', {
           body: { imageBase64, userId: user.id }
         });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Function invoke error:', error);
+          throw error;
+        }
+
+        console.log('Analysis response:', data);
 
         // Complete the AI generation log with success
         await supabase.rpc('complete_ai_generation', {
           log_id_param: creditResult.log_id,
-          response_data_param: data.analysis
+          response_data_param: data.analysis || data
         });
 
         return {
-          ...data.analysis,
+          ...(data.analysis || data),
           remainingCredits: (creditResult.remaining || 0) - 1
         };
       } catch (error) {
+        console.error('Analysis error:', error);
+        
         // Mark generation as failed
         await supabase.rpc('complete_ai_generation', {
           log_id_param: creditResult.log_id,

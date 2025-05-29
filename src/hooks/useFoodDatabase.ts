@@ -29,6 +29,7 @@ interface FoodItem {
   cook_time?: number;
   servings?: number;
   created_by_user_id?: string;
+  similarity_score?: number;
 }
 
 export const useFoodDatabase = () => {
@@ -48,7 +49,10 @@ export const useFoodDatabase = () => {
           limit_count: 20
         });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Search error:', error);
+          throw error;
+        }
 
         // Log search history
         if (user?.id && searchTerm.length > 2) {
@@ -87,7 +91,10 @@ export const useFoodDatabase = () => {
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Favorites error:', error);
+        throw error;
+      }
       return data || [];
     },
     enabled: !!user?.id,
@@ -115,7 +122,10 @@ export const useFoodDatabase = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Add to favorites error:', error);
+        throw error;
+      }
       return data;
     },
     onSuccess: () => {
@@ -136,7 +146,10 @@ export const useFoodDatabase = () => {
         .delete()
         .eq('id', favoriteId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Remove from favorites error:', error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['favorite-foods'] });
@@ -173,6 +186,19 @@ export const useFoodDatabase = () => {
     }) => {
       if (!user?.id) throw new Error('User not authenticated');
 
+      console.log('Logging consumption:', {
+        user_id: user.id,
+        food_item_id: foodItemId,
+        quantity_g: quantity,
+        meal_type: mealType,
+        calories_consumed: calories,
+        protein_consumed: protein,
+        carbs_consumed: carbs,
+        fat_consumed: fat,
+        notes,
+        source
+      });
+
       const { data, error } = await supabase
         .from('food_consumption_log')
         .insert({
@@ -190,11 +216,15 @@ export const useFoodDatabase = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Log consumption error:', error);
+        throw error;
+      }
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['food-consumption'] });
+      queryClient.invalidateQueries({ queryKey: ['food-consumption-today'] });
       toast.success('Food logged successfully!');
     },
     onError: (error) => {
