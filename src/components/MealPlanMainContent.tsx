@@ -55,51 +55,59 @@ const MealPlanMainContent = ({
   onExchangeMeal
 }: MealPlanMainContentProps) => {
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 px-2 sm:px-4 max-w-7xl mx-auto">
       {/* Compact Navigation Section */}
-      <CompactNavigation
-        currentWeekOffset={currentWeekOffset}
-        onWeekChange={onWeekChange}
-        weekStartDate={weekStartDate}
-        selectedDayNumber={selectedDayNumber}
-        onDaySelect={onDaySelect}
-        viewMode={viewMode}
-        onViewModeChange={onViewModeChange}
-      />
+      <div className="sticky top-0 z-10 bg-gray-50/95 backdrop-blur-sm -mx-2 sm:-mx-4 px-2 sm:px-4 py-2 border-b border-gray-200/50">
+        <CompactNavigation
+          currentWeekOffset={currentWeekOffset}
+          onWeekChange={onWeekChange}
+          weekStartDate={weekStartDate}
+          selectedDayNumber={selectedDayNumber}
+          onDaySelect={onDaySelect}
+          viewMode={viewMode}
+          onViewModeChange={onViewModeChange}
+        />
+      </div>
 
       {!currentWeekPlan ? (
-        <EmptyMealPlan onGenerate={onGenerate} />
+        <div className="px-2 sm:px-0">
+          <EmptyMealPlan onGenerate={onGenerate} />
+        </div>
       ) : (
-        <>
-          {/* Action Section with Summary and Buttons */}
+        <div className="space-y-3">
+          {/* Action Section with Summary - Only for weekly view */}
           <ActionSection
             viewMode={viewMode}
             totalCalories={totalCalories}
             totalProtein={totalProtein}
             onShowShoppingList={onShowShoppingList}
             onAddSnack={onAddSnack}
-            showAddSnack={viewMode === 'daily' && currentWeekPlan !== null}
-            showShoppingList={currentWeekPlan !== null && (viewMode === 'daily' ? todaysMeals.length > 0 : true)}
+            showAddSnack={false}
+            showShoppingList={false}
           />
 
           {/* Main Content */}
-          {viewMode === 'weekly' ? (
-            <WeeklyMealPlanView
-              weeklyPlan={currentWeekPlan}
-              onShowRecipe={onShowRecipe}
-              onExchangeMeal={onExchangeMeal}
-            />
-          ) : (
-            <MealPlanContent
-              viewMode={viewMode}
-              currentWeekPlan={currentWeekPlan}
-              todaysMeals={todaysMeals}
-              onGenerate={onGenerate}
-              onShowRecipe={onShowRecipe}
-              onExchangeMeal={onExchangeMeal}
-            />
-          )}
-        </>
+          <div className="px-2 sm:px-0">
+            {viewMode === 'weekly' ? (
+              <WeeklyMealPlanView
+                weeklyPlan={currentWeekPlan}
+                onShowRecipe={onShowRecipe}
+                onExchangeMeal={onExchangeMeal}
+              />
+            ) : (
+              <MealPlanContent
+                viewMode={viewMode}
+                currentWeekPlan={currentWeekPlan}
+                todaysMeals={todaysMeals}
+                onGenerate={onGenerate}
+                onShowRecipe={onShowRecipe}
+                onExchangeMeal={onExchangeMeal}
+                onAddSnack={onAddSnack}
+                onShowShoppingList={onShowShoppingList}
+              />
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
