@@ -91,11 +91,10 @@ const MealPlanMainContent = ({
             />
           ) : (
             <MealPlanContent
-              selectedDayNumber={selectedDayNumber}
+              viewMode={viewMode}
+              currentWeekPlan={currentWeekPlan}
               todaysMeals={todaysMeals}
-              totalCalories={totalCalories}
-              totalProtein={totalProtein}
-              onShowShoppingList={onShowShoppingList}
+              onGenerate={onGenerate}
               onShowRecipe={onShowRecipe}
               onExchangeMeal={onExchangeMeal}
             />

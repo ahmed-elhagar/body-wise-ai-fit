@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useLanguage } from "@/contexts/LanguageContext";
+import LanguageToggle from "@/components/LanguageToggle";
 import {
   Home,
   User,
@@ -76,9 +77,12 @@ const Navigation = () => {
         md:translate-x-0
       `}>
         <div className="p-4 sm:p-6">
-          <h2 className={`text-xl sm:text-2xl font-bold bg-fitness-gradient bg-clip-text text-transparent ${isRTL ? 'text-right' : 'text-left'}`}>
-            FitGenius AI
-          </h2>
+          <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <h2 className={`text-xl sm:text-2xl font-bold bg-fitness-gradient bg-clip-text text-transparent ${isRTL ? 'text-right' : 'text-left'}`}>
+              FitGenius AI
+            </h2>
+            <LanguageToggle />
+          </div>
           {profile && (
             <div className="mt-3 sm:mt-4 p-3 bg-fitness-gradient rounded-lg text-white">
               <p className={`text-sm opacity-90 ${isRTL ? 'text-right' : 'text-left'}`}>{t('nav.welcomeBack')}</p>

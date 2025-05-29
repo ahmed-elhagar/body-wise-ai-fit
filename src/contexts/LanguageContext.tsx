@@ -1,5 +1,7 @@
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 type Language = 'en' | 'ar';
 
@@ -215,6 +217,58 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [language, setLanguage] = useState<Language>('en');
+  const { user } = useAuth();
+
+  // Load language from user profile or localStorage
+  useEffect(() => {
+    const loadLanguage = async () => {
+      if (user?.id) {
+        try {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('preferred_language')
+            .eq('id', user.id)
+            .single();
+          
+          if (profile?.preferred_language) {
+            setLanguage(profile.preferred_language as Language);
+          }
+        } catch (error) {
+          console.log('Could not load language from profile, using default');
+        }
+      } else {
+        // Load from localStorage for non-authenticated users
+        const savedLanguage = localStorage.getItem('preferred_language') as Language;
+        if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'ar')) {
+          setLanguage(savedLanguage);
+        }
+      }
+    };
+
+    loadLanguage();
+  }, [user?.id]);
+
+  const handleSetLanguage = async (lang: Language) => {
+    setLanguage(lang);
+    
+    // Save to user profile if authenticated
+    if (user?.id) {
+      try {
+        await supabase
+          .from('profiles')
+          .upsert({ 
+            id: user.id, 
+            preferred_language: lang,
+            updated_at: new Date().toISOString()
+          });
+      } catch (error) {
+        console.error('Failed to save language preference:', error);
+      }
+    } else {
+      // Save to localStorage for non-authenticated users
+      localStorage.setItem('preferred_language', lang);
+    }
+  };
 
   const t = (key: string): string => {
     return translations[key]?.[language] || key;
@@ -223,7 +277,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const isRTL = language === 'ar';
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t, isRTL }}>
+    <LanguageContext.Provider value={{ language, setLanguage: handleSetLanguage, t, isRTL }}>
       {children}
     </LanguageContext.Provider>
   );
