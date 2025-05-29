@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -13,7 +14,7 @@ import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
   const { user, isAdmin } = useAuth();
-  const { profile, updateProfile, isUpdating } = useProfile();
+  const { profile, updateProfile, isUpdating, isLoading } = useProfile();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("profile");
 
@@ -138,7 +139,7 @@ const Profile = () => {
               )}
 
               {activeTab === "account" && (
-                <AccountSettingsCard />
+                <AccountSettingsCard user={user} />
               )}
             </div>
           </div>
