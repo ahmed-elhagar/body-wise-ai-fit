@@ -94,4 +94,41 @@ export const exerciseTranslations = {
   'exercise.workoutName': 'اسم التمرين',
   'exercise.rest': 'راحة',
   'exercise.empty': 'فارغ',
+  
+  // New missing translations
+  'exercise.pause': 'إيقاف مؤقت',
+  'exercise.resume': 'استئناف',
+  'exercise.reset': 'إعادة تعيين',
+  'exercise.share': 'مشاركة',
+  'exercise.tutorials': 'دروس تعليمية',
+  'exercise.stretchingVideos': 'فيديوهات الإطالة',
+  'exercise.meditation': 'التأمل',
+  'exercise.restDayActivities': 'أنشطة يوم الراحة',
+  'exercise.todaysProgress': 'تقدم اليوم',
+  'exercise.progressTracker': 'متتبع التقدم',
+  'exercise.weekProgress': 'تقدم الأسبوع',
+  'exercise.averageWorkoutDuration': 'متوسط التمرين',
+  'exercise.totalCalories': 'إجمالي السعرات',
+  'exercise.lightStretching': 'إطالة خفيفة',
+  'exercise.stretchingDesc': 'تمارين إطالة لطيفة للحفاظ على المرونة',
+  'exercise.meditationDesc': 'تمارين اليقظة والاسترخاء',
+  'exercise.lightWalk': 'مشي خفيف',
+  'exercise.walkDesc': 'مشي بوتيرة سهلة للتعافي النشط',
+  'exercise.readFitness': 'تعليم اللياقة',
+  'exercise.readDesc': 'تعلم عن التغذية واللياقة البدنية',
+  'exercise.recoveryChecklist': 'قائمة التعافي',
+  'exercise.checkHydration': 'ابق رطب (8+ أكواب من الماء)',
+  'exercise.checkSleep': 'احصل على 7-9 ساعات نوم جيد',
+  'exercise.checkNutrition': 'ركز على الوجبات المغذية',
+  'exercise.checkStress': 'تحكم في مستويات التوتر',
+  'exercise.restQuote': 'استرح عندما تكون متعب. انعش وجدد نفسك وجسدك وعقلك وروحك.',
+  'exercise.motivation.great': 'عمل رائع! استمر في التقدم! 💪',
+  'exercise.motivation.amazing': 'تقدم مذهل! أنت مشتعل! 🔥',
+  'exercise.motivation.awesome': 'عمل ممتاز! كل تكرار مهم! ⭐',
+  'exercise.motivation.fantastic': 'رائع! أنت تبني القوة! 🏆',
+  'exercise.motivation.incredible': 'إخلاص لا يصدق! استمر! 🎯',
+  'exercise.motivation.outstanding': 'جهد متميز! أنت لا تُقهر! 🚀',
+  'exercise.motivation.perfect': 'مثالي! لقد أكملت كل شيء! 🎉',
+  'exercise.motivation.restWell': 'استرح جيداً اليوم! التعافي جزء من الرحلة! 😌',
+  'exercise.motivation.getStarted': 'مستعد للبدء؟ جسدك سيشكرك! 💯',
 };

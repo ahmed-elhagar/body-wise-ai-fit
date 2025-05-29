@@ -1,8 +1,8 @@
+
 import { ExerciseListEnhanced } from "./ExerciseListEnhanced";
 import { ExerciseProgramSelector } from "./ExerciseProgramSelector";
 import { AIExerciseDialog } from "./AIExerciseDialog";
 import { ExerciseEnhancedNavigation } from "./ExerciseEnhancedNavigation";
-import { CompactWorkoutSummary } from "./CompactWorkoutSummary";
 import { ExerciseProgressTracker } from "./ExerciseProgressTracker";
 import { ExerciseMotivationCard } from "./ExerciseMotivationCard";
 import { ExerciseQuickActions } from "./ExerciseQuickActions";
@@ -113,39 +113,41 @@ export const ExerciseProgramPageContent = ({
             className="data-[state=active]:bg-fitness-gradient data-[state=active]:text-white text-gray-700 font-medium"
           >
             <Home className="w-4 h-4 mr-2" />
-            <span className="hidden sm:inline">{t('exercise.homeWorkout') || 'Home Workout'}</span>
-            <span className="sm:hidden">Home</span>
+            <span className="hidden sm:inline">{t('exercise.homeWorkout')}</span>
+            <span className="sm:hidden">{t('exercise.home')}</span>
           </TabsTrigger>
           <TabsTrigger 
             value="gym" 
             className="data-[state=active]:bg-fitness-gradient data-[state=active]:text-white text-gray-700 font-medium"
           >
             <Building2 className="w-4 h-4 mr-2" />
-            <span className="hidden sm:inline">{t('exercise.gymWorkout') || 'Gym Workout'}</span>
-            <span className="sm:hidden">Gym</span>
+            <span className="hidden sm:inline">{t('exercise.gymWorkout')}</span>
+            <span className="sm:hidden">{t('exercise.gym')}</span>
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="home" className="mt-4">
           {currentProgram && currentProgram.workout_type === "home" ? (
             <div className="space-y-4">
-              {/* Quick Actions with Timer - Always Visible */}
-              <ExerciseQuickActions
-                isWorkoutActive={workoutSession.isActive}
-                isPaused={workoutSession.isPaused}
-                totalTime={workoutSession.totalTime}
-                onStartWorkout={handleStartWorkout}
-                onPauseWorkout={workoutSession.pauseSession}
-                onResumeWorkout={workoutSession.resumeSession}
-                onRestartWorkout={workoutSession.resetSession}
-                onShareProgress={workoutSession.shareProgress}
-                canStart={totalExercises > 0}
-                isRestDay={isRestDay}
-              />
+              {/* Quick Actions - Sticky at top */}
+              <div className="sticky top-4 z-10">
+                <ExerciseQuickActions
+                  isWorkoutActive={workoutSession.isActive}
+                  isPaused={workoutSession.isPaused}
+                  totalTime={workoutSession.totalTime}
+                  onStartWorkout={handleStartWorkout}
+                  onPauseWorkout={workoutSession.pauseSession}
+                  onResumeWorkout={workoutSession.resumeSession}
+                  onRestartWorkout={workoutSession.resetSession}
+                  onShareProgress={workoutSession.shareProgress}
+                  canStart={totalExercises > 0}
+                  isRestDay={isRestDay}
+                />
+              </div>
 
-              {/* Optimized Layout - Less Scrolling */}
+              {/* Main Content Layout */}
               <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-                {/* Main Exercise List - Takes More Space */}
+                {/* Exercise List - Takes most space */}
                 <div className="lg:col-span-3">
                   <ExerciseListEnhanced 
                     exercises={todaysExercises}
@@ -156,12 +158,14 @@ export const ExerciseProgramPageContent = ({
                   />
                 </div>
 
-                {/* Compact Sidebar */}
+                {/* Sidebar with Progress and Motivation */}
                 <div className="lg:col-span-1 space-y-4">
-                  {/* Compact Workout Summary */}
+                  {/* Progress Summary */}
                   <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
                     <div className="text-center space-y-2">
-                      <h3 className="font-semibold text-gray-800">Today's Progress</h3>
+                      <h3 className="font-semibold text-gray-800">
+                        {t('exercise.todaysProgress')}
+                      </h3>
                       <div className="text-2xl font-bold text-blue-600">
                         {completedExercises}/{totalExercises}
                       </div>
@@ -172,12 +176,20 @@ export const ExerciseProgramPageContent = ({
                         />
                       </div>
                       <div className="text-sm text-gray-600">
-                        {Math.round(progressPercentage)}% completed
+                        {Math.round(progressPercentage)}% {t('exercise.completed').toLowerCase()}
                       </div>
                     </div>
                   </div>
 
-                  {/* Compact Motivation */}
+                  {/* Progress Tracker */}
+                  <ExerciseProgressTracker
+                    currentProgram={currentProgram}
+                    selectedDay={selectedDayNumber}
+                    completedExercises={completedExercises}
+                    totalExercises={totalExercises}
+                  />
+
+                  {/* Motivation Card */}
                   <ExerciseMotivationCard
                     completedExercises={completedExercises}
                     totalExercises={totalExercises}
@@ -198,23 +210,25 @@ export const ExerciseProgramPageContent = ({
         <TabsContent value="gym" className="mt-4">
           {currentProgram && currentProgram.workout_type === "gym" ? (
             <div className="space-y-4">
-              {/* Quick Actions with Timer - Always Visible */}
-              <ExerciseQuickActions
-                isWorkoutActive={workoutSession.isActive}
-                isPaused={workoutSession.isPaused}
-                totalTime={workoutSession.totalTime}
-                onStartWorkout={handleStartWorkout}
-                onPauseWorkout={workoutSession.pauseSession}
-                onResumeWorkout={workoutSession.resumeSession}
-                onRestartWorkout={workoutSession.resetSession}
-                onShareProgress={workoutSession.shareProgress}
-                canStart={totalExercises > 0}
-                isRestDay={isRestDay}
-              />
+              {/* Quick Actions - Sticky at top */}
+              <div className="sticky top-4 z-10">
+                <ExerciseQuickActions
+                  isWorkoutActive={workoutSession.isActive}
+                  isPaused={workoutSession.isPaused}
+                  totalTime={workoutSession.totalTime}
+                  onStartWorkout={handleStartWorkout}
+                  onPauseWorkout={workoutSession.pauseSession}
+                  onResumeWorkout={workoutSession.resumeSession}
+                  onRestartWorkout={workoutSession.resetSession}
+                  onShareProgress={workoutSession.shareProgress}
+                  canStart={totalExercises > 0}
+                  isRestDay={isRestDay}
+                />
+              </div>
 
-              {/* Optimized Layout - Less Scrolling */}
+              {/* Main Content Layout */}
               <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-                {/* Main Exercise List - Takes More Space */}
+                {/* Exercise List - Takes most space */}
                 <div className="lg:col-span-3">
                   <ExerciseListEnhanced 
                     exercises={todaysExercises}
@@ -225,12 +239,14 @@ export const ExerciseProgramPageContent = ({
                   />
                 </div>
 
-                {/* Compact Sidebar */}
+                {/* Sidebar with Progress and Motivation */}
                 <div className="lg:col-span-1 space-y-4">
-                  {/* Compact Workout Summary */}
+                  {/* Progress Summary */}
                   <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
                     <div className="text-center space-y-2">
-                      <h3 className="font-semibold text-gray-800">Today's Progress</h3>
+                      <h3 className="font-semibold text-gray-800">
+                        {t('exercise.todaysProgress')}
+                      </h3>
                       <div className="text-2xl font-bold text-blue-600">
                         {completedExercises}/{totalExercises}
                       </div>
@@ -241,12 +257,20 @@ export const ExerciseProgramPageContent = ({
                         />
                       </div>
                       <div className="text-sm text-gray-600">
-                        {Math.round(progressPercentage)}% completed
+                        {Math.round(progressPercentage)}% {t('exercise.completed').toLowerCase()}
                       </div>
                     </div>
                   </div>
 
-                  {/* Compact Motivation */}
+                  {/* Progress Tracker */}
+                  <ExerciseProgressTracker
+                    currentProgram={currentProgram}
+                    selectedDay={selectedDayNumber}
+                    completedExercises={completedExercises}
+                    totalExercises={totalExercises}
+                  />
+
+                  {/* Motivation Card */}
                   <ExerciseMotivationCard
                     completedExercises={completedExercises}
                     totalExercises={totalExercises}

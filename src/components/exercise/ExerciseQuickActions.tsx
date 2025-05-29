@@ -36,7 +36,7 @@ export const ExerciseQuickActions = ({
       <Card className="p-4 bg-gradient-to-br from-orange-50 to-yellow-50 border-orange-200 shadow-sm">
         <div className="text-center space-y-3">
           <h3 className="text-lg font-semibold text-orange-800">
-            {t('exercise.restDayActivities') || 'Rest Day Activities'}
+            {t('exercise.restDayActivities')}
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Button 
@@ -45,7 +45,7 @@ export const ExerciseQuickActions = ({
               onClick={() => window.open('https://www.youtube.com/results?search_query=stretching+routine', '_blank')}
             >
               <Youtube className="w-4 h-4 mr-2" />
-              {t('exercise.stretchingVideos') || 'Stretching Videos'}
+              {t('exercise.stretchingVideos')}
             </Button>
             
             <Button 
@@ -54,7 +54,7 @@ export const ExerciseQuickActions = ({
               onClick={() => window.open('https://www.youtube.com/results?search_query=meditation+relaxation', '_blank')}
             >
               <BookOpen className="w-4 h-4 mr-2" />
-              {t('exercise.meditation') || 'Meditation'}
+              {t('exercise.meditation')}
             </Button>
           </div>
         </div>
@@ -63,7 +63,7 @@ export const ExerciseQuickActions = ({
   }
 
   return (
-    <Card className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 shadow-sm sticky top-4 z-10">
+    <Card className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 shadow-sm">
       <div className="space-y-4">
         {/* Timer Display */}
         {isWorkoutActive && (
@@ -71,7 +71,11 @@ export const ExerciseQuickActions = ({
             <div className="flex items-center justify-center gap-2 mb-2">
               <Timer className="w-5 h-5 text-blue-600" />
               <span className="text-2xl font-bold text-blue-800">{totalTime}</span>
-              {isPaused && <span className="text-sm text-orange-600 font-medium">(Paused)</span>}
+              {isPaused && (
+                <span className="text-sm text-orange-600 font-medium">
+                  ({t('exercise.pause')})
+                </span>
+              )}
             </div>
           </div>
         )}
@@ -85,7 +89,7 @@ export const ExerciseQuickActions = ({
               className="h-12 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium px-6"
             >
               <Play className="w-5 h-5 mr-2" />
-              Start Workout
+              {t('exercise.startWorkout')}
             </Button>
           ) : (
             <>
@@ -96,7 +100,7 @@ export const ExerciseQuickActions = ({
                   className="h-12 border-orange-300 text-orange-700 hover:bg-orange-100 px-6"
                 >
                   <Pause className="w-5 h-5 mr-2" />
-                  Pause
+                  {t('exercise.pause')}
                 </Button>
               ) : (
                 <Button 
@@ -104,7 +108,7 @@ export const ExerciseQuickActions = ({
                   className="h-12 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6"
                 >
                   <Play className="w-5 h-5 mr-2" />
-                  Resume
+                  {t('exercise.resume')}
                 </Button>
               )}
             </>
@@ -116,7 +120,7 @@ export const ExerciseQuickActions = ({
             className="h-12 border-gray-300 text-gray-700 hover:bg-gray-100"
           >
             <RotateCcw className="w-4 h-4 mr-2" />
-            Reset
+            {t('exercise.reset')}
           </Button>
 
           <Button 
@@ -125,7 +129,7 @@ export const ExerciseQuickActions = ({
             className="h-12 border-blue-300 text-blue-700 hover:bg-blue-100"
           >
             <Share2 className="w-4 h-4 mr-2" />
-            Share
+            {t('exercise.share')}
           </Button>
 
           <Button 
@@ -134,7 +138,7 @@ export const ExerciseQuickActions = ({
             onClick={() => window.open('https://www.youtube.com/results?search_query=workout+tutorial', '_blank')}
           >
             <Youtube className="w-4 h-4 mr-2" />
-            Tutorials
+            {t('exercise.tutorials')}
           </Button>
         </div>
       </div>
