@@ -12,11 +12,11 @@ import { supabase } from '@/integrations/supabase/client';
 const DebugPanel = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const { user, session } = useAuth();
+  const { user, session, isAdmin } = useAuth();
   const { profile } = useProfile();
 
   // Only show debug panel in development or for admin users
-  const shouldShow = import.meta.env.DEV || profile?.user_roles?.some(role => role.role === 'admin');
+  const shouldShow = import.meta.env.DEV || isAdmin;
 
   if (!shouldShow) return null;
 
