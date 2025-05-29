@@ -22,8 +22,8 @@ const EnhancedProfileDesktopLayout = ({
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       <div className="flex min-h-screen">
         {/* Left Sidebar - Profile completion */}
-        <div className={`w-80 bg-white/60 backdrop-blur-sm ${isRTL ? 'border-l' : 'border-r'} border-gray-200 flex-shrink-0 flex flex-col`}>
-          <div className="flex-1 overflow-y-auto">
+        <div className="w-80 flex-shrink-0">
+          <div className="h-full overflow-y-auto bg-white/60 backdrop-blur-sm border-r border-gray-200">
             <div className="p-6 space-y-6">
               <Button
                 variant="ghost"
@@ -49,8 +49,8 @@ const EnhancedProfileDesktopLayout = ({
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 min-w-0 flex flex-col">
-          <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 min-w-0">
+          <div className="h-full overflow-y-auto">
             <div className="max-w-4xl mx-auto p-6 xl:p-8">
               {children}
             </div>

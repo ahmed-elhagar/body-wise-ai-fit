@@ -37,6 +37,8 @@ export const commonTranslations = {
   'carbs': 'كربوهيدرات',
   'recipe': 'وصفة',
   'exchange': 'تبديل',
+  'coming': 'قريباً',
+  'soon': 'جداً',
 
   // Additional missing translations
   'todaysSummary': 'ملخص اليوم',

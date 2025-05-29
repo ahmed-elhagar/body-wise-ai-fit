@@ -37,6 +37,8 @@ export const commonTranslations = {
   'carbs': 'Carbs',
   'recipe': 'Recipe',
   'exchange': 'Exchange',
+  'coming': 'Coming',
+  'soon': 'Soon',
 
   // Additional missing translations
   'todaysSummary': 'Today\'s Summary',

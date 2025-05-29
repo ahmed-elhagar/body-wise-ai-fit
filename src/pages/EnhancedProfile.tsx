@@ -18,7 +18,7 @@ import EnhancedProfileOverview from "@/components/profile/enhanced/EnhancedProfi
 const EnhancedProfile = () => {
   const { user } = useAuth();
   const { isLoading } = useProfile();
-  const { isRTL } = useLanguage();
+  const { t, isRTL } = useLanguage();
   const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState("overview");
 
@@ -86,8 +86,8 @@ const EnhancedProfile = () => {
       case 'settings':
         return (
           <div className="text-center py-12">
-            <h3 className="text-lg font-semibold text-gray-600 mb-2">Settings Coming Soon</h3>
-            <p className="text-gray-500">Notification and preference settings will be available here.</p>
+            <h3 className="text-lg font-semibold text-gray-600 mb-2">{t('settings')} {t('coming')} {t('soon')}</h3>
+            <p className="text-gray-500">{t('configureAppPreferences')}</p>
           </div>
         );
       
@@ -101,7 +101,7 @@ const EnhancedProfile = () => {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="animate-spin rounded-full h-12 w-12 border-b-2 border-fitness-primary mx-auto mb-4" />
-          <p className="text-gray-600">Loading enhanced profile...</p>
+          <p className="text-gray-600">{t('loading')}...</p>
         </div>
       </div>
     );
