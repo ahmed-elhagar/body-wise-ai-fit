@@ -10,16 +10,19 @@ export const storeWorkoutProgram = async (
     throw new Error('User ID is required');
   }
 
-  // Create weekly program record
+  const workoutType = preferences?.workoutType || 'home';
+
+  // Create weekly program record with workout type
   const { data: weeklyProgram, error: weeklyError } = await supabase
     .from('weekly_exercise_programs')
     .insert({
       user_id: userId,
-      program_name: generatedProgram.programOverview?.name || `${preferences?.workoutType || 'Home'} Fitness Program`,
+      program_name: generatedProgram.programOverview?.name || `${workoutType === 'gym' ? 'Gym' : 'Home'} Fitness Program`,
       difficulty_level: preferences?.fitnessLevel || 'beginner',
       week_start_date: new Date().toISOString().split('T')[0],
+      workout_type: workoutType,
       generation_prompt: {
-        workoutType: preferences?.workoutType || 'home',
+        workoutType,
         preferences,
         userData
       }
@@ -31,6 +34,8 @@ export const storeWorkoutProgram = async (
     console.error('Error creating weekly program:', weeklyError);
     throw new Error('Failed to save weekly program');
   }
+
+  console.log('Created weekly program with workout type:', workoutType);
 
   // Store daily workouts and exercises
   for (const week of generatedProgram.weeks) {

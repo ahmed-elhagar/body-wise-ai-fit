@@ -45,7 +45,7 @@ export const useAIExercise = () => {
         preferred_language: profile.preferred_language || 'en'
       };
 
-      // Transform the request to match expected format
+      // Transform the request to match expected format - ensure workoutType is properly set
       const transformedRequest = {
         workoutType: request.workoutType || 'home',
         goalType: request.goalType || request.fitnessGoal || userData.fitness_goal,
@@ -53,13 +53,14 @@ export const useAIExercise = () => {
         availableTime: request.availableTime || request.duration || '45',
         preferredWorkouts: request.preferredWorkouts || ['strength', 'cardio'],
         targetMuscleGroups: request.targetMuscleGroups || ['full_body'],
-        equipment: request.equipment || [request.equipment?.[0] || 'Basic home equipment'],
+        equipment: request.equipment || (request.workoutType === 'gym' ? ['barbells', 'dumbbells', 'machines'] : ['bodyweight', 'resistance_bands', 'light_dumbbells']),
         userLanguage: request.userLanguage || userData.preferred_language
       };
 
+      console.log('Transformed request:', transformedRequest);
+
       const { data, error } = await supabase.functions.invoke('generate-exercise-program', {
         body: {
-          ...transformedRequest,
           userData,
           preferences: transformedRequest,
           userLanguage: userData.preferred_language
@@ -71,6 +72,7 @@ export const useAIExercise = () => {
         throw new Error(error.message || 'Failed to generate exercise program');
       }
 
+      console.log('Exercise generation response:', data);
       return data;
     },
     onSuccess: () => {
@@ -80,7 +82,7 @@ export const useAIExercise = () => {
     },
     onError: (error) => {
       console.error('Exercise generation error:', error);
-      toast.error('Failed to generate exercise program');
+      toast.error('Failed to generate exercise program. Please try again.');
     }
   });
 

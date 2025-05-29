@@ -24,8 +24,29 @@ const Exercise = () => {
   const { workouts, exercises, isLoading: workoutsLoading } = useDailyWorkouts(currentProgram?.id, selectedDay, workoutType);
 
   const handleGenerateProgram = (preferences: any) => {
-    generateExerciseProgram(preferences);
-    toast.success(`Generating your personalized ${preferences.workoutType} exercise program...`);
+    console.log('Generating exercise program with preferences:', preferences);
+    generateExerciseProgram({
+      ...preferences,
+      workoutType: preferences.workoutType || workoutType
+    });
+    toast.success(`Generating your personalized ${preferences.workoutType || workoutType} exercise program...`);
+  };
+
+  const handleGenerateNewProgram = () => {
+    const preferences = {
+      workoutType: workoutType,
+      goalType: "general_fitness",
+      fitnessLevel: "beginner",
+      availableTime: "45",
+      preferredWorkouts: workoutType === "home" ? ["bodyweight", "cardio"] : ["strength", "cardio"],
+      targetMuscleGroups: ["full_body"],
+      equipment: workoutType === "home" ? ["bodyweight", "resistance_bands", "light_dumbbells"] : ["barbells", "dumbbells", "machines"],
+      duration: "4",
+      workoutDays: "4-5 days per week",
+      difficulty: "beginner"
+    };
+    
+    handleGenerateProgram(preferences);
   };
 
   // Show loading screen only if data is being loaded AND we're not sure about existing content
@@ -41,7 +62,7 @@ const Exercise = () => {
   }
 
   // Show generation screen only if actively generating
-  if (isGeneratingContent && hasExistingContent === false) {
+  if (isGenerating) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
         <div className="text-center">
@@ -62,7 +83,7 @@ const Exercise = () => {
       <div className="container mx-auto px-4 py-8">
         <ExerciseHeader 
           currentProgram={currentProgram}
-          onGenerateProgram={() => {}} // We'll handle this in the selector now
+          onGenerateProgram={handleGenerateNewProgram}
           isGenerating={isGenerating}
         />
 

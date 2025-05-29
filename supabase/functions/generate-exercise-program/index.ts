@@ -17,7 +17,7 @@ serve(async (req) => {
   }
 
   try {
-    const { workoutType, userData, preferences } = await req.json();
+    const { userData, preferences } = await req.json();
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -32,14 +32,17 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    console.log('Generating exercise program for:', { workoutType, preferences });
+    console.log('Generating exercise program for:', { userData: userData?.userId, preferences });
 
+    // Determine workout type - default to 'home' if not specified
+    const workoutType = preferences?.workoutType || 'home';
+    
     // Choose the appropriate prompt based on workout type
-    const selectedPrompt = preferences?.workoutType === 'gym' 
+    const selectedPrompt = workoutType === 'gym' 
       ? createGymWorkoutPrompt(userData, preferences)
       : createHomeWorkoutPrompt(userData, preferences);
     
-    console.log(`Sending request to OpenAI for ${preferences?.workoutType || 'home'} exercise program`);
+    console.log(`Sending request to OpenAI for ${workoutType} exercise program`);
     
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -52,7 +55,7 @@ serve(async (req) => {
         messages: [
           { 
             role: 'system', 
-            content: `You are a certified personal trainer. Always respond with valid JSON only. Create safe, effective workouts appropriate for the specified environment.` 
+            content: `You are a certified personal trainer. Always respond with valid JSON only. Create safe, effective workouts appropriate for the specified environment (${workoutType}).` 
           },
           { role: 'user', content: selectedPrompt }
         ],
@@ -80,12 +83,19 @@ serve(async (req) => {
 
     validateWorkoutProgram(generatedProgram);
 
+    // Add workout type to preferences for storage
+    const preferencesWithType = {
+      ...preferences,
+      workoutType
+    };
+
     // Store the program in the database
-    const weeklyProgram = await storeWorkoutProgram(supabase, generatedProgram, userData, preferences);
+    const weeklyProgram = await storeWorkoutProgram(supabase, generatedProgram, userData, preferencesWithType);
 
     return new Response(JSON.stringify({ 
       success: true,
       programId: weeklyProgram.id,
+      workoutType,
       generatedProgram 
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
