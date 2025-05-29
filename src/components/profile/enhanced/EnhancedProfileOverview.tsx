@@ -2,7 +2,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { User, Heart, Target, TrendingUp, Clock, Shield } from "lucide-react";
+import { User, Heart, Target, TrendingUp, Shield } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import { useHealthAssessment } from "@/hooks/useHealthAssessment";
 
@@ -10,7 +10,55 @@ const EnhancedProfileOverview = () => {
   const { profile } = useProfile();
   const { assessment } = useHealthAssessment();
 
-  const completionScore = profile?.profile_completion_score || 0;
+  // Calculate accurate completion score
+  const calculateCompletionScore = () => {
+    let totalFields = 0;
+    let completedFields = 0;
+
+    // Basic Information
+    const basicFields = ['first_name', 'last_name', 'age', 'gender', 'height', 'weight', 'nationality', 'body_shape'];
+    basicFields.forEach(field => {
+      totalFields++;
+      if (profile?.[field as keyof typeof profile]) completedFields++;
+    });
+
+    // Goals & Activity
+    const goalFields = ['fitness_goal', 'activity_level'];
+    goalFields.forEach(field => {
+      totalFields++;
+      if (profile?.[field as keyof typeof profile]) completedFields++;
+    });
+    
+    // Array fields
+    totalFields += 4;
+    if (profile?.health_conditions?.length) completedFields++;
+    if (profile?.allergies?.length) completedFields++;
+    if (profile?.preferred_foods?.length) completedFields++;
+    if (profile?.dietary_restrictions?.length) completedFields++;
+
+    // Health Assessment
+    if (assessment) {
+      const assessmentFields = [
+        'stress_level', 'sleep_quality', 'energy_level', 'work_schedule',
+        'exercise_history', 'nutrition_knowledge', 'cooking_skills', 'time_availability',
+        'timeline_expectation', 'commitment_level'
+      ];
+      
+      assessmentFields.forEach(field => {
+        totalFields++;
+        const value = assessment[field as keyof typeof assessment];
+        if (Array.isArray(value) ? value.length > 0 : value) {
+          completedFields++;
+        }
+      });
+    } else {
+      totalFields += 10;
+    }
+
+    return Math.round((completedFields / totalFields) * 100);
+  };
+
+  const completionScore = calculateCompletionScore();
   const healthScore = assessment?.health_score || 0;
   const readinessScore = assessment?.readiness_score || 0;
   const riskScore = assessment?.risk_score || 0;
@@ -32,8 +80,8 @@ const EnhancedProfileOverview = () => {
       {/* Welcome Section */}
       <Card className="p-4 lg:p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
         <div className="flex items-center gap-3 mb-4">
-          <User className="w-6 h-6 text-blue-600" />
-          <h2 className="text-xl lg:text-2xl font-bold text-gray-800">
+          <User className="w-5 h-5 lg:w-6 lg:h-6 text-blue-600" />
+          <h2 className="text-lg lg:text-xl xl:text-2xl font-bold text-gray-800">
             Welcome {profile?.first_name || 'User'}!
           </h2>
         </div>
@@ -204,22 +252,6 @@ const EnhancedProfileOverview = () => {
           </div>
         </Card>
       )}
-
-      {/* AI Integration Info */}
-      <Card className="p-4 lg:p-6 bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
-        <div className="flex items-center gap-3 mb-3">
-          <TrendingUp className="w-5 h-5 text-green-600" />
-          <h3 className="text-lg font-semibold text-gray-800">AI Integration Ready</h3>
-        </div>
-        <p className="text-sm text-gray-600 mb-3">
-          Your profile data is automatically used by our AI to generate personalized meal plans and exercise programs. 
-          The more complete your profile, the better our recommendations become.
-        </p>
-        <div className="flex items-center gap-2 text-sm">
-          <Clock className="w-4 h-4 text-green-600" />
-          <span className="text-gray-700">Last updated: {profile?.updated_at ? new Date(profile.updated_at).toLocaleDateString() : 'Never'}</span>
-        </div>
-      </Card>
     </div>
   );
 };

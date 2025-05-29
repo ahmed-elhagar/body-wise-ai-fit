@@ -4,7 +4,7 @@ import { Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useEnhancedProfile } from "@/hooks/useEnhancedProfile";
-import { useMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/use-mobile";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import EnhancedProfileMobileLayout from "@/components/profile/enhanced/EnhancedProfileMobileLayout";
 import EnhancedProfileDesktopLayout from "@/components/profile/enhanced/EnhancedProfileDesktopLayout";
@@ -17,7 +17,7 @@ import EnhancedProfileOverview from "@/components/profile/enhanced/EnhancedProfi
 const EnhancedProfile = () => {
   const { user } = useAuth();
   const { isLoading } = useProfile();
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState("overview");
 
   const {
