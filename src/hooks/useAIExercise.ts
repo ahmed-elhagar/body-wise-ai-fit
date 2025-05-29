@@ -1,5 +1,5 @@
 
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useProfile } from './useProfile';
 import { toast } from 'sonner';
@@ -12,6 +12,7 @@ interface ExerciseProgramRequest {
   targetMuscleGroups?: string[];
   equipment?: string[];
   userLanguage?: string;
+  workoutType?: "home" | "gym";
   // Additional properties for backward compatibility
   duration?: string;
   workoutDays?: string;
@@ -21,6 +22,7 @@ interface ExerciseProgramRequest {
 
 export const useAIExercise = () => {
   const { profile } = useProfile();
+  const queryClient = useQueryClient();
 
   const generateExerciseProgram = useMutation({
     mutationFn: async (request: ExerciseProgramRequest) => {
@@ -32,6 +34,7 @@ export const useAIExercise = () => {
 
       // Prepare user data safely with proper null checks
       const userData = {
+        userId: profile.id,
         age: profile.age || 25,
         gender: profile.gender || 'not specified',
         weight: profile.weight || null,
@@ -44,9 +47,10 @@ export const useAIExercise = () => {
 
       // Transform the request to match expected format
       const transformedRequest = {
+        workoutType: request.workoutType || 'home',
         goalType: request.goalType || request.fitnessGoal || userData.fitness_goal,
         fitnessLevel: request.fitnessLevel || request.difficulty || 'beginner',
-        availableTime: request.availableTime || request.duration || '4',
+        availableTime: request.availableTime || request.duration || '45',
         preferredWorkouts: request.preferredWorkouts || ['strength', 'cardio'],
         targetMuscleGroups: request.targetMuscleGroups || ['full_body'],
         equipment: request.equipment || [request.equipment?.[0] || 'Basic home equipment'],
@@ -57,6 +61,7 @@ export const useAIExercise = () => {
         body: {
           ...transformedRequest,
           userData,
+          preferences: transformedRequest,
           userLanguage: userData.preferred_language
         }
       });
@@ -69,6 +74,8 @@ export const useAIExercise = () => {
       return data;
     },
     onSuccess: () => {
+      // Invalidate exercise programs to refetch the new data
+      queryClient.invalidateQueries({ queryKey: ['exercise-programs'] });
       toast.success('Exercise program generated successfully!');
     },
     onError: (error) => {
