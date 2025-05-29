@@ -8,7 +8,7 @@ import { useProfile } from "@/hooks/useProfile";
 export const useAIMealPlan = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const { user } = useAuth();
-  const { profile, refetch: refetchProfile } = useProfile();
+  const { profile } = useProfile();
 
   const generateMealPlan = async (preferences: any) => {
     if (!user?.id) {
@@ -72,9 +72,6 @@ export const useAIMealPlan = () => {
 
       console.log("✅ Meal plan generated successfully:", data);
       toast.success(`✨ ${data.message || 'Meal plan generated successfully!'}`);
-      
-      // Refresh profile to update remaining generations
-      refetchProfile();
       
       return data;
       
