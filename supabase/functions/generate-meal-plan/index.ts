@@ -99,17 +99,55 @@ serve(async (req) => {
     console.log(`🍽️ GENERATION CONFIG: includeSnacks=${includeSnacks} (from preferences: ${preferences?.includeSnacks})`);
     console.log(`Generating ${totalMeals} meals (${mealsPerDay} meals/day, snacks: ${includeSnacks})`);
 
+    // Enhanced system prompt with strict JSON structure requirements
+    const systemPrompt = `You are a professional nutritionist AI. You MUST generate a meal plan in this EXACT JSON structure:
+
+{
+  "days": [
+    {
+      "dayNumber": 1,
+      "dayName": "Saturday",
+      "meals": [
+        {
+          "type": "breakfast",
+          "name": "Meal Name",
+          "calories": 500,
+          "protein": 25,
+          "carbs": 60,
+          "fat": 20,
+          "ingredients": ["ingredient1", "ingredient2"],
+          "instructions": ["step1", "step2"],
+          "prepTime": 15,
+          "cookTime": 20,
+          "servings": 2
+        }
+      ]
+    }
+  ],
+  "weekSummary": {
+    "totalCalories": ${dailyCalories * 7},
+    "totalProtein": 700,
+    "totalCarbs": 2100,
+    "totalFat": 490,
+    "dietType": "balanced"
+  }
+}
+
+CRITICAL REQUIREMENTS:
+1. Generate EXACTLY 7 days starting with Saturday (dayNumber 1-7)
+2. Each day must have EXACTLY ${mealsPerDay} meals
+3. Meal types: ${includeSnacks ? 'breakfast, lunch, dinner, snack1, snack2' : 'breakfast, lunch, dinner'}
+4. Return ONLY valid JSON - no markdown, no explanations
+5. All numeric values must be numbers, not strings
+6. Focus on ${userProfile?.nationality || 'international'} cuisine`;
+
     // Generate AI prompt with enhanced instructions
     const prompt = generateMealPlanPrompt(userProfile, preferences, dailyCalories, includeSnacks);
 
-    console.log('Sending request to OpenAI...');
+    console.log('Sending request to OpenAI with enhanced prompts...');
     
     let response;
     try {
-      const systemPrompt = includeSnacks 
-        ? `You are a professional nutritionist. Generate EXACTLY 7 days starting from SATURDAY with EXACTLY 5 meals each (breakfast, lunch, dinner, snack1, snack2) totaling 35 meals. Each meal MUST have: type, name, calories (number), protein, carbs, fat, ingredients (array), instructions (array), prepTime, cookTime, servings. Return ONLY valid JSON - no markdown. Focus on ${userProfile?.nationality || 'international'} cuisine with realistic prep times ≤${preferences?.maxPrepTime || 45} minutes.`
-        : `You are a professional nutritionist. Generate EXACTLY 7 days starting from SATURDAY with EXACTLY 3 meals each (breakfast, lunch, dinner) totaling 21 meals. Each meal MUST have: type, name, calories (number), protein, carbs, fat, ingredients (array), instructions (array), prepTime, cookTime, servings. Return ONLY valid JSON - no markdown. Focus on ${userProfile?.nationality || 'international'} cuisine with realistic prep times ≤${preferences?.maxPrepTime || 45} minutes.`;
-
       response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -122,7 +160,7 @@ serve(async (req) => {
             { role: 'system', content: systemPrompt },
             { role: 'user', content: prompt }
           ],
-          temperature: 0.2,
+          temperature: 0.1,
           max_tokens: 8000,
           top_p: 0.8,
           frequency_penalty: 0,
@@ -181,18 +219,21 @@ serve(async (req) => {
       });
     }
 
-    // Parse and clean the response
+    // Parse and clean the response with enhanced error handling
     let generatedPlan;
     try {
       const content = data.choices[0].message.content.trim();
       console.log('Raw OpenAI content preview:', content.substring(0, 500) + '...');
       
-      // Clean JSON response
+      // Enhanced JSON cleaning
       let cleanedContent = content
         .replace(/```json\n?/g, '')
         .replace(/```\n?/g, '')
+        .replace(/^\s*```[\s\S]*?\n/, '')
+        .replace(/\n```\s*$/, '')
         .trim();
       
+      // Find the JSON object boundaries
       const firstBrace = cleanedContent.indexOf('{');
       const lastBrace = cleanedContent.lastIndexOf('}');
       

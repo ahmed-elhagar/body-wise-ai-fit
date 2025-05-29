@@ -1,18 +1,55 @@
 
-// DRY prompt templates - moved directly into edge function context
+// Enhanced prompt templates for better JSON structure generation
 const MEAL_PLAN_PROMPTS = {
-  SYSTEM_BASE: (totalMeals: number) => `You are a professional nutritionist. Generate EXACTLY 7 days starting from SATURDAY with meals totaling ${totalMeals}. Each meal MUST have: type, name, calories (number), protein, carbs, fat, ingredients (array), instructions (array), prepTime, cookTime, servings. Return ONLY valid JSON - no markdown.`,
-  
-  SKELETON_ONLY: (nationality: string = 'international', maxPrepTime: number = 45) => 
-    `Focus on ${nationality} cuisine with realistic prep times ≤${maxPrepTime} minutes. Generate BASIC meal info only - detailed recipes will be fetched separately on-demand.`,
+  JSON_STRUCTURE_EXAMPLE: (includeSnacks: boolean) => `
+REQUIRED JSON STRUCTURE (copy this format exactly):
+{
+  "days": [
+    {
+      "dayNumber": 1,
+      "dayName": "Saturday",
+      "meals": [
+        {
+          "type": "breakfast",
+          "name": "Spanish Omelette",
+          "calories": 500,
+          "protein": 25,
+          "carbs": 40,
+          "fat": 30,
+          "ingredients": ["eggs", "potatoes", "onion"],
+          "instructions": ["Step 1", "Step 2"],
+          "prepTime": 15,
+          "cookTime": 30,
+          "servings": 2
+        }${includeSnacks ? `,
+        {
+          "type": "snack1",
+          "name": "Greek Yogurt",
+          "calories": 150,
+          "protein": 15,
+          "carbs": 20,
+          "fat": 5,
+          "ingredients": ["Greek yogurt", "honey"],
+          "instructions": ["Mix yogurt with honey"],
+          "prepTime": 2,
+          "cookTime": 0,
+          "servings": 1
+        }` : ''}
+      ]
+    }
+  ]
+}`,
+
+  MEAL_TYPES: (includeSnacks: boolean) => 
+    includeSnacks ? 'breakfast, lunch, dinner, snack1, snack2' : 'breakfast, lunch, dinner',
   
   SNACK_DISTRIBUTION: (breakfast: number, lunch: number, dinner: number, snack1: number, snack2: number) => `
 MEAL DISTRIBUTION WITH SNACKS:
 - Breakfast: ${breakfast} calories
 - Lunch: ${lunch} calories  
 - Dinner: ${dinner} calories
-- Snack (morning): ${snack1} calories
-- Snack (evening): ${snack2} calories`,
+- Snack 1 (morning): ${snack1} calories
+- Snack 2 (evening): ${snack2} calories`,
 
   NO_SNACK_DISTRIBUTION: (breakfast: number, lunch: number, dinner: number) => `
 MEAL DISTRIBUTION WITHOUT SNACKS:
@@ -41,15 +78,18 @@ export const generateMealPlanPrompt = (userProfile: any, preferences: any, daily
     distribution = MEAL_PLAN_PROMPTS.NO_SNACK_DISTRIBUTION(breakfast, lunch, dinner);
   }
 
-  // Basic skeleton instructions
-  const skeletonInstructions = MEAL_PLAN_PROMPTS.SKELETON_ONLY(
-    userProfile?.nationality || 'international',
-    parseInt(preferences?.maxPrepTime || '45')
-  );
+  return `Generate a 7-day meal plan starting from Saturday with the following requirements:
 
-  return `${distribution}
+${distribution}
 
-${skeletonInstructions}
+${MEAL_PLAN_PROMPTS.JSON_STRUCTURE_EXAMPLE(includeSnacks)}
+
+CRITICAL REQUIREMENTS:
+1. Generate EXACTLY 7 days (dayNumber: 1-7, starting Saturday)
+2. Each day must have EXACTLY ${mealsPerDay} meals
+3. Meal types: ${MEAL_PLAN_PROMPTS.MEAL_TYPES(includeSnacks)}
+4. Return ONLY valid JSON matching the structure above
+5. No markdown formatting, no explanations
 
 User Profile:
 - Age: ${userProfile?.age || 30}
@@ -68,7 +108,5 @@ Preferences:
 Dietary Restrictions: ${userProfile?.dietary_restrictions?.join(', ') || 'none'}
 Allergies: ${userProfile?.allergies?.join(', ') || 'none'}
 
-Generate ${totalMeals} meals total (${mealsPerDay} per day for 7 days) starting from Saturday.
-Focus on variety, nutrition balance, and cultural preferences.
-Each meal should be realistic and achievable within the prep time limits.`;
+Generate ${totalMeals} meals total following the exact JSON structure shown above.`;
 };
