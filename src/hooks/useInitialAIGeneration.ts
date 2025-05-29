@@ -97,8 +97,15 @@ export const useInitialAIGeneration = () => {
       };
 
       const defaultExercisePreferences = {
+        goalType: profile.fitness_goal || "general_fitness",
+        fitnessLevel: profile.activity_level === 'sedentary' ? "beginner" :
+                     profile.activity_level === 'very_active' ? "advanced" :
+                     "intermediate",
+        availableTime: "4",
+        preferredWorkouts: ["strength", "cardio"],
+        targetMuscleGroups: ["full_body"],
+        equipment: ["Basic home equipment and gym options"],
         duration: "4",
-        equipment: "Basic home equipment and gym options",
         workoutDays: profile.activity_level === 'sedentary' ? "2-3 days per week" :
                      profile.activity_level === 'very_active' ? "5-6 days per week" :
                      "3-4 days per week",

@@ -23,6 +23,8 @@ export interface Meal {
   image_url?: string; // Add this property for database image URLs
   imageUrl?: string; // Keep compatibility with existing code
   youtubeId: string;
+  meal_type?: string; // Add meal_type property for database compatibility
+  youtube_search_term?: string; // Add youtube_search_term property for database compatibility
 }
 
 export interface ShoppingItem {

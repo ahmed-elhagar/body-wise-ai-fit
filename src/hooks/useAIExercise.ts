@@ -5,13 +5,18 @@ import { useProfile } from './useProfile';
 import { toast } from 'sonner';
 
 interface ExerciseProgramRequest {
-  goalType: string;
-  fitnessLevel: string;
-  availableTime: string;
-  preferredWorkouts: string[];
-  targetMuscleGroups: string[];
-  equipment: string[];
+  goalType?: string;
+  fitnessLevel?: string;
+  availableTime?: string;
+  preferredWorkouts?: string[];
+  targetMuscleGroups?: string[];
+  equipment?: string[];
   userLanguage?: string;
+  // Additional properties for backward compatibility
+  duration?: string;
+  workoutDays?: string;
+  difficulty?: string;
+  fitnessGoal?: string;
 }
 
 export const useAIExercise = () => {
@@ -25,7 +30,7 @@ export const useAIExercise = () => {
 
       console.log('Generating exercise program with request:', request);
 
-      // Prepare user data safely
+      // Prepare user data safely with proper null checks
       const userData = {
         age: profile.age || 25,
         gender: profile.gender || 'not specified',
@@ -37,9 +42,20 @@ export const useAIExercise = () => {
         preferred_language: profile.preferred_language || 'en'
       };
 
+      // Transform the request to match expected format
+      const transformedRequest = {
+        goalType: request.goalType || request.fitnessGoal || userData.fitness_goal,
+        fitnessLevel: request.fitnessLevel || request.difficulty || 'beginner',
+        availableTime: request.availableTime || request.duration || '4',
+        preferredWorkouts: request.preferredWorkouts || ['strength', 'cardio'],
+        targetMuscleGroups: request.targetMuscleGroups || ['full_body'],
+        equipment: request.equipment || [request.equipment?.[0] || 'Basic home equipment'],
+        userLanguage: request.userLanguage || userData.preferred_language
+      };
+
       const { data, error } = await supabase.functions.invoke('generate-exercise-program', {
         body: {
-          ...request,
+          ...transformedRequest,
           userData,
           userLanguage: userData.preferred_language
         }

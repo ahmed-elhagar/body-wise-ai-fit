@@ -67,7 +67,7 @@ const MealPlanContent = ({
       <div className="space-y-6">
         {/* Meal Type Sections */}
         {['breakfast', 'lunch', 'dinner'].map((mealType) => {
-          const mealsForType = todaysMeals.filter(meal => meal.meal_type === mealType);
+          const mealsForType = todaysMeals.filter(meal => (meal.meal_type || meal.type) === mealType);
           
           if (mealsForType.length === 0) return null;
 
@@ -85,10 +85,10 @@ const MealPlanContent = ({
               
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {mealsForType.map((meal, index) => {
-                  // Add missing youtubeId property to make it compatible with the type
+                  // Ensure meal has youtubeId property
                   const mealWithYoutubeId = {
                     ...meal,
-                    youtubeId: meal.youtube_search_term || '' // Use youtube_search_term as fallback
+                    youtubeId: meal.youtubeId || meal.youtube_search_term || ''
                   };
                   
                   return (
@@ -96,7 +96,7 @@ const MealPlanContent = ({
                       key={`${meal.id}-${index}`}
                       meal={mealWithYoutubeId}
                       onShowRecipe={() => onShowRecipe(mealWithYoutubeId)}
-                      onExchange={() => onExchangeMeal(mealWithYoutubeId, index)}
+                      onExchangeMeal={() => onExchangeMeal(mealWithYoutubeId, index)}
                     />
                   );
                 })}
@@ -106,7 +106,7 @@ const MealPlanContent = ({
         })}
 
         {/* Snacks Section */}
-        {todaysMeals.some(meal => meal.meal_type === 'snack') && (
+        {todaysMeals.some(meal => (meal.meal_type || meal.type) === 'snack') && (
           <div className="space-y-4">
             <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <Badge 
@@ -120,11 +120,11 @@ const MealPlanContent = ({
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {todaysMeals
-                .filter(meal => meal.meal_type === 'snack')
+                .filter(meal => (meal.meal_type || meal.type) === 'snack')
                 .map((meal, index) => {
                   const mealWithYoutubeId = {
                     ...meal,
-                    youtubeId: meal.youtube_search_term || ''
+                    youtubeId: meal.youtubeId || meal.youtube_search_term || ''
                   };
                   
                   return (
@@ -132,7 +132,7 @@ const MealPlanContent = ({
                       key={`${meal.id}-${index}`}
                       meal={mealWithYoutubeId}
                       onShowRecipe={() => onShowRecipe(mealWithYoutubeId)}
-                      onExchange={() => onExchangeMeal(mealWithYoutubeId, index)}
+                      onExchangeMeal={() => onExchangeMeal(mealWithYoutubeId, index)}
                     />
                   );
                 })}

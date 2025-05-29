@@ -23,8 +23,13 @@ const Exercise = () => {
 
   const handleGenerateProgram = () => {
     const preferences = {
+      goalType: "general_fitness",
+      fitnessLevel: "beginner",
+      availableTime: "4",
+      preferredWorkouts: ["strength", "cardio"],
+      targetMuscleGroups: ["full_body"],
+      equipment: ["Basic home equipment"],
       duration: "4",
-      equipment: "Basic home equipment",
       workoutDays: "3-4 days per week",
       difficulty: "beginner"
     };
