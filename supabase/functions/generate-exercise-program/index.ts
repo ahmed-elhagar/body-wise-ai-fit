@@ -48,30 +48,24 @@ serve(async (req) => {
       throw new Error('User ID is required');
     }
 
-    // Check AI generation limit using centralized system with proper status
+    // Manually check generation limit first
     console.log('🔍 Checking AI generation limit...');
-    const { data: limitCheck, error: limitError } = await supabase.rpc('check_and_use_ai_generation', {
-      user_id_param: userData.userId,
-      generation_type_param: 'exercise_program',
-      prompt_data_param: {
-        workoutType: preferences?.workoutType || 'home',
-        goalType: preferences?.goalType,
-        fitnessLevel: preferences?.fitnessLevel,
-        userLanguage: finalUserLanguage,
-        weekStartDate: preferences?.weekStartDate
-      }
-    });
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('ai_generations_remaining')
+      .eq('id', userData.userId)
+      .single();
 
-    if (limitError) {
-      console.error('❌ Error checking generation limit:', limitError);
+    if (profileError) {
+      console.error('❌ Error fetching user profile:', profileError);
       throw new Error('Failed to check generation limit');
     }
 
-    if (!limitCheck?.success) {
+    if (!profile || profile.ai_generations_remaining <= 0) {
       console.log('🚫 Generation limit reached for user');
       return new Response(JSON.stringify({
-        error: limitCheck?.error || 'AI generation limit reached',
-        remaining: limitCheck?.remaining || 0,
+        error: 'AI generation limit reached',
+        remaining: profile?.ai_generations_remaining || 0,
         limitReached: true
       }), {
         status: 429,
@@ -79,8 +73,48 @@ serve(async (req) => {
       });
     }
 
-    const logId = limitCheck.log_id;
-    console.log('✅ Generation limit checked, remaining:', limitCheck.remaining);
+    // Create log entry with valid status
+    console.log('📝 Creating generation log...');
+    const { data: logEntry, error: logError } = await supabase
+      .from('ai_generation_logs')
+      .insert({
+        user_id: userData.userId,
+        generation_type: 'exercise_program',
+        prompt_data: {
+          workoutType: preferences?.workoutType || 'home',
+          goalType: preferences?.goalType,
+          fitnessLevel: preferences?.fitnessLevel,
+          userLanguage: finalUserLanguage,
+          weekStartDate: preferences?.weekStartDate
+        },
+        status: 'pending',
+        credits_used: 1
+      })
+      .select()
+      .single();
+
+    if (logError) {
+      console.error('❌ Error creating log entry:', logError);
+      throw new Error('Failed to create generation log');
+    }
+
+    const logId = logEntry.id;
+
+    // Decrement the count
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({ 
+        ai_generations_remaining: profile.ai_generations_remaining - 1,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', userData.userId);
+
+    if (updateError) {
+      console.error('❌ Error updating generation count:', updateError);
+      throw new Error('Failed to update generation count');
+    }
+
+    console.log('✅ Generation limit checked, remaining:', profile.ai_generations_remaining - 1);
 
     const workoutType = preferences?.workoutType || 'home';
     
@@ -133,10 +167,13 @@ serve(async (req) => {
       console.error('❌ OpenAI API error:', response.status, errorText);
       
       // Mark generation as failed
-      await supabase.rpc('complete_ai_generation', {
-        log_id_param: logId,
-        error_message_param: `OpenAI API error: ${response.status}`
-      });
+      await supabase
+        .from('ai_generation_logs')
+        .update({
+          status: 'failed',
+          error_message: `OpenAI API error: ${response.status}`
+        })
+        .eq('id', logId);
       
       throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
     }
@@ -145,10 +182,13 @@ serve(async (req) => {
     console.log('📥 OpenAI exercise response received successfully');
 
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      await supabase.rpc('complete_ai_generation', {
-        log_id_param: logId,
-        error_message_param: 'Invalid response structure from OpenAI API'
-      });
+      await supabase
+        .from('ai_generation_logs')
+        .update({
+          status: 'failed',
+          error_message: 'Invalid response structure from OpenAI API'
+        })
+        .eq('id', logId);
       throw new Error('Invalid response structure from OpenAI API');
     }
 
@@ -169,16 +209,19 @@ serve(async (req) => {
     const weeklyProgram = await storeWorkoutProgram(supabase, generatedProgram, enhancedUserData, finalEnhancedPreferences);
 
     // Mark generation as completed
-    await supabase.rpc('complete_ai_generation', {
-      log_id_param: logId,
-      response_data_param: {
-        programId: weeklyProgram.id,
-        programName: weeklyProgram.program_name,
-        workoutType,
-        workoutsCreated: weeklyProgram.workoutsCreated,
-        exercisesCreated: weeklyProgram.exercisesCreated
-      }
-    });
+    await supabase
+      .from('ai_generation_logs')
+      .update({
+        status: 'completed',
+        response_data: {
+          programId: weeklyProgram.id,
+          programName: weeklyProgram.program_name,
+          workoutType,
+          workoutsCreated: weeklyProgram.workoutsCreated,
+          exercisesCreated: weeklyProgram.exercisesCreated
+        }
+      })
+      .eq('id', logId);
 
     console.log('🎉 Exercise program generated and stored successfully:', {
       programId: weeklyProgram.id,
@@ -188,7 +231,7 @@ serve(async (req) => {
       workoutsCreated: weeklyProgram.workoutsCreated,
       exercisesCreated: weeklyProgram.exercisesCreated,
       userLanguage: finalUserLanguage,
-      generationsRemaining: limitCheck.remaining
+      generationsRemaining: profile.ai_generations_remaining - 1
     });
 
     const successMessage = finalUserLanguage === 'ar'
@@ -204,7 +247,7 @@ serve(async (req) => {
       workoutsCreated: weeklyProgram.workoutsCreated,
       exercisesCreated: weeklyProgram.exercisesCreated,
       userLanguage: finalUserLanguage,
-      generationsRemaining: limitCheck.remaining,
+      generationsRemaining: profile.ai_generations_remaining - 1,
       message: successMessage
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
