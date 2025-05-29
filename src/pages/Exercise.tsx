@@ -76,33 +76,35 @@ const Exercise = () => {
 
   return (
     <MealPlanLayout>
-      <ExerciseProgramPageContent
-        currentDate={currentDate}
-        weekStartDate={weekStartDate}
-        selectedDayNumber={selectedDayNumber}
-        setSelectedDayNumber={setSelectedDayNumber}
-        currentWeekOffset={currentWeekOffset}
-        setCurrentWeekOffset={setCurrentWeekOffset}
-        currentProgram={currentProgram}
-        workoutType={workoutType}
-        setWorkoutType={setWorkoutType}
-        todaysWorkouts={todaysWorkouts}
-        todaysExercises={todaysExercises}
-        completedExercises={completedExercises}
-        totalExercises={totalExercises}
-        progressPercentage={progressPercentage}
-        showAIDialog={showAIDialog}
-        setShowAIDialog={setShowAIDialog}
-        aiPreferences={aiPreferences}
-        setAiPreferences={setAiPreferences}
-        handleGenerateAIProgram={handleGenerateAIProgram}
-        handleRegenerateProgram={handleRegenerateProgram}
-        handleExerciseComplete={handleExerciseComplete}
-        handleExerciseProgressUpdate={handleExerciseProgressUpdate}
-        isGenerating={isGenerating}
-        refetch={refetch}
-        isRestDay={isRestDay}
-      />
+      <div className="p-4 sm:p-6">
+        <ExerciseProgramPageContent
+          currentDate={currentDate}
+          weekStartDate={weekStartDate}
+          selectedDayNumber={selectedDayNumber}
+          setSelectedDayNumber={setSelectedDayNumber}
+          currentWeekOffset={currentWeekOffset}
+          setCurrentWeekOffset={setCurrentWeekOffset}
+          currentProgram={currentProgram}
+          workoutType={workoutType}
+          setWorkoutType={setWorkoutType}
+          todaysWorkouts={todaysWorkouts}
+          todaysExercises={todaysExercises}
+          completedExercises={completedExercises}
+          totalExercises={totalExercises}
+          progressPercentage={progressPercentage}
+          showAIDialog={showAIDialog}
+          setShowAIDialog={setShowAIDialog}
+          aiPreferences={aiPreferences}
+          setAiPreferences={setAiPreferences}
+          handleGenerateAIProgram={handleGenerateAIProgram}
+          handleRegenerateProgram={handleRegenerateProgram}
+          handleExerciseComplete={handleExerciseComplete}
+          handleExerciseProgressUpdate={handleExerciseProgressUpdate}
+          isGenerating={isGenerating}
+          refetch={refetch}
+          isRestDay={isRestDay}
+        />
+      </div>
     </MealPlanLayout>
   );
 };
