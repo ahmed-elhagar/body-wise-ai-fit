@@ -23,7 +23,8 @@ export const useMealPlanState = () => {
     duration: '7',
     cuisine: '',
     maxPrepTime: '45',
-    mealTypes: 'all'
+    mealTypes: 'all',
+    includeSnacks: true
   });
 
   const { generateMealPlan, isGenerating } = useAIMealPlan();

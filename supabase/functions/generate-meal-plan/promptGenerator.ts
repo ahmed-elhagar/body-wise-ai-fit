@@ -16,14 +16,22 @@ interface Preferences {
   maxPrepTime?: string;
   duration?: string;
   mealTypes?: string;
+  includeSnacks?: boolean;
 }
 
-export const generateMealPlanPrompt = (userProfile: UserProfile, preferences: Preferences, dailyCalories: number): string => {
+export const generateMealPlanPrompt = (userProfile: UserProfile, preferences: Preferences, dailyCalories: number, includeSnacks: boolean = true): string => {
   const nationality = userProfile?.nationality || 'international';
   const allergies = userProfile?.allergies?.length ? userProfile.allergies.join(', ') : 'None';
   const restrictions = userProfile?.dietary_restrictions?.length ? userProfile.dietary_restrictions.join(', ') : 'None';
   
-  return `You are a professional nutritionist specializing in ${nationality} cuisine. Create a complete 7-day meal plan with EXACTLY 35 meals (5 meals per day for 7 days).
+  const mealTypes = includeSnacks 
+    ? 'breakfast, lunch, dinner, snack1, snack2' 
+    : 'breakfast, lunch, dinner';
+  
+  const totalMeals = includeSnacks ? 35 : 21;
+  const mealsPerDay = includeSnacks ? 5 : 3;
+
+  return `You are a professional nutritionist specializing in ${nationality} cuisine. Create a complete 7-day meal plan with EXACTLY ${totalMeals} meals (${mealsPerDay} meals per day for 7 days).
 
 USER PROFILE:
 - Age: ${userProfile?.age}, Gender: ${userProfile?.gender}
@@ -37,12 +45,13 @@ USER PROFILE:
 PREFERENCES:
 - Cuisine: ${preferences?.cuisine || 'Mixed'}
 - Max Prep Time: ${preferences?.maxPrepTime || '45'} minutes
+- Include Snacks: ${includeSnacks ? 'Yes' : 'No'}
 - Focus: Authentic ${nationality} dishes with proper nutrition
 
 CRITICAL REQUIREMENTS:
 1. EXACTLY 7 days starting from Saturday (day 1) to Friday (day 7)
-2. EXACTLY 5 meals per day: breakfast, lunch, dinner, snack1, snack2
-3. Total meals: 35 (no more, no less)
+2. EXACTLY ${mealsPerDay} meals per day: ${mealTypes}
+3. Total meals: ${totalMeals} (no more, no less)
 4. Return ONLY valid JSON - no markdown or code blocks
 5. All nutritional values must be numbers (not strings)
 6. Include detailed ingredients with measurements
@@ -51,12 +60,19 @@ CRITICAL REQUIREMENTS:
 9. Include realistic YouTube search terms for each meal
 10. Provide detailed descriptions for AI image generation
 
-MEAL DISTRIBUTION:
+${includeSnacks ? `
+MEAL DISTRIBUTION WITH SNACKS:
 - Breakfast: ${Math.round(dailyCalories * 0.25)} calories
 - Lunch: ${Math.round(dailyCalories * 0.35)} calories  
 - Dinner: ${Math.round(dailyCalories * 0.30)} calories
 - Snack1: ${Math.round(dailyCalories * 0.05)} calories
 - Snack2: ${Math.round(dailyCalories * 0.05)} calories
+` : `
+MEAL DISTRIBUTION WITHOUT SNACKS:
+- Breakfast: ${Math.round(dailyCalories * 0.30)} calories
+- Lunch: ${Math.round(dailyCalories * 0.40)} calories  
+- Dinner: ${Math.round(dailyCalories * 0.30)} calories
+`}
 
 Return this EXACT JSON structure:
 
@@ -67,7 +83,8 @@ Return this EXACT JSON structure:
     "totalProtein": ${Math.round(dailyCalories * 7 * 0.15 / 4)},
     "totalCarbs": ${Math.round(dailyCalories * 7 * 0.50 / 4)},
     "totalFat": ${Math.round(dailyCalories * 7 * 0.35 / 9)},
-    "dietType": "${userProfile?.fitness_goal === 'weight_loss' ? 'Weight Loss' : userProfile?.fitness_goal === 'muscle_gain' ? 'Muscle Building' : 'Balanced Nutrition'}"
+    "dietType": "${userProfile?.fitness_goal === 'weight_loss' ? 'Weight Loss' : userProfile?.fitness_goal === 'muscle_gain' ? 'Muscle Building' : 'Balanced Nutrition'}",
+    "includeSnacks": ${includeSnacks}
   },
   "days": [
     {
@@ -78,7 +95,7 @@ Return this EXACT JSON structure:
         {
           "type": "breakfast",
           "name": "Traditional ${nationality} Breakfast",
-          "calories": ${Math.round(dailyCalories * 0.25)},
+          "calories": ${Math.round(dailyCalories * (includeSnacks ? 0.25 : 0.30))},
           "protein": 25,
           "carbs": 45,
           "fat": 15,
@@ -111,11 +128,51 @@ Return this EXACT JSON structure:
           "tips": "Chef tips for best results",
           "nutritionBenefits": "Health benefits of key ingredients",
           "culturalInfo": "Cultural significance and variations"
-        }
+        }${includeSnacks ? `,
+        {
+          "type": "snack1",
+          "name": "Healthy ${nationality} Snack",
+          "calories": ${Math.round(dailyCalories * 0.05)},
+          "protein": 3,
+          "carbs": 8,
+          "fat": 2,
+          "fiber": 2,
+          "sugar": 3,
+          "description": "Light and healthy snack",
+          "imagePrompt": "Professional food photography of healthy snack, beautifully presented",
+          "ingredients": [...],
+          "instructions": [...],
+          "prepTime": 5,
+          "cookTime": 0,
+          "servings": 1,
+          "youtubeSearchTerm": "healthy ${nationality} snack recipe",
+          "cuisine": "${nationality}",
+          "difficulty": "easy"
+        },
+        {
+          "type": "snack2",
+          "name": "Another Healthy ${nationality} Snack",
+          "calories": ${Math.round(dailyCalories * 0.05)},
+          "protein": 3,
+          "carbs": 8,
+          "fat": 2,
+          "fiber": 2,
+          "sugar": 3,
+          "description": "Light and healthy evening snack",
+          "imagePrompt": "Professional food photography of healthy snack, beautifully presented",
+          "ingredients": [...],
+          "instructions": [...],
+          "prepTime": 5,
+          "cookTime": 0,
+          "servings": 1,
+          "youtubeSearchTerm": "healthy ${nationality} evening snack",
+          "cuisine": "${nationality}",
+          "difficulty": "easy"
+        }` : ''}
       ]
     }
   ]
 }
 
-Generate all 7 days following this pattern. Each day must have exactly 5 meals with the specified types. Focus on authentic ${nationality} cuisine while meeting nutritional requirements and avoiding allergens. Make sure YouTube search terms are specific and likely to return actual cooking videos.`;
+Generate all 7 days following this pattern. Each day must have exactly ${mealsPerDay} meals with the specified types. Focus on authentic ${nationality} cuisine while meeting nutritional requirements and avoiding allergens. Make sure YouTube search terms are specific and likely to return actual cooking videos.`;
 };

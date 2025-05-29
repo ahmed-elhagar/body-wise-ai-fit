@@ -40,10 +40,17 @@ serve(async (req) => {
     const dailyCalories = calculateDailyCalories(userProfile);
     console.log('Calculated daily calories:', dailyCalories);
 
-    // Generate AI prompt
-    const prompt = generateMealPlanPrompt(userProfile, preferences, dailyCalories);
+    // Calculate number of meals based on snacks preference
+    const includeSnacks = preferences.includeSnacks !== false; // Default to true
+    const mealsPerDay = includeSnacks ? 5 : 3; // breakfast, lunch, dinner + 2 snacks
+    const totalMeals = mealsPerDay * 7;
+    
+    console.log(`Generating ${totalMeals} meals (${mealsPerDay} meals per day, snacks: ${includeSnacks})`);
 
-    console.log('Sending request to OpenAI...');
+    // Generate AI prompt
+    const prompt = generateMealPlanPrompt(userProfile, preferences, dailyCalories, includeSnacks);
+
+    console.log('Sending request to OpenAI with optimized settings...');
     
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -52,23 +59,26 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-4o-mini', // Faster and cheaper model
         messages: [
           { 
             role: 'system', 
-            content: `You are a professional nutritionist specializing in ${userProfile?.nationality || 'international'} cuisine. Generate EXACTLY 7 days starting from SATURDAY with EXACTLY 5 meals each (35 total meals). Return ONLY valid JSON with no markdown formatting. Focus on authentic cultural dishes with detailed instructions, realistic YouTube search terms, and descriptive image prompts. Each meal must have proper nutritional information and cooking details.` 
+            content: `You are a professional nutritionist specializing in ${userProfile?.nationality || 'international'} cuisine. Generate EXACTLY 7 days starting from SATURDAY with ${includeSnacks ? 'EXACTLY 5 meals each (35 total meals)' : 'EXACTLY 3 meals each (21 total meals)'}. Return ONLY valid JSON with no markdown formatting. Focus on authentic cultural dishes with detailed instructions and realistic YouTube search terms.` 
           },
           { role: 'user', content: prompt }
         ],
-        temperature: 0.2,
-        max_tokens: 16000,
+        temperature: 0.3, // Lower temperature for more consistent results
+        max_tokens: 12000, // Reduced token limit for faster response
+        top_p: 0.9,
+        frequency_penalty: 0.1,
+        presence_penalty: 0.1
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
       console.error('OpenAI API error:', response.status, errorText);
-      throw new Error(`OpenAI API error: ${response.status}`);
+      throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
@@ -109,8 +119,8 @@ serve(async (req) => {
     }
 
     // Validate the meal plan
-    validateMealPlan(generatedPlan);
-    console.log('✅ VALIDATION PASSED - 7 days with 35 total meals confirmed');
+    validateMealPlan(generatedPlan, includeSnacks);
+    console.log(`✅ VALIDATION PASSED - 7 days with ${totalMeals} total meals confirmed`);
     
     // Decrement AI generations BEFORE saving
     const remainingGenerations = await decrementUserGenerations(userProfile, profileData);
@@ -120,7 +130,7 @@ serve(async (req) => {
     const weeklyPlan = await saveWeeklyPlan(userProfile, generatedPlan, preferences, dailyCalories);
     console.log('Weekly plan saved with ID:', weeklyPlan.id);
 
-    // Save all meals with images (this will take time but runs in background)
+    // Save all meals with images (this will take time but runs efficiently)
     console.log('Starting meal saving process...');
     const { totalMealsSaved } = await saveMealsToDatabase(generatedPlan, weeklyPlan.id);
 
@@ -133,7 +143,8 @@ serve(async (req) => {
       weeklyPlanId: weeklyPlan.id,
       totalMeals: totalMealsSaved,
       generationsRemaining: remainingGenerations,
-      message: 'Meal plan generated successfully with images and YouTube links'
+      includeSnacks: includeSnacks,
+      message: `Meal plan generated successfully with ${totalMealsSaved} meals${includeSnacks ? ' including snacks' : ''}`
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

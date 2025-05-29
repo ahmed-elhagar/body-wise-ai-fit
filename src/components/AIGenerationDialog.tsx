@@ -4,13 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sparkles, Loader2, Calendar, Database, Search } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Sparkles, Loader2, Calendar, Database, Apple } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface AIPreferences {
   duration: string;
   cuisine: string;
   maxPrepTime: string;
   mealTypes: string;
+  includeSnacks: boolean;
 }
 
 interface AIGenerationDialogProps {
@@ -30,53 +33,77 @@ const AIGenerationDialog = ({
   onGenerate, 
   isGenerating 
 }: AIGenerationDialogProps) => {
+  const { t } = useLanguage();
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-purple-500" />
-            Generate AI Meal Plan
+            {t('mealPlan.generateAIMealPlan')}
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-2">
               <Calendar className="w-4 h-4 text-purple-600" />
-              <span className="font-medium text-sm text-purple-800">7-Day Complete Plan</span>
+              <span className="font-medium text-sm text-purple-800">{t('mealPlan.sevenDayCompletePlan')}</span>
             </div>
             <p className="text-xs text-purple-700">
-              • 35 meals total (5 meals × 7 days)
-              • Breakfast, lunch, dinner, and 2 snacks daily
-              • Personalized to your profile and preferences
+              • {t('mealPlan.mealsTotal')}
+              • {t('mealPlan.personalizedProfile')}
             </p>
           </div>
 
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-2">
               <Database className="w-4 h-4 text-blue-600" />
-              <span className="font-medium text-sm text-blue-800">Food Database Integration</span>
+              <span className="font-medium text-sm text-blue-800">{t('mealPlan.foodDatabaseIntegration')}</span>
             </div>
             <p className="text-xs text-blue-700">
-              • Automatically populates food database
-              • Enables quick meal searches
-              • Stores nutritional data for future use
+              • {t('mealPlan.automaticallyPopulates')}
+              • {t('mealPlan.enablesQuickSearch')}
+              • {t('mealPlan.storesNutritionalData')}
             </p>
           </div>
 
+          <div className="flex items-center space-x-2 p-3 bg-green-50 rounded-lg border border-green-200">
+            <Checkbox
+              id="includeSnacks"
+              checked={preferences.includeSnacks}
+              onCheckedChange={(checked) => 
+                onPreferencesChange({ ...preferences, includeSnacks: checked as boolean })
+              }
+            />
+            <div className="flex items-center gap-2">
+              <Apple className="w-4 h-4 text-green-600" />
+              <Label htmlFor="includeSnacks" className="text-sm font-medium text-green-800">
+                {t('mealPlan.includeSnacks')}
+              </Label>
+            </div>
+          </div>
+          
+          <p className="text-xs text-gray-600">
+            {preferences.includeSnacks 
+              ? t('mealPlan.withSnacksDesc') 
+              : t('mealPlan.withoutSnacksDesc')
+            }
+          </p>
+
           <div>
-            <Label htmlFor="cuisine">Preferred Cuisine (Optional)</Label>
+            <Label htmlFor="cuisine">{t('mealPlan.preferredCuisine')}</Label>
             <Input
               value={preferences.cuisine}
               onChange={(e) => onPreferencesChange({ ...preferences, cuisine: e.target.value })}
-              placeholder="e.g., Mediterranean, Asian, Italian"
+              placeholder={t('mealPlan.cuisinePlaceholder')}
               className="mt-1"
             />
-            <p className="text-xs text-gray-500 mt-1">Leave empty to use your nationality preference</p>
+            <p className="text-xs text-gray-500 mt-1">{t('mealPlan.leaveEmptyNationality')}</p>
           </div>
           
           <div>
-            <Label htmlFor="maxPrepTime">Max Prep Time (minutes)</Label>
+            <Label htmlFor="maxPrepTime">{t('mealPlan.maxPrepTime')}</Label>
             <Select 
               value={preferences.maxPrepTime} 
               onValueChange={(value) => onPreferencesChange({ ...preferences, maxPrepTime: value })}
@@ -85,10 +112,10 @@ const AIGenerationDialog = ({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="15">15 minutes</SelectItem>
-                <SelectItem value="30">30 minutes</SelectItem>
-                <SelectItem value="60">1 hour</SelectItem>
-                <SelectItem value="120">2 hours</SelectItem>
+                <SelectItem value="15">15 {t('mealPlan.minutes')}</SelectItem>
+                <SelectItem value="30">30 {t('mealPlan.minutes')}</SelectItem>
+                <SelectItem value="60">1 {t('mealPlan.hour')}</SelectItem>
+                <SelectItem value="120">2 {t('mealPlan.hours')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -101,12 +128,12 @@ const AIGenerationDialog = ({
             {isGenerating ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Generating 7-Day Plan...
+                {t('mealPlan.generating')}...
               </>
             ) : (
               <>
                 <Sparkles className="w-4 h-4 mr-2" />
-                Generate 7-Day Meal Plan
+                {t('mealPlan.generateSevenDayPlan')}
               </>
             )}
           </Button>
@@ -114,10 +141,10 @@ const AIGenerationDialog = ({
           {isGenerating && (
             <div className="text-center space-y-2">
               <div className="text-sm text-gray-600">
-                Creating your personalized meal plan...
+                {t('mealPlan.creatingPersonalized')}
               </div>
               <div className="text-xs text-gray-500">
-                This may take 30-60 seconds
+                {t('mealPlan.mayTakeTime')}
               </div>
             </div>
           )}
