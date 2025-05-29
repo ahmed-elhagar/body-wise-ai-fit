@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useDynamicMealPlan } from "@/hooks/useDynamicMealPlan";
 import { useAIMealPlan } from "@/hooks/useAIMealPlan";
-import { getMealPlanWeekDates, getSaturdayOfWeek, getCurrentSaturdayDay } from "@/utils/mealPlanUtils";
+import { getCurrentSaturdayDay, getWeekStartDate } from "@/utils/mealPlanUtils";
 import MealPlanLayout from "@/components/MealPlanLayout";
 import MealPlanLoadingScreen from "@/components/MealPlanLoadingScreen";
 import MealPlanHeader from "@/components/MealPlanHeader";
@@ -35,18 +35,14 @@ const MealPlan = () => {
   const [selectedMealIndex, setSelectedMealIndex] = useState<number>(-1);
 
   const { generateMealPlan, isGenerating } = useAIMealPlan();
+  const { currentWeekPlan, isLoading } = useDynamicMealPlan(currentWeekOffset);
 
-  const weekStartDate = getSaturdayOfWeek(new Date(), currentWeekOffset);
-  const { weekStartDateStr } = getMealPlanWeekDates(weekStartDate);
+  const weekStartDate = getWeekStartDate(currentWeekOffset);
 
-  const {
-    mealPlan,
-    todaysMeals,
-    totalCalories,
-    totalProtein,
-    isLoading,
-    refetch
-  } = useDynamicMealPlan(weekStartDateStr, selectedDayNumber);
+  // Calculate today's meals and totals
+  const todaysMeals = currentWeekPlan?.dailyMeals?.filter(meal => meal.day_number === selectedDayNumber) || [];
+  const totalCalories = todaysMeals.reduce((sum, meal) => sum + (meal.calories || 0), 0);
+  const totalProtein = todaysMeals.reduce((sum, meal) => sum + (meal.protein || 0), 0);
 
   const handleRegeneratePlan = () => {
     setShowAIDialog(true);
@@ -70,6 +66,11 @@ const MealPlan = () => {
 
   const handleFinalizePlan = () => {
     toast.success(t('mealPlan.planFinalized'));
+  };
+
+  const refetch = () => {
+    // Force component re-render by updating state
+    setCurrentWeekOffset(currentWeekOffset);
   };
 
   const currentDate = new Date().toLocaleDateString('en-US', {
@@ -101,8 +102,8 @@ const MealPlan = () => {
           onShowAIDialog={() => setShowAIDialog(true)}
           onRegeneratePlan={handleRegeneratePlan}
           isGenerating={isGenerating}
-          dietType={mealPlan?.weekSummary?.dietType}
-          totalWeeklyCalories={mealPlan?.weekSummary?.totalCalories}
+          dietType={currentWeekPlan?.weeklyPlan?.generation_prompt?.dietType}
+          totalWeeklyCalories={currentWeekPlan?.weeklyPlan?.total_calories}
         />
 
         <WeeklyNavigation
@@ -113,8 +114,8 @@ const MealPlan = () => {
 
         {viewMode === 'daily' && (
           <DaySelector
-            selectedDay={selectedDayNumber.toString()}
-            onDayChange={(day) => setSelectedDayNumber(parseInt(day))}
+            selectedDayNumber={selectedDayNumber}
+            onDayChange={setSelectedDayNumber}
             weekStartDate={weekStartDate}
           />
         )}
@@ -124,14 +125,15 @@ const MealPlan = () => {
           onViewModeChange={setViewMode}
           onAddSnack={() => setShowAddSnackDialog(true)}
           onFinalizePlan={handleFinalizePlan}
-          showAddSnack={viewMode === 'daily' && mealPlan !== null}
+          showAddSnack={viewMode === 'daily' && currentWeekPlan !== null}
         />
 
-        {!mealPlan ? (
-          <EmptyMealPlan onGeneratePlan={() => setShowAIDialog(true)} />
+        {!currentWeekPlan ? (
+          <EmptyMealPlan onGenerate={() => setShowAIDialog(true)} />
         ) : viewMode === 'weekly' ? (
           <WeeklyMealPlanView
-            mealPlan={mealPlan}
+            weeklyPlan={currentWeekPlan.weeklyPlan}
+            dailyMeals={currentWeekPlan.dailyMeals}
             onShowRecipe={handleShowRecipe}
             onExchangeMeal={handleExchangeMeal}
           />
@@ -155,8 +157,8 @@ const MealPlan = () => {
         />
 
         <AddSnackDialog
-          open={showAddSnackDialog}
-          onOpenChange={setShowAddSnackDialog}
+          isOpen={showAddSnackDialog}
+          onClose={() => setShowAddSnackDialog(false)}
           onAddSnack={() => {
             refetch();
             setShowAddSnackDialog(false);
@@ -164,23 +166,23 @@ const MealPlan = () => {
         />
 
         <ShoppingListDialog
-          open={showShoppingListDialog}
-          onOpenChange={setShowShoppingListDialog}
+          isOpen={showShoppingListDialog}
+          onClose={() => setShowShoppingListDialog(false)}
           meals={todaysMeals}
         />
 
         {selectedMeal && (
           <MealRecipeDialog
-            open={showRecipeDialog}
-            onOpenChange={setShowRecipeDialog}
+            isOpen={showRecipeDialog}
+            onClose={() => setShowRecipeDialog(false)}
             meal={selectedMeal}
           />
         )}
 
         {selectedMeal && (
           <MealExchangeDialog
-            open={showExchangeDialog}
-            onOpenChange={setShowExchangeDialog}
+            isOpen={showExchangeDialog}
+            onClose={() => setShowExchangeDialog(false)}
             currentMeal={selectedMeal}
             onExchange={() => {
               refetch();
