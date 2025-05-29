@@ -1,19 +1,20 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Loader2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Calculator, Scale, Clock } from "lucide-react";
 
 interface AddFoodDialogProps {
   isOpen: boolean;
   onClose: () => void;
   selectedFood: any;
-  onLogFood: (logData: any) => void;
+  onLogFood: (data: any) => void;
   isLogging: boolean;
 }
 
@@ -22,16 +23,22 @@ const AddFoodDialog = ({ isOpen, onClose, selectedFood, onLogFood, isLogging }: 
   const [mealType, setMealType] = useState<string>("snack");
   const [notes, setNotes] = useState<string>("");
 
-  const handleLogFood = () => {
-    if (!selectedFood) return;
+  if (!selectedFood) return null;
 
-    const factor = quantity / 100;
-    const calories = Math.round(selectedFood.calories_per_100g * factor);
-    const protein = Math.round(selectedFood.protein_per_100g * factor * 10) / 10;
-    const carbs = Math.round(selectedFood.carbs_per_100g * factor * 10) / 10;
-    const fat = Math.round(selectedFood.fat_per_100g * factor * 10) / 10;
+  // Calculate nutrition based on quantity
+  const calculateNutrition = (baseValue: number, quantity: number) => {
+    return Math.round((baseValue * quantity / 100) * 10) / 10;
+  };
 
-    onLogFood({
+  const calories = calculateNutrition(selectedFood.calories_per_100g || 0, quantity);
+  const protein = calculateNutrition(selectedFood.protein_per_100g || 0, quantity);
+  const carbs = calculateNutrition(selectedFood.carbs_per_100g || 0, quantity);
+  const fat = calculateNutrition(selectedFood.fat_per_100g || 0, quantity);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const logData = {
       foodItemId: selectedFood.id,
       quantity,
       mealType,
@@ -39,121 +46,158 @@ const AddFoodDialog = ({ isOpen, onClose, selectedFood, onLogFood, isLogging }: 
       calories,
       protein,
       carbs,
-      fat
-    });
+      fat,
+      // Include meal data if this is from meal plan
+      mealData: selectedFood._mealData || null
+    };
 
-    // Reset form
-    setQuantity(100);
-    setMealType("snack");
-    setNotes("");
+    onLogFood(logData);
   };
+
+  const mealTypes = [
+    { value: 'breakfast', label: 'Breakfast' },
+    { value: 'lunch', label: 'Lunch' },
+    { value: 'dinner', label: 'Dinner' },
+    { value: 'snack', label: 'Snack' }
+  ];
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md mx-4">
+      <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Plus className="w-5 h-5" />
-            Log Food
+            <Scale className="w-5 h-5 text-blue-600" />
+            Log Food Consumption
           </DialogTitle>
         </DialogHeader>
 
-        {selectedFood && (
-          <div className="space-y-4">
-            {/* Food Info */}
-            <Card className="p-3 bg-gray-50">
-              <h3 className="font-medium text-gray-900 mb-2 text-sm">{selectedFood.name}</h3>
-              <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
-                <span>{selectedFood.calories_per_100g} cal/100g</span>
-                <span>{selectedFood.protein_per_100g}g protein</span>
-                <span>{selectedFood.carbs_per_100g}g carbs</span>
-                <span>{selectedFood.fat_per_100g}g fat</span>
-              </div>
-            </Card>
-
-            {/* Quantity */}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Food Summary */}
+          <Card className="p-4 bg-gray-50 border border-gray-200">
             <div className="space-y-2">
-              <Label htmlFor="quantity" className="text-sm">Quantity (grams)</Label>
+              <h3 className="font-semibold text-gray-900">{selectedFood.name}</h3>
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="outline" className="text-xs">
+                  {selectedFood.category || 'Food'}
+                </Badge>
+                {selectedFood.verified && (
+                  <Badge variant="default" className="text-xs bg-green-100 text-green-700">
+                    Verified
+                  </Badge>
+                )}
+              </div>
+              {selectedFood.serving_description && (
+                <p className="text-xs text-gray-600">
+                  Default: {selectedFood.serving_description}
+                </p>
+              )}
+            </div>
+          </Card>
+
+          {/* Quantity Input */}
+          <div className="space-y-2">
+            <Label htmlFor="quantity">Quantity (grams)</Label>
+            <div className="relative">
               <Input
                 id="quantity"
                 type="number"
                 value={quantity}
-                onChange={(e) => setQuantity(Number(e.target.value))}
+                onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
                 min="1"
-                max="2000"
-                className="text-sm"
+                step="1"
+                className="pr-8"
               />
-            </div>
-
-            {/* Meal Type */}
-            <div className="space-y-2">
-              <Label htmlFor="meal-type" className="text-sm">Meal Type</Label>
-              <Select value={mealType} onValueChange={setMealType}>
-                <SelectTrigger className="text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="breakfast">Breakfast</SelectItem>
-                  <SelectItem value="lunch">Lunch</SelectItem>
-                  <SelectItem value="dinner">Dinner</SelectItem>
-                  <SelectItem value="snack">Snack</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Notes */}
-            <div className="space-y-2">
-              <Label htmlFor="notes" className="text-sm">Notes (optional)</Label>
-              <Textarea
-                id="notes"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Any additional notes..."
-                rows={2}
-                className="text-sm"
-              />
-            </div>
-
-            {/* Calculated Nutrition */}
-            <Card className="p-3 bg-blue-50 border-blue-200">
-              <h4 className="font-medium text-blue-900 mb-2 text-sm">For {quantity}g serving:</h4>
-              <div className="grid grid-cols-2 gap-2 text-xs text-blue-800">
-                <span>{Math.round(selectedFood.calories_per_100g * quantity / 100)} calories</span>
-                <span>{Math.round(selectedFood.protein_per_100g * quantity / 10) / 10}g protein</span>
-                <span>{Math.round(selectedFood.carbs_per_100g * quantity / 10) / 10}g carbs</span>
-                <span>{Math.round(selectedFood.fat_per_100g * quantity / 10) / 10}g fat</span>
-              </div>
-            </Card>
-
-            {/* Actions */}
-            <div className="flex gap-3 pt-2">
-              <Button
-                variant="outline"
-                onClick={onClose}
-                className="flex-1 text-sm"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleLogFood}
-                disabled={isLogging}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-sm"
-              >
-                {isLogging ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Logging...
-                  </>
-                ) : (
-                  <>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Log Food
-                  </>
-                )}
-              </Button>
+              <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-gray-500">
+                g
+              </span>
             </div>
           </div>
-        )}
+
+          {/* Meal Type */}
+          <div className="space-y-2">
+            <Label htmlFor="mealType">Meal Type</Label>
+            <Select value={mealType} onValueChange={setMealType}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select meal type" />
+              </SelectTrigger>
+              <SelectContent>
+                {mealTypes.map((type) => (
+                  <SelectItem key={type.value} value={type.value}>
+                    {type.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Calculated Nutrition */}
+          <Card className="p-4 bg-blue-50 border border-blue-200">
+            <div className="flex items-center gap-2 mb-3">
+              <Calculator className="w-4 h-4 text-blue-600" />
+              <h4 className="font-semibold text-blue-900">Nutrition for {quantity}g</h4>
+            </div>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="flex justify-between">
+                <span className="text-blue-700">Calories:</span>
+                <span className="font-semibold text-blue-900">{calories}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-blue-700">Protein:</span>
+                <span className="font-semibold text-blue-900">{protein}g</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-blue-700">Carbs:</span>
+                <span className="font-semibold text-blue-900">{carbs}g</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-blue-700">Fat:</span>
+                <span className="font-semibold text-blue-900">{fat}g</span>
+              </div>
+            </div>
+          </Card>
+
+          {/* Notes */}
+          <div className="space-y-2">
+            <Label htmlFor="notes">Notes (optional)</Label>
+            <Textarea
+              id="notes"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Add any notes about this meal..."
+              rows={3}
+            />
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-3 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              className="flex-1"
+              disabled={isLogging}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              className="flex-1"
+              disabled={isLogging}
+            >
+              {isLogging ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full" />
+                  Logging...
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  Log Food
+                </div>
+              )}
+            </Button>
+          </div>
+        </form>
       </DialogContent>
     </Dialog>
   );

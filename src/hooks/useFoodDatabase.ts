@@ -100,6 +100,52 @@ export const useFoodDatabase = () => {
     enabled: !!user?.id,
   });
 
+  // Add meal to food_items table if it doesn't exist
+  const ensureMealInFoodItems = async (meal: any) => {
+    // Check if meal already exists in food_items
+    const { data: existing, error: checkError } = await supabase
+      .from('food_items')
+      .select('id')
+      .eq('name', meal.name)
+      .maybeSingle();
+
+    if (checkError) {
+      console.error('Error checking existing meal:', checkError);
+      throw checkError;
+    }
+
+    if (existing) {
+      return existing.id;
+    }
+
+    // Add meal to food_items table
+    const { data: newFood, error: insertError } = await supabase
+      .from('food_items')
+      .insert({
+        name: meal.name,
+        category: 'meal',
+        cuisine_type: 'general',
+        calories_per_100g: Math.round((meal.calories || 0) / ((meal.servings || 1) * 100) * 100),
+        protein_per_100g: Math.round((meal.protein || 0) / ((meal.servings || 1) * 100) * 100 * 10) / 10,
+        carbs_per_100g: Math.round((meal.carbs || 0) / ((meal.servings || 1) * 100) * 100 * 10) / 10,
+        fat_per_100g: Math.round((meal.fat || 0) / ((meal.servings || 1) * 100) * 100 * 10) / 10,
+        serving_size_g: 100 * (meal.servings || 1),
+        serving_description: `${meal.servings || 1} serving(s)`,
+        source: 'meal_plan',
+        confidence_score: 0.9,
+        verified: false
+      })
+      .select()
+      .single();
+
+    if (insertError) {
+      console.error('Error inserting meal:', insertError);
+      throw insertError;
+    }
+
+    return newFood.id;
+  };
+
   // Add to favorites
   const addToFavoritesMutation = useMutation({
     mutationFn: async ({ foodItemId, customName, customServingSize, notes }: {
@@ -172,7 +218,8 @@ export const useFoodDatabase = () => {
       protein,
       carbs,
       fat,
-      source = 'manual'
+      source = 'manual',
+      mealData
     }: {
       foodItemId: string;
       quantity: number;
@@ -183,12 +230,25 @@ export const useFoodDatabase = () => {
       carbs: number;
       fat: number;
       source?: string;
+      mealData?: any;
     }) => {
       if (!user?.id) throw new Error('User not authenticated');
 
-      console.log('Logging consumption:', {
+      let actualFoodItemId = foodItemId;
+
+      // If this is a meal from meal plan (has meal- prefix), ensure it exists in food_items
+      if (foodItemId.startsWith('meal-') && mealData) {
+        try {
+          actualFoodItemId = await ensureMealInFoodItems(mealData);
+        } catch (error) {
+          console.error('Failed to ensure meal in food_items:', error);
+          throw new Error('Failed to add meal to database');
+        }
+      }
+
+      console.log('Logging consumption with actual food ID:', {
         user_id: user.id,
-        food_item_id: foodItemId,
+        food_item_id: actualFoodItemId,
         quantity_g: quantity,
         meal_type: mealType,
         calories_consumed: calories,
@@ -203,7 +263,7 @@ export const useFoodDatabase = () => {
         .from('food_consumption_log')
         .insert({
           user_id: user.id,
-          food_item_id: foodItemId,
+          food_item_id: actualFoodItemId,
           quantity_g: quantity,
           meal_type: mealType,
           calories_consumed: calories,
@@ -242,6 +302,7 @@ export const useFoodDatabase = () => {
     logConsumption: logConsumptionMutation.mutate,
     isAddingToFavorites: addToFavoritesMutation.isPending,
     isRemovingFromFavorites: removeFromFavoritesMutation.isPending,
-    isLoggingConsumption: logConsumptionMutation.isPending
+    isLoggingConsumption: logConsumptionMutation.isPending,
+    ensureMealInFoodItems
   };
 };

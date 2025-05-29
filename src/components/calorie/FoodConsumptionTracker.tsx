@@ -123,6 +123,25 @@ const FoodConsumptionTracker = ({ onSelectFood }: FoodConsumptionTrackerProps) =
     }
   };
 
+  const handleAddMealPlanItem = (meal: any) => {
+    if (onSelectFood) {
+      // Pass the meal data with proper structure for the food database
+      const foodData = {
+        id: meal.id, // Use the actual meal ID from daily_meals
+        name: meal.name,
+        calories_per_100g: Math.round((meal.calories || 0) / ((meal.servings || 1) * 100) * 100),
+        protein_per_100g: Math.round((meal.protein || 0) / ((meal.servings || 1) * 100) * 100 * 10) / 10,
+        carbs_per_100g: Math.round((meal.carbs || 0) / ((meal.servings || 1) * 100) * 100 * 10) / 10,
+        fat_per_100g: Math.round((meal.fat || 0) / ((meal.servings || 1) * 100) * 100 * 10) / 10,
+        category: 'meal',
+        serving_description: `${meal.servings || 1} serving(s)`,
+        // Include original meal data for processing
+        _mealData: meal
+      };
+      onSelectFood(foodData);
+    }
+  };
+
   if (isLoading) {
     return (
       <Card className="p-6">
@@ -225,14 +244,7 @@ const FoodConsumptionTracker = ({ onSelectFood }: FoodConsumptionTrackerProps) =
                     size="sm"
                     variant="outline"
                     className="text-xs px-3 py-1 h-auto ml-2"
-                    onClick={() => onSelectFood && onSelectFood({
-                      id: `meal-${meal.id}`,
-                      name: meal.name,
-                      calories_per_100g: meal.calories || 0,
-                      protein_per_100g: meal.protein || 0,
-                      carbs_per_100g: meal.carbs || 0,
-                      fat_per_100g: meal.fat || 0
-                    })}
+                    onClick={() => handleAddMealPlanItem(meal)}
                   >
                     <Plus className="w-3 h-3 mr-1" />
                     Add

@@ -41,7 +41,7 @@ export const saveMealsToDatabase = async (generatedPlan: AIGeneratedPlan, weekly
     
     for (const meal of day.meals) {
       try {
-        // Save meal to centralized food_items table
+        // First, save/update meal in centralized food_items table
         const { data: foodItem, error: foodError } = await supabase
           .from('food_items')
           .upsert({
@@ -68,7 +68,9 @@ export const saveMealsToDatabase = async (generatedPlan: AIGeneratedPlan, weekly
 
         if (foodError) {
           console.error(`Error saving food item "${meal.name}":`, foodError);
-          // Continue with daily meal even if food item fails
+          // Continue with daily meal even if food item save fails
+        } else {
+          console.log(`✅ Saved to centralized food_items: ${meal.name} (ID: ${foodItem.id})`);
         }
 
         // Save the daily meal reference
@@ -98,7 +100,7 @@ export const saveMealsToDatabase = async (generatedPlan: AIGeneratedPlan, weekly
           failedMeals++;
         } else {
           totalMealsSaved++;
-          console.log(`✅ Saved meal to centralized database: ${meal.name} (${meal.calories} cal)`);
+          console.log(`✅ Saved meal to daily_meals: ${meal.name} (${meal.calories} cal)`);
         }
       } catch (error) {
         console.error(`Failed to process meal "${meal.name}":`, error);
