@@ -20,12 +20,10 @@ interface MealPlanPageContentProps {
   setSelectedDayNumber: (day: number) => void;
   viewMode: 'daily' | 'weekly';
   setViewMode: (mode: 'daily' | 'weekly') => void;
-  setShowAddSnackDialog: (show: boolean) => void;
   currentWeekPlan: any;
   todaysMeals: any[];
   totalCalories: number;
   totalProtein: number;
-  setShowShoppingListDialog: (show: boolean) => void;
   handleShowRecipe: (meal: any) => void;
   handleExchangeMeal: (meal: any, index: number) => void;
   showAIDialog: boolean;

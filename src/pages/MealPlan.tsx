@@ -88,12 +88,10 @@ const MealPlan = () => {
       setSelectedDayNumber={setSelectedDayNumber}
       viewMode={viewMode}
       setViewMode={setViewMode}
-      setShowAddSnackDialog={setShowAddSnackDialog}
       currentWeekPlan={currentWeekPlan}
       todaysMeals={todaysMeals}
       totalCalories={totalCalories}
       totalProtein={totalProtein}
-      setShowShoppingListDialog={setShowShoppingListDialog}
       handleShowRecipe={handleShowRecipe}
       handleExchangeMeal={handleExchangeMeal}
       showAIDialog={showAIDialog}
