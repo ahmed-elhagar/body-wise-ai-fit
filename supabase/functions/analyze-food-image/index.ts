@@ -1,17 +1,16 @@
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const supabase = createClient(
-  Deno.env.get('SUPABASE_URL') ?? '',
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-);
+const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -26,7 +25,40 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    console.log('Analyzing food image for user:', userId);
+    console.log('=== FOOD IMAGE ANALYSIS START ===');
+    console.log('User ID:', userId);
+    console.log('Image size:', imageBase64?.length || 0);
+
+    // Enhanced prompt to match our unified database structure
+    const prompt = `Analyze this food image and return ONLY a JSON object with this exact structure:
+
+{
+  "foodItems": [
+    {
+      "name": "exact food name",
+      "category": "protein|vegetables|fruits|grains|dairy|nuts|beverages|snacks|general",
+      "cuisine": "cuisine type",
+      "calories": number_per_100g,
+      "protein": number_per_100g,
+      "carbs": number_per_100g,
+      "fat": number_per_100g,
+      "fiber": number_per_100g,
+      "sugar": number_per_100g,
+      "quantity": "estimated serving description"
+    }
+  ],
+  "overallConfidence": 0.8,
+  "cuisineType": "general",
+  "suggestions": "brief analysis tips"
+}
+
+CRITICAL REQUIREMENTS:
+1. Return ONLY valid JSON, no explanations
+2. All nutrition values must be per 100g
+3. Use exact category names from the list above
+4. Include 1-5 food items maximum
+5. Make realistic nutrition estimates
+6. Confidence should be 0.1-1.0`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -38,119 +70,123 @@ serve(async (req) => {
         model: 'gpt-4o',
         messages: [
           {
-            role: 'system',
-            content: `You are a professional nutritionist and food recognition expert. Analyze food images with high accuracy and provide detailed nutritional breakdowns.
-
-IMPORTANT: 
-- Be very precise with portion size estimates
-- Consider cooking methods and preparation styles
-- Account for hidden ingredients (oils, sauces, seasonings)
-- Provide realistic calorie and macro estimates
-- Always respond with valid JSON only, no markdown formatting`
-          },
-          {
             role: 'user',
             content: [
-              {
-                type: 'text',
-                text: `Analyze this food image in detail. Identify each food item, estimate portions accurately, and provide comprehensive nutritional information. 
-
-Return this exact JSON structure:
-{
-  "foodItems": [
-    {
-      "name": "specific food item name",
-      "quantity": "estimated portion with unit",
-      "calories": number,
-      "protein": number,
-      "carbs": number,
-      "fat": number,
-      "fiber": number,
-      "sugar": number,
-      "confidence": number (0-1)
-    }
-  ],
-  "totalNutrition": {
-    "calories": total_number,
-    "protein": total_number,
-    "carbs": total_number,
-    "fat": total_number,
-    "fiber": total_number,
-    "sugar": total_number
-  },
-  "overallConfidence": number (0-1),
-  "recommendations": "specific dietary advice based on this meal",
-  "mealType": "breakfast/lunch/dinner/snack",
-  "cuisineType": "cuisine identification"
-}`
-              },
+              { type: 'text', text: prompt },
               {
                 type: 'image_url',
-                image_url: {
-                  url: imageBase64,
-                  detail: 'high'
-                }
+                image_url: { url: imageBase64 }
               }
             ]
           }
         ],
-        max_tokens: 1500,
-        temperature: 0.3,
+        max_tokens: 1000,
+        temperature: 0.1,
       }),
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('OpenAI API error:', response.status, errorText);
       throw new Error(`OpenAI API error: ${response.status}`);
     }
 
     const data = await response.json();
-    let content = data.choices[0].message.content.trim();
-    
-    // Remove markdown formatting if present
-    content = content.replace(/```json\s*/g, '').replace(/```\s*$/g, '').trim();
-    
-    const analysis = JSON.parse(content);
+    console.log('✅ OpenAI response received');
 
-    // Store each food item in the database for future reference
-    if (analysis.foodItems && userId) {
+    if (!data.choices?.[0]?.message?.content) {
+      throw new Error('Invalid response from OpenAI API');
+    }
+
+    // Parse the analysis
+    let analysis;
+    try {
+      const content = data.choices[0].message.content.trim();
+      console.log('Raw OpenAI content:', content.substring(0, 500));
+      
+      // Clean up JSON response
+      let cleanedContent = content
+        .replace(/```json\n?/g, '')
+        .replace(/```\n?/g, '')
+        .trim();
+      
+      // Find JSON boundaries
+      const firstBrace = cleanedContent.indexOf('{');
+      const lastBrace = cleanedContent.lastIndexOf('}');
+      
+      if (firstBrace !== -1 && lastBrace !== -1) {
+        cleanedContent = cleanedContent.substring(firstBrace, lastBrace + 1);
+      }
+      
+      analysis = JSON.parse(cleanedContent);
+      console.log('✅ Parsed analysis:', analysis);
+      
+    } catch (parseError) {
+      console.error('Failed to parse analysis:', parseError);
+      throw new Error('Failed to parse AI analysis response');
+    }
+
+    // Store analyzed food items in the unified database
+    if (analysis.foodItems && Array.isArray(analysis.foodItems)) {
       for (const foodItem of analysis.foodItems) {
         try {
-          await supabase
-            .from('food_database')
-            .upsert({
-              name: foodItem.name.toLowerCase(),
-              calories_per_unit: foodItem.calories,
-              protein_per_unit: foodItem.protein,
-              carbs_per_unit: foodItem.carbs,
-              fat_per_unit: foodItem.fat,
-              fiber_per_unit: foodItem.fiber || 0,
-              sugar_per_unit: foodItem.sugar || 0,
-              unit_type: 'serving',
-              source: 'ai_analysis',
-              confidence_score: foodItem.confidence || analysis.overallConfidence || 0.8,
-              cuisine_type: analysis.cuisineType || 'general',
-              last_analyzed: new Date().toISOString()
-            }, { 
-              onConflict: 'name',
-              ignoreDuplicates: false 
-            });
+          const { data: existingFood } = await supabase
+            .from('food_items')
+            .select('id')
+            .eq('name', foodItem.name)
+            .single();
+
+          if (!existingFood) {
+            await supabase
+              .from('food_items')
+              .insert({
+                name: foodItem.name || 'Unknown Food',
+                category: foodItem.category || 'general',
+                cuisine_type: foodItem.cuisine || analysis.cuisineType || 'general',
+                calories_per_100g: Number(foodItem.calories) || 0,
+                protein_per_100g: Number(foodItem.protein) || 0,
+                carbs_per_100g: Number(foodItem.carbs) || 0,
+                fat_per_100g: Number(foodItem.fat) || 0,
+                fiber_per_100g: Number(foodItem.fiber) || 0,
+                sugar_per_100g: Number(foodItem.sugar) || 0,
+                serving_size_g: 100,
+                serving_description: foodItem.quantity || '100g serving',
+                confidence_score: Number(analysis.overallConfidence) || 0.8,
+                source: 'ai_scan',
+                verified: false,
+                created_by_user_id: userId,
+                ai_generation_data: {
+                  analysisDate: new Date().toISOString(),
+                  confidence: analysis.overallConfidence,
+                  cuisine: analysis.cuisineType
+                }
+              });
+            console.log('✅ Stored food item:', foodItem.name);
+          }
         } catch (dbError) {
-          console.error('Error storing food item:', foodItem.name, dbError);
+          console.error('Error storing food item:', dbError);
+          // Continue with other items even if one fails
         }
       }
     }
 
+    console.log('✅ FOOD IMAGE ANALYSIS COMPLETE');
+
     return new Response(JSON.stringify({ 
-      analysis: {
-        ...analysis,
-        imageData: imageBase64 // Include image for display
-      }
+      success: true,
+      analysis: analysis
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
+
   } catch (error) {
-    console.error('Error analyzing food image:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error('=== FOOD ANALYSIS FAILED ===');
+    console.error('Error details:', error);
+    
+    return new Response(JSON.stringify({ 
+      success: false,
+      error: error.message || 'Failed to analyze food image'
+    }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

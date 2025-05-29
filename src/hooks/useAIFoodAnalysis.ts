@@ -52,38 +52,6 @@ export const useAIFoodAnalysis = () => {
           response_data_param: data.analysis
         });
 
-        // Store analyzed food items in the new food_items table
-        if (data.analysis?.foodItems && Array.isArray(data.analysis.foodItems)) {
-          for (const foodItem of data.analysis.foodItems) {
-            try {
-              await supabase
-                .from('food_items')
-                .upsert({
-                  name: foodItem.name || 'Unknown Food',
-                  category: foodItem.category || 'general',
-                  cuisine_type: data.analysis.cuisineType || 'general',
-                  calories_per_100g: Number(foodItem.calories) || 0,
-                  protein_per_100g: Number(foodItem.protein) || 0,
-                  carbs_per_100g: Number(foodItem.carbs) || 0,
-                  fat_per_100g: Number(foodItem.fat) || 0,
-                  fiber_per_100g: Number(foodItem.fiber) || 0,
-                  sugar_per_100g: Number(foodItem.sugar) || 0,
-                  serving_size_g: 100,
-                  serving_description: foodItem.quantity || '100g serving',
-                  confidence_score: Number(data.analysis.overallConfidence) || 0.7,
-                  source: 'ai_analysis',
-                  verified: false
-                }, { 
-                  onConflict: 'name',
-                  ignoreDuplicates: true 
-                });
-            } catch (dbError) {
-              console.error('Error storing food item:', dbError);
-              // Continue with other items even if one fails
-            }
-          }
-        }
-
         return {
           ...data.analysis,
           remainingCredits: (creditResult.remaining || 0) - 1

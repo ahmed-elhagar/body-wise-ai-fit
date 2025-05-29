@@ -1,7 +1,6 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Camera, Search, Heart, BarChart3, Menu, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";

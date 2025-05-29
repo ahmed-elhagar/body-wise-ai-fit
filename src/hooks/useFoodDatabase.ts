@@ -22,13 +22,20 @@ interface FoodItem {
   confidence_score: number;
   verified: boolean;
   image_url?: string;
+  source: string;
+  ingredients?: any[];
+  instructions?: any[];
+  prep_time?: number;
+  cook_time?: number;
+  servings?: number;
+  created_by_user_id?: string;
 }
 
 export const useFoodDatabase = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  // Search food items
+  // Search food items using the updated function
   const searchFoodItems = (searchTerm: string, category?: string) => {
     return useQuery({
       queryKey: ['food-search', searchTerm, category],
@@ -151,7 +158,8 @@ export const useFoodDatabase = () => {
       calories,
       protein,
       carbs,
-      fat
+      fat,
+      source = 'manual'
     }: {
       foodItemId: string;
       quantity: number;
@@ -161,6 +169,7 @@ export const useFoodDatabase = () => {
       protein: number;
       carbs: number;
       fat: number;
+      source?: string;
     }) => {
       if (!user?.id) throw new Error('User not authenticated');
 
@@ -176,7 +185,7 @@ export const useFoodDatabase = () => {
           carbs_consumed: carbs,
           fat_consumed: fat,
           notes,
-          source: 'manual'
+          source
         })
         .select()
         .single();
