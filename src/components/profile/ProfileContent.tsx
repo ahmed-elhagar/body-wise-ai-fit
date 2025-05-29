@@ -1,6 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 import BasicInfoCard from "./BasicInfoCard";
 import HealthGoalsCard from "./HealthGoalsCard";
 import AccountSettingsCard from "./AccountSettingsCard";
@@ -36,6 +37,8 @@ const ProfileContent = ({
   handleEditGoals,
   isUpdating,
 }: ProfileContentProps) => {
+  const { t } = useLanguage();
+
   return (
     <div className="space-y-6">
       {activeTab === "overview" && !isEditMode && (
@@ -58,7 +61,7 @@ const ProfileContent = ({
                 variant="outline"
                 className="w-full lg:w-auto"
               >
-                Cancel
+                {t('cancel')}
               </Button>
               <Button 
                 onClick={handleSave}
@@ -68,10 +71,10 @@ const ProfileContent = ({
                 {isUpdating ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Saving...
+                    {t('saving')}...
                   </>
                 ) : (
-                  'Save Changes'
+                  t('save')
                 )}
               </Button>
             </div>
@@ -96,7 +99,7 @@ const ProfileContent = ({
                 variant="outline"
                 className="w-full lg:w-auto"
               >
-                Cancel
+                {t('cancel')}
               </Button>
               <Button 
                 onClick={handleSave}
@@ -106,10 +109,10 @@ const ProfileContent = ({
                 {isUpdating ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Saving...
+                    {t('saving')}...
                   </>
                 ) : (
-                  'Save Changes'
+                  t('save')
                 )}
               </Button>
             </div>

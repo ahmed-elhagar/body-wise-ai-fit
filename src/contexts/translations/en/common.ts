@@ -101,4 +101,16 @@ export const commonTranslations = {
   'goals': 'Goals',
   'preferencesSettings': 'Preferences & Settings',
   'configureAppPreferences': 'Configure your app preferences, notification settings, and privacy options.',
+  
+  // Profile specific
+  'yourProfile': 'Your Profile',
+  'editProfile': 'Edit Profile',
+  'profileOverview': 'Profile Overview',
+  'personalInformation': 'Personal Information',
+  'physicalStats': 'Physical Stats',
+  'healthGoals': 'Health & Goals',
+  'accountSettings': 'Account Settings',
+  'saveChanges': 'Save Changes',
+  'viewPersonalInfo': 'View your personal information and preferences',
+  'updatePersonalInfo': 'Update your personal information and preferences',
 };

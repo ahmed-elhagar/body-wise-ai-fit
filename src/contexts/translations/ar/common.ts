@@ -101,4 +101,16 @@ export const commonTranslations = {
   'goals': 'الأهداف',
   'preferencesSettings': 'التفضيلات والإعدادات',
   'configureAppPreferences': 'قم بتكوين تفضيلات التطبيق وإعدادات الإشعارات وخيارات الخصوصية.',
+  
+  // Profile specific
+  'yourProfile': 'ملفك الشخصي',
+  'editProfile': 'تعديل الملف الشخصي',
+  'profileOverview': 'نظرة عامة على الملف الشخصي',
+  'personalInformation': 'المعلومات الشخصية',
+  'physicalStats': 'الإحصائيات الجسدية',
+  'healthGoals': 'الأهداف الصحية',
+  'accountSettings': 'إعدادات الحساب',
+  'saveChanges': 'حفظ التغييرات',
+  'viewPersonalInfo': 'عرض معلوماتك الشخصية وتفضيلاتك',
+  'updatePersonalInfo': 'تحديث معلوماتك الشخصية وتفضيلاتك',
 };

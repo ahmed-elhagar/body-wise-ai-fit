@@ -10,10 +10,12 @@ import ProfilePromotionCard from "@/components/profile/ProfilePromotionCard";
 import ProfileContent from "@/components/profile/ProfileContent";
 import ProfileLoadingState from "@/components/profile/ProfileLoadingState";
 import { useProfileForm } from "@/hooks/useProfileForm";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Profile = () => {
   const { user, isAdmin } = useAuth();
   const { profile, isLoading } = useProfile();
+  const { isRTL } = useLanguage();
   const [activeTab, setActiveTab] = useState("overview");
   const [isEditMode, setIsEditMode] = useState(false);
 
@@ -44,43 +46,46 @@ const Profile = () => {
   return (
     <ProtectedRoute requireProfile>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-        <SidebarProvider>
-          <div className="min-h-screen flex w-full">
-            <ProfileAppSidebar 
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
-              formData={formData}
-              user={user}
-              isAdmin={isAdmin}
-              isEditMode={isEditMode}
-              setIsEditMode={setIsEditMode}
-            />
-            <SidebarInset className="flex-1">
-              <div className="w-full max-w-4xl mx-auto px-4 py-6">
-                <ProfileHeader isEditMode={isEditMode} />
-                
-                <ProfilePromotionCard 
-                  profileCompleteness={profileCompleteness} 
-                />
+        {/* Account for main navigation */}
+        <div className={`${isRTL ? 'mr-16 lg:mr-64' : 'ml-16 lg:ml-64'} min-h-screen`}>
+          <SidebarProvider>
+            <div className="flex w-full min-h-screen">
+              <ProfileAppSidebar 
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                formData={formData}
+                user={user}
+                isAdmin={isAdmin}
+                isEditMode={isEditMode}
+                setIsEditMode={setIsEditMode}
+              />
+              <SidebarInset className="flex-1">
+                <div className="w-full max-w-4xl mx-auto px-4 py-6">
+                  <ProfileHeader isEditMode={isEditMode} />
+                  
+                  <ProfilePromotionCard 
+                    profileCompleteness={profileCompleteness} 
+                  />
 
-                <ProfileContent
-                  activeTab={activeTab}
-                  isEditMode={isEditMode}
-                  formData={formData}
-                  user={user}
-                  updateFormData={updateFormData}
-                  handleArrayInput={handleArrayInput}
-                  handleSave={handleSave}
-                  setIsEditMode={setIsEditMode}
-                  setActiveTab={setActiveTab}
-                  handleEditProfile={handleEditProfile}
-                  handleEditGoals={handleEditGoals}
-                  isUpdating={isUpdating}
-                />
-              </div>
-            </SidebarInset>
-          </div>
-        </SidebarProvider>
+                  <ProfileContent
+                    activeTab={activeTab}
+                    isEditMode={isEditMode}
+                    formData={formData}
+                    user={user}
+                    updateFormData={updateFormData}
+                    handleArrayInput={handleArrayInput}
+                    handleSave={handleSave}
+                    setIsEditMode={setIsEditMode}
+                    setActiveTab={setActiveTab}
+                    handleEditProfile={handleEditProfile}
+                    handleEditGoals={handleEditGoals}
+                    isUpdating={isUpdating}
+                  />
+                </div>
+              </SidebarInset>
+            </div>
+          </SidebarProvider>
+        </div>
       </div>
     </ProtectedRoute>
   );

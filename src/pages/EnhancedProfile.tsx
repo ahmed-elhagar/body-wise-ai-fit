@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useEnhancedProfile } from "@/hooks/useEnhancedProfile";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useLanguage } from "@/contexts/LanguageContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import EnhancedProfileMobileLayout from "@/components/profile/enhanced/EnhancedProfileMobileLayout";
 import EnhancedProfileDesktopLayout from "@/components/profile/enhanced/EnhancedProfileDesktopLayout";
@@ -17,6 +18,7 @@ import EnhancedProfileOverview from "@/components/profile/enhanced/EnhancedProfi
 const EnhancedProfile = () => {
   const { user } = useAuth();
   const { isLoading } = useProfile();
+  const { isRTL } = useLanguage();
   const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState("overview");
 
@@ -107,26 +109,29 @@ const EnhancedProfile = () => {
 
   return (
     <ProtectedRoute requireProfile>
-      {isMobile ? (
-        <EnhancedProfileMobileLayout
-          currentStep={activeTab}
-          onStepChange={setActiveTab}
-        >
-          {renderTabContent()}
-        </EnhancedProfileMobileLayout>
-      ) : (
-        <EnhancedProfileDesktopLayout onStepClick={handleStepClick}>
-          <EnhancedProfileTabs
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            formData={formData}
-            updateFormData={updateFormData}
-            handleArrayInput={handleArrayInput}
-            handleSave={saveBasicInfo}
-            isUpdating={isUpdating}
-          />
-        </EnhancedProfileDesktopLayout>
-      )}
+      {/* Account for main navigation */}
+      <div className={`${isRTL ? 'mr-16 lg:mr-64' : 'ml-16 lg:ml-64'} min-h-screen`}>
+        {isMobile ? (
+          <EnhancedProfileMobileLayout
+            currentStep={activeTab}
+            onStepChange={setActiveTab}
+          >
+            {renderTabContent()}
+          </EnhancedProfileMobileLayout>
+        ) : (
+          <EnhancedProfileDesktopLayout onStepClick={handleStepClick}>
+            <EnhancedProfileTabs
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              formData={formData}
+              updateFormData={updateFormData}
+              handleArrayInput={handleArrayInput}
+              handleSave={saveBasicInfo}
+              isUpdating={isUpdating}
+            />
+          </EnhancedProfileDesktopLayout>
+        )}
+      </div>
     </ProtectedRoute>
   );
 };
