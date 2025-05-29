@@ -6,7 +6,9 @@ export const getMealTime = (mealType: string) => {
     'breakfast': '8:00 AM',
     'lunch': '1:00 PM',
     'dinner': '7:00 PM',
-    'snack': '3:00 PM'
+    'snack': '3:00 PM',
+    'snack1': '10:00 AM',
+    'snack2': '4:00 PM'
   };
   return times[mealType.toLowerCase()] || '12:00 PM';
 };
@@ -16,7 +18,9 @@ export const getMealEmoji = (mealType: string) => {
     'breakfast': '🥣',
     'lunch': '🥗',
     'dinner': '🍽️',
-    'snack': '🍎'
+    'snack': '🍎',
+    'snack1': '🍎',
+    'snack2': '🍎'
   };
   return emojis[mealType.toLowerCase()] || '🍽️';
 };
@@ -48,12 +52,32 @@ export const formatDate = (date: Date) => {
   });
 };
 
+// Updated to start from Saturday and get current day correctly
 export const getCurrentDayOfWeek = () => {
   const today = new Date();
-  const currentDay = today.getDay() === 0 ? 7 : today.getDay();
-  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  return days[currentDay - 1];
+  const currentDay = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  // Convert to our system where Saturday = 1, Sunday = 2, etc.
+  const adjustedDay = currentDay === 6 ? 1 : currentDay + 2;
+  return adjustedDay;
 };
+
+export const getWeekStartDate = (offset: number = 0) => {
+  const today = new Date();
+  const currentDay = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  
+  // Calculate days since Saturday (our week start)
+  const daysSinceSaturday = currentDay === 6 ? 0 : currentDay + 1;
+  
+  const weekStart = new Date(today);
+  weekStart.setDate(today.getDate() - daysSinceSaturday + (offset * 7));
+  
+  return weekStart;
+};
+
+export const getDayNames = (t: any) => [
+  t('day.saturday'), t('day.sunday'), t('day.monday'), 
+  t('day.tuesday'), t('day.wednesday'), t('day.thursday'), t('day.friday')
+];
 
 export const transformDailyMealsToMeals = (dailyMeals: any[], selectedDayNumber: number): Meal[] => {
   return dailyMeals
@@ -81,6 +105,7 @@ export const transformDailyMealsToMeals = (dailyMeals: any[], selectedDayNumber:
         prepTime: meal.prep_time || 0,
         servings: meal.servings || 1,
         image: getMealEmoji(meal.meal_type),
+        imageUrl: meal.image_url,
         youtubeId: meal.youtube_search_term || "dQw4w9WgXcQ"
       };
     }) || [];

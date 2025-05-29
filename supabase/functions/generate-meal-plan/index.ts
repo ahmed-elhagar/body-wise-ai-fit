@@ -1,3 +1,4 @@
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
@@ -12,8 +13,8 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-// Function to generate meal image
-async function generateMealImage(mealName: string, ingredients: string[]): Promise<string | null> {
+// Function to get image URL from internet or generate with AI
+async function getMealImageUrl(mealName: string, ingredients: string[]): Promise<string | null> {
   try {
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAIApiKey) return null;
@@ -63,6 +64,21 @@ serve(async (req) => {
     console.log('User Profile:', JSON.stringify(userProfile, null, 2));
     console.log('Preferences:', JSON.stringify(preferences, null, 2));
 
+    // Check if user has generations remaining and decrement
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select('ai_generations_remaining')
+      .eq('id', userProfile.id)
+      .single();
+      
+    if (profileError) {
+      throw new Error('Failed to check AI generations remaining');
+    }
+    
+    if (profileData.ai_generations_remaining <= 0) {
+      throw new Error('You have reached your AI generation limit. Please contact admin to increase your limit.');
+    }
+
     // Calculate BMR and daily calorie needs
     const bmr = userProfile?.gender === 'male' 
       ? 88.362 + (13.397 * userProfile.weight) + (4.799 * userProfile.height) - (5.677 * userProfile.age)
@@ -79,8 +95,8 @@ serve(async (req) => {
     const dailyCalories = Math.round(bmr * activityMultiplier);
     console.log('Calculated daily calories:', dailyCalories);
 
-    // Enhanced prompt with cultural cuisine focus and detailed requirements
-    const prompt = `Generate a complete 7-day meal plan with EXACTLY 35 meals (7 days × 5 meals per day: breakfast, lunch, dinner, snack1, snack2).
+    // Enhanced prompt for better meal data and starting from Saturday
+    const prompt = `Generate a complete 7-day meal plan starting from SATURDAY and ending on FRIDAY with EXACTLY 35 meals (7 days × 5 meals per day: breakfast, lunch, dinner, snack1, snack2).
 
 USER PROFILE:
 - Age: ${userProfile?.age}, Gender: ${userProfile?.gender}
@@ -90,7 +106,7 @@ USER PROFILE:
 - Target: ${dailyCalories} calories daily
 
 CRITICAL REQUIREMENTS:
-1. EXACTLY 7 days (Monday to Sunday)
+1. EXACTLY 7 days (Saturday to Friday)
 2. EXACTLY 5 meals per day
 3. TOTAL: 35 meals - NO EXCEPTIONS
 4. Valid JSON only - no markdown formatting
@@ -98,6 +114,7 @@ CRITICAL REQUIREMENTS:
 6. Focus on ${userProfile?.nationality || 'international'} cuisine with authentic local dishes
 7. Include detailed cooking instructions and cultural context
 8. Provide comprehensive ingredient lists with exact measurements
+9. Week starts on Saturday (day 1) and ends on Friday (day 7)
 
 Return ONLY this JSON structure:
 
@@ -113,7 +130,7 @@ Return ONLY this JSON structure:
   "days": [
     {
       "dayNumber": 1,
-      "dayName": "Monday",
+      "dayName": "Saturday",
       "totalCalories": ${dailyCalories},
       "meals": [
         {
@@ -150,7 +167,7 @@ Return ONLY this JSON structure:
   ]
 }
 
-Generate all 7 days following this exact pattern. Each day must have exactly 5 meals. Vary the meal names and ingredients but keep authentic ${userProfile?.nationality || 'international'} flavors and traditional cooking methods.`;
+Generate all 7 days starting from Saturday following this exact pattern. Each day must have exactly 5 meals. Vary the meal names and ingredients but keep authentic ${userProfile?.nationality || 'international'} flavors and traditional cooking methods.`;
 
     console.log('Sending request to OpenAI...');
     
@@ -165,7 +182,7 @@ Generate all 7 days following this exact pattern. Each day must have exactly 5 m
         messages: [
           { 
             role: 'system', 
-            content: `You are a professional nutritionist specializing in ${userProfile?.nationality || 'international'} cuisine. Generate EXACTLY 7 days with EXACTLY 5 meals each (35 total meals). Return ONLY valid JSON with no markdown formatting. Focus on authentic cultural dishes with detailed instructions and nutritional information.` 
+            content: `You are a professional nutritionist specializing in ${userProfile?.nationality || 'international'} cuisine. Generate EXACTLY 7 days starting from SATURDAY with EXACTLY 5 meals each (35 total meals). Return ONLY valid JSON with no markdown formatting. Focus on authentic cultural dishes with detailed instructions and nutritional information.` 
           },
           { role: 'user', content: prompt }
         ],
@@ -267,9 +284,12 @@ Generate all 7 days following this exact pattern. Each day must have exactly 5 m
 
     console.log('✅ VALIDATION PASSED - 7 days with 35 total meals confirmed');
     
-    // Delete existing meals for this week before saving new ones
-    const weekStartDate = new Date();
-    weekStartDate.setDate(weekStartDate.getDate() - weekStartDate.getDay());
+    // Calculate week start date (Saturday)
+    const today = new Date();
+    const currentDay = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    const daysSinceSaturday = currentDay === 6 ? 0 : currentDay + 1;
+    const weekStartDate = new Date(today);
+    weekStartDate.setDate(today.getDate() - daysSinceSaturday);
     
     console.log('Deleting existing plan for week:', weekStartDate.toISOString().split('T')[0]);
     const { error: deleteError } = await supabase
@@ -280,6 +300,20 @@ Generate all 7 days following this exact pattern. Each day must have exactly 5 m
     
     if (deleteError) {
       console.error('Error deleting existing plan:', deleteError);
+    }
+
+    // Decrement AI generations BEFORE saving
+    const { error: decrementError } = await supabase
+      .from('profiles')
+      .update({
+        ai_generations_remaining: profileData.ai_generations_remaining - 1,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', userProfile.id);
+      
+    if (decrementError) {
+      console.error('Failed to decrement AI generations:', decrementError);
+      throw new Error('Failed to update generation count');
     }
 
     // Save new weekly plan
@@ -322,7 +356,7 @@ Generate all 7 days following this exact pattern. Each day must have exactly 5 m
         
         // Generate image for the meal
         const ingredientNames = (meal.ingredients || []).map((ing: any) => ing.name || '');
-        const imageUrl = await generateMealImage(meal.name || 'meal', ingredientNames);
+        const imageUrl = await getMealImageUrl(meal.name || 'meal', ingredientNames);
         
         const { error: mealError } = await supabase
           .from('daily_meals')
@@ -358,11 +392,15 @@ Generate all 7 days following this exact pattern. Each day must have exactly 5 m
     }
 
     console.log(`✅ MEAL SAVING COMPLETE: ${totalMealsSaved} meals saved, ${failedMeals} failed out of 35 expected`);
+    console.log(`✅ AI generations remaining: ${profileData.ai_generations_remaining - 1}`);
 
     console.log('=== MEAL PLAN GENERATION COMPLETE ===');
     console.log(`✅ SUCCESS: Generated ${generatedPlan.days.length} days with ${totalMealsSaved} meals`);
     
-    return new Response(JSON.stringify({ generatedPlan }), {
+    return new Response(JSON.stringify({ 
+      generatedPlan,
+      generationsRemaining: profileData.ai_generations_remaining - 1
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {

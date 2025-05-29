@@ -1,3 +1,4 @@
+
 import MealRecipeDialog from "@/components/MealRecipeDialog";
 import ShoppingListDialog from "@/components/ShoppingListDialog";
 import MealExchangeDialog from "@/components/MealExchangeDialog";
@@ -15,9 +16,9 @@ import { useMealPlanLogic } from "@/hooks/useMealPlanLogic";
 import { useInitialAIGeneration } from "@/hooks/useInitialAIGeneration";
 import { formatDate, getCurrentDayOfWeek, transformDailyMealsToMeals } from "@/utils/mealPlanUtils";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Calendar, Grid, Plus } from "lucide-react";
+import { Calendar, Grid, Plus, CheckCircle } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const MealPlan = () => {
@@ -25,6 +26,7 @@ const MealPlan = () => {
   const { t, isRTL } = useLanguage();
   const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
   const [showAddSnackDialog, setShowAddSnackDialog] = useState(false);
+  
   const {
     showAIDialog,
     selectedMeal,
@@ -53,10 +55,18 @@ const MealPlan = () => {
     handleShowShoppingList
   } = useMealPlanLogic();
 
-  // Calculate current date and week
+  // Auto-select current day when component mounts
+  useEffect(() => {
+    const currentDay = getCurrentDayOfWeek();
+    setSelectedDayNumber(currentDay);
+  }, [setSelectedDayNumber]);
+
+  // Calculate current date and week (starting from Saturday)
   const today = new Date();
   const currentWeekStart = new Date(today);
-  currentWeekStart.setDate(today.getDate() - today.getDay() + (currentWeekOffset * 7));
+  const currentDay = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  const daysSinceSaturday = currentDay === 6 ? 0 : currentDay + 1;
+  currentWeekStart.setDate(today.getDate() - daysSinceSaturday + (currentWeekOffset * 7));
 
   // Get meals for selected day
   const todaysMeals = transformDailyMealsToMeals(currentWeekPlan?.dailyMeals || [], selectedDayNumber);
@@ -75,20 +85,19 @@ const MealPlan = () => {
 
   // Calculate weekly overview from actual data
   const weeklyOverview = [
-    { day: "Mon", calories: getDayCalories(1), status: selectedDayNumber === 1 ? "current" as const : "planned" as const },
-    { day: "Tue", calories: getDayCalories(2), status: selectedDayNumber === 2 ? "current" as const : "planned" as const },
-    { day: "Wed", calories: getDayCalories(3), status: selectedDayNumber === 3 ? "current" as const : "planned" as const },
-    { day: "Thu", calories: getDayCalories(4), status: selectedDayNumber === 4 ? "current" as const : "planned" as const },
-    { day: "Fri", calories: getDayCalories(5), status: selectedDayNumber === 5 ? "current" as const : "planned" as const },
-    { day: "Sat", calories: getDayCalories(6), status: selectedDayNumber === 6 ? "current" as const : "planned" as const },
-    { day: "Sun", calories: getDayCalories(7), status: selectedDayNumber === 7 ? "current" as const : "planned" as const }
+    { day: "Sat", calories: getDayCalories(1), status: selectedDayNumber === 1 ? "current" as const : "planned" as const },
+    { day: "Sun", calories: getDayCalories(2), status: selectedDayNumber === 2 ? "current" as const : "planned" as const },
+    { day: "Mon", calories: getDayCalories(3), status: selectedDayNumber === 3 ? "current" as const : "planned" as const },
+    { day: "Tue", calories: getDayCalories(4), status: selectedDayNumber === 4 ? "current" as const : "planned" as const },
+    { day: "Wed", calories: getDayCalories(5), status: selectedDayNumber === 5 ? "current" as const : "planned" as const },
+    { day: "Thu", calories: getDayCalories(6), status: selectedDayNumber === 6 ? "current" as const : "planned" as const },
+    { day: "Fri", calories: getDayCalories(7), status: selectedDayNumber === 7 ? "current" as const : "planned" as const }
   ];
 
   const totalCalories = todaysMeals.reduce((sum, meal) => sum + meal.calories, 0);
   const totalProtein = todaysMeals.reduce((sum, meal) => sum + meal.protein, 0);
 
   const handleWeeklyMealExchange = (meal: any, dayNumber: number, mealIndex: number) => {
-    // Convert to the format expected by the existing exchange handler
     const mealId = currentWeekPlan?.dailyMeals?.find(m => 
       m.day_number === dayNumber && 
       m.name === meal.name
@@ -98,7 +107,6 @@ const MealPlan = () => {
     setShowExchangeDialog(true);
   };
 
-  // Get diet type and weekly calories from the weekly plan
   const dietType = currentWeekPlan?.weeklyPlan?.generation_prompt?.dietType || 
                    currentWeekPlan?.weeklyPlan?.generation_prompt?.preferences?.dietType;
   const totalWeeklyCalories = currentWeekPlan?.weeklyPlan?.total_calories;
@@ -134,8 +142,18 @@ const MealPlan = () => {
   }
 
   const handleSnackAdded = () => {
-    // Refresh the meal plan data
     window.location.reload();
+  };
+
+  const handleFinalizeMealPlan = () => {
+    if (!currentWeekPlan) {
+      toast.error(t('mealPlan.noActivePlan'));
+      return;
+    }
+    
+    toast.success(t('mealPlan.planFinalized'));
+    // Here you could navigate to the next step of the app
+    // For example: navigate('/exercise-plan') or whatever the next step is
   };
 
   return (
@@ -159,41 +177,65 @@ const MealPlan = () => {
             weekStartDate={currentWeekStart}
           />
 
-          {/* View Mode Toggle and Add Snack Button - Enhanced responsiveness */}
+          {/* Enhanced View Mode Toggle and Actions */}
           {currentWeekPlan && (
             <div className="mb-4 sm:mb-6 flex justify-center">
-              <div className="bg-white/80 backdrop-blur-sm rounded-lg p-1 shadow-lg flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full max-w-2xl">
-                <div className="flex w-full sm:w-auto">
-                  <Button
-                    variant={viewMode === 'daily' ? 'default' : 'ghost'}
-                    className={`flex-1 sm:flex-initial text-sm ${viewMode === 'daily' ? 'bg-fitness-gradient text-white' : ''}`}
-                    onClick={() => setViewMode('daily')}
-                    size="sm"
-                  >
-                    <Calendar className="w-4 h-4 mr-2" />
-                    {t('mealPlan.dailyView')}
-                  </Button>
-                  <Button
-                    variant={viewMode === 'weekly' ? 'default' : 'ghost'}
-                    className={`flex-1 sm:flex-initial text-sm ${viewMode === 'weekly' ? 'bg-fitness-gradient text-white' : ''}`}
-                    onClick={() => setViewMode('weekly')}
-                    size="sm"
-                  >
-                    <Grid className="w-4 h-4 mr-2" />
-                    {t('mealPlan.weeklyView')}
-                  </Button>
+              <div className="bg-white/90 backdrop-blur-sm rounded-xl p-2 shadow-lg w-full max-w-4xl">
+                <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3">
+                  {/* View Mode Toggle */}
+                  <div className="flex flex-1">
+                    <Button
+                      variant={viewMode === 'daily' ? 'default' : 'ghost'}
+                      className={`flex-1 text-sm transition-all duration-200 ${
+                        viewMode === 'daily' 
+                          ? 'bg-fitness-gradient text-white shadow-md' 
+                          : 'hover:bg-gray-100'
+                      }`}
+                      onClick={() => setViewMode('daily')}
+                      size="sm"
+                    >
+                      <Calendar className="w-4 h-4 mr-2" />
+                      {t('mealPlan.dailyView')}
+                    </Button>
+                    <Button
+                      variant={viewMode === 'weekly' ? 'default' : 'ghost'}
+                      className={`flex-1 text-sm transition-all duration-200 ${
+                        viewMode === 'weekly' 
+                          ? 'bg-fitness-gradient text-white shadow-md' 
+                          : 'hover:bg-gray-100'
+                      }`}
+                      onClick={() => setViewMode('weekly')}
+                      size="sm"
+                    >
+                      <Grid className="w-4 h-4 mr-2" />
+                      {t('mealPlan.weeklyView')}
+                    </Button>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-2 lg:gap-3">
+                    {viewMode === 'daily' && (
+                      <Button
+                        variant="outline"
+                        className="flex-1 lg:flex-initial lg:min-w-[140px] text-sm border-green-500 text-green-600 hover:bg-green-50 hover:border-green-600 transition-all duration-200"
+                        onClick={() => setShowAddSnackDialog(true)}
+                        size="sm"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        {t('mealPlan.addSnack')}
+                      </Button>
+                    )}
+                    
+                    <Button
+                      className="flex-1 lg:flex-initial lg:min-w-[160px] text-sm bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-lg transition-all duration-200 transform hover:scale-105"
+                      onClick={handleFinalizeMealPlan}
+                      size="sm"
+                    >
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      {t('mealPlan.finalizePlan')}
+                    </Button>
+                  </div>
                 </div>
-                {viewMode === 'daily' && (
-                  <Button
-                    variant="outline"
-                    className="w-full sm:w-auto sm:min-w-[140px] text-sm border-fitness-primary text-fitness-primary hover:bg-fitness-primary hover:text-white"
-                    onClick={() => setShowAddSnackDialog(true)}
-                    size="sm"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    {t('mealPlan.addSnack')}
-                  </Button>
-                )}
               </div>
             </div>
           )}

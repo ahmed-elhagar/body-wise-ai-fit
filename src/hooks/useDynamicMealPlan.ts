@@ -2,6 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { getWeekStartDate } from '@/utils/mealPlanUtils';
 
 export interface MealIngredient {
   name: string;
@@ -43,13 +44,6 @@ export interface WeeklyMealPlan {
 export const useDynamicMealPlan = (weekOffset: number = 0) => {
   const { user } = useAuth();
 
-  const getWeekStartDate = (offset: number) => {
-    const today = new Date();
-    const currentWeekStart = new Date(today);
-    currentWeekStart.setDate(today.getDate() - today.getDay() + (offset * 7));
-    return currentWeekStart.toISOString().split('T')[0];
-  };
-
   const { data: currentWeekPlan, isLoading } = useQuery({
     queryKey: ['weekly-meal-plan', user?.id, weekOffset],
     queryFn: async () => {
@@ -65,7 +59,7 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
         throw new Error('Authentication required');
       }
       
-      const weekStartDate = getWeekStartDate(weekOffset);
+      const weekStartDate = getWeekStartDate(weekOffset).toISOString().split('T')[0];
       console.log('useDynamicMealPlan - Fetching meal plan for user:', user.id, 'Email:', user.email, 'week:', weekStartDate);
       
       const { data: weeklyPlan, error: weeklyError } = await supabase
@@ -145,9 +139,8 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
       };
     },
     enabled: !!user?.id,
-    staleTime: 1000 * 60 * 2, // Reduce to 2 minutes
+    staleTime: 1000 * 60 * 2,
     retry: (failureCount, error: any) => {
-      // Don't retry authentication or data integrity errors
       if (error?.message?.includes('Authentication required') || 
           error?.message?.includes('Data integrity violation')) {
         return false;
@@ -159,6 +152,6 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
   return {
     currentWeekPlan,
     isLoading,
-    getWeekStartDate
+    getWeekStartDate: (offset: number) => getWeekStartDate(offset)
   };
 };
