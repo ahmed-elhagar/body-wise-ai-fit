@@ -26,21 +26,23 @@ const CompactNavigation = ({
 }: CompactNavigationProps) => {
   const { t, isRTL } = useLanguage();
   const dayNames = getDayNames(t);
-  const shortDayNames = ['S', 'S', 'M', 'T', 'W', 'T', 'F'];
+  const shortDayNames = isRTL 
+    ? ['س', 'ح', 'ن', 'ث', 'ر', 'خ', 'ج'] // Arabic short day names
+    : ['S', 'S', 'M', 'T', 'W', 'T', 'F'];
 
   const formatWeekRange = (startDate: Date) => {
     const endDate = new Date(startDate);
     endDate.setDate(startDate.getDate() + 6);
     
-    const startMonth = startDate.toLocaleDateString('en-US', { month: 'short' });
+    const startMonth = startDate.toLocaleDateString(isRTL ? 'ar-SA' : 'en-US', { month: 'short' });
     const startDay = startDate.getDate();
-    const endMonth = endDate.toLocaleDateString('en-US', { month: 'short' });
+    const endMonth = endDate.toLocaleDateString(isRTL ? 'ar-SA' : 'en-US', { month: 'short' });
     const endDay = endDate.getDate();
     
     if (startMonth === endMonth) {
-      return `${startMonth} ${startDay}-${endDay}`;
+      return isRTL ? `${endDay}-${startDay} ${startMonth}` : `${startMonth} ${startDay}-${endDay}`;
     } else {
-      return `${startMonth} ${startDay} - ${endMonth} ${endDay}`;
+      return isRTL ? `${endDay} ${endMonth} - ${startDay} ${startMonth}` : `${startMonth} ${startDay} - ${endMonth} ${endDay}`;
     }
   };
 
@@ -55,7 +57,7 @@ const CompactNavigation = ({
             onClick={() => onWeekChange(currentWeekOffset - 1)}
             className="h-8 w-8 p-0"
           >
-            <ChevronLeft className="w-4 h-4" />
+            {isRTL ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
           </Button>
 
           <div className="text-center">
@@ -70,7 +72,7 @@ const CompactNavigation = ({
             onClick={() => onWeekChange(currentWeekOffset + 1)}
             className="h-8 w-8 p-0"
           >
-            <ChevronRight className="w-4 h-4" />
+            {isRTL ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
           </Button>
         </div>
 
@@ -89,7 +91,9 @@ const CompactNavigation = ({
               onClick={() => onViewModeChange('daily')}
             >
               <Calendar className="w-3 h-3" />
-              <span className="hidden sm:inline ml-1">{t('mealPlan.dailyView')}</span>
+              <span className={`hidden sm:inline ${isRTL ? 'mr-1' : 'ml-1'}`}>
+                {t('mealPlan.dailyView')}
+              </span>
             </Button>
             <Button
               variant={viewMode === 'weekly' ? 'default' : 'ghost'}
@@ -102,13 +106,15 @@ const CompactNavigation = ({
               onClick={() => onViewModeChange('weekly')}
             >
               <Grid className="w-3 h-3" />
-              <span className="hidden sm:inline ml-1">{t('mealPlan.weeklyView')}</span>
+              <span className={`hidden sm:inline ${isRTL ? 'mr-1' : 'ml-1'}`}>
+                {t('mealPlan.weeklyView')}
+              </span>
             </Button>
           </div>
 
           {/* Compact Day Selector - Only show in daily view */}
           {viewMode === 'daily' && (
-            <div className="flex gap-1">
+            <div className={`flex gap-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
               {shortDayNames.map((day, index) => (
                 <Button
                   key={index}

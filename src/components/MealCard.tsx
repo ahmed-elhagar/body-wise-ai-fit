@@ -42,22 +42,33 @@ interface MealCardProps {
 const MealCard = ({ meal, onShowRecipe, onExchangeMeal }: MealCardProps) => {
   const { isRTL } = useLanguage();
   
-  // Enhanced image state management
+  // Enhanced image state management with proper meal ID tracking
   const [mealImage, setMealImage] = useState<string | null>(
     meal.image_url || meal.imageUrl || null
   );
   const [isLoadingImage, setIsLoadingImage] = useState(false);
+  const [currentMealId, setCurrentMealId] = useState(meal.id);
+
+  // Reset image when meal changes (fixes caching issue)
+  useEffect(() => {
+    if (meal.id !== currentMealId) {
+      console.log(`🔄 Meal changed from ${currentMealId} to ${meal.id}, resetting image`);
+      setCurrentMealId(meal.id);
+      setMealImage(meal.image_url || meal.imageUrl || null);
+      setIsLoadingImage(false);
+    }
+  }, [meal.id, currentMealId]);
 
   // Update image when meal data changes (e.g., after recipe generation)
   useEffect(() => {
-    if (meal.image_url && meal.image_url !== mealImage) {
+    if (meal.image_url && meal.image_url !== mealImage && meal.id === currentMealId) {
       console.log(`📸 Updating meal image for ${meal.name}:`, {
         oldImage: mealImage,
         newImage: meal.image_url
       });
       setMealImage(meal.image_url);
     }
-  }, [meal.image_url, meal.imageUrl]);
+  }, [meal.image_url, meal.imageUrl, mealImage, meal.id, currentMealId]);
 
   const generateMealImage = async () => {
     if (isLoadingImage || mealImage) return;

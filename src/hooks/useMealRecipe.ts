@@ -3,10 +3,12 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export const useMealRecipe = () => {
   const [isGeneratingRecipe, setIsGeneratingRecipe] = useState(false);
   const { user } = useAuth();
+  const { language } = useLanguage();
 
   const generateRecipe = async (mealId: string) => {
     if (!user) {
@@ -17,7 +19,7 @@ export const useMealRecipe = () => {
     setIsGeneratingRecipe(true);
     
     try {
-      console.log('🍳 Generating recipe for meal:', mealId);
+      console.log('🍳 Generating recipe for meal:', mealId, 'in language:', language);
       
       // Show immediate feedback
       toast.loading('Generating detailed recipe with images...', {
@@ -27,7 +29,8 @@ export const useMealRecipe = () => {
       const { data, error } = await supabase.functions.invoke('generate-meal-recipe', {
         body: {
           mealId: mealId,
-          userId: user.id
+          userId: user.id,
+          language: language // Pass current language to recipe generation
         }
       });
 

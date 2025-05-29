@@ -9,7 +9,7 @@ import { getCurrentSaturdayDay, getWeekStartDate, getCategoryForIngredient } fro
 import type { Meal } from "@/types/meal";
 
 export const useMealPlanState = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
   const [selectedDayNumber, setSelectedDayNumber] = useState(getCurrentSaturdayDay());
   const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
@@ -34,7 +34,7 @@ export const useMealPlanState = () => {
 
   const weekStartDate = getWeekStartDate(currentWeekOffset);
 
-  // Enhanced conversion from DailyMeal to Meal type
+  // Enhanced conversion from DailyMeal to Meal type with unique keys
   const convertDailyMealToMeal = (dailyMeal: any): Meal => ({
     id: dailyMeal.id,
     type: dailyMeal.meal_type || 'meal',
@@ -56,7 +56,7 @@ export const useMealPlanState = () => {
     youtubeId: dailyMeal.youtube_search_term || ''
   });
 
-  // Get today's meals with better filtering
+  // Get today's meals with better filtering and unique keys
   const todaysDailyMeals = currentWeekPlan?.dailyMeals?.filter(meal => 
     meal.day_number === selectedDayNumber
   ) || [];
@@ -97,9 +97,17 @@ export const useMealPlanState = () => {
     try {
       console.log('🚀 Starting AI meal plan generation with preferences:', aiPreferences);
       console.log('🎯 Generating for week offset:', currentWeekOffset);
+      console.log('🌐 Using language:', language);
+      
+      // Enhanced preferences with current language
+      const enhancedPreferences = {
+        ...aiPreferences,
+        language: language, // Pass current language to AI generation
+        locale: language === 'ar' ? 'ar-SA' : 'en-US'
+      };
       
       // CRITICAL FIX: Generate for the currently selected week offset
-      const result = await generateMealPlan(aiPreferences, { weekOffset: currentWeekOffset });
+      const result = await generateMealPlan(enhancedPreferences, { weekOffset: currentWeekOffset });
       
       if (result?.success) {
         console.log('✅ Generation successful, result:', result);

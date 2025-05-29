@@ -81,8 +81,8 @@ const ActionSection = ({
             </div>
           </div>
 
-          {/* Shopping List Button Only */}
-          <div className={`flex justify-end ${isRTL ? 'justify-start' : ''}`}>
+          {/* Action Buttons */}
+          <div className={`flex gap-2 ${isRTL ? 'justify-start' : 'justify-end'} ${isRTL ? 'flex-row-reverse' : ''}`}>
             {showShoppingList && (
               <Button
                 variant="outline"
@@ -90,28 +90,25 @@ const ActionSection = ({
                 className="bg-white/90 border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-800 transition-all duration-300 shadow-md hover:shadow-lg font-medium rounded-lg px-4 py-2"
                 onClick={onShowShoppingList}
               >
-                <ShoppingCart className="w-3 h-3 mr-1.5" />
+                <ShoppingCart className={`w-3 h-3 ${isRTL ? 'ml-1.5' : 'mr-1.5'}`} />
                 {t('mealPlan.shoppingList')}
+              </Button>
+            )}
+            
+            {showAddSnack && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 text-green-700 hover:bg-gradient-to-r hover:from-green-100 hover:to-emerald-100 hover:border-green-300 hover:text-green-800 transition-all duration-300 shadow-md hover:shadow-lg font-medium rounded-lg px-4 py-2"
+                onClick={onAddSnack}
+              >
+                <Plus className={`w-3 h-3 ${isRTL ? 'ml-1.5' : 'mr-1.5'}`} />
+                {t('mealPlan.addSnack')}
               </Button>
             )}
           </div>
         </div>
       </Card>
-
-      {/* Add Snack Button - Separate Row for Better Design */}
-      {showAddSnack && (
-        <div className={`flex ${isRTL ? 'justify-start' : 'justify-end'}`}>
-          <Button
-            variant="outline"
-            size="sm"
-            className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 text-green-700 hover:bg-gradient-to-r hover:from-green-100 hover:to-emerald-100 hover:border-green-300 hover:text-green-800 transition-all duration-300 shadow-md hover:shadow-lg font-medium rounded-lg px-6 py-2.5"
-            onClick={onAddSnack}
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            {t('mealPlan.addSnack')}
-          </Button>
-        </div>
-      )}
     </div>
   );
 };

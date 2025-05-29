@@ -18,7 +18,7 @@ serve(async (req) => {
   }
 
   try {
-    const { mealId, userId } = await req.json();
+    const { mealId, userId, language = 'en' } = await req.json();
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 
     if (!openAIApiKey) {
@@ -28,6 +28,7 @@ serve(async (req) => {
     console.log('=== MEAL RECIPE GENERATION START ===');
     console.log('Meal ID:', mealId);
     console.log('User ID:', userId);
+    console.log('Language:', language);
 
     // Get the meal from database
     const { data: meal, error: mealError } = await supabase
@@ -71,10 +72,53 @@ serve(async (req) => {
       throw new Error('Daily recipe generation limit reached (10 per day)');
     }
 
-    console.log(`Generating detailed recipe for: ${meal.name} (${todayRecipeCount + 1}/10 today)`);
+    console.log(`Generating detailed recipe for: ${meal.name} (${todayRecipeCount + 1}/10 today) in ${language}`);
 
-    // Generate detailed recipe with AI
-    const prompt = `You are a professional chef. Generate a detailed recipe for "${meal.name}" with exactly ${meal.calories} calories and ${meal.servings} serving(s).
+    // Language-aware prompt generation
+    const isArabic = language === 'ar';
+    const systemPrompt = isArabic 
+      ? 'أنت طاهٍ محترف. قم بإنشاء وصفات مفصلة باللغة العربية بتنسيق JSON فقط.'
+      : 'You are a professional chef. Generate detailed recipes in JSON format only.';
+
+    const userPrompt = isArabic 
+      ? `أنت طاهٍ محترف. قم بإنشاء وصفة مفصلة لـ "${meal.name}" تحتوي على ${meal.calories} سعرة حرارية بالضبط و ${meal.servings} حصة.
+
+معلومات الوجبة:
+- الاسم: ${meal.name}
+- السعرات الحرارية: ${meal.calories}
+- البروتين: ${meal.protein}جم
+- الكربوهيدرات: ${meal.carbs}جم  
+- الدهون: ${meal.fat}جم
+- وقت التحضير: ${meal.prep_time} دقيقة
+- وقت الطبخ: ${meal.cook_time} دقيقة
+- عدد الحصص: ${meal.servings}
+- المطبخ: ${meal.cuisine || 'عالمي'}
+
+أنشئ JSON صحيح فقط مع مكونات مفصلة وتعليمات وموجه لإنشاء الصورة:
+
+{
+  "ingredients": [
+    {
+      "name": "اسم المكون",
+      "quantity": "100",
+      "unit": "جم",
+      "calories": 50,
+      "protein": 5,
+      "carbs": 10,
+      "fat": 2
+    }
+  ],
+  "instructions": [
+    "الخطوة 1: تعليمات التحضير المفصلة",
+    "الخطوة 2: تعليمات الطبخ مع التوقيت",
+    "الخطوة 3: التقديم النهائي"
+  ],
+  "imagePrompt": "تصوير طعام احترافي لـ ${meal.name}، مقدم بشكل جميل، إضاءة طبيعية، عرض شهي",
+  "youtubeSearchTerm": "${meal.name} وصفة طبخ تعليمي",
+  "tips": "نصائح الطاهي للحصول على أفضل النتائج",
+  "nutritionBenefits": "الفوائد الصحية لهذه الوجبة"
+}`
+      : `You are a professional chef. Generate a detailed recipe for "${meal.name}" with exactly ${meal.calories} calories and ${meal.servings} serving(s).
 
 MEAL INFO:
 - Name: ${meal.name}
@@ -121,8 +165,8 @@ Generate ONLY valid JSON with detailed ingredients, instructions, and image gene
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: 'You are a professional chef. Generate detailed recipes in JSON format only.' },
-          { role: 'user', content: prompt }
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
         ],
         temperature: 0.3,
         max_tokens: 1500,
@@ -201,7 +245,7 @@ Generate ONLY valid JSON with detailed ingredients, instructions, and image gene
       .insert({
         user_id: userId,
         generation_type: 'recipe',
-        prompt_data: { meal_name: meal.name, meal_id: mealId },
+        prompt_data: { meal_name: meal.name, meal_id: mealId, language: language },
         response_data: { recipe_generated: true, image_generated: !!imageUrl },
         status: 'success'
       });
