@@ -6,9 +6,10 @@ interface BodyShapeSelectorProps {
   value: string;
   onChange: (value: string) => void;
   gender: string;
+  error?: string;
 }
 
-const BodyShapeSelector = ({ value, onChange, gender }: BodyShapeSelectorProps) => {
+const BodyShapeSelector = ({ value, onChange, gender, error }: BodyShapeSelectorProps) => {
   const bodyShapes = [
     {
       id: 'ectomorph',
@@ -68,10 +69,15 @@ const BodyShapeSelector = ({ value, onChange, gender }: BodyShapeSelectorProps) 
 
   return (
     <div>
-      <Label className="text-base font-semibold mb-4 block">Select Your Body Shape</Label>
+      <Label className={`text-base font-semibold mb-4 block ${error ? 'text-red-600' : ''}`}>
+        Select Your Body Shape
+      </Label>
       <p className="text-sm text-gray-600 mb-6">
         This helps us understand your metabolism and create a personalized diet plan that works best for your body type.
       </p>
+      {error && (
+        <p className="text-sm text-red-600 mb-4">{error}</p>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {bodyShapes.map((shape) => (
           <Card
@@ -80,7 +86,7 @@ const BodyShapeSelector = ({ value, onChange, gender }: BodyShapeSelectorProps) 
               value === shape.id
                 ? 'ring-2 ring-fitness-primary bg-fitness-primary/5'
                 : 'hover:bg-gray-50'
-            }`}
+            } ${error ? 'border-red-300' : ''}`}
             onClick={() => onChange(shape.id)}
           >
             <div className="text-center">

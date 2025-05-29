@@ -1,10 +1,9 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useProfile } from '@/hooks/useProfile';
 import { enTranslations } from './translations/en';
 import { arTranslations } from './translations/ar';
 
-type Language = 'en' | 'ar';
+export type Language = 'en' | 'ar';
 
 interface LanguageContextType {
   language: Language;
