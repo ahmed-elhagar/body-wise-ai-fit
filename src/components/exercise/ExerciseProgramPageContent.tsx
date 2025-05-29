@@ -142,9 +142,9 @@ export const ExerciseProgramPageContent = ({
 
         <TabsContent value="home" className="mt-4 sm:mt-6">
           {currentProgram && currentProgram.workout_type === "home" ? (
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
-              {/* Main Content */}
-              <div className="lg:col-span-3 space-y-4">
+            <div className="space-y-4 sm:space-y-6">
+              {/* Mobile Layout - Stack everything */}
+              <div className="block lg:hidden space-y-4">
                 <CompactWorkoutSummary
                   todaysWorkouts={todaysWorkouts}
                   currentProgram={currentProgram}
@@ -156,17 +156,6 @@ export const ExerciseProgramPageContent = ({
                   isRestDay={isRestDay}
                 />
 
-                <ExerciseListEnhanced 
-                  exercises={todaysExercises}
-                  isLoading={false}
-                  onExerciseComplete={handleCompleteExercise}
-                  onExerciseProgressUpdate={handleExerciseProgressUpdate}
-                  isRestDay={isRestDay}
-                />
-              </div>
-
-              {/* Sidebar */}
-              <div className="space-y-4">
                 <ExerciseProgressTracker
                   currentProgram={currentProgram}
                   selectedDay={selectedDayNumber}
@@ -179,6 +168,55 @@ export const ExerciseProgramPageContent = ({
                   totalExercises={totalExercises}
                   isRestDay={isRestDay}
                 />
+
+                <ExerciseListEnhanced 
+                  exercises={todaysExercises}
+                  isLoading={false}
+                  onExerciseComplete={handleCompleteExercise}
+                  onExerciseProgressUpdate={handleExerciseProgressUpdate}
+                  isRestDay={isRestDay}
+                />
+              </div>
+
+              {/* Desktop Layout - Grid with sidebar */}
+              <div className="hidden lg:grid lg:grid-cols-4 gap-6">
+                {/* Main Content */}
+                <div className="lg:col-span-3 space-y-4">
+                  <CompactWorkoutSummary
+                    todaysWorkouts={todaysWorkouts}
+                    currentProgram={currentProgram}
+                    completedExercises={completedExercises}
+                    totalExercises={totalExercises}
+                    progressPercentage={progressPercentage}
+                    workoutType="home"
+                    selectedDay={selectedDayNumber}
+                    isRestDay={isRestDay}
+                  />
+
+                  <ExerciseListEnhanced 
+                    exercises={todaysExercises}
+                    isLoading={false}
+                    onExerciseComplete={handleCompleteExercise}
+                    onExerciseProgressUpdate={handleExerciseProgressUpdate}
+                    isRestDay={isRestDay}
+                  />
+                </div>
+
+                {/* Sidebar */}
+                <div className="space-y-4">
+                  <ExerciseProgressTracker
+                    currentProgram={currentProgram}
+                    selectedDay={selectedDayNumber}
+                    completedExercises={completedExercises}
+                    totalExercises={totalExercises}
+                  />
+
+                  <ExerciseMotivationCard
+                    completedExercises={completedExercises}
+                    totalExercises={totalExercises}
+                    isRestDay={isRestDay}
+                  />
+                </div>
               </div>
             </div>
           ) : (
@@ -192,9 +230,9 @@ export const ExerciseProgramPageContent = ({
 
         <TabsContent value="gym" className="mt-4 sm:mt-6">
           {currentProgram && currentProgram.workout_type === "gym" ? (
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
-              {/* Main Content */}
-              <div className="lg:col-span-3 space-y-4">
+            <div className="space-y-4 sm:space-y-6">
+              {/* Mobile Layout - Stack everything */}
+              <div className="block lg:hidden space-y-4">
                 <CompactWorkoutSummary
                   todaysWorkouts={todaysWorkouts}
                   currentProgram={currentProgram}
@@ -206,17 +244,6 @@ export const ExerciseProgramPageContent = ({
                   isRestDay={isRestDay}
                 />
 
-                <ExerciseListEnhanced 
-                  exercises={todaysExercises}
-                  isLoading={false}
-                  onExerciseComplete={handleCompleteExercise}
-                  onExerciseProgressUpdate={handleExerciseProgressUpdate}
-                  isRestDay={isRestDay}
-                />
-              </div>
-
-              {/* Sidebar */}
-              <div className="space-y-4">
                 <ExerciseProgressTracker
                   currentProgram={currentProgram}
                   selectedDay={selectedDayNumber}
@@ -229,6 +256,55 @@ export const ExerciseProgramPageContent = ({
                   totalExercises={totalExercises}
                   isRestDay={isRestDay}
                 />
+
+                <ExerciseListEnhanced 
+                  exercises={todaysExercises}
+                  isLoading={false}
+                  onExerciseComplete={handleCompleteExercise}
+                  onExerciseProgressUpdate={handleExerciseProgressUpdate}
+                  isRestDay={isRestDay}
+                />
+              </div>
+
+              {/* Desktop Layout - Grid with sidebar */}
+              <div className="hidden lg:grid lg:grid-cols-4 gap-6">
+                {/* Main Content */}
+                <div className="lg:col-span-3 space-y-4">
+                  <CompactWorkoutSummary
+                    todaysWorkouts={todaysWorkouts}
+                    currentProgram={currentProgram}
+                    completedExercises={completedExercises}
+                    totalExercises={totalExercises}
+                    progressPercentage={progressPercentage}
+                    workoutType="gym"
+                    selectedDay={selectedDayNumber}
+                    isRestDay={isRestDay}
+                  />
+
+                  <ExerciseListEnhanced 
+                    exercises={todaysExercises}
+                    isLoading={false}
+                    onExerciseComplete={handleCompleteExercise}
+                    onExerciseProgressUpdate={handleExerciseProgressUpdate}
+                    isRestDay={isRestDay}
+                  />
+                </div>
+
+                {/* Sidebar */}
+                <div className="space-y-4">
+                  <ExerciseProgressTracker
+                    currentProgram={currentProgram}
+                    selectedDay={selectedDayNumber}
+                    completedExercises={completedExercises}
+                    totalExercises={totalExercises}
+                  />
+
+                  <ExerciseMotivationCard
+                    completedExercises={completedExercises}
+                    totalExercises={totalExercises}
+                    isRestDay={isRestDay}
+                  />
+                </div>
               </div>
             </div>
           ) : (
