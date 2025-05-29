@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { RefreshCw, Check, Loader2 } from "lucide-react";
 import { useAIMealExchange } from "@/hooks/useAIMealExchange";
 import { useEffect } from "react";
+import type { Meal } from "@/types/meal";
 
 interface MealAlternative {
   name: string;
@@ -17,14 +18,7 @@ interface MealAlternative {
 }
 
 interface MealExchangeDialogProps {
-  currentMeal: {
-    name: string;
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-    type?: string;
-  } | null;
+  currentMeal: Meal | null;
   alternatives?: MealAlternative[];
   isOpen: boolean;
   onClose: () => void;

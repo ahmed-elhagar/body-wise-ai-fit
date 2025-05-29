@@ -110,8 +110,7 @@ const MealPlanDialogs = ({
         <MealExchangeDialog
           isOpen={showExchangeDialog}
           onClose={onCloseExchangeDialog}
-          meal={selectedMeal}
-          mealIndex={selectedMealIndex}
+          currentMeal={selectedMeal}
           onExchange={onExchange}
         />
       )}

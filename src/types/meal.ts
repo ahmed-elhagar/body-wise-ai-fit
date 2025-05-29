@@ -20,6 +20,8 @@ export interface Meal {
   prepTime: number;
   servings: number;
   image: string;
+  image_url?: string; // Add this property for database image URLs
+  imageUrl?: string; // Keep compatibility with existing code
   youtubeId: string;
 }
 
