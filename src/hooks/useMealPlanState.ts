@@ -96,30 +96,37 @@ export const useMealPlanState = () => {
   const handleGenerateAIPlan = async () => {
     try {
       console.log('🚀 Starting AI meal plan generation with preferences:', aiPreferences);
+      console.log('🎯 Generating for week offset:', currentWeekOffset);
       
-      // This generates completely new AI-powered meal plan with user preferences
-      const result = await generateMealPlan(aiPreferences);
+      // CRITICAL FIX: Generate for the current week being viewed
+      const result = await generateMealPlan(aiPreferences, { weekOffset: currentWeekOffset });
       
       if (result?.success) {
         setShowAIDialog(false);
         
-        // ENHANCED FIX: Immediate and delayed refetch with invalidation
+        // ENHANCED FIX: If we were viewing a past/future week, reset to current week
+        if (currentWeekOffset !== 0) {
+          console.log('🔄 Resetting to current week after generation');
+          setCurrentWeekOffset(0);
+        }
+        
+        // Force immediate refetch for the correct week
         console.log('✅ Generation successful, forcing immediate refetch...');
         
-        // Immediate refetch
-        await refetchMealPlan?.();
+        // Wait a moment for the state to update if we changed week offset
+        if (currentWeekOffset !== 0) {
+          setTimeout(async () => {
+            await refetchMealPlan?.();
+          }, 100);
+        } else {
+          await refetchMealPlan?.();
+        }
         
         // Additional refetch after short delay to ensure consistency
         setTimeout(async () => {
           console.log('🔄 Secondary refetch for consistency...');
           await refetchMealPlan?.();
         }, 1500);
-        
-        // Final refetch after longer delay
-        setTimeout(async () => {
-          console.log('🔄 Final refetch to ensure data visibility...');
-          await refetchMealPlan?.();
-        }, 3000);
         
         toast.success("✨ Meal plan generated successfully!");
       }
@@ -183,7 +190,7 @@ export const useMealPlanState = () => {
     
     // Handlers - Now with distinct functionality
     handleRegeneratePlan, // Shuffles existing meals
-    handleGenerateAIPlan, // Generates new AI plan
+    handleGenerateAIPlan, // Generates new AI plan for current viewed week
     handleShowRecipe,
     handleExchangeMeal,
     refetch,

@@ -1,3 +1,4 @@
+
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -39,7 +40,7 @@ interface GeneratedPlan {
   };
 }
 
-// CRITICAL FIX: Use date-fns compatible week calculation 
+// CRITICAL FIX: Accept weekOffset parameter and use it consistently
 const getWeekStartDate = (weekOffset: number = 0): Date => {
   const today = new Date();
   
@@ -71,11 +72,12 @@ const getWeekStartDate = (weekOffset: number = 0): Date => {
 };
 
 export const saveWeeklyPlan = async (userProfile: UserProfile, generatedPlan: GeneratedPlan, preferences: any, dailyCalories: number) => {
-  // Use the CONSISTENT week calculation
-  const weekStartDate = getWeekStartDate(0);
+  // CRITICAL FIX: Use the weekOffset from preferences
+  const weekOffset = preferences?.weekOffset || 0;
+  const weekStartDate = getWeekStartDate(weekOffset);
   const weekStartDateStr = weekStartDate.toISOString().split('T')[0];
   
-  console.log('🎯 SAVING Weekly Plan with CONSISTENT date:', weekStartDateStr);
+  console.log('🎯 SAVING Weekly Plan with CONSISTENT date for offset', weekOffset, ':', weekStartDateStr);
   
   // Delete existing plan for this week
   console.log('Deleting existing plan for week:', weekStartDateStr);
@@ -100,7 +102,8 @@ export const saveWeeklyPlan = async (userProfile: UserProfile, generatedPlan: Ge
         userProfile,
         preferences,
         generatedAt: new Date().toISOString(),
-        weekStartDate: weekStartDateStr
+        weekStartDate: weekStartDateStr,
+        weekOffset: weekOffset
       },
       total_calories: generatedPlan.weekSummary?.totalCalories || dailyCalories * 7,
       total_protein: generatedPlan.weekSummary?.totalProtein || 700,
@@ -119,7 +122,8 @@ export const saveWeeklyPlan = async (userProfile: UserProfile, generatedPlan: Ge
     id: weeklyPlan.id,
     week_start_date: weeklyPlan.week_start_date,
     user_id: weeklyPlan.user_id,
-    created_at: weeklyPlan.created_at
+    created_at: weeklyPlan.created_at,
+    weekOffset: weekOffset
   });
 
   return weeklyPlan;

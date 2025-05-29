@@ -5,12 +5,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 
+interface GenerateMealPlanOptions {
+  weekOffset?: number;
+}
+
 export const useAIMealPlan = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const { user } = useAuth();
   const { profile } = useProfile();
 
-  const generateMealPlan = async (preferences: any) => {
+  const generateMealPlan = async (preferences: any, options: GenerateMealPlanOptions = {}) => {
     if (!user?.id) {
       toast.error("Please log in to generate meal plans");
       return;
@@ -37,6 +41,7 @@ export const useAIMealPlan = () => {
         nationality: profile?.nationality
       });
       console.log("Preferences:", preferences);
+      console.log("Week Offset:", options.weekOffset || 0);
 
       const { data, error } = await supabase.functions.invoke('generate-meal-plan', {
         body: {
@@ -55,7 +60,8 @@ export const useAIMealPlan = () => {
           preferences: {
             ...preferences,
             allergies: profile?.allergies || [],
-            dietary_restrictions: profile?.dietary_restrictions || []
+            dietary_restrictions: profile?.dietary_restrictions || [],
+            weekOffset: options.weekOffset || 0 // Pass the week offset to backend
           }
         }
       });
@@ -73,7 +79,7 @@ export const useAIMealPlan = () => {
       console.log("✅ Meal plan generated successfully:", data);
       toast.success(`✨ ${data.message || 'Meal plan generated successfully!'}`);
       
-      return data;
+      return { ...data, weekOffset: options.weekOffset || 0 };
       
     } catch (error: any) {
       console.error("❌ Error generating meal plan:", error);
