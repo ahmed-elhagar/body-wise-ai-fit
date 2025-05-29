@@ -13,7 +13,7 @@ const MealDetails = ({ prepTime, cookTime, servings, ingredients }: MealDetailsP
   const { t, isRTL } = useLanguage();
 
   return (
-    <div className={`flex flex-wrap items-center gap-2 sm:gap-3 text-xs text-gray-600 mb-2 sm:mb-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+    <div className={`flex flex-wrap items-center gap-2 sm:gap-3 text-xs text-gray-600 mb-2 sm:mb-3 ${isRTL ? 'flex-row-reverse justify-end' : 'justify-start'}`}>
       <div className={`flex items-center gap-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
         <Clock className="w-3 h-3" />
         <span>{(prepTime || 0) + (cookTime || 0)} {t('mealPlan.min')}</span>

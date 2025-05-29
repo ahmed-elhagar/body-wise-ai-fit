@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { ChefHat } from "lucide-react";
+import { ChefHat, ArrowLeftRight } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Meal {
@@ -37,7 +37,7 @@ const MealActionButtons = ({ meal, onShowRecipe, onExchangeMeal }: MealActionBut
         className="flex-1 bg-white/90 hover:bg-fitness-primary hover:text-white transition-all duration-200 shadow-sm text-xs sm:text-sm"
         onClick={() => onShowRecipe(meal)}
       >
-        <ChefHat className="w-3 h-3 mr-1" />
+        <ChefHat className={`w-3 h-3 ${isRTL ? 'ml-1' : 'mr-1'}`} />
         {t('mealPlan.recipe')}
       </Button>
       <Button 
@@ -46,7 +46,7 @@ const MealActionButtons = ({ meal, onShowRecipe, onExchangeMeal }: MealActionBut
         className="flex-1 bg-white/90 hover:bg-orange-500 hover:text-white transition-all duration-200 shadow-sm text-xs sm:text-sm"
         onClick={() => onExchangeMeal(meal)}
       >
-        <span className="text-xs mr-1">⇄</span>
+        <ArrowLeftRight className={`w-3 h-3 ${isRTL ? 'ml-1' : 'mr-1'}`} />
         {t('mealPlan.exchange')}
       </Button>
     </div>

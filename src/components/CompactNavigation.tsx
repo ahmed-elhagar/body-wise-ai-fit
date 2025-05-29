@@ -48,7 +48,7 @@ const CompactNavigation = ({
 
   return (
     <Card className="p-3 bg-white/95 backdrop-blur-sm border-0 shadow-lg">
-      <div className="space-y-3">
+      <div className={`space-y-3 ${isRTL ? 'text-right' : 'text-left'}`}>
         {/* Week Navigation Row */}
         <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
           <Button

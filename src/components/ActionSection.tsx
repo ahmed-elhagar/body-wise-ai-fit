@@ -37,7 +37,7 @@ const ActionSection = ({
     <div className="space-y-4">
       {/* Summary Card */}
       <Card className="p-4 bg-gradient-to-br from-white via-fitness-primary/5 to-pink-50 border-0 shadow-lg">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-center">
+        <div className={`grid grid-cols-1 lg:grid-cols-3 gap-4 items-center ${isRTL ? 'text-right' : 'text-left'}`}>
           
           {/* Summary Section */}
           <div className="lg:col-span-2">
@@ -82,7 +82,7 @@ const ActionSection = ({
           </div>
 
           {/* Action Buttons */}
-          <div className={`flex gap-2 ${isRTL ? 'justify-start' : 'justify-end'} ${isRTL ? 'flex-row-reverse' : ''}`}>
+          <div className={`flex gap-2 justify-end ${isRTL ? 'flex-row-reverse justify-start' : ''}`}>
             {showShoppingList && (
               <Button
                 variant="outline"

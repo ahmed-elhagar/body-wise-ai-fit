@@ -10,7 +10,7 @@ const IngredientsPreview = ({ ingredients }: IngredientsPreviewProps) => {
   const { t, isRTL } = useLanguage();
 
   return (
-    <div className={`flex flex-wrap gap-1 mb-3 sm:mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+    <div className={`flex flex-wrap gap-1 mb-3 sm:mb-4 ${isRTL ? 'flex-row-reverse justify-end' : 'justify-start'}`}>
       {(ingredients || []).slice(0, 2).map((ingredient, idx) => (
         <Badge key={idx} variant="outline" className="text-xs bg-gray-50 hover:bg-gray-100 transition-colors">
           {typeof ingredient === 'string' ? ingredient : ingredient.name}

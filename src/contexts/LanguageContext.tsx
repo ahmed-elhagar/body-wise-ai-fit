@@ -135,12 +135,13 @@ const translations: Translations = {
   'mealPlan.highProtein': { en: 'High Protein Diet', ar: 'نظام عالي البروتين' },
   'mealPlan.balanced': { en: 'Balanced Diet', ar: 'نظام متوازن' },
   'mealPlan.noActivePlan': { en: 'No active meal plan found', ar: 'لم يتم العثور على خطة وجبات نشطة' },
+  'mealPlan.personalizedProfile': { en: 'Create your personalized weekly meal plan based on your profile', ar: 'أنشئ خطة وجباتك الأسبوعية الشخصية بناءً على ملفك الشخصي' },
   
   // AI Generation Dialog
   'mealPlan.generateAIMealPlan': { en: 'Generate AI Meal Plan', ar: 'إنشاء خطة وجبات ذكية' },
   'mealPlan.sevenDayCompletePlan': { en: '7-Day Complete Plan', ar: 'خطة كاملة لـ 7 أيام' },
   'mealPlan.mealsTotal': { en: '21-35 meals total (based on snacks)', ar: '21-35 وجبة إجمالية (حسب الوجبات الخفيفة)' },
-  'mealPlan.personalizedProfile': { en: 'Personalized to your profile', ar: 'مخصصة لملفك الشخصي' },
+  'mealPlan.personalizedProfileAI': { en: 'Personalized to your profile', ar: 'مخصصة لملفك الشخصي' },
   'mealPlan.foodDatabaseIntegration': { en: 'Food Database Integration', ar: 'تكامل قاعدة بيانات الطعام' },
   'mealPlan.automaticallyPopulates': { en: 'Automatically populates nutrition data', ar: 'ملء تلقائي لبيانات التغذية' },
   'mealPlan.enablesQuickSearch': { en: 'Enables quick food search', ar: 'تمكين البحث السريع عن الطعام' },
