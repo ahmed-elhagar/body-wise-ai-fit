@@ -22,6 +22,15 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
+    console.log('🚀 Exercise generation request received:', {
+      userId: userData?.userId?.substring(0, 8) + '...',
+      workoutType: preferences?.workoutType,
+      weekStartDate: preferences?.weekStartDate,
+      weekOffset: preferences?.weekOffset,
+      goalType: preferences?.goalType,
+      fitnessLevel: preferences?.fitnessLevel
+    });
+
     if (!openAIApiKey) {
       throw new Error('OpenAI API key not configured');
     }
@@ -32,15 +41,18 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    console.log('🚀 Generating exercise program for:', { 
-      userId: userData?.userId?.substring(0, 8) + '...', 
-      workoutType: preferences?.workoutType,
-      goalType: preferences?.goalType,
-      fitnessLevel: preferences?.fitnessLevel
-    });
+    // Validate required data
+    if (!userData?.userId) {
+      throw new Error('User ID is required');
+    }
 
     // Determine workout type - default to 'home' if not specified
     const workoutType = preferences?.workoutType || 'home';
+    
+    // Validate workout type
+    if (!['home', 'gym'].includes(workoutType)) {
+      throw new Error('Invalid workout type. Must be "home" or "gym"');
+    }
     
     // Choose the appropriate prompt based on workout type
     const selectedPrompt = workoutType === 'gym' 
@@ -60,12 +72,12 @@ serve(async (req) => {
         messages: [
           { 
             role: 'system', 
-            content: `You are a certified personal trainer and exercise specialist. Always respond with valid JSON only. Create safe, effective workouts for ${workoutType} environment. Focus on proper form and progressive overload principles.` 
+            content: `You are a certified personal trainer and exercise specialist. Always respond with valid JSON only. Create safe, effective workouts for ${workoutType} environment. Focus on proper form, progressive overload, and clear instructions.` 
           },
           { role: 'user', content: selectedPrompt }
         ],
         temperature: 0.3,
-        max_tokens: 3000,
+        max_tokens: 4000,
       }),
     });
 
@@ -89,19 +101,24 @@ serve(async (req) => {
     validateWorkoutProgram(generatedProgram);
     console.log('✅ Exercise program validation passed');
 
-    // Add workout type to preferences for storage
-    const preferencesWithType = {
+    // Ensure preferences include the workout type and week information
+    const enhancedPreferences = {
       ...preferences,
-      workoutType
+      workoutType,
+      weekStartDate: preferences?.weekStartDate,
+      weekOffset: preferences?.weekOffset
     };
 
     // Store the program in the database
-    const weeklyProgram = await storeWorkoutProgram(supabase, generatedProgram, userData, preferencesWithType);
+    const weeklyProgram = await storeWorkoutProgram(supabase, generatedProgram, userData, enhancedPreferences);
 
     console.log('🎉 Exercise program generated and stored successfully:', {
       programId: weeklyProgram.id,
       workoutType,
-      programName: weeklyProgram.program_name
+      programName: weeklyProgram.program_name,
+      weekStartDate: weeklyProgram.week_start_date,
+      workoutsCreated: weeklyProgram.workoutsCreated,
+      exercisesCreated: weeklyProgram.exercisesCreated
     });
 
     return new Response(JSON.stringify({ 
@@ -109,6 +126,9 @@ serve(async (req) => {
       programId: weeklyProgram.id,
       workoutType,
       programName: weeklyProgram.program_name,
+      weekStartDate: weeklyProgram.week_start_date,
+      workoutsCreated: weeklyProgram.workoutsCreated,
+      exercisesCreated: weeklyProgram.exercisesCreated,
       message: `${workoutType === 'gym' ? 'Gym' : 'Home'} exercise program generated successfully`
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -126,6 +146,8 @@ serve(async (req) => {
       errorMessage = 'Generated program validation failed - please try again';
     } else if (error.message.includes('database') || error.message.includes('Supabase')) {
       errorMessage = 'Database error - please try again';
+    } else if (error.message.includes('User ID')) {
+      errorMessage = 'Authentication required - please sign in';
     }
     
     return new Response(JSON.stringify({ 

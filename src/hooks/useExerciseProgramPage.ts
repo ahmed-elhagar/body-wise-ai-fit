@@ -80,16 +80,18 @@ export const useExerciseProgramPage = () => {
   }, [todaysExercises]);
 
   const handleGenerateAIProgram = (preferences: ExercisePreferences) => {
+    const weekStartDateString = format(weekStartDate, 'yyyy-MM-dd');
+    
     console.log('🤖 Generating AI exercise program with preferences:', {
       ...preferences,
       weekOffset: currentWeekOffset,
-      weekStartDate: format(weekStartDate, 'yyyy-MM-dd')
+      weekStartDate: weekStartDateString
     });
     
-    // Pass week information to AI generation
+    // Pass week information to AI generation with exact week date
     const enhancedPreferences = {
       ...preferences,
-      weekStartDate: format(weekStartDate, 'yyyy-MM-dd'),
+      weekStartDate: weekStartDateString,
       weekOffset: currentWeekOffset
     };
     
@@ -98,12 +100,21 @@ export const useExerciseProgramPage = () => {
   };
 
   const handleRegenerateProgram = () => {
+    const weekStartDateString = format(weekStartDate, 'yyyy-MM-dd');
+    
     const preferences = {
       ...aiPreferences,
       workoutType: workoutType,
-      weekStartDate: format(weekStartDate, 'yyyy-MM-dd'),
+      weekStartDate: weekStartDateString,
       weekOffset: currentWeekOffset
     };
+    
+    console.log('🔄 Regenerating program for:', {
+      workoutType,
+      weekStartDate: weekStartDateString,
+      weekOffset: currentWeekOffset
+    });
+    
     handleGenerateAIProgram(preferences);
   };
 

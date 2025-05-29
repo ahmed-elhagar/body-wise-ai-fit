@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useProfile } from './useProfile';
 import { toast } from 'sonner';
+import { format, addDays, startOfWeek } from 'date-fns';
 
 interface ExerciseProgramRequest {
   goalType?: string;
@@ -30,8 +31,19 @@ export const useAIExercise = () => {
       console.log('🚀 Starting exercise program generation with request:', {
         workoutType: request.workoutType,
         goalType: request.goalType,
-        fitnessLevel: request.fitnessLevel
+        fitnessLevel: request.fitnessLevel,
+        weekOffset: request.weekOffset,
+        weekStartDate: request.weekStartDate
       });
+
+      // Calculate week start date if not provided
+      let weekStartDate = request.weekStartDate;
+      if (!weekStartDate && request.weekOffset !== undefined) {
+        const currentWeekStart = startOfWeek(new Date());
+        weekStartDate = format(addDays(currentWeekStart, request.weekOffset * 7), 'yyyy-MM-dd');
+      } else if (!weekStartDate) {
+        weekStartDate = format(startOfWeek(new Date()), 'yyyy-MM-dd');
+      }
 
       // Prepare user data safely with proper null checks
       const userData = {
@@ -56,11 +68,14 @@ export const useAIExercise = () => {
         targetMuscleGroups: request.targetMuscleGroups || ['full_body'],
         equipment: request.equipment || (request.workoutType === 'gym' ? ['barbells', 'dumbbells', 'machines'] : ['bodyweight']),
         userLanguage: request.userLanguage || userData.preferred_language,
-        weekStartDate: request.weekStartDate,
+        weekStartDate: weekStartDate,
         weekOffset: request.weekOffset
       };
 
-      console.log('📤 Sending request to edge function:', transformedRequest);
+      console.log('📤 Sending request to edge function:', {
+        ...transformedRequest,
+        userId: userData.userId.substring(0, 8) + '...'
+      });
 
       const { data, error } = await supabase.functions.invoke('generate-exercise-program', {
         body: {
@@ -84,11 +99,13 @@ export const useAIExercise = () => {
       return data;
     },
     onSuccess: (data) => {
-      // Invalidate exercise programs to refetch the new data
+      // Invalidate all exercise-related queries to refetch the new data
       queryClient.invalidateQueries({ queryKey: ['exercise-programs'] });
       queryClient.invalidateQueries({ queryKey: ['exercise-program'] });
       
-      toast.success(`${data.workoutType === 'gym' ? 'Gym' : 'Home'} exercise program generated successfully!`);
+      toast.success(`${data.workoutType === 'gym' ? 'Gym' : 'Home'} exercise program generated successfully!`, {
+        description: `Created ${data.workoutsCreated || 0} workouts with ${data.exercisesCreated || 0} exercises`
+      });
       console.log('✅ Exercise program generation completed successfully');
     },
     onError: (error) => {
@@ -103,6 +120,8 @@ export const useAIExercise = () => {
         errorMessage = 'AI service is temporarily unavailable. Please try again later.';
       } else if (error.message.includes('parse')) {
         errorMessage = 'There was an issue processing your request. Please try again.';
+      } else if (error.message.includes('Authentication required')) {
+        errorMessage = 'Please sign in to generate exercise programs.';
       }
       
       toast.error(errorMessage);

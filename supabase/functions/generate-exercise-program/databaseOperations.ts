@@ -16,12 +16,21 @@ export const storeWorkoutProgram = async (
 
   const workoutType = preferences?.workoutType || 'home';
   
-  // Calculate week start date from preferences or use current week
-  const weekStartDate = preferences?.weekStartDate || format(startOfWeek(new Date()), 'yyyy-MM-dd');
+  // Calculate week start date - ensure we get the exact week requested
+  let weekStartDate;
+  if (preferences?.weekStartDate) {
+    weekStartDate = preferences.weekStartDate;
+  } else if (preferences?.weekOffset !== undefined) {
+    const currentWeekStart = startOfWeek(new Date());
+    weekStartDate = format(addDays(currentWeekStart, preferences.weekOffset * 7), 'yyyy-MM-dd');
+  } else {
+    weekStartDate = format(startOfWeek(new Date()), 'yyyy-MM-dd');
+  }
   
   console.log('🗄️ Starting workout program storage:', {
     workoutType,
     weekStartDate,
+    weekOffset: preferences?.weekOffset,
     userId: userId.substring(0, 8) + '...',
     programName: generatedProgram?.programOverview?.name
   });
@@ -31,7 +40,7 @@ export const storeWorkoutProgram = async (
     await deleteExistingPrograms(supabase, userId, workoutType, weekStartDate);
 
     // Small delay to ensure database consistency
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 500));
 
     // Create new weekly program record
     const weeklyProgram = await createWeeklyProgram(
@@ -55,10 +64,15 @@ export const storeWorkoutProgram = async (
       programName: weeklyProgram.program_name,
       workoutsCreated: result.totalWorkoutsCreated,
       exercisesCreated: result.totalExercisesCreated,
-      workoutType
+      workoutType,
+      weekStartDate
     });
 
-    return weeklyProgram;
+    return {
+      ...weeklyProgram,
+      workoutsCreated: result.totalWorkoutsCreated,
+      exercisesCreated: result.totalExercisesCreated
+    };
     
   } catch (error) {
     console.error('❌ Critical error in storeWorkoutProgram:', error);

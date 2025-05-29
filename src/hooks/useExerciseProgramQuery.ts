@@ -65,12 +65,12 @@ export const useExerciseProgramQuery = (weekOffset: number = 0, workoutType: "ho
         daily_workouts: generateWeeklyWorkouts(existingProgram.daily_workouts || [], workoutType)
       } as ExerciseProgram;
 
-      console.log('✅ Transformed program with', transformedProgram.daily_workouts?.length, 'daily workouts');
+      console.log('✅ Transformed program with', transformedProgram.daily_workouts?.length, 'daily workouts (including rest days)');
 
       return transformedProgram;
     },
     enabled: !!user?.id,
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
-    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
+    staleTime: 2 * 60 * 1000, // Cache for 2 minutes
+    gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
   });
 };
