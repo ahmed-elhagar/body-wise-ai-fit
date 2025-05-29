@@ -4,6 +4,8 @@ import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useMealShuffle } from "@/hooks/useMealShuffle";
 import { useAIMealPlan } from "@/hooks/useAIMealPlan";
+import { useQueryClient } from '@tanstack/react-query';
+import { useAuth } from './useAuth';
 
 export const useMealPlanActions = (
   currentWeekPlan: any,
@@ -12,6 +14,8 @@ export const useMealPlanActions = (
   refetchMealPlan: any
 ) => {
   const { t, language } = useLanguage();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const { generateMealPlan, isGenerating } = useAIMealPlan();
   const { shuffleMeals, isShuffling } = useMealShuffle();
 
@@ -34,53 +38,59 @@ export const useMealPlanActions = (
     }
   }, [currentWeekPlan?.weeklyPlan?.id, shuffleMeals, t, refetchMealPlan]);
 
-  // Enhanced AI generation handler
+  // Enhanced AI generation handler with better cache management
   const handleGenerateAIPlan = useCallback(async () => {
     try {
-      console.log('🚀 Starting AI meal plan generation with preferences:', aiPreferences);
+      console.log('🚀 Starting AI meal plan generation with enhanced cache management:', {
+        weekOffset: currentWeekOffset,
+        preferences: aiPreferences,
+        userId: user?.id
+      });
       
       const enhancedPreferences = {
         ...aiPreferences,
         language: language,
-        locale: language === 'ar' ? 'ar-SA' : 'en-US'
+        locale: language === 'ar' ? 'ar-SA' : 'en-US',
+        weekOffset: currentWeekOffset
       };
       
       const result = await generateMealPlan(enhancedPreferences, { weekOffset: currentWeekOffset });
       
       if (result?.success) {
+        console.log('✅ Generation successful, invalidating cache and refetching:', {
+          weeklyPlanId: result.weeklyPlanId,
+          weekOffset: currentWeekOffset
+        });
         
-        // Force immediate refetch with retries
-        let retryCount = 0;
-        const maxRetries = 3;
-        const retryInterval = 1000;
+        // Invalidate all meal plan queries to ensure fresh data
+        await queryClient.invalidateQueries({
+          queryKey: ['weekly-meal-plan']
+        });
         
-        const attemptRefetch = async () => {
-          try {
-            await refetchMealPlan?.();
-            toast.success(t('generatedSuccessfully') || "✨ Meal plan generated successfully!");
-          } catch (error) {
-            retryCount++;
-            if (retryCount < maxRetries) {
-              console.log(`Retrying refetch... (${retryCount}/${maxRetries})`);
-              setTimeout(attemptRefetch, retryInterval * retryCount);
-            } else {
-              console.error('Failed to refetch after multiple attempts');
-              toast.warning('Meal plan generated but may need a page refresh to display properly.');
-            }
-          }
-        };
+        // Wait a bit for the database to be fully updated
+        await new Promise(resolve => setTimeout(resolve, 1500));
         
-        setTimeout(attemptRefetch, 500);
-        return true;
+        // Force immediate refetch with better error handling
+        try {
+          await refetchMealPlan?.();
+          console.log('✅ Refetch completed successfully');
+          return true;
+        } catch (refetchError) {
+          console.error('❌ Refetch failed after generation:', refetchError);
+          toast.warning('Plan generated but may need a page refresh to display properly.');
+          return true; // Still consider it successful since generation worked
+        }
+      } else {
+        console.error('❌ Generation failed:', result?.error);
+        return false;
       }
-      return false;
       
     } catch (error) {
-      console.error('❌ Generation failed:', error);
+      console.error('❌ Generation failed with exception:', error);
       toast.error(t('mealPlan.generationFailed') || "Failed to generate meal plan. Please try again.");
       throw error;
     }
-  }, [aiPreferences, language, currentWeekOffset, generateMealPlan, refetchMealPlan, t]);
+  }, [aiPreferences, language, currentWeekOffset, generateMealPlan, refetchMealPlan, t, queryClient, user?.id]);
 
   return {
     handleRegeneratePlan,

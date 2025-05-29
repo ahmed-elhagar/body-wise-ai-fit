@@ -168,8 +168,8 @@ export const useMealPlanData = (weekOffset: number = 0) => {
       }
     },
     enabled: !!user?.id,
-    staleTime: 30000, // 30 seconds
-    gcTime: 60000, // 1 minute
+    staleTime: 5000, // Reduced stale time for more frequent updates
+    gcTime: 30000, // Reduced cache time
     retry: (failureCount, error) => {
       // Don't retry on authentication errors
       if (error?.message?.includes('JWT')) return false;
@@ -177,5 +177,7 @@ export const useMealPlanData = (weekOffset: number = 0) => {
     },
     refetchOnWindowFocus: false,
     refetchOnMount: true,
+    // Add better invalidation
+    refetchOnReconnect: true
   });
 };

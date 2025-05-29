@@ -1,129 +1,119 @@
 
-import { useState } from "react";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
-import { useProfile } from "@/hooks/useProfile";
+import { useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from './useAuth';
+import { toast } from 'sonner';
+import { useLanguage } from '@/contexts/LanguageContext';
 
-interface GenerateMealPlanOptions {
+interface MealPlanPreferences {
+  duration: string;
+  cuisine: string;
+  maxPrepTime: string;
+  mealTypes: string;
+  includeSnacks: boolean;
+  weekOffset?: number;
+}
+
+interface GenerationOptions {
   weekOffset?: number;
 }
 
 export const useAIMealPlan = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const { user } = useAuth();
-  const { profile } = useProfile();
+  const { t } = useLanguage();
 
-  const generateMealPlan = async (preferences: any, options: GenerateMealPlanOptions = {}) => {
-    if (!user?.id) {
-      toast.error("Please log in to generate meal plans");
-      return;
-    }
-
-    // Check if user has generations remaining
-    if (profile?.ai_generations_remaining === 0) {
-      toast.error("You have reached your AI generation limit. Please contact admin to increase your limit.");
-      return;
+  const generateMealPlan = async (preferences: MealPlanPreferences, options: GenerationOptions = {}) => {
+    if (!user) {
+      toast.error(t('authRequired') || 'Authentication required');
+      return { success: false, error: 'No user found' };
     }
 
     setIsGenerating(true);
     
     try {
-      console.log("🚀 Starting AI meal plan generation...");
-      console.log("User Profile:", {
-        id: user.id,
-        age: profile?.age,
-        gender: profile?.gender,
-        weight: profile?.weight,
-        height: profile?.height,
-        fitness_goal: profile?.fitness_goal,
-        activity_level: profile?.activity_level,
-        nationality: profile?.nationality
+      console.log('🚀 Starting AI meal plan generation with enhanced debugging:', {
+        userId: user.id,
+        userEmail: user.email,
+        preferences,
+        options,
+        weekOffset: options.weekOffset || 0
       });
-      console.log("Preferences:", preferences);
-      console.log("Week Offset:", options.weekOffset || 0);
 
-      // Validate week offset
-      const weekOffset = options.weekOffset || 0;
-      if (weekOffset < -52 || weekOffset > 52) {
-        throw new Error("Week offset must be between -52 and 52 weeks");
-      }
-
-      const requestPayload = {
-        userProfile: {
-          id: user.id,
-          age: profile?.age,
-          gender: profile?.gender,
-          weight: profile?.weight,
-          height: profile?.height,
-          fitness_goal: profile?.fitness_goal,
-          activity_level: profile?.activity_level,
-          nationality: profile?.nationality,
-          allergies: profile?.allergies || [],
-          dietary_restrictions: profile?.dietary_restrictions || []
-        },
-        preferences: {
-          ...preferences,
-          allergies: profile?.allergies || [],
-          dietary_restrictions: profile?.dietary_restrictions || [],
-          weekOffset: weekOffset
-        }
+      // Enhanced preferences with week offset
+      const enhancedPreferences = {
+        ...preferences,
+        weekOffset: options.weekOffset || 0,
+        timestamp: new Date().toISOString()
       };
 
-      console.log("📡 Sending request to edge function:", requestPayload);
+      console.log('📊 Enhanced preferences for generation:', enhancedPreferences);
 
       const { data, error } = await supabase.functions.invoke('generate-meal-plan', {
-        body: requestPayload
+        body: {
+          userProfile: {
+            id: user.id,
+            email: user.email,
+            ...user.user_metadata
+          },
+          preferences: enhancedPreferences
+        }
       });
 
-      console.log("📥 Edge function response:", { data, error });
+      console.log('📥 Edge function response received:', {
+        success: data?.success,
+        error: error?.message || data?.error,
+        weeklyPlanId: data?.weeklyPlanId,
+        totalMeals: data?.totalMeals,
+        weekOffset: data?.weekOffset,
+        includeSnacks: data?.includeSnacks
+      });
 
       if (error) {
-        console.error("❌ Supabase function error:", error);
-        
-        // Handle specific error types
-        if (error.message?.includes('FunctionsHttpError')) {
-          throw new Error('Server error occurred. Please try again.');
-        } else if (error.message?.includes('FunctionsRelayError')) {
-          throw new Error('Network error. Please check your connection and try again.');
-        } else if (error.message?.includes('generation limit')) {
-          throw new Error('You have reached your AI generation limit. Please contact admin to increase your limit.');
-        }
-        
-        throw new Error(error.message || 'Failed to generate meal plan');
+        console.error('❌ Supabase function invoke error:', error);
+        const errorMessage = error.message || 'Failed to generate meal plan';
+        toast.error(t('mealPlan.generationFailed') || errorMessage);
+        return { success: false, error: errorMessage };
       }
 
       if (!data?.success) {
-        console.error("❌ Generation failed:", data);
-        throw new Error(data?.error || 'Failed to generate meal plan');
+        console.error('❌ Generation failed on server:', {
+          serverError: data?.error,
+          details: data?.details,
+          serverResponse: data
+        });
+        
+        const errorMessage = data?.details || data?.error || 'Generation failed on server';
+        toast.error(t('mealPlan.generationFailed') || errorMessage);
+        return { success: false, error: errorMessage };
       }
 
-      console.log("✅ Meal plan generated successfully:", data);
-      toast.success(`✨ ${data.message || 'Meal plan generated successfully!'}`);
-      
-      return { ...data, weekOffset: weekOffset };
-      
-    } catch (error: any) {
-      console.error("❌ Error generating meal plan:", error);
-      
-      // Handle specific error messages
-      if (error.message?.includes('generation limit')) {
-        toast.error("You have reached your AI generation limit. Please contact admin to increase your limit.");
-      } else if (error.message?.includes('Authentication required')) {
-        toast.error("Please log in again to generate meal plans.");
-      } else if (error.message?.includes('Week offset')) {
-        toast.error("Invalid week selection. Please choose a week within the allowed range.");
-      } else if (error.message?.includes('timeout')) {
-        toast.error("Generation is taking longer than expected. Please try again.");
-      } else if (error.message?.includes('Server error')) {
-        toast.error("Server error occurred. Please try again in a moment.");
-      } else if (error.message?.includes('Network error')) {
-        toast.error("Network error. Please check your connection and try again.");
-      } else {
-        toast.error(error.message || "Failed to generate meal plan. Please try again.");
-      }
-      
-      throw error;
+      console.log('✅ Meal plan generation successful:', {
+        weeklyPlanId: data.weeklyPlanId,
+        totalMeals: data.totalMeals,
+        weekStartDate: data.weekStartDate,
+        weekOffset: data.weekOffset,
+        generationsRemaining: data.generationsRemaining
+      });
+
+      // Show success toast with details
+      const successMessage = `${t('mealPlan.generatedSuccessfully')} (${data.totalMeals} meals)`;
+      toast.success(successMessage);
+
+      return {
+        success: true,
+        weeklyPlanId: data.weeklyPlanId,
+        totalMeals: data.totalMeals,
+        weekStartDate: data.weekStartDate,
+        weekOffset: data.weekOffset,
+        generationsRemaining: data.generationsRemaining
+      };
+
+    } catch (error) {
+      console.error('❌ Unexpected error during generation:', error);
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+      toast.error(t('mealPlan.generationFailed') || errorMessage);
+      return { success: false, error: errorMessage };
     } finally {
       setIsGenerating(false);
     }
