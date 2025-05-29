@@ -1,338 +1,112 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import i18n from 'i18next';
-import { initReactI18next } from 'react-i18next';
-import LanguageDetector from 'i18next-browser-languagedetector';
 
-// Define the shape of the language context
-interface LanguageContextProps {
-  language: string;
-  setLanguage: (lang: string) => void;
-  t: (key: string, options?: any) => string;
-  i18n: i18n.i18n;
+import React, { createContext, useContext, useState } from 'react';
+
+type Language = 'en' | 'ar';
+
+interface Translations {
+  [key: string]: {
+    en: string;
+    ar: string;
+  };
+}
+
+const translations: Translations = {
+  // Navigation
+  'nav.dashboard': { en: 'Dashboard', ar: 'لوحة التحكم' },
+  'nav.mealPlan': { en: 'Meal Plan', ar: 'خطة الوجبات' },
+  'nav.exercise': { en: 'Exercise', ar: 'التمارين' },
+  'nav.weightTracking': { en: 'Weight Tracking', ar: 'تتبع الوزن' },
+  'nav.calorieChecker': { en: 'Calorie Checker', ar: 'فاحص السعرات' },
+  'nav.profile': { en: 'Profile', ar: 'الملف الشخصي' },
+  'nav.aiChat': { en: 'AI Chat', ar: 'دردشة ذكية' },
+  'nav.logout': { en: 'Logout', ar: 'تسجيل خروج' },
+
+  // Days
+  'day.saturday': { en: 'Saturday', ar: 'السبت' },
+  'day.sunday': { en: 'Sunday', ar: 'الأحد' },
+  'day.monday': { en: 'Monday', ar: 'الإثنين' },
+  'day.tuesday': { en: 'Tuesday', ar: 'الثلاثاء' },
+  'day.wednesday': { en: 'Wednesday', ar: 'الأربعاء' },
+  'day.thursday': { en: 'Thursday', ar: 'الخميس' },
+  'day.friday': { en: 'Friday', ar: 'الجمعة' },
+
+  // Meal Plan
+  'mealPlan.title': { en: 'Meal Plan', ar: 'خطة الوجبات' },
+  'mealPlan.loading': { en: 'Loading meal plan...', ar: 'تحميل خطة الوجبات...' },
+  'mealPlan.generating': { en: 'Generating your personalized meal plan...', ar: 'إنشاء خطة الوجبات الشخصية...' },
+  'mealPlan.selectDay': { en: 'Select Day', ar: 'اختر اليوم' },
+  'mealPlan.dailyView': { en: 'Daily View', ar: 'العرض اليومي' },
+  'mealPlan.weeklyView': { en: 'Weekly View', ar: 'العرض الأسبوعي' },
+  'mealPlan.addSnack': { en: 'Add Snack', ar: 'إضافة وجبة خفيفة' },
+  'mealPlan.finalizePlan': { en: 'Finalize Plan', ar: 'إنهاء الخطة' },
+  'mealPlan.daysMeals': { en: "'s Meals", ar: 'وجبات ' },
+  'mealPlan.mealsPlanned': { en: 'meals planned', ar: 'وجبة مخططة' },
+  'mealPlan.previousWeek': { en: 'Previous', ar: 'السابق' },
+  'mealPlan.nextWeek': { en: 'Next', ar: 'التالي' },
+  'mealPlan.thisWeek': { en: 'This Week', ar: 'هذا الأسبوع' },
+  'mealPlan.lastWeek': { en: 'Last Week', ar: 'الأسبوع الماضي' },
+  'mealPlan.nextWeek': { en: 'Next Week', ar: 'الأسبوع القادم' },
+  'mealPlan.weeksAgo': { en: 'weeks ago', ar: 'أسابيع مضت' },
+  'mealPlan.weeksAhead': { en: 'weeks ahead', ar: 'أسابيع قادمة' },
+  'mealPlan.todaysSummary': { en: "Today's Summary", ar: 'ملخص اليوم' },
+  'mealPlan.calories': { en: 'Calories', ar: 'السعرات' },
+  'mealPlan.protein': { en: 'Protein', ar: 'البروتين' },
+  'mealPlan.carbs': { en: 'Carbs', ar: 'الكربوهيدرات' },
+  'mealPlan.fat': { en: 'Fat', ar: 'الدهون' },
+  'mealPlan.calToday': { en: 'cal today', ar: 'سعرة اليوم' },
+  'mealPlan.proteinToday': { en: 'protein today', ar: 'بروتين اليوم' },
+  'mealPlan.avgPerMeal': { en: 'avg/meal', ar: 'متوسط/وجبة' },
+  'mealPlan.proteinPerMeal': { en: 'protein/meal', ar: 'بروتين/وجبة' },
+  'mealPlan.shoppingList': { en: 'Shopping List', ar: 'قائمة التسوق' },
+  'mealPlan.weeklyMealPlan': { en: 'Weekly Meal Plan', ar: 'خطة الوجبات الأسبوعية' },
+  'mealPlan.personalizedPlan': { en: 'Personalized nutrition for your fitness goals', ar: 'تغذية شخصية لأهدافك الرياضية' },
+  'mealPlan.weeklyCalories': { en: 'Weekly Calories', ar: 'السعرات الأسبوعية' },
+  'mealPlan.weeklyProtein': { en: 'Weekly Protein', ar: 'البروتين الأسبوعي' },
+  'mealPlan.cal': { en: 'cal', ar: 'سعرة' },
+  'mealPlan.calPerDay': { en: 'cal/day', ar: 'سعرة/يوم' },
+  'mealPlan.min': { en: 'min', ar: 'دقيقة' },
+  'mealPlan.snack': { en: 'Snack', ar: 'وجبة خفيفة' },
+  'mealPlan.breakfast': { en: 'Breakfast', ar: 'إفطار' },
+  'mealPlan.lunch': { en: 'Lunch', ar: 'غداء' },
+  'mealPlan.dinner': { en: 'Dinner', ar: 'عشاء' },
+  'mealPlan.noMealsPlanned': { en: 'No meals planned', ar: 'لا توجد وجبات مخططة' },
+  'mealPlan.vegetarian': { en: 'Vegetarian Diet', ar: 'نظام نباتي' },
+  'mealPlan.keto': { en: 'Keto Diet', ar: 'نظام كيتو' },
+  'mealPlan.highProtein': { en: 'High Protein Diet', ar: 'نظام عالي البروتين' },
+  'mealPlan.balanced': { en: 'Balanced Diet', ar: 'نظام متوازن' },
+  'mealPlan.noActivePlan': { en: 'No active meal plan found', ar: 'لم يتم العثور على خطة وجبات نشطة' },
+  'mealPlan.planFinalized': { en: 'Meal plan finalized! Ready for the next step.', ar: 'تم إنهاء خطة الوجبات! جاهز للخطوة التالية.' }
+};
+
+interface LanguageContextType {
+  language: Language;
+  setLanguage: (lang: Language) => void;
+  t: (key: string) => string;
   isRTL: boolean;
 }
 
-// Create the language context with a default value
-const LanguageContext = createContext<LanguageContextProps>({
-  language: 'en',
-  setLanguage: () => {},
-  t: (key: string) => key,
-  i18n: i18n.createInstance(),
-  isRTL: false,
-});
+const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-// Custom hook to use the language context
-export const useLanguage = () => useContext(LanguageContext);
-
-// Language provider component
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [language, setLanguage] = useState('en');
-  const [isRTL, setIsRTL] = useState(false);
+  const [language, setLanguage] = useState<Language>('en');
 
-  useEffect(() => {
-    const storedLanguage = localStorage.getItem('language') || 'en';
-    setLanguage(storedLanguage);
-    setIsRTL(storedLanguage === 'ar');
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('language', language);
-    setIsRTL(language === 'ar');
-  }, [language]);
-
-  useEffect(() => {
-    i18n
-      .use(LanguageDetector)
-      .use(initReactI18next)
-      .init({
-        resources: translations,
-        lng: language,
-        fallbackLng: 'en',
-        interpolation: {
-          escapeValue: false,
-        },
-        detection: {
-          order: ['localStorage', 'navigator'],
-          lookupLocalStorage: 'language',
-          caches: ['localStorage'],
-        },
-      });
-  }, [language]);
-
-  const handleLanguageChange = (lang: string) => {
-    setLanguage(lang);
-    i18n.changeLanguage(lang);
+  const t = (key: string): string => {
+    return translations[key]?.[language] || key;
   };
 
-  const value: LanguageContextProps = {
-    language: language,
-    setLanguage: handleLanguageChange,
-    t: i18n.t.bind(i18n),
-    i18n: i18n,
-    isRTL: isRTL,
-  };
-
-const translations = {
-  en: {
-    navigation: {
-      home: 'Home',
-      mealPlan: 'Meal Plan',
-      fitnessTracking: 'Fitness Tracking',
-      community: 'Community',
-      settings: 'Settings',
-      logout: 'Logout',
-    },
-    settingsPage: {
-      title: 'Settings',
-      language: 'Language',
-      theme: 'Theme',
-      notifications: 'Notifications',
-      account: 'Account',
-      profile: 'Profile',
-      security: 'Security',
-      help: 'Help',
-      about: 'About',
-      english: 'English',
-      arabic: 'Arabic',
-    },
-    mealPlan: {
-      title: 'Meal Plan',
-      generatePlan: 'Generate Meal Plan',
-      regeneratePlan: 'Regenerate Plan',
-      daysMeals: '\'s Meals',
-      mealsPlanned: 'Meals Planned',
-      calories: 'Calories',
-      protein: 'Protein',
-      carbs: 'Carbs',
-      fat: 'Fat',
-      todaysSummary: 'Today\'s Summary',
-      calToday: 'Cal Today',
-      proteinToday: 'Protein Today',
-      avgPerMeal: 'Avg per Meal',
-      proteinPerMeal: 'Protein per Meal',
-      shoppingList: 'Shopping List',
-      recipe: 'Recipe',
-      exchange: 'Exchange',
-      min: 'min',
-      serving: 'Serving',
-      ingredients: 'Ingredients',
-      more: 'more',
-      aiGenerated: 'AI Generated',
-      generateImage: 'Generate Image',
-      loading: 'Loading meal plan...',
-      generating: 'Generating your personalized meal plan...',
-      dailyView: 'Daily View',
-      weeklyView: 'Weekly View',
-      addSnack: 'Add Snack',
-      caloriesRemaining: 'Calories Remaining',
-      calPerDay: 'Cal per day',
-      progress: 'Progress',
-      targetReached: 'Target Reached!',
-      targetReachedDesc: 'You have reached your calorie target for today. Keep up the great work!',
-      aiPoweredTitle: 'AI Powered Snack Suggestion',
-      aiDescription: 'Let our AI suggest a delicious and healthy snack for you, tailored to fit your remaining {calories} calories.',
-      quickPrep: 'Quick Preparation',
-      healthy: 'Healthy and Nutritious',
-      perfectFit: 'Perfect Calorie Fit',
-      cancel: 'Cancel',
-      generateSnack: 'Generate Snack',
-	  selectDay: 'Select Day',
-      thisWeek: 'This Week',
-      lastWeek: 'Last Week', 
-      nextWeek: 'Next Week',
-      weeksAgo: 'weeks ago',
-      weeksAhead: 'weeks ahead',
-      previousWeek: 'Previous Week',
-      finalizePlan: 'Finalize Plan',
-      noActivePlan: 'No active meal plan found',
-      planFinalized: 'Meal plan finalized successfully!'
-    },
-    addSnack: {
-      title: 'Add AI Snack',
-      error: 'Failed to generate snack. Please try again.',
-      success: 'AI Snack generated successfully!',
-      notEnoughCalories: 'Not enough calories remaining to generate a snack.',
-      caloriesRemaining: 'Calories Remaining',
-      aiPoweredTitle: 'AI Powered Snack Suggestion',
-      aiDescription: 'Let our AI suggest a delicious and healthy snack for you, tailored to fit your remaining {calories} calories.',
-      quickPrep: 'Quick Preparation',
-      healthy: 'Healthy and Nutritious',
-      perfectFit: 'Perfect Calorie Fit',
-      cancel: 'Cancel',
-      generateSnack: 'Generate Snack',
-      targetReached: 'Calorie Target Reached',
-      targetReachedDesc: 'You have already met your calorie target for today. Consider adjusting your plan or saving the calories for another day.',
-    },
-    day: {
-      monday: 'Monday',
-      tuesday: 'Tuesday',
-      wednesday: 'Wednesday',
-      thursday: 'Thursday',
-      friday: 'Friday',
-      saturday: 'Saturday',
-      sunday: 'Sunday'
-    },
-    snack: 'Snack',
-  },
-  ar: {
-    navigation: {
-      home: 'الرئيسية',
-      mealPlan: 'خطة الوجبات',
-      fitnessTracking: 'تتبع اللياقة البدنية',
-      community: 'المجتمع',
-      settings: 'الإعدادات',
-      logout: 'تسجيل الخروج',
-    },
-    settingsPage: {
-      title: 'الإعدادات',
-      language: 'اللغة',
-      theme: 'السمة',
-      notifications: 'الإشعارات',
-      account: 'الحساب',
-      profile: 'الملف الشخصي',
-      security: 'الأمان',
-      help: 'المساعدة',
-      about: 'حول',
-      english: 'الإنجليزية',
-      arabic: 'العربية',
-    },
-    mealPlan: {
-      title: 'خطة الوجبات',
-      generatePlan: 'إنشاء خطة وجبات',
-      regeneratePlan: 'إعادة إنشاء الخطة',
-      daysMeals: ' وجبات اليوم',
-      mealsPlanned: 'وجبات مخططة',
-      calories: 'السعرات الحرارية',
-      protein: 'البروتين',
-      carbs: 'الكربوهيدرات',
-      fat: 'الدهون',
-      todaysSummary: 'ملخص اليوم',
-      calToday: 'سعر حراري اليوم',
-      proteinToday: 'بروتين اليوم',
-      avgPerMeal: 'المعدل لكل وجبة',
-      proteinPerMeal: 'البروتين لكل وجبة',
-      shoppingList: 'قائمة التسوق',
-      recipe: 'وصفة',
-      exchange: 'تبادل',
-      min: 'دقيقة',
-      serving: 'حصة',
-      ingredients: 'مكونات',
-      more: 'المزيد',
-      aiGenerated: 'تم إنشاؤه بواسطة الذكاء الاصطناعي',
-      generateImage: 'إنشاء صورة',
-      loading: 'جارٍ تحميل خطة الوجبات...',
-      generating: 'جارٍ إنشاء خطة الوجبات المخصصة الخاصة بك...',
-      dailyView: 'عرض يومي',
-      weeklyView: 'عرض أسبوعي',
-      addSnack: 'إضافة وجبة خفيفة',
-      caloriesRemaining: 'السعرات الحرارية المتبقية',
-      calPerDay: 'سعر حراري في اليوم',
-      progress: 'التقدم',
-      targetReached: 'تم الوصول إلى الهدف!',
-      targetReachedDesc: 'لقد وصلت إلى هدف السعرات الحرارية لهذا اليوم. استمر في العمل الرائع!',
-      aiPoweredTitle: 'اقتراح وجبة خفيفة مدعوم بالذكاء الاصطناعي',
-      aiDescription: 'دع الذكاء الاصطناعي الخاص بنا يقترح وجبة خفيفة لذيذة وصحية لك، مصممة لتناسب {calories} السعرات الحرارية المتبقية.',
-      quickPrep: 'تحضير سريع',
-      healthy: 'صحي ومغذ',
-      perfectFit: 'تناسب مثالي للسعرات الحرارية',
-      cancel: 'إلغاء',
-      generateSnack: 'إنشاء وجبة خفيفة',
-	  selectDay: 'اختر اليوم',
-      thisWeek: 'هذا الأسبوع',
-      lastWeek: 'الأسبوع الماضي',
-      nextWeek: 'الأسبوع القادم', 
-      weeksAgo: 'أسابيع مضت',
-      weeksAhead: 'أسابيع قادمة',
-      previousWeek: 'الأسبوع السابق',
-      finalizePlan: 'إنهاء الخطة',
-      noActivePlan: 'لا توجد خطة وجبات نشطة',
-      planFinalized: 'تم إنهاء خطة الوجبات بنجاح!'
-    },
-    addSnack: {
-      title: 'إضافة وجبة خفيفة بالذكاء الاصطناعي',
-      error: 'فشل إنشاء وجبة خفيفة. يرجى المحاولة مرة أخرى.',
-      success: 'تم إنشاء وجبة خفيفة بالذكاء الاصطناعي بنجاح!',
-      notEnoughCalories: 'لا توجد سعرات حرارية كافية متبقية لإنشاء وجبة خفيفة.',
-      caloriesRemaining: 'السعرات الحرارية المتبقية',
-      aiPoweredTitle: 'اقتراح وجبة خفيفة مدعوم بالذكاء الاصطناعي',
-      aiDescription: 'دع الذكاء الاصطناعي الخاص بنا يقترح وجبة خفيفة لذيذة وصحية لك، مصممة لتناسب {calories} السعرات الحرارية المتبقية.',
-      quickPrep: 'تحضير سريع',
-      healthy: 'صحي ومغذ',
-      perfectFit: 'تناسب مثالي للسعرات الحرارية',
-      cancel: 'إلغاء',
-      generateSnack: 'إنشاء وجبة خفيفة',
-      targetReached: 'تم الوصول إلى هدف السعرات الحرارية',
-      targetReachedDesc: 'لقد حققت بالفعل هدف السعرات الحرارية لهذا اليوم. فكر في تعديل خطتك أو توفير السعرات الحرارية ليوم آخر.',
-    },
-    day: {
-      monday: 'الاثنين',
-      tuesday: 'الثلاثاء',
-      wednesday: 'الأربعاء',
-      thursday: 'الخميس',
-      friday: 'الجمعة',
-      saturday: 'السبت',
-      sunday: 'الأحد'
-    },
-    snack: 'وجبة خفيفة',
-  }
-};
-
-    day: {
-      saturday: 'Saturday',
-      sunday: 'Sunday', 
-      monday: 'Monday',
-      tuesday: 'Tuesday',
-      wednesday: 'Wednesday',
-      thursday: 'Thursday',
-      friday: 'Friday'
-    },
-    
-    mealPlan: {
-      selectDay: 'Select Day',
-      thisWeek: 'This Week',
-      lastWeek: 'Last Week', 
-      nextWeek: 'Next Week',
-      weeksAgo: 'weeks ago',
-      weeksAhead: 'weeks ahead',
-      previousWeek: 'Previous Week',
-      finalizePlan: 'Finalize Plan',
-      noActivePlan: 'No active meal plan found',
-      planFinalized: 'Meal plan finalized successfully!'
-    }
-  },
-  ar: {
-    navigation: {
-      home: 'الرئيسية',
-      mealPlan: 'خطة الوجبات',
-    },
-    day: {
-      saturday: 'السبت',
-      sunday: 'الأحد',
-      monday: 'الاثنين', 
-      tuesday: 'الثلاثاء',
-      wednesday: 'الأربعاء',
-      thursday: 'الخميس',
-      friday: 'الجمعة'
-    },
-    
-    mealPlan: {
-      selectDay: 'اختر اليوم',
-      thisWeek: 'هذا الأسبوع',
-      lastWeek: 'الأسبوع الماضي',
-      nextWeek: 'الأسبوع القادم', 
-      weeksAgo: 'أسابيع مضت',
-      weeksAhead: 'أسابيع قادمة',
-      previousWeek: 'الأسبوع السابق',
-      finalizePlan: 'إنهاء الخطة',
-      noActivePlan: 'لا توجد خطة وجبات نشطة',
-      planFinalized: 'تم إنهاء خطة الوجبات بنجاح!'
-    }
-  }
-};
+  const isRTL = language === 'ar';
 
   return (
-    <LanguageContext.Provider value={value}>
+    <LanguageContext.Provider value={{ language, setLanguage, t, isRTL }}>
       {children}
     </LanguageContext.Provider>
   );
+};
+
+export const useLanguage = () => {
+  const context = useContext(LanguageContext);
+  if (context === undefined) {
+    throw new Error('useLanguage must be used within a LanguageProvider');
+  }
+  return context;
 };
