@@ -13,16 +13,16 @@ interface HealthGoalsCardProps {
 
 const HealthGoalsCard = ({ formData, updateFormData, handleArrayInput }: HealthGoalsCardProps) => {
   return (
-    <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-      <div className="flex items-center mb-6">
+    <Card className="p-4 sm:p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+      <div className="flex items-center mb-4 sm:mb-6">
         <Target className="w-5 h-5 text-fitness-primary mr-2" />
         <h3 className="text-lg font-semibold text-gray-800">Health & Goals</h3>
       </div>
       
       <div className="space-y-4">
         <div>
-          <Label htmlFor="fitness_goal">Fitness Goal</Label>
-          <Select value={formData.fitness_goal} onValueChange={(value) => updateFormData("fitness_goal", value)}>
+          <Label htmlFor="fitness_goal" className="text-sm font-medium">Fitness Goal</Label>
+          <Select value={formData.fitness_goal || ''} onValueChange={(value) => updateFormData("fitness_goal", value)}>
             <SelectTrigger className="mt-1">
               <SelectValue placeholder="Select your goal" />
             </SelectTrigger>
@@ -36,8 +36,8 @@ const HealthGoalsCard = ({ formData, updateFormData, handleArrayInput }: HealthG
           </Select>
         </div>
         <div>
-          <Label htmlFor="activity_level">Activity Level</Label>
-          <Select value={formData.activity_level} onValueChange={(value) => updateFormData("activity_level", value)}>
+          <Label htmlFor="activity_level" className="text-sm font-medium">Activity Level</Label>
+          <Select value={formData.activity_level || ''} onValueChange={(value) => updateFormData("activity_level", value)}>
             <SelectTrigger className="mt-1">
               <SelectValue placeholder="Select activity level" />
             </SelectTrigger>
@@ -51,13 +51,35 @@ const HealthGoalsCard = ({ formData, updateFormData, handleArrayInput }: HealthG
           </Select>
         </div>
         <div>
-          <Label htmlFor="health_conditions">Health Conditions</Label>
+          <Label htmlFor="health_conditions" className="text-sm font-medium">Health Conditions</Label>
           <Textarea
             id="health_conditions"
-            value={formData.health_conditions.join(', ')}
+            value={Array.isArray(formData.health_conditions) ? formData.health_conditions.join(', ') : ''}
             onChange={(e) => handleArrayInput("health_conditions", e.target.value)}
             placeholder="Any health conditions or medical considerations"
             rows={3}
+            className="mt-1"
+          />
+        </div>
+        <div>
+          <Label htmlFor="allergies" className="text-sm font-medium">Allergies</Label>
+          <Textarea
+            id="allergies"
+            value={Array.isArray(formData.allergies) ? formData.allergies.join(', ') : ''}
+            onChange={(e) => handleArrayInput("allergies", e.target.value)}
+            placeholder="Any food allergies or dietary restrictions"
+            rows={2}
+            className="mt-1"
+          />
+        </div>
+        <div>
+          <Label htmlFor="preferred_foods" className="text-sm font-medium">Preferred Foods</Label>
+          <Textarea
+            id="preferred_foods"
+            value={Array.isArray(formData.preferred_foods) ? formData.preferred_foods.join(', ') : ''}
+            onChange={(e) => handleArrayInput("preferred_foods", e.target.value)}
+            placeholder="Foods you enjoy eating"
+            rows={2}
             className="mt-1"
           />
         </div>
