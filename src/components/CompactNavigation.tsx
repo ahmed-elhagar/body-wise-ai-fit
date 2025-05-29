@@ -76,37 +76,37 @@ const CompactNavigation = ({
 
         {/* View Toggle and Day Selector Row */}
         <div className={`flex items-center justify-between gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-          {/* View Toggle */}
+          {/* Compact View Toggle */}
           <div className="bg-gray-100 rounded-lg p-1 flex">
             <Button
               variant={viewMode === 'daily' ? 'default' : 'ghost'}
               size="sm"
-              className={`h-7 px-3 text-xs ${
+              className={`h-7 px-2 text-xs ${
                 viewMode === 'daily' 
                   ? 'bg-fitness-gradient text-white shadow-sm' 
                   : 'hover:bg-gray-50 text-gray-600'
               }`}
               onClick={() => onViewModeChange('daily')}
             >
-              <Calendar className="w-3 h-3 mr-1" />
-              {t('mealPlan.dailyView')}
+              <Calendar className="w-3 h-3" />
+              <span className="hidden sm:inline ml-1">{t('mealPlan.dailyView')}</span>
             </Button>
             <Button
               variant={viewMode === 'weekly' ? 'default' : 'ghost'}
               size="sm"
-              className={`h-7 px-3 text-xs ${
+              className={`h-7 px-2 text-xs ${
                 viewMode === 'weekly' 
                   ? 'bg-fitness-gradient text-white shadow-sm' 
                   : 'hover:bg-gray-50 text-gray-600'
               }`}
               onClick={() => onViewModeChange('weekly')}
             >
-              <Grid className="w-3 h-3 mr-1" />
-              {t('mealPlan.weeklyView')}
+              <Grid className="w-3 h-3" />
+              <span className="hidden sm:inline ml-1">{t('mealPlan.weeklyView')}</span>
             </Button>
           </div>
 
-          {/* Day Selector - Only show in daily view */}
+          {/* Compact Day Selector - Only show in daily view */}
           {viewMode === 'daily' && (
             <div className="flex gap-1">
               {shortDayNames.map((day, index) => (

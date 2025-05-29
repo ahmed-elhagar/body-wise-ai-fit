@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState } from 'react';
 
 type Language = 'en' | 'ar';
@@ -87,10 +88,10 @@ const translations: Translations = {
   'mealPlan.loading': { en: 'Loading meal plan...', ar: 'تحميل خطة الوجبات...' },
   'mealPlan.generating': { en: 'Generating your personalized meal plan...', ar: 'إنشاء خطة الوجبات الشخصية...' },
   'mealPlan.selectDay': { en: 'Select Day', ar: 'اختر اليوم' },
-  'mealPlan.dailyView': { en: 'Daily View', ar: 'العرض اليومي' },
-  'mealPlan.weeklyView': { en: 'Weekly View', ar: 'العرض الأسبوعي' },
+  'mealPlan.dailyView': { en: 'Daily', ar: 'يومي' },
+  'mealPlan.weeklyView': { en: 'Weekly', ar: 'أسبوعي' },
   'mealPlan.addSnack': { en: 'Add Snack', ar: 'إضافة وجبة خفيفة' },
-  'mealPlan.daysMeals': { en: "'s Meals", ar: 'وجبات ' },
+  'mealPlan.meals': { en: 'Meals', ar: 'الوجبات' },
   'mealPlan.mealsPlanned': { en: 'meals planned', ar: 'وجبة مخططة' },
   'mealPlan.previousWeek': { en: 'Previous', ar: 'السابق' },
   'mealPlan.nextWeek': { en: 'Next', ar: 'التالي' },
@@ -100,6 +101,7 @@ const translations: Translations = {
   'mealPlan.weeksAgo': { en: 'weeks ago', ar: 'أسابيع مضت' },
   'mealPlan.weeksAhead': { en: 'weeks ahead', ar: 'أسابيع قادمة' },
   'mealPlan.todaysSummary': { en: "Today's Summary", ar: 'ملخص اليوم' },
+  'mealPlan.weeklyOverview': { en: 'Weekly Overview', ar: 'نظرة أسبوعية' },
   'mealPlan.calories': { en: 'Calories', ar: 'السعرات' },
   'mealPlan.protein': { en: 'Protein', ar: 'البروتين' },
   'mealPlan.carbs': { en: 'Carbs', ar: 'الكربوهيدرات' },
