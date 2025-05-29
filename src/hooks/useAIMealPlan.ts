@@ -1,112 +1,96 @@
 
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
-import { useProfile } from './useProfile';
-import { MealPlanPreferences } from '@/types/mealPlan';
+import { useState } from "react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 
 export const useAIMealPlan = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const { user } = useAuth();
-  const { profile } = useProfile();
+  const { profile, refetch: refetchProfile } = useProfile();
 
-  const generateMealPlan = async (preferences: MealPlanPreferences) => {
-    if (!user || !profile) {
-      toast.error('Please complete your profile first');
+  const generateMealPlan = async (preferences: any) => {
+    if (!user?.id) {
+      toast.error("Please log in to generate meal plans");
       return;
     }
 
-    // Validate required profile data
-    if (!profile.age || !profile.weight || !profile.height || !profile.fitness_goal) {
-      toast.error('Please complete your profile with age, weight, height, and fitness goal');
+    // Check if user has generations remaining
+    if (profile?.ai_generations_remaining === 0) {
+      toast.error("You have reached your AI generation limit. Please contact admin to increase your limit.");
       return;
     }
 
     setIsGenerating(true);
     
     try {
-      console.log('🚀 Starting AI meal plan generation...');
-      console.log('User Profile:', {
+      console.log("🚀 Starting AI meal plan generation...");
+      console.log("User Profile:", {
         id: user.id,
-        age: profile.age,
-        gender: profile.gender,
-        weight: profile.weight,
-        height: profile.height,
-        fitness_goal: profile.fitness_goal,
-        activity_level: profile.activity_level,
-        nationality: profile.nationality
+        age: profile?.age,
+        gender: profile?.gender,
+        weight: profile?.weight,
+        height: profile?.height,
+        fitness_goal: profile?.fitness_goal,
+        activity_level: profile?.activity_level,
+        nationality: profile?.nationality
       });
-      console.log('Preferences:', preferences);
-
-      // Show immediate feedback
-      toast.loading('Generating your personalized 7-day meal plan...', {
-        duration: 60000, // 1 minute timeout
-      });
+      console.log("Preferences:", preferences);
 
       const { data, error } = await supabase.functions.invoke('generate-meal-plan', {
         body: {
           userProfile: {
             id: user.id,
-            age: profile.age,
-            gender: profile.gender,
-            weight: profile.weight,
-            height: profile.height,
-            fitness_goal: profile.fitness_goal,
-            activity_level: profile.activity_level,
-            nationality: profile.nationality,
-            allergies: profile.allergies || [],
-            dietary_restrictions: profile.dietary_restrictions || []
+            age: profile?.age,
+            gender: profile?.gender,
+            weight: profile?.weight,
+            height: profile?.height,
+            fitness_goal: profile?.fitness_goal,
+            activity_level: profile?.activity_level,
+            nationality: profile?.nationality,
+            allergies: profile?.allergies || [],
+            dietary_restrictions: profile?.dietary_restrictions || []
           },
           preferences: {
-            duration: preferences.duration || '7',
-            cuisine: preferences.cuisine || '',
-            maxPrepTime: preferences.maxPrepTime || '45',
-            mealTypes: preferences.mealTypes || 'all',
-            dietaryRestrictions: preferences.dietaryRestrictions || [],
-            allergies: preferences.allergies || []
+            ...preferences,
+            allergies: profile?.allergies || [],
+            dietary_restrictions: profile?.dietary_restrictions || []
           }
         }
       });
 
-      // Dismiss loading toast
-      toast.dismiss();
-
       if (error) {
-        console.error('❌ Supabase function error:', error);
+        console.error("❌ Supabase function error:", error);
         throw error;
       }
 
-      if (data?.success) {
-        console.log('✅ Meal plan generated successfully!');
-        
-        // Show success message with details
-        toast.success(
-          `🎉 Your 7-day meal plan is ready! Generated ${data.totalMeals} meals with images and cooking videos. ${data.generationsRemaining} AI generations remaining.`,
-          { duration: 5000 }
-        );
-        
-        // Force reload the meal plan data
-        setTimeout(() => {
-          window.location.reload();
-        }, 2000);
-        
-      } else {
+      if (!data?.success) {
+        console.error("❌ Generation failed:", data);
         throw new Error(data?.error || 'Failed to generate meal plan');
       }
+
+      console.log("✅ Meal plan generated successfully:", data);
+      toast.success(`✨ ${data.message || 'Meal plan generated successfully!'}`);
+      
+      // Refresh profile to update remaining generations
+      refetchProfile();
+      
+      return data;
       
     } catch (error: any) {
-      console.error('❌ Error generating meal plan:', error);
-      toast.dismiss(); // Dismiss any loading toasts
+      console.error("❌ Error generating meal plan:", error);
       
-      // Handle specific error cases
-      if (error.message?.includes('generations')) {
-        toast.error('You have reached your AI generation limit. Please contact support.');
-      } else if (error.message?.includes('profile')) {
-        toast.error('Please complete your profile before generating a meal plan.');
+      // Handle specific error messages
+      if (error.message?.includes('generation limit')) {
+        toast.error("You have reached your AI generation limit. Please contact admin to increase your limit.");
+      } else if (error.message?.includes('Authentication required')) {
+        toast.error("Please log in again to generate meal plans.");
       } else {
-        toast.error(error.message || 'Failed to generate meal plan. Please try again.');
+        toast.error(error.message || "Failed to generate meal plan. Please try again.");
       }
+      
+      throw error;
     } finally {
       setIsGenerating(false);
     }
