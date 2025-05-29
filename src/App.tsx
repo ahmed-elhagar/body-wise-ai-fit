@@ -22,8 +22,8 @@ function App() {
   return (
     <div className="min-h-screen bg-background">
       <QueryClientProvider client={queryClient}>
-        <LanguageProvider>
-          <AuthProvider>
+        <AuthProvider>
+          <LanguageProvider>
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<Dashboard />} />
@@ -42,8 +42,8 @@ function App() {
               <GlobalFeedbackButton />
               <Toaster />
             </BrowserRouter>
-          </AuthProvider>
-        </LanguageProvider>
+          </LanguageProvider>
+        </AuthProvider>
       </QueryClientProvider>
     </div>
   );
