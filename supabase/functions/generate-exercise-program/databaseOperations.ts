@@ -23,46 +23,66 @@ export const storeWorkoutProgram = async (
     userId: userId.substring(0, 8) + '...'
   });
 
-  // Check if there's already a program for this week and workout type
-  const { data: existingProgram } = await supabase
+  // Check if there's already a program for this week and workout type with more specific query
+  const { data: existingPrograms, error: fetchError } = await supabase
     .from('weekly_exercise_programs')
     .select('id')
     .eq('user_id', userId)
     .eq('workout_type', workoutType)
-    .eq('week_start_date', weekStartDate)
-    .maybeSingle();
+    .eq('week_start_date', weekStartDate);
 
-  // If program exists, delete it and create new one
-  if (existingProgram) {
-    console.log('🔄 Replacing existing program for week:', weekStartDate);
+  if (fetchError) {
+    console.error('❌ Error checking for existing programs:', fetchError);
+    throw new Error('Failed to check for existing programs: ' + fetchError.message);
+  }
+
+  // If programs exist, delete them all first
+  if (existingPrograms && existingPrograms.length > 0) {
+    console.log('🔄 Found', existingPrograms.length, 'existing programs for week:', weekStartDate, 'type:', workoutType);
     
-    // Delete related data in correct order (exercises first, then workouts, then program)
-    const { data: workoutIds } = await supabase
-      .from('daily_workouts')
-      .select('id')
-      .eq('weekly_program_id', existingProgram.id);
-    
-    if (workoutIds && workoutIds.length > 0) {
-      const workoutIdArray = workoutIds.map(w => w.id);
-      
-      // Delete exercises first
-      await supabase
-        .from('exercises')
-        .delete()
-        .in('daily_workout_id', workoutIdArray);
-      
-      // Then delete workouts
-      await supabase
+    for (const program of existingPrograms) {
+      // Delete related data in correct order (exercises first, then workouts, then program)
+      const { data: workoutIds } = await supabase
         .from('daily_workouts')
+        .select('id')
+        .eq('weekly_program_id', program.id);
+      
+      if (workoutIds && workoutIds.length > 0) {
+        const workoutIdArray = workoutIds.map(w => w.id);
+        
+        // Delete exercises first
+        const { error: exerciseDeleteError } = await supabase
+          .from('exercises')
+          .delete()
+          .in('daily_workout_id', workoutIdArray);
+          
+        if (exerciseDeleteError) {
+          console.error('❌ Error deleting exercises:', exerciseDeleteError);
+        }
+        
+        // Then delete workouts
+        const { error: workoutDeleteError } = await supabase
+          .from('daily_workouts')
+          .delete()
+          .eq('weekly_program_id', program.id);
+          
+        if (workoutDeleteError) {
+          console.error('❌ Error deleting workouts:', workoutDeleteError);
+        }
+      }
+      
+      // Finally delete the program
+      const { error: programDeleteError } = await supabase
+        .from('weekly_exercise_programs')
         .delete()
-        .eq('weekly_program_id', existingProgram.id);
+        .eq('id', program.id);
+        
+      if (programDeleteError) {
+        console.error('❌ Error deleting program:', programDeleteError);
+      } else {
+        console.log('✅ Deleted existing program:', program.id);
+      }
     }
-    
-    // Finally delete the program
-    await supabase
-      .from('weekly_exercise_programs')
-      .delete()
-      .eq('id', existingProgram.id);
   }
 
   // Create weekly program record with workout type and specific week
