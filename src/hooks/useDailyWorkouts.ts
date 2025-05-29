@@ -8,7 +8,6 @@ interface DailyWorkout {
   weekly_program_id: string;
   day_number: number;
   workout_name: string;
-  type: "home" | "gym";
   estimated_duration?: number;
   estimated_calories?: number;
   muscle_groups?: string[];
@@ -34,9 +33,9 @@ interface Exercise {
 export const useDailyWorkouts = (weeklyProgramId?: string, dayNumber: number = 1, workoutType: "home" | "gym" = "home") => {
   const { user } = useAuth();
 
-  const { data: workouts, isLoading: workoutsLoading, error: workoutsError } = useQuery<DailyWorkout[]>({
+  const { data: workouts, isLoading: workoutsLoading, error: workoutsError } = useQuery({
     queryKey: ['daily-workouts', weeklyProgramId, dayNumber, workoutType],
-    queryFn: async (): Promise<DailyWorkout[]> => {
+    queryFn: async () => {
       if (!weeklyProgramId) return [];
       
       const { data, error } = await supabase
@@ -44,7 +43,6 @@ export const useDailyWorkouts = (weeklyProgramId?: string, dayNumber: number = 1
         .select('*')
         .eq('weekly_program_id', weeklyProgramId)
         .eq('day_number', dayNumber)
-        .eq('type', workoutType)
         .order('created_at', { ascending: true });
 
       if (error) throw error;
@@ -53,9 +51,9 @@ export const useDailyWorkouts = (weeklyProgramId?: string, dayNumber: number = 1
     enabled: !!weeklyProgramId && !!user?.id,
   });
 
-  const { data: exercises, isLoading: exercisesLoading, error: exercisesError } = useQuery<Exercise[]>({
+  const { data: exercises, isLoading: exercisesLoading, error: exercisesError } = useQuery({
     queryKey: ['exercises', workouts?.[0]?.id],
-    queryFn: async (): Promise<Exercise[]> => {
+    queryFn: async () => {
       if (!workouts?.[0]?.id) return [];
       
       const { data, error } = await supabase
