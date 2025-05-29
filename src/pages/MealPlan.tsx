@@ -36,7 +36,7 @@ const MealPlan = () => {
   const [aiPreferences, setAiPreferences] = useState({
     duration: '7',
     cuisine: '',
-    maxPrepTime: '30',
+    maxPrepTime: '45',
     mealTypes: 'all'
   });
 
@@ -45,27 +45,34 @@ const MealPlan = () => {
 
   const weekStartDate = getWeekStartDate(currentWeekOffset);
 
-  // Convert DailyMeal to Meal type for compatibility
+  // Enhanced conversion from DailyMeal to Meal type
   const convertDailyMealToMeal = (dailyMeal: any): Meal => ({
     type: dailyMeal.meal_type || 'meal',
-    time: '12:00',
+    time: dailyMeal.meal_type === 'breakfast' ? '08:00' : 
+          dailyMeal.meal_type === 'lunch' ? '12:00' :
+          dailyMeal.meal_type === 'dinner' ? '18:00' : '15:00',
     name: dailyMeal.name || 'Unnamed Meal',
-    calories: dailyMeal.calories || 0,
-    protein: dailyMeal.protein || 0,
-    carbs: dailyMeal.carbs || 0,
-    fat: dailyMeal.fat || 0,
-    ingredients: dailyMeal.ingredients || [],
-    instructions: dailyMeal.instructions || [],
-    cookTime: dailyMeal.cook_time || 0,
-    prepTime: dailyMeal.prep_time || 0,
+    calories: Math.round(dailyMeal.calories || 0),
+    protein: Math.round((dailyMeal.protein || 0) * 10) / 10,
+    carbs: Math.round((dailyMeal.carbs || 0) * 10) / 10,
+    fat: Math.round((dailyMeal.fat || 0) * 10) / 10,
+    ingredients: Array.isArray(dailyMeal.ingredients) ? dailyMeal.ingredients : [],
+    instructions: Array.isArray(dailyMeal.instructions) ? dailyMeal.instructions : [],
+    cookTime: dailyMeal.cook_time || 15,
+    prepTime: dailyMeal.prep_time || 10,
     servings: dailyMeal.servings || 1,
-    image: dailyMeal.image || '',
+    image: dailyMeal.image_url || '',
     youtubeId: dailyMeal.youtube_search_term || ''
   });
 
-  // Calculate today's meals and totals
-  const todaysDailyMeals = currentWeekPlan?.dailyMeals?.filter(meal => meal.day_number === selectedDayNumber) || [];
+  // Get today's meals with better filtering
+  const todaysDailyMeals = currentWeekPlan?.dailyMeals?.filter(meal => 
+    meal.day_number === selectedDayNumber
+  ) || [];
+  
   const todaysMeals = todaysDailyMeals.map(convertDailyMealToMeal);
+  
+  // Calculate nutrition totals
   const totalCalories = todaysMeals.reduce((sum, meal) => sum + (meal.calories || 0), 0);
   const totalProtein = todaysMeals.reduce((sum, meal) => sum + (meal.protein || 0), 0);
 
@@ -110,10 +117,11 @@ const MealPlan = () => {
   };
 
   const refetch = () => {
-    // Force component re-render by updating state
-    setCurrentWeekOffset(currentWeekOffset);
+    // Force reload to get updated data
+    window.location.reload();
   };
 
+  // Enhanced current date formatting
   const currentDate = new Date().toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
@@ -122,12 +130,14 @@ const MealPlan = () => {
 
   const currentDay = new Date().toLocaleDateString('en-US', { weekday: 'long' });
 
+  // Show loading state during generation
   if (isGenerating) {
     return (
       <MealPlanLoadingScreen message={t('mealPlan.generating')} />
     );
   }
 
+  // Show loading state while fetching data
   if (isLoading) {
     return (
       <MealPlanLoadingScreen message={t('mealPlan.loading')} />
@@ -188,6 +198,7 @@ const MealPlan = () => {
           />
         )}
 
+        {/* Enhanced dialogs with better props */}
         <AIGenerationDialog
           isOpen={showAIDialog}
           onClose={() => setShowAIDialog(false)}
