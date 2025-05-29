@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { useCreditSystem } from './useCreditSystem';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -22,6 +23,7 @@ export const useAIMealPlan = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const { user } = useAuth();
   const { t } = useLanguage();
+  const { checkAndUseCreditAsync, completeGenerationAsync } = useCreditSystem();
 
   const generateMealPlan = async (preferences: MealPlanPreferences, options: GenerationOptions = {}) => {
     if (!user) {
@@ -49,65 +51,86 @@ export const useAIMealPlan = () => {
 
       console.log('📊 Enhanced preferences for generation:', enhancedPreferences);
 
-      const { data, error } = await supabase.functions.invoke('generate-meal-plan', {
-        body: {
-          userProfile: {
-            id: user.id,
-            email: user.email,
-            ...user.user_metadata
-          },
-          preferences: enhancedPreferences
-        }
+      // Use centralized credit system
+      const creditResult = await checkAndUseCreditAsync({
+        generationType: 'meal_plan',
+        promptData: enhancedPreferences
       });
 
-      console.log('📥 Edge function response received:', {
-        success: data?.success,
-        error: error?.message || data?.error,
-        weeklyPlanId: data?.weeklyPlanId,
-        totalMeals: data?.totalMeals,
-        weekOffset: data?.weekOffset,
-        includeSnacks: data?.includeSnacks
-      });
-
-      if (error) {
-        console.error('❌ Supabase function invoke error:', error);
-        const errorMessage = error.message || 'Failed to generate meal plan';
-        toast.error(t('mealPlan.generationFailed') || errorMessage);
-        return { success: false, error: errorMessage };
-      }
-
-      if (!data?.success) {
-        console.error('❌ Generation failed on server:', {
-          serverError: data?.error,
-          details: data?.details,
-          serverResponse: data
+      try {
+        const { data, error } = await supabase.functions.invoke('generate-meal-plan', {
+          body: {
+            userProfile: {
+              id: user.id,
+              email: user.email,
+              ...user.user_metadata
+            },
+            preferences: enhancedPreferences
+          }
         });
-        
-        const errorMessage = data?.details || data?.error || 'Generation failed on server';
-        toast.error(t('mealPlan.generationFailed') || errorMessage);
-        return { success: false, error: errorMessage };
+
+        console.log('📥 Edge function response received:', {
+          success: data?.success,
+          error: error?.message || data?.error,
+          weeklyPlanId: data?.weeklyPlanId,
+          totalMeals: data?.totalMeals,
+          weekOffset: data?.weekOffset,
+          includeSnacks: data?.includeSnacks
+        });
+
+        if (error) {
+          console.error('❌ Supabase function invoke error:', error);
+          throw new Error(error.message || 'Failed to generate meal plan');
+        }
+
+        if (!data?.success) {
+          console.error('❌ Generation failed on server:', {
+            serverError: data?.error,
+            details: data?.details,
+            serverResponse: data
+          });
+          
+          throw new Error(data?.details || data?.error || 'Generation failed on server');
+        }
+
+        console.log('✅ Meal plan generation successful:', {
+          weeklyPlanId: data.weeklyPlanId,
+          totalMeals: data.totalMeals,
+          weekStartDate: data.weekStartDate,
+          weekOffset: data.weekOffset,
+          generationsRemaining: data.generationsRemaining
+        });
+
+        // Complete the AI generation log with success
+        await completeGenerationAsync({
+          logId: creditResult.log_id!,
+          responseData: {
+            weeklyPlanId: data.weeklyPlanId,
+            totalMeals: data.totalMeals,
+            weekStartDate: data.weekStartDate
+          }
+        });
+
+        // Show success toast with details
+        const successMessage = `${t('mealPlan.generatedSuccessfully')} (${data.totalMeals} meals)`;
+        toast.success(successMessage);
+
+        return {
+          success: true,
+          weeklyPlanId: data.weeklyPlanId,
+          totalMeals: data.totalMeals,
+          weekStartDate: data.weekStartDate,
+          weekOffset: data.weekOffset,
+          generationsRemaining: creditResult.remaining
+        };
+      } catch (error) {
+        // Mark generation as failed
+        await completeGenerationAsync({
+          logId: creditResult.log_id!,
+          errorMessage: error instanceof Error ? error.message : 'Generation failed'
+        });
+        throw error;
       }
-
-      console.log('✅ Meal plan generation successful:', {
-        weeklyPlanId: data.weeklyPlanId,
-        totalMeals: data.totalMeals,
-        weekStartDate: data.weekStartDate,
-        weekOffset: data.weekOffset,
-        generationsRemaining: data.generationsRemaining
-      });
-
-      // Show success toast with details
-      const successMessage = `${t('mealPlan.generatedSuccessfully')} (${data.totalMeals} meals)`;
-      toast.success(successMessage);
-
-      return {
-        success: true,
-        weeklyPlanId: data.weeklyPlanId,
-        totalMeals: data.totalMeals,
-        weekStartDate: data.weekStartDate,
-        weekOffset: data.weekOffset,
-        generationsRemaining: data.generationsRemaining
-      };
 
     } catch (error) {
       console.error('❌ Unexpected error during generation:', error);

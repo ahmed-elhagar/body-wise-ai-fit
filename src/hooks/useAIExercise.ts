@@ -2,6 +2,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useProfile } from './useProfile';
+import { useCreditSystem } from './useCreditSystem';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
 import { format, addDays, startOfWeek } from 'date-fns';
@@ -23,6 +24,7 @@ export const useAIExercise = () => {
   const { profile } = useProfile();
   const { language, t } = useLanguage();
   const queryClient = useQueryClient();
+  const { checkAndUseCreditAsync, completeGenerationAsync } = useCreditSystem();
 
   const generateExerciseProgram = useMutation({
     mutationFn: async (request: ExerciseProgramRequest) => {
@@ -77,37 +79,63 @@ export const useAIExercise = () => {
         weekOffset: request.weekOffset
       };
 
-      console.log('📤 Sending request to edge function with enhanced data');
-
-      const { data, error } = await supabase.functions.invoke('generate-exercise-program', {
-        body: {
-          userData,
-          preferences: transformedRequest,
-          userLanguage: userLanguage
-        }
+      // Use centralized credit system
+      const creditResult = await checkAndUseCreditAsync({
+        generationType: 'exercise_program',
+        promptData: transformedRequest
       });
 
-      if (error) {
-        console.error('🚨 Exercise generation error:', error);
-        throw new Error(error.message || 'Failed to generate exercise program');
-      }
+      try {
+        console.log('📤 Sending request to edge function with enhanced data');
 
-      if (!data || !data.success) {
-        console.error('🚨 Invalid response from exercise generation:', data);
-        
-        // Handle AI generation limit specifically
-        if (data?.limitReached) {
-          const limitMessage = language === 'ar' ? 
-            `تم الوصول لحد الاستخدام اليومي لخدمة الذكاء الاصطناعي. المتبقي: ${data.remaining || 0}` :
-            `AI generation limit reached. Remaining: ${data.remaining || 0}`;
-          throw new Error(limitMessage);
+        const { data, error } = await supabase.functions.invoke('generate-exercise-program', {
+          body: {
+            userData,
+            preferences: transformedRequest,
+            userLanguage: userLanguage
+          }
+        });
+
+        if (error) {
+          console.error('🚨 Exercise generation error:', error);
+          throw new Error(error.message || 'Failed to generate exercise program');
         }
-        
-        throw new Error(data?.error || 'Invalid response from exercise generation service');
-      }
 
-      console.log('✅ Exercise generation response:', data);
-      return data;
+        if (!data || !data.success) {
+          console.error('🚨 Invalid response from exercise generation:', data);
+          
+          // Handle AI generation limit specifically
+          if (data?.limitReached) {
+            const limitMessage = language === 'ar' ? 
+              `تم الوصول لحد الاستخدام اليومي لخدمة الذكاء الاصطناعي. المتبقي: ${data.remaining || 0}` :
+              `AI generation limit reached. Remaining: ${data.remaining || 0}`;
+            throw new Error(limitMessage);
+          }
+          
+          throw new Error(data?.error || 'Invalid response from exercise generation service');
+        }
+
+        console.log('✅ Exercise generation response:', data);
+
+        // Complete the AI generation log with success
+        await completeGenerationAsync({
+          logId: creditResult.log_id!,
+          responseData: {
+            workoutType: data.workoutType,
+            workoutsCreated: data.workoutsCreated,
+            exercisesCreated: data.exercisesCreated
+          }
+        });
+
+        return data;
+      } catch (error) {
+        // Mark generation as failed
+        await completeGenerationAsync({
+          logId: creditResult.log_id!,
+          errorMessage: error instanceof Error ? error.message : 'Generation failed'
+        });
+        throw error;
+      }
     },
     onSuccess: (data) => {
       // Invalidate all exercise-related queries for fresh data

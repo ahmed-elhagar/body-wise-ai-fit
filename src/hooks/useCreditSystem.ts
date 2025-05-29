@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
 
-export type GenerationType = 'meal_plan' | 'exercise_program' | 'ai_chat' | 'food_analysis' | 'snack_generation';
+export type GenerationType = 'meal_plan' | 'exercise_program' | 'ai_chat' | 'food_analysis' | 'snack_generation' | 'recipe';
 
 interface CreditCheckResult {
   success: boolean;
@@ -52,30 +52,62 @@ export const useCreditSystem = () => {
 
       console.log('Checking credit for generation type:', generationType);
 
-      const { data, error } = await supabase.rpc('check_and_use_ai_generation', {
-        user_id_param: user.id,
-        generation_type_param: generationType,
-        prompt_data_param: promptData || {}
-      });
+      // First check if user has enough credits
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('ai_generations_remaining')
+        .eq('id', user.id)
+        .single();
 
-      if (error) {
-        console.error('Credit check error:', error);
+      if (profileError) {
+        console.error('Error checking profile credits:', profileError);
         throw new Error('Failed to check AI generation credits');
       }
 
-      // Safely cast the response with proper type checking
-      const result = data as unknown;
-      if (!result || typeof result !== 'object') {
-        throw new Error('Invalid response from credit check');
+      if (!profile || profile.ai_generations_remaining <= 0) {
+        throw new Error('AI generation limit reached. Please upgrade or wait for credits to reset.');
       }
 
-      const creditResult = result as CreditCheckResult;
-      if (!creditResult.success) {
-        throw new Error(creditResult.error || 'AI generation limit reached');
+      // Create generation log
+      const { data: logEntry, error: logError } = await supabase
+        .from('ai_generation_logs')
+        .insert({
+          user_id: user.id,
+          generation_type: generationType,
+          prompt_data: promptData || {},
+          status: 'pending',
+          credits_used: 1
+        })
+        .select()
+        .single();
+
+      if (logError) {
+        console.error('Error creating generation log:', logError);
+        throw new Error('Failed to create generation log');
       }
 
-      console.log('Credit check successful:', creditResult);
-      return creditResult;
+      // Decrement user credits
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ 
+          ai_generations_remaining: profile.ai_generations_remaining - 1,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+
+      if (updateError) {
+        console.error('Error updating credits:', updateError);
+        throw new Error('Failed to update generation count');
+      }
+
+      const result: CreditCheckResult = {
+        success: true,
+        log_id: logEntry.id,
+        remaining: profile.ai_generations_remaining - 1
+      };
+
+      console.log('Credit check successful:', result);
+      return result;
     },
     onSuccess: () => {
       // Invalidate credits query to refresh the count
@@ -102,11 +134,22 @@ export const useCreditSystem = () => {
       responseData?: any;
       errorMessage?: string;
     }) => {
-      const { error } = await supabase.rpc('complete_ai_generation', {
-        log_id_param: logId,
-        response_data_param: responseData || {},
-        error_message_param: errorMessage || null
-      });
+      const updateData: any = {
+        status: errorMessage ? 'failed' : 'completed'
+      };
+      
+      if (responseData) {
+        updateData.response_data = responseData;
+      }
+      
+      if (errorMessage) {
+        updateData.error_message = errorMessage;
+      }
+
+      const { error } = await supabase
+        .from('ai_generation_logs')
+        .update(updateData)
+        .eq('id', logId);
 
       if (error) {
         console.error('Error completing generation log:', error);
@@ -119,8 +162,10 @@ export const useCreditSystem = () => {
     userCredits,
     isLoadingCredits,
     checkAndUseCredit: checkAndUseCredit.mutate,
+    checkAndUseCreditAsync: checkAndUseCredit.mutateAsync,
     isCheckingCredit: checkAndUseCredit.isPending,
     completeGeneration: completeGeneration.mutate,
+    completeGenerationAsync: completeGeneration.mutateAsync,
     isCompletingGeneration: completeGeneration.isPending,
   };
 };
