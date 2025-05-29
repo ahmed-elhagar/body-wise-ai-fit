@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useDynamicMealPlan } from "@/hooks/useDynamicMealPlan";
@@ -34,10 +34,11 @@ export const useMealPlanState = () => {
 
   const weekStartDate = getWeekStartDate(currentWeekOffset);
 
-  // Enhanced conversion from DailyMeal to Meal type with unique keys
-  const convertDailyMealToMeal = (dailyMeal: any): Meal => ({
+  // Memoized conversion from DailyMeal to Meal type
+  const convertDailyMealToMeal = useCallback((dailyMeal: any): Meal => ({
     id: dailyMeal.id,
     type: dailyMeal.meal_type || 'meal',
+    meal_type: dailyMeal.meal_type,
     time: dailyMeal.meal_type === 'breakfast' ? '08:00' : 
           dailyMeal.meal_type === 'lunch' ? '12:00' :
           dailyMeal.meal_type === 'dinner' ? '18:00' : '15:00',
@@ -53,22 +54,27 @@ export const useMealPlanState = () => {
     servings: dailyMeal.servings || 1,
     image: dailyMeal.image_url || '',
     image_url: dailyMeal.image_url || '',
-    youtubeId: dailyMeal.youtube_search_term || ''
-  });
+    youtubeId: dailyMeal.youtube_search_term || '',
+    youtube_search_term: dailyMeal.youtube_search_term
+  }), []);
 
-  // Get today's meals with better filtering and unique keys
-  const todaysDailyMeals = currentWeekPlan?.dailyMeals?.filter(meal => 
-    meal.day_number === selectedDayNumber
-  ) || [];
+  // Memoized today's meals with better filtering
+  const todaysMeals = useMemo(() => {
+    const todaysDailyMeals = currentWeekPlan?.dailyMeals?.filter(meal => 
+      meal.day_number === selectedDayNumber
+    ) || [];
+    
+    return todaysDailyMeals.map(convertDailyMealToMeal);
+  }, [currentWeekPlan?.dailyMeals, selectedDayNumber, convertDailyMealToMeal]);
   
-  const todaysMeals = todaysDailyMeals.map(convertDailyMealToMeal);
-  
-  // Calculate nutrition totals
-  const totalCalories = todaysMeals.reduce((sum, meal) => sum + (meal.calories || 0), 0);
-  const totalProtein = todaysMeals.reduce((sum, meal) => sum + (meal.protein || 0), 0);
+  // Memoized nutrition calculations
+  const { totalCalories, totalProtein } = useMemo(() => ({
+    totalCalories: todaysMeals.reduce((sum, meal) => sum + (meal.calories || 0), 0),
+    totalProtein: todaysMeals.reduce((sum, meal) => sum + (meal.protein || 0), 0)
+  }), [todaysMeals]);
 
-  // Convert meals to shopping items
-  const convertMealsToShoppingItems = (meals: Meal[]) => {
+  // Memoized shopping items conversion
+  const convertMealsToShoppingItems = useCallback((meals: Meal[]) => {
     const items: any[] = [];
     meals.forEach(meal => {
       meal.ingredients.forEach((ingredient: any) => {
@@ -81,76 +87,64 @@ export const useMealPlanState = () => {
       });
     });
     return items;
-  };
+  }, []);
 
-  // Shuffle existing meals vs Generate new AI plan
-  const handleRegeneratePlan = async () => {
+  // Optimized shuffle handler
+  const handleRegeneratePlan = useCallback(async () => {
     if (!currentWeekPlan?.weeklyPlan?.id) {
-      toast.error('No meal plan found to shuffle');
+      toast.error(t('mealPlan.noMealPlanToShuffle') || 'No meal plan found to shuffle');
       return;
     }
     
     await shuffleMeals(currentWeekPlan.weeklyPlan.id);
-  };
+  }, [currentWeekPlan?.weeklyPlan?.id, shuffleMeals, t]);
 
-  const handleGenerateAIPlan = async () => {
+  // Optimized AI generation handler
+  const handleGenerateAIPlan = useCallback(async () => {
     try {
       console.log('🚀 Starting AI meal plan generation with preferences:', aiPreferences);
-      console.log('🎯 Generating for week offset:', currentWeekOffset);
-      console.log('🌐 Using language:', language);
       
-      // Enhanced preferences with current language
       const enhancedPreferences = {
         ...aiPreferences,
-        language: language, // Pass current language to AI generation
+        language: language,
         locale: language === 'ar' ? 'ar-SA' : 'en-US'
       };
       
-      // CRITICAL FIX: Generate for the currently selected week offset
       const result = await generateMealPlan(enhancedPreferences, { weekOffset: currentWeekOffset });
       
       if (result?.success) {
-        console.log('✅ Generation successful, result:', result);
-        
         setShowAIDialog(false);
         
-        // Force immediate refetch to show the new plan
+        // Force immediate refetch
         setTimeout(async () => {
-          console.log('🔄 Forcing refetch after generation...');
           await refetchMealPlan?.();
         }, 500);
         
-        // Additional refetch after longer delay for consistency
-        setTimeout(async () => {
-          console.log('🔄 Secondary refetch for consistency...');
-          await refetchMealPlan?.();
-        }, 2000);
-        
-        toast.success("✨ Meal plan generated successfully!");
+        toast.success(t('mealPlan.generatedSuccessfully') || "✨ Meal plan generated successfully!");
       }
       
     } catch (error) {
       console.error('❌ Generation failed:', error);
-      toast.error("Failed to generate meal plan. Please try again.");
+      toast.error(t('mealPlan.generationFailed') || "Failed to generate meal plan. Please try again.");
     }
-  };
+  }, [aiPreferences, language, currentWeekOffset, generateMealPlan, refetchMealPlan, t]);
 
-  const handleShowRecipe = (meal: Meal) => {
+  const handleShowRecipe = useCallback((meal: Meal) => {
     console.log('🍳 Opening recipe for meal:', { id: meal.id, name: meal.name });
     setSelectedMeal(meal);
     setShowRecipeDialog(true);
-  };
+  }, []);
 
-  const handleExchangeMeal = (meal: Meal, index: number) => {
+  const handleExchangeMeal = useCallback((meal: Meal, index: number) => {
     setSelectedMeal(meal);
     setSelectedMealIndex(index);
     setShowExchangeDialog(true);
-  };
+  }, []);
 
-  const refetch = async () => {
+  const refetch = useCallback(async () => {
     console.log('🔄 Manual refetch triggered for week offset:', currentWeekOffset);
     await refetchMealPlan?.();
-  };
+  }, [currentWeekOffset, refetchMealPlan]);
 
   return {
     // State

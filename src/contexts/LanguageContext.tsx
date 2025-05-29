@@ -72,6 +72,15 @@ const translations: Record<Language, Record<string, string>> = {
     'mealPlan.totalProtein': 'Total Protein',
     'mealPlan.addSnack': 'Add Snack',
     'mealPlan.shoppingList': 'Shopping List',
+    'mealPlan.generating': 'Generating your meal plan...',
+    'mealPlan.loading': 'Loading meal plan...',
+    'mealPlan.more': 'more',
+    'mealPlan.recipe': 'View Recipe',
+    'mealPlan.exchange': 'Exchange',
+    'mealPlan.balanced': 'Balanced',
+    'mealPlan.vegetarian': 'Vegetarian',
+    'mealPlan.keto': 'Keto',
+    'mealPlan.highProtein': 'High Protein',
     
     // Meal Types
     'mealType.breakfast': 'Breakfast',
@@ -168,6 +177,15 @@ const translations: Record<Language, Record<string, string>> = {
     'mealPlan.totalProtein': 'إجمالي البروتين',
     'mealPlan.addSnack': 'إضافة وجبة خفيفة',
     'mealPlan.shoppingList': 'قائمة التسوق',
+    'mealPlan.generating': 'جاري إنشاء خطة الوجبات...',
+    'mealPlan.loading': 'جاري تحميل خطة الوجبات...',
+    'mealPlan.more': 'المزيد',
+    'mealPlan.recipe': 'عرض الوصفة',
+    'mealPlan.exchange': 'استبدال',
+    'mealPlan.balanced': 'متوازن',
+    'mealPlan.vegetarian': 'نباتي',
+    'mealPlan.keto': 'كيتو',
+    'mealPlan.highProtein': 'عالي البروتين',
     
     // Meal Types
     'mealType.breakfast': 'الإفطار',
@@ -222,7 +240,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       document.documentElement.dir = profile.preferred_language === 'ar' ? 'rtl' : 'ltr';
       document.documentElement.lang = profile.preferred_language;
     }
-  }, [profile]);
+  }, [profile?.preferred_language]);
 
   // Initialize language on first load from localStorage if no profile
   useEffect(() => {
@@ -259,7 +277,12 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const t = (key: string): string => {
-    return translations[language]?.[key] || key;
+    const translation = translations[language]?.[key];
+    if (!translation) {
+      console.warn(`Missing translation for key: ${key} in language: ${language}`);
+      return key;
+    }
+    return translation;
   };
 
   const isRTL = language === 'ar';
