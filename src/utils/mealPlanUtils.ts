@@ -35,27 +35,26 @@ export const getCategoryForIngredient = (ingredientName: string): string => {
   return 'Others';
 };
 
-// CRITICAL FIX: Completely rewritten week calculation for absolute consistency
+// ENHANCED: Completely rewritten week calculation for absolute consistency
 export const getWeekStartDate = (weekOffset: number = 0): Date => {
   const today = new Date();
-  console.log('🔍 Week calculation input:', {
-    today: today.toISOString().split('T')[0],
-    todayDay: today.getDay(),
-    weekOffset
-  });
   
-  // Use date-fns startOfWeek with Saturday as start (weekStartsOn: 6)
+  // Use Saturday as the start of the week (weekStartsOn: 6)
   const startOfCurrentWeek = startOfWeek(today, { weekStartsOn: 6 });
+  
+  // Add the week offset to get the target week
   const targetWeek = addWeeks(startOfCurrentWeek, weekOffset);
   
-  // Ensure we get a clean date
+  // Ensure we get a clean date with no time component
   const result = new Date(targetWeek);
   result.setHours(0, 0, 0, 0);
   
-  console.log('🎯 Week calculation result:', {
-    input: { today: today.toISOString().split('T')[0], weekOffset },
-    output: result.toISOString().split('T')[0],
-    startOfCurrentWeek: startOfCurrentWeek.toISOString().split('T')[0]
+  console.log('🎯 WEEK CALCULATION:', {
+    today: today.toISOString().split('T')[0],
+    todayDay: today.getDay(),
+    weekOffset,
+    startOfCurrentWeek: startOfCurrentWeek.toISOString().split('T')[0],
+    targetWeek: result.toISOString().split('T')[0]
   });
   
   return result;

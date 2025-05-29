@@ -53,20 +53,18 @@ export const useMealPlanData = (weekOffset: number = 0) => {
       }
       
       try {
-        // Use CONSISTENT week calculation
+        // Use CONSISTENT week calculation - EXACT week only
         const weekStartDate = getWeekStartDate(weekOffset);
         const weekStartDateStr = weekStartDate.toISOString().split('T')[0];
         
-        console.log('🎯 MEAL PLAN FETCH - ENHANCED DEBUG:', {
+        console.log('🎯 MEAL PLAN FETCH - EXACT WEEK ONLY:', {
           userId: user.id,
-          userEmail: user.email,
           weekOffset,
-          weekStartDate: weekStartDateStr,
-          today: new Date().toISOString().split('T')[0],
-          calculatedWeek: weekStartDate.toDateString()
+          searchingForDate: weekStartDateStr,
+          today: new Date().toISOString().split('T')[0]
         });
         
-        // Try to find the specific week first with better error handling
+        // Fetch ONLY the exact week - no fallbacks
         const { data: weeklyPlan, error: weeklyError } = await supabase
           .from('weekly_meal_plans')
           .select('*')
@@ -75,102 +73,42 @@ export const useMealPlanData = (weekOffset: number = 0) => {
           .maybeSingle();
 
         if (weeklyError) {
-          console.error('❌ useMealPlanData - Error fetching weekly plan:', weeklyError);
+          console.error('❌ Error fetching weekly plan:', weeklyError);
           throw weeklyError;
         }
 
         if (!weeklyPlan) {
-          console.log('❌ NO MEAL PLAN FOUND for exact date:', weekStartDateStr);
+          console.log('❌ NO MEAL PLAN FOUND for exact week:', {
+            searchedDate: weekStartDateStr,
+            weekOffset,
+            userId: user.id
+          });
           
-          // Check what meal plans exist for this user for debugging
+          // Check what weeks exist for debugging
           const { data: allPlans } = await supabase
             .from('weekly_meal_plans')
-            .select('id, week_start_date, created_at, total_calories')
+            .select('id, week_start_date, total_calories')
             .eq('user_id', user.id)
             .order('week_start_date', { ascending: false });
           
-          console.log('🔍 ALL USER MEAL PLANS:', {
-            searchedDate: weekStartDateStr,
-            userPlans: allPlans?.map(p => ({ 
-              id: p.id, 
-              week_start_date: p.week_start_date, 
-              created_at: p.created_at,
-              total_calories: p.total_calories
-            })) || [],
-            totalFound: allPlans?.length || 0
+          console.log('🔍 AVAILABLE WEEKS FOR USER:', {
+            searchedWeek: weekStartDateStr,
+            availableWeeks: allPlans?.map(p => p.week_start_date) || [],
+            totalPlans: allPlans?.length || 0
           });
           
-          // Try to find the closest week plan if no exact match
-          if (allPlans && allPlans.length > 0) {
-            console.log('🔄 Trying to find closest week plan...');
-            const closestPlan = allPlans[0]; // Most recent plan
-            console.log('🎯 Using closest plan:', {
-              planId: closestPlan.id,
-              weekStartDate: closestPlan.week_start_date,
-              searchedDate: weekStartDateStr
-            });
-            
-            // Fetch meals for the closest plan
-            const { data: dailyMeals, error: mealsError } = await supabase
-              .from('daily_meals')
-              .select('*')
-              .eq('weekly_plan_id', closestPlan.id)
-              .order('day_number', { ascending: true })
-              .order('meal_type', { ascending: true });
-
-            if (mealsError) {
-              console.error('❌ Error fetching meals for closest plan:', mealsError);
-              throw mealsError;
-            }
-
-            console.log('✅ Found meals for closest plan:', {
-              count: dailyMeals?.length || 0,
-              planId: closestPlan.id
-            });
-
-            // Process meals data
-            const processedMeals = (dailyMeals || []).map(meal => {
-              try {
-                return {
-                  ...meal,
-                  ingredients: Array.isArray(meal.ingredients) 
-                    ? meal.ingredients 
-                    : typeof meal.ingredients === 'string' 
-                      ? JSON.parse(meal.ingredients || '[]')
-                      : [],
-                  instructions: Array.isArray(meal.instructions)
-                    ? meal.instructions
-                    : typeof meal.instructions === 'string'
-                      ? JSON.parse(meal.instructions || '[]')
-                      : []
-                };
-              } catch (parseError) {
-                console.error('Error parsing meal data:', parseError, meal);
-                return {
-                  ...meal,
-                  ingredients: [],
-                  instructions: []
-                };
-              }
-            }) as DailyMeal[];
-
-            return {
-              weeklyPlan: closestPlan as WeeklyMealPlan,
-              dailyMeals: processedMeals
-            };
-          }
-          
+          // Return null for no data - no fallbacks
           return null;
         }
 
-        console.log('✅ Found exact meal plan:', {
+        console.log('✅ Found EXACT meal plan for week:', {
           planId: weeklyPlan.id,
           weekStartDate: weeklyPlan.week_start_date,
-          totalCalories: weeklyPlan.total_calories,
-          userId: weeklyPlan.user_id
+          weekOffset,
+          totalCalories: weeklyPlan.total_calories
         });
 
-        // Fetch meals for the found plan with better error handling
+        // Fetch meals for the exact plan
         const { data: dailyMeals, error: mealsError } = await supabase
           .from('daily_meals')
           .select('*')
@@ -179,22 +117,18 @@ export const useMealPlanData = (weekOffset: number = 0) => {
           .order('meal_type', { ascending: true });
 
         if (mealsError) {
-          console.error('❌ useMealPlanData - Error fetching daily meals:', mealsError);
+          console.error('❌ Error fetching daily meals:', mealsError);
           throw mealsError;
         }
 
-        console.log('✅ Found daily meals:', {
-          count: dailyMeals?.length || 0,
+        console.log('✅ Found meals for exact week:', {
+          weekOffset,
           planId: weeklyPlan.id,
-          meals: dailyMeals?.map(m => ({ 
-            id: m.id,
-            day: m.day_number, 
-            type: m.meal_type, 
-            name: m.name 
-          })) || []
+          mealsCount: dailyMeals?.length || 0,
+          weekStartDate: weeklyPlan.week_start_date
         });
 
-        // Process meals data with better error handling
+        // Process meals data
         const processedMeals = (dailyMeals || []).map(meal => {
           try {
             return {
@@ -219,15 +153,6 @@ export const useMealPlanData = (weekOffset: number = 0) => {
             };
           }
         }) as DailyMeal[];
-
-        console.log('✅ MEAL PLAN LOADED SUCCESSFULLY:', {
-          userId: user.id,
-          planId: weeklyPlan.id,
-          mealsCount: processedMeals.length,
-          weekStartDate: weeklyPlan.week_start_date,
-          searchedDate: weekStartDateStr,
-          weekOffset: weekOffset
-        });
 
         return {
           weeklyPlan: weeklyPlan as WeeklyMealPlan,

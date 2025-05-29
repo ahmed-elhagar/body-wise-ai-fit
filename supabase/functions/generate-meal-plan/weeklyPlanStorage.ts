@@ -40,20 +40,20 @@ interface GeneratedPlan {
   };
 }
 
-// CRITICAL FIX: Use exact same logic as frontend getWeekStartDate
+// ENHANCED: Use exact same logic as frontend - absolutely critical for consistency
 const getWeekStartDate = (weekOffset: number = 0): Date => {
   const today = new Date();
   
-  // Use same logic as frontend: find Saturday start of week
+  // Saturday = 6, so we find the Saturday of current week
   const currentDayOfWeek = today.getDay(); // 0=Sunday, 6=Saturday
   
-  // Calculate days to get to Saturday (start of week)
+  // Calculate days to go back to reach Saturday
   let daysToSaturday: number;
   if (currentDayOfWeek === 6) {
     // Today is Saturday
     daysToSaturday = 0;
   } else {
-    // Calculate days back to previous Saturday
+    // Go back to previous Saturday
     daysToSaturday = currentDayOfWeek + 1;
   }
   
@@ -61,27 +61,31 @@ const getWeekStartDate = (weekOffset: number = 0): Date => {
   const startDate = new Date(today);
   startDate.setDate(today.getDate() - daysToSaturday);
   
-  // Add the week offset
+  // Add the week offset (positive = future weeks, negative = past weeks)
   startDate.setDate(startDate.getDate() + (weekOffset * 7));
   
   // Reset to start of day to ensure consistency
   startDate.setHours(0, 0, 0, 0);
   
-  console.log(`📅 BACKEND Week calculation (FIXED): today=${today.toISOString().split('T')[0]}, currentDay=${currentDayOfWeek}, daysToSaturday=${daysToSaturday}, weekOffset=${weekOffset}, result=${startDate.toISOString().split('T')[0]}`);
+  console.log(`📅 BACKEND Week calculation: today=${today.toISOString().split('T')[0]}, currentDay=${currentDayOfWeek}, daysToSaturday=${daysToSaturday}, weekOffset=${weekOffset}, result=${startDate.toISOString().split('T')[0]}`);
   
   return startDate;
 };
 
 export const saveWeeklyPlan = async (userProfile: UserProfile, generatedPlan: GeneratedPlan, preferences: any, dailyCalories: number) => {
-  // CRITICAL FIX: Use the weekOffset from preferences
+  // CRITICAL: Use the weekOffset from preferences to ensure exact week match
   const weekOffset = preferences?.weekOffset || 0;
   const weekStartDate = getWeekStartDate(weekOffset);
   const weekStartDateStr = weekStartDate.toISOString().split('T')[0];
   
-  console.log('🎯 SAVING Weekly Plan with CONSISTENT date for offset', weekOffset, ':', weekStartDateStr);
+  console.log('🎯 SAVING Weekly Plan for EXACT week:', {
+    weekOffset,
+    calculatedDate: weekStartDateStr,
+    userId: userProfile.id
+  });
   
-  // Delete existing plan for this week
-  console.log('Deleting existing plan for week:', weekStartDateStr);
+  // Delete existing plan for this EXACT week only
+  console.log('Deleting existing plan for exact week:', weekStartDateStr);
   const { error: deleteError } = await supabase
     .from('weekly_meal_plans')
     .delete()
@@ -119,11 +123,10 @@ export const saveWeeklyPlan = async (userProfile: UserProfile, generatedPlan: Ge
     throw weeklyError;
   }
 
-  console.log('✅ Weekly plan saved successfully with CONSISTENT date:', {
+  console.log('✅ Weekly plan saved for EXACT week:', {
     id: weeklyPlan.id,
     week_start_date: weeklyPlan.week_start_date,
     user_id: weeklyPlan.user_id,
-    created_at: weeklyPlan.created_at,
     weekOffset: weekOffset
   });
 
