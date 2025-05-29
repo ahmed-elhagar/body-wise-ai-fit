@@ -179,8 +179,8 @@ export const useMealPlanData = (weekOffset: number = 0) => {
       }
     },
     enabled: !!user?.id,
-    staleTime: 3000, // Reduced stale time for more frequent updates
-    gcTime: 20000, // Reduced cache time
+    staleTime: 1000, // Very short stale time for immediate updates
+    gcTime: 5000, // Short cache time
     retry: (failureCount, error) => {
       // Don't retry on authentication errors
       if (error?.message?.includes('JWT')) return false;

@@ -34,7 +34,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       document.documentElement.dir = profile.preferred_language === 'ar' ? 'rtl' : 'ltr';
       document.documentElement.lang = profile.preferred_language;
     }
-  }, [profile?.preferred_language]);
+  }, [profile?.preferred_language, language]);
 
   // Initialize language on first load from localStorage if no profile
   useEffect(() => {
@@ -74,7 +74,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const translation = translations[language]?.[key];
     if (!translation) {
       console.warn(`Missing translation for key: ${key} in language: ${language}`);
-      return key;
+      return key; // Return the key itself as fallback
     }
     return translation;
   };
@@ -91,7 +91,14 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 export const useLanguage = (): LanguageContextType => {
   const context = useContext(LanguageContext);
   if (context === undefined) {
-    throw new Error('useLanguage must be used within a LanguageProvider');
+    // Instead of throwing an error immediately, provide a fallback
+    console.error('useLanguage must be used within a LanguageProvider, using fallback');
+    return {
+      language: 'en',
+      setLanguage: () => {},
+      t: (key: string) => key,
+      isRTL: false
+    };
   }
   return context;
 };
