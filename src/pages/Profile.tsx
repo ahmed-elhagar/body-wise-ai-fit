@@ -99,18 +99,18 @@ const Profile = () => {
   return (
     <ProtectedRoute requireProfile>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-        <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-7xl">
-          {/* Header - Mobile Optimized */}
+        <div className="container mx-auto px-4 py-4 sm:py-8 max-w-7xl">
+          {/* Header */}
           <div className="mb-6 sm:mb-8">
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">Your Profile</h1>
             <p className="text-sm sm:text-base text-gray-600">Manage your personal information and preferences</p>
           </div>
 
-          {/* Enhanced Profile Promotion Card - Mobile Optimized */}
+          {/* Enhanced Profile Promotion Card */}
           {profileCompleteness < 100 && (
             <Card className="mb-6 sm:mb-8 p-4 sm:p-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white">
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:justify-between">
-                <div className="flex items-start gap-3 sm:gap-4">
+                <div className="flex items-start gap-3 sm:gap-4 flex-1">
                   <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 mt-1 sm:mt-0 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <h3 className="text-lg sm:text-xl font-semibold mb-1">Complete Your Enhanced Profile</h3>
@@ -134,34 +134,33 @@ const Profile = () => {
             </Card>
           )}
 
-          {/* Main Layout - Mobile Responsive */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
-            {/* Sidebar - Hidden on mobile, shown as tabs */}
-            <div className="lg:col-span-1 order-2 lg:order-1">
-              <div className="block lg:hidden mb-6">
-                {/* Mobile Tab Navigation */}
-                <div className="flex bg-white rounded-lg p-1 shadow-lg">
-                  <Button
-                    variant={activeTab === "profile" ? "default" : "ghost"}
-                    size="sm"
-                    className={`flex-1 text-xs ${activeTab === "profile" ? "bg-fitness-gradient text-white" : ""}`}
-                    onClick={() => setActiveTab("profile")}
-                  >
-                    Profile
-                  </Button>
-                  <Button
-                    variant={activeTab === "account" ? "default" : "ghost"}
-                    size="sm"
-                    className={`flex-1 text-xs ${activeTab === "account" ? "bg-fitness-gradient text-white" : ""}`}
-                    onClick={() => setActiveTab("account")}
-                  >
-                    Account
-                  </Button>
-                </div>
-              </div>
-              
-              {/* Desktop Sidebar */}
-              <div className="hidden lg:block">
+          {/* Mobile Tab Navigation */}
+          <div className="block lg:hidden mb-6">
+            <div className="flex bg-white rounded-lg p-1 shadow-lg">
+              <Button
+                variant={activeTab === "profile" ? "default" : "ghost"}
+                size="sm"
+                className={`flex-1 text-xs ${activeTab === "profile" ? "bg-fitness-gradient text-white" : ""}`}
+                onClick={() => setActiveTab("profile")}
+              >
+                Profile
+              </Button>
+              <Button
+                variant={activeTab === "account" ? "default" : "ghost"}
+                size="sm"
+                className={`flex-1 text-xs ${activeTab === "account" ? "bg-fitness-gradient text-white" : ""}`}
+                onClick={() => setActiveTab("account")}
+              >
+                Account
+              </Button>
+            </div>
+          </div>
+
+          {/* Main Layout - Fixed Grid System */}
+          <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+            {/* Desktop Sidebar - Fixed Width */}
+            <div className="hidden lg:block lg:w-80 lg:flex-shrink-0">
+              <div className="sticky top-4">
                 <ProfileSidebar
                   activeTab={activeTab}
                   setActiveTab={setActiveTab}
@@ -172,8 +171,8 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* Main Content */}
-            <div className="lg:col-span-3 space-y-4 sm:space-y-6 order-1 lg:order-2">
+            {/* Main Content Area - Flexible Width */}
+            <div className="flex-1 min-w-0 space-y-4 sm:space-y-6">
               {activeTab === "profile" && (
                 <>
                   <BasicInfoCard formData={formData} updateFormData={updateFormData} />
@@ -207,13 +206,13 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* Mobile Profile Summary - Only show on mobile */}
+          {/* Mobile Profile Summary */}
           <div className="block lg:hidden mt-6">
             <Card className="p-4 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
               <div className="text-center">
                 <div className="w-16 h-16 bg-fitness-gradient rounded-full flex items-center justify-center mx-auto mb-3">
                   <span className="text-white font-bold text-lg">
-                    {formData.first_name ? formData.first_name.charAt(0) : user?.email?.charAt(0)?.toUpperCase()}
+                    {formData.first_name ? formData.first_name.charAt(0).toUpperCase() : user?.email?.charAt(0)?.toUpperCase()}
                   </span>
                 </div>
                 <h3 className="text-lg font-semibold text-gray-800 mb-1">
