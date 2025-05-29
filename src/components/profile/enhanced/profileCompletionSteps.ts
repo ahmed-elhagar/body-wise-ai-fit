@@ -57,20 +57,12 @@ export const useProfileCompletionSteps = (completionScore: number) => {
       key: 'profile_review',
       title: t('profileReview'),
       description: t('finalReviewConfirmation'),
-      completed: completionScore >= 85, // Increased threshold for better completion tracking
+      completed: completionScore >= 85,
     },
   ];
 
   const nextIncompleteStep = steps.find(step => !step.completed);
   const completedSteps = steps.filter(step => step.completed).length;
-
-  console.log('Profile completion steps:', {
-    steps: steps.map(s => ({ key: s.key, completed: s.completed })),
-    nextIncompleteStep: nextIncompleteStep?.key,
-    completedSteps,
-    totalSteps: steps.length,
-    completionScore
-  });
 
   return {
     steps,

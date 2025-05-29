@@ -3,16 +3,20 @@ import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import ProfileHeader from "@/components/profile/ProfileHeader";
-import ProfilePromotionCard from "@/components/profile/ProfilePromotionCard";
-import ProfileContent from "@/components/profile/ProfileContent";
-import ProfileLoadingState from "@/components/profile/ProfileLoadingState";
 import { useProfileForm } from "@/hooks/useProfileForm";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, Target, Settings, Eye, Shield, LogOut } from "lucide-react";
+import { User, Target, Settings, Eye, Shield, LogOut, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import ProfileLoadingState from "@/components/profile/ProfileLoadingState";
+import ProfileCompletionCard from "@/components/profile/enhanced/ProfileCompletionCard";
+import EnhancedBasicInfoForm from "@/components/profile/enhanced/EnhancedBasicInfoForm";
+import EnhancedGoalsForm from "@/components/profile/enhanced/EnhancedGoalsForm";
+import HealthAssessmentForm from "@/components/profile/enhanced/HealthAssessmentForm";
+import EnhancedSettingsForm from "@/components/profile/enhanced/EnhancedSettingsForm";
+import EnhancedProfileOverview from "@/components/profile/enhanced/EnhancedProfileOverview";
+import { useEnhancedProfile } from "@/hooks/useEnhancedProfile";
 
 const Profile = () => {
   const { user, isAdmin, signOut } = useAuth();
@@ -20,24 +24,36 @@ const Profile = () => {
   const { isRTL, t } = useLanguage();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
-  const [isEditMode, setIsEditMode] = useState(false);
 
   const {
     formData,
     updateFormData,
     handleArrayInput,
-    handleSave,
+    saveBasicInfo,
+    saveGoalsAndActivity,
     isUpdating,
-  } = useProfileForm();
+  } = useEnhancedProfile();
 
-  const handleEditProfile = () => {
-    setIsEditMode(true);
-    setActiveTab("profile");
-  };
-
-  const handleEditGoals = () => {
-    setIsEditMode(true);
-    setActiveTab("goals");
+  const handleStepClick = (step: string) => {
+    switch (step) {
+      case 'basic_info':
+        setActiveTab('basic');
+        break;
+      case 'health_assessment':
+        setActiveTab('health');
+        break;
+      case 'goals_setup':
+        setActiveTab('goals');
+        break;
+      case 'preferences':
+        setActiveTab('settings');
+        break;
+      case 'profile_review':
+        setActiveTab('overview');
+        break;
+      default:
+        setActiveTab('overview');
+    }
   };
 
   const handleSignOut = async () => {
@@ -58,15 +74,19 @@ const Profile = () => {
   return (
     <ProtectedRoute requireProfile>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-        {/* Account for main navigation */}
         <div className={`${isRTL ? 'mr-16 lg:mr-64' : 'ml-16 lg:ml-64'} min-h-screen`}>
           <div className="max-w-6xl mx-auto p-4 lg:p-6">
             {/* Header Section */}
             <div className="mb-6">
-              <ProfileHeader isEditMode={isEditMode} />
+              <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-2">
+                {t('profile')}
+              </h1>
+              <p className="text-sm lg:text-base text-gray-600">
+                Manage your personal information and preferences
+              </p>
               
               {/* User Info Card */}
-              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 lg:p-6 border border-gray-200 mb-4">
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 lg:p-6 border border-gray-200 my-6">
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
                     <div className="w-16 h-16 lg:w-20 lg:h-20 bg-fitness-gradient rounded-full flex items-center justify-center">
@@ -132,100 +152,70 @@ const Profile = () => {
                   </div>
                 </div>
               </div>
-              
-              <ProfilePromotionCard 
-                profileCompleteness={profileCompleteness} 
-              />
+            </div>
+
+            {/* Profile Completion Card */}
+            <div className="mb-6">
+              <ProfileCompletionCard onStepClick={handleStepClick} />
             </div>
 
             {/* Main Content with Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-4 lg:grid-cols-4 mb-6">
-                <TabsTrigger value="overview" className="flex items-center gap-2">
+              <TabsList className="grid w-full grid-cols-5 mb-6">
+                <TabsTrigger value="overview" className="flex items-center gap-1">
                   <Eye className="w-4 h-4" />
                   <span className="hidden sm:inline">{t('overview')}</span>
                 </TabsTrigger>
-                <TabsTrigger value="profile" className="flex items-center gap-2">
+                <TabsTrigger value="basic" className="flex items-center gap-1">
                   <User className="w-4 h-4" />
-                  <span className="hidden sm:inline">{t('basicInfo')}</span>
+                  <span className="hidden sm:inline">{t('basic')}</span>
                 </TabsTrigger>
-                <TabsTrigger value="goals" className="flex items-center gap-2">
+                <TabsTrigger value="health" className="flex items-center gap-1">
+                  <Heart className="w-4 h-4" />
+                  <span className="hidden sm:inline">{t('health')}</span>
+                </TabsTrigger>
+                <TabsTrigger value="goals" className="flex items-center gap-1">
                   <Target className="w-4 h-4" />
                   <span className="hidden sm:inline">{t('goals')}</span>
                 </TabsTrigger>
-                <TabsTrigger value="account" className="flex items-center gap-2">
+                <TabsTrigger value="settings" className="flex items-center gap-1">
                   <Settings className="w-4 h-4" />
-                  <span className="hidden sm:inline">{t('account')}</span>
+                  <span className="hidden sm:inline">{t('settings')}</span>
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="overview">
-                <ProfileContent
-                  activeTab="overview"
-                  isEditMode={false}
-                  formData={formData}
-                  user={user}
-                  updateFormData={updateFormData}
-                  handleArrayInput={handleArrayInput}
-                  handleSave={handleSave}
-                  setIsEditMode={setIsEditMode}
-                  setActiveTab={setActiveTab}
-                  handleEditProfile={handleEditProfile}
-                  handleEditGoals={handleEditGoals}
-                  isUpdating={isUpdating}
-                />
-              </TabsContent>
+              <div className="bg-white/60 backdrop-blur-sm rounded-xl border border-gray-200 min-h-[600px]">
+                <TabsContent value="overview" className="p-6 m-0">
+                  <EnhancedProfileOverview />
+                </TabsContent>
 
-              <TabsContent value="profile">
-                <ProfileContent
-                  activeTab="profile"
-                  isEditMode={isEditMode}
-                  formData={formData}
-                  user={user}
-                  updateFormData={updateFormData}
-                  handleArrayInput={handleArrayInput}
-                  handleSave={handleSave}
-                  setIsEditMode={setIsEditMode}
-                  setActiveTab={setActiveTab}
-                  handleEditProfile={handleEditProfile}
-                  handleEditGoals={handleEditGoals}
-                  isUpdating={isUpdating}
-                />
-              </TabsContent>
+                <TabsContent value="basic" className="p-6 m-0">
+                  <EnhancedBasicInfoForm
+                    formData={formData}
+                    updateFormData={updateFormData}
+                    onSave={saveBasicInfo}
+                    isUpdating={isUpdating}
+                  />
+                </TabsContent>
 
-              <TabsContent value="goals">
-                <ProfileContent
-                  activeTab="goals"
-                  isEditMode={isEditMode}
-                  formData={formData}
-                  user={user}
-                  updateFormData={updateFormData}
-                  handleArrayInput={handleArrayInput}
-                  handleSave={handleSave}
-                  setIsEditMode={setIsEditMode}
-                  setActiveTab={setActiveTab}
-                  handleEditProfile={handleEditProfile}
-                  handleEditGoals={handleEditGoals}
-                  isUpdating={isUpdating}
-                />
-              </TabsContent>
+                <TabsContent value="health" className="p-6 m-0">
+                  <HealthAssessmentForm />
+                </TabsContent>
 
-              <TabsContent value="account">
-                <ProfileContent
-                  activeTab="account"
-                  isEditMode={isEditMode}
-                  formData={formData}
-                  user={user}
-                  updateFormData={updateFormData}
-                  handleArrayInput={handleArrayInput}
-                  handleSave={handleSave}
-                  setIsEditMode={setIsEditMode}
-                  setActiveTab={setActiveTab}
-                  handleEditProfile={handleEditProfile}
-                  handleEditGoals={handleEditGoals}
-                  isUpdating={isUpdating}
-                />
-              </TabsContent>
+                <TabsContent value="goals" className="p-6 m-0">
+                  <EnhancedGoalsForm
+                    formData={formData}
+                    updateFormData={updateFormData}
+                    handleArrayInput={handleArrayInput}
+                    onSave={saveGoalsAndActivity}
+                    isUpdating={isUpdating}
+                  />
+                </TabsContent>
+
+                <TabsContent value="settings" className="p-6 m-0">
+                  <EnhancedSettingsForm />
+                </TabsContent>
+              </div>
             </Tabs>
           </div>
         </div>

@@ -1,64 +1,46 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Settings, Bell, Globe, Shield } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
+import { Settings, Palette, Globe, Bell, Shield } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useProfile } from "@/hooks/useProfile";
 import { useOnboardingProgress } from "@/hooks/useOnboardingProgress";
 import { toast } from "sonner";
 
 const EnhancedSettingsForm = () => {
+  const { t, language, setLanguage } = useLanguage();
+  const { profile, updateProfile } = useProfile();
   const { markStepComplete } = useOnboardingProgress();
-  const [isUpdating, setIsUpdating] = useState(false);
   
-  const [settings, setSettings] = useState({
-    language: 'en',
-    notifications: {
-      email: true,
-      push: true,
-      sms: false,
-      marketing: false,
-    },
-    privacy: {
-      profile_visibility: 'private',
-      data_sharing_analytics: true,
-      data_sharing_research: false,
-    },
-    preferences: {
-      theme: 'light',
-      measurement_units: 'metric',
-      auto_meal_planning: true,
-      auto_exercise_planning: true,
-      ai_suggestions: true,
-    }
+  const [preferences, setPreferences] = useState({
+    theme: 'light',
+    notifications: true,
+    emailUpdates: false,
+    dataSharing: false,
+    measurementUnits: 'metric',
   });
 
-  const handleSave = async () => {
-    setIsUpdating(true);
-    try {
-      // Simulate saving settings
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      markStepComplete('preferences');
-      toast.success('Settings saved successfully!');
-    } catch (error) {
-      console.error('Error saving settings:', error);
-      toast.error('Failed to save settings');
-    } finally {
-      setIsUpdating(false);
+  const handleLanguageChange = async (newLanguage: string) => {
+    setLanguage(newLanguage);
+    if (profile) {
+      await updateProfile({ preferred_language: newLanguage });
+      toast.success('Language preference saved!');
     }
   };
 
-  const updateSetting = (category: string, key: string, value: any) => {
-    setSettings(prev => ({
-      ...prev,
-      [category]: {
-        ...prev[category as keyof typeof prev],
-        [key]: value
-      }
-    }));
+  const handleSavePreferences = async () => {
+    try {
+      markStepComplete('preferences');
+      toast.success('Preferences saved successfully!');
+    } catch (error) {
+      console.error('Error saving preferences:', error);
+      toast.error('Failed to save preferences');
+    }
   };
 
   return (
@@ -66,100 +48,98 @@ const EnhancedSettingsForm = () => {
       {/* Language & Localization */}
       <Card className="p-6">
         <div className="flex items-center mb-4">
-          <Globe className="w-5 h-5 text-blue-600 mr-2" />
-          <h3 className="text-lg font-semibold text-gray-800">Language & Localization</h3>
+          <Globe className="w-5 h-5 text-fitness-primary mr-2" />
+          <h3 className="text-lg font-semibold text-gray-800">{t('language')} & Region</h3>
         </div>
         
         <div className="space-y-4">
           <div>
-            <Label htmlFor="language">Preferred Language</Label>
-            <Select 
-              value={settings.language} 
-              onValueChange={(value) => setSettings(prev => ({ ...prev, language: value }))}
-            >
+            <Label htmlFor="language">Display Language</Label>
+            <Select value={language} onValueChange={handleLanguageChange}>
               <SelectTrigger className="mt-1">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="en">English</SelectItem>
                 <SelectItem value="ar">العربية</SelectItem>
-                <SelectItem value="es">Español</SelectItem>
-                <SelectItem value="fr">Français</SelectItem>
               </SelectContent>
             </Select>
           </div>
-
+          
           <div>
-            <Label htmlFor="measurement_units">Measurement Units</Label>
+            <Label htmlFor="units">Measurement Units</Label>
             <Select 
-              value={settings.preferences.measurement_units} 
-              onValueChange={(value) => updateSetting('preferences', 'measurement_units', value)}
+              value={preferences.measurementUnits} 
+              onValueChange={(value) => setPreferences({...preferences, measurementUnits: value})}
             >
               <SelectTrigger className="mt-1">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="metric">Metric (kg, cm)</SelectItem>
-                <SelectItem value="imperial">Imperial (lbs, ft/in)</SelectItem>
+                <SelectItem value="imperial">Imperial (lbs, ft)</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
       </Card>
 
+      {/* Appearance */}
+      <Card className="p-6">
+        <div className="flex items-center mb-4">
+          <Palette className="w-5 h-5 text-fitness-primary mr-2" />
+          <h3 className="text-lg font-semibold text-gray-800">Appearance</h3>
+        </div>
+        
+        <div>
+          <Label htmlFor="theme">Theme</Label>
+          <Select 
+            value={preferences.theme} 
+            onValueChange={(value) => setPreferences({...preferences, theme: value})}
+          >
+            <SelectTrigger className="mt-1">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="light">Light</SelectItem>
+              <SelectItem value="dark">Dark</SelectItem>
+              <SelectItem value="auto">Auto</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </Card>
+
       {/* Notifications */}
       <Card className="p-6">
         <div className="flex items-center mb-4">
-          <Bell className="w-5 h-5 text-blue-600 mr-2" />
+          <Bell className="w-5 h-5 text-fitness-primary mr-2" />
           <h3 className="text-lg font-semibold text-gray-800">Notifications</h3>
         </div>
         
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <Label htmlFor="email_notifications">Email Notifications</Label>
-              <p className="text-sm text-gray-600">Receive updates and reminders via email</p>
+              <Label htmlFor="notifications">Push Notifications</Label>
+              <p className="text-sm text-gray-600">Receive workout and meal reminders</p>
             </div>
             <Switch
-              id="email_notifications"
-              checked={settings.notifications.email}
-              onCheckedChange={(checked) => updateSetting('notifications', 'email', checked)}
+              id="notifications"
+              checked={preferences.notifications}
+              onCheckedChange={(checked) => setPreferences({...preferences, notifications: checked})}
             />
           </div>
-
+          
+          <Separator />
+          
           <div className="flex items-center justify-between">
             <div>
-              <Label htmlFor="push_notifications">Push Notifications</Label>
-              <p className="text-sm text-gray-600">Get real-time notifications on your device</p>
+              <Label htmlFor="emailUpdates">Email Updates</Label>
+              <p className="text-sm text-gray-600">Weekly progress reports and tips</p>
             </div>
             <Switch
-              id="push_notifications"
-              checked={settings.notifications.push}
-              onCheckedChange={(checked) => updateSetting('notifications', 'push', checked)}
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div>
-              <Label htmlFor="sms_notifications">SMS Notifications</Label>
-              <p className="text-sm text-gray-600">Receive important updates via text message</p>
-            </div>
-            <Switch
-              id="sms_notifications"
-              checked={settings.notifications.sms}
-              onCheckedChange={(checked) => updateSetting('notifications', 'sms', checked)}
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div>
-              <Label htmlFor="marketing_emails">Marketing Emails</Label>
-              <p className="text-sm text-gray-600">Receive promotional content and tips</p>
-            </div>
-            <Switch
-              id="marketing_emails"
-              checked={settings.notifications.marketing}
-              onCheckedChange={(checked) => updateSetting('notifications', 'marketing', checked)}
+              id="emailUpdates"
+              checked={preferences.emailUpdates}
+              onCheckedChange={(checked) => setPreferences({...preferences, emailUpdates: checked})}
             />
           </div>
         </div>
@@ -168,131 +148,30 @@ const EnhancedSettingsForm = () => {
       {/* Privacy */}
       <Card className="p-6">
         <div className="flex items-center mb-4">
-          <Shield className="w-5 h-5 text-blue-600 mr-2" />
-          <h3 className="text-lg font-semibold text-gray-800">Privacy & Data</h3>
+          <Shield className="w-5 h-5 text-fitness-primary mr-2" />
+          <h3 className="text-lg font-semibold text-gray-800">Privacy</h3>
         </div>
         
-        <div className="space-y-4">
+        <div className="flex items-center justify-between">
           <div>
-            <Label htmlFor="profile_visibility">Profile Visibility</Label>
-            <Select 
-              value={settings.privacy.profile_visibility} 
-              onValueChange={(value) => updateSetting('privacy', 'profile_visibility', value)}
-            >
-              <SelectTrigger className="mt-1">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="private">Private</SelectItem>
-                <SelectItem value="friends">Friends Only</SelectItem>
-                <SelectItem value="public">Public</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label htmlFor="dataSharing">Anonymous Data Sharing</Label>
+            <p className="text-sm text-gray-600">Help improve our AI recommendations</p>
           </div>
-
-          <div className="flex items-center justify-between">
-            <div>
-              <Label htmlFor="data_analytics">Analytics Data Sharing</Label>
-              <p className="text-sm text-gray-600">Help improve the app with anonymous usage data</p>
-            </div>
-            <Switch
-              id="data_analytics"
-              checked={settings.privacy.data_sharing_analytics}
-              onCheckedChange={(checked) => updateSetting('privacy', 'data_sharing_analytics', checked)}
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div>
-              <Label htmlFor="data_research">Research Data Sharing</Label>
-              <p className="text-sm text-gray-600">Contribute to health and fitness research</p>
-            </div>
-            <Switch
-              id="data_research"
-              checked={settings.privacy.data_sharing_research}
-              onCheckedChange={(checked) => updateSetting('privacy', 'data_sharing_research', checked)}
-            />
-          </div>
+          <Switch
+            id="dataSharing"
+            checked={preferences.dataSharing}
+            onCheckedChange={(checked) => setPreferences({...preferences, dataSharing: checked})}
+          />
         </div>
       </Card>
 
-      {/* App Preferences */}
-      <Card className="p-6">
-        <div className="flex items-center mb-4">
-          <Settings className="w-5 h-5 text-blue-600 mr-2" />
-          <h3 className="text-lg font-semibold text-gray-800">App Preferences</h3>
-        </div>
-        
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="theme">Theme</Label>
-            <Select 
-              value={settings.preferences.theme} 
-              onValueChange={(value) => updateSetting('preferences', 'theme', value)}
-            >
-              <SelectTrigger className="mt-1">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="light">Light</SelectItem>
-                <SelectItem value="dark">Dark</SelectItem>
-                <SelectItem value="auto">Auto</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div>
-              <Label htmlFor="auto_meal_planning">Automatic Meal Planning</Label>
-              <p className="text-sm text-gray-600">Generate meal plans automatically</p>
-            </div>
-            <Switch
-              id="auto_meal_planning"
-              checked={settings.preferences.auto_meal_planning}
-              onCheckedChange={(checked) => updateSetting('preferences', 'auto_meal_planning', checked)}
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div>
-              <Label htmlFor="auto_exercise_planning">Automatic Exercise Planning</Label>
-              <p className="text-sm text-gray-600">Generate workout plans automatically</p>
-            </div>
-            <Switch
-              id="auto_exercise_planning"
-              checked={settings.preferences.auto_exercise_planning}
-              onCheckedChange={(checked) => updateSetting('preferences', 'auto_exercise_planning', checked)}
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div>
-              <Label htmlFor="ai_suggestions">AI Suggestions</Label>
-              <p className="text-sm text-gray-600">Receive personalized AI recommendations</p>
-            </div>
-            <Switch
-              id="ai_suggestions"
-              checked={settings.preferences.ai_suggestions}
-              onCheckedChange={(checked) => updateSetting('preferences', 'ai_suggestions', checked)}
-            />
-          </div>
-        </div>
-      </Card>
-
+      {/* Save Button */}
       <div className="flex justify-end">
         <Button 
-          onClick={handleSave}
-          disabled={isUpdating}
-          className="bg-fitness-gradient hover:opacity-90 w-full md:w-auto"
+          onClick={handleSavePreferences}
+          className="bg-fitness-gradient hover:opacity-90"
         >
-          {isUpdating ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            'Save Settings'
-          )}
+          Save Preferences
         </Button>
       </div>
     </div>
