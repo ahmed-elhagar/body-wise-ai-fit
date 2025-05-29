@@ -12,7 +12,6 @@ import Index from '@/pages/Index';
 import Auth from '@/pages/Auth';
 import Dashboard from '@/pages/Dashboard';
 import Profile from '@/pages/Profile';
-import EnhancedProfile from '@/pages/EnhancedProfile';
 import Onboarding from '@/pages/Onboarding';
 import MealPlan from '@/pages/MealPlan';
 import Exercise from '@/pages/Exercise';
@@ -46,7 +45,6 @@ function App() {
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/profile" element={<Profile />} />
-                <Route path="/enhanced-profile" element={<EnhancedProfile />} />
                 <Route path="/onboarding" element={<Onboarding />} />
                 <Route path="/meal-plan" element={<MealPlan />} />
                 <Route path="/exercise" element={<Exercise />} />

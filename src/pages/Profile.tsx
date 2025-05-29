@@ -1,14 +1,14 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import { useProfileForm } from "@/hooks/useProfileForm";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, Target, Settings, Eye, Shield, LogOut, Heart } from "lucide-react";
+import { User, Target, Settings, Eye, Shield, LogOut, Heart, CheckCircle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import ProfileLoadingState from "@/components/profile/ProfileLoadingState";
 import ProfileCompletionCard from "@/components/profile/enhanced/ProfileCompletionCard";
 import EnhancedBasicInfoForm from "@/components/profile/enhanced/EnhancedBasicInfoForm";
@@ -17,13 +17,15 @@ import HealthAssessmentForm from "@/components/profile/enhanced/HealthAssessment
 import EnhancedSettingsForm from "@/components/profile/enhanced/EnhancedSettingsForm";
 import EnhancedProfileOverview from "@/components/profile/enhanced/EnhancedProfileOverview";
 import { useEnhancedProfile } from "@/hooks/useEnhancedProfile";
+import { toast } from "sonner";
 
 const Profile = () => {
   const { user, isAdmin, signOut } = useAuth();
-  const { profile, isLoading } = useProfile();
+  const { profile, isLoading, error } = useProfile();
   const { isRTL, t } = useLanguage();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const {
     formData,
@@ -32,9 +34,37 @@ const Profile = () => {
     saveBasicInfo,
     saveGoalsAndActivity,
     isUpdating,
+    validationErrors,
+    completionPercentage,
+    progress,
+    assessment,
   } = useEnhancedProfile();
 
+  // Track unsaved changes
+  useEffect(() => {
+    if (profile) {
+      const hasChanges = 
+        formData.first_name !== (profile.first_name || '') ||
+        formData.last_name !== (profile.last_name || '') ||
+        formData.age !== (profile.age?.toString() || '') ||
+        formData.gender !== (profile.gender || '') ||
+        formData.height !== (profile.height?.toString() || '') ||
+        formData.weight !== (profile.weight?.toString() || '') ||
+        formData.nationality !== (profile.nationality || '') ||
+        formData.body_shape !== (profile.body_shape || '') ||
+        formData.fitness_goal !== (profile.fitness_goal || '') ||
+        formData.activity_level !== (profile.activity_level || '');
+      
+      setHasUnsavedChanges(hasChanges);
+    }
+  }, [formData, profile]);
+
   const handleStepClick = (step: string) => {
+    if (hasUnsavedChanges) {
+      toast.error('Please save your current changes before switching sections');
+      return;
+    }
+
     switch (step) {
       case 'basic_info':
         setActiveTab('basic');
@@ -57,33 +87,76 @@ const Profile = () => {
   };
 
   const handleSignOut = async () => {
+    if (hasUnsavedChanges) {
+      if (!confirm('You have unsaved changes. Are you sure you want to sign out?')) {
+        return;
+      }
+    }
+    
     try {
       await signOut();
       navigate('/auth');
     } catch (error) {
       console.error('Sign out error:', error);
+      toast.error('Failed to sign out. Please try again.');
     }
   };
 
-  const profileCompleteness = profile?.profile_completion_score || 0;
+  const handleTabChange = (newTab: string) => {
+    if (hasUnsavedChanges) {
+      toast.error('Please save your current changes before switching tabs');
+      return;
+    }
+    setActiveTab(newTab);
+  };
 
   if (isLoading) {
     return <ProfileLoadingState />;
   }
 
+  if (error) {
+    return (
+      <ProtectedRoute requireProfile={false}>
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+          <Alert className="max-w-md">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Failed to load profile data. Please refresh the page or try again later.
+            </AlertDescription>
+          </Alert>
+        </div>
+      </ProtectedRoute>
+    );
+  }
+
   return (
-    <ProtectedRoute requireProfile>
+    <ProtectedRoute requireProfile={false}>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
         <div className={`${isRTL ? 'mr-16 lg:mr-64' : 'ml-16 lg:ml-64'} min-h-screen`}>
           <div className="max-w-6xl mx-auto p-4 lg:p-6">
             {/* Header Section */}
             <div className="mb-6">
-              <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-2">
-                {t('profile')}
-              </h1>
+              <div className="flex items-center gap-2 mb-2">
+                <h1 className="text-2xl lg:text-3xl font-bold text-gray-800">
+                  {t('profile')}
+                </h1>
+                {completionPercentage >= 100 && (
+                  <CheckCircle className="w-6 h-6 text-green-500" />
+                )}
+              </div>
               <p className="text-sm lg:text-base text-gray-600">
                 Manage your personal information and preferences
               </p>
+              
+              {/* Unsaved Changes Warning */}
+              {hasUnsavedChanges && (
+                <Alert className="mt-4 border-yellow-200 bg-yellow-50">
+                  <AlertCircle className="h-4 w-4 text-yellow-600" />
+                  <AlertDescription className="text-yellow-800">
+                    You have unsaved changes. Make sure to save before switching sections.
+                  </AlertDescription>
+                </Alert>
+              )}
               
               {/* User Info Card */}
               <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 lg:p-6 border border-gray-200 my-6">
@@ -148,7 +221,7 @@ const Profile = () => {
                   </div>
                   <div className="bg-gray-50 p-3 rounded-lg text-center">
                     <p className="text-gray-600 text-xs">{t('completion')}</p>
-                    <p className="font-semibold">{profileCompleteness}%</p>
+                    <p className="font-semibold text-blue-600">{completionPercentage}%</p>
                   </div>
                 </div>
               </div>
@@ -160,7 +233,7 @@ const Profile = () => {
             </div>
 
             {/* Main Content with Tabs */}
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
               <TabsList className="grid w-full grid-cols-5 mb-6">
                 <TabsTrigger value="overview" className="flex items-center gap-1">
                   <Eye className="w-4 h-4" />
@@ -195,6 +268,7 @@ const Profile = () => {
                     updateFormData={updateFormData}
                     onSave={saveBasicInfo}
                     isUpdating={isUpdating}
+                    validationErrors={validationErrors}
                   />
                 </TabsContent>
 
@@ -209,6 +283,7 @@ const Profile = () => {
                     handleArrayInput={handleArrayInput}
                     onSave={saveGoalsAndActivity}
                     isUpdating={isUpdating}
+                    validationErrors={validationErrors}
                   />
                 </TabsContent>
 

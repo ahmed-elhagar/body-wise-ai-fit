@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Settings, Palette, Globe, Bell, Shield } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useLanguage, Language } from "@/contexts/LanguageContext";
 import { useProfile } from "@/hooks/useProfile";
 import { useOnboardingProgress } from "@/hooks/useOnboardingProgress";
 import { toast } from "sonner";
@@ -26,7 +26,7 @@ const EnhancedSettingsForm = () => {
   });
 
   const handleLanguageChange = async (newLanguage: string) => {
-    setLanguage(newLanguage);
+    setLanguage(newLanguage as Language);
     if (profile) {
       await updateProfile({ preferred_language: newLanguage });
       toast.success('Language preference saved!');
