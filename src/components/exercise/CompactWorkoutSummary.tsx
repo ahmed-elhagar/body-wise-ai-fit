@@ -2,8 +2,9 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Clock, Target, Home, Building2, Coffee } from "lucide-react";
+import { Clock, Flame, Target, Calendar, Dumbbell, TrendingUp } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { getWorkoutStatistics, getTrainingDays, getRestDays } from "@/utils/exerciseDataUtils";
 
 interface CompactWorkoutSummaryProps {
   todaysWorkouts: any[];
@@ -24,128 +25,166 @@ export const CompactWorkoutSummary = ({
   progressPercentage,
   workoutType,
   selectedDay,
-  isRestDay
+  isRestDay = false
 }: CompactWorkoutSummaryProps) => {
   const { t } = useLanguage();
-  
-  const todaysWorkout = todaysWorkouts?.[0];
-  const isEmptyDay = !todaysWorkout || (!isRestDay && totalExercises === 0);
 
-  // Rest Day Summary
+  // Get workout statistics
+  const weekStats = currentProgram?.daily_workouts ? getWorkoutStatistics(currentProgram.daily_workouts) : null;
+  const trainingDays = currentProgram?.daily_workouts ? getTrainingDays(currentProgram.daily_workouts) : [];
+  const restDays = currentProgram?.daily_workouts ? getRestDays(currentProgram.daily_workouts) : [];
+
+  const currentWorkout = todaysWorkouts?.[0];
+  const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const currentDayName = dayNames[selectedDay - 1];
+
+  // Rest Day Display
   if (isRestDay) {
     return (
-      <Card className="p-4 bg-gradient-to-r from-orange-50 to-orange-100 border-orange-200 mb-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-orange-200 rounded-full flex items-center justify-center">
-              <Coffee className="w-5 h-5 text-orange-600" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-orange-800">{t('exercise.restDay')}</h3>
-              <p className="text-sm text-orange-600">{t('exercise.restDayTip')}</p>
-            </div>
+      <Card className="p-4 sm:p-6 bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 shadow-lg">
+        <div className="text-center space-y-4">
+          <div className="w-16 h-16 bg-orange-200 rounded-full flex items-center justify-center mx-auto">
+            <Calendar className="w-8 h-8 text-orange-600" />
           </div>
-          <Badge variant="outline" className="bg-orange-100 text-orange-700 border-orange-300">
-            {t('exercise.rest')}
-          </Badge>
+          
+          <div>
+            <h3 className="text-xl font-bold text-orange-800 mb-2">
+              {t('exercise.restDay')} - {currentDayName}
+            </h3>
+            <p className="text-orange-700 text-sm">
+              {t('exercise.restDayMessage') || 'Take time to recover and prepare for your next workout!'}
+            </p>
+          </div>
+
+          {weekStats && (
+            <div className="grid grid-cols-2 gap-4 mt-6 pt-4 border-t border-orange-200">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-orange-800">{weekStats.totalWorkouts}</div>
+                <div className="text-xs text-orange-600">{t('exercise.weeklyWorkouts')}</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-orange-800">{weekStats.completedWorkouts}</div>
+                <div className="text-xs text-orange-600">{t('exercise.completed')}</div>
+              </div>
+            </div>
+          )}
         </div>
       </Card>
     );
   }
 
-  // Empty Day Summary
-  if (isEmptyDay) {
-    return (
-      <Card className="p-4 bg-gray-50 border-gray-200 mb-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-              {workoutType === "home" ? (
-                <Home className="w-5 h-5 text-gray-500" />
-              ) : (
-                <Building2 className="w-5 h-5 text-gray-500" />
-              )}
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-700">{t('exercise.noWorkout')}</h3>
-              <p className="text-sm text-gray-500">{t('exercise.noWorkoutMessage')}</p>
-            </div>
-          </div>
-          <Badge variant="outline" className="bg-gray-100 text-gray-600">
-            {t('exercise.empty')}
-          </Badge>
-        </div>
-      </Card>
-    );
-  }
-
-  // Active Workout Summary
+  // Active Workout Display
   return (
-    <Card className="p-4 bg-white border-0 shadow-md mb-4">
-      <div className="space-y-3">
+    <Card className="p-4 sm:p-6 bg-white/90 backdrop-blur-sm border-0 shadow-lg">
+      <div className="space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-fitness-gradient rounded-full flex items-center justify-center">
-              {workoutType === "home" ? (
-                <Home className="w-5 h-5 text-white" />
-              ) : (
-                <Building2 className="w-5 h-5 text-white" />
-              )}
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-fitness-gradient rounded-lg flex items-center justify-center">
+              <Dumbbell className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="font-semibold text-gray-800">{todaysWorkout.workout_name}</h3>
-              <p className="text-sm text-gray-600">{t('exercise.today')}</p>
+              <h3 className="font-semibold text-gray-800">
+                {currentWorkout?.workout_name || `${currentDayName} Workout`}
+              </h3>
+              <p className="text-xs text-gray-600">
+                {workoutType === "gym" ? t('exercise.gymWorkout') : t('exercise.homeWorkout')}
+              </p>
             </div>
           </div>
-          <Badge variant="outline" className="bg-fitness-gradient/10 text-fitness-700 border-fitness-200">
-            {workoutType === "home" ? t('exercise.home') : t('exercise.gym')}
+          
+          <Badge variant="outline" className="bg-white/80">
+            {currentProgram?.difficulty_level || 'Beginner'}
           </Badge>
         </div>
 
-        {/* Quick Stats */}
-        <div className="flex items-center justify-between text-sm">
-          <div className="flex items-center space-x-4">
-            {todaysWorkout.estimated_duration && (
-              <span className="flex items-center text-gray-600">
-                <Clock className="w-3 h-3 mr-1" />
-                {todaysWorkout.estimated_duration} {t('min')}
-              </span>
-            )}
-            {todaysWorkout.estimated_calories && (
-              <span className="flex items-center text-gray-600">
-                <Target className="w-3 h-3 mr-1" />
-                {todaysWorkout.estimated_calories} {t('cal')}
-              </span>
-            )}
+        {/* Quick Stats Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="text-center p-3 bg-gray-50 rounded-lg">
+            <Clock className="w-4 h-4 text-gray-600 mx-auto mb-1" />
+            <div className="text-sm font-medium text-gray-800">
+              {currentWorkout?.estimated_duration || 45}min
+            </div>
+            <div className="text-xs text-gray-600">{t('exercise.duration')}</div>
           </div>
-          <span className="text-gray-600">
-            {completedExercises}/{totalExercises} {t('exercise.exercises')}
-          </span>
+          
+          <div className="text-center p-3 bg-gray-50 rounded-lg">
+            <Flame className="w-4 h-4 text-orange-500 mx-auto mb-1" />
+            <div className="text-sm font-medium text-gray-800">
+              {currentWorkout?.estimated_calories || 250}
+            </div>
+            <div className="text-xs text-gray-600">{t('exercise.calories')}</div>
+          </div>
+          
+          <div className="text-center p-3 bg-gray-50 rounded-lg">
+            <Target className="w-4 h-4 text-green-500 mx-auto mb-1" />
+            <div className="text-sm font-medium text-gray-800">
+              {totalExercises}
+            </div>
+            <div className="text-xs text-gray-600">{t('exercise.exercises')}</div>
+          </div>
+          
+          <div className="text-center p-3 bg-gray-50 rounded-lg">
+            <TrendingUp className="w-4 h-4 text-blue-500 mx-auto mb-1" />
+            <div className="text-sm font-medium text-gray-800">
+              {Math.round(progressPercentage)}%
+            </div>
+            <div className="text-xs text-gray-600">{t('exercise.progress')}</div>
+          </div>
         </div>
 
         {/* Progress Bar */}
-        <div className="space-y-1">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-gray-600">{t('exercise.progress')}</span>
-            <span className="text-gray-700 font-medium">{Math.round(progressPercentage)}%</span>
+        {totalExercises > 0 && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-600">{t('exercise.todayProgress')}</span>
+              <span className="font-medium text-gray-800">
+                {completedExercises}/{totalExercises} {t('exercise.exercises')}
+              </span>
+            </div>
+            <Progress 
+              value={progressPercentage} 
+              className="h-2 bg-gray-200"
+            />
           </div>
-          <Progress value={progressPercentage} className="h-2" />
-        </div>
+        )}
 
         {/* Muscle Groups */}
-        {todaysWorkout.muscle_groups && todaysWorkout.muscle_groups.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {todaysWorkout.muscle_groups.slice(0, 3).map((muscle: string, index: number) => (
-              <Badge key={index} variant="secondary" className="text-xs px-2 py-0.5">
-                {muscle}
-              </Badge>
-            ))}
-            {todaysWorkout.muscle_groups.length > 3 && (
-              <Badge variant="secondary" className="text-xs px-2 py-0.5">
-                +{todaysWorkout.muscle_groups.length - 3}
-              </Badge>
-            )}
+        {currentWorkout?.muscle_groups && currentWorkout.muscle_groups.length > 0 && (
+          <div className="space-y-2">
+            <div className="text-sm font-medium text-gray-700">{t('exercise.targetMuscles')}:</div>
+            <div className="flex flex-wrap gap-1">
+              {currentWorkout.muscle_groups.map((muscle: string, index: number) => (
+                <Badge 
+                  key={index} 
+                  variant="secondary" 
+                  className="text-xs bg-blue-50 text-blue-700 border-blue-200"
+                >
+                  {muscle}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Week Overview */}
+        {weekStats && (
+          <div className="pt-3 border-t border-gray-200">
+            <div className="text-xs text-gray-600 mb-2">{t('exercise.weekOverview')}:</div>
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div>
+                <div className="text-sm font-medium text-gray-800">{trainingDays.length}</div>
+                <div className="text-xs text-gray-600">{t('exercise.training')}</div>
+              </div>
+              <div>
+                <div className="text-sm font-medium text-gray-800">{restDays.length}</div>
+                <div className="text-xs text-gray-600">{t('exercise.rest')}</div>
+              </div>
+              <div>
+                <div className="text-sm font-medium text-gray-800">{weekStats.totalEstimatedCalories}</div>
+                <div className="text-xs text-gray-600">{t('exercise.totalCalories')}</div>
+              </div>
+            </div>
           </div>
         )}
       </div>
