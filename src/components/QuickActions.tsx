@@ -21,65 +21,65 @@ const QuickActions = () => {
       icon: Scale,
       title: t('quickActions.logWeight'),
       description: t('quickActions.trackProgress'),
-      color: "bg-blue-500",
+      color: "bg-health-primary",
       action: () => navigate('/weight-tracking')
     },
     {
       icon: Camera,
       title: t('quickActions.logFood'),
       description: t('quickActions.checkCalories'),
-      color: "bg-green-500",
+      color: "bg-health-accent",
       action: () => navigate('/calorie-checker')
     },
     {
       icon: Utensils,
       title: t('quickActions.mealPlan'),
       description: t('quickActions.viewWeeklyMeals'),
-      color: "bg-orange-500",
+      color: "bg-health-secondary",
       action: () => navigate('/meal-plan')
     },
     {
       icon: Dumbbell,
       title: t('quickActions.workout'),
       description: t('quickActions.startExercising'),
-      color: "bg-purple-500",
+      color: "bg-health-primary",
       action: () => navigate('/exercise')
     },
     {
       icon: Target,
       title: t('quickActions.updateGoals'),
       description: t('quickActions.modifyTargets'),
-      color: "bg-red-500",
+      color: "bg-health-accent",
       action: () => navigate('/profile')
     },
     {
       icon: Calendar,
       title: t('quickActions.schedule'),
       description: t('quickActions.planWeek'),
-      color: "bg-indigo-500",
+      color: "bg-health-secondary",
       action: () => navigate('/dashboard')
     }
   ];
 
   return (
-    <Card className="p-4 sm:p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-      <h3 className={`text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4 ${isRTL ? 'text-right' : 'text-left'}`}>
+    <Card className="p-6 bg-white border border-health-border shadow-sm rounded-2xl">
+      <h3 className={`text-xl font-semibold text-health-text-primary mb-6 ${isRTL ? 'text-right' : 'text-left'}`}>
         {t('quickActions.title')}
       </h3>
-      <div className="grid grid-cols-2 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 gap-4">
         {actions.map((action, index) => (
           <Button
             key={index}
             variant="outline"
-            className={`h-auto p-3 sm:p-4 flex flex-col items-center space-y-2 hover:bg-gray-50 transition-all duration-200 ${isRTL ? 'text-right' : 'text-left'}`}
+            className={`h-auto p-4 flex flex-col items-center space-y-3 hover:bg-health-soft border-health-border transition-all duration-200 hover:border-health-primary group ${isRTL ? 'text-right' : 'text-left'} rounded-xl`}
             onClick={action.action}
           >
-            <div className={`w-8 h-8 sm:w-10 sm:h-10 ${action.color} rounded-full flex items-center justify-center`}>
-              <action.icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+            <div className={`w-12 h-12 ${action.color} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200`}>
+              <action.icon className="w-6 h-6 text-white" />
             </div>
             <div className="text-center">
-              <p className="font-medium text-xs sm:text-sm">{action.title}</p>
-              <p className="text-xs text-gray-500 hidden sm:block">{action.description}</p>
+              <p className="font-medium text-sm text-health-text-primary">{action.title}</p>
+              <p className="text-xs text-health-text-secondary hidden sm:block mt-1">{action.description}</p>
             </div>
           </Button>
         ))}

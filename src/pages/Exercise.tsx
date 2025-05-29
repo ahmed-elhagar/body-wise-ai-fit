@@ -76,7 +76,7 @@ const Exercise = () => {
 
   return (
     <MealPlanLayout>
-      <div className="p-4 sm:p-6">
+      <div className="p-4 sm:p-8 bg-health-background min-h-screen">
         <ExerciseProgramPageContent
           currentDate={currentDate}
           weekStartDate={weekStartDate}

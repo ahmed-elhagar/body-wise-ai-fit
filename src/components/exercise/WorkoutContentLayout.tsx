@@ -44,9 +44,9 @@ export const WorkoutContentLayout = ({
   };
 
   return (
-    <div className="space-y-4">
-      {/* Progress Tracker - Top position for better visibility */}
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+    <div className="space-y-6">
+      {/* Progress Tracker - Enhanced visual hierarchy */}
+      <div className="bg-white rounded-2xl border border-health-border shadow-sm overflow-hidden">
         <ExerciseProgressTracker
           currentProgram={currentProgram}
           selectedDay={selectedDayNumber}
@@ -56,7 +56,7 @@ export const WorkoutContentLayout = ({
         />
       </div>
 
-      {/* Quick Actions - Sticky below progress */}
+      {/* Quick Actions - Improved spacing and styling */}
       <div className="sticky top-4 z-10">
         <ExerciseQuickActions
           isWorkoutActive={workoutSession.isActive}
@@ -72,8 +72,8 @@ export const WorkoutContentLayout = ({
         />
       </div>
 
-      {/* Main Content Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+      {/* Main Content Layout - Enhanced grid and spacing */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Exercise List - Takes most space */}
         <div className="lg:col-span-3">
           <ExerciseListEnhanced 
@@ -85,34 +85,67 @@ export const WorkoutContentLayout = ({
           />
         </div>
 
-        {/* Sidebar with Motivation and Today's Summary */}
-        <div className="lg:col-span-1 space-y-4">
-          {/* Today's Progress Summary */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
-            <div className="text-center space-y-3">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
-                <span className="text-2xl font-bold text-blue-600">
-                  {totalExercises > 0 ? Math.round(progressPercentage) : 0}%
-                </span>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-800 mb-1">
-                  {t('exercise.todaysProgress')}
-                </h3>
-                <div className="text-sm text-gray-600">
-                  {completedExercises}/{totalExercises} {t('exercise.exercises')}
+        {/* Sidebar with enhanced design */}
+        <div className="lg:col-span-1 space-y-6">
+          {/* Progress Summary Card - Redesigned for better visual appeal */}
+          <div className="bg-white rounded-2xl p-6 border border-health-border shadow-sm">
+            <div className="text-center space-y-4">
+              {/* Circular Progress Indicator */}
+              <div className="relative w-20 h-20 mx-auto">
+                <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 36 36">
+                  <path
+                    className="text-health-soft stroke-current"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                    fill="none"
+                    d="M18 2.0845
+                      a 15.9155 15.9155 0 0 1 0 31.831
+                      a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <path
+                    className="text-health-primary stroke-current transition-all duration-500 ease-out"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    fill="none"
+                    strokeDasharray={`${progressPercentage}, 100`}
+                    d="M18 2.0845
+                      a 15.9155 15.9155 0 0 1 0 31.831
+                      a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-2xl font-bold text-health-primary">
+                    {totalExercises > 0 ? Math.round(progressPercentage) : 0}%
+                  </span>
                 </div>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-3">
-                <div 
-                  className="bg-gradient-to-r from-blue-500 to-purple-500 rounded-full h-3 transition-all duration-500 ease-out"
-                  style={{ width: `${progressPercentage}%` }}
-                />
+              
+              {/* Progress Details */}
+              <div>
+                <h3 className="font-semibold text-health-text-primary mb-2 text-lg">
+                  {t('exercise.todaysProgress')}
+                </h3>
+                <div className="text-sm text-health-text-secondary">
+                  <span className="font-medium text-health-primary">{completedExercises}</span>
+                  <span className="mx-1">/</span>
+                  <span>{totalExercises}</span>
+                  <span className="ml-1">{t('exercise.exercises')}</span>
+                </div>
+              </div>
+              
+              {/* Progress Status */}
+              <div className="bg-health-soft rounded-xl px-4 py-2">
+                <div className="text-xs font-medium text-health-primary">
+                  {progressPercentage === 100 ? '🎉 Completed!' : 
+                   progressPercentage > 50 ? '💪 Almost there!' : 
+                   progressPercentage > 0 ? '🔥 Keep going!' : '🎯 Ready to start!'}
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Motivation Card */}
+          {/* Motivation Card - Enhanced design */}
           <ExerciseMotivationCard
             completedExercises={completedExercises}
             totalExercises={totalExercises}

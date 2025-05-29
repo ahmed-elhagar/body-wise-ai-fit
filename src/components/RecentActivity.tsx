@@ -19,53 +19,56 @@ const RecentActivity = () => {
       title: `${t('recentActivity.loggedWeight')}: ${entry.weight} ${t('common.kg')}`,
       time: entry.recorded_at,
       badge: t('recentActivity.badges.weight'),
-      color: 'bg-blue-500'
+      color: 'bg-health-primary'
     })) || []),
     ...(mealPlans?.slice(0, 2).map(plan => ({
       type: 'meal',
       title: `${t('recentActivity.createdMealPlan')} ${new Date(plan.week_start_date).toLocaleDateString()}`,
       time: plan.created_at,
       badge: t('recentActivity.badges.nutrition'),
-      color: 'bg-green-500'
+      color: 'bg-health-accent'
     })) || []),
     ...(programs?.slice(0, 2).map(program => ({
       type: 'exercise',
       title: `${t('recentActivity.createdProgram')} ${program.program_name} ${t('recentActivity.program')}`,
       time: program.created_at,
       badge: t('recentActivity.badges.exercise'),
-      color: 'bg-purple-500'
+      color: 'bg-health-secondary'
     })) || [])
   ].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 5);
 
   if (activities.length === 0) {
     return (
-      <Card className="p-4 sm:p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-        <h3 className={`text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4 ${isRTL ? 'text-right' : 'text-left'}`}>
+      <Card className="p-6 bg-white border border-health-border shadow-sm rounded-2xl">
+        <h3 className={`text-xl font-semibold text-health-text-primary mb-6 ${isRTL ? 'text-right' : 'text-left'}`}>
           {t('recentActivity.title')}
         </h3>
-        <div className="text-center py-6 sm:py-8">
-          <p className="text-gray-500 text-sm sm:text-base">{t('recentActivity.noActivity')}</p>
+        <div className="text-center py-8">
+          <div className="w-16 h-16 bg-health-soft rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <span className="text-2xl">📈</span>
+          </div>
+          <p className="text-health-text-secondary">{t('recentActivity.noActivity')}</p>
         </div>
       </Card>
     );
   }
 
   return (
-    <Card className="p-4 sm:p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-      <h3 className={`text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4 ${isRTL ? 'text-right' : 'text-left'}`}>
+    <Card className="p-6 bg-white border border-health-border shadow-sm rounded-2xl">
+      <h3 className={`text-xl font-semibold text-health-text-primary mb-6 ${isRTL ? 'text-right' : 'text-left'}`}>
         {t('recentActivity.title')}
       </h3>
-      <div className="space-y-3 sm:space-y-4">
+      <div className="space-y-4">
         {activities.map((activity, index) => (
-          <div key={index} className={`flex items-start gap-3 p-3 rounded-lg bg-gray-50 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <div className={`w-2 h-2 ${activity.color} rounded-full mt-2 flex-shrink-0`}></div>
+          <div key={index} className={`flex items-start gap-4 p-4 rounded-xl bg-health-soft ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <div className={`w-3 h-3 ${activity.color} rounded-full mt-2 flex-shrink-0`}></div>
             <div className={`flex-1 min-w-0 ${isRTL ? 'text-right' : 'text-left'}`}>
-              <p className="text-sm font-medium text-gray-800 break-words">{activity.title}</p>
-              <div className={`flex items-center gap-2 mt-1 ${isRTL ? 'flex-row-reverse justify-end' : ''}`}>
-                <Badge variant="secondary" className="text-xs">
+              <p className="text-sm font-medium text-health-text-primary break-words">{activity.title}</p>
+              <div className={`flex items-center gap-3 mt-2 ${isRTL ? 'flex-row-reverse justify-end' : ''}`}>
+                <Badge variant="secondary" className="text-xs bg-white border-health-border text-health-primary">
                   {activity.badge}
                 </Badge>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-health-text-secondary">
                   {formatDistanceToNow(new Date(activity.time), { addSuffix: true })}
                 </p>
               </div>

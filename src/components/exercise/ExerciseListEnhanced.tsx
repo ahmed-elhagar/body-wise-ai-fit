@@ -26,9 +26,9 @@ export const ExerciseListEnhanced = ({
   if (isLoading) {
     return (
       <div className="lg:col-span-3">
-        <div className="text-center py-8">
-          <div className="w-8 h-8 animate-spin border-4 border-fitness-primary border-t-transparent rounded-full mx-auto mb-2"></div>
-          <p className="text-gray-600">{t('exercise.loadingExercises') || 'Loading exercises...'}</p>
+        <div className="text-center py-12">
+          <div className="w-10 h-10 animate-spin border-4 border-health-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-health-text-secondary text-lg font-medium">{t('exercise.loadingExercises') || 'Loading exercises...'}</p>
         </div>
       </div>
     );
@@ -42,13 +42,15 @@ export const ExerciseListEnhanced = ({
   if (!exercises || exercises.length === 0) {
     return (
       <div className="lg:col-span-3">
-        <Card className="p-8 bg-white/80 backdrop-blur-sm border-0 shadow-lg text-center">
-          <Dumbbell className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">
+        <Card className="p-12 bg-white border border-health-border shadow-sm text-center rounded-2xl">
+          <div className="w-16 h-16 bg-health-soft rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <Dumbbell className="w-8 h-8 text-health-text-secondary" />
+          </div>
+          <h3 className="text-xl font-semibold text-health-text-primary mb-3">
             {t('exercise.noExercises') || 'No Exercises for Today'}
           </h3>
-          <p className="text-gray-600">
-            {t('exercise.noExercisesMessage') || 'Generate an AI workout plan to get started'}
+          <p className="text-health-text-secondary max-w-md mx-auto leading-relaxed">
+            {t('exercise.noExercisesMessage') || 'Generate an AI workout plan to get started with your fitness journey'}
           </p>
         </Card>
       </div>
@@ -58,10 +60,15 @@ export const ExerciseListEnhanced = ({
   return (
     <div className="lg:col-span-3">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-gray-800">
-          {t('exercise.exerciseList') || 'Exercise List'}
-        </h2>
-        <Badge variant="outline" className="bg-white/80">
+        <div>
+          <h2 className="text-2xl font-semibold text-health-text-primary mb-1">
+            {t('exercise.exerciseList') || 'Exercise List'}
+          </h2>
+          <p className="text-health-text-secondary">
+            Complete your workout step by step
+          </p>
+        </div>
+        <Badge variant="outline" className="bg-health-soft border-health-border text-health-primary font-medium px-3 py-1">
           {exercises.length} {t('exercise.exercises') || 'exercises'}
         </Badge>
       </div>
