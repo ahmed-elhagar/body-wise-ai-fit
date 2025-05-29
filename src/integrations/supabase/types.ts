@@ -274,6 +274,65 @@ export type Database = {
           },
         ]
       }
+      food_consumption_log: {
+        Row: {
+          ai_analysis_data: Json | null
+          calories_consumed: number
+          carbs_consumed: number
+          consumed_at: string | null
+          created_at: string | null
+          fat_consumed: number
+          food_item_id: string
+          id: string
+          meal_type: string | null
+          notes: string | null
+          protein_consumed: number
+          quantity_g: number
+          source: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_analysis_data?: Json | null
+          calories_consumed: number
+          carbs_consumed: number
+          consumed_at?: string | null
+          created_at?: string | null
+          fat_consumed: number
+          food_item_id: string
+          id?: string
+          meal_type?: string | null
+          notes?: string | null
+          protein_consumed: number
+          quantity_g?: number
+          source?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_analysis_data?: Json | null
+          calories_consumed?: number
+          carbs_consumed?: number
+          consumed_at?: string | null
+          created_at?: string | null
+          fat_consumed?: number
+          food_item_id?: string
+          id?: string
+          meal_type?: string | null
+          notes?: string | null
+          protein_consumed?: number
+          quantity_g?: number
+          source?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "food_consumption_log_food_item_id_fkey"
+            columns: ["food_item_id"]
+            isOneToOne: false
+            referencedRelation: "food_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       food_database: {
         Row: {
           calories_per_unit: number
@@ -322,6 +381,105 @@ export type Database = {
           source?: string | null
           sugar_per_unit?: number | null
           unit_type?: string
+        }
+        Relationships: []
+      }
+      food_items: {
+        Row: {
+          barcode: string | null
+          brand: string | null
+          calories_per_100g: number
+          carbs_per_100g: number
+          category: string
+          confidence_score: number | null
+          created_at: string | null
+          cuisine_type: string | null
+          fat_per_100g: number
+          fiber_per_100g: number | null
+          id: string
+          image_url: string | null
+          name: string
+          protein_per_100g: number
+          serving_description: string | null
+          serving_size_g: number | null
+          sodium_per_100g: number | null
+          source: string | null
+          sugar_per_100g: number | null
+          updated_at: string | null
+          verified: boolean | null
+        }
+        Insert: {
+          barcode?: string | null
+          brand?: string | null
+          calories_per_100g?: number
+          carbs_per_100g?: number
+          category?: string
+          confidence_score?: number | null
+          created_at?: string | null
+          cuisine_type?: string | null
+          fat_per_100g?: number
+          fiber_per_100g?: number | null
+          id?: string
+          image_url?: string | null
+          name: string
+          protein_per_100g?: number
+          serving_description?: string | null
+          serving_size_g?: number | null
+          sodium_per_100g?: number | null
+          source?: string | null
+          sugar_per_100g?: number | null
+          updated_at?: string | null
+          verified?: boolean | null
+        }
+        Update: {
+          barcode?: string | null
+          brand?: string | null
+          calories_per_100g?: number
+          carbs_per_100g?: number
+          category?: string
+          confidence_score?: number | null
+          created_at?: string | null
+          cuisine_type?: string | null
+          fat_per_100g?: number
+          fiber_per_100g?: number | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          protein_per_100g?: number
+          serving_description?: string | null
+          serving_size_g?: number | null
+          sodium_per_100g?: number | null
+          source?: string | null
+          sugar_per_100g?: number | null
+          updated_at?: string | null
+          verified?: boolean | null
+        }
+        Relationships: []
+      }
+      food_search_history: {
+        Row: {
+          created_at: string | null
+          id: string
+          results_count: number | null
+          search_term: string
+          search_type: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          results_count?: number | null
+          search_term: string
+          search_type?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          results_count?: number | null
+          search_term?: string
+          search_type?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -561,6 +719,44 @@ export type Database = {
           weight?: number | null
         }
         Relationships: []
+      }
+      user_favorite_foods: {
+        Row: {
+          created_at: string | null
+          custom_name: string | null
+          custom_serving_size_g: number | null
+          food_item_id: string
+          id: string
+          notes: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          custom_name?: string | null
+          custom_serving_size_g?: number | null
+          food_item_id: string
+          id?: string
+          notes?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          custom_name?: string | null
+          custom_serving_size_g?: number | null
+          food_item_id?: string
+          id?: string
+          notes?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_favorite_foods_food_item_id_fkey"
+            columns: ["food_item_id"]
+            isOneToOne: false
+            referencedRelation: "food_items"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_feedback: {
         Row: {
@@ -971,6 +1167,33 @@ export type Database = {
           unit_type: string
           confidence_score: number
           cuisine_type: string
+        }[]
+      }
+      search_food_items: {
+        Args: {
+          search_term: string
+          category_filter?: string
+          limit_count?: number
+        }
+        Returns: {
+          id: string
+          name: string
+          brand: string
+          category: string
+          cuisine_type: string
+          calories_per_100g: number
+          protein_per_100g: number
+          carbs_per_100g: number
+          fat_per_100g: number
+          fiber_per_100g: number
+          sugar_per_100g: number
+          sodium_per_100g: number
+          serving_size_g: number
+          serving_description: string
+          confidence_score: number
+          verified: boolean
+          image_url: string
+          similarity_score: number
         }[]
       }
       set_limit: {

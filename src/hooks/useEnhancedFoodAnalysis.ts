@@ -16,14 +16,14 @@ const convertFileToBase64 = (file: File): Promise<string> => {
   });
 };
 
-export const useAIFoodAnalysis = () => {
+export const useEnhancedFoodAnalysis = () => {
   const { user } = useAuth();
 
   const mutation = useMutation({
     mutationFn: async (file: File) => {
       if (!user?.id) throw new Error('User not authenticated');
 
-      // Check AI generation credits first
+      // Check AI generation credits
       const { data: creditCheck, error: creditError } = await supabase.rpc('check_and_use_ai_generation', {
         user_id_param: user.id,
         generation_type_param: 'food_analysis',
@@ -44,47 +44,42 @@ export const useAIFoodAnalysis = () => {
 
         if (error) throw error;
 
-        // Complete the AI generation log with success
+        // Complete the AI generation log
         await supabase.rpc('complete_ai_generation', {
           log_id_param: creditCheck.log_id,
           response_data_param: data.analysis
         });
 
-        // Store analyzed food items in the new food_items table
+        // Store analyzed food items in the database
         if (data.analysis?.foodItems && Array.isArray(data.analysis.foodItems)) {
           for (const foodItem of data.analysis.foodItems) {
-            try {
-              await supabase
-                .from('food_items')
-                .upsert({
-                  name: foodItem.name || 'Unknown Food',
-                  category: foodItem.category || 'general',
-                  cuisine_type: data.analysis.cuisineType || 'general',
-                  calories_per_100g: Number(foodItem.calories) || 0,
-                  protein_per_100g: Number(foodItem.protein) || 0,
-                  carbs_per_100g: Number(foodItem.carbs) || 0,
-                  fat_per_100g: Number(foodItem.fat) || 0,
-                  fiber_per_100g: Number(foodItem.fiber) || 0,
-                  sugar_per_100g: Number(foodItem.sugar) || 0,
-                  serving_size_g: 100,
-                  serving_description: foodItem.quantity || '100g serving',
-                  confidence_score: Number(data.analysis.overallConfidence) || 0.7,
-                  source: 'ai_analysis',
-                  verified: false
-                }, { 
-                  onConflict: 'name',
-                  ignoreDuplicates: true 
-                });
-            } catch (dbError) {
-              console.error('Error storing food item:', dbError);
-              // Continue with other items even if one fails
-            }
+            await supabase
+              .from('food_items')
+              .upsert({
+                name: foodItem.name,
+                category: foodItem.category || 'general',
+                cuisine_type: data.analysis.cuisineType || 'general',
+                calories_per_100g: foodItem.calories || 0,
+                protein_per_100g: foodItem.protein || 0,
+                carbs_per_100g: foodItem.carbs || 0,
+                fat_per_100g: foodItem.fat || 0,
+                fiber_per_100g: foodItem.fiber || 0,
+                sugar_per_100g: foodItem.sugar || 0,
+                serving_size_g: 100,
+                serving_description: foodItem.quantity || '100g',
+                confidence_score: data.analysis.overallConfidence || 0.7,
+                source: 'ai_analysis',
+                verified: false
+              }, { 
+                onConflict: 'name',
+                ignoreDuplicates: true 
+              });
           }
         }
 
         return {
           ...data.analysis,
-          remainingCredits: creditCheck.remaining - 1
+          remainingCredits: creditCheck.remaining
         };
       } catch (error) {
         // Mark generation as failed
@@ -98,9 +93,9 @@ export const useAIFoodAnalysis = () => {
     onSuccess: (data) => {
       const confidence = data.overallConfidence || 0.8;
       if (confidence > 0.7) {
-        toast.success(`High-confidence analysis complete! ${data.remainingCredits} credits remaining.`);
+        toast.success(`Food analysis completed! ${data.remainingCredits} credits remaining.`);
       } else {
-        toast.success(`Analysis complete (moderate confidence). ${data.remainingCredits} credits remaining.`);
+        toast.success(`Analysis completed with moderate confidence. ${data.remainingCredits} credits remaining.`);
       }
     },
     onError: (error) => {
