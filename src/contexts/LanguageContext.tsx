@@ -108,6 +108,7 @@ const translations: Record<Language, Record<string, string>> = {
     'serving': 'serving',
     'servings': 'servings',
     'ingredients': 'ingredients',
+    'currentWeek': 'Current Week',
     
     // Meal Types
     'breakfast': 'Breakfast',
@@ -125,11 +126,6 @@ const translations: Record<Language, Record<string, string>> = {
     'saturday': 'Saturday',
     'sunday': 'Sunday',
     'today': 'Today',
-    
-    // Week navigation
-    'previousWeek': 'Previous Week',
-    'nextWeek': 'Next Week',
-    'currentWeek': 'Current Week',
   },
   ar: {
     // Navigation
@@ -226,6 +222,7 @@ const translations: Record<Language, Record<string, string>> = {
     'serving': 'حصة',
     'servings': 'حصص',
     'ingredients': 'مكونات',
+    'currentWeek': 'الأسبوع الحالي',
     
     // Meal Types
     'breakfast': 'الإفطار',
@@ -243,11 +240,6 @@ const translations: Record<Language, Record<string, string>> = {
     'saturday': 'السبت',
     'sunday': 'الأحد',
     'today': 'اليوم',
-    
-    // Week navigation
-    'previousWeek': 'الأسبوع السابق',
-    'nextWeek': 'الأسبوع التالي',
-    'currentWeek': 'الأسبوع الحالي',
   }
 };
 
