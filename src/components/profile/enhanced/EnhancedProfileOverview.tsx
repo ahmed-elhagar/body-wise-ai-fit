@@ -1,5 +1,8 @@
 
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { User, Heart, Target, TrendingUp, Clock, Shield } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import { useHealthAssessment } from "@/hooks/useHealthAssessment";
 
@@ -7,94 +10,217 @@ const EnhancedProfileOverview = () => {
   const { profile } = useProfile();
   const { assessment } = useHealthAssessment();
 
-  const calculateHealthScore = () => {
-    if (!profile || !assessment) return 0;
-    
-    let score = 0;
-    
-    // Basic info completeness (30 points)
-    if (profile.first_name && profile.last_name) score += 5;
-    if (profile.age) score += 5;
-    if (profile.gender) score += 5;
-    if (profile.height && profile.weight) score += 10;
-    if (profile.fitness_goal) score += 5;
-    
-    // Health assessment completeness (40 points)
-    if (assessment.stress_level) score += 10;
-    if (assessment.sleep_quality) score += 10;
-    if (assessment.energy_level) score += 10;
-    if (assessment.exercise_history) score += 10;
-    
-    // Lifestyle factors (30 points)
-    if (profile.activity_level) score += 10;
-    if (assessment.nutrition_knowledge) score += 10;
-    if (assessment.time_availability) score += 10;
-    
-    return Math.min(score, 100);
+  const completionScore = profile?.profile_completion_score || 0;
+  const healthScore = assessment?.health_score || 0;
+  const readinessScore = assessment?.readiness_score || 0;
+  const riskScore = assessment?.risk_score || 0;
+
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return "text-green-600";
+    if (score >= 60) return "text-yellow-600";
+    return "text-red-600";
   };
 
-  const calculateFitnessReadiness = () => {
-    if (!profile || !assessment) return 0;
-    
-    let readiness = 85; // Base readiness
-    
-    // Reduce based on health conditions
-    if (profile.health_conditions && profile.health_conditions.length > 0) {
-      readiness -= profile.health_conditions.length * 5;
-    }
-    
-    // Adjust based on activity level
-    if (profile.activity_level === 'sedentary') readiness -= 10;
-    if (profile.activity_level === 'very_active') readiness += 5;
-    
-    // Adjust based on stress and sleep
-    if (assessment.stress_level && assessment.stress_level > 7) readiness -= 10;
-    if (assessment.sleep_quality && assessment.sleep_quality < 6) readiness -= 10;
-    
-    return Math.max(Math.min(readiness, 100), 0);
+  const getScoreBadgeColor = (score: number) => {
+    if (score >= 80) return "bg-green-100 text-green-800";
+    if (score >= 60) return "bg-yellow-100 text-yellow-800";
+    return "bg-red-100 text-red-800";
   };
 
   return (
-    <Card className="p-6">
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">Profile Overview</h2>
-      <p className="text-gray-600 mb-6">
-        Your comprehensive health and fitness profile overview with AI-powered insights.
-      </p>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-blue-50 p-4 rounded-lg">
-          <h3 className="font-semibold text-blue-800 mb-2">Health Score</h3>
-          <p className="text-2xl font-bold text-blue-600">{calculateHealthScore()}/100</p>
-          <p className="text-sm text-blue-600">
-            {calculateHealthScore() >= 80 ? 'Excellent health profile' : 
-             calculateHealthScore() >= 60 ? 'Good health profile' : 
-             'Complete more sections to improve'}
-          </p>
+    <div className="space-y-4 lg:space-y-6">
+      {/* Welcome Section */}
+      <Card className="p-4 lg:p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+        <div className="flex items-center gap-3 mb-4">
+          <User className="w-6 h-6 text-blue-600" />
+          <h2 className="text-xl lg:text-2xl font-bold text-gray-800">
+            Welcome {profile?.first_name || 'User'}!
+          </h2>
         </div>
-        <div className="bg-green-50 p-4 rounded-lg">
-          <h3 className="font-semibold text-green-800 mb-2">Fitness Readiness</h3>
-          <p className="text-2xl font-bold text-green-600">{calculateFitnessReadiness()}/100</p>
-          <p className="text-sm text-green-600">
-            {calculateFitnessReadiness() >= 80 ? 'Ready for intense exercise' : 
-             calculateFitnessReadiness() >= 60 ? 'Ready for moderate exercise' : 
-             'Start with light activities'}
-          </p>
-        </div>
-      </div>
-      
-      {/* AI Integration Data Summary */}
-      <div className="mt-6 p-4 bg-purple-50 rounded-lg">
-        <h3 className="font-semibold text-purple-800 mb-2">AI Integration Status</h3>
-        <p className="text-sm text-purple-600 mb-2">
-          Your profile data is being used to personalize AI recommendations for:
+        <p className="text-sm lg:text-base text-gray-600 mb-4">
+          Your enhanced profile helps our AI create personalized meal plans and exercise programs 
+          tailored specifically to your needs, preferences, and health status.
         </p>
-        <ul className="text-sm text-purple-600 list-disc list-inside space-y-1">
-          <li>Meal plans based on your preferences and restrictions</li>
-          <li>Exercise programs tailored to your fitness level</li>
-          <li>Health insights considering your conditions and goals</li>
-          <li>Progress tracking aligned with your objectives</li>
-        </ul>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-gray-700">Profile Completion:</span>
+          <Progress value={completionScore} className="flex-1 max-w-48" />
+          <span className="text-sm font-semibold text-gray-800">{completionScore}%</span>
+        </div>
+      </Card>
+
+      {/* Health Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <Card className="p-4">
+          <div className="flex items-center gap-3 mb-3">
+            <Heart className="w-5 h-5 text-red-500" />
+            <h3 className="font-semibold text-gray-800">Health Score</h3>
+          </div>
+          <div className="text-center">
+            <div className={`text-2xl font-bold ${getScoreColor(healthScore)}`}>
+              {healthScore}/100
+            </div>
+            <Badge className={`mt-2 ${getScoreBadgeColor(healthScore)}`}>
+              {healthScore >= 80 ? 'Excellent' : healthScore >= 60 ? 'Good' : 'Needs Attention'}
+            </Badge>
+          </div>
+        </Card>
+
+        <Card className="p-4">
+          <div className="flex items-center gap-3 mb-3">
+            <TrendingUp className="w-5 h-5 text-green-500" />
+            <h3 className="font-semibold text-gray-800">Readiness Score</h3>
+          </div>
+          <div className="text-center">
+            <div className={`text-2xl font-bold ${getScoreColor(readinessScore)}`}>
+              {readinessScore}/100
+            </div>
+            <Badge className={`mt-2 ${getScoreBadgeColor(readinessScore)}`}>
+              {readinessScore >= 80 ? 'Ready' : readinessScore >= 60 ? 'Moderately Ready' : 'Building Up'}
+            </Badge>
+          </div>
+        </Card>
+
+        <Card className="p-4">
+          <div className="flex items-center gap-3 mb-3">
+            <Shield className="w-5 h-5 text-orange-500" />
+            <h3 className="font-semibold text-gray-800">Risk Score</h3>
+          </div>
+          <div className="text-center">
+            <div className={`text-2xl font-bold ${riskScore <= 30 ? 'text-green-600' : riskScore <= 60 ? 'text-yellow-600' : 'text-red-600'}`}>
+              {riskScore}/100
+            </div>
+            <Badge className={`mt-2 ${riskScore <= 30 ? 'bg-green-100 text-green-800' : riskScore <= 60 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
+              {riskScore <= 30 ? 'Low Risk' : riskScore <= 60 ? 'Moderate Risk' : 'High Risk'}
+            </Badge>
+          </div>
+        </Card>
       </div>
-    </Card>
+
+      {/* Profile Summary */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+        <Card className="p-4 lg:p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <User className="w-5 h-5 text-blue-500" />
+            <h3 className="text-lg font-semibold text-gray-800">Basic Information</h3>
+          </div>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-gray-600">Age:</span>
+              <span className="font-medium">{profile?.age || 'Not set'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Gender:</span>
+              <span className="font-medium capitalize">{profile?.gender || 'Not set'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Height:</span>
+              <span className="font-medium">{profile?.height ? `${profile.height} cm` : 'Not set'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Weight:</span>
+              <span className="font-medium">{profile?.weight ? `${profile.weight} kg` : 'Not set'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Nationality:</span>
+              <span className="font-medium">{profile?.nationality || 'Not set'}</span>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-4 lg:p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <Target className="w-5 h-5 text-green-500" />
+            <h3 className="text-lg font-semibold text-gray-800">Goals & Activity</h3>
+          </div>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-gray-600">Fitness Goal:</span>
+              <span className="font-medium capitalize">{profile?.fitness_goal?.replace('_', ' ') || 'Not set'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Activity Level:</span>
+              <span className="font-medium capitalize">{profile?.activity_level?.replace('_', ' ') || 'Not set'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Exercise History:</span>
+              <span className="font-medium capitalize">{assessment?.exercise_history || 'Not assessed'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Time Available:</span>
+              <span className="font-medium capitalize">{assessment?.time_availability?.replace('_', ' ') || 'Not set'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Commitment Level:</span>
+              <span className="font-medium">{assessment?.commitment_level ? `${assessment.commitment_level}/10` : 'Not rated'}</span>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Health Information */}
+      {(profile?.health_conditions?.length || profile?.allergies?.length || assessment?.chronic_conditions?.length) && (
+        <Card className="p-4 lg:p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <Heart className="w-5 h-5 text-red-500" />
+            <h3 className="text-lg font-semibold text-gray-800">Health Information</h3>
+          </div>
+          <div className="space-y-3">
+            {profile?.health_conditions?.length > 0 && (
+              <div>
+                <span className="text-sm font-medium text-gray-700">Health Conditions:</span>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {profile.health_conditions.map((condition, index) => (
+                    <Badge key={index} variant="outline" className="text-xs">
+                      {condition}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+            {profile?.allergies?.length > 0 && (
+              <div>
+                <span className="text-sm font-medium text-gray-700">Allergies:</span>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {profile.allergies.map((allergy, index) => (
+                    <Badge key={index} variant="outline" className="text-xs bg-red-50 text-red-700">
+                      {allergy}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+            {assessment?.chronic_conditions?.length > 0 && (
+              <div>
+                <span className="text-sm font-medium text-gray-700">Chronic Conditions:</span>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {assessment.chronic_conditions.map((condition, index) => (
+                    <Badge key={index} variant="outline" className="text-xs bg-orange-50 text-orange-700">
+                      {condition}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </Card>
+      )}
+
+      {/* AI Integration Info */}
+      <Card className="p-4 lg:p-6 bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
+        <div className="flex items-center gap-3 mb-3">
+          <TrendingUp className="w-5 h-5 text-green-600" />
+          <h3 className="text-lg font-semibold text-gray-800">AI Integration Ready</h3>
+        </div>
+        <p className="text-sm text-gray-600 mb-3">
+          Your profile data is automatically used by our AI to generate personalized meal plans and exercise programs. 
+          The more complete your profile, the better our recommendations become.
+        </p>
+        <div className="flex items-center gap-2 text-sm">
+          <Clock className="w-4 h-4 text-green-600" />
+          <span className="text-gray-700">Last updated: {profile?.updated_at ? new Date(profile.updated_at).toLocaleDateString() : 'Never'}</span>
+        </div>
+      </Card>
+    </div>
   );
 };
 
