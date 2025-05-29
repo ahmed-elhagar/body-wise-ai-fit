@@ -48,7 +48,7 @@ serve(async (req) => {
       throw new Error('User ID is required');
     }
 
-    // Check AI generation limit using centralized system
+    // Check AI generation limit using centralized system with proper status
     console.log('🔍 Checking AI generation limit...');
     const { data: limitCheck, error: limitError } = await supabase.rpc('check_and_use_ai_generation', {
       user_id_param: userData.userId,
