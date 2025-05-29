@@ -1,345 +1,325 @@
 
 export const createHomeWorkoutPrompt = (userData: any, preferences: any) => {
-  const weekStartDate = preferences?.weekStartDate || new Date().toISOString().split('T')[0];
-  const userLanguage = preferences?.userLanguage || userData?.preferred_language || 'en';
-  const isArabic = userLanguage === 'ar';
+  const language = preferences?.userLanguage || 'en';
+  const isArabic = language === 'ar';
   
-  // Language-specific content
-  const languageContent = {
-    en: {
-      programName: "Home Bodyweight Training Program",
-      description: "Complete home workout program using only bodyweight exercises",
-      dayNames: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-      restDays: ["Wednesday", "Sunday"],
-      workoutNames: {
-        1: "Upper Body Power",
-        2: "Lower Body Strength", 
-        4: "Full Body Circuit",
-        5: "Core & Stability",
-        6: "Active Recovery & Flexibility"
-      },
-      focus: "Foundation Building",
-      equipment: ["bodyweight"],
-      muscleGroups: {
-        chest: "chest", shoulders: "shoulders", triceps: "triceps", core: "core",
-        quadriceps: "quadriceps", glutes: "glutes", hamstrings: "hamstrings", 
-        calves: "calves", back: "back", biceps: "biceps", flexibility: "flexibility"
-      }
-    },
-    ar: {
-      programName: "برنامج التدريب المنزلي بوزن الجسم",
-      description: "برنامج تدريبي منزلي شامل باستخدام وزن الجسم فقط",
-      dayNames: ["الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت", "الأحد"],
-      restDays: ["الأربعاء", "الأحد"],
-      workoutNames: {
-        1: "قوة الجزء العلوي",
-        2: "قوة الجزء السفلي",
-        4: "دائرة الجسم الكامل", 
-        5: "المركز والاستقرار",
-        6: "الاستشفاء النشط والمرونة"
-      },
-      focus: "بناء الأساسات",
-      equipment: ["وزن الجسم"],
-      muscleGroups: {
-        chest: "الصدر", shoulders: "الأكتاف", triceps: "العضلة ثلاثية الرؤوس", core: "المركز",
-        quadriceps: "العضلة رباعية الرؤوس", glutes: "الأرداف", hamstrings: "أوتار الركبة",
-        calves: "بطة الساق", back: "الظهر", biceps: "العضلة ثنائية الرؤوس", flexibility: "المرونة"
-      }
-    }
-  };
+  const basePrompt = isArabic ? `
+إنشاء برنامج تدريبي منزلي شامل لمدة أسبوع واحد بوزن الجسم للمعطيات التالية:
 
-  const lang = languageContent[userLanguage] || languageContent.en;
+معلومات المتدرب:
+- العمر: ${userData?.age || 25} سنة
+- الجنس: ${userData?.gender || 'غير محدد'}
+- الوزن: ${userData?.weight || 70} كيلو
+- الطول: ${userData?.height || 170} سم
+- مستوى النشاط: ${userData?.activity_level || 'متوسط النشاط'}
+- الهدف الرياضي: ${preferences?.goalType || 'لياقة عامة'}
+- مستوى اللياقة: ${preferences?.fitnessLevel || 'مبتدئ'}
+- الوقت المتاح: ${preferences?.availableTime || 45} دقيقة لكل جلسة
 
-  return `You are a certified personal trainer creating a HOME WORKOUT program. Generate EXACTLY 5 workout days (Monday, Tuesday, Thursday, Friday, Saturday) with Wednesday and Sunday as rest days.
+متطلبات البرنامج:
+- إنشاء برنامج لمدة أسبوع واحد فقط
+- 5 أيام تدريب و 2 يوم راحة (الأربعاء والأحد)
+- التمارين باستخدام وزن الجسم فقط
+- تمارين آمنة وفعالة للمنزل
+- تعليمات واضحة وتفصيلية
+- تقدر مجموعات العضلات المستهدفة
 
-USER PROFILE:
-- Age: ${userData?.age} years old
-- Gender: ${userData?.gender}
-- Weight: ${userData?.weight}kg, Height: ${userData?.height}cm
-- Fitness Goal: ${preferences?.goalType || 'general_fitness'}
+يجب أن يكون الرد بتنسيق JSON صحيح مع البنية التالية:
+` : `
+Create a comprehensive one-week home bodyweight workout program with the following user data:
+
+User Information:
+- Age: ${userData?.age || 25} years
+- Gender: ${userData?.gender || 'not specified'}
+- Weight: ${userData?.weight || 70} kg
+- Height: ${userData?.height || 170} cm
+- Activity Level: ${userData?.activity_level || 'moderately active'}
+- Fitness Goal: ${preferences?.goalType || 'general fitness'}
 - Fitness Level: ${preferences?.fitnessLevel || 'beginner'}
 - Available Time: ${preferences?.availableTime || 45} minutes per session
-- Week Start Date: ${weekStartDate}
-- User Language: ${userLanguage}
 
-LANGUAGE REQUIREMENTS:
-- ALL workout names, exercise names, and instructions must be in ${isArabic ? 'Arabic' : 'English'}
-- Keep technical terms like "sets", "reps" in their original format
-- Use culturally appropriate exercise descriptions
+Program Requirements:
+- Create program for exactly ONE WEEK only
+- 5 training days and 2 rest days (Wednesday and Sunday)
+- Bodyweight exercises only (no equipment needed)
+- Safe and effective home exercises
+- Clear and detailed instructions
+- Target different muscle groups
 
-STRICT REQUIREMENTS:
-- ONLY bodyweight exercises (push-ups, squats, lunges, planks, burpees, etc.)
-- NO gym equipment required
-- Each workout 30-60 minutes
-- 3-5 exercises per workout
-- Progressive difficulty
-- Clear sets, reps, and rest periods
+Respond with valid JSON only in this exact structure:
+`;
 
-RESPONSE FORMAT - Return ONLY valid JSON with this EXACT structure:
+  const jsonStructure = `
 {
   "programOverview": {
-    "name": "${lang.programName}",
-    "duration": "4 weeks",
+    "name": "${isArabic ? 'برنامج التدريب المنزلي' : 'Home Bodyweight Training Program'}",
+    "duration": "1 week",
     "difficulty": "${preferences?.fitnessLevel || 'beginner'}",
-    "description": "${lang.description}",
-    "goals": ["${preferences?.goalType || 'general_fitness'}"],
-    "equipment": ${JSON.stringify(lang.equipment)},
-    "workoutDays": 5,
-    "restDays": ${JSON.stringify(lang.restDays)}
+    "description": "${isArabic ? 'برنامج تدريبي منزلي شامل بوزن الجسم' : 'Comprehensive home bodyweight training program'}"
   },
-  "weeks": [
-    {
-      "weekNumber": 1,
-      "focus": "${lang.focus}",
-      "workouts": [
-        {
-          "day": 1,
-          "dayName": "${lang.dayNames[0]}",
-          "workoutName": "${lang.workoutNames[1]}",
-          "estimatedDuration": ${preferences?.availableTime || 45},
-          "estimatedCalories": 280,
-          "muscleGroups": ["${lang.muscleGroups.chest}", "${lang.muscleGroups.shoulders}", "${lang.muscleGroups.triceps}", "${lang.muscleGroups.core}"],
-          "exercises": [
-            {
-              "name": "${isArabic ? 'تمارين الضغط' : 'Push-ups'}",
-              "sets": 3,
-              "reps": "8-12",
-              "restSeconds": 60,
-              "muscleGroups": ["${lang.muscleGroups.chest}", "${lang.muscleGroups.triceps}", "${lang.muscleGroups.shoulders}"],
-              "instructions": "${isArabic ? 'حافظ على استقامة الجسم من الرأس إلى الكعبين، اخفض الصدر إلى الأرض، ادفع للأعلى بقوة' : 'Keep body straight from head to heels, lower chest to floor, push up explosively'}",
-              "youtubeSearchTerm": "${isArabic ? 'تمارين الضغط الصحيحة' : 'proper push up form technique'}",
-              "difficulty": "${preferences?.fitnessLevel || 'beginner'}",
-              "equipment": "${isArabic ? 'وزن الجسم' : 'bodyweight'}",
-              "orderNumber": 1
-            },
-            {
-              "name": "${isArabic ? 'تمارين الضغط المقلوبة' : 'Pike Push-ups'}",
-              "sets": 3,
-              "reps": "6-10", 
-              "restSeconds": 60,
-              "muscleGroups": ["${lang.muscleGroups.shoulders}", "${lang.muscleGroups.triceps}"],
-              "instructions": "${isArabic ? 'اتخذ وضعية V المقلوبة، اخفض الرأس نحو الأرض بين اليدين، ادفع للأعلى' : 'Form inverted V position, lower head toward floor between hands, push back up'}",
-              "youtubeSearchTerm": "${isArabic ? 'تمارين الأكتاف بوزن الجسم' : 'pike push up shoulder exercise'}",
-              "difficulty": "${preferences?.fitnessLevel || 'beginner'}",
-              "equipment": "${isArabic ? 'وزن الجسم' : 'bodyweight'}",
-              "orderNumber": 2
-            },
-            {
-              "name": "${isArabic ? 'تمارين العضلة ثلاثية الرؤوس' : 'Tricep Dips'}",
-              "sets": 3,
-              "reps": "8-12",
-              "restSeconds": 60,
-              "muscleGroups": ["${lang.muscleGroups.triceps}", "${lang.muscleGroups.shoulders}"],
-              "instructions": "${isArabic ? 'استخدم كرسي أو حافة، اخفض الجسم بثني المرفقين، ادفع للأعلى' : 'Use chair or edge, lower body down by bending elbows, push back up'}",
-              "youtubeSearchTerm": "${isArabic ? 'تمارين العضلة ثلاثية الرؤوس منزلي' : 'chair tricep dips home exercise'}",
-              "difficulty": "${preferences?.fitnessLevel || 'beginner'}",
-              "equipment": "${isArabic ? 'كرسي' : 'chair'}",
-              "orderNumber": 3
-            },
-            {
-              "name": "${isArabic ? 'تمرين البلانك' : 'Plank Hold'}",
-              "sets": 3,
-              "reps": "30-60 seconds",
-              "restSeconds": 60,
-              "muscleGroups": ["${lang.muscleGroups.core}", "${lang.muscleGroups.shoulders}"],
-              "instructions": "${isArabic ? 'حافظ على خط مستقيم من الرأس إلى الكعبين، شد عضلات المركز' : 'Hold straight line from head to heels, engage core muscles'}",
-              "youtubeSearchTerm": "${isArabic ? 'تمرين البلانك الصحيح' : 'plank exercise proper form'}",
-              "difficulty": "${preferences?.fitnessLevel || 'beginner'}",
-              "equipment": "${isArabic ? 'وزن الجسم' : 'bodyweight'}",
-              "orderNumber": 4
-            }
-          ]
-        },
-        {
-          "day": 2,
-          "dayName": "${lang.dayNames[1]}",
-          "workoutName": "${lang.workoutNames[2]}",
-          "estimatedDuration": ${preferences?.availableTime || 45},
-          "estimatedCalories": 320,
-          "muscleGroups": ["${lang.muscleGroups.quadriceps}", "${lang.muscleGroups.glutes}", "${lang.muscleGroups.hamstrings}", "${lang.muscleGroups.calves}"],
-          "exercises": [
-            {
-              "name": "${isArabic ? 'تمارين القرفصاء' : 'Bodyweight Squats'}",
-              "sets": 4,
-              "reps": "15-20",
-              "restSeconds": 60,
-              "muscleGroups": ["${lang.muscleGroups.quadriceps}", "${lang.muscleGroups.glutes}"],
-              "instructions": "${isArabic ? 'القدمان بعرض الكتفين، اخفض الوركين للخلف والأسفل، حافظ على الصدر مرفوعاً' : 'Feet shoulder-width apart, lower hips back and down, keep chest up'}",
-              "youtubeSearchTerm": "${isArabic ? 'تمارين القرفصاء الصحيحة' : 'bodyweight squat perfect form'}",
-              "difficulty": "${preferences?.fitnessLevel || 'beginner'}",
-              "equipment": "${isArabic ? 'وزن الجسم' : 'bodyweight'}",
-              "orderNumber": 1
-            },
-            {
-              "name": "${isArabic ? 'تمارين الطعن' : 'Lunges'}",
-              "sets": 3,
-              "reps": "10-12 each leg",
-              "restSeconds": 60,
-              "muscleGroups": ["${lang.muscleGroups.quadriceps}", "${lang.muscleGroups.glutes}", "${lang.muscleGroups.hamstrings}"],
-              "instructions": "${isArabic ? 'اتخذ خطوة للأمام، اخفض الركبة الخلفية نحو الأرض، ادفع للعودة للبداية' : 'Step forward into lunge, lower back knee toward floor, push back to start'}",
-              "youtubeSearchTerm": "${isArabic ? 'تمارين الطعن الصحيحة' : 'forward lunges proper technique'}",
-              "difficulty": "${preferences?.fitnessLevel || 'beginner'}",
-              "equipment": "${isArabic ? 'وزن الجسم' : 'bodyweight'}",
-              "orderNumber": 2
-            },
-            {
-              "name": "${isArabic ? 'رفع بطة الساق على قدم واحدة' : 'Single-leg Calf Raises'}",
-              "sets": 3,
-              "reps": "12-15 each leg",
-              "restSeconds": 45,
-              "muscleGroups": ["${lang.muscleGroups.calves}"],
-              "instructions": "${isArabic ? 'ارتفع على قدم واحدة، امسك لفترة قصيرة، اخفض ببطء' : 'Rise up on one foot, hold briefly, lower slowly'}",
-              "youtubeSearchTerm": "${isArabic ? 'تمارين بطة الساق على قدم واحدة' : 'single leg calf raises'}",
-              "difficulty": "${preferences?.fitnessLevel || 'beginner'}",
-              "equipment": "${isArabic ? 'وزن الجسم' : 'bodyweight'}",
-              "orderNumber": 3
-            },
-            {
-              "name": "${isArabic ? 'تمارين رفع الأرداف' : 'Glute Bridges'}",
-              "sets": 3,
-              "reps": "15-20",
-              "restSeconds": 45,
-              "muscleGroups": ["${lang.muscleGroups.glutes}", "${lang.muscleGroups.hamstrings}"],
-              "instructions": "${isArabic ? 'استلق على الظهر، ارفع الوركين بشد الأرداف، امسك لفترة قصيرة' : 'Lie on back, lift hips up by squeezing glutes, hold briefly'}",
-              "youtubeSearchTerm": "${isArabic ? 'تمارين رفع الأرداف' : 'glute bridge exercise form'}",
-              "difficulty": "${preferences?.fitnessLevel || 'beginner'}",
-              "equipment": "${isArabic ? 'وزن الجسم' : 'bodyweight'}",
-              "orderNumber": 4
-            }
-          ]
-        }
-      ]
-    }
-  ]
+  "weeks": [{
+    "weekNumber": 1,
+    "workouts": [
+      {
+        "day": 1,
+        "workoutName": "${isArabic ? 'تدريب الجزء العلوي' : 'Upper Body Strength'}",
+        "estimatedDuration": ${preferences?.availableTime || 45},
+        "estimatedCalories": 250,
+        "muscleGroups": ["chest", "shoulders", "arms", "core"],
+        "exercises": [
+          {
+            "name": "${isArabic ? 'تمرين الضغط' : 'Push-ups'}",
+            "sets": 3,
+            "reps": "8-12",
+            "restSeconds": 60,
+            "muscleGroups": ["chest", "shoulders", "triceps"],
+            "instructions": "${isArabic ? 'ابدأ في وضعية الانبطاح مع استقامة الجسم، اخفض صدرك للأسفل ثم ادفع للأعلى' : 'Start in plank position, lower chest to ground, push back up'}",
+            "youtubeSearchTerm": "${isArabic ? 'تمرين الضغط الصحيح' : 'proper push up form'}",
+            "equipment": "bodyweight",
+            "difficulty": "${preferences?.fitnessLevel || 'beginner'}",
+            "orderNumber": 1
+          }
+        ]
+      },
+      {
+        "day": 2,
+        "workoutName": "${isArabic ? 'تدريب الجزء السفلي' : 'Lower Body Power'}",
+        "estimatedDuration": ${preferences?.availableTime || 45},
+        "estimatedCalories": 280,
+        "muscleGroups": ["legs", "glutes", "core"],
+        "exercises": [
+          {
+            "name": "${isArabic ? 'تمرين القرفصاء' : 'Bodyweight Squats'}",
+            "sets": 3,
+            "reps": "12-15",
+            "restSeconds": 60,
+            "muscleGroups": ["quadriceps", "glutes", "hamstrings"],
+            "instructions": "${isArabic ? 'قف مع المباعدة بين القدمين، اخفض الوركين للخلف والأسفل، ثم عد للوضع الأصلي' : 'Stand with feet shoulder-width apart, lower hips back and down, return to standing'}",
+            "youtubeSearchTerm": "${isArabic ? 'تمرين القرفصاء الصحيح' : 'proper squat form'}",
+            "equipment": "bodyweight",
+            "difficulty": "${preferences?.fitnessLevel || 'beginner'}",
+            "orderNumber": 1
+          }
+        ]
+      },
+      {
+        "day": 4,
+        "workoutName": "${isArabic ? 'تدريب كامل الجسم' : 'Full Body Circuit'}",
+        "estimatedDuration": ${preferences?.availableTime || 45},
+        "estimatedCalories": 300,
+        "muscleGroups": ["full_body"],
+        "exercises": [
+          {
+            "name": "${isArabic ? 'تمرين البيربي' : 'Burpees'}",
+            "sets": 3,
+            "reps": "5-8",
+            "restSeconds": 90,
+            "muscleGroups": ["full_body"],
+            "instructions": "${isArabic ? 'ابدأ واقفاً، اخفض للقرفصاء، اقفز للانبطاح، ادفع للأعلى، اقفز للقرفصاء، ثم اقفز للأعلى' : 'Start standing, squat down, jump to plank, push-up, jump to squat, jump up'}",
+            "youtubeSearchTerm": "${isArabic ? 'تمرين البيربي الصحيح' : 'proper burpee form'}",
+            "equipment": "bodyweight",
+            "difficulty": "${preferences?.fitnessLevel || 'beginner'}",
+            "orderNumber": 1
+          }
+        ]
+      },
+      {
+        "day": 5,
+        "workoutName": "${isArabic ? 'تدريب الجزء العلوي المتقدم' : 'Upper Body Focus'}",
+        "estimatedDuration": ${preferences?.availableTime || 45},
+        "estimatedCalories": 260,
+        "muscleGroups": ["chest", "back", "shoulders", "arms"],
+        "exercises": [
+          {
+            "name": "${isArabic ? 'تمرين البلانك' : 'Plank Hold'}",
+            "sets": 3,
+            "reps": "30-60 seconds",
+            "restSeconds": 60,
+            "muscleGroups": ["core", "shoulders"],
+            "instructions": "${isArabic ? 'احتفظ بوضعية الانبطاح مع استقامة الجسم من الرأس للكعبين' : 'Hold plank position with straight line from head to heels'}",
+            "youtubeSearchTerm": "${isArabic ? 'تمرين البلانك الصحيح' : 'proper plank form'}",
+            "equipment": "bodyweight",
+            "difficulty": "${preferences?.fitnessLevel || 'beginner'}",
+            "orderNumber": 1
+          }
+        ]
+      },
+      {
+        "day": 6,
+        "workoutName": "${isArabic ? 'تدريب الساقين والأرداف' : 'Legs & Glutes'}",
+        "estimatedDuration": ${preferences?.availableTime || 45},
+        "estimatedCalories": 290,
+        "muscleGroups": ["legs", "glutes", "core"],
+        "exercises": [
+          {
+            "name": "${isArabic ? 'تمرين الطعنات' : 'Lunges'}",
+            "sets": 3,
+            "reps": "10-12 each leg",
+            "restSeconds": 60,
+            "muscleGroups": ["quadriceps", "glutes", "hamstrings"],
+            "instructions": "${isArabic ? 'اخطو للأمام واخفض الركبة الخلفية، ثم عد للوضع الأصلي' : 'Step forward and lower back knee, return to starting position'}",
+            "youtubeSearchTerm": "${isArabic ? 'تمرين الطعنات الصحيح' : 'proper lunge form'}",
+            "equipment": "bodyweight",
+            "difficulty": "${preferences?.fitnessLevel || 'beginner'}",
+            "orderNumber": 1
+          }
+        ]
+      }
+    ]
+  }]
 }`;
+
+  return basePrompt + jsonStructure;
 };
 
 export const createGymWorkoutPrompt = (userData: any, preferences: any) => {
-  const weekStartDate = preferences?.weekStartDate || new Date().toISOString().split('T')[0];
-  const userLanguage = preferences?.userLanguage || userData?.preferred_language || 'en';
-  const isArabic = userLanguage === 'ar';
+  const language = preferences?.userLanguage || 'en';
+  const isArabic = language === 'ar';
   
-  // Language-specific content for gym workouts
-  const languageContent = {
-    en: {
-      programName: "Gym Strength Training Program",
-      description: "Complete gym workout program with progressive overload",
-      dayNames: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-      restDays: ["Wednesday", "Saturday", "Sunday"],
-      workoutNames: {
-        1: "Upper Body Push",
-        2: "Lower Body Power",
-        4: "Upper Body Pull", 
-        5: "Full Body Circuit"
-      },
-      focus: "Foundation Building",
-      equipment: ["barbells", "dumbbells", "machines", "cables"],
-      muscleGroups: {
-        chest: "chest", shoulders: "shoulders", triceps: "triceps", back: "back",
-        biceps: "biceps", quadriceps: "quadriceps", glutes: "glutes", 
-        hamstrings: "hamstrings", calves: "calves", core: "core", cardio: "cardio"
-      }
-    },
-    ar: {
-      programName: "برنامج تدريب القوة في الصالة الرياضية",
-      description: "برنامج تدريبي شامل في الصالة الرياضية مع الزيادة التدريجية",
-      dayNames: ["الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت", "الأحد"],
-      restDays: ["الأربعاء", "السبت", "الأحد"],
-      workoutNames: {
-        1: "دفع الجزء العلوي",
-        2: "قوة الجزء السفلي",
-        4: "سحب الجزء العلوي",
-        5: "دائرة الجسم الكامل"
-      },
-      focus: "بناء الأساسات",
-      equipment: ["البارات", "الدمبلز", "الأجهزة", "الكابلات"],
-      muscleGroups: {
-        chest: "الصدر", shoulders: "الأكتاف", triceps: "العضلة ثلاثية الرؤوس", back: "الظهر",
-        biceps: "العضلة ثنائية الرؤوس", quadriceps: "العضلة رباعية الرؤوس", glutes: "الأرداف",
-        hamstrings: "أوتار الركبة", calves: "بطة الساق", core: "المركز", cardio: "الكارديو"
-      }
-    }
-  };
+  const basePrompt = isArabic ? `
+إنشاء برنامج تدريبي شامل في الصالة الرياضية لمدة أسبوع واحد للمعطيات التالية:
 
-  const lang = languageContent[userLanguage] || languageContent.en;
+معلومات المتدرب:
+- العمر: ${userData?.age || 25} سنة
+- الجنس: ${userData?.gender || 'غير محدد'}
+- الوزن: ${userData?.weight || 70} كيلو
+- الطول: ${userData?.height || 170} سم
+- مستوى النشاط: ${userData?.activity_level || 'متوسط النشاط'}
+- الهدف الرياضي: ${preferences?.goalType || 'لياقة عامة'}
+- مستوى اللياقة: ${preferences?.fitnessLevel || 'مبتدئ'}
+- الوقت المتاح: ${preferences?.availableTime || 45} دقيقة لكل جلسة
 
-  return `You are a certified personal trainer creating a GYM WORKOUT program. Generate EXACTLY 4 workout days (Monday, Tuesday, Thursday, Friday) with Wednesday, Saturday, and Sunday as rest days.
+متطلبات البرنامج:
+- إنشاء برنامج لمدة أسبوع واحد فقط
+- 4 أيام تدريب و 3 أيام راحة (الأربعاء والسبت والأحد)
+- استخدام معدات الصالة الرياضية (أوزان، آلات، كابلات)
+- تمارين مركبة وعزل
+- تعليمات واضحة وتفصيلية
+- تدرج في الشدة والصعوبة
 
-USER PROFILE:
-- Age: ${userData?.age} years old
-- Gender: ${userData?.gender}
-- Weight: ${userData?.weight}kg, Height: ${userData?.height}cm
-- Fitness Goal: ${preferences?.goalType || 'general_fitness'}
+يجب أن يكون الرد بتنسيق JSON صحيح مع البنية التالية:
+` : `
+Create a comprehensive one-week gym workout program with the following user data:
+
+User Information:
+- Age: ${userData?.age || 25} years
+- Gender: ${userData?.gender || 'not specified'}
+- Weight: ${userData?.weight || 70} kg
+- Height: ${userData?.height || 170} cm
+- Activity Level: ${userData?.activity_level || 'moderately active'}
+- Fitness Goal: ${preferences?.goalType || 'general fitness'}
 - Fitness Level: ${preferences?.fitnessLevel || 'beginner'}
 - Available Time: ${preferences?.availableTime || 45} minutes per session
-- Week Start Date: ${weekStartDate}
-- User Language: ${userLanguage}
 
-LANGUAGE REQUIREMENTS:
-- ALL workout names, exercise names, and instructions must be in ${isArabic ? 'Arabic' : 'English'}
-- Keep technical terms like "sets", "reps" in their original format
-- Use culturally appropriate exercise descriptions
+Program Requirements:
+- Create program for exactly ONE WEEK only
+- 4 training days and 3 rest days (Wednesday, Saturday, Sunday)
+- Use gym equipment (weights, machines, cables)
+- Mix of compound and isolation exercises
+- Clear and detailed instructions
+- Progressive intensity and difficulty
 
-STRICT REQUIREMENTS:
-- Full gym equipment: barbells, dumbbells, machines, cables
-- Progressive overload principles
-- Compound and isolation movements
-- 4-6 exercises per workout
-- Clear weight guidance and progression
+Respond with valid JSON only in this exact structure:
+`;
 
-RESPONSE FORMAT - Return ONLY valid JSON with this EXACT structure:
+  const jsonStructure = `
 {
   "programOverview": {
-    "name": "${lang.programName}",
-    "duration": "4 weeks",
+    "name": "${isArabic ? 'برنامج تدريب الصالة الرياضية' : 'Gym Strength Training Program'}",
+    "duration": "1 week",
     "difficulty": "${preferences?.fitnessLevel || 'beginner'}",
-    "description": "${lang.description}",
-    "goals": ["${preferences?.goalType || 'general_fitness'}"],
-    "equipment": ${JSON.stringify(lang.equipment)},
-    "workoutDays": 4,
-    "restDays": ${JSON.stringify(lang.restDays)}
+    "description": "${isArabic ? 'برنامج تدريبي شامل في الصالة الرياضية' : 'Comprehensive gym training program'}"
   },
-  "weeks": [
-    {
-      "weekNumber": 1,
-      "focus": "${lang.focus}",
-      "workouts": [
-        {
-          "day": 1,
-          "dayName": "${lang.dayNames[0]}",
-          "workoutName": "${lang.workoutNames[1]}",
-          "estimatedDuration": ${preferences?.availableTime || 45},
-          "estimatedCalories": 380,
-          "muscleGroups": ["${lang.muscleGroups.chest}", "${lang.muscleGroups.shoulders}", "${lang.muscleGroups.triceps}"],
-          "exercises": [
-            {
-              "name": "${isArabic ? 'تمرين البنش برس' : 'Bench Press'}",
-              "sets": 3,
-              "reps": "8-10",
-              "restSeconds": 90,
-              "muscleGroups": ["${lang.muscleGroups.chest}", "${lang.muscleGroups.triceps}", "${lang.muscleGroups.shoulders}"],
-              "instructions": "${isArabic ? 'اخفض البار إلى الصدر بتحكم، ادفع للأعلى بقوة، حافظ على لوحي الكتف للخلف' : 'Lower bar to chest with control, press up explosively, keep shoulder blades back'}",
-              "youtubeSearchTerm": "${isArabic ? 'تمرين البنش برس الصحيح' : 'bench press proper form technique'}",
-              "difficulty": "${preferences?.fitnessLevel || 'beginner'}",
-              "equipment": "${isArabic ? 'بار' : 'barbell'}",
-              "orderNumber": 1
-            },
-            {
-              "name": "${isArabic ? 'تمرين الضغط العلوي' : 'Overhead Press'}",
-              "sets": 3,
-              "reps": "8-10",
-              "restSeconds": 90,
-              "muscleGroups": ["${lang.muscleGroups.shoulders}", "${lang.muscleGroups.triceps}", "${lang.muscleGroups.core}"],
-              "instructions": "${isArabic ? 'ادفع البار مباشرة للأعلى، حافظ على شد المركز، المدى الكامل للحركة' : 'Press barbell straight overhead, keep core tight, full range of motion'}",
-              "youtubeSearchTerm": "${isArabic ? 'تمرين الضغط العلوي بالبار' : 'overhead press barbell form'}",
-              "difficulty": "${preferences?.fitnessLevel || 'beginner'}",
-              "equipment": "${isArabic ? 'بار' : 'barbell'}",
-              "orderNumber": 2
-            }
-          ]
-        }
-      ]
-    }
-  ]
+  "weeks": [{
+    "weekNumber": 1,
+    "workouts": [
+      {
+        "day": 1,
+        "workoutName": "${isArabic ? 'تدريب الصدر والثلاثية' : 'Chest & Triceps'}",
+        "estimatedDuration": ${preferences?.availableTime || 45},
+        "estimatedCalories": 350,
+        "muscleGroups": ["chest", "triceps", "shoulders"],
+        "exercises": [
+          {
+            "name": "${isArabic ? 'البنش برس بالبار' : 'Barbell Bench Press'}",
+            "sets": 3,
+            "reps": "8-10",
+            "restSeconds": 90,
+            "muscleGroups": ["chest", "triceps", "shoulders"],
+            "instructions": "${isArabic ? 'استلق على المقعد، امسك البار بعرض الكتفين، اخفض البار للصدر ثم ادفع للأعلى' : 'Lie on bench, grip bar shoulder-width, lower to chest, press up'}",
+            "youtubeSearchTerm": "${isArabic ? 'البنش برس الصحيح' : 'proper bench press form'}",
+            "equipment": "barbell",
+            "difficulty": "${preferences?.fitnessLevel || 'beginner'}",
+            "orderNumber": 1
+          }
+        ]
+      },
+      {
+        "day": 2,
+        "workoutName": "${isArabic ? 'تدريب الظهر والبايسيبس' : 'Back & Biceps'}",
+        "estimatedDuration": ${preferences?.availableTime || 45},
+        "estimatedCalories": 340,
+        "muscleGroups": ["back", "biceps"],
+        "exercises": [
+          {
+            "name": "${isArabic ? 'السحب للأسفل بالكابل' : 'Lat Pulldown'}",
+            "sets": 3,
+            "reps": "10-12",
+            "restSeconds": 75,
+            "muscleGroups": ["back", "biceps"],
+            "instructions": "${isArabic ? 'اجلس مستقيماً، امسك البار بعرض أوسع من الكتفين، اسحب للصدر' : 'Sit upright, grip bar wider than shoulders, pull to chest'}",
+            "youtubeSearchTerm": "${isArabic ? 'السحب للأسفل بالكابل' : 'lat pulldown form'}",
+            "equipment": "cable_machine",
+            "difficulty": "${preferences?.fitnessLevel || 'beginner'}",
+            "orderNumber": 1
+          }
+        ]
+      },
+      {
+        "day": 4,
+        "workoutName": "${isArabic ? 'تدريب الساقين' : 'Legs Day'}",
+        "estimatedDuration": ${preferences?.availableTime || 45},
+        "estimatedCalories": 400,
+        "muscleGroups": ["legs", "glutes"],
+        "exercises": [
+          {
+            "name": "${isArabic ? 'السكوات بالبار' : 'Barbell Squats'}",
+            "sets": 3,
+            "reps": "8-12",
+            "restSeconds": 120,
+            "muscleGroups": ["quadriceps", "glutes", "hamstrings"],
+            "instructions": "${isArabic ? 'ضع البار على الكتفين، اخفض الوركين للخلف والأسفل، عد للوضع الأصلي' : 'Bar on shoulders, lower hips back and down, return to standing'}",
+            "youtubeSearchTerm": "${isArabic ? 'السكوات بالبار الصحيح' : 'barbell squat form'}",
+            "equipment": "barbell",
+            "difficulty": "${preferences?.fitnessLevel || 'beginner'}",
+            "orderNumber": 1
+          }
+        ]
+      },
+      {
+        "day": 5,
+        "workoutName": "${isArabic ? 'تدريب الكتفين والبطن' : 'Shoulders & Core'}",
+        "estimatedDuration": ${preferences?.availableTime || 45},
+        "estimatedCalories": 320,
+        "muscleGroups": ["shoulders", "core"],
+        "exercises": [
+          {
+            "name": "${isArabic ? 'الضغط العسكري بالدمبل' : 'Dumbbell Shoulder Press'}",
+            "sets": 3,
+            "reps": "10-12",
+            "restSeconds": 75,
+            "muscleGroups": ["shoulders", "triceps"],
+            "instructions": "${isArabic ? 'اجلس مستقيماً، ارفع الدمبل من مستوى الكتف للأعلى' : 'Sit upright, press dumbbells from shoulder level overhead'}",
+            "youtubeSearchTerm": "${isArabic ? 'الضغط العسكري بالدمبل' : 'dumbbell shoulder press'}",
+            "equipment": "dumbbells",
+            "difficulty": "${preferences?.fitnessLevel || 'beginner'}",
+            "orderNumber": 1
+          }
+        ]
+      }
+    ]
+  }]
 }`;
+
+  return basePrompt + jsonStructure;
 };

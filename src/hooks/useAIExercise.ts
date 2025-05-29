@@ -30,7 +30,6 @@ export const useAIExercise = () => {
         throw new Error('Profile not found. Please complete your profile first.');
       }
 
-      // Get user's preferred language from profile or context
       const userLanguage = profile.preferred_language || language || 'en';
 
       console.log('🚀 Starting exercise program generation with request:', {
@@ -51,7 +50,7 @@ export const useAIExercise = () => {
         weekStartDate = format(startOfWeek(new Date()), 'yyyy-MM-dd');
       }
 
-      // Prepare user data safely with proper null checks
+      // Enhanced user data with better defaults
       const userData = {
         userId: profile.id,
         age: profile.age || 25,
@@ -64,21 +63,21 @@ export const useAIExercise = () => {
         preferred_language: userLanguage
       };
 
-      // Transform the request to match expected format
+      // Enhanced preferences with better equipment mapping
       const transformedRequest = {
         workoutType: request.workoutType || 'home',
         goalType: request.goalType || userData.fitness_goal,
         fitnessLevel: request.fitnessLevel || 'beginner',
         availableTime: request.availableTime || '45',
-        preferredWorkouts: request.preferredWorkouts || ['bodyweight', 'cardio'],
+        preferredWorkouts: request.preferredWorkouts || (request.workoutType === 'gym' ? ['strength', 'compound'] : ['bodyweight', 'cardio']),
         targetMuscleGroups: request.targetMuscleGroups || ['full_body'],
-        equipment: request.equipment || (request.workoutType === 'gym' ? ['barbells', 'dumbbells', 'machines'] : ['bodyweight']),
+        equipment: request.equipment || (request.workoutType === 'gym' ? ['barbells', 'dumbbells', 'machines', 'cables'] : ['bodyweight']),
         userLanguage: userLanguage,
         weekStartDate: weekStartDate,
         weekOffset: request.weekOffset
       };
 
-      console.log('📤 Sending request to edge function with language:', userLanguage);
+      console.log('📤 Sending request to edge function with enhanced data');
 
       const { data, error } = await supabase.functions.invoke('generate-exercise-program', {
         body: {
@@ -95,6 +94,15 @@ export const useAIExercise = () => {
 
       if (!data || !data.success) {
         console.error('🚨 Invalid response from exercise generation:', data);
+        
+        // Handle AI generation limit specifically
+        if (data?.limitReached) {
+          const limitMessage = language === 'ar' ? 
+            `تم الوصول لحد الاستخدام اليومي لخدمة الذكاء الاصطناعي. المتبقي: ${data.remaining || 0}` :
+            `AI generation limit reached. Remaining: ${data.remaining || 0}`;
+          throw new Error(limitMessage);
+        }
+        
         throw new Error(data?.error || 'Invalid response from exercise generation service');
       }
 
@@ -102,7 +110,7 @@ export const useAIExercise = () => {
       return data;
     },
     onSuccess: (data) => {
-      // Invalidate all exercise-related queries to refetch the new data
+      // Invalidate all exercise-related queries
       queryClient.invalidateQueries({ queryKey: ['exercise-programs'] });
       queryClient.invalidateQueries({ queryKey: ['exercise-program'] });
       
@@ -111,8 +119,8 @@ export const useAIExercise = () => {
         `${data.workoutType === 'gym' ? 'Gym' : 'Home'} exercise program generated successfully!`;
       
       const description = language === 'ar' ? 
-        `تم إنشاء ${data.workoutsCreated || 0} تمارين مع ${data.exercisesCreated || 0} حركة` :
-        `Created ${data.workoutsCreated || 0} workouts with ${data.exercisesCreated || 0} exercises`;
+        `تم إنشاء ${data.workoutsCreated || 0} تمارين مع ${data.exercisesCreated || 0} حركة. المتبقي: ${data.generationsRemaining || 0}` :
+        `Created ${data.workoutsCreated || 0} workouts with ${data.exercisesCreated || 0} exercises. Remaining: ${data.generationsRemaining || 0}`;
       
       toast.success(successMessage, { description });
       console.log('✅ Exercise program generation completed successfully');
@@ -120,23 +128,23 @@ export const useAIExercise = () => {
     onError: (error) => {
       console.error('🚨 Exercise generation error:', error);
       
-      // Provide more specific error messages based on user language
       let errorMessage = language === 'ar' ? 
         'فشل في إنشاء برنامج التمارين. يرجى المحاولة مرة أخرى.' :
         'Failed to generate exercise program. Please try again.';
       
+      // Enhanced error handling with specific messages
       if (error.message.includes('Profile not found')) {
         errorMessage = language === 'ar' ? 
           'يرجى إكمال ملفك الشخصي قبل إنشاء برنامج التمارين.' :
           'Please complete your profile before generating an exercise program.';
+      } else if (error.message.includes('limit reached') || error.message.includes('limit')) {
+        errorMessage = language === 'ar' ? 
+          'تم الوصول للحد الأقصى لاستخدام خدمة الذكاء الاصطناعي اليوم.' :
+          'AI generation limit reached for today.';
       } else if (error.message.includes('API key')) {
         errorMessage = language === 'ar' ? 
           'خدمة الذكاء الاصطناعي غير متاحة مؤقتاً. يرجى المحاولة لاحقاً.' :
           'AI service is temporarily unavailable. Please try again later.';
-      } else if (error.message.includes('parse')) {
-        errorMessage = language === 'ar' ? 
-          'حدثت مشكلة في معالجة طلبك. يرجى المحاولة مرة أخرى.' :
-          'There was an issue processing your request. Please try again.';
       } else if (error.message.includes('Authentication required')) {
         errorMessage = language === 'ar' ? 
           'يرجى تسجيل الدخول لإنشاء برامج التمارين.' :

@@ -22,7 +22,6 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
-    // Use userLanguage from request, fallback to userData, then default to 'en'
     const finalUserLanguage = userLanguage || userData?.preferred_language || preferences?.userLanguage || 'en';
 
     console.log('🚀 Exercise generation request received:', {
@@ -45,32 +44,60 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Validate required data
     if (!userData?.userId) {
       throw new Error('User ID is required');
     }
 
-    // Determine workout type - default to 'home' if not specified
+    // Check AI generation limit using centralized system
+    console.log('🔍 Checking AI generation limit...');
+    const { data: limitCheck, error: limitError } = await supabase.rpc('check_and_use_ai_generation', {
+      user_id_param: userData.userId,
+      generation_type_param: 'exercise_program',
+      prompt_data_param: {
+        workoutType: preferences?.workoutType || 'home',
+        goalType: preferences?.goalType,
+        fitnessLevel: preferences?.fitnessLevel,
+        userLanguage: finalUserLanguage,
+        weekStartDate: preferences?.weekStartDate
+      }
+    });
+
+    if (limitError) {
+      console.error('❌ Error checking generation limit:', limitError);
+      throw new Error('Failed to check generation limit');
+    }
+
+    if (!limitCheck?.success) {
+      console.log('🚫 Generation limit reached for user');
+      return new Response(JSON.stringify({
+        error: limitCheck?.error || 'AI generation limit reached',
+        remaining: limitCheck?.remaining || 0,
+        limitReached: true
+      }), {
+        status: 429,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const logId = limitCheck.log_id;
+    console.log('✅ Generation limit checked, remaining:', limitCheck.remaining);
+
     const workoutType = preferences?.workoutType || 'home';
     
-    // Validate workout type
     if (!['home', 'gym'].includes(workoutType)) {
       throw new Error('Invalid workout type. Must be "home" or "gym"');
     }
 
-    // Enhance preferences with language information
     const enhancedPreferences = {
       ...preferences,
       userLanguage: finalUserLanguage
     };
 
-    // Enhance userData with language information
     const enhancedUserData = {
       ...userData,
       preferred_language: finalUserLanguage
     };
     
-    // Choose the appropriate prompt based on workout type
     const selectedPrompt = workoutType === 'gym' 
       ? createGymWorkoutPrompt(enhancedUserData, enhancedPreferences)
       : createHomeWorkoutPrompt(enhancedUserData, enhancedPreferences);
@@ -78,8 +105,8 @@ serve(async (req) => {
     console.log(`📤 Sending request to OpenAI for ${workoutType} exercise program in ${finalUserLanguage}`);
     
     const systemMessage = finalUserLanguage === 'ar' 
-      ? `أنت مدرب شخصي معتمد ومتخصص في التمارين الرياضية. اكتب استجابتك بتنسيق JSON صحيح فقط. قم بإنشاء تمارين آمنة وفعالة لبيئة ${workoutType === 'gym' ? 'الصالة الرياضية' : 'المنزل'}. ركز على الشكل الصحيح والزيادة التدريجية والتعليمات الواضحة.`
-      : `You are a certified personal trainer and exercise specialist. Always respond with valid JSON only. Create safe, effective workouts for ${workoutType} environment. Focus on proper form, progressive overload, and clear instructions.`;
+      ? `أنت مدرب شخصي معتمد ومتخصص في التمارين الرياضية. اكتب استجابتك بتنسيق JSON صحيح فقط. قم بإنشاء تمارين آمنة وفعالة لبيئة ${workoutType === 'gym' ? 'الصالة الرياضية' : 'المنزل'}. ركز على الشكل الصحيح والزيادة التدريجية والتعليمات الواضحة. استخدم اللغة العربية لأسماء التمارين والتعليمات.`
+      : `You are a certified personal trainer and exercise specialist. Always respond with valid JSON only. Create safe, effective workouts for ${workoutType} environment. Focus on proper form, progressive overload, and clear instructions. Use ${finalUserLanguage === 'en' ? 'English' : finalUserLanguage} for exercise names and instructions.`;
     
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -104,6 +131,13 @@ serve(async (req) => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('❌ OpenAI API error:', response.status, errorText);
+      
+      // Mark generation as failed
+      await supabase.rpc('complete_ai_generation', {
+        log_id_param: logId,
+        error_message_param: `OpenAI API error: ${response.status}`
+      });
+      
       throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
     }
 
@@ -111,17 +145,19 @@ serve(async (req) => {
     console.log('📥 OpenAI exercise response received successfully');
 
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      await supabase.rpc('complete_ai_generation', {
+        log_id_param: logId,
+        error_message_param: 'Invalid response structure from OpenAI API'
+      });
       throw new Error('Invalid response structure from OpenAI API');
     }
 
-    // Parse and validate the AI response
     const generatedProgram = parseAIResponse(data.choices[0].message.content);
     console.log('✅ Exercise program parsed successfully');
 
     validateWorkoutProgram(generatedProgram);
     console.log('✅ Exercise program validation passed');
 
-    // Ensure preferences include the workout type, week information, and language
     const finalEnhancedPreferences = {
       ...enhancedPreferences,
       workoutType,
@@ -130,8 +166,19 @@ serve(async (req) => {
       userLanguage: finalUserLanguage
     };
 
-    // Store the program in the database
     const weeklyProgram = await storeWorkoutProgram(supabase, generatedProgram, enhancedUserData, finalEnhancedPreferences);
+
+    // Mark generation as completed
+    await supabase.rpc('complete_ai_generation', {
+      log_id_param: logId,
+      response_data_param: {
+        programId: weeklyProgram.id,
+        programName: weeklyProgram.program_name,
+        workoutType,
+        workoutsCreated: weeklyProgram.workoutsCreated,
+        exercisesCreated: weeklyProgram.exercisesCreated
+      }
+    });
 
     console.log('🎉 Exercise program generated and stored successfully:', {
       programId: weeklyProgram.id,
@@ -140,7 +187,8 @@ serve(async (req) => {
       weekStartDate: weeklyProgram.week_start_date,
       workoutsCreated: weeklyProgram.workoutsCreated,
       exercisesCreated: weeklyProgram.exercisesCreated,
-      userLanguage: finalUserLanguage
+      userLanguage: finalUserLanguage,
+      generationsRemaining: limitCheck.remaining
     });
 
     const successMessage = finalUserLanguage === 'ar'
@@ -156,6 +204,7 @@ serve(async (req) => {
       workoutsCreated: weeklyProgram.workoutsCreated,
       exercisesCreated: weeklyProgram.exercisesCreated,
       userLanguage: finalUserLanguage,
+      generationsRemaining: limitCheck.remaining,
       message: successMessage
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -163,7 +212,6 @@ serve(async (req) => {
   } catch (error) {
     console.error('❌ Error generating exercise program:', error);
     
-    // Provide more specific error messages
     let errorMessage = 'Failed to generate exercise program';
     if (error.message.includes('OpenAI')) {
       errorMessage = 'AI service error - please try again';
@@ -175,6 +223,8 @@ serve(async (req) => {
       errorMessage = 'Database error - please try again';
     } else if (error.message.includes('User ID')) {
       errorMessage = 'Authentication required - please sign in';
+    } else if (error.message.includes('limit')) {
+      errorMessage = 'AI generation limit reached';
     }
     
     return new Response(JSON.stringify({ 

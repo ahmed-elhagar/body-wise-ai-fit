@@ -42,6 +42,7 @@ export type Database = {
       ai_generation_logs: {
         Row: {
           created_at: string | null
+          credits_used: number | null
           error_message: string | null
           generation_type: string
           id: string
@@ -52,6 +53,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          credits_used?: number | null
           error_message?: string | null
           generation_type: string
           id?: string
@@ -62,6 +64,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          credits_used?: number | null
           error_message?: string | null
           generation_type?: string
           id?: string
@@ -570,8 +573,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_and_use_ai_generation: {
+        Args: {
+          user_id_param: string
+          generation_type_param: string
+          prompt_data_param?: Json
+        }
+        Returns: Json
+      }
       cleanup_old_sessions: {
         Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      complete_ai_generation: {
+        Args: {
+          log_id_param: string
+          response_data_param?: Json
+          error_message_param?: string
+        }
         Returns: undefined
       }
       create_admin_user: {

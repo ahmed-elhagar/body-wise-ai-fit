@@ -16,7 +16,7 @@ export const storeWorkoutProgram = async (
 
   const workoutType = preferences?.workoutType || 'home';
   
-  // Calculate week start date - ensure we get the exact week requested
+  // Calculate week start date with proper handling
   let weekStartDate;
   if (preferences?.weekStartDate) {
     weekStartDate = preferences.weekStartDate;
@@ -36,13 +36,13 @@ export const storeWorkoutProgram = async (
   });
 
   try {
-    // Delete existing programs for this user, week, and workout type
+    // Delete existing programs for this user, week, and workout type with enhanced cleanup
     await deleteExistingPrograms(supabase, userId, workoutType, weekStartDate);
 
-    // Small delay to ensure database consistency
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // Wait for database consistency
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-    // Create new weekly program record
+    // Create new weekly program record with enhanced data
     const weeklyProgram = await createWeeklyProgram(
       supabase, 
       generatedProgram, 
@@ -56,7 +56,9 @@ export const storeWorkoutProgram = async (
       throw new Error('Failed to create weekly program record');
     }
 
-    // Store daily workouts and exercises
+    console.log('✅ Weekly program created:', weeklyProgram.id);
+
+    // Store daily workouts and exercises with improved error handling
     const result = await storeWorkoutPrograms(supabase, generatedProgram, weeklyProgram.id);
     
     console.log('🎉 Program storage completed successfully:', {
@@ -77,10 +79,11 @@ export const storeWorkoutProgram = async (
   } catch (error) {
     console.error('❌ Critical error in storeWorkoutProgram:', error);
     
-    // Clean up any partial data that might have been created
+    // Enhanced cleanup on error
     try {
+      console.log('🧹 Attempting cleanup after error...');
       await deleteExistingPrograms(supabase, userId, workoutType, weekStartDate);
-      console.log('🧹 Cleaned up partial data after error');
+      console.log('✅ Cleanup completed successfully');
     } catch (cleanupError) {
       console.error('⚠️ Failed to clean up after error:', cleanupError);
     }
