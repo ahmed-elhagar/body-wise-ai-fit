@@ -1,3 +1,4 @@
+
 export const mealPlan = {
   title: "Meal Plan",
   description: "Your personalized meal plan for the week",
@@ -9,6 +10,7 @@ export const mealPlan = {
   shuffleMeals: "Shuffle Meals",
   noMealPlanToShuffle: "No meal plan to shuffle. Generate one first!",
   generationFailed: "Meal plan generation failed. Please try again.",
+  generatedSuccessfully: "Meal plan generated successfully!",
   todaysMeals: "Today's Meals",
   weeklyView: "Weekly View",
   dailyView: "Daily View",
@@ -45,6 +47,7 @@ export const mealPlan = {
   noMealsPlanned: "No meals planned",
   cal: "cal",
   min: "min",
+  minutes: "minutes",
   
   // Meal types
   breakfast: "Breakfast",
@@ -86,6 +89,33 @@ export const mealPlan = {
   shoppingListGeneration: "Shopping list generation",
   recipeInstructions: "Recipe instructions",
   nutritionalAnalysis: "Nutritional analysis",
+  
+  // AI Dialog specific translations
+  leaveEmptyNationality: "Leave empty to include all cuisines",
+  maxPrepTime: "Max Prep Time",
+  generateSevenDayPlan: "Generate 7-Day Plan",
+  
+  // Cuisine types
+  cuisine: {
+    mixed: "Mixed Cuisine",
+    mediterranean: "Mediterranean",
+    asian: "Asian",
+    mexican: "Mexican",
+    italian: "Italian",
+    indian: "Indian",
+    middleEastern: "Middle Eastern",
+    american: "American",
+    french: "French",
+    chinese: "Chinese",
+    japanese: "Japanese",
+    korean: "Korean",
+    thai: "Thai",
+    greek: "Greek",
+    spanish: "Spanish",
+    turkish: "Turkish",
+    lebanese: "Lebanese",
+    moroccan: "Moroccan"
+  },
   
   mealType: {
     breakfast: "Breakfast",

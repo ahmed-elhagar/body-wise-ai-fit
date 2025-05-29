@@ -12,7 +12,7 @@ export const enTranslations = {
   ...exerciseTranslations,
   mealPlan: mealPlan,
   
-  // Days of week
+  // Days of week (global level for reuse)
   saturday: "Saturday",
   sunday: "Sunday",
   monday: "Monday", 
@@ -21,9 +21,23 @@ export const enTranslations = {
   thursday: "Thursday",
   friday: "Friday",
   
-  // Diet types
+  // Diet types (global level for reuse)
   balanced: "Balanced",
   vegetarian: "Vegetarian",
   keto: "Keto",
   highProtein: "High Protein",
+  
+  // Global common terms
+  minutes: "minutes",
+  cuisine: "Cuisine",
+  mixed: "Mixed",
+  all: "All",
+  cancel: "Cancel",
+  apply: "Apply",
+  reset: "Reset",
+  generating: "Generating...",
+  
+  // Auth related
+  authRequired: "Please sign in to continue",
+  signInRequired: "Please sign in to access this feature"
 };

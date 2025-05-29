@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useProfile } from '@/hooks/useProfile';
 import { enTranslations } from './translations/en';
@@ -14,16 +15,25 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-// Flatten nested objects for translation lookup
+// Flatten nested objects for translation lookup with better error handling
 const flattenTranslations = (obj: any, prefix = ''): Record<string, string> => {
   const flattened: Record<string, string> = {};
   
+  if (!obj || typeof obj !== 'object') {
+    console.warn('Invalid translation object:', obj);
+    return flattened;
+  }
+  
   Object.keys(obj).forEach(key => {
     const newKey = prefix ? `${prefix}.${key}` : key;
-    if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
-      Object.assign(flattened, flattenTranslations(obj[key], newKey));
+    const value = obj[key];
+    
+    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+      Object.assign(flattened, flattenTranslations(value, newKey));
+    } else if (typeof value === 'string') {
+      flattened[newKey] = value;
     } else {
-      flattened[newKey] = obj[key];
+      console.warn(`Skipping non-string translation value for key: ${newKey}`, value);
     }
   });
   
@@ -34,6 +44,14 @@ const translations: Record<Language, Record<string, string>> = {
   en: flattenTranslations(enTranslations),
   ar: flattenTranslations(arTranslations)
 };
+
+// Debug translation loading
+console.log('🌐 Translation system initialized:', {
+  englishKeys: Object.keys(translations.en).length,
+  arabicKeys: Object.keys(translations.ar).length,
+  sampleEnglishKeys: Object.keys(translations.en).slice(0, 10),
+  sampleArabicKeys: Object.keys(translations.ar).slice(0, 10)
+});
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [language, setLanguageState] = useState<Language>('en');
@@ -90,7 +108,10 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const translation = translations[language]?.[key];
     if (!translation) {
       console.warn(`Missing translation for key: ${key} in language: ${language}`);
-      return key; // Return the key itself as fallback
+      
+      // Return a more user-friendly fallback
+      const fallback = key.split('.').pop()?.replace(/([A-Z])/g, ' $1').trim() || key;
+      return fallback;
     }
     return translation;
   };
@@ -111,7 +132,10 @@ export const useLanguage = (): LanguageContextType => {
     return {
       language: 'en',
       setLanguage: () => {},
-      t: (key: string) => key,
+      t: (key: string) => {
+        console.warn(`Translation accessed outside provider: ${key}`);
+        return key.split('.').pop()?.replace(/([A-Z])/g, ' $1').trim() || key;
+      },
       isRTL: false
     };
   }

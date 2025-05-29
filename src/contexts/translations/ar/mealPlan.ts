@@ -1,3 +1,4 @@
+
 export const mealPlan = {
   title: "خطة الوجبات",
   description: "إدارة خطة وجباتك الأسبوعية",
@@ -9,6 +10,7 @@ export const mealPlan = {
   noMealsToday: "لا توجد وجبات مقررة لهذا اليوم.",
   generateNewPlan: "ابدأ بتوليد خطة وجبات جديدة مخصصة لك.",
   mealPlanGenerated: "تم توليد خطة الوجبات بنجاح!",
+  generatedSuccessfully: "تم توليد خطة الوجبات بنجاح!",
   mealPlanGenerationFailed: "فشل في توليد خطة الوجبات. يرجى المحاولة مرة أخرى.",
   shuffleMeals: "إعادة ترتيب الوجبات",
   noMealPlanToShuffle: "لا توجد خطة وجبات لإعادة ترتيبها.",
@@ -21,6 +23,7 @@ export const mealPlan = {
   fat: "دهون",
   cal: "كالوري",
   min: "دقيقة",
+  minutes: "دقائق",
   todaysSummary: "ملخص اليوم",
   shoppingList: "قائمة التسوق",
   recipe: "وصفة",
@@ -91,6 +94,33 @@ export const mealPlan = {
   recipeInstructions: "تعليمات الوصفة",
   nutritionalAnalysis: "التحليل الغذائي",
   
+  // AI Dialog specific translations
+  leaveEmptyNationality: "اتركه فارغاً لتشمل جميع المطابخ",
+  maxPrepTime: "الحد الأقصى لوقت التحضير",
+  generateSevenDayPlan: "توليد خطة 7 أيام",
+  
+  // Cuisine types
+  cuisine: {
+    mixed: "مطبخ مختلط",
+    mediterranean: "البحر الأبيض المتوسط",
+    asian: "آسيوي",
+    mexican: "مكسيكي",
+    italian: "إيطالي",
+    indian: "هندي",
+    middleEastern: "شرق أوسطي",
+    american: "أمريكي",
+    french: "فرنسي",
+    chinese: "صيني",
+    japanese: "ياباني",
+    korean: "كوري",
+    thai: "تايلندي",
+    greek: "يوناني",
+    spanish: "إسباني",
+    turkish: "تركي",
+    lebanese: "لبناني",
+    moroccan: "مغربي"
+  },
+  
   mealType: {
     breakfast: "فطور",
     lunch: "غداء", 
@@ -105,7 +135,6 @@ export const mealPlan = {
   includeSnacks: "تشمل وجبات خفيفة",
   days: "أيام",
   mixed: "مختلط",
-  minutes: "دقائق",
   all: "الكل",
   aiPreferences: "تفضيلات الذكاء الاصطناعي",
   apply: "تطبيق",
