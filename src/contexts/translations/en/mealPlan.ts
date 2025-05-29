@@ -1,3 +1,4 @@
+
 export const mealPlan = {
   title: "Meal Plan",
   description: "Your personalized meal plan for the week",
@@ -80,5 +81,21 @@ export const mealPlan = {
     notEnoughCalories: "Not enough calories remaining for a snack",
     targetReached: "Daily calorie target reached!",
     targetReachedDesc: "You've reached your daily calorie goal. Great job!"
+  },
+  mealExchange: {
+    title: "Exchange Meal",
+    currentMeal: "Current Meal",
+    alternatives: "Alternative Meals",
+    generateNew: "Generate New",
+    generating: "Generating...",
+    exchange: "Exchange",
+    cancel: "Cancel",
+    fromDatabase: "From Database",
+    aiGenerated: "AI Generated",
+    similarCalories: "Similar calories",
+    searchingDatabase: "Searching database...",
+    generatingAI: "Generating AI alternatives...",
+    savingResults: "Saving results for future use...",
+    noAlternatives: "Click 'Generate New' to get personalized alternatives"
   }
 };

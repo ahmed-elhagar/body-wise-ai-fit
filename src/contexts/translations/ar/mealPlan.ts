@@ -1,3 +1,4 @@
+
 export const mealPlan = {
   title: "خطة الوجبات",
   description: "إدارة خطة وجباتك الأسبوعية",
@@ -56,5 +57,21 @@ export const mealPlan = {
     notEnoughCalories: "لا توجد سعرات كافية متبقية للوجبة الخفيفة",
     targetReached: "تم الوصول لهدف السعرات اليومي!",
     targetReachedDesc: "لقد وصلت لهدف السعرات اليومي. عمل رائع!"
+  },
+  mealExchange: {
+    title: "تبديل الوجبة",
+    currentMeal: "الوجبة الحالية",
+    alternatives: "البدائل المتاحة",
+    generateNew: "توليد جديد",
+    generating: "جاري التوليد...",
+    exchange: "تبديل",
+    cancel: "إلغاء",
+    fromDatabase: "من قاعدة البيانات",
+    aiGenerated: "مولد بالذكاء الاصطناعي",
+    similarCalories: "سعرات مشابهة",
+    searchingDatabase: "البحث في قاعدة البيانات...",
+    generatingAI: "توليد بدائل بالذكاء الاصطناعي...",
+    savingResults: "حفظ النتائج للمستقبل...",
+    noAlternatives: "اضغط 'توليد جديد' للحصول على بدائل مخصصة"
   }
 };

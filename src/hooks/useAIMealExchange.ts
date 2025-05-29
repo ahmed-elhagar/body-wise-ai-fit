@@ -3,6 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useProfile } from './useProfile';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
 
 export interface MealAlternative {
@@ -17,19 +18,21 @@ export interface MealAlternative {
   prepTime: number;
   cookTime: number;
   servings: number;
+  source?: 'database' | 'ai';
 }
 
 export const useAIMealExchange = () => {
   const { user } = useAuth();
   const { profile } = useProfile();
+  const { language, t } = useLanguage();
 
   const generateAlternatives = useMutation({
     mutationFn: async (currentMeal: any) => {
       if (!user?.id) {
-        throw new Error('Please sign in to get meal alternatives');
+        throw new Error(t('auth.signInRequired') || 'Please sign in to get meal alternatives');
       }
 
-      console.log('Generating meal alternatives for:', currentMeal.name);
+      console.log('🔄 Generating meal alternatives for:', currentMeal.name, 'in language:', language);
 
       const { data, error } = await supabase.functions.invoke('generate-meal-alternatives', {
         body: {
@@ -39,7 +42,8 @@ export const useAIMealExchange = () => {
             dietaryRestrictions: profile?.dietary_restrictions || [],
             allergies: profile?.allergies || [],
             preferredFoods: profile?.preferred_foods || []
-          }
+          },
+          language
         }
       });
 
@@ -48,11 +52,23 @@ export const useAIMealExchange = () => {
         throw new Error(error.message || 'Failed to generate meal alternatives');
       }
 
+      if (!data?.success) {
+        throw new Error(data?.error || 'Failed to generate alternatives');
+      }
+
+      console.log('✅ Generated alternatives:', {
+        total: data.alternatives?.length || 0,
+        sources: data.source_breakdown
+      });
+
       return data.alternatives || [];
     },
     onError: (error: any) => {
       console.error('Error generating meal alternatives:', error);
-      toast.error(`Failed to generate alternatives: ${error.message}`);
+      toast.error(language === 'ar' ? 
+        `فشل في توليد البدائل: ${error.message}` :
+        `Failed to generate alternatives: ${error.message}`
+      );
     },
   });
 
@@ -60,5 +76,6 @@ export const useAIMealExchange = () => {
     generateAlternatives: generateAlternatives.mutate,
     isGenerating: generateAlternatives.isPending,
     alternatives: generateAlternatives.data || [],
+    error: generateAlternatives.error,
   };
 };

@@ -1,11 +1,18 @@
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const openAIApiKey = Deno.env.get('OPENAI_API_KEY')!;
+
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -13,182 +20,211 @@ serve(async (req) => {
   }
 
   try {
-    const { currentMeal, userProfile, preferences } = await req.json();
-    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+    const { currentMeal, userProfile, preferences, language = 'en' } = await req.json();
+    
+    console.log('🔄 Generating meal alternatives for:', currentMeal.name);
 
-    if (!openAIApiKey) {
-      throw new Error('OpenAI API key not configured');
+    // First, try to find similar meals from database
+    const calorieRange = 100; // ±100 calories
+    const minCalories = currentMeal.calories - calorieRange;
+    const maxCalories = currentMeal.calories + calorieRange;
+
+    const { data: existingMeals, error: dbError } = await supabase
+      .from('daily_meals')
+      .select('*')
+      .gte('calories', minCalories)
+      .lte('calories', maxCalories)
+      .neq('id', currentMeal.id)
+      .limit(5);
+
+    if (dbError) {
+      console.error('Database query error:', dbError);
     }
 
-    console.log('Generating meal alternatives for:', currentMeal.name);
+    const dbAlternatives = existingMeals?.map(meal => ({
+      name: meal.name,
+      calories: meal.calories,
+      protein: meal.protein,
+      carbs: meal.carbs,
+      fat: meal.fat,
+      reason: language === 'ar' ? 
+        `وجبة مشابهة من قاعدة البيانات (${meal.calories} سعرة حرارية)` :
+        `Similar meal from database (${meal.calories} calories)`,
+      ingredients: meal.ingredients || [],
+      instructions: meal.instructions || [],
+      prepTime: meal.prep_time || 15,
+      cookTime: meal.cook_time || 15,
+      servings: meal.servings || 1,
+      source: 'database'
+    })) || [];
 
-    const systemMessage = `You are a nutritionist AI that generates healthy meal alternatives. Create 3-4 alternative meals that are similar in calories and nutritional profile to the current meal.
+    // Generate AI alternatives if we need more options
+    let aiAlternatives = [];
+    if (dbAlternatives.length < 3) {
+      const isArabic = language === 'ar';
+      
+      const systemPrompt = isArabic ? `
+أنت خبير تغذية متخصص في إنشاء بدائل للوجبات. أنشئ 3 بدائل صحية ومتوازنة للوجبة المعطاة.
 
-CURRENT MEAL:
-- Name: ${currentMeal.name}
-- Calories: ${currentMeal.calories}
-- Protein: ${currentMeal.protein}g
-- Carbs: ${currentMeal.carbs}g
-- Fat: ${currentMeal.fat}g
-- Type: ${currentMeal.type}
+متطلبات البدائل:
+- نفس السعرات الحرارية تقريباً (±50 سعرة)
+- نفس النوع (إفطار/غداء/عشاء/وجبة خفيفة)
+- مناسبة للملف الشخصي للمستخدم
+- مكونات وتعليمات واضحة باللغة العربية
 
-USER PREFERENCES:
-- Dietary restrictions: ${preferences.dietaryRestrictions?.join(', ') || 'None'}
-- Allergies: ${preferences.allergies?.join(', ') || 'None'}
-- Preferred foods: ${preferences.preferredFoods?.join(', ') || 'None'}
-- Nationality: ${userProfile.nationality || 'International'}
+أرجع JSON صحيح فقط بدون أي تنسيق إضافي.` : `
+You are a nutrition expert specialized in creating meal alternatives. Generate 3 healthy and balanced alternatives for the given meal.
 
-CRITICAL: Return ONLY valid JSON without markdown formatting. All numeric values must be numbers (not strings with "g" suffix).
+Alternative requirements:
+- Similar calories (±50 calories)
+- Same meal type (breakfast/lunch/dinner/snack)
+- Suitable for user profile
+- Clear ingredients and instructions in English
 
-Return this exact JSON structure:
+Return only valid JSON without any additional formatting.`;
+
+      const userPrompt = isArabic ? `
+الوجبة الحالية: ${currentMeal.name}
+السعرات: ${currentMeal.calories}
+البروتين: ${currentMeal.protein}g
+الكربوهيدرات: ${currentMeal.carbs}g
+الدهون: ${currentMeal.fat}g
+
+ملف المستخدم:
+- العمر: ${userProfile?.age || 30}
+- الجنس: ${userProfile?.gender || 'غير محدد'}
+- الهدف: ${userProfile?.fitness_goal || 'المحافظة على الوزن'}
+- القيود الغذائية: ${userProfile?.dietary_restrictions?.join(', ') || 'لا يوجد'}
+- الحساسية: ${userProfile?.allergies?.join(', ') || 'لا يوجد'}
+
+أنشئ 3 بدائل بهذا التنسيق:
 {
   "alternatives": [
     {
-      "name": "Alternative meal name",
-      "calories": 450,
+      "name": "اسم الوجبة",
+      "calories": 500,
       "protein": 25,
       "carbs": 40,
-      "fat": 15,
-      "reason": "Why this is a good alternative",
-      "ingredients": [{"name": "ingredient", "quantity": "amount", "unit": "unit"}],
+      "fat": 20,
+      "reason": "سبب اختيار هذه الوجبة",
+      "ingredients": ["مكون 1", "مكون 2"],
+      "instructions": ["خطوة 1", "خطوة 2"],
+      "prepTime": 15,
+      "cookTime": 20,
+      "servings": 1
+    }
+  ]
+}` : `
+Current meal: ${currentMeal.name}
+Calories: ${currentMeal.calories}
+Protein: ${currentMeal.protein}g
+Carbs: ${currentMeal.carbs}g
+Fat: ${currentMeal.fat}g
+
+User profile:
+- Age: ${userProfile?.age || 30}
+- Gender: ${userProfile?.gender || 'not specified'}
+- Goal: ${userProfile?.fitness_goal || 'maintain weight'}
+- Dietary restrictions: ${userProfile?.dietary_restrictions?.join(', ') || 'none'}
+- Allergies: ${userProfile?.allergies?.join(', ') || 'none'}
+
+Generate 3 alternatives in this format:
+{
+  "alternatives": [
+    {
+      "name": "Meal name",
+      "calories": 500,
+      "protein": 25,
+      "carbs": 40,
+      "fat": 20,
+      "reason": "Why this meal is a good alternative",
+      "ingredients": ["ingredient 1", "ingredient 2"],
       "instructions": ["step 1", "step 2"],
-      "prepTime": 10,
-      "cookTime": 15,
+      "prepTime": 15,
+      "cookTime": 20,
       "servings": 1
     }
   ]
 }`;
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: systemMessage },
-          { role: 'user', content: `Generate alternatives for this ${currentMeal.type} meal: ${currentMeal.name}. Remember: return only valid JSON with numeric values (no "g" suffixes).` }
-        ],
-        temperature: 0.7,
-        max_tokens: 2000,
-      }),
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+          temperature: 0.7,
+          max_tokens: 2000,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const content = data.choices[0].message.content;
+        
+        try {
+          const parsed = JSON.parse(content);
+          aiAlternatives = parsed.alternatives?.map(alt => ({
+            ...alt,
+            source: 'ai'
+          })) || [];
+
+          // Store AI alternatives in database for future use
+          for (const alternative of aiAlternatives) {
+            try {
+              await supabase.from('daily_meals').insert({
+                weekly_plan_id: currentMeal.weekly_plan_id || 'generated',
+                day_number: currentMeal.day_number || 1,
+                meal_type: currentMeal.meal_type || 'meal',
+                name: alternative.name,
+                calories: alternative.calories,
+                protein: alternative.protein,
+                carbs: alternative.carbs,
+                fat: alternative.fat,
+                ingredients: alternative.ingredients,
+                instructions: alternative.instructions,
+                prep_time: alternative.prepTime,
+                cook_time: alternative.cookTime,
+                servings: alternative.servings,
+                youtube_search_term: `${alternative.name} recipe`,
+                alternatives: [],
+                recipe_fetched: true
+              });
+            } catch (insertError) {
+              console.error('Failed to store AI alternative:', insertError);
+            }
+          }
+        } catch (parseError) {
+          console.error('Failed to parse AI response:', parseError);
+        }
+      }
+    }
+
+    // Combine database and AI alternatives
+    const allAlternatives = [...dbAlternatives, ...aiAlternatives];
+
+    return new Response(JSON.stringify({ 
+      success: true,
+      alternatives: allAlternatives,
+      source_breakdown: {
+        database: dbAlternatives.length,
+        ai_generated: aiAlternatives.length
+      }
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
-    if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    let content = data.choices[0].message.content.trim();
-    
-    // Remove markdown code blocks if present
-    content = content.replace(/```json\s*/g, '').replace(/```\s*$/g, '').trim();
-    
-    // Fix common JSON issues - remove "g" suffixes from numeric values
-    content = content.replace(/"protein":\s*"?(\d+)g?"?,/g, '"protein": $1,');
-    content = content.replace(/"carbs":\s*"?(\d+)g?"?,/g, '"carbs": $1,');
-    content = content.replace(/"fat":\s*"?(\d+)g?"?,/g, '"fat": $1,');
-    
-    try {
-      const parsed = JSON.parse(content);
-      
-      // Validate the structure
-      if (!parsed.alternatives || !Array.isArray(parsed.alternatives)) {
-        throw new Error('Invalid response structure');
-      }
-      
-      // Ensure all alternatives have required fields
-      const validatedAlternatives = parsed.alternatives.map((alt: any) => ({
-        name: alt.name || 'Healthy Alternative',
-        calories: typeof alt.calories === 'number' ? alt.calories : parseInt(alt.calories) || currentMeal.calories,
-        protein: typeof alt.protein === 'number' ? alt.protein : parseInt(alt.protein) || currentMeal.protein,
-        carbs: typeof alt.carbs === 'number' ? alt.carbs : parseInt(alt.carbs) || currentMeal.carbs,
-        fat: typeof alt.fat === 'number' ? alt.fat : parseInt(alt.fat) || currentMeal.fat,
-        reason: alt.reason || 'A nutritious alternative with similar macros',
-        ingredients: Array.isArray(alt.ingredients) ? alt.ingredients : [
-          { name: "lean protein", quantity: "1", unit: "serving" },
-          { name: "vegetables", quantity: "1", unit: "cup" },
-          { name: "whole grains", quantity: "1/2", unit: "cup" }
-        ],
-        instructions: Array.isArray(alt.instructions) ? alt.instructions : [
-          "Prepare ingredients according to recipe",
-          "Cook as desired",
-          "Serve hot and enjoy"
-        ],
-        prepTime: alt.prepTime || 10,
-        cookTime: alt.cookTime || 15,
-        servings: alt.servings || 1
-      }));
-      
-      console.log('Successfully parsed alternatives:', validatedAlternatives.length);
-      return new Response(JSON.stringify({ alternatives: validatedAlternatives }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    } catch (parseError) {
-      console.error('Failed to parse AI response:', content);
-      console.error('Parse error:', parseError);
-      
-      // Fallback response with properly structured alternatives
-      const fallbackResponse = {
-        alternatives: [
-          {
-            name: `Healthy ${currentMeal.type} Alternative`,
-            calories: currentMeal.calories || 400,
-            protein: currentMeal.protein || 20,
-            carbs: currentMeal.carbs || 45,
-            fat: currentMeal.fat || 12,
-            reason: "A nutritious alternative with similar macronutrients",
-            ingredients: [
-              { name: "lean protein source", quantity: "1", unit: "serving" },
-              { name: "fresh vegetables", quantity: "1", unit: "cup" },
-              { name: "whole grain", quantity: "1/2", unit: "cup" }
-            ],
-            instructions: [
-              "Prepare all ingredients",
-              "Cook protein and vegetables",
-              "Serve with whole grain",
-              "Season to taste"
-            ],
-            prepTime: 10,
-            cookTime: 15,
-            servings: 1
-          },
-          {
-            name: `Mediterranean ${currentMeal.type}`,
-            calories: Math.round(currentMeal.calories * 0.95) || 380,
-            protein: currentMeal.protein || 18,
-            carbs: currentMeal.carbs || 42,
-            fat: currentMeal.fat || 14,
-            reason: "Mediterranean-inspired alternative with healthy fats",
-            ingredients: [
-              { name: "olive oil", quantity: "1", unit: "tbsp" },
-              { name: "fresh herbs", quantity: "2", unit: "tbsp" },
-              { name: "lean protein", quantity: "1", unit: "serving" }
-            ],
-            instructions: [
-              "Heat olive oil in pan",
-              "Add protein and cook",
-              "Garnish with fresh herbs",
-              "Serve immediately"
-            ],
-            prepTime: 8,
-            cookTime: 12,
-            servings: 1
-          }
-        ]
-      };
-      
-      return new Response(JSON.stringify(fallbackResponse), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
   } catch (error) {
-    console.error('Error in generate-meal-alternatives:', error);
+    console.error('Error generating meal alternatives:', error);
     return new Response(JSON.stringify({ 
-      error: error.message || 'Failed to generate meal alternatives' 
+      success: false,
+      error: error.message 
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
