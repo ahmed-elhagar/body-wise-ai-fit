@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useCreditSystem } from './useCreditSystem';
 import { toast } from 'sonner';
+import { AIFoodAnalysisResult } from '@/types/aiAnalysis';
 
 const convertFileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -22,7 +23,7 @@ export const useAIFoodAnalysis = () => {
   const { checkAndUseCredit, completeGeneration } = useCreditSystem();
 
   const mutation = useMutation({
-    mutationFn: async (file: File) => {
+    mutationFn: async (file: File): Promise<AIFoodAnalysisResult> => {
       if (!user?.id) throw new Error('User not authenticated');
 
       console.log('Starting AI food analysis...');
@@ -66,10 +67,12 @@ export const useAIFoodAnalysis = () => {
                 responseData: data.analysis || data
               });
 
-              resolve({
+              const result: AIFoodAnalysisResult = {
                 ...(data.analysis || data),
                 remainingCredits: (creditResult.remaining || 0)
-              });
+              };
+
+              resolve(result);
             } catch (error) {
               console.error('Analysis error:', error);
               
@@ -88,7 +91,7 @@ export const useAIFoodAnalysis = () => {
         });
       });
     },
-    onSuccess: (data: any) => {
+    onSuccess: (data: AIFoodAnalysisResult) => {
       const confidence = data.overallConfidence || 0.8;
       if (confidence > 0.7) {
         toast.success(`High-confidence analysis complete! ${data.remainingCredits} credits remaining.`);

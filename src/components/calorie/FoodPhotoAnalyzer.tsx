@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Camera, Upload, Loader2, Utensils, AlertCircle } from "lucide-react";
 import { useAIFoodAnalysis } from "@/hooks/useAIFoodAnalysis";
+import { AIFoodAnalysisResult, FoodAnalysisItem } from "@/types/aiAnalysis";
 
 interface FoodPhotoAnalyzerProps {
   onSelectFood?: (food: any) => void;
@@ -40,7 +41,7 @@ const FoodPhotoAnalyzer = ({ onSelectFood }: FoodPhotoAnalyzerProps) => {
     }
   };
 
-  const handleSelectFood = (food: any) => {
+  const handleSelectFood = (food: FoodAnalysisItem) => {
     if (onSelectFood) {
       // Convert to standardized food item format
       const standardizedFood = {
@@ -162,7 +163,7 @@ const FoodPhotoAnalyzer = ({ onSelectFood }: FoodPhotoAnalyzerProps) => {
 
             {analysisResult.foodItems && analysisResult.foodItems.length > 0 ? (
               <div className="space-y-2">
-                {analysisResult.foodItems.map((food: any, index: number) => (
+                {analysisResult.foodItems.map((food: FoodAnalysisItem, index: number) => (
                   <div
                     key={index}
                     className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"

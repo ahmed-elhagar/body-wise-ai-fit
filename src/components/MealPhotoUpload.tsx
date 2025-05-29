@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Camera, Upload, Loader2, Eye } from "lucide-react";
 import { useAIFoodAnalysis } from "@/hooks/useAIFoodAnalysis";
+import { AIFoodAnalysisResult, FoodAnalysisItem } from "@/types/aiAnalysis";
 
 const MealPhotoUpload = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -177,7 +178,7 @@ const MealPhotoUpload = () => {
               <div className="mb-4">
                 <p className="text-sm font-medium text-gray-700 mb-2">Detected Foods:</p>
                 <div className="space-y-2">
-                  {analysisResult.foodItems.map((food: any, index: number) => (
+                  {analysisResult.foodItems.map((food: FoodAnalysisItem, index: number) => (
                     <div key={index} className="flex justify-between items-center p-2 bg-white rounded border">
                       <div>
                         <span className="font-medium">{food.name}</span>

@@ -63,13 +63,19 @@ export const useCreditSystem = () => {
         throw new Error('Failed to check AI generation credits');
       }
 
-      const result = data as CreditCheckResult;
-      if (!result?.success) {
-        throw new Error(result?.error || 'AI generation limit reached');
+      // Safely cast the response with proper type checking
+      const result = data as unknown;
+      if (!result || typeof result !== 'object') {
+        throw new Error('Invalid response from credit check');
       }
 
-      console.log('Credit check successful:', result);
-      return result;
+      const creditResult = result as CreditCheckResult;
+      if (!creditResult.success) {
+        throw new Error(creditResult.error || 'AI generation limit reached');
+      }
+
+      console.log('Credit check successful:', creditResult);
+      return creditResult;
     },
     onSuccess: () => {
       // Invalidate credits query to refresh the count
