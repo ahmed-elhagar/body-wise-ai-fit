@@ -30,9 +30,14 @@ export const useMealPlanState = () => {
 
   const { generateMealPlan, isGenerating } = useAIMealPlan();
   const { shuffleMeals, isShuffling } = useMealShuffle();
-  const { currentWeekPlan, isLoading, refetch: refetchMealPlan } = useDynamicMealPlan(currentWeekOffset);
+  const { currentWeekPlan, isLoading, error, refetch: refetchMealPlan } = useDynamicMealPlan(currentWeekOffset);
 
   const weekStartDate = getWeekStartDate(currentWeekOffset);
+
+  // Log any errors for debugging
+  if (error) {
+    console.error('useDynamicMealPlan error:', error);
+  }
 
   // Memoized conversion from DailyMeal to Meal type
   const convertDailyMealToMeal = useCallback((dailyMeal: any): Meal => ({
@@ -92,14 +97,23 @@ export const useMealPlanState = () => {
   // Optimized shuffle handler
   const handleRegeneratePlan = useCallback(async () => {
     if (!currentWeekPlan?.weeklyPlan?.id) {
-      toast.error(t('mealPlan.noMealPlanToShuffle') || 'No meal plan found to shuffle');
+      toast.error(t('noMealPlanToShuffle') || 'No meal plan found to shuffle');
       return;
     }
     
-    await shuffleMeals(currentWeekPlan.weeklyPlan.id);
-  }, [currentWeekPlan?.weeklyPlan?.id, shuffleMeals, t]);
+    try {
+      await shuffleMeals(currentWeekPlan.weeklyPlan.id);
+      // Refresh the data after successful shuffle
+      setTimeout(() => {
+        refetchMealPlan?.();
+      }, 1000);
+    } catch (error) {
+      console.error('Failed to shuffle meals:', error);
+      toast.error('Failed to shuffle meals. Please try again.');
+    }
+  }, [currentWeekPlan?.weeklyPlan?.id, shuffleMeals, t, refetchMealPlan]);
 
-  // Optimized AI generation handler
+  // Enhanced AI generation handler
   const handleGenerateAIPlan = useCallback(async () => {
     try {
       console.log('🚀 Starting AI meal plan generation with preferences:', aiPreferences);
@@ -115,17 +129,33 @@ export const useMealPlanState = () => {
       if (result?.success) {
         setShowAIDialog(false);
         
-        // Force immediate refetch
-        setTimeout(async () => {
-          await refetchMealPlan?.();
-        }, 500);
+        // Force immediate refetch with retries
+        let retryCount = 0;
+        const maxRetries = 3;
+        const retryInterval = 1000;
         
-        toast.success(t('mealPlan.generatedSuccessfully') || "✨ Meal plan generated successfully!");
+        const attemptRefetch = async () => {
+          try {
+            await refetchMealPlan?.();
+            toast.success(t('generatedSuccessfully') || "✨ Meal plan generated successfully!");
+          } catch (error) {
+            retryCount++;
+            if (retryCount < maxRetries) {
+              console.log(`Retrying refetch... (${retryCount}/${maxRetries})`);
+              setTimeout(attemptRefetch, retryInterval * retryCount);
+            } else {
+              console.error('Failed to refetch after multiple attempts');
+              toast.warning('Meal plan generated but may need a page refresh to display properly.');
+            }
+          }
+        };
+        
+        setTimeout(attemptRefetch, 500);
       }
       
     } catch (error) {
       console.error('❌ Generation failed:', error);
-      toast.error(t('mealPlan.generationFailed') || "Failed to generate meal plan. Please try again.");
+      toast.error(t('generationFailed') || "Failed to generate meal plan. Please try again.");
     }
   }, [aiPreferences, language, currentWeekOffset, generateMealPlan, refetchMealPlan, t]);
 
@@ -143,7 +173,12 @@ export const useMealPlanState = () => {
 
   const refetch = useCallback(async () => {
     console.log('🔄 Manual refetch triggered for week offset:', currentWeekOffset);
-    await refetchMealPlan?.();
+    try {
+      await refetchMealPlan?.();
+    } catch (error) {
+      console.error('Manual refetch failed:', error);
+      toast.error('Failed to refresh meal plan. Please try again.');
+    }
   }, [currentWeekOffset, refetchMealPlan]);
 
   return {
@@ -178,6 +213,7 @@ export const useMealPlanState = () => {
     todaysMeals,
     totalCalories,
     totalProtein,
+    error,
     
     // Handlers
     handleRegeneratePlan,

@@ -43,6 +43,12 @@ export const useAIMealPlan = () => {
       console.log("Preferences:", preferences);
       console.log("Week Offset:", options.weekOffset || 0);
 
+      // Validate week offset
+      const weekOffset = options.weekOffset || 0;
+      if (weekOffset < -52 || weekOffset > 52) {
+        throw new Error("Week offset must be between -52 and 52 weeks");
+      }
+
       const { data, error } = await supabase.functions.invoke('generate-meal-plan', {
         body: {
           userProfile: {
@@ -61,7 +67,7 @@ export const useAIMealPlan = () => {
             ...preferences,
             allergies: profile?.allergies || [],
             dietary_restrictions: profile?.dietary_restrictions || [],
-            weekOffset: options.weekOffset || 0 // Pass the week offset to backend
+            weekOffset: weekOffset
           }
         }
       });
@@ -79,7 +85,7 @@ export const useAIMealPlan = () => {
       console.log("✅ Meal plan generated successfully:", data);
       toast.success(`✨ ${data.message || 'Meal plan generated successfully!'}`);
       
-      return { ...data, weekOffset: options.weekOffset || 0 };
+      return { ...data, weekOffset: weekOffset };
       
     } catch (error: any) {
       console.error("❌ Error generating meal plan:", error);
@@ -89,6 +95,10 @@ export const useAIMealPlan = () => {
         toast.error("You have reached your AI generation limit. Please contact admin to increase your limit.");
       } else if (error.message?.includes('Authentication required')) {
         toast.error("Please log in again to generate meal plans.");
+      } else if (error.message?.includes('Week offset')) {
+        toast.error("Invalid week selection. Please choose a week within the allowed range.");
+      } else if (error.message?.includes('timeout')) {
+        toast.error("Generation is taking longer than expected. Please try again.");
       } else {
         toast.error(error.message || "Failed to generate meal plan. Please try again.");
       }

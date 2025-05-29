@@ -100,7 +100,6 @@ const translations: Record<Language, Record<string, string>> = {
     'nextWeek': 'Next Week',
     'weeksAgo': 'weeks ago',
     'weeksAhead': 'weeks ahead',
-    'previousWeek': 'Previous Week',
     'dailyViewHelper': 'View detailed daily meal breakdown',
     'weeklyViewHelper': 'Overview of your entire week',
     'todaysSummary': "Today's Summary",
@@ -109,6 +108,39 @@ const translations: Record<Language, Record<string, string>> = {
     'servings': 'servings',
     'ingredients': 'ingredients',
     'currentWeek': 'Current Week',
+    
+    // Missing Meal Plan translations
+    'mealPlan.noActivePlan': 'No active meal plan',
+    'mealPlan.dailyView': 'Daily View',
+    'mealPlan.weeklyView': 'Weekly View',
+    'mealPlan.generating': 'Generating your meal plan...',
+    'mealPlan.loading': 'Loading meal plan...',
+    'mealPlan.generationFailed': 'Failed to generate meal plan. Please try again.',
+    'mealPlan.hours': 'hours',
+    'mealPlan.generateSevenDayPlan': 'Generate 7-Day Plan',
+    
+    // Add Snack translations
+    'addSnack.title': 'Add Snack',
+    'addSnack.selectDay': 'Select Day',
+    'addSnack.snackName': 'Snack Name',
+    'addSnack.calories': 'Calories',
+    'addSnack.protein': 'Protein (g)',
+    'addSnack.carbs': 'Carbs (g)',
+    'addSnack.fat': 'Fat (g)',
+    'addSnack.add': 'Add Snack',
+    'addSnack.cancel': 'Cancel',
+    'addSnack.placeholder': 'Enter snack name...',
+    'addSnack.success': 'Snack added successfully!',
+    'addSnack.error': 'Failed to add snack. Please try again.',
+    
+    // Day names for AddSnack
+    'day.monday': 'Monday',
+    'day.tuesday': 'Tuesday',
+    'day.wednesday': 'Wednesday',
+    'day.thursday': 'Thursday',
+    'day.friday': 'Friday',
+    'day.saturday': 'Saturday',
+    'day.sunday': 'Sunday',
     
     // Meal Types
     'breakfast': 'Breakfast',
@@ -214,7 +246,6 @@ const translations: Record<Language, Record<string, string>> = {
     'nextWeek': 'الأسبوع القادم',
     'weeksAgo': 'أسابيع مضت',
     'weeksAhead': 'أسابيع قادمة',
-    'previousWeek': 'الأسبوع السابق',
     'dailyViewHelper': 'عرض تفصيلي لوجبات اليوم',
     'weeklyViewHelper': 'نظرة عامة على الأسبوع كاملاً',
     'todaysSummary': 'ملخص اليوم',
@@ -223,6 +254,39 @@ const translations: Record<Language, Record<string, string>> = {
     'servings': 'حصص',
     'ingredients': 'مكونات',
     'currentWeek': 'الأسبوع الحالي',
+    
+    // Missing Meal Plan translations
+    'mealPlan.noActivePlan': 'لا توجد خطة وجبات نشطة',
+    'mealPlan.dailyView': 'العرض اليومي',
+    'mealPlan.weeklyView': 'العرض الأسبوعي',
+    'mealPlan.generating': 'جاري إنشاء خطة الوجبات...',
+    'mealPlan.loading': 'جاري تحميل خطة الوجبات...',
+    'mealPlan.generationFailed': 'فشل في إنشاء خطة الوجبات. حاول مرة أخرى.',
+    'mealPlan.hours': 'ساعات',
+    'mealPlan.generateSevenDayPlan': 'إنشاء خطة 7 أيام',
+    
+    // Add Snack translations
+    'addSnack.title': 'إضافة وجبة خفيفة',
+    'addSnack.selectDay': 'اختر اليوم',
+    'addSnack.snackName': 'اسم الوجبة الخفيفة',
+    'addSnack.calories': 'السعرات الحرارية',
+    'addSnack.protein': 'البروتين (جم)',
+    'addSnack.carbs': 'الكربوهيدرات (جم)',
+    'addSnack.fat': 'الدهون (جم)',
+    'addSnack.add': 'إضافة وجبة خفيفة',
+    'addSnack.cancel': 'إلغاء',
+    'addSnack.placeholder': 'أدخل اسم الوجبة الخفيفة...',
+    'addSnack.success': 'تم إضافة الوجبة الخفيفة بنجاح!',
+    'addSnack.error': 'فشل في إضافة الوجبة الخفيفة. حاول مرة أخرى.',
+    
+    // Day names for AddSnack
+    'day.monday': 'الإثنين',
+    'day.tuesday': 'الثلاثاء',
+    'day.wednesday': 'الأربعاء',
+    'day.thursday': 'الخميس',
+    'day.friday': 'الجمعة',
+    'day.saturday': 'السبت',
+    'day.sunday': 'الأحد',
     
     // Meal Types
     'breakfast': 'الإفطار',

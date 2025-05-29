@@ -6,6 +6,9 @@ import MealPlanLoadingScreen from "@/components/MealPlanLoadingScreen";
 import MealPlanHeader from "@/components/MealPlanHeader";
 import MealPlanMainContent from "@/components/MealPlanMainContent";
 import MealPlanDialogs from "@/components/MealPlanDialogs";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertTriangle, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const MealPlan = () => {
   const { t } = useLanguage();
@@ -41,6 +44,7 @@ const MealPlan = () => {
     todaysMeals,
     totalCalories,
     totalProtein,
+    error,
     
     // Handlers
     handleRegeneratePlan,
@@ -69,7 +73,7 @@ const MealPlan = () => {
   // Show loading state during generation OR shuffling
   if (isGenerating) {
     return (
-      <MealPlanLoadingScreen message={t('mealPlan.generating')} />
+      <MealPlanLoadingScreen message={t('generating')} />
     );
   }
 
@@ -82,7 +86,32 @@ const MealPlan = () => {
   // Show loading state while fetching data
   if (isLoading) {
     return (
-      <MealPlanLoadingScreen message={t('mealPlan.loading')} />
+      <MealPlanLoadingScreen message={t('loading')} />
+    );
+  }
+
+  // Show error state if there's an error
+  if (error) {
+    return (
+      <MealPlanLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Alert className="max-w-md">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription className="space-y-3">
+              <p>Failed to load meal plan data. Please try again.</p>
+              <Button 
+                onClick={() => refetch()} 
+                variant="outline" 
+                size="sm"
+                className="w-full"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Retry
+              </Button>
+            </AlertDescription>
+          </Alert>
+        </div>
+      </MealPlanLayout>
     );
   }
 
