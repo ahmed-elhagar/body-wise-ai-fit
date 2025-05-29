@@ -28,15 +28,21 @@ export const useAIFoodAnalysis = () => {
 
       console.log('Starting AI food analysis...');
 
-      // Use centralized credit system
-      const creditResult = await checkAndUseCreditAsync({
-        generationType: 'food_analysis',
-        promptData: { 
-          type: 'food_analysis',
-          imageSize: file.size, 
-          fileName: file.name 
-        }
-      });
+      let creditResult;
+      try {
+        // Use centralized credit system
+        creditResult = await checkAndUseCreditAsync({
+          generationType: 'food_analysis',
+          promptData: { 
+            type: 'food_analysis',
+            imageSize: file.size, 
+            fileName: file.name 
+          }
+        });
+      } catch (error) {
+        console.error('Credit check failed:', error);
+        throw new Error('Failed to check AI generation credits. Please try again.');
+      }
 
       try {
         console.log('Credits checked, proceeding with analysis...');
@@ -75,11 +81,17 @@ export const useAIFoodAnalysis = () => {
       } catch (error) {
         console.error('Analysis error:', error);
         
-        // Mark generation as failed
-        await completeGenerationAsync({
-          logId: creditResult.log_id!,
-          errorMessage: error instanceof Error ? error.message : 'Analysis failed'
-        });
+        // Mark generation as failed if we have a log ID
+        if (creditResult?.log_id) {
+          try {
+            await completeGenerationAsync({
+              logId: creditResult.log_id,
+              errorMessage: error instanceof Error ? error.message : 'Analysis failed'
+            });
+          } catch (logError) {
+            console.error('Failed to update generation log:', logError);
+          }
+        }
         
         throw error;
       }
@@ -94,7 +106,7 @@ export const useAIFoodAnalysis = () => {
     },
     onError: (error) => {
       console.error('Error analyzing food:', error);
-      if (error.message.includes('limit reached')) {
+      if (error.message.includes('limit reached') || error.message.includes('credits')) {
         toast.error('AI generation limit reached. Please upgrade or wait for credits to reset.');
       } else {
         toast.error(`Failed to analyze food image: ${error.message}`);

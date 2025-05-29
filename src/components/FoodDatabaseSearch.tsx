@@ -50,7 +50,7 @@ const FoodDatabaseSearch = ({ onAddFood }: FoodDatabaseSearchProps) => {
       // Search in food_database table (legacy/original database)
       const { data: foodDatabaseData, error: foodDatabaseError } = await supabase
         .from('food_database')
-        .select('id, name, calories_per_unit as calories_per_100g, protein_per_unit as protein_per_100g, carbs_per_unit as carbs_per_100g, fat_per_unit as fat_per_100g, unit_type, confidence_score, cuisine_type')
+        .select('id, name, calories_per_unit, protein_per_unit, carbs_per_unit, fat_per_unit, unit_type, confidence_score, cuisine_type')
         .ilike('name', `%${searchTerm}%`)
         .order('confidence_score', { ascending: false })
         .limit(5);
@@ -85,10 +85,10 @@ const FoodDatabaseSearch = ({ onAddFood }: FoodDatabaseSearchProps) => {
         combinedResults.push(...foodDatabaseData.map(item => ({
           id: item.id,
           name: item.name,
-          calories_per_100g: item.calories_per_100g || 0,
-          protein_per_100g: item.protein_per_100g || 0,
-          carbs_per_100g: item.carbs_per_100g || 0,
-          fat_per_100g: item.fat_per_100g || 0,
+          calories_per_100g: item.calories_per_unit || 0,
+          protein_per_100g: item.protein_per_unit || 0,
+          carbs_per_100g: item.carbs_per_unit || 0,
+          fat_per_100g: item.fat_per_unit || 0,
           serving_size_g: 100,
           serving_description: `1 ${item.unit_type || 'serving'}`,
           confidence_score: item.confidence_score || 0.8,
