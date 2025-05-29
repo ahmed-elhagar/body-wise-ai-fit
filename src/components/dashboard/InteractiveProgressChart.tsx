@@ -83,46 +83,47 @@ const InteractiveProgressChart = () => {
   const currentConfig = chartConfig[activeChart];
 
   return (
-    <Card className="p-6 bg-white/90 backdrop-blur-sm border-0 shadow-lg">
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-6">
-        <div className="flex items-center gap-3 mb-4 lg:mb-0">
-          <currentConfig.icon className="w-6 h-6 text-gray-700" />
-          <h3 className="text-lg font-semibold text-gray-800">{currentConfig.title}</h3>
-          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+    <Card className="p-3 sm:p-6 bg-white/95 backdrop-blur-sm border-0 shadow-lg h-full">
+      <div className="flex flex-col space-y-4 mb-4 sm:mb-6">
+        <div className="flex items-center gap-3">
+          <currentConfig.icon className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" />
+          <h3 className="text-base sm:text-lg font-semibold text-gray-800">{currentConfig.title}</h3>
+          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
             Last 7 days
           </Badge>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {Object.entries(chartConfig).map(([key, config]) => (
             <Button
               key={key}
               variant={activeChart === key ? "default" : "outline"}
               size="sm"
               onClick={() => setActiveChart(key as any)}
-              className="text-xs"
+              className="text-xs flex-1 sm:flex-none min-w-0"
             >
-              <config.icon className="w-3 h-3 mr-1" />
-              {config.title.split(' ')[0]}
+              <config.icon className="w-3 h-3 mr-1 flex-shrink-0" />
+              <span className="truncate">{config.title.split(' ')[0]}</span>
             </Button>
           ))}
         </div>
       </div>
 
-      <div className="h-64 lg:h-80">
+      <div className="h-48 sm:h-64 lg:h-80 w-full">
         <ResponsiveContainer width="100%" height="100%">
-          {activeChart === 'weight' && (
-            <LineChart data={currentConfig.data}>
+          {activeChart === 'weight' ? (
+            <LineChart data={currentConfig.data} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
               <XAxis 
                 dataKey="date" 
                 tickFormatter={formatDate}
                 stroke="#6b7280"
-                fontSize={12}
+                fontSize={10}
+                interval="preserveStartEnd"
               />
               <YAxis 
                 stroke="#6b7280"
-                fontSize={12}
+                fontSize={10}
                 domain={['dataMin - 2', 'dataMax + 1']}
               />
               <Tooltip 
@@ -132,16 +133,17 @@ const InteractiveProgressChart = () => {
                   backgroundColor: 'white',
                   border: '1px solid #e5e7eb',
                   borderRadius: '8px',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                  fontSize: '12px'
                 }}
               />
               <Line 
                 type="monotone" 
                 dataKey="value" 
                 stroke={currentConfig.color}
-                strokeWidth={3}
-                dot={{ fill: currentConfig.color, strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, stroke: currentConfig.color, strokeWidth: 2 }}
+                strokeWidth={2}
+                dot={{ fill: currentConfig.color, strokeWidth: 2, r: 3 }}
+                activeDot={{ r: 5, stroke: currentConfig.color, strokeWidth: 2 }}
               />
               <Line 
                 type="monotone" 
@@ -152,20 +154,19 @@ const InteractiveProgressChart = () => {
                 dot={false}
               />
             </LineChart>
-          )}
-
-          {activeChart === 'calories' && (
-            <AreaChart data={currentConfig.data}>
+          ) : activeChart === 'calories' ? (
+            <AreaChart data={currentConfig.data} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
               <XAxis 
                 dataKey="date" 
                 tickFormatter={formatDate}
                 stroke="#6b7280"
-                fontSize={12}
+                fontSize={10}
+                interval="preserveStartEnd"
               />
               <YAxis 
                 stroke="#6b7280"
-                fontSize={12}
+                fontSize={10}
               />
               <Tooltip 
                 formatter={formatTooltip}
@@ -174,7 +175,8 @@ const InteractiveProgressChart = () => {
                   backgroundColor: 'white',
                   border: '1px solid #e5e7eb',
                   borderRadius: '8px',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                  fontSize: '12px'
                 }}
               />
               <Area 
@@ -193,28 +195,20 @@ const InteractiveProgressChart = () => {
                 fill="#10b981"
                 fillOpacity={0.4}
               />
-              <Line 
-                type="monotone" 
-                dataKey="target" 
-                stroke="#dc2626"
-                strokeWidth={2}
-                strokeDasharray="5 5"
-              />
             </AreaChart>
-          )}
-
-          {activeChart === 'workouts' && (
-            <BarChart data={currentConfig.data}>
+          ) : (
+            <BarChart data={currentConfig.data} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
               <XAxis 
                 dataKey="date" 
                 tickFormatter={formatDate}
                 stroke="#6b7280"
-                fontSize={12}
+                fontSize={10}
+                interval="preserveStartEnd"
               />
               <YAxis 
                 stroke="#6b7280"
-                fontSize={12}
+                fontSize={10}
               />
               <Tooltip 
                 formatter={formatTooltip}
@@ -223,7 +217,8 @@ const InteractiveProgressChart = () => {
                   backgroundColor: 'white',
                   border: '1px solid #e5e7eb',
                   borderRadius: '8px',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                  fontSize: '12px'
                 }}
               />
               <Bar 
@@ -237,7 +232,7 @@ const InteractiveProgressChart = () => {
       </div>
 
       {/* Chart Legend */}
-      <div className="mt-4 flex justify-center gap-6 text-sm">
+      <div className="mt-3 sm:mt-4 flex justify-center gap-4 sm:gap-6 text-xs sm:text-sm flex-wrap">
         {activeChart === 'weight' && (
           <>
             <div className="flex items-center gap-2">
@@ -245,7 +240,7 @@ const InteractiveProgressChart = () => {
               <span className="text-gray-600">Current Weight</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-1 bg-red-600 rounded" style={{ borderStyle: 'dashed' }}></div>
+              <div className="w-3 h-1 bg-red-600 border-dashed border border-red-600"></div>
               <span className="text-gray-600">Target Weight</span>
             </div>
           </>
@@ -254,18 +249,18 @@ const InteractiveProgressChart = () => {
           <>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-              <span className="text-gray-600">Calories Consumed</span>
+              <span className="text-gray-600">Consumed</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-              <span className="text-gray-600">Calories Burned</span>
+              <span className="text-gray-600">Burned</span>
             </div>
           </>
         )}
         {activeChart === 'workouts' && (
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
-            <span className="text-gray-600">Workout Duration (minutes)</span>
+            <span className="text-gray-600">Duration (minutes)</span>
           </div>
         )}
       </div>

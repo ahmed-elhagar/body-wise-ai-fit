@@ -91,36 +91,36 @@ const EnhancedStatsGrid = () => {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
       {stats.map((stat, index) => {
         const IconComponent = stat.icon;
 
         return (
-          <Card key={index} className={`relative overflow-hidden bg-gradient-to-br ${stat.bgGradient} border ${stat.borderColor} shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 rounded-xl p-4 sm:p-6`}>
+          <Card key={index} className={`relative overflow-hidden bg-gradient-to-br ${stat.bgGradient} border ${stat.borderColor} shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 rounded-xl p-3 sm:p-4 lg:p-6 h-full`}>
             {/* Animated Background */}
             <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-50" />
             
             {/* Content */}
-            <div className="relative">
+            <div className="relative h-full flex flex-col">
               {/* Header */}
-              <div className={`flex items-center justify-between mb-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                <div className={`w-10 h-10 bg-gradient-to-br ${stat.gradient} rounded-xl flex items-center justify-center shadow-lg`}>
-                  <IconComponent className="w-5 h-5 text-white" />
+              <div className={`flex items-center justify-between mb-2 sm:mb-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                <div className={`w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br ${stat.gradient} rounded-xl flex items-center justify-center shadow-lg flex-shrink-0`}>
+                  <IconComponent className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                 </div>
-                <div className={`text-right ${isRTL ? 'text-left' : ''}`}>
-                  <div className="text-xs text-gray-600 font-semibold">
+                <div className={`text-right flex-1 min-w-0 ml-2 ${isRTL ? 'text-left ml-0 mr-2' : ''}`}>
+                  <div className="text-xs sm:text-sm text-gray-600 font-semibold truncate">
                     {stat.title}
                   </div>
                 </div>
               </div>
 
               {/* Main Value */}
-              <div className={`mb-3 ${isRTL ? 'text-right' : 'text-left'}`}>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-2xl lg:text-3xl font-bold text-gray-800">
+              <div className={`mb-2 sm:mb-3 flex-1 flex items-center ${isRTL ? 'text-right' : 'text-left'}`}>
+                <div className="flex items-baseline gap-1 w-full">
+                  <span className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-gray-800 truncate">
                     {stat.value}
                   </span>
-                  <span className="text-sm font-medium text-gray-600">
+                  <span className="text-xs sm:text-sm font-medium text-gray-600 flex-shrink-0">
                     {stat.unit}
                   </span>
                 </div>
@@ -130,21 +130,21 @@ const EnhancedStatsGrid = () => {
               <div className="mb-2">
                 <Progress 
                   value={stat.progress} 
-                  className={`h-2 bg-gray-200 ${stat.progressColor}`}
+                  className="h-1.5 sm:h-2 bg-gray-200"
                 />
               </div>
 
               {/* Target Info */}
-              <div className="text-xs text-gray-500 font-medium">
+              <div className="text-xs sm:text-sm text-gray-500 font-medium truncate">
                 {stat.target}
               </div>
 
               {/* Achievement Badge */}
               {stat.progress >= 100 && (
                 <div className="absolute top-2 right-2">
-                  <Badge className="bg-gold text-yellow-800 animate-pulse">
-                    <Award className="w-3 h-3 mr-1" />
-                    Goal!
+                  <Badge className="bg-yellow-100 text-yellow-800 animate-pulse text-xs p-1">
+                    <Award className="w-2 h-2 sm:w-3 sm:h-3 mr-0.5" />
+                    <span className="hidden sm:inline">Goal!</span>
                   </Badge>
                 </div>
               )}

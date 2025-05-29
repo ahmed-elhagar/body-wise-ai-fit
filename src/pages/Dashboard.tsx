@@ -8,12 +8,14 @@ import InteractiveProgressChart from "@/components/dashboard/InteractiveProgress
 import EnhancedQuickActions from "@/components/dashboard/EnhancedQuickActions";
 import ActivityFeed from "@/components/dashboard/ActivityFeed";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Loader2 } from "lucide-react";
 
 const Dashboard = () => {
   const { profile } = useProfile();
   const { isGeneratingContent, generationStatus, hasExistingContent } = useInitialAIGeneration();
   const { t, isRTL } = useLanguage();
+  const isMobile = useIsMobile();
 
   // Show loading screen only if AI content is being generated for first time users
   if (isGeneratingContent && hasExistingContent === false) {
@@ -51,32 +53,32 @@ const Dashboard = () => {
     <div className={`min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex ${isRTL ? 'rtl' : 'ltr'}`}>
       <Navigation />
       <div className={`flex-1 ${isRTL ? 'mr-0 md:mr-64' : 'ml-0 md:ml-64'} transition-all duration-300`}>
-        <div className="container mx-auto px-4 py-6 max-w-7xl">
+        <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 max-w-7xl h-full">
           {/* Header Section */}
-          <div className="mb-6">
+          <div className="mb-4 sm:mb-6">
             <DashboardHeader />
           </div>
 
           {/* Enhanced Stats Grid */}
-          <div className="mb-6">
+          <div className="mb-4 sm:mb-6">
             <EnhancedStatsGrid />
           </div>
 
           {/* Main Content Layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          <div className={`grid ${isMobile ? 'grid-cols-1 gap-4' : 'grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6'} mb-4 sm:mb-6`}>
             {/* Interactive Progress Chart - Takes 2 columns on large screens */}
-            <div className="lg:col-span-2">
+            <div className={`${isMobile ? 'order-1' : 'lg:col-span-2'}`}>
               <InteractiveProgressChart />
             </div>
 
             {/* Enhanced Quick Actions - Takes 1 column */}
-            <div className="lg:col-span-1">
+            <div className={`${isMobile ? 'order-2' : 'lg:col-span-1'} ${isMobile ? 'h-auto' : 'h-full'}`}>
               <EnhancedQuickActions />
             </div>
           </div>
 
           {/* Activity Feed - Full width */}
-          <div className="mb-6">
+          <div className="mb-4 sm:mb-6">
             <ActivityFeed />
           </div>
         </div>
