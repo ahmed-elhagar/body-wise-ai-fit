@@ -39,7 +39,12 @@ const ProgressOverview = () => {
   return (
     <Card className="relative overflow-hidden bg-gradient-to-br from-white via-purple-50 to-pink-50 border-0 shadow-xl rounded-3xl">
       {/* Animated Background */}
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="%23a855f7" fill-opacity="0.05"%3E%3Cpath d="M20 20c0-8.837-7.163-16-16-16s-16 7.163-16 16 7.163 16 16 16 16-7.163 16-16zm-16-8c4.418 0 8 3.582 8 8s-3.582 8-8 8-8-3.582-8-8 3.582-8 8-8z"/%3E%3C/g%3E%3C/svg%3E')] animate-pulse-soft"></div>
+      <div 
+        className="absolute inset-0 animate-pulse-soft opacity-30"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23a855f7' fill-opacity='0.05'%3E%3Cpath d='M20 20c0-8.837-7.163-16-16-16s-16 7.163-16 16 7.163 16 16 16 16-7.163 16-16zm-16-8c4.418 0 8 3.582 8 8s-3.582 8-8 8-8-3.582-8-8 3.582-8 8-8z'/%3E%3C/g%3E%3C/svg%3E")`
+        }}
+      ></div>
 
       {/* Header */}
       <div className="relative bg-gradient-to-r from-purple-600 to-pink-600 p-6 text-white">
