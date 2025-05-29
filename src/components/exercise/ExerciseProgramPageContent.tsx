@@ -60,8 +60,9 @@ export const ExerciseProgramPageContent = ({
   handleExerciseComplete,
   handleExerciseProgressUpdate,
   isGenerating,
-  refetch
-}: ExerciseProgramPageContentProps) => {
+  refetch,
+  isRestDay
+}: ExerciseProgramPageContentProps & { isRestDay?: boolean }) => {
   return (
     <div className="space-y-6">
       <ExerciseHeader 
@@ -96,6 +97,7 @@ export const ExerciseProgramPageContent = ({
                 selectedDayNumber={selectedDayNumber}
                 setSelectedDayNumber={setSelectedDayNumber}
                 currentProgram={currentProgram}
+                workoutType="home"
               />
 
               <div className="grid lg:grid-cols-4 gap-6">
@@ -105,8 +107,9 @@ export const ExerciseProgramPageContent = ({
                   completedExercises={completedExercises}
                   totalExercises={totalExercises}
                   progressPercentage={progressPercentage}
-                  workoutType={currentProgram.workout_type}
+                  workoutType="home"
                   selectedDay={selectedDayNumber}
+                  isRestDay={isRestDay}
                 />
 
                 <ExerciseListEnhanced 
@@ -114,6 +117,7 @@ export const ExerciseProgramPageContent = ({
                   isLoading={false}
                   onExerciseComplete={handleExerciseComplete}
                   onExerciseProgressUpdate={handleExerciseProgressUpdate}
+                  isRestDay={isRestDay}
                 />
               </div>
             </div>
@@ -133,6 +137,7 @@ export const ExerciseProgramPageContent = ({
                 selectedDayNumber={selectedDayNumber}
                 setSelectedDayNumber={setSelectedDayNumber}
                 currentProgram={currentProgram}
+                workoutType="gym"
               />
 
               <div className="grid lg:grid-cols-4 gap-6">
@@ -142,8 +147,9 @@ export const ExerciseProgramPageContent = ({
                   completedExercises={completedExercises}
                   totalExercises={totalExercises}
                   progressPercentage={progressPercentage}
-                  workoutType={currentProgram.workout_type}
+                  workoutType="gym"
                   selectedDay={selectedDayNumber}
+                  isRestDay={isRestDay}
                 />
 
                 <ExerciseListEnhanced 
@@ -151,6 +157,7 @@ export const ExerciseProgramPageContent = ({
                   isLoading={false}
                   onExerciseComplete={handleExerciseComplete}
                   onExerciseProgressUpdate={handleExerciseProgressUpdate}
+                  isRestDay={isRestDay}
                 />
               </div>
             </div>

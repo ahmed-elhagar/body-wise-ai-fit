@@ -1,4 +1,3 @@
-
 import MealPlanLayout from "@/components/MealPlanLayout";
 import { useExerciseProgramPage } from "@/hooks/useExerciseProgramPage";
 import { ExerciseProgramLoadingStates } from "@/components/exercise/ExerciseProgramLoadingStates";
@@ -99,6 +98,7 @@ const Exercise = () => {
         handleExerciseProgressUpdate={handleExerciseProgressUpdate}
         isGenerating={isGenerating}
         refetch={refetch}
+        isRestDay={isRestDay}
       />
     </MealPlanLayout>
   );

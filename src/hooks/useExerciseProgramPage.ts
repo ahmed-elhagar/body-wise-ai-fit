@@ -20,7 +20,7 @@ export interface ExercisePreferences {
 export type { ExerciseProgram } from './useExerciseProgramData';
 
 export const useExerciseProgramPage = () => {
-  const [selectedDayNumber, setSelectedDayNumber] = useState(new Date().getDay() || 7); // Auto-select current day
+  const [selectedDayNumber, setSelectedDayNumber] = useState(new Date().getDay() || 7);
   const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
   const [workoutType, setWorkoutType] = useState<"home" | "gym">("home");
   const [showAIDialog, setShowAIDialog] = useState(false);
@@ -37,7 +37,9 @@ export const useExerciseProgramPage = () => {
     difficulty: "beginner"
   });
 
-  const { currentProgram, isLoading, error, refetch, completeExercise, updateExerciseProgress } = useExerciseProgramData(currentWeekOffset);
+  // Use the updated hook with proper week and workout type filtering
+  const { currentProgram, isLoading, error, refetch, completeExercise, updateExerciseProgress } = 
+    useExerciseProgramData(currentWeekOffset, workoutType);
   const { generateExerciseProgram, isGenerating } = useAIExercise();
 
   const currentDate = new Date();
@@ -46,15 +48,22 @@ export const useExerciseProgramPage = () => {
   // Get today's workouts based on selected day
   const todaysWorkouts = useMemo(() => {
     if (!currentProgram?.daily_workouts) return [];
-    return currentProgram.daily_workouts.filter(
+    const dayWorkouts = currentProgram.daily_workouts.filter(
       workout => workout.day_number === selectedDayNumber
     );
+    console.log('🎯 Today\'s workouts for day', selectedDayNumber, ':', dayWorkouts);
+    return dayWorkouts;
   }, [currentProgram, selectedDayNumber]);
 
   // Get today's exercises
   const todaysExercises = useMemo(() => {
     if (!todaysWorkouts.length) return [];
     return todaysWorkouts.flatMap(workout => workout.exercises || []);
+  }, [todaysWorkouts]);
+
+  // Check if today is a rest day
+  const isRestDay = useMemo(() => {
+    return todaysWorkouts.length > 0 && todaysWorkouts[0]?.is_rest_day;
   }, [todaysWorkouts]);
 
   // Calculate progress
@@ -71,20 +80,35 @@ export const useExerciseProgramPage = () => {
   }, [todaysExercises]);
 
   const handleGenerateAIProgram = (preferences: ExercisePreferences) => {
-    console.log('Generating AI exercise program with preferences:', preferences);
-    generateExerciseProgram(preferences);
+    console.log('🤖 Generating AI exercise program with preferences:', {
+      ...preferences,
+      weekOffset: currentWeekOffset,
+      weekStartDate: format(weekStartDate, 'yyyy-MM-dd')
+    });
+    
+    // Pass week information to AI generation
+    const enhancedPreferences = {
+      ...preferences,
+      weekStartDate: format(weekStartDate, 'yyyy-MM-dd'),
+      weekOffset: currentWeekOffset
+    };
+    
+    generateExerciseProgram(enhancedPreferences);
     setShowAIDialog(false);
   };
 
   const handleRegenerateProgram = () => {
     const preferences = {
       ...aiPreferences,
-      workoutType: currentProgram?.workout_type || workoutType
+      workoutType: workoutType,
+      weekStartDate: format(weekStartDate, 'yyyy-MM-dd'),
+      weekOffset: currentWeekOffset
     };
     handleGenerateAIProgram(preferences);
   };
 
   const handleWorkoutTypeChange = (type: "home" | "gym") => {
+    console.log('🔄 Changing workout type to:', type);
     setWorkoutType(type);
     setAiPreferences(prev => ({
       ...prev,
@@ -133,6 +157,7 @@ export const useExerciseProgramPage = () => {
     completedExercises,
     totalExercises,
     progressPercentage,
+    isRestDay,
     error,
     
     // Computed

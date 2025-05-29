@@ -2,6 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { addDays, startOfWeek, format } from 'date-fns';
 
 export interface ExerciseProgram {
   id: string;
@@ -27,6 +28,7 @@ export interface DailyWorkout {
   muscle_groups?: string[];
   completed: boolean;
   exercises?: Exercise[];
+  is_rest_day?: boolean;
 }
 
 export interface Exercise {
@@ -48,15 +50,28 @@ export interface Exercise {
   actual_reps?: string;
 }
 
-export const useExerciseProgramData = (weekOffset: number = 0) => {
+export const useExerciseProgramData = (weekOffset: number = 0, workoutType: "home" | "gym" = "home") => {
   const { user } = useAuth();
 
+  // Calculate the target week start date based on offset
+  const currentDate = new Date();
+  const targetWeekStart = addDays(startOfWeek(currentDate), weekOffset * 7);
+  const targetWeekStartString = format(targetWeekStart, 'yyyy-MM-dd');
+
   const { data: currentProgram, isLoading: isProgramLoading, error: programError, refetch } = useQuery({
-    queryKey: ['current-exercise-program', user?.id, weekOffset],
+    queryKey: ['exercise-program', user?.id, weekOffset, workoutType, targetWeekStartString],
     queryFn: async () => {
       if (!user?.id) throw new Error('No user ID');
       
-      const { data, error } = await supabase
+      console.log('🔍 Fetching exercise program:', {
+        weekOffset,
+        workoutType,
+        targetWeekStart: targetWeekStartString,
+        userId: user.id
+      });
+
+      // First try to get existing program for this specific week and workout type
+      const { data: existingProgram, error: fetchError } = await supabase
         .from('weekly_exercise_programs')
         .select(`
           *,
@@ -66,34 +81,84 @@ export const useExerciseProgramData = (weekOffset: number = 0) => {
           )
         `)
         .eq('user_id', user.id)
+        .eq('workout_type', workoutType)
+        .eq('week_start_date', targetWeekStartString)
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') throw error;
-      
-      // Transform data to match interface with proper type handling
-      if (data) {
-        return {
-          ...data,
-          workout_type: data.workout_type || "home",
-          current_week: data.current_week || 1,
-          daily_workouts_count: data.daily_workouts?.length || 0,
-          daily_workouts: data.daily_workouts?.map((workout: any) => ({
-            ...workout,
-            completed: workout.completed || false,
-            exercises: workout.exercises?.map((exercise: any) => ({
-              ...exercise,
-              completed: exercise.completed || false
-            })) || []
-          })) || []
-        } as ExerciseProgram;
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        console.error('❌ Error fetching exercise program:', fetchError);
+        throw fetchError;
       }
-      
-      return null;
+
+      // If no program found for this week, return null (empty state)
+      if (!existingProgram) {
+        console.log('📭 No program found for week:', targetWeekStartString, 'type:', workoutType);
+        return null;
+      }
+
+      console.log('✅ Found program:', existingProgram.program_name);
+
+      // Transform data and handle rest days
+      const transformedProgram = {
+        ...existingProgram,
+        workout_type: existingProgram.workout_type || workoutType,
+        current_week: existingProgram.current_week || 1,
+        daily_workouts_count: existingProgram.daily_workouts?.length || 0,
+        daily_workouts: generateWeeklyWorkouts(existingProgram.daily_workouts || [], workoutType)
+      } as ExerciseProgram;
+
+      return transformedProgram;
     },
     enabled: !!user?.id,
   });
+
+  // Generate a complete week (7 days) with rest days
+  const generateWeeklyWorkouts = (workouts: any[], type: "home" | "gym"): DailyWorkout[] => {
+    const weekDays = [1, 2, 3, 4, 5, 6, 7]; // Monday to Sunday
+    const restDays = type === "home" ? [3, 6, 7] : [4, 7]; // Wed, Sat, Sun for home; Thu, Sun for gym
+    
+    return weekDays.map(dayNumber => {
+      const existingWorkout = workouts.find(w => w.day_number === dayNumber);
+      const isRestDay = restDays.includes(dayNumber);
+      
+      if (isRestDay) {
+        return {
+          id: `rest-${dayNumber}`,
+          weekly_program_id: '',
+          day_number: dayNumber,
+          workout_name: 'Rest Day',
+          completed: false,
+          exercises: [],
+          is_rest_day: true
+        };
+      }
+      
+      if (existingWorkout) {
+        return {
+          ...existingWorkout,
+          completed: existingWorkout.completed || false,
+          is_rest_day: false,
+          exercises: existingWorkout.exercises?.map((exercise: any) => ({
+            ...exercise,
+            completed: exercise.completed || false
+          })) || []
+        };
+      }
+      
+      // Return empty workout day if no data
+      return {
+        id: `empty-${dayNumber}`,
+        weekly_program_id: '',
+        day_number: dayNumber,
+        workout_name: 'No Workout',
+        completed: false,
+        exercises: [],
+        is_rest_day: false
+      };
+    });
+  };
 
   const completeExercise = async (exerciseId: string) => {
     if (!user?.id) return;
@@ -111,7 +176,6 @@ export const useExerciseProgramData = (weekOffset: number = 0) => {
       throw error;
     }
 
-    // Refetch to update the UI
     refetch();
   };
 
