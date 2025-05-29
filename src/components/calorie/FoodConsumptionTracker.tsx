@@ -4,16 +4,20 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Calendar, Target } from "lucide-react";
+import { Plus, Trash2, Calendar, Target, Utensils, Clock } from "lucide-react";
 import { useFoodDatabase } from "@/hooks/useFoodDatabase";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useMealPlanData } from "@/hooks/useMealPlanData";
 
 const FoodConsumptionTracker = () => {
   const { user } = useAuth();
   const { logConsumption, isLoggingConsumption } = useFoodDatabase();
   const [selectedMealType, setSelectedMealType] = useState<string>('all');
+  
+  // Get today's meal plan
+  const { data: currentWeekPlan } = useMealPlanData(0);
 
   // Get today's consumption log
   const { data: todaysConsumption, isLoading } = useQuery({
@@ -76,6 +80,12 @@ const FoodConsumptionTracker = () => {
     selectedMealType === 'all' || item.meal_type === selectedMealType
   ) || [];
 
+  // Get today's meal plan meals
+  const todayNumber = new Date().getDay() === 0 ? 7 : new Date().getDay();
+  const todaysMealPlan = currentWeekPlan?.dailyMeals?.filter(meal => 
+    meal.day_number === todayNumber
+  ) || [];
+
   // Goals (these could come from user profile)
   const dailyGoals = {
     calories: 2000,
@@ -103,7 +113,6 @@ const FoodConsumptionTracker = () => {
         .eq('id', entryId);
 
       if (error) throw error;
-      // Refresh data
       window.location.reload();
     } catch (error) {
       console.error('Error deleting entry:', error);
@@ -112,7 +121,7 @@ const FoodConsumptionTracker = () => {
 
   if (isLoading) {
     return (
-      <Card className="p-6">
+      <Card className="p-4">
         <div className="animate-pulse space-y-4">
           <div className="h-6 bg-gray-200 rounded w-1/3"></div>
           <div className="space-y-2">
@@ -125,20 +134,20 @@ const FoodConsumptionTracker = () => {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-4">
       {/* Daily Progress Summary */}
-      <Card className="p-4 sm:p-6 bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200">
+      <Card className="p-4 bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-            <Target className="w-5 h-5 text-white" />
+          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+            <Target className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-800">Today's Progress</h3>
-            <p className="text-sm text-gray-600">Track your daily nutrition goals</p>
+            <h3 className="text-base font-semibold text-gray-800">Today's Progress</h3>
+            <p className="text-xs text-gray-600">Daily nutrition goals</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 gap-3">
           {[
             { key: 'calories', label: 'Calories', unit: '', color: 'orange' },
             { key: 'protein', label: 'Protein', unit: 'g', color: 'green' },
@@ -150,27 +159,27 @@ const FoodConsumptionTracker = () => {
             const percentage = getProgressPercentage(current, goal);
             
             return (
-              <div key={key} className="bg-white rounded-lg p-4 border border-gray-200">
+              <div key={key} className="bg-white rounded-lg p-3 border border-gray-200">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700">{label}</span>
-                  <Badge variant="outline" className="text-xs">
+                  <span className="text-xs font-medium text-gray-700">{label}</span>
+                  <Badge variant="outline" className="text-xs px-1 py-0">
                     {Math.round(percentage)}%
                   </Badge>
                 </div>
                 
                 <div className="space-y-2">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-lg font-bold text-gray-900">
+                    <span className="text-sm font-bold text-gray-900">
                       {Math.round(current)}
                     </span>
-                    <span className="text-sm text-gray-600">
+                    <span className="text-xs text-gray-600">
                       / {goal}{unit}
                     </span>
                   </div>
                   
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-gray-200 rounded-full h-1.5">
                     <div
-                      className={`h-2 rounded-full transition-all duration-300 ${getProgressColor(percentage)}`}
+                      className={`h-1.5 rounded-full transition-all duration-300 ${getProgressColor(percentage)}`}
                       style={{ width: `${percentage}%` }}
                     />
                   </div>
@@ -181,23 +190,71 @@ const FoodConsumptionTracker = () => {
         </div>
       </Card>
 
-      {/* Food Log */}
-      <Card className="p-4 sm:p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
-              <Calendar className="w-5 h-5 text-white" />
+      {/* Today's Meal Plan */}
+      {todaysMealPlan.length > 0 && (
+        <Card className="p-4">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+              <Utensils className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-800">Today's Food Log</h3>
-              <p className="text-sm text-gray-600">
-                {todaysConsumption?.length || 0} items logged
+              <h3 className="text-base font-semibold text-gray-800">Today's Meal Plan</h3>
+              <p className="text-xs text-gray-600">{todaysMealPlan.length} planned meals</p>
+            </div>
+          </div>
+
+          <div className="space-y-2 max-h-48 overflow-y-auto">
+            {todaysMealPlan.map((meal, index) => (
+              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h4 className="text-sm font-medium text-gray-900 truncate">{meal.name}</h4>
+                    <Badge variant="outline" className="text-xs capitalize">
+                      {meal.meal_type}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs text-gray-600">
+                    <span>{meal.calories} cal</span>
+                    <span>•</span>
+                    <span>{meal.protein}g protein</span>
+                    <span>•</span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {meal.prep_time + meal.cook_time}min
+                    </span>
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-xs px-2 py-1 h-auto"
+                >
+                  <Plus className="w-3 h-3 mr-1" />
+                  Add
+                </Button>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {/* Food Log */}
+      <Card className="p-4">
+        <div className="flex flex-col gap-4 mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center">
+              <Calendar className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <h3 className="text-base font-semibold text-gray-800">Food Log</h3>
+              <p className="text-xs text-gray-600">
+                {todaysConsumption?.length || 0} items logged today
               </p>
             </div>
           </div>
 
           <Select value={selectedMealType} onValueChange={setSelectedMealType}>
-            <SelectTrigger className="w-full sm:w-48">
+            <SelectTrigger className="w-full text-sm">
               <SelectValue placeholder="Filter by meal" />
             </SelectTrigger>
             <SelectContent>
@@ -211,33 +268,33 @@ const FoodConsumptionTracker = () => {
         </div>
 
         {filteredConsumption.length === 0 ? (
-          <div className="text-center py-8">
-            <Plus className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-600 mb-2">
+          <div className="text-center py-6">
+            <Plus className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+            <p className="text-sm text-gray-600 mb-2">
               {selectedMealType !== 'all' ? `No ${selectedMealType} items logged` : 'No food logged today'}
             </p>
-            <p className="text-sm text-gray-500">
-              Use the search above to find and log your meals
+            <p className="text-xs text-gray-500">
+              Use the search tab to find and log your meals
             </p>
           </div>
         ) : (
-          <div className="space-y-3 max-h-64 overflow-y-auto">
+          <div className="space-y-2 max-h-64 overflow-y-auto">
             {filteredConsumption.map((entry: any) => (
               <div
                 key={entry.id}
-                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200"
+                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <h4 className="font-medium text-gray-900 truncate">
+                    <h4 className="text-sm font-medium text-gray-900 truncate">
                       {entry.food_item?.name}
                     </h4>
-                    <Badge variant="outline" className="text-xs capitalize flex-shrink-0">
+                    <Badge variant="outline" className="text-xs capitalize">
                       {entry.meal_type}
                     </Badge>
                   </div>
                   
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs text-gray-600 mb-1">
+                  <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 mb-1">
                     <span>{Math.round(entry.calories_consumed)} cal</span>
                     <span>{Math.round(entry.protein_consumed)}g protein</span>
                     <span>{Math.round(entry.carbs_consumed)}g carbs</span>
@@ -245,7 +302,7 @@ const FoodConsumptionTracker = () => {
                   </div>
                   
                   <div className="flex items-center gap-2 text-xs text-gray-500">
-                    <span>{entry.quantity_g}g serving</span>
+                    <span>{entry.quantity_g}g</span>
                     <span>•</span>
                     <span>{new Date(entry.consumed_at).toLocaleTimeString([], { 
                       hour: '2-digit', 
@@ -258,9 +315,9 @@ const FoodConsumptionTracker = () => {
                   size="sm"
                   variant="outline"
                   onClick={() => handleDeleteEntry(entry.id)}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50 ml-3"
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50 p-1 h-auto"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="w-3 h-3" />
                 </Button>
               </div>
             ))}

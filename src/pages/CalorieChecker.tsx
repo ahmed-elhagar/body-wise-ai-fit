@@ -25,7 +25,7 @@ const CalorieChecker = () => {
   
   const [selectedFood, setSelectedFood] = useState<any>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [selectedTab, setSelectedTab] = useState("analyzer");
+  const [selectedTab, setSelectedTab] = useState("search");
   
   // Form state for logging food
   const [quantity, setQuantity] = useState<number>(100);
@@ -68,132 +68,94 @@ const CalorieChecker = () => {
 
   const tabs = [
     {
-      value: "analyzer",
-      label: "AI Analysis",
-      icon: Camera,
-      description: "Upload food photos for instant AI analysis"
+      value: "search",
+      label: "Search",
+      icon: Search,
+      description: "Find foods in database"
     },
     {
-      value: "search",
-      label: "Food Search",
-      icon: Search,
-      description: "Search comprehensive nutrition database"
+      value: "analyzer",
+      label: "AI Scan",
+      icon: Camera,
+      description: "Scan food photos"
     },
     {
       value: "favorites",
       label: "Favorites",
       icon: Heart,
-      description: "Quick access to your saved foods"
+      description: "Your saved foods"
     },
     {
       value: "tracker",
-      label: "Today's Log",
+      label: "Today",
       icon: BarChart3,
-      description: "Track your daily nutrition progress"
+      description: "Daily progress"
     }
   ];
 
   return (
     <div className={`min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 ${isRTL ? 'rtl' : 'ltr'}`}>
-      <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-8 max-w-7xl">
+      <div className="container mx-auto px-4 py-4 max-w-6xl">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6 sm:mb-8">
-          <div className="flex items-center gap-3 sm:gap-4">
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/dashboard')}
-              className="p-2"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
-                Smart Calorie Tracker
-              </h1>
-              <p className="text-sm sm:text-base text-gray-600">
-                AI-powered nutrition analysis and food logging
-              </p>
-            </div>
+        <div className="flex items-center gap-3 mb-4">
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/dashboard')}
+            className="p-2"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
+              Calorie Tracker
+            </h1>
+            <p className="text-sm text-gray-600">
+              AI-powered nutrition tracking
+            </p>
           </div>
         </div>
 
-        {/* Main Content */}
-        <div className="space-y-6">
-          {isMobile ? (
-            /* Mobile: Full-width tabs */
-            <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 bg-white border border-gray-200 rounded-xl p-1">
-                {tabs.map((tab) => {
-                  const IconComponent = tab.icon;
-                  return (
-                    <TabsTrigger
-                      key={tab.value}
-                      value={tab.value}
-                      className="flex flex-col items-center gap-1 p-3 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700"
-                    >
-                      <IconComponent className="w-4 h-4" />
-                      <span className="text-xs font-medium">{tab.label}</span>
-                    </TabsTrigger>
-                  );
-                })}
-              </TabsList>
+        {/* Mobile: Full-width tabs */}
+        <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-4 bg-white border border-gray-200 rounded-xl p-1 mb-4">
+            {tabs.map((tab) => {
+              const IconComponent = tab.icon;
+              return (
+                <TabsTrigger
+                  key={tab.value}
+                  value={tab.value}
+                  className="flex flex-col items-center gap-1 py-2 px-1 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700"
+                >
+                  <IconComponent className="w-4 h-4" />
+                  <span className="text-xs font-medium truncate">{tab.label}</span>
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
 
-              {tabs.map((tab) => (
-                <TabsContent key={tab.value} value={tab.value} className="mt-6">
-                  {tab.value === "analyzer" && <FoodPhotoAnalyzer />}
-                  {tab.value === "search" && <EnhancedFoodSearch onSelectFood={handleSelectFood} />}
-                  {tab.value === "favorites" && <EnhancedFoodSearch onSelectFood={handleSelectFood} showFavoritesOnly />}
-                  {tab.value === "tracker" && <FoodConsumptionTracker />}
-                </TabsContent>
-              ))}
-            </Tabs>
-          ) : (
-            /* Desktop: Two-column layout */
-            <div className="grid lg:grid-cols-3 gap-6">
-              {/* Left Column - Main Actions */}
-              <div className="lg:col-span-2 space-y-6">
-                <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-                  <TabsList className="grid w-full grid-cols-3 bg-white border border-gray-200 rounded-xl p-1">
-                    {tabs.slice(0, 3).map((tab) => {
-                      const IconComponent = tab.icon;
-                      return (
-                        <TabsTrigger
-                          key={tab.value}
-                          value={tab.value}
-                          className="flex items-center gap-2 p-3 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700"
-                        >
-                          <IconComponent className="w-4 h-4" />
-                          <span className="font-medium">{tab.label}</span>
-                        </TabsTrigger>
-                      );
-                    })}
-                  </TabsList>
-
-                  <div className="mt-6">
-                    <TabsContent value="analyzer">
-                      <FoodPhotoAnalyzer />
-                    </TabsContent>
-                    <TabsContent value="search">
-                      <EnhancedFoodSearch onSelectFood={handleSelectFood} />
-                    </TabsContent>
-                    <TabsContent value="favorites">
-                      <EnhancedFoodSearch onSelectFood={handleSelectFood} showFavoritesOnly />
-                    </TabsContent>
-                  </div>
-                </Tabs>
-              </div>
-
-              {/* Right Column - Consumption Tracker */}
-              <div className="lg:col-span-1">
-                <FoodConsumptionTracker />
-              </div>
-            </div>
-          )}
-        </div>
+          {/* Tab Contents */}
+          <div className="space-y-4">
+            <TabsContent value="search" className="mt-0">
+              <EnhancedFoodSearch onSelectFood={handleSelectFood} />
+            </TabsContent>
+            
+            <TabsContent value="analyzer" className="mt-0">
+              <FoodPhotoAnalyzer />
+            </TabsContent>
+            
+            <TabsContent value="favorites" className="mt-0">
+              <EnhancedFoodSearch onSelectFood={handleSelectFood} showFavoritesOnly />
+            </TabsContent>
+            
+            <TabsContent value="tracker" className="mt-0">
+              <FoodConsumptionTracker />
+            </TabsContent>
+          </div>
+        </Tabs>
 
         {/* Add Food Dialog */}
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-md mx-4">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Plus className="w-5 h-5" />
@@ -204,19 +166,19 @@ const CalorieChecker = () => {
             {selectedFood && (
               <div className="space-y-4">
                 {/* Food Info */}
-                <Card className="p-4 bg-gray-50">
-                  <h3 className="font-medium text-gray-900 mb-2">{selectedFood.name}</h3>
-                  <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
+                <Card className="p-3 bg-gray-50">
+                  <h3 className="font-medium text-gray-900 mb-2 text-sm">{selectedFood.name}</h3>
+                  <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
                     <span>{selectedFood.calories_per_100g} cal/100g</span>
-                    <span>{selectedFood.protein_per_100g}g protein/100g</span>
-                    <span>{selectedFood.carbs_per_100g}g carbs/100g</span>
-                    <span>{selectedFood.fat_per_100g}g fat/100g</span>
+                    <span>{selectedFood.protein_per_100g}g protein</span>
+                    <span>{selectedFood.carbs_per_100g}g carbs</span>
+                    <span>{selectedFood.fat_per_100g}g fat</span>
                   </div>
                 </Card>
 
                 {/* Quantity */}
                 <div className="space-y-2">
-                  <Label htmlFor="quantity">Quantity (grams)</Label>
+                  <Label htmlFor="quantity" className="text-sm">Quantity (grams)</Label>
                   <Input
                     id="quantity"
                     type="number"
@@ -224,14 +186,15 @@ const CalorieChecker = () => {
                     onChange={(e) => setQuantity(Number(e.target.value))}
                     min="1"
                     max="2000"
+                    className="text-sm"
                   />
                 </div>
 
                 {/* Meal Type */}
                 <div className="space-y-2">
-                  <Label htmlFor="meal-type">Meal Type</Label>
+                  <Label htmlFor="meal-type" className="text-sm">Meal Type</Label>
                   <Select value={mealType} onValueChange={setMealType}>
-                    <SelectTrigger>
+                    <SelectTrigger className="text-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -245,20 +208,21 @@ const CalorieChecker = () => {
 
                 {/* Notes */}
                 <div className="space-y-2">
-                  <Label htmlFor="notes">Notes (optional)</Label>
+                  <Label htmlFor="notes" className="text-sm">Notes (optional)</Label>
                   <Textarea
                     id="notes"
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder="Any additional notes..."
                     rows={2}
+                    className="text-sm"
                   />
                 </div>
 
                 {/* Calculated Nutrition */}
-                <Card className="p-4 bg-blue-50 border-blue-200">
-                  <h4 className="font-medium text-blue-900 mb-2">For {quantity}g serving:</h4>
-                  <div className="grid grid-cols-2 gap-2 text-sm text-blue-800">
+                <Card className="p-3 bg-blue-50 border-blue-200">
+                  <h4 className="font-medium text-blue-900 mb-2 text-sm">For {quantity}g serving:</h4>
+                  <div className="grid grid-cols-2 gap-2 text-xs text-blue-800">
                     <span>{Math.round(selectedFood.calories_per_100g * quantity / 100)} calories</span>
                     <span>{Math.round(selectedFood.protein_per_100g * quantity / 10) / 10}g protein</span>
                     <span>{Math.round(selectedFood.carbs_per_100g * quantity / 10) / 10}g carbs</span>
@@ -267,18 +231,18 @@ const CalorieChecker = () => {
                 </Card>
 
                 {/* Actions */}
-                <div className="flex gap-3 pt-4">
+                <div className="flex gap-3 pt-2">
                   <Button
                     variant="outline"
                     onClick={() => setIsAddDialogOpen(false)}
-                    className="flex-1"
+                    className="flex-1 text-sm"
                   >
                     Cancel
                   </Button>
                   <Button
                     onClick={handleLogFood}
                     disabled={isLoggingConsumption}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700"
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-sm"
                   >
                     {isLoggingConsumption ? (
                       <>
