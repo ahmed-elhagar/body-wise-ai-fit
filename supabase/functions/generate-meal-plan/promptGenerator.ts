@@ -97,19 +97,23 @@ export const generateMealPlanPrompt = (userProfile: any, preferences: any, daily
   }
 
   const promptLanguage = isArabic ? 
-    `أنشئ خطة وجبات لمدة 7 أيام تبدأ من يوم السبت مع المتطلبات التالية:
-
-${distribution}
+    `أنشئ خطة وجبات لمدة 7 أيام تبدأ من يوم السبت. يجب أن تتبع هذا الهيكل JSON بالضبط:
 
 ${MEAL_PLAN_PROMPTS.JSON_STRUCTURE_EXAMPLE(includeSnacks, language)}
+
+${distribution}
 
 المتطلبات الأساسية:
 1. أنشئ بالضبط 7 أيام (رقم اليوم: 1-7، بدءاً من السبت)
 2. كل يوم يجب أن يحتوي على ${mealsPerDay} وجبات بالضبط
 3. أنواع الوجبات: ${MEAL_PLAN_PROMPTS.MEAL_TYPES(includeSnacks)}
-4. أرجع JSON صحيح فقط يطابق الهيكل أعلاه
-5. بدون تنسيق markdown، بدون تفسيرات
-6. اجعل أسماء الوجبات والمكونات والتعليمات باللغة العربية
+4. أرجع JSON صحيح فقط يطابق الهيكل أعلاه تماماً
+5. بدون تنسيق markdown، بدون تفسيرات، بدون نص إضافي
+6. جميع القيم الرقمية يجب أن تكون أرقام وليس نصوص
+7. اجعل أسماء الوجبات والمكونات والتعليمات باللغة العربية
+8. ingredients و instructions يجب أن تكون arrays
+9. المطبخ: ${preferences?.cuisine || 'مختلط'}
+10. وقت التحضير الأقصى: ${preferences?.maxPrepTime || 45} دقيقة
 
 ملف المستخدم:
 - العمر: ${userProfile?.age || 30}
@@ -120,29 +124,28 @@ ${MEAL_PLAN_PROMPTS.JSON_STRUCTURE_EXAMPLE(includeSnacks, language)}
 - الهدف الصحي: ${userProfile?.fitness_goal || 'المحافظة'}
 - الجنسية: ${userProfile?.nationality || 'دولي'}
 
-التفضيلات:
-- المطبخ: ${preferences?.cuisine || 'مختلط'}
-- وقت التحضير الأقصى: ${preferences?.maxPrepTime || 45} دقيقة
-- نوع النظام الغذائي: ${preferences?.mealTypes || 'جميع'}
-
 القيود الغذائية: ${userProfile?.dietary_restrictions?.join(', ') || 'لا يوجد'}
 الحساسية: ${userProfile?.allergies?.join(', ') || 'لا يوجد'}
 
-أنشئ ${totalMeals} وجبة إجمالية تتبع هيكل JSON المحدد أعلاه.` :
+أنشئ ${totalMeals} وجبة إجمالية تتبع هيكل JSON المحدد أعلاه بالضبط.` :
 
-    `Generate a 7-day meal plan starting from Saturday with the following requirements:
-
-${distribution}
+    `Generate a 7-day meal plan starting from Saturday. You MUST follow this exact JSON structure:
 
 ${MEAL_PLAN_PROMPTS.JSON_STRUCTURE_EXAMPLE(includeSnacks, language)}
+
+${distribution}
 
 CRITICAL REQUIREMENTS:
 1. Generate EXACTLY 7 days (dayNumber: 1-7, starting Saturday)
 2. Each day must have EXACTLY ${mealsPerDay} meals
 3. Meal types: ${MEAL_PLAN_PROMPTS.MEAL_TYPES(includeSnacks)}
-4. Return ONLY valid JSON matching the structure above
-5. No markdown formatting, no explanations
-6. Make meal names, ingredients, and instructions in English
+4. Return ONLY valid JSON matching the structure above exactly
+5. No markdown formatting, no explanations, no additional text
+6. All numeric values must be numbers, not strings
+7. Make meal names, ingredients, and instructions in English
+8. ingredients and instructions must be arrays
+9. Cuisine: ${preferences?.cuisine || 'mixed'}
+10. Max prep time: ${preferences?.maxPrepTime || 45} minutes
 
 User Profile:
 - Age: ${userProfile?.age || 30}
@@ -152,11 +155,6 @@ User Profile:
 - Activity Level: ${userProfile?.activity_level || 'moderate'}
 - Fitness Goal: ${userProfile?.fitness_goal || 'maintain'}
 - Nationality: ${userProfile?.nationality || 'international'}
-
-Preferences:
-- Cuisine: ${preferences?.cuisine || 'mixed'}
-- Max Prep Time: ${preferences?.maxPrepTime || 45} minutes
-- Diet Type: ${preferences?.mealTypes || 'all'}
 
 Dietary Restrictions: ${userProfile?.dietary_restrictions?.join(', ') || 'none'}
 Allergies: ${userProfile?.allergies?.join(', ') || 'none'}
