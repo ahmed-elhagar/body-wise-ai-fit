@@ -43,7 +43,7 @@ const MealItem = ({ meal, mealIndex, dayNumber, onShowRecipe, onExchangeMeal }: 
               {isSnack ? t('snack') : t(meal.meal_type.toLowerCase())}
             </Badge>
             <span className="text-xs text-gray-500">
-              {(meal.prep_time || 0) + (meal.cook_time || 0)} {t('mealPlan.min')}
+              {(meal.prep_time || 0) + (meal.cook_time || 0)} {t('min')}
             </span>
           </div>
           
@@ -56,15 +56,15 @@ const MealItem = ({ meal, mealIndex, dayNumber, onShowRecipe, onExchangeMeal }: 
           <div className="grid grid-cols-3 gap-2 text-xs mb-3">
             <div className="bg-white/80 p-2 rounded text-center">
               <span className="font-medium text-red-600">{meal.calories || 0}</span>
-              <div className="text-gray-500">{t('mealPlan.cal')}</div>
+              <div className="text-gray-500">{t('cal')}</div>
             </div>
             <div className="bg-white/80 p-2 rounded text-center">
               <span className="font-medium text-green-600">{meal.protein || 0}g</span>
-              <div className="text-gray-500">{t('mealPlan.protein')}</div>
+              <div className="text-gray-500">{t('protein')}</div>
             </div>
             <div className="bg-white/80 p-2 rounded text-center">
               <span className="font-medium text-blue-600">{meal.carbs || 0}g</span>
-              <div className="text-gray-500">{t('mealPlan.carbs')}</div>
+              <div className="text-gray-500">{t('carbs')}</div>
             </div>
           </div>
         </div>

@@ -38,7 +38,7 @@ const MealActionButtons = ({ meal, onShowRecipe, onExchangeMeal }: MealActionBut
         onClick={() => onShowRecipe(meal)}
       >
         <ChefHat className={`w-3 h-3 ${isRTL ? 'ml-1' : 'mr-1'}`} />
-        {t('mealPlan.recipe')}
+        {t('recipe')}
       </Button>
       <Button 
         size="sm" 
@@ -47,7 +47,7 @@ const MealActionButtons = ({ meal, onShowRecipe, onExchangeMeal }: MealActionBut
         onClick={() => onExchangeMeal(meal)}
       >
         <ArrowLeftRight className={`w-3 h-3 ${isRTL ? 'ml-1' : 'mr-1'}`} />
-        {t('mealPlan.exchange')}
+        {t('exchange')}
       </Button>
     </div>
   );

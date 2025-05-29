@@ -22,7 +22,7 @@ const IngredientsPreview = ({ ingredients }: IngredientsPreviewProps) => {
       ))}
       {ingredients.length > 2 && (
         <Badge variant="outline" className="text-xs bg-fitness-primary/10 text-fitness-primary">
-          +{ingredients.length - 2} {t('mealPlan.more')}
+          +{ingredients.length - 2} {t('more')}
         </Badge>
       )}
     </div>

@@ -31,14 +31,14 @@ const MealPlanContent = ({
       <Card className="p-8 text-center bg-white/80 backdrop-blur-sm">
         <ChefHat className="w-16 h-16 mx-auto mb-4 text-gray-400" />
         <h3 className="text-xl font-semibold text-gray-800 mb-2">
-          {t('mealPlan.noMealPlan')}
+          {t('noMealPlan')}
         </h3>
         <p className="text-gray-600 mb-6">
-          {t('mealPlan.generateFirstPlan')}
+          {t('generateFirstPlan')}
         </p>
         <Button onClick={onGenerate} className="bg-fitness-gradient text-white">
           <Plus className="w-4 h-4 mr-2" />
-          {t('mealPlan.generateMealPlan')}
+          {t('generateMealPlan')}
         </Button>
       </Card>
     );
@@ -49,14 +49,14 @@ const MealPlanContent = ({
       <Card className="p-8 text-center bg-white/80 backdrop-blur-sm">
         <ChefHat className="w-16 h-16 mx-auto mb-4 text-gray-400" />
         <h3 className="text-xl font-semibold text-gray-800 mb-2">
-          {t('mealPlan.noMealsToday')}
+          {t('noMealsToday')}
         </h3>
         <p className="text-gray-600 mb-6">
-          {t('mealPlan.generateNewPlan')}
+          {t('generateNewPlan')}
         </p>
         <Button onClick={onGenerate} className="bg-fitness-gradient text-white">
           <Plus className="w-4 h-4 mr-2" />
-          {t('mealPlan.generateMealPlan')}
+          {t('generateMealPlan')}
         </Button>
       </Card>
     );
@@ -85,7 +85,6 @@ const MealPlanContent = ({
               
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {mealsForType.map((meal, index) => {
-                  // Ensure meal has youtubeId property
                   const mealWithYoutubeId = {
                     ...meal,
                     youtubeId: meal.youtubeId || meal.youtube_search_term || ''

@@ -28,8 +28,8 @@ const WeeklyPlanHeader = ({ dietType, weeklyCalories, weeklyProtein }: WeeklyPla
             <Utensils className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h3 className="text-xl font-bold text-gray-800">{t('mealPlan.weeklyMealPlan')}</h3>
-            <p className="text-sm text-gray-600">{t('mealPlan.personalizedPlan')}</p>
+            <h3 className="text-xl font-bold text-gray-800">{t('weeklyMealPlan')}</h3>
+            <p className="text-sm text-gray-600">{t('personalizedPlan')}</p>
           </div>
         </div>
         <div className={`flex flex-col items-end gap-2 ${isRTL ? 'items-start' : 'items-end'}`}>
@@ -38,7 +38,7 @@ const WeeklyPlanHeader = ({ dietType, weeklyCalories, weeklyProtein }: WeeklyPla
           </Badge>
           {weeklyCalories > 0 && (
             <div className="text-sm text-gray-600">
-              {Math.round(weeklyCalories / 7)} {t('mealPlan.calPerDay')}
+              {Math.round(weeklyCalories / 7)} {t('calPerDay')}
             </div>
           )}
         </div>
@@ -50,14 +50,14 @@ const WeeklyPlanHeader = ({ dietType, weeklyCalories, weeklyProtein }: WeeklyPla
           <div className="bg-gradient-to-r from-red-50 to-red-100 p-4 rounded-lg">
             <div className={`flex items-center gap-2 mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <Flame className="w-4 h-4 text-red-600" />
-              <span className="text-sm font-medium text-red-700">{t('mealPlan.weeklyCalories')}</span>
+              <span className="text-sm font-medium text-red-700">{t('weeklyCalories')}</span>
             </div>
             <span className="text-2xl font-bold text-red-800">{weeklyCalories.toLocaleString()}</span>
           </div>
           <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg">
             <div className={`flex items-center gap-2 mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <TrendingUp className="w-4 h-4 text-green-600" />
-              <span className="text-sm font-medium text-green-700">{t('mealPlan.weeklyProtein')}</span>
+              <span className="text-sm font-medium text-green-700">{t('weeklyProtein')}</span>
             </div>
             <span className="text-2xl font-bold text-green-800">{weeklyProtein}g</span>
           </div>
