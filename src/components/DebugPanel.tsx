@@ -13,7 +13,7 @@ const DebugPanel = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const { user, session } = useAuth();
-  const { data: profile } = useProfile();
+  const { profile } = useProfile();
 
   // Only show debug panel in development or for admin users
   const shouldShow = import.meta.env.DEV || profile?.user_roles?.some(role => role.role === 'admin');
