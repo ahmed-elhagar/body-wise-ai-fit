@@ -1,4 +1,3 @@
-
 export const createHomeWorkoutPrompt = (userData: any, preferences: any) => {
   return `You are a certified personal trainer creating a HOME WORKOUT program. Generate ONLY exercises that can be done at home with NO GYM EQUIPMENT.
 
@@ -13,25 +12,30 @@ USER PROFILE:
 - Health Conditions: ${userData?.health_conditions?.join(', ') || 'None'}
 
 STRICT HOME WORKOUT REQUIREMENTS:
-- ONLY bodyweight exercises (push-ups, squats, lunges, planks, etc.)
+- ONLY bodyweight exercises (push-ups, squats, lunges, planks, burpees, mountain climbers, jumping jacks, etc.)
 - ONLY resistance bands exercises (if mentioned)
 - ONLY light dumbbells exercises (if mentioned)
-- NO gym machines (NO bench press, lat pulldown, leg press, cable machines)
+- NO gym machines whatsoever
 - NO barbells or heavy equipment
 - NO gym-specific equipment
 - Exercises must be doable in a small living space
 - Focus on functional movements and compound bodyweight exercises
 
-FORBIDDEN EQUIPMENT/EXERCISES:
+ABSOLUTELY FORBIDDEN EQUIPMENT/EXERCISES:
+- Leg press machine or any leg press variations
 - Bench press, lat pulldown, leg press, cable machines
+- Smith machine, squat rack, power rack
 - Barbells, heavy weights, gym machines
 - Any exercise requiring a gym membership
+- Pull-up bars (unless specifically mentioned as available)
+- Any machine-based exercises
 
 ALLOWED EQUIPMENT ONLY:
-- Bodyweight (push-ups, squats, lunges, planks, burpees)
-- Resistance bands (optional)
-- Light dumbbells 5-20lbs (optional)
-- Yoga mat (optional)
+- Bodyweight movements: push-ups, squats, lunges, planks, burpees, mountain climbers
+- Resistance bands: band pulls, band squats, band rows (optional)
+- Light dumbbells 5-20lbs: dumbbell curls, shoulder press, chest press (optional)
+- Yoga mat for floor exercises (optional)
+- Chair for tricep dips (household item)
 
 RESPONSE FORMAT - Return ONLY valid JSON:
 {
@@ -139,11 +143,62 @@ RESPONSE FORMAT - Return ONLY valid JSON:
               "orderNumber": 3
             }
           ]
+        },
+        {
+          "day": 3,
+          "dayName": "Wednesday",
+          "workoutName": "Lower Body Power",
+          "estimatedDuration": ${preferences?.availableTime || 45},
+          "estimatedCalories": 320,
+          "muscleGroups": ["legs", "glutes", "core"],
+          "exercises": [
+            {
+              "name": "Jump Squats",
+              "sets": 3,
+              "reps": "10-15",
+              "restSeconds": 90,
+              "muscleGroups": ["quadriceps", "glutes", "calves"],
+              "instructions": "Squat down then explode up jumping as high as possible",
+              "youtubeSearchTerm": "jump squat bodyweight plyometric",
+              "difficulty": "${preferences?.fitnessLevel}",
+              "equipment": "bodyweight",
+              "orderNumber": 1
+            },
+            {
+              "name": "Single Leg Squats (Pistol Progression)",
+              "sets": 3,
+              "reps": "5-8 each leg",
+              "restSeconds": 90,
+              "muscleGroups": ["quadriceps", "glutes", "core"],
+              "instructions": "Stand on one leg, squat down as far as possible, return to standing",
+              "youtubeSearchTerm": "single leg squat bodyweight progression",
+              "difficulty": "${preferences?.fitnessLevel}",
+              "equipment": "bodyweight",
+              "orderNumber": 2
+            },
+            {
+              "name": "Bulgarian Split Squats",
+              "sets": 3,
+              "reps": "10-12 each leg",
+              "restSeconds": 60,
+              "muscleGroups": ["quadriceps", "glutes", "hamstrings"],
+              "instructions": "Rear foot elevated on chair, squat down on front leg",
+              "youtubeSearchTerm": "bulgarian split squat bodyweight",
+              "difficulty": "${preferences?.fitnessLevel}",
+              "equipment": "chair",
+              "orderNumber": 3
+            }
+          ]
         }
       ]
     }
   ]
 }
+
+IMPORTANT: Replace ANY leg press, bench press, or machine exercise with appropriate bodyweight alternatives:
+- Instead of leg press → use squats, lunges, or jump squats
+- Instead of bench press → use push-ups or pike push-ups
+- Instead of machine exercises → use bodyweight or resistance band alternatives
 
 Create a complete 4-week program with ONLY bodyweight, resistance bands, and light dumbbell exercises. NO GYM EQUIPMENT ALLOWED.`;
 };
