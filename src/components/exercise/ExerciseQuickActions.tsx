@@ -27,81 +27,90 @@ export const ExerciseQuickActions = ({
 
   if (isRestDay) {
     return (
-      <Card className="p-4 bg-white border-gray-200 shadow-sm">
-        <h3 className="text-sm font-medium text-gray-700 mb-3">Rest Day Activities</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Button 
-            variant="outline" 
-            className="h-11 text-orange-700 border-orange-200 hover:bg-orange-50"
-            onClick={() => window.open('https://www.youtube.com/results?search_query=stretching+routine', '_blank')}
-          >
-            <Youtube className="w-4 h-4 mr-2" />
-            Stretching Videos
-          </Button>
-          
-          <Button 
-            variant="outline"
-            className="h-11 text-purple-700 border-purple-200 hover:bg-purple-50"
-            onClick={() => window.open('https://www.youtube.com/results?search_query=meditation+relaxation', '_blank')}
-          >
-            <BookOpen className="w-4 h-4 mr-2" />
-            Meditation
-          </Button>
+      <Card className="p-6 bg-gradient-to-br from-orange-50 to-yellow-50 border-orange-200 shadow-sm">
+        <div className="text-center space-y-4">
+          <h3 className="text-lg font-semibold text-orange-800 mb-4">
+            {t('exercise.restDayActivities') || 'Rest Day Activities'}
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Button 
+              variant="outline" 
+              className="h-12 text-orange-700 border-orange-300 hover:bg-orange-100 transition-colors"
+              onClick={() => window.open('https://www.youtube.com/results?search_query=stretching+routine', '_blank')}
+            >
+              <Youtube className="w-5 h-5 mr-2" />
+              {t('exercise.stretchingVideos') || 'Stretching Videos'}
+            </Button>
+            
+            <Button 
+              variant="outline"
+              className="h-12 text-purple-700 border-purple-300 hover:bg-purple-100 transition-colors"
+              onClick={() => window.open('https://www.youtube.com/results?search_query=meditation+relaxation', '_blank')}
+            >
+              <BookOpen className="w-5 h-5 mr-2" />
+              {t('exercise.meditation') || 'Meditation'}
+            </Button>
+          </div>
         </div>
       </Card>
     );
   }
 
   return (
-    <Card className="p-4 bg-white border-gray-200 shadow-sm">
-      <h3 className="text-sm font-medium text-gray-700 mb-3">Workout Actions</h3>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {!isWorkoutActive ? (
+    <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 shadow-sm">
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-gray-800 text-center">
+          {t('exercise.workoutActions') || 'Workout Controls'}
+        </h3>
+        
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {!isWorkoutActive ? (
+            <Button 
+              onClick={onStartWorkout}
+              disabled={!canStart}
+              className="h-12 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium col-span-2 lg:col-span-1 transition-all duration-200"
+            >
+              <Play className="w-5 h-5 mr-2" />
+              {t('exercise.startWorkout') || 'Start Workout'}
+            </Button>
+          ) : (
+            <Button 
+              onClick={onPauseWorkout}
+              variant="outline"
+              className="h-12 col-span-2 lg:col-span-1 border-orange-300 text-orange-700 hover:bg-orange-100 transition-all duration-200"
+            >
+              <Pause className="w-5 h-5 mr-2" />
+              {t('exercise.pauseWorkout') || 'Pause'}
+            </Button>
+          )}
+
           <Button 
-            onClick={onStartWorkout}
-            disabled={!canStart}
-            className="h-11 bg-fitness-gradient hover:opacity-90 text-white col-span-2 sm:col-span-1"
-          >
-            <Play className="w-4 h-4 mr-2" />
-            Start Workout
-          </Button>
-        ) : (
-          <Button 
-            onClick={onPauseWorkout}
+            onClick={onRestartWorkout}
             variant="outline"
-            className="h-11 col-span-2 sm:col-span-1 border-orange-200 text-orange-700 hover:bg-orange-50"
+            className="h-12 border-gray-300 text-gray-700 hover:bg-gray-100 transition-all duration-200"
           >
-            <Pause className="w-4 h-4 mr-2" />
-            Pause
+            <RotateCcw className="w-5 h-5 mr-2" />
+            {t('exercise.resetWorkout') || 'Reset'}
           </Button>
-        )}
 
-        <Button 
-          onClick={onRestartWorkout}
-          variant="outline"
-          className="h-11 border-gray-200 hover:bg-gray-50"
-        >
-          <RotateCcw className="w-4 h-4 mr-2" />
-          Reset
-        </Button>
+          <Button 
+            onClick={onShareProgress}
+            variant="outline"
+            className="h-12 border-blue-300 text-blue-700 hover:bg-blue-100 transition-all duration-200"
+          >
+            <Share2 className="w-5 h-5 mr-2" />
+            {t('exercise.shareProgress') || 'Share'}
+          </Button>
 
-        <Button 
-          onClick={onShareProgress}
-          variant="outline"
-          className="h-11 border-blue-200 text-blue-700 hover:bg-blue-50"
-        >
-          <Share2 className="w-4 h-4 mr-2" />
-          Share
-        </Button>
-
-        <Button 
-          variant="outline"
-          className="h-11 border-red-200 text-red-700 hover:bg-red-50"
-          onClick={() => window.open('https://www.youtube.com/results?search_query=workout+tutorial', '_blank')}
-        >
-          <Youtube className="w-4 h-4 mr-2" />
-          Tutorials
-        </Button>
+          <Button 
+            variant="outline"
+            className="h-12 border-red-300 text-red-700 hover:bg-red-100 transition-all duration-200"
+            onClick={() => window.open('https://www.youtube.com/results?search_query=workout+tutorial', '_blank')}
+          >
+            <Youtube className="w-5 h-5 mr-2" />
+            {t('exercise.tutorials') || 'Tutorials'}
+          </Button>
+        </div>
       </div>
     </Card>
   );
