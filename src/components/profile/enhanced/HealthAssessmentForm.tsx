@@ -1,9 +1,9 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
@@ -16,23 +16,47 @@ const HealthAssessmentForm = () => {
   const { markStepComplete } = useOnboardingProgress();
   
   const [formData, setFormData] = useState({
-    chronic_conditions: assessment?.chronic_conditions || [],
-    medications: assessment?.medications || [],
-    injuries: assessment?.injuries || [],
-    physical_limitations: assessment?.physical_limitations || [],
-    stress_level: assessment?.stress_level || 5,
-    sleep_quality: assessment?.sleep_quality || 7,
-    energy_level: assessment?.energy_level || 7,
-    work_schedule: assessment?.work_schedule || '',
-    exercise_history: assessment?.exercise_history || '',
-    nutrition_knowledge: assessment?.nutrition_knowledge || '',
-    cooking_skills: assessment?.cooking_skills || '',
-    time_availability: assessment?.time_availability || '',
-    primary_motivation: assessment?.primary_motivation || [],
-    specific_goals: assessment?.specific_goals || [],
-    timeline_expectation: assessment?.timeline_expectation || '',
-    commitment_level: assessment?.commitment_level || 7,
+    chronic_conditions: [],
+    medications: [],
+    injuries: [],
+    physical_limitations: [],
+    stress_level: 5,
+    sleep_quality: 7,
+    energy_level: 7,
+    work_schedule: '',
+    exercise_history: '',
+    nutrition_knowledge: '',
+    cooking_skills: '',
+    time_availability: '',
+    primary_motivation: [],
+    specific_goals: [],
+    timeline_expectation: '',
+    commitment_level: 7,
   });
+
+  // Sync form data with assessment data when component mounts or assessment changes
+  useEffect(() => {
+    if (assessment) {
+      setFormData({
+        chronic_conditions: assessment.chronic_conditions || [],
+        medications: assessment.medications || [],
+        injuries: assessment.injuries || [],
+        physical_limitations: assessment.physical_limitations || [],
+        stress_level: assessment.stress_level || 5,
+        sleep_quality: assessment.sleep_quality || 7,
+        energy_level: assessment.energy_level || 7,
+        work_schedule: assessment.work_schedule || '',
+        exercise_history: assessment.exercise_history || '',
+        nutrition_knowledge: assessment.nutrition_knowledge || '',
+        cooking_skills: assessment.cooking_skills || '',
+        time_availability: assessment.time_availability || '',
+        primary_motivation: assessment.primary_motivation || [],
+        specific_goals: assessment.specific_goals || [],
+        timeline_expectation: assessment.timeline_expectation || '',
+        commitment_level: assessment.commitment_level || 7,
+      });
+    }
+  }, [assessment]);
 
   const [newCondition, setNewCondition] = useState('');
   const [newMedication, setNewMedication] = useState('');
@@ -69,7 +93,8 @@ const HealthAssessmentForm = () => {
       risk_score: calculateRiskScore(),
     };
 
-    saveAssessment(assessmentData);
+    console.log('Submitting health assessment data:', assessmentData);
+    await saveAssessment(assessmentData);
     markStepComplete('health_assessment');
   };
 
@@ -144,6 +169,39 @@ const HealthAssessmentForm = () => {
                   <X 
                     className="w-3 h-3 cursor-pointer" 
                     onClick={() => removeArrayItem('chronic_conditions', index)}
+                  />
+                </Badge>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <Label htmlFor="medications">Current Medications</Label>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Input
+                value={newMedication}
+                onChange={(e) => setNewMedication(e.target.value)}
+                placeholder="Add medication"
+                className="flex-1"
+                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addArrayItem('medications', newMedication, setNewMedication))}
+              />
+              <Button 
+                type="button" 
+                onClick={() => addArrayItem('medications', newMedication, setNewMedication)}
+                size="sm"
+                className="w-full sm:w-auto"
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                Add
+              </Button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {formData.medications.map((medication, index) => (
+                <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                  {medication}
+                  <X 
+                    className="w-3 h-3 cursor-pointer" 
+                    onClick={() => removeArrayItem('medications', index)}
                   />
                 </Badge>
               ))}
@@ -276,6 +334,39 @@ const HealthAssessmentForm = () => {
         {/* Goals and Motivation */}
         <div className="space-y-4">
           <h3 className="text-base lg:text-lg font-semibold text-gray-800">Goals & Motivation</h3>
+          
+          <div className="space-y-3">
+            <Label htmlFor="primary_motivation">Primary Motivation</Label>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Input
+                value={newMotivation}
+                onChange={(e) => setNewMotivation(e.target.value)}
+                placeholder="Add motivation (e.g., better health)"
+                className="flex-1"
+                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addArrayItem('primary_motivation', newMotivation, setNewMotivation))}
+              />
+              <Button 
+                type="button" 
+                onClick={() => addArrayItem('primary_motivation', newMotivation, setNewMotivation)}
+                size="sm"
+                className="w-full sm:w-auto"
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                Add
+              </Button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {formData.primary_motivation.map((motivation, index) => (
+                <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                  {motivation}
+                  <X 
+                    className="w-3 h-3 cursor-pointer" 
+                    onClick={() => removeArrayItem('primary_motivation', index)}
+                  />
+                </Badge>
+              ))}
+            </div>
+          </div>
           
           <div>
             <Label className="text-sm">Commitment Level: {formData.commitment_level}/10</Label>

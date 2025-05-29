@@ -1,3 +1,4 @@
+
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -17,50 +18,68 @@ const ProfileCompletionCard = ({ onStepClick }: ProfileCompletionCardProps) => {
   const { progress } = useOnboardingProgress();
   const { t } = useLanguage();
 
-  // Calculate accurate completion score based on actual data
+  // Centralized completion score calculation
   const calculateCompletionScore = () => {
     let totalFields = 0;
     let completedFields = 0;
 
-    // Basic Information (8 fields)
+    // Basic Information (8 required fields)
     const basicFields = ['first_name', 'last_name', 'age', 'gender', 'height', 'weight', 'nationality', 'body_shape'];
     basicFields.forEach(field => {
       totalFields++;
-      if (profile?.[field as keyof typeof profile]) completedFields++;
+      const value = profile?.[field as keyof typeof profile];
+      if (value !== null && value !== undefined && value !== '') {
+        completedFields++;
+      }
     });
 
-    // Goals & Activity (6 fields)
+    // Goals & Activity (6 fields - 2 required + 4 array fields)
     const goalFields = ['fitness_goal', 'activity_level'];
     goalFields.forEach(field => {
       totalFields++;
-      if (profile?.[field as keyof typeof profile]) completedFields++;
+      const value = profile?.[field as keyof typeof profile];
+      if (value && value !== '') {
+        completedFields++;
+      }
     });
     
-    // Array fields
-    totalFields += 4;
-    if (profile?.health_conditions?.length) completedFields++;
-    if (profile?.allergies?.length) completedFields++;
-    if (profile?.preferred_foods?.length) completedFields++;
-    if (profile?.dietary_restrictions?.length) completedFields++;
+    // Array fields for profile
+    const arrayFields = ['health_conditions', 'allergies', 'preferred_foods', 'dietary_restrictions'];
+    arrayFields.forEach(field => {
+      totalFields++;
+      const value = profile?.[field as keyof typeof profile] as string[];
+      if (value && Array.isArray(value) && value.length > 0) {
+        completedFields++;
+      }
+    });
 
-    // Health Assessment (14 fields)
+    // Health Assessment (12 key fields)
     if (assessment) {
       const assessmentFields = [
-        'chronic_conditions', 'medications', 'injuries', 'physical_limitations',
         'stress_level', 'sleep_quality', 'energy_level', 'work_schedule',
         'exercise_history', 'nutrition_knowledge', 'cooking_skills', 'time_availability',
-        'primary_motivation', 'specific_goals', 'timeline_expectation', 'commitment_level'
+        'timeline_expectation', 'commitment_level'
       ];
       
       assessmentFields.forEach(field => {
         totalFields++;
         const value = assessment[field as keyof typeof assessment];
-        if (Array.isArray(value) ? value.length > 0 : value) {
+        if (value !== null && value !== undefined && value !== '') {
+          completedFields++;
+        }
+      });
+
+      // Assessment array fields
+      const assessmentArrayFields = ['chronic_conditions', 'medications', 'primary_motivation', 'specific_goals'];
+      assessmentArrayFields.forEach(field => {
+        totalFields++;
+        const value = assessment[field as keyof typeof assessment] as string[];
+        if (value && Array.isArray(value) && value.length > 0) {
           completedFields++;
         }
       });
     } else {
-      totalFields += 16; // Add assessment fields to total even if not completed
+      totalFields += 14; // Add assessment fields to total even if not completed
     }
 
     return Math.round((completedFields / totalFields) * 100);
@@ -74,13 +93,19 @@ const ProfileCompletionCard = ({ onStepClick }: ProfileCompletionCardProps) => {
       title: t('basicInformation'),
       description: t('personalDetailsAndMeasurements'),
       completed: profile?.first_name && profile?.last_name && profile?.age && profile?.gender && 
-                 profile?.height && profile?.weight && profile?.nationality,
+                 profile?.height && profile?.weight && profile?.nationality && profile?.body_shape,
     },
     {
       key: 'health_assessment',
       title: t('healthAssessment'),
       description: t('healthConditionsLifestyleData'),
-      completed: !!assessment && assessment.stress_level && assessment.sleep_quality && assessment.energy_level,
+      completed: !!assessment && 
+                 assessment.stress_level !== null && 
+                 assessment.sleep_quality !== null && 
+                 assessment.energy_level !== null &&
+                 assessment.work_schedule && 
+                 assessment.exercise_history &&
+                 assessment.commitment_level !== null,
     },
     {
       key: 'goals_setup',
