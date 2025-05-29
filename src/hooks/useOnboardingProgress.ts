@@ -160,8 +160,11 @@ export const useOnboardingProgress = () => {
     console.log('useOnboardingProgress - Marking step complete:', step);
     
     const stepData: OnboardingProgressInput = {};
-    stepData[`${step}_completed` as keyof OnboardingProgressInput] = true;
-    stepData[`${step}_completed_at` as keyof OnboardingProgressInput] = new Date().toISOString();
+    const completedField = `${step}_completed` as keyof OnboardingProgressInput;
+    const completedAtField = `${step}_completed_at` as keyof OnboardingProgressInput;
+    
+    stepData[completedField] = true as any;
+    stepData[completedAtField] = new Date().toISOString() as any;
     
     try {
       const result = await updateProgressMutation.mutateAsync(stepData);

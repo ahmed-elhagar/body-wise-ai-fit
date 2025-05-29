@@ -191,11 +191,10 @@ export const useEnhancedProfile = () => {
 
     // Onboarding progress
     if (progress) {
-      total += 2;
+      total += 1;
       if (progress.preferences_completed) completed++;
-      if (progress.profile_review_completed) completed++;
     } else {
-      total += 2;
+      total += 1;
     }
 
     return Math.round((completed / total) * 100);
