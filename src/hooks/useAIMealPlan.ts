@@ -49,32 +49,48 @@ export const useAIMealPlan = () => {
         throw new Error("Week offset must be between -52 and 52 weeks");
       }
 
-      const { data, error } = await supabase.functions.invoke('generate-meal-plan', {
-        body: {
-          userProfile: {
-            id: user.id,
-            age: profile?.age,
-            gender: profile?.gender,
-            weight: profile?.weight,
-            height: profile?.height,
-            fitness_goal: profile?.fitness_goal,
-            activity_level: profile?.activity_level,
-            nationality: profile?.nationality,
-            allergies: profile?.allergies || [],
-            dietary_restrictions: profile?.dietary_restrictions || []
-          },
-          preferences: {
-            ...preferences,
-            allergies: profile?.allergies || [],
-            dietary_restrictions: profile?.dietary_restrictions || [],
-            weekOffset: weekOffset
-          }
+      const requestPayload = {
+        userProfile: {
+          id: user.id,
+          age: profile?.age,
+          gender: profile?.gender,
+          weight: profile?.weight,
+          height: profile?.height,
+          fitness_goal: profile?.fitness_goal,
+          activity_level: profile?.activity_level,
+          nationality: profile?.nationality,
+          allergies: profile?.allergies || [],
+          dietary_restrictions: profile?.dietary_restrictions || []
+        },
+        preferences: {
+          ...preferences,
+          allergies: profile?.allergies || [],
+          dietary_restrictions: profile?.dietary_restrictions || [],
+          weekOffset: weekOffset
         }
+      };
+
+      console.log("📡 Sending request to edge function:", requestPayload);
+
+      const { data, error } = await supabase.functions.invoke('generate-meal-plan', {
+        body: requestPayload
       });
+
+      console.log("📥 Edge function response:", { data, error });
 
       if (error) {
         console.error("❌ Supabase function error:", error);
-        throw error;
+        
+        // Handle specific error types
+        if (error.message?.includes('FunctionsHttpError')) {
+          throw new Error('Server error occurred. Please try again.');
+        } else if (error.message?.includes('FunctionsRelayError')) {
+          throw new Error('Network error. Please check your connection and try again.');
+        } else if (error.message?.includes('generation limit')) {
+          throw new Error('You have reached your AI generation limit. Please contact admin to increase your limit.');
+        }
+        
+        throw new Error(error.message || 'Failed to generate meal plan');
       }
 
       if (!data?.success) {
@@ -99,6 +115,10 @@ export const useAIMealPlan = () => {
         toast.error("Invalid week selection. Please choose a week within the allowed range.");
       } else if (error.message?.includes('timeout')) {
         toast.error("Generation is taking longer than expected. Please try again.");
+      } else if (error.message?.includes('Server error')) {
+        toast.error("Server error occurred. Please try again in a moment.");
+      } else if (error.message?.includes('Network error')) {
+        toast.error("Network error. Please check your connection and try again.");
       } else {
         toast.error(error.message || "Failed to generate meal plan. Please try again.");
       }

@@ -22,20 +22,70 @@ serve(async (req) => {
   }
 
   try {
-    const { userProfile, preferences } = await req.json();
-    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-
-    if (!openAIApiKey) {
-      throw new Error('OpenAI API key not configured');
+    console.log('=== MEAL PLAN GENERATION DEBUG START ===');
+    
+    // Parse request body
+    let userProfile, preferences;
+    try {
+      const body = await req.json();
+      userProfile = body.userProfile;
+      preferences = body.preferences;
+    } catch (error) {
+      console.error('❌ Failed to parse request body:', error);
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: 'Invalid request format',
+        details: 'Request body must be valid JSON'
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
-    console.log('=== MEAL PLAN GENERATION DEBUG START ===');
+    // Validate required data
+    if (!userProfile?.id) {
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: 'User profile is required',
+        details: 'Missing user profile data'
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+    if (!openAIApiKey) {
+      console.error('❌ OpenAI API key not configured');
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: 'Service configuration error',
+        details: 'AI service is temporarily unavailable'
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     console.log('User Profile:', JSON.stringify(userProfile, null, 2));
     console.log('Preferences:', JSON.stringify(preferences, null, 2));
     console.log('Week Offset from request:', preferences?.weekOffset || 0);
 
     // Check generations and get profile data
-    const profileData = await checkAndDecrementGenerations(userProfile);
+    let profileData;
+    try {
+      profileData = await checkAndDecrementGenerations(userProfile);
+    } catch (error) {
+      console.error('❌ Failed to check user generations:', error);
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: 'User validation failed',
+        details: error.message || 'Unable to validate user account'
+      }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
     
     // Calculate daily calorie needs
     const dailyCalories = calculateDailyCalories(userProfile);
@@ -54,41 +104,80 @@ serve(async (req) => {
 
     console.log('Sending request to OpenAI...');
     
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { 
-            role: 'system', 
-            content: `You are a professional nutritionist. Generate EXACTLY 7 days starting from SATURDAY with ${includeSnacks ? 'EXACTLY 5 meals each (35 total)' : 'EXACTLY 3 meals each (21 total)'}. Return ONLY valid JSON - no markdown. Focus on ${userProfile?.nationality || 'international'} cuisine with realistic prep times ≤${preferences?.maxPrepTime || 45} minutes.` 
-          },
-          { role: 'user', content: prompt }
-        ],
-        temperature: 0.2,
-        max_tokens: 8000,
-        top_p: 0.8,
-        frequency_penalty: 0,
-        presence_penalty: 0,
-        stream: false
-      }),
-    });
+    let response;
+    try {
+      response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            { 
+              role: 'system', 
+              content: `You are a professional nutritionist. Generate EXACTLY 7 days starting from SATURDAY with ${includeSnacks ? 'EXACTLY 5 meals each (35 total)' : 'EXACTLY 3 meals each (21 total)'}. Return ONLY valid JSON - no markdown. Focus on ${userProfile?.nationality || 'international'} cuisine with realistic prep times ≤${preferences?.maxPrepTime || 45} minutes.` 
+            },
+            { role: 'user', content: prompt }
+          ],
+          temperature: 0.2,
+          max_tokens: 8000,
+          top_p: 0.8,
+          frequency_penalty: 0,
+          presence_penalty: 0,
+          stream: false
+        }),
+      });
+    } catch (error) {
+      console.error('❌ Failed to connect to OpenAI:', error);
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: 'AI service unavailable',
+        details: 'Unable to connect to AI service. Please try again later.'
+      }), {
+        status: 503,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
       console.error('OpenAI API error:', response.status, errorText);
-      throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
+      
+      if (response.status === 429) {
+        return new Response(JSON.stringify({ 
+          success: false,
+          error: 'Service temporarily overloaded',
+          details: 'Please try again in a few minutes.'
+        }), {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: 'AI generation failed',
+        details: 'Unable to generate meal plan. Please try again.'
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const data = await response.json();
     console.log('✅ OpenAI response received');
 
     if (!data.choices?.[0]?.message?.content) {
-      throw new Error('Invalid response from OpenAI API');
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: 'Invalid AI response',
+        details: 'AI service returned incomplete data. Please try again.'
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // Parse and clean the response
@@ -120,13 +209,31 @@ serve(async (req) => {
       
     } catch (parseError) {
       console.error('Failed to parse OpenAI response:', parseError);
-      console.error('Content that failed to parse:', content);
-      throw new Error('Failed to parse AI response. Please try again.');
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: 'AI response format error',
+        details: 'Unable to process AI response. Please try again.'
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // Validate the meal plan
-    validateMealPlan(generatedPlan, includeSnacks);
-    console.log(`✅ VALIDATION PASSED - 7 days with ${totalMeals} total meals`);
+    try {
+      validateMealPlan(generatedPlan, includeSnacks);
+      console.log(`✅ VALIDATION PASSED - 7 days with ${totalMeals} total meals`);
+    } catch (validationError) {
+      console.error('❌ Meal plan validation failed:', validationError);
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: 'Generated plan validation failed',
+        details: 'AI generated an incomplete plan. Please try again.'
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
     
     // Decrement AI generations BEFORE saving
     const remainingGenerations = await decrementUserGenerations(userProfile, profileData);
@@ -135,12 +242,39 @@ serve(async (req) => {
     console.log('📊 SAVING TO DATABASE...');
     console.log('Week offset for saving:', preferences?.weekOffset || 0);
     
-    const weeklyPlan = await saveWeeklyPlan(userProfile, generatedPlan, preferences, dailyCalories);
-    console.log('✅ Weekly plan saved with ID:', weeklyPlan.id);
+    let weeklyPlan;
+    try {
+      weeklyPlan = await saveWeeklyPlan(userProfile, generatedPlan, preferences, dailyCalories);
+      console.log('✅ Weekly plan saved with ID:', weeklyPlan.id);
+    } catch (dbError) {
+      console.error('❌ Failed to save weekly plan:', dbError);
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: 'Database save failed',
+        details: 'Failed to save meal plan. Please try again.'
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
     
     // Save individual meals
-    const { totalMealsSaved } = await saveMealsToDatabase(generatedPlan, weeklyPlan.id);
-    console.log('✅ Individual meals saved:', totalMealsSaved);
+    let totalMealsSaved;
+    try {
+      const result = await saveMealsToDatabase(generatedPlan, weeklyPlan.id);
+      totalMealsSaved = result.totalMealsSaved;
+      console.log('✅ Individual meals saved:', totalMealsSaved);
+    } catch (dbError) {
+      console.error('❌ Failed to save meals:', dbError);
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: 'Meal save failed',
+        details: 'Failed to save individual meals. Please try again.'
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     console.log(`✅ GENERATION COMPLETE: ${totalMealsSaved} meals saved`);
     console.log(`✅ AI generations remaining: ${remainingGenerations}`);
@@ -163,8 +297,8 @@ serve(async (req) => {
     console.error('Error details:', error);
     return new Response(JSON.stringify({ 
       success: false,
-      error: error.message || 'Failed to generate meal plan',
-      details: error.toString()
+      error: 'Unexpected server error',
+      details: 'An unexpected error occurred. Please try again later.'
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

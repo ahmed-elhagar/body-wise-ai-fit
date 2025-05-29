@@ -1,15 +1,13 @@
 
 import { useState, useMemo, useCallback } from "react";
-import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useDynamicMealPlan } from "@/hooks/useDynamicMealPlan";
-import { useAIMealPlan } from "@/hooks/useAIMealPlan";
-import { useMealShuffle } from "@/hooks/useMealShuffle";
+import { useMealPlanActions } from "@/hooks/useMealPlanActions";
 import { getCurrentSaturdayDay, getWeekStartDate, getCategoryForIngredient } from "@/utils/mealPlanUtils";
 import type { Meal } from "@/types/meal";
 
 export const useMealPlanState = () => {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
   const [selectedDayNumber, setSelectedDayNumber] = useState(getCurrentSaturdayDay());
   const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
@@ -28,9 +26,13 @@ export const useMealPlanState = () => {
     includeSnacks: true
   });
 
-  const { generateMealPlan, isGenerating } = useAIMealPlan();
-  const { shuffleMeals, isShuffling } = useMealShuffle();
   const { currentWeekPlan, isLoading, error, refetch: refetchMealPlan } = useDynamicMealPlan(currentWeekOffset);
+  const { handleRegeneratePlan, handleGenerateAIPlan, isGenerating, isShuffling } = useMealPlanActions(
+    currentWeekPlan,
+    currentWeekOffset,
+    aiPreferences,
+    refetchMealPlan
+  );
 
   const weekStartDate = getWeekStartDate(currentWeekOffset);
 
@@ -94,71 +96,6 @@ export const useMealPlanState = () => {
     return items;
   }, []);
 
-  // Optimized shuffle handler
-  const handleRegeneratePlan = useCallback(async () => {
-    if (!currentWeekPlan?.weeklyPlan?.id) {
-      toast.error(t('noMealPlanToShuffle') || 'No meal plan found to shuffle');
-      return;
-    }
-    
-    try {
-      await shuffleMeals(currentWeekPlan.weeklyPlan.id);
-      // Refresh the data after successful shuffle
-      setTimeout(() => {
-        refetchMealPlan?.();
-      }, 1000);
-    } catch (error) {
-      console.error('Failed to shuffle meals:', error);
-      toast.error('Failed to shuffle meals. Please try again.');
-    }
-  }, [currentWeekPlan?.weeklyPlan?.id, shuffleMeals, t, refetchMealPlan]);
-
-  // Enhanced AI generation handler
-  const handleGenerateAIPlan = useCallback(async () => {
-    try {
-      console.log('🚀 Starting AI meal plan generation with preferences:', aiPreferences);
-      
-      const enhancedPreferences = {
-        ...aiPreferences,
-        language: language,
-        locale: language === 'ar' ? 'ar-SA' : 'en-US'
-      };
-      
-      const result = await generateMealPlan(enhancedPreferences, { weekOffset: currentWeekOffset });
-      
-      if (result?.success) {
-        setShowAIDialog(false);
-        
-        // Force immediate refetch with retries
-        let retryCount = 0;
-        const maxRetries = 3;
-        const retryInterval = 1000;
-        
-        const attemptRefetch = async () => {
-          try {
-            await refetchMealPlan?.();
-            toast.success(t('generatedSuccessfully') || "✨ Meal plan generated successfully!");
-          } catch (error) {
-            retryCount++;
-            if (retryCount < maxRetries) {
-              console.log(`Retrying refetch... (${retryCount}/${maxRetries})`);
-              setTimeout(attemptRefetch, retryInterval * retryCount);
-            } else {
-              console.error('Failed to refetch after multiple attempts');
-              toast.warning('Meal plan generated but may need a page refresh to display properly.');
-            }
-          }
-        };
-        
-        setTimeout(attemptRefetch, 500);
-      }
-      
-    } catch (error) {
-      console.error('❌ Generation failed:', error);
-      toast.error(t('generationFailed') || "Failed to generate meal plan. Please try again.");
-    }
-  }, [aiPreferences, language, currentWeekOffset, generateMealPlan, refetchMealPlan, t]);
-
   const handleShowRecipe = useCallback((meal: Meal) => {
     console.log('🍳 Opening recipe for meal:', { id: meal.id, name: meal.name });
     setSelectedMeal(meal);
@@ -177,9 +114,15 @@ export const useMealPlanState = () => {
       await refetchMealPlan?.();
     } catch (error) {
       console.error('Manual refetch failed:', error);
-      toast.error('Failed to refresh meal plan. Please try again.');
     }
   }, [currentWeekOffset, refetchMealPlan]);
+
+  const enhancedHandleGenerateAIPlan = useCallback(async () => {
+    const success = await handleGenerateAIPlan();
+    if (success) {
+      setShowAIDialog(false);
+    }
+  }, [handleGenerateAIPlan]);
 
   return {
     // State
@@ -217,7 +160,7 @@ export const useMealPlanState = () => {
     
     // Handlers
     handleRegeneratePlan,
-    handleGenerateAIPlan,
+    handleGenerateAIPlan: enhancedHandleGenerateAIPlan,
     handleShowRecipe,
     handleExchangeMeal,
     refetch,
