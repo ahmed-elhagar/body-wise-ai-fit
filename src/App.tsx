@@ -13,6 +13,7 @@ import WeightTracking from './pages/WeightTracking';
 import CalorieChecker from './pages/CalorieChecker';
 import Profile from './pages/Profile';
 import Onboarding from './pages/Onboarding';
+import Auth from './pages/Auth';
 import AdminPanel from './pages/AdminPanel';
 import DebugPanel from './components/DebugPanel';
 import GlobalFeedbackButton from './components/GlobalFeedbackButton';
@@ -27,6 +28,7 @@ function App() {
           <LanguageProvider>
             <BrowserRouter>
               <Routes>
+                <Route path="/auth" element={<Auth />} />
                 <Route path="/" element={
                   <ProtectedRoute requireProfile>
                     <Dashboard />
