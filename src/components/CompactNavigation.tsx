@@ -57,7 +57,7 @@ const CompactNavigation = ({
             variant="ghost"
             size="sm"
             onClick={() => onWeekChange(currentWeekOffset - 1)}
-            className="h-9 w-9 p-0 hover:bg-gray-100 rounded-xl shadow-sm"
+            className="h-9 w-9 p-0 hover:bg-blue-50 hover:text-blue-600 rounded-xl shadow-sm transition-colors"
             aria-label={t('previousWeek')}
           >
             {isRTL ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
@@ -77,7 +77,7 @@ const CompactNavigation = ({
             variant="ghost"
             size="sm"
             onClick={() => onWeekChange(currentWeekOffset + 1)}
-            className="h-9 w-9 p-0 hover:bg-gray-100 rounded-xl shadow-sm"
+            className="h-9 w-9 p-0 hover:bg-blue-50 hover:text-blue-600 rounded-xl shadow-sm transition-colors"
             aria-label={t('nextWeek')}
           >
             {isRTL ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
@@ -93,7 +93,7 @@ const CompactNavigation = ({
               size="sm"
               className={`h-8 px-3 text-xs rounded-lg transition-all duration-200 ${
                 viewMode === 'daily' 
-                  ? 'bg-white text-fitness-primary shadow-md font-semibold' 
+                  ? 'bg-blue-500 text-white shadow-md font-semibold hover:bg-blue-600' 
                   : 'hover:bg-gray-50 text-gray-600'
               }`}
               onClick={() => onViewModeChange('daily')}
@@ -109,7 +109,7 @@ const CompactNavigation = ({
               size="sm"
               className={`h-8 px-3 text-xs rounded-lg transition-all duration-200 ${
                 viewMode === 'weekly' 
-                  ? 'bg-white text-fitness-primary shadow-md font-semibold' 
+                  ? 'bg-blue-500 text-white shadow-md font-semibold hover:bg-blue-600' 
                   : 'hover:bg-gray-50 text-gray-600'
               }`}
               onClick={() => onViewModeChange('weekly')}
@@ -141,9 +141,9 @@ const CompactNavigation = ({
                     size="sm"
                     className={`h-8 w-10 p-0 text-xs font-medium rounded-lg transition-all duration-200 ${
                       isSelected 
-                        ? 'bg-white text-fitness-primary shadow-md scale-105' 
+                        ? 'bg-blue-500 text-white shadow-md scale-105 hover:bg-blue-600' 
                         : 'hover:bg-gray-100 text-gray-600'
-                    } ${isToday ? 'ring-2 ring-fitness-primary/30' : ''}`}
+                    } ${isToday ? 'ring-2 ring-blue-300' : ''}`}
                     onClick={() => onDaySelect(dayNumber)}
                     aria-pressed={isSelected}
                     aria-label={`${dayNames[index]} ${isToday ? '(Today)' : ''}`}

@@ -2,7 +2,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ChefHat, ArrowLeftRight, Clock, Users, Utensils, Plus, ShoppingCart, Flame, Zap } from "lucide-react";
+import { ChefHat, ArrowLeftRight, Clock, Plus, ShoppingCart, Flame, Zap } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import type { Meal } from "@/types/meal";
 
@@ -32,14 +32,14 @@ const CompactDailyView = ({
   if (todaysMeals.length === 0) {
     return (
       <Card className="p-6 text-center bg-gradient-to-br from-white to-gray-50/80 backdrop-blur-sm border-0 shadow-lg">
-        <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-fitness-primary/10 to-pink-100 rounded-2xl flex items-center justify-center">
-          <ChefHat className="w-8 h-8 text-fitness-primary" />
+        <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl flex items-center justify-center">
+          <ChefHat className="w-8 h-8 text-blue-600" />
         </div>
         <h3 className="text-xl font-bold text-gray-800 mb-2">{t('noMealsToday')}</h3>
         <p className="text-gray-600 mb-6 text-sm max-w-sm mx-auto leading-relaxed">{t('generateNewPlan')}</p>
         <Button 
           onClick={onGenerate} 
-          className="bg-fitness-gradient text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 px-6 py-3"
+          className="bg-blue-500 hover:bg-blue-600 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 px-6 py-3"
           aria-label={t('generateMealPlan')}
         >
           <Plus className="w-5 h-5 mr-2" />
@@ -83,18 +83,18 @@ const CompactDailyView = ({
   const renderCompactMealCard = (meal: Meal, index: number, mealType: string) => (
     <Card 
       key={`${meal.id}-${index}`} 
-      className="p-3 bg-white/90 backdrop-blur-sm border border-gray-100 hover:shadow-md transition-all duration-200 group"
+      className="p-3 bg-white/95 backdrop-blur-sm border border-gray-200 hover:shadow-md transition-all duration-200 group rounded-lg"
       role="article"
       aria-labelledby={`meal-${meal.id}-title`}
     >
       <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
         {/* Meal Icon & Image */}
-        <div className="w-12 h-12 bg-gradient-to-br from-fitness-primary/10 to-pink-100 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden">
+        <div className="w-11 h-11 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
           {meal.image || meal.image_url ? (
             <img 
               src={meal.image || meal.image_url} 
               alt=""
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover rounded-lg"
               loading="lazy"
             />
           ) : (
@@ -114,7 +114,7 @@ const CompactDailyView = ({
           </h4>
           
           {/* Compact Nutrition Row */}
-          <div className={`flex items-center gap-3 text-xs text-gray-600 mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+          <div className={`flex items-center gap-3 text-xs text-gray-600 ${isRTL ? 'flex-row-reverse' : ''}`}>
             <div className="flex items-center gap-1">
               <Flame className="w-3 h-3 text-red-500" />
               <span className="font-medium">{meal.calories}</span>
@@ -135,7 +135,7 @@ const CompactDailyView = ({
           <Button 
             size="sm" 
             variant="ghost" 
-            className="h-8 w-8 p-0 hover:bg-fitness-primary hover:text-white transition-colors"
+            className="h-8 w-8 p-0 hover:bg-blue-100 hover:text-blue-600 transition-colors rounded-lg"
             onClick={() => onShowRecipe(meal)}
             aria-label={`${t('recipe')} for ${meal.name}`}
           >
@@ -144,7 +144,7 @@ const CompactDailyView = ({
           <Button 
             size="sm" 
             variant="ghost" 
-            className="h-8 w-8 p-0 hover:bg-orange-500 hover:text-white transition-colors"
+            className="h-8 w-8 p-0 hover:bg-orange-100 hover:text-orange-600 transition-colors rounded-lg"
             onClick={() => onExchangeMeal(meal, index)}
             aria-label={`${t('exchange')} ${meal.name}`}
           >
@@ -163,21 +163,21 @@ const CompactDailyView = ({
 
     return (
       <div key={mealType} className="space-y-2">
-        {/* Section Header */}
-        <div className={`flex items-center justify-between p-3 bg-gradient-to-r ${colorClasses} rounded-lg border ${isRTL ? 'flex-row-reverse' : ''}`}>
+        {/* Compact Section Header */}
+        <div className={`flex items-center justify-between p-2 bg-gradient-to-r ${colorClasses} rounded-lg border ${isRTL ? 'flex-row-reverse' : ''}`}>
           <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <span className="text-lg" role="img" aria-label={mealType}>
+            <span className="text-base" role="img" aria-label={mealType}>
               {getMealTypeIcon(mealType)}
             </span>
             <h3 className="font-semibold text-sm">{t(mealType)}</h3>
           </div>
-          <Badge variant="secondary" className="bg-white/80 text-xs font-medium">
+          <Badge variant="secondary" className="bg-white/80 text-xs font-medium px-2 py-1">
             {sectionCalories} {t('cal')}
           </Badge>
         </div>
 
-        {/* Meals Grid */}
-        <div className="space-y-2">
+        {/* Compact Meals Grid */}
+        <div className="space-y-1">
           {meals.map((meal, index) => renderCompactMealCard(meal, index, mealType))}
         </div>
       </div>
@@ -185,12 +185,12 @@ const CompactDailyView = ({
   };
 
   return (
-    <div className="space-y-4" role="main" aria-label={t('todaysMeals')}>
-      {/* Enhanced Summary Card */}
-      <Card className="p-4 bg-gradient-to-r from-fitness-primary/5 to-pink-50 border-0 shadow-lg">
+    <div className="space-y-3" role="main" aria-label={t('todaysMeals')}>
+      {/* Compact Summary Card */}
+      <Card className="p-3 bg-gradient-to-r from-blue-50 to-blue-100 border-0 shadow-lg rounded-lg">
         <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
           <div>
-            <h2 className="font-bold text-gray-800 text-lg mb-1">{t('todaysSummary')}</h2>
+            <h2 className="font-bold text-gray-800 text-base mb-1">{t('todaysSummary')}</h2>
             <div className={`flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <div className="flex items-center gap-1 text-sm text-gray-700">
                 <Flame className="w-4 h-4 text-red-500" />
@@ -209,7 +209,7 @@ const CompactDailyView = ({
             <Button 
               size="sm" 
               variant="outline" 
-              className="h-9 px-3 text-xs bg-white hover:bg-blue-50 border-blue-200 text-blue-700 shadow-sm"
+              className="h-8 px-3 text-xs bg-white hover:bg-blue-50 border-blue-200 text-blue-700 shadow-sm rounded-lg"
               onClick={onShowShoppingList}
               aria-label={t('shoppingList')}
             >
@@ -219,19 +219,19 @@ const CompactDailyView = ({
             <Button 
               size="sm" 
               variant="outline" 
-              className="h-9 px-3 text-xs bg-white hover:bg-green-50 border-green-200 text-green-700 shadow-sm"
+              className="h-8 px-3 text-xs bg-white hover:bg-green-50 border-green-200 text-green-700 shadow-sm rounded-lg"
               onClick={onAddSnack}
-              aria-label={t('addSnack')}
+              aria-label={t('addSnack.title')}
             >
               <Plus className={`w-3 h-3 ${isRTL ? 'ml-1' : 'mr-1'}`} />
-              <span className="hidden sm:inline">{t('addSnack')}</span>
+              <span className="hidden sm:inline">{t('addSnack.title')}</span>
             </Button>
           </div>
         </div>
       </Card>
 
       {/* Compact Meal Sections */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         {Object.entries(mealsByType).map(([mealType, meals]) => 
           renderMealTypeSection(mealType, meals)
         )}
