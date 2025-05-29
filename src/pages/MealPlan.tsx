@@ -39,8 +39,27 @@ const MealPlan = () => {
 
   const weekStartDate = getWeekStartDate(currentWeekOffset);
 
+  // Convert DailyMeal to Meal type for compatibility
+  const convertDailyMealToMeal = (dailyMeal: any): Meal => ({
+    type: dailyMeal.meal_type || 'meal',
+    time: '12:00',
+    name: dailyMeal.name || 'Unnamed Meal',
+    calories: dailyMeal.calories || 0,
+    protein: dailyMeal.protein || 0,
+    carbs: dailyMeal.carbs || 0,
+    fat: dailyMeal.fat || 0,
+    ingredients: dailyMeal.ingredients || [],
+    instructions: dailyMeal.instructions || [],
+    cookTime: dailyMeal.cook_time || 0,
+    prepTime: dailyMeal.prep_time || 0,
+    servings: dailyMeal.servings || 1,
+    image: dailyMeal.image || '',
+    youtubeId: dailyMeal.youtube_search_term || ''
+  });
+
   // Calculate today's meals and totals
-  const todaysMeals = currentWeekPlan?.dailyMeals?.filter(meal => meal.day_number === selectedDayNumber) || [];
+  const todaysDailyMeals = currentWeekPlan?.dailyMeals?.filter(meal => meal.day_number === selectedDayNumber) || [];
+  const todaysMeals = todaysDailyMeals.map(convertDailyMealToMeal);
   const totalCalories = todaysMeals.reduce((sum, meal) => sum + (meal.calories || 0), 0);
   const totalProtein = todaysMeals.reduce((sum, meal) => sum + (meal.protein || 0), 0);
 
@@ -115,8 +134,7 @@ const MealPlan = () => {
         {viewMode === 'daily' && (
           <DaySelector
             selectedDayNumber={selectedDayNumber}
-            onDayChange={setSelectedDayNumber}
-            weekStartDate={weekStartDate}
+            onDaySelect={setSelectedDayNumber}
           />
         )}
 
@@ -133,7 +151,6 @@ const MealPlan = () => {
         ) : viewMode === 'weekly' ? (
           <WeeklyMealPlanView
             weeklyPlan={currentWeekPlan.weeklyPlan}
-            dailyMeals={currentWeekPlan.dailyMeals}
             onShowRecipe={handleShowRecipe}
             onExchangeMeal={handleExchangeMeal}
           />
@@ -159,7 +176,7 @@ const MealPlan = () => {
         <AddSnackDialog
           isOpen={showAddSnackDialog}
           onClose={() => setShowAddSnackDialog(false)}
-          onAddSnack={() => {
+          onAdd={() => {
             refetch();
             setShowAddSnackDialog(false);
           }}

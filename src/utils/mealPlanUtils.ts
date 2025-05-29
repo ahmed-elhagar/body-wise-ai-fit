@@ -1,5 +1,16 @@
-
 import { format, startOfWeek, addDays, addWeeks } from 'date-fns';
+
+export const getDayNames = (t: (key: string) => string) => {
+  return [
+    t('day.saturday'),
+    t('day.sunday'),
+    t('day.monday'),
+    t('day.tuesday'),
+    t('day.wednesday'),
+    t('day.thursday'),
+    t('day.friday')
+  ];
+};
 
 export const getCategoryForIngredient = (ingredientName: string): string => {
   const categories = {
