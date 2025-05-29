@@ -92,7 +92,7 @@ export const ExerciseProgramPageContent = ({
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="max-w-7xl mx-auto space-y-6">
       {/* Enhanced Navigation - Week and Day Selection */}
       <ExerciseEnhancedNavigation
         currentWeekOffset={currentWeekOffset}
@@ -106,45 +106,43 @@ export const ExerciseProgramPageContent = ({
         onGenerateForWeek={handleGenerateForCurrentWeek}
       />
 
-      {/* Quick Actions */}
-      {hasDataForCurrentWeek && (
-        <ExerciseQuickActions
-          isWorkoutActive={workoutSession.isActive}
-          onStartWorkout={handleStartWorkout}
-          onPauseWorkout={workoutSession.pauseSession}
-          onRestartWorkout={workoutSession.resetSession}
-          onShareProgress={workoutSession.shareProgress}
-          canStart={totalExercises > 0}
-          isRestDay={isRestDay}
-        />
-      )}
-
       {/* Workout Type Tabs */}
       <Tabs value={workoutType} onValueChange={(value) => setWorkoutType(value as "home" | "gym")} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 bg-white/90 backdrop-blur-sm h-12 sm:h-14">
+        <TabsList className="grid w-full grid-cols-2 bg-white h-12 border border-gray-200">
           <TabsTrigger 
             value="home" 
-            className="data-[state=active]:bg-fitness-gradient data-[state=active]:text-white text-sm sm:text-base font-medium"
+            className="data-[state=active]:bg-fitness-gradient data-[state=active]:text-white text-gray-700 font-medium"
           >
             <Home className="w-4 h-4 mr-2" />
-            <span className="hidden sm:inline">{t('exercise.homeWorkout')}</span>
-            <span className="sm:hidden">{t('exercise.home')}</span>
+            <span className="hidden sm:inline">{t('exercise.homeWorkout') || 'Home Workout'}</span>
+            <span className="sm:hidden">Home</span>
           </TabsTrigger>
           <TabsTrigger 
             value="gym" 
-            className="data-[state=active]:bg-fitness-gradient data-[state=active]:text-white text-sm sm:text-base font-medium"
+            className="data-[state=active]:bg-fitness-gradient data-[state=active]:text-white text-gray-700 font-medium"
           >
             <Building2 className="w-4 h-4 mr-2" />
-            <span className="hidden sm:inline">{t('exercise.gymWorkout')}</span>
-            <span className="sm:hidden">{t('exercise.gym')}</span>
+            <span className="hidden sm:inline">{t('exercise.gymWorkout') || 'Gym Workout'}</span>
+            <span className="sm:hidden">Gym</span>
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="home" className="mt-4 sm:mt-6">
+        <TabsContent value="home" className="mt-6">
           {currentProgram && currentProgram.workout_type === "home" ? (
-            <div className="space-y-4 sm:space-y-6">
+            <div className="space-y-6">
+              {/* Quick Actions */}
+              <ExerciseQuickActions
+                isWorkoutActive={workoutSession.isActive}
+                onStartWorkout={handleStartWorkout}
+                onPauseWorkout={workoutSession.pauseSession}
+                onRestartWorkout={workoutSession.resetSession}
+                onShareProgress={workoutSession.shareProgress}
+                canStart={totalExercises > 0}
+                isRestDay={isRestDay}
+              />
+
               {/* Mobile Layout - Stack everything */}
-              <div className="block lg:hidden space-y-4">
+              <div className="block xl:hidden space-y-6">
                 <CompactWorkoutSummary
                   todaysWorkouts={todaysWorkouts}
                   currentProgram={currentProgram}
@@ -179,9 +177,9 @@ export const ExerciseProgramPageContent = ({
               </div>
 
               {/* Desktop Layout - Grid with sidebar */}
-              <div className="hidden lg:grid lg:grid-cols-4 gap-6">
+              <div className="hidden xl:grid xl:grid-cols-5 gap-6">
                 {/* Main Content */}
-                <div className="lg:col-span-3 space-y-4">
+                <div className="xl:col-span-3 space-y-6">
                   <CompactWorkoutSummary
                     todaysWorkouts={todaysWorkouts}
                     currentProgram={currentProgram}
@@ -203,7 +201,7 @@ export const ExerciseProgramPageContent = ({
                 </div>
 
                 {/* Sidebar */}
-                <div className="space-y-4">
+                <div className="xl:col-span-2 space-y-6">
                   <ExerciseProgressTracker
                     currentProgram={currentProgram}
                     selectedDay={selectedDayNumber}
@@ -228,11 +226,22 @@ export const ExerciseProgramPageContent = ({
           )}
         </TabsContent>
 
-        <TabsContent value="gym" className="mt-4 sm:mt-6">
+        <TabsContent value="gym" className="mt-6">
           {currentProgram && currentProgram.workout_type === "gym" ? (
-            <div className="space-y-4 sm:space-y-6">
+            <div className="space-y-6">
+              {/* Quick Actions */}
+              <ExerciseQuickActions
+                isWorkoutActive={workoutSession.isActive}
+                onStartWorkout={handleStartWorkout}
+                onPauseWorkout={workoutSession.pauseSession}
+                onRestartWorkout={workoutSession.resetSession}
+                onShareProgress={workoutSession.shareProgress}
+                canStart={totalExercises > 0}
+                isRestDay={isRestDay}
+              />
+
               {/* Mobile Layout - Stack everything */}
-              <div className="block lg:hidden space-y-4">
+              <div className="block xl:hidden space-y-6">
                 <CompactWorkoutSummary
                   todaysWorkouts={todaysWorkouts}
                   currentProgram={currentProgram}
@@ -267,9 +276,9 @@ export const ExerciseProgramPageContent = ({
               </div>
 
               {/* Desktop Layout - Grid with sidebar */}
-              <div className="hidden lg:grid lg:grid-cols-4 gap-6">
+              <div className="hidden xl:grid xl:grid-cols-5 gap-6">
                 {/* Main Content */}
-                <div className="lg:col-span-3 space-y-4">
+                <div className="xl:col-span-3 space-y-6">
                   <CompactWorkoutSummary
                     todaysWorkouts={todaysWorkouts}
                     currentProgram={currentProgram}
@@ -291,7 +300,7 @@ export const ExerciseProgramPageContent = ({
                 </div>
 
                 {/* Sidebar */}
-                <div className="space-y-4">
+                <div className="xl:col-span-2 space-y-6">
                   <ExerciseProgressTracker
                     currentProgram={currentProgram}
                     selectedDay={selectedDayNumber}

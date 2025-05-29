@@ -27,26 +27,25 @@ export const ExerciseQuickActions = ({
 
   if (isRestDay) {
     return (
-      <Card className="p-4 bg-white/90 backdrop-blur-sm">
-        <div className="grid grid-cols-2 gap-3">
+      <Card className="p-4 bg-white border-gray-200 shadow-sm">
+        <h3 className="text-sm font-medium text-gray-700 mb-3">Rest Day Activities</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Button 
             variant="outline" 
-            className="h-12 text-orange-700 border-orange-200 hover:bg-orange-50"
+            className="h-11 text-orange-700 border-orange-200 hover:bg-orange-50"
             onClick={() => window.open('https://www.youtube.com/results?search_query=stretching+routine', '_blank')}
           >
             <Youtube className="w-4 h-4 mr-2" />
-            <span className="hidden sm:inline">{t('exercise.watchStretching')}</span>
-            <span className="sm:hidden">Stretch</span>
+            Stretching Videos
           </Button>
           
           <Button 
             variant="outline"
-            className="h-12 text-purple-700 border-purple-200 hover:bg-purple-50"
+            className="h-11 text-purple-700 border-purple-200 hover:bg-purple-50"
             onClick={() => window.open('https://www.youtube.com/results?search_query=meditation+relaxation', '_blank')}
           >
             <BookOpen className="w-4 h-4 mr-2" />
-            <span className="hidden sm:inline">{t('exercise.meditation')}</span>
-            <span className="sm:hidden">Relax</span>
+            Meditation
           </Button>
         </div>
       </Card>
@@ -54,58 +53,54 @@ export const ExerciseQuickActions = ({
   }
 
   return (
-    <Card className="p-4 bg-white/90 backdrop-blur-sm">
+    <Card className="p-4 bg-white border-gray-200 shadow-sm">
+      <h3 className="text-sm font-medium text-gray-700 mb-3">Workout Actions</h3>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {!isWorkoutActive ? (
           <Button 
             onClick={onStartWorkout}
             disabled={!canStart}
-            className="h-12 bg-fitness-gradient hover:opacity-90 text-white col-span-2 sm:col-span-1"
+            className="h-11 bg-fitness-gradient hover:opacity-90 text-white col-span-2 sm:col-span-1"
           >
             <Play className="w-4 h-4 mr-2" />
-            <span className="hidden sm:inline">{t('exercise.startWorkout')}</span>
-            <span className="sm:hidden">Start</span>
+            Start Workout
           </Button>
         ) : (
           <Button 
             onClick={onPauseWorkout}
             variant="outline"
-            className="h-12 col-span-2 sm:col-span-1"
+            className="h-11 col-span-2 sm:col-span-1 border-orange-200 text-orange-700 hover:bg-orange-50"
           >
             <Pause className="w-4 h-4 mr-2" />
-            <span className="hidden sm:inline">{t('exercise.pauseWorkout')}</span>
-            <span className="sm:hidden">Pause</span>
+            Pause
           </Button>
         )}
 
         <Button 
           onClick={onRestartWorkout}
           variant="outline"
-          className="h-12"
+          className="h-11 border-gray-200 hover:bg-gray-50"
         >
           <RotateCcw className="w-4 h-4 mr-2" />
-          <span className="hidden sm:inline">{t('exercise.restart')}</span>
-          <span className="sm:hidden">Reset</span>
+          Reset
         </Button>
 
         <Button 
           onClick={onShareProgress}
           variant="outline"
-          className="h-12"
+          className="h-11 border-blue-200 text-blue-700 hover:bg-blue-50"
         >
           <Share2 className="w-4 h-4 mr-2" />
-          <span className="hidden sm:inline">{t('exercise.share')}</span>
-          <span className="sm:hidden">Share</span>
+          Share
         </Button>
 
         <Button 
           variant="outline"
-          className="h-12"
+          className="h-11 border-red-200 text-red-700 hover:bg-red-50"
           onClick={() => window.open('https://www.youtube.com/results?search_query=workout+tutorial', '_blank')}
         >
           <Youtube className="w-4 h-4 mr-2" />
-          <span className="hidden sm:inline">{t('exercise.tutorials')}</span>
-          <span className="sm:hidden">Videos</span>
+          Tutorials
         </Button>
       </div>
     </Card>
