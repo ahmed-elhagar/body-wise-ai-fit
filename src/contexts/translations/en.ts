@@ -1,3 +1,4 @@
+
 export const enTranslations = {
   // Navigation and general
   'home': 'Home',
@@ -40,7 +41,6 @@ export const enTranslations = {
   'mealPlan.weeksAgo': 'weeks ago',
   'mealPlan.weeksAhead': 'weeks ahead',
   'mealPlan.previousWeek': 'Previous',
-  'mealPlan.nextWeek': 'Next',
   'mealPlan.shoppingList': 'Shopping List',
   'mealPlan.addSnack': 'Add Snack',
   'mealPlan.cal': 'cal',

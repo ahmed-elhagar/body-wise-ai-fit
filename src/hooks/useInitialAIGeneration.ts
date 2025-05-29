@@ -91,6 +91,7 @@ export const useInitialAIGeneration = () => {
         cuisine: profile.nationality || "International",
         maxPrepTime: "30",
         mealTypes: "5",
+        includeSnacks: true,
         dietaryGoal: profile.fitness_goal || "maintenance",
         allergies: profile.allergies || [],
         restrictions: profile.dietary_restrictions || []

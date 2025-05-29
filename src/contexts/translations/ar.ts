@@ -1,3 +1,4 @@
+
 export const arTranslations = {
   // Navigation and general
   'home': 'الرئيسية',
@@ -40,7 +41,6 @@ export const arTranslations = {
   'mealPlan.weeksAgo': 'أسابيع مضت',
   'mealPlan.weeksAhead': 'أسابيع قادمة',
   'mealPlan.previousWeek': 'السابق',
-  'mealPlan.nextWeek': 'التالي',
   'mealPlan.shoppingList': 'قائمة التسوق',
   'mealPlan.addSnack': 'إضافة وجبة خفيفة',
   'mealPlan.cal': 'سعرة',
