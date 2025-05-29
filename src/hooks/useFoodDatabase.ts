@@ -36,23 +36,59 @@ export const useFoodDatabase = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  // Search food items using the updated function
+  // Enhanced search that looks in both food_items and food_database tables
   const searchFoodItems = (searchTerm: string, category?: string) => {
     return useQuery({
-      queryKey: ['food-search', searchTerm, category],
+      queryKey: ['comprehensive-food-search', searchTerm, category],
       queryFn: async () => {
         if (!searchTerm || searchTerm.length < 2) return [];
         
-        const { data, error } = await supabase.rpc('search_food_items', {
+        // Search in food_items table (where AI-generated meals are stored)
+        const { data: foodItemsData, error: foodItemsError } = await supabase
+          .from('food_items')
+          .select('*')
+          .ilike('name', `%${searchTerm}%`)
+          .order('confidence_score', { ascending: false })
+          .limit(15);
+
+        if (foodItemsError) {
+          console.error('Food items search error:', foodItemsError);
+        }
+
+        // Search in food_database table using the RPC function
+        const { data: rpcData, error: rpcError } = await supabase.rpc('search_food_items', {
           search_term: searchTerm,
           category_filter: category || null,
-          limit_count: 20
+          limit_count: 10
         });
 
-        if (error) {
-          console.error('Search error:', error);
-          throw error;
+        if (rpcError) {
+          console.error('RPC search error:', rpcError);
         }
+
+        // Combine results
+        const combinedResults: FoodItem[] = [];
+
+        // Add food_items results
+        if (foodItemsData) {
+          combinedResults.push(...foodItemsData.map(item => ({
+            ...item,
+            similarity_score: 1.0 // High score for direct matches
+          } as FoodItem)));
+        }
+
+        // Add RPC results if they exist
+        if (rpcData) {
+          combinedResults.push(...rpcData.map(item => ({
+            ...item,
+            similarity_score: item.similarity_score || 0.8
+          } as FoodItem)));
+        }
+
+        // Remove duplicates based on name (case insensitive)
+        const uniqueResults = combinedResults.filter((item, index, self) => 
+          index === self.findIndex(t => t.name.toLowerCase() === item.name.toLowerCase())
+        );
 
         // Log search history
         if (user?.id && searchTerm.length > 2) {
@@ -62,11 +98,15 @@ export const useFoodDatabase = () => {
               user_id: user.id,
               search_term: searchTerm,
               search_type: 'text',
-              results_count: data?.length || 0
+              results_count: uniqueResults.length
             });
         }
 
-        return (data || []) as FoodItem[];
+        // Sort by similarity score and verified status
+        return uniqueResults.sort((a, b) => {
+          if (a.verified !== b.verified) return a.verified ? -1 : 1;
+          return (b.similarity_score || 0) - (a.similarity_score || 0);
+        });
       },
       enabled: searchTerm.length >= 2,
     });
