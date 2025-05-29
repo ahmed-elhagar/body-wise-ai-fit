@@ -14,25 +14,29 @@ export const useWorkoutSession = () => {
     setSessionStarted(true);
     timer.start();
     toast({
-      title: "Workout Started!",
+      title: "Workout Started! 💪",
       description: "Good luck with your workout session!",
     });
   }, [timer]);
 
   const pauseSession = useCallback(() => {
-    timer.pause();
-    toast({
-      title: "Workout Paused",
-      description: "Take a break and resume when ready.",
-    });
+    if (timer.isActive && !timer.isPaused) {
+      timer.pause();
+      toast({
+        title: "Workout Paused ⏸️",
+        description: "Take a break and resume when ready.",
+      });
+    }
   }, [timer]);
 
   const resumeSession = useCallback(() => {
-    timer.resume();
-    toast({
-      title: "Workout Resumed",
-      description: "Let's continue with your workout!",
-    });
+    if (timer.isActive && timer.isPaused) {
+      timer.resume();
+      toast({
+        title: "Workout Resumed ▶️",
+        description: "Let's continue with your workout!",
+      });
+    }
   }, [timer]);
 
   const resetSession = useCallback(() => {
@@ -41,7 +45,7 @@ export const useWorkoutSession = () => {
     setCompletedAt({});
     timer.reset();
     toast({
-      title: "Workout Reset",
+      title: "Workout Reset 🔄",
       description: "Ready to start a fresh workout session.",
     });
   }, [timer]);
@@ -81,19 +85,17 @@ export const useWorkoutSession = () => {
           title: 'Workout Complete!',
           text: shareText,
         }).catch(() => {
-          // Fallback to clipboard if share fails
           navigator.clipboard.writeText(shareText).then(() => {
             toast({
-              title: "Progress Copied!",
+              title: "Progress Copied! 📋",
               description: "Workout progress copied to clipboard.",
             });
           });
         });
       } else {
-        // Fallback to clipboard
         navigator.clipboard.writeText(shareText).then(() => {
           toast({
-            title: "Progress Copied!",
+            title: "Progress Copied! 📋",
             description: "Workout progress copied to clipboard.",
           });
         });
@@ -101,7 +103,7 @@ export const useWorkoutSession = () => {
     } catch (error) {
       console.log('Share not available, showing toast instead');
       toast({
-        title: "Workout Complete!",
+        title: "Workout Complete! 🎉",
         description: `Great job! You completed your workout in ${totalTime}`,
       });
     }

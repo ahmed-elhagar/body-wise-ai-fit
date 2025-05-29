@@ -1,26 +1,30 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 export const useWorkoutTimer = () => {
   const [isActive, setIsActive] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout | null = null;
-    
     if (isActive && !isPaused) {
-      interval = setInterval(() => {
+      intervalRef.current = setInterval(() => {
         setSeconds(seconds => seconds + 1);
       }, 1000);
-    } else if (!isActive && seconds !== 0) {
-      if (interval) clearInterval(interval);
+    } else {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
     }
     
     return () => {
-      if (interval) clearInterval(interval);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
     };
-  }, [isActive, isPaused, seconds]);
+  }, [isActive, isPaused]);
 
   const start = useCallback(() => {
     setIsActive(true);
@@ -39,6 +43,10 @@ export const useWorkoutTimer = () => {
     setSeconds(0);
     setIsActive(false);
     setIsPaused(false);
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
   }, []);
 
   const stop = useCallback(() => {
@@ -46,11 +54,12 @@ export const useWorkoutTimer = () => {
     setIsPaused(false);
   }, []);
 
-  const formatTime = useCallback((totalSeconds: number) => {
-    const mins = Math.floor(totalSeconds / 60);
-    const secs = totalSeconds % 60;
+  const formatTime = useCallback((totalSeconds?: number) => {
+    const timeToFormat = totalSeconds ?? seconds;
+    const mins = Math.floor(timeToFormat / 60);
+    const secs = timeToFormat % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  }, []);
+  }, [seconds]);
 
   return {
     seconds,
@@ -61,6 +70,6 @@ export const useWorkoutTimer = () => {
     resume,
     reset,
     stop,
-    formatTime: () => formatTime(seconds)
+    formatTime
   };
 };

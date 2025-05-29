@@ -1,4 +1,3 @@
-
 import { ExerciseListEnhanced } from "./ExerciseListEnhanced";
 import { ExerciseProgramSelector } from "./ExerciseProgramSelector";
 import { AIExerciseDialog } from "./AIExerciseDialog";
@@ -92,7 +91,7 @@ export const ExerciseProgramPageContent = ({
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="max-w-7xl mx-auto space-y-4">
       {/* Enhanced Navigation - Week and Day Selection */}
       <ExerciseEnhancedNavigation
         currentWeekOffset={currentWeekOffset}
@@ -127,70 +126,27 @@ export const ExerciseProgramPageContent = ({
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="home" className="mt-6">
+        <TabsContent value="home" className="mt-4">
           {currentProgram && currentProgram.workout_type === "home" ? (
-            <div className="space-y-6">
-              {/* Quick Actions */}
+            <div className="space-y-4">
+              {/* Quick Actions with Timer - Always Visible */}
               <ExerciseQuickActions
                 isWorkoutActive={workoutSession.isActive}
+                isPaused={workoutSession.isPaused}
+                totalTime={workoutSession.totalTime}
                 onStartWorkout={handleStartWorkout}
                 onPauseWorkout={workoutSession.pauseSession}
+                onResumeWorkout={workoutSession.resumeSession}
                 onRestartWorkout={workoutSession.resetSession}
                 onShareProgress={workoutSession.shareProgress}
                 canStart={totalExercises > 0}
                 isRestDay={isRestDay}
               />
 
-              {/* Mobile Layout - Stack everything */}
-              <div className="block xl:hidden space-y-6">
-                <CompactWorkoutSummary
-                  todaysWorkouts={todaysWorkouts}
-                  currentProgram={currentProgram}
-                  completedExercises={completedExercises}
-                  totalExercises={totalExercises}
-                  progressPercentage={progressPercentage}
-                  workoutType="home"
-                  selectedDay={selectedDayNumber}
-                  isRestDay={isRestDay}
-                />
-
-                <ExerciseProgressTracker
-                  currentProgram={currentProgram}
-                  selectedDay={selectedDayNumber}
-                  completedExercises={completedExercises}
-                  totalExercises={totalExercises}
-                />
-
-                <ExerciseMotivationCard
-                  completedExercises={completedExercises}
-                  totalExercises={totalExercises}
-                  isRestDay={isRestDay}
-                />
-
-                <ExerciseListEnhanced 
-                  exercises={todaysExercises}
-                  isLoading={false}
-                  onExerciseComplete={handleCompleteExercise}
-                  onExerciseProgressUpdate={handleExerciseProgressUpdate}
-                  isRestDay={isRestDay}
-                />
-              </div>
-
-              {/* Desktop Layout - Grid with sidebar */}
-              <div className="hidden xl:grid xl:grid-cols-5 gap-6">
-                {/* Main Content */}
-                <div className="xl:col-span-3 space-y-6">
-                  <CompactWorkoutSummary
-                    todaysWorkouts={todaysWorkouts}
-                    currentProgram={currentProgram}
-                    completedExercises={completedExercises}
-                    totalExercises={totalExercises}
-                    progressPercentage={progressPercentage}
-                    workoutType="home"
-                    selectedDay={selectedDayNumber}
-                    isRestDay={isRestDay}
-                  />
-
+              {/* Optimized Layout - Less Scrolling */}
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                {/* Main Exercise List - Takes More Space */}
+                <div className="lg:col-span-3">
                   <ExerciseListEnhanced 
                     exercises={todaysExercises}
                     isLoading={false}
@@ -200,15 +156,28 @@ export const ExerciseProgramPageContent = ({
                   />
                 </div>
 
-                {/* Sidebar */}
-                <div className="xl:col-span-2 space-y-6">
-                  <ExerciseProgressTracker
-                    currentProgram={currentProgram}
-                    selectedDay={selectedDayNumber}
-                    completedExercises={completedExercises}
-                    totalExercises={totalExercises}
-                  />
+                {/* Compact Sidebar */}
+                <div className="lg:col-span-1 space-y-4">
+                  {/* Compact Workout Summary */}
+                  <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                    <div className="text-center space-y-2">
+                      <h3 className="font-semibold text-gray-800">Today's Progress</h3>
+                      <div className="text-2xl font-bold text-blue-600">
+                        {completedExercises}/{totalExercises}
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-blue-500 rounded-full h-2 transition-all duration-500"
+                          style={{ width: `${progressPercentage}%` }}
+                        />
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        {Math.round(progressPercentage)}% completed
+                      </div>
+                    </div>
+                  </div>
 
+                  {/* Compact Motivation */}
                   <ExerciseMotivationCard
                     completedExercises={completedExercises}
                     totalExercises={totalExercises}
@@ -226,70 +195,27 @@ export const ExerciseProgramPageContent = ({
           )}
         </TabsContent>
 
-        <TabsContent value="gym" className="mt-6">
+        <TabsContent value="gym" className="mt-4">
           {currentProgram && currentProgram.workout_type === "gym" ? (
-            <div className="space-y-6">
-              {/* Quick Actions */}
+            <div className="space-y-4">
+              {/* Quick Actions with Timer - Always Visible */}
               <ExerciseQuickActions
                 isWorkoutActive={workoutSession.isActive}
+                isPaused={workoutSession.isPaused}
+                totalTime={workoutSession.totalTime}
                 onStartWorkout={handleStartWorkout}
                 onPauseWorkout={workoutSession.pauseSession}
+                onResumeWorkout={workoutSession.resumeSession}
                 onRestartWorkout={workoutSession.resetSession}
                 onShareProgress={workoutSession.shareProgress}
                 canStart={totalExercises > 0}
                 isRestDay={isRestDay}
               />
 
-              {/* Mobile Layout - Stack everything */}
-              <div className="block xl:hidden space-y-6">
-                <CompactWorkoutSummary
-                  todaysWorkouts={todaysWorkouts}
-                  currentProgram={currentProgram}
-                  completedExercises={completedExercises}
-                  totalExercises={totalExercises}
-                  progressPercentage={progressPercentage}
-                  workoutType="gym"
-                  selectedDay={selectedDayNumber}
-                  isRestDay={isRestDay}
-                />
-
-                <ExerciseProgressTracker
-                  currentProgram={currentProgram}
-                  selectedDay={selectedDayNumber}
-                  completedExercises={completedExercises}
-                  totalExercises={totalExercises}
-                />
-
-                <ExerciseMotivationCard
-                  completedExercises={completedExercises}
-                  totalExercises={totalExercises}
-                  isRestDay={isRestDay}
-                />
-
-                <ExerciseListEnhanced 
-                  exercises={todaysExercises}
-                  isLoading={false}
-                  onExerciseComplete={handleCompleteExercise}
-                  onExerciseProgressUpdate={handleExerciseProgressUpdate}
-                  isRestDay={isRestDay}
-                />
-              </div>
-
-              {/* Desktop Layout - Grid with sidebar */}
-              <div className="hidden xl:grid xl:grid-cols-5 gap-6">
-                {/* Main Content */}
-                <div className="xl:col-span-3 space-y-6">
-                  <CompactWorkoutSummary
-                    todaysWorkouts={todaysWorkouts}
-                    currentProgram={currentProgram}
-                    completedExercises={completedExercises}
-                    totalExercises={totalExercises}
-                    progressPercentage={progressPercentage}
-                    workoutType="gym"
-                    selectedDay={selectedDayNumber}
-                    isRestDay={isRestDay}
-                  />
-
+              {/* Optimized Layout - Less Scrolling */}
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                {/* Main Exercise List - Takes More Space */}
+                <div className="lg:col-span-3">
                   <ExerciseListEnhanced 
                     exercises={todaysExercises}
                     isLoading={false}
@@ -299,15 +225,28 @@ export const ExerciseProgramPageContent = ({
                   />
                 </div>
 
-                {/* Sidebar */}
-                <div className="xl:col-span-2 space-y-6">
-                  <ExerciseProgressTracker
-                    currentProgram={currentProgram}
-                    selectedDay={selectedDayNumber}
-                    completedExercises={completedExercises}
-                    totalExercises={totalExercises}
-                  />
+                {/* Compact Sidebar */}
+                <div className="lg:col-span-1 space-y-4">
+                  {/* Compact Workout Summary */}
+                  <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                    <div className="text-center space-y-2">
+                      <h3 className="font-semibold text-gray-800">Today's Progress</h3>
+                      <div className="text-2xl font-bold text-blue-600">
+                        {completedExercises}/{totalExercises}
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-blue-500 rounded-full h-2 transition-all duration-500"
+                          style={{ width: `${progressPercentage}%` }}
+                        />
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        {Math.round(progressPercentage)}% completed
+                      </div>
+                    </div>
+                  </div>
 
+                  {/* Compact Motivation */}
                   <ExerciseMotivationCard
                     completedExercises={completedExercises}
                     totalExercises={totalExercises}
