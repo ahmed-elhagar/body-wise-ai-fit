@@ -1,11 +1,9 @@
 
-import WeeklyNavigation from "@/components/WeeklyNavigation";
-import DaySelector from "@/components/DaySelector";
-import MealPlanActions from "@/components/MealPlanActions";
+import CompactNavigation from "@/components/CompactNavigation";
 import MealPlanContent from "@/components/MealPlanContent";
 import EmptyMealPlan from "@/components/EmptyMealPlan";
 import WeeklyMealPlanView from "@/components/WeeklyMealPlanView";
-import DailySummary from "@/components/DailySummary";
+import ActionSection from "@/components/ActionSection";
 import type { Meal } from "@/types/meal";
 
 interface MealPlanMainContentProps {
@@ -57,41 +55,41 @@ const MealPlanMainContent = ({
   onExchangeMeal
 }: MealPlanMainContentProps) => {
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <WeeklyNavigation
+    <div className="space-y-4">
+      {/* Compact Navigation Section */}
+      <CompactNavigation
         currentWeekOffset={currentWeekOffset}
         onWeekChange={onWeekChange}
         weekStartDate={weekStartDate}
-      />
-
-      {viewMode === 'daily' && (
-        <DaySelector
-          selectedDayNumber={selectedDayNumber}
-          onDaySelect={onDaySelect}
-        />
-      )}
-
-      <MealPlanActions
+        selectedDayNumber={selectedDayNumber}
+        onDaySelect={onDaySelect}
         viewMode={viewMode}
         onViewModeChange={onViewModeChange}
-        onAddSnack={onAddSnack}
-        onShowShoppingList={onShowShoppingList}
-        showAddSnack={viewMode === 'daily' && currentWeekPlan !== null}
-        showShoppingList={currentWeekPlan !== null && (viewMode === 'daily' ? todaysMeals.length > 0 : true)}
       />
 
       {!currentWeekPlan ? (
         <EmptyMealPlan onGenerate={onGenerate} />
-      ) : viewMode === 'weekly' ? (
-        <WeeklyMealPlanView
-          weeklyPlan={currentWeekPlan}
-          onShowRecipe={onShowRecipe}
-          onExchangeMeal={onExchangeMeal}
-        />
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Main Content - Takes 3/4 of the space */}
-          <div className="lg:col-span-3">
+        <>
+          {/* Action Section with Summary and Buttons */}
+          <ActionSection
+            viewMode={viewMode}
+            totalCalories={totalCalories}
+            totalProtein={totalProtein}
+            onShowShoppingList={onShowShoppingList}
+            onAddSnack={onAddSnack}
+            showAddSnack={viewMode === 'daily' && currentWeekPlan !== null}
+            showShoppingList={currentWeekPlan !== null && (viewMode === 'daily' ? todaysMeals.length > 0 : true)}
+          />
+
+          {/* Main Content */}
+          {viewMode === 'weekly' ? (
+            <WeeklyMealPlanView
+              weeklyPlan={currentWeekPlan}
+              onShowRecipe={onShowRecipe}
+              onExchangeMeal={onExchangeMeal}
+            />
+          ) : (
             <MealPlanContent
               selectedDayNumber={selectedDayNumber}
               todaysMeals={todaysMeals}
@@ -101,19 +99,8 @@ const MealPlanMainContent = ({
               onShowRecipe={onShowRecipe}
               onExchangeMeal={onExchangeMeal}
             />
-          </div>
-          
-          {/* Daily Summary Sidebar - Takes 1/4 of the space */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-6">
-              <DailySummary
-                totalCalories={totalCalories}
-                totalProtein={totalProtein}
-                onShowShoppingList={onShowShoppingList}
-              />
-            </div>
-          </div>
-        </div>
+          )}
+        </>
       )}
     </div>
   );
