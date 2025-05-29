@@ -5,6 +5,7 @@ export const mealPlan = {
   weeklyView: "عرض أسبوعي",
   dailyView: "عرض يومي",
   generateMealPlan: "توليد خطة وجبات",
+  generateAIMealPlan: "توليد خطة ذكية",
   regenerateMealPlan: "إعادة توليد الخطة",
   noMealsToday: "لا توجد وجبات مقررة لهذا اليوم.",
   generateNewPlan: "ابدأ بتوليد خطة وجبات جديدة مخصصة لك.",
@@ -73,8 +74,23 @@ export const mealPlan = {
   
   // Missing translations that were showing as mealPlan.xyz
   noMealPlan: "لا توجد خطة وجبات بعد",
+  noActivePlan: "لا توجد خطة وجبات نشطة",
   generateFirstPlan: "لنقم بإنشاء خطة وجباتك الأولى المخصصة",
   aiPowered: "تغذية مخصصة بالذكاء الاصطناعي",
+  personalizedProfile: "بناءً على ملفك الشخصي وتفضيلاتك",
+  
+  // Food database and features
+  foodDatabaseIntegration: "تكامل قاعدة بيانات الطعام",
+  automaticallyPopulates: "ملء تلقائي لمعلومات المكونات",
+  smartNutritionTracking: "تتبع ذكي للتغذية",
+  realTimeCalorieAdjustments: "تعديلات السعرات الحرارية في الوقت الفعلي",
+  culturalCuisineSupport: "دعم المطابخ الثقافية",
+  globalFoodPreferences: "تفضيلات الطعام العالمية والقيود الغذائية",
+  mealPlanningFeatures: "ميزات تخطيط الوجبات",
+  weeklyMealScheduling: "جدولة الوجبات الأسبوعية",
+  shoppingListGeneration: "توليد قائمة التسوق",
+  recipeInstructions: "تعليمات الوصفة",
+  nutritionalAnalysis: "التحليل الغذائي",
   
   mealType: {
     breakfast: "فطور",
@@ -157,7 +173,13 @@ export const mealPlan = {
     personalizedForYou: "مخصصة لك",
     remainingCalories: "السعرات المتبقية",
     perfectFit: "تناسب مثالي",
-    healthyChoice: "خيار صحي"
+    healthyChoice: "خيار صحي",
+    generationSteps: {
+      analyzing: "تحليل احتياجاتك الغذائية...",
+      creating: "إنشاء الوجبة الخفيفة المثالية...",
+      saving: "حفظ في خطة وجباتك...",
+      preparing: "تحضير وجبتك الخفيفة..."
+    }
   },
   mealExchange: {
     title: "تبديل الوجبة",

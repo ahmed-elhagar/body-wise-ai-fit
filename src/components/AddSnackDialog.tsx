@@ -77,20 +77,15 @@ const AddSnackDialog = ({
   const dynamicTargetCalories = getDynamicTargetCalories();
   const remainingCalories = Math.max(0, dynamicTargetCalories - currentDayCalories);
 
-  console.log('🍎 AddSnackDialog - Calorie Analysis:', {
+  console.log('🍎 AddSnackDialog - Enhanced Debug:', {
     currentDayCalories,
     originalTarget: targetDayCalories,
     dynamicTarget: dynamicTargetCalories,
     remainingCalories,
+    weeklyPlanId,
+    selectedDay,
     language,
-    profileData: {
-      weight: profile?.weight,
-      height: profile?.height,
-      age: profile?.age,
-      gender: profile?.gender,
-      activityLevel: profile?.activity_level,
-      fitnessGoal: profile?.fitness_goal
-    }
+    userProfile: !!profile
   });
 
   const handleGenerateAISnack = async () => {
@@ -107,19 +102,21 @@ const AddSnackDialog = ({
     setIsGenerating(true);
     
     try {
+      // Step 1: Analyzing
       setGenerationStep('analyzing');
-      console.log('🍎 Generating AI snack with enhanced params:', {
+      await new Promise(resolve => setTimeout(resolve, 1200));
+      
+      // Step 2: Creating
+      setGenerationStep('creating');
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      console.log('🍎 Calling generate-ai-snack function with:', {
         userProfile: profile,
         day: selectedDay,
         calories: remainingCalories,
         weeklyPlanId,
-        currentDayCalories,
-        targetCalories: dynamicTargetCalories,
         language
       });
-
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setGenerationStep('creating');
 
       const { data, error } = await supabase.functions.invoke('generate-ai-snack', {
         body: {
@@ -127,8 +124,6 @@ const AddSnackDialog = ({
           day: selectedDay,
           calories: remainingCalories,
           weeklyPlanId,
-          currentDayCalories,
-          targetCalories: dynamicTargetCalories,
           language
         }
       });
@@ -139,13 +134,20 @@ const AddSnackDialog = ({
         return;
       }
 
+      // Step 3: Saving
       setGenerationStep('saving');
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 800));
 
       console.log('✅ AI snack generated successfully:', data);
-      toast.success(t('mealPlan.addSnack.success'));
-      onSnackAdded();
-      onClose();
+      
+      if (data?.success) {
+        toast.success(data.message || t('mealPlan.addSnack.success'));
+        onSnackAdded();
+        onClose();
+      } else {
+        console.error('❌ Generation failed:', data?.error);
+        toast.error(data?.error || t('mealPlan.addSnack.error'));
+      }
       
     } catch (error) {
       console.error('❌ Error generating AI snack:', error);

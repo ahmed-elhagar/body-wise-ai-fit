@@ -5,6 +5,7 @@ export const mealPlan = {
   noMealsToday: "No meals planned for today!",
   generateNewPlan: "Generate a new meal plan to get started.",
   generateMealPlan: "Generate Meal Plan",
+  generateAIMealPlan: "Generate AI Meal Plan",
   regenerateMealPlan: "Regenerate Plan",
   shuffleMeals: "Shuffle Meals",
   noMealPlanToShuffle: "No meal plan to shuffle. Generate one first!",
@@ -69,8 +70,23 @@ export const mealPlan = {
   
   // Missing translations that were showing as mealPlan.xyz
   noMealPlan: "No Meal Plan Yet",
+  noActivePlan: "No Active Meal Plan",
   generateFirstPlan: "Let's create your first personalized meal plan",
   aiPowered: "AI-powered personalized nutrition",
+  personalizedProfile: "Based on your profile and preferences",
+  
+  // Food database and features
+  foodDatabaseIntegration: "Food Database Integration",
+  automaticallyPopulates: "Automatically populates ingredient information",
+  smartNutritionTracking: "Smart Nutrition Tracking",
+  realTimeCalorieAdjustments: "Real-time calorie adjustments",
+  culturalCuisineSupport: "Cultural Cuisine Support",
+  globalFoodPreferences: "Global food preferences and dietary restrictions",
+  mealPlanningFeatures: "Meal Planning Features",
+  weeklyMealScheduling: "Weekly meal scheduling",
+  shoppingListGeneration: "Shopping list generation",
+  recipeInstructions: "Recipe instructions",
+  nutritionalAnalysis: "Nutritional analysis",
   
   mealType: {
     breakfast: "Breakfast",
@@ -137,7 +153,13 @@ export const mealPlan = {
     personalizedForYou: "Personalized for you",
     remainingCalories: "Remaining calories",
     perfectFit: "Perfect fit",
-    healthyChoice: "Healthy choice"
+    healthyChoice: "Healthy choice",
+    generationSteps: {
+      analyzing: "Analyzing your nutrition needs...",
+      creating: "Creating the perfect snack...",
+      saving: "Saving to your meal plan...",
+      preparing: "Preparing your snack..."
+    }
   },
   mealExchange: {
     title: "Exchange Meal",
