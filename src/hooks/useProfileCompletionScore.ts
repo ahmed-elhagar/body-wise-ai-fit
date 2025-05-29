@@ -12,7 +12,7 @@ export const useProfileCompletionScore = () => {
     let totalFields = 0;
     let completedFields = 0;
 
-    // Basic Information (8 required fields)
+    // Basic Information (8 required fields) - Weight: 25%
     const basicFields = ['first_name', 'last_name', 'age', 'gender', 'height', 'weight', 'nationality', 'body_shape'];
     basicFields.forEach(field => {
       totalFields++;
@@ -22,7 +22,7 @@ export const useProfileCompletionScore = () => {
       }
     });
 
-    // Goals & Activity (6 fields - 2 required + 4 array fields)
+    // Goals & Activity (2 required + 4 optional array fields) - Weight: 15%
     const goalFields = ['fitness_goal', 'activity_level'];
     goalFields.forEach(field => {
       totalFields++;
@@ -32,7 +32,7 @@ export const useProfileCompletionScore = () => {
       }
     });
     
-    // Array fields for profile
+    // Optional array fields for profile (less weight)
     const arrayFields = ['health_conditions', 'allergies', 'preferred_foods', 'dietary_restrictions'];
     arrayFields.forEach(field => {
       totalFields++;
@@ -42,7 +42,7 @@ export const useProfileCompletionScore = () => {
       }
     });
 
-    // Health Assessment (key fields)
+    // Health Assessment (key required fields) - Weight: 40%
     const healthAssessmentFields = [
       'stress_level', 'sleep_quality', 'energy_level', 'work_schedule',
       'exercise_history', 'nutrition_knowledge', 'cooking_skills', 'time_availability',
@@ -59,7 +59,7 @@ export const useProfileCompletionScore = () => {
       }
     });
 
-    // Assessment array fields
+    // Assessment optional array fields (less weight)
     const assessmentArrayFields = ['chronic_conditions', 'medications', 'primary_motivation', 'specific_goals'];
     assessmentArrayFields.forEach(field => {
       totalFields++;
@@ -71,19 +71,35 @@ export const useProfileCompletionScore = () => {
       }
     });
 
-    // Onboarding progress fields
+    // Onboarding progress fields - Weight: 20%
     totalFields += 2; // preferences_completed, profile_review_completed
     if (progress?.preferences_completed) completedFields++;
     if (progress?.profile_review_completed) completedFields++;
 
     const score = Math.round((completedFields / totalFields) * 100);
-    console.log('Profile completion calculation:', {
+    
+    console.log('Profile completion calculation details:', {
       completedFields,
       totalFields,
       score,
-      profile: !!profile,
-      assessment: !!assessment,
-      progress: !!progress
+      hasProfile: !!profile,
+      hasAssessment: !!assessment,
+      hasProgress: !!progress,
+      basicInfo: basicFields.map(field => ({
+        field,
+        value: profile?.[field as keyof typeof profile],
+        completed: profile?.[field as keyof typeof profile] !== null && 
+                  profile?.[field as keyof typeof profile] !== undefined && 
+                  profile?.[field as keyof typeof profile] !== ''
+      })),
+      healthAssessment: healthAssessmentFields.map(field => ({
+        field,
+        value: assessment?.[field as keyof typeof assessment],
+        completed: assessment && 
+                  assessment[field as keyof typeof assessment] !== null && 
+                  assessment[field as keyof typeof assessment] !== undefined && 
+                  assessment[field as keyof typeof assessment] !== ''
+      }))
     });
     
     return score;

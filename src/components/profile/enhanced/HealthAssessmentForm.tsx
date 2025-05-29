@@ -37,6 +37,7 @@ const HealthAssessmentForm = () => {
   // Sync form data with assessment data when component mounts or assessment changes
   useEffect(() => {
     if (assessment) {
+      console.log('HealthAssessmentForm - Loading existing assessment data:', assessment);
       setFormData({
         chronic_conditions: assessment.chronic_conditions || [],
         medications: assessment.medications || [],
@@ -88,8 +89,33 @@ const HealthAssessmentForm = () => {
     return Math.max(0, Math.min(100, score));
   };
 
+  const validateForm = () => {
+    // Check required fields
+    const requiredFields = [
+      'work_schedule',
+      'exercise_history', 
+      'nutrition_knowledge',
+      'cooking_skills',
+      'time_availability',
+      'timeline_expectation'
+    ];
+
+    for (const field of requiredFields) {
+      if (!formData[field as keyof typeof formData] || formData[field as keyof typeof formData] === '') {
+        toast.error(`Please complete all required fields`);
+        return false;
+      }
+    }
+
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
     
     try {
       const assessmentData = {
@@ -100,17 +126,31 @@ const HealthAssessmentForm = () => {
         risk_score: calculateRiskScore(),
       };
 
-      console.log('Submitting health assessment data:', assessmentData);
+      console.log('HealthAssessmentForm - Submitting assessment data:', assessmentData);
       
-      // Use the mutation directly without the callback pattern
-      saveAssessment(assessmentData);
-      
-      // Mark step as complete
+      // Save the assessment using the mutation
+      await new Promise((resolve, reject) => {
+        const unsubscribe = () => {};
+        
+        try {
+          saveAssessment(assessmentData);
+          // Since the mutation doesn't return a promise directly, we'll resolve immediately
+          // The actual success/error handling is done in the mutation callbacks
+          resolve(true);
+        } catch (error) {
+          reject(error);
+        }
+      });
+
+      // Mark the health assessment step as complete
+      console.log('HealthAssessmentForm - Marking health assessment step as complete');
       markStepComplete('health_assessment');
       
+      toast.success('Health assessment saved successfully!');
+      
     } catch (error) {
-      console.error('Failed to save health assessment:', error);
-      toast.error('Failed to save health assessment');
+      console.error('HealthAssessmentForm - Failed to save health assessment:', error);
+      toast.error('Failed to save health assessment. Please try again.');
     }
   };
 

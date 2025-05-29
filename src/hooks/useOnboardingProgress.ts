@@ -53,6 +53,8 @@ export const useOnboardingProgress = () => {
     mutationFn: async (progressData: Partial<OnboardingProgress>) => {
       if (!user?.id) throw new Error('No user ID');
 
+      console.log('useOnboardingProgress - Updating progress with data:', progressData);
+
       // First check if record exists
       const { data: existing } = await supabase
         .from('onboarding_progress')
@@ -73,6 +75,7 @@ export const useOnboardingProgress = () => {
           .single();
 
         if (error) throw error;
+        console.log('useOnboardingProgress - Updated existing progress:', data);
         return data;
       } else {
         // Create new record with defaults
@@ -96,6 +99,7 @@ export const useOnboardingProgress = () => {
           .single();
 
         if (error) throw error;
+        console.log('useOnboardingProgress - Created new progress:', data);
         return data;
       }
     },
@@ -105,11 +109,13 @@ export const useOnboardingProgress = () => {
     },
     onError: (error) => {
       console.error('Error updating onboarding progress:', error);
-      // Don't show error toast for progress updates as they're not critical
+      toast.error('Failed to update progress');
     },
   });
 
-  const markStepComplete = (step: string) => {
+  const markStepComplete = async (step: string) => {
+    console.log('useOnboardingProgress - Marking step complete:', step);
+    
     const stepData: any = {};
     stepData[`${step}_completed`] = true;
     stepData[`${step}_completed_at`] = new Date().toISOString();
@@ -127,7 +133,15 @@ export const useOnboardingProgress = () => {
     stepData.completion_percentage = Math.round(((currentCompletedSteps + 1) / totalSteps) * 100);
     stepData.current_step = Math.min(currentCompletedSteps + 2, totalSteps);
     
-    updateProgressMutation.mutate(stepData);
+    console.log('useOnboardingProgress - Step data to save:', stepData);
+    
+    try {
+      await updateProgressMutation.mutateAsync(stepData);
+      console.log('useOnboardingProgress - Step marked complete successfully:', step);
+    } catch (error) {
+      console.error('useOnboardingProgress - Failed to mark step complete:', error);
+      throw error;
+    }
   };
 
   return {
