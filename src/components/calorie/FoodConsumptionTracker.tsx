@@ -13,7 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 const FoodConsumptionTracker = () => {
   const { user } = useAuth();
   const { logConsumption, isLoggingConsumption } = useFoodDatabase();
-  const [selectedMealType, setSelectedMealType] = useState<string>('');
+  const [selectedMealType, setSelectedMealType] = useState<string>('all');
 
   // Get today's consumption log
   const { data: todaysConsumption, isLoading } = useQuery({
@@ -53,7 +53,7 @@ const FoodConsumptionTracker = () => {
   });
 
   const mealTypes = [
-    { value: '', label: 'All Meals' },
+    { value: 'all', label: 'All Meals' },
     { value: 'breakfast', label: 'Breakfast' },
     { value: 'lunch', label: 'Lunch' },
     { value: 'dinner', label: 'Dinner' },
@@ -73,7 +73,7 @@ const FoodConsumptionTracker = () => {
 
   // Filter by meal type
   const filteredConsumption = todaysConsumption?.filter(item => 
-    !selectedMealType || item.meal_type === selectedMealType
+    selectedMealType === 'all' || item.meal_type === selectedMealType
   ) || [];
 
   // Goals (these could come from user profile)
@@ -214,7 +214,7 @@ const FoodConsumptionTracker = () => {
           <div className="text-center py-8">
             <Plus className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-600 mb-2">
-              {selectedMealType ? `No ${selectedMealType} items logged` : 'No food logged today'}
+              {selectedMealType !== 'all' ? `No ${selectedMealType} items logged` : 'No food logged today'}
             </p>
             <p className="text-sm text-gray-500">
               Use the search above to find and log your meals

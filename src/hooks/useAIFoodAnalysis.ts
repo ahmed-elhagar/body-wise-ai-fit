@@ -31,8 +31,10 @@ export const useAIFoodAnalysis = () => {
       });
 
       if (creditError) throw creditError;
-      if (!creditCheck?.success) {
-        throw new Error(creditCheck?.error || 'AI generation limit reached');
+      
+      const creditResult = creditCheck as any;
+      if (!creditResult?.success) {
+        throw new Error(creditResult?.error || 'AI generation limit reached');
       }
 
       const imageBase64 = await convertFileToBase64(file);
@@ -46,7 +48,7 @@ export const useAIFoodAnalysis = () => {
 
         // Complete the AI generation log with success
         await supabase.rpc('complete_ai_generation', {
-          log_id_param: creditCheck.log_id,
+          log_id_param: creditResult.log_id,
           response_data_param: data.analysis
         });
 
@@ -84,12 +86,12 @@ export const useAIFoodAnalysis = () => {
 
         return {
           ...data.analysis,
-          remainingCredits: creditCheck.remaining - 1
+          remainingCredits: (creditResult.remaining || 0) - 1
         };
       } catch (error) {
         // Mark generation as failed
         await supabase.rpc('complete_ai_generation', {
-          log_id_param: creditCheck.log_id,
+          log_id_param: creditResult.log_id,
           error_message_param: error instanceof Error ? error.message : 'Analysis failed'
         });
         throw error;

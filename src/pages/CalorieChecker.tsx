@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Camera, Search, Heart, BarChart3, Plus } from "lucide-react";
+import { ArrowLeft, Camera, Search, Heart, BarChart3, Plus, Loader2 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useLanguage } from "@/contexts/LanguageContext";
 import FoodPhotoAnalyzer from "@/components/calorie/FoodPhotoAnalyzer";
