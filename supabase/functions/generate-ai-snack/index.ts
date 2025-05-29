@@ -15,7 +15,7 @@ serve(async (req) => {
   try {
     const { userProfile, day, calories, weeklyPlanId, language = 'en' } = await req.json();
     
-    console.log('Generate AI Snack - Request data:', { 
+    console.log('🍎 Generate AI Snack - Request data:', { 
       userProfile: userProfile ? 'provided' : 'missing',
       day, 
       calories, 
@@ -119,11 +119,11 @@ serve(async (req) => {
     const carbs = Math.round((targetCalories * 0.50) / 4); // 50% from carbs  
     const fat = Math.round((targetCalories * 0.30) / 9); // 30% from fat
 
-    // Create the snack object with proper structure
+    // Create the snack object with proper structure - FIXED meal_type to 'snack'
     const snackData = {
       weekly_plan_id: weeklyPlanId,
       day_number: day,
-      meal_type: 'snack',
+      meal_type: 'snack', // This is now allowed due to the updated constraint
       name: selectedSnack.name,
       calories: targetCalories,
       protein: protein,
@@ -137,7 +137,7 @@ serve(async (req) => {
       instructions: selectedSnack.instructions
     };
 
-    console.log('Saving snack to database:', snackData);
+    console.log('🍎 Saving snack to database:', snackData);
 
     // Save to database
     const { data: savedSnack, error: dbError } = await supabase
@@ -147,7 +147,7 @@ serve(async (req) => {
       .single();
 
     if (dbError) {
-      console.error('Database error:', dbError);
+      console.error('❌ Database error:', dbError);
       return new Response(
         JSON.stringify({ 
           error: isArabic ? 'خطأ في حفظ الوجبة الخفيفة' : 'Failed to save snack',
@@ -158,7 +158,7 @@ serve(async (req) => {
       );
     }
 
-    console.log('Snack saved successfully:', savedSnack);
+    console.log('✅ Snack saved successfully:', savedSnack);
 
     const successMessage = isArabic ? 'تم إضافة الوجبة الخفيفة بنجاح!' : 'Snack added successfully!';
 
@@ -172,7 +172,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Generate AI Snack - Error:', error);
+    console.error('❌ Generate AI Snack - Error:', error);
     
     return new Response(
       JSON.stringify({ 

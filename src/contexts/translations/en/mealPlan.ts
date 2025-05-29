@@ -1,4 +1,3 @@
-
 export const mealPlan = {
   title: "Meal Plan",
   description: "Your personalized meal plan for the week",
@@ -134,31 +133,26 @@ export const mealPlan = {
     },
   },
   addSnack: {
-    title: "Add Healthy Snack",
-    description: "Generate a personalized snack based on your remaining calories",
-    caloriesLeft: "calories left for today",
-    generateSnack: "Generate AI Snack",
+    title: "Add Smart Snack",
+    description: "AI-powered healthy snack recommendations",
+    remainingCalories: "Daily Progress",
+    caloriesLeft: "calories left",
+    caloriesAvailable: "calories available for snack",
+    generateSnack: "Generate Perfect Snack",
+    generateAISnack: "Generate AI Snack",
+    perfectFit: "Get a personalized snack that fits your remaining calories",
+    generating: "Creating Your Perfect Snack",
+    success: "Snack added successfully to your meal plan!",
+    error: "Failed to generate snack. Please try again.",
     cancel: "Cancel",
-    generating: "Generating your snack...",
-    analyzing: "Analyzing your nutrition needs",
-    creating: "Creating the perfect snack",
-    saving: "Saving to your meal plan",
-    preparing: "Preparing your snack...",
-    success: "Snack added successfully!",
-    error: "Failed to generate snack",
-    notEnoughCalories: "Not enough calories remaining for a snack",
-    targetReached: "Daily calorie target reached!",
-    targetReachedDesc: "You've reached your daily calorie goal. Great job!",
-    smartSnack: "Smart Snack",
-    personalizedForYou: "Personalized for you",
-    remainingCalories: "Remaining calories",
-    perfectFit: "Perfect fit",
-    healthyChoice: "Healthy choice",
+    targetReached: "Daily Target Reached!",
+    targetReachedDesc: "Great job! You've reached your daily calorie goal.",
+    notEnoughCalories: "Less than 50 calories remaining for a meaningful snack",
     generationSteps: {
-      analyzing: "Analyzing your nutrition needs...",
-      creating: "Creating the perfect snack...",
+      analyzing: "Analyzing your nutritional needs...",
+      creating: "Creating personalized snack...",
       saving: "Saving to your meal plan...",
-      preparing: "Preparing your snack..."
+      preparing: "Finalizing your snack..."
     }
   },
   mealExchange: {

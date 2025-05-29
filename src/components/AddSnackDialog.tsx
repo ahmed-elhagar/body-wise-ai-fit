@@ -143,13 +143,16 @@ const AddSnackDialog = ({
       if (data?.success) {
         toast.success(data.message || t('mealPlan.addSnack.success'));
         
-        // Close dialog and refresh data
+        // Close dialog immediately and refresh data
         onClose();
         
-        // Wait a bit then trigger refresh
+        // Trigger immediate refresh
+        onSnackAdded();
+        
+        // Force a hard refresh after a short delay to ensure data is updated
         setTimeout(() => {
-          onSnackAdded();
-        }, 500);
+          window.location.reload();
+        }, 1000);
       } else {
         console.error('❌ Generation failed:', data?.error);
         toast.error(data?.error || t('mealPlan.addSnack.error'));
