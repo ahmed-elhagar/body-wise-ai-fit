@@ -29,9 +29,10 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    console.log('=== OPTIMIZED MEAL PLAN GENERATION START ===');
+    console.log('=== MEAL PLAN GENERATION DEBUG START ===');
     console.log('User Profile:', JSON.stringify(userProfile, null, 2));
     console.log('Preferences:', JSON.stringify(preferences, null, 2));
+    console.log('Week Offset from request:', preferences?.weekOffset || 0);
 
     // Check generations and get profile data
     const profileData = await checkAndDecrementGenerations(userProfile);
@@ -40,7 +41,7 @@ serve(async (req) => {
     const dailyCalories = calculateDailyCalories(userProfile);
     console.log('Calculated daily calories:', dailyCalories);
 
-    // CRITICAL FIX: Get includeSnacks from preferences, with proper default
+    // Get includeSnacks from preferences
     const includeSnacks = preferences?.includeSnacks !== false && preferences?.includeSnacks !== 'false';
     const mealsPerDay = includeSnacks ? 5 : 3;
     const totalMeals = mealsPerDay * 7;
@@ -48,12 +49,11 @@ serve(async (req) => {
     console.log(`🍽️ GENERATION CONFIG: includeSnacks=${includeSnacks} (from preferences: ${preferences?.includeSnacks})`);
     console.log(`Generating ${totalMeals} meals (${mealsPerDay} meals/day, snacks: ${includeSnacks})`);
 
-    // Generate optimized AI prompt with correct snacks setting
+    // Generate AI prompt
     const prompt = generateMealPlanPrompt(userProfile, preferences, dailyCalories, includeSnacks);
 
-    console.log('Sending OPTIMIZED request to OpenAI...');
+    console.log('Sending request to OpenAI...');
     
-    // PERFORMANCE OPTIMIZATION: Use faster model with optimized settings
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -61,7 +61,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini', // Fastest model for production
+        model: 'gpt-4o-mini',
         messages: [
           { 
             role: 'system', 
@@ -69,12 +69,12 @@ serve(async (req) => {
           },
           { role: 'user', content: prompt }
         ],
-        temperature: 0.2, // Lower for consistency and speed
-        max_tokens: 8000, // Reduced for faster response
+        temperature: 0.2,
+        max_tokens: 8000,
         top_p: 0.8,
         frequency_penalty: 0,
         presence_penalty: 0,
-        stream: false // Ensure non-streaming for reliability
+        stream: false
       }),
     });
 
@@ -85,18 +85,19 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    console.log('✅ OpenAI response received in optimized time');
+    console.log('✅ OpenAI response received');
 
     if (!data.choices?.[0]?.message?.content) {
       throw new Error('Invalid response from OpenAI API');
     }
 
-    // Parse and clean the response with improved error handling
+    // Parse and clean the response
     let generatedPlan;
     try {
       const content = data.choices[0].message.content.trim();
+      console.log('Raw OpenAI content:', content.substring(0, 500) + '...');
       
-      // Clean JSON response more efficiently
+      // Clean JSON response
       let cleanedContent = content
         .replace(/```json\n?/g, '')
         .replace(/```\n?/g, '')
@@ -110,36 +111,49 @@ serve(async (req) => {
       }
       
       generatedPlan = JSON.parse(cleanedContent);
-      console.log('✅ Meal plan parsed successfully');
+      console.log('✅ Parsed plan structure:', {
+        hasDays: !!generatedPlan.days,
+        daysCount: generatedPlan.days?.length || 0,
+        firstDayMeals: generatedPlan.days?.[0]?.meals?.length || 0,
+        weekSummary: !!generatedPlan.weekSummary
+      });
       
     } catch (parseError) {
       console.error('Failed to parse OpenAI response:', parseError);
+      console.error('Content that failed to parse:', content);
       throw new Error('Failed to parse AI response. Please try again.');
     }
 
-    // Quick validation
+    // Validate the meal plan
     validateMealPlan(generatedPlan, includeSnacks);
     console.log(`✅ VALIDATION PASSED - 7 days with ${totalMeals} total meals`);
     
     // Decrement AI generations BEFORE saving
     const remainingGenerations = await decrementUserGenerations(userProfile, profileData);
 
-    // Save to database efficiently
-    console.log('Saving meal plan to database...');
-    const weeklyPlan = await saveWeeklyPlan(userProfile, generatedPlan, preferences, dailyCalories);
+    // Save to database with detailed logging
+    console.log('📊 SAVING TO DATABASE...');
+    console.log('Week offset for saving:', preferences?.weekOffset || 0);
     
-    // Save meals with background processing for images
+    const weeklyPlan = await saveWeeklyPlan(userProfile, generatedPlan, preferences, dailyCalories);
+    console.log('✅ Weekly plan saved with ID:', weeklyPlan.id);
+    
+    // Save individual meals
     const { totalMealsSaved } = await saveMealsToDatabase(generatedPlan, weeklyPlan.id);
+    console.log('✅ Individual meals saved:', totalMealsSaved);
 
-    console.log(`✅ OPTIMIZED GENERATION COMPLETE: ${totalMealsSaved} meals in reduced time`);
+    console.log(`✅ GENERATION COMPLETE: ${totalMealsSaved} meals saved`);
     console.log(`✅ AI generations remaining: ${remainingGenerations}`);
+    console.log('=== MEAL PLAN GENERATION DEBUG END ===');
     
     return new Response(JSON.stringify({ 
       success: true,
       weeklyPlanId: weeklyPlan.id,
+      weekStartDate: weeklyPlan.week_start_date,
       totalMeals: totalMealsSaved,
       generationsRemaining: remainingGenerations,
       includeSnacks: includeSnacks,
+      weekOffset: preferences?.weekOffset || 0,
       message: `✨ Optimized meal plan generated with ${totalMealsSaved} meals${includeSnacks ? ' including snacks' : ''}`
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

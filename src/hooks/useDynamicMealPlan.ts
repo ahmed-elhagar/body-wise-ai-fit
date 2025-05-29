@@ -59,16 +59,33 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
         throw new Error('Authentication required');
       }
       
-      // Use CONSISTENT week calculation with date-fns
+      // Use CONSISTENT week calculation
       const weekStartDate = getWeekStartDate(weekOffset);
       const weekStartDateStr = weekStartDate.toISOString().split('T')[0];
       
-      console.log('🎯 MEAL PLAN FETCH - CONSISTENT DATE CALCULATION:', {
+      console.log('🎯 MEAL PLAN FETCH - DEBUG INFO:', {
         userId: user.id,
         userEmail: user.email,
         weekOffset,
         weekStartDate: weekStartDateStr,
-        today: new Date().toISOString().split('T')[0]
+        today: new Date().toISOString().split('T')[0],
+        calculatedWeek: weekStartDate.toDateString()
+      });
+      
+      // First, check what meal plans exist for this user (debugging)
+      const { data: allPlans } = await supabase
+        .from('weekly_meal_plans')
+        .select('id, week_start_date, created_at, user_id')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      
+      console.log('🔍 ALL USER MEAL PLANS:', {
+        searchedDate: weekStartDateStr,
+        userPlans: allPlans?.map(p => ({ 
+          id: p.id, 
+          week_start_date: p.week_start_date, 
+          created_at: p.created_at 
+        })) || []
       });
       
       const { data: weeklyPlan, error: weeklyError } = await supabase
@@ -84,36 +101,9 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
       }
 
       if (!weeklyPlan) {
-        console.log('🔍 NO MEAL PLAN FOUND - Debugging for user:', user.id);
-        
-        // Debug: Check what meal plans exist for this user
-        const { data: allPlans } = await supabase
-          .from('weekly_meal_plans')
-          .select('id, week_start_date, created_at, user_id')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
-        
-        console.log('🔍 All meal plans for user:', {
-          searchedDate: weekStartDateStr,
-          userPlans: allPlans?.map(p => ({ 
-            id: p.id, 
-            week_start_date: p.week_start_date, 
-            created_at: p.created_at,
-            user_id: p.user_id 
-          }))
-        });
-        
+        console.log('❌ NO MEAL PLAN FOUND for date:', weekStartDateStr);
+        console.log('Available dates:', allPlans?.map(p => p.week_start_date) || []);
         return null;
-      }
-
-      // CRITICAL: Double check user isolation
-      if (weeklyPlan.user_id !== user.id) {
-        console.error('🚨 CRITICAL: Meal plan user mismatch!', {
-          planUserId: weeklyPlan.user_id,
-          currentUserId: user.id,
-          currentUserEmail: user.email
-        });
-        throw new Error('Data integrity violation - meal plan user mismatch');
       }
 
       console.log('✅ Found meal plan:', {
@@ -123,7 +113,7 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
         userId: weeklyPlan.user_id
       });
 
-      // Fetch meals with additional user verification
+      // Fetch meals with detailed logging
       const { data: dailyMeals, error: mealsError } = await supabase
         .from('daily_meals')
         .select('*')
@@ -144,19 +134,10 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
           day: m.day_number, 
           type: m.meal_type, 
           name: m.name 
-        }))
+        })) || []
       });
 
-      // Verify all meals belong to the current user's plan
-      if (dailyMeals && dailyMeals.length > 0) {
-        const invalidMeal = dailyMeals.find(meal => meal.weekly_plan_id !== weeklyPlan.id);
-        if (invalidMeal) {
-          console.error('🚨 CRITICAL: Invalid meal found in results!', invalidMeal);
-          throw new Error('Data integrity violation - invalid meal data');
-        }
-      }
-
-      // Parse ingredients if they're stored as JSON strings
+      // Process meals data
       const processedMeals = (dailyMeals || []).map(meal => ({
         ...meal,
         ingredients: Array.isArray(meal.ingredients) 
@@ -173,11 +154,11 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
 
       console.log('✅ MEAL PLAN LOADED SUCCESSFULLY:', {
         userId: user.id,
-        userEmail: user.email,
         planId: weeklyPlan.id,
         mealsCount: processedMeals.length,
         weekStartDate: weeklyPlan.week_start_date,
-        searchedDate: weekStartDateStr
+        searchedDate: weekStartDateStr,
+        weekOffset: weekOffset
       });
 
       return {
@@ -186,8 +167,8 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
       };
     },
     enabled: !!user?.id,
-    staleTime: 0, // CRITICAL FIX: Always fetch fresh data
-    gcTime: 1000 * 10, // Keep in cache for only 10 seconds
+    staleTime: 0,
+    gcTime: 1000 * 10,
     retry: (failureCount, error: any) => {
       if (error?.message?.includes('Authentication required') || 
           error?.message?.includes('Data integrity violation')) {
@@ -195,8 +176,8 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
       }
       return failureCount < 1;
     },
-    refetchOnWindowFocus: true, // Refetch when window gains focus
-    refetchOnMount: true, // Always refetch on mount
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
   });
 
   return {

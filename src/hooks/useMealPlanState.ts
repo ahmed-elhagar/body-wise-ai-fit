@@ -34,9 +34,9 @@ export const useMealPlanState = () => {
 
   const weekStartDate = getWeekStartDate(currentWeekOffset);
 
-  // Enhanced conversion from DailyMeal to Meal type - CRITICAL: preserve database ID
+  // Enhanced conversion from DailyMeal to Meal type
   const convertDailyMealToMeal = (dailyMeal: any): Meal => ({
-    id: dailyMeal.id, // CRITICAL: Include database ID for recipe generation
+    id: dailyMeal.id,
     type: dailyMeal.meal_type || 'meal',
     time: dailyMeal.meal_type === 'breakfast' ? '08:00' : 
           dailyMeal.meal_type === 'lunch' ? '12:00' :
@@ -82,14 +82,13 @@ export const useMealPlanState = () => {
     return items;
   };
 
-  // DISTINCT FUNCTIONALITY: Shuffle existing meals vs Generate new AI plan
+  // Shuffle existing meals vs Generate new AI plan
   const handleRegeneratePlan = async () => {
     if (!currentWeekPlan?.weeklyPlan?.id) {
       toast.error('No meal plan found to shuffle');
       return;
     }
     
-    // This shuffles existing meals between days
     await shuffleMeals(currentWeekPlan.weeklyPlan.id);
   };
 
@@ -98,35 +97,23 @@ export const useMealPlanState = () => {
       console.log('🚀 Starting AI meal plan generation with preferences:', aiPreferences);
       console.log('🎯 Generating for week offset:', currentWeekOffset);
       
-      // CRITICAL FIX: Generate for the current week being viewed
+      // Generate for the current week being viewed
       const result = await generateMealPlan(aiPreferences, { weekOffset: currentWeekOffset });
       
       if (result?.success) {
+        console.log('✅ Generation successful, result:', result);
+        
         setShowAIDialog(false);
         
-        // ENHANCED FIX: If we were viewing a past/future week, reset to current week
-        if (currentWeekOffset !== 0) {
-          console.log('🔄 Resetting to current week after generation');
-          setCurrentWeekOffset(0);
-        }
+        // Force immediate refetch
+        console.log('🔄 Forcing immediate refetch...');
+        await refetchMealPlan?.();
         
-        // Force immediate refetch for the correct week
-        console.log('✅ Generation successful, forcing immediate refetch...');
-        
-        // Wait a moment for the state to update if we changed week offset
-        if (currentWeekOffset !== 0) {
-          setTimeout(async () => {
-            await refetchMealPlan?.();
-          }, 100);
-        } else {
-          await refetchMealPlan?.();
-        }
-        
-        // Additional refetch after short delay to ensure consistency
+        // Additional refetch after short delay to ensure data consistency
         setTimeout(async () => {
           console.log('🔄 Secondary refetch for consistency...');
           await refetchMealPlan?.();
-        }, 1500);
+        }, 1000);
         
         toast.success("✨ Meal plan generated successfully!");
       }
@@ -150,8 +137,7 @@ export const useMealPlanState = () => {
   };
 
   const refetch = async () => {
-    console.log('🔄 Manual refetch triggered');
-    // Force reload the meal plan data
+    console.log('🔄 Manual refetch triggered for week offset:', currentWeekOffset);
     await refetchMealPlan?.();
   };
 
@@ -188,9 +174,9 @@ export const useMealPlanState = () => {
     totalCalories,
     totalProtein,
     
-    // Handlers - Now with distinct functionality
-    handleRegeneratePlan, // Shuffles existing meals
-    handleGenerateAIPlan, // Generates new AI plan for current viewed week
+    // Handlers
+    handleRegeneratePlan,
+    handleGenerateAIPlan,
     handleShowRecipe,
     handleExchangeMeal,
     refetch,
