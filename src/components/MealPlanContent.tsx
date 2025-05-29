@@ -1,9 +1,10 @@
 
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Plus } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Clock, Users, ChefHat, Plus } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import MealCard from "./MealCard";
+import MealCard from "@/components/MealCard";
 import type { Meal } from "@/types/meal";
 
 interface MealPlanContentProps {
@@ -25,84 +26,124 @@ const MealPlanContent = ({
 }: MealPlanContentProps) => {
   const { t, isRTL } = useLanguage();
 
-  // If no meal plan exists, show generation prompt
   if (!currentWeekPlan) {
     return (
-      <Card className={`p-6 sm:p-8 text-center bg-gradient-to-br from-blue-50 to-indigo-100 border-0 shadow-lg ${isRTL ? 'text-right' : 'text-left'}`}>
-        <div className="max-w-md mx-auto space-y-4">
-          <div className="w-16 h-16 bg-fitness-gradient rounded-full flex items-center justify-center mx-auto">
-            <Sparkles className="w-8 h-8 text-white" />
-          </div>
-          <h3 className="text-lg font-semibold text-gray-800">
-            {t('mealPlan.noActivePlan')}
-          </h3>
-          <p className="text-gray-600 text-sm">
-            {t('mealPlan.personalizedProfile')}
-          </p>
-          <Button 
-            onClick={onGenerate}
-            className="bg-fitness-gradient hover:opacity-90 text-white px-6 py-2"
-          >
-            <Sparkles className={`w-4 h-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
-            {t('mealPlan.generateAIMealPlan')}
-          </Button>
-        </div>
+      <Card className="p-8 text-center bg-white/80 backdrop-blur-sm">
+        <ChefHat className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+        <h3 className="text-xl font-semibold text-gray-800 mb-2">
+          {t('mealPlan.noMealPlan')}
+        </h3>
+        <p className="text-gray-600 mb-6">
+          {t('mealPlan.generateFirstPlan')}
+        </p>
+        <Button onClick={onGenerate} className="bg-fitness-gradient text-white">
+          <Plus className="w-4 h-4 mr-2" />
+          {t('mealPlan.generateMealPlan')}
+        </Button>
       </Card>
     );
   }
 
-  // If meal plan exists but no meals for today, show add meals option
-  if (todaysMeals.length === 0) {
+  if (viewMode === 'daily' && (!todaysMeals || todaysMeals.length === 0)) {
     return (
-      <Card className={`p-6 sm:p-8 text-center bg-gradient-to-br from-gray-50 to-slate-100 border-0 shadow-lg ${isRTL ? 'text-right' : 'text-left'}`}>
-        <div className="max-w-md mx-auto space-y-4">
-          <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto">
-            <Plus className="w-8 h-8 text-gray-600" />
-          </div>
-          <h3 className="text-lg font-semibold text-gray-800">
-            {t('mealPlan.noMealsPlanned')}
-          </h3>
-          <Button 
-            onClick={onGenerate}
-            variant="outline"
-            className="border-fitness-primary text-fitness-primary hover:bg-fitness-primary hover:text-white px-6 py-2"
-          >
-            <Sparkles className={`w-4 h-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
-            {t('mealPlan.generateAIMealPlan')}
-          </Button>
-        </div>
+      <Card className="p-8 text-center bg-white/80 backdrop-blur-sm">
+        <ChefHat className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+        <h3 className="text-xl font-semibold text-gray-800 mb-2">
+          {t('mealPlan.noMealsToday')}
+        </h3>
+        <p className="text-gray-600 mb-6">
+          {t('mealPlan.generateNewPlan')}
+        </p>
+        <Button onClick={onGenerate} className="bg-fitness-gradient text-white">
+          <Plus className="w-4 h-4 mr-2" />
+          {t('mealPlan.generateMealPlan')}
+        </Button>
       </Card>
     );
   }
 
-  // Show meals content
-  return (
-    <div className="space-y-4">
-      {/* Meals Header */}
-      <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-        <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-          <h2 className="text-lg font-semibold text-gray-800">
-            {viewMode === 'daily' ? t('mealPlan.meals') : t('mealPlan.weeklyMealPlan')}
-          </h2>
-          <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-            {todaysMeals.length} {t('mealPlan.mealsPlanned')}
-          </span>
-        </div>
-      </div>
+  if (viewMode === 'daily') {
+    return (
+      <div className="space-y-6">
+        {/* Meal Type Sections */}
+        {['breakfast', 'lunch', 'dinner'].map((mealType) => {
+          const mealsForType = todaysMeals.filter(meal => meal.meal_type === mealType);
+          
+          if (mealsForType.length === 0) return null;
 
-      {/* Meals Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-        {todaysMeals.map((meal, index) => (
-          <MealCard
-            key={`${meal.id}-${index}`}
-            meal={meal}
-            onShowRecipe={onShowRecipe}
-            onExchangeMeal={(meal) => onExchangeMeal(meal, index)}
-          />
-        ))}
+          return (
+            <div key={mealType} className="space-y-4">
+              <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                <Badge 
+                  variant="outline" 
+                  className="px-3 py-1 bg-fitness-gradient text-white border-0"
+                >
+                  {t(`mealType.${mealType}`)}
+                </Badge>
+                <div className="h-px bg-gray-200 flex-1" />
+              </div>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {mealsForType.map((meal, index) => {
+                  // Add missing youtubeId property to make it compatible with the type
+                  const mealWithYoutubeId = {
+                    ...meal,
+                    youtubeId: meal.youtube_search_term || '' // Use youtube_search_term as fallback
+                  };
+                  
+                  return (
+                    <MealCard
+                      key={`${meal.id}-${index}`}
+                      meal={mealWithYoutubeId}
+                      onShowRecipe={() => onShowRecipe(mealWithYoutubeId)}
+                      onExchange={() => onExchangeMeal(mealWithYoutubeId, index)}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Snacks Section */}
+        {todaysMeals.some(meal => meal.meal_type === 'snack') && (
+          <div className="space-y-4">
+            <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <Badge 
+                variant="outline" 
+                className="px-3 py-1 bg-purple-gradient text-white border-0"
+              >
+                {t('mealType.snacks')}
+              </Badge>
+              <div className="h-px bg-gray-200 flex-1" />
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {todaysMeals
+                .filter(meal => meal.meal_type === 'snack')
+                .map((meal, index) => {
+                  const mealWithYoutubeId = {
+                    ...meal,
+                    youtubeId: meal.youtube_search_term || ''
+                  };
+                  
+                  return (
+                    <MealCard
+                      key={`${meal.id}-${index}`}
+                      meal={mealWithYoutubeId}
+                      onShowRecipe={() => onShowRecipe(mealWithYoutubeId)}
+                      onExchange={() => onExchangeMeal(mealWithYoutubeId, index)}
+                    />
+                  );
+                })}
+            </div>
+          </div>
+        )}
       </div>
-    </div>
-  );
+    );
+  }
+
+  return null;
 };
 
 export default MealPlanContent;

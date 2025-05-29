@@ -311,6 +311,7 @@ export type Database = {
           nationality: string | null
           onboarding_completed: boolean | null
           preferred_foods: string[] | null
+          preferred_language: string | null
           updated_at: string | null
           weight: number | null
         }
@@ -333,6 +334,7 @@ export type Database = {
           nationality?: string | null
           onboarding_completed?: boolean | null
           preferred_foods?: string[] | null
+          preferred_language?: string | null
           updated_at?: string | null
           weight?: number | null
         }
@@ -355,6 +357,7 @@ export type Database = {
           nationality?: string | null
           onboarding_completed?: boolean | null
           preferred_foods?: string[] | null
+          preferred_language?: string | null
           updated_at?: string | null
           weight?: number | null
         }

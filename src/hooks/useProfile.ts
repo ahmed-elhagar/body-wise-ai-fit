@@ -27,7 +27,7 @@ export const useProfile = () => {
       
       const { data, error } = await supabase
         .from('profiles')
-        .select('*, preferred_language')
+        .select('*')
         .eq('id', user.id)
         .maybeSingle();
 
