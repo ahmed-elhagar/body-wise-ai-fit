@@ -1,9 +1,9 @@
-
 import { commonTranslations } from './ar/common';
 import { navigationTranslations } from './ar/navigation';
 import { dashboardTranslations } from './ar/dashboard';
 import { exercise } from './ar/exercise';
 import { mealPlan } from './ar/mealPlan';
+import { lifePhase } from './ar/lifePhase';
 
 export const arTranslations = {
   ...commonTranslations,
@@ -11,6 +11,12 @@ export const arTranslations = {
   ...dashboardTranslations,
   exercise: exercise,
   mealPlan: mealPlan,
+  
+  // Life Phase Nutrition
+  profile: {
+    ...commonTranslations.profile,
+    lifePhase: lifePhase
+  },
   
   // Days of week (global level for reuse)
   saturday: "السبت",

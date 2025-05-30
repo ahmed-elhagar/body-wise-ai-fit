@@ -41,9 +41,11 @@ export type Database = {
       }
       ai_generation_logs: {
         Row: {
+          condition_type: string | null
           created_at: string | null
           credits_used: number | null
           error_message: string | null
+          extra_calories: number | null
           generation_type: string
           id: string
           prompt_data: Json
@@ -52,9 +54,11 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          condition_type?: string | null
           created_at?: string | null
           credits_used?: number | null
           error_message?: string | null
+          extra_calories?: number | null
           generation_type: string
           id?: string
           prompt_data: Json
@@ -63,9 +67,11 @@ export type Database = {
           user_id: string
         }
         Update: {
+          condition_type?: string | null
           created_at?: string | null
           credits_used?: number | null
           error_message?: string | null
+          extra_calories?: number | null
           generation_type?: string
           id?: string
           prompt_data?: Json
@@ -641,9 +647,12 @@ export type Database = {
           allergies: string[] | null
           bio: string | null
           body_shape: string | null
+          breastfeeding_level: string | null
+          condition_start_date: string | null
           created_at: string | null
           dietary_restrictions: string[] | null
           email: string | null
+          fasting_type: string | null
           first_name: string | null
           fitness_goal: string | null
           gender: string | null
@@ -657,6 +666,7 @@ export type Database = {
           onboarding_completed: boolean | null
           preferred_foods: string[] | null
           preferred_language: string | null
+          pregnancy_trimester: number | null
           profile_completion_score: number | null
           profile_visibility: string | null
           timezone: string | null
@@ -670,9 +680,12 @@ export type Database = {
           allergies?: string[] | null
           bio?: string | null
           body_shape?: string | null
+          breastfeeding_level?: string | null
+          condition_start_date?: string | null
           created_at?: string | null
           dietary_restrictions?: string[] | null
           email?: string | null
+          fasting_type?: string | null
           first_name?: string | null
           fitness_goal?: string | null
           gender?: string | null
@@ -686,6 +699,7 @@ export type Database = {
           onboarding_completed?: boolean | null
           preferred_foods?: string[] | null
           preferred_language?: string | null
+          pregnancy_trimester?: number | null
           profile_completion_score?: number | null
           profile_visibility?: string | null
           timezone?: string | null
@@ -699,9 +713,12 @@ export type Database = {
           allergies?: string[] | null
           bio?: string | null
           body_shape?: string | null
+          breastfeeding_level?: string | null
+          condition_start_date?: string | null
           created_at?: string | null
           dietary_restrictions?: string[] | null
           email?: string | null
+          fasting_type?: string | null
           first_name?: string | null
           fitness_goal?: string | null
           gender?: string | null
@@ -715,6 +732,7 @@ export type Database = {
           onboarding_completed?: boolean | null
           preferred_foods?: string[] | null
           preferred_language?: string | null
+          pregnancy_trimester?: number | null
           profile_completion_score?: number | null
           profile_visibility?: string | null
           timezone?: string | null
@@ -1006,6 +1024,7 @@ export type Database = {
           created_at: string | null
           generation_prompt: Json | null
           id: string
+          life_phase_context: Json | null
           total_calories: number | null
           total_carbs: number | null
           total_fat: number | null
@@ -1017,6 +1036,7 @@ export type Database = {
           created_at?: string | null
           generation_prompt?: Json | null
           id?: string
+          life_phase_context?: Json | null
           total_calories?: number | null
           total_carbs?: number | null
           total_fat?: number | null
@@ -1028,6 +1048,7 @@ export type Database = {
           created_at?: string | null
           generation_prompt?: Json | null
           id?: string
+          life_phase_context?: Json | null
           total_calories?: number | null
           total_carbs?: number | null
           total_fat?: number | null
@@ -1072,6 +1093,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_calorie_offset: {
+        Args: { pregnancy_trimester: number; breastfeeding_level: string }
+        Returns: number
+      }
       calculate_profile_completion_score: {
         Args: { user_id_param: string }
         Returns: number

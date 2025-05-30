@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { calculateDailyCalories } from './nutritionCalculator.ts';
@@ -10,6 +9,11 @@ import {
   saveMealsToDatabase, 
   decrementUserGenerations 
 } from './databaseOperations.ts';
+import { 
+  buildNutritionContext, 
+  enhancePromptWithLifePhase, 
+  validateLifePhaseMealPlan 
+} from './lifePhaseProcessor.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -22,7 +26,7 @@ serve(async (req) => {
   }
 
   try {
-    console.log('=== ENHANCED MEAL PLAN GENERATION START ===');
+    console.log('=== ENHANCED MEAL PLAN GENERATION WITH LIFE-PHASE SUPPORT START ===');
     
     // Parse request body
     let userProfile, preferences;
@@ -84,6 +88,10 @@ serve(async (req) => {
       requestLanguage: preferences?.language
     });
 
+    // NEW: Build life-phase nutrition context
+    const nutritionContext = buildNutritionContext(userProfile);
+    console.log('🏥 Life-Phase Context:', nutritionContext);
+
     // Check generations and get profile data
     let profileData;
     try {
@@ -100,11 +108,15 @@ serve(async (req) => {
       });
     }
     
-    // Calculate daily calorie needs
-    const dailyCalories = calculateDailyCalories(userProfile);
-    console.log('🔥 Calculated daily calories:', dailyCalories);
+    // Calculate daily calorie needs WITH life-phase adjustments
+    const baseDailyCalories = calculateDailyCalories(userProfile);
+    const adjustedDailyCalories = baseDailyCalories + nutritionContext.extraCalories;
+    console.log('🔥 Calorie calculation:', {
+      base: baseDailyCalories,
+      adjustment: nutritionContext.extraCalories,
+      total: adjustedDailyCalories
+    });
 
-    // Get includeSnacks from preferences
     const includeSnacks = preferences?.includeSnacks !== false && preferences?.includeSnacks !== 'false';
     const mealsPerDay = includeSnacks ? 5 : 3;
     const totalMeals = mealsPerDay * 7;
@@ -114,105 +126,24 @@ serve(async (req) => {
       mealsPerDay,
       totalMeals,
       language,
-      isArabic
+      isArabic,
+      nutritionContext
     });
 
-    // Enhanced system prompt with language support
-    const systemPrompt = isArabic ? 
-      `أنت خبير تغذية مُحترف بالذكاء الاصطناعي. يجب عليك إنشاء خطة وجبات بهذا الهيكل JSON المحدد بالضبط:
+    // Enhanced system prompt with life-phase support
+    const baseSystemPrompt = isArabic ? 
+      `أنت خبير تغذية مُحترف بالذكاء الاصطناعي متخصص في التغذية لمراحل الحياة المختلفة.` :
+      `You are a professional nutritionist AI specialized in life-phase nutrition.`;
 
-{
-  "days": [
-    {
-      "dayNumber": 1,
-      "dayName": "السبت",
-      "meals": [
-        {
-          "type": "breakfast",
-          "name": "اسم الوجبة",
-          "calories": 500,
-          "protein": 25,
-          "carbs": 60,
-          "fat": 20,
-          "ingredients": ["مكون1", "مكون2"],
-          "instructions": ["خطوة1", "خطوة2"],
-          "prepTime": 15,
-          "cookTime": 20,
-          "servings": 2
-        }
-      ]
-    }
-  ],
-  "weekSummary": {
-    "totalCalories": ${dailyCalories * 7},
-    "totalProtein": 700,
-    "totalCarbs": 2100,
-    "totalFat": 490,
-    "dietType": "متوازن"
-  }
-}
+    const systemPrompt = baseSystemPrompt + (isArabic ? 
+      ` يجب عليك إنشاء خطة وجبات تراعي الظروف الخاصة للمستخدم مثل الصيام والحمل والرضاعة الطبيعية.` :
+      ` You must create meal plans that consider special conditions like fasting, pregnancy, and breastfeeding.`);
 
-المتطلبات الأساسية:
-1. أنشئ بالضبط 7 أيام بدءاً من السبت (رقم اليوم 1-7)
-2. كل يوم يجب أن يحتوي على ${mealsPerDay} وجبات بالضبط
-3. أنواع الوجبات: ${includeSnacks ? 'breakfast, lunch, dinner, snack1, snack2' : 'breakfast, lunch, dinner'}
-4. أرجع JSON صحيح فقط - بدون markdown، بدون تفسيرات
-5. جميع القيم الرقمية يجب أن تكون أرقام وليس نصوص
-6. ركز على المطبخ ${userProfile?.nationality || 'العالمي'}
-7. اجعل أسماء الوجبات والمكونات والتعليمات باللغة العربية` :
+    // Generate AI prompt with life-phase enhancements
+    const basePrompt = generateMealPlanPrompt(userProfile, preferences, adjustedDailyCalories, includeSnacks);
+    const enhancedPrompt = enhancePromptWithLifePhase(basePrompt, nutritionContext, language);
 
-      `You are a professional nutritionist AI. You MUST generate a meal plan in this EXACT JSON structure:
-
-{
-  "days": [
-    {
-      "dayNumber": 1,
-      "dayName": "Saturday",
-      "meals": [
-        {
-          "type": "breakfast",
-          "name": "Meal Name",
-          "calories": 500,
-          "protein": 25,
-          "carbs": 60,
-          "fat": 20,
-          "ingredients": ["ingredient1", "ingredient2"],
-          "instructions": ["step1", "step2"],
-          "prepTime": 15,
-          "cookTime": 20,
-          "servings": 2
-        }
-      ]
-    }
-  ],
-  "weekSummary": {
-    "totalCalories": ${dailyCalories * 7},
-    "totalProtein": 700,
-    "totalCarbs": 2100,
-    "totalFat": 490,
-    "dietType": "balanced"
-  }
-}
-
-CRITICAL REQUIREMENTS:
-1. Generate EXACTLY 7 days starting with Saturday (dayNumber 1-7)
-2. Each day must have EXACTLY ${mealsPerDay} meals
-3. Meal types: ${includeSnacks ? 'breakfast, lunch, dinner, snack1, snack2' : 'breakfast, lunch, dinner'}
-4. Return ONLY valid JSON - no markdown, no explanations
-5. All numeric values must be numbers, not strings
-6. Focus on ${userProfile?.nationality || 'international'} cuisine
-7. Make meal names, ingredients, and instructions in English`;
-
-    // Generate AI prompt with enhanced language support
-    const enhancedPreferences = {
-      ...preferences,
-      language,
-      locale: isArabic ? 'ar-SA' : 'en-US'
-    };
-    
-    const prompt = generateMealPlanPrompt(userProfile, enhancedPreferences, dailyCalories, includeSnacks);
-
-    console.log('🤖 Sending enhanced request to OpenAI...');
+    console.log('🤖 Sending enhanced life-phase request to OpenAI...');
     
     let response;
     try {
@@ -226,7 +157,7 @@ CRITICAL REQUIREMENTS:
           model: 'gpt-4o-mini',
           messages: [
             { role: 'system', content: systemPrompt },
-            { role: 'user', content: prompt }
+            { role: 'user', content: enhancedPrompt }
           ],
           temperature: 0.1,
           max_tokens: 8000,
@@ -287,41 +218,20 @@ CRITICAL REQUIREMENTS:
       });
     }
 
-    // Parse and clean the response with enhanced error handling
+    // Parse and validate with life-phase checks
     let generatedPlan;
     try {
       const content = data.choices[0].message.content.trim();
-      console.log('📝 Raw OpenAI content preview:', content.substring(0, 500) + '...');
-      
-      // Enhanced JSON cleaning
-      let cleanedContent = content
+      const cleanedContent = content
         .replace(/```json\n?/g, '')
         .replace(/```\n?/g, '')
-        .replace(/^\s*```[\s\S]*?\n/, '')
-        .replace(/\n```\s*$/, '')
         .trim();
       
-      // Find the JSON object boundaries
-      const firstBrace = cleanedContent.indexOf('{');
-      const lastBrace = cleanedContent.lastIndexOf('}');
-      
-      if (firstBrace !== -1 && lastBrace !== -1) {
-        cleanedContent = cleanedContent.substring(firstBrace, lastBrace + 1);
-      }
-      
       generatedPlan = JSON.parse(cleanedContent);
-      console.log('✅ Parsed plan structure:', {
-        hasDays: !!generatedPlan.days,
-        daysCount: generatedPlan.days?.length || 0,
-        firstDayMeals: generatedPlan.days?.[0]?.meals?.length || 0,
-        weekSummary: !!generatedPlan.weekSummary,
-        language: language,
-        sampleMealName: generatedPlan.days?.[0]?.meals?.[0]?.name
-      });
+      console.log('✅ Parsed plan structure with life-phase validation');
       
     } catch (parseError) {
       console.error('Failed to parse OpenAI response:', parseError);
-      console.error('Raw content that failed to parse:', data.choices[0].message.content);
       return new Response(JSON.stringify({ 
         success: false,
         error: 'AI response format error',
@@ -332,17 +242,22 @@ CRITICAL REQUIREMENTS:
       });
     }
 
-    // Validate the meal plan with enhanced error handling
+    // Enhanced validation with life-phase checks
     try {
       validateMealPlan(generatedPlan, includeSnacks);
-      console.log(`✅ VALIDATION PASSED - 7 days with ${totalMeals} expected meals in ${language}`);
+      
+      // NEW: Life-phase specific validation
+      if (!validateLifePhaseMealPlan(generatedPlan, nutritionContext)) {
+        throw new Error('Life-phase nutrition requirements not met');
+      }
+      
+      console.log(`✅ VALIDATION PASSED - Life-phase meal plan for ${language}`);
     } catch (validationError) {
       console.error('❌ Meal plan validation failed:', validationError);
-      console.error('Generated plan that failed validation:', JSON.stringify(generatedPlan, null, 2));
       return new Response(JSON.stringify({ 
         success: false,
         error: 'Generated plan validation failed',
-        details: `AI generated an incomplete plan: ${validationError.message}. Please try again.`
+        details: `Plan validation failed: ${validationError.message}. Please try again.`
       }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -353,18 +268,25 @@ CRITICAL REQUIREMENTS:
     const remainingGenerations = await decrementUserGenerations(userProfile, profileData);
 
     // Save to database with enhanced logging
-    console.log('💾 SAVING ENHANCED MEAL PLAN TO DATABASE...');
+    console.log('💾 SAVING ENHANCED LIFE-PHASE MEAL PLAN TO DATABASE...');
     
     let weeklyPlan;
     try {
       // Add language info to preferences for storage
       const enhancedPreferencesForStorage = {
-        ...enhancedPreferences,
-        generatedLanguage: language
+        ...preferences,
+        generatedLanguage: language,
+        nutritionContext: nutritionContext,
+        lifePhaseTags: {
+          fasting: nutritionContext.fastingType,
+          pregnancy: nutritionContext.pregnancyTrimester,
+          breastfeeding: nutritionContext.breastfeedingLevel,
+          extraCalories: nutritionContext.extraCalories
+        }
       };
       
-      weeklyPlan = await saveWeeklyPlan(userProfile, generatedPlan, enhancedPreferencesForStorage, dailyCalories);
-      console.log('✅ Weekly plan saved with ID:', weeklyPlan.id);
+      weeklyPlan = await saveWeeklyPlan(userProfile, generatedPlan, enhancedPreferencesForStorage, adjustedDailyCalories);
+      console.log('✅ Life-phase weekly plan saved with ID:', weeklyPlan.id);
     } catch (dbError) {
       console.error('❌ Failed to save weekly plan:', dbError);
       return new Response(JSON.stringify({ 
@@ -395,14 +317,15 @@ CRITICAL REQUIREMENTS:
       });
     }
 
-    console.log(`✅ ENHANCED GENERATION COMPLETE:`, {
+    console.log(`✅ ENHANCED LIFE-PHASE GENERATION COMPLETE:`, {
       totalMealsSaved,
       remainingGenerations,
       language,
       isArabic,
-      includeSnacks
+      includeSnacks,
+      nutritionContext
     });
-    console.log('=== ENHANCED MEAL PLAN GENERATION END ===');
+    console.log('=== ENHANCED MEAL PLAN GENERATION WITH LIFE-PHASE SUPPORT END ===');
     
     return new Response(JSON.stringify({ 
       success: true,
@@ -413,12 +336,13 @@ CRITICAL REQUIREMENTS:
       includeSnacks: includeSnacks,
       weekOffset: preferences?.weekOffset || 0,
       language: language,
-      message: `✨ ${isArabic ? 'تم إنشاء خطة وجبات محسّنة مع' : 'Enhanced meal plan generated with'} ${totalMealsSaved} ${isArabic ? 'وجبة' : 'meals'}${includeSnacks ? (isArabic ? ' تشمل وجبات خفيفة' : ' including snacks') : ''}`
+      nutritionContext: nutritionContext,
+      message: `✨ ${isArabic ? 'تم إنشاء خطة وجبات محسّنة لمرحلة الحياة مع' : 'Life-phase optimized meal plan generated with'} ${totalMealsSaved} ${isArabic ? 'وجبة' : 'meals'}${nutritionContext.extraCalories > 0 ? ` (+${nutritionContext.extraCalories} kcal)` : ''}`
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('=== ENHANCED MEAL PLAN GENERATION FAILED ===');
+    console.error('=== ENHANCED LIFE-PHASE MEAL PLAN GENERATION FAILED ===');
     console.error('Error details:', error);
     return new Response(JSON.stringify({ 
       success: false,
