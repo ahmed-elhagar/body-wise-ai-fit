@@ -14,7 +14,6 @@ import Progress from "@/pages/Progress";
 import Profile from "@/pages/Profile";
 import Admin from "@/pages/Admin";
 import Landing from "@/pages/Landing";
-import EnhancedProfile from "@/pages/EnhancedProfile";
 
 const queryClient = new QueryClient();
 
@@ -35,7 +34,6 @@ function App() {
                 <Route path="/progress" element={<Layout><Progress /></Layout>} />
                 <Route path="/profile" element={<Layout><Profile /></Layout>} />
                 <Route path="/admin" element={<Layout><Admin /></Layout>} />
-                <Route path="/enhanced-profile" element={<EnhancedProfile />} />
               </Routes>
             </BrowserRouter>
           </LanguageProvider>
