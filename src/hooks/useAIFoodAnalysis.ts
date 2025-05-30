@@ -17,11 +17,13 @@ export const useAIFoodAnalysis = () => {
     setError(null);
     setAnalysisResult(null);
 
+    let creditResult: any = null;
+
     try {
       console.log('Starting AI food analysis...');
 
       // Use 'meal_plan' as the generation type since it's definitely valid in the database constraint
-      const creditResult = await checkAndUseCreditAsync({
+      creditResult = await checkAndUseCreditAsync({
         generationType: 'meal_plan',
         promptData: {
           analysisType: 'food_image',

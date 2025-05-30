@@ -28,12 +28,13 @@ export const useMealRecipe = () => {
         duration: 15000,
       });
 
-      // Use centralized credit system
+      // Use centralized credit system with valid generation type
       const creditResult = await checkAndUseCreditAsync({
-        generationType: 'recipe',
+        generationType: 'meal_plan',
         promptData: {
           mealId: mealId,
-          language: language
+          language: language,
+          action: 'recipe_generation'
         }
       });
 
