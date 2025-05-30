@@ -65,12 +65,13 @@ export const OptimizedExerciseList = memo(({
       )}
       
       <div className="space-y-4">
-        {sortedExercises.map((exercise) => (
+        {sortedExercises.map((exercise, index) => (
           <ExerciseCardEnhanced
             key={exercise.id}
             exercise={exercise}
-            onComplete={onExerciseComplete}
-            onProgressUpdate={onExerciseProgressUpdate}
+            index={index}
+            onExerciseComplete={onExerciseComplete}
+            onExerciseProgressUpdate={onExerciseProgressUpdate}
           />
         ))}
       </div>
