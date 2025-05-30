@@ -55,10 +55,18 @@ export const useOnboardingProgress = () => {
       if (!user?.id) throw new Error('No user ID');
 
       const now = new Date().toISOString();
+      
+      // First, get existing record to preserve created_at
+      const { data: existingRecord } = await supabase
+        .from('onboarding_progress')
+        .select('created_at')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
       const updateData: any = {
         user_id: user.id,
         updated_at: now,
-        created_at: progress?.created_at || now,
+        created_at: existingRecord?.created_at || now, // Preserve existing or set new
       };
 
       switch (step) {
@@ -103,13 +111,20 @@ export const useOnboardingProgress = () => {
 
       const { data, error } = await supabase
         .from('onboarding_progress')
-        .upsert(updateData)
-        .select()
+        .upsert(updateData, { onConflict: 'user_id' })
+        .select('*')
         .single();
 
-      if (error) throw error;
-      
-      // Properly construct the result with all required fields including created_at
+      if (error) {
+        console.error('Upsert error:', error);
+        throw error;
+      }
+
+      if (!data) {
+        throw new Error('No data returned from upsert operation');
+      }
+
+      // Ensure all required fields are present
       const result: OnboardingProgress = {
         id: data.id,
         user_id: data.user_id,
@@ -126,8 +141,8 @@ export const useOnboardingProgress = () => {
         goals_setup_completed_at: data.goals_setup_completed_at,
         preferences_completed_at: data.preferences_completed_at,
         profile_review_completed_at: data.profile_review_completed_at,
-        created_at: data.created_at || now, // Ensure created_at is always present
-        updated_at: data.updated_at || now,
+        created_at: data.created_at,
+        updated_at: data.updated_at,
         completed_at: data.completed_at,
       };
 
