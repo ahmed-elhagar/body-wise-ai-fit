@@ -13,9 +13,9 @@ export const arTranslations = {
   exercise: exercise,
   mealPlan: mealPlan,
   
-  // Life Phase Nutrition - restructure profile to avoid spread type error
+  // Life Phase Nutrition - add lifePhase to profile
   profile: {
-    ...(commonTranslations.profile || {}),
+    ...commonTranslations.profile,
     lifePhase: lifePhase
   },
   
