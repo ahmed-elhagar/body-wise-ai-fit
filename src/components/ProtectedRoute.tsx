@@ -1,5 +1,7 @@
+
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
+import { useRole } from '@/hooks/useRole';
 import { Navigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useEffect } from 'react';

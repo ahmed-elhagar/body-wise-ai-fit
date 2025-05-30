@@ -1,3 +1,4 @@
+
 import React from "react";
 import {
   Home,
@@ -18,7 +19,6 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
-  SidebarToggleButton,
 } from "@/components/ui/sidebar";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -32,7 +32,7 @@ import { useRole } from "@/hooks/useRole";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const location = useLocation();
-  const { t, currentLanguage, toggleLanguage, isRTL } = useLanguage();
+  const { t, language, toggleLanguage, isRTL } = useLanguage();
   const { user, signOut } = useAuth();
   const { profile } = useProfile();
   const { role, isPro, isCoach, isAdmin } = useRole();
@@ -50,25 +50,25 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const navigation = [
     {
-      title: t.navigation.dashboard,
+      title: t("Dashboard"),
       url: "/dashboard",
       icon: Home,
       isActive: location.pathname === "/dashboard",
     },
     {
-      title: t.navigation.mealPlan,
+      title: t("Meal Plan"),
       url: "/meal-plan",
       icon: UtensilsCrossed,
       isActive: location.pathname === "/meal-plan",
     },
     {
-      title: t.navigation.exercise,
+      title: t("Exercise"),
       url: "/exercise",
       icon: Dumbbell,
       isActive: location.pathname === "/exercise",
     },
     {
-      title: t.navigation.progress,
+      title: t("Progress"),
       url: "/progress",
       icon: TrendingUp,
       isActive: location.pathname === "/progress",
@@ -148,7 +148,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         {navigation.map((item) => (
           <SidebarMenuItem key={item.title}>
             <SidebarMenuButton
-              variant={item.isActive ? "active" : "ghost"}
+              variant={item.isActive ? "default" : "ghost"}
               size="lg"
               asChild
             >
@@ -178,18 +178,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => navigate("/profile")}>
-                  {t.profile.title}
+                  {t("Profile")}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut}>
-                  {t.auth.signOut}
+                  {t("Sign Out")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" onClick={toggleLanguage}>
-              {isRTL ? t.direction.ltr : t.direction.rtl}
+              {isRTL ? "English" : "العربية"}
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

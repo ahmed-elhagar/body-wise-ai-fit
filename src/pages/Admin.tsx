@@ -1,5 +1,7 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { FeatureFlagToggle } from "@/components/admin/FeatureFlagToggle";
 import AdminHeader from "@/components/admin/AdminHeader";
 import StatsCards from "@/components/admin/StatsCards";
@@ -28,13 +30,12 @@ const Admin = () => {
       if (!user?.id) return false;
       
       const { data, error } = await supabase
-        .from('user_roles')
+        .from('profiles')
         .select('role')
-        .eq('user_id', user.id)
-        .eq('role', 'admin')
+        .eq('id', user.id)
         .single();
       
-      return !error && data;
+      return !error && data?.role === 'admin';
     },
     enabled: !!user?.id
   });

@@ -37,12 +37,17 @@ const SubscriptionsTab = () => {
         .from('subscriptions')
         .select(`
           *,
-          profiles(first_name, last_name, email)
+          profiles!subscriptions_user_id_fkey(first_name, last_name, email)
         `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as Subscription[];
+      
+      // Transform the data to match our interface
+      return (data || []).map(item => ({
+        ...item,
+        profiles: item.profiles || { first_name: '', last_name: '', email: '' }
+      })) as Subscription[];
     }
   });
 

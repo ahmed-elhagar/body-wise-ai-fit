@@ -10,12 +10,14 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+type UserRole = 'normal' | 'pro' | 'coach' | 'admin';
+
 interface UserProfile {
   id: string;
   email: string;
   first_name: string;
   last_name: string;
-  role: 'normal' | 'pro' | 'coach' | 'admin';
+  role: UserRole;
 }
 
 interface CoachTrainee {
@@ -45,7 +47,10 @@ const CoachesTab = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as UserProfile[];
+      return (data || []).map(user => ({
+        ...user,
+        role: (user.role as UserRole) || 'normal'
+      })) as UserProfile[];
     }
   });
 
@@ -57,22 +62,26 @@ const CoachesTab = () => {
         .from('coach_trainees')
         .select(`
           *,
-          trainee_profile:profiles!trainee_id(first_name, last_name, email)
+          profiles!coach_trainees_trainee_id_fkey(first_name, last_name, email)
         `);
 
       if (error) throw error;
-      return data as CoachTrainee[];
+      
+      // Transform the data to match our interface
+      return (data || []).map(item => ({
+        ...item,
+        trainee_profile: item.profiles || { first_name: '', last_name: '', email: '' }
+      })) as CoachTrainee[];
     }
   });
 
   const updateUserRole = useMutation({
-    mutationFn: async ({ userId, newRole }: { userId: string; newRole: string }) => {
-      const { data, error } = await supabase.rpc('update_user_role', {
-        target_user_id: userId,
-        new_role: newRole
-      });
+    mutationFn: async ({ userId, newRole }: { userId: string; newRole: UserRole }) => {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ role: newRole })
+        .eq('id', userId);
       if (error) throw error;
-      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
@@ -135,7 +144,7 @@ const CoachesTab = () => {
     u.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
 
-  const getRoleColor = (role: string) => {
+  const getRoleColor = (role: UserRole) => {
     switch (role) {
       case 'admin': return 'bg-red-100 text-red-800';
       case 'coach': return 'bg-blue-100 text-blue-800';
@@ -255,7 +264,7 @@ const CoachesTab = () => {
                     <td className="px-4 py-3">
                       <Select
                         value={user.role}
-                        onValueChange={(newRole) => updateUserRole.mutate({ userId: user.id, newRole })}
+                        onValueChange={(newRole: UserRole) => updateUserRole.mutate({ userId: user.id, newRole })}
                       >
                         <SelectTrigger className="w-32">
                           <SelectValue />

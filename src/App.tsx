@@ -1,3 +1,4 @@
+
 import React from "react";
 import {
   BrowserRouter as Router,
@@ -8,7 +9,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
-import { Layout } from "@/components/Layout";
+import Layout from "@/components/Layout";
 import Landing from "@/pages/Landing";
 import Auth from "@/pages/Auth";
 import Onboarding from "@/pages/Onboarding";
@@ -19,7 +20,7 @@ import Exercise from "@/pages/Exercise";
 import Progress from "@/pages/Progress";
 import WeightTracking from "@/pages/WeightTracking";
 import CalorieChecker from "@/pages/CalorieChecker";
-import AIChatPage from "@/pages/AIChat";
+import AIChatPage from "@/pages/AIChatPage";
 import NotFound from "@/pages/NotFound";
 import Pro from "@/pages/Pro";
 import Coach from "@/pages/Coach";

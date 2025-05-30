@@ -30,12 +30,17 @@ export const useCoach = () => {
         .from('coach_trainees')
         .select(`
           *,
-          trainee_profile:profiles!trainee_id(first_name, last_name, email)
+          profiles!coach_trainees_trainee_id_fkey(first_name, last_name, email)
         `)
         .eq('coach_id', user.id);
 
       if (error) throw error;
-      return data as Trainee[];
+      
+      // Transform the data to match our interface
+      return (data || []).map(item => ({
+        ...item,
+        trainee_profile: item.profiles || { first_name: '', last_name: '', email: '' }
+      })) as Trainee[];
     },
     enabled: !!user?.id,
   });
