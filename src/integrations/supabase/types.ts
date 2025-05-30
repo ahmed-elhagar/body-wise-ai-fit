@@ -81,6 +81,30 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_trainees: {
+        Row: {
+          assigned_at: string | null
+          coach_id: string
+          id: string
+          notes: string | null
+          trainee_id: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          coach_id: string
+          id?: string
+          notes?: string | null
+          trainee_id: string
+        }
+        Update: {
+          assigned_at?: string | null
+          coach_id?: string
+          id?: string
+          notes?: string | null
+          trainee_id?: string
+        }
+        Relationships: []
+      }
       daily_meals: {
         Row: {
           alternatives: Json | null
@@ -669,6 +693,7 @@ export type Database = {
           pregnancy_trimester: number | null
           profile_completion_score: number | null
           profile_visibility: string | null
+          role: Database["public"]["Enums"]["user_role"] | null
           timezone: string | null
           updated_at: string | null
           weight: number | null
@@ -702,6 +727,7 @@ export type Database = {
           pregnancy_trimester?: number | null
           profile_completion_score?: number | null
           profile_visibility?: string | null
+          role?: Database["public"]["Enums"]["user_role"] | null
           timezone?: string | null
           updated_at?: string | null
           weight?: number | null
@@ -735,9 +761,52 @@ export type Database = {
           pregnancy_trimester?: number | null
           profile_completion_score?: number | null
           profile_visibility?: string | null
+          role?: Database["public"]["Enums"]["user_role"] | null
           timezone?: string | null
           updated_at?: string | null
           weight?: number | null
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean | null
+          created_at: string | null
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          plan_type: string | null
+          status: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          plan_type?: string | null
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          plan_type?: string | null
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -1146,6 +1215,10 @@ export type Database = {
           daily_workouts_count: number
         }[]
       }
+      get_user_role: {
+        Args: { user_id: string }
+        Returns: Database["public"]["Enums"]["user_role"]
+      }
       gtrgm_compress: {
         Args: { "": unknown }
         Returns: unknown
@@ -1176,6 +1249,10 @@ export type Database = {
       invalidate_all_user_sessions: {
         Args: { target_user_id: string }
         Returns: undefined
+      }
+      is_pro_user: {
+        Args: { user_id: string }
+        Returns: boolean
       }
       reset_ai_generations: {
         Args: { target_user_id: string; new_count?: number }
@@ -1236,9 +1313,17 @@ export type Database = {
         Args: { "": string }
         Returns: string[]
       }
+      update_user_role: {
+        Args: {
+          target_user_id: string
+          new_role: Database["public"]["Enums"]["user_role"]
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "user"
+      user_role: "normal" | "pro" | "coach" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1355,6 +1440,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      user_role: ["normal", "pro", "coach", "admin"],
     },
   },
 } as const

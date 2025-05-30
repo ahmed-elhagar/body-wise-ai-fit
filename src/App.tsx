@@ -1,87 +1,139 @@
-
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+} from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { LanguageProvider } from "@/contexts/LanguageContext";
+import { Toaster } from "sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
-import Layout from "@/components/Layout";
-import Dashboard from "@/pages/Dashboard";
+import { LanguageProvider } from "@/contexts/LanguageContext";
+import { Layout } from "@/components/Layout";
 import Landing from "@/pages/Landing";
-import { memo } from "react";
-import { 
-  LazyMealPlan, 
-  LazyExercise, 
-  LazyAdmin, 
-  LazyProgress, 
-  LazyProfile, 
-  LazyCalorieChecker,
-  LazyAIChatPage,
-  withSuspense 
-} from "@/components/LazyPages";
-
-// Optimize QueryClient configuration for better performance
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      gcTime: 10 * 60 * 1000, // 10 minutes (was cacheTime)
-      refetchOnWindowFocus: false,
-      retry: 1,
-      networkMode: 'offlineFirst'
-    },
-    mutations: {
-      retry: 1,
-      networkMode: 'offlineFirst'
-    },
-  },
-});
-
-// Memoize layout wrapper to prevent unnecessary re-renders
-const LayoutWrapper = memo(({ children }: { children: React.ReactNode }) => (
-  <Layout>{children}</Layout>
-));
-
-LayoutWrapper.displayName = 'LayoutWrapper';
-
-// Wrap lazy components with suspense
-const MealPlan = withSuspense(LazyMealPlan);
-const Exercise = withSuspense(LazyExercise);
-const Admin = withSuspense(LazyAdmin);
-const Progress = withSuspense(LazyProgress);
-const Profile = withSuspense(LazyProfile);
-const CalorieChecker = withSuspense(LazyCalorieChecker);
-const AIChatPage = withSuspense(LazyAIChatPage);
+import Auth from "@/pages/Auth";
+import Onboarding from "@/pages/Onboarding";
+import Dashboard from "@/pages/Dashboard";
+import Profile from "@/pages/Profile";
+import MealPlan from "@/pages/MealPlan";
+import Exercise from "@/pages/Exercise";
+import Progress from "@/pages/Progress";
+import WeightTracking from "@/pages/WeightTracking";
+import CalorieChecker from "@/pages/CalorieChecker";
+import AIChatPage from "@/pages/AIChat";
+import NotFound from "@/pages/NotFound";
+import Pro from "@/pages/Pro";
+import Coach from "@/pages/Coach";
+import Admin from "@/pages/Admin";
 
 function App() {
+  const queryClient = new QueryClient();
+
   return (
-    <ErrorBoundary>
+    <Router>
       <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <AuthProvider>
-            <LanguageProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <Routes>
-                  <Route path="/" element={<Landing />} />
-                  <Route path="/dashboard" element={<LayoutWrapper><Dashboard /></LayoutWrapper>} />
-                  <Route path="/meal-plan" element={<LayoutWrapper><MealPlan /></LayoutWrapper>} />
-                  <Route path="/exercise" element={<LayoutWrapper><Exercise /></LayoutWrapper>} />
-                  <Route path="/progress" element={<LayoutWrapper><Progress /></LayoutWrapper>} />
-                  <Route path="/profile" element={<LayoutWrapper><Profile /></LayoutWrapper>} />
-                  <Route path="/admin" element={<LayoutWrapper><Admin /></LayoutWrapper>} />
-                  <Route path="/calorie-checker" element={<LayoutWrapper><CalorieChecker /></LayoutWrapper>} />
-                  <Route path="/ai-chat" element={<LayoutWrapper><AIChatPage /></LayoutWrapper>} />
-                </Routes>
-              </BrowserRouter>
-            </LanguageProvider>
-          </AuthProvider>
-        </TooltipProvider>
+        <AuthProvider>
+          <LanguageProvider>
+            <div className="min-h-screen bg-background">
+              <Routes>
+                <Route path="/" element={<Landing />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/onboarding" element={<Onboarding />} />
+                <Route 
+                  path="/dashboard" 
+                  element={
+                    <Layout>
+                      <Dashboard />
+                    </Layout>
+                  } 
+                />
+                <Route 
+                  path="/profile" 
+                  element={
+                    <Layout>
+                      <Profile />
+                    </Layout>
+                  } 
+                />
+                <Route 
+                  path="/meal-plan" 
+                  element={
+                    <Layout>
+                      <MealPlan />
+                    </Layout>
+                  } 
+                />
+                <Route 
+                  path="/exercise" 
+                  element={
+                    <Layout>
+                      <Exercise />
+                    </Layout>
+                  } 
+                />
+                <Route 
+                  path="/progress" 
+                  element={
+                    <Layout>
+                      <Progress />
+                    </Layout>
+                  } 
+                />
+                <Route 
+                  path="/weight-tracking" 
+                  element={
+                    <Layout>
+                      <WeightTracking />
+                    </Layout>
+                  } 
+                />
+                <Route 
+                  path="/calorie-checker" 
+                  element={
+                    <Layout>
+                      <CalorieChecker />
+                    </Layout>
+                  } 
+                />
+                <Route 
+                  path="/ai-chat" 
+                  element={
+                    <Layout>
+                      <AIChatPage />
+                    </Layout>
+                  } 
+                />
+                <Route 
+                  path="/pro" 
+                  element={
+                    <Layout>
+                      <Pro />
+                    </Layout>
+                  } 
+                />
+                <Route 
+                  path="/coach" 
+                  element={
+                    <Layout>
+                      <Coach />
+                    </Layout>
+                  } 
+                />
+                <Route 
+                  path="/admin" 
+                  element={
+                    <Layout>
+                      <Admin />
+                    </Layout>
+                  } 
+                />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </div>
+            <Toaster />
+          </LanguageProvider>
+        </AuthProvider>
       </QueryClientProvider>
-    </ErrorBoundary>
+    </Router>
   );
 }
 

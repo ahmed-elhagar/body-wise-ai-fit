@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FeatureFlagToggle } from "@/components/admin/FeatureFlagToggle";
@@ -8,6 +7,8 @@ import UsersTable from "@/components/admin/UsersTable";
 import ActiveSessionsTable from "@/components/admin/ActiveSessionsTable";
 import GenerationLogsTable from "@/components/admin/GenerationLogsTable";
 import UserGenerationManager from "@/components/admin/UserGenerationManager";
+import SubscriptionsTab from "@/components/admin/SubscriptionsTab";
+import CoachesTab from "@/components/admin/CoachesTab";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -17,6 +18,7 @@ import { toast } from "sonner";
 const Admin = () => {
   const { user } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview');
   const queryClient = useQueryClient();
 
   // Check if user has admin role
@@ -95,6 +97,16 @@ const Admin = () => {
     }
   });
 
+  const tabs = [
+    { id: 'overview', label: 'Overview', icon: '📊' },
+    { id: 'subscriptions', label: 'Subscriptions', icon: '💳' },
+    { id: 'coaches', label: 'Coaches', icon: '👨‍🏫' },
+    { id: 'users', label: 'Users', icon: '👥' },
+    { id: 'sessions', label: 'Sessions', icon: '🔐' },
+    { id: 'logs', label: 'AI Logs', icon: '🤖' },
+    { id: 'features', label: 'Features', icon: '⚙️' },
+  ];
+
   const handleForceLogout = async () => {
     if (window.confirm('Are you sure you want to force logout all users?')) {
       setIsLoggingOut(true);
@@ -126,7 +138,27 @@ const Admin = () => {
       <div className="max-w-7xl mx-auto">
         <AdminHeader onForceLogout={handleForceLogout} isLoggingOut={isLoggingOut} />
 
-        {adminStats && (
+        {/* Tab Navigation */}
+        <Card className="mb-6">
+          <CardContent className="p-4">
+            <div className="flex flex-wrap gap-2">
+              {tabs.map((tab) => (
+                <Button
+                  key={tab.id}
+                  variant={activeTab === tab.id ? 'default' : 'ghost'}
+                  onClick={() => setActiveTab(tab.id)}
+                  className="flex items-center gap-2"
+                >
+                  <span>{tab.icon}</span>
+                  {tab.label}
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Tab Content */}
+        {activeTab === 'overview' && adminStats && (
           <>
             <StatsCards
               totalUsers={adminStats.totalUsers}
@@ -134,29 +166,40 @@ const Admin = () => {
               totalActiveSessions={adminStats.totalActiveSessions}
               totalGenerations={adminStats.totalGenerations}
             />
-
             <UserGenerationManager
               users={adminStats.users}
               onUpdateGenerations={handleUpdateGenerations}
               isUpdating={updateGenerationMutation.isPending}
             />
-
-            <UsersTable users={adminStats.users} />
-
-            <ActiveSessionsTable activeSessions={adminStats.activeSessions} />
-
-            <GenerationLogsTable logs={adminStats.generationLogs} />
           </>
         )}
 
-        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-          <CardHeader>
-            <CardTitle>Feature Management</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <FeatureFlagToggle />
-          </CardContent>
-        </Card>
+        {activeTab === 'subscriptions' && <SubscriptionsTab />}
+        
+        {activeTab === 'coaches' && <CoachesTab />}
+
+        {activeTab === 'users' && adminStats && (
+          <UsersTable users={adminStats.users} />
+        )}
+
+        {activeTab === 'sessions' && adminStats && (
+          <ActiveSessionsTable activeSessions={adminStats.activeSessions} />
+        )}
+
+        {activeTab === 'logs' && adminStats && (
+          <GenerationLogsTable logs={adminStats.generationLogs} />
+        )}
+
+        {activeTab === 'features' && (
+          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+            <CardHeader>
+              <CardTitle>Feature Management</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <FeatureFlagToggle />
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

@@ -1,8 +1,8 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
+import { useRole } from './useRole';
 
 // Updated to match the actual database constraint - using only confirmed valid types
 export type GenerationType = 'meal_plan' | 'exercise_program' | 'snack_generation';
@@ -17,6 +17,7 @@ interface CreditCheckResult {
 
 export const useCreditSystem = () => {
   const { user } = useAuth();
+  const { isPro } = useRole();
   const queryClient = useQueryClient();
 
   // Get current user credits
@@ -54,7 +55,37 @@ export const useCreditSystem = () => {
 
       console.log('Checking credit for generation type:', generationType);
 
-      // First check if user has enough credits
+      // Pro users have unlimited credits
+      if (isPro) {
+        console.log('Pro user detected - unlimited credits');
+        
+        // Still create log entry for tracking
+        const { data: logEntry, error: logError } = await supabase
+          .from('ai_generation_logs')
+          .insert({
+            user_id: user.id,
+            generation_type: generationType,
+            prompt_data: promptData || {},
+            status: 'started',
+            credits_used: 0 // Pro users don't consume credits
+          })
+          .select()
+          .single();
+
+        if (logError) {
+          console.error('Error creating generation log:', logError);
+          throw new Error('Failed to create generation log');
+        }
+
+        return {
+          success: true,
+          log_id: logEntry.id,
+          remaining: -1, // Indicates unlimited
+          user_id: user.id
+        };
+      }
+
+      // Regular credit check for non-pro users
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('ai_generations_remaining')
@@ -67,7 +98,7 @@ export const useCreditSystem = () => {
       }
 
       if (!profile || profile.ai_generations_remaining <= 0) {
-        throw new Error('AI generation limit reached. Please upgrade or wait for credits to reset.');
+        throw new Error('AI generation limit reached. Please upgrade to Pro for unlimited access.');
       }
 
       // Create generation log
@@ -77,7 +108,7 @@ export const useCreditSystem = () => {
           user_id: user.id,
           generation_type: generationType,
           prompt_data: promptData || {},
-          status: 'pending',
+          status: 'started',
           credits_used: 1
         })
         .select()
@@ -119,7 +150,7 @@ export const useCreditSystem = () => {
     onError: (error) => {
       console.error('Credit check failed:', error);
       if (error.message.includes('limit reached')) {
-        toast.error('AI generation limit reached. Please upgrade or wait for credits to reset.');
+        toast.error('AI generation limit reached. Upgrade to Pro for unlimited access!');
       } else {
         toast.error(`Credit check failed: ${error.message}`);
       }
@@ -162,8 +193,9 @@ export const useCreditSystem = () => {
   });
 
   return {
-    userCredits,
+    userCredits: isPro ? -1 : userCredits, // -1 indicates unlimited for Pro users
     isLoadingCredits,
+    isPro,
     checkAndUseCredit: checkAndUseCredit.mutate,
     checkAndUseCreditAsync: checkAndUseCredit.mutateAsync,
     isCheckingCredit: checkAndUseCredit.isPending,

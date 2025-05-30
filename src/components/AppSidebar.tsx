@@ -1,193 +1,199 @@
-
+import React from "react";
 import {
-  Calendar,
   Home,
-  User,
-  Utensils,
-  Activity,
+  UtensilsCrossed,
+  Dumbbell,
   TrendingUp,
   Settings,
-  ChevronUp,
-  User2,
-} from "lucide-react"
-import { Link, useNavigate, useLocation } from "react-router-dom"
-
+  Scale,
+  Search,
+  MessageSquare,
+  Star,
+  Users,
+} from "lucide-react";
 import {
   Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
   SidebarHeader,
-} from "@/components/ui/sidebar"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { useAuth } from "@/hooks/useAuth"
-import { useLanguage } from "@/contexts/LanguageContext"
-import LanguageToggle from "@/components/LanguageToggle"
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarFooter,
+  SidebarToggleButton,
+} from "@/components/ui/sidebar";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useRole } from "@/hooks/useRole";
 
-const items = [
-  {
-    title: "dashboard",
-    url: "/dashboard",
-    icon: Home,
-  },
-  {
-    title: "mealPlan",
-    url: "/meal-plan",
-    icon: Utensils,
-  },
-  {
-    title: "exercise",
-    url: "/exercise",
-    icon: Activity,
-  },
-  {
-    title: "progress",
-    url: "/progress",
-    icon: TrendingUp,
-  },
-  {
-    title: "profile",
-    url: "/profile",
-    icon: User,
-  },
-]
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const location = useLocation();
+  const { t, currentLanguage, toggleLanguage, isRTL } = useLanguage();
+  const { user, signOut } = useAuth();
+  const { profile } = useProfile();
+  const { role, isPro, isCoach, isAdmin } = useRole();
 
-export function AppSidebar() {
-  const { user, signOut } = useAuth()
-  const navigate = useNavigate()
-  const location = useLocation()
-  const { t, isRTL } = useLanguage()
+  const navigate = useNavigate();
 
   const handleSignOut = async () => {
     try {
-      await signOut()
-      navigate("/")
+      await signOut();
+      navigate("/auth");
     } catch (error) {
-      console.error("Error signing out:", error)
+      console.error("Sign out failed:", error);
     }
+  };
+
+  const navigation = [
+    {
+      title: t.navigation.dashboard,
+      url: "/dashboard",
+      icon: Home,
+      isActive: location.pathname === "/dashboard",
+    },
+    {
+      title: t.navigation.mealPlan,
+      url: "/meal-plan",
+      icon: UtensilsCrossed,
+      isActive: location.pathname === "/meal-plan",
+    },
+    {
+      title: t.navigation.exercise,
+      url: "/exercise",
+      icon: Dumbbell,
+      isActive: location.pathname === "/exercise",
+    },
+    {
+      title: t.navigation.progress,
+      url: "/progress",
+      icon: TrendingUp,
+      isActive: location.pathname === "/progress",
+    },
+    {
+      title: "Weight Tracking",
+      url: "/weight-tracking",
+      icon: Scale,
+      isActive: location.pathname === "/weight-tracking",
+    },
+    {
+      title: "Calorie Checker",
+      url: "/calorie-checker",
+      icon: Search,
+      isActive: location.pathname === "/calorie-checker",
+    },
+    {
+      title: "AI Chat",
+      url: "/ai-chat",
+      icon: MessageSquare,
+      isActive: location.pathname === "/ai-chat",
+    },
+  ];
+
+  // Add role-specific navigation items
+  if (!isPro && (role === 'normal')) {
+    navigation.push({
+      title: "Upgrade to Pro",
+      url: "/pro",
+      icon: Star,
+      isActive: location.pathname === "/pro",
+    });
   }
 
-  const isActive = (url: string) => {
-    return location.pathname === url
+  if (isCoach) {
+    navigation.push({
+      title: "Coach Dashboard",
+      url: "/coach",
+      icon: Users,
+      isActive: location.pathname === "/coach",
+    });
+  }
+
+  if (isAdmin) {
+    navigation.push({
+      title: "Admin Panel",
+      url: "/admin",
+      icon: Settings,
+      isActive: location.pathname === "/admin",
+    });
   }
 
   return (
-    <Sidebar 
-      variant="inset" 
-      className={`border-slate-200 bg-gradient-to-b from-slate-50 to-white ${
-        isRTL ? 'border-l' : 'border-r'
-      }`}
-      side={isRTL ? "right" : "left"}
-    >
-      <SidebarHeader className="h-16 border-b border-slate-200 bg-gradient-to-r from-blue-600 to-purple-600">
-        <div className={`flex items-center gap-3 px-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
-          <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-            <Activity className="h-6 w-6 text-white" />
-          </div>
-          <span className="font-bold text-xl text-white">
-            FitFatta
-          </span>
-        </div>
+    <Sidebar collapsible="icon" {...props}>
+      <SidebarHeader>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton size="lg" asChild>
+              <a href="/dashboard" className="font-semibold">
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-fitness-primary text-sidebar-primary-foreground">
+                  <Dumbbell className="size-4" />
+                </div>
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-semibold">FitGenius</span>
+                  <span className="truncate text-xs">
+                    {isPro && <Badge className="bg-yellow-500 text-black text-xs">PRO</Badge>}
+                    {isCoach && <Badge className="bg-blue-500 text-white text-xs">COACH</Badge>}
+                    {isAdmin && <Badge className="bg-red-500 text-white text-xs">ADMIN</Badge>}
+                  </span>
+                </div>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
-      
-      <SidebarContent className="py-4">
-        <SidebarGroup>
-          <SidebarGroupLabel className={`text-slate-600 font-semibold text-sm uppercase tracking-wide mb-2 ${isRTL ? 'text-right' : ''}`}>
-            {t('navigation.menu')}
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
-              {items.map((item) => {
-                const active = isActive(item.url)
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
-                      <Link 
-                        to={item.url} 
-                        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
-                          isRTL ? 'flex-row-reverse text-right' : ''
-                        } ${
-                          active 
-                            ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-md' 
-                            : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
-                        }`}
-                      >
-                        <item.icon className={`h-5 w-5 ${active ? 'text-white' : 'text-slate-500'}`} />
-                        <span className={`font-medium ${active ? 'text-white' : ''}`}>
-                          {t(`navigation.${item.title}`)}
-                        </span>
-                        {active && (
-                          <div className={`w-2 h-2 bg-white rounded-full ${isRTL ? 'mr-auto' : 'ml-auto'}`} />
-                        )}
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-      
-      <SidebarFooter className="border-t border-slate-200 bg-slate-50/50">
-        <div className="px-3 py-3 border-b border-slate-200">
-          <LanguageToggle />
-        </div>
+      <SidebarMenu>
+        {navigation.map((item) => (
+          <SidebarMenuItem key={item.title}>
+            <SidebarMenuButton
+              variant={item.isActive ? "active" : "ghost"}
+              size="lg"
+              asChild
+            >
+              <a href={item.url}>
+                <item.icon className="size-4" />
+                <span>{item.title}</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        ))}
+      </SidebarMenu>
+      <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <SidebarMenuButton
-                  size="lg"
-                  className={`data-[state=open]:bg-slate-100 data-[state=open]:text-slate-900 hover:bg-slate-100 p-3 ${isRTL ? 'flex-row-reverse' : ''}`}
-                >
-                  <div className={`flex items-center gap-3 flex-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                    <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                      <User2 className="h-4 w-4 text-white" />
-                    </div>
-                    <div className={`grid flex-1 text-sm leading-tight ${isRTL ? 'text-right' : 'text-left'}`}>
-                      <span className="truncate font-semibold text-slate-900">{user?.email}</span>
-                      <span className="truncate text-xs text-slate-500">{t('navigation.account')}</span>
-                    </div>
+                <SidebarMenuButton size="lg">
+                  <Avatar className="size-7">
+                    <AvatarImage src={user?.user_metadata?.avatar_url} />
+                    <AvatarFallback>{profile?.first_name?.[0]}{profile?.last_name?.[0]}</AvatarFallback>
+                  </Avatar>
+                  <div className="grid flex-1 text-left text-sm leading-tight">
+                    <span className="truncate font-semibold">{profile?.first_name} {profile?.last_name}</span>
+                    <span className="truncate text-xs">{profile?.email}</span>
                   </div>
-                  <ChevronUp className={`size-4 text-slate-400 ${isRTL ? 'mr-auto' : 'ml-auto'}`} />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg bg-white shadow-xl border border-slate-200"
-                side={isRTL ? "left" : "right"}
-                align="end"
-                sideOffset={4}
-              >
-                <DropdownMenuItem className={`gap-2 py-2.5 text-slate-700 hover:bg-slate-50 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                  <User2 className="h-4 w-4 text-slate-500" />
-                  <span>{t('navigation.account')}</span>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => navigate("/profile")}>
+                  {t.profile.title}
                 </DropdownMenuItem>
-                <DropdownMenuItem className={`gap-2 py-2.5 text-slate-700 hover:bg-slate-50 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                  <Settings className="h-4 w-4 text-slate-500" />
-                  <span>{t('navigation.settings')}</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  className={`gap-2 py-2.5 text-red-600 hover:text-red-700 hover:bg-red-50 ${isRTL ? 'flex-row-reverse' : ''}`}
-                  onClick={handleSignOut}
-                >
-                  <span>{t('navigation.signOut')}</span>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleSignOut}>
+                  {t.auth.signOut}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton size="lg" onClick={toggleLanguage}>
+              {isRTL ? t.direction.ltr : t.direction.rtl}
+            </SidebarMenuButton>
+          </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }

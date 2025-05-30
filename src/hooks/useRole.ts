@@ -1,0 +1,72 @@
+
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from './useAuth';
+
+export type UserRole = 'normal' | 'pro' | 'coach' | 'admin';
+
+interface RoleCapabilities {
+  role: UserRole;
+  isPro: boolean;
+  isCoach: boolean;
+  isAdmin: boolean;
+  canAccessUnlimitedAI: boolean;
+  canManageTrainees: boolean;
+  canAccessBilling: boolean;
+}
+
+export const useRole = () => {
+  const { user } = useAuth();
+
+  const { data: roleData, isLoading, refetch } = useQuery({
+    queryKey: ['user-role', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+
+      // Get user profile with role
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError) throw profileError;
+
+      // Check if user has active subscription
+      const { data: subscription, error: subError } = await supabase
+        .from('subscriptions')
+        .select('status, current_period_end')
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .gte('current_period_end', new Date().toISOString())
+        .maybeSingle();
+
+      if (subError && subError.code !== 'PGRST116') throw subError;
+
+      const role = profile.role as UserRole;
+      const isPro = !!subscription || role === 'admin';
+      const isCoach = role === 'coach' || role === 'admin';
+      const isAdmin = role === 'admin';
+
+      const capabilities: RoleCapabilities = {
+        role,
+        isPro,
+        isCoach,
+        isAdmin,
+        canAccessUnlimitedAI: isPro,
+        canManageTrainees: isCoach,
+        canAccessBilling: role === 'normal' || role === 'pro',
+      };
+
+      return capabilities;
+    },
+    enabled: !!user?.id,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
+  return {
+    ...roleData,
+    isLoading,
+    refetch,
+  };
+};

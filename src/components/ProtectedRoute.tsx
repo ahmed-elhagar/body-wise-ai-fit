@@ -1,4 +1,3 @@
-
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { Navigate } from 'react-router-dom';
@@ -8,16 +7,19 @@ import { useEffect } from 'react';
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requireProfile?: boolean;
-  adminOnly?: boolean;
+  requireRole?: 'admin' | 'coach' | 'pro' | 'normal';
+  adminOnly?: boolean; // Keep for backward compatibility
 }
 
 export default function ProtectedRoute({ 
   children, 
   requireProfile = false, 
+  requireRole,
   adminOnly = false 
 }: ProtectedRouteProps) {
-  const { user, loading: authLoading, isAdmin } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { profile, isLoading: profileLoading } = useProfile();
+  const { role, isAdmin, isCoach, isLoading: roleLoading } = useRole();
 
   useEffect(() => {
     console.log('ProtectedRoute - Current state:', { 
@@ -29,9 +31,10 @@ export default function ProtectedRoute({
       isAdmin,
       profileExists: !!profile,
       requireProfile,
+      requireRole,
       adminOnly
     });
-  }, [user, authLoading, profileLoading, isAdmin, profile, requireProfile, adminOnly]);
+  }, [user, authLoading, profileLoading, isAdmin, profile, requireProfile, requireRole, adminOnly]);
 
   // Show loading while authentication is being determined
   if (authLoading) {
@@ -51,10 +54,9 @@ export default function ProtectedRoute({
     return <Navigate to="/auth" replace />;
   }
 
-  // Check admin access - but don't block while admin status is being determined
-  if (adminOnly) {
-    // If auth is still loading, wait
-    if (authLoading) {
+  // Check role requirements
+  if (requireRole || adminOnly) {
+    if (authLoading || roleLoading) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
           <div className="text-center">
@@ -65,8 +67,22 @@ export default function ProtectedRoute({
       );
     }
     
-    // If definitely not admin, redirect
-    if (!isAdmin) {
+    // Handle specific role requirements
+    if (requireRole) {
+      const hasRequiredRole = 
+        (requireRole === 'admin' && isAdmin) ||
+        (requireRole === 'coach' && (isCoach || isAdmin)) ||
+        (requireRole === 'pro' && (role === 'pro' || role === 'admin')) ||
+        (requireRole === 'normal' && role);
+
+      if (!hasRequiredRole) {
+        console.log('ProtectedRoute - Insufficient role permissions');
+        return <Navigate to="/dashboard" replace />;
+      }
+    }
+    
+    // Backward compatibility for adminOnly
+    if (adminOnly && !isAdmin) {
       console.log('ProtectedRoute - Admin required but user is not admin');
       return <Navigate to="/dashboard" replace />;
     }
