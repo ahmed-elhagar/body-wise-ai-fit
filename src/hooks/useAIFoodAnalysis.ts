@@ -19,9 +19,9 @@ export const useAIFoodAnalysis = () => {
     try {
       console.log('Starting AI food analysis...');
 
-      // Use 'ai_chat' as the generation type since 'food_analysis' is not in the database constraint
+      // Use 'recipe' as the generation type since it's valid in the database constraint
       const creditResult = await checkAndUseCreditAsync({
-        generationType: 'ai_chat',
+        generationType: 'recipe',
         promptData: {
           analysisType: 'food_image',
           fileName: imageFile.name,
