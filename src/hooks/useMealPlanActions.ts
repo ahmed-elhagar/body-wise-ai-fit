@@ -2,7 +2,6 @@
 import { useCallback } from "react";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useMealShuffle } from "@/hooks/useMealShuffle";
 import { useAIMealPlan } from "@/hooks/useAIMealPlan";
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from './useAuth';
@@ -13,47 +12,10 @@ export const useMealPlanActions = (
   aiPreferences: any,
   refetchMealPlan: any
 ) => {
-  const { t, language } = useLanguage();
+  const { language } = useLanguage();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const { generateMealPlan, isGenerating } = useAIMealPlan();
-  const { shuffleMeals, isShuffling } = useMealShuffle();
-
-  // Enhanced shuffle handler with better validation
-  const handleRegeneratePlan = useCallback(async () => {
-    if (!currentWeekPlan?.weeklyPlan?.id) {
-      toast.error(t('noMealPlanToShuffle') || 'No meal plan found to shuffle');
-      return;
-    }
-
-    if (!user?.id) {
-      toast.error('Please log in to shuffle meals');
-      return;
-    }
-    
-    try {
-      console.log('🔄 Initiating meal shuffle:', {
-        weeklyPlanId: currentWeekPlan.weeklyPlan.id,
-        userId: user.id,
-        weekOffset: currentWeekOffset
-      });
-
-      await shuffleMeals(currentWeekPlan.weeklyPlan.id);
-      
-      // Invalidate queries to refresh data
-      await queryClient.invalidateQueries({
-        queryKey: ['weekly-meal-plan']
-      });
-      
-      // Refresh the data after successful shuffle
-      setTimeout(() => {
-        refetchMealPlan?.();
-      }, 1000);
-    } catch (error) {
-      console.error('Failed to shuffle meals:', error);
-      toast.error('Failed to shuffle meals. Please try again.');
-    }
-  }, [currentWeekPlan?.weeklyPlan?.id, user?.id, shuffleMeals, t, refetchMealPlan, queryClient, currentWeekOffset]);
 
   // Enhanced AI generation handler with better cache management
   const handleGenerateAIPlan = useCallback(async () => {
@@ -104,15 +66,13 @@ export const useMealPlanActions = (
       
     } catch (error) {
       console.error('❌ Generation failed with exception:', error);
-      toast.error(t('mealPlan.generationFailed') || "Failed to generate meal plan. Please try again.");
+      toast.error("Failed to generate meal plan. Please try again.");
       throw error;
     }
-  }, [aiPreferences, language, currentWeekOffset, generateMealPlan, refetchMealPlan, t, queryClient, user?.id]);
+  }, [aiPreferences, language, currentWeekOffset, generateMealPlan, refetchMealPlan, queryClient, user?.id]);
 
   return {
-    handleRegeneratePlan,
     handleGenerateAIPlan,
-    isGenerating,
-    isShuffling
+    isGenerating
   };
 };

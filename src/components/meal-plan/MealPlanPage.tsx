@@ -1,20 +1,17 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   UtensilsCrossed, 
   ShoppingCart, 
-  Calendar,
-  TrendingUp,
   ChevronLeft,
   ChevronRight,
   Grid3X3,
   List,
   Target,
-  Flame
+  Flame,
+  Sparkles
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useMealPlanPage } from "@/hooks/useMealPlanPage";
@@ -26,6 +23,7 @@ import MealPlanLoadingBackdrop from "./MealPlanLoadingBackdrop";
 import MealRecipeDialog from "./MealRecipeDialog";
 import MealExchangeDialog from "./MealExchangeDialog";
 import SnackPickerDialog from "./SnackPickerDialog";
+import MealPlanAIDialog from "./MealPlanAIDialog";
 import { toast } from "sonner";
 
 const MealPlanPage = () => {
@@ -69,6 +67,22 @@ const MealPlanPage = () => {
 
   const handleShoppingListUpdate = () => {
     toast.success("Shopping list updated ✅");
+  };
+
+  // Enhanced AI generation handler
+  const handleGenerateAIPlan = async () => {
+    console.log('🎯 MealPlanPage: Starting AI generation with preferences:', mealPlanState.aiPreferences);
+    
+    try {
+      const success = await mealPlanState.handleGenerateAIPlan();
+      if (success) {
+        mealPlanState.setShowAIDialog(false);
+        toast.success("Meal plan generated successfully! 🎉");
+      }
+    } catch (error) {
+      console.error('❌ AI generation failed:', error);
+      toast.error("Failed to generate meal plan. Please try again.");
+    }
   };
 
   if (mealPlanState.isLoading) {
@@ -181,9 +195,10 @@ const MealPlanPage = () => {
             </h3>
             <p className="text-gray-600 mb-8 text-lg">Generate your first AI-powered meal plan to get started!</p>
             <Button 
-              onClick={() => mealPlanState.setShowAIDialog && mealPlanState.setShowAIDialog(true)}
+              onClick={() => mealPlanState.setShowAIDialog(true)}
               className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-10 py-4 text-lg font-semibold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300"
             >
+              <Sparkles className="w-6 h-6 mr-3" />
               Generate Meal Plan
             </Button>
           </Card>
@@ -193,7 +208,7 @@ const MealPlanPage = () => {
             <Card className="mb-6 bg-gradient-to-br from-white to-blue-50/50 border-0 shadow-xl rounded-2xl overflow-hidden">
               <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
                 <CardTitle className="text-xl font-bold flex items-center gap-3">
-                  <TrendingUp className="w-6 h-6" />
+                  <Target className="w-6 h-6" />
                   Weekly Overview
                 </CardTitle>
               </CardHeader>
@@ -225,7 +240,7 @@ const MealPlanPage = () => {
                   
                   <div className="text-center">
                     <div className="w-16 h-16 mx-auto mb-3 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg">
-                      <TrendingUp className="w-8 h-8 text-white" />
+                      <Target className="w-8 h-8 text-white" />
                     </div>
                     <div className="text-2xl font-bold text-orange-600">{weeklyStats.totalProtein.toFixed(1)}g</div>
                     <div className="text-sm text-gray-600 font-medium">Total Protein</div>
@@ -234,9 +249,10 @@ const MealPlanPage = () => {
                 
                 <div className="mt-6 pt-6 border-t border-gray-200">
                   <Button 
-                    onClick={() => mealPlanState.setShowAIDialog && mealPlanState.setShowAIDialog(true)}
+                    onClick={() => mealPlanState.setShowAIDialog(true)}
                     className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
                   >
+                    <Sparkles className="w-5 h-5 mr-2" />
                     Regenerate Plan
                   </Button>
                 </div>
@@ -284,7 +300,17 @@ const MealPlanPage = () => {
         )}
       </div>
 
-      {/* Dialogs */}
+      {/* AI Generation Dialog */}
+      <MealPlanAIDialog
+        open={mealPlanState.showAIDialog}
+        onOpenChange={mealPlanState.setShowAIDialog}
+        preferences={mealPlanState.aiPreferences}
+        onPreferencesChange={mealPlanState.setAiPreferences}
+        onGenerate={handleGenerateAIPlan}
+        isGenerating={mealPlanState.isGenerating}
+      />
+
+      {/* Other Dialogs */}
       <SnackPickerDialog
         isOpen={showSnackDialog}
         onClose={() => setShowSnackDialog(false)}

@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Loader2 } from "lucide-react";
+import { useState } from "react";
 
 interface MealPlanAIDialogProps {
   open: boolean;
@@ -23,24 +24,44 @@ const MealPlanAIDialog = ({
   onGenerate,
   isGenerating
 }: MealPlanAIDialogProps) => {
+  const [localPreferences, setLocalPreferences] = useState({
+    duration: "7",
+    cuisine: "mixed",
+    maxPrepTime: "30",
+    includeSnacks: true,
+    mealTypes: "breakfast,lunch,dinner",
+    ...preferences
+  });
+
+  const handlePreferenceChange = (key: string, value: any) => {
+    const newPrefs = { ...localPreferences, [key]: value };
+    setLocalPreferences(newPrefs);
+    onPreferencesChange(newPrefs);
+  };
+
+  const handleGenerate = () => {
+    console.log('🎯 AI Dialog: Starting generation with preferences:', localPreferences);
+    onGenerate();
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md bg-white border-0 shadow-2xl">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5" />
+          <DialogTitle className="flex items-center gap-2 text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <Sparkles className="h-6 w-6 text-blue-600" />
             Generate AI Meal Plan
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-4">
+        <div className="space-y-6 p-2">
           <div className="space-y-2">
-            <Label>Duration</Label>
+            <Label className="text-sm font-semibold text-gray-700">Duration</Label>
             <Select 
-              value={preferences.duration} 
-              onValueChange={(value) => onPreferencesChange({...preferences, duration: value})}
+              value={localPreferences.duration} 
+              onValueChange={(value) => handlePreferenceChange('duration', value)}
             >
-              <SelectTrigger>
+              <SelectTrigger className="bg-gray-50 border-gray-200">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -52,34 +73,36 @@ const MealPlanAIDialog = ({
           </div>
 
           <div className="space-y-2">
-            <Label>Cuisine Type</Label>
+            <Label className="text-sm font-semibold text-gray-700">Cuisine Type</Label>
             <Select 
-              value={preferences.cuisine} 
-              onValueChange={(value) => onPreferencesChange({...preferences, cuisine: value})}
+              value={localPreferences.cuisine} 
+              onValueChange={(value) => handlePreferenceChange('cuisine', value)}
             >
-              <SelectTrigger>
+              <SelectTrigger className="bg-gray-50 border-gray-200">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="mixed">Mixed</SelectItem>
+                <SelectItem value="mixed">Mixed International</SelectItem>
                 <SelectItem value="mediterranean">Mediterranean</SelectItem>
                 <SelectItem value="asian">Asian</SelectItem>
                 <SelectItem value="mexican">Mexican</SelectItem>
                 <SelectItem value="american">American</SelectItem>
+                <SelectItem value="middle_eastern">Middle Eastern</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label>Max Prep Time</Label>
+            <Label className="text-sm font-semibold text-gray-700">Max Prep Time</Label>
             <Select 
-              value={preferences.maxPrepTime} 
-              onValueChange={(value) => onPreferencesChange({...preferences, maxPrepTime: value})}
+              value={localPreferences.maxPrepTime} 
+              onValueChange={(value) => handlePreferenceChange('maxPrepTime', value)}
             >
-              <SelectTrigger>
+              <SelectTrigger className="bg-gray-50 border-gray-200">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="15">15 minutes</SelectItem>
                 <SelectItem value="30">30 minutes</SelectItem>
                 <SelectItem value="45">45 minutes</SelectItem>
                 <SelectItem value="60">1 hour</SelectItem>
@@ -88,21 +111,33 @@ const MealPlanAIDialog = ({
             </Select>
           </div>
 
-          <div className="flex items-center justify-between">
-            <Label>Include Snacks</Label>
+          <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+            <div>
+              <Label className="text-sm font-semibold text-blue-900">Include Snacks</Label>
+              <p className="text-xs text-blue-700">Add healthy snacks between meals</p>
+            </div>
             <Switch 
-              checked={preferences.includeSnacks}
-              onCheckedChange={(checked) => onPreferencesChange({...preferences, includeSnacks: checked})}
+              checked={localPreferences.includeSnacks}
+              onCheckedChange={(checked) => handlePreferenceChange('includeSnacks', checked)}
             />
           </div>
 
           <Button 
-            onClick={onGenerate} 
+            onClick={handleGenerate}
             disabled={isGenerating}
-            className="w-full bg-fitness-gradient text-white"
+            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
           >
-            <Sparkles className="h-4 w-4 mr-2" />
-            {isGenerating ? 'Generating...' : 'Generate Meal Plan'}
+            {isGenerating ? (
+              <>
+                <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                Generating Your Plan...
+              </>
+            ) : (
+              <>
+                <Sparkles className="h-5 w-5 mr-2" />
+                Generate Meal Plan
+              </>
+            )}
           </Button>
         </div>
       </DialogContent>
