@@ -1,65 +1,46 @@
 
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Toaster } from 'sonner';
-import { AuthProvider } from '@/hooks/useAuth';
-import { LanguageProvider } from '@/contexts/LanguageContext';
-import Navigation from '@/components/Navigation';
-import GlobalFeedbackButton from '@/components/GlobalFeedbackButton';
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { LanguageProvider } from "@/contexts/LanguageContext";
+import { AuthProvider } from "@/contexts/AuthContext";
+import Layout from "@/components/Layout";
+import Dashboard from "@/pages/Dashboard";
+import MealPlan from "@/pages/MealPlan";
+import Exercise from "@/pages/Exercise";
+import Progress from "@/pages/Progress";
+import Profile from "@/pages/Profile";
+import Admin from "@/pages/Admin";
+import Landing from "@/pages/Landing";
+import EnhancedProfile from "@/pages/EnhancedProfile";
 
-// Page imports
-import Index from '@/pages/Index';
-import Auth from '@/pages/Auth';
-import Dashboard from '@/pages/Dashboard';
-import Profile from '@/pages/Profile';
-import Onboarding from '@/pages/Onboarding';
-import MealPlan from '@/pages/MealPlan';
-import Exercise from '@/pages/Exercise';
-import WeightTracking from '@/pages/WeightTracking';
-import CalorieChecker from '@/pages/CalorieChecker';
-import AIChatPage from '@/pages/AIChatPage';
-import AdminPanel from '@/pages/AdminPanel';
-import NotFound from '@/pages/NotFound';
-
-import './App.css';
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      retry: 1,
-    },
-  },
-});
+const queryClient = new QueryClient();
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
+      <TooltipProvider>
         <LanguageProvider>
-          <Router>
-            <div className="min-h-screen bg-gray-50">
-              <Navigation />
+          <AuthProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
               <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/onboarding" element={<Onboarding />} />
-                <Route path="/meal-plan" element={<MealPlan />} />
-                <Route path="/exercise" element={<Exercise />} />
-                <Route path="/weight-tracking" element={<WeightTracking />} />
-                <Route path="/calorie-checker" element={<CalorieChecker />} />
-                <Route path="/ai-chat" element={<AIChatPage />} />
-                <Route path="/admin" element={<AdminPanel />} />
-                <Route path="*" element={<NotFound />} />
+                <Route path="/" element={<Landing />} />
+                <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
+                <Route path="/meal-plan" element={<Layout><MealPlan /></Layout>} />
+                <Route path="/exercise" element={<Layout><Exercise /></Layout>} />
+                <Route path="/progress" element={<Layout><Progress /></Layout>} />
+                <Route path="/profile" element={<Layout><Profile /></Layout>} />
+                <Route path="/admin" element={<Layout><Admin /></Layout>} />
+                <Route path="/enhanced-profile" element={<EnhancedProfile />} />
               </Routes>
-              <GlobalFeedbackButton />
-              <Toaster position="top-right" />
-            </div>
-          </Router>
+            </BrowserRouter>
+          </AuthProvider>
         </LanguageProvider>
-      </AuthProvider>
+      </TooltipProvider>
     </QueryClientProvider>
   );
 }
