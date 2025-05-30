@@ -1,8 +1,16 @@
 
-import MealPlanLayout from "@/components/MealPlanLayout";
-import MealPlanHeader from "@/components/MealPlanHeader";
-import MealPlanMainContent from "@/components/MealPlanMainContent";
-import MealPlanDialogs from "@/components/MealPlanDialogs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { UtensilsCrossed, Shuffle, Sparkles, Calendar } from "lucide-react";
+import MealPlanWeekNavigation from "./MealPlanWeekNavigation";
+import MealPlanDaySelector from "./MealPlanDaySelector";
+import MealPlanLoadingState from "./MealPlanLoadingState";
+import MealPlanEmptyState from "./MealPlanEmptyState";
+import MealPlanStatsCard from "./MealPlanStatsCard";
+import MealPlanDayContent from "./MealPlanDayContent";
+import MealPlanRecipeDialog from "./MealPlanRecipeDialog";
+import MealPlanExchangeDialog from "./MealPlanExchangeDialog";
+import MealPlanAIDialog from "./MealPlanAIDialog";
 
 interface MealPlanPageContentProps {
   currentDate: string;
@@ -47,73 +55,147 @@ interface MealPlanPageContentProps {
 }
 
 const MealPlanPageContent = (props: MealPlanPageContentProps) => {
+  if (props.isGenerating) {
+    return <MealPlanLoadingState />;
+  }
+
   return (
-    <MealPlanLayout>
-      <div className="space-y-4 sm:space-y-6">
-        <MealPlanHeader
-          currentDate={props.currentDate}
-          currentDay={props.currentDay}
-          onShowAIDialog={() => props.setShowAIDialog(true)}
-          onRegeneratePlan={props.onRegeneratePlan}
-          isGenerating={props.isGenerating}
-          isShuffling={props.isShuffling}
-          dietType={props.currentWeekPlan?.weeklyPlan?.generation_prompt?.dietType}
-          totalWeeklyCalories={props.currentWeekPlan?.weeklyPlan?.total_calories}
-        />
+    <div className="p-6 bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/30 min-h-screen">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Enhanced Header */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+              <UtensilsCrossed className="h-8 w-8 text-blue-600" />
+              Meal Plan
+            </h1>
+            <p className="text-gray-600 mt-1">
+              {props.currentDate} • {props.currentDay}
+            </p>
+          </div>
+          
+          <div className="flex flex-wrap gap-2">
+            {props.currentWeekPlan && (
+              <Button
+                onClick={props.onRegeneratePlan}
+                disabled={props.isShuffling}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2 text-gray-700 border-gray-300 hover:bg-gray-50"
+              >
+                <Shuffle className="h-4 w-4" />
+                <span className="text-gray-700">
+                  {props.isShuffling ? 'Shuffling...' : 'Shuffle'}
+                </span>
+              </Button>
+            )}
+            
+            <Button
+              onClick={props.onShowAIDialog}
+              disabled={props.isGenerating}
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <Sparkles className="h-4 w-4" />
+              <span className="text-white">
+                {props.isGenerating ? 'Generating...' : 'Generate AI Plan'}
+              </span>
+            </Button>
+          </div>
+        </div>
 
-        <MealPlanMainContent
+        {/* Week Navigation */}
+        <MealPlanWeekNavigation
           currentWeekOffset={props.currentWeekOffset}
-          onWeekChange={props.setCurrentWeekOffset}
+          onPreviousWeek={() => props.setCurrentWeekOffset(props.currentWeekOffset - 1)}
+          onNextWeek={() => props.setCurrentWeekOffset(props.currentWeekOffset + 1)}
+          onCurrentWeek={() => props.setCurrentWeekOffset(0)}
           weekStartDate={props.weekStartDate}
-          selectedDayNumber={props.selectedDayNumber}
-          onDaySelect={props.setSelectedDayNumber}
-          viewMode={props.viewMode}
-          onViewModeChange={props.setViewMode}
-          onAddSnack={() => props.setShowAddSnackDialog(true)}
-          onGenerate={() => props.setShowAIDialog(true)}
-          currentWeekPlan={props.currentWeekPlan}
-          todaysMeals={props.todaysMeals}
-          totalCalories={props.totalCalories}
-          totalProtein={props.totalProtein}
-          onShowShoppingList={() => props.setShowShoppingListDialog(true)}
-          onShowRecipe={props.handleShowRecipe}
-          onExchangeMeal={props.handleExchangeMeal}
         />
 
-        <MealPlanDialogs
-          showAIDialog={props.showAIDialog}
-          onCloseAIDialog={() => props.setShowAIDialog(false)}
-          aiPreferences={props.aiPreferences}
-          onPreferencesChange={props.setAiPreferences}
-          onGenerateAI={props.handleGenerateAIPlan}
-          isGenerating={props.isGenerating}
-          showAddSnackDialog={props.showAddSnackDialog}
-          onCloseAddSnackDialog={() => props.setShowAddSnackDialog(false)}
+        {/* Day Selector */}
+        <MealPlanDaySelector
           selectedDay={props.selectedDayNumber}
-          weeklyPlanId={props.currentWeekPlan?.weeklyPlan?.id || null}
-          onSnackAdded={() => {
-            props.refetch();
-            props.setShowAddSnackDialog(false);
-          }}
-          currentDayCalories={props.totalCalories}
-          targetDayCalories={2000}
-          showShoppingListDialog={props.showShoppingListDialog}
-          onCloseShoppingListDialog={() => props.setShowShoppingListDialog(false)}
-          shoppingItems={props.convertMealsToShoppingItems(props.todaysMeals)}
-          showRecipeDialog={props.showRecipeDialog}
-          onCloseRecipeDialog={() => props.setShowRecipeDialog(false)}
-          selectedMeal={props.selectedMeal}
-          showExchangeDialog={props.showExchangeDialog}
-          onCloseExchangeDialog={() => props.setShowExchangeDialog(false)}
-          selectedMealIndex={props.selectedMealIndex}
-          onExchange={() => {
-            props.refetch();
-            props.setShowExchangeDialog(false);
-          }}
+          onDaySelect={props.setSelectedDayNumber}
+          weekStartDate={props.weekStartDate}
+        />
+
+        {props.currentWeekPlan ? (
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* Stats Cards */}
+            <div className="lg:col-span-1 space-y-4">
+              <MealPlanStatsCard
+                totalCalories={props.totalCalories}
+                totalProtein={props.totalProtein}
+                targetDayCalories={2000}
+                selectedDay={props.selectedDayNumber}
+              />
+
+              {/* Weekly Overview */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    Weekly Overview
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Total Calories</span>
+                    <span className="font-medium text-gray-900">{props.totalWeeklyCalories || 0}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Total Protein</span>
+                    <span className="font-medium text-gray-900">{props.currentWeekPlan.weeklyPlan?.total_protein || 0}g</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Total Meals</span>
+                    <span className="font-medium text-gray-900">{props.currentWeekPlan.dailyMeals?.length || 0}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Main Content */}
+            <div className="lg:col-span-3">
+              <MealPlanDayContent
+                selectedDay={props.selectedDayNumber}
+                todaysMeals={props.todaysMeals}
+                onMealClick={props.handleShowRecipe}
+                onRecipeClick={props.handleShowRecipe}
+                onExchangeClick={props.handleExchangeMeal}
+                weekStartDate={props.weekStartDate}
+              />
+            </div>
+          </div>
+        ) : (
+          <MealPlanEmptyState onGenerateClick={props.onShowAIDialog} />
+        )}
+
+        {/* Dialogs */}
+        <MealPlanRecipeDialog
+          open={props.showRecipeDialog}
+          onOpenChange={props.setShowRecipeDialog}
+          meal={props.selectedMeal}
           onRecipeGenerated={props.handleRecipeGenerated}
         />
+
+        <MealPlanExchangeDialog
+          open={props.showExchangeDialog}
+          onOpenChange={props.setShowExchangeDialog}
+          meal={props.selectedMeal}
+          mealIndex={props.selectedMealIndex}
+        />
+
+        <MealPlanAIDialog
+          open={props.showAIDialog}
+          onOpenChange={props.setShowAIDialog}
+          preferences={props.aiPreferences}
+          onPreferencesChange={props.setAiPreferences}
+          onGenerate={props.handleGenerateAIPlan}
+          isGenerating={props.isGenerating}
+        />
       </div>
-    </MealPlanLayout>
+    </div>
   );
 };
 

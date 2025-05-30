@@ -20,22 +20,22 @@ const CompactProfileCompletionCard = ({ onStepClick }: CompactProfileCompletionC
   if (isCompleted && !isExpanded) {
     return (
       <Card className="bg-green-50 border-green-200">
-        <CardContent className="p-4">
+        <CardContent className="p-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <CheckCircle className="w-5 h-5 text-green-600" />
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-green-600" />
               <div>
-                <p className="font-medium text-green-800">Profile Complete!</p>
-                <p className="text-sm text-green-600">All sections completed</p>
+                <p className="text-sm font-medium text-green-800">Profile Complete!</p>
+                <p className="text-xs text-green-600">All sections completed</p>
               </div>
             </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setIsExpanded(true)}
-              className="text-green-600 hover:text-green-700"
+              className="text-green-600 hover:text-green-700 h-8 w-8 p-0"
             >
-              <ChevronDown className="w-4 h-4" />
+              <ChevronDown className="w-3 h-3" />
             </Button>
           </div>
         </CardContent>
@@ -48,8 +48,8 @@ const CompactProfileCompletionCard = ({ onStepClick }: CompactProfileCompletionC
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <Target className="w-5 h-5 text-blue-600" />
-            <span className="font-medium text-gray-800">
+            <Target className="w-4 h-4 text-blue-600" />
+            <span className="text-sm font-medium text-gray-800">
               {isCompleted ? "Profile Complete!" : "Profile Setup"}
             </span>
           </div>
@@ -58,16 +58,16 @@ const CompactProfileCompletionCard = ({ onStepClick }: CompactProfileCompletionC
               variant="ghost"
               size="sm"
               onClick={() => setIsExpanded(false)}
-              className="text-gray-600 hover:text-gray-700"
+              className="text-gray-600 hover:text-gray-700 h-8 w-8 p-0"
             >
-              <ChevronUp className="w-4 h-4" />
+              <ChevronUp className="w-3 h-3" />
             </Button>
           )}
         </div>
 
         <div className="space-y-3">
           <div className="space-y-1">
-            <div className="flex justify-between text-sm">
+            <div className="flex justify-between text-xs">
               <span className={isCompleted ? "text-green-700" : "text-gray-600"}>
                 Progress
               </span>
@@ -77,7 +77,7 @@ const CompactProfileCompletionCard = ({ onStepClick }: CompactProfileCompletionC
             </div>
             <Progress 
               value={completionPercentage} 
-              className={`h-2 ${isCompleted ? "bg-green-100" : ""}`}
+              className={`h-1.5 ${isCompleted ? "bg-green-100" : ""}`}
             />
             <p className="text-xs text-gray-500">
               {completedSteps} of {steps.length} sections completed
@@ -85,15 +85,15 @@ const CompactProfileCompletionCard = ({ onStepClick }: CompactProfileCompletionC
           </div>
 
           {!isCompleted && nextIncompleteStep && (
-            <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-              <p className="text-sm text-blue-800 font-medium">
+            <div className="p-2 bg-blue-50 rounded-lg border border-blue-200">
+              <p className="text-xs text-blue-800 font-medium">
                 Next: {nextIncompleteStep.title}
               </p>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => onStepClick(nextIncompleteStep.key)}
-                className="mt-2 text-xs bg-white hover:bg-blue-50 border-blue-200"
+                className="mt-1 text-xs h-6 bg-white hover:bg-blue-50 border-blue-200"
               >
                 Complete Now
               </Button>
@@ -101,14 +101,14 @@ const CompactProfileCompletionCard = ({ onStepClick }: CompactProfileCompletionC
           )}
 
           {isCompleted && (
-            <div className="grid grid-cols-2 gap-2 mt-3">
+            <div className="grid grid-cols-2 gap-1">
               {steps.map((step) => (
                 <Button
                   key={step.key}
                   variant="outline"
                   size="sm"
                   onClick={() => onStepClick(step.key)}
-                  className="text-xs bg-white hover:bg-green-50 border-green-200"
+                  className="text-xs h-6 bg-white hover:bg-green-50 border-green-200"
                 >
                   {step.title}
                 </Button>

@@ -54,7 +54,7 @@ export const useOnboardingProgress = () => {
     mutationFn: async (step: string) => {
       if (!user?.id) throw new Error('No user ID');
 
-      const updateData: Partial<OnboardingProgress> = {
+      const updateData: any = {
         user_id: user.id,
         updated_at: new Date().toISOString(),
       };
