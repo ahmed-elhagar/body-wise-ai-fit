@@ -88,7 +88,7 @@ const Navigation = () => {
                 <Activity className="w-4 h-4 text-white" />
               </div>
               <h2 className={`text-lg font-bold bg-gradient-to-r from-health-primary to-health-secondary bg-clip-text text-transparent ${isRTL ? 'text-right' : 'text-left'}`}>
-                FitGenius
+                FitFatta
               </h2>
             </div>
             <LanguageToggle />

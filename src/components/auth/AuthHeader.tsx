@@ -12,7 +12,7 @@ export const AuthHeader = ({ isSignUp }: AuthHeaderProps) => {
         <User className="w-8 h-8 text-white" />
       </div>
       <h1 className="text-3xl font-bold bg-fitness-gradient bg-clip-text text-transparent">
-        FitGenius AI
+        FitFatta AI
       </h1>
       <p className="text-gray-600 mt-2">
         {isSignUp ? 'Create your account' : 'Welcome back!'}

@@ -69,7 +69,7 @@ const Index = () => {
           
           <h1 className="text-5xl md:text-6xl font-bold mb-6">
             <span className="bg-fitness-gradient bg-clip-text text-transparent">
-              FitGenius AI
+              FitFatta AI
             </span>
           </h1>
           
@@ -130,7 +130,7 @@ const Index = () => {
               Ready to Transform Your Fitness Journey?
             </h2>
             <p className="text-gray-600 mb-6 text-lg">
-              Join thousands of users who have achieved their fitness goals with FitGenius AI
+              Join thousands of users who have achieved their fitness goals with FitFatta AI
             </p>
             <Button 
               onClick={() => navigate('/auth')}
