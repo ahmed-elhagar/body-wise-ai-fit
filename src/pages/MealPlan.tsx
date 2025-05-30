@@ -3,9 +3,7 @@ import { useState } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, ChefHat, Clock, Users, Shuffle, Sparkles, UtensilsCrossed, Apple } from "lucide-react";
+import { Calendar, Shuffle, Sparkles, UtensilsCrossed } from "lucide-react";
 import { useMealPlanPage } from "@/hooks/useMealPlanPage";
 import { useLanguage } from "@/contexts/LanguageContext";
 import MealPlanWeekNavigation from "@/components/meal-plan/MealPlanWeekNavigation";
@@ -22,6 +20,33 @@ const MealPlan = () => {
   const { t } = useLanguage();
   const mealPlanState = useMealPlanPage();
 
+  // Convert DailyMeal to Meal format for handlers
+  const handleShowRecipe = (meal: any) => {
+    const convertedMeal = {
+      ...meal,
+      type: meal.meal_type || 'meal',
+      time: '12:00',
+      cookTime: meal.cook_time || 30,
+      prepTime: meal.prep_time || 15,
+      servings: meal.servings || 1,
+      difficulty: 'medium'
+    };
+    mealPlanState.handleShowRecipe(convertedMeal);
+  };
+
+  const handleExchangeMeal = (meal: any, index: number) => {
+    const convertedMeal = {
+      ...meal,
+      type: meal.meal_type || 'meal',
+      time: '12:00',
+      cookTime: meal.cook_time || 30,
+      prepTime: meal.prep_time || 15,
+      servings: meal.servings || 1,
+      difficulty: 'medium'
+    };
+    mealPlanState.handleExchangeMeal(convertedMeal, index);
+  };
+
   if (mealPlanState.isLoading) {
     return <MealPlanLoadingState />;
   }
@@ -34,8 +59,8 @@ const MealPlan = () => {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-                <UtensilsCrossed className="h-8 w-8 text-fitness-primary" />
-                {t('mealPlan.title')}
+                <UtensilsCrossed className="h-8 w-8 text-blue-600" />
+                Meal Plan
               </h1>
               <p className="text-gray-600 mt-1">
                 {mealPlanState.currentDate} • {mealPlanState.currentDay}
@@ -49,20 +74,24 @@ const MealPlan = () => {
                   disabled={mealPlanState.isShuffling}
                   variant="outline"
                   size="sm"
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 text-gray-700 border-gray-300 hover:bg-gray-50"
                 >
                   <Shuffle className="h-4 w-4" />
-                  {mealPlanState.isShuffling ? t('mealPlan.shuffling') : t('mealPlan.shuffle')}
+                  <span className="text-gray-700">
+                    {mealPlanState.isShuffling ? 'Shuffling...' : 'Shuffle'}
+                  </span>
                 </Button>
               )}
               
               <Button
                 onClick={() => mealPlanState.setShowAIDialog(true)}
                 disabled={mealPlanState.isGenerating}
-                className="flex items-center gap-2 bg-fitness-gradient text-white"
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
               >
                 <Sparkles className="h-4 w-4" />
-                {mealPlanState.isGenerating ? t('mealPlan.generating') : t('mealPlan.generateAI')}
+                <span className="text-white">
+                  {mealPlanState.isGenerating ? 'Generating...' : 'Generate AI Plan'}
+                </span>
               </Button>
             </div>
           </div>
@@ -99,21 +128,21 @@ const MealPlan = () => {
                   <CardHeader>
                     <CardTitle className="text-sm font-medium flex items-center gap-2">
                       <Calendar className="h-4 w-4" />
-                      {t('mealPlan.weeklyOverview')}
+                      Weekly Overview
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <div className="flex justify-between text-sm">
-                      <span>{t('mealPlan.totalCalories')}</span>
-                      <span className="font-medium">{mealPlanState.currentWeekPlan.weeklyPlan.total_calories || 0}</span>
+                      <span className="text-gray-600">Total Calories</span>
+                      <span className="font-medium text-gray-900">{mealPlanState.currentWeekPlan.weeklyPlan?.total_calories || 0}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span>{t('mealPlan.totalProtein')}</span>
-                      <span className="font-medium">{mealPlanState.currentWeekPlan.weeklyPlan.total_protein || 0}g</span>
+                      <span className="text-gray-600">Total Protein</span>
+                      <span className="font-medium text-gray-900">{mealPlanState.currentWeekPlan.weeklyPlan?.total_protein || 0}g</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span>{t('mealPlan.totalMeals')}</span>
-                      <span className="font-medium">{mealPlanState.currentWeekPlan.dailyMeals?.length || 0}</span>
+                      <span className="text-gray-600">Total Meals</span>
+                      <span className="font-medium text-gray-900">{mealPlanState.currentWeekPlan.dailyMeals?.length || 0}</span>
                     </div>
                   </CardContent>
                 </Card>
@@ -124,9 +153,9 @@ const MealPlan = () => {
                 <MealPlanDayContent
                   selectedDay={mealPlanState.selectedDayNumber}
                   todaysMeals={mealPlanState.todaysMeals}
-                  onMealClick={mealPlanState.handleShowRecipe}
-                  onRecipeClick={mealPlanState.handleShowRecipe}
-                  onExchangeClick={mealPlanState.handleExchangeMeal}
+                  onMealClick={handleShowRecipe}
+                  onRecipeClick={handleShowRecipe}
+                  onExchangeClick={handleExchangeMeal}
                   weekStartDate={mealPlanState.weekStartDate}
                 />
               </div>

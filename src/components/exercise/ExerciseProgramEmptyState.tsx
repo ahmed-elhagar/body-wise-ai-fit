@@ -22,10 +22,10 @@ const ExerciseProgramEmptyState = ({ workoutType, onGenerateClick }: ExercisePro
           </p>
           <Button 
             onClick={onGenerateClick}
-            className="bg-fitness-gradient text-white"
+            className="bg-blue-600 hover:bg-blue-700 text-white"
           >
             <Sparkles className="h-4 w-4 mr-2" />
-            Generate AI Program
+            <span className="text-white">Generate AI Program</span>
           </Button>
         </CardContent>
       </Card>

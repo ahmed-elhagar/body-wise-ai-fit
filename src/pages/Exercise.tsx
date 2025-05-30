@@ -3,9 +3,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
-import { Dumbbell, Calendar, Clock, Target, Sparkles, Home, Building2 } from "lucide-react";
+import { Dumbbell, Calendar, Target, Sparkles, Home, Building2 } from "lucide-react";
 import { useExerciseProgramPage } from "@/hooks/useExerciseProgramPage";
 import { useLanguage } from "@/contexts/LanguageContext";
 import ExerciseProgramWeekNavigation from "@/components/exercise/ExerciseProgramWeekNavigation";
@@ -32,8 +30,8 @@ const Exercise = () => {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-                <Dumbbell className="h-8 w-8 text-fitness-primary" />
-                {t('exercise.title')}
+                <Dumbbell className="h-8 w-8 text-blue-600" />
+                Exercise Program
               </h1>
               <p className="text-gray-600 mt-1">
                 {exerciseState.currentDate.toLocaleDateString()} • Week {exerciseState.currentWeekOffset + 1}
@@ -50,7 +48,7 @@ const Exercise = () => {
                   className="flex items-center gap-2"
                 >
                   <Home className="h-4 w-4" />
-                  Home
+                  <span className="text-white">Home</span>
                 </Button>
                 <Button
                   onClick={() => exerciseState.setWorkoutType("gym")}
@@ -59,7 +57,7 @@ const Exercise = () => {
                   className="flex items-center gap-2"
                 >
                   <Building2 className="h-4 w-4" />
-                  Gym
+                  <span className="text-white">Gym</span>
                 </Button>
               </div>
 
@@ -69,6 +67,7 @@ const Exercise = () => {
                   disabled={exerciseState.isGenerating}
                   variant="outline"
                   size="sm"
+                  className="text-gray-700 border-gray-300 hover:bg-gray-50"
                 >
                   Regenerate
                 </Button>
@@ -77,10 +76,12 @@ const Exercise = () => {
               <Button
                 onClick={() => exerciseState.setShowAIDialog(true)}
                 disabled={exerciseState.isGenerating}
-                className="flex items-center gap-2 bg-fitness-gradient text-white"
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
               >
                 <Sparkles className="h-4 w-4" />
-                {exerciseState.isGenerating ? 'Generating...' : 'Generate AI Program'}
+                <span className="text-white">
+                  {exerciseState.isGenerating ? 'Generating...' : 'Generate AI Program'}
+                </span>
               </Button>
             </div>
           </div>
@@ -123,26 +124,26 @@ const Exercise = () => {
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <div className="flex justify-between text-sm">
-                      <span>Program Type</span>
+                      <span className="text-gray-600">Program Type</span>
                       <Badge variant="secondary" className="capitalize">
                         {exerciseState.workoutType}
                       </Badge>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span>Goal</span>
-                      <span className="font-medium capitalize">
-                        {exerciseState.currentProgram.goal?.replace('_', ' ') || 'General Fitness'}
+                      <span className="text-gray-600">Goal</span>
+                      <span className="font-medium capitalize text-gray-900">
+                        {exerciseState.currentProgram.difficulty_level?.replace('_', ' ') || 'General Fitness'}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span>Level</span>
-                      <span className="font-medium capitalize">
-                        {exerciseState.currentProgram.level || 'Beginner'}
+                      <span className="text-gray-600">Level</span>
+                      <span className="font-medium capitalize text-gray-900">
+                        {exerciseState.currentProgram.difficulty_level || 'Beginner'}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span>Total Workouts</span>
-                      <span className="font-medium">
+                      <span className="text-gray-600">Total Workouts</span>
+                      <span className="font-medium text-gray-900">
                         {exerciseState.currentProgram.daily_workouts?.filter(w => !w.is_rest_day).length || 0}
                       </span>
                     </div>
@@ -155,10 +156,12 @@ const Exercise = () => {
                 <ExerciseProgramDayContent
                   selectedDay={exerciseState.selectedDayNumber}
                   todaysWorkouts={exerciseState.todaysWorkouts}
-                  todaysExercises={exerciseState.todaysExercises}
+                  todaysExercises={exerciseState.todaysExercises as any[]}
                   isRestDay={exerciseState.isRestDay}
                   onExerciseComplete={exerciseState.handleExerciseComplete}
-                  onExerciseProgressUpdate={exerciseState.handleExerciseProgressUpdate}
+                  onExerciseProgressUpdate={(exerciseId: string, progress: any) => 
+                    exerciseState.handleExerciseProgressUpdate(exerciseId, progress.sets, progress.reps, progress.notes)
+                  }
                   weekStartDate={exerciseState.weekStartDate}
                 />
               </div>
@@ -176,7 +179,7 @@ const Exercise = () => {
             onOpenChange={exerciseState.setShowAIDialog}
             preferences={exerciseState.aiPreferences}
             onPreferencesChange={exerciseState.setAiPreferences}
-            onGenerate={exerciseState.handleGenerateAIProgram}
+            onGenerate={(prefs) => exerciseState.handleGenerateAIProgram(prefs)}
             isGenerating={exerciseState.isGenerating}
           />
         </div>

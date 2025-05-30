@@ -21,10 +21,10 @@ const MealPlanEmptyState = ({ onGenerateClick }: MealPlanEmptyStateProps) => {
           </p>
           <Button 
             onClick={onGenerateClick}
-            className="bg-fitness-gradient text-white"
+            className="bg-blue-600 hover:bg-blue-700 text-white"
           >
             <Sparkles className="h-4 w-4 mr-2" />
-            Generate AI Meal Plan
+            <span className="text-white">Generate AI Meal Plan</span>
           </Button>
         </CardContent>
       </Card>

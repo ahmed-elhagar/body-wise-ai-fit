@@ -1,15 +1,14 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Dumbbell, Clock, Repeat, Target, CheckCircle, Play } from "lucide-react";
 import { format, addDays } from "date-fns";
 
 interface Exercise {
   id: string;
   name: string;
-  sets: number;
-  reps: string;
+  sets?: number;
+  reps?: string;
   weight?: number;
   duration?: number;
   rest_time?: number;
@@ -53,12 +52,12 @@ const ExerciseProgramDayContent = ({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Target className="h-5 w-5 text-green-500" />
-            {getDayName(selectedDay)} - {format(dayDate, 'MMM d')} (Rest Day)
+            <span className="text-gray-900">{getDayName(selectedDay)} - {format(dayDate, 'MMM d')} (Rest Day)</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="text-center py-12">
           <Target className="h-16 w-16 text-green-500 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold mb-2">Recovery Day</h3>
+          <h3 className="text-xl font-semibold mb-2 text-gray-900">Recovery Day</h3>
           <p className="text-gray-600">
             Take time to rest and let your muscles recover. Light stretching or walking is recommended.
           </p>
@@ -71,15 +70,15 @@ const ExerciseProgramDayContent = ({
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Dumbbell className="h-5 w-5 text-fitness-primary" />
-          {getDayName(selectedDay)} - {format(dayDate, 'MMM d')}
+          <Dumbbell className="h-5 w-5 text-blue-600" />
+          <span className="text-gray-900">{getDayName(selectedDay)} - {format(dayDate, 'MMM d')}</span>
         </CardTitle>
       </CardHeader>
       <CardContent>
         {todaysExercises.length > 0 ? (
           <div className="space-y-4">
             {todaysExercises.map((exercise, index) => (
-              <Card key={exercise.id} className={`border-l-4 ${exercise.completed ? 'border-l-green-500' : 'border-l-fitness-primary'}`}>
+              <Card key={exercise.id} className={`border-l-4 ${exercise.completed ? 'border-l-green-500' : 'border-l-blue-600'}`}>
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -87,18 +86,20 @@ const ExerciseProgramDayContent = ({
                         {exercise.completed ? (
                           <CheckCircle className="h-5 w-5 text-green-500" />
                         ) : (
-                          <Play className="h-5 w-5 text-fitness-primary" />
+                          <Play className="h-5 w-5 text-blue-600" />
                         )}
-                        <h4 className={`font-semibold text-lg ${exercise.completed ? 'line-through text-gray-500' : ''}`}>
+                        <h4 className={`font-semibold text-lg ${exercise.completed ? 'line-through text-gray-500' : 'text-gray-900'}`}>
                           {exercise.name}
                         </h4>
                       </div>
                       
                       <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
-                        <span className="flex items-center gap-1">
-                          <Repeat className="h-3 w-3" />
-                          {exercise.sets} sets × {exercise.reps} reps
-                        </span>
+                        {exercise.sets && exercise.reps && (
+                          <span className="flex items-center gap-1">
+                            <Repeat className="h-3 w-3" />
+                            {exercise.sets} sets × {exercise.reps} reps
+                          </span>
+                        )}
                         {exercise.weight && (
                           <span className="flex items-center gap-1">
                             <Target className="h-3 w-3" />
@@ -120,25 +121,27 @@ const ExerciseProgramDayContent = ({
                       <Button 
                         size="sm"
                         onClick={() => onExerciseComplete(exercise.id)}
-                        className="bg-fitness-gradient text-white"
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
                       >
                         <CheckCircle className="h-4 w-4 mr-2" />
-                        Mark Complete
+                        <span className="text-white">Mark Complete</span>
                       </Button>
                     ) : (
                       <Button 
                         size="sm" 
                         variant="outline"
                         onClick={() => onExerciseComplete(exercise.id)}
+                        className="text-gray-700 border-gray-300 hover:bg-gray-50"
                       >
-                        Mark Incomplete
+                        <span className="text-gray-700">Mark Incomplete</span>
                       </Button>
                     )}
                     <Button 
                       size="sm" 
                       variant="outline"
+                      className="text-gray-700 border-gray-300 hover:bg-gray-50"
                     >
-                      Update Progress
+                      <span className="text-gray-700">Update Progress</span>
                     </Button>
                   </div>
                 </CardContent>
