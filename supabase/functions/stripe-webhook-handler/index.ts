@@ -51,11 +51,7 @@ serve(async (req) => {
             throw new Error("No user_id in session metadata");
           }
 
-          // First, find the customer email to get user info
-          const customer = await stripe.customers.retrieve(session.customer as string);
-          const customerEmail = (customer as any).email;
-
-          logStep("Found customer details", { userId, customerEmail, subscriptionId: subscription.id });
+          logStep("Processing subscription for user", { userId, subscriptionId: subscription.id });
 
           // Update subscription record
           const { error: subError } = await supabaseClient
@@ -77,6 +73,8 @@ serve(async (req) => {
             console.error('Error updating subscription:', subError);
             throw new Error('Failed to update subscription');
           }
+
+          logStep("Subscription updated successfully", { userId, subscriptionId: subscription.id });
 
           // Update user role to pro and reset AI generations
           const { error: roleError } = await supabaseClient

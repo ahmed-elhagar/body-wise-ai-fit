@@ -23,6 +23,8 @@ export const useRole = () => {
     queryFn: async () => {
       if (!user?.id) return null;
 
+      console.log('useRole - Fetching role for user:', user.id);
+
       // Get user profile with role
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
@@ -30,7 +32,12 @@ export const useRole = () => {
         .eq('id', user.id)
         .single();
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error('useRole - Profile error:', profileError);
+        throw profileError;
+      }
+
+      console.log('useRole - Profile role:', profile.role);
 
       // Check if user has active subscription
       const { data: subscription, error: subError } = await supabase
@@ -41,13 +48,20 @@ export const useRole = () => {
         .gte('current_period_end', new Date().toISOString())
         .maybeSingle();
 
-      if (subError && subError.code !== 'PGRST116') throw subError;
+      if (subError && subError.code !== 'PGRST116') {
+        console.error('useRole - Subscription error:', subError);
+        throw subError;
+      }
+
+      console.log('useRole - Active subscription:', subscription);
 
       const role = profile.role as UserRole;
-      // Fix: Pro users are those with 'pro' role OR active subscription OR admin role
+      // Pro users are those with 'pro' role OR active subscription OR admin role
       const isPro = !!subscription || role === 'pro' || role === 'admin';
       const isCoach = role === 'coach' || role === 'admin';
       const isAdmin = role === 'admin';
+
+      console.log('useRole - Calculated capabilities:', { role, isPro, isCoach, isAdmin });
 
       const capabilities: RoleCapabilities = {
         role,
@@ -62,7 +76,8 @@ export const useRole = () => {
       return capabilities;
     },
     enabled: !!user?.id,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 30, // 30 seconds - shorter to catch updates faster
+    refetchInterval: 5000, // Poll every 5 seconds to catch updates
   });
 
   return {

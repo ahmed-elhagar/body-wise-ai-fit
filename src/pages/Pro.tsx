@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,16 +11,18 @@ import { toast } from "sonner";
 
 const Pro = () => {
   const { isPro, role, refetch: refetchRole } = useRole();
-  const { subscription, createCheckoutSession, cancelSubscription, isCreatingCheckout, isCancelling } = useSubscription();
+  const { subscription, createCheckoutSession, cancelSubscription, isCreatingCheckout, isCancelling, refetch: refetchSubscription } = useSubscription();
   const [searchParams] = useSearchParams();
 
   // Handle successful subscription
   useEffect(() => {
     const subscriptionStatus = searchParams.get('subscription');
     if (subscriptionStatus === 'success') {
+      console.log('Pro page - Subscription success detected, refreshing data');
       toast.success('Welcome to FitGenius Pro! Your subscription is now active.');
-      // Refetch user role and subscription status
+      // Force refresh both role and subscription data
       refetchRole();
+      refetchSubscription();
       // Remove the URL parameter
       window.history.replaceState({}, '', '/pro');
     } else if (subscriptionStatus === 'cancelled') {
@@ -29,7 +30,12 @@ const Pro = () => {
       // Remove the URL parameter
       window.history.replaceState({}, '', '/pro');
     }
-  }, [searchParams, refetchRole]);
+  }, [searchParams, refetchRole, refetchSubscription]);
+
+  // Debug logging
+  useEffect(() => {
+    console.log('Pro page - Current state:', { isPro, role, subscription });
+  }, [isPro, role, subscription]);
 
   const features = [
     { icon: Zap, title: "Unlimited AI Generations", description: "No limits on meal plans and exercise programs" },
@@ -50,6 +56,7 @@ const Pro = () => {
                 <Badge className="bg-yellow-500 text-white">ACTIVE</Badge>
               </div>
               <p className="text-gray-600 text-lg">You're enjoying all Pro benefits!</p>
+              <p className="text-sm text-gray-500 mt-2">Role: {role} | Pro Status: {isPro ? 'Active' : 'Inactive'}</p>
             </div>
 
             {subscription && (
@@ -127,6 +134,7 @@ const Pro = () => {
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Unlock unlimited AI-powered meal planning and exercise programs. Take your fitness journey to the next level.
             </p>
+            <p className="text-sm text-gray-500 mt-2">Current Role: {role} | Pro Status: {isPro ? 'Active' : 'Inactive'}</p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
