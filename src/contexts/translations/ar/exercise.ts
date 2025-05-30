@@ -1,4 +1,5 @@
 
+
 export const exercise = {
   exerciseList: "قائمة التمارين",
   noExercises: "لا توجد تمارين",
@@ -54,6 +55,12 @@ export const exercise = {
   resistance_band: "شريط المقاومة",
   machine: "جهاز",
   cable: "كابل",
+  barbells: "البار",
+  resistance_bands: "أربطة المقاومة",
+  kettlebells: "الكيتل بيل",
+  pull_up_bar: "بار العقلة",
+  yoga_mat: "سجادة اليوغا",
+  stability_ball: "كرة التوازن",
   
   // Exercise instructions
   'Sit upright, grip the bar with a wide grip, pull the bar to your chest while moving your shoulders back': 'اجلس منتصباً، امسك البار بقبضة واسعة، اسحب البار إلى صدرك مع تحريك كتفيك للخلف',
@@ -121,13 +128,6 @@ export const exercise = {
   remaining: "متبقي",
   currentExercise: "التمرين الحالي",
   preferredEquipment: "المعدات المفضلة (اختياري)",
-  targetMuscleGroups: "مجموعات العضلات المستهدفة (اختياري)",
-  
-  // Equipment translations (removing duplicates)
-  barbells: "البار",
-  resistance_bands: "أربطة المقاومة",
-  kettlebells: "الكيتل بيل",
-  pull_up_bar: "بار العقلة",
-  yoga_mat: "سجادة اليوغا",
-  stability_ball: "كرة التوازن"
+  targetMuscleGroups: "مجموعات العضلات المستهدفة (اختياري)"
 };
+
