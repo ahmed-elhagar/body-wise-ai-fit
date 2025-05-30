@@ -22,7 +22,7 @@ const HealthGoalsCard = ({ formData, updateFormData, handleArrayInput }: HealthG
       <div className="space-y-4">
         <div>
           <Label htmlFor="fitness_goal" className="text-sm font-medium">Fitness Goal</Label>
-          <Select value={formData.fitness_goal || ''} onValueChange={(value) => updateFormData("fitness_goal", value)}>
+          <Select value={formData.fitness_goal || undefined} onValueChange={(value) => updateFormData("fitness_goal", value)}>
             <SelectTrigger className="mt-1">
               <SelectValue placeholder="Select your goal" />
             </SelectTrigger>
@@ -37,7 +37,7 @@ const HealthGoalsCard = ({ formData, updateFormData, handleArrayInput }: HealthG
         </div>
         <div>
           <Label htmlFor="activity_level" className="text-sm font-medium">Activity Level</Label>
-          <Select value={formData.activity_level || ''} onValueChange={(value) => updateFormData("activity_level", value)}>
+          <Select value={formData.activity_level || undefined} onValueChange={(value) => updateFormData("activity_level", value)}>
             <SelectTrigger className="mt-1">
               <SelectValue placeholder="Select activity level" />
             </SelectTrigger>

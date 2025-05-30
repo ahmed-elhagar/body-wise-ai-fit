@@ -52,7 +52,7 @@ const BasicInfoCard = ({ formData, updateFormData }: BasicInfoCardProps) => {
         </div>
         <div>
           <Label htmlFor="gender" className="text-sm font-medium">Gender</Label>
-          <Select value={formData.gender || ''} onValueChange={(value) => updateFormData("gender", value)}>
+          <Select value={formData.gender || undefined} onValueChange={(value) => updateFormData("gender", value)}>
             <SelectTrigger className="mt-1">
               <SelectValue placeholder="Select gender" />
             </SelectTrigger>
@@ -97,7 +97,7 @@ const BasicInfoCard = ({ formData, updateFormData }: BasicInfoCardProps) => {
         </div>
         <div>
           <Label htmlFor="body_shape" className="text-sm font-medium">Body Shape</Label>
-          <Select value={formData.body_shape || ''} onValueChange={(value) => updateFormData("body_shape", value)}>
+          <Select value={formData.body_shape || undefined} onValueChange={(value) => updateFormData("body_shape", value)}>
             <SelectTrigger className="mt-1">
               <SelectValue placeholder="Select body shape" />
             </SelectTrigger>

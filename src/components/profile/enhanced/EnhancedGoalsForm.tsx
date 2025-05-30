@@ -35,7 +35,7 @@ const EnhancedGoalsForm = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="fitness_goal">Fitness Goal</Label>
-            <Select value={formData.fitness_goal} onValueChange={(value) => updateFormData('fitness_goal', value)}>
+            <Select value={formData.fitness_goal || undefined} onValueChange={(value) => updateFormData('fitness_goal', value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select your fitness goal" />
               </SelectTrigger>
@@ -55,7 +55,7 @@ const EnhancedGoalsForm = ({
 
           <div>
             <Label htmlFor="activity_level">Activity Level</Label>
-            <Select value={formData.activity_level} onValueChange={(value) => updateFormData('activity_level', value)}>
+            <Select value={formData.activity_level || undefined} onValueChange={(value) => updateFormData('activity_level', value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select your activity level" />
               </SelectTrigger>

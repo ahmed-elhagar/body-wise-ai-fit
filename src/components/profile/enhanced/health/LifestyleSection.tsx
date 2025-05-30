@@ -16,7 +16,7 @@ const LifestyleSection = ({ formData, setFormData }: LifestyleSectionProps) => {
         <div>
           <Label htmlFor="exercise_history">Exercise History</Label>
           <Select 
-            value={formData.exercise_history || ''} 
+            value={formData.exercise_history || undefined} 
             onValueChange={(value) => setFormData((prev: any) => ({ ...prev, exercise_history: value }))}
           >
             <SelectTrigger className="mt-1">
@@ -34,7 +34,7 @@ const LifestyleSection = ({ formData, setFormData }: LifestyleSectionProps) => {
         <div>
           <Label htmlFor="cooking_skills">Cooking Skills</Label>
           <Select 
-            value={formData.cooking_skills || ''} 
+            value={formData.cooking_skills || undefined} 
             onValueChange={(value) => setFormData((prev: any) => ({ ...prev, cooking_skills: value }))}
           >
             <SelectTrigger className="mt-1">
@@ -52,7 +52,7 @@ const LifestyleSection = ({ formData, setFormData }: LifestyleSectionProps) => {
         <div>
           <Label htmlFor="time_availability">Time Availability</Label>
           <Select 
-            value={formData.time_availability || ''} 
+            value={formData.time_availability || undefined} 
             onValueChange={(value) => setFormData((prev: any) => ({ ...prev, time_availability: value }))}
           >
             <SelectTrigger className="mt-1">
@@ -69,7 +69,7 @@ const LifestyleSection = ({ formData, setFormData }: LifestyleSectionProps) => {
         <div>
           <Label htmlFor="work_schedule">Work Schedule</Label>
           <Select 
-            value={formData.work_schedule || ''} 
+            value={formData.work_schedule || undefined} 
             onValueChange={(value) => setFormData((prev: any) => ({ ...prev, work_schedule: value }))}
           >
             <SelectTrigger className="mt-1">
@@ -88,7 +88,7 @@ const LifestyleSection = ({ formData, setFormData }: LifestyleSectionProps) => {
         <div>
           <Label htmlFor="nutrition_knowledge">Nutrition Knowledge</Label>
           <Select 
-            value={formData.nutrition_knowledge || ''} 
+            value={formData.nutrition_knowledge || undefined} 
             onValueChange={(value) => setFormData((prev: any) => ({ ...prev, nutrition_knowledge: value }))}
           >
             <SelectTrigger className="mt-1">

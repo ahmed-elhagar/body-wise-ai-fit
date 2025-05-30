@@ -35,7 +35,7 @@ const EnhancedBasicInfoForm = ({
             <Label htmlFor="first_name">First Name</Label>
             <Input
               id="first_name"
-              value={formData.first_name}
+              value={formData.first_name || ''}
               onChange={(e) => updateFormData('first_name', e.target.value)}
               placeholder="Enter your first name"
             />
@@ -48,7 +48,7 @@ const EnhancedBasicInfoForm = ({
             <Label htmlFor="last_name">Last Name</Label>
             <Input
               id="last_name"
-              value={formData.last_name}
+              value={formData.last_name || ''}
               onChange={(e) => updateFormData('last_name', e.target.value)}
               placeholder="Enter your last name"
             />
@@ -62,7 +62,7 @@ const EnhancedBasicInfoForm = ({
             <Input
               id="age"
               type="number"
-              value={formData.age}
+              value={formData.age || ''}
               onChange={(e) => updateFormData('age', e.target.value)}
               placeholder="Enter your age"
             />
@@ -73,7 +73,7 @@ const EnhancedBasicInfoForm = ({
 
           <div>
             <Label htmlFor="gender">Gender</Label>
-            <Select value={formData.gender} onValueChange={(value) => updateFormData('gender', value)}>
+            <Select value={formData.gender || undefined} onValueChange={(value) => updateFormData('gender', value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select gender" />
               </SelectTrigger>
@@ -93,7 +93,7 @@ const EnhancedBasicInfoForm = ({
             <Input
               id="height"
               type="number"
-              value={formData.height}
+              value={formData.height || ''}
               onChange={(e) => updateFormData('height', e.target.value)}
               placeholder="Enter your height in cm"
             />
@@ -107,7 +107,7 @@ const EnhancedBasicInfoForm = ({
             <Input
               id="weight"
               type="number"
-              value={formData.weight}
+              value={formData.weight || ''}
               onChange={(e) => updateFormData('weight', e.target.value)}
               placeholder="Enter your weight in kg"
             />
@@ -120,7 +120,7 @@ const EnhancedBasicInfoForm = ({
             <Label htmlFor="nationality">Nationality</Label>
             <Input
               id="nationality"
-              value={formData.nationality}
+              value={formData.nationality || ''}
               onChange={(e) => updateFormData('nationality', e.target.value)}
               placeholder="Enter your nationality"
             />
@@ -131,7 +131,7 @@ const EnhancedBasicInfoForm = ({
 
           <div>
             <Label htmlFor="body_shape">Body Shape</Label>
-            <Select value={formData.body_shape} onValueChange={(value) => updateFormData('body_shape', value)}>
+            <Select value={formData.body_shape || undefined} onValueChange={(value) => updateFormData('body_shape', value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select body shape" />
               </SelectTrigger>
