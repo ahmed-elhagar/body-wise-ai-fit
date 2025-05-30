@@ -88,7 +88,7 @@ export const ExerciseProgramPageContent = ({
   if (!currentProgram) {
     return (
       <EmptyExerciseState
-        onGenerateProgram={handleGenerateAIProgram}
+        onGenerateProgram={(prefs) => handleGenerateAIProgram(prefs)}
         workoutType={workoutType}
         setWorkoutType={setWorkoutType}
         showAIDialog={showAIDialog}
@@ -192,6 +192,7 @@ export const ExerciseProgramPageContent = ({
         selectedDayNumber={selectedDayNumber}
         setSelectedDayNumber={setSelectedDayNumber}
         currentProgram={currentProgram}
+        workoutType={workoutType}
       />
 
       {/* Progress Overview Card */}
