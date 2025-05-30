@@ -11,15 +11,24 @@ const logStep = (step: string, details?: any) => {
 
 serve(async (req) => {
   try {
-    logStep("Webhook received", { method: req.method, headers: Object.fromEntries(req.headers.entries()) });
+    logStep("=== WEBHOOK RECEIVED ===", { 
+      method: req.method, 
+      url: req.url,
+      headers: Object.fromEntries(req.headers.entries()) 
+    });
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
     
     if (!stripeKey || !webhookSecret) {
-      logStep("ERROR: Missing Stripe configuration", { stripeKey: !!stripeKey, webhookSecret: !!webhookSecret });
+      logStep("❌ CRITICAL ERROR: Missing Stripe configuration", { 
+        stripeKey: !!stripeKey, 
+        webhookSecret: !!webhookSecret 
+      });
       throw new Error("Missing Stripe configuration");
     }
+
+    logStep("✅ Stripe configuration verified");
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
     
@@ -29,53 +38,76 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
+    logStep("✅ Supabase client initialized with service role");
+
     const body = await req.text();
     const signature = req.headers.get("stripe-signature");
     
     if (!signature) {
-      logStep("ERROR: No Stripe signature found");
+      logStep("❌ ERROR: No Stripe signature found in headers");
       throw new Error("No Stripe signature found");
     }
+
+    logStep("✅ Stripe signature found, verifying webhook...");
 
     // Verify webhook signature
     let event;
     try {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
-      logStep("Webhook verified successfully", { eventType: event.type, eventId: event.id });
+      logStep("✅ WEBHOOK VERIFIED SUCCESSFULLY", { 
+        eventType: event.type, 
+        eventId: event.id,
+        created: event.created 
+      });
     } catch (err) {
-      logStep("ERROR: Webhook signature verification failed", { error: err.message });
+      logStep("❌ WEBHOOK VERIFICATION FAILED", { 
+        error: err.message,
+        signature: signature.substring(0, 20) + "..." 
+      });
       throw new Error(`Webhook signature verification failed: ${err.message}`);
     }
+
+    logStep(`🔄 PROCESSING EVENT: ${event.type}`, { eventId: event.id });
 
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
-        logStep("Processing checkout completion", { 
+        logStep("💰 CHECKOUT SESSION COMPLETED", { 
           sessionId: session.id, 
           mode: session.mode,
           subscriptionId: session.subscription,
+          customerId: session.customer,
           metadata: session.metadata,
-          customerId: session.customer
+          paymentStatus: session.payment_status,
+          status: session.status
         });
 
         if (session.mode === 'subscription' && session.subscription) {
+          logStep("📋 Retrieving subscription details from Stripe...");
           const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
           const userId = session.metadata?.user_id;
           
           if (!userId) {
-            logStep("ERROR: No user_id in session metadata", { metadata: session.metadata });
+            logStep("❌ CRITICAL ERROR: No user_id in session metadata", { 
+              metadata: session.metadata,
+              sessionId: session.id 
+            });
             throw new Error("No user_id in session metadata");
           }
 
-          logStep("Processing subscription for user", { 
+          logStep("👤 PROCESSING SUBSCRIPTION FOR USER", { 
             userId, 
             subscriptionId: subscription.id,
             status: subscription.status,
             customerId: session.customer,
-            currentPeriodEnd: subscription.current_period_end
+            currentPeriodStart: subscription.current_period_start,
+            currentPeriodEnd: subscription.current_period_end,
+            priceId: subscription.items.data[0]?.price?.id,
+            interval: subscription.items.data[0]?.price?.recurring?.interval
           });
 
           // First, let's check if user exists in profiles
+          logStep("🔍 Checking if user profile exists...");
           const { data: existingProfile, error: profileCheckError } = await supabaseClient
             .from('profiles')
             .select('id, role, ai_generations_remaining')
@@ -83,13 +115,21 @@ serve(async (req) => {
             .single();
 
           if (profileCheckError) {
-            logStep("ERROR: User profile not found", { error: profileCheckError, userId });
+            logStep("❌ CRITICAL ERROR: User profile not found", { 
+              error: profileCheckError, 
+              userId,
+              code: profileCheckError.code 
+            });
             throw new Error(`User profile not found: ${profileCheckError.message}`);
           }
 
-          logStep("Found existing profile", { profile: existingProfile });
+          logStep("✅ User profile found", { 
+            userId: existingProfile.id,
+            currentRole: existingProfile.role,
+            currentGenerations: existingProfile.ai_generations_remaining
+          });
 
-          // Update/Create subscription record with more detailed logging
+          // Create comprehensive subscription record
           const subscriptionRecord = {
             user_id: userId,
             stripe_customer_id: session.customer as string,
@@ -98,12 +138,12 @@ serve(async (req) => {
             plan_type: session.metadata?.plan_type || 'monthly',
             current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
             current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-            cancel_at_period_end: false,
-            stripe_price_id: subscription.items.data[0].price.id,
-            interval: subscription.items.data[0].price.recurring?.interval || 'month'
+            cancel_at_period_end: subscription.cancel_at_period_end || false,
+            stripe_price_id: subscription.items.data[0]?.price?.id || null,
+            interval: subscription.items.data[0]?.price?.recurring?.interval || 'month'
           };
 
-          logStep("Upserting subscription record", { subscriptionRecord });
+          logStep("💾 UPSERTING SUBSCRIPTION RECORD", { subscriptionRecord });
 
           const { data: upsertedSub, error: subError } = await supabaseClient
             .from('subscriptions')
@@ -112,11 +152,21 @@ serve(async (req) => {
             .single();
 
           if (subError) {
-            logStep("ERROR: Failed to upsert subscription", { error: subError, userId, subscriptionId: subscription.id });
+            logStep("❌ CRITICAL ERROR: Failed to upsert subscription", { 
+              error: subError, 
+              userId, 
+              subscriptionId: subscription.id,
+              code: subError.code,
+              details: subError.details
+            });
             throw new Error(`Failed to upsert subscription: ${subError.message}`);
           }
 
-          logStep("Subscription upserted successfully", { upsertedSub });
+          logStep("✅ SUBSCRIPTION RECORD CREATED/UPDATED", { 
+            subscriptionDbId: upsertedSub.id,
+            status: upsertedSub.status,
+            planType: upsertedSub.plan_type
+          });
 
           // Update user role to pro and set unlimited AI generations
           const profileUpdate = {
@@ -124,7 +174,7 @@ serve(async (req) => {
             ai_generations_remaining: 999999 // Unlimited for pro users
           };
 
-          logStep("Updating profile to pro", { userId, profileUpdate });
+          logStep("👑 UPDATING USER TO PRO STATUS", { userId, profileUpdate });
 
           const { data: updatedProfile, error: roleError } = await supabaseClient
             .from('profiles')
@@ -134,13 +184,23 @@ serve(async (req) => {
             .single();
 
           if (roleError) {
-            logStep("ERROR: Failed to update user role", { error: roleError, userId });
+            logStep("❌ CRITICAL ERROR: Failed to update user role", { 
+              error: roleError, 
+              userId,
+              code: roleError.code
+            });
             throw new Error(`Failed to update user role: ${roleError.message}`);
           }
 
-          logStep("User upgraded to pro successfully", { userId, updatedProfile });
+          logStep("✅ USER SUCCESSFULLY UPGRADED TO PRO", { 
+            userId, 
+            newRole: updatedProfile.role,
+            newGenerations: updatedProfile.ai_generations_remaining
+          });
 
           // Final verification - fetch fresh data to confirm updates
+          logStep("🔍 PERFORMING FINAL VERIFICATION...");
+          
           const { data: finalProfile, error: finalProfileError } = await supabaseClient
             .from('profiles')
             .select('role, ai_generations_remaining')
@@ -155,27 +215,42 @@ serve(async (req) => {
             .single();
 
           if (finalProfileError || finalSubError) {
-            logStep("ERROR: Final verification failed", { 
+            logStep("❌ FINAL VERIFICATION FAILED", { 
               profileError: finalProfileError, 
               subError: finalSubError, 
               userId 
             });
           } else {
-            logStep("Final verification successful", { 
+            logStep("✅ FINAL VERIFICATION SUCCESSFUL - SUBSCRIPTION COMPLETE", { 
               userId, 
               finalProfile, 
-              finalSub,
+              finalSub: {
+                id: finalSub.id,
+                status: finalSub.status,
+                planType: finalSub.plan_type,
+                stripeId: finalSub.stripe_subscription_id
+              },
               subscriptionActive: finalSub?.status === 'active',
               roleIsPro: finalProfile?.role === 'pro'
             });
           }
+        } else {
+          logStep("ℹ️ Skipping non-subscription checkout session", { 
+            mode: session.mode,
+            sessionId: session.id 
+          });
         }
         break;
       }
 
       case 'invoice.payment_succeeded': {
         const invoice = event.data.object as Stripe.Invoice;
-        logStep("Processing successful payment", { invoiceId: invoice.id, subscriptionId: invoice.subscription });
+        logStep("💳 INVOICE PAYMENT SUCCEEDED", { 
+          invoiceId: invoice.id, 
+          subscriptionId: invoice.subscription,
+          amount: invoice.amount_paid,
+          currency: invoice.currency
+        });
 
         if (invoice.subscription) {
           const subscription = await stripe.subscriptions.retrieve(invoice.subscription as string);
@@ -188,11 +263,17 @@ serve(async (req) => {
             .single();
 
           if (findError || !subRecord) {
-            logStep("ERROR: Subscription not found for payment", { error: findError, subscriptionId: subscription.id });
+            logStep("❌ ERROR: Subscription not found for payment", { 
+              error: findError, 
+              subscriptionId: subscription.id 
+            });
             break;
           }
 
-          logStep("Found subscription for renewal", { userId: subRecord.user_id, subscriptionId: subscription.id });
+          logStep("🔄 PROCESSING SUBSCRIPTION RENEWAL", { 
+            userId: subRecord.user_id, 
+            subscriptionId: subscription.id 
+          });
 
           // Update subscription period and ensure active status
           const { error: updateError } = await supabaseClient
@@ -206,9 +287,15 @@ serve(async (req) => {
             .eq('stripe_subscription_id', subscription.id);
 
           if (updateError) {
-            logStep("ERROR: Failed to update subscription period", { error: updateError, subscriptionId: subscription.id });
+            logStep("❌ ERROR: Failed to update subscription period", { 
+              error: updateError, 
+              subscriptionId: subscription.id 
+            });
           } else {
-            logStep("Subscription period updated successfully", { userId: subRecord.user_id, subscriptionId: subscription.id });
+            logStep("✅ Subscription period updated successfully", { 
+              userId: subRecord.user_id, 
+              subscriptionId: subscription.id 
+            });
           }
 
           // Ensure user still has pro role and unlimited generations
@@ -221,9 +308,14 @@ serve(async (req) => {
             .eq('id', subRecord.user_id);
 
           if (roleError) {
-            logStep("ERROR: Failed to maintain pro role", { error: roleError, userId: subRecord.user_id });
+            logStep("❌ ERROR: Failed to maintain pro role", { 
+              error: roleError, 
+              userId: subRecord.user_id 
+            });
           } else {
-            logStep("Pro role maintained successfully", { userId: subRecord.user_id });
+            logStep("✅ Pro role maintained successfully", { 
+              userId: subRecord.user_id 
+            });
           }
         }
         break;
@@ -231,7 +323,11 @@ serve(async (req) => {
 
       case 'customer.subscription.deleted': {
         const subscription = event.data.object as Stripe.Subscription;
-        logStep("Processing subscription deletion", { subscriptionId: subscription.id });
+        logStep("❌ SUBSCRIPTION DELETED", { 
+          subscriptionId: subscription.id,
+          canceledAt: subscription.canceled_at,
+          endedAt: subscription.ended_at
+        });
 
         // Find user by subscription ID
         const { data: subRecord, error: findError } = await supabaseClient
@@ -241,11 +337,17 @@ serve(async (req) => {
           .single();
 
         if (findError || !subRecord) {
-          logStep("ERROR: Subscription not found for deletion", { error: findError, subscriptionId: subscription.id });
+          logStep("❌ ERROR: Subscription not found for deletion", { 
+            error: findError, 
+            subscriptionId: subscription.id 
+          });
           break;
         }
 
-        logStep("Found subscription for cancellation", { userId: subRecord.user_id, subscriptionId: subscription.id });
+        logStep("🔄 PROCESSING SUBSCRIPTION CANCELLATION", { 
+          userId: subRecord.user_id, 
+          subscriptionId: subscription.id 
+        });
 
         // Update subscription status to cancelled
         const { error: subError } = await supabaseClient
@@ -254,9 +356,15 @@ serve(async (req) => {
           .eq('stripe_subscription_id', subscription.id);
 
         if (subError) {
-          logStep("ERROR: Failed to update subscription status to cancelled", { error: subError, subscriptionId: subscription.id });
+          logStep("❌ ERROR: Failed to update subscription status to cancelled", { 
+            error: subError, 
+            subscriptionId: subscription.id 
+          });
         } else {
-          logStep("Subscription marked as cancelled", { userId: subRecord.user_id, subscriptionId: subscription.id });
+          logStep("✅ Subscription marked as cancelled", { 
+            userId: subRecord.user_id, 
+            subscriptionId: subscription.id 
+          });
         }
 
         // Downgrade user role back to normal and reset AI generations
@@ -269,19 +377,25 @@ serve(async (req) => {
           .eq('id', subRecord.user_id);
 
         if (roleError) {
-          logStep("ERROR: Failed to downgrade user role", { error: roleError, userId: subRecord.user_id });
+          logStep("❌ ERROR: Failed to downgrade user role", { 
+            error: roleError, 
+            userId: subRecord.user_id 
+          });
         } else {
-          logStep("User downgraded to normal successfully", { userId: subRecord.user_id });
+          logStep("✅ User downgraded to normal successfully", { 
+            userId: subRecord.user_id 
+          });
         }
         break;
       }
 
       case 'customer.subscription.updated': {
         const subscription = event.data.object as Stripe.Subscription;
-        logStep("Processing subscription update", { 
+        logStep("🔄 SUBSCRIPTION UPDATED", { 
           subscriptionId: subscription.id, 
           status: subscription.status,
-          cancelAtPeriodEnd: subscription.cancel_at_period_end 
+          cancelAtPeriodEnd: subscription.cancel_at_period_end,
+          currentPeriodEnd: subscription.current_period_end
         });
 
         // Find user by subscription ID
@@ -292,11 +406,17 @@ serve(async (req) => {
           .single();
 
         if (findError || !subRecord) {
-          logStep("ERROR: Subscription not found for update", { error: findError, subscriptionId: subscription.id });
+          logStep("❌ ERROR: Subscription not found for update", { 
+            error: findError, 
+            subscriptionId: subscription.id 
+          });
           break;
         }
 
-        logStep("Found subscription for update", { userId: subRecord.user_id, subscriptionId: subscription.id });
+        logStep("🔄 PROCESSING SUBSCRIPTION UPDATE", { 
+          userId: subRecord.user_id, 
+          subscriptionId: subscription.id 
+        });
 
         // Update subscription details
         const { error: updateError } = await supabaseClient
@@ -310,9 +430,15 @@ serve(async (req) => {
           .eq('stripe_subscription_id', subscription.id);
 
         if (updateError) {
-          logStep("ERROR: Failed to update subscription", { error: updateError, subscriptionId: subscription.id });
+          logStep("❌ ERROR: Failed to update subscription", { 
+            error: updateError, 
+            subscriptionId: subscription.id 
+          });
         } else {
-          logStep("Subscription updated successfully", { userId: subRecord.user_id, status: subscription.status });
+          logStep("✅ Subscription updated successfully", { 
+            userId: subRecord.user_id, 
+            status: subscription.status 
+          });
         }
 
         // Update user role based on subscription status
@@ -328,27 +454,52 @@ serve(async (req) => {
           .eq('id', subRecord.user_id);
 
         if (roleError) {
-          logStep("ERROR: Failed to update user role based on subscription status", { error: roleError, userId: subRecord.user_id });
+          logStep("❌ ERROR: Failed to update user role based on subscription status", { 
+            error: roleError, 
+            userId: subRecord.user_id 
+          });
         } else {
-          logStep("User role updated based on subscription status", { userId: subRecord.user_id, newRole, newGenerations });
+          logStep("✅ User role updated based on subscription status", { 
+            userId: subRecord.user_id, 
+            newRole, 
+            newGenerations 
+          });
         }
         break;
       }
 
       default:
-        logStep("Unhandled event type", { eventType: event.type });
+        logStep(`ℹ️ Unhandled event type: ${event.type}`, { eventId: event.id });
     }
 
-    logStep("Webhook processed successfully", { eventType: event.type, eventId: event.id });
-    return new Response(JSON.stringify({ received: true, processed: true }), {
+    logStep("🎉 WEBHOOK PROCESSING COMPLETED SUCCESSFULLY", { 
+      eventType: event.type, 
+      eventId: event.id,
+      processingTime: Date.now() - new Date(event.created * 1000).getTime()
+    });
+    
+    return new Response(JSON.stringify({ 
+      received: true, 
+      processed: true,
+      eventType: event.type,
+      eventId: event.id 
+    }), {
       headers: { "Content-Type": "application/json" },
       status: 200,
     });
 
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep("CRITICAL ERROR in webhook processing", { message: errorMessage, stack: error instanceof Error ? error.stack : undefined });
-    return new Response(JSON.stringify({ error: errorMessage, received: false }), {
+    logStep("💥 CRITICAL ERROR IN WEBHOOK PROCESSING", { 
+      message: errorMessage, 
+      stack: error instanceof Error ? error.stack : undefined,
+      timestamp: new Date().toISOString()
+    });
+    return new Response(JSON.stringify({ 
+      error: errorMessage, 
+      received: false,
+      timestamp: new Date().toISOString()
+    }), {
       headers: { "Content-Type": "application/json" },
       status: 400,
     });

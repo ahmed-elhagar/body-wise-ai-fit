@@ -1,21 +1,20 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Star, Zap, Users, Calendar } from "lucide-react";
 import { useRole } from "@/hooks/useRole";
 import { useSubscription } from "@/hooks/useSubscription";
-import { supabase } from "@/integrations/supabase/client";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { useState } from "react";
+import { SubscriptionDebugPanel } from "@/components/SubscriptionDebugPanel";
 
 const Pro = () => {
   const { isPro, role, refetch: refetchRole } = useRole();
   const { subscription, createCheckoutSession, cancelSubscription, isCreatingCheckout, isCancelling, refetch: refetchSubscription } = useSubscription();
   const [searchParams] = useSearchParams();
-  const [debugInfo, setDebugInfo] = useState<any>(null);
 
   // Handle successful subscription
   useEffect(() => {
@@ -60,78 +59,6 @@ const Pro = () => {
     }
   }, [searchParams, refetchRole, refetchSubscription]);
 
-  // Enhanced debug data collection
-  useEffect(() => {
-    const collectDebugInfo = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (user) {
-          console.log('Pro page - Current user:', user.id, user.email);
-          
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', user.id)
-            .single();
-
-          if (profileError) {
-            console.error('Pro page - Profile fetch error:', profileError);
-          } else {
-            console.log('Pro page - Profile data:', profile);
-          }
-
-          const { data: subscriptionData, error: subError } = await supabase
-            .from('subscriptions')
-            .select('*')
-            .eq('user_id', user.id);
-
-          if (subError) {
-            console.error('Pro page - Subscription fetch error:', subError);
-          } else {
-            console.log('Pro page - Raw subscription data:', subscriptionData);
-          }
-
-          // Check for active subscriptions specifically
-          const { data: activeSubscriptions, error: activeSubError } = await supabase
-            .from('subscriptions')
-            .select('*')
-            .eq('user_id', user.id)
-            .eq('status', 'active')
-            .gte('current_period_end', new Date().toISOString());
-
-          if (activeSubError) {
-            console.error('Pro page - Active subscription fetch error:', activeSubError);
-          } else {
-            console.log('Pro page - Active subscriptions:', activeSubscriptions);
-          }
-
-          setDebugInfo({
-            userId: user.id,
-            email: user.email,
-            profile,
-            profileError,
-            subscriptions: subscriptionData,
-            subscriptionError: subError,
-            activeSubscriptions,
-            activeSubscriptionError: activeSubError,
-            currentState: { isPro, role, subscription },
-            timestamp: new Date().toISOString()
-          });
-        }
-      } catch (error) {
-        console.error('Debug info collection failed:', error);
-        setDebugInfo({ error: error.message, timestamp: new Date().toISOString() });
-      }
-    };
-
-    collectDebugInfo();
-    
-    // Refresh debug info every 5 seconds
-    const interval = setInterval(collectDebugInfo, 5000);
-    return () => clearInterval(interval);
-  }, [isPro, role, subscription]);
-
   // Debug logging
   useEffect(() => {
     console.log('Pro page - Current state changed:', { 
@@ -161,29 +88,7 @@ const Pro = () => {
     try {
       // Force refresh both hooks
       await Promise.all([refetchRole(), refetchSubscription()]);
-      
-      // Additional manual check
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: freshProfile } = await supabase
-          .from('profiles')
-          .select('role, ai_generations_remaining')
-          .eq('id', user.id)
-          .single();
-          
-        const { data: freshSub } = await supabase
-          .from('subscriptions')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('status', 'active')
-          .maybeSingle();
-          
-        console.log('Pro page - Fresh data after manual refresh:', {
-          profile: freshProfile,
-          subscription: freshSub,
-          timestamp: new Date().toISOString()
-        });
-      }
+      toast.success('Data refreshed successfully');
     } catch (error) {
       console.error('Pro page - Manual refresh error:', error);
       toast.error('Failed to refresh data');
@@ -212,39 +117,8 @@ const Pro = () => {
               </Button>
             </div>
 
-            {/* Enhanced Debug Information */}
-            {debugInfo && (
-              <Card className="mb-8 bg-yellow-50 border-yellow-200">
-                <CardHeader>
-                  <CardTitle className="text-sm text-yellow-800">🐛 Debug Information (Pro User)</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-xs font-mono space-y-2 text-yellow-900">
-                    <p><strong>Timestamp:</strong> {debugInfo.timestamp}</p>
-                    <p><strong>User ID:</strong> {debugInfo.userId}</p>
-                    <p><strong>Email:</strong> {debugInfo.email}</p>
-                    <p><strong>Profile Role:</strong> {debugInfo.profile?.role || 'N/A'}</p>
-                    <p><strong>AI Generations:</strong> {debugInfo.profile?.ai_generations_remaining || 'N/A'}</p>
-                    <p><strong>Is Pro (calculated):</strong> {isPro ? 'Yes' : 'No'}</p>
-                    <p><strong>Role (from hook):</strong> {role || 'N/A'}</p>
-                    <p><strong>Total Subscriptions:</strong> {debugInfo.subscriptions?.length || 0}</p>
-                    <p><strong>Active Subscriptions:</strong> {debugInfo.activeSubscriptions?.length || 0}</p>
-                    {debugInfo.activeSubscriptions?.[0] && (
-                      <div className="mt-2 p-2 bg-yellow-100 rounded">
-                        <p><strong>Active Sub ID:</strong> {debugInfo.activeSubscriptions[0].id}</p>
-                        <p><strong>Stripe Sub ID:</strong> {debugInfo.activeSubscriptions[0].stripe_subscription_id}</p>
-                        <p><strong>Status:</strong> {debugInfo.activeSubscriptions[0].status}</p>
-                        <p><strong>Period End:</strong> {debugInfo.activeSubscriptions[0].current_period_end}</p>
-                        <p><strong>Plan Type:</strong> {debugInfo.activeSubscriptions[0].plan_type}</p>
-                      </div>
-                    )}
-                    {debugInfo.error && (
-                      <p className="text-red-600"><strong>Error:</strong> {debugInfo.error}</p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+            {/* Debug Panel */}
+            <SubscriptionDebugPanel />
 
             {subscription && (
               <Card className="mb-8">
@@ -266,7 +140,7 @@ const Pro = () => {
                     <div>
                       <p className="text-sm text-gray-600">Next Billing</p>
                       <p className="font-semibold">
-                        {new Date(subscription.current_period_end).toLocaleDateString()}
+                        {subscription.current_period_end ? new Date(subscription.current_period_end).toLocaleDateString() : 'N/A'}
                       </p>
                     </div>
                   </div>
@@ -332,41 +206,8 @@ const Pro = () => {
             </div>
           </div>
 
-          {/* Enhanced Debug Information for non-pro users */}
-          {debugInfo && (
-            <Card className="mb-8 bg-red-50 border-red-200">
-              <CardHeader>
-                <CardTitle className="text-sm text-red-800">🐛 Debug Information (Non-Pro User)</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-xs font-mono space-y-2 text-red-900">
-                  <p><strong>Timestamp:</strong> {debugInfo.timestamp}</p>
-                  <p><strong>User ID:</strong> {debugInfo.userId}</p>
-                  <p><strong>Email:</strong> {debugInfo.email}</p>
-                  <p><strong>Profile Role:</strong> {debugInfo.profile?.role || 'N/A'}</p>
-                  <p><strong>AI Generations:</strong> {debugInfo.profile?.ai_generations_remaining || 'N/A'}</p>
-                  <p><strong>Is Pro (calculated):</strong> {isPro ? 'Yes' : 'No'}</p>
-                  <p><strong>Role (from hook):</strong> {role || 'N/A'}</p>
-                  <p><strong>Total Subscriptions:</strong> {debugInfo.subscriptions?.length || 0}</p>
-                  <p><strong>Active Subscriptions:</strong> {debugInfo.activeSubscriptions?.length || 0}</p>
-                  {debugInfo.subscriptions?.[0] && (
-                    <div className="mt-2 p-2 bg-red-100 rounded">
-                      <p><strong>Latest Sub ID:</strong> {debugInfo.subscriptions[0].id}</p>
-                      <p><strong>Stripe Sub ID:</strong> {debugInfo.subscriptions[0].stripe_subscription_id}</p>
-                      <p><strong>Status:</strong> {debugInfo.subscriptions[0].status}</p>
-                      <p><strong>Period End:</strong> {debugInfo.subscriptions[0].current_period_end}</p>
-                      <p><strong>Plan Type:</strong> {debugInfo.subscriptions[0].plan_type}</p>
-                      <p><strong>Created:</strong> {debugInfo.subscriptions[0].created_at}</p>
-                      <p><strong>Updated:</strong> {debugInfo.subscriptions[0].updated_at}</p>
-                    </div>
-                  )}
-                  {debugInfo.error && (
-                    <p className="text-red-600"><strong>Error:</strong> {debugInfo.error}</p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          {/* Debug Panel for Non-Pro Users */}
+          <SubscriptionDebugPanel />
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
             {/* Monthly Plan */}
