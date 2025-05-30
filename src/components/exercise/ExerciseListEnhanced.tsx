@@ -28,7 +28,7 @@ export const ExerciseListEnhanced = ({
       <div className="lg:col-span-3">
         <div className="text-center py-12">
           <div className="w-10 h-10 animate-spin border-4 border-health-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-health-text-secondary text-lg font-medium">{t('exercise.loadingExercises') || 'Loading exercises...'}</p>
+          <p className="text-health-text-secondary text-lg font-medium">{t('exercise.loadingExercises')}</p>
         </div>
       </div>
     );
@@ -47,10 +47,10 @@ export const ExerciseListEnhanced = ({
             <Dumbbell className="w-8 h-8 text-health-text-secondary" />
           </div>
           <h3 className="text-xl font-semibold text-health-text-primary mb-3">
-            {t('exercise.noExercises') || 'No Exercises for Today'}
+            {t('exercise.noExercises')}
           </h3>
           <p className="text-health-text-secondary max-w-md mx-auto leading-relaxed">
-            {t('exercise.noExercisesMessage') || 'Generate an AI workout plan to get started with your fitness journey'}
+            {t('exercise.noExercisesMessage')}
           </p>
         </Card>
       </div>
@@ -62,14 +62,14 @@ export const ExerciseListEnhanced = ({
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-2xl font-semibold text-health-text-primary mb-1">
-            {t('exercise.exerciseList') || 'Exercise List'}
+            {t('exercise.exerciseList')}
           </h2>
           <p className="text-health-text-secondary">
-            Complete your workout step by step
+            {t('exercise.completeWorkoutStepByStep') || 'Complete your workout step by step'}
           </p>
         </div>
         <Badge variant="outline" className="bg-health-soft border-health-border text-health-primary font-medium px-3 py-1">
-          {exercises.length} {t('exercise.exercises') || 'exercises'}
+          {exercises.length} {t('exercise.exercises')}
         </Badge>
       </div>
       
