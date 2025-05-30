@@ -106,7 +106,9 @@ const ShoppingListDrawer = ({
         <div className="space-y-6 h-full">
           <DrawerHeader 
             totalItems={shoppingItems.length}
-            weeklyPlan={weeklyPlan}
+            groupedItems={groupedItems}
+            weekId={weekId}
+            onShoppingListUpdate={onShoppingListUpdate}
           />
           
           <div className="flex-1 overflow-y-auto">
