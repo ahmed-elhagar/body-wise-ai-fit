@@ -29,8 +29,10 @@ const Admin = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div>Loading...</div>
+      <div className="p-6">
+        <div className="flex items-center justify-center h-64">
+          <div>Loading...</div>
+        </div>
       </div>
     );
   }
@@ -40,24 +42,22 @@ const Admin = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="ml-16 lg:ml-64 min-h-screen">
-        <div className="max-w-6xl mx-auto p-6">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Admin Panel</h1>
-            <p className="text-gray-600 mt-2">Manage application settings and features</p>
-          </div>
+    <div className="p-6">
+      <div className="max-w-6xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Admin Panel</h1>
+          <p className="text-gray-600 mt-2">Manage application settings and features</p>
+        </div>
 
-          <div className="grid gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Feature Management</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <FeatureFlagToggle />
-              </CardContent>
-            </Card>
-          </div>
+        <div className="grid gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Feature Management</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <FeatureFlagToggle />
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

@@ -1,15 +1,21 @@
 
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Progress = () => {
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gray-50">
-        <div className="ml-16 lg:ml-64 min-h-screen">
-          <div className="max-w-6xl mx-auto p-6">
-            <h1 className="text-3xl font-bold text-gray-900 mb-6">Progress Tracking</h1>
-            <p className="text-gray-600">Track your fitness progress here.</p>
-          </div>
+      <div className="p-6">
+        <div className="max-w-6xl mx-auto">
+          <h1 className="text-3xl font-bold text-gray-900 mb-6">Progress Tracking</h1>
+          <Card>
+            <CardHeader>
+              <CardTitle>Your Fitness Journey</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600">Track your fitness progress and achievements here.</p>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </ProtectedRoute>

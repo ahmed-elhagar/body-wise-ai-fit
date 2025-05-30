@@ -94,8 +94,8 @@ const Profile = () => {
   if (error) {
     return (
       <ProtectedRoute requireProfile={false}>
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
-          <Alert className="max-w-md">
+        <div className="p-6">
+          <Alert className="max-w-md mx-auto">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
               Failed to load profile data. Please refresh the page or try again later.
@@ -108,39 +108,37 @@ const Profile = () => {
 
   return (
     <ProtectedRoute requireProfile={false}>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-        <div className={`${isRTL ? 'mr-16 lg:mr-64' : 'ml-16 lg:ml-64'} min-h-screen`}>
-          <div className="max-w-6xl mx-auto p-3 lg:p-4">
-            <ProfilePageHeader
-              hasUnsavedChanges={hasUnsavedChanges}
-              completionPercentage={completionPercentage}
-              formData={formData}
-              user={user}
-            />
+      <div className="p-6">
+        <div className="max-w-6xl mx-auto">
+          <ProfilePageHeader
+            hasUnsavedChanges={hasUnsavedChanges}
+            completionPercentage={completionPercentage}
+            formData={formData}
+            user={user}
+          />
 
-            <ProfileUserInfoCard
-              formData={formData}
-              user={user}
-              completionPercentage={completionPercentage}
-            />
+          <ProfileUserInfoCard
+            formData={formData}
+            user={user}
+            completionPercentage={completionPercentage}
+          />
 
-            <div className="mb-4 mt-4">
-              <ProfileCompletionCard onStepClick={handleStepClick} />
-            </div>
-
-            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-              <ProfileTabNavigation activeTab={activeTab} onTabChange={handleTabChange} />
-              <ProfileTabContent
-                formData={formData}
-                updateFormData={updateFormData}
-                handleArrayInput={handleArrayInput}
-                saveBasicInfo={saveBasicInfo}
-                saveGoalsAndActivity={saveGoalsAndActivity}
-                isUpdating={isUpdating}
-                validationErrors={validationErrors}
-              />
-            </Tabs>
+          <div className="mb-4 mt-4">
+            <ProfileCompletionCard onStepClick={handleStepClick} />
           </div>
+
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+            <ProfileTabNavigation activeTab={activeTab} onTabChange={handleTabChange} />
+            <ProfileTabContent
+              formData={formData}
+              updateFormData={updateFormData}
+              handleArrayInput={handleArrayInput}
+              saveBasicInfo={saveBasicInfo}
+              saveGoalsAndActivity={saveGoalsAndActivity}
+              isUpdating={isUpdating}
+              validationErrors={validationErrors}
+            />
+          </Tabs>
         </div>
       </div>
     </ProtectedRoute>

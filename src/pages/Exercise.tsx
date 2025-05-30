@@ -1,111 +1,24 @@
 
-import MealPlanLayout from "@/components/MealPlanLayout";
-import { useExerciseProgramPage } from "@/hooks/useExerciseProgramPage";
-import { ExerciseProgramLoadingStates } from "@/components/exercise/ExerciseProgramLoadingStates";
-import { ExerciseProgramErrorState } from "@/components/exercise/ExerciseProgramErrorState";
-import { ExerciseProgramPageContent } from "@/components/exercise/ExerciseProgramPageContent";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Exercise = () => {
-  const {
-    // State
-    selectedDayNumber,
-    setSelectedDayNumber,
-    currentWeekOffset,
-    setCurrentWeekOffset,
-    workoutType,
-    setWorkoutType,
-    showAIDialog,
-    setShowAIDialog,
-    aiPreferences,
-    setAiPreferences,
-    
-    // Data
-    currentProgram,
-    isLoading,
-    isGenerating,
-    todaysWorkouts,
-    todaysExercises,
-    completedExercises,
-    totalExercises,
-    progressPercentage,
-    isRestDay,
-    error,
-    
-    // Computed
-    currentDate,
-    weekStartDate,
-    
-    // Handlers
-    handleGenerateAIProgram,
-    handleRegenerateProgram,
-    handleExerciseComplete,
-    handleExerciseProgressUpdate,
-    refetch
-  } = useExerciseProgramPage();
-
-  console.log('🎯 Exercise Page - Debug State:', {
-    hasCurrentProgram: !!currentProgram,
-    workoutType: currentProgram?.workout_type || workoutType,
-    currentWeekOffset,
-    selectedDayNumber,
-    isLoading,
-    isGenerating,
-    todaysWorkoutsCount: todaysWorkouts?.length || 0,
-    todaysExercisesCount: todaysExercises?.length || 0,
-    isRestDay,
-    error: error?.message
-  });
-
-  // Check if we should show loading states
-  const shouldShowLoading = isLoading || isGenerating;
-  
-  if (shouldShowLoading) {
-    return (
-      <ExerciseProgramLoadingStates
-        isGenerating={isGenerating}
-        isLoading={isLoading}
-      />
-    );
-  }
-
-  // Show error state if there's an error
-  if (error) {
-    console.error('🚨 Exercise Page - Error detected:', error);
-    return <ExerciseProgramErrorState onRetry={refetch} />;
-  }
-
   return (
-    <MealPlanLayout>
-      <div className="p-4 sm:p-8 bg-health-background min-h-screen">
-        <ExerciseProgramPageContent
-          currentDate={currentDate}
-          weekStartDate={weekStartDate}
-          selectedDayNumber={selectedDayNumber}
-          setSelectedDayNumber={setSelectedDayNumber}
-          currentWeekOffset={currentWeekOffset}
-          setCurrentWeekOffset={setCurrentWeekOffset}
-          currentProgram={currentProgram}
-          workoutType={workoutType}
-          setWorkoutType={setWorkoutType}
-          todaysWorkouts={todaysWorkouts}
-          todaysExercises={todaysExercises}
-          completedExercises={completedExercises}
-          totalExercises={totalExercises}
-          progressPercentage={progressPercentage}
-          showAIDialog={showAIDialog}
-          setShowAIDialog={setShowAIDialog}
-          aiPreferences={aiPreferences}
-          setAiPreferences={setAiPreferences}
-          handleGenerateAIProgram={handleGenerateAIProgram}
-          handleRegenerateProgram={handleRegenerateProgram}
-          handleExerciseComplete={handleExerciseComplete}
-          handleExerciseProgressUpdate={handleExerciseProgressUpdate}
-          isGenerating={isGenerating}
-          refetch={refetch}
-          isRestDay={isRestDay}
-        />
+    <ProtectedRoute>
+      <div className="p-6">
+        <div className="max-w-6xl mx-auto">
+          <h1 className="text-3xl font-bold text-gray-900 mb-6">Exercise Programs</h1>
+          <Card>
+            <CardHeader>
+              <CardTitle>Your Workout Plan</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600">Your personalized exercise programs will be displayed here.</p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </MealPlanLayout>
+    </ProtectedRoute>
   );
 };
 
