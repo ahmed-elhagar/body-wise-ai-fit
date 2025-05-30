@@ -2,15 +2,20 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useAuth } from '@/hooks/useAuth';
+import type { User } from '@supabase/supabase-js';
 
 // Mock dependencies
 vi.mock('@/hooks/useAuth');
 vi.mock('@/integrations/supabase/client');
 vi.mock('@/lib/analytics');
 
-const mockUser = {
+const mockUser: Partial<User> = {
   id: 'test-user-id',
-  email: 'test@example.com'
+  email: 'test@example.com',
+  app_metadata: {},
+  user_metadata: {},
+  aud: 'authenticated',
+  created_at: '2025-01-01T00:00:00Z'
 };
 
 const mockSubscription = {
@@ -31,7 +36,7 @@ describe('useSubscription', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(useAuth).mockReturnValue({
-      user: mockUser,
+      user: mockUser as User,
       session: null,
       loading: false,
       isAdmin: false,
