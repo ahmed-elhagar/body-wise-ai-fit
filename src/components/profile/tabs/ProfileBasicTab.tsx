@@ -1,6 +1,5 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import EnhancedBasicInfoForm from "../enhanced/EnhancedBasicInfoForm";
 
 interface ProfileBasicTabProps {
   formData: any;
@@ -19,21 +18,13 @@ const ProfileBasicTab = ({
 }: ProfileBasicTabProps) => {
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Basic Information</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-gray-600">Basic profile information form will be displayed here.</p>
-          <Button 
-            onClick={saveBasicInfo} 
-            disabled={isUpdating}
-            className="mt-4"
-          >
-            {isUpdating ? 'Saving...' : 'Save Basic Info'}
-          </Button>
-        </CardContent>
-      </Card>
+      <EnhancedBasicInfoForm
+        formData={formData}
+        updateFormData={updateFormData}
+        onSave={saveBasicInfo}
+        isUpdating={isUpdating}
+        validationErrors={validationErrors}
+      />
     </div>
   );
 };

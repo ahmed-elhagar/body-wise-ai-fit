@@ -1,4 +1,3 @@
-
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,6 +16,33 @@ import ExerciseProgramAIDialog from "@/components/exercise/ExerciseProgramAIDial
 const Exercise = () => {
   const { t } = useLanguage();
   const exerciseState = useExerciseProgramPage();
+
+  // Convert DailyMeal to Meal format for handlers
+  const handleShowRecipe = (meal: any) => {
+    const convertedMeal = {
+      ...meal,
+      type: meal.meal_type || 'meal',
+      time: '12:00',
+      cookTime: meal.cook_time || 30,
+      prepTime: meal.prep_time || 15,
+      servings: meal.servings || 1,
+      difficulty: 'medium'
+    };
+    exerciseState.handleShowRecipe(convertedMeal);
+  };
+
+  const handleExchangeMeal = (meal: any, index: number) => {
+    const convertedMeal = {
+      ...meal,
+      type: meal.meal_type || 'meal',
+      time: '12:00',
+      cookTime: meal.cook_time || 30,
+      prepTime: meal.prep_time || 15,
+      servings: meal.servings || 1,
+      difficulty: 'medium'
+    };
+    exerciseState.handleExchangeMeal(convertedMeal, index);
+  };
 
   if (exerciseState.isLoading) {
     return <ExerciseProgramLoadingState />;
@@ -179,7 +205,7 @@ const Exercise = () => {
             onOpenChange={exerciseState.setShowAIDialog}
             preferences={exerciseState.aiPreferences}
             onPreferencesChange={exerciseState.setAiPreferences}
-            onGenerate={(prefs) => exerciseState.handleGenerateAIProgram(prefs)}
+            onGenerate={exerciseState.handleGenerateAIProgram}
             isGenerating={exerciseState.isGenerating}
           />
         </div>

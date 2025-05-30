@@ -1,6 +1,5 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import EnhancedGoalsForm from "../enhanced/EnhancedGoalsForm";
 
 interface ProfileGoalsTabProps {
   formData: any;
@@ -21,21 +20,14 @@ const ProfileGoalsTab = ({
 }: ProfileGoalsTabProps) => {
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Goals & Activity</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-gray-600">Goals and activity form will be displayed here.</p>
-          <Button 
-            onClick={saveGoalsAndActivity} 
-            disabled={isUpdating}
-            className="mt-4"
-          >
-            {isUpdating ? 'Saving...' : 'Save Goals'}
-          </Button>
-        </CardContent>
-      </Card>
+      <EnhancedGoalsForm
+        formData={formData}
+        updateFormData={updateFormData}
+        handleArrayInput={handleArrayInput}
+        onSave={saveGoalsAndActivity}
+        isUpdating={isUpdating}
+        validationErrors={validationErrors}
+      />
     </div>
   );
 };
