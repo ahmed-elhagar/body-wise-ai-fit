@@ -95,7 +95,7 @@ export const useOnboardingProgress = () => {
         .single();
 
       if (error) throw error;
-      return data;
+      return data as OnboardingProgress;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['onboarding-progress'] });

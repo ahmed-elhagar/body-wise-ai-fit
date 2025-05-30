@@ -72,6 +72,7 @@ const MealPlanDialogs = ({
 }: MealPlanDialogsProps) => {
   return (
     <>
+      {/* Enhanced AI Generation Dialog */}
       <AIGenerationDialog
         isOpen={showAIDialog}
         onClose={onCloseAIDialog}
@@ -81,6 +82,7 @@ const MealPlanDialogs = ({
         isGenerating={isGenerating}
       />
 
+      {/* Enhanced Add Snack Dialog */}
       <AddSnackDialog
         isOpen={showAddSnackDialog}
         onClose={onCloseAddSnackDialog}
@@ -91,12 +93,14 @@ const MealPlanDialogs = ({
         targetDayCalories={targetDayCalories}
       />
 
+      {/* Enhanced Shopping List Dialog */}
       <ShoppingListDialog
         isOpen={showShoppingListDialog}
         onClose={onCloseShoppingListDialog}
         items={shoppingItems}
       />
 
+      {/* Enhanced Recipe Dialog */}
       {selectedMeal && (
         <MealRecipeDialog
           isOpen={showRecipeDialog}
@@ -106,6 +110,7 @@ const MealPlanDialogs = ({
         />
       )}
 
+      {/* Enhanced Exchange Dialog */}
       {selectedMeal && (
         <MealExchangeDialog
           isOpen={showExchangeDialog}

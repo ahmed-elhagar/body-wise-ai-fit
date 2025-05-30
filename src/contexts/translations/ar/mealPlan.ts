@@ -1,4 +1,3 @@
-
 export const mealPlan = {
   title: "خطة الوجبات",
   description: "إدارة خطة وجباتك الأسبوعية",
@@ -7,7 +6,7 @@ export const mealPlan = {
   generateMealPlan: "توليد خطة وجبات",
   generateAIMealPlan: "توليد خطة ذكية",
   regenerateMealPlan: "إعادة توليد الخطة",
-  noMealsToday: "لا توجد وجبات مقررة لهذا اليوم.",
+  noMealsToday: "لا توجد وجبات مخططة لليوم",
   generateNewPlan: "ابدأ بتوليد خطة وجبات جديدة مخصصة لك.",
   mealPlanGenerated: "تم توليد خطة الوجبات بنجاح!",
   generatedSuccessfully: "تم توليد خطة الوجبات بنجاح!",
@@ -219,4 +218,18 @@ export const mealPlan = {
     savingResults: "حفظ النتائج للمستقبل...",
     noAlternatives: "اضغط 'توليد جديد' للحصول على بدائل مخصصة"
   }
+};
+
+export const mealPlanTranslations = {
+  noMealsToday: "لا توجد وجبات مخططة لليوم",
+  mealsPlanned: "وجبات مخططة",
+  meal: "وجبة",
+  meals: "وجبات",
+  dailyStats: "إحصائيات يومية",
+  quickActions: "إجراءات سريعة",
+  mealsByType: "الوجبات حسب النوع",
+  nutritionSummary: "ملخص التغذية",
+  todaysSummary: "ملخص اليوم",
+  enhancedView: "عرض محسن",
+  compactView: "عرض مضغوط"
 };
