@@ -54,32 +54,37 @@ export const useOnboardingProgress = () => {
     mutationFn: async (step: string) => {
       if (!user?.id) throw new Error('No user ID');
 
+      const now = new Date().toISOString();
       const updateData: any = {
         user_id: user.id,
-        updated_at: new Date().toISOString(),
-        created_at: new Date().toISOString(),
+        updated_at: now,
       };
+
+      // Only set created_at if this is a new record
+      if (!progress) {
+        updateData.created_at = now;
+      }
 
       switch (step) {
         case 'basic_info':
           updateData.basic_info_completed = true;
-          updateData.basic_info_completed_at = new Date().toISOString();
+          updateData.basic_info_completed_at = now;
           break;
         case 'health_assessment':
           updateData.health_assessment_completed = true;
-          updateData.health_assessment_completed_at = new Date().toISOString();
+          updateData.health_assessment_completed_at = now;
           break;
         case 'goals_setup':
           updateData.goals_setup_completed = true;
-          updateData.goals_setup_completed_at = new Date().toISOString();
+          updateData.goals_setup_completed_at = now;
           break;
         case 'preferences':
           updateData.preferences_completed = true;
-          updateData.preferences_completed_at = new Date().toISOString();
+          updateData.preferences_completed_at = now;
           break;
         case 'profile_review':
           updateData.profile_review_completed = true;
-          updateData.profile_review_completed_at = new Date().toISOString();
+          updateData.profile_review_completed_at = now;
           break;
       }
 

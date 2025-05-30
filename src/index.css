@@ -108,6 +108,36 @@
     text-align: right;
   }
 
+  /* RTL sidebar positioning - override shadcn defaults */
+  [dir="rtl"] .group\\/sidebar-wrapper > div[data-sidebar="sidebar"] {
+    right: 0 !important;
+    left: auto !important;
+  }
+
+  [dir="rtl"] .group\\/sidebar-wrapper > div[data-sidebar="sidebar"][data-side="right"] {
+    right: 0 !important;
+    left: auto !important;
+  }
+
+  [dir="rtl"] .group\\/sidebar-wrapper > div[data-sidebar="sidebar"][data-side="left"] {
+    right: 0 !important;
+    left: auto !important;
+  }
+
+  /* RTL sidebar content alignment */
+  [dir="rtl"] [data-sidebar="sidebar"] [data-sidebar="menu-button"] {
+    flex-direction: row-reverse;
+    text-align: right;
+  }
+
+  [dir="rtl"] [data-sidebar="sidebar"] [data-sidebar="header"] {
+    text-align: right;
+  }
+
+  [dir="rtl"] [data-sidebar="sidebar"] [data-sidebar="footer"] {
+    text-align: right;
+  }
+
   /* RTL specific animations */
   [dir="rtl"] .animate-slide-in-from-left {
     animation: slideInFromRight 0.3s ease-out;
@@ -191,9 +221,26 @@
   }
 }
 
-/* Sidebar specific fixes */
+/* Sidebar specific fixes for better RTL support */
 .sidebar {
   background: hsl(var(--sidebar-background));
   color: hsl(var(--sidebar-foreground));
   border-color: hsl(var(--sidebar-border));
+}
+
+/* Force RTL sidebar positioning */
+[dir="rtl"] [data-sidebar="sidebar"] {
+  right: 0 !important;
+  left: auto !important;
+}
+
+[dir="rtl"] .group\\/sidebar-wrapper .peer {
+  right: 0 !important;
+  left: auto !important;
+}
+
+/* Mobile sidebar for RTL */
+[dir="rtl"] [data-mobile="true"] {
+  right: 0 !important;
+  left: auto !important;
 }
