@@ -284,6 +284,7 @@ export type Database = {
           fat_consumed: number
           food_item_id: string
           id: string
+          meal_image_url: string | null
           meal_type: string | null
           notes: string | null
           protein_consumed: number
@@ -300,6 +301,7 @@ export type Database = {
           fat_consumed: number
           food_item_id: string
           id?: string
+          meal_image_url?: string | null
           meal_type?: string | null
           notes?: string | null
           protein_consumed: number
@@ -316,6 +318,7 @@ export type Database = {
           fat_consumed?: number
           food_item_id?: string
           id?: string
+          meal_image_url?: string | null
           meal_type?: string | null
           notes?: string | null
           protein_consumed?: number

@@ -23,6 +23,18 @@ serve(async (req) => {
 
     console.log('🔄 Starting meal shuffle for weekly plan:', weeklyPlanId);
 
+    // Verify the user owns this weekly plan
+    const { data: weeklyPlan, error: planError } = await supabaseClient
+      .from('weekly_meal_plans')
+      .select('id, user_id')
+      .eq('id', weeklyPlanId)
+      .eq('user_id', userId)
+      .single();
+
+    if (planError || !weeklyPlan) {
+      throw new Error('Weekly plan not found or access denied');
+    }
+
     // Get current meals for the week
     const { data: currentMeals, error: fetchError } = await supabaseClient
       .from('daily_meals')
