@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Timeline, Target, TrendingUp } from "lucide-react";
+import { Clock, CheckCircle, Target, TrendingUp } from "lucide-react";
 import { useGoals } from "@/hooks/useGoals";
 import { useWeightTracking } from "@/hooks/useWeightTracking";
 
@@ -55,13 +55,13 @@ const GoalHistoryTimeline = () => {
       <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Timeline className="w-5 h-5 text-purple-600" />
+            <Clock className="w-5 h-5 text-purple-600" />
             Goal History
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
-            <Timeline className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+            <Clock className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500">Your goal milestones will appear here</p>
           </div>
         </CardContent>
@@ -73,7 +73,7 @@ const GoalHistoryTimeline = () => {
     <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Timeline className="w-5 h-5 text-purple-600" />
+          <Clock className="w-5 h-5 text-purple-600" />
           Goal History & Milestones
         </CardTitle>
       </CardHeader>
