@@ -61,11 +61,15 @@ const EnhancedMealPlanPage = () => {
   };
 
   const handleShowRecipe = (meal: DailyMeal) => {
-    mealPlanState.handleShowRecipe(meal);
+    if (mealPlanState.handleShowRecipe) {
+      mealPlanState.handleShowRecipe(meal);
+    }
   };
 
   const handleExchangeMeal = async (meal: DailyMeal, index: number) => {
-    mealPlanState.handleExchangeMeal(meal, index);
+    if (mealPlanState.handleExchangeMeal) {
+      mealPlanState.handleExchangeMeal(meal, index);
+    }
     
     // Show toast after exchange
     setTimeout(() => {
@@ -248,7 +252,9 @@ const EnhancedMealPlanPage = () => {
             <Button 
               onClick={() => {
                 setIsAILoading(true);
-                mealPlanState.setShowAIDialog(true);
+                if (mealPlanState.setShowAIDialog) {
+                  mealPlanState.setShowAIDialog(true);
+                }
                 setIsAILoading(false);
               }}
               className="bg-gradient-to-r from-[#FF6F3C] to-[#FF8F4C] hover:from-[#FF5F2C] hover:to-[#FF7F3C] text-white px-8 py-3"
@@ -285,7 +291,7 @@ const EnhancedMealPlanPage = () => {
                   
                   <div className="pt-4 border-t border-gray-700">
                     <Button 
-                      onClick={() => mealPlanState.setShowAIDialog(true)}
+                      onClick={() => mealPlanState.setShowAIDialog && mealPlanState.setShowAIDialog(true)}
                       className="w-full bg-gradient-to-r from-[#FF6F3C] to-[#FF8F4C] hover:from-[#FF5F2C] hover:to-[#FF7F3C] text-white"
                     >
                       Regenerate Plan
@@ -345,7 +351,7 @@ const EnhancedMealPlanPage = () => {
       {mealPlanState.selectedMeal && (
         <MealRecipeDialog
           isOpen={mealPlanState.showRecipeDialog}
-          onClose={mealPlanState.setShowRecipeDialog}
+          onClose={() => mealPlanState.setShowRecipeDialog && mealPlanState.setShowRecipeDialog(false)}
           meal={mealPlanState.selectedMeal}
           onRecipeGenerated={mealPlanState.handleRecipeGenerated}
         />
@@ -354,7 +360,7 @@ const EnhancedMealPlanPage = () => {
       {mealPlanState.selectedMeal && (
         <MealExchangeDialog
           isOpen={mealPlanState.showExchangeDialog}
-          onClose={mealPlanState.setShowExchangeDialog}
+          onClose={() => mealPlanState.setShowExchangeDialog && mealPlanState.setShowExchangeDialog(false)}
           currentMeal={mealPlanState.selectedMeal}
           onExchange={mealPlanState.handleRegeneratePlan}
         />
