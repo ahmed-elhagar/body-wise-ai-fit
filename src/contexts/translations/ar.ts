@@ -1,3 +1,4 @@
+
 import { commonTranslations } from './ar/common';
 import { navigationTranslations } from './ar/navigation';
 import { dashboardTranslations } from './ar/dashboard';
@@ -12,7 +13,7 @@ export const arTranslations = {
   exercise: exercise,
   mealPlan: mealPlan,
   
-  // Life Phase Nutrition
+  // Life Phase Nutrition - restructure profile to avoid spread type error
   profile: {
     ...commonTranslations.profile,
     lifePhase: lifePhase
