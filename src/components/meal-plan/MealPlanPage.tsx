@@ -15,7 +15,7 @@ import {
   Sparkles
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useMealPlanPage } from "@/hooks/useMealPlanPage";
+import { useMealPlanState } from "@/hooks/useMealPlanState";
 import { format, addDays } from "date-fns";
 import MealPlanDayView from "./MealPlanDayView";
 import MealPlanWeekView from "./MealPlanWeekView";
@@ -30,7 +30,7 @@ import type { DailyMeal } from "@/hooks/useMealPlanData";
 
 const MealPlanPage = () => {
   const { t, isRTL } = useLanguage();
-  const mealPlanState = useMealPlanPage();
+  const mealPlanState = useMealPlanState();
   
   const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
   const [showShoppingDrawer, setShowShoppingDrawer] = useState(false);

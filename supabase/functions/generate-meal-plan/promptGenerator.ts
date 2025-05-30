@@ -4,10 +4,25 @@ const MEAL_PLAN_PROMPTS = {
   JSON_STRUCTURE_EXAMPLE: (includeSnacks: boolean, language: string = 'en') => {
     const isArabic = language === 'ar';
     const sampleMealName = isArabic ? "عجة إسبانية" : "Spanish Omelette";
-    const sampleIngredients = isArabic ? ["بيض", "بطاطس", "بصل"] : ["eggs", "potatoes", "onion"];
-    const sampleInstructions = isArabic ? ["الخطوة 1", "الخطوة 2"] : ["Step 1", "Step 2"];
+    const sampleIngredients = isArabic ? 
+      [
+        { "name": "بيض", "quantity": "3", "unit": "حبات" },
+        { "name": "بطاطس", "quantity": "2", "unit": "حبات متوسطة" },
+        { "name": "بصل", "quantity": "1", "unit": "حبة صغيرة" }
+      ] :
+      [
+        { "name": "eggs", "quantity": "3", "unit": "large" },
+        { "name": "potatoes", "quantity": "2", "unit": "medium" },
+        { "name": "onion", "quantity": "1", "unit": "small" }
+      ];
+    const sampleInstructions = isArabic ? 
+      ["قلي البطاطس حتى تذبل", "اخفقي البيض", "اخلطي المكونات واطبخي"] : 
+      ["Fry potatoes until tender", "Beat the eggs", "Mix ingredients and cook"];
+    
     const snackName = isArabic ? "زبادي يوناني" : "Greek Yogurt";
-    const snackIngredients = isArabic ? ["زبادي يوناني", "عسل"] : ["Greek yogurt", "honey"];
+    const snackIngredients = isArabic ? 
+      [{ "name": "زبادي يوناني", "quantity": "1", "unit": "كوب" }, { "name": "عسل", "quantity": "1", "unit": "ملعقة كبيرة" }] :
+      [{ "name": "Greek yogurt", "quantity": "1", "unit": "cup" }, { "name": "honey", "quantity": "1", "unit": "tablespoon" }];
     const snackInstructions = isArabic ? ["اخلط الزبادي مع العسل"] : ["Mix yogurt with honey"];
     
     return `
@@ -25,8 +40,8 @@ REQUIRED JSON STRUCTURE (copy this format exactly):
           "protein": 25,
           "carbs": 40,
           "fat": 30,
-          "ingredients": ${JSON.stringify(sampleIngredients)},
-          "instructions": ${JSON.stringify(sampleInstructions)},
+          "ingredients": ${JSON.stringify(sampleIngredients, null, 2)},
+          "instructions": ${JSON.stringify(sampleInstructions, null, 2)},
           "prepTime": 15,
           "cookTime": 30,
           "servings": 2
@@ -38,8 +53,8 @@ REQUIRED JSON STRUCTURE (copy this format exactly):
           "protein": 15,
           "carbs": 20,
           "fat": 5,
-          "ingredients": ${JSON.stringify(snackIngredients)},
-          "instructions": ${JSON.stringify(snackInstructions)},
+          "ingredients": ${JSON.stringify(snackIngredients, null, 2)},
+          "instructions": ${JSON.stringify(snackInstructions, null, 2)},
           "prepTime": 2,
           "cookTime": 0,
           "servings": 1
@@ -47,7 +62,14 @@ REQUIRED JSON STRUCTURE (copy this format exactly):
       ]
     }
   ]
-}`;
+}
+
+CRITICAL REQUIREMENTS FOR INGREDIENTS:
+- ingredients MUST be an array of objects
+- Each ingredient object MUST have: "name", "quantity", "unit"
+- Example: {"name": "chicken breast", "quantity": "200", "unit": "grams"}
+- DO NOT use simple strings for ingredients
+- DO NOT use nested arrays`;
   },
 
   MEAL_TYPES: (includeSnacks: boolean) => 
@@ -111,9 +133,10 @@ ${distribution}
 5. بدون تنسيق markdown، بدون تفسيرات، بدون نص إضافي
 6. جميع القيم الرقمية يجب أن تكون أرقام وليس نصوص
 7. اجعل أسماء الوجبات والمكونات والتعليمات باللغة العربية
-8. ingredients و instructions يجب أن تكون arrays
-9. المطبخ: ${preferences?.cuisine || 'مختلط'}
-10. وقت التحضير الأقصى: ${preferences?.maxPrepTime || 45} دقيقة
+8. ingredients يجب أن تكون array من objects مع name, quantity, unit
+9. instructions يجب أن تكون array من strings
+10. المطبخ: ${preferences?.cuisine || 'مختلط'}
+11. وقت التحضير الأقصى: ${preferences?.maxPrepTime || 45} دقيقة
 
 ملف المستخدم:
 - العمر: ${userProfile?.age || 30}
@@ -143,9 +166,14 @@ CRITICAL REQUIREMENTS:
 5. No markdown formatting, no explanations, no additional text
 6. All numeric values must be numbers, not strings
 7. Make meal names, ingredients, and instructions in English
-8. ingredients and instructions must be arrays
-9. Cuisine: ${preferences?.cuisine || 'mixed'}
-10. Max prep time: ${preferences?.maxPrepTime || 45} minutes
+8. ingredients must be array of objects with name, quantity, unit properties
+9. instructions must be array of strings
+10. Cuisine: ${preferences?.cuisine || 'mixed'}
+11. Max prep time: ${preferences?.maxPrepTime || 45} minutes
+
+INGREDIENT FORMAT REQUIREMENT:
+Each ingredient MUST be an object like this:
+{"name": "ingredient name", "quantity": "amount", "unit": "measurement unit"}
 
 User Profile:
 - Age: ${userProfile?.age || 30}

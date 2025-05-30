@@ -45,17 +45,31 @@ export interface WeeklyMealPlan {
   life_phase_context?: any;
 }
 
-// Helper function to safely parse JSON fields
+// Enhanced helper function to safely parse JSON fields with better error handling
 const safeParseJson = (jsonField: any, fallback: any = []) => {
+  // If it's already an array, return it
   if (Array.isArray(jsonField)) return jsonField;
+  
+  // If it's null or undefined, return fallback
+  if (!jsonField) return fallback;
+  
+  // If it's a string, try to parse it
   if (typeof jsonField === 'string') {
     try {
-      return JSON.parse(jsonField);
-    } catch {
+      const parsed = JSON.parse(jsonField);
+      return Array.isArray(parsed) ? parsed : fallback;
+    } catch (error) {
+      console.warn('Failed to parse JSON field:', jsonField, error);
       return fallback;
     }
   }
-  return jsonField || fallback;
+  
+  // If it's an object, return it as is
+  if (typeof jsonField === 'object') {
+    return jsonField;
+  }
+  
+  return fallback;
 };
 
 export const useMealPlanData = (weekOffset: number = 0) => {
@@ -154,9 +168,14 @@ export const useMealPlanData = (weekOffset: number = 0) => {
           }, {} as Record<number, number>)
         });
 
-        // Process meals data with enhanced error handling and proper type conversion
+        // Process meals data with proper type conversion
         const processedMeals: DailyMeal[] = (dailyMeals || []).map(meal => {
           try {
+            // Properly parse ingredients and instructions
+            const ingredients = safeParseJson(meal.ingredients, []) as MealIngredient[];
+            const instructions = safeParseJson(meal.instructions, []) as string[];
+            const alternatives = safeParseJson(meal.alternatives, []);
+
             return {
               id: meal.id,
               weekly_plan_id: meal.weekly_plan_id,
@@ -173,9 +192,9 @@ export const useMealPlanData = (weekOffset: number = 0) => {
               youtube_search_term: meal.youtube_search_term,
               image_url: meal.image_url,
               recipe_fetched: meal.recipe_fetched || false,
-              ingredients: safeParseJson(meal.ingredients, []) as MealIngredient[],
-              instructions: safeParseJson(meal.instructions, []) as string[],
-              alternatives: safeParseJson(meal.alternatives, [])
+              ingredients,
+              instructions,
+              alternatives
             };
           } catch (parseError) {
             console.error('Error parsing meal data:', parseError, meal);
