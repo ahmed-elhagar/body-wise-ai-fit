@@ -1,10 +1,6 @@
 
 import ProtectedRoute from "@/components/ProtectedRoute";
-import { ExerciseHeader } from "@/components/exercise/ExerciseHeader";
-import { ExerciseDaySelector } from "@/components/exercise/ExerciseDaySelector";
-import { ExerciseList } from "@/components/exercise/ExerciseList";
-import { EmptyExerciseState } from "@/components/exercise/EmptyExerciseState";
-import { AIExerciseDialog } from "@/components/exercise/AIExerciseDialog";
+import { ExerciseProgramPageContent } from "@/components/exercise/ExerciseProgramPageContent";
 import { useExerciseProgramPage } from "@/hooks/useExerciseProgramPage";
 
 const Exercise = () => {
@@ -52,51 +48,34 @@ const Exercise = () => {
 
   return (
     <ProtectedRoute>
-      <div className="p-6">
-        <div className="max-w-4xl mx-auto space-y-6">
-          <ExerciseHeader
-            currentProgram={currentProgram}
-            onGenerateProgram={() => setShowAIDialog(true)}
-            onShowAIDialog={() => setShowAIDialog(true)}
-            isGenerating={isGenerating}
-          />
-
-          <ExerciseDaySelector
-            selectedDayNumber={selectedDayNumber}
-            setSelectedDayNumber={setSelectedDayNumber}
-            currentProgram={currentProgram}
-            workoutType={workoutType}
-          />
-
-          {isLoading ? (
-            <div className="text-center py-8">Loading exercises...</div>
-          ) : !currentProgram ? (
-            <EmptyExerciseState 
-              onGenerateProgram={() => setShowAIDialog(true)}
-              workoutType={workoutType}
-              setWorkoutType={setWorkoutType}
-              showAIDialog={showAIDialog}
-              setShowAIDialog={setShowAIDialog}
-              aiPreferences={aiPreferences}
-              setAiPreferences={setAiPreferences}
-              isGenerating={isGenerating}
-            />
-          ) : (
-            <ExerciseList
-              exercises={todaysExercises}
-              workoutsLoading={isLoading}
-            />
-          )}
-
-          <AIExerciseDialog
-            open={showAIDialog}
-            onOpenChange={setShowAIDialog}
-            preferences={aiPreferences}
-            setPreferences={setAiPreferences}
-            onGenerate={handleGenerateAIProgram}
-            isGenerating={isGenerating}
-          />
-        </div>
+      <div className="p-6 bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/30 min-h-screen">
+        <ExerciseProgramPageContent
+          currentDate={currentDate}
+          weekStartDate={weekStartDate}
+          selectedDayNumber={selectedDayNumber}
+          setSelectedDayNumber={setSelectedDayNumber}
+          currentWeekOffset={currentWeekOffset}
+          setCurrentWeekOffset={setCurrentWeekOffset}
+          currentProgram={currentProgram}
+          workoutType={workoutType}
+          setWorkoutType={setWorkoutType}
+          todaysWorkouts={todaysWorkouts}
+          todaysExercises={todaysExercises}
+          completedExercises={completedExercises}
+          totalExercises={totalExercises}
+          progressPercentage={progressPercentage}
+          showAIDialog={showAIDialog}
+          setShowAIDialog={setShowAIDialog}
+          aiPreferences={aiPreferences}
+          setAiPreferences={setAiPreferences}
+          handleGenerateAIProgram={handleGenerateAIProgram}
+          handleRegenerateProgram={handleRegenerateProgram}
+          handleExerciseComplete={handleExerciseComplete}
+          handleExerciseProgressUpdate={handleExerciseProgressUpdate}
+          isGenerating={isGenerating}
+          refetch={refetch}
+          isRestDay={isRestDay}
+        />
       </div>
     </ProtectedRoute>
   );

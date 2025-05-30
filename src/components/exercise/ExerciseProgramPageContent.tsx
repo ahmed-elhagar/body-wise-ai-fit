@@ -1,4 +1,3 @@
-
 import { useLanguage } from "@/contexts/LanguageContext";
 import { WeeklyExerciseNavigation } from "./WeeklyExerciseNavigation";
 import { ExerciseDaySelector } from "./ExerciseDaySelector";
@@ -9,6 +8,7 @@ import { ExercisePageHeader } from "./ExercisePageHeader";
 import { WorkoutTypeSelector } from "./WorkoutTypeSelector";
 import { TodaysWorkoutProgressCard } from "./TodaysWorkoutProgressCard";
 import { format, addDays } from "date-fns";
+import { EnhancedWorkoutTypeToggle } from "./EnhancedWorkoutTypeToggle";
 
 interface ExerciseProgramPageContentProps {
   currentDate: Date;
@@ -107,10 +107,10 @@ export const ExerciseProgramPageContent = ({
         isGenerating={isGenerating}
       />
 
-      {/* Workout Type Toggle */}
-      <WorkoutTypeSelector
+      {/* Enhanced Workout Type Toggle */}
+      <EnhancedWorkoutTypeToggle
         workoutType={workoutType}
-        setWorkoutType={setWorkoutType}
+        onWorkoutTypeChange={setWorkoutType}
       />
 
       {/* Weekly Navigation */}

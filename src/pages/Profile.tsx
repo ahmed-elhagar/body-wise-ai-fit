@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -16,6 +15,7 @@ import ProfileTabNavigation from "@/components/profile/ProfileTabNavigation";
 import ProfileTabContent from "@/components/profile/ProfileTabContent";
 import { useEnhancedProfile } from "@/hooks/useEnhancedProfile";
 import { toast } from "sonner";
+import CompactProfileCompletionCard from "@/components/profile/enhanced/CompactProfileCompletionCard";
 
 const Profile = () => {
   const { user } = useAuth();
@@ -108,7 +108,7 @@ const Profile = () => {
 
   return (
     <ProtectedRoute requireProfile={false}>
-      <div className="p-6">
+      <div className="p-6 bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/30 min-h-screen">
         <div className="max-w-6xl mx-auto">
           <ProfilePageHeader
             hasUnsavedChanges={hasUnsavedChanges}
@@ -123,8 +123,8 @@ const Profile = () => {
             completionPercentage={completionPercentage}
           />
 
-          <div className="mb-4 mt-4">
-            <ProfileCompletionCard onStepClick={handleStepClick} />
+          <div className="mb-6 mt-4">
+            <CompactProfileCompletionCard onStepClick={handleStepClick} />
           </div>
 
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">

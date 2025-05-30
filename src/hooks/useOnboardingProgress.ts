@@ -15,8 +15,14 @@ export interface OnboardingProgress {
   current_step: number;
   completion_percentage: number;
   total_steps: number;
+  basic_info_completed_at?: string;
+  health_assessment_completed_at?: string;
+  goals_setup_completed_at?: string;
+  preferences_completed_at?: string;
+  profile_review_completed_at?: string;
   created_at: string;
   updated_at: string;
+  completed_at?: string;
 }
 
 export const useOnboardingProgress = () => {
@@ -48,10 +54,9 @@ export const useOnboardingProgress = () => {
     mutationFn: async (step: string) => {
       if (!user?.id) throw new Error('No user ID');
 
-      const updateData: any = {
+      const updateData: Partial<OnboardingProgress> = {
         user_id: user.id,
         updated_at: new Date().toISOString(),
-        created_at: new Date().toISOString(),
       };
 
       switch (step) {
@@ -84,7 +89,7 @@ export const useOnboardingProgress = () => {
         .single();
 
       if (error) throw error;
-      return data as OnboardingProgress;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['onboarding-progress'] });
