@@ -19,11 +19,12 @@ import {
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useMealPlanPage } from "@/hooks/useMealPlanPage";
 import SnackPickerDialog from "./SnackPickerDialog";
-import ShoppingListDrawer from "./ShoppingListDrawer";
+import ShoppingListDrawer from "../shopping-list/ShoppingListDrawer";
 import MealPlanLoadingBackdrop from "./MealPlanLoadingBackdrop";
 import MealRecipeDialog from "./MealRecipeDialog";
 import MealExchangeDialog from "./MealExchangeDialog";
 import { toast } from "sonner";
+import type { DailyMeal } from "@/hooks/useMealPlanData";
 
 const EnhancedMealPlanPage = () => {
   const { t, isRTL } = useLanguage();
@@ -59,28 +60,12 @@ const EnhancedMealPlanPage = () => {
     });
   };
 
-  const handleShowRecipe = (meal: any) => {
-    // Convert meal to DailyMeal type
-    const dailyMeal = {
-      ...meal,
-      weekly_plan_id: mealPlanState.currentWeekPlan?.weeklyPlan?.id || '',
-      day_number: meal.day_number || 1,
-      prep_time: meal.prep_time || 0,
-      cook_time: meal.cook_time || 0
-    };
-    mealPlanState.handleShowRecipe(dailyMeal);
+  const handleShowRecipe = (meal: DailyMeal) => {
+    mealPlanState.handleShowRecipe(meal);
   };
 
-  const handleExchangeMeal = async (meal: any, index: number) => {
-    // Convert meal to DailyMeal type
-    const dailyMeal = {
-      ...meal,
-      weekly_plan_id: mealPlanState.currentWeekPlan?.weeklyPlan?.id || '',
-      day_number: meal.day_number || 1,
-      prep_time: meal.prep_time || 0,
-      cook_time: meal.cook_time || 0
-    };
-    mealPlanState.handleExchangeMeal(dailyMeal, index);
+  const handleExchangeMeal = async (meal: DailyMeal, index: number) => {
+    mealPlanState.handleExchangeMeal(meal, index);
     
     // Show toast after exchange
     setTimeout(() => {
