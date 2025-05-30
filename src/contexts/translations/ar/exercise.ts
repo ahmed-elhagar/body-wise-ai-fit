@@ -1,195 +1,145 @@
+export const exercise = {
+  exerciseList: "قائمة التمارين",
+  noExercises: "لا توجد تمارين",
+  noExercisesMessage: "لا توجد تمارين متاحة لهذا اليوم. يرجى تحديد يوم آخر أو إنشاء خطة تمارين جديدة.",
+  exercises: "تمارين",
+  loadingExercises: "جارٍ تحميل التمارين...",
+  completeWorkoutStepByStep: "أكمل التمرين خطوة بخطوة",
+  sets: "مجموعات",
+  reps: "تكرار",
+  rest: "راحة",
+  completed: "مكتمل",
+  progress: "التقدم",
+  markComplete: "تأكيد الإكمال",
+  editProgress: "تعديل التقدم",
+  watchVideo: "مشاهدة الفيديو",
+  
+  // Exercise names
+  'Cable Lat Pulldown': 'السحب للأسفل بالكابل',
+  'Bent Over Barbell Row': 'التجديف بالبار المحني',
+  'Dumbbell Press': 'الضغط بالدمبل',
+  'Pull-ups': 'تمرين العقلة',
+  'Squats': 'القرفصاء',
+  'Bench Press': 'الضغط على البنش',
+  'Deadlift': 'الرفعة الميتة',
+  'Plank': 'تمرين البلانك',
+  'Running in Place': 'الجري في المكان',
+  'Jump Rope': 'القفز بالحبل',
+  'Push-ups': 'تمرين الضغط',
+  'Crunches': 'تمرين الطحن',
+  'Bridge': 'تمرين الجسر',
+  'Mountain Climbers': 'تمرين المتسلق',
+  'Jumping Jacks': 'تمرين القفز',
+  'Burpees': 'تمرين البيربي',
+  'Lunges': 'تمرين اللونجز',
+  
+  // Muscle Groups
+  full_body: "الجسم بالكامل",
+  upper_body: "الجزء العلوي من الجسم",
+  lower_body: "الجزء السفلي من الجسم",
+  core: "القلب",
+  chest: "الصدر",
+  back: "الظهر",
+  shoulders: "الأكتاف",
+  biceps: "العضلة ذات الرأسين",
+  triceps: "العضلة ثلاثية الرؤوس",
+  legs: "الساقين",
+  glutes: "المؤخرة",
 
-export const exerciseTranslations = {
-  // Exercise specific translations - Enhanced and Complete
-  'exercise.selectDay': 'اختر اليوم',
-  'exercise.selectWeek': 'اختر الأسبوع',
-  'exercise.hasWorkout': 'يحتوي على تمرين',
-  'exercise.restDay': 'يوم راحة',
-  'exercise.restDayDescription': 'عضلاتك تحتاج وقت للتعافي والنمو. استخدم هذا اليوم لـ:',
-  'exercise.restTip1': 'الحصول على نوم كافي (7-9 ساعات)',
-  'exercise.restTip2': 'البقاء رطب طوال اليوم',
-  'exercise.restTip3': 'القيام بتمارين إطالة خفيفة أو يوغا',
-  'exercise.restTip4': 'التركيز على التغذية وتحضير الوجبات',
-  'exercise.restTip5': 'التنزه في الخارج',
-  'exercise.restDayMessage': 'خذ استراحة واترك عضلاتك تتعافى. ابق رطب واحصل على نوم جيد!',
-  'exercise.restDayTip': 'ينصح بتمارين إطالة خفيفة أو المشي',
-  'exercise.noWorkout': 'لا يوجد تمرين مخطط',
-  'exercise.noWorkoutMessage': 'أنشئ خطة تمرين بالذكاء الاصطناعي للبدء',
-  'exercise.noDataForWeek': 'لا توجد بيانات تمرين لهذا الأسبوع',
-  'exercise.generateForThisWeek': 'إنشاء تمرين لهذا الأسبوع',
-  'exercise.goBackToCurrentWeek': 'العودة للأسبوع الحالي',
-  'exercise.todaysWorkout': 'تمرين اليوم',
-  'exercise.home': 'المنزل',
-  'exercise.gym': 'الصالة الرياضية',
-  'exercise.homeWorkout': 'تمرين منزلي',
-  'exercise.gymWorkout': 'تمرين صالة رياضية',
-  'exercise.progress': 'التقدم',
-  'exercise.exercises': 'تمارين',
-  'exercise.exercise': 'تمرين',
-  'exercise.targetMuscles': 'العضلات المستهدفة',
-  'exercise.exerciseList': 'قائمة التمارين',
-  'exercise.noExercises': 'لا توجد تمارين لليوم',
-  'exercise.noExercisesMessage': 'أنشئ خطة تمرين بالذكاء الاصطناعي للبدء',
-  'exercise.loadingExercises': 'جاري تحميل التمارين...',
-  'exercise.completed': 'مكتمل',
-  'exercise.markComplete': 'تسجيل الإكمال',
-  'exercise.editProgress': 'تعديل التقدم',
-  'exercise.sets': 'مجموعات',
-  'exercise.reps': 'تكرارات',
-  'exercise.notes': 'ملاحظات',
-  'exercise.actualSets': 'المجموعات الفعلية',
-  'exercise.actualReps': 'التكرارات الفعلية',
-  'exercise.addNotes': 'أضف ملاحظات حول أدائك...',
-  'exercise.watchVideo': 'شاهد الفيديو',
-  'exercise.instructions': 'التعليمات',
-  'exercise.equipment': 'المعدات',
-  'exercise.muscleGroups': 'مجموعات العضلات',
-  'exercise.difficulty': 'الصعوبة',
-  'exercise.restTime': 'وقت الراحة',
-  'exercise.seconds': 'ثواني',
-  'exercise.programName': 'اسم البرنامج',
-  'exercise.workoutType': 'نوع التمرين',
-  'exercise.currentWeek': 'الأسبوع الحالي',
-  'exercise.generateProgram': 'إنشاء برنامج تمارين',
-  'exercise.generateNew': 'إنشاء جديد',
-  'exercise.week': 'أسبوع',
-  'exercise.thisWeek': 'هذا الأسبوع',
-  'exercise.lastWeek': 'الأسبوع الماضي',
-  'exercise.nextWeek': 'الأسبوع القادم',
-  'exercise.weeksAgo': 'أسابيع مضت',
-  'exercise.weeksAhead': 'أسابيع قادمة',
-  'exercise.workoutPlanner': 'مخطط التمارين',
-  'exercise.weeklyPlan': 'الخطة الأسبوعية',
-  'exercise.dailyWorkout': 'التمرين اليومي',
-  'exercise.workoutComplete': 'التمرين مكتمل',
-  'exercise.startWorkout': 'بدء التمرين',
-  'exercise.finishWorkout': 'إنهاء التمرين',
-  'exercise.skipExercise': 'تخطي التمرين',
-  'exercise.nextExercise': 'التمرين التالي',
-  'exercise.previousExercise': 'التمرين السابق',
-  'exercise.duration': 'المدة',
-  'exercise.calories': 'السعرات',
-  'exercise.intensity': 'الشدة',
-  'exercise.low': 'منخفض',
-  'exercise.medium': 'متوسط',
-  'exercise.high': 'عالي',
-  'exercise.beginner': 'مبتدئ',
-  'exercise.intermediate': 'متوسط',
-  'exercise.advanced': 'متقدم',
-  'exercise.all': 'الكل',
-  'exercise.chest': 'الصدر',
-  'exercise.back': 'الظهر',
-  'exercise.shoulders': 'الأكتاف',
-  'exercise.arms': 'الذراعين',
-  'exercise.legs': 'الساقين',
-  'exercise.core': 'الجذع',
-  'exercise.cardio': 'كارديو',
-  'exercise.fullBody': 'الجسم كامل',
-  'exercise.today': 'اليوم',
-  'exercise.workoutSummary': 'ملخص التمرين',
-  'exercise.estimatedTime': 'الوقت المقدر',
-  'exercise.estimatedCalories': 'السعرات المقدرة',
-  'exercise.muscleGroup': 'مجموعة العضلات',
-  'exercise.workoutName': 'اسم التمرين',
-  'exercise.rest': 'راحة',
-  'exercise.empty': 'فارغ',
+  // Equipment
+  bodyweight: "وزن الجسم",
+  dumbbells: "الدمبل",
+  barbell: "البار",
+  resistance_band: "شريط المقاومة",
+  machine: "جهاز",
+  cable: "كابل",
   
-  // New missing translations
-  'exercise.pause': 'إيقاف مؤقت',
-  'exercise.resume': 'استئناف',
-  'exercise.reset': 'إعادة تعيين',
-  'exercise.share': 'مشاركة',
-  'exercise.tutorials': 'دروس تعليمية',
-  'exercise.stretchingVideos': 'فيديوهات الإطالة',
-  'exercise.meditation': 'التأمل',
-  'exercise.restDayActivities': 'أنشطة يوم الراحة',
-  'exercise.todaysProgress': 'تقدم اليوم',
-  'exercise.progressTracker': 'متتبع التقدم',
-  'exercise.weekProgress': 'تقدم الأسبوع',
-  'exercise.averageWorkoutDuration': 'متوسط التمرين',
-  'exercise.totalCalories': 'إجمالي السعرات',
-  'exercise.lightStretching': 'إطالة خفيفة',
-  'exercise.stretchingDesc': 'تمارين إطالة لطيفة للحفاظ على المرونة',
-  'exercise.meditationDesc': 'تمارين اليقظة والاسترخاء',
-  'exercise.lightWalk': 'مشي خفيف',
-  'exercise.walkDesc': 'مشي بوتيرة سهلة للتعافي النشط',
-  'exercise.readFitness': 'تعليم اللياقة',
-  'exercise.readDesc': 'تعلم عن التغذية واللياقة البدنية',
-  'exercise.recoveryChecklist': 'قائمة التعافي',
-  'exercise.checkHydration': 'ابق رطب (8+ أكواب من الماء)',
-  'exercise.checkSleep': 'احصل على 7-9 ساعات نوم جيد',
-  'exercise.checkNutrition': 'ركز على الوجبات المغذية',
-  'exercise.checkStress': 'تحكم في مستويات التوتر',
-  'exercise.restQuote': 'استرح عندما تكون متعب. انعش وجدد نفسك وجسدك وعقلك وروحك.',
-  'exercise.motivation.great': 'عمل رائع! استمر في التقدم! 💪',
-  'exercise.motivation.amazing': 'تقدم مذهل! أنت مشتعل! 🔥',
-  'exercise.motivation.awesome': 'عمل ممتاز! كل تكرار مهم! ⭐',
-  'exercise.motivation.fantastic': 'رائع! أنت تبني القوة! 🏆',
-  'exercise.motivation.incredible': 'إخلاص لا يصدق! استمر! 🎯',
-  'exercise.motivation.outstanding': 'جهد متميز! أنت لا تُقهر! 🚀',
-  'exercise.motivation.perfect': 'مثالي! لقد أكملت كل شيء! 🎉',
-  'exercise.motivation.restWell': 'استرح جيداً اليوم! التعافي جزء من الرحلة! 😌',
-  'exercise.motivation.getStarted': 'مستعد للبدء؟ جسدك سيشكرك! 💯',
+  // Exercise instructions
+  'Sit upright, grip the bar with a wide grip, pull the bar to your chest while moving your shoulders back': 'اجلس منتصباً، امسك البار بقبضة واسعة، اسحب البار إلى صدرك مع تحريك كتفيك للخلف',
+  'With your torso bent forward, grip the bar and pull it toward your abdomen while keeping your back straight': 'مع انحناء جذعك للأمام، امسك البار واسحبه نحو بطنك مع الحفاظ على استقامة ظهرك',
+  'Lie face down, raise your body in a straight line and hold the position': 'استلقِ على وجهك، ارفع جسمك في خط مستقيم وحافظ على هذا الوضع',
+  'Stand straight then lower as if sitting on a chair': 'قف بشكل مستقيم ثم انخفض كما لو كنت تجلس على كرسي',
   
-  // Additional translations for better coverage  
-  min: 'دقيقة',
-  cal: 'سعرة',
-  today: 'اليوم',
-  workouts: 'التمارين',
-  week: 'الأسبوع',
-  weekProgress: 'تقدم الأسبوع',
+  // AI Generation Preferences
+  workoutType: "نوع التمرين",
+  goalType: "نوع الهدف",
+  fitnessLevel: "مستوى اللياقة",
+  availableTime: "الوقت المتاح",
+  preferredWorkouts: "التدريبات المفضلة",
+  targetMuscleGroups: "مجموعات العضلات المستهدفة",
+  equipment: "المعدات",
+  duration: "المدة",
+  workoutDays: "أيام التمرين",
+  difficulty: "الصعوبة",
+  generateProgram: "إنشاء برنامج",
+  regenerateProgram: "إعادة إنشاء البرنامج",
+  home: "المنزل",
+  gym: "الصالة الرياضية",
+  general_fitness: "اللياقة العامة",
+  weight_loss: "فقدان الوزن",
+  muscle_gain: "اكتساب العضلات",
+  beginner: "مبتدئ",
+  intermediate: "متوسط",
+  advanced: "متقدم",
+  '30': "30 دقيقة",
+  '45': "45 دقيقة",
+  '60': "60 دقيقة",
+  '3-4 days per week': "3-4 أيام في الأسبوع",
+  '4-5 days per week': "4-5 أيام في الأسبوع",
+  '5-6 days per week': "5-6 أيام في الأسبوع",
   
-  // Day names in Arabic - flattened to avoid nested objects
-  'day.monday': 'الإثنين',
-  'day.tuesday': 'الثلاثاء',
-  'day.wednesday': 'الأربعاء', 
-  'day.thursday': 'الخميس',
-  'day.friday': 'الجمعة',
-  'day.saturday': 'السبت',
-  'day.sunday': 'الأحد',
+  // Common
+  common: {
+    cancel: "إلغاء",
+    save: "حفظ",
+    edit: "تعديل",
+    close: "إغلاق"
+  },
   
-  // New translations for enhanced loading and RTL support
-  'exercise.customizeProgram': 'تخصيص برنامج التمارين بالذكاء الاصطناعي',
-  'exercise.getPersonalizedPlan': 'احصل على خطة تمرين منزلية مخصصة بالذكاء الاصطناعي',
-  'exercise.trainingEnvironment': 'بيئة التدريب',
-  'exercise.homeTraining': 'التدريب المنزلي',
-  'exercise.gymTraining': 'التدريب في الصالة الرياضية',
-  'exercise.homeTrainingDesc': 'تمارين وزن الجسم ومعدات بسيطة',
-  'exercise.gymTrainingDesc': 'الوصول الكامل للمعدات والتدريب المتقدم',
-  'exercise.bodyweight': 'وزن الجسم',
-  'exercise.minimalEquipment': 'معدات بسيطة',
-  'exercise.flexibleSchedule': 'جدول مرن',
-  'exercise.fullEquipment': 'معدات كاملة',
-  'exercise.progressiveOverload': 'زيادة تدريجية',
-  'exercise.advancedTraining': 'تدريب متقدم',
-  'exercise.fitnessGoal': 'هدف اللياقة',
-  'exercise.weightLoss': 'إنقاص الوزن',
-  'exercise.muscleGain': 'بناء العضلات',
-  'exercise.generalFitness': 'اللياقة العامة',
-  'exercise.strength': 'بناء القوة',
-  'exercise.endurance': 'التحمل',
-  'exercise.flexibility': 'المرونة',
-  'exercise.months': 'أشهر',
-  'exercise.years': 'سنوات',
-  'exercise.minutes': 'دقيقة',
-  'exercise.perSession': 'لكل جلسة',
-  'exercise.programWillInclude': 'سيشمل برنامجك:',
-  'exercise.daysPerWeek': 'أيام في الأسبوع',
-  'exercise.personalizedExercises': 'تمارين مخصصة بالذكاء الاصطناعي',
-  'exercise.bodyweightExercises': 'تمارين وزن الجسم',
-  'exercise.noEquipmentNeeded': 'لا تحتاج معدات',
-  'exercise.smallSpaceFriendly': 'مناسب للمساحات الصغيرة',
-  'exercise.generating': 'جاري الإنشاء',
-  'exercise.generatingProgram': 'إنشاء برنامج التمارين الخاص بك',
-  'exercise.generatingProgramDesc': 'الذكاء الاصطناعي ينشئ خطة تمرين مخصصة حسب أهدافك وتفضيلاتك',
-  'exercise.loadingProgram': 'جاري تحميل برنامج التمارين...',
-  'exercise.analyzingProfile': 'تحليل ملفك الشخصي',
-  'exercise.analyzingProfileDesc': 'فهم مستوى لياقتك وأهدافك',
-  'exercise.selectingExercises': 'اختيار التمارين',
-  'exercise.selectingExercisesDesc': 'اختيار أفضل التمارين لبرنامجك',
-  'exercise.creatingSchedule': 'إنشاء الجدول',
-  'exercise.creatingScheduleDesc': 'بناء تقويم التمارين الأسبوعي',
-  'exercise.finalizingProgram': 'إنهاء البرنامج',
-  'exercise.finalizingProgramDesc': 'إضافة اللمسات الأخيرة لبرنامجك',
-  'exercise.pleaseWait': 'يرجى الانتظار بينما ننشئ برنامجك المخصص...',
+  // Exercise Progress Dialog
+  exerciseProgress: "تقدم التمرين",
+  setsCompleted: "المجموعات المكتملة",
+  repsPerformed: "التكرارات المؤداة",
+  additionalNotes: "ملاحظات إضافية",
+  
+  // Rest Day Card
+  restDay: "يوم الراحة",
+  enjoyYourRest: "استمتع بيوم الراحة!",
+  restDayDescription: "اليوم هو يوم الراحة. استغل هذا الوقت للتعافي والاستعداد للأسبوع القادم.",
+  
+  // Exchange feature translations
+  exchange: "استبدال",
+  exchangeExercise: "استبدال التمرين",
+  exchangeReason: "لماذا تريد استبدال هذا التمرين؟",
+  exchangeReasonPlaceholder: "مثال: ليس لدي المعدات المطلوبة، صعب جداً، إلخ.",
+  exchanging: "جاري الاستبدال...",
+  exchangeLimitReached: "تم الوصول لحد الاستبدال",
+  exchangeLimitMessage: "لقد استخدمت جميع عمليات الاستبدال (2) لهذا الأسبوع. سيتم إعادة تعيين الحد أسبوعياً.",
+  weeklyExchangeLimit: "استخدام الاستبدال الأسبوعي",
+  used: "مستخدم",
+  remaining: "متبقي",
+  currentExercise: "التمرين الحالي",
+  preferredEquipment: "المعدات المفضلة (اختياري)",
+  targetMuscleGroups: "مجموعات العضلات المستهدفة (اختياري)",
+  
+  // Equipment translations
+  bodyweight: "وزن الجسم",
+  dumbbells: "الدمبل",
+  barbells: "البار",
+  resistance_bands: "أربطة المقاومة",
+  kettlebells: "الكيتل بيل",
+  pull_up_bar: "بار العقلة",
+  yoga_mat: "سجادة اليوغا",
+  stability_ball: "كرة التوازن",
+  
+  // Muscle group translations
+  chest: "الصدر",
+  back: "الظهر",
+  shoulders: "الأكتاف",
+  biceps: "العضلة ذات الرأسين",
+  triceps: "العضلة ثلاثية الرؤوس",
+  legs: "الساقين",
+  glutes: "المؤخرة",
+  core: "عضلات البطن",
+  full_body: "الجسم كاملاً"
 };

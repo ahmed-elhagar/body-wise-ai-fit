@@ -3,10 +3,11 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle, Clock, Dumbbell, Play, Youtube, Edit3 } from "lucide-react";
+import { CheckCircle, Clock, Dumbbell, Play, Youtube, Edit3, RefreshCw } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ExerciseProgressDialog } from "./ExerciseProgressDialog";
+import { ExerciseExchangeDialog } from "./ExerciseExchangeDialog";
 import { translateExerciseContent } from "@/utils/exerciseTranslationUtils";
 
 interface ExerciseCardEnhancedProps {
