@@ -22,8 +22,8 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <LanguageProvider>
-          <AuthProvider>
+        <AuthProvider>
+          <LanguageProvider>
             <Toaster />
             <Sonner />
             <BrowserRouter>
@@ -38,8 +38,8 @@ function App() {
                 <Route path="/enhanced-profile" element={<EnhancedProfile />} />
               </Routes>
             </BrowserRouter>
-          </AuthProvider>
-        </LanguageProvider>
+          </LanguageProvider>
+        </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );
