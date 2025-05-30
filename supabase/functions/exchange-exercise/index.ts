@@ -27,12 +27,12 @@ serve(async (req) => {
       throw new Error('Exercise ID is required');
     }
 
-    // Get original exercise details with better error handling
+    // Get original exercise details with proper error handling
     const { data: originalExercise, error: exerciseError } = await supabaseClient
       .from('exercises')
       .select('*')
       .eq('id', exerciseId)
-      .maybeSingle();
+      .single();
 
     if (exerciseError) {
       console.error('Exercise query error:', exerciseError);
@@ -46,7 +46,7 @@ serve(async (req) => {
 
     console.log('✅ Found original exercise:', originalExercise.name);
 
-    // Generate exchange prompt - AI will automatically detect muscle groups
+    // Generate exchange prompt with comprehensive instructions
     const exchangePrompt = `
 You are a fitness expert AI. The user wants to exchange the following exercise:
 
@@ -134,7 +134,7 @@ IMPORTANT: Respond with ONLY valid JSON, no additional text or markdown formatti
     let newExerciseData;
     try {
       // Clean the response to ensure it's valid JSON
-      const cleanedContent = aiContent.trim();
+      const cleanedContent = aiContent.trim().replace(/```json\n?|\n?```/g, '');
       newExerciseData = JSON.parse(cleanedContent);
     } catch (parseError) {
       console.error('Failed to parse AI response:', aiContent);
