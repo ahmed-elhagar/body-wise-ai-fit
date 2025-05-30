@@ -51,7 +51,7 @@ export const useOnboardingProgress = () => {
       const updateData: any = {
         user_id: user.id,
         updated_at: new Date().toISOString(),
-        created_at: new Date().toISOString(), // Add created_at field
+        created_at: new Date().toISOString(),
       };
 
       switch (step) {
@@ -84,7 +84,7 @@ export const useOnboardingProgress = () => {
         .single();
 
       if (error) throw error;
-      return data;
+      return data as OnboardingProgress;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['onboarding-progress'] });
