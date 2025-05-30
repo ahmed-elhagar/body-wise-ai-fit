@@ -1,7 +1,8 @@
-
 import { ReactNode, memo } from 'react';
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
-import { AppSidebar } from './AppSidebar';
+import { Toaster } from "@/components/ui/sonner";
+import { useAuth } from "@/hooks/useAuth";
+import AppSidebar from "./AppSidebar";
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface LayoutProps {

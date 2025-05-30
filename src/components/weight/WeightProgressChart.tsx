@@ -1,9 +1,7 @@
-
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, Minus, Scale, Calendar } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Scale } from "lucide-react";
 import { WeightEntry } from "@/hooks/useWeightTracking";
 import { useState, useMemo } from "react";
 import { subDays, format } from "date-fns";
@@ -61,6 +59,10 @@ const WeightProgressChart = ({ weightEntries }: WeightProgressChartProps) => {
       return `${value.toFixed(1)} kg`;
     }
     return '0.0';
+  };
+
+  const customTooltipFormatter = (value: any, name: string) => {
+    return [formatTooltipValue(value, name), name === 'weight' ? 'Weight' : name === 'bodyFat' ? 'Body Fat' : 'Muscle Mass'];
   };
 
   const timeRangeOptions = [
@@ -139,12 +141,7 @@ const WeightProgressChart = ({ weightEntries }: WeightProgressChartProps) => {
               />
               <Tooltip 
                 labelFormatter={(value) => `Date: ${value}`}
-                formatter={(value, name) => [
-                  formatTooltipValue(value, name),
-                  name === 'weight' ? 'Weight' : 
-                  name === 'bodyFat' ? 'Body Fat' : 
-                  'Muscle Mass'
-                ]}
+                formatter={customTooltipFormatter}
                 contentStyle={{
                   backgroundColor: 'white',
                   border: '1px solid #e5e7eb',

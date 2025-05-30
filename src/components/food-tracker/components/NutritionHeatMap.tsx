@@ -1,110 +1,122 @@
 
-import { format, eachDayOfInterval, startOfMonth, endOfMonth, isSameDay, startOfWeek, endOfWeek } from "date-fns";
-import { cn } from "@/lib/utils";
+import { useMemo } from "react";
+import { format, eachDayOfInterval, startOfMonth, endOfMonth } from "date-fns";
 
-interface NutritionHeatMapProps {
-  currentMonth: Date;
-  dailyTotals: Map<string, { calories: number; protein: number; carbs: number; fat: number; count: number }>;
-  selectedDate: Date;
-  onDateSelect: (date: Date) => void;
-  isLoading: boolean;
+interface FoodConsumptionLog {
+  id: string;
+  user_id: string;
+  food_item_id: string;
+  quantity_g: number;
+  meal_type: string;
+  calories_consumed: number;
+  protein_consumed: number;
+  carbs_consumed: number;
+  fat_consumed: number;
+  consumed_at: string;
+  meal_image_url?: string;
+  notes?: string;
+  source: string;
+  ai_analysis_data?: any;
+  food_item?: {
+    id: string;
+    name: string;
+    brand?: string;
+    category: string;
+    serving_description?: string;
+  };
 }
 
-const NutritionHeatMap = ({ 
-  currentMonth, 
-  dailyTotals, 
-  selectedDate, 
-  onDateSelect, 
-  isLoading 
-}: NutritionHeatMapProps) => {
-  
-  // Get all days in the calendar view (including days from prev/next month to complete weeks)
-  const monthStart = startOfMonth(currentMonth);
-  const monthEnd = endOfMonth(currentMonth);
-  const calendarStart = startOfWeek(monthStart);
-  const calendarEnd = endOfWeek(monthEnd);
-  
-  const calendarDays = eachDayOfInterval({
-    start: calendarStart,
-    end: calendarEnd
-  });
+interface NutritionHeatMapProps {
+  data: FoodConsumptionLog[];
+  currentMonth: Date;
+}
 
-  const getIntensityClass = (calories: number) => {
-    if (calories === 0) return 'bg-gray-100 hover:bg-gray-200';
-    if (calories < 500) return 'bg-green-100 hover:bg-green-200';
-    if (calories < 1200) return 'bg-green-200 hover:bg-green-300';
-    if (calories < 2000) return 'bg-green-400 hover:bg-green-500';
-    return 'bg-green-600 hover:bg-green-700';
+const NutritionHeatMap = ({ data, currentMonth }: NutritionHeatMapProps) => {
+  const heatMapData = useMemo(() => {
+    const monthStart = startOfMonth(currentMonth);
+    const monthEnd = endOfMonth(currentMonth);
+    const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
+
+    return days.map(day => {
+      const dayStr = format(day, 'yyyy-MM-dd');
+      const dayData = data.filter(entry => 
+        format(new Date(entry.consumed_at), 'yyyy-MM-dd') === dayStr
+      );
+
+      const totalCalories = dayData.reduce((sum, entry) => sum + (entry.calories_consumed || 0), 0);
+      const totalEntries = dayData.length;
+
+      // Calculate intensity based on calories (0-4 scale)
+      let intensity = 0;
+      if (totalCalories > 0) {
+        if (totalCalories >= 2500) intensity = 4;
+        else if (totalCalories >= 2000) intensity = 3;
+        else if (totalCalories >= 1500) intensity = 2;
+        else if (totalCalories >= 1000) intensity = 1;
+      }
+
+      return {
+        date: day,
+        dateStr: dayStr,
+        dayName: format(day, 'EEE'),
+        dayNumber: format(day, 'd'),
+        totalCalories,
+        totalEntries,
+        intensity
+      };
+    });
+  }, [data, currentMonth]);
+
+  const getIntensityColor = (intensity: number) => {
+    switch (intensity) {
+      case 0: return 'bg-gray-100';
+      case 1: return 'bg-green-100';
+      case 2: return 'bg-green-200';
+      case 3: return 'bg-green-300';
+      case 4: return 'bg-green-400';
+      default: return 'bg-gray-100';
+    }
   };
-
-  const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-4">
-      {/* Legend */}
-      <div className="flex items-center justify-between text-sm text-gray-600">
-        <span>Less</span>
-        <div className="flex items-center gap-1">
-          <div className="w-3 h-3 bg-gray-100 rounded-sm"></div>
-          <div className="w-3 h-3 bg-green-100 rounded-sm"></div>
-          <div className="w-3 h-3 bg-green-200 rounded-sm"></div>
-          <div className="w-3 h-3 bg-green-400 rounded-sm"></div>
-          <div className="w-3 h-3 bg-green-600 rounded-sm"></div>
-        </div>
-        <span>More</span>
-      </div>
-
-      {/* Calendar Grid */}
-      <div className="grid grid-cols-7 gap-1">
-        {/* Week day headers */}
-        {weekDays.map(day => (
-          <div key={day} className="text-center text-xs font-medium text-gray-500 py-2">
+      <div className="grid grid-cols-7 gap-1 text-center">
+        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+          <div key={day} className="text-xs font-medium text-gray-600 py-2">
             {day}
           </div>
         ))}
-        
-        {/* Calendar days */}
-        {calendarDays.map(day => {
-          const dateKey = format(day, 'yyyy-MM-dd');
-          const dayData = dailyTotals.get(dateKey);
-          const calories = dayData?.calories || 0;
-          const isCurrentMonth = day.getMonth() === currentMonth.getMonth();
-          const isSelected = isSameDay(day, selectedDate);
-          const isToday = isSameDay(day, new Date());
-
-          return (
-            <button
-              key={dateKey}
-              onClick={() => onDateSelect(day)}
-              className={cn(
-                "w-8 h-8 rounded-sm text-xs font-medium transition-all duration-200",
-                getIntensityClass(calories),
-                isSelected && "ring-2 ring-green-600 ring-offset-1",
-                isToday && "ring-2 ring-blue-500 ring-offset-1",
-                !isCurrentMonth && "opacity-30",
-                "focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-1"
-              )}
-              title={`${format(day, 'MMM d')}: ${Math.round(calories)} calories${dayData ? ` (${dayData.count} meals)` : ''}`}
-            >
-              {format(day, 'd')}
-            </button>
-          );
-        })}
+      </div>
+      
+      <div className="grid grid-cols-7 gap-1">
+        {heatMapData.map((day) => (
+          <div
+            key={day.dateStr}
+            className={`
+              aspect-square rounded-md flex items-center justify-center text-xs font-medium
+              ${getIntensityColor(day.intensity)}
+              ${day.totalEntries > 0 ? 'text-gray-800 cursor-pointer hover:ring-2 hover:ring-green-300' : 'text-gray-500'}
+              transition-all duration-200
+            `}
+            title={`${day.dateStr}: ${day.totalCalories} calories, ${day.totalEntries} entries`}
+          >
+            {day.dayNumber}
+          </div>
+        ))}
       </div>
 
-      {/* Summary */}
-      <div className="text-sm text-gray-600 text-center">
-        <span>
-          {Array.from(dailyTotals.values()).filter(d => d.calories > 0).length} days with logged food this month
-        </span>
+      {/* Legend */}
+      <div className="flex items-center gap-2 text-xs">
+        <span className="text-gray-600">Less</span>
+        <div className="flex gap-1">
+          {[0, 1, 2, 3, 4].map(intensity => (
+            <div
+              key={intensity}
+              className={`w-3 h-3 rounded-sm ${getIntensityColor(intensity)}`}
+            />
+          ))}
+        </div>
+        <span className="text-gray-600">More</span>
       </div>
     </div>
   );
