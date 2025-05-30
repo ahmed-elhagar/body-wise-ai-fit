@@ -25,6 +25,7 @@ export const ExerciseCardEnhanced = ({
 }: ExerciseCardEnhancedProps) => {
   const { t, language } = useLanguage();
   const [showProgressDialog, setShowProgressDialog] = useState(false);
+  const [showExchangeDialog, setShowExchangeDialog] = useState(false);
 
   // Translate exercise content based on current language
   const translatedExercise = translateExerciseContent(exercise, language);
@@ -165,6 +166,15 @@ export const ExerciseCardEnhanced = ({
             <Youtube className="w-4 h-4 mr-2" />
             {t('exercise.watchVideo')}
           </Button>
+
+          <Button
+            variant="outline"
+            onClick={() => setShowExchangeDialog(true)}
+            className="border-orange-200 hover:bg-orange-50 text-orange-600"
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            {t('exercise.exchange')}
+          </Button>
         </div>
       </Card>
 
@@ -176,6 +186,12 @@ export const ExerciseCardEnhanced = ({
           onExerciseProgressUpdate(exercise.id, sets, reps, notes);
           setShowProgressDialog(false);
         }}
+      />
+
+      <ExerciseExchangeDialog
+        exercise={exercise}
+        open={showExchangeDialog}
+        onOpenChange={setShowExchangeDialog}
       />
     </>
   );

@@ -127,7 +127,5 @@ export const exercise = {
   used: "مستخدم",
   remaining: "متبقي",
   currentExercise: "التمرين الحالي",
-  preferredEquipment: "المعدات المفضلة (اختياري)",
-  targetMuscleGroups: "مجموعات العضلات المستهدفة (اختياري)"
+  preferredEquipment: "المعدات المفضلة (اختياري)"
 };
-
