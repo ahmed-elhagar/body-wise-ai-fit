@@ -109,7 +109,7 @@ export const useOnboardingProgress = () => {
 
       if (error) throw error;
       
-      // Ensure the returned data matches the OnboardingProgress interface
+      // Properly construct the result with all required fields including created_at
       const result: OnboardingProgress = {
         id: data.id,
         user_id: data.user_id,
@@ -126,8 +126,8 @@ export const useOnboardingProgress = () => {
         goals_setup_completed_at: data.goals_setup_completed_at,
         preferences_completed_at: data.preferences_completed_at,
         profile_review_completed_at: data.profile_review_completed_at,
-        created_at: data.created_at,
-        updated_at: data.updated_at,
+        created_at: data.created_at || now, // Ensure created_at is always present
+        updated_at: data.updated_at || now,
         completed_at: data.completed_at,
       };
 

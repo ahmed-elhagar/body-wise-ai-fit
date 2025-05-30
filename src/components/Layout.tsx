@@ -1,5 +1,5 @@
 
-import { ReactNode } from 'react';
+import { ReactNode, memo } from 'react';
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from './AppSidebar';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -8,7 +8,7 @@ interface LayoutProps {
   children: ReactNode;
 }
 
-const Layout = ({ children }: LayoutProps) => {
+const Layout = memo(({ children }: LayoutProps) => {
   const { isRTL, language } = useLanguage();
 
   return (
@@ -23,6 +23,8 @@ const Layout = ({ children }: LayoutProps) => {
       </div>
     </SidebarProvider>
   );
-};
+});
+
+Layout.displayName = 'Layout';
 
 export default Layout;

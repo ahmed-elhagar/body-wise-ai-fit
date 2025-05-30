@@ -14,8 +14,29 @@ import Progress from "@/pages/Progress";
 import Profile from "@/pages/Profile";
 import Admin from "@/pages/Admin";
 import Landing from "@/pages/Landing";
+import { memo } from "react";
 
-const queryClient = new QueryClient();
+// Optimize QueryClient configuration for better performance
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes (was cacheTime)
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+    mutations: {
+      retry: 1,
+    },
+  },
+});
+
+// Memoize layout wrapper to prevent unnecessary re-renders
+const LayoutWrapper = memo(({ children }: { children: React.ReactNode }) => (
+  <Layout>{children}</Layout>
+));
+
+LayoutWrapper.displayName = 'LayoutWrapper';
 
 function App() {
   return (
@@ -28,12 +49,12 @@ function App() {
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<Landing />} />
-                <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
-                <Route path="/meal-plan" element={<Layout><MealPlan /></Layout>} />
-                <Route path="/exercise" element={<Layout><Exercise /></Layout>} />
-                <Route path="/progress" element={<Layout><Progress /></Layout>} />
-                <Route path="/profile" element={<Layout><Profile /></Layout>} />
-                <Route path="/admin" element={<Layout><Admin /></Layout>} />
+                <Route path="/dashboard" element={<LayoutWrapper><Dashboard /></LayoutWrapper>} />
+                <Route path="/meal-plan" element={<LayoutWrapper><MealPlan /></LayoutWrapper>} />
+                <Route path="/exercise" element={<LayoutWrapper><Exercise /></LayoutWrapper>} />
+                <Route path="/progress" element={<LayoutWrapper><Progress /></LayoutWrapper>} />
+                <Route path="/profile" element={<LayoutWrapper><Profile /></LayoutWrapper>} />
+                <Route path="/admin" element={<LayoutWrapper><Admin /></LayoutWrapper>} />
               </Routes>
             </BrowserRouter>
           </LanguageProvider>

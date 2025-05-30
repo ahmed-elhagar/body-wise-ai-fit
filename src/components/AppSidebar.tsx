@@ -10,6 +10,7 @@ import {
   ChevronUp,
   User2,
 } from "lucide-react"
+import { Link, useNavigate, useLocation } from "react-router-dom"
 
 import {
   Sidebar,
@@ -30,7 +31,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useAuth } from "@/hooks/useAuth"
-import { useNavigate, useLocation } from "react-router-dom"
 import { useLanguage } from "@/contexts/LanguageContext"
 import LanguageToggle from "@/components/LanguageToggle"
 
@@ -106,8 +106,8 @@ export function AppSidebar() {
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>
-                      <a 
-                        href={item.url} 
+                      <Link 
+                        to={item.url} 
                         className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
                           isRTL ? 'flex-row-reverse' : ''
                         } ${
@@ -123,7 +123,7 @@ export function AppSidebar() {
                         {active && (
                           <div className={`w-2 h-2 bg-white rounded-full ${isRTL ? 'mr-auto' : 'ml-auto'}`} />
                         )}
-                      </a>
+                      </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 )
