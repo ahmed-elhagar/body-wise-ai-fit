@@ -4,7 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
 
-export type GenerationType = 'meal_plan' | 'exercise_program' | 'ai_chat' | 'food_analysis' | 'snack_generation' | 'recipe';
+// Updated to match the actual database constraint
+export type GenerationType = 'meal_plan' | 'exercise_program' | 'ai_chat' | 'snack_generation' | 'recipe';
 
 interface CreditCheckResult {
   success: boolean;
