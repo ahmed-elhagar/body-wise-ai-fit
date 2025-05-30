@@ -1,5 +1,4 @@
 
-
 export const exercise = {
   exerciseList: "قائمة التمارين",
   noExercises: "لا توجد تمارين",
@@ -47,6 +46,11 @@ export const exercise = {
   triceps: "العضلة ثلاثية الرؤوس",
   legs: "الساقين",
   glutes: "المؤخرة",
+  quadriceps: "العضلة الرباعية",
+  hamstrings: "أوتار الركبة",
+  calves: "ربلة الساق",
+  forearms: "الساعدين",
+  abs: "البطن",
 
   // Equipment
   bodyweight: "وزن الجسم",
@@ -62,11 +66,28 @@ export const exercise = {
   yoga_mat: "سجادة اليوغا",
   stability_ball: "كرة التوازن",
   
-  // Exercise instructions
-  'Sit upright, grip the bar with a wide grip, pull the bar to your chest while moving your shoulders back': 'اجلس منتصباً، امسك البار بقبضة واسعة، اسحب البار إلى صدرك مع تحريك كتفيك للخلف',
-  'With your torso bent forward, grip the bar and pull it toward your abdomen while keeping your back straight': 'مع انحناء جذعك للأمام، امسك البار واسحبه نحو بطنك مع الحفاظ على استقامة ظهرك',
-  'Lie face down, raise your body in a straight line and hold the position': 'استلقِ على وجهك، ارفع جسمك في خط مستقيم وحافظ على هذا الوضع',
-  'Stand straight then lower as if sitting on a chair': 'قف بشكل مستقيم ثم انخفض كما لو كنت تجلس على كرسي',
+  // Exchange feature translations
+  exchange: "استبدال",
+  exchangeExercise: "استبدال التمرين",
+  exchangeReason: "لماذا تريد استبدال هذا التمرين؟",
+  selectReason: "اختر السبب",
+  exchanging: "جاري الاستبدال...",
+  exchangeLimitReached: "تم الوصول لحد الاستبدال",
+  exchangeLimitMessage: "لقد استخدمت جميع عمليات الاستبدال (2) لهذا الأسبوع. سيتم إعادة تعيين الحد أسبوعياً.",
+  weeklyExchangeLimit: "استخدام الاستبدال الأسبوعي",
+  used: "مستخدم",
+  remaining: "متبقي",
+  currentExercise: "التمرين الحالي",
+  preferredEquipment: "المعدات المفضلة (اختياري)",
+  cancel: "إلغاء",
+  
+  // Reason options
+  noEquipment: "ليس لدي المعدات المطلوبة",
+  tooDifficult: "صعب جداً بالنسبة لي",
+  tooEasy: "سهل جداً بالنسبة لي",
+  injuryConcern: "لدي إصابة أو قيود جسدية",
+  preferDifferent: "أفضل نوع تمرين مختلف",
+  notEnoughSpace: "ليس لدي مساحة كافية",
   
   // AI Generation Preferences
   workoutType: "نوع التمرين",
@@ -96,14 +117,6 @@ export const exercise = {
   '4-5 days per week': "4-5 أيام في الأسبوع",
   '5-6 days per week': "5-6 أيام في الأسبوع",
   
-  // Common
-  common: {
-    cancel: "إلغاء",
-    save: "حفظ",
-    edit: "تعديل",
-    close: "إغلاق"
-  },
-  
   // Exercise Progress Dialog
   exerciseProgress: "تقدم التمرين",
   setsCompleted: "المجموعات المكتملة",
@@ -113,19 +126,5 @@ export const exercise = {
   // Rest Day Card
   restDay: "يوم الراحة",
   enjoyYourRest: "استمتع بيوم الراحة!",
-  restDayDescription: "اليوم هو يوم الراحة. استغل هذا الوقت للتعافي والاستعداد للأسبوع القادم.",
-  
-  // Exchange feature translations
-  exchange: "استبدال",
-  exchangeExercise: "استبدال التمرين",
-  exchangeReason: "لماذا تريد استبدال هذا التمرين؟",
-  exchangeReasonPlaceholder: "مثال: ليس لدي المعدات المطلوبة، صعب جداً، إلخ.",
-  exchanging: "جاري الاستبدال...",
-  exchangeLimitReached: "تم الوصول لحد الاستبدال",
-  exchangeLimitMessage: "لقد استخدمت جميع عمليات الاستبدال (2) لهذا الأسبوع. سيتم إعادة تعيين الحد أسبوعياً.",
-  weeklyExchangeLimit: "استخدام الاستبدال الأسبوعي",
-  used: "مستخدم",
-  remaining: "متبقي",
-  currentExercise: "التمرين الحالي",
-  preferredEquipment: "المعدات المفضلة (اختياري)"
+  restDayDescription: "اليوم هو يوم الراحة. استغل هذا الوقت للتعافي والاستعداد للأسبوع القادم."
 };

@@ -23,7 +23,7 @@ serve(async (req) => {
 
     console.log('🔄 Exchange exercise request:', { exerciseId, reason, userLanguage });
 
-    // Get original exercise details - fix the query to avoid multiple rows
+    // Get original exercise details - fix the query to get single exercise
     const { data: originalExercise, error: exerciseError } = await supabaseClient
       .from('exercises')
       .select('*')
@@ -31,7 +31,12 @@ serve(async (req) => {
       .single();
 
     if (exerciseError) {
+      console.error('Exercise query error:', exerciseError);
       throw new Error(`Failed to get exercise: ${exerciseError.message}`);
+    }
+
+    if (!originalExercise) {
+      throw new Error('Exercise not found');
     }
 
     // Generate exchange prompt - AI will automatically detect muscle groups
@@ -141,6 +146,7 @@ Ensure the response is valid JSON only, no additional text.
       .single();
 
     if (updateError) {
+      console.error('Update error:', updateError);
       throw new Error(`Failed to update exercise: ${updateError.message}`);
     }
 

@@ -55,7 +55,7 @@ export const exercise = {
   exchange: "Exchange",
   exchangeExercise: "Exchange Exercise",
   exchangeReason: "Why do you want to exchange this exercise?",
-  exchangeReasonPlaceholder: "e.g., I don't have the required equipment, it's too difficult, etc.",
+  selectReason: "Select a reason",
   exchanging: "Exchanging...",
   exchangeLimitReached: "Exchange Limit Reached",
   exchangeLimitMessage: "You have used all 2 exercise exchanges for this week. Limit resets weekly.",
@@ -63,21 +63,34 @@ export const exercise = {
   used: "used",
   remaining: "remaining",
   currentExercise: "Current Exercise",
-  preferredEquipment: "Preferred Equipment (optional)",
-  targetMuscleGroups: "Target Muscle Groups (optional)",
+  preferredEquipment: "Available Equipment (optional)",
+  cancel: "Cancel",
   
-  // Equipment translations (removing duplicates)
+  // Reason options
+  noEquipment: "I don't have the required equipment",
+  tooDifficult: "Too difficult for me",
+  tooEasy: "Too easy for me",
+  injuryConcern: "I have an injury or physical limitation",
+  preferDifferent: "I prefer a different exercise type",
+  notEnoughSpace: "Not enough space",
+  
+  // Equipment translations
   kettlebells: "Kettlebells",
   pull_up_bar: "Pull-up Bar",
   yoga_mat: "Yoga Mat",
   stability_ball: "Stability Ball",
   
-  // Muscle group translations (removing duplicates)
+  // Muscle group translations
   chest: "Chest",
   back: "Back",
   shoulders: "Shoulders",
   biceps: "Biceps",
   triceps: "Triceps",
   legs: "Legs",
-  glutes: "Glutes"
+  glutes: "Glutes",
+  quadriceps: "Quadriceps",
+  hamstrings: "Hamstrings",
+  calves: "Calves",
+  forearms: "Forearms",
+  abs: "Abs"
 };

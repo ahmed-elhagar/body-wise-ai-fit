@@ -2,9 +2,9 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useExerciseExchange } from '@/hooks/useExerciseExchange';
 import { RefreshCw, AlertCircle, Zap } from 'lucide-react';
@@ -37,14 +37,25 @@ export const ExerciseExchangeDialog = ({
     'kettlebells', 'pull_up_bar', 'yoga_mat', 'stability_ball'
   ];
 
+  const reasonOptions = [
+    { value: 'no_equipment', label: t('exercise.noEquipment') || 'I don\'t have the required equipment' },
+    { value: 'too_difficult', label: t('exercise.tooDifficult') || 'Too difficult for me' },
+    { value: 'too_easy', label: t('exercise.tooEasy') || 'Too easy for me' },
+    { value: 'injury_concern', label: t('exercise.injuryConcern') || 'I have an injury or physical limitation' },
+    { value: 'prefer_different', label: t('exercise.preferDifferent') || 'I prefer a different exercise type' },
+    { value: 'not_enough_space', label: t('exercise.notEnoughSpace') || 'Not enough space' }
+  ];
+
   const handleSubmit = () => {
-    if (!reason.trim()) {
+    if (!reason) {
       return;
     }
 
+    const selectedReasonLabel = reasonOptions.find(option => option.value === reason)?.label || reason;
+
     exchangeExercise({
       exerciseId: exercise.id,
-      reason: reason.trim(),
+      reason: selectedReasonLabel,
       preferences: {
         equipment: selectedEquipment.length > 0 ? selectedEquipment : undefined
       }
@@ -116,18 +127,23 @@ export const ExerciseExchangeDialog = ({
             )}
           </div>
 
-          {/* Reason Input */}
+          {/* Reason Selection */}
           <div>
             <label className="block text-sm font-medium mb-2">
               {t('exercise.exchangeReason') || 'Why do you want to exchange this exercise?'} *
             </label>
-            <Textarea
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              placeholder={t('exercise.exchangeReasonPlaceholder') || 'e.g., I don\'t have the required equipment, it\'s too difficult, etc.'}
-              className="min-h-[80px]"
-              disabled={!canExchange}
-            />
+            <Select value={reason} onValueChange={setReason} disabled={!canExchange}>
+              <SelectTrigger>
+                <SelectValue placeholder={t('exercise.selectReason') || 'Select a reason'} />
+              </SelectTrigger>
+              <SelectContent>
+                {reasonOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Equipment Preferences */}
@@ -162,11 +178,11 @@ export const ExerciseExchangeDialog = ({
               onClick={() => onOpenChange(false)}
               className="flex-1"
             >
-              {t('common.cancel') || 'Cancel'}
+              {t('exercise.cancel') || 'Cancel'}
             </Button>
             <Button
               onClick={handleSubmit}
-              disabled={!reason.trim() || isExchanging || !canExchange}
+              disabled={!reason || isExchanging || !canExchange}
               className="flex-1"
             >
               {isExchanging ? (
