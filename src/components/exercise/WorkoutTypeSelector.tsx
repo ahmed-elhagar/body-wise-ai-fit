@@ -16,26 +16,33 @@ export const WorkoutTypeSelector = ({
   const { t } = useLanguage();
 
   return (
-    <Card className="p-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Button
-            variant={workoutType === "home" ? "default" : "outline"}
-            onClick={() => setWorkoutType("home")}
-            className={`${workoutType === "home" ? "bg-health-primary hover:bg-health-primary/90" : ""}`}
-          >
-            <Home className="w-4 h-4 mr-2" />
-            {t('exercise.home')}
-          </Button>
-          <Button
-            variant={workoutType === "gym" ? "default" : "outline"}
-            onClick={() => setWorkoutType("gym")}
-            className={`${workoutType === "gym" ? "bg-health-primary hover:bg-health-primary/90" : ""}`}
-          >
-            <Building2 className="w-4 h-4 mr-2" />
-            {t('exercise.gym')}
-          </Button>
-        </div>
+    <Card className="p-2 bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-2xl">
+      <div className="flex items-center gap-2">
+        <Button
+          variant={workoutType === "home" ? "default" : "ghost"}
+          onClick={() => setWorkoutType("home")}
+          className={`flex-1 h-12 rounded-xl font-semibold transition-all duration-300 ${
+            workoutType === "home" 
+              ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg hover:shadow-xl" 
+              : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+          }`}
+        >
+          <Home className="w-5 h-5 mr-2" />
+          {t('exercise.home')}
+        </Button>
+        
+        <Button
+          variant={workoutType === "gym" ? "default" : "ghost"}
+          onClick={() => setWorkoutType("gym")}
+          className={`flex-1 h-12 rounded-xl font-semibold transition-all duration-300 ${
+            workoutType === "gym" 
+              ? "bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg hover:shadow-xl" 
+              : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+          }`}
+        >
+          <Building2 className="w-5 h-5 mr-2" />
+          {t('exercise.gym')}
+        </Button>
       </div>
     </Card>
   );
