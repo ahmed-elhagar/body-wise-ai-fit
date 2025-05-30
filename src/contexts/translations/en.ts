@@ -15,6 +15,20 @@ export const enTranslations = {
   mealPlan: mealPlanTranslations,
   profile: profile,
   
+  // Navigation items
+  navigation: {
+    appName: "FitFatta",
+    menu: "Menu",
+    dashboard: "Dashboard",
+    mealPlan: "Meal Plan",
+    exercise: "Exercise",
+    progress: "Progress", 
+    profile: "Profile",
+    account: "Account",
+    settings: "Settings",
+    signOut: "Sign Out"
+  },
+  
   // Days of week (global level for reuse)
   saturday: "Saturday",
   sunday: "Sunday",
