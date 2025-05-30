@@ -28,7 +28,7 @@ export const useRole = () => {
       // Get user profile with role
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, ai_generations_remaining')
         .eq('id', user.id)
         .single();
 
@@ -37,12 +37,12 @@ export const useRole = () => {
         throw profileError;
       }
 
-      console.log('useRole - Profile role:', profile.role);
+      console.log('useRole - Profile data:', profile);
 
       // Check if user has active subscription
       const { data: subscription, error: subError } = await supabase
         .from('subscriptions')
-        .select('status, current_period_end')
+        .select('status, current_period_end, stripe_subscription_id')
         .eq('user_id', user.id)
         .eq('status', 'active')
         .gte('current_period_end', new Date().toISOString())
@@ -56,12 +56,24 @@ export const useRole = () => {
       console.log('useRole - Active subscription:', subscription);
 
       const role = profile.role as UserRole;
-      // Pro users are those with 'pro' role OR active subscription OR admin role
-      const isPro = !!subscription || role === 'pro' || role === 'admin';
+      
+      // User is Pro if:
+      // 1. They have role 'pro' OR
+      // 2. They have an active subscription OR  
+      // 3. They are admin
+      const hasActiveSubscription = !!subscription;
+      const isPro = role === 'pro' || hasActiveSubscription || role === 'admin';
       const isCoach = role === 'coach' || role === 'admin';
       const isAdmin = role === 'admin';
 
-      console.log('useRole - Calculated capabilities:', { role, isPro, isCoach, isAdmin });
+      console.log('useRole - Final calculations:', { 
+        role, 
+        hasActiveSubscription, 
+        isPro, 
+        isCoach, 
+        isAdmin,
+        aiGenerations: profile.ai_generations_remaining 
+      });
 
       const capabilities: RoleCapabilities = {
         role,
@@ -76,8 +88,8 @@ export const useRole = () => {
       return capabilities;
     },
     enabled: !!user?.id,
-    staleTime: 1000 * 30, // 30 seconds - shorter to catch updates faster
-    refetchInterval: 5000, // Poll every 5 seconds to catch updates
+    staleTime: 1000 * 10, // 10 seconds - refresh frequently to catch updates
+    refetchInterval: 3000, // Poll every 3 seconds to catch updates quickly
   });
 
   return {

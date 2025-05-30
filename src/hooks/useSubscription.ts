@@ -27,44 +27,63 @@ export const useSubscription = () => {
     queryFn: async () => {
       if (!user?.id) return null;
 
+      console.log('useSubscription - Fetching subscription for user:', user.id);
+
       const { data, error } = await supabase
         .from('subscriptions')
         .select('*')
         .eq('user_id', user.id)
         .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') throw error;
+      if (error && error.code !== 'PGRST116') {
+        console.error('useSubscription - Error:', error);
+        throw error;
+      }
+
+      console.log('useSubscription - Fetched subscription:', data);
       return data as Subscription | null;
     },
     enabled: !!user?.id,
-    refetchInterval: 5000, // Poll every 5 seconds to catch webhook updates faster
+    staleTime: 1000 * 5, // 5 seconds - refresh frequently
+    refetchInterval: 2000, // Poll every 2 seconds to catch webhook updates faster
   });
 
   const createCheckoutSession = useMutation({
     mutationFn: async ({ planType }: { planType: 'monthly' | 'yearly' }) => {
+      console.log('useSubscription - Creating checkout session for:', planType);
       const { data, error } = await supabase.functions.invoke('create-subscription', {
         body: { plan_type: planType }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('useSubscription - Checkout error:', error);
+        throw error;
+      }
       return data;
     },
     onSuccess: (data) => {
       if (data.url) {
+        console.log('useSubscription - Opening checkout URL:', data.url);
         // Open Stripe checkout in a new tab
         window.open(data.url, '_blank');
-        // Start polling more frequently while checkout is in progress
+        
+        // Start aggressive polling while checkout is in progress
         const pollInterval = setInterval(() => {
+          console.log('useSubscription - Polling for updates');
           refetch();
           // Refresh role data as well
           queryClient.invalidateQueries({ queryKey: ['user-role'] });
-        }, 2000);
+        }, 1000); // Poll every second during checkout
         
-        // Stop polling after 5 minutes
-        setTimeout(() => clearInterval(pollInterval), 300000);
+        // Stop aggressive polling after 5 minutes
+        setTimeout(() => {
+          console.log('useSubscription - Stopping aggressive polling');
+          clearInterval(pollInterval);
+        }, 300000);
       }
     },
     onError: (error) => {
+      console.error('useSubscription - Create checkout session error:', error);
       toast.error(`Failed to create checkout session: ${error.message}`);
     }
   });

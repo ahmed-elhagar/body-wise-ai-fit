@@ -8,11 +8,13 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
+import { useState } from "react";
 
 const Pro = () => {
   const { isPro, role, refetch: refetchRole } = useRole();
   const { subscription, createCheckoutSession, cancelSubscription, isCreatingCheckout, isCancelling, refetch: refetchSubscription } = useSubscription();
   const [searchParams] = useSearchParams();
+  const [debugInfo, setDebugInfo] = useState<any>(null);
 
   // Handle successful subscription
   useEffect(() => {
@@ -20,17 +22,70 @@ const Pro = () => {
     if (subscriptionStatus === 'success') {
       console.log('Pro page - Subscription success detected, refreshing data');
       toast.success('Welcome to FitGenius Pro! Your subscription is now active.');
-      // Force refresh both role and subscription data
-      refetchRole();
-      refetchSubscription();
+      
+      // Force refresh both role and subscription data multiple times
+      const refreshData = async () => {
+        console.log('Pro page - Starting data refresh sequence');
+        
+        // Initial refresh
+        await Promise.all([refetchRole(), refetchSubscription()]);
+        
+        // Wait 2 seconds and refresh again
+        setTimeout(async () => {
+          console.log('Pro page - Second refresh attempt');
+          await Promise.all([refetchRole(), refetchSubscription()]);
+        }, 2000);
+        
+        // Wait 5 seconds and refresh again
+        setTimeout(async () => {
+          console.log('Pro page - Third refresh attempt');
+          await Promise.all([refetchRole(), refetchSubscription()]);
+        }, 5000);
+      };
+      
+      refreshData();
+      
       // Remove the URL parameter
       window.history.replaceState({}, '', '/pro');
     } else if (subscriptionStatus === 'cancelled') {
       toast.info('Subscription cancelled. You can try again anytime.');
-      // Remove the URL parameter
       window.history.replaceState({}, '', '/pro');
     }
   }, [searchParams, refetchRole, refetchSubscription]);
+
+  // Debug data collection
+  useEffect(() => {
+    const collectDebugInfo = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+
+          const { data: subscriptionData } = await supabase
+            .from('subscriptions')
+            .select('*')
+            .eq('user_id', user.id);
+
+          setDebugInfo({
+            userId: user.id,
+            email: user.email,
+            profile,
+            subscriptions: subscriptionData,
+            currentState: { isPro, role, subscription }
+          });
+        }
+      } catch (error) {
+        console.error('Debug info collection failed:', error);
+      }
+    };
+
+    collectDebugInfo();
+  }, [isPro, role, subscription]);
 
   // Debug logging
   useEffect(() => {
@@ -44,6 +99,12 @@ const Pro = () => {
     { icon: Star, title: "Exclusive Features", description: "Access to beta features and premium content" },
   ];
 
+  const forceRefresh = async () => {
+    console.log('Pro page - Manual refresh triggered');
+    toast.info('Refreshing subscription status...');
+    await Promise.all([refetchRole(), refetchSubscription()]);
+  };
+
   if (isPro) {
     return (
       <ProtectedRoute requireProfile>
@@ -56,7 +117,14 @@ const Pro = () => {
                 <Badge className="bg-yellow-500 text-white">ACTIVE</Badge>
               </div>
               <p className="text-gray-600 text-lg">You're enjoying all Pro benefits!</p>
-              <p className="text-sm text-gray-500 mt-2">Role: {role} | Pro Status: {isPro ? 'Active' : 'Inactive'}</p>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={forceRefresh}
+                className="mt-2"
+              >
+                Refresh Status
+              </Button>
             </div>
 
             {subscription && (
@@ -99,6 +167,27 @@ const Pro = () => {
               </Card>
             )}
 
+            {/* Debug Information */}
+            {debugInfo && (
+              <Card className="mb-8 bg-gray-50">
+                <CardHeader>
+                  <CardTitle className="text-sm">Debug Information</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-xs font-mono">
+                    <p><strong>Role:</strong> {role}</p>
+                    <p><strong>Is Pro:</strong> {isPro ? 'Yes' : 'No'}</p>
+                    <p><strong>Profile Role:</strong> {debugInfo.profile?.role}</p>
+                    <p><strong>AI Generations:</strong> {debugInfo.profile?.ai_generations_remaining}</p>
+                    <p><strong>Subscriptions Count:</strong> {debugInfo.subscriptions?.length || 0}</p>
+                    {debugInfo.subscriptions?.[0] && (
+                      <p><strong>Latest Sub Status:</strong> {debugInfo.subscriptions[0].status}</p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {features.map((feature, index) => (
                 <Card key={index} className="bg-white/80 backdrop-blur-sm">
@@ -134,8 +223,41 @@ const Pro = () => {
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Unlock unlimited AI-powered meal planning and exercise programs. Take your fitness journey to the next level.
             </p>
-            <p className="text-sm text-gray-500 mt-2">Current Role: {role} | Pro Status: {isPro ? 'Active' : 'Inactive'}</p>
+            <div className="mt-4 flex items-center justify-center gap-4">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={forceRefresh}
+              >
+                Refresh Status
+              </Button>
+            </div>
           </div>
+
+          {/* Debug Information for non-pro users */}
+          {debugInfo && (
+            <Card className="mb-8 bg-gray-50">
+              <CardHeader>
+                <CardTitle className="text-sm">Debug Information</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-xs font-mono">
+                  <p><strong>Role:</strong> {role}</p>
+                  <p><strong>Is Pro:</strong> {isPro ? 'Yes' : 'No'}</p>
+                  <p><strong>Profile Role:</strong> {debugInfo.profile?.role}</p>
+                  <p><strong>AI Generations:</strong> {debugInfo.profile?.ai_generations_remaining}</p>
+                  <p><strong>Subscriptions Count:</strong> {debugInfo.subscriptions?.length || 0}</p>
+                  {debugInfo.subscriptions?.[0] && (
+                    <div>
+                      <p><strong>Latest Sub Status:</strong> {debugInfo.subscriptions[0].status}</p>
+                      <p><strong>Latest Sub ID:</strong> {debugInfo.subscriptions[0].stripe_subscription_id}</p>
+                      <p><strong>Period End:</strong> {debugInfo.subscriptions[0].current_period_end}</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
             {/* Monthly Plan */}
