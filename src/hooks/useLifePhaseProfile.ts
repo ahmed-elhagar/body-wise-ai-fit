@@ -1,108 +1,76 @@
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
+import { useProfile } from './useProfile';
 import { toast } from 'sonner';
-import { useLanguage } from '@/contexts/LanguageContext';
 
-interface LifePhaseProfile {
+export interface LifePhaseData {
   fasting_type?: string;
   pregnancy_trimester?: number;
   breastfeeding_level?: string;
-  condition_start_date?: Date;
+  condition_start_date?: string;
 }
 
 export const useLifePhaseProfile = () => {
-  const { user } = useAuth();
-  const { t } = useLanguage();
-  const [lifePhase, setLifePhase] = useState<LifePhaseProfile>({});
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
+  const { profile, updateProfile } = useProfile();
+  
+  const [lifePhase, setLifePhase] = useState<LifePhaseData>({
+    fasting_type: '',
+    pregnancy_trimester: 0,
+    breastfeeding_level: '',
+    condition_start_date: '',
+  });
+
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (user?.id) {
-      fetchLifePhaseProfile();
-    }
-  }, [user?.id]);
-
-  const fetchLifePhaseProfile = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('fasting_type, pregnancy_trimester, breastfeeding_level, condition_start_date')
-        .eq('id', user?.id)
-        .single();
-
-      if (error) throw error;
-
+    if (profile) {
       setLifePhase({
-        fasting_type: data.fasting_type || undefined,
-        pregnancy_trimester: data.pregnancy_trimester || undefined,
-        breastfeeding_level: data.breastfeeding_level || undefined,
-        condition_start_date: data.condition_start_date ? new Date(data.condition_start_date) : undefined
+        fasting_type: profile.fasting_type || '',
+        pregnancy_trimester: profile.pregnancy_trimester || 0,
+        breastfeeding_level: profile.breastfeeding_level || '',
+        condition_start_date: profile.condition_start_date || '',
       });
+    }
+  }, [profile]);
+
+  const updateLifePhaseProfile = async (updates: Partial<LifePhaseData>) => {
+    setIsLoading(true);
+    try {
+      const updatedLifePhase = { ...lifePhase, ...updates };
+      setLifePhase(updatedLifePhase);
+      
+      await updateProfile(updatedLifePhase);
+      toast.success('Life phase information updated successfully');
     } catch (error) {
-      console.error('Error fetching life phase profile:', error);
+      console.error('Error updating life phase profile:', error);
+      toast.error('Failed to update life phase information');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const updateLifePhaseProfile = async (updates: Partial<LifePhaseProfile>) => {
-    if (!user?.id) return;
-
-    setIsSaving(true);
-    try {
-      const updateData = {
-        fasting_type: updates.fasting_type || null,
-        pregnancy_trimester: updates.pregnancy_trimester || null,
-        breastfeeding_level: updates.breastfeeding_level || null,
-        condition_start_date: updates.condition_start_date?.toISOString().split('T')[0] || null
-      };
-
-      const { error } = await supabase
-        .from('profiles')
-        .update(updateData)
-        .eq('id', user.id);
-
-      if (error) throw error;
-
-      setLifePhase(prev => ({ ...prev, ...updates }));
-      toast.success(t('profile.lifePhase.updated') || 'Life phase profile updated successfully');
-    } catch (error) {
-      console.error('Error updating life phase profile:', error);
-      toast.error(t('profile.lifePhase.updateError') || 'Failed to update life phase profile');
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const calculateCalorieOffset = () => {
-    if (lifePhase.pregnancy_trimester === 2) return 340;
-    if (lifePhase.pregnancy_trimester === 3) return 450;
-    if (lifePhase.breastfeeding_level === 'exclusive') return 400;
-    if (lifePhase.breastfeeding_level === 'partial') return 250;
-    return 0;
-  };
-
   const getNutritionContext = () => {
-    return {
-      fastingType: lifePhase.fasting_type,
-      pregnancyTrimester: lifePhase.pregnancy_trimester,
-      breastfeedingLevel: lifePhase.breastfeeding_level,
-      extraCalories: calculateCalorieOffset(),
-      conditionStartDate: lifePhase.condition_start_date,
-      needsHydrationReminders: !!(lifePhase.fasting_type === 'ramadan' || lifePhase.breastfeeding_level),
-      isRamadan: lifePhase.fasting_type === 'ramadan'
-    };
+    const context: any = {};
+    
+    if (lifePhase.pregnancy_trimester && lifePhase.pregnancy_trimester > 0) {
+      context.pregnancy_trimester = lifePhase.pregnancy_trimester;
+    }
+    
+    if (lifePhase.breastfeeding_level && lifePhase.breastfeeding_level !== 'none') {
+      context.breastfeeding_level = lifePhase.breastfeeding_level;
+    }
+    
+    if (lifePhase.fasting_type && lifePhase.fasting_type !== 'none') {
+      context.fasting_type = lifePhase.fasting_type;
+    }
+    
+    return context;
   };
 
   return {
     lifePhase,
     isLoading,
-    isSaving,
     updateLifePhaseProfile,
-    calculateCalorieOffset,
     getNutritionContext
   };
 };

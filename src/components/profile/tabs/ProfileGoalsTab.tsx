@@ -13,7 +13,7 @@ interface ProfileGoalsTabProps {
 const ProfileGoalsTab = ({ 
   formData, 
   updateFormData, 
-  handleArrayInput, 
+  handleArrayInput,
   saveGoalsAndActivity, 
   isUpdating, 
   validationErrors 

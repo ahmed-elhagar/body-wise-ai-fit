@@ -1,17 +1,26 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import ProfileOverviewCard from "../ProfileOverviewCard";
+import ProfileGoalsCard from "../ProfileGoalsCard";
+import { useProfileForm } from "@/hooks/useProfileForm";
 
 const ProfileOverviewTab = () => {
+  const { formData } = useProfileForm();
+
+  const handleEdit = () => {
+    // This could navigate to edit mode or trigger edit state
+    console.log('Edit profile clicked');
+  };
+
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Profile Overview</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-gray-600">Your profile overview will be displayed here.</p>
-        </CardContent>
-      </Card>
+      <ProfileOverviewCard 
+        formData={formData}
+        onEdit={handleEdit}
+      />
+      <ProfileGoalsCard 
+        formData={formData}
+        onEdit={handleEdit}
+      />
     </div>
   );
 };
