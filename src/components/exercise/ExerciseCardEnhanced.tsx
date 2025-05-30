@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle, Clock, Dumbbell, Play, Youtube, Edit3 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ExerciseProgressDialog } from "./ExerciseProgressDialog";
 import { translateExerciseContent } from "@/utils/exerciseTranslationUtils";
@@ -27,6 +27,16 @@ export const ExerciseCardEnhanced = ({
 
   // Translate exercise content based on current language
   const translatedExercise = translateExerciseContent(exercise, language);
+
+  // Debug log to track translation
+  useEffect(() => {
+    console.log('🎯 ExerciseCardEnhanced - Translation Debug:', {
+      originalName: exercise.name,
+      translatedName: translatedExercise.name,
+      currentLanguage: language,
+      exerciseId: exercise.id
+    });
+  }, [exercise.name, translatedExercise.name, language, exercise.id]);
 
   const handleWatchVideo = () => {
     const searchQuery = translatedExercise.youtube_search_term || translatedExercise.name;
