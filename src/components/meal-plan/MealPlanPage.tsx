@@ -12,7 +12,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Grid3X3,
-  List
+  List,
+  Target,
+  Flame
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useMealPlanPage } from "@/hooks/useMealPlanPage";
@@ -74,76 +76,80 @@ const MealPlanPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/30 text-gray-900">
       <MealPlanLoadingBackdrop 
         isLoading={mealPlanState.isGenerating} 
         message="Generating your meal plan..."
       />
       
-      {/* Header Section */}
-      <div className="bg-white border-b border-gray-200 shadow-sm">
+      {/* Enhanced Header Section */}
+      <div className="bg-white/90 backdrop-blur-sm border-b border-gray-200/50 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-                <UtensilsCrossed className="w-8 h-8 text-blue-600" />
-                Meal Plan
-              </h1>
-              <p className="text-gray-600 mt-1">
-                {format(mealPlanState.weekStartDate, 'MMMM d')} - {format(addDays(mealPlanState.weekStartDate, 6), 'MMMM d, yyyy')}
-              </p>
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <UtensilsCrossed className="w-7 h-7 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  Meal Plan
+                </h1>
+                <p className="text-gray-600 mt-1 font-medium">
+                  {format(mealPlanState.weekStartDate, 'MMMM d')} - {format(addDays(mealPlanState.weekStartDate, 6), 'MMMM d, yyyy')}
+                </p>
+              </div>
             </div>
             
-            {/* Controls */}
+            {/* Enhanced Controls */}
             <div className="flex flex-wrap items-center gap-3">
               {/* Week Navigation */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-xl p-1 shadow-md">
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   onClick={() => mealPlanState.setCurrentWeekOffset(mealPlanState.currentWeekOffset - 1)}
-                  className="p-2"
+                  className="p-2 hover:bg-blue-50"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </Button>
                 
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   onClick={() => mealPlanState.setCurrentWeekOffset(0)}
-                  className={`px-3 ${mealPlanState.currentWeekOffset === 0 ? 'bg-blue-50 border-blue-200' : ''}`}
+                  className={`px-4 font-medium ${mealPlanState.currentWeekOffset === 0 ? 'bg-blue-100 text-blue-700' : 'hover:bg-blue-50'}`}
                 >
                   Current Week
                 </Button>
                 
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   onClick={() => mealPlanState.setCurrentWeekOffset(mealPlanState.currentWeekOffset + 1)}
-                  className="p-2"
+                  className="p-2 hover:bg-blue-50"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </Button>
               </div>
 
               {/* View Mode Toggle */}
-              <div className="flex items-center bg-gray-100 rounded-lg p-1">
+              <div className="flex items-center bg-white/80 backdrop-blur-sm rounded-xl p-1 shadow-md">
                 <Button
                   variant={viewMode === 'daily' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('daily')}
-                  className="h-8 px-3"
+                  className={`h-9 px-4 ${viewMode === 'daily' ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' : 'hover:bg-blue-50'}`}
                 >
-                  <List className="w-4 h-4 mr-1" />
+                  <List className="w-4 h-4 mr-2" />
                   Daily
                 </Button>
                 <Button
                   variant={viewMode === 'weekly' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('weekly')}
-                  className="h-8 px-3"
+                  className={`h-9 px-4 ${viewMode === 'weekly' ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' : 'hover:bg-blue-50'}`}
                 >
-                  <Grid3X3 className="w-4 h-4 mr-1" />
+                  <Grid3X3 className="w-4 h-4 mr-2" />
                   Weekly
                 </Button>
               </div>
@@ -152,7 +158,7 @@ const MealPlanPage = () => {
               {mealPlanState.currentWeekPlan && (
                 <Button 
                   onClick={() => setShowShoppingDrawer(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-300"
                   size="sm"
                 >
                   <ShoppingCart className="w-4 h-4 mr-2" />
@@ -166,104 +172,115 @@ const MealPlanPage = () => {
 
       <div className="max-w-7xl mx-auto p-6">
         {!mealPlanState.currentWeekPlan ? (
-          <Card className="p-8 text-center">
-            <div className="w-24 h-24 mx-auto mb-6 bg-blue-100 rounded-3xl flex items-center justify-center">
-              <UtensilsCrossed className="w-12 h-12 text-blue-600" />
+          <Card className="p-12 text-center bg-white/80 backdrop-blur-sm border-0 shadow-2xl rounded-3xl">
+            <div className="w-32 h-32 mx-auto mb-8 bg-gradient-to-br from-blue-100 to-purple-100 rounded-3xl flex items-center justify-center">
+              <UtensilsCrossed className="w-16 h-16 text-blue-600" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-3">No Meal Plan Yet</h3>
-            <p className="text-gray-600 mb-6">Generate your first meal plan to get started!</p>
+            <h3 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
+              No Meal Plan Yet
+            </h3>
+            <p className="text-gray-600 mb-8 text-lg">Generate your first AI-powered meal plan to get started!</p>
             <Button 
               onClick={() => mealPlanState.setShowAIDialog && mealPlanState.setShowAIDialog(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3"
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-10 py-4 text-lg font-semibold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300"
             >
               Generate Meal Plan
             </Button>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            {/* Sidebar Stats */}
-            <div className="lg:col-span-1">
-              <Card className="sticky top-6">
-                <CardHeader>
-                  <CardTitle className="text-gray-900 flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-blue-600" />
-                    Weekly Overview
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Total Calories</span>
-                      <Badge variant="secondary" className="bg-blue-50 text-blue-700">
-                        {weeklyStats.totalCalories.toLocaleString()}
-                      </Badge>
+          <>
+            {/* Weekly Overview - Moved to Top */}
+            <Card className="mb-6 bg-gradient-to-br from-white to-blue-50/50 border-0 shadow-xl rounded-2xl overflow-hidden">
+              <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+                <CardTitle className="text-xl font-bold flex items-center gap-3">
+                  <TrendingUp className="w-6 h-6" />
+                  Weekly Overview
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="text-center">
+                    <div className="w-16 h-16 mx-auto mb-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
+                      <Flame className="w-8 h-8 text-white" />
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Avg Daily</span>
-                      <span className="font-medium text-gray-900">{weeklyStats.avgDailyCalories} cal</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Total Protein</span>
-                      <span className="font-medium text-gray-900">{weeklyStats.totalProtein.toFixed(1)}g</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Total Meals</span>
-                      <span className="font-medium text-gray-900">{weeklyStats.totalMeals}</span>
-                    </div>
+                    <div className="text-2xl font-bold text-blue-600">{weeklyStats.totalCalories.toLocaleString()}</div>
+                    <div className="text-sm text-gray-600 font-medium">Total Calories</div>
                   </div>
                   
-                  <div className="pt-4 border-t border-gray-200">
-                    <Button 
-                      onClick={() => mealPlanState.setShowAIDialog && mealPlanState.setShowAIDialog(true)}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                    >
-                      Regenerate Plan
-                    </Button>
+                  <div className="text-center">
+                    <div className="w-16 h-16 mx-auto mb-3 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg">
+                      <Target className="w-8 h-8 text-white" />
+                    </div>
+                    <div className="text-2xl font-bold text-green-600">{weeklyStats.avgDailyCalories}</div>
+                    <div className="text-sm text-gray-600 font-medium">Daily Average</div>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                  
+                  <div className="text-center">
+                    <div className="w-16 h-16 mx-auto mb-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                      <UtensilsCrossed className="w-8 h-8 text-white" />
+                    </div>
+                    <div className="text-2xl font-bold text-purple-600">{weeklyStats.totalMeals}</div>
+                    <div className="text-sm text-gray-600 font-medium">Total Meals</div>
+                  </div>
+                  
+                  <div className="text-center">
+                    <div className="w-16 h-16 mx-auto mb-3 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg">
+                      <TrendingUp className="w-8 h-8 text-white" />
+                    </div>
+                    <div className="text-2xl font-bold text-orange-600">{weeklyStats.totalProtein.toFixed(1)}g</div>
+                    <div className="text-sm text-gray-600 font-medium">Total Protein</div>
+                  </div>
+                </div>
+                
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                  <Button 
+                    onClick={() => mealPlanState.setShowAIDialog && mealPlanState.setShowAIDialog(true)}
+                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                  >
+                    Regenerate Plan
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Main Content */}
-            <div className="lg:col-span-3">
-              {viewMode === 'daily' ? (
-                <Tabs value={mealPlanState.selectedDayNumber.toString()} onValueChange={(value) => mealPlanState.setSelectedDayNumber(parseInt(value))}>
-                  <TabsList className="grid w-full grid-cols-7 bg-white border border-gray-200 mb-6">
-                    {weekDays.map((day) => (
-                      <TabsTrigger 
-                        key={day.number} 
-                        value={day.number.toString()}
-                        className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-600 hover:text-gray-900 transition-colors flex flex-col py-3"
-                      >
-                        <span className="text-xs font-medium">{day.name.slice(0, 3)}</span>
-                        <span className="text-lg font-bold">{format(day.date, 'd')}</span>
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
-                  
+            {viewMode === 'daily' ? (
+              <Tabs value={mealPlanState.selectedDayNumber.toString()} onValueChange={(value) => mealPlanState.setSelectedDayNumber(parseInt(value))}>
+                <TabsList className="grid w-full grid-cols-7 bg-white/80 backdrop-blur-sm border border-gray-200/50 shadow-lg rounded-2xl mb-6">
                   {weekDays.map((day) => (
-                    <TabsContent key={day.number} value={day.number.toString()}>
-                      <MealPlanDayView
-                        dayNumber={day.number}
-                        weeklyPlan={mealPlanState.currentWeekPlan}
-                        onShowRecipe={mealPlanState.handleShowRecipe}
-                        onExchangeMeal={mealPlanState.handleExchangeMeal}
-                        onAddSnack={() => handleAddSnack(day.number)}
-                      />
-                    </TabsContent>
+                    <TabsTrigger 
+                      key={day.number} 
+                      value={day.number.toString()}
+                      className="data-[state=active]:bg-gradient-to-br data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white text-gray-600 hover:text-gray-900 transition-all duration-300 flex flex-col py-4 rounded-xl font-medium"
+                    >
+                      <span className="text-xs font-semibold opacity-80">{day.name.slice(0, 3)}</span>
+                      <span className="text-xl font-bold">{format(day.date, 'd')}</span>
+                    </TabsTrigger>
                   ))}
-                </Tabs>
-              ) : (
-                <MealPlanWeekView
-                  weeklyPlan={mealPlanState.currentWeekPlan}
-                  weekDays={weekDays}
-                  onShowRecipe={mealPlanState.handleShowRecipe}
-                  onExchangeMeal={mealPlanState.handleExchangeMeal}
-                  onAddSnack={handleAddSnack}
-                />
-              )}
-            </div>
-          </div>
+                </TabsList>
+                
+                {weekDays.map((day) => (
+                  <TabsContent key={day.number} value={day.number.toString()}>
+                    <MealPlanDayView
+                      dayNumber={day.number}
+                      weeklyPlan={mealPlanState.currentWeekPlan}
+                      onShowRecipe={mealPlanState.handleShowRecipe}
+                      onExchangeMeal={mealPlanState.handleExchangeMeal}
+                      onAddSnack={() => handleAddSnack(day.number)}
+                    />
+                  </TabsContent>
+                ))}
+              </Tabs>
+            ) : (
+              <MealPlanWeekView
+                weeklyPlan={mealPlanState.currentWeekPlan}
+                weekDays={weekDays}
+                onShowRecipe={mealPlanState.handleShowRecipe}
+                onExchangeMeal={mealPlanState.handleExchangeMeal}
+                onAddSnack={handleAddSnack}
+              />
+            )}
+          </>
         )}
       </div>
 

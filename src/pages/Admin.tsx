@@ -11,11 +11,49 @@ import AnalyticsTab from "@/components/admin/AnalyticsTab";
 import UserGenerationManager from "@/components/admin/UserGenerationManager";
 import { useRole } from "@/hooks/useRole";
 import { Navigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const Admin = () => {
   const { isAdmin, isLoading } = useRole();
 
-  if (isLoading) {
+  // Fetch real users data
+  const { data: users = [], isLoading: isLoadingUsers } = useQuery({
+    queryKey: ['admin-users'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: isAdmin
+  });
+
+  // Fetch real stats data
+  const { data: stats, isLoading: isLoadingStats } = useQuery({
+    queryKey: ['admin-stats'],
+    queryFn: async () => {
+      const [usersCount, activeSessionsCount, subscriptionsCount, generationsCount] = await Promise.all([
+        supabase.from('profiles').select('*', { count: 'exact' }),
+        supabase.from('active_sessions').select('*', { count: 'exact' }),
+        supabase.from('subscriptions').select('*', { count: 'exact' }).eq('status', 'active'),
+        supabase.from('ai_generation_logs').select('*', { count: 'exact' })
+      ]);
+
+      return {
+        totalUsers: usersCount.count || 0,
+        activeSessions: activeSessionsCount.count || 0,
+        activeSubscriptions: subscriptionsCount.count || 0,
+        totalGenerations: generationsCount.count || 0
+      };
+    },
+    enabled: isAdmin
+  });
+
+  if (isLoading || isLoadingUsers || isLoadingStats) {
     return (
       <ProtectedRoute>
         <Layout>
@@ -40,7 +78,7 @@ const Admin = () => {
         <div className="p-3 md:p-4 lg:p-6 bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/30 min-h-screen">
           <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
             <AdminHeader />
-            <StatsCards />
+            <StatsCards stats={stats} />
             
             <Tabs defaultValue="users" className="w-full">
               <TabsList className="grid w-full grid-cols-5 bg-white border border-gray-200 shadow-sm">
@@ -77,7 +115,7 @@ const Admin = () => {
               </TabsList>
 
               <TabsContent value="users" className="mt-6">
-                <UsersTable />
+                <UsersTable users={users} />
               </TabsContent>
 
               <TabsContent value="subscriptions" className="mt-6">

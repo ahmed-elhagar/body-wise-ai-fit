@@ -3,21 +3,29 @@ import { Card } from '@/components/ui/card';
 import { Users, Activity, Shield, TrendingUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
-const StatsCards = () => {
-  // Mock data - in a real app, this would come from props or a hook
-  const stats = [
+interface StatsCardsProps {
+  stats?: {
+    totalUsers: number;
+    activeSessions: number;
+    activeSubscriptions: number;
+    totalGenerations: number;
+  };
+}
+
+const StatsCards = ({ stats }: StatsCardsProps) => {
+  const statsData = [
     {
       icon: Users,
       label: 'Total Users',
-      value: 1247,
+      value: stats?.totalUsers || 0,
       color: 'text-blue-500',
       bgColor: 'bg-blue-50',
       borderColor: 'border-blue-200'
     },
     {
       icon: Activity,
-      label: 'Active Users',
-      value: 892,
+      label: 'Active Subscriptions',
+      value: stats?.activeSubscriptions || 0,
       color: 'text-green-500',
       bgColor: 'bg-green-50',
       borderColor: 'border-green-200'
@@ -25,7 +33,7 @@ const StatsCards = () => {
     {
       icon: Shield,
       label: 'Active Sessions',
-      value: 156,
+      value: stats?.activeSessions || 0,
       color: 'text-purple-500',
       bgColor: 'bg-purple-50',
       borderColor: 'border-purple-200'
@@ -33,7 +41,7 @@ const StatsCards = () => {
     {
       icon: TrendingUp,
       label: 'Total AI Generations',
-      value: 5643,
+      value: stats?.totalGenerations || 0,
       color: 'text-orange-500',
       bgColor: 'bg-orange-50',
       borderColor: 'border-orange-200'
@@ -42,7 +50,7 @@ const StatsCards = () => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      {stats.map((stat) => (
+      {statsData.map((stat) => (
         <Card key={stat.label} className={`p-4 md:p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 ${stat.bgColor}/30`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -55,7 +63,7 @@ const StatsCards = () => {
               </div>
             </div>
             <Badge variant="outline" className={`${stat.bgColor} ${stat.color} border-current`}>
-              +12%
+              Live
             </Badge>
           </div>
         </Card>
