@@ -73,11 +73,12 @@ serve(async (req) => {
 
     logStep("Creating checkout session", { 
       planType: plan_type, 
-      unitAmount: planConfig.price, // This should be a number
+      unitAmount: planConfig.price, 
+      unitAmountType: typeof planConfig.price,
       interval: planConfig.interval 
     });
 
-    // Create checkout session - FIXED: unit_amount is now properly a number
+    // Create checkout session - CRITICAL FIX: Ensure unit_amount is a number
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       line_items: [
@@ -88,8 +89,8 @@ serve(async (req) => {
               name: "FitGenius Pro Subscription",
               description: "Unlimited AI generations, premium features"
             },
-            unit_amount: planConfig.price, // This is now a number, not a string
-            recurring: { interval: planConfig.interval as any },
+            unit_amount: Number(planConfig.price), // EXPLICIT conversion to number
+            recurring: { interval: planConfig.interval as 'month' | 'year' },
           },
           quantity: 1,
         },
@@ -127,7 +128,8 @@ serve(async (req) => {
     logStep("Checkout session created successfully", { 
       sessionId: session.id, 
       url: session.url,
-      unitAmountSent: planConfig.price,
+      unitAmountSent: Number(planConfig.price),
+      unitAmountType: typeof Number(planConfig.price),
       metadata: session.metadata
     });
 
