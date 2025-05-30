@@ -2,15 +2,18 @@
 import { ReactNode } from 'react';
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from './AppSidebar';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface LayoutProps {
   children: ReactNode;
 }
 
 const Layout = ({ children }: LayoutProps) => {
+  const { isRTL, language } = useLanguage();
+
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gray-50">
+      <div className={`min-h-screen flex w-full bg-gray-50 ${isRTL ? 'rtl' : 'ltr'} ${language === 'ar' ? 'font-arabic' : ''}`}>
         <AppSidebar />
         <SidebarInset className="flex-1">
           <main className="flex-1 overflow-auto">

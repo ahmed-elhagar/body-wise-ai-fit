@@ -39,6 +39,8 @@ export const commonTranslations = {
   'exchange': 'Exchange',
   'coming': 'Coming',
   'soon': 'Soon',
+  'progress': 'Progress',
+  'of': 'of',
 
   // Additional missing translations
   'todaysSummary': 'Today\'s Summary',

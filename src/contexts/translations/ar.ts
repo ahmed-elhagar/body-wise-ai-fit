@@ -5,6 +5,7 @@ import { dashboardTranslations } from './ar/dashboard';
 import { exercise } from './ar/exercise';
 import { mealPlan } from './ar/mealPlan';
 import { lifePhase } from './ar/lifePhase';
+import { profile } from './ar/profile';
 
 export const arTranslations = {
   ...commonTranslations,
@@ -12,12 +13,7 @@ export const arTranslations = {
   ...dashboardTranslations,
   exercise: exercise,
   mealPlan: mealPlan,
-  
-  // Life Phase Nutrition - safely merge profile with lifePhase
-  profile: {
-    ...(typeof commonTranslations.profile === 'object' && commonTranslations.profile !== null ? commonTranslations.profile : {}),
-    lifePhase: lifePhase
-  },
+  profile: profile,
   
   // Days of week (global level for reuse)
   saturday: "السبت",

@@ -6,6 +6,7 @@ import { CheckCircle, Target, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 import { useProfileCompletionSteps } from "./profileCompletionSteps";
 import { useEnhancedProfile } from "@/hooks/useEnhancedProfile";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface CompactProfileCompletionCardProps {
   onStepClick: (step: string) => void;
@@ -15,18 +16,23 @@ const CompactProfileCompletionCard = ({ onStepClick }: CompactProfileCompletionC
   const { completionPercentage } = useEnhancedProfile();
   const { steps, nextIncompleteStep, completedSteps } = useProfileCompletionSteps(completionPercentage);
   const [isExpanded, setIsExpanded] = useState(completionPercentage < 100);
+  const { t, isRTL } = useLanguage();
   const isCompleted = completionPercentage >= 100;
 
   if (isCompleted && !isExpanded) {
     return (
-      <Card className="bg-green-50 border-green-200">
+      <Card className={`bg-green-50 border-green-200 ${isRTL ? 'rtl' : 'ltr'}`}>
         <CardContent className="p-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+          <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <CheckCircle className="w-4 h-4 text-green-600" />
-              <div>
-                <p className="text-sm font-medium text-green-800">Profile Complete!</p>
-                <p className="text-xs text-green-600">All sections completed</p>
+              <div className={isRTL ? 'text-right' : ''}>
+                <p className={`text-sm font-medium text-green-800 ${isRTL ? 'font-arabic' : ''}`}>
+                  {t('profile.profileComplete')}
+                </p>
+                <p className={`text-xs text-green-600 ${isRTL ? 'font-arabic' : ''}`}>
+                  {t('profile.allSectionsCompleted')}
+                </p>
               </div>
             </div>
             <Button
@@ -44,13 +50,13 @@ const CompactProfileCompletionCard = ({ onStepClick }: CompactProfileCompletionC
   }
 
   return (
-    <Card className={isCompleted ? "bg-green-50 border-green-200" : ""}>
+    <Card className={`${isCompleted ? "bg-green-50 border-green-200" : ""} ${isRTL ? 'rtl' : 'ltr'}`}>
       <CardContent className="p-4">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
+        <div className={`flex items-center justify-between mb-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+          <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
             <Target className="w-4 h-4 text-blue-600" />
-            <span className="text-sm font-medium text-gray-800">
-              {isCompleted ? "Profile Complete!" : "Profile Setup"}
+            <span className={`text-sm font-medium text-gray-800 ${isRTL ? 'font-arabic' : ''}`}>
+              {isCompleted ? t('profile.profileComplete') : t('profile.profileCompletion')}
             </span>
           </div>
           {isCompleted && (
@@ -67,35 +73,35 @@ const CompactProfileCompletionCard = ({ onStepClick }: CompactProfileCompletionC
 
         <div className="space-y-3">
           <div className="space-y-1">
-            <div className="flex justify-between text-xs">
-              <span className={isCompleted ? "text-green-700" : "text-gray-600"}>
-                Progress
+            <div className={`flex justify-between text-xs ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <span className={`${isCompleted ? "text-green-700" : "text-gray-600"} ${isRTL ? 'font-arabic' : ''}`}>
+                {t('progress')}
               </span>
-              <span className={isCompleted ? "text-green-700 font-medium" : "text-gray-700 font-medium"}>
+              <span className={`${isCompleted ? "text-green-700 font-medium" : "text-gray-700 font-medium"}`}>
                 {completionPercentage}%
               </span>
             </div>
             <Progress 
               value={completionPercentage} 
-              className={`h-1.5 ${isCompleted ? "bg-green-100" : ""}`}
+              className={`h-1.5 ${isCompleted ? "bg-green-100" : ""} ${isRTL ? 'scale-x-[-1]' : ''}`}
             />
-            <p className="text-xs text-gray-500">
-              {completedSteps} of {steps.length} sections completed
+            <p className={`text-xs text-gray-500 ${isRTL ? 'font-arabic text-right' : ''}`}>
+              {completedSteps} {t('of')} {steps.length} {t('profile.sectionsCompleted')}
             </p>
           </div>
 
           {!isCompleted && nextIncompleteStep && (
             <div className="p-2 bg-blue-50 rounded-lg border border-blue-200">
-              <p className="text-xs text-blue-800 font-medium">
-                Next: {nextIncompleteStep.title}
+              <p className={`text-xs text-blue-800 font-medium ${isRTL ? 'font-arabic text-right' : ''}`}>
+                {t('profile.nextStep')}: {nextIncompleteStep.title}
               </p>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => onStepClick(nextIncompleteStep.key)}
-                className="mt-1 text-xs h-6 bg-white hover:bg-blue-50 border-blue-200"
+                className={`mt-1 text-xs h-6 bg-white hover:bg-blue-50 border-blue-200 ${isRTL ? 'font-arabic' : ''}`}
               >
-                Complete Now
+                {t('profile.completeNow')}
               </Button>
             </div>
           )}
@@ -108,7 +114,7 @@ const CompactProfileCompletionCard = ({ onStepClick }: CompactProfileCompletionC
                   variant="outline"
                   size="sm"
                   onClick={() => onStepClick(step.key)}
-                  className="text-xs h-6 bg-white hover:bg-green-50 border-green-200"
+                  className={`text-xs h-6 bg-white hover:bg-green-50 border-green-200 ${isRTL ? 'font-arabic' : ''}`}
                 >
                   {step.title}
                 </Button>

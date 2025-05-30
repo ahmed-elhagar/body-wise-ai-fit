@@ -1,7 +1,7 @@
 
 import type { Config } from "tailwindcss";
 
-export default {
+const config: Config = {
   darkMode: ["class"],
   content: [
     "./pages/**/*.{ts,tsx}",
@@ -19,6 +19,10 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ["Inter", "sans-serif"],
+        arabic: ["Cairo", "Inter", "sans-serif"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -53,23 +57,40 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        sidebar: {
-          DEFAULT: "hsl(var(--sidebar-background))",
-          foreground: "hsl(var(--sidebar-foreground))",
-          primary: "hsl(var(--sidebar-primary))",
-          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
-          accent: "hsl(var(--sidebar-accent))",
-          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
-          border: "hsl(var(--sidebar-border))",
-          ring: "hsl(var(--sidebar-ring))",
+        chart: {
+          "1": "hsl(var(--chart-1))",
+          "2": "hsl(var(--chart-2))",
+          "3": "hsl(var(--chart-3))",
+          "4": "hsl(var(--chart-4))",
+          "5": "hsl(var(--chart-5))",
         },
+        // Fitness app specific colors
         fitness: {
-          primary: "#3B82F6",
-          secondary: "#06B6D4",
+          primary: {
+            50: "#eff6ff",
+            100: "#dbeafe",
+            200: "#bfdbfe",
+            300: "#93c5fd",
+            400: "#60a5fa",
+            500: "#3b82f6",
+            600: "#2563eb",
+            700: "#1d4ed8",
+            800: "#1e40af",
+            900: "#1e3a8a",
+          },
+          neutral: {
+            50: "#f8fafc",
+            100: "#f1f5f9",
+            200: "#e2e8f0",
+            300: "#cbd5e1",
+            400: "#94a3b8",
+            500: "#64748b",
+            600: "#475569",
+            700: "#334155",
+            800: "#1e293b",
+            900: "#0f172a",
+          },
         },
-      },
-      backgroundImage: {
-        'fitness-gradient': 'linear-gradient(135deg, #3B82F6 0%, #06B6D4 100%)',
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -85,12 +106,33 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "fade-in": {
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
+        },
+        "slide-up": {
+          "0%": { transform: "translateY(100%)" },
+          "100%": { transform: "translateY(0)" },
+        },
+        "slide-down": {
+          "0%": { transform: "translateY(-100%)" },
+          "100%": { transform: "translateY(0)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "fade-in": "fade-in 0.3s ease-out",
+        "slide-up": "slide-up 0.3s ease-out",
+        "slide-down": "slide-down 0.3s ease-out",
+      },
+      spacing: {
+        '18': '4.5rem',
+        '88': '22rem',
       },
     },
   },
   plugins: [require("tailwindcss-animate")],
 } satisfies Config;
+
+export default config;

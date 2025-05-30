@@ -39,6 +39,8 @@ export const commonTranslations = {
   'exchange': 'تبديل',
   'coming': 'قريباً',
   'soon': 'جداً',
+  'progress': 'التقدم',
+  'of': 'من',
 
   // Additional missing translations
   'todaysSummary': 'ملخص اليوم',
