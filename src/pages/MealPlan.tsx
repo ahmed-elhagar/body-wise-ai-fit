@@ -1,11 +1,14 @@
 
 import ProtectedRoute from "@/components/ProtectedRoute";
+import Layout from "@/components/Layout";
 import MealPlanPage from "@/components/meal-plan/MealPlanPage";
 
 const MealPlan = () => {
   return (
     <ProtectedRoute>
-      <MealPlanPage />
+      <Layout>
+        <MealPlanPage />
+      </Layout>
     </ProtectedRoute>
   );
 };

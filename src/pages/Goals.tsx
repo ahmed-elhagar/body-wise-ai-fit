@@ -19,7 +19,7 @@ const Goals = () => {
     return (
       <ProtectedRoute>
         <Layout>
-          <div className="p-6">
+          <div className="p-4 md:p-6">
             <div className="max-w-6xl mx-auto">
               <div className="animate-pulse space-y-4">
                 <div className="h-8 bg-gray-200 rounded w-1/4"></div>
@@ -38,13 +38,13 @@ const Goals = () => {
   return (
     <ProtectedRoute>
       <Layout>
-        <div className="p-6 min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <div className="p-4 md:p-6 min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
           <div className="max-w-6xl mx-auto space-y-6">
             {/* Header */}
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-                  <Target className="h-8 w-8 text-blue-600" />
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
+                  <Target className="h-6 w-6 md:h-8 md:w-8 text-blue-600" />
                   {t('Goals')}
                 </h1>
                 <p className="text-gray-600 mt-1">
