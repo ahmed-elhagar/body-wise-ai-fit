@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Star, Zap, Users, Calendar } from "lucide-react";
 import { useRole } from "@/hooks/useRole";
 import { useSubscription } from "@/hooks/useSubscription";
+import { supabase } from "@/integrations/supabase/client";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -41,6 +42,12 @@ const Pro = () => {
           console.log('Pro page - Third refresh attempt');
           await Promise.all([refetchRole(), refetchSubscription()]);
         }, 5000);
+        
+        // Wait 10 seconds and refresh again
+        setTimeout(async () => {
+          console.log('Pro page - Fourth refresh attempt');
+          await Promise.all([refetchRole(), refetchSubscription()]);
+        }, 10000);
       };
       
       refreshData();
@@ -53,43 +60,91 @@ const Pro = () => {
     }
   }, [searchParams, refetchRole, refetchSubscription]);
 
-  // Debug data collection
+  // Enhanced debug data collection
   useEffect(() => {
     const collectDebugInfo = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         
         if (user) {
-          const { data: profile } = await supabase
+          console.log('Pro page - Current user:', user.id, user.email);
+          
+          const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', user.id)
             .single();
 
-          const { data: subscriptionData } = await supabase
+          if (profileError) {
+            console.error('Pro page - Profile fetch error:', profileError);
+          } else {
+            console.log('Pro page - Profile data:', profile);
+          }
+
+          const { data: subscriptionData, error: subError } = await supabase
             .from('subscriptions')
             .select('*')
             .eq('user_id', user.id);
+
+          if (subError) {
+            console.error('Pro page - Subscription fetch error:', subError);
+          } else {
+            console.log('Pro page - Raw subscription data:', subscriptionData);
+          }
+
+          // Check for active subscriptions specifically
+          const { data: activeSubscriptions, error: activeSubError } = await supabase
+            .from('subscriptions')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('status', 'active')
+            .gte('current_period_end', new Date().toISOString());
+
+          if (activeSubError) {
+            console.error('Pro page - Active subscription fetch error:', activeSubError);
+          } else {
+            console.log('Pro page - Active subscriptions:', activeSubscriptions);
+          }
 
           setDebugInfo({
             userId: user.id,
             email: user.email,
             profile,
+            profileError,
             subscriptions: subscriptionData,
-            currentState: { isPro, role, subscription }
+            subscriptionError: subError,
+            activeSubscriptions,
+            activeSubscriptionError: activeSubError,
+            currentState: { isPro, role, subscription },
+            timestamp: new Date().toISOString()
           });
         }
       } catch (error) {
         console.error('Debug info collection failed:', error);
+        setDebugInfo({ error: error.message, timestamp: new Date().toISOString() });
       }
     };
 
     collectDebugInfo();
+    
+    // Refresh debug info every 5 seconds
+    const interval = setInterval(collectDebugInfo, 5000);
+    return () => clearInterval(interval);
   }, [isPro, role, subscription]);
 
   // Debug logging
   useEffect(() => {
-    console.log('Pro page - Current state:', { isPro, role, subscription });
+    console.log('Pro page - Current state changed:', { 
+      isPro, 
+      role, 
+      subscription: subscription ? {
+        id: subscription.id,
+        status: subscription.status,
+        user_id: subscription.user_id,
+        stripe_subscription_id: subscription.stripe_subscription_id
+      } : null,
+      timestamp: new Date().toISOString()
+    });
   }, [isPro, role, subscription]);
 
   const features = [
@@ -100,9 +155,39 @@ const Pro = () => {
   ];
 
   const forceRefresh = async () => {
-    console.log('Pro page - Manual refresh triggered');
+    console.log('Pro page - Manual refresh triggered at:', new Date().toISOString());
     toast.info('Refreshing subscription status...');
-    await Promise.all([refetchRole(), refetchSubscription()]);
+    
+    try {
+      // Force refresh both hooks
+      await Promise.all([refetchRole(), refetchSubscription()]);
+      
+      // Additional manual check
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: freshProfile } = await supabase
+          .from('profiles')
+          .select('role, ai_generations_remaining')
+          .eq('id', user.id)
+          .single();
+          
+        const { data: freshSub } = await supabase
+          .from('subscriptions')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('status', 'active')
+          .maybeSingle();
+          
+        console.log('Pro page - Fresh data after manual refresh:', {
+          profile: freshProfile,
+          subscription: freshSub,
+          timestamp: new Date().toISOString()
+        });
+      }
+    } catch (error) {
+      console.error('Pro page - Manual refresh error:', error);
+      toast.error('Failed to refresh data');
+    }
   };
 
   if (isPro) {
@@ -126,6 +211,40 @@ const Pro = () => {
                 Refresh Status
               </Button>
             </div>
+
+            {/* Enhanced Debug Information */}
+            {debugInfo && (
+              <Card className="mb-8 bg-yellow-50 border-yellow-200">
+                <CardHeader>
+                  <CardTitle className="text-sm text-yellow-800">🐛 Debug Information (Pro User)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-xs font-mono space-y-2 text-yellow-900">
+                    <p><strong>Timestamp:</strong> {debugInfo.timestamp}</p>
+                    <p><strong>User ID:</strong> {debugInfo.userId}</p>
+                    <p><strong>Email:</strong> {debugInfo.email}</p>
+                    <p><strong>Profile Role:</strong> {debugInfo.profile?.role || 'N/A'}</p>
+                    <p><strong>AI Generations:</strong> {debugInfo.profile?.ai_generations_remaining || 'N/A'}</p>
+                    <p><strong>Is Pro (calculated):</strong> {isPro ? 'Yes' : 'No'}</p>
+                    <p><strong>Role (from hook):</strong> {role || 'N/A'}</p>
+                    <p><strong>Total Subscriptions:</strong> {debugInfo.subscriptions?.length || 0}</p>
+                    <p><strong>Active Subscriptions:</strong> {debugInfo.activeSubscriptions?.length || 0}</p>
+                    {debugInfo.activeSubscriptions?.[0] && (
+                      <div className="mt-2 p-2 bg-yellow-100 rounded">
+                        <p><strong>Active Sub ID:</strong> {debugInfo.activeSubscriptions[0].id}</p>
+                        <p><strong>Stripe Sub ID:</strong> {debugInfo.activeSubscriptions[0].stripe_subscription_id}</p>
+                        <p><strong>Status:</strong> {debugInfo.activeSubscriptions[0].status}</p>
+                        <p><strong>Period End:</strong> {debugInfo.activeSubscriptions[0].current_period_end}</p>
+                        <p><strong>Plan Type:</strong> {debugInfo.activeSubscriptions[0].plan_type}</p>
+                      </div>
+                    )}
+                    {debugInfo.error && (
+                      <p className="text-red-600"><strong>Error:</strong> {debugInfo.error}</p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {subscription && (
               <Card className="mb-8">
@@ -163,27 +282,6 @@ const Pro = () => {
                       </Button>
                     </div>
                   )}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Debug Information */}
-            {debugInfo && (
-              <Card className="mb-8 bg-gray-50">
-                <CardHeader>
-                  <CardTitle className="text-sm">Debug Information</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-xs font-mono">
-                    <p><strong>Role:</strong> {role}</p>
-                    <p><strong>Is Pro:</strong> {isPro ? 'Yes' : 'No'}</p>
-                    <p><strong>Profile Role:</strong> {debugInfo.profile?.role}</p>
-                    <p><strong>AI Generations:</strong> {debugInfo.profile?.ai_generations_remaining}</p>
-                    <p><strong>Subscriptions Count:</strong> {debugInfo.subscriptions?.length || 0}</p>
-                    {debugInfo.subscriptions?.[0] && (
-                      <p><strong>Latest Sub Status:</strong> {debugInfo.subscriptions[0].status}</p>
-                    )}
-                  </div>
                 </CardContent>
               </Card>
             )}
@@ -234,25 +332,36 @@ const Pro = () => {
             </div>
           </div>
 
-          {/* Debug Information for non-pro users */}
+          {/* Enhanced Debug Information for non-pro users */}
           {debugInfo && (
-            <Card className="mb-8 bg-gray-50">
+            <Card className="mb-8 bg-red-50 border-red-200">
               <CardHeader>
-                <CardTitle className="text-sm">Debug Information</CardTitle>
+                <CardTitle className="text-sm text-red-800">🐛 Debug Information (Non-Pro User)</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-xs font-mono">
-                  <p><strong>Role:</strong> {role}</p>
-                  <p><strong>Is Pro:</strong> {isPro ? 'Yes' : 'No'}</p>
-                  <p><strong>Profile Role:</strong> {debugInfo.profile?.role}</p>
-                  <p><strong>AI Generations:</strong> {debugInfo.profile?.ai_generations_remaining}</p>
-                  <p><strong>Subscriptions Count:</strong> {debugInfo.subscriptions?.length || 0}</p>
+                <div className="text-xs font-mono space-y-2 text-red-900">
+                  <p><strong>Timestamp:</strong> {debugInfo.timestamp}</p>
+                  <p><strong>User ID:</strong> {debugInfo.userId}</p>
+                  <p><strong>Email:</strong> {debugInfo.email}</p>
+                  <p><strong>Profile Role:</strong> {debugInfo.profile?.role || 'N/A'}</p>
+                  <p><strong>AI Generations:</strong> {debugInfo.profile?.ai_generations_remaining || 'N/A'}</p>
+                  <p><strong>Is Pro (calculated):</strong> {isPro ? 'Yes' : 'No'}</p>
+                  <p><strong>Role (from hook):</strong> {role || 'N/A'}</p>
+                  <p><strong>Total Subscriptions:</strong> {debugInfo.subscriptions?.length || 0}</p>
+                  <p><strong>Active Subscriptions:</strong> {debugInfo.activeSubscriptions?.length || 0}</p>
                   {debugInfo.subscriptions?.[0] && (
-                    <div>
-                      <p><strong>Latest Sub Status:</strong> {debugInfo.subscriptions[0].status}</p>
-                      <p><strong>Latest Sub ID:</strong> {debugInfo.subscriptions[0].stripe_subscription_id}</p>
+                    <div className="mt-2 p-2 bg-red-100 rounded">
+                      <p><strong>Latest Sub ID:</strong> {debugInfo.subscriptions[0].id}</p>
+                      <p><strong>Stripe Sub ID:</strong> {debugInfo.subscriptions[0].stripe_subscription_id}</p>
+                      <p><strong>Status:</strong> {debugInfo.subscriptions[0].status}</p>
                       <p><strong>Period End:</strong> {debugInfo.subscriptions[0].current_period_end}</p>
+                      <p><strong>Plan Type:</strong> {debugInfo.subscriptions[0].plan_type}</p>
+                      <p><strong>Created:</strong> {debugInfo.subscriptions[0].created_at}</p>
+                      <p><strong>Updated:</strong> {debugInfo.subscriptions[0].updated_at}</p>
                     </div>
+                  )}
+                  {debugInfo.error && (
+                    <p className="text-red-600"><strong>Error:</strong> {debugInfo.error}</p>
                   )}
                 </div>
               </CardContent>

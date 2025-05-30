@@ -54,7 +54,8 @@ serve(async (req) => {
           sessionId: session.id, 
           mode: session.mode,
           subscriptionId: session.subscription,
-          metadata: session.metadata 
+          metadata: session.metadata,
+          customerId: session.customer
         });
 
         if (session.mode === 'subscription' && session.subscription) {
@@ -70,71 +71,103 @@ serve(async (req) => {
             userId, 
             subscriptionId: subscription.id,
             status: subscription.status,
-            customerId: session.customer 
+            customerId: session.customer,
+            currentPeriodEnd: subscription.current_period_end
           });
 
-          // Update subscription record
-          const { error: subError } = await supabaseClient
-            .from('subscriptions')
-            .upsert({
-              user_id: userId,
-              stripe_customer_id: session.customer as string,
-              stripe_subscription_id: subscription.id,
-              status: 'active',
-              plan_type: session.metadata?.plan_type || 'monthly',
-              current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-              current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-              cancel_at_period_end: false,
-              stripe_price_id: subscription.items.data[0].price.id,
-              interval: subscription.items.data[0].price.recurring?.interval || 'month'
-            }, { onConflict: 'user_id' });
+          // First, let's check if user exists in profiles
+          const { data: existingProfile, error: profileCheckError } = await supabaseClient
+            .from('profiles')
+            .select('id, role, ai_generations_remaining')
+            .eq('id', userId)
+            .single();
 
-          if (subError) {
-            logStep("ERROR: Failed to update subscription", { error: subError, userId, subscriptionId: subscription.id });
-            throw new Error(`Failed to update subscription: ${subError.message}`);
+          if (profileCheckError) {
+            logStep("ERROR: User profile not found", { error: profileCheckError, userId });
+            throw new Error(`User profile not found: ${profileCheckError.message}`);
           }
 
-          logStep("Subscription updated successfully", { userId, subscriptionId: subscription.id });
+          logStep("Found existing profile", { profile: existingProfile });
 
-          // Update user role to pro and reset AI generations
-          const { error: roleError } = await supabaseClient
+          // Update/Create subscription record with more detailed logging
+          const subscriptionRecord = {
+            user_id: userId,
+            stripe_customer_id: session.customer as string,
+            stripe_subscription_id: subscription.id,
+            status: 'active',
+            plan_type: session.metadata?.plan_type || 'monthly',
+            current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+            cancel_at_period_end: false,
+            stripe_price_id: subscription.items.data[0].price.id,
+            interval: subscription.items.data[0].price.recurring?.interval || 'month'
+          };
+
+          logStep("Upserting subscription record", { subscriptionRecord });
+
+          const { data: upsertedSub, error: subError } = await supabaseClient
+            .from('subscriptions')
+            .upsert(subscriptionRecord, { onConflict: 'user_id' })
+            .select()
+            .single();
+
+          if (subError) {
+            logStep("ERROR: Failed to upsert subscription", { error: subError, userId, subscriptionId: subscription.id });
+            throw new Error(`Failed to upsert subscription: ${subError.message}`);
+          }
+
+          logStep("Subscription upserted successfully", { upsertedSub });
+
+          // Update user role to pro and set unlimited AI generations
+          const profileUpdate = {
+            role: 'pro',
+            ai_generations_remaining: 999999 // Unlimited for pro users
+          };
+
+          logStep("Updating profile to pro", { userId, profileUpdate });
+
+          const { data: updatedProfile, error: roleError } = await supabaseClient
             .from('profiles')
-            .update({ 
-              role: 'pro',
-              ai_generations_remaining: 999999 // Unlimited for pro users
-            })
-            .eq('id', userId);
+            .update(profileUpdate)
+            .eq('id', userId)
+            .select()
+            .single();
 
           if (roleError) {
             logStep("ERROR: Failed to update user role", { error: roleError, userId });
             throw new Error(`Failed to update user role: ${roleError.message}`);
           }
 
-          logStep("User upgraded to pro successfully", { userId, subscriptionId: subscription.id });
+          logStep("User upgraded to pro successfully", { userId, updatedProfile });
 
-          // Verify the updates were successful
-          const { data: updatedProfile, error: checkError } = await supabaseClient
+          // Final verification - fetch fresh data to confirm updates
+          const { data: finalProfile, error: finalProfileError } = await supabaseClient
             .from('profiles')
             .select('role, ai_generations_remaining')
             .eq('id', userId)
             .single();
 
-          if (checkError) {
-            logStep("ERROR: Failed to verify profile update", { error: checkError, userId });
-          } else {
-            logStep("Profile update verified", { userId, profile: updatedProfile });
-          }
-
-          const { data: updatedSub, error: subCheckError } = await supabaseClient
+          const { data: finalSub, error: finalSubError } = await supabaseClient
             .from('subscriptions')
             .select('*')
             .eq('user_id', userId)
+            .eq('status', 'active')
             .single();
 
-          if (subCheckError) {
-            logStep("ERROR: Failed to verify subscription update", { error: subCheckError, userId });
+          if (finalProfileError || finalSubError) {
+            logStep("ERROR: Final verification failed", { 
+              profileError: finalProfileError, 
+              subError: finalSubError, 
+              userId 
+            });
           } else {
-            logStep("Subscription update verified", { userId, subscription: updatedSub });
+            logStep("Final verification successful", { 
+              userId, 
+              finalProfile, 
+              finalSub,
+              subscriptionActive: finalSub?.status === 'active',
+              roleIsPro: finalProfile?.role === 'pro'
+            });
           }
         }
         break;
@@ -159,6 +192,8 @@ serve(async (req) => {
             break;
           }
 
+          logStep("Found subscription for renewal", { userId: subRecord.user_id, subscriptionId: subscription.id });
+
           // Update subscription period and ensure active status
           const { error: updateError } = await supabaseClient
             .from('subscriptions')
@@ -173,7 +208,7 @@ serve(async (req) => {
           if (updateError) {
             logStep("ERROR: Failed to update subscription period", { error: updateError, subscriptionId: subscription.id });
           } else {
-            logStep("Subscription period updated", { userId: subRecord.user_id, subscriptionId: subscription.id });
+            logStep("Subscription period updated successfully", { userId: subRecord.user_id, subscriptionId: subscription.id });
           }
 
           // Ensure user still has pro role and unlimited generations
@@ -188,7 +223,7 @@ serve(async (req) => {
           if (roleError) {
             logStep("ERROR: Failed to maintain pro role", { error: roleError, userId: subRecord.user_id });
           } else {
-            logStep("Pro role maintained", { userId: subRecord.user_id });
+            logStep("Pro role maintained successfully", { userId: subRecord.user_id });
           }
         }
         break;
@@ -210,7 +245,9 @@ serve(async (req) => {
           break;
         }
 
-        // Update subscription status
+        logStep("Found subscription for cancellation", { userId: subRecord.user_id, subscriptionId: subscription.id });
+
+        // Update subscription status to cancelled
         const { error: subError } = await supabaseClient
           .from('subscriptions')
           .update({ status: 'cancelled' })
@@ -218,6 +255,8 @@ serve(async (req) => {
 
         if (subError) {
           logStep("ERROR: Failed to update subscription status to cancelled", { error: subError, subscriptionId: subscription.id });
+        } else {
+          logStep("Subscription marked as cancelled", { userId: subRecord.user_id, subscriptionId: subscription.id });
         }
 
         // Downgrade user role back to normal and reset AI generations
@@ -232,7 +271,7 @@ serve(async (req) => {
         if (roleError) {
           logStep("ERROR: Failed to downgrade user role", { error: roleError, userId: subRecord.user_id });
         } else {
-          logStep("User downgraded to normal", { userId: subRecord.user_id });
+          logStep("User downgraded to normal successfully", { userId: subRecord.user_id });
         }
         break;
       }
@@ -257,6 +296,8 @@ serve(async (req) => {
           break;
         }
 
+        logStep("Found subscription for update", { userId: subRecord.user_id, subscriptionId: subscription.id });
+
         // Update subscription details
         const { error: updateError } = await supabaseClient
           .from('subscriptions')
@@ -271,7 +312,7 @@ serve(async (req) => {
         if (updateError) {
           logStep("ERROR: Failed to update subscription", { error: updateError, subscriptionId: subscription.id });
         } else {
-          logStep("Subscription updated", { userId: subRecord.user_id, status: subscription.status });
+          logStep("Subscription updated successfully", { userId: subRecord.user_id, status: subscription.status });
         }
 
         // Update user role based on subscription status
@@ -287,9 +328,9 @@ serve(async (req) => {
           .eq('id', subRecord.user_id);
 
         if (roleError) {
-          logStep("ERROR: Failed to update user role", { error: roleError, userId: subRecord.user_id });
+          logStep("ERROR: Failed to update user role based on subscription status", { error: roleError, userId: subRecord.user_id });
         } else {
-          logStep("User role updated", { userId: subRecord.user_id, newRole, newGenerations });
+          logStep("User role updated based on subscription status", { userId: subRecord.user_id, newRole, newGenerations });
         }
         break;
       }
