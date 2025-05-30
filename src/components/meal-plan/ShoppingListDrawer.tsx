@@ -11,8 +11,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Download, ShoppingCart, Package, Loader2, FileText } from "lucide-react";
+import { Download, ShoppingCart, Package, Loader2, Mail } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import type { DailyMeal } from "@/hooks/useMealPlanData";
 
 interface ShoppingItem {
@@ -26,15 +29,28 @@ interface ShoppingListDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   weeklyPlan: { dailyMeals: DailyMeal[] } | null;
+  weekId?: string;
+  onShoppingListUpdate?: () => void;
 }
 
-const ShoppingListDrawer = ({ isOpen, onClose, weeklyPlan }: ShoppingListDrawerProps) => {
+const ShoppingListDrawer = ({ 
+  isOpen, 
+  onClose, 
+  weeklyPlan, 
+  weekId,
+  onShoppingListUpdate 
+}: ShoppingListDrawerProps) => {
   const { t, isRTL } = useLanguage();
+  const { user } = useAuth();
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(false);
+  const [isEmailSending, setIsEmailSending] = useState(false);
 
-  // Process ingredients from meal plan data
+  // Memoized ingredient aggregation for performance
   const { shoppingItems, groupedItems } = useMemo(() => {
+    console.log('🔄 Computing shopping list from meal plan data...');
+    const startTime = performance.now();
+    
     if (!weeklyPlan?.dailyMeals) {
       return { shoppingItems: [], groupedItems: {} };
     }
@@ -79,10 +95,39 @@ const ShoppingListDrawer = ({ isOpen, onClose, weeklyPlan }: ShoppingListDrawerP
       return acc;
     }, {} as Record<string, ShoppingItem[]>);
 
+    const endTime = performance.now();
+    console.log(`✅ Shopping list computed in ${(endTime - startTime).toFixed(2)}ms`);
+
     setTimeout(() => setIsLoading(false), 300);
 
     return { shoppingItems: items, groupedItems: grouped };
   }, [weeklyPlan]);
+
+  // Load persisted progress from localStorage
+  useEffect(() => {
+    if (user && weekId && shoppingItems.length > 0) {
+      const storageKey = `shopping-progress-${user.id}-${weekId}`;
+      const savedProgress = localStorage.getItem(storageKey);
+      
+      if (savedProgress) {
+        try {
+          const parsedProgress = JSON.parse(savedProgress);
+          setCheckedItems(new Set(parsedProgress));
+          console.log('📱 Rehydrated shopping list progress from localStorage');
+        } catch (error) {
+          console.error('Error parsing saved progress:', error);
+        }
+      }
+    }
+  }, [user, weekId, shoppingItems.length]);
+
+  // Save progress to localStorage whenever checkedItems changes
+  useEffect(() => {
+    if (user && weekId && checkedItems.size > 0) {
+      const storageKey = `shopping-progress-${user.id}-${weekId}`;
+      localStorage.setItem(storageKey, JSON.stringify(Array.from(checkedItems)));
+    }
+  }, [checkedItems, user, weekId]);
 
   const categorizeIngredient = (ingredientName: string): string => {
     const name = ingredientName.toLowerCase();
@@ -139,13 +184,37 @@ const ShoppingListDrawer = ({ isOpen, onClose, weeklyPlan }: ShoppingListDrawerP
     return isRTL ? 'أخرى' : 'Other';
   };
 
+  // Get current week date range for PDF header
+  const getWeekRange = () => {
+    const today = new Date();
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay() + 1); // Monday
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6); // Sunday
+
+    const formatOptions: Intl.DateTimeFormatOptions = { 
+      day: 'numeric', 
+      month: 'short', 
+      year: 'numeric' 
+    };
+    
+    const locale = isRTL ? 'ar' : 'en';
+    const startFormatted = startOfWeek.toLocaleDateString(locale, formatOptions);
+    const endFormatted = endOfWeek.toLocaleDateString(locale, formatOptions);
+    
+    return isRTL ? 
+      `قائمة التسوق · ${startFormatted} – ${endFormatted}` :
+      `Shopping List · ${startFormatted} – ${endFormatted}`;
+  };
+
   const generateShoppingPdf = () => {
     const categories = Object.keys(groupedItems).sort();
+    const weekRange = getWeekRange();
     
     const listContent = categories.map(category => {
       const items = groupedItems[category];
       const itemsText = items
-        .map(item => `• ${item.name} - ${item.quantity} ${item.unit}`)
+        .map(item => `• ${item.name} - ${item.quantity} ${isRTL && item.unit === 'g' ? 'جم' : item.unit}`)
         .join('\n');
       return `${category.toUpperCase()}\n${itemsText}`;
     }).join('\n\n');
@@ -155,7 +224,7 @@ const ShoppingListDrawer = ({ isOpen, onClose, weeklyPlan }: ShoppingListDrawerP
       printWindow.document.write(`
         <html>
           <head>
-            <title>Shopping List</title>
+            <title>${isRTL ? 'قائمة التسوق' : 'Shopping List'}</title>
             <style>
               body { 
                 font-family: Arial, sans-serif; 
@@ -163,7 +232,13 @@ const ShoppingListDrawer = ({ isOpen, onClose, weeklyPlan }: ShoppingListDrawerP
                 direction: ${isRTL ? 'rtl' : 'ltr'};
                 text-align: ${isRTL ? 'right' : 'left'};
               }
-              h1 { color: #FF6F3C; text-align: center; margin-bottom: 20px; }
+              .header { 
+                color: #FF6F3C; 
+                text-align: ${isRTL ? 'right' : 'left'}; 
+                margin-bottom: 20px; 
+                font-size: 28px;
+                font-weight: bold;
+              }
               h3 { 
                 color: #FF6F3C; 
                 border-bottom: 2px solid #FF6F3C; 
@@ -172,7 +247,7 @@ const ShoppingListDrawer = ({ isOpen, onClose, weeklyPlan }: ShoppingListDrawerP
               }
               .item { margin: 8px 0; padding: 8px; border-bottom: 1px solid #eee; }
               .meta { 
-                text-align: center; 
+                text-align: ${isRTL ? 'right' : 'left'}; 
                 color: #666; 
                 margin-bottom: 30px; 
                 font-size: 14px;
@@ -183,7 +258,7 @@ const ShoppingListDrawer = ({ isOpen, onClose, weeklyPlan }: ShoppingListDrawerP
             </style>
           </head>
           <body>
-            <h1>🛒 ${isRTL ? 'قائمة التسوق الأسبوعية' : 'Weekly Shopping List'}</h1>
+            <div class="header">${weekRange}</div>
             <p class="meta">
               ${isRTL ? 'تم إنشاؤها في' : 'Generated on'} ${new Date().toLocaleDateString(isRTL ? 'ar' : 'en')}
             </p>
@@ -196,6 +271,33 @@ const ShoppingListDrawer = ({ isOpen, onClose, weeklyPlan }: ShoppingListDrawerP
     }
   };
 
+  const sendShoppingListEmail = async () => {
+    if (!user || !weekId) return;
+    
+    setIsEmailSending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-shopping-list-email', {
+        body: {
+          userId: user.id,
+          weekId: weekId,
+          shoppingItems: groupedItems,
+          weekRange: getWeekRange()
+        }
+      });
+
+      if (error) throw error;
+
+      toast.success(isRTL ? 'تم إرسال البريد الإلكتروني' : 'Email sent', {
+        duration: 2000,
+      });
+    } catch (error) {
+      console.error('Error sending email:', error);
+      toast.error(isRTL ? 'فشل في إرسال البريد الإلكتروني' : 'Failed to send email');
+    } finally {
+      setIsEmailSending(false);
+    }
+  };
+
   const toggleItem = (itemKey: string) => {
     const newChecked = new Set(checkedItems);
     if (newChecked.has(itemKey)) {
@@ -204,6 +306,7 @@ const ShoppingListDrawer = ({ isOpen, onClose, weeklyPlan }: ShoppingListDrawerP
       newChecked.add(itemKey);
     }
     setCheckedItems(newChecked);
+    onShoppingListUpdate?.();
   };
 
   const toggleCategory = (category: string) => {
@@ -217,6 +320,13 @@ const ShoppingListDrawer = ({ isOpen, onClose, weeklyPlan }: ShoppingListDrawerP
       categoryItems.forEach(item => newChecked.add(item));
     }
     setCheckedItems(newChecked);
+    onShoppingListUpdate?.();
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      onClose();
+    }
   };
 
   const categories = Object.keys(groupedItems).sort();
@@ -244,7 +354,10 @@ const ShoppingListDrawer = ({ isOpen, onClose, weeklyPlan }: ShoppingListDrawerP
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent className="w-full sm:max-w-lg bg-[#1E1F23] border-gray-700 text-white">
+      <SheetContent 
+        className="w-full sm:max-w-lg bg-[#1E1F23] border-gray-700 text-white"
+        onKeyDown={handleKeyDown}
+      >
         <SheetHeader className="mb-6">
           <SheetTitle className="text-white flex items-center gap-2">
             <ShoppingCart className="w-5 h-5 text-[#FF6F3C]" />
@@ -258,15 +371,30 @@ const ShoppingListDrawer = ({ isOpen, onClose, weeklyPlan }: ShoppingListDrawerP
         </SheetHeader>
 
         <div className="space-y-4">
-          {/* Export Button */}
+          {/* Action Buttons */}
           {totalItems > 0 && (
-            <Button 
-              onClick={generateShoppingPdf}
-              className="w-full bg-gradient-to-r from-[#FF6F3C] to-[#FF8F4C] hover:from-[#FF5F2C] hover:to-[#FF7F3C] text-white"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              {isRTL ? 'تصدير PDF' : 'Export PDF'}
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                onClick={generateShoppingPdf}
+                className="flex-1 bg-gradient-to-r from-[#FF6F3C] to-[#FF8F4C] hover:from-[#FF5F2C] hover:to-[#FF7F3C] text-white"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                {isRTL ? 'تصدير PDF' : 'Export PDF'}
+              </Button>
+              
+              <Button 
+                onClick={sendShoppingListEmail}
+                disabled={isEmailSending}
+                variant="outline"
+                className="bg-gray-800 border-gray-600 text-gray-300 hover:bg-blue-600 hover:text-white hover:border-blue-600"
+              >
+                {isEmailSending ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Mail className="w-4 h-4" />
+                )}
+              </Button>
+            </div>
           )}
 
           {/* Loading State */}
@@ -315,6 +443,9 @@ const ShoppingListDrawer = ({ isOpen, onClose, weeklyPlan }: ShoppingListDrawerP
                       className="bg-gradient-to-r from-[#FF6F3C] to-[#FF8F4C] h-2 rounded-full transition-all duration-300"
                       style={{ width: `${totalItems > 0 ? (checkedCount / totalItems) * 100 : 0}%` }}
                     />
+                  </div>
+                  <div className="text-center text-sm text-gray-400 mt-1">
+                    {totalItems > 0 ? Math.round((checkedCount / totalItems) * 100) : 0}%
                   </div>
                 </CardContent>
               </Card>
@@ -366,7 +497,7 @@ const ShoppingListDrawer = ({ isOpen, onClose, weeklyPlan }: ShoppingListDrawerP
                                     {item.name}
                                   </span>
                                   <span className={`text-sm ml-2 ${isChecked ? 'line-through text-gray-600' : 'text-gray-400'}`}>
-                                    {item.quantity} {item.unit}
+                                    {item.quantity} {isRTL && item.unit === 'g' ? 'جم' : item.unit}
                                   </span>
                                 </div>
                               </div>

@@ -23,6 +23,7 @@ import ShoppingListDrawer from "./ShoppingListDrawer";
 import MealPlanLoadingBackdrop from "./MealPlanLoadingBackdrop";
 import MealRecipeDialog from "./MealRecipeDialog";
 import MealExchangeDialog from "./MealExchangeDialog";
+import { toast } from "sonner";
 
 const EnhancedMealPlanPage = () => {
   const { t, isRTL } = useLanguage();
@@ -53,14 +54,40 @@ const EnhancedMealPlanPage = () => {
   const handleSnackAdded = async () => {
     setShowSnackDialog(false);
     await mealPlanState.refetch();
+    toast.success("Shopping list updated ✅", {
+      duration: 2000,
+    });
   };
 
   const handleShowRecipe = (meal: any) => {
-    mealPlanState.handleShowRecipe(meal);
+    // Convert meal to DailyMeal type
+    const dailyMeal = {
+      ...meal,
+      weekly_plan_id: mealPlanState.currentWeekPlan?.weeklyPlan?.id || '',
+      day_number: meal.day_number || 1,
+      prep_time: meal.prep_time || 0,
+      cook_time: meal.cook_time || 0
+    };
+    mealPlanState.handleShowRecipe(dailyMeal);
   };
 
-  const handleExchangeMeal = (meal: any, index: number) => {
-    mealPlanState.handleExchangeMeal(meal, index);
+  const handleExchangeMeal = async (meal: any, index: number) => {
+    // Convert meal to DailyMeal type
+    const dailyMeal = {
+      ...meal,
+      weekly_plan_id: mealPlanState.currentWeekPlan?.weeklyPlan?.id || '',
+      day_number: meal.day_number || 1,
+      prep_time: meal.prep_time || 0,
+      cook_time: meal.cook_time || 0
+    };
+    mealPlanState.handleExchangeMeal(dailyMeal, index);
+    
+    // Show toast after exchange
+    setTimeout(() => {
+      toast.success("Shopping list updated ✅", {
+        duration: 2000,
+      });
+    }, 1000);
   };
 
   const renderDayMeals = (dayNumber: number) => {
@@ -73,6 +100,14 @@ const EnhancedMealPlanPage = () => {
 
     return (
       <div className="space-y-4">
+        {/* Skip to main content link */}
+        <a 
+          href="#main-content" 
+          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-[#FF6F3C] text-white px-4 py-2 rounded-md z-50"
+        >
+          {isRTL ? 'انتقل إلى المحتوى الرئيسي' : 'Skip to main content'}
+        </a>
+
         {/* Day Stats */}
         <Card className="bg-[#1E1F23] border-gray-700 hover:shadow-lg transition-all duration-300">
           <CardContent className="p-4">
@@ -99,7 +134,7 @@ const EnhancedMealPlanPage = () => {
         </Card>
 
         {/* Meals */}
-        <div className="space-y-3">
+        <div className="space-y-3" id="main-content">
           {dayMeals.map((meal, index) => (
             <Card key={meal.id} className="bg-[#1E1F23] border-gray-700 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 group">
               <CardContent className="p-4">
@@ -314,6 +349,12 @@ const EnhancedMealPlanPage = () => {
         isOpen={showShoppingDrawer}
         onClose={() => setShowShoppingDrawer(false)}
         weeklyPlan={mealPlanState.currentWeekPlan}
+        weekId={mealPlanState.currentWeekPlan?.weeklyPlan?.id}
+        onShoppingListUpdate={() => {
+          toast.success("Shopping list updated ✅", {
+            duration: 2000,
+          });
+        }}
       />
 
       {mealPlanState.selectedMeal && (
