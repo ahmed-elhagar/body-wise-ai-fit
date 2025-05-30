@@ -9,7 +9,7 @@ import CoachesTab from "@/components/admin/CoachesTab";
 import AnalyticsTab from "@/components/admin/AnalyticsTab";
 import GenerationLogsTable from "@/components/admin/GenerationLogsTable";
 import ActiveSessionsTable from "@/components/admin/ActiveSessionsTable";
-import { UserGenerationManager } from "@/components/admin/UserGenerationManager";
+import UserGenerationManager from "@/components/admin/UserGenerationManager";
 
 const Admin = () => {
   return (
