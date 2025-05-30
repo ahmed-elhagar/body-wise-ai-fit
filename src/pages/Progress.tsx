@@ -48,7 +48,7 @@ const Progress = () => {
 
   const MacroRing = ({ goal, color }: { goal: any, color: string }) => {
     const progress = goal ? Math.min((goal.current_value / goal.target_value) * 100, 100) : 0;
-    const isGoldRing = progress >= 90; // Turn gold when target met
+    const isGoldRing = progress >= 90;
     
     return (
       <div className="relative w-16 h-16">
@@ -87,8 +87,8 @@ const Progress = () => {
     return (
       <ProtectedRoute>
         <Layout>
-          <div className="p-6">
-            <div className="max-w-6xl mx-auto">
+          <div className="p-4 md:p-6">
+            <div className="max-w-7xl mx-auto">
               <div className="animate-pulse space-y-4">
                 <div className="h-8 bg-gray-200 rounded w-1/4"></div>
                 <div className="h-12 bg-gray-200 rounded w-1/2"></div>
@@ -104,158 +104,160 @@ const Progress = () => {
   return (
     <ProtectedRoute>
       <Layout>
-        <div className="p-6 min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-          <div className="max-w-6xl mx-auto space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-                  <TrendingUp className="h-8 w-8 text-blue-600" />
-                  Progress Tracking
-                </h1>
-                <p className="text-gray-600 mt-1">
-                  Monitor your fitness journey and achievements
-                </p>
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+          <div className="p-4 md:p-6">
+            <div className="max-w-7xl mx-auto space-y-6">
+              {/* Header */}
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
+                    <TrendingUp className="h-6 w-6 md:h-8 md:w-8 text-blue-600" />
+                    Progress Tracking
+                  </h1>
+                  <p className="text-gray-600 mt-1 text-sm md:text-base">
+                    Monitor your fitness journey and achievements
+                  </p>
+                </div>
+                <ProgressBadges />
               </div>
-              <ProgressBadges />
-            </div>
 
-            <Tabs value={activeTab} onValueChange={(value) => navigate(`/progress/${value}`)}>
-              <TabsList className="grid w-full grid-cols-3 lg:w-96">
-                <TabsTrigger value="overview" className="flex items-center gap-2">
-                  <Target className="h-4 w-4" />
-                  <span className="hidden sm:inline">Overview</span>
-                </TabsTrigger>
-                <TabsTrigger value="weight" className="flex items-center gap-2">
-                  <Scale className="h-4 w-4" />
-                  <span className="hidden sm:inline">Weight</span>
-                </TabsTrigger>
-                <TabsTrigger value="history" className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  <span className="hidden sm:inline">History</span>
-                </TabsTrigger>
-              </TabsList>
+              <Tabs value={activeTab} onValueChange={(value) => navigate(`/progress/${value}`)} className="w-full">
+                <TabsList className="grid w-full grid-cols-3 max-w-md mx-auto md:mx-0">
+                  <TabsTrigger value="overview" className="flex items-center gap-2">
+                    <Target className="h-4 w-4" />
+                    <span className="hidden sm:inline">Overview</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="weight" className="flex items-center gap-2">
+                    <Scale className="h-4 w-4" />
+                    <span className="hidden sm:inline">Weight</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="history" className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    <span className="hidden sm:inline">History</span>
+                  </TabsTrigger>
+                </TabsList>
 
-              <TabsContent value="overview" className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {/* BMI Card */}
-                  {bmi && (
-                    <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <Activity className="h-5 w-5 text-blue-600" />
-                          BMI Status
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-center">
-                          <div className="text-3xl font-bold text-gray-800 mb-2">
-                            {bmi.toFixed(1)}
-                          </div>
-                          <Badge className={getBMICategory(bmi).color}>
-                            {getBMICategory(bmi).label}
-                          </Badge>
-                          <p className="text-sm text-gray-600 mt-2">
-                            Current BMI calculation
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  {/* Macro Goals Ring */}
-                  {macroGoals.length > 0 && (
-                    <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <Target className="h-5 w-5 text-green-600" />
-                          Daily Macros
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="grid grid-cols-2 gap-4">
-                          {macroGoals.map(goal => (
-                            <div key={goal.id} className="text-center">
-                              <MacroRing 
-                                goal={goal} 
-                                color={
-                                  goal.goal_type === 'calories' ? '#f59e0b' :
-                                  goal.goal_type === 'protein' ? '#ef4444' :
-                                  goal.goal_type === 'carbs' ? '#3b82f6' : '#10b981'
-                                } 
-                              />
-                              <p className="text-xs font-medium mt-1 capitalize">
-                                {goal.goal_type}
-                              </p>
+                <TabsContent value="overview" className="space-y-6 mt-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+                    {/* BMI Card */}
+                    {bmi && (
+                      <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="flex items-center gap-2 text-lg">
+                            <Activity className="h-5 w-5 text-blue-600" />
+                            BMI Status
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-center">
+                            <div className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
+                              {bmi.toFixed(1)}
                             </div>
-                          ))}
-                        </div>
-                        {macroGoals.every(g => (g.current_value / g.target_value) >= 0.9) && (
-                          <Badge className="w-full mt-4 bg-yellow-100 text-yellow-800 border-yellow-300 justify-center">
-                            🏆 All Targets Met!
-                          </Badge>
-                        )}
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  {/* Weekly Progress */}
-                  {weightEntries.length > 1 && (
-                    <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <TrendingUp className="h-5 w-5 text-purple-600" />
-                          Weekly Progress
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-gray-800 mb-2">
-                            {(() => {
-                              const current = weightEntries[0]?.weight || 0;
-                              const weekAgo = weightEntries.find(entry => {
-                                const entryDate = new Date(entry.recorded_at);
-                                const weekAgoDate = new Date();
-                                weekAgoDate.setDate(weekAgoDate.getDate() - 7);
-                                return entryDate <= weekAgoDate;
-                              })?.weight || current;
-                              const change = current - weekAgo;
-                              return `${change > 0 ? '+' : ''}${change.toFixed(1)} kg`;
-                            })()}
+                            <Badge className={getBMICategory(bmi).color}>
+                              {getBMICategory(bmi).label}
+                            </Badge>
+                            <p className="text-sm text-gray-600 mt-2">
+                              Current BMI calculation
+                            </p>
                           </div>
-                          <p className="text-sm text-gray-600">
-                            Last 7 days
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-                </div>
+                        </CardContent>
+                      </Card>
+                    )}
 
-                {/* Quick Stats */}
-                {weightEntries.length > 0 && <WeightStatsCards weightEntries={weightEntries} />}
-              </TabsContent>
+                    {/* Macro Goals Ring */}
+                    {macroGoals.length > 0 && (
+                      <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="flex items-center gap-2 text-lg">
+                            <Target className="h-5 w-5 text-green-600" />
+                            Daily Macros
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="grid grid-cols-2 gap-4">
+                            {macroGoals.map(goal => (
+                              <div key={goal.id} className="text-center">
+                                <MacroRing 
+                                  goal={goal} 
+                                  color={
+                                    goal.goal_type === 'calories' ? '#f59e0b' :
+                                    goal.goal_type === 'protein' ? '#ef4444' :
+                                    goal.goal_type === 'carbs' ? '#3b82f6' : '#10b981'
+                                  } 
+                                />
+                                <p className="text-xs font-medium mt-1 capitalize">
+                                  {goal.goal_type}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                          {macroGoals.every(g => (g.current_value / g.target_value) >= 0.9) && (
+                            <Badge className="w-full mt-4 bg-yellow-100 text-yellow-800 border-yellow-300 justify-center">
+                              🏆 All Targets Met!
+                            </Badge>
+                          )}
+                        </CardContent>
+                      </Card>
+                    )}
 
-              <TabsContent value="weight" className="space-y-6">
-                <WeightStatsCards weightEntries={weightEntries} />
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <div className="lg:col-span-2">
-                    <WeightProgressChart weightEntries={weightEntries} />
+                    {/* Weekly Progress */}
+                    {weightEntries.length > 1 && (
+                      <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="flex items-center gap-2 text-lg">
+                            <TrendingUp className="h-5 w-5 text-purple-600" />
+                            Weekly Progress
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-center">
+                            <div className="text-xl md:text-2xl font-bold text-gray-800 mb-2">
+                              {(() => {
+                                const current = weightEntries[0]?.weight || 0;
+                                const weekAgo = weightEntries.find(entry => {
+                                  const entryDate = new Date(entry.recorded_at);
+                                  const weekAgoDate = new Date();
+                                  weekAgoDate.setDate(weekAgoDate.getDate() - 7);
+                                  return entryDate <= weekAgoDate;
+                                })?.weight || current;
+                                const change = current - weekAgo;
+                                return `${change > 0 ? '+' : ''}${change.toFixed(1)} kg`;
+                              })()}
+                            </div>
+                            <p className="text-sm text-gray-600">
+                              Last 7 days
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
                   </div>
-                  <div className="lg:col-span-1">
-                    <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-                      <h3 className="text-lg font-semibold mb-4">Add Weight Entry</h3>
-                      <WeightEntryForm />
-                    </Card>
-                  </div>
-                </div>
-              </TabsContent>
 
-              <TabsContent value="history" className="space-y-6">
-                <GoalHistoryTimeline />
-              </TabsContent>
-            </Tabs>
+                  {/* Quick Stats */}
+                  {weightEntries.length > 0 && <WeightStatsCards weightEntries={weightEntries} />}
+                </TabsContent>
+
+                <TabsContent value="weight" className="space-y-6 mt-6">
+                  <WeightStatsCards weightEntries={weightEntries} />
+
+                  <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                    <div className="xl:col-span-2">
+                      <WeightProgressChart weightEntries={weightEntries} />
+                    </div>
+                    <div className="xl:col-span-1">
+                      <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg h-fit">
+                        <h3 className="text-lg font-semibold mb-4">Add Weight Entry</h3>
+                        <WeightEntryForm />
+                      </Card>
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="history" className="space-y-6 mt-6">
+                  <GoalHistoryTimeline />
+                </TabsContent>
+              </Tabs>
+            </div>
           </div>
         </div>
       </Layout>
