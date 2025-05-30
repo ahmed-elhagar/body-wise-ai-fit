@@ -1,16 +1,18 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
 
-// Updated to match the actual database constraint
-export type GenerationType = 'meal_plan' | 'exercise_program' | 'snack_generation' | 'recipe';
+// Updated to match the actual database constraint - using only confirmed valid types
+export type GenerationType = 'meal_plan' | 'exercise_program' | 'snack_generation';
 
 interface CreditCheckResult {
   success: boolean;
   log_id?: string;
   remaining?: number;
   error?: string;
+  user_id?: string;
 }
 
 export const useCreditSystem = () => {
@@ -103,7 +105,8 @@ export const useCreditSystem = () => {
       const result: CreditCheckResult = {
         success: true,
         log_id: logEntry.id,
-        remaining: profile.ai_generations_remaining - 1
+        remaining: profile.ai_generations_remaining - 1,
+        user_id: user.id
       };
 
       console.log('Credit check successful:', result);
