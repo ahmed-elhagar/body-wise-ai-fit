@@ -1,3 +1,4 @@
+
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -53,10 +54,10 @@ const MealList = memo(({ meals, onViewMealPlan }: {
 }) => {
   if (meals.length === 0) {
     return (
-      <div className="text-center py-8">
-        <Apple className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-        <p className="text-gray-500">No meal plan for today</p>
-        <Button onClick={onViewMealPlan} className="mt-3" variant="outline">
+      <div className="text-center py-6">
+        <Apple className="h-10 w-10 text-gray-300 mx-auto mb-3" />
+        <p className="text-gray-500 text-sm">No meal plan for today</p>
+        <Button onClick={onViewMealPlan} className="mt-3" variant="outline" size="sm">
           Generate Meal Plan
         </Button>
       </div>
@@ -65,21 +66,21 @@ const MealList = memo(({ meals, onViewMealPlan }: {
 
   return (
     <div className="space-y-3">
-      {meals.slice(0, 4).map((meal) => (
+      {meals.slice(0, 3).map((meal) => (
         <div key={meal.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
           <div>
-            <h4 className="font-medium">{meal.name}</h4>
-            <p className="text-sm text-gray-600 capitalize">{meal.meal_type}</p>
+            <h4 className="font-medium text-sm">{meal.name}</h4>
+            <p className="text-xs text-gray-600 capitalize">{meal.meal_type}</p>
           </div>
           <div className="text-right">
-            <p className="font-medium">{meal.calories} cal</p>
-            <p className="text-sm text-gray-600">{meal.protein}g protein</p>
+            <p className="font-medium text-sm">{meal.calories} cal</p>
+            <p className="text-xs text-gray-600">{meal.protein}g protein</p>
           </div>
         </div>
       ))}
-      {meals.length > 4 && (
-        <p className="text-center text-sm text-gray-500">
-          +{meals.length - 4} more meals
+      {meals.length > 3 && (
+        <p className="text-center text-xs text-gray-500">
+          +{meals.length - 3} more meals
         </p>
       )}
     </div>
@@ -97,10 +98,10 @@ const ExerciseProgress = memo(({ exercises, onViewExercise }: {
 
   if (exercises.length === 0) {
     return (
-      <div className="text-center py-8">
-        <Dumbbell className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-        <p className="text-gray-500">Rest day or no workout planned</p>
-        <Button onClick={onViewExercise} className="mt-3" variant="outline">
+      <div className="text-center py-6">
+        <Dumbbell className="h-10 w-10 text-gray-300 mx-auto mb-3" />
+        <p className="text-gray-500 text-sm">Rest day or no workout planned</p>
+        <Button onClick={onViewExercise} className="mt-3" variant="outline" size="sm">
           View Exercise Plan
         </Button>
       </div>
@@ -111,18 +112,18 @@ const ExerciseProgress = memo(({ exercises, onViewExercise }: {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <span className="text-sm text-gray-600">Progress</span>
-        <Badge variant={exerciseProgress === 100 ? "default" : "secondary"}>
+        <Badge variant={exerciseProgress === 100 ? "default" : "secondary"} className="text-xs">
           {completedExercises}/{exercises.length}
         </Badge>
       </div>
       <Progress value={exerciseProgress} />
-      <div className="space-y-2 max-h-40 overflow-y-auto">
+      <div className="space-y-2 max-h-32 overflow-y-auto">
         {exercises.slice(0, 3).map((exercise) => (
           <div key={exercise.id} className="flex items-center justify-between text-sm">
             <span className={exercise.completed ? "line-through text-gray-500" : ""}>
               {exercise.name}
             </span>
-            <span className="text-gray-500">
+            <span className="text-gray-500 text-xs">
               {exercise.sets} × {exercise.reps}
             </span>
           </div>
@@ -183,39 +184,39 @@ const Dashboard = () => {
   return (
     <ProtectedRoute>
       <Layout>
-        <div className="p-4 md:p-6">
-          <div className="max-w-7xl mx-auto space-y-6">
-            {/* Welcome Header */}
+        <div className="p-3 md:p-4 lg:p-6">
+          <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
+            {/* Welcome Header - More compact */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+                <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900">
                   Welcome back, {userName}! 👋
                 </h1>
-                <p className="text-gray-600 mt-1">
+                <p className="text-gray-600 mt-1 text-sm md:text-base">
                   Here's your fitness journey overview for today
                 </p>
               </div>
               <div className="flex gap-2">
-                <Button onClick={handleViewMealPlan} className="bg-fitness-gradient text-white">
+                <Button onClick={handleViewMealPlan} className="bg-fitness-gradient text-white" size="sm">
                   <Apple className="h-4 w-4 mr-2" />
-                  View Meal Plan
+                  <span className="hidden sm:inline">View </span>Meal Plan
                 </Button>
-                <Button onClick={handleViewExercise} variant="outline">
+                <Button onClick={handleViewExercise} variant="outline" size="sm">
                   <Dumbbell className="h-4 w-4 mr-2" />
-                  Start Workout
+                  <span className="hidden sm:inline">Start </span>Workout
                 </Button>
               </div>
             </div>
 
-            {/* Quick Stats Grid */}
-            <div className="grid gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {/* Quick Stats Grid - More compact */}
+            <div className="grid gap-3 md:gap-4 grid-cols-2 lg:grid-cols-4">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Today's Calories</CardTitle>
+                  <CardTitle className="text-xs md:text-sm font-medium">Today's Calories</CardTitle>
                   <Flame className="h-4 w-4 text-orange-500" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{todaysCalories}</div>
+                  <div className="text-lg md:text-2xl font-bold">{todaysCalories}</div>
                   <p className="text-xs text-muted-foreground">
                     {todaysMeals.length} meals planned
                   </p>
@@ -224,22 +225,22 @@ const Dashboard = () => {
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Protein Intake</CardTitle>
+                  <CardTitle className="text-xs md:text-sm font-medium">Protein Intake</CardTitle>
                   <Target className="h-4 w-4 text-green-500" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{todaysProtein.toFixed(1)}g</div>
+                  <div className="text-lg md:text-2xl font-bold">{todaysProtein.toFixed(1)}g</div>
                   <p className="text-xs text-muted-foreground">Daily protein goal</p>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Exercise Progress</CardTitle>
+                  <CardTitle className="text-xs md:text-sm font-medium">Exercise Progress</CardTitle>
                   <Activity className="h-4 w-4 text-blue-500" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{exerciseProgress.toFixed(0)}%</div>
+                  <div className="text-lg md:text-2xl font-bold">{exerciseProgress.toFixed(0)}%</div>
                   <p className="text-xs text-muted-foreground">
                     {completedExercises}/{todaysExercises.length} exercises done
                   </p>
@@ -248,22 +249,22 @@ const Dashboard = () => {
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">AI Generations</CardTitle>
+                  <CardTitle className="text-xs md:text-sm font-medium">AI Generations</CardTitle>
                   <Sparkles className="h-4 w-4 text-purple-500" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{profile?.ai_generations_remaining || 0}</div>
+                  <div className="text-lg md:text-2xl font-bold">{profile?.ai_generations_remaining || 0}</div>
                   <p className="text-xs text-muted-foreground">Credits remaining</p>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Main Content Grid */}
-            <div className="grid gap-4 md:gap-6 lg:grid-cols-3">
+            {/* Main Content Grid - Better organized */}
+            <div className="grid gap-4 md:gap-6 grid-cols-1 lg:grid-cols-12">
               {/* Today's Meals */}
-              <Card className="lg:col-span-2">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+              <Card className="lg:col-span-8">
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-2 text-lg">
                     <Apple className="h-5 w-5 text-green-500" />
                     Today's Meals
                   </CardTitle>
@@ -274,71 +275,73 @@ const Dashboard = () => {
               </Card>
 
               {/* Weight Tracking Widget */}
-              <WeightTrackingWidget />
-            </div>
-
-            {/* Progress Chart and Quick Actions */}
-            <div className="grid gap-4 md:gap-6 lg:grid-cols-2">
-              <InteractiveProgressChart />
-              
-              <div className="space-y-4 md:space-y-6">
-                {/* Today's Workout */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Dumbbell className="h-5 w-5 text-blue-500" />
-                      Today's Workout
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ExerciseProgress exercises={todaysExercises} onViewExercise={handleViewExercise} />
-                  </CardContent>
-                </Card>
-
-                {/* Quick Actions */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <TrendingUp className="h-5 w-5 text-purple-500" />
-                      Quick Actions
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <Button onClick={handleViewMealPlan} variant="outline" className="w-full justify-start">
-                      <Apple className="h-4 w-4 mr-2" />
-                      Generate New Meal Plan
-                    </Button>
-                    <Button onClick={handleViewExercise} variant="outline" className="w-full justify-start">
-                      <Dumbbell className="h-4 w-4 mr-2" />
-                      Create Exercise Program
-                    </Button>
-                    <Button onClick={handleViewWeight} variant="outline" className="w-full justify-start">
-                      <Target className="h-4 w-4 mr-2" />
-                      Track Weight
-                    </Button>
-                    <Button onClick={handleViewProgress} variant="outline" className="w-full justify-start">
-                      <TrendingUp className="h-4 w-4 mr-2" />
-                      View Progress
-                    </Button>
-                    <Button onClick={handleViewProfile} variant="outline" className="w-full justify-start">
-                      <Users className="h-4 w-4 mr-2" />
-                      Update Profile
-                    </Button>
-                  </CardContent>
-                </Card>
+              <div className="lg:col-span-4">
+                <WeightTrackingWidget />
               </div>
             </div>
 
-            {/* Achievements */}
+            {/* Progress Chart and Workout */}
+            <div className="grid gap-4 md:gap-6 grid-cols-1 lg:grid-cols-2">
+              <InteractiveProgressChart />
+              
+              {/* Today's Workout */}
+              <Card>
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Dumbbell className="h-5 w-5 text-blue-500" />
+                    Today's Workout
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ExerciseProgress exercises={todaysExercises} onViewExercise={handleViewExercise} />
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Quick Actions - More compact */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <TrendingUp className="h-5 w-5 text-purple-500" />
+                  Quick Actions
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                  <Button onClick={handleViewMealPlan} variant="outline" size="sm" className="justify-start">
+                    <Apple className="h-4 w-4 mr-2" />
+                    <span className="hidden md:inline">Generate </span>Meal Plan
+                  </Button>
+                  <Button onClick={handleViewExercise} variant="outline" size="sm" className="justify-start">
+                    <Dumbbell className="h-4 w-4 mr-2" />
+                    <span className="hidden md:inline">Create </span>Exercise
+                  </Button>
+                  <Button onClick={handleViewWeight} variant="outline" size="sm" className="justify-start">
+                    <Target className="h-4 w-4 mr-2" />
+                    <span className="hidden md:inline">Track </span>Weight
+                  </Button>
+                  <Button onClick={handleViewProgress} variant="outline" size="sm" className="justify-start">
+                    <TrendingUp className="h-4 w-4 mr-2" />
+                    <span className="hidden md:inline">View </span>Progress
+                  </Button>
+                  <Button onClick={handleViewProfile} variant="outline" size="sm" className="justify-start">
+                    <Users className="h-4 w-4 mr-2" />
+                    <span className="hidden md:inline">Update </span>Profile
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Achievements - More compact */}
+            <Card>
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-lg">
                   <Award className="h-5 w-5 text-yellow-500" />
                   Achievements
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Profile Completion</span>
                     <Badge variant="secondary">
@@ -357,11 +360,11 @@ const Dashboard = () => {
                       {currentExerciseProgram ? "1+" : "0"}
                     </Badge>
                   </div>
-                  <div className="text-center pt-4">
-                    <p className="text-sm text-gray-500">
-                      Keep going! Every step counts towards your fitness goals.
-                    </p>
-                  </div>
+                </div>
+                <div className="text-center pt-4">
+                  <p className="text-sm text-gray-500">
+                    Keep going! Every step counts towards your fitness goals.
+                  </p>
                 </div>
               </CardContent>
             </Card>

@@ -1,7 +1,9 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import Layout from "@/components/Layout";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Tabs } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
@@ -88,59 +90,69 @@ const Profile = () => {
   };
 
   if (isLoading) {
-    return <ProfileLoadingState />;
+    return (
+      <ProtectedRoute requireProfile={false}>
+        <Layout>
+          <ProfileLoadingState />
+        </Layout>
+      </ProtectedRoute>
+    );
   }
 
   if (error) {
     return (
       <ProtectedRoute requireProfile={false}>
-        <div className="p-6">
-          <Alert className="max-w-md mx-auto">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              Failed to load profile data. Please refresh the page or try again later.
-            </AlertDescription>
-          </Alert>
-        </div>
+        <Layout>
+          <div className="p-6">
+            <Alert className="max-w-md mx-auto">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                Failed to load profile data. Please refresh the page or try again later.
+              </AlertDescription>
+            </Alert>
+          </div>
+        </Layout>
       </ProtectedRoute>
     );
   }
 
   return (
     <ProtectedRoute requireProfile={false}>
-      <div className="p-6 bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/30 min-h-screen">
-        <div className="max-w-6xl mx-auto">
-          <ProfilePageHeader
-            hasUnsavedChanges={hasUnsavedChanges}
-            completionPercentage={completionPercentage}
-            formData={formData}
-            user={user}
-          />
-
-          <ProfileUserInfoCard
-            formData={formData}
-            user={user}
-            completionPercentage={completionPercentage}
-          />
-
-          <div className="mb-6 mt-4">
-            <CompactProfileCompletionCard onStepClick={handleStepClick} />
-          </div>
-
-          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <ProfileTabNavigation activeTab={activeTab} onTabChange={handleTabChange} />
-            <ProfileTabContent
+      <Layout>
+        <div className="p-4 md:p-6 bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/30 min-h-screen">
+          <div className="max-w-6xl mx-auto">
+            <ProfilePageHeader
+              hasUnsavedChanges={hasUnsavedChanges}
+              completionPercentage={completionPercentage}
               formData={formData}
-              updateFormData={updateFormData}
-              handleArrayInput={handleArrayInput}
-              saveBasicInfo={saveBasicInfo}
-              saveGoalsAndActivity={saveGoalsAndActivity}
-              isUpdating={isUpdating}
-              validationErrors={validationErrors}
+              user={user}
             />
-          </Tabs>
+
+            <ProfileUserInfoCard
+              formData={formData}
+              user={user}
+              completionPercentage={completionPercentage}
+            />
+
+            <div className="mb-6 mt-4">
+              <CompactProfileCompletionCard onStepClick={handleStepClick} />
+            </div>
+
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+              <ProfileTabNavigation activeTab={activeTab} onTabChange={handleTabChange} />
+              <ProfileTabContent
+                formData={formData}
+                updateFormData={updateFormData}
+                handleArrayInput={handleArrayInput}
+                saveBasicInfo={saveBasicInfo}
+                saveGoalsAndActivity={saveGoalsAndActivity}
+                isUpdating={isUpdating}
+                validationErrors={validationErrors}
+              />
+            </Tabs>
+          </div>
         </div>
-      </div>
+      </Layout>
     </ProtectedRoute>
   );
 };

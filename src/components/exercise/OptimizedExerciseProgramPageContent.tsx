@@ -96,7 +96,7 @@ export const OptimizedExerciseProgramPageContent = memo(({
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
       <ExercisePageHeader
         currentProgram={currentProgram}
         workoutType={workoutType}
@@ -105,16 +105,22 @@ export const OptimizedExerciseProgramPageContent = memo(({
         isGenerating={isGenerating}
       />
 
-      <EnhancedWorkoutTypeToggle
-        workoutType={workoutType}
-        onWorkoutTypeChange={setWorkoutType}
-      />
-
-      <WeeklyExerciseNavigation
-        currentWeekOffset={currentWeekOffset}
-        setCurrentWeekOffset={setCurrentWeekOffset}
-        weekStartDate={weekStartDate}
-      />
+      {/* Combined controls section - more compact */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-1">
+          <EnhancedWorkoutTypeToggle
+            workoutType={workoutType}
+            onWorkoutTypeChange={setWorkoutType}
+          />
+        </div>
+        <div className="lg:col-span-2">
+          <WeeklyExerciseNavigation
+            currentWeekOffset={currentWeekOffset}
+            setCurrentWeekOffset={setCurrentWeekOffset}
+            weekStartDate={weekStartDate}
+          />
+        </div>
+      </div>
 
       <ExerciseDaySelector
         selectedDayNumber={selectedDayNumber}
