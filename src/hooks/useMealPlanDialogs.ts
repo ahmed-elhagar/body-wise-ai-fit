@@ -1,30 +1,32 @@
 
 import { useState } from "react";
-import type { Meal } from "@/types/meal";
+import type { DailyMeal } from "@/hooks/useMealPlanData";
+
+export interface MealPlanPreferences {
+  duration: string;
+  cuisine: string;
+  maxPrepTime: string;
+  mealTypes: string;
+  dietaryRestrictions?: string[];
+  allergies?: string[];
+}
 
 export const useMealPlanDialogs = () => {
   const [showAIDialog, setShowAIDialog] = useState(false);
-  const [showAddSnackDialog, setShowAddSnackDialog] = useState(false);
-  const [showShoppingListDialog, setShowShoppingListDialog] = useState(false);
   const [showRecipeDialog, setShowRecipeDialog] = useState(false);
   const [showExchangeDialog, setShowExchangeDialog] = useState(false);
-  const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
-  const [selectedMealIndex, setSelectedMealIndex] = useState<number>(-1);
-  const [aiPreferences, setAiPreferences] = useState({
-    duration: '7',
-    cuisine: 'mixed',
-    maxPrepTime: '45',
-    mealTypes: 'all',
-    includeSnacks: true
+  const [selectedMeal, setSelectedMeal] = useState<DailyMeal | null>(null);
+  const [selectedMealIndex, setSelectedMealIndex] = useState(0);
+  const [aiPreferences, setAiPreferences] = useState<MealPlanPreferences>({
+    duration: "7",
+    cuisine: "mixed",
+    maxPrepTime: "30",
+    mealTypes: "breakfast,lunch,dinner"
   });
 
   return {
     showAIDialog,
     setShowAIDialog,
-    showAddSnackDialog,
-    setShowAddSnackDialog,
-    showShoppingListDialog,
-    setShowShoppingListDialog,
     showRecipeDialog,
     setShowRecipeDialog,
     showExchangeDialog,
