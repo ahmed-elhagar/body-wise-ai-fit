@@ -20,6 +20,8 @@ import { useMealPlanPage } from "@/hooks/useMealPlanPage";
 import SnackPickerDialog from "./SnackPickerDialog";
 import ShoppingListDrawer from "./ShoppingListDrawer";
 import MealPlanLoadingBackdrop from "./MealPlanLoadingBackdrop";
+import MealRecipeDialog from "./MealRecipeDialog";
+import MealExchangeDialog from "./MealExchangeDialog";
 
 const EnhancedMealPlanPage = () => {
   const { t, isRTL } = useLanguage();
@@ -50,6 +52,14 @@ const EnhancedMealPlanPage = () => {
   const handleSnackAdded = async () => {
     setShowSnackDialog(false);
     await mealPlanState.refetch();
+  };
+
+  const handleShowRecipe = (meal: any) => {
+    mealPlanState.handleShowRecipe(meal);
+  };
+
+  const handleExchangeMeal = (meal: any, index: number) => {
+    mealPlanState.handleExchangeMeal(meal, index);
   };
 
   const renderDayMeals = (dayNumber: number) => {
@@ -138,7 +148,7 @@ const EnhancedMealPlanPage = () => {
                     size="sm"
                     variant="outline"
                     className="flex-1 bg-gray-800 border-gray-600 text-gray-300 hover:bg-[#FF6F3C] hover:text-white hover:border-[#FF6F3C]"
-                    onClick={() => mealPlanState.handleShowRecipe(meal)}
+                    onClick={() => handleShowRecipe(meal)}
                   >
                     <ChefHat className="w-3 h-3 mr-1" />
                     Recipe
@@ -147,7 +157,7 @@ const EnhancedMealPlanPage = () => {
                     size="sm"
                     variant="outline"
                     className="flex-1 bg-gray-800 border-gray-600 text-gray-300 hover:bg-orange-500 hover:text-white hover:border-orange-500"
-                    onClick={() => mealPlanState.handleExchangeMeal(meal, index)}
+                    onClick={() => handleExchangeMeal(meal, index)}
                   >
                     <ArrowLeftRight className="w-3 h-3 mr-1" />
                     Exchange
