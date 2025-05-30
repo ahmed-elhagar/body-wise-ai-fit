@@ -27,7 +27,14 @@ import Coach from "@/pages/Coach";
 import Admin from "@/pages/Admin";
 
 function App() {
-  const queryClient = new QueryClient();
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: 1,
+        staleTime: 5 * 60 * 1000, // 5 minutes
+      },
+    },
+  });
 
   return (
     <Router>
@@ -130,7 +137,7 @@ function App() {
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </div>
-            <Toaster />
+            <Toaster position="top-right" />
           </LanguageProvider>
         </AuthProvider>
       </QueryClientProvider>

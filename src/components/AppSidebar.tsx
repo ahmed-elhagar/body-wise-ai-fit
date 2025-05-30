@@ -11,6 +11,8 @@ import {
   MessageSquare,
   Star,
   Users,
+  LogOut,
+  Globe,
 } from "lucide-react";
 import {
   Sidebar,
@@ -19,16 +21,17 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
+  SidebarContent,
 } from "@/components/ui/sidebar";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useRole } from "@/hooks/useRole";
+import { Button } from "@/components/ui/button";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const location = useLocation();
@@ -37,12 +40,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { profile } = useProfile();
   const { role, isPro, isCoach, isAdmin } = useRole();
 
-  const navigate = useNavigate();
-
   const handleSignOut = async () => {
     try {
       await signOut();
-      navigate("/auth");
     } catch (error) {
       console.error("Sign out failed:", error);
     }
@@ -127,74 +127,106 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
+      <SidebarHeader className="border-b border-border/50">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <a href="/dashboard" className="font-semibold">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-fitness-primary text-sidebar-primary-foreground">
+              <Link to="/dashboard" className="font-semibold hover:bg-accent/50 transition-colors">
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-sm">
                   <Dumbbell className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">FitGenius</span>
-                  <span className="truncate text-xs">
-                    {isPro && <Badge className="bg-yellow-500 text-black text-xs">PRO</Badge>}
-                    {isCoach && <Badge className="bg-blue-500 text-white text-xs">COACH</Badge>}
-                    {isAdmin && <Badge className="bg-red-500 text-white text-xs">ADMIN</Badge>}
-                  </span>
+                  <span className="truncate font-bold text-foreground">FitGenius</span>
+                  <span className="truncate text-xs text-muted-foreground">AI Fitness Companion</span>
                 </div>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarMenu>
-        {navigation.map((item) => (
-          <SidebarMenuItem key={item.title}>
-            <SidebarMenuButton
-              variant={item.isActive ? "default" : "outline"}
-              size="lg"
-              asChild
-            >
-              <a href={item.url}>
-                <item.icon className="size-4" />
-                <span>{item.title}</span>
-              </a>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        ))}
-      </SidebarMenu>
-      <SidebarFooter>
-        <SidebarMenu>
+
+      <SidebarContent className="px-2 py-4">
+        <SidebarMenu className="space-y-1">
+          {navigation.map((item) => (
+            <SidebarMenuItem key={item.title}>
+              <SidebarMenuButton
+                variant={item.isActive ? "default" : "outline"}
+                size="lg"
+                asChild
+                className={`transition-all duration-200 ${
+                  item.isActive 
+                    ? "bg-blue-600 text-white shadow-md hover:bg-blue-700" 
+                    : "hover:bg-accent/50 text-foreground"
+                }`}
+              >
+                <Link to={item.url} className="w-full">
+                  <item.icon className="size-4" />
+                  <span className="font-medium">{item.title}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
+      </SidebarContent>
+
+      <SidebarFooter className="border-t border-border/50 p-2">
+        <SidebarMenu className="space-y-2">
+          {/* User Profile Section */}
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <SidebarMenuButton size="lg">
-                  <Avatar className="size-7">
+                <SidebarMenuButton 
+                  size="lg" 
+                  className="hover:bg-accent/50 transition-colors border border-border/30 bg-background/50"
+                >
+                  <Avatar className="size-8 border-2 border-background shadow-sm">
                     <AvatarImage src={user?.user_metadata?.avatar_url} />
-                    <AvatarFallback>{profile?.first_name?.[0]}{profile?.last_name?.[0]}</AvatarFallback>
+                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-600 text-white text-sm font-bold">
+                      {profile?.first_name?.[0]}{profile?.last_name?.[0]}
+                    </AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">{profile?.first_name} {profile?.last_name}</span>
-                    <span className="truncate text-xs">{profile?.email}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="truncate font-semibold text-foreground">
+                        {profile?.first_name} {profile?.last_name}
+                      </span>
+                      {isPro && <Badge className="bg-yellow-500/10 text-yellow-600 border-yellow-500/20 text-xs px-1.5 py-0.5">PRO</Badge>}
+                      {isCoach && <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/20 text-xs px-1.5 py-0.5">COACH</Badge>}
+                      {isAdmin && <Badge className="bg-red-500/10 text-red-600 border-red-500/20 text-xs px-1.5 py-0.5">ADMIN</Badge>}
+                    </div>
+                    <span className="truncate text-xs text-muted-foreground">{profile?.email}</span>
                   </div>
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => navigate("/profile")}>
-                  {t("Profile")}
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem asChild>
+                  <Link to="/profile" className="cursor-pointer">
+                    <Settings className="size-4 mr-2" />
+                    {t("Profile")}
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut}>
+                <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-red-600 focus:text-red-600">
+                  <LogOut className="size-4 mr-2" />
                   {t("Sign Out")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>
+
+          {/* Language Toggle */}
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" onClick={toggleLanguage}>
-              {isRTL ? "English" : "العربية"}
-            </SidebarMenuButton>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={toggleLanguage}
+              className="w-full justify-start bg-background/50 border-border/30 hover:bg-accent/50 transition-colors"
+            >
+              <Globe className="size-4 mr-2" />
+              <span className="font-medium">
+                {language === 'en' ? 'العربية' : 'English'}
+              </span>
+            </Button>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
