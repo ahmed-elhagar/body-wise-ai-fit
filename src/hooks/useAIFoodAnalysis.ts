@@ -2,24 +2,7 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { useCreditSystem } from './useCreditSystem';
-
-export interface FoodAnalysisItem {
-  name: string;
-  quantity?: string;
-  calories?: number;
-  protein?: number;
-  carbs?: number;
-  fat?: number;
-  fiber?: number;
-  sugar?: number;
-  category?: string;
-}
-
-export interface AIFoodAnalysisResult {
-  foodItems: FoodAnalysisItem[];
-  overallConfidence: number;
-  suggestions?: string;
-}
+import { AIFoodAnalysisResult, FoodAnalysisItem } from '@/types/aiAnalysis';
 
 export const useAIFoodAnalysis = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -67,18 +50,29 @@ export const useAIFoodAnalysis = () => {
         foodItems: [
           {
             name: 'Mixed Food Item',
+            category: 'general',
             quantity: '1 serving',
             calories: 250,
             protein: 15,
             carbs: 30,
             fat: 8,
             fiber: 5,
-            sugar: 10,
-            category: 'general'
+            sugar: 10
           }
         ],
         overallConfidence: 0.75,
-        suggestions: 'The image quality could be improved for better analysis. Try taking the photo in better lighting.'
+        cuisineType: 'general',
+        mealType: 'meal',
+        suggestions: 'The image quality could be improved for better analysis. Try taking the photo in better lighting.',
+        recommendations: 'Consider adding more vegetables to balance the meal nutrition.',
+        totalNutrition: {
+          calories: 250,
+          protein: 15,
+          carbs: 30,
+          fat: 8
+        },
+        imageData: URL.createObjectURL(imageFile),
+        remainingCredits: creditResult.remaining
       };
 
       setAnalysisResult(mockResult);
