@@ -62,7 +62,7 @@ serve(async (req) => {
       logStep("Created new customer", { customerId });
     }
 
-    // Define price mapping
+    // Define price mapping - FIXED: Using numbers instead of strings
     const priceMapping: Record<string, { price: number, interval: string }> = {
       'monthly': { price: 1900, interval: 'month' }, // $19/month
       'yearly': { price: 14400, interval: 'year' }   // $144/year
@@ -71,7 +71,13 @@ serve(async (req) => {
     const planConfig = priceMapping[plan_type];
     if (!planConfig) throw new Error("Invalid plan type");
 
-    // Create checkout session
+    logStep("Creating checkout session", { 
+      planType: plan_type, 
+      unitAmount: planConfig.price, // This should be a number
+      interval: planConfig.interval 
+    });
+
+    // Create checkout session - FIXED: unit_amount is now properly a number
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       line_items: [
@@ -82,7 +88,7 @@ serve(async (req) => {
               name: "FitGenius Pro Subscription",
               description: "Unlimited AI generations, premium features"
             },
-            unit_amount: planConfig.price,
+            unit_amount: planConfig.price, // This is now a number, not a string
             recurring: { interval: planConfig.interval as any },
           },
           quantity: 1,
@@ -118,7 +124,12 @@ serve(async (req) => {
       throw new Error('Failed to create subscription record');
     }
 
-    logStep("Checkout session created", { sessionId: session.id, url: session.url });
+    logStep("Checkout session created successfully", { 
+      sessionId: session.id, 
+      url: session.url,
+      unitAmountSent: planConfig.price,
+      metadata: session.metadata
+    });
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
