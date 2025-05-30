@@ -24,8 +24,8 @@ import {
   Apple,
   Shield,
   MessageCircle,
-  Scale,
-  Settings
+  ChevronRight,
+  Menu
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -80,31 +80,32 @@ const AppSidebar = () => {
   ];
 
   return (
-    <Sidebar className="border-r border-gray-200 bg-white shadow-sm">
-      <SidebarTrigger className="fixed top-4 left-4 z-50 md:hidden bg-white shadow-md border border-gray-200" />
-      
+    <Sidebar collapsible="icon" className="border-r border-gray-200 bg-white">
       <SidebarHeader className="border-b border-gray-100 p-4">
-        <Link 
-          to="/dashboard" 
-          className="flex items-center space-x-3 hover:bg-gray-50 rounded-lg p-2 transition-colors group"
-        >
-          <Avatar className="h-10 w-10">
-            <AvatarFallback className="bg-gradient-to-br from-blue-600 to-purple-600 text-white font-bold">
-              FT
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col">
-            <span className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
-              {t('navigation.appName')}
-            </span>
-            <span className="text-xs text-gray-500">Fitness Companion</span>
+        <div className="flex items-center justify-between">
+          <Link 
+            to="/dashboard" 
+            className="flex items-center space-x-3 hover:bg-gray-50 rounded-lg p-2 transition-colors group-data-[collapsible=icon]:justify-center"
+          >
+            <Avatar className="h-10 w-10 bg-gradient-to-br from-blue-600 to-purple-600">
+              <AvatarFallback className="bg-gradient-to-br from-blue-600 to-purple-600 text-white font-bold">
+                FT
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col group-data-[collapsible=icon]:hidden">
+              <span className="font-bold text-gray-900">{t('navigation.appName')}</span>
+              <span className="text-xs text-gray-500">Fitness Tracker</span>
+            </div>
+          </Link>
+          <div className="hidden lg:block">
+            <SidebarTrigger className="h-8 w-8 hover:bg-gray-100" />
           </div>
-        </Link>
+        </div>
       </SidebarHeader>
 
-      <SidebarContent className="px-3 py-4">
+      <SidebarContent className="px-2 py-4">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-3 mb-3">
+          <SidebarGroupLabel className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-3 mb-2 group-data-[collapsible=icon]:hidden">
             {t('navigation.menu')}
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -115,28 +116,20 @@ const AppSidebar = () => {
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton 
                       asChild 
-                      isActive={isActive}
+                      tooltip={item.title}
                       className={`
-                        relative w-full justify-start px-3 py-3 rounded-xl transition-all duration-200 group
+                        relative w-full justify-start px-3 py-2.5 rounded-lg transition-all duration-200
                         ${isActive 
-                          ? 'bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 shadow-sm border border-blue-200/50' 
+                          ? 'bg-blue-50 text-blue-700 shadow-sm border border-blue-200' 
                           : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                         }
                       `}
                     >
                       <Link to={item.url} className="flex items-center space-x-3">
-                        <div className={`
-                          p-1.5 rounded-lg transition-colors
-                          ${isActive 
-                            ? 'bg-blue-100 text-blue-600' 
-                            : 'text-gray-500 group-hover:bg-gray-100 group-hover:text-gray-700'
-                          }
-                        `}>
-                          <item.icon className="h-4 w-4" />
-                        </div>
-                        <span className="font-medium">{item.title}</span>
+                        <item.icon className={`h-5 w-5 ${isActive ? 'text-blue-600' : 'text-gray-500'}`} />
+                        <span className="font-medium group-data-[collapsible=icon]:hidden">{item.title}</span>
                         {isActive && (
-                          <div className="absolute right-3 w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>
+                          <div className="absolute right-2 w-2 h-2 bg-blue-600 rounded-full group-data-[collapsible=icon]:hidden"></div>
                         )}
                       </Link>
                     </SidebarMenuButton>
@@ -148,9 +141,9 @@ const AppSidebar = () => {
         </SidebarGroup>
 
         {(isAdmin || isCoach) && (
-          <SidebarGroup className="mt-8">
-            <SidebarGroupLabel className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-3 mb-3">
-              Administration
+          <SidebarGroup className="mt-6">
+            <SidebarGroupLabel className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-3 mb-2 group-data-[collapsible=icon]:hidden">
+              Admin
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu className="space-y-1">
@@ -158,26 +151,18 @@ const AppSidebar = () => {
                   <SidebarMenuItem>
                     <SidebarMenuButton 
                       asChild 
-                      isActive={location.pathname === "/admin"}
+                      tooltip="Admin Panel"
                       className={`
-                        w-full justify-start px-3 py-3 rounded-xl transition-all duration-200 group
+                        w-full justify-start px-3 py-2.5 rounded-lg transition-all duration-200
                         ${location.pathname === "/admin" 
-                          ? 'bg-gradient-to-r from-purple-50 to-pink-50 text-purple-700 shadow-sm border border-purple-200/50' 
+                          ? 'bg-purple-50 text-purple-700 shadow-sm border border-purple-200' 
                           : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                         }
                       `}
                     >
                       <Link to="/admin" className="flex items-center space-x-3">
-                        <div className={`
-                          p-1.5 rounded-lg transition-colors
-                          ${location.pathname === "/admin" 
-                            ? 'bg-purple-100 text-purple-600' 
-                            : 'text-gray-500 group-hover:bg-gray-100 group-hover:text-gray-700'
-                          }
-                        `}>
-                          <Shield className="h-4 w-4" />
-                        </div>
-                        <span className="font-medium">Admin Panel</span>
+                        <Shield className={`h-5 w-5 ${location.pathname === "/admin" ? 'text-purple-600' : 'text-gray-500'}`} />
+                        <span className="font-medium group-data-[collapsible=icon]:hidden">Admin Panel</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -186,26 +171,18 @@ const AppSidebar = () => {
                   <SidebarMenuItem>
                     <SidebarMenuButton 
                       asChild 
-                      isActive={location.pathname === "/coach"}
+                      tooltip="Coach Panel"
                       className={`
-                        w-full justify-start px-3 py-3 rounded-xl transition-all duration-200 group
+                        w-full justify-start px-3 py-2.5 rounded-lg transition-all duration-200
                         ${location.pathname === "/coach" 
-                          ? 'bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 shadow-sm border border-green-200/50' 
+                          ? 'bg-green-50 text-green-700 shadow-sm border border-green-200' 
                           : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                         }
                       `}
                     >
                       <Link to="/coach" className="flex items-center space-x-3">
-                        <div className={`
-                          p-1.5 rounded-lg transition-colors
-                          ${location.pathname === "/coach" 
-                            ? 'bg-green-100 text-green-600' 
-                            : 'text-gray-500 group-hover:bg-gray-100 group-hover:text-gray-700'
-                          }
-                        `}>
-                          <MessageCircle className="h-4 w-4" />
-                        </div>
-                        <span className="font-medium">Coach Panel</span>
+                        <MessageCircle className={`h-5 w-5 ${location.pathname === "/coach" ? 'text-green-600' : 'text-gray-500'}`} />
+                        <span className="font-medium group-data-[collapsible=icon]:hidden">Coach Panel</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -219,30 +196,31 @@ const AppSidebar = () => {
       <SidebarFooter className="border-t border-gray-100 p-4">
         {user ? (
           <div className="space-y-3">
-            <div className="flex items-center space-x-3 p-2 rounded-lg bg-gray-50">
+            <div className="flex items-center space-x-3 p-2 rounded-lg bg-gray-50 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:space-x-0">
               <Avatar className="h-8 w-8">
                 <AvatarFallback className="bg-gray-300 text-gray-700 text-xs">
                   {user.email?.slice(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
                 <p className="text-sm font-medium text-gray-900 truncate">{user.email}</p>
-                <Badge variant="secondary" className="mt-1">
+                <Badge variant="secondary" className="mt-1 text-xs">
                   {isAdmin ? 'Admin' : isCoach ? 'Coach' : 'User'}
                 </Badge>
               </div>
             </div>
             <Link to="/auth?logout=true" className="w-full">
-              <Button variant="ghost" size="sm" className="w-full justify-start text-gray-600 hover:text-red-600 hover:bg-red-50">
-                <LogOut className="mr-2 h-4 w-4" />
-                {t('navigation.signOut')}
+              <Button variant="ghost" size="sm" className="w-full justify-start text-gray-600 hover:text-red-600 hover:bg-red-50 group-data-[collapsible=icon]:justify-center">
+                <LogOut className="h-4 w-4 group-data-[collapsible=icon]:mr-0 mr-2" />
+                <span className="group-data-[collapsible=icon]:hidden">{t('navigation.signOut')}</span>
               </Button>
             </Link>
           </div>
         ) : (
           <Link to="/auth" className="w-full">
-            <Button variant="default" className="w-full bg-blue-600 hover:bg-blue-700">
-              {t('navigation.signIn')}
+            <Button variant="default" className="w-full bg-blue-600 hover:bg-blue-700 group-data-[collapsible=icon]:px-2">
+              <span className="group-data-[collapsible=icon]:hidden">{t('navigation.signIn')}</span>
+              <span className="group-data-[collapsible=icon]:block hidden">Sign In</span>
             </Button>
           </Link>
         )}
