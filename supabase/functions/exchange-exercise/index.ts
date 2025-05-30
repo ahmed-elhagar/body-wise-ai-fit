@@ -27,23 +27,28 @@ serve(async (req) => {
       throw new Error('Exercise ID is required');
     }
 
-    // Get original exercise details with proper error handling
-    const { data: originalExercise, error: exerciseError } = await supabaseClient
+    // Get original exercise details - use array query first to check existence
+    const { data: exerciseArray, error: exerciseError } = await supabaseClient
       .from('exercises')
       .select('*')
-      .eq('id', exerciseId)
-      .single();
+      .eq('id', exerciseId);
 
     if (exerciseError) {
       console.error('Exercise query error:', exerciseError);
-      throw new Error(`Failed to get exercise: ${exerciseError.message}`);
+      throw new Error(`Failed to query exercise: ${exerciseError.message}`);
     }
 
-    if (!originalExercise) {
+    if (!exerciseArray || exerciseArray.length === 0) {
       console.error('Exercise not found for ID:', exerciseId);
       throw new Error('Exercise not found');
     }
 
+    if (exerciseArray.length > 1) {
+      console.error('Multiple exercises found for ID:', exerciseId);
+      throw new Error('Multiple exercises found with same ID');
+    }
+
+    const originalExercise = exerciseArray[0];
     console.log('✅ Found original exercise:', originalExercise.name);
 
     // Generate exchange prompt with comprehensive instructions
