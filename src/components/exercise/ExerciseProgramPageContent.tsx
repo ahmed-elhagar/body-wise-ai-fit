@@ -185,14 +185,12 @@ export const ExerciseProgramPageContent = ({
         currentWeekOffset={currentWeekOffset}
         setCurrentWeekOffset={setCurrentWeekOffset}
         weekStartDate={weekStartDate}
-        currentProgram={currentProgram}
       />
 
       {/* Day Selector */}
       <ExerciseDaySelector
         selectedDayNumber={selectedDayNumber}
         setSelectedDayNumber={setSelectedDayNumber}
-        weekStartDate={weekStartDate}
         currentProgram={currentProgram}
       />
 
