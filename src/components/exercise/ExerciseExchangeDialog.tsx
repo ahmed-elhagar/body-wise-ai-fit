@@ -23,8 +23,6 @@ export const ExerciseExchangeDialog = ({
   const { t } = useLanguage();
   const [reason, setReason] = useState('');
   const [selectedEquipment, setSelectedEquipment] = useState<string[]>([]);
-  const [selectedMuscleGroups, setSelectedMuscleGroups] = useState<string[]>([]);
-  const [difficulty, setDifficulty] = useState('');
 
   const { 
     exchangeExercise, 
@@ -39,13 +37,6 @@ export const ExerciseExchangeDialog = ({
     'kettlebells', 'pull_up_bar', 'yoga_mat', 'stability_ball'
   ];
 
-  const muscleGroupOptions = [
-    'chest', 'back', 'shoulders', 'biceps', 'triceps', 
-    'legs', 'glutes', 'core', 'full_body'
-  ];
-
-  const difficultyOptions = ['beginner', 'intermediate', 'advanced'];
-
   const handleSubmit = () => {
     if (!reason.trim()) {
       return;
@@ -55,17 +46,13 @@ export const ExerciseExchangeDialog = ({
       exerciseId: exercise.id,
       reason: reason.trim(),
       preferences: {
-        targetMuscleGroups: selectedMuscleGroups.length > 0 ? selectedMuscleGroups : undefined,
-        equipment: selectedEquipment.length > 0 ? selectedEquipment : undefined,
-        difficulty: difficulty || undefined
+        equipment: selectedEquipment.length > 0 ? selectedEquipment : undefined
       }
     });
 
     // Reset form
     setReason('');
     setSelectedEquipment([]);
-    setSelectedMuscleGroups([]);
-    setDifficulty('');
     onOpenChange(false);
   };
 
@@ -117,7 +104,7 @@ export const ExerciseExchangeDialog = ({
             <h4 className="font-medium text-health-text-primary mb-2">
               {t('exercise.currentExercise') || 'Current Exercise'}
             </h4>
-            <p className="text-sm text-health-text-secondary">{exercise.name}</p>
+            <p className="text-sm text-health-text-secondary font-medium">{exercise.name}</p>
             {exercise.muscle_groups && (
               <div className="flex flex-wrap gap-1 mt-2">
                 {exercise.muscle_groups.map((muscle: string, idx: number) => (
@@ -146,7 +133,7 @@ export const ExerciseExchangeDialog = ({
           {/* Equipment Preferences */}
           <div>
             <label className="block text-sm font-medium mb-3">
-              {t('exercise.preferredEquipment') || 'Preferred Equipment (optional)'}
+              {t('exercise.preferredEquipment') || 'Available Equipment (optional)'}
             </label>
             <div className="grid grid-cols-2 gap-2">
               {equipmentOptions.map((equipment) => (
@@ -163,31 +150,6 @@ export const ExerciseExchangeDialog = ({
                     disabled={!canExchange}
                   />
                   <span>{t(`exercise.${equipment}`) || equipment}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* Muscle Group Preferences */}
-          <div>
-            <label className="block text-sm font-medium mb-3">
-              {t('exercise.targetMuscleGroups') || 'Target Muscle Groups (optional)'}
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              {muscleGroupOptions.map((muscle) => (
-                <label key={muscle} className="flex items-center space-x-2 text-sm">
-                  <Checkbox
-                    checked={selectedMuscleGroups.includes(muscle)}
-                    onCheckedChange={(checked) => {
-                      if (checked) {
-                        setSelectedMuscleGroups([...selectedMuscleGroups, muscle]);
-                      } else {
-                        setSelectedMuscleGroups(selectedMuscleGroups.filter(m => m !== muscle));
-                      }
-                    }}
-                    disabled={!canExchange}
-                  />
-                  <span>{t(`exercise.${muscle}`) || muscle}</span>
                 </label>
               ))}
             </div>

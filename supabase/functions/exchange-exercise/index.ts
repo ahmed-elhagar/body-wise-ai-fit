@@ -23,16 +23,10 @@ serve(async (req) => {
 
     console.log('🔄 Exchange exercise request:', { exerciseId, reason, userLanguage });
 
-    // Get original exercise details
+    // Get original exercise details - fix the query to avoid multiple rows
     const { data: originalExercise, error: exerciseError } = await supabaseClient
       .from('exercises')
-      .select(`
-        *,
-        daily_workouts!inner(
-          *,
-          weekly_exercise_programs!inner(*)
-        )
-      `)
+      .select('*')
       .eq('id', exerciseId)
       .single();
 
@@ -40,7 +34,7 @@ serve(async (req) => {
       throw new Error(`Failed to get exercise: ${exerciseError.message}`);
     }
 
-    // Generate exchange prompt
+    // Generate exchange prompt - AI will automatically detect muscle groups
     const exchangePrompt = `
 You are a fitness expert AI. The user wants to exchange the following exercise:
 
@@ -53,18 +47,15 @@ You are a fitness expert AI. The user wants to exchange the following exercise:
 
 **Reason for Exchange:** ${reason}
 
-**User Preferences:**
-${preferences?.equipment ? `- Preferred Equipment: ${preferences.equipment.join(', ')}` : ''}
-${preferences?.targetMuscleGroups ? `- Target Muscle Groups: ${preferences.targetMuscleGroups.join(', ')}` : ''}
-${preferences?.difficulty ? `- Difficulty: ${preferences.difficulty}` : ''}
-
-**Language:** ${userLanguage}
+**User Equipment Preferences:**
+${preferences?.equipment ? `- Available Equipment: ${preferences.equipment.join(', ')}` : '- Use any suitable equipment'}
 
 Please provide a suitable alternative exercise that:
-1. Targets similar muscle groups (unless user specified different ones)
-2. Matches the user's equipment preferences
-3. Has similar intensity/difficulty
+1. Targets the SAME muscle groups as the original exercise
+2. Matches the user's available equipment (if specified)
+3. Has similar intensity/difficulty level
 4. Addresses the user's reason for exchange
+5. Maintains the same workout structure (sets/reps pattern)
 
 Respond with a JSON object in this exact format:
 {
@@ -72,9 +63,9 @@ Respond with a JSON object in this exact format:
   "sets": ${originalExercise.sets},
   "reps": "${originalExercise.reps}",
   "rest_seconds": ${originalExercise.rest_seconds || 60},
-  "muscle_groups": ["array", "of", "muscle", "groups"],
+  "muscle_groups": ${JSON.stringify(originalExercise.muscle_groups || ['full_body'])},
   "equipment": "required equipment",
-  "difficulty": "beginner/intermediate/advanced",
+  "difficulty": "${originalExercise.difficulty || 'intermediate'}",
   "instructions": "Detailed instructions in ${userLanguage}",
   "youtube_search_term": "Search term for YouTube tutorial"
 }
