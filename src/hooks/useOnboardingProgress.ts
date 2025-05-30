@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -57,7 +58,7 @@ export const useOnboardingProgress = () => {
       const updateData: any = {
         user_id: user.id,
         updated_at: now,
-        created_at: progress?.created_at || now, // Include created_at
+        created_at: progress?.created_at || now,
       };
 
       switch (step) {
@@ -107,7 +108,30 @@ export const useOnboardingProgress = () => {
         .single();
 
       if (error) throw error;
-      return data as OnboardingProgress;
+      
+      // Ensure the returned data matches the OnboardingProgress interface
+      const result: OnboardingProgress = {
+        id: data.id,
+        user_id: data.user_id,
+        basic_info_completed: data.basic_info_completed || false,
+        health_assessment_completed: data.health_assessment_completed || false,
+        goals_setup_completed: data.goals_setup_completed || false,
+        preferences_completed: data.preferences_completed || false,
+        profile_review_completed: data.profile_review_completed || false,
+        current_step: data.current_step || 0,
+        completion_percentage: data.completion_percentage || 0,
+        total_steps: data.total_steps || 5,
+        basic_info_completed_at: data.basic_info_completed_at,
+        health_assessment_completed_at: data.health_assessment_completed_at,
+        goals_setup_completed_at: data.goals_setup_completed_at,
+        preferences_completed_at: data.preferences_completed_at,
+        profile_review_completed_at: data.profile_review_completed_at,
+        created_at: data.created_at,
+        updated_at: data.updated_at,
+        completed_at: data.completed_at,
+      };
+
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['onboarding-progress'] });
