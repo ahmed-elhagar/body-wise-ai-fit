@@ -131,13 +131,13 @@ const Exercise = () => {
                     <div className="flex justify-between text-sm">
                       <span>Goal</span>
                       <span className="font-medium capitalize">
-                        {exerciseState.currentProgram.goal_type?.replace('_', ' ') || 'General Fitness'}
+                        {exerciseState.currentProgram.goal?.replace('_', ' ') || 'General Fitness'}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span>Level</span>
                       <span className="font-medium capitalize">
-                        {exerciseState.currentProgram.fitness_level || 'Beginner'}
+                        {exerciseState.currentProgram.level || 'Beginner'}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">

@@ -124,9 +124,9 @@ const MealPlan = () => {
                 <MealPlanDayContent
                   selectedDay={mealPlanState.selectedDayNumber}
                   todaysMeals={mealPlanState.todaysMeals}
-                  onMealClick={mealPlanState.handleMealClick}
-                  onRecipeClick={mealPlanState.handleRecipeClick}
-                  onExchangeClick={mealPlanState.handleExchangeClick}
+                  onMealClick={mealPlanState.handleShowRecipe}
+                  onRecipeClick={mealPlanState.handleShowRecipe}
+                  onExchangeClick={mealPlanState.handleExchangeMeal}
                   weekStartDate={mealPlanState.weekStartDate}
                 />
               </div>
