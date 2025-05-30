@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -58,12 +57,8 @@ export const useOnboardingProgress = () => {
       const updateData: any = {
         user_id: user.id,
         updated_at: now,
+        created_at: progress?.created_at || now, // Include created_at
       };
-
-      // Only set created_at if this is a new record
-      if (!progress) {
-        updateData.created_at = now;
-      }
 
       switch (step) {
         case 'basic_info':
@@ -112,7 +107,7 @@ export const useOnboardingProgress = () => {
         .single();
 
       if (error) throw error;
-      return data;
+      return data as OnboardingProgress;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['onboarding-progress'] });

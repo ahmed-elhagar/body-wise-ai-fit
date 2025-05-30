@@ -6,6 +6,8 @@ import { LoadingSteps } from "./LoadingSteps";
 import { LoadingHeader } from "./LoadingHeader";
 import { LoadingFooter } from "./LoadingFooter";
 import { useLoadingProgress } from "./useLoadingProgress";
+import { getGenerationSteps } from "./loadingStepsData";
+import { ChefHat } from "lucide-react";
 
 interface MealPlanGenerationLoadingProps {
   isGenerating: boolean;
@@ -17,23 +19,25 @@ const MealPlanGenerationLoading = ({
   generationType = 'initial' 
 }: MealPlanGenerationLoadingProps) => {
   const { t, isRTL } = useLanguage();
-  const { currentStep, progress } = useLoadingProgress(isGenerating, 5000);
-
-  // Default loading steps
-  const steps = [
-    { id: 'analyzing', label: t('mealPlan.stepAnalyzing'), completed: false },
-    { id: 'generating', label: t('mealPlan.stepGenerating'), completed: false },
-    { id: 'optimizing', label: t('mealPlan.stepOptimizing'), completed: false },
-    { id: 'personalizing', label: t('mealPlan.stepPersonalizing'), completed: false },
-    { id: 'finalizing', label: t('mealPlan.stepFinalizing'), completed: false },
-  ];
+  
+  // Get proper step objects with icons, titles, descriptions, and durations
+  const steps = getGenerationSteps(t);
+  const { currentStep, progress } = useLoadingProgress(steps, isGenerating);
 
   if (!isGenerating) return null;
+
+  const title = generationType === 'regenerate' 
+    ? t('mealPlan.regeneratingYourPlan') 
+    : t('mealPlan.generatingYourPlan');
 
   return (
     <div className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 ${isRTL ? 'rtl' : 'ltr'}`}>
       <Card className="w-full max-w-md p-6 bg-white/95 backdrop-blur-md border-0 shadow-2xl">
-        <LoadingHeader />
+        <LoadingHeader 
+          icon={ChefHat}
+          title={title}
+          description={t('mealPlan.pleaseWait')}
+        />
         
         <div className="space-y-6">
           {/* Progress Bar */}

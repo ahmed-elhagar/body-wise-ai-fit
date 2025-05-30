@@ -1,4 +1,3 @@
-
 export const mealPlanTranslations = {
   mealPlan: "Meal Plan",
   noMealPlan: "No Meal Plan Yet",
@@ -95,5 +94,25 @@ export const mealPlanTranslations = {
   generatingYourPlan: "Generating Your Meal Plan",
   regeneratingYourPlan: "Regenerating Your Meal Plan",
   aiGeneratingPlan: "AI Generating Plan",
-  pleaseWait: "Please wait while we create your personalized meal plan..."
+  pleaseWait: "Please wait while we create your personalized meal plan...",
+  
+  // New loading step translations
+  analyzingProfile: "Analyzing Profile",
+  analyzingProfileDesc: "Understanding your dietary preferences and health goals",
+  calculatingNutrition: "Calculating Nutrition",
+  calculatingNutritionDesc: "Optimizing macro and micronutrient balance",
+  selectingMeals: "Selecting Meals",
+  selectingMealsDesc: "Choosing delicious meals that fit your profile",
+  creatingWeeklyPlan: "Creating Weekly Plan",
+  creatingWeeklyPlanDesc: "Organizing your meals into a balanced weekly schedule",
+  finalizingMealPlan: "Finalizing Meal Plan",
+  finalizingMealPlanDesc: "Adding final touches and generating shopping lists",
+  
+  // Shuffle loading steps
+  analyzingCurrentPlan: "Analyzing Current Plan",
+  analyzingCurrentPlanDesc: "Reviewing your existing meal preferences",
+  selectingAlternatives: "Selecting Alternatives", 
+  selectingAlternativesDesc: "Finding new meals that match your nutritional needs",
+  reorganizingWeek: "Reorganizing Week",
+  reorganizingWeekDesc: "Creating a fresh weekly meal arrangement"
 };
