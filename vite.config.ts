@@ -59,10 +59,39 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         manualChunks: {
+          // Framework chunks
           vendor: ['react', 'react-dom'],
-          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-select'],
+          
+          // Router chunk
+          router: ['react-router-dom'],
+          
+          // UI library chunks
+          ui: [
+            '@radix-ui/react-dialog', 
+            '@radix-ui/react-dropdown-menu', 
+            '@radix-ui/react-select',
+            '@radix-ui/react-toast',
+            '@radix-ui/react-tabs',
+            '@radix-ui/react-progress'
+          ],
+          
+          // Charts and visualization
           charts: ['recharts'],
-          utils: ['date-fns', 'clsx']
+          
+          // Date utilities
+          dates: ['date-fns'],
+          
+          // Form handling
+          forms: ['react-hook-form', '@hookform/resolvers', 'zod'],
+          
+          // Backend services
+          supabase: ['@supabase/supabase-js'],
+          
+          // Query management
+          query: ['@tanstack/react-query'],
+          
+          // Utilities
+          utils: ['clsx', 'class-variance-authority', 'tailwind-merge']
         }
       }
     },
@@ -72,7 +101,18 @@ export default defineConfig(({ mode }) => ({
       compress: {
         drop_console: true,
         drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug']
+      },
+      mangle: {
+        safari10: true
       }
-    }
+    },
+    chunkSizeWarningLimit: 1000,
+    cssCodeSplit: true
+  },
+  esbuild: {
+    treeShaking: true,
+    legalComments: 'none',
+    target: 'esnext'
   }
 }));

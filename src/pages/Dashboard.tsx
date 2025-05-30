@@ -6,12 +6,10 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { 
   Activity, 
-  Calendar, 
   TrendingUp, 
   Target, 
   Apple, 
   Dumbbell, 
-  Clock,
   Flame,
   Award,
   Users,
@@ -23,6 +21,121 @@ import { useMealPlanData } from "@/hooks/useMealPlanData";
 import { useExerciseProgramData } from "@/hooks/useExerciseProgramData";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
+import { memo, useMemo, useCallback } from "react";
+
+// Memoized components for better performance
+const StatCard = memo(({ title, value, description, icon: Icon, className = "" }: {
+  title: string;
+  value: string | number;
+  description: string;
+  icon: any;
+  className?: string;
+}) => (
+  <Card>
+    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <CardTitle className="text-sm font-medium">{title}</CardTitle>
+      <Icon className={`h-4 w-4 ${className}`} />
+    </CardHeader>
+    <CardContent>
+      <div className="text-2xl font-bold">{value}</div>
+      <p className="text-xs text-muted-foreground">{description}</p>
+    </CardContent>
+  </Card>
+));
+
+StatCard.displayName = 'StatCard';
+
+const MealList = memo(({ meals, onViewMealPlan }: {
+  meals: any[];
+  onViewMealPlan: () => void;
+}) => {
+  if (meals.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <Apple className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+        <p className="text-gray-500">No meal plan for today</p>
+        <Button onClick={onViewMealPlan} className="mt-3" variant="outline">
+          Generate Meal Plan
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {meals.slice(0, 4).map((meal) => (
+        <div key={meal.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div>
+            <h4 className="font-medium">{meal.name}</h4>
+            <p className="text-sm text-gray-600 capitalize">{meal.meal_type}</p>
+          </div>
+          <div className="text-right">
+            <p className="font-medium">{meal.calories} cal</p>
+            <p className="text-sm text-gray-600">{meal.protein}g protein</p>
+          </div>
+        </div>
+      ))}
+      {meals.length > 4 && (
+        <p className="text-center text-sm text-gray-500">
+          +{meals.length - 4} more meals
+        </p>
+      )}
+    </div>
+  );
+});
+
+MealList.displayName = 'MealList';
+
+const ExerciseProgress = memo(({ exercises, onViewExercise }: {
+  exercises: any[];
+  onViewExercise: () => void;
+}) => {
+  const completedExercises = exercises.filter(ex => ex.completed).length;
+  const exerciseProgress = exercises.length > 0 ? (completedExercises / exercises.length) * 100 : 0;
+
+  if (exercises.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <Dumbbell className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+        <p className="text-gray-500">Rest day or no workout planned</p>
+        <Button onClick={onViewExercise} className="mt-3" variant="outline">
+          View Exercise Plan
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-gray-600">Progress</span>
+        <Badge variant={exerciseProgress === 100 ? "default" : "secondary"}>
+          {completedExercises}/{exercises.length}
+        </Badge>
+      </div>
+      <Progress value={exerciseProgress} />
+      <div className="space-y-2 max-h-40 overflow-y-auto">
+        {exercises.slice(0, 3).map((exercise) => (
+          <div key={exercise.id} className="flex items-center justify-between text-sm">
+            <span className={exercise.completed ? "line-through text-gray-500" : ""}>
+              {exercise.name}
+            </span>
+            <span className="text-gray-500">
+              {exercise.sets} × {exercise.reps}
+            </span>
+          </div>
+        ))}
+        {exercises.length > 3 && (
+          <p className="text-xs text-gray-500 text-center">
+            +{exercises.length - 3} more exercises
+          </p>
+        )}
+      </div>
+    </div>
+  );
+});
+
+ExerciseProgress.displayName = 'ExerciseProgress';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -34,21 +147,35 @@ const Dashboard = () => {
   const { data: currentMealPlan } = useMealPlanData(0);
   const { currentProgram: currentExerciseProgram } = useExerciseProgramData(0, "home");
 
-  // Calculate today's progress
-  const today = new Date().getDay() || 7;
-  const todaysMeals = currentMealPlan?.dailyMeals?.filter(meal => meal.day_number === today) || [];
-  const todaysExercises = currentExerciseProgram?.daily_workouts
-    ?.filter(workout => workout.day_number === today)
-    .flatMap(workout => workout.exercises || []) || [];
+  // Memoized navigation functions
+  const handleViewMealPlan = useCallback(() => navigate('/meal-plan'), [navigate]);
+  const handleViewExercise = useCallback(() => navigate('/exercise'), [navigate]);
+  const handleViewProgress = useCallback(() => navigate('/progress'), [navigate]);
+  const handleViewProfile = useCallback(() => navigate('/profile'), [navigate]);
+
+  // Calculate today's data
+  const { todaysMeals, todaysExercises, todaysCalories, todaysProtein, userName } = useMemo(() => {
+    const today = new Date().getDay() || 7;
+    const meals = currentMealPlan?.dailyMeals?.filter(meal => meal.day_number === today) || [];
+    const exercises = currentExerciseProgram?.daily_workouts
+      ?.filter(workout => workout.day_number === today)
+      .flatMap(workout => workout.exercises || []) || [];
+
+    const calories = meals.reduce((sum, meal) => sum + (meal.calories || 0), 0);
+    const protein = meals.reduce((sum, meal) => sum + (meal.protein || 0), 0);
+    const name = profile?.first_name || user?.email?.split('@')[0] || 'User';
+
+    return {
+      todaysMeals: meals,
+      todaysExercises: exercises,
+      todaysCalories: calories,
+      todaysProtein: protein,
+      userName: name
+    };
+  }, [currentMealPlan, currentExerciseProgram, profile, user]);
 
   const completedExercises = todaysExercises.filter(ex => ex.completed).length;
   const exerciseProgress = todaysExercises.length > 0 ? (completedExercises / todaysExercises.length) * 100 : 0;
-
-  // Quick stats
-  const todaysCalories = todaysMeals.reduce((sum, meal) => sum + (meal.calories || 0), 0);
-  const todaysProtein = todaysMeals.reduce((sum, meal) => sum + (meal.protein || 0), 0);
-
-  const userName = profile?.first_name || user?.email?.split('@')[0] || 'User';
 
   return (
     <ProtectedRoute>
@@ -65,17 +192,11 @@ const Dashboard = () => {
               </p>
             </div>
             <div className="flex gap-2">
-              <Button 
-                onClick={() => navigate('/meal-plan')}
-                className="bg-fitness-gradient text-white"
-              >
+              <Button onClick={handleViewMealPlan} className="bg-fitness-gradient text-white">
                 <Apple className="h-4 w-4 mr-2" />
                 View Meal Plan
               </Button>
-              <Button 
-                onClick={() => navigate('/exercise')}
-                variant="outline"
-              >
+              <Button onClick={handleViewExercise} variant="outline">
                 <Dumbbell className="h-4 w-4 mr-2" />
                 Start Workout
               </Button>
@@ -84,58 +205,34 @@ const Dashboard = () => {
 
           {/* Quick Stats Grid */}
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Today's Calories</CardTitle>
-                <Flame className="h-4 w-4 text-orange-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{todaysCalories}</div>
-                <p className="text-xs text-muted-foreground">
-                  {todaysMeals.length} meals planned
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Protein Intake</CardTitle>
-                <Target className="h-4 w-4 text-green-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{todaysProtein.toFixed(1)}g</div>
-                <p className="text-xs text-muted-foreground">
-                  Daily protein goal
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Exercise Progress</CardTitle>
-                <Activity className="h-4 w-4 text-blue-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{exerciseProgress.toFixed(0)}%</div>
-                <Progress value={exerciseProgress} className="mt-2" />
-                <p className="text-xs text-muted-foreground mt-2">
-                  {completedExercises}/{todaysExercises.length} exercises done
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">AI Generations</CardTitle>
-                <Sparkles className="h-4 w-4 text-purple-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{profile?.ai_generations_remaining || 0}</div>
-                <p className="text-xs text-muted-foreground">
-                  Credits remaining
-                </p>
-              </CardContent>
-            </Card>
+            <StatCard
+              title="Today's Calories"
+              value={todaysCalories}
+              description={`${todaysMeals.length} meals planned`}
+              icon={Flame}
+              className="text-orange-500"
+            />
+            <StatCard
+              title="Protein Intake"
+              value={`${todaysProtein.toFixed(1)}g`}
+              description="Daily protein goal"
+              icon={Target}
+              className="text-green-500"
+            />
+            <StatCard
+              title="Exercise Progress"
+              value={`${exerciseProgress.toFixed(0)}%`}
+              description={`${completedExercises}/${todaysExercises.length} exercises done`}
+              icon={Activity}
+              className="text-blue-500"
+            />
+            <StatCard
+              title="AI Generations"
+              value={profile?.ai_generations_remaining || 0}
+              description="Credits remaining"
+              icon={Sparkles}
+              className="text-purple-500"
+            />
           </div>
 
           {/* Main Content Grid */}
@@ -149,39 +246,7 @@ const Dashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {todaysMeals.length > 0 ? (
-                  <div className="space-y-3">
-                    {todaysMeals.slice(0, 4).map((meal, index) => (
-                      <div key={meal.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div>
-                          <h4 className="font-medium">{meal.name}</h4>
-                          <p className="text-sm text-gray-600 capitalize">{meal.meal_type}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-medium">{meal.calories} cal</p>
-                          <p className="text-sm text-gray-600">{meal.protein}g protein</p>
-                        </div>
-                      </div>
-                    ))}
-                    {todaysMeals.length > 4 && (
-                      <p className="text-center text-sm text-gray-500">
-                        +{todaysMeals.length - 4} more meals
-                      </p>
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <Apple className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                    <p className="text-gray-500">No meal plan for today</p>
-                    <Button 
-                      onClick={() => navigate('/meal-plan')}
-                      className="mt-3"
-                      variant="outline"
-                    >
-                      Generate Meal Plan
-                    </Button>
-                  </div>
-                )}
+                <MealList meals={todaysMeals} onViewMealPlan={handleViewMealPlan} />
               </CardContent>
             </Card>
 
@@ -194,51 +259,12 @@ const Dashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {todaysExercises.length > 0 ? (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Progress</span>
-                      <Badge variant={exerciseProgress === 100 ? "default" : "secondary"}>
-                        {completedExercises}/{todaysExercises.length}
-                      </Badge>
-                    </div>
-                    <Progress value={exerciseProgress} />
-                    <div className="space-y-2 max-h-40 overflow-y-auto">
-                      {todaysExercises.slice(0, 3).map((exercise) => (
-                        <div key={exercise.id} className="flex items-center justify-between text-sm">
-                          <span className={exercise.completed ? "line-through text-gray-500" : ""}>
-                            {exercise.name}
-                          </span>
-                          <span className="text-gray-500">
-                            {exercise.sets} × {exercise.reps}
-                          </span>
-                        </div>
-                      ))}
-                      {todaysExercises.length > 3 && (
-                        <p className="text-xs text-gray-500 text-center">
-                          +{todaysExercises.length - 3} more exercises
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <Dumbbell className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                    <p className="text-gray-500">Rest day or no workout planned</p>
-                    <Button 
-                      onClick={() => navigate('/exercise')}
-                      className="mt-3"
-                      variant="outline"
-                    >
-                      View Exercise Plan
-                    </Button>
-                  </div>
-                )}
+                <ExerciseProgress exercises={todaysExercises} onViewExercise={handleViewExercise} />
               </CardContent>
             </Card>
           </div>
 
-          {/* Recent Activity & Quick Actions */}
+          {/* Quick Actions & Achievements */}
           <div className="grid gap-6 lg:grid-cols-2">
             <Card>
               <CardHeader>
@@ -248,35 +274,19 @@ const Dashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button 
-                  onClick={() => navigate('/meal-plan')}
-                  variant="outline" 
-                  className="w-full justify-start"
-                >
+                <Button onClick={handleViewMealPlan} variant="outline" className="w-full justify-start">
                   <Apple className="h-4 w-4 mr-2" />
                   Generate New Meal Plan
                 </Button>
-                <Button 
-                  onClick={() => navigate('/exercise')}
-                  variant="outline" 
-                  className="w-full justify-start"
-                >
+                <Button onClick={handleViewExercise} variant="outline" className="w-full justify-start">
                   <Dumbbell className="h-4 w-4 mr-2" />
                   Create Exercise Program
                 </Button>
-                <Button 
-                  onClick={() => navigate('/progress')}
-                  variant="outline" 
-                  className="w-full justify-start"
-                >
+                <Button onClick={handleViewProgress} variant="outline" className="w-full justify-start">
                   <TrendingUp className="h-4 w-4 mr-2" />
                   Track Progress
                 </Button>
-                <Button 
-                  onClick={() => navigate('/profile')}
-                  variant="outline" 
-                  className="w-full justify-start"
-                >
+                <Button onClick={handleViewProfile} variant="outline" className="w-full justify-start">
                   <Users className="h-4 w-4 mr-2" />
                   Update Profile
                 </Button>
@@ -325,4 +335,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default memo(Dashboard);

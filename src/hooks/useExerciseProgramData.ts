@@ -1,11 +1,14 @@
 
 import { useExerciseProgramQuery } from './useExerciseProgramQuery';
 import { useExerciseActions } from './useExerciseActions';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 
 export const useExerciseProgramData = (weekOffset: number = 0, workoutType: "home" | "gym" = "home") => {
   const { data: currentProgram, isLoading, error, refetch } = useExerciseProgramQuery(weekOffset, workoutType);
   const { completeExercise, updateExerciseProgress } = useExerciseActions(refetch);
+
+  // Memoize the program data to prevent unnecessary re-renders
+  const memoizedProgram = useMemo(() => currentProgram, [currentProgram]);
 
   // Enhanced refetch with better error handling
   const enhancedRefetch = useCallback(async () => {
@@ -54,7 +57,7 @@ export const useExerciseProgramData = (weekOffset: number = 0, workoutType: "hom
   }, [updateExerciseProgress]);
 
   return {
-    currentProgram,
+    currentProgram: memoizedProgram,
     isLoading,
     error,
     refetch: enhancedRefetch,
