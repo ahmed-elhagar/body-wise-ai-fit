@@ -48,7 +48,7 @@ const MealPlanPage = () => {
     { number: 7, name: 'Friday', date: addDays(mealPlanState.weekStartDate, 6) }
   ];
 
-  // Calculate weekly stats
+  // Calculate weekly stats from processed data
   const weeklyStats = {
     totalCalories: mealPlanState.currentWeekPlan?.weeklyPlan?.total_calories || 0,
     totalProtein: mealPlanState.currentWeekPlan?.weeklyPlan?.total_protein || 0,
@@ -282,8 +282,8 @@ const MealPlanPage = () => {
                     <MealPlanDayView
                       dayNumber={day.number}
                       weeklyPlan={mealPlanState.currentWeekPlan}
-                      onShowRecipe={(meal: DailyMeal) => mealPlanState.handleShowRecipe(meal)}
-                      onExchangeMeal={(meal: DailyMeal, index: number) => mealPlanState.handleExchangeMeal(meal, index)}
+                      onShowRecipe={mealPlanState.handleShowRecipe}
+                      onExchangeMeal={mealPlanState.handleExchangeMeal}
                       onAddSnack={() => handleAddSnack(day.number)}
                     />
                   </TabsContent>
@@ -293,8 +293,8 @@ const MealPlanPage = () => {
               <MealPlanWeekView
                 weeklyPlan={mealPlanState.currentWeekPlan}
                 weekDays={weekDays}
-                onShowRecipe={(meal: DailyMeal) => mealPlanState.handleShowRecipe(meal)}
-                onExchangeMeal={(meal: DailyMeal, index: number) => mealPlanState.handleExchangeMeal(meal, index)}
+                onShowRecipe={mealPlanState.handleShowRecipe}
+                onExchangeMeal={mealPlanState.handleExchangeMeal}
                 onAddSnack={handleAddSnack}
               />
             )}
@@ -332,7 +332,7 @@ const MealPlanPage = () => {
       {mealPlanState.selectedMeal && (
         <MealRecipeDialog
           isOpen={mealPlanState.showRecipeDialog}
-          onClose={() => mealPlanState.setShowRecipeDialog && mealPlanState.setShowRecipeDialog(false)}
+          onClose={() => mealPlanState.setShowRecipeDialog(false)}
           meal={mealPlanState.selectedMeal}
           onRecipeGenerated={mealPlanState.handleRecipeGenerated}
         />
@@ -341,7 +341,7 @@ const MealPlanPage = () => {
       {mealPlanState.selectedMeal && (
         <MealExchangeDialog
           isOpen={mealPlanState.showExchangeDialog}
-          onClose={() => mealPlanState.setShowExchangeDialog && mealPlanState.setShowExchangeDialog(false)}
+          onClose={() => mealPlanState.setShowExchangeDialog(false)}
           currentMeal={mealPlanState.selectedMeal}
           onExchange={mealPlanState.handleRegeneratePlan}
         />

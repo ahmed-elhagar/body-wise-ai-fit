@@ -17,25 +17,25 @@ import {
   ArrowLeftRight
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useMealPlanPage } from "@/hooks/useMealPlanPage";
+import { useMealPlanState } from "@/hooks/useMealPlanState";
 import SnackPickerDialog from "./SnackPickerDialog";
 import ShoppingListDrawer from "../shopping-list/ShoppingListDrawer";
 import MealPlanLoadingBackdrop from "./MealPlanLoadingBackdrop";
 import MealRecipeDialog from "./MealRecipeDialog";
 import MealExchangeDialog from "./MealExchangeDialog";
+import MealPlanAIDialog from "./MealPlanAIDialog";
 import { toast } from "sonner";
 import type { DailyMeal } from "@/hooks/useMealPlanData";
 
 const EnhancedMealPlanPage = () => {
   const { t, isRTL } = useLanguage();
-  const mealPlanState = useMealPlanPage();
+  const mealPlanState = useMealPlanState();
   
   const [showSnackDialog, setShowSnackDialog] = useState(false);
   const [showShoppingDrawer, setShowShoppingDrawer] = useState(false);
   const [selectedDayForSnack, setSelectedDayForSnack] = useState(1);
-  const [isAILoading, setIsAILoading] = useState(false);
 
-  // Calculate weekly stats
+  // Calculate weekly stats using processed data
   const weeklyStats = useMemo(() => {
     if (!mealPlanState.currentWeekPlan?.dailyMeals) return { calories: 0, protein: 0, carbs: 0, fat: 0 };
     
@@ -61,15 +61,11 @@ const EnhancedMealPlanPage = () => {
   };
 
   const handleShowRecipe = (meal: DailyMeal) => {
-    if (mealPlanState.handleShowRecipe) {
-      mealPlanState.handleShowRecipe(meal);
-    }
+    mealPlanState.handleShowRecipe(meal);
   };
 
   const handleExchangeMeal = async (meal: DailyMeal, index: number) => {
-    if (mealPlanState.handleExchangeMeal) {
-      mealPlanState.handleExchangeMeal(meal, index);
-    }
+    mealPlanState.handleExchangeMeal(meal, index);
     
     // Show toast after exchange
     setTimeout(() => {
@@ -77,6 +73,21 @@ const EnhancedMealPlanPage = () => {
         duration: 2000,
       });
     }, 1000);
+  };
+
+  const handleGenerateAIPlan = async () => {
+    console.log('🎯 EnhancedMealPlanPage: Starting AI generation with preferences:', mealPlanState.aiPreferences);
+    
+    try {
+      const success = await mealPlanState.handleGenerateAIPlan();
+      if (success) {
+        mealPlanState.setShowAIDialog(false);
+        toast.success("Meal plan generated successfully! 🎉");
+      }
+    } catch (error) {
+      console.error('❌ AI generation failed:', error);
+      toast.error("Failed to generate meal plan. Please try again.");
+    }
   };
 
   const renderDayMeals = (dayNumber: number) => {
@@ -203,7 +214,7 @@ const EnhancedMealPlanPage = () => {
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       <MealPlanLoadingBackdrop 
-        isLoading={isAILoading || mealPlanState.isGenerating} 
+        isLoading={mealPlanState.isGenerating} 
         message={mealPlanState.isGenerating ? "Generating your meal plan..." : "Processing..."}
       />
       
@@ -217,7 +228,7 @@ const EnhancedMealPlanPage = () => {
                 Meal Plan
               </h1>
               <p className="text-orange-100">
-                {mealPlanState.currentDate} • {mealPlanState.currentDay}
+                Week of {mealPlanState.weekStartDate.toLocaleDateString()}
               </p>
             </div>
             
@@ -228,14 +239,16 @@ const EnhancedMealPlanPage = () => {
               <Badge className="bg-white/20 text-white px-4 py-2">
                 {weeklyStats.protein.toFixed(0)}g protein/week
               </Badge>
-              <Button 
-                onClick={() => setShowShoppingDrawer(true)}
-                className="bg-white/20 hover:bg-white/30 text-white border-white/30"
-                variant="outline"
-              >
-                <ShoppingCart className="w-4 h-4 mr-2" />
-                Shopping List
-              </Button>
+              {mealPlanState.currentWeekPlan && (
+                <Button 
+                  onClick={() => setShowShoppingDrawer(true)}
+                  className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+                  variant="outline"
+                >
+                  <ShoppingCart className="w-4 h-4 mr-2" />
+                  Shopping List
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -250,13 +263,7 @@ const EnhancedMealPlanPage = () => {
             <h3 className="text-2xl font-bold text-white mb-3">No Meal Plan Yet</h3>
             <p className="text-gray-400 mb-6">Generate your first meal plan to get started!</p>
             <Button 
-              onClick={() => {
-                setIsAILoading(true);
-                if (mealPlanState.setShowAIDialog) {
-                  mealPlanState.setShowAIDialog(true);
-                }
-                setIsAILoading(false);
-              }}
+              onClick={() => mealPlanState.setShowAIDialog(true)}
               className="bg-gradient-to-r from-[#FF6F3C] to-[#FF8F4C] hover:from-[#FF5F2C] hover:to-[#FF7F3C] text-white px-8 py-3"
             >
               Generate Meal Plan
@@ -291,7 +298,7 @@ const EnhancedMealPlanPage = () => {
                   
                   <div className="pt-4 border-t border-gray-700">
                     <Button 
-                      onClick={() => mealPlanState.setShowAIDialog && mealPlanState.setShowAIDialog(true)}
+                      onClick={() => mealPlanState.setShowAIDialog(true)}
                       className="w-full bg-gradient-to-r from-[#FF6F3C] to-[#FF8F4C] hover:from-[#FF5F2C] hover:to-[#FF7F3C] text-white"
                     >
                       Regenerate Plan
@@ -327,6 +334,16 @@ const EnhancedMealPlanPage = () => {
         )}
       </div>
 
+      {/* AI Generation Dialog */}
+      <MealPlanAIDialog
+        open={mealPlanState.showAIDialog}
+        onOpenChange={mealPlanState.setShowAIDialog}
+        preferences={mealPlanState.aiPreferences}
+        onPreferencesChange={mealPlanState.setAiPreferences}
+        onGenerate={handleGenerateAIPlan}
+        isGenerating={mealPlanState.isGenerating}
+      />
+
       {/* Dialogs */}
       <SnackPickerDialog
         isOpen={showSnackDialog}
@@ -351,7 +368,7 @@ const EnhancedMealPlanPage = () => {
       {mealPlanState.selectedMeal && (
         <MealRecipeDialog
           isOpen={mealPlanState.showRecipeDialog}
-          onClose={() => mealPlanState.setShowRecipeDialog && mealPlanState.setShowRecipeDialog(false)}
+          onClose={() => mealPlanState.setShowRecipeDialog(false)}
           meal={mealPlanState.selectedMeal}
           onRecipeGenerated={mealPlanState.handleRecipeGenerated}
         />
@@ -360,7 +377,7 @@ const EnhancedMealPlanPage = () => {
       {mealPlanState.selectedMeal && (
         <MealExchangeDialog
           isOpen={mealPlanState.showExchangeDialog}
-          onClose={() => mealPlanState.setShowExchangeDialog && mealPlanState.setShowExchangeDialog(false)}
+          onClose={() => mealPlanState.setShowExchangeDialog(false)}
           currentMeal={mealPlanState.selectedMeal}
           onExchange={mealPlanState.handleRegeneratePlan}
         />
