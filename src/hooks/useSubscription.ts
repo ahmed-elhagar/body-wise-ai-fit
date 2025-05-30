@@ -14,6 +14,8 @@ interface Subscription {
   current_period_start: string;
   current_period_end: string;
   cancel_at_period_end: boolean;
+  stripe_price_id: string;
+  interval: string;
 }
 
 export const useSubscription = () => {
@@ -35,6 +37,7 @@ export const useSubscription = () => {
       return data as Subscription | null;
     },
     enabled: !!user?.id,
+    refetchInterval: 10000, // Poll every 10 seconds to catch webhook updates
   });
 
   const createCheckoutSession = useMutation({
@@ -48,6 +51,7 @@ export const useSubscription = () => {
     },
     onSuccess: (data) => {
       if (data.url) {
+        // Open Stripe checkout in a new tab
         window.open(data.url, '_blank');
       }
     },
@@ -62,10 +66,28 @@ export const useSubscription = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['subscription'] });
       queryClient.invalidateQueries({ queryKey: ['user-role'] });
-      toast.success('Subscription cancelled successfully');
+      toast.success(data.message || 'Subscription cancelled successfully');
+    },
+    onError: (error) => {
+      toast.error(`Failed to cancel subscription: ${error.message}`);
+    }
+  });
+
+  const adminCancelSubscription = useMutation({
+    mutationFn: async ({ targetUserId, refund }: { targetUserId: string; refund?: boolean }) => {
+      const { data, error } = await supabase.functions.invoke('admin-cancel-subscription', {
+        body: { target_user_id: targetUserId, refund: refund }
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['subscription'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
+      toast.success(data.message || 'Subscription cancelled successfully');
     },
     onError: (error) => {
       toast.error(`Failed to cancel subscription: ${error.message}`);
@@ -77,7 +99,9 @@ export const useSubscription = () => {
     isLoading,
     createCheckoutSession: createCheckoutSession.mutate,
     cancelSubscription: cancelSubscription.mutate,
+    adminCancelSubscription: adminCancelSubscription.mutate,
     isCreatingCheckout: createCheckoutSession.isPending,
     isCancelling: cancelSubscription.isPending,
+    isAdminCancelling: adminCancelSubscription.isPending,
   };
 };

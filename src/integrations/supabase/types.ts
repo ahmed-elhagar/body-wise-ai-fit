@@ -81,6 +81,33 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_logs: {
+        Row: {
+          action: string
+          admin_user_id: string
+          created_at: string | null
+          details: Json | null
+          id: string
+          target_user_id: string | null
+        }
+        Insert: {
+          action: string
+          admin_user_id: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          target_user_id?: string | null
+        }
+        Update: {
+          action?: string
+          admin_user_id?: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          target_user_id?: string | null
+        }
+        Relationships: []
+      }
       coach_trainees: {
         Row: {
           assigned_at: string | null
@@ -775,10 +802,13 @@ export type Database = {
           current_period_end: string | null
           current_period_start: string | null
           id: string
+          interval: string | null
           plan_type: string | null
           status: string
           stripe_customer_id: string | null
+          stripe_price_id: string | null
           stripe_subscription_id: string | null
+          trial_end: string | null
           updated_at: string | null
           user_id: string
         }
@@ -788,10 +818,13 @@ export type Database = {
           current_period_end?: string | null
           current_period_start?: string | null
           id?: string
+          interval?: string | null
           plan_type?: string | null
           status?: string
           stripe_customer_id?: string | null
+          stripe_price_id?: string | null
           stripe_subscription_id?: string | null
+          trial_end?: string | null
           updated_at?: string | null
           user_id: string
         }
@@ -801,10 +834,13 @@ export type Database = {
           current_period_end?: string | null
           current_period_start?: string | null
           id?: string
+          interval?: string | null
           plan_type?: string | null
           status?: string
           stripe_customer_id?: string | null
+          stripe_price_id?: string | null
           stripe_subscription_id?: string | null
+          trial_end?: string | null
           updated_at?: string | null
           user_id?: string
         }

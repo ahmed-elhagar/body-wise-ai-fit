@@ -1,1 +1,14 @@
+
 project_id = "xnoslfftfktqvyoefccw"
+
+[functions.create-subscription]
+verify_jwt = true
+
+[functions.cancel-subscription]
+verify_jwt = true
+
+[functions.admin-cancel-subscription]
+verify_jwt = true
+
+[functions.stripe-webhook-handler]
+verify_jwt = false
