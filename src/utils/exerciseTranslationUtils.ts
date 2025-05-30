@@ -1,8 +1,8 @@
 
 import { useLanguage } from '@/contexts/LanguageContext';
 
-// Exercise name translations mapping
-const exerciseNameTranslations: Record<string, Record<string, string>> = {
+// Exercise name translations mapping (string to string)
+const exerciseNameTranslations: Record<string, string> = {
   // Arabic to English exercise names
   'السحب للأسفل بالكابل': 'Cable Lat Pulldown',
   'التجديف بالبار المحني': 'Bent Over Barbell Row',
@@ -29,7 +29,7 @@ const exerciseNameTranslations: Record<string, Record<string, string>> = {
 };
 
 // Exercise instructions translations
-const instructionTranslations: Record<string, Record<string, string>> = {
+const instructionTranslations: Record<string, string> = {
   // Arabic to English instructions
   'جلس مستقيماً، امسك البار بقبضة واسعة، اسحب البار للصدر مع تحريك الكتفين للخلف': 'Sit upright, grip the bar with a wide grip, pull the bar to your chest while moving your shoulders back',
   'مع انحناء الجذع للأمام، امسك البار واسحبه نحو البطن مع الحفاظ على استقامة الظهر': 'With your torso bent forward, grip the bar and pull it toward your abdomen while keeping your back straight',
@@ -48,7 +48,6 @@ export const translateExerciseContent = (exercise: any, targetLanguage: 'en' | '
   if (exercise.name) {
     const translatedName = exerciseNameTranslations[exercise.name];
     if (translatedName) {
-      // If we have a direct translation, use it
       translatedExercise.name = translatedName;
     } else {
       // If no direct translation found, check if it's already in the target language

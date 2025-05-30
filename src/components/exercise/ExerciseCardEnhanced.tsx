@@ -159,8 +159,8 @@ export const ExerciseCardEnhanced = ({
 
       <ExerciseProgressDialog
         exercise={exercise}
-        isOpen={showProgressDialog}
-        onClose={() => setShowProgressDialog(false)}
+        open={showProgressDialog}
+        onOpenChange={setShowProgressDialog}
         onSave={(sets, reps, notes) => {
           onExerciseProgressUpdate(exercise.id, sets, reps, notes);
           setShowProgressDialog(false);
