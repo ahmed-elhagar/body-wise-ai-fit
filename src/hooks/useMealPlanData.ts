@@ -173,8 +173,8 @@ export const useMealPlanData = (weekOffset: number = 0) => {
               youtube_search_term: meal.youtube_search_term,
               image_url: meal.image_url,
               recipe_fetched: meal.recipe_fetched || false,
-              ingredients: safeParseJson(meal.ingredients, []),
-              instructions: safeParseJson(meal.instructions, []),
+              ingredients: safeParseJson(meal.ingredients, []) as MealIngredient[],
+              instructions: safeParseJson(meal.instructions, []) as string[],
               alternatives: safeParseJson(meal.alternatives, [])
             };
           } catch (parseError) {
@@ -202,10 +202,23 @@ export const useMealPlanData = (weekOffset: number = 0) => {
           }
         });
 
-        return {
-          weeklyPlan: weeklyPlan as WeeklyMealPlan,
+        const result = {
+          weeklyPlan: {
+            id: weeklyPlan.id,
+            user_id: weeklyPlan.user_id,
+            week_start_date: weeklyPlan.week_start_date,
+            total_calories: weeklyPlan.total_calories || 0,
+            total_protein: weeklyPlan.total_protein || 0,
+            total_carbs: weeklyPlan.total_carbs || 0,
+            total_fat: weeklyPlan.total_fat || 0,
+            generation_prompt: weeklyPlan.generation_prompt,
+            created_at: weeklyPlan.created_at,
+            life_phase_context: weeklyPlan.life_phase_context
+          } as WeeklyMealPlan,
           dailyMeals: processedMeals
         };
+
+        return result;
       } catch (error) {
         console.error('❌ useMealPlanData - Unexpected error:', error);
         throw error;

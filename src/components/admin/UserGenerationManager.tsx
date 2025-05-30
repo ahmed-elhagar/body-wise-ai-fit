@@ -1,40 +1,94 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, Users, Settings } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+
+interface UserProfile {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  ai_generations_remaining: number;
+}
 
 const UserGenerationManager = () => {
   const [selectedUserId, setSelectedUserId] = useState('');
   const [newGenerationLimit, setNewGenerationLimit] = useState('');
-  const [isUpdating, setIsUpdating] = useState(false);
+  const queryClient = useQueryClient();
 
-  // Mock users data - in a real app, this would come from props or a hook
-  const users = [
-    { id: '1', first_name: 'John', last_name: 'Doe', email: 'john@example.com' },
-    { id: '2', first_name: 'Jane', last_name: 'Smith', email: 'jane@example.com' },
-    { id: '3', first_name: 'Mike', last_name: 'Johnson', email: 'mike@example.com' },
-  ];
+  // Fetch real users data
+  const { data: users = [], isLoading: isLoadingUsers } = useQuery({
+    queryKey: ['admin-users-for-generation'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, email, ai_generations_remaining')
+        .order('first_name', { ascending: true });
+      
+      if (error) throw error;
+      return data as UserProfile[];
+    }
+  });
+
+  // Update user generation limit mutation
+  const updateGenerationLimitMutation = useMutation({
+    mutationFn: async ({ userId, newLimit }: { userId: string; newLimit: number }) => {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ 
+          ai_generations_remaining: newLimit,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users-for-generation'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      toast.success('Generation limit updated successfully');
+      setSelectedUserId('');
+      setNewGenerationLimit('');
+    },
+    onError: (error) => {
+      console.error('Failed to update generation limit:', error);
+      toast.error('Failed to update generation limit');
+    }
+  });
 
   const handleSubmit = async () => {
     if (selectedUserId && newGenerationLimit) {
-      setIsUpdating(true);
-      try {
-        // Add actual update logic here
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-        toast.success('Generation limit updated successfully');
-        setSelectedUserId('');
-        setNewGenerationLimit('');
-      } catch (error) {
-        toast.error('Failed to update generation limit');
-      } finally {
-        setIsUpdating(false);
+      const limit = parseInt(newGenerationLimit);
+      if (isNaN(limit) || limit < 0) {
+        toast.error('Please enter a valid number');
+        return;
       }
+      
+      updateGenerationLimitMutation.mutate({
+        userId: selectedUserId,
+        newLimit: limit
+      });
     }
   };
+
+  const selectedUser = users.find(user => user.id === selectedUserId);
+
+  if (isLoadingUsers) {
+    return (
+      <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+        <div className="flex items-center justify-center p-8">
+          <Loader2 className="w-6 h-6 animate-spin mr-2" />
+          <span>Loading users...</span>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -59,12 +113,17 @@ const UserGenerationManager = () => {
               onChange={(e) => setSelectedUserId(e.target.value)}
             >
               <option value="">Choose a user...</option>
-              {users?.map((user) => (
+              {users.map((user) => (
                 <option key={user.id} value={user.id}>
-                  {user.first_name} {user.last_name} ({user.email})
+                  {user.first_name} {user.last_name} ({user.email}) - Current: {user.ai_generations_remaining}
                 </option>
               ))}
             </select>
+            {selectedUser && (
+              <p className="text-xs text-gray-500 mt-1">
+                Current limit: {selectedUser.ai_generations_remaining} generations
+              </p>
+            )}
           </div>
 
           <div>
@@ -72,6 +131,7 @@ const UserGenerationManager = () => {
             <Input
               id="generation-limit"
               type="number"
+              min="0"
               value={newGenerationLimit}
               onChange={(e) => setNewGenerationLimit(e.target.value)}
               placeholder="Enter new limit"
@@ -82,10 +142,10 @@ const UserGenerationManager = () => {
           <div className="flex items-end">
             <Button
               onClick={handleSubmit}
-              disabled={isUpdating || !selectedUserId || !newGenerationLimit}
+              disabled={updateGenerationLimitMutation.isPending || !selectedUserId || !newGenerationLimit}
               className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 shadow-lg hover:shadow-xl transition-all duration-300"
             >
-              {isUpdating ? (
+              {updateGenerationLimitMutation.isPending ? (
                 <Loader2 className="w-4 h-4 animate-spin mr-2" />
               ) : (
                 <Users className="w-4 h-4 mr-2" />
@@ -94,6 +154,12 @@ const UserGenerationManager = () => {
             </Button>
           </div>
         </div>
+
+        {users.length === 0 && (
+          <div className="text-center py-8 text-gray-500">
+            No users found in the system.
+          </div>
+        )}
       </Card>
     </div>
   );
