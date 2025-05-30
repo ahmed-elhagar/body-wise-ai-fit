@@ -88,6 +88,23 @@ export const useOnboardingProgress = () => {
           break;
       }
 
+      // Calculate progress
+      const completedSteps = [
+        updateData.basic_info_completed || progress?.basic_info_completed,
+        updateData.health_assessment_completed || progress?.health_assessment_completed,
+        updateData.goals_setup_completed || progress?.goals_setup_completed,
+        updateData.preferences_completed || progress?.preferences_completed,
+        updateData.profile_review_completed || progress?.profile_review_completed,
+      ].filter(Boolean).length;
+
+      updateData.current_step = completedSteps;
+      updateData.completion_percentage = (completedSteps / 5) * 100;
+      updateData.total_steps = 5;
+
+      if (completedSteps === 5) {
+        updateData.completed_at = now;
+      }
+
       const { data, error } = await supabase
         .from('onboarding_progress')
         .upsert(updateData)
@@ -95,7 +112,7 @@ export const useOnboardingProgress = () => {
         .single();
 
       if (error) throw error;
-      return data as OnboardingProgress;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['onboarding-progress'] });

@@ -120,10 +120,12 @@ const CompactDailyView = ({
             </div>
             
             <div className="space-y-3">
-              {meals.map((meal) => (
+              {meals.map((meal, mealIndex) => (
                 <CompactMealCard
                   key={`${meal.id}-${meal.originalIndex}`}
                   meal={meal}
+                  index={mealIndex}
+                  mealType={mealType}
                   onShowRecipe={() => onShowRecipe(meal)}
                   onExchangeMeal={() => onExchangeMeal(meal, meal.originalIndex)}
                 />

@@ -108,18 +108,18 @@
     text-align: right;
   }
 
-  /* RTL sidebar positioning - override shadcn defaults */
-  [dir="rtl"] .group\\/sidebar-wrapper > div[data-sidebar="sidebar"] {
+  /* RTL sidebar positioning - using attribute selectors */
+  [dir="rtl"] .group\/sidebar-wrapper > [data-sidebar="sidebar"] {
     right: 0 !important;
     left: auto !important;
   }
 
-  [dir="rtl"] .group\\/sidebar-wrapper > div[data-sidebar="sidebar"][data-side="right"] {
+  [dir="rtl"] .group\/sidebar-wrapper > [data-sidebar="sidebar"][data-side="right"] {
     right: 0 !important;
     left: auto !important;
   }
 
-  [dir="rtl"] .group\\/sidebar-wrapper > div[data-sidebar="sidebar"][data-side="left"] {
+  [dir="rtl"] .group\/sidebar-wrapper > [data-sidebar="sidebar"][data-side="left"] {
     right: 0 !important;
     left: auto !important;
   }
@@ -234,7 +234,7 @@
   left: auto !important;
 }
 
-[dir="rtl"] .group\\/sidebar-wrapper .peer {
+[dir="rtl"] .group\/sidebar-wrapper .peer {
   right: 0 !important;
   left: auto !important;
 }

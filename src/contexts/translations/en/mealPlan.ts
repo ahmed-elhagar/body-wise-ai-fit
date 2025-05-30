@@ -1,3 +1,4 @@
+
 export const mealPlanTranslations = {
   mealPlan: "Meal Plan",
   noMealPlan: "No Meal Plan Yet",
@@ -33,10 +34,10 @@ export const mealPlanTranslations = {
   notEnoughCalories: "Not enough calories remaining to add a snack.",
   snackAddedSuccessfully: "Snack added successfully!",
   errorAddingSnack: "Error adding snack. Please try again.",
-  analyzing: "Analyzing...",
-  creating: "Creating...",
-  saving: "Saving...",
-  success: "Success!",
+  analyzing: "Analyzing your preferences...",
+  creating: "Creating your perfect meal plan...",
+  saving: "Saving to your profile...",
+  success: "Success! Your meal plan is ready!",
   caloriesAvailable: "calories available",
   perfectFit: "Let AI generate a snack that perfectly fits your remaining calories!",
   generateSnack: "Generate Snack",
@@ -85,4 +86,14 @@ export const mealPlanTranslations = {
   days: "Days",
   minutes: "Minutes",
   all: "All",
+  // Loading states
+  stepAnalyzing: "Analyzing your preferences",
+  stepGenerating: "Generating meal ideas",
+  stepOptimizing: "Optimizing nutrition",
+  stepPersonalizing: "Personalizing for you",
+  stepFinalizing: "Finalizing your plan",
+  generatingYourPlan: "Generating Your Meal Plan",
+  regeneratingYourPlan: "Regenerating Your Meal Plan",
+  aiGeneratingPlan: "AI Generating Plan",
+  pleaseWait: "Please wait while we create your personalized meal plan..."
 };
