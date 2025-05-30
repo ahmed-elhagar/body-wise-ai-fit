@@ -8,9 +8,9 @@ import { Settings, TestTube } from 'lucide-react';
 import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 
 export const FeatureFlagToggle: React.FC = () => {
-  const { flags, loading, toggleFlag } = useFeatureFlags();
+  const { flags, isLoading, toggleFlag } = useFeatureFlags();
 
-  if (loading) {
+  if (isLoading) {
     return <div>Loading feature flags...</div>;
   }
 
