@@ -1,3 +1,4 @@
+
 import {
   Sidebar,
   SidebarContent,
@@ -69,6 +70,11 @@ const AppSidebar = () => {
       icon: Dumbbell,
     },
     {
+      title: "Weight Tracking",
+      url: "/weight-tracking",
+      icon: Scale,
+    },
+    {
       title: t('navigation.progress'),
       url: "/progress",
       icon: TrendingUp,
@@ -100,14 +106,13 @@ const AppSidebar = () => {
               <SidebarGroupLabel>{t('navigation.menu')}</SidebarGroupLabel>
               <SidebarGroupContent>
                 {navigationItems.map((item) => (
-                  <SidebarMenuItem
-                    key={item.title}
-                    active={location.pathname === item.url}
-                  >
-                    <Link to={item.url} className="flex items-center space-x-2">
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </Link>
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={location.pathname === item.url}>
+                      <Link to={item.url} className="flex items-center space-x-2">
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
               </SidebarGroupContent>
@@ -117,19 +122,23 @@ const AppSidebar = () => {
                 <SidebarGroupLabel>Admin</SidebarGroupLabel>
                 <SidebarGroupContent>
                   {isAdmin && (
-                    <SidebarMenuItem active={location.pathname === "/admin"}>
-                      <Link to="/admin" className="flex items-center space-x-2">
-                        <Shield className="h-4 w-4" />
-                        <span>Admin Panel</span>
-                      </Link>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild isActive={location.pathname === "/admin"}>
+                        <Link to="/admin" className="flex items-center space-x-2">
+                          <Shield className="h-4 w-4" />
+                          <span>Admin Panel</span>
+                        </Link>
+                      </SidebarMenuButton>
                     </SidebarMenuItem>
                   )}
                   {isCoach && (
-                    <SidebarMenuItem active={location.pathname === "/coach"}>
-                      <Link to="/coach" className="flex items-center space-x-2">
-                        <MessageCircle className="h-4 w-4" />
-                        <span>Coach Panel</span>
-                      </Link>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild isActive={location.pathname === "/coach"}>
+                        <Link to="/coach" className="flex items-center space-x-2">
+                          <MessageCircle className="h-4 w-4" />
+                          <span>Coach Panel</span>
+                        </Link>
+                      </SidebarMenuButton>
                     </SidebarMenuItem>
                   )}
                 </SidebarGroupContent>
@@ -165,10 +174,12 @@ const AppSidebar = () => {
         <SidebarMenuButton />
         <SidebarMenu>
           {navigationItems.map((item) => (
-            <SidebarMenuItem key={item.title} active={location.pathname === item.url}>
-              <Link to={item.url}>
-                <item.icon className="h-4 w-4" />
-              </Link>
+            <SidebarMenuItem key={item.title}>
+              <SidebarMenuButton asChild isActive={location.pathname === item.url}>
+                <Link to={item.url}>
+                  <item.icon className="h-4 w-4" />
+                </Link>
+              </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>

@@ -26,7 +26,8 @@ export const enTranslations = {
     profile: "Profile",
     account: "Account",
     settings: "Settings",
-    signOut: "Sign Out"
+    signOut: "Sign Out",
+    signIn: "Sign In"
   },
   
   // Days of week (global level for reuse)
@@ -130,5 +131,22 @@ export const enTranslations = {
   "Add any notes about this food...": "Add any notes about this food...",
   "Less": "Less",
   "More": "More",
-  "days with logged food this month": "days with logged food this month"
+  "days with logged food this month": "days with logged food this month",
+
+  // Weight Tracking specific
+  "Weight Tracking": "Weight Tracking",
+  "Current Weight": "Current Weight",
+  "Weight Change": "Weight Change",
+  "Body Fat": "Body Fat",
+  "Muscle Mass": "Muscle Mass",
+  "BMI": "BMI",
+  "Goal Weight": "Goal Weight",
+  "Add Entry": "Add Entry",
+  "kg": "kg",
+  "lbs": "lbs",
+  "Date": "Date",
+  "Normal": "Normal",
+  "Underweight": "Underweight",
+  "Overweight": "Overweight",
+  "Obese": "Obese"
 };

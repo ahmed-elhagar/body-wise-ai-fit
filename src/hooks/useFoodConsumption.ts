@@ -105,6 +105,41 @@ export const useFoodConsumption = (date?: Date) => {
     });
   };
 
+  // Get historical data for calendar/heatmap
+  const useHistoryData = (startDate: Date, endDate: Date) => {
+    return useQuery({
+      queryKey: ['food-consumption-history', user?.id, format(startDate, 'yyyy-MM-dd'), format(endDate, 'yyyy-MM-dd')],
+      queryFn: async () => {
+        if (!user?.id) return [];
+
+        const { data, error } = await supabase
+          .from('food_consumption_log')
+          .select(`
+            *,
+            food_item:food_items(
+              id,
+              name,
+              brand,
+              category,
+              serving_description
+            )
+          `)
+          .eq('user_id', user.id)
+          .gte('consumed_at', startDate.toISOString())
+          .lte('consumed_at', endDate.toISOString())
+          .order('consumed_at', { ascending: false });
+
+        if (error) {
+          console.error('Error fetching food consumption history:', error);
+          throw error;
+        }
+
+        return data as FoodConsumptionLog[];
+      },
+      enabled: !!user?.id,
+    });
+  };
+
   // Delete food log entry
   const deleteConsumptionMutation = useMutation({
     mutationFn: async (logId: string) => {
@@ -133,6 +168,7 @@ export const useFoodConsumption = (date?: Date) => {
     isLoading,
     refetch,
     getConsumptionHistory,
+    useHistoryData,
     deleteConsumption: deleteConsumptionMutation.mutate,
     isDeletingConsumption: deleteConsumptionMutation.isPending,
   };

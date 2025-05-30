@@ -71,11 +71,95 @@ export const useWeightTracking = () => {
     },
   });
 
+  const updateWeightEntry = useMutation({
+    mutationFn: async ({ id, ...updateData }: Partial<WeightEntry> & { id: string }) => {
+      if (!user?.id) throw new Error('No user ID');
+
+      const { data, error } = await supabase
+        .from('weight_entries')
+        .update(updateData)
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['weight-entries', user?.id] });
+      toast.success('Weight entry updated successfully!');
+    },
+    onError: (error) => {
+      console.error('Weight entry update error:', error);
+      toast.error('Failed to update weight entry');
+    },
+  });
+
+  const deleteWeightEntry = useMutation({
+    mutationFn: async (id: string) => {
+      if (!user?.id) throw new Error('No user ID');
+
+      const { error } = await supabase
+        .from('weight_entries')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['weight-entries', user?.id] });
+      toast.success('Weight entry deleted successfully!');
+    },
+    onError: (error) => {
+      console.error('Weight entry delete error:', error);
+      toast.error('Failed to delete weight entry');
+    },
+  });
+
+  // Get weight statistics
+  const getWeightStats = () => {
+    if (!weightEntries || weightEntries.length === 0) return null;
+
+    const latest = weightEntries[0];
+    const oldest = weightEntries[weightEntries.length - 1];
+    const totalChange = latest.weight - oldest.weight;
+    
+    // Calculate weekly trend (last 7 entries or 7 days)
+    const weekAgoEntry = weightEntries.find(entry => {
+      const entryDate = new Date(entry.recorded_at);
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      return entryDate <= weekAgo;
+    });
+    
+    const weeklyChange = weekAgoEntry ? latest.weight - weekAgoEntry.weight : 0;
+    
+    // Calculate average weight
+    const avgWeight = weightEntries.reduce((sum, entry) => sum + entry.weight, 0) / weightEntries.length;
+
+    return {
+      currentWeight: latest.weight,
+      totalChange,
+      weeklyChange,
+      avgWeight,
+      entryCount: weightEntries.length,
+      latestEntry: latest,
+      oldestEntry: oldest,
+    };
+  };
+
   return {
     weightEntries: weightEntries || [],
     isLoading,
     error,
     addWeightEntry: addWeightEntry.mutate,
+    updateWeightEntry: updateWeightEntry.mutate,
+    deleteWeightEntry: deleteWeightEntry.mutate,
     isAdding: addWeightEntry.isPending,
+    isUpdating: updateWeightEntry.isPending,
+    isDeleting: deleteWeightEntry.isPending,
+    getWeightStats,
   };
 };
