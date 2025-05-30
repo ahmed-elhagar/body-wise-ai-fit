@@ -1,4 +1,3 @@
-
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -88,7 +87,7 @@ export const ExerciseProgramPageContent = ({
   if (!currentProgram) {
     return (
       <EmptyExerciseState
-        onGenerateProgram={(prefs) => handleGenerateAIProgram(prefs)}
+        onGenerateProgram={() => setShowAIDialog(true)}
         workoutType={workoutType}
         setWorkoutType={setWorkoutType}
         showAIDialog={showAIDialog}
