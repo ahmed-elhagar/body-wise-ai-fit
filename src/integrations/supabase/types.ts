@@ -627,6 +627,55 @@ export type Database = {
         }
         Relationships: []
       }
+      meal_comments: {
+        Row: {
+          body: string
+          coach_id: string
+          created_at: string
+          id: string
+          meal_log_id: string
+          trainee_id: string
+        }
+        Insert: {
+          body: string
+          coach_id: string
+          created_at?: string
+          id?: string
+          meal_log_id: string
+          trainee_id: string
+        }
+        Update: {
+          body?: string
+          coach_id?: string
+          created_at?: string
+          id?: string
+          meal_log_id?: string
+          trainee_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meal_comments_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meal_comments_meal_log_id_fkey"
+            columns: ["meal_log_id"]
+            isOneToOne: false
+            referencedRelation: "food_consumption_log"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meal_comments_trainee_id_fkey"
+            columns: ["trainee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       onboarding_progress: {
         Row: {
           basic_info_completed: boolean | null

@@ -1,118 +1,251 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useProfile } from '@/hooks/useProfile';
-import { enTranslations } from './translations/en';
-import { arTranslations } from './translations/ar';
+import { useRouter } from 'next/router';
 
-export type Language = 'en' | 'ar';
-
-interface LanguageContextType {
-  language: Language;
-  setLanguage: (lang: Language) => void;
+interface LanguageContextProps {
+  language: string;
+  setLanguage: (language: string) => void;
   t: (key: string) => string;
   isRTL: boolean;
 }
 
-const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
-
-// Flatten nested objects for translation lookup with better error handling
-const flattenTranslations = (obj: any, prefix = ''): Record<string, string> => {
-  const flattened: Record<string, string> = {};
-  
-  if (!obj || typeof obj !== 'object') {
-    console.warn('Invalid translation object:', obj);
-    return flattened;
-  }
-  
-  Object.keys(obj).forEach(key => {
-    const newKey = prefix ? `${prefix}.${key}` : key;
-    const value = obj[key];
-    
-    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-      Object.assign(flattened, flattenTranslations(value, newKey));
-    } else if (typeof value === 'string') {
-      flattened[newKey] = value;
-    } else {
-      console.warn(`Skipping non-string translation value for key: ${newKey}`, value);
-    }
-  });
-  
-  return flattened;
-};
-
-const translations: Record<Language, Record<string, string>> = {
-  en: flattenTranslations(enTranslations),
-  ar: flattenTranslations(arTranslations)
-};
-
-// Debug translation loading
-console.log('🌐 Translation system initialized:', {
-  englishKeys: Object.keys(translations.en).length,
-  arabicKeys: Object.keys(translations.ar).length,
-  sampleEnglishKeys: Object.keys(translations.en).slice(0, 10),
-  sampleArabicKeys: Object.keys(translations.ar).slice(0, 10)
+const LanguageContext = createContext<LanguageContextProps>({
+  language: 'en',
+  setLanguage: () => {},
+  t: (key: string) => key,
+  isRTL: false,
 });
 
-export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [language, setLanguageState] = useState<Language>('en');
-  const { profile, updateProfile } = useProfile();
+interface LanguageProviderProps {
+  children: React.ReactNode;
+}
 
-  // Load language from profile when available
+const translations = {
+  en: {
+    'Dashboard': 'Dashboard',
+    'Meal Plan': 'Meal Plan',
+    'Food Tracker': 'Food Tracker',
+    'Exercise': 'Exercise',
+    'Goals': 'Goals',
+    'Profile': 'Profile',
+    'Settings': 'Settings',
+    'Logout': 'Logout',
+    'Toggle Theme': 'Toggle Theme',
+    'Language': 'Language',
+    'Select Language': 'Select Language',
+    'Welcome': 'Welcome',
+    'Welcome back': 'Welcome back',
+    'Dashboard Page': 'Dashboard Page',
+    'Meal Plan Page': 'Meal Plan Page',
+    'Food Tracker Page': 'Food Tracker Page',
+    'Exercise Page': 'Exercise Page',
+    'Goals Page': 'Goals Page',
+    'Profile Page': 'Profile Page',
+    'Settings Page': 'Settings Page',
+    'Logout Action': 'Logout Action',
+    'Toggle Theme Action': 'Toggle Theme Action',
+    'Language Setting': 'Language Setting',
+    'Click me': 'Click me',
+    'Open': 'Open',
+    'Close': 'Close',
+    'Save': 'Save',
+    'Cancel': 'Cancel',
+    'Edit': 'Edit',
+    'Delete': 'Delete',
+    'Add': 'Add',
+    'View': 'View',
+    'Submit': 'Submit',
+    'Loading': 'Loading',
+    'Success': 'Success',
+    'Error': 'Error',
+    'Info': 'Info',
+    'Warning': 'Warning',
+    'Confirmation': 'Confirmation',
+    'Yes': 'Yes',
+    'No': 'No',
+    'Okay': 'Okay',
+    'Next': 'Next',
+    'Previous': 'Previous',
+    'Today': 'Today',
+    'Yesterday': 'Yesterday',
+    'Tomorrow': 'Tomorrow',
+    'Now': 'Now',
+    'Later': 'Later',
+    'January': 'January',
+    'February': 'February',
+    'March': 'March',
+    'April': 'April',
+    'May': 'May',
+    'June': 'June',
+    'July': 'July',
+    'August': 'August',
+    'September': 'September',
+    'October': 'October',
+    'November': 'November',
+    'December': 'December',
+    'Sunday': 'Sunday',
+    'Monday': 'Monday',
+    'Tuesday': 'Tuesday',
+    'Wednesday': 'Wednesday',
+    'Thursday': 'Thursday',
+    'Friday': 'Friday',
+    'Saturday': 'Saturday',
+    'Sun': 'Sun',
+    'Mon': 'Mon',
+    'Tue': 'Tue',
+    'Wed': 'Wed',
+    'Thu': 'Thu',
+    'Fri': 'Fri',
+    'Sat': 'Sat',
+    'Calories': 'Calories',
+    'Protein': 'Protein',
+    'Carbs': 'Carbs',
+    'Fat': 'Fat',
+    'Daily Nutrition': 'Daily Nutrition',
+    "Today's Food Log": "Today's Food Log",
+    "Add Food": "Add Food",
+    "No food logged today": "No food logged today",
+    "Start tracking your nutrition by adding your first meal!": "Start tracking your nutrition by adding your first meal!",
+    "Are you sure you want to delete this food log entry?": "Are you sure you want to delete this food log entry?",
+    'Meal Comments': 'Meal Comments',
+    'No comments yet': 'No comments yet',
+    'Start a conversation with your trainee': 'Start a conversation with your trainee',
+    'Your coach can leave feedback here': 'Your coach can leave feedback here',
+    'Leave feedback for your trainee...': 'Leave feedback for your trainee...',
+    'Reply to your coach...': 'Reply to your coach...',
+    'Press Ctrl+Enter to send': 'Press Ctrl+Enter to send',
+    'Coach': 'Coach',
+    'You': 'You',
+    'Are you sure you want to delete this comment?': 'Are you sure you want to delete this comment?',
+    'Comment added successfully': 'Comment added successfully',
+    'Failed to add comment': 'Failed to add comment',
+    'Comment deleted': 'Comment deleted',
+    'Failed to delete comment': 'Failed to delete comment',
+    'Coach left feedback 👋': 'Coach left feedback 👋',
+    'Viewing meals as': 'Viewing meals as',
+    'Meals': 'Meals',
+  },
+  ar: {
+    'Dashboard': 'لوحة القيادة',
+    'Meal Plan': 'خطة الوجبات',
+    'Food Tracker': 'متتبع الطعام',
+    'Exercise': 'تمرين',
+    'Goals': 'الأهداف',
+    'Profile': 'الملف الشخصي',
+    'Settings': 'الإعدادات',
+    'Logout': 'تسجيل الخروج',
+    'Toggle Theme': 'تبديل المظهر',
+    'Language': 'اللغة',
+    'Select Language': 'اختر اللغة',
+    'Welcome': 'مرحبا',
+    'Welcome back': 'مرحبا بعودتك',
+    'Dashboard Page': 'صفحة لوحة القيادة',
+    'Meal Plan Page': 'صفحة خطة الوجبات',
+    'Food Tracker Page': 'صفحة متتبع الطعام',
+    'Exercise Page': 'صفحة التمرين',
+    'Goals Page': 'صفحة الأهداف',
+    'Profile Page': 'صفحة الملف الشخصي',
+    'Settings Page': 'صفحة الإعدادات',
+    'Logout Action': 'تسجيل الخروج',
+    'Toggle Theme Action': 'تبديل المظهر',
+    'Language Setting': 'إعدادات اللغة',
+    'Click me': 'اضغط هنا',
+    'Open': 'فتح',
+    'Close': 'إغلاق',
+    'Save': 'حفظ',
+    'Cancel': 'إلغاء',
+    'Edit': 'تعديل',
+    'Delete': 'حذف',
+    'Add': 'إضافة',
+    'View': 'عرض',
+    'Submit': 'إرسال',
+    'Loading': 'جار التحميل',
+    'Success': 'نجاح',
+    'Error': 'خطأ',
+    'Info': 'معلومات',
+    'Warning': 'تحذير',
+    'Confirmation': 'تأكيد',
+    'Yes': 'نعم',
+    'No': 'لا',
+    'Okay': 'موافق',
+    'Next': 'التالي',
+    'Previous': 'السابق',
+    'Today': 'اليوم',
+    'Yesterday': 'الأمس',
+    'Tomorrow': 'غدًا',
+    'Now': 'الآن',
+    'Later': 'لاحقًا',
+    'January': 'يناير',
+    'February': 'فبراير',
+    'March': 'مارس',
+    'April': 'أبريل',
+    'May': 'مايو',
+    'June': 'يونيو',
+    'July': 'يوليو',
+    'August': 'أغسطس',
+    'September': 'سبتمبر',
+    'October': 'أكتوبر',
+    'November': 'نوفمبر',
+    'December': 'ديسمبر',
+    'Sunday': 'الأحد',
+    'Monday': 'الاثنين',
+    'Tuesday': 'الثلاثاء',
+    'Wednesday': 'الأربعاء',
+    'Thursday': 'الخميس',
+    'Friday': 'الجمعة',
+    'Saturday': 'السبت',
+    'Sun': 'الأحد',
+    'Mon': 'الاثنين',
+    'Tue': 'الثلاثاء',
+    'Wed': 'الأربعاء',
+    'Thu': 'الخميس',
+    'Fri': 'الجمعة',
+    'Sat': 'السبت',
+    'Calories': 'السعرات الحرارية',
+    'Protein': 'بروتين',
+    'Carbs': 'الكربوهيدرات',
+    'Fat': 'الدهون',
+    'Daily Nutrition': 'التغذية اليومية',
+    "Today's Food Log": "سجل الطعام اليوم",
+    "Add Food": "إضافة طعام",
+    "No food logged today": "لا يوجد طعام مسجل اليوم",
+    "Start tracking your nutrition by adding your first meal!": "ابدأ بتتبع تغذيتك بإضافة وجبتك الأولى!",
+    "Are you sure you want to delete this food log entry?": "هل أنت متأكد من حذف هذا السجل الغذائي؟",
+    'Meal Comments': 'تعليقات الوجبة',
+    'No comments yet': 'لا توجد تعليقات بعد',
+    'Start a conversation with your trainee': 'ابدأ محادثة مع المتدرب',
+    'Your coach can leave feedback here': 'يمكن لمدربك ترك ملاحظات هنا',
+    'Leave feedback for your trainee...': 'اترك ملاحظات للمتدرب...',
+    'Reply to your coach...': 'رد على مدربك...',
+    'Press Ctrl+Enter to send': 'اضغط Ctrl+Enter للإرسال',
+    'Coach': 'مدرب',
+    'You': 'أنت',
+    'Are you sure you want to delete this comment?': 'هل أنت متأكد من حذف هذا التعليق؟',
+    'Comment added successfully': 'تم إضافة التعليق بنجاح',
+    'Failed to add comment': 'فشل في إضافة التعليق',
+    'Comment deleted': 'تم حذف التعليق',
+    'Failed to delete comment': 'فشل في حذف التعليق',
+    'Coach left feedback 👋': 'ترك المدرب ملاحظة 👋',
+    'Viewing meals as': 'عرض وجبات',
+    'Meals': 'الوجبات',
+  }
+};
+
+export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
+  const [language, setLanguage] = useState<string>('en');
+  const router = useRouter();
+
   useEffect(() => {
-    if (profile?.preferred_language && profile.preferred_language !== language) {
-      console.log('LanguageContext - Loading language from profile:', profile.preferred_language);
-      setLanguageState(profile.preferred_language as Language);
-      updateDocumentDirection(profile.preferred_language as Language);
-    }
-  }, [profile?.preferred_language]);
+    const storedLanguage = localStorage.getItem('language') || router.locale || 'en';
+    setLanguage(storedLanguage);
+  }, [router.locale]);
 
-  // Initialize language on first load from localStorage if no profile
   useEffect(() => {
-    if (!profile) {
-      const savedLanguage = localStorage.getItem('language') as Language;
-      if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'ar')) {
-        setLanguageState(savedLanguage);
-        updateDocumentDirection(savedLanguage);
-      }
-    }
-  }, [profile]);
+    localStorage.setItem('language', language);
+    router.push(router.pathname, router.asPath, { locale: language });
+  }, [language, router]);
 
-  const updateDocumentDirection = (lang: Language) => {
-    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-    document.documentElement.lang = lang;
-    document.body.style.fontFamily = lang === 'ar' ? 'Cairo, sans-serif' : 'Inter, sans-serif';
-  };
-
-  const setLanguage = async (lang: Language) => {
-    console.log('LanguageContext - Setting language to:', lang);
-    setLanguageState(lang);
-    
-    // Update document direction immediately
-    updateDocumentDirection(lang);
-    
-    // Save to localStorage as backup
-    localStorage.setItem('language', lang);
-    
-    // Update profile if available
-    if (profile && updateProfile) {
-      try {
-        await updateProfile({ preferred_language: lang });
-        console.log('LanguageContext - Language updated in profile');
-      } catch (error) {
-        console.error('LanguageContext - Failed to update language in profile:', error);
-      }
-    }
-  };
-
-  const t = (key: string): string => {
-    const translation = translations[language]?.[key];
-    if (!translation) {
-      console.warn(`Missing translation for key: ${key} in language: ${language}`);
-      
-      // Return a more user-friendly fallback
-      const fallback = key.split('.').pop()?.replace(/([A-Z])/g, ' $1').trim() || key;
-      return fallback;
-    }
+  const t = (key: string) => {
+    const translation = (translations[language as keyof typeof translations] && translations[language as keyof typeof translations][key]) || key;
     return translation;
   };
 
@@ -120,24 +253,11 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t, isRTL }}>
-      {children}
+      <div dir={isRTL ? 'rtl' : 'ltr'}>
+        {children}
+      </div>
     </LanguageContext.Provider>
   );
 };
 
-export const useLanguage = (): LanguageContextType => {
-  const context = useContext(LanguageContext);
-  if (context === undefined) {
-    console.error('useLanguage must be used within a LanguageProvider, using fallback');
-    return {
-      language: 'en',
-      setLanguage: () => {},
-      t: (key: string) => {
-        console.warn(`Translation accessed outside provider: ${key}`);
-        return key.split('.').pop()?.replace(/([A-Z])/g, ' $1').trim() || key;
-      },
-      isRTL: false
-    };
-  }
-  return context;
-};
+export const useLanguage = () => useContext(LanguageContext);
