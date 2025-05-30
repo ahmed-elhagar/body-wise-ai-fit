@@ -13,9 +13,9 @@ export const enTranslations = {
   exercise: exercise,
   mealPlan: mealPlan,
   
-  // Life Phase Nutrition - add lifePhase to profile
+  // Life Phase Nutrition - safely merge profile with lifePhase
   profile: {
-    ...commonTranslations.profile,
+    ...(typeof commonTranslations.profile === 'object' && commonTranslations.profile !== null ? commonTranslations.profile : {}),
     lifePhase: lifePhase
   },
   
