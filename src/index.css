@@ -108,18 +108,17 @@
     text-align: right;
   }
 
-  /* RTL sidebar positioning - using attribute selectors */
-  [dir="rtl"] .group\/sidebar-wrapper > [data-sidebar="sidebar"] {
+  /* Enhanced RTL sidebar positioning */
+  [dir="rtl"] .group\/sidebar-wrapper {
+    flex-direction: row-reverse;
+  }
+
+  [dir="rtl"] [data-sidebar="sidebar"] {
     right: 0 !important;
     left: auto !important;
   }
 
-  [dir="rtl"] .group\/sidebar-wrapper > [data-sidebar="sidebar"][data-side="right"] {
-    right: 0 !important;
-    left: auto !important;
-  }
-
-  [dir="rtl"] .group\/sidebar-wrapper > [data-sidebar="sidebar"][data-side="left"] {
+  [dir="rtl"] .peer {
     right: 0 !important;
     left: auto !important;
   }
@@ -136,6 +135,32 @@
 
   [dir="rtl"] [data-sidebar="sidebar"] [data-sidebar="footer"] {
     text-align: right;
+  }
+
+  /* RTL sidebar inset positioning */
+  [dir="rtl"] [data-sidebar="sidebar"][data-variant="inset"] {
+    right: 0 !important;
+    left: auto !important;
+  }
+
+  /* RTL main content adjustment */
+  [dir="rtl"] .peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-2 {
+    margin-left: 0 !important;
+    margin-right: 0.5rem !important;
+  }
+
+  [dir="rtl"] .md\:peer-data-[variant=inset]\:ml-0 {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  /* Force RTL layout for sidebar wrapper */
+  [dir="rtl"] .group\/sidebar-wrapper > .peer {
+    transform: scaleX(-1);
+  }
+
+  [dir="rtl"] .group\/sidebar-wrapper > .peer > * {
+    transform: scaleX(-1);
   }
 
   /* RTL specific animations */
@@ -228,13 +253,13 @@
   border-color: hsl(var(--sidebar-border));
 }
 
-/* Force RTL sidebar positioning */
-[dir="rtl"] [data-sidebar="sidebar"] {
+/* Enhanced RTL sidebar positioning with higher specificity */
+[dir="rtl"] [data-sidebar="sidebar"][data-side="left"] {
   right: 0 !important;
   left: auto !important;
 }
 
-[dir="rtl"] .group\/sidebar-wrapper .peer {
+[dir="rtl"] [data-sidebar="sidebar"][data-side="right"] {
   right: 0 !important;
   left: auto !important;
 }
@@ -243,4 +268,22 @@
 [dir="rtl"] [data-mobile="true"] {
   right: 0 !important;
   left: auto !important;
+}
+
+/* RTL sidebar content spacing */
+[dir="rtl"] [data-sidebar="content"] {
+  padding-right: 0.5rem;
+  padding-left: 0.5rem;
+}
+
+/* RTL sidebar menu items */
+[dir="rtl"] [data-sidebar="menu-item"] {
+  direction: rtl;
+  text-align: right;
+}
+
+/* RTL sidebar group labels */
+[dir="rtl"] [data-sidebar="group-label"] {
+  text-align: right;
+  direction: rtl;
 }

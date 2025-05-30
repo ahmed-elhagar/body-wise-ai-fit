@@ -15,6 +15,20 @@ export const arTranslations = {
   mealPlan: mealPlan,
   profile: profile,
   
+  // Navigation items
+  navigation: {
+    appName: "فت فاتا",
+    menu: "القائمة",
+    dashboard: "لوحة التحكم",
+    mealPlan: "خطة الوجبات",
+    exercise: "التمارين",
+    progress: "التقدم", 
+    profile: "الملف الشخصي",
+    account: "الحساب",
+    settings: "الإعدادات",
+    signOut: "تسجيل الخروج"
+  },
+  
   // Days of week (global level for reuse)
   saturday: "السبت",
   sunday: "الأحد", 

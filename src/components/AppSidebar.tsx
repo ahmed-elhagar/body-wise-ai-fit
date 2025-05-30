@@ -82,7 +82,13 @@ export function AppSidebar() {
   }
 
   return (
-    <Sidebar variant="inset" className="border-r border-slate-200 bg-gradient-to-b from-slate-50 to-white">
+    <Sidebar 
+      variant="inset" 
+      className={`border-slate-200 bg-gradient-to-b from-slate-50 to-white ${
+        isRTL ? 'border-l' : 'border-r'
+      }`}
+      side={isRTL ? "right" : "left"}
+    >
       <SidebarHeader className="h-16 border-b border-slate-200 bg-gradient-to-r from-blue-600 to-purple-600">
         <div className={`flex items-center gap-3 px-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
           <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
@@ -109,7 +115,7 @@ export function AppSidebar() {
                       <Link 
                         to={item.url} 
                         className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
-                          isRTL ? 'flex-row-reverse' : ''
+                          isRTL ? 'flex-row-reverse text-right' : ''
                         } ${
                           active 
                             ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-md' 
@@ -149,12 +155,12 @@ export function AppSidebar() {
                     <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
                       <User2 className="h-4 w-4 text-white" />
                     </div>
-                    <div className="grid flex-1 text-left text-sm leading-tight">
+                    <div className={`grid flex-1 text-sm leading-tight ${isRTL ? 'text-right' : 'text-left'}`}>
                       <span className="truncate font-semibold text-slate-900">{user?.email}</span>
                       <span className="truncate text-xs text-slate-500">{t('navigation.account')}</span>
                     </div>
                   </div>
-                  <ChevronUp className="ml-auto size-4 text-slate-400" />
+                  <ChevronUp className={`size-4 text-slate-400 ${isRTL ? 'mr-auto' : 'ml-auto'}`} />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent

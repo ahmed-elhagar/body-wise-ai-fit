@@ -20,7 +20,7 @@ export interface OnboardingProgress {
   goals_setup_completed_at?: string;
   preferences_completed_at?: string;
   profile_review_completed_at?: string;
-  created_at: string;
+  started_at: string;
   updated_at: string;
   completed_at?: string;
 }
@@ -55,18 +55,10 @@ export const useOnboardingProgress = () => {
       if (!user?.id) throw new Error('No user ID');
 
       const now = new Date().toISOString();
-      
-      // First, get existing record to preserve created_at
-      const { data: existingRecord } = await supabase
-        .from('onboarding_progress')
-        .select('created_at')
-        .eq('user_id', user.id)
-        .maybeSingle();
 
       const updateData: any = {
         user_id: user.id,
         updated_at: now,
-        created_at: existingRecord?.created_at || now, // Preserve existing or set new
       };
 
       switch (step) {
@@ -141,7 +133,7 @@ export const useOnboardingProgress = () => {
         goals_setup_completed_at: data.goals_setup_completed_at,
         preferences_completed_at: data.preferences_completed_at,
         profile_review_completed_at: data.profile_review_completed_at,
-        created_at: data.created_at,
+        started_at: data.started_at,
         updated_at: data.updated_at,
         completed_at: data.completed_at,
       };
