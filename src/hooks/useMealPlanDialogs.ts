@@ -1,12 +1,12 @@
 
 import { useState } from "react";
-import type { Meal } from "@/types/meal";
+import type { DailyMeal } from "@/hooks/useMealPlanData";
 
 export const useMealPlanDialogs = () => {
   const [showAIDialog, setShowAIDialog] = useState(false);
   const [showRecipeDialog, setShowRecipeDialog] = useState(false);
   const [showExchangeDialog, setShowExchangeDialog] = useState(false);
-  const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
+  const [selectedMeal, setSelectedMeal] = useState<DailyMeal | null>(null);
   const [selectedMealIndex, setSelectedMealIndex] = useState(0);
   
   // AI preferences with proper defaults

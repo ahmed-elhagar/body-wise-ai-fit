@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ import MealExchangeDialog from "./MealExchangeDialog";
 import SnackPickerDialog from "./SnackPickerDialog";
 import MealPlanAIDialog from "./MealPlanAIDialog";
 import { toast } from "sonner";
+import type { DailyMeal } from "@/hooks/useMealPlanData";
 
 const MealPlanPage = () => {
   const { t, isRTL } = useLanguage();
@@ -280,8 +282,8 @@ const MealPlanPage = () => {
                     <MealPlanDayView
                       dayNumber={day.number}
                       weeklyPlan={mealPlanState.currentWeekPlan}
-                      onShowRecipe={mealPlanState.handleShowRecipe}
-                      onExchangeMeal={mealPlanState.handleExchangeMeal}
+                      onShowRecipe={(meal: DailyMeal) => mealPlanState.handleShowRecipe(meal)}
+                      onExchangeMeal={(meal: DailyMeal, index: number) => mealPlanState.handleExchangeMeal(meal, index)}
                       onAddSnack={() => handleAddSnack(day.number)}
                     />
                   </TabsContent>
@@ -291,8 +293,8 @@ const MealPlanPage = () => {
               <MealPlanWeekView
                 weeklyPlan={mealPlanState.currentWeekPlan}
                 weekDays={weekDays}
-                onShowRecipe={mealPlanState.handleShowRecipe}
-                onExchangeMeal={mealPlanState.handleExchangeMeal}
+                onShowRecipe={(meal: DailyMeal) => mealPlanState.handleShowRecipe(meal)}
+                onExchangeMeal={(meal: DailyMeal, index: number) => mealPlanState.handleExchangeMeal(meal, index)}
                 onAddSnack={handleAddSnack}
               />
             )}

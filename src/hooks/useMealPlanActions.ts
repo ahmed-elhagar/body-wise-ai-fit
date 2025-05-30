@@ -71,8 +71,16 @@ export const useMealPlanActions = (
     }
   }, [aiPreferences, language, currentWeekOffset, generateMealPlan, refetchMealPlan, queryClient, user?.id]);
 
+  // Add the missing handleRegeneratePlan method
+  const handleRegeneratePlan = useCallback(async () => {
+    console.log('🔄 Regenerating meal plan...');
+    return await handleGenerateAIPlan();
+  }, [handleGenerateAIPlan]);
+
   return {
     handleGenerateAIPlan,
-    isGenerating
+    handleRegeneratePlan,
+    isGenerating,
+    isShuffling: false // Add missing isShuffling property
   };
 };

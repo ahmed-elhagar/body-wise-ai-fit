@@ -57,6 +57,7 @@ export const useMealPlanState = () => {
     if (success) {
       dialogs.setShowAIDialog(false);
     }
+    return success;
   }, [handleGenerateAIPlan, dialogs.setShowAIDialog]);
 
   return {

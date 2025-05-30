@@ -28,6 +28,8 @@ export interface DailyMeal {
   servings: number;
   youtube_search_term?: string;
   image_url?: string;
+  alternatives?: any[];
+  recipe_fetched?: boolean;
 }
 
 export interface WeeklyMealPlan {
@@ -40,7 +42,21 @@ export interface WeeklyMealPlan {
   total_fat: number;
   generation_prompt: any;
   created_at: string;
+  life_phase_context?: any;
 }
+
+// Helper function to safely parse JSON fields
+const safeParseJson = (jsonField: any, fallback: any = []) => {
+  if (Array.isArray(jsonField)) return jsonField;
+  if (typeof jsonField === 'string') {
+    try {
+      return JSON.parse(jsonField);
+    } catch {
+      return fallback;
+    }
+  }
+  return jsonField || fallback;
+};
 
 export const useMealPlanData = (weekOffset: number = 0) => {
   const { user } = useAuth();
@@ -138,31 +154,53 @@ export const useMealPlanData = (weekOffset: number = 0) => {
           }, {} as Record<number, number>)
         });
 
-        // Process meals data with enhanced error handling
-        const processedMeals = (dailyMeals || []).map(meal => {
+        // Process meals data with enhanced error handling and proper type conversion
+        const processedMeals: DailyMeal[] = (dailyMeals || []).map(meal => {
           try {
             return {
-              ...meal,
-              ingredients: Array.isArray(meal.ingredients) 
-                ? meal.ingredients 
-                : typeof meal.ingredients === 'string' 
-                  ? JSON.parse(meal.ingredients || '[]')
-                  : [],
-              instructions: Array.isArray(meal.instructions)
-                ? meal.instructions
-                : typeof meal.instructions === 'string'
-                  ? JSON.parse(meal.instructions || '[]')
-                  : []
+              id: meal.id,
+              weekly_plan_id: meal.weekly_plan_id,
+              day_number: meal.day_number,
+              meal_type: meal.meal_type,
+              name: meal.name,
+              calories: meal.calories || 0,
+              protein: meal.protein || 0,
+              carbs: meal.carbs || 0,
+              fat: meal.fat || 0,
+              prep_time: meal.prep_time || 0,
+              cook_time: meal.cook_time || 0,
+              servings: meal.servings || 1,
+              youtube_search_term: meal.youtube_search_term,
+              image_url: meal.image_url,
+              recipe_fetched: meal.recipe_fetched || false,
+              ingredients: safeParseJson(meal.ingredients, []),
+              instructions: safeParseJson(meal.instructions, []),
+              alternatives: safeParseJson(meal.alternatives, [])
             };
           } catch (parseError) {
             console.error('Error parsing meal data:', parseError, meal);
             return {
-              ...meal,
+              id: meal.id,
+              weekly_plan_id: meal.weekly_plan_id,
+              day_number: meal.day_number,
+              meal_type: meal.meal_type,
+              name: meal.name,
+              calories: meal.calories || 0,
+              protein: meal.protein || 0,
+              carbs: meal.carbs || 0,
+              fat: meal.fat || 0,
+              prep_time: meal.prep_time || 0,
+              cook_time: meal.cook_time || 0,
+              servings: meal.servings || 1,
+              youtube_search_term: meal.youtube_search_term,
+              image_url: meal.image_url,
+              recipe_fetched: meal.recipe_fetched || false,
               ingredients: [],
-              instructions: []
+              instructions: [],
+              alternatives: []
             };
           }
-        }) as DailyMeal[];
+        });
 
         return {
           weeklyPlan: weeklyPlan as WeeklyMealPlan,
