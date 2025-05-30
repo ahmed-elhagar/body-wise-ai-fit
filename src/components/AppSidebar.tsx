@@ -56,10 +56,10 @@ export function AppSidebar() {
   };
 
   const navigation = [
-    { name: t('dashboard'), href: '/dashboard', icon: Home },
+    { name: t('nav.dashboard'), href: '/dashboard', icon: Home },
     { name: t('mealPlan'), href: '/meal-plan', icon: UtensilsCrossed },
     { name: t('exercise'), href: '/exercise', icon: Dumbbell },
-    { name: t('progress'), href: '/progress', icon: TrendingUp },
+    { name: t('nav.progress'), href: '/progress', icon: TrendingUp },
     { name: t('profile'), href: '/profile', icon: User },
   ];
 
@@ -68,11 +68,11 @@ export function AppSidebar() {
   }
 
   return (
-    <Sidebar className="border-r border-gray-200">
-      <SidebarHeader className="border-b border-gray-200 p-4">
+    <Sidebar className="border-r border-gray-200 bg-white">
+      <SidebarHeader className="border-b border-gray-200 p-4 bg-white">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-fitness-gradient rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
               <span className="text-white font-bold text-sm">FG</span>
             </div>
             <div className="flex flex-col">
@@ -87,7 +87,7 @@ export function AppSidebar() {
         <div className="hidden lg:block mt-4">
           {user && (
             <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-              <div className="w-10 h-10 bg-fitness-gradient rounded-full flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
                 <span className="text-white font-bold text-sm">
                   {user.email?.charAt(0).toUpperCase()}
                 </span>
@@ -103,7 +103,7 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="p-4">
+      <SidebarContent className="p-4 bg-white">
         <SidebarMenu>
           {navigation.map((item) => {
             const Icon = item.icon;
@@ -113,7 +113,11 @@ export function AppSidebar() {
                 <SidebarMenuButton
                   onClick={() => navigate(item.href)}
                   isActive={isActive}
-                  className="w-full justify-start"
+                  className={`w-full justify-start mb-1 ${
+                    isActive 
+                      ? 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100' 
+                      : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                  }`}
                 >
                   <Icon className="w-4 h-4" />
                   <span>{item.name}</span>
@@ -124,13 +128,13 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-gray-200 p-4">
+      <SidebarFooter className="border-t border-gray-200 p-4 bg-white">
         <SidebarMenu>
           {hasAdminRole && (
             <SidebarMenuItem>
               <SidebarMenuButton
                 onClick={() => navigate('/admin')}
-                className="w-full justify-start text-yellow-700 hover:bg-yellow-50"
+                className="w-full justify-start text-yellow-700 hover:bg-yellow-50 mb-1"
               >
                 <Shield className="w-4 h-4" />
                 <span>Admin Panel</span>

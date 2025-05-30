@@ -15,8 +15,8 @@ const Layout = ({ children }: LayoutProps) => {
     <SidebarProvider>
       <div className={`min-h-screen flex w-full bg-gray-50 ${isRTL ? 'rtl' : 'ltr'} ${language === 'ar' ? 'font-arabic' : ''}`}>
         <AppSidebar />
-        <SidebarInset className="flex-1">
-          <main className="flex-1 overflow-auto">
+        <SidebarInset className="flex-1 w-full">
+          <main className="flex-1 overflow-auto p-6 w-full">
             {children}
           </main>
         </SidebarInset>

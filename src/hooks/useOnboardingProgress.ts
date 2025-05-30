@@ -57,6 +57,7 @@ export const useOnboardingProgress = () => {
       const updateData: any = {
         user_id: user.id,
         updated_at: new Date().toISOString(),
+        created_at: new Date().toISOString(),
       };
 
       switch (step) {
