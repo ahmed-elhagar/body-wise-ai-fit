@@ -1,3 +1,4 @@
+
 export const exercise = {
   sets: "Sets",
   reps: "Reps",
@@ -65,24 +66,18 @@ export const exercise = {
   preferredEquipment: "Preferred Equipment (optional)",
   targetMuscleGroups: "Target Muscle Groups (optional)",
   
-  // Equipment translations
-  bodyweight: "Bodyweight",
-  dumbbells: "Dumbbells",
-  barbells: "Barbells",
-  resistance_bands: "Resistance Bands",
+  // Equipment translations (removing duplicates)
   kettlebells: "Kettlebells",
   pull_up_bar: "Pull-up Bar",
   yoga_mat: "Yoga Mat",
   stability_ball: "Stability Ball",
   
-  // Muscle group translations
+  // Muscle group translations (removing duplicates)
   chest: "Chest",
   back: "Back",
   shoulders: "Shoulders",
   biceps: "Biceps",
   triceps: "Triceps",
   legs: "Legs",
-  glutes: "Glutes",
-  core: "Core",
-  full_body: "Full Body"
+  glutes: "Glutes"
 };

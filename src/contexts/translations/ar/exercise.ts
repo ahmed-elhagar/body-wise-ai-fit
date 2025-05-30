@@ -1,3 +1,4 @@
+
 export const exercise = {
   exerciseList: "قائمة التمارين",
   noExercises: "لا توجد تمارين",
@@ -122,24 +123,11 @@ export const exercise = {
   preferredEquipment: "المعدات المفضلة (اختياري)",
   targetMuscleGroups: "مجموعات العضلات المستهدفة (اختياري)",
   
-  // Equipment translations
-  bodyweight: "وزن الجسم",
-  dumbbells: "الدمبل",
+  // Equipment translations (removing duplicates)
   barbells: "البار",
   resistance_bands: "أربطة المقاومة",
   kettlebells: "الكيتل بيل",
   pull_up_bar: "بار العقلة",
   yoga_mat: "سجادة اليوغا",
-  stability_ball: "كرة التوازن",
-  
-  // Muscle group translations
-  chest: "الصدر",
-  back: "الظهر",
-  shoulders: "الأكتاف",
-  biceps: "العضلة ذات الرأسين",
-  triceps: "العضلة ثلاثية الرؤوس",
-  legs: "الساقين",
-  glutes: "المؤخرة",
-  core: "عضلات البطن",
-  full_body: "الجسم كاملاً"
+  stability_ball: "كرة التوازن"
 };
