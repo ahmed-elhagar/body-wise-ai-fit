@@ -2,13 +2,13 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
-import { AdminHeader } from "@/components/admin/AdminHeader";
-import { StatsCards } from "@/components/admin/StatsCards";
-import { UsersTable } from "@/components/admin/UsersTable";
-import { SubscriptionsTab } from "@/components/admin/SubscriptionsTab";
-import { CoachesTab } from "@/components/admin/CoachesTab";
-import { AnalyticsTab } from "@/components/admin/AnalyticsTab";
-import { UserGenerationManager } from "@/components/admin/UserGenerationManager";
+import AdminHeader from "@/components/admin/AdminHeader";
+import StatsCards from "@/components/admin/StatsCards";
+import UsersTable from "@/components/admin/UsersTable";
+import SubscriptionsTab from "@/components/admin/SubscriptionsTab";
+import CoachesTab from "@/components/admin/CoachesTab";
+import AnalyticsTab from "@/components/admin/AnalyticsTab";
+import UserGenerationManager from "@/components/admin/UserGenerationManager";
 import { useRole } from "@/hooks/useRole";
 import { Navigate } from "react-router-dom";
 
