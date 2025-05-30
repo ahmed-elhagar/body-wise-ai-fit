@@ -32,7 +32,7 @@ import { useRole } from "@/hooks/useRole";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const location = useLocation();
-  const { t, language, toggleLanguage, isRTL } = useLanguage();
+  const { t, language, setLanguage, isRTL } = useLanguage();
   const { user, signOut } = useAuth();
   const { profile } = useProfile();
   const { role, isPro, isCoach, isAdmin } = useRole();
@@ -46,6 +46,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     } catch (error) {
       console.error("Sign out failed:", error);
     }
+  };
+
+  const toggleLanguage = () => {
+    setLanguage(language === 'en' ? 'ar' : 'en');
   };
 
   const navigation = [
@@ -148,7 +152,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         {navigation.map((item) => (
           <SidebarMenuItem key={item.title}>
             <SidebarMenuButton
-              variant={item.isActive ? "default" : "ghost"}
+              variant={item.isActive ? "default" : "outline"}
               size="lg"
               asChild
             >
