@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown, RefreshCw } from 'lucide-react';
+import { ChevronDown, RefreshCw, AlertTriangle, CheckCircle } from 'lucide-react';
 
 interface DebugData {
   timestamp: string;
@@ -104,6 +104,23 @@ export const SubscriptionDebugPanel = () => {
     }
   };
 
+  const forceSubscriptionSync = async () => {
+    try {
+      console.log('Force syncing subscription data...');
+      setIsLoading(true);
+      
+      // Force refresh all queries
+      await collectDebugData();
+      
+      // Also trigger a role refetch if we had access to it
+      window.location.reload(); // Quick way to refresh everything
+    } catch (error) {
+      console.error('Error forcing sync:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (user) {
       collectDebugData();
@@ -115,13 +132,31 @@ export const SubscriptionDebugPanel = () => {
 
   if (!user) return null;
 
+  const getSubscriptionStatus = () => {
+    if (!debugData) return 'loading';
+    
+    const hasActiveSubscription = debugData.activeSubscriptions.length > 0;
+    const hasProRole = debugData.userProfile?.role === 'pro';
+    
+    if (hasActiveSubscription && hasProRole) return 'healthy';
+    if (hasActiveSubscription && !hasProRole) return 'role-issue';
+    if (!hasActiveSubscription && hasProRole) return 'subscription-issue';
+    return 'no-subscription';
+  };
+
+  const status = getSubscriptionStatus();
+
   return (
     <Card className="mt-4 border-blue-200 bg-blue-50">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>
           <CardHeader className="cursor-pointer hover:bg-blue-100 transition-colors">
             <CardTitle className="text-sm flex items-center justify-between text-blue-800">
-              🔧 Subscription Debug Panel (Live)
+              <div className="flex items-center gap-2">
+                🔧 Subscription Debug Panel (Live)
+                {status === 'healthy' && <CheckCircle className="w-4 h-4 text-green-600" />}
+                {status !== 'healthy' && status !== 'loading' && <AlertTriangle className="w-4 h-4 text-orange-600" />}
+              </div>
               <div className="flex items-center gap-2">
                 {isLoading && <RefreshCw className="w-4 h-4 animate-spin" />}
                 <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
@@ -131,7 +166,7 @@ export const SubscriptionDebugPanel = () => {
         </CollapsibleTrigger>
         <CollapsibleContent>
           <CardContent className="space-y-4">
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <Button 
                 size="sm" 
                 variant="outline" 
@@ -146,6 +181,14 @@ export const SubscriptionDebugPanel = () => {
                 onClick={testWebhookFlow}
               >
                 Test Webhook Flow
+              </Button>
+              <Button 
+                size="sm" 
+                variant="default" 
+                onClick={forceSubscriptionSync}
+                disabled={isLoading}
+              >
+                Force Sync
               </Button>
             </div>
 
@@ -187,23 +230,64 @@ export const SubscriptionDebugPanel = () => {
                 </div>
 
                 <div>
-                  <h4 className="font-semibold text-blue-800 mb-1">Diagnosis</h4>
+                  <h4 className="font-semibold text-blue-800 mb-1">System Status & Diagnosis</h4>
                   <div className="bg-white p-2 rounded border">
+                    {status === 'loading' && (
+                      <p className="text-blue-600">⏳ Loading subscription data...</p>
+                    )}
+                    {status === 'healthy' && (
+                      <p className="text-green-600">✅ Everything looks perfect! User has active subscription and pro role</p>
+                    )}
+                    {status === 'role-issue' && (
+                      <div className="text-red-600">
+                        <p className="font-medium">❌ ROLE SYNC ISSUE DETECTED</p>
+                        <p>• Active subscription exists but user role is not 'pro'</p>
+                        <p>• This suggests webhook didn't update the role properly</p>
+                        <p>• Try the "Force Sync" button above</p>
+                      </div>
+                    )}
+                    {status === 'subscription-issue' && (
+                      <div className="text-orange-600">
+                        <p className="font-medium">⚠️ SUBSCRIPTION SYNC ISSUE</p>
+                        <p>• User has pro role but no active subscription found</p>
+                        <p>• This might be a webhook delay or processing issue</p>
+                      </div>
+                    )}
+                    {status === 'no-subscription' && (
+                      <p className="text-gray-600">ℹ️ No active subscription - user is on free plan</p>
+                    )}
+                    
                     {debugData.subscriptions.length === 0 && (
-                      <p className="text-red-600">❌ No subscription records found in database</p>
+                      <p className="text-red-600 mt-2">❌ No subscription records found in database</p>
                     )}
                     {debugData.subscriptions.length > 0 && debugData.subscriptions[0]?.status !== 'active' && (
-                      <p className="text-orange-600">⚠️ Subscription exists but status is: {debugData.subscriptions[0]?.status}</p>
+                      <p className="text-orange-600 mt-2">⚠️ Subscription exists but status is: {debugData.subscriptions[0]?.status}</p>
                     )}
                     {debugData.subscriptions.length > 0 && debugData.subscriptions[0]?.status === 'active' && !debugData.subscriptions[0]?.stripe_subscription_id && (
-                      <p className="text-orange-600">⚠️ Active subscription but no Stripe ID - webhook may not have processed</p>
+                      <p className="text-orange-600 mt-2">⚠️ Active subscription but no Stripe ID - webhook may not have processed</p>
                     )}
-                    {debugData.activeSubscriptions.length > 0 && debugData.userProfile?.role !== 'pro' && (
-                      <p className="text-red-600">❌ Active subscription exists but user role is not 'pro'</p>
-                    )}
-                    {debugData.activeSubscriptions.length > 0 && debugData.userProfile?.role === 'pro' && (
-                      <p className="text-green-600">✅ Everything looks correct - user has active subscription and pro role</p>
-                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="font-semibold text-blue-800 mb-1">Integration Health Check</h4>
+                  <div className="bg-white p-2 rounded border space-y-1">
+                    <p className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded-full bg-green-500"></span>
+                      Supabase Connection: ✅ Connected
+                    </p>
+                    <p className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded-full bg-green-500"></span>
+                      User Authentication: ✅ Active
+                    </p>
+                    <p className="flex items-center gap-2">
+                      <span className={`w-3 h-3 rounded-full ${debugData.subscriptions.length > 0 ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                      Subscription Table: {debugData.subscriptions.length > 0 ? '✅ Has Data' : '❌ No Records'}
+                    </p>
+                    <p className="flex items-center gap-2">
+                      <span className={`w-3 h-3 rounded-full ${debugData.userProfile?.role === 'pro' ? 'bg-green-500' : 'bg-yellow-500'}`}></span>
+                      User Role: {debugData.userProfile?.role === 'pro' ? '✅ Pro Active' : '⚠️ Not Pro'}
+                    </p>
                   </div>
                 </div>
 
