@@ -51,27 +51,40 @@ serve(async (req) => {
             throw new Error("No user_id in session metadata");
           }
 
+          // First, find the customer email to get user info
+          const customer = await stripe.customers.retrieve(session.customer as string);
+          const customerEmail = (customer as any).email;
+
+          logStep("Found customer details", { userId, customerEmail, subscriptionId: subscription.id });
+
           // Update subscription record
           const { error: subError } = await supabaseClient
             .from('subscriptions')
-            .update({
+            .upsert({
+              user_id: userId,
+              stripe_customer_id: session.customer as string,
               stripe_subscription_id: subscription.id,
               status: 'active',
+              plan_type: session.metadata?.plan_type || 'monthly',
               current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
               current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-              stripe_price_id: subscription.items.data[0].price.id
-            })
-            .eq('user_id', userId);
+              cancel_at_period_end: false,
+              stripe_price_id: subscription.items.data[0].price.id,
+              interval: subscription.items.data[0].price.recurring?.interval || 'month'
+            }, { onConflict: 'user_id' });
 
           if (subError) {
             console.error('Error updating subscription:', subError);
             throw new Error('Failed to update subscription');
           }
 
-          // Update user role to pro
+          // Update user role to pro and reset AI generations
           const { error: roleError } = await supabaseClient
             .from('profiles')
-            .update({ role: 'pro' })
+            .update({ 
+              role: 'pro',
+              ai_generations_remaining: 999999 // Unlimited for pro users
+            })
             .eq('id', userId);
 
           if (roleError) {
@@ -79,7 +92,7 @@ serve(async (req) => {
             throw new Error('Failed to update user role');
           }
 
-          logStep("User upgraded to pro", { userId, subscriptionId: subscription.id });
+          logStep("User upgraded to pro successfully", { userId, subscriptionId: subscription.id });
         }
         break;
       }
@@ -91,7 +104,7 @@ serve(async (req) => {
         if (invoice.subscription) {
           const subscription = await stripe.subscriptions.retrieve(invoice.subscription as string);
           
-          // Find user by customer ID
+          // Find user by subscription ID
           const { data: subRecord, error: findError } = await supabaseClient
             .from('subscriptions')
             .select('user_id')
@@ -103,7 +116,7 @@ serve(async (req) => {
             break;
           }
 
-          // Update subscription period
+          // Update subscription period and ensure active status
           const { error: updateError } = await supabaseClient
             .from('subscriptions')
             .update({
@@ -116,9 +129,22 @@ serve(async (req) => {
 
           if (updateError) {
             console.error('Error updating subscription period:', updateError);
+          } else {
+            logStep("Subscription period updated", { userId: subRecord.user_id });
           }
 
-          logStep("Subscription period updated", { userId: subRecord.user_id });
+          // Ensure user still has pro role and unlimited generations
+          const { error: roleError } = await supabaseClient
+            .from('profiles')
+            .update({ 
+              role: 'pro',
+              ai_generations_remaining: 999999
+            })
+            .eq('id', subRecord.user_id);
+
+          if (roleError) {
+            console.error('Error maintaining pro role:', roleError);
+          }
         }
         break;
       }
@@ -160,9 +186,9 @@ serve(async (req) => {
 
         if (roleError) {
           console.error('Error downgrading user role:', roleError);
+        } else {
+          logStep("User downgraded to normal", { userId: subRecord.user_id });
         }
-
-        logStep("User downgraded to normal", { userId: subRecord.user_id });
         break;
       }
 
@@ -195,9 +221,25 @@ serve(async (req) => {
 
         if (updateError) {
           console.error('Error updating subscription:', updateError);
+        } else {
+          logStep("Subscription updated", { userId: subRecord.user_id, status: subscription.status });
         }
 
-        logStep("Subscription updated", { userId: subRecord.user_id, status: subscription.status });
+        // Update user role based on subscription status
+        const newRole = subscription.status === 'active' ? 'pro' : 'normal';
+        const newGenerations = subscription.status === 'active' ? 999999 : 5;
+
+        const { error: roleError } = await supabaseClient
+          .from('profiles')
+          .update({ 
+            role: newRole,
+            ai_generations_remaining: newGenerations
+          })
+          .eq('id', subRecord.user_id);
+
+        if (roleError) {
+          console.error('Error updating user role:', roleError);
+        }
         break;
       }
 

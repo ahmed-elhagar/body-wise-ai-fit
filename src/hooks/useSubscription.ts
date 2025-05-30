@@ -22,7 +22,7 @@ export const useSubscription = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: subscription, isLoading } = useQuery({
+  const { data: subscription, isLoading, refetch } = useQuery({
     queryKey: ['subscription', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
@@ -37,7 +37,7 @@ export const useSubscription = () => {
       return data as Subscription | null;
     },
     enabled: !!user?.id,
-    refetchInterval: 10000, // Poll every 10 seconds to catch webhook updates
+    refetchInterval: 5000, // Poll every 5 seconds to catch webhook updates faster
   });
 
   const createCheckoutSession = useMutation({
@@ -53,6 +53,14 @@ export const useSubscription = () => {
       if (data.url) {
         // Open Stripe checkout in a new tab
         window.open(data.url, '_blank');
+        // Start polling more frequently while checkout is in progress
+        const pollInterval = setInterval(() => {
+          refetch();
+          queryClient.invalidateQueries({ queryKey: ['user-role'] });
+        }, 2000);
+        
+        // Stop polling after 5 minutes
+        setTimeout(() => clearInterval(pollInterval), 300000);
       }
     },
     onError: (error) => {
@@ -97,6 +105,7 @@ export const useSubscription = () => {
   return {
     subscription,
     isLoading,
+    refetch,
     createCheckoutSession: createCheckoutSession.mutate,
     cancelSubscription: cancelSubscription.mutate,
     adminCancelSubscription: adminCancelSubscription.mutate,

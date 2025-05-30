@@ -6,10 +6,30 @@ import { CheckCircle, Star, Zap, Users, Calendar } from "lucide-react";
 import { useRole } from "@/hooks/useRole";
 import { useSubscription } from "@/hooks/useSubscription";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import { toast } from "sonner";
 
 const Pro = () => {
-  const { isPro, role } = useRole();
+  const { isPro, role, refetch: refetchRole } = useRole();
   const { subscription, createCheckoutSession, cancelSubscription, isCreatingCheckout, isCancelling } = useSubscription();
+  const [searchParams] = useSearchParams();
+
+  // Handle successful subscription
+  useEffect(() => {
+    const subscriptionStatus = searchParams.get('subscription');
+    if (subscriptionStatus === 'success') {
+      toast.success('Welcome to FitGenius Pro! Your subscription is now active.');
+      // Refetch user role and subscription status
+      refetchRole();
+      // Remove the URL parameter
+      window.history.replaceState({}, '', '/pro');
+    } else if (subscriptionStatus === 'cancelled') {
+      toast.info('Subscription cancelled. You can try again anytime.');
+      // Remove the URL parameter
+      window.history.replaceState({}, '', '/pro');
+    }
+  }, [searchParams, refetchRole]);
 
   const features = [
     { icon: Zap, title: "Unlimited AI Generations", description: "No limits on meal plans and exercise programs" },

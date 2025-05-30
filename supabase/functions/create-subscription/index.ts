@@ -64,8 +64,8 @@ serve(async (req) => {
 
     // Define price mapping
     const priceMapping: Record<string, { price: number, interval: string }> = {
-      'monthly': { price: 999, interval: 'month' }, // $9.99/month
-      'yearly': { price: 9999, interval: 'year' }   // $99.99/year
+      'monthly': { price: 1900, interval: 'month' }, // $19/month
+      'yearly': { price: 14400, interval: 'year' }   // $144/year
     };
 
     const planConfig = priceMapping[plan_type];
@@ -89,8 +89,8 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
-      success_url: `${req.headers.get("origin")}/dashboard?success=true`,
-      cancel_url: `${req.headers.get("origin")}/pro?cancelled=true`,
+      success_url: `${req.headers.get("origin")}/pro?subscription=success`,
+      cancel_url: `${req.headers.get("origin")}/pro?subscription=cancelled`,
       metadata: {
         user_id: user.id,
         plan_type: plan_type
