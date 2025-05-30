@@ -35,6 +35,33 @@ export const useFoodDatabase = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
+  // Helper function to upload meal image
+  const uploadMealImage = async (file: File, consumptionLogId: string): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${consumptionLogId}_${Date.now()}.${fileExt}`;
+      const filePath = `meal-photos/${user?.id}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('meal-images')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        console.error('Error uploading meal image:', uploadError);
+        return null;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('meal-images')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Error in uploadMealImage:', error);
+      return null;
+    }
+  };
+
   // Centralized search using only food_items table
   const searchFoodItems = (searchTerm: string, category?: string) => {
     return useQuery({
@@ -219,7 +246,8 @@ export const useFoodDatabase = () => {
       carbs,
       fat,
       source = 'manual',
-      mealData
+      mealData,
+      mealImage
     }: {
       foodItemId: string;
       quantity: number;
@@ -231,6 +259,7 @@ export const useFoodDatabase = () => {
       fat: number;
       source?: string;
       mealData?: any;
+      mealImage?: File;
     }) => {
       if (!user?.id) throw new Error('User not authenticated');
 
@@ -259,6 +288,7 @@ export const useFoodDatabase = () => {
         source
       });
 
+      // First, log the consumption
       const { data, error } = await supabase
         .from('food_consumption_log')
         .insert({
@@ -280,6 +310,23 @@ export const useFoodDatabase = () => {
         console.error('Log consumption error:', error);
         throw error;
       }
+
+      // If there's a meal image, upload it and update the consumption log
+      if (mealImage && data?.id) {
+        try {
+          const imageUrl = await uploadMealImage(mealImage, data.id);
+          if (imageUrl) {
+            await supabase
+              .from('food_consumption_log')
+              .update({ meal_image_url: imageUrl })
+              .eq('id', data.id);
+          }
+        } catch (imageError) {
+          console.error('Error uploading meal image:', imageError);
+          // Don't fail the entire operation if image upload fails
+        }
+      }
+
       return data;
     },
     onSuccess: () => {

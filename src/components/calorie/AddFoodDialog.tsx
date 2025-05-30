@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calculator, Scale, Clock } from "lucide-react";
+import { Calculator, Scale, Clock, Camera, Upload, X } from "lucide-react";
 
 interface AddFoodDialogProps {
   isOpen: boolean;
@@ -22,6 +22,8 @@ const AddFoodDialog = ({ isOpen, onClose, selectedFood, onLogFood, isLogging }: 
   const [quantity, setQuantity] = useState<number>(100);
   const [mealType, setMealType] = useState<string>("snack");
   const [notes, setNotes] = useState<string>("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   if (!selectedFood) return null;
 
@@ -35,6 +37,23 @@ const AddFoodDialog = ({ isOpen, onClose, selectedFood, onLogFood, isLogging }: 
   const carbs = calculateNutrition(selectedFood.carbs_per_100g || 0, quantity);
   const fat = calculateNutrition(selectedFood.fat_per_100g || 0, quantity);
 
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+    }
+  };
+
+  const removeImage = () => {
+    setSelectedFile(null);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    setPreviewUrl(null);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -47,6 +66,7 @@ const AddFoodDialog = ({ isOpen, onClose, selectedFood, onLogFood, isLogging }: 
       protein,
       carbs,
       fat,
+      mealImage: selectedFile, // Include the uploaded image
       // Include meal data if this is from meal plan
       mealData: selectedFood._mealData || null
     };
@@ -63,7 +83,7 @@ const AddFoodDialog = ({ isOpen, onClose, selectedFood, onLogFood, isLogging }: 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Scale className="w-5 h-5 text-blue-600" />
@@ -93,6 +113,50 @@ const AddFoodDialog = ({ isOpen, onClose, selectedFood, onLogFood, isLogging }: 
               )}
             </div>
           </Card>
+
+          {/* Image Upload Section */}
+          <div className="space-y-3">
+            <Label htmlFor="meal-image">Meal Photo (Optional)</Label>
+            
+            {!previewUrl ? (
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-blue-400 transition-colors">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                  id="meal-image"
+                />
+                <label htmlFor="meal-image" className="cursor-pointer flex flex-col items-center">
+                  <Upload className="w-8 h-8 text-gray-400 mb-2" />
+                  <Button type="button" variant="outline" size="sm" className="mb-2">
+                    <Camera className="w-4 h-4 mr-2" />
+                    Add Photo
+                  </Button>
+                  <p className="text-xs text-gray-500 text-center">
+                    Upload a photo of your meal for your records
+                  </p>
+                </label>
+              </div>
+            ) : (
+              <div className="relative">
+                <img
+                  src={previewUrl}
+                  alt="Meal preview"
+                  className="w-full h-32 object-cover rounded-lg border"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={removeImage}
+                  className="absolute top-2 right-2 h-8 w-8 p-0 bg-white/90 hover:bg-white"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
+          </div>
 
           {/* Quantity Input */}
           <div className="space-y-2">
