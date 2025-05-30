@@ -17,14 +17,14 @@ export const useMealShuffle = () => {
     setIsShuffling(true);
     
     try {
-      console.log('🔄 Starting meal shuffle for plan:', weeklyPlanId);
+      console.log('🔄 Starting meal shuffle for plan:', weeklyPlanId, 'user:', user.id);
       
       // Show immediate feedback
       toast.loading('Shuffling your meals across the week...', {
         duration: 10000,
       });
 
-      // Call the shuffle function directly without using AI credits
+      // Call the shuffle function with proper authentication
       const { data, error } = await supabase.functions.invoke('shuffle-weekly-meals', {
         body: {
           weeklyPlanId,
@@ -35,13 +35,15 @@ export const useMealShuffle = () => {
       // Dismiss loading toast
       toast.dismiss();
 
+      console.log('🔄 Shuffle function response:', { data, error });
+
       if (error) {
         console.error('❌ Shuffle function error:', error);
-        throw error;
+        throw new Error(error.message || 'Failed to shuffle meals');
       }
 
       if (data?.success) {
-        console.log('✅ Meals shuffled successfully!');
+        console.log('✅ Meals shuffled successfully!', data);
         
         toast.success(
           `🎲 ${data.message} Your meals have been redistributed across the week!`,

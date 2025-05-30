@@ -19,15 +19,32 @@ export const useMealPlanActions = (
   const { generateMealPlan, isGenerating } = useAIMealPlan();
   const { shuffleMeals, isShuffling } = useMealShuffle();
 
-  // Optimized shuffle handler
+  // Enhanced shuffle handler with better validation
   const handleRegeneratePlan = useCallback(async () => {
     if (!currentWeekPlan?.weeklyPlan?.id) {
       toast.error(t('noMealPlanToShuffle') || 'No meal plan found to shuffle');
       return;
     }
+
+    if (!user?.id) {
+      toast.error('Please log in to shuffle meals');
+      return;
+    }
     
     try {
+      console.log('🔄 Initiating meal shuffle:', {
+        weeklyPlanId: currentWeekPlan.weeklyPlan.id,
+        userId: user.id,
+        weekOffset: currentWeekOffset
+      });
+
       await shuffleMeals(currentWeekPlan.weeklyPlan.id);
+      
+      // Invalidate queries to refresh data
+      await queryClient.invalidateQueries({
+        queryKey: ['weekly-meal-plan']
+      });
+      
       // Refresh the data after successful shuffle
       setTimeout(() => {
         refetchMealPlan?.();
@@ -36,7 +53,7 @@ export const useMealPlanActions = (
       console.error('Failed to shuffle meals:', error);
       toast.error('Failed to shuffle meals. Please try again.');
     }
-  }, [currentWeekPlan?.weeklyPlan?.id, shuffleMeals, t, refetchMealPlan]);
+  }, [currentWeekPlan?.weeklyPlan?.id, user?.id, shuffleMeals, t, refetchMealPlan, queryClient, currentWeekOffset]);
 
   // Enhanced AI generation handler with better cache management
   const handleGenerateAIPlan = useCallback(async () => {
