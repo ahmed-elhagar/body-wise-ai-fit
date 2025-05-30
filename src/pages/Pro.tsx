@@ -104,17 +104,22 @@ const Pro = () => {
               <div className="flex items-center justify-center gap-2 mb-4">
                 <Star className="w-8 h-8 text-yellow-500" />
                 <h1 className="text-4xl font-bold text-gray-900">FitGenius Pro</h1>
-                <Badge className="bg-yellow-500 text-white">ACTIVE</Badge>
+                <Badge className="bg-yellow-500 text-white" data-testid="user-role-badge">ACTIVE</Badge>
               </div>
               <p className="text-gray-600 text-lg">You're enjoying all Pro benefits!</p>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={forceRefresh}
-                className="mt-2"
-              >
-                Refresh Status
-              </Button>
+              <div className="mt-2 space-y-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={forceRefresh}
+                  className="mt-2"
+                >
+                  Refresh Status
+                </Button>
+                <div className="text-sm text-gray-600">
+                  AI Generations: <span data-testid="ai-generations-remaining">∞</span>
+                </div>
+              </div>
             </div>
 
             {/* Debug Panel */}
@@ -133,7 +138,10 @@ const Pro = () => {
                     </div>
                     <div>
                       <p className="text-sm text-gray-600">Status</p>
-                      <Badge variant={subscription.status === 'active' ? 'default' : 'secondary'}>
+                      <Badge 
+                        variant={subscription.status === 'active' ? 'default' : 'secondary'}
+                        data-testid="subscription-status"
+                      >
                         {subscription.status}
                       </Badge>
                     </div>
@@ -151,6 +159,7 @@ const Pro = () => {
                         variant="outline" 
                         onClick={() => cancelSubscription()}
                         disabled={isCancelling}
+                        data-testid="manage-subscription-button"
                       >
                         {isCancelling ? 'Cancelling...' : 'Cancel Subscription'}
                       </Button>
@@ -196,6 +205,9 @@ const Pro = () => {
               Unlock unlimited AI-powered meal planning and exercise programs. Take your fitness journey to the next level.
             </p>
             <div className="mt-4 flex items-center justify-center gap-4">
+              <Badge variant="secondary" data-testid="user-role-badge">
+                {role?.toUpperCase() || 'NORMAL'}
+              </Badge>
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -203,6 +215,9 @@ const Pro = () => {
               >
                 Refresh Status
               </Button>
+              <div className="text-sm text-gray-600">
+                AI Generations: <span data-testid="ai-generations-remaining">5</span>
+              </div>
             </div>
           </div>
 
@@ -225,6 +240,7 @@ const Pro = () => {
                   size="lg"
                   onClick={() => createCheckoutSession({ planType: 'monthly' })}
                   disabled={isCreatingCheckout}
+                  data-testid="monthly-plan-button"
                 >
                   {isCreatingCheckout ? 'Creating...' : 'Start Monthly Plan'}
                 </Button>
@@ -260,6 +276,7 @@ const Pro = () => {
                   size="lg"
                   onClick={() => createCheckoutSession({ planType: 'yearly' })}
                   disabled={isCreatingCheckout}
+                  data-testid="yearly-plan-button"
                 >
                   {isCreatingCheckout ? 'Creating...' : 'Start Yearly Plan'}
                 </Button>

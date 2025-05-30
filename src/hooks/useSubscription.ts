@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
+import { trackEvent } from '@/lib/analytics';
 
 interface Subscription {
   id: string;
@@ -51,6 +52,21 @@ export const useSubscription = () => {
   const createCheckoutSession = useMutation({
     mutationFn: async ({ planType }: { planType: 'monthly' | 'yearly' }) => {
       console.log('useSubscription - Creating checkout session for:', planType);
+      
+      // Track upgrade clicked event
+      if (user?.id) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+          
+        trackEvent('upgrade_clicked', {
+          plan_type: planType,
+          user_role: profile?.role || 'normal'
+        });
+      }
+      
       const { data, error } = await supabase.functions.invoke('create-subscription', {
         body: { plan_type: planType }
       });
@@ -90,6 +106,21 @@ export const useSubscription = () => {
 
   const cancelSubscription = useMutation({
     mutationFn: async () => {
+      // Track cancellation event
+      if (user?.id && subscription) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+          
+        trackEvent('cancel_subscription', {
+          plan_type: subscription.plan_type,
+          user_id: user.id,
+          user_role: profile?.role || 'normal'
+        });
+      }
+      
       const { data, error } = await supabase.functions.invoke('cancel-subscription');
       if (error) throw error;
       return data;

@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { identifyUser, resetAnalytics } from '@/lib/analytics';
 
 interface AuthContextType {
   user: User | null;
@@ -48,15 +49,35 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Check admin status in background without blocking
+        // Handle analytics identification
         if (session?.user) {
-          setTimeout(() => {
+          // Identify user in analytics
+          setTimeout(async () => {
             if (mounted) {
+              try {
+                const { data: profile } = await supabase
+                  .from('profiles')
+                  .select('role, first_name, last_name')
+                  .eq('id', session.user.id)
+                  .single();
+                
+                identifyUser(session.user.id, {
+                  email: session.user.email,
+                  role: profile?.role || 'normal',
+                  first_name: profile?.first_name,
+                  last_name: profile?.last_name
+                });
+              } catch (error) {
+                console.warn('Failed to identify user in analytics:', error);
+              }
+              
               checkAdminStatus(session.user.id);
             }
           }, 0);
         } else {
           setIsAdmin(false);
+          // Reset analytics on logout
+          resetAnalytics();
         }
         
         // Always set loading to false after auth state change
@@ -193,6 +214,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(null);
       setSession(null);
       setIsAdmin(false);
+      resetAnalytics();
       console.log('useAuth - Sign out successful');
     } catch (error: any) {
       console.error('useAuth - Sign out error:', error);
