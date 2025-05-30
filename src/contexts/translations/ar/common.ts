@@ -1,4 +1,3 @@
-
 export const commonTranslations = {
   // Common app-wide translations
   loading: "جاري التحميل...",
@@ -237,4 +236,56 @@ export const commonTranslations = {
   english: "الإنجليزية",
   arabic: "العربية",
   changeLanguage: "تغيير اللغة",
+  
+  // Goals (Arabic translations)
+  "Goals": "الأهداف",
+  "Set and track your fitness goals": "حدد وتتبع أهدافك في اللياقة البدنية",
+  "Weight Goal": "هدف الوزن",
+  "Daily Macro Goals": "أهداف المغذيات اليومية",
+  "Set your weight goal to track progress": "حدد هدف الوزن لتتبع التقدم",
+  "Set Weight Goal": "تحديد هدف الوزن",
+  "Target Weight (kg)": "الوزن المستهدف (كجم)",
+  "Enter target weight": "أدخل الوزن المستهدف",
+  "Target Date (optional)": "التاريخ المستهدف (اختياري)",
+  "Why is this goal important to you?": "لماذا هذا الهدف مهم لك؟",
+  "Save Goal": "حفظ الهدف",
+  "Saving...": "جاري الحفظ...",
+  "Current Weight": "الوزن الحالي",
+  "Target Weight": "الوزن المستهدف",
+  "Progress": "التقدم",
+  "Target Date:": "التاريخ المستهدف:",
+  "Almost There!": "أوشكت على الوصول!",
+  "Making Progress": "تحرز تقدماً",
+  "Getting Started": "البداية",
+  "Set daily macro targets to optimize nutrition": "حدد أهداف المغذيات اليومية لتحسين التغذية",
+  "Set Macro Goals": "تحديد أهداف المغذيات",
+  "Calories (kcal)": "السعرات (سعرة)",
+  "Protein (g)": "البروتين (جم)",
+  "Carbs (g)": "الكربوهيدرات (جم)",
+  "Fat (g)": "الدهون (جم)",
+  "Save Goals": "حفظ الأهداف",
+  "All Goals Met!": "🏆 تم تحقيق جميع الأهداف!",
+  "Track your daily intake": "تتبع استهلاكك اليومي",
+  "Goal Achieved!": "تم تحقيق الهدف!",
+  "On Track": "على المسار الصحيح",
+  "At Risk": "في خطر",
+  "No Goal Set": "لم يتم تحديد هدف",
+  "Goal History": "تاريخ الأهداف",
+  "Goal History & Milestones": "تاريخ الأهداف والإنجازات",
+  "Your goal milestones will appear here": "ستظهر إنجازات أهدافك هنا",
+  "No Goals Set Yet": "لم يتم تحديد أهداف بعد",
+  "Start your fitness journey by setting your first goal": "ابدأ رحلة اللياقة البدنية بتحديد هدفك الأول",
+  "Popular goals to get started:": "أهداف شائعة للبداية:",
+  "Lose 5kg in 3 months": "فقدان 5 كيلو في 3 أشهر",
+  "Eat 100g protein daily": "تناول 100 جرام بروتين يومياً",
+  "Monitor your fitness journey and achievements": "راقب رحلة اللياقة البدنية وإنجازاتك",
+  "Overview": "نظرة عامة",
+  "History": "التاريخ",
+  "BMI Status": "حالة مؤشر كتلة الجسم",
+  "Current BMI calculation": "حساب مؤشر كتلة الجسم الحالي",
+  "Daily Macros": "المغذيات اليومية",
+  "All Targets Met!": "🏆 تم تحقيق جميع الأهداف!",
+  "Weekly Progress": "التقدم الأسبوعي",
+  "Last 7 days": "آخر 7 أيام",
+  "Manage Goals": "إدارة الأهداف"
 };

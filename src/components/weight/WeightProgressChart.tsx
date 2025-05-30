@@ -5,6 +5,8 @@ import { TrendingUp, TrendingDown, Minus, Scale } from "lucide-react";
 import { WeightEntry } from "@/hooks/useWeightTracking";
 import { useState, useMemo } from "react";
 import { subDays, format } from "date-fns";
+import { useGoals } from "@/hooks/useGoals";
+import { Badge } from "@/components/ui/badge";
 
 interface WeightProgressChartProps {
   weightEntries: WeightEntry[];
@@ -12,6 +14,7 @@ interface WeightProgressChartProps {
 
 const WeightProgressChart = ({ weightEntries }: WeightProgressChartProps) => {
   const [timeRange, setTimeRange] = useState<30 | 90 | 180>(30);
+  const { getWeightGoal } = useGoals();
   
   // Filter data based on time range
   const chartData = useMemo(() => {
@@ -44,14 +47,9 @@ const WeightProgressChart = ({ weightEntries }: WeightProgressChartProps) => {
 
   const trend = getTrend();
 
-  // Calculate goal weight line (example: could come from user_goals table)
-  const goalWeight = useMemo(() => {
-    if (chartData.length === 0) return null;
-    // This could be fetched from user_goals table
-    // For now, we'll use a simple calculation: 10% weight loss from max weight
-    const maxWeight = Math.max(...chartData.map(d => d.weight));
-    return maxWeight * 0.9; // Example goal: lose 10%
-  }, [chartData]);
+  // Get goal weight from user goals
+  const weightGoal = getWeightGoal();
+  const goalWeight = weightGoal?.target_value;
 
   const formatTooltipValue = (value: any, name: string) => {
     if (typeof value === 'number') {
@@ -78,6 +76,11 @@ const WeightProgressChart = ({ weightEntries }: WeightProgressChartProps) => {
           <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
             <Scale className="w-5 h-5 text-blue-600" />
             Weight Progress
+            {goalWeight && (
+              <Badge variant="outline" className="ml-2 text-xs">
+                Goal: {goalWeight}kg
+              </Badge>
+            )}
           </h3>
           <p className="text-sm text-gray-600">Track your weight journey over time</p>
         </div>
@@ -156,7 +159,12 @@ const WeightProgressChart = ({ weightEntries }: WeightProgressChartProps) => {
                   y={goalWeight} 
                   stroke="#ef4444" 
                   strokeDasharray="5 5"
-                  label={{ value: "Goal", position: "right" }}
+                  strokeWidth={2}
+                  label={{ 
+                    value: `Goal: ${goalWeight}kg`, 
+                    position: "right",
+                    style: { fontSize: '12px', fill: '#ef4444' }
+                  }}
                 />
               )}
               
