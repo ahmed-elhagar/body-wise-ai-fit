@@ -60,21 +60,6 @@ const EnhancedMealPlanPage = () => {
     });
   };
 
-  const handleShowRecipe = (meal: DailyMeal) => {
-    mealPlanState.handleShowRecipe(meal);
-  };
-
-  const handleExchangeMeal = async (meal: DailyMeal, index: number) => {
-    mealPlanState.handleExchangeMeal(meal, index);
-    
-    // Show toast after exchange
-    setTimeout(() => {
-      toast.success("Shopping list updated ✅", {
-        duration: 2000,
-      });
-    }, 1000);
-  };
-
   const handleGenerateAIPlan = async () => {
     console.log('🎯 EnhancedMealPlanPage: Starting AI generation with preferences:', mealPlanState.aiPreferences);
     
@@ -184,7 +169,7 @@ const EnhancedMealPlanPage = () => {
                     size="sm"
                     variant="outline"
                     className="flex-1 bg-gray-800 border-gray-600 text-gray-300 hover:bg-[#FF6F3C] hover:text-white hover:border-[#FF6F3C]"
-                    onClick={() => handleShowRecipe(meal)}
+                    onClick={() => mealPlanState.handleShowRecipe(meal)}
                   >
                     <ChefHat className="w-3 h-3 mr-1" />
                     Recipe
@@ -193,7 +178,7 @@ const EnhancedMealPlanPage = () => {
                     size="sm"
                     variant="outline"
                     className="flex-1 bg-gray-800 border-gray-600 text-gray-300 hover:bg-orange-500 hover:text-white hover:border-orange-500"
-                    onClick={() => handleExchangeMeal(meal, index)}
+                    onClick={() => mealPlanState.handleExchangeMeal(meal, index)}
                   >
                     <ArrowLeftRight className="w-3 h-3 mr-1" />
                     Exchange

@@ -1,7 +1,7 @@
 
 import { useCallback } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useDynamicMealPlan } from "@/hooks/useDynamicMealPlan";
+import { useMealPlanData } from "@/hooks/useMealPlanData";
 import { useMealPlanActions } from "@/hooks/useMealPlanActions";
 import { useMealPlanNavigation } from "@/hooks/useMealPlanNavigation";
 import { useMealPlanDialogs } from "@/hooks/useMealPlanDialogs";
@@ -15,7 +15,7 @@ export const useMealPlanState = () => {
   const navigation = useMealPlanNavigation();
   const dialogs = useMealPlanDialogs();
   
-  const { currentWeekPlan, isLoading, error, refetch: refetchMealPlan } = useDynamicMealPlan(navigation.currentWeekOffset);
+  const { data: currentWeekPlan, isLoading, error, refetch: refetchMealPlan } = useMealPlanData(navigation.currentWeekOffset);
   const { handleRegeneratePlan, handleGenerateAIPlan, isGenerating, isShuffling } = useMealPlanActions(
     currentWeekPlan,
     navigation.currentWeekOffset,
