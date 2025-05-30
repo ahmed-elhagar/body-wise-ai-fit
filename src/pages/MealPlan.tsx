@@ -1,11 +1,11 @@
 
 import ProtectedRoute from "@/components/ProtectedRoute";
-import EnhancedMealPlanPage from "@/components/meal-plan/EnhancedMealPlanPage";
+import MealPlanPage from "@/components/meal-plan/MealPlanPage";
 
 const MealPlan = () => {
   return (
     <ProtectedRoute>
-      <EnhancedMealPlanPage />
+      <MealPlanPage />
     </ProtectedRoute>
   );
 };
