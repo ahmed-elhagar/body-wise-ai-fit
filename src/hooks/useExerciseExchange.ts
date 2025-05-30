@@ -58,14 +58,19 @@ export const useExerciseExchange = () => {
         throw new Error('Weekly exchange limit reached (2 exchanges per week)');
       }
 
-      // Get original exercise details
+      console.log('🔄 Starting exercise exchange...', { exerciseId, reason });
+
+      // Get original exercise details first for logging
       const { data: originalExercise, error: exerciseError } = await supabase
         .from('exercises')
-        .select('*, daily_workouts!inner(*, weekly_exercise_programs!inner(*))')
+        .select('name, sets, reps, muscle_groups, equipment')
         .eq('id', exerciseId)
         .single();
 
-      if (exerciseError) throw exerciseError;
+      if (exerciseError) {
+        console.error('Error fetching original exercise:', exerciseError);
+        throw new Error('Could not find the exercise to exchange');
+      }
 
       // Use credit system
       const creditResult = await checkAndUseCreditAsync({
@@ -80,6 +85,8 @@ export const useExerciseExchange = () => {
       });
 
       try {
+        console.log('🤖 Calling exchange-exercise function...');
+        
         // Call AI exchange service
         const { data, error } = await supabase.functions.invoke('exchange-exercise', {
           body: {
@@ -91,9 +98,15 @@ export const useExerciseExchange = () => {
           }
         });
 
-        if (error) throw error;
+        console.log('📥 Exchange function response:', { data, error });
+
+        if (error) {
+          console.error('Exchange function error:', error);
+          throw new Error(error.message || 'Failed to call exchange function');
+        }
 
         if (!data?.success) {
+          console.error('Exchange failed:', data?.error);
           throw new Error(data?.error || 'Failed to exchange exercise');
         }
 
@@ -108,6 +121,7 @@ export const useExerciseExchange = () => {
           }
         });
 
+        console.log('✅ Exercise exchange completed successfully');
         return data;
       } catch (error) {
         // Mark generation as failed
@@ -118,19 +132,21 @@ export const useExerciseExchange = () => {
         throw error;
       }
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       // Invalidate exercise queries to refresh the data
       queryClient.invalidateQueries({ queryKey: ['exercise-programs'] });
       queryClient.invalidateQueries({ queryKey: ['exercise-program'] });
       queryClient.invalidateQueries({ queryKey: ['weekly-exercise-exchanges'] });
       
-      toast.success('Exercise exchanged successfully!');
+      toast.success(`Exercise exchanged! New exercise: ${data.newExercise?.name}`);
     },
     onError: (error) => {
       console.error('Exercise exchange error:', error);
       
       if (error.message.includes('limit reached')) {
         toast.error('Weekly exchange limit reached (2 exchanges per week)');
+      } else if (error.message.includes('not found')) {
+        toast.error('Exercise not found. Please try again.');
       } else {
         toast.error(error.message || 'Failed to exchange exercise');
       }

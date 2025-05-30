@@ -21,14 +21,18 @@ serve(async (req) => {
 
     const { exerciseId, reason, preferences, userLanguage = 'en', userId } = await req.json();
 
-    console.log('🔄 Exchange exercise request:', { exerciseId, reason, userLanguage });
+    console.log('🔄 Exchange exercise request:', { exerciseId, reason, userLanguage, userId });
 
-    // Get original exercise details - fix the query to get single exercise
+    if (!exerciseId) {
+      throw new Error('Exercise ID is required');
+    }
+
+    // Get original exercise details with better error handling
     const { data: originalExercise, error: exerciseError } = await supabaseClient
       .from('exercises')
       .select('*')
       .eq('id', exerciseId)
-      .single();
+      .maybeSingle();
 
     if (exerciseError) {
       console.error('Exercise query error:', exerciseError);
@@ -36,16 +40,19 @@ serve(async (req) => {
     }
 
     if (!originalExercise) {
+      console.error('Exercise not found for ID:', exerciseId);
       throw new Error('Exercise not found');
     }
+
+    console.log('✅ Found original exercise:', originalExercise.name);
 
     // Generate exchange prompt - AI will automatically detect muscle groups
     const exchangePrompt = `
 You are a fitness expert AI. The user wants to exchange the following exercise:
 
 **Current Exercise:** ${originalExercise.name}
-**Sets:** ${originalExercise.sets}
-**Reps:** ${originalExercise.reps}
+**Sets:** ${originalExercise.sets || 3}
+**Reps:** ${originalExercise.reps || '12'}
 **Equipment:** ${originalExercise.equipment || 'bodyweight'}
 **Muscle Groups:** ${originalExercise.muscle_groups?.join(', ') || 'full body'}
 **Instructions:** ${originalExercise.instructions || 'No instructions provided'}
@@ -65,8 +72,8 @@ Please provide a suitable alternative exercise that:
 Respond with a JSON object in this exact format:
 {
   "name": "Exercise name in ${userLanguage}",
-  "sets": ${originalExercise.sets},
-  "reps": "${originalExercise.reps}",
+  "sets": ${originalExercise.sets || 3},
+  "reps": "${originalExercise.reps || '12'}",
   "rest_seconds": ${originalExercise.rest_seconds || 60},
   "muscle_groups": ${JSON.stringify(originalExercise.muscle_groups || ['full_body'])},
   "equipment": "required equipment",
@@ -75,13 +82,15 @@ Respond with a JSON object in this exact format:
   "youtube_search_term": "Search term for YouTube tutorial"
 }
 
-Ensure the response is valid JSON only, no additional text.
+IMPORTANT: Respond with ONLY valid JSON, no additional text or markdown formatting.
 `;
 
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAIApiKey) {
       throw new Error('OpenAI API key not configured');
     }
+
+    console.log('🤖 Calling OpenAI API...');
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -94,7 +103,7 @@ Ensure the response is valid JSON only, no additional text.
         messages: [
           {
             role: 'system',
-            content: 'You are a professional fitness trainer AI that provides exercise alternatives. Always respond with valid JSON only.'
+            content: 'You are a professional fitness trainer AI that provides exercise alternatives. Always respond with valid JSON only, no markdown or additional formatting.'
           },
           {
             role: 'user',
@@ -107,7 +116,9 @@ Ensure the response is valid JSON only, no additional text.
     });
 
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error('OpenAI API error:', response.status, errorText);
+      throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
     }
 
     const aiResponse = await response.json();
@@ -117,28 +128,40 @@ Ensure the response is valid JSON only, no additional text.
       throw new Error('No response from AI');
     }
 
-    // Parse the AI response
+    console.log('🤖 AI Response received:', aiContent);
+
+    // Parse the AI response with better error handling
     let newExerciseData;
     try {
-      newExerciseData = JSON.parse(aiContent);
+      // Clean the response to ensure it's valid JSON
+      const cleanedContent = aiContent.trim();
+      newExerciseData = JSON.parse(cleanedContent);
     } catch (parseError) {
       console.error('Failed to parse AI response:', aiContent);
-      throw new Error('Invalid AI response format');
+      console.error('Parse error:', parseError);
+      throw new Error(`Invalid AI response format: ${parseError.message}`);
     }
 
-    // Update the exercise in the database
+    // Validate required fields
+    if (!newExerciseData.name) {
+      throw new Error('AI response missing exercise name');
+    }
+
+    console.log('✅ Parsed new exercise data:', newExerciseData);
+
+    // Update the exercise in the database with the new AI-generated data
     const { data: updatedExercise, error: updateError } = await supabaseClient
       .from('exercises')
       .update({
         name: newExerciseData.name,
-        sets: newExerciseData.sets,
-        reps: newExerciseData.reps,
-        rest_seconds: newExerciseData.rest_seconds,
-        muscle_groups: newExerciseData.muscle_groups,
-        equipment: newExerciseData.equipment,
-        difficulty: newExerciseData.difficulty,
-        instructions: newExerciseData.instructions,
-        youtube_search_term: newExerciseData.youtube_search_term,
+        sets: newExerciseData.sets || originalExercise.sets || 3,
+        reps: newExerciseData.reps || originalExercise.reps || '12',
+        rest_seconds: newExerciseData.rest_seconds || originalExercise.rest_seconds || 60,
+        muscle_groups: newExerciseData.muscle_groups || originalExercise.muscle_groups || ['full_body'],
+        equipment: newExerciseData.equipment || originalExercise.equipment || 'bodyweight',
+        difficulty: newExerciseData.difficulty || originalExercise.difficulty || 'intermediate',
+        instructions: newExerciseData.instructions || 'No instructions provided',
+        youtube_search_term: newExerciseData.youtube_search_term || newExerciseData.name,
         updated_at: new Date().toISOString()
       })
       .eq('id', exerciseId)
@@ -150,7 +173,7 @@ Ensure the response is valid JSON only, no additional text.
       throw new Error(`Failed to update exercise: ${updateError.message}`);
     }
 
-    console.log('✅ Exercise exchanged successfully');
+    console.log('✅ Exercise exchanged successfully:', updatedExercise.name);
 
     return new Response(
       JSON.stringify({
