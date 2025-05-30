@@ -56,6 +56,7 @@ export const useSubscription = () => {
         // Start polling more frequently while checkout is in progress
         const pollInterval = setInterval(() => {
           refetch();
+          // Refresh role data as well
           queryClient.invalidateQueries({ queryKey: ['user-role'] });
         }, 2000);
         

@@ -44,7 +44,8 @@ export const useRole = () => {
       if (subError && subError.code !== 'PGRST116') throw subError;
 
       const role = profile.role as UserRole;
-      const isPro = !!subscription || role === 'admin';
+      // Fix: Pro users are those with 'pro' role OR active subscription OR admin role
+      const isPro = !!subscription || role === 'pro' || role === 'admin';
       const isCoach = role === 'coach' || role === 'admin';
       const isAdmin = role === 'admin';
 
