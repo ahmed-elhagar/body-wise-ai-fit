@@ -62,7 +62,7 @@ const MealPlanWeekView = ({
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1">
                       <Badge 
-                        size="sm" 
+                        variant="outline" 
                         className="mb-1 bg-white text-gray-700 border border-gray-300"
                       >
                         {meal.meal_type}
