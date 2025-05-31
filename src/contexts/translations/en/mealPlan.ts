@@ -79,5 +79,6 @@ export const mealPlan = {
   snackAddedSuccess: "Snack added successfully!",
   planGeneratedSuccess: "Meal plan generated successfully!",
   planGenerationFailed: "Failed to generate meal plan. Please try again.",
-  shoppingListUpdated: "Shopping list updated successfully!"
+  shoppingListUpdated: "Shopping list updated successfully!",
+  dayOverview: "Day Overview"
 } as const;

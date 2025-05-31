@@ -79,5 +79,6 @@ export const mealPlan = {
   snackAddedSuccess: "تم إضافة الوجبة الخفيفة بنجاح!",
   planGeneratedSuccess: "تم إنشاء خطة الوجبات بنجاح!",
   planGenerationFailed: "فشل في إنشاء خطة الوجبات. يرجى المحاولة مرة أخرى.",
-  shoppingListUpdated: "تم تحديث قائمة التسوق بنجاح!"
+  shoppingListUpdated: "تم تحديث قائمة التسوق بنجاح!",
+  dayOverview: "نظرة عامة على اليوم"
 } as const;
