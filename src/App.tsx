@@ -22,20 +22,27 @@ import NotFound from './pages/NotFound';
 import FoodTracker from './pages/FoodTracker';
 import { Toaster } from "@/components/ui/sonner"
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 1,
+    },
+  },
+});
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <LanguageProvider>
-          <BrowserRouter>
+        <BrowserRouter>
+          <LanguageProvider>
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/meal-plan" element={<MealPlan />} />
               <Route path="/exercise" element={<Exercise />} />
-              <Route path="/food" element={<FoodTracker />} />
+              <Route path="/food-tracker" element={<FoodTracker />} />
               <Route path="/progress" element={<Progress />} />
               <Route path="/progress/:tab" element={<Progress />} />
               <Route path="/goals" element={<Goals />} />
@@ -43,17 +50,20 @@ function App() {
               {/* Redirect old weight-tracking to progress weight tab */}
               <Route path="/weight-tracking" element={<Navigate to="/progress/weight" replace />} />
               <Route path="/coach" element={<Coach />} />
+              <Route path="/coach/trainees" element={<Coach />} />
+              <Route path="/coach/settings" element={<Coach />} />
               <Route path="/pro" element={<Pro />} />
               <Route path="/calorie-checker" element={<CalorieChecker />} />
               <Route path="/ai-chat" element={<AIChatPage />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/admin" element={<Admin />} />
+              <Route path="/admin/dashboard" element={<Admin />} />
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
-          </BrowserRouter>
-          <Toaster />
-        </LanguageProvider>
+            <Toaster />
+          </LanguageProvider>
+        </BrowserRouter>
       </AuthProvider>
     </QueryClientProvider>
   );
