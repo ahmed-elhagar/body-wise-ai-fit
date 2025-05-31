@@ -5,14 +5,21 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ArrowLeft, Send, Loader2, UserCheck, Badge as BadgeIcon, AlertCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { ArrowLeft, Send, Loader2, UserCheck, Badge as BadgeIcon, AlertCircle, X, Edit } from "lucide-react";
 import { useCoachChat } from "@/hooks/useCoachChat";
 import { useRealtimeChat } from "@/hooks/useRealtimeChat";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Badge } from "@/components/ui/badge";
+import { useMessageSearch } from "@/hooks/useMessageSearch";
+import { useTypingIndicator } from "@/hooks/useTypingIndicator";
+import { useMessageActions } from "@/hooks/useMessageActions";
 import { cn } from "@/lib/utils";
 import MobileChatInterface from "@/components/chat/MobileChatInterface";
+import ChatSearchBar from "@/components/chat/ChatSearchBar";
+import TypingIndicator from "@/components/chat/TypingIndicator";
+import MessageActionsMenu from "@/components/chat/MessageActionsMenu";
 
 interface TraineeCoachChatProps {
   coachId: string;
@@ -38,6 +45,33 @@ const TraineeCoachChat = ({ coachId, coachName, onBack }: TraineeCoachChatProps)
   } = useCoachChat(coachId, traineeId);
   
   const { isConnected } = useRealtimeChat(coachId, traineeId);
+  
+  // Phase 2 features
+  const { 
+    searchQuery, 
+    setSearchQuery, 
+    isSearchActive, 
+    setIsSearchActive, 
+    filteredMessages, 
+    searchStats,
+    clearSearch 
+  } = useMessageSearch(messages);
+  
+  const { 
+    typingUsers, 
+    sendTypingIndicator, 
+    stopTypingIndicator 
+  } = useTypingIndicator(coachId, traineeId);
+  
+  const {
+    replyingTo,
+    setReplyingTo,
+    editingMessage,
+    setEditingMessage,
+    editMessage,
+    deleteMessage,
+    isEditing
+  } = useMessageActions(coachId, traineeId);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -45,13 +79,15 @@ const TraineeCoachChat = ({ coachId, coachName, onBack }: TraineeCoachChatProps)
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [filteredMessages]);
 
   const handleSendMessage = async () => {
     if (!message.trim() || isSending) return;
     
     const messageText = message.trim();
     setMessage('');
+    setReplyingTo(null);
+    stopTypingIndicator();
     
     try {
       await sendMessage({ message: messageText });
@@ -65,6 +101,42 @@ const TraineeCoachChat = ({ coachId, coachName, onBack }: TraineeCoachChatProps)
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    setMessage(value);
+    
+    if (value.trim()) {
+      sendTypingIndicator();
+    } else {
+      stopTypingIndicator();
+    }
+  };
+
+  const handleEditMessage = (msg: any) => {
+    setEditingMessage(msg);
+    setMessage(msg.message);
+    inputRef.current?.focus();
+  };
+
+  const handleCancelEdit = () => {
+    setEditingMessage(null);
+    setMessage('');
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingMessage || !message.trim()) return;
+    
+    try {
+      await editMessage({
+        messageId: editingMessage.id,
+        newContent: message.trim()
+      });
+      setMessage('');
+    } catch (error) {
+      console.error('Failed to edit message:', error);
     }
   };
 
@@ -113,7 +185,9 @@ const TraineeCoachChat = ({ coachId, coachName, onBack }: TraineeCoachChatProps)
     );
   }
 
-  // Desktop interface
+  const displayMessages = searchStats.isFiltered ? filteredMessages : messages;
+
+  // Desktop interface with enhanced features
   return (
     <Card className="h-[600px] flex flex-col bg-white shadow-lg rounded-xl">
       <CardHeader className="bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-t-xl pb-4">
@@ -156,15 +230,25 @@ const TraineeCoachChat = ({ coachId, coachName, onBack }: TraineeCoachChatProps)
       </CardHeader>
       
       <CardContent className="flex-1 flex flex-col p-0">
+        {/* Search Bar */}
+        <ChatSearchBar
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          isActive={isSearchActive}
+          onToggleSearch={() => setIsSearchActive(!isSearchActive)}
+          searchStats={searchStats}
+          onClearSearch={clearSearch}
+        />
+
         <ScrollArea className="flex-1 p-4">
           <div className="space-y-4">
-            {messages.map((msg) => {
+            {displayMessages.map((msg) => {
               const isOwn = msg.sender_id === user?.id;
               return (
                 <div
                   key={msg.id}
                   className={cn(
-                    "flex gap-3 max-w-[80%]",
+                    "group flex gap-3 max-w-[80%]",
                     isOwn ? "ml-auto flex-row-reverse" : "mr-auto"
                   )}
                 >
@@ -176,55 +260,142 @@ const TraineeCoachChat = ({ coachId, coachName, onBack }: TraineeCoachChatProps)
                     </Avatar>
                   )}
                   
-                  <div
-                    className={cn(
-                      "rounded-lg px-3 py-2",
-                      isOwn
-                        ? "bg-green-600 text-white"
-                        : "bg-gray-100 text-gray-900"
+                  <div className="flex-1">
+                    {/* Reply indicator */}
+                    {replyingTo?.id === msg.id && (
+                      <div className="text-xs text-blue-600 mb-1">
+                        Replying to this message
+                      </div>
                     )}
-                  >
-                    <p className="text-sm whitespace-pre-wrap">
-                      {msg.message}
-                    </p>
-                    <div className={cn(
-                      "text-xs mt-1 flex items-center gap-2",
-                      isOwn ? "text-green-100 justify-end" : "text-gray-500"
-                    )}>
-                      <span>{formatTime(msg.created_at)}</span>
-                      {isOwn && msg.is_read && (
-                        <span className="flex items-center gap-1">
-                          <BadgeIcon className="w-3 h-3" />
-                          Read
-                        </span>
+                    
+                    <div
+                      className={cn(
+                        "rounded-lg px-3 py-2 relative",
+                        isOwn
+                          ? "bg-green-600 text-white"
+                          : "bg-gray-100 text-gray-900",
+                        msg.updated_at !== msg.created_at && "border-l-2 border-orange-400"
                       )}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-sm whitespace-pre-wrap flex-1">
+                          {msg.message}
+                        </p>
+                        <MessageActionsMenu
+                          message={msg}
+                          isOwnMessage={isOwn}
+                          onReply={setReplyingTo}
+                          onEdit={handleEditMessage}
+                          onDelete={deleteMessage}
+                        />
+                      </div>
+                      
+                      <div className={cn(
+                        "text-xs mt-1 flex items-center justify-between",
+                        isOwn ? "text-green-100" : "text-gray-500"
+                      )}>
+                        <div className="flex items-center gap-2">
+                          <span>{formatTime(msg.created_at)}</span>
+                          {msg.updated_at !== msg.created_at && (
+                            <span className="text-xs opacity-75">(edited)</span>
+                          )}
+                        </div>
+                        {isOwn && msg.is_read && (
+                          <span className="flex items-center gap-1">
+                            <BadgeIcon className="w-3 h-3" />
+                            Read
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
               );
             })}
+            
+            {/* Typing indicator */}
+            <TypingIndicator
+              typingUsers={typingUsers}
+              getCoachName={() => coachName}
+            />
+            
             <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
         
         <div className="border-t p-4 bg-gray-50 rounded-b-xl">
+          {/* Reply indicator */}
+          {replyingTo && (
+            <div className="mb-3 p-2 bg-blue-50 rounded-lg border border-blue-200">
+              <div className="flex items-center justify-between">
+                <div className="text-sm">
+                  <span className="text-blue-600 font-medium">Replying to:</span>
+                  <p className="text-gray-600 truncate mt-1">{replyingTo.message}</p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setReplyingTo(null)}
+                  className="p-1"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+          
+          {/* Edit indicator */}
+          {editingMessage && (
+            <div className="mb-3 p-2 bg-orange-50 rounded-lg border border-orange-200">
+              <div className="flex items-center justify-between">
+                <div className="text-sm">
+                  <span className="text-orange-600 font-medium flex items-center gap-1">
+                    <Edit className="h-3 w-3" />
+                    Editing message
+                  </span>
+                </div>
+                <div className="flex gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleSaveEdit}
+                    disabled={isEditing}
+                    className="p-1 text-green-600 hover:bg-green-100"
+                  >
+                    Save
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleCancelEdit}
+                    className="p-1"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+          
           <div className="flex gap-3">
             <Textarea
               ref={inputRef}
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              onChange={handleInputChange}
               onKeyPress={handleKeyPress}
-              placeholder="Type your message..."
+              placeholder={editingMessage ? "Edit your message..." : "Type your message..."}
               className="flex-1 min-h-[60px] resize-none"
-              disabled={isSending}
+              disabled={isSending || isEditing}
             />
             <Button
-              onClick={handleSendMessage}
-              disabled={!message.trim() || isSending}
+              onClick={editingMessage ? handleSaveEdit : handleSendMessage}
+              disabled={!message.trim() || isSending || isEditing}
               className="self-end bg-green-600 hover:bg-green-700"
             >
-              {isSending ? (
+              {isSending || isEditing ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
+              ) : editingMessage ? (
+                <Edit className="h-4 w-4" />
               ) : (
                 <Send className="h-4 w-4" />
               )}
