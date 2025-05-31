@@ -1,10 +1,9 @@
 
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { UtensilsCrossed, Sparkles, Shuffle, ShoppingCart, MoreVertical, RefreshCcw } from "lucide-react";
-import { useMealPlanTranslation } from "@/utils/translationHelpers";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface EnhancedMealPlanHeaderProps {
   onGenerateAI: () => void;
@@ -23,12 +22,7 @@ const EnhancedMealPlanHeader = ({
   isGenerating,
   hasWeeklyPlan
 }: EnhancedMealPlanHeaderProps) => {
-  const { mealPlanT } = useMealPlanTranslation();
-  const navigate = useNavigate();
-
-  const handleNavigateToMealPlan = () => {
-    navigate('/meal-plan');
-  };
+  const { t } = useLanguage();
 
   return (
     <Card className="bg-white border-fitness-primary-100 shadow-sm">
@@ -41,7 +35,7 @@ const EnhancedMealPlanHeader = ({
             </div>
             <div>
               <h1 className="text-2xl font-bold text-fitness-primary-800">
-                {mealPlanT('title')}
+                Meal Plan
               </h1>
               <p className="text-sm text-fitness-primary-600">
                 Smart nutrition planning for your healthy lifestyle
@@ -49,62 +43,55 @@ const EnhancedMealPlanHeader = ({
             </div>
           </div>
 
-          {/* Right: Actions */}
-          <div className="flex items-center gap-3">
-            {/* Primary Generate AI Button */}
-            <Button
-              onClick={onGenerateAI}
-              disabled={isGenerating}
-              size="sm"
-              variant="accent"
-              className="shadow-md"
-            >
-              <Sparkles className="w-4 h-4 mr-2" />
-              {hasWeeklyPlan ? mealPlanT('generateNewPlan') : mealPlanT('generateAIMealPlan')}
-            </Button>
-
-            {/* Actions Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="icon-sm"
-                  className="border-fitness-primary-300 text-fitness-primary-600 hover:bg-fitness-primary-50"
-                >
-                  <MoreVertical className="w-4 h-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 bg-white border-fitness-primary-200 shadow-lg z-[110]">
-                {hasWeeklyPlan && (
-                  <DropdownMenuItem
-                    onClick={onRegeneratePlan}
-                    disabled={isGenerating}
-                    className="flex items-center gap-2 text-fitness-primary-700 hover:bg-fitness-primary-50 cursor-pointer"
-                  >
-                    <RefreshCcw className="w-4 h-4" />
-                    {mealPlanT('regenerate')}
-                  </DropdownMenuItem>
-                )}
-                {hasWeeklyPlan && (
-                  <DropdownMenuItem
-                    onClick={onShuffle}
-                    disabled={isGenerating}
-                    className="flex items-center gap-2 text-fitness-primary-700 hover:bg-fitness-primary-50 cursor-pointer"
-                  >
-                    <Shuffle className="w-4 h-4" />
-                    {mealPlanT('shuffleMeals')}
-                  </DropdownMenuItem>
-                )}
+          {/* Right: Actions Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="icon-sm"
+                className="border-fitness-primary-300 text-fitness-primary-600 hover:bg-fitness-primary-50"
+              >
+                <MoreVertical className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 bg-white border-fitness-primary-200 shadow-lg z-[110]">
+              <DropdownMenuItem
+                onClick={onGenerateAI}
+                disabled={isGenerating}
+                className="flex items-center gap-2 text-fitness-primary-700 hover:bg-fitness-primary-50 cursor-pointer"
+              >
+                <Sparkles className="w-4 h-4" />
+                {t('mealPlan.generateAIMealPlan')}
+              </DropdownMenuItem>
+              {hasWeeklyPlan && (
                 <DropdownMenuItem
-                  onClick={onShowShoppingList}
+                  onClick={onRegeneratePlan}
+                  disabled={isGenerating}
                   className="flex items-center gap-2 text-fitness-primary-700 hover:bg-fitness-primary-50 cursor-pointer"
                 >
-                  <ShoppingCart className="w-4 h-4" />
-                  {mealPlanT('shoppingList')}
+                  <RefreshCcw className="w-4 h-4" />
+                  {t('mealPlan.regenerate')}
                 </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+              )}
+              {hasWeeklyPlan && (
+                <DropdownMenuItem
+                  onClick={onShuffle}
+                  disabled={isGenerating}
+                  className="flex items-center gap-2 text-fitness-primary-700 hover:bg-fitness-primary-50 cursor-pointer"
+                >
+                  <Shuffle className="w-4 h-4" />
+                  {t('mealPlan.shuffleMeals')}
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem
+                onClick={onShowShoppingList}
+                className="flex items-center gap-2 text-fitness-primary-700 hover:bg-fitness-primary-50 cursor-pointer"
+              >
+                <ShoppingCart className="w-4 h-4" />
+                {t('mealPlan.shoppingList')}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </Card>

@@ -20,7 +20,7 @@ const buttonVariants = cva(
         warning: "bg-gradient-to-r from-warning-500 to-warning-600 text-white hover:from-warning-600 hover:to-warning-700 hover:shadow-lg hover:shadow-warning-500/25 active:scale-[0.98] transform",
         info: "bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 text-white hover:from-fitness-primary-600 hover:to-fitness-primary-700 hover:shadow-lg hover:shadow-fitness-primary-500/25 active:scale-[0.98] transform",
         orange: "bg-gradient-to-r from-fitness-orange-500 to-fitness-orange-600 text-white hover:from-fitness-orange-600 hover:to-fitness-orange-700 hover:shadow-lg hover:shadow-fitness-orange-500/25 active:scale-[0.98] transform",
-        accent: "bg-gradient-to-r from-fitness-accent-500 to-fitness-accent-600 text-white hover:from-fitness-accent-600 hover:to-fitness-accent-700 hover:shadow-lg hover:shadow-fitness-accent-500/25 active:scale-[0.98] transform"
+        accent: "bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 text-white hover:from-fitness-primary-600 hover:to-fitness-primary-700 hover:shadow-lg hover:shadow-fitness-primary-500/25 active:scale-[0.98] transform"
       },
       size: {
         sm: "h-7 rounded-md px-2.5 text-xs font-medium",

@@ -120,26 +120,26 @@ const SnackPickerDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md bg-[#1E1F23] border-gray-700 text-white">
+      <DialogContent className="max-w-md bg-white border-fitness-primary-200 text-fitness-primary-800">
         <DialogHeader>
-          <DialogTitle className="text-white">Add Snack - Day {dayNumber}</DialogTitle>
+          <DialogTitle className="text-fitness-primary-800">Add Snack - Day {dayNumber}</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-6">
           {/* AI Generated Snack */}
-          <Card className="bg-gray-800 border-gray-600">
+          <Card className="bg-fitness-primary-50 border-fitness-primary-200">
             <CardContent className="p-4">
-              <h3 className="font-semibold text-white mb-3 flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-fitness-accent-500" />
+              <h3 className="font-semibold text-fitness-primary-800 mb-3 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-fitness-primary-500" />
                 AI Generated Snack
               </h3>
-              <p className="text-gray-400 text-sm mb-4">
+              <p className="text-fitness-primary-600 text-sm mb-4">
                 Let AI create a perfect snack based on your preferences and remaining calories.
               </p>
               <Button 
                 onClick={handleGenerateAISnack}
                 disabled={isGenerating}
-                variant="accent"
+                variant="default"
                 className="w-full"
               >
                 <Sparkles className="w-4 h-4 mr-2" />
@@ -149,78 +149,78 @@ const SnackPickerDialog = ({
           </Card>
 
           {/* Custom Snack */}
-          <Card className="bg-gray-800 border-gray-600">
+          <Card className="bg-fitness-primary-50 border-fitness-primary-200">
             <CardContent className="p-4">
-              <h3 className="font-semibold text-white mb-3 flex items-center gap-2">
-                <Plus className="w-4 h-4 text-fitness-accent-500" />
+              <h3 className="font-semibold text-fitness-primary-800 mb-3 flex items-center gap-2">
+                <Plus className="w-4 h-4 text-fitness-primary-500" />
                 Custom Snack
               </h3>
               
               <div className="space-y-3">
                 <div>
-                  <Label htmlFor="snack-name" className="text-gray-300">Snack Name</Label>
+                  <Label htmlFor="snack-name" className="text-fitness-primary-700">Snack Name</Label>
                   <Input
                     id="snack-name"
                     value={customSnack.name}
                     onChange={(e) => setCustomSnack({...customSnack, name: e.target.value})}
                     placeholder="e.g., Apple with peanut butter"
-                    className="bg-gray-700 border-gray-600 text-white"
+                    className="bg-white border-fitness-primary-300 text-fitness-primary-800"
                   />
                 </div>
                 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label htmlFor="calories" className="text-gray-300">Calories</Label>
+                    <Label htmlFor="calories" className="text-fitness-primary-700">Calories</Label>
                     <Input
                       id="calories"
                       type="number"
                       value={customSnack.calories}
                       onChange={(e) => setCustomSnack({...customSnack, calories: e.target.value})}
                       placeholder="200"
-                      className="bg-gray-700 border-gray-600 text-white"
+                      className="bg-white border-fitness-primary-300 text-fitness-primary-800"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="protein" className="text-gray-300">Protein (g)</Label>
+                    <Label htmlFor="protein" className="text-fitness-primary-700">Protein (g)</Label>
                     <Input
                       id="protein"
                       type="number"
                       value={customSnack.protein}
                       onChange={(e) => setCustomSnack({...customSnack, protein: e.target.value})}
                       placeholder="5"
-                      className="bg-gray-700 border-gray-600 text-white"
+                      className="bg-white border-fitness-primary-300 text-fitness-primary-800"
                     />
                   </div>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label htmlFor="carbs" className="text-gray-300">Carbs (g)</Label>
+                    <Label htmlFor="carbs" className="text-fitness-primary-700">Carbs (g)</Label>
                     <Input
                       id="carbs"
                       type="number"
                       value={customSnack.carbs}
                       onChange={(e) => setCustomSnack({...customSnack, carbs: e.target.value})}
                       placeholder="15"
-                      className="bg-gray-700 border-gray-600 text-white"
+                      className="bg-white border-fitness-primary-300 text-fitness-primary-800"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="fat" className="text-gray-300">Fat (g)</Label>
+                    <Label htmlFor="fat" className="text-fitness-primary-700">Fat (g)</Label>
                     <Input
                       id="fat"
                       type="number"
                       value={customSnack.fat}
                       onChange={(e) => setCustomSnack({...customSnack, fat: e.target.value})}
                       placeholder="8"
-                      className="bg-gray-700 border-gray-600 text-white"
+                      className="bg-white border-fitness-primary-300 text-fitness-primary-800"
                     />
                   </div>
                 </div>
                 
                 <Button 
                   onClick={handleAddCustomSnack}
-                  variant="accent"
+                  variant="default"
                   className="w-full"
                 >
                   <Plus className="w-4 h-4 mr-2" />

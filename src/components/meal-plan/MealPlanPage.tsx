@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useMealPlanPage } from "@/hooks/useMealPlanPage";
 import { Card } from "@/components/ui/card";
@@ -118,6 +117,7 @@ const MealPlanPage = () => {
             onGenerateAI={() => setShowAIDialog(true)}
             onShuffle={handleShuffle}
             onShowShoppingList={handleShowShoppingList}
+            onRegeneratePlan={handleRegeneratePlan}
             isGenerating={isGenerating}
             hasWeeklyPlan={!!currentWeekPlan?.weeklyPlan}
           />
