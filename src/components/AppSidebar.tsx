@@ -138,36 +138,36 @@ const AppSidebar = () => {
   return (
     <Sidebar 
       className={cn(
-        "border-r border-gray-200",
+        "border-r border-gray-200 bg-white",
         isRTL && "border-r-0 border-l border-gray-200"
       )} 
       side={isRTL ? "right" : "left"}
       data-sidebar="sidebar"
     >
       {/* Header */}
-      <SidebarHeader className="p-4 border-b border-gray-200" data-sidebar="header">
+      <SidebarHeader className="p-6 border-b border-gray-200 bg-gradient-to-br from-blue-50 to-indigo-50" data-sidebar="header">
         <div className={cn(
           "flex items-center gap-3 mb-4",
           isRTL && "flex-row-reverse"
         )}>
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-            <Dumbbell className="w-4 h-4 text-white" />
+          <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+            <Dumbbell className="w-5 h-5 text-white" />
           </div>
           <div className={isRTL ? "text-right" : ""}>
-            <h2 className="font-bold text-lg text-gray-900">{String(t('common:appName'))}</h2>
-            <p className="text-xs text-gray-500">{String(t('common:aiPoweredFitness'))}</p>
+            <h2 className="font-bold text-xl text-gray-900">{String(t('common:appName'))}</h2>
+            <p className="text-sm text-gray-600 font-medium">{String(t('common:aiPoweredFitness'))}</p>
           </div>
         </div>
 
         {/* User Info */}
         {user && (
           <div className={cn(
-            "flex items-center gap-3 p-3 bg-gray-50 rounded-lg",
+            "flex items-center gap-3 p-4 bg-white/80 backdrop-blur-sm rounded-xl border border-white/50 shadow-sm",
             isRTL && "flex-row-reverse"
           )}>
-            <Avatar className="w-8 h-8">
+            <Avatar className="w-10 h-10 ring-2 ring-blue-100">
               <AvatarImage src={user.user_metadata?.avatar_url} />
-              <AvatarFallback className="bg-blue-600 text-white text-sm">
+              <AvatarFallback className="bg-gradient-to-br from-blue-600 to-purple-600 text-white font-semibold">
                 {getUserInitials()}
               </AvatarFallback>
             </Avatar>
@@ -175,19 +175,19 @@ const AppSidebar = () => {
               "flex-1 min-w-0",
               isRTL && "text-right"
             )}>
-              <p className="font-medium text-sm text-gray-900 truncate">
+              <p className="font-semibold text-gray-900 truncate text-sm">
                 {getUserDisplayName()}
               </p>
-              <p className="text-xs text-gray-500 truncate">{user.email}</p>
+              <p className="text-gray-500 truncate text-xs">{user.email}</p>
             </div>
           </div>
         )}
       </SidebarHeader>
 
-      <SidebarContent className="p-0" data-sidebar="content">
+      <SidebarContent className="p-0 bg-white" data-sidebar="content">
         {/* Main Navigation */}
-        <SidebarGroup className="px-3 py-4">
-          <SidebarMenu className="space-y-1">
+        <SidebarGroup className="px-4 py-6">
+          <SidebarMenu className="space-y-2">
             {navigationItems.map((item) => {
               const isActive = location.pathname === item.href || 
                              (item.href === "/dashboard" && location.pathname === "/");
@@ -198,9 +198,9 @@ const AppSidebar = () => {
 
         {/* Coach Panel */}
         {isCoach && (
-          <SidebarGroup className="px-3 py-2">
+          <SidebarGroup className="px-4 py-2">
             <SidebarGroupLabel className={cn(
-              "text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-2",
+              "text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2 px-2",
               isRTL && "flex-row-reverse text-right"
             )} data-sidebar="group-label">
               <Users className="w-4 h-4" />
@@ -215,8 +215,8 @@ const AppSidebar = () => {
                       asChild
                       isActive={isActive}
                       className={cn(
-                        "w-full text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors",
-                        isActive && "bg-green-50 text-green-600 border-r-2 border-green-600",
+                        "w-full text-gray-600 hover:text-gray-900 hover:bg-green-50 transition-colors",
+                        isActive && "bg-green-50 text-green-700 border-r-2 border-green-600",
                         isRTL && "text-right",
                         isRTL && isActive && "border-r-0 border-l-2 border-green-600"
                       )}
@@ -243,9 +243,9 @@ const AppSidebar = () => {
 
         {/* Admin Panel */}
         {isAdmin && (
-          <SidebarGroup className="px-3 py-2">
+          <SidebarGroup className="px-4 py-2">
             <SidebarGroupLabel className={cn(
-              "text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-2",
+              "text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2 px-2",
               isRTL && "flex-row-reverse text-right"
             )} data-sidebar="group-label">
               <Crown className="w-4 h-4" />
@@ -260,8 +260,8 @@ const AppSidebar = () => {
                       asChild
                       isActive={isActive}
                       className={cn(
-                        "w-full text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors",
-                        isActive && "bg-purple-50 text-purple-600 border-r-2 border-purple-600",
+                        "w-full text-gray-600 hover:text-gray-900 hover:bg-purple-50 transition-colors",
+                        isActive && "bg-purple-50 text-purple-700 border-r-2 border-purple-600",
                         isRTL && "text-right",
                         isRTL && isActive && "border-r-0 border-l-2 border-purple-600"
                       )}
@@ -288,7 +288,7 @@ const AppSidebar = () => {
       </SidebarContent>
 
       {/* Footer */}
-      <SidebarFooter className="p-4 border-t border-gray-200" data-sidebar="footer">
+      <SidebarFooter className="p-4 border-t border-gray-200 bg-gray-50/50" data-sidebar="footer">
         {/* Language Toggle */}
         <div className="mb-3">
           <LanguageToggle />
@@ -299,12 +299,12 @@ const AppSidebar = () => {
           onClick={handleSignOut}
           variant="ghost"
           className={cn(
-            "w-full text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors",
+            "w-full text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors font-medium",
             isRTL && "flex-row-reverse"
           )}
         >
           <LogOut className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
-          <span className="font-medium">{String(tNav("logout"))}</span>
+          <span>{String(tNav("logout"))}</span>
         </Button>
       </SidebarFooter>
     </Sidebar>

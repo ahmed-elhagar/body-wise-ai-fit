@@ -17,29 +17,30 @@ const Layout = memo(({ children }: LayoutProps) => {
   return (
     <SidebarProvider defaultOpen={true}>
       <div className={cn(
-        "sidebar-layout bg-gray-50 w-full min-h-screen",
+        "min-h-screen flex w-full bg-gray-50",
         isRTL && 'font-arabic'
       )}>
         <AppSidebar />
         <SidebarInset className="flex-1 w-full min-w-0" data-sidebar="inset">
           {/* Mobile header with sidebar trigger */}
           <div className={cn(
-            "flex h-14 items-center gap-3 border-b bg-white px-4 md:hidden",
+            "flex h-16 items-center gap-4 border-b bg-white px-6 md:hidden shadow-sm",
             isRTL && 'flex-row-reverse'
           )}>
-            <SidebarTrigger className="h-8 w-8" data-sidebar="trigger" />
-            <h1 className="font-semibold text-gray-900">{t('common:appName')}</h1>
+            <SidebarTrigger className="h-8 w-8 text-gray-600 hover:text-gray-900" data-sidebar="trigger" />
+            <h1 className="font-bold text-lg text-gray-900">{String(t('common:appName'))}</h1>
           </div>
           
           {/* Desktop header with sidebar trigger */}
           <div className={cn(
-            "hidden md:flex h-14 items-center gap-3 border-b bg-white px-4",
+            "hidden md:flex h-16 items-center gap-4 border-b bg-white px-6 shadow-sm",
             isRTL && 'flex-row-reverse justify-end'
           )}>
-            <SidebarTrigger className="h-8 w-8" data-sidebar="trigger" />
+            <SidebarTrigger className="h-8 w-8 text-gray-600 hover:text-gray-900" data-sidebar="trigger" />
+            <div className="flex-1" />
           </div>
           
-          <main className="flex-1 overflow-auto w-full">
+          <main className="flex-1 overflow-auto w-full p-6">
             {children}
           </main>
         </SidebarInset>
