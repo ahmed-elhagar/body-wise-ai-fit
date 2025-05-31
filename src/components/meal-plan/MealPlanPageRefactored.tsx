@@ -6,6 +6,7 @@ import { useMealPlanTranslation } from "@/utils/translationHelpers";
 import { useMealPlanState } from "@/hooks/useMealPlanState";
 import { Container, Section, ContentArea, Grid, Flex } from "@/components/ui/layout";
 import MealPlanHero from "./MealPlanHero";
+import CompactControlBar from "./CompactControlBar";
 import DayTabs from "./DayTabs";
 import MealGrid from "./MealGrid";
 import QuickStatsCard from "./QuickStatsCard";
@@ -17,7 +18,6 @@ import MealRecipeDialog from "./MealRecipeDialog";
 import MealExchangeDialog from "./MealExchangeDialog";
 import SnackPickerDialog from "./SnackPickerDialog";
 import MealPlanAIDialog from "./MealPlanAIDialog";
-import ViewModeToggle from "./ViewModeToggle";
 import { toast } from "sonner";
 
 const MealPlanPageRefactored = () => {
@@ -99,9 +99,9 @@ const MealPlanPageRefactored = () => {
         message={mealPlanT('generating')}
       />
       
-      <Container className="py-3 lg:py-6">
+      <Container className="py-2 lg:py-4">
         <ContentArea>
-          {/* Enhanced Hero Header */}
+          {/* Compact Hero Header */}
           <Section>
             <MealPlanHero
               weekStartDate={mealPlanState.weekStartDate}
@@ -116,48 +116,15 @@ const MealPlanPageRefactored = () => {
 
           {mealPlanState.currentWeekPlan ? (
             <>
-              {/* Control Bar with Action Buttons */}
+              {/* Compact Control Bar */}
               <Section>
-                <div className="card-enhanced card-padding">
-                  <Flex justify="between" wrap className="gap-4">
-                    <ViewModeToggle 
-                      viewMode={viewMode} 
-                      onViewModeChange={setViewMode} 
-                    />
-                    
-                    <Flex gap={3} wrap>
-                      <button
-                        onClick={() => handleAddSnack(mealPlanState.selectedDayNumber)}
-                        className="touch-target flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-fitness-orange-500 to-fitness-orange-600 text-white rounded-xl hover:from-fitness-orange-600 hover:to-fitness-orange-700 transition-all text-sm font-medium shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
-                        {mealPlanT('addSnack')}
-                      </button>
-                      
-                      <button
-                        onClick={() => setShowShoppingDrawer(true)}
-                        className="touch-target flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-fitness-accent-500 to-fitness-accent-600 text-white rounded-xl hover:from-fitness-accent-600 hover:to-fitness-accent-700 transition-all text-sm font-medium shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.1 5M7 13l-1.1 5m0 0h9.2M16 18a2 2 0 11-4 0 2 2 0 014 0zm-8 0a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                        {mealPlanT('shoppingList')}
-                      </button>
-
-                      <button
-                        onClick={() => mealPlanState.setShowAIDialog(true)}
-                        className="touch-target flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 text-white rounded-xl hover:from-fitness-primary-600 hover:to-fitness-primary-700 transition-all text-sm font-medium shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                        {mealPlanT('generateAIPlan')}
-                      </button>
-                    </Flex>
-                  </Flex>
-                </div>
+                <CompactControlBar
+                  viewMode={viewMode}
+                  onViewModeChange={setViewMode}
+                  onAddSnack={() => handleAddSnack(mealPlanState.selectedDayNumber)}
+                  onShowShoppingList={() => setShowShoppingDrawer(true)}
+                  onShowAIDialog={() => mealPlanState.setShowAIDialog(true)}
+                />
               </Section>
 
               {viewMode === 'weekly' ? (
@@ -217,37 +184,16 @@ const MealPlanPageRefactored = () => {
                   </div>
 
                   {/* Desktop Layout: Sidebar + Main Content */}
-                  <div className="hidden xl:grid xl:grid-cols-12 gap-6">
-                    {/* Enhanced Sidebar - Stats */}
+                  <div className="hidden xl:grid xl:grid-cols-12 gap-4">
+                    {/* Compact Sidebar - Stats */}
                     <div className="xl:col-span-3">
-                      <div className="sticky top-6 space-y-6">
+                      <div className="sticky top-4 space-y-4">
                         <QuickStatsCard
                           totalCalories={mealPlanState.totalCalories}
                           totalProtein={mealPlanState.totalProtein}
                           targetDayCalories={mealPlanState.targetDayCalories}
                           mealCount={mealPlanState.todaysMeals?.length || 0}
                         />
-                        
-                        {/* Enhanced AI Generation Card */}
-                        <div className="bg-gradient-to-br from-fitness-primary-50 to-fitness-secondary-50 rounded-2xl border-2 border-fitness-primary-200 p-6 shadow-lg">
-                          <div className="text-center space-y-4">
-                            <div className="w-12 h-12 bg-gradient-to-br from-fitness-primary-500 to-fitness-secondary-500 rounded-xl flex items-center justify-center mx-auto">
-                              <span className="text-2xl">🤖</span>
-                            </div>
-                            <h3 className="font-semibold text-fitness-primary-800">
-                              AI Meal Planning
-                            </h3>
-                            <p className="text-sm text-fitness-primary-600">
-                              Generate personalized meal plans with AI
-                            </p>
-                            <button
-                              onClick={() => mealPlanState.setShowAIDialog(true)}
-                              className="w-full bg-gradient-to-r from-fitness-primary-500 to-fitness-secondary-500 text-white px-4 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-                            >
-                              Generate New Plan
-                            </button>
-                          </div>
-                        </div>
                       </div>
                     </div>
 
