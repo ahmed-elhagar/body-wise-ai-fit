@@ -92,14 +92,14 @@ const MealPlanPageRefactored = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50">
       <MealPlanLoadingBackdrop 
         isLoading={mealPlanState.isGenerating} 
         message={mealPlanT('generating')}
       />
       
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-3 lg:py-6 space-y-4 lg:space-y-6">
-        {/* Hero Header */}
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-3 lg:py-6 space-y-4 lg:space-y-6">
+        {/* Enhanced Hero Header */}
         <MealPlanHero
           weekStartDate={mealPlanState.weekStartDate}
           currentWeekOffset={mealPlanState.currentWeekOffset}
@@ -111,17 +111,27 @@ const MealPlanPageRefactored = () => {
 
         {mealPlanState.currentWeekPlan ? (
           <>
-            {/* Control Bar - View Mode & Shopping List */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white rounded-xl p-3 shadow-sm border border-gray-100">
+            {/* Control Bar with Action Buttons */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-lg border border-white/20">
               <ViewModeToggle 
                 viewMode={viewMode} 
                 onViewModeChange={setViewMode} 
               />
               
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => handleAddSnack(mealPlanState.selectedDayNumber)}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl hover:from-emerald-600 hover:to-teal-700 transition-all text-sm font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  {mealPlanT('addSnack')}
+                </button>
+                
                 <button
                   onClick={() => setShowShoppingDrawer(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all text-sm font-medium"
+                  className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all text-sm font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.1 5M7 13l-1.1 5m0 0h9.2M16 18a2 2 0 11-4 0 2 2 0 014 0zm-8 0a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -139,22 +149,22 @@ const MealPlanPageRefactored = () => {
                 onSwitchToDaily={() => setViewMode('daily')}
               />
             ) : (
-              <div className="space-y-4 lg:space-y-6">
-                {/* Mobile/Tablet Layout: Stack vertically */}
-                <div className="block lg:hidden space-y-4">
-                  {/* Quick Stats - Mobile */}
-                  <QuickStatsCard
-                    totalCalories={mealPlanState.totalCalories}
-                    totalProtein={mealPlanState.totalProtein}
-                    targetDayCalories={mealPlanState.targetDayCalories}
-                    mealCount={mealPlanState.todaysMeals?.length || 0}
-                  />
-                  
+              <div className="space-y-6">
+                {/* Mobile Layout: Stack vertically */}
+                <div className="block xl:hidden space-y-6">
                   {/* Day Tabs - Mobile */}
                   <DayTabs
                     weekStartDate={mealPlanState.weekStartDate}
                     selectedDayNumber={mealPlanState.selectedDayNumber}
                     onDayChange={mealPlanState.setSelectedDayNumber}
+                  />
+
+                  {/* Quick Stats - Mobile - Below tabs */}
+                  <QuickStatsCard
+                    totalCalories={mealPlanState.totalCalories}
+                    totalProtein={mealPlanState.totalProtein}
+                    targetDayCalories={mealPlanState.targetDayCalories}
+                    mealCount={mealPlanState.todaysMeals?.length || 0}
                   />
 
                   {/* Meal Content - Mobile */}
@@ -177,10 +187,10 @@ const MealPlanPageRefactored = () => {
                   </Tabs>
                 </div>
 
-                {/* Desktop Layout: 3-column grid */}
-                <div className="hidden lg:grid lg:grid-cols-12 gap-6">
-                  {/* Left Sidebar - Stats */}
-                  <div className="lg:col-span-3 space-y-4 sticky top-6 self-start">
+                {/* Desktop Layout: Sidebar + Main Content */}
+                <div className="hidden xl:grid xl:grid-cols-12 gap-6">
+                  {/* Sidebar - Stats */}
+                  <div className="xl:col-span-3 space-y-6 sticky top-6 self-start">
                     <QuickStatsCard
                       totalCalories={mealPlanState.totalCalories}
                       totalProtein={mealPlanState.totalProtein}
@@ -190,7 +200,7 @@ const MealPlanPageRefactored = () => {
                   </div>
 
                   {/* Main Content */}
-                  <div className="lg:col-span-9 space-y-6">
+                  <div className="xl:col-span-9 space-y-6">
                     {/* Day Tabs */}
                     <DayTabs
                       weekStartDate={mealPlanState.weekStartDate}

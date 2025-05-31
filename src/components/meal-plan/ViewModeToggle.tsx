@@ -12,29 +12,29 @@ const ViewModeToggle = ({ viewMode, onViewModeChange }: ViewModeToggleProps) => 
   const { t, isRTL } = useLanguage();
 
   return (
-    <div className={`flex bg-white rounded-xl p-1 shadow-sm border border-gray-200 ${isRTL ? 'flex-row-reverse' : ''}`}>
+    <div className={`flex bg-slate-100/80 backdrop-blur-sm rounded-xl p-1.5 shadow-inner border border-slate-200/50 ${isRTL ? 'flex-row-reverse' : ''}`}>
       <Button
         onClick={() => onViewModeChange('daily')}
-        variant={viewMode === 'daily' ? 'default' : 'ghost'}
+        variant="ghost"
         size="sm"
         className={`${
           viewMode === 'daily'
-            ? 'bg-blue-600 text-white shadow-sm'
-            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-        } transition-all duration-200 rounded-lg px-4 py-2`}
+            ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg hover:from-blue-700 hover:to-indigo-700'
+            : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+        } transition-all duration-300 rounded-lg px-4 py-2.5 font-medium`}
       >
         <Calendar className="w-4 h-4 mr-2" />
         {t('mealPlan.dailyView')}
       </Button>
       <Button
         onClick={() => onViewModeChange('weekly')}
-        variant={viewMode === 'weekly' ? 'default' : 'ghost'}
+        variant="ghost"
         size="sm"
         className={`${
           viewMode === 'weekly'
-            ? 'bg-blue-600 text-white shadow-sm'
-            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-        } transition-all duration-200 rounded-lg px-4 py-2`}
+            ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg hover:from-blue-700 hover:to-indigo-700'
+            : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+        } transition-all duration-300 rounded-lg px-4 py-2.5 font-medium`}
       >
         <Grid className="w-4 h-4 mr-2" />
         {t('mealPlan.weeklyView')}
