@@ -12,7 +12,7 @@ import EmptyWeightChart from "./EmptyWeightChart";
 
 const WeightChart = () => {
   const [timeRange, setTimeRange] = useState<30 | 90 | 180>(30);
-  const { weightEntries, isLoading, goalWeight } = useWeightTracking();
+  const { weightEntries, isLoading } = useWeightTracking();
   const chartData = useWeightChartData(weightEntries, timeRange);
 
   if (isLoading) {
@@ -121,7 +121,7 @@ const WeightChart = () => {
           </ResponsiveContainer>
         </div>
 
-        <ChartLegend chartData={chartData} goalWeight={goalWeight} />
+        <ChartLegend chartData={chartData} />
         <DataSummary chartData={chartData} timeRange={timeRange} />
       </CardContent>
     </Card>
