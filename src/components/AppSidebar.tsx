@@ -7,7 +7,6 @@ import {
 } from "@/components/ui/sidebar";
 import { AppSidebarHeader, SidebarNavigation, AppSidebarFooter } from "@/components/sidebar";
 import SidebarAdminPanel from "@/components/sidebar/SidebarAdminPanel";
-import SidebarCoachPanel from "@/components/sidebar/SidebarCoachPanel";
 
 export const AppSidebar = () => {
   return (
@@ -18,7 +17,6 @@ export const AppSidebar = () => {
       
       <SidebarContent className="overflow-y-auto">
         <SidebarNavigation />
-        <SidebarCoachPanel />
         <SidebarAdminPanel />
       </SidebarContent>
       
