@@ -1,5 +1,5 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { 
   Users, 
@@ -7,11 +7,12 @@ import {
   TrendingUp, 
   MessageCircle,
   Target,
-  Award,
-  Calendar,
-  Clock
+  Award
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 interface CoachMetricsOverviewProps {
   trainees: any[];
@@ -19,6 +20,55 @@ interface CoachMetricsOverviewProps {
 }
 
 const CoachMetricsOverview = ({ trainees, className }: CoachMetricsOverviewProps) => {
+  const { user } = useAuth();
+
+  // Get coach metrics from database
+  const { data: coachMetrics } = useQuery({
+    queryKey: ['coach-metrics', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+
+      // Get unread messages count
+      const { data: unreadMessages } = await supabase
+        .from('coach_trainee_messages')
+        .select('id')
+        .eq('coach_id', user.id)
+        .eq('is_read', false)
+        .neq('sender_id', user.id);
+
+      // Get recent message activity (last 24 hours)
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      
+      const { data: recentMessages } = await supabase
+        .from('coach_trainee_messages')
+        .select('id')
+        .eq('coach_id', user.id)
+        .gte('created_at', yesterday.toISOString());
+
+      // Get goals completion data
+      const traineeIds = trainees.map(t => t.trainee_id);
+      const { data: completedGoals } = await supabase
+        .from('user_goals')
+        .select('id')
+        .in('user_id', traineeIds)
+        .eq('status', 'completed');
+
+      const { data: totalGoals } = await supabase
+        .from('user_goals')
+        .select('id')
+        .in('user_id', traineeIds);
+
+      return {
+        unreadMessagesCount: unreadMessages?.length || 0,
+        recentMessagesCount: recentMessages?.length || 0,
+        completedGoalsCount: completedGoals?.length || 0,
+        totalGoalsCount: totalGoals?.length || 0,
+      };
+    },
+    enabled: !!user?.id && trainees.length > 0,
+  });
+
   // Calculate metrics
   const totalTrainees = trainees.length;
   const activeTrainees = trainees.filter(t => 
@@ -27,14 +77,6 @@ const CoachMetricsOverview = ({ trainees, className }: CoachMetricsOverviewProps
   const completedProfiles = trainees.filter(t => 
     (t.trainee_profile?.profile_completion_score || 0) >= 80
   ).length;
-  
-  // Mock additional metrics - in real app these would come from backend
-  const mockMetrics = {
-    totalMessages: Math.floor(Math.random() * 100) + 50,
-    avgResponseTime: Math.floor(Math.random() * 60) + 15, // minutes
-    weeklyGoalsAchieved: Math.floor(Math.random() * totalTrainees * 0.8),
-    satisfactionScore: 85 + Math.floor(Math.random() * 15), // 85-100%
-  };
 
   const metrics = [
     {
@@ -43,7 +85,7 @@ const CoachMetricsOverview = ({ trainees, className }: CoachMetricsOverviewProps
       icon: Users,
       description: `${activeTrainees} active`,
       color: "blue",
-      trend: totalTrainees > 0 ? "+12% this month" : null
+      trend: totalTrainees > 0 ? `${Math.round((activeTrainees / totalTrainees) * 100)}% active` : null
     },
     {
       title: "Active This Week",
@@ -51,7 +93,7 @@ const CoachMetricsOverview = ({ trainees, className }: CoachMetricsOverviewProps
       icon: Activity,
       description: `${Math.round((activeTrainees / Math.max(totalTrainees, 1)) * 100)}% engagement`,
       color: "green",
-      trend: activeTrainees > 0 ? "+5% vs last week" : null
+      trend: activeTrainees > 0 ? "Engaged trainees" : null
     },
     {
       title: "Completed Profiles",
@@ -62,28 +104,32 @@ const CoachMetricsOverview = ({ trainees, className }: CoachMetricsOverviewProps
       trend: completedProfiles > 0 ? `${completedProfiles}/${totalTrainees} complete` : null
     },
     {
-      title: "Messages Today",
-      value: mockMetrics.totalMessages,
+      title: "Unread Messages",
+      value: coachMetrics?.unreadMessagesCount || 0,
       icon: MessageCircle,
-      description: `Avg ${mockMetrics.avgResponseTime}min response`,
+      description: `${coachMetrics?.recentMessagesCount || 0} in last 24h`,
       color: "orange",
-      trend: "↑ 23% vs yesterday"
+      trend: coachMetrics?.recentMessagesCount ? "Recent activity" : "No recent messages"
     },
     {
-      title: "Weekly Goals Met",
-      value: mockMetrics.weeklyGoalsAchieved,
+      title: "Goals Completed",
+      value: coachMetrics?.completedGoalsCount || 0,
       icon: Award,
-      description: `${Math.round((mockMetrics.weeklyGoalsAchieved / Math.max(totalTrainees, 1)) * 100)}% success rate`,
+      description: `${coachMetrics?.totalGoalsCount || 0} total goals`,
       color: "emerald",
-      trend: "🎯 Above target"
+      trend: coachMetrics?.completedGoalsCount && coachMetrics?.totalGoalsCount ? 
+        `${Math.round((coachMetrics.completedGoalsCount / coachMetrics.totalGoalsCount) * 100)}% success rate` : 
+        "No goals yet"
     },
     {
-      title: "Satisfaction Score",
-      value: `${mockMetrics.satisfactionScore}%`,
+      title: "Average Progress",
+      value: totalTrainees > 0 ? 
+        `${Math.round(trainees.reduce((acc, t) => acc + (t.trainee_profile?.profile_completion_score || 0), 0) / totalTrainees)}%` : 
+        "0%",
       icon: TrendingUp,
-      description: "Based on feedback",
+      description: "Profile completion",
       color: "pink",
-      trend: "↑ 2% this month"
+      trend: "Overall progress"
     }
   ];
 
