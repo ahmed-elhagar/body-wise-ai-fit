@@ -148,5 +148,27 @@ export const enTranslations = {
   "Normal": "Normal",
   "Underweight": "Underweight",
   "Overweight": "Overweight",
-  "Obese": "Obese"
+  "Obese": "Obese",
+
+  // Sidebar specific translations
+  "Dashboard": "Dashboard",
+  "Meal Plan": "Meal Plan",
+  "Exercise": "Exercise",
+  "Goals": "Goals",
+  "Profile": "Profile",
+  "Trainees": "Trainees",
+  "Coach Settings": "Coach Settings",
+  "Admin Dashboard": "Admin Dashboard",
+  "Coach Panel": "Coach Panel",
+  "Admin": "Admin",
+  "Logout": "Logout",
+  "Success": "Success",
+  "Error": "Error",
+
+  // Missing coach and admin related
+  "Coach": "Coach",
+  "Manage your clients and coaching sessions": "Manage your clients and coaching sessions",
+  "Active clients": "Active clients",
+  "Professional Coach": "Professional Coach",
+  "System administration and management": "System administration and management"
 };

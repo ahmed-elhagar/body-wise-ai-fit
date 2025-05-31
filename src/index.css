@@ -108,19 +108,40 @@
     text-align: right;
   }
 
-  /* Enhanced RTL sidebar positioning */
+  /* Enhanced RTL sidebar positioning - CRITICAL FIX */
   [dir="rtl"] .group\/sidebar-wrapper {
-    flex-direction: row-reverse;
+    flex-direction: row-reverse !important;
   }
 
   [dir="rtl"] [data-sidebar="sidebar"] {
     right: 0 !important;
     left: auto !important;
+    border-right: none !important;
+    border-left: 1px solid hsl(var(--sidebar-border)) !important;
   }
 
-  [dir="rtl"] .peer {
+  [dir="rtl"] [data-sidebar="sidebar"][data-state="expanded"] {
     right: 0 !important;
-    left: auto !important;
+  }
+
+  [dir="rtl"] [data-sidebar="sidebar"][data-state="collapsed"] {
+    right: calc(var(--sidebar-width-icon) * -1) !important;
+  }
+
+  /* RTL sidebar trigger positioning */
+  [dir="rtl"] [data-sidebar="trigger"] {
+    right: auto !important;
+    left: 1rem !important;
+  }
+
+  /* RTL sidebar inset content positioning */
+  [dir="rtl"] [data-sidebar="inset"] {
+    margin-right: var(--sidebar-width) !important;
+    margin-left: 0 !important;
+  }
+
+  [dir="rtl"] [data-sidebar="inset"][data-state="collapsed"] {
+    margin-right: var(--sidebar-width-icon) !important;
   }
 
   /* RTL sidebar content alignment */
@@ -137,30 +158,36 @@
     text-align: right;
   }
 
-  /* RTL sidebar inset positioning */
-  [dir="rtl"] [data-sidebar="sidebar"][data-variant="inset"] {
-    right: 0 !important;
-    left: auto !important;
+  /* RTL sidebar menu items */
+  [dir="rtl"] [data-sidebar="menu-item"] {
+    direction: rtl;
+    text-align: right;
   }
 
-  /* RTL main content adjustment */
-  [dir="rtl"] .peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-2 {
+  [dir="rtl"] [data-sidebar="menu-item"] a {
+    flex-direction: row-reverse;
+  }
+
+  [dir="rtl"] [data-sidebar="menu-item"] svg {
+    margin-left: 0.5rem;
+    margin-right: 0;
+  }
+
+  /* RTL sidebar group labels */
+  [dir="rtl"] [data-sidebar="group-label"] {
+    text-align: right;
+    direction: rtl;
+  }
+
+  /* RTL main content margin adjustment */
+  [dir="rtl"] .peer-data-[state=expanded]:peer-data-[variant=inset]:ml-\[--sidebar-width\] {
     margin-left: 0 !important;
-    margin-right: 0.5rem !important;
+    margin-right: var(--sidebar-width) !important;
   }
 
-  [dir="rtl"] .md\:peer-data-[variant=inset]\:ml-0 {
+  [dir="rtl"] .peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-\[calc\(var\(--sidebar-width-icon\)\)\] {
     margin-left: 0 !important;
-    margin-right: 0 !important;
-  }
-
-  /* Force RTL layout for sidebar wrapper */
-  [dir="rtl"] .group\/sidebar-wrapper > .peer {
-    transform: scaleX(-1);
-  }
-
-  [dir="rtl"] .group\/sidebar-wrapper > .peer > * {
-    transform: scaleX(-1);
+    margin-right: calc(var(--sidebar-width-icon)) !important;
   }
 
   /* RTL specific animations */
@@ -257,6 +284,8 @@
 [dir="rtl"] [data-sidebar="sidebar"][data-side="left"] {
   right: 0 !important;
   left: auto !important;
+  border-right: none !important;
+  border-left: 1px solid hsl(var(--sidebar-border)) !important;
 }
 
 [dir="rtl"] [data-sidebar="sidebar"][data-side="right"] {
@@ -276,14 +305,25 @@
   padding-left: 0.5rem;
 }
 
-/* RTL sidebar menu items */
-[dir="rtl"] [data-sidebar="menu-item"] {
-  direction: rtl;
-  text-align: right;
+/* Force sidebar to right side in RTL */
+[dir="rtl"] .group\/sidebar-wrapper [data-sidebar="sidebar"] {
+  position: fixed !important;
+  right: 0 !important;
+  left: auto !important;
+  top: 0 !important;
+  height: 100vh !important;
+  z-index: 40 !important;
+  border-right: none !important;
+  border-left: 1px solid hsl(var(--sidebar-border)) !important;
 }
 
-/* RTL sidebar group labels */
-[dir="rtl"] [data-sidebar="group-label"] {
-  text-align: right;
-  direction: rtl;
+/* RTL sidebar inset margin fix */
+[dir="rtl"] [data-sidebar="inset"] {
+  margin-right: var(--sidebar-width) !important;
+  margin-left: 0 !important;
+  transition: margin-right 0.2s ease !important;
+}
+
+[dir="rtl"] [data-sidebar="inset"][data-state="collapsed"] {
+  margin-right: var(--sidebar-width-icon) !important;
 }
