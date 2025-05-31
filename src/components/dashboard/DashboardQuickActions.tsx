@@ -1,7 +1,16 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, Apple, Dumbbell, Target, Users, Scale, User } from "lucide-react";
+import { 
+  Apple, 
+  Dumbbell, 
+  Scale, 
+  BarChart3, 
+  User,
+  Target,
+  Utensils,
+  Bell
+} from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
 
@@ -11,93 +20,103 @@ interface DashboardQuickActionsProps {
   handleViewWeight: () => void;
   handleViewProgress: () => void;
   handleViewProfile: () => void;
-  handleViewGoals?: () => void;
+  handleViewGoals: () => void;
 }
 
-const DashboardQuickActions = ({ 
-  handleViewMealPlan, 
-  handleViewExercise, 
-  handleViewWeight, 
-  handleViewProgress, 
+const DashboardQuickActions = ({
+  handleViewMealPlan,
+  handleViewExercise,
+  handleViewWeight,
+  handleViewProgress,
   handleViewProfile,
-  handleViewGoals
+  handleViewGoals,
 }: DashboardQuickActionsProps) => {
   const { t } = useLanguage();
   const navigate = useNavigate();
 
   const quickActions = [
     {
-      title: t('View Meal Plan'),
-      description: t('Check today\'s meals'),
+      title: t('Meal Plan'),
+      description: t('View today\'s meals'),
       icon: Apple,
-      color: 'text-green-600',
-      bgColor: 'bg-green-50 hover:bg-green-100',
-      action: handleViewMealPlan
+      action: handleViewMealPlan,
+      color: 'bg-green-500 hover:bg-green-600',
     },
     {
-      title: t('Start Workout'),
-      description: t('Begin today\'s exercise'),
+      title: t('Workout'),
+      description: t('Start exercising'),
       icon: Dumbbell,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50 hover:bg-blue-100',
-      action: handleViewExercise
+      action: handleViewExercise,
+      color: 'bg-blue-500 hover:bg-blue-600',
     },
     {
-      title: t('Log Weight'),
-      description: t('Track your progress'),
+      title: t('Food Tracker'),
+      description: t('Log your meals'),
+      icon: Utensils,
+      action: () => navigate('/food-tracker'),
+      color: 'bg-orange-500 hover:bg-orange-600',
+    },
+    {
+      title: t('Weight'),
+      description: t('Track progress'),
       icon: Scale,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50 hover:bg-purple-100',
-      action: handleViewWeight
+      action: handleViewWeight,
+      color: 'bg-purple-500 hover:bg-purple-600',
     },
     {
-      title: t('View Goals'),
-      description: t('Track your objectives'),
+      title: t('Goals'),
+      description: t('Manage objectives'),
       icon: Target,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-50 hover:bg-orange-100',
-      action: handleViewGoals || (() => navigate('/goals'))
+      action: handleViewGoals,
+      color: 'bg-red-500 hover:bg-red-600',
     },
     {
-      title: t('View Progress'),
-      description: t('See your analytics'),
-      icon: TrendingUp,
-      color: 'text-indigo-600',
-      bgColor: 'bg-indigo-50 hover:bg-indigo-100',
-      action: handleViewProgress
+      title: t('Progress'),
+      description: t('View analytics'),
+      icon: BarChart3,
+      action: handleViewProgress,
+      color: 'bg-indigo-500 hover:bg-indigo-600',
     },
     {
-      title: t('Edit Profile'),
-      description: t('Update your info'),
+      title: t('Notifications'),
+      description: t('Check updates'),
+      icon: Bell,
+      action: () => navigate('/notifications'),
+      color: 'bg-yellow-500 hover:bg-yellow-600',
+    },
+    {
+      title: t('Profile'),
+      description: t('Edit settings'),
       icon: User,
-      color: 'text-gray-600',
-      bgColor: 'bg-gray-50 hover:bg-gray-100',
-      action: handleViewProfile
-    }
+      action: handleViewProfile,
+      color: 'bg-gray-500 hover:bg-gray-600',
+    },
   ];
 
   return (
-    <Card>
-      <CardHeader className="pb-4">
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <TrendingUp className="h-5 w-5 text-purple-500" />
-          Quick Actions
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-          {quickActions.map((action, index) => (
-            <Button
-              key={index}
-              onClick={action.action}
-              variant="outline"
-              size="sm"
-              className="justify-start"
-            >
-              <action.icon className="h-4 w-4 mr-2" />
-              <span className="hidden md:inline">{action.title}</span>
-            </Button>
-          ))}
+    <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+      <CardContent className="p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          {t('Quick Actions')}
+        </h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {quickActions.map((action, index) => {
+            const IconComponent = action.icon;
+            return (
+              <Button
+                key={index}
+                variant="outline"
+                onClick={action.action}
+                className={`h-auto p-4 flex flex-col items-center space-y-2 text-white border-0 ${action.color} transition-all hover:scale-105`}
+              >
+                <IconComponent className="w-6 h-6" />
+                <div className="text-center">
+                  <div className="font-medium text-sm">{action.title}</div>
+                  <div className="text-xs opacity-90">{action.description}</div>
+                </div>
+              </Button>
+            );
+          })}
         </div>
       </CardContent>
     </Card>

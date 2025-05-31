@@ -1,142 +1,145 @@
 
-import { useState } from 'react';
-import { useFoodDatabase } from './useFoodDatabase';
-import { useAIFoodAnalysis } from './useAIFoodAnalysis';
-import { AIFoodAnalysisResult, FoodAnalysisItem } from '@/types/aiAnalysis';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from './useAuth';
+import { useCreditSystem } from './useCreditSystem';
 import { toast } from 'sonner';
-import { useLanguage } from '@/contexts/LanguageContext';
 
 export const useFoodPhotoIntegration = () => {
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [lastAnalysis, setLastAnalysis] = useState<AIFoodAnalysisResult | null>(null);
-  
-  const { logConsumption, isLoggingConsumption } = useFoodDatabase();
-  const { analyzeFood, isAnalyzing, analysisResult, error } = useAIFoodAnalysis();
-  const { t } = useLanguage();
+  const { user } = useAuth();
+  const { useCredit, logGeneration } = useCreditSystem();
+  const queryClient = useQueryClient();
 
-  const processImageAndLog = async (
-    imageFile: File, 
-    mealType: string = 'snack',
-    notes?: string
-  ) => {
-    setIsProcessing(true);
-    
-    try {
-      // First, analyze the image
-      await analyzeFood(imageFile);
-      
-      // The analysis result will be available through the hook
-      // We'll handle logging in a separate method
-      
-    } catch (error) {
-      console.error('Error processing image:', error);
-      toast.error(t('Failed to process image. Please try again.'));
-    } finally {
-      setIsProcessing(false);
-    }
-  };
+  const analyzePhoto = useMutation({
+    mutationFn: async (photoFile: File) => {
+      // Check and use AI credit
+      const creditResult = await new Promise((resolve, reject) => {
+        useCredit('food_analysis', {
+          onSuccess: resolve,
+          onError: reject,
+        });
+      });
 
-  const logAnalyzedFood = async (
-    food: FoodAnalysisItem,
-    quantity: number = 100,
-    mealType: string = 'snack',
-    notes?: string
-  ) => {
-    try {
+      if (!creditResult || !(creditResult as any).success) {
+        throw new Error('Insufficient AI credits');
+      }
+
+      // Create form data for photo upload
+      const formData = new FormData();
+      formData.append('photo', photoFile);
+
+      // Call Supabase Edge Function for analysis
+      const { data, error } = await supabase.functions.invoke('analyze-food-image', {
+        body: formData,
+      });
+
+      if (error) {
+        // Log failed generation
+        logGeneration({
+          generationType: 'food_analysis',
+          promptData: { fileName: photoFile.name },
+          status: 'failed',
+          errorMessage: error.message,
+        });
+        throw error;
+      }
+
+      // Log successful generation
+      logGeneration({
+        generationType: 'food_analysis',
+        promptData: { fileName: photoFile.name },
+        responseData: data,
+        status: 'completed',
+      });
+
+      return data;
+    },
+    onError: (error) => {
+      console.error('Photo analysis failed:', error);
+      toast.error('Failed to analyze photo');
+    },
+  });
+
+  const logAnalyzedFood = useMutation({
+    mutationFn: async (
+      analyzedFood: any,
+      quantity: number,
+      mealType: string,
+      notes: string
+    ) => {
+      // First, create or find the food item
+      let foodItemId = analyzedFood.id;
+
+      if (!foodItemId) {
+        const { data: newFoodItem, error: foodError } = await supabase
+          .from('food_items')
+          .insert({
+            name: analyzedFood.name,
+            category: 'ai_detected',
+            calories_per_100g: analyzedFood.calories || 0,
+            protein_per_100g: analyzedFood.protein || 0,
+            carbs_per_100g: analyzedFood.carbs || 0,
+            fat_per_100g: analyzedFood.fat || 0,
+            source: 'ai_analysis',
+            confidence_score: analyzedFood.confidence || 0.8,
+          })
+          .select('id')
+          .single();
+
+        if (foodError) throw foodError;
+        foodItemId = newFoodItem.id;
+      }
+
+      // Log the consumption
       const multiplier = quantity / 100;
-      
-      const logData = {
-        foodItemId: `ai-${Date.now()}`, // Temporary ID for AI-detected foods
-        quantity,
-        mealType,
-        notes: notes || `AI detected: ${food.quantity || 'estimated portion'}`,
-        calories: (food.calories || 0) * multiplier,
-        protein: (food.protein || 0) * multiplier,
-        carbs: (food.carbs || 0) * multiplier,
-        fat: (food.fat || 0) * multiplier,
-        source: 'ai_analysis',
-        mealData: {
-          name: food.name,
-          category: food.category,
-          confidence: analysisResult?.overallConfidence || 0.8,
-          originalAnalysis: food
-        }
-      };
+      const { error } = await supabase
+        .from('food_consumption_log')
+        .insert({
+          user_id: user?.id,
+          food_item_id: foodItemId,
+          quantity_g: quantity,
+          meal_type: mealType,
+          notes,
+          calories_consumed: (analyzedFood.calories || 0) * multiplier,
+          protein_consumed: (analyzedFood.protein || 0) * multiplier,
+          carbs_consumed: (analyzedFood.carbs || 0) * multiplier,
+          fat_consumed: (analyzedFood.fat || 0) * multiplier,
+          source: 'ai_analysis',
+          ai_analysis_data: analyzedFood,
+        });
 
-      await logConsumption(logData);
-      
-      toast.success(t('Food logged successfully!'));
+      if (error) throw error;
       return true;
-      
-    } catch (error) {
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['food-consumption-today'] });
+      toast.success('Food logged successfully!');
+    },
+    onError: (error) => {
       console.error('Error logging analyzed food:', error);
-      toast.error(t('Failed to log food. Please try again.'));
-      return false;
-    }
-  };
+      toast.error('Failed to log food');
+    },
+  });
 
-  const convertToFoodItem = (food: FoodAnalysisItem) => {
-    // Convert AI analysis result to standardized food item format
+  const convertToFoodItem = (analyzedFood: any) => {
     return {
-      id: `ai-${Date.now()}`,
-      name: food.name,
-      category: food.category || 'general',
-      calories_per_100g: food.calories || 0,
-      protein_per_100g: food.protein || 0,
-      carbs_per_100g: food.carbs || 0,
-      fat_per_100g: food.fat || 0,
-      fiber_per_100g: food.fiber || 0,
-      sugar_per_100g: food.sugar || 0,
-      serving_size_g: 100,
-      serving_description: food.quantity || '100g serving',
-      confidence_score: analysisResult?.overallConfidence || 0.8,
-      verified: false,
-      source: 'ai_scan',
-      // Include original analysis data
-      _aiAnalysis: food
+      id: analyzedFood.id || null,
+      name: analyzedFood.name || 'Unknown Food',
+      category: 'ai_detected',
+      calories: analyzedFood.calories || 0,
+      protein: analyzedFood.protein || 0,
+      carbs: analyzedFood.carbs || 0,
+      fat: analyzedFood.fat || 0,
+      quantity: analyzedFood.quantity || 'estimated portion',
+      confidence: analyzedFood.confidence || 0.8,
     };
   };
 
-  const bulkLogFoods = async (
-    foods: FoodAnalysisItem[],
-    mealType: string = 'meal',
-    notes?: string
-  ) => {
-    let successCount = 0;
-    
-    for (const food of foods) {
-      const success = await logAnalyzedFood(food, 100, mealType, notes);
-      if (success) successCount++;
-    }
-    
-    if (successCount === foods.length) {
-      toast.success(t('All foods logged successfully!'));
-    } else if (successCount > 0) {
-      toast.success(t('{{count}} foods logged successfully', { count: successCount }));
-    } else {
-      toast.error(t('Failed to log foods. Please try again.'));
-    }
-    
-    return successCount;
-  };
-
   return {
-    // Core functionality
-    processImageAndLog,
-    logAnalyzedFood,
-    bulkLogFoods,
+    analyzePhoto: analyzePhoto.mutate,
+    logAnalyzedFood: logAnalyzedFood.mutate,
     convertToFoodItem,
-    
-    // State
-    isProcessing: isProcessing || isAnalyzing,
-    isLoggingFood: isLoggingConsumption,
-    lastAnalysis: analysisResult || lastAnalysis,
-    analysisError: error,
-    
-    // Direct hook access for more control
-    analyzeFood,
-    isAnalyzing,
-    analysisResult,
-    error
+    isAnalyzing: analyzePhoto.isPending,
+    isLoggingFood: logAnalyzedFood.isPending,
   };
 };

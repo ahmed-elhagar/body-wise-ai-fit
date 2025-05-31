@@ -32,7 +32,10 @@ export const useNotifications = () => {
         .order('created_at', { ascending: false })
         .limit(50);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching notifications:', error);
+        throw error;
+      }
       return data as Notification[];
     },
     enabled: !!user?.id,
