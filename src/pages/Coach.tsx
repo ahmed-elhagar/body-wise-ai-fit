@@ -7,14 +7,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MessageCircle, Users, TrendingUp, Star, Calendar, Target } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
-import { useRole } from "@/hooks/useRole";
 import { useCoach } from "@/hooks/useCoach";
 import { Navigate } from "react-router-dom";
 
 const Coach = () => {
-  const { isCoach, isLoading } = useRole();
-  const { trainees, isLoading: isLoadingTrainees } = useCoach();
+  const { trainees, isLoading } = useCoach();
   const [selectedClient, setSelectedClient] = useState<string | null>(null);
+
+  // Check if user is a coach based on having trainees
+  const isCoach = trainees && trainees.length > 0;
 
   // Mock stats data for now
   const coachStats = {

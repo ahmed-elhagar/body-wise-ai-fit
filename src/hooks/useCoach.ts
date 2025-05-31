@@ -6,7 +6,7 @@ import { useAuth } from './useAuth';
 export const useCoach = () => {
   const { user } = useAuth();
 
-  const { data: trainees = [] } = useQuery({
+  const { data: trainees = [], isLoading } = useQuery({
     queryKey: ['coach-trainees', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
@@ -15,7 +15,7 @@ export const useCoach = () => {
         .from('coach_trainees')
         .select(`
           *,
-          trainee:profiles!coach_trainees_trainee_id_fkey(
+          trainee_profile:profiles!coach_trainees_trainee_id_fkey(
             id,
             first_name,
             last_name,
@@ -34,5 +34,5 @@ export const useCoach = () => {
     enabled: !!user?.id,
   });
 
-  return { trainees };
+  return { trainees, isLoading };
 };
