@@ -28,55 +28,74 @@ const CoachMetricsOverview = ({ trainees, className }: CoachMetricsOverviewProps
     queryFn: async () => {
       if (!user?.id) return null;
 
-      // Get unread messages count
-      const { data: unreadMessages } = await supabase
-        .from('coach_trainee_messages')
-        .select('id')
-        .eq('coach_id', user.id)
-        .eq('is_read', false)
-        .neq('sender_id', user.id);
+      try {
+        // Get unread messages count
+        const { data: unreadMessages } = await supabase
+          .from('coach_trainee_messages')
+          .select('id')
+          .eq('coach_id', user.id)
+          .eq('is_read', false)
+          .neq('sender_id', user.id);
 
-      // Get recent message activity (last 24 hours)
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      
-      const { data: recentMessages } = await supabase
-        .from('coach_trainee_messages')
-        .select('id')
-        .eq('coach_id', user.id)
-        .gte('created_at', yesterday.toISOString());
+        // Get recent message activity (last 24 hours)
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        
+        const { data: recentMessages } = await supabase
+          .from('coach_trainee_messages')
+          .select('id')
+          .eq('coach_id', user.id)
+          .gte('created_at', yesterday.toISOString());
 
-      // Get goals completion data
-      const traineeIds = trainees.map(t => t.trainee_id);
-      const { data: completedGoals } = await supabase
-        .from('user_goals')
-        .select('id')
-        .in('user_id', traineeIds)
-        .eq('status', 'completed');
+        // Get goals completion data
+        const traineeIds = trainees.map(t => t.trainee_id);
+        const { data: completedGoals } = await supabase
+          .from('user_goals')
+          .select('id')
+          .in('user_id', traineeIds)
+          .eq('status', 'completed');
 
-      const { data: totalGoals } = await supabase
-        .from('user_goals')
-        .select('id')
-        .in('user_id', traineeIds);
+        const { data: totalGoals } = await supabase
+          .from('user_goals')
+          .select('id')
+          .in('user_id', traineeIds);
 
-      return {
-        unreadMessagesCount: unreadMessages?.length || 0,
-        recentMessagesCount: recentMessages?.length || 0,
-        completedGoalsCount: completedGoals?.length || 0,
-        totalGoalsCount: totalGoals?.length || 0,
-      };
+        return {
+          unreadMessagesCount: unreadMessages?.length || 0,
+          recentMessagesCount: recentMessages?.length || 0,
+          completedGoalsCount: completedGoals?.length || 0,
+          totalGoalsCount: totalGoals?.length || 0,
+        };
+      } catch (error) {
+        console.error('Error fetching coach metrics:', error);
+        return {
+          unreadMessagesCount: 0,
+          recentMessagesCount: 0,
+          completedGoalsCount: 0,
+          totalGoalsCount: 0,
+        };
+      }
     },
     enabled: !!user?.id && trainees.length > 0,
   });
 
-  // Calculate metrics
+  // Calculate metrics safely
   const totalTrainees = trainees.length;
-  const activeTrainees = trainees.filter(t => 
-    (t.trainee_profile?.ai_generations_remaining || 0) > 0
-  ).length;
-  const completedProfiles = trainees.filter(t => 
-    (t.trainee_profile?.profile_completion_score || 0) >= 80
-  ).length;
+  const activeTrainees = trainees.filter(t => {
+    const profile = t.trainee_profile || {};
+    return (profile.ai_generations_remaining || 0) > 0;
+  }).length;
+  
+  const completedProfiles = trainees.filter(t => {
+    const profile = t.trainee_profile || {};
+    return (profile.profile_completion_score || 0) >= 80;
+  }).length;
+
+  const averageProgress = totalTrainees > 0 ? 
+    Math.round(trainees.reduce((acc, t) => {
+      const profile = t.trainee_profile || {};
+      return acc + (profile.profile_completion_score || 0);
+    }, 0) / totalTrainees) : 0;
 
   const metrics = [
     {
@@ -123,9 +142,7 @@ const CoachMetricsOverview = ({ trainees, className }: CoachMetricsOverviewProps
     },
     {
       title: "Average Progress",
-      value: totalTrainees > 0 ? 
-        `${Math.round(trainees.reduce((acc, t) => acc + (t.trainee_profile?.profile_completion_score || 0), 0) / totalTrainees)}%` : 
-        "0%",
+      value: `${averageProgress}%`,
       icon: TrendingUp,
       description: "Profile completion",
       color: "pink",

@@ -26,30 +26,38 @@ export const useCoachTasks = () => {
     queryFn: async () => {
       if (!user?.id) return [];
 
-      // Get tasks with trainee information
-      const { data: taskData, error: taskError } = await supabase
-        .from('coach_tasks')
-        .select(`
-          *,
-          trainee:profiles!coach_tasks_trainee_id_fkey(first_name, last_name)
-        `)
-        .eq('coach_id', user.id)
-        .order('created_at', { ascending: false });
+      try {
+        // Get tasks with trainee information
+        const { data: taskData, error: taskError } = await supabase
+          .from('coach_tasks')
+          .select(`
+            *,
+            trainee:profiles!coach_tasks_trainee_id_fkey(first_name, last_name)
+          `)
+          .eq('coach_id', user.id)
+          .order('created_at', { ascending: false });
 
-      if (taskError) throw taskError;
+        if (taskError) {
+          console.error('Error fetching tasks:', taskError);
+          throw taskError;
+        }
 
-      return taskData?.map(task => ({
-        id: task.id,
-        title: task.title,
-        description: task.description,
-        priority: task.priority,
-        type: task.type,
-        dueDate: task.due_date ? new Date(task.due_date) : undefined,
-        traineeId: task.trainee_id,
-        traineeName: task.trainee ? `${task.trainee.first_name} ${task.trainee.last_name}` : undefined,
-        completed: task.completed,
-        createdAt: new Date(task.created_at)
-      })) || [];
+        return taskData?.map((task: any) => ({
+          id: task.id,
+          title: task.title,
+          description: task.description || '',
+          priority: task.priority as 'high' | 'medium' | 'low',
+          type: task.type as 'review' | 'follow-up' | 'planning' | 'admin',
+          dueDate: task.due_date ? new Date(task.due_date) : undefined,
+          traineeId: task.trainee_id,
+          traineeName: task.trainee ? `${task.trainee.first_name || ''} ${task.trainee.last_name || ''}`.trim() : undefined,
+          completed: task.completed,
+          createdAt: new Date(task.created_at)
+        })) || [];
+      } catch (error) {
+        console.error('Error in coach tasks query:', error);
+        return [];
+      }
     },
     enabled: !!user?.id,
   });

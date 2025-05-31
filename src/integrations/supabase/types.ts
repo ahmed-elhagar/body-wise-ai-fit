@@ -108,6 +108,48 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_tasks: {
+        Row: {
+          coach_id: string
+          completed: boolean
+          created_at: string
+          description: string | null
+          due_date: string | null
+          id: string
+          priority: string
+          title: string
+          trainee_id: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          coach_id: string
+          completed?: boolean
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string
+          title: string
+          trainee_id?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          coach_id?: string
+          completed?: boolean
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string
+          title?: string
+          trainee_id?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       coach_trainee_messages: {
         Row: {
           coach_id: string
