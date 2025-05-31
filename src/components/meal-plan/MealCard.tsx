@@ -102,10 +102,16 @@ const MealCard = ({ meal, onShowRecipe, onExchangeMeal }: MealCardProps) => {
           </div>
         </div>
 
-        {/* Action Buttons with explicit onClick handlers */}
+        {/* Action Buttons with direct onClick console logs */}
         <div className="flex gap-2">
           <Button
-            onClick={handleViewRecipe}
+            onClick={(e) => {
+              console.log('🚨 DIRECT JSX CLICK - VIEW RECIPE BUTTON CLICKED!');
+              console.log('🚨 Event:', e);
+              console.log('🚨 Target:', e.target);
+              console.log('🚨 CurrentTarget:', e.currentTarget);
+              handleViewRecipe(e);
+            }}
             size="sm"
             className="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white"
             data-testid="view-recipe-button"
@@ -115,7 +121,13 @@ const MealCard = ({ meal, onShowRecipe, onExchangeMeal }: MealCardProps) => {
             View Recipe
           </Button>
           <Button
-            onClick={handleExchangeMeal}
+            onClick={(e) => {
+              console.log('🚨 DIRECT JSX CLICK - EXCHANGE MEAL BUTTON CLICKED!');
+              console.log('🚨 Event:', e);
+              console.log('🚨 Target:', e.target);
+              console.log('🚨 CurrentTarget:', e.currentTarget);
+              handleExchangeMeal(e);
+            }}
             size="sm"
             variant="outline"
             className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50"
