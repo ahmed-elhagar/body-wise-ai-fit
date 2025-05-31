@@ -1,52 +1,64 @@
 
-import React from "react";
-import { LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { SidebarFooter } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/hooks/useI18n";
-import LanguageToggle from "@/components/LanguageToggle";
+import { useSidebar } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
+import { useState, useEffect } from "react";
+import { Settings, LogOut } from "lucide-react";
+import { SidebarMenuButton } from "@/components/ui/sidebar";
 
-const AppSidebarFooter = () => {
-  const { tFrom, isRTL } = useI18n();
-  const tNav = tFrom('navigation');
+export const SidebarFooter = () => {
+  const { user, signOut } = useAuth();
+  const { t, isRTL } = useI18n();
   const navigate = useNavigate();
-  const { signOut } = useAuth();
+  const { state } = useSidebar();
+  const [isCollapsing, setIsCollapsing] = useState(false);
+
+  useEffect(() => {
+    if (state === "collapsed") {
+      setIsCollapsing(true);
+      const timer = setTimeout(() => setIsCollapsing(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [state]);
 
   const handleSignOut = async () => {
     try {
       await signOut();
-      toast.success("Successfully signed out");
-      navigate("/auth");
+      navigate('/auth');
     } catch (error) {
-      toast.error("Error signing out");
+      console.error('Error signing out:', error);
     }
   };
 
-  return (
-    <SidebarFooter className="p-4 border-t border-gray-200 bg-gray-50/50" data-sidebar="footer">
-      {/* Language Toggle */}
-      <div className="mb-3">
-        <LanguageToggle />
-      </div>
+  if (!user) return null;
 
-      {/* Logout Button */}
-      <Button
-        onClick={handleSignOut}
-        variant="ghost"
-        className={cn(
-          "w-full text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors font-medium",
-          isRTL && "flex-row-reverse"
-        )}
-      >
-        <LogOut className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
-        <span>{String(tNav("logout"))}</span>
-      </Button>
-    </SidebarFooter>
+  return (
+    <div className="p-4 border-t">
+      <div className="space-y-1">
+        <SidebarMenuButton
+          onClick={() => navigate('/profile')}
+          className="nav-link-rtl w-full justify-start"
+          aria-label={t("Settings")}
+        >
+          <Settings className="w-4 h-4 icon-start" />
+          {state === "expanded" && !isCollapsing && (
+            <span>{t("Settings")}</span>
+          )}
+        </SidebarMenuButton>
+
+        <SidebarMenuButton
+          onClick={handleSignOut}
+          className="nav-link-rtl w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
+          aria-label={t("Logout")}
+        >
+          <LogOut className="w-4 h-4 icon-start" />
+          {state === "expanded" && !isCollapsing && (
+            <span>{t("Logout")}</span>
+          )}
+        </SidebarMenuButton>
+      </div>
+    </div>
   );
 };
-
-export default AppSidebarFooter;

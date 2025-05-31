@@ -1,96 +1,115 @@
 
-import React from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useI18n } from "@/hooks/useI18n";
+import { useSidebar } from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
+import { useState, useEffect } from "react";
 import {
   LayoutDashboard,
   UtensilsCrossed,
-  Apple,
+  Camera,
   Dumbbell,
   Target,
   User,
+  BarChart3,
+  Scale,
 } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
-import { 
-  SidebarMenu, 
-  SidebarMenuItem, 
-  SidebarMenuButton, 
-  SidebarGroup 
+import {
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { useI18n } from "@/hooks/useI18n";
-import { useUnreadComments } from "@/hooks/useUnreadComments";
-import { cn } from "@/lib/utils";
 
-interface NavigationItem {
-  href: string;
-  icon: React.ComponentType<any>;
-  label: string;
-  hasNotification?: boolean;
-}
-
-const SidebarNavigation = () => {
-  const { tFrom, isRTL } = useI18n();
-  const tNav = tFrom('navigation');
+export const SidebarNavigation = () => {
+  const { t, isRTL } = useI18n();
   const location = useLocation();
-  const { hasUnreadComments } = useUnreadComments();
+  const navigate = useNavigate();
+  const { state } = useSidebar();
+  const [isCollapsing, setIsCollapsing] = useState(false);
 
-  const navigationItems: NavigationItem[] = [
-    { href: "/dashboard", icon: LayoutDashboard, label: String(tNav("dashboard")) },
-    { href: "/meal-plan", icon: UtensilsCrossed, label: String(tNav("mealPlan")) },
+  useEffect(() => {
+    if (state === "collapsed") {
+      setIsCollapsing(true);
+      const timer = setTimeout(() => setIsCollapsing(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [state]);
+
+  const navigationItems = [
     { 
-      href: "/food-tracker", 
-      icon: Apple, 
-      label: String(tNav("foodTracker")),
-      hasNotification: hasUnreadComments 
+      title: t("Dashboard"), 
+      icon: LayoutDashboard, 
+      href: "/dashboard" 
     },
-    { href: "/exercise", icon: Dumbbell, label: String(tNav("exercise")) },
-    { href: "/goals", icon: Target, label: String(tNav("goals")) },
-    { href: "/profile", icon: User, label: String(tNav("profile")) },
+    { 
+      title: t("Meal Plan"), 
+      icon: UtensilsCrossed, 
+      href: "/meal-plan" 
+    },
+    { 
+      title: t("Food Tracker"), 
+      icon: Camera, 
+      href: "/food-tracker" 
+    },
+    { 
+      title: t("Exercise"), 
+      icon: Dumbbell, 
+      href: "/exercise" 
+    },
+    { 
+      title: t("Goals"), 
+      icon: Target, 
+      href: "/goals" 
+    },
+    { 
+      title: t("Profile"), 
+      icon: User, 
+      href: "/profile" 
+    },
+    { 
+      title: t("Progress"), 
+      icon: BarChart3, 
+      href: "/progress" 
+    },
+    { 
+      title: t("Weight Tracking"), 
+      icon: Scale, 
+      href: "/weight-tracking" 
+    },
   ];
 
-  const renderNavItem = (item: NavigationItem, isActive: boolean) => (
-    <SidebarMenuItem key={item.href}>
-      <SidebarMenuButton
-        asChild
-        isActive={isActive}
-        className={cn(
-          "w-full text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors relative",
-          isActive && "bg-blue-50 text-blue-600 border-r-2 border-blue-600",
-          isRTL && "text-right",
-          isRTL && isActive && "border-r-0 border-l-2 border-blue-600"
-        )}
-        data-sidebar="menu-button"
-      >
-        <Link 
-          to={item.href} 
-          className={cn(
-            "flex items-center gap-3 px-3 py-2 relative w-full",
-            isRTL && "flex-row-reverse"
-          )} 
-          data-sidebar="menu-item"
-        >
-          <item.icon className="h-5 w-5 flex-shrink-0" />
-          <span className="font-medium truncate">{item.label}</span>
-          {item.hasNotification && (
-            <div className={cn(
-              "absolute w-2 h-2 bg-red-500 rounded-full",
-              isRTL ? "top-1 left-1" : "top-1 right-1"
-            )}></div>
-          )}
-        </Link>
-      </SidebarMenuButton>
-    </SidebarMenuItem>
-  );
+  const handleNavigation = (href: string) => {
+    navigate(href);
+  };
 
   return (
-    <SidebarGroup className="px-4 py-6">
-      <SidebarMenu className="space-y-2">
-        {navigationItems.map((item) => {
-          const isActive = location.pathname === item.href || 
-                         (item.href === "/dashboard" && location.pathname === "/");
-          return renderNavItem(item, isActive);
-        })}
-      </SidebarMenu>
-    </SidebarGroup>
+    <SidebarMenu>
+      {navigationItems.map((item) => {
+        const Icon = item.icon;
+        const isActive = location.pathname === item.href;
+        
+        return (
+          <SidebarMenuItem key={item.href}>
+            <SidebarMenuButton
+              onClick={() => handleNavigation(item.href)}
+              className={cn(
+                "nav-link-rtl w-full justify-start transition-all duration-200",
+                isActive && "bg-primary/10 text-primary border-e-2 border-primary",
+                !isActive && "hover:bg-muted/50",
+                isRTL && isActive && "border-s-2 border-e-0"
+              )}
+              aria-label={item.title}
+            >
+              <Icon className={cn("w-5 h-5 icon-start", isActive && "text-primary")} />
+              {state === "expanded" && !isCollapsing && (
+                <span className={cn("font-medium", isActive && "text-primary")}>
+                  {item.title}
+                </span>
+              )}
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        );
+      })}
+    </SidebarMenu>
   );
 };
-
-export default SidebarNavigation;
