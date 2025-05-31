@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import { addDays } from "date-fns";
 import { useMealPlanTranslation } from "@/utils/translationHelpers";
 import { useMealPlanState } from "@/hooks/useMealPlanState";

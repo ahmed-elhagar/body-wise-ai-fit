@@ -23,4 +23,5 @@ export interface Meal {
   image: string;
   imageUrl?: string;
   image_url?: string;
+  youtube_search_term?: string; // Add this property for YouTube search functionality
 }
