@@ -1,176 +1,97 @@
 
-import { useState, useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { useProfile } from "@/hooks/useProfile";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { Tabs } from "@/components/ui/tabs";
-import { useNavigate } from "react-router-dom";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
-import ProfileLoadingState from "@/components/profile/ProfileLoadingState";
-import ProfileCompletionCard from "@/components/profile/enhanced/ProfileCompletionCard";
-import ProfilePageHeader from "@/components/profile/ProfilePageHeader";
-import ProfileUserInfoCard from "@/components/profile/ProfileUserInfoCard";
-import ProfileTabNavigation from "@/components/profile/ProfileTabNavigation";
-import ProfileTabContent from "@/components/profile/ProfileTabContent";
-import { useEnhancedProfile } from "@/hooks/useEnhancedProfile";
-import { toast } from "sonner";
-import CompactProfileCompletionCard from "@/components/profile/enhanced/CompactProfileCompletionCard";
+import { PageHeader } from "@/components/ui/page-header";
+import { User } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ProfileOverviewTab from "@/components/profile/tabs/ProfileOverviewTab";
+import ProfileBasicTab from "@/components/profile/tabs/ProfileBasicTab";
+import ProfileHealthTab from "@/components/profile/tabs/ProfileHealthTab";
+import ProfileGoalsTab from "@/components/profile/tabs/ProfileGoalsTab";
+import ProfileSettingsTab from "@/components/profile/tabs/ProfileSettingsTab";
+import { useProfile } from "@/hooks/useProfile";
 
 const Profile = () => {
-  const { user } = useAuth();
-  const { profile, isLoading, error } = useProfile();
-  const { isRTL } = useLanguage();
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("overview");
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-
-  // Add debugging
-  useEffect(() => {
-    console.log('Profile page - Current state:', {
-      userExists: !!user,
-      userId: user?.id,
-      userEmail: user?.email,
-      profileExists: !!profile,
-      isLoading,
-      error: error?.message || error
-    });
-  }, [user, profile, isLoading, error]);
-
-  const {
-    formData,
-    updateFormData,
-    handleArrayInput,
-    saveBasicInfo,
-    saveGoalsAndActivity,
-    isUpdating,
-    validationErrors,
-    completionPercentage,
-  } = useEnhancedProfile();
-
-  // Track unsaved changes
-  useEffect(() => {
-    if (profile) {
-      const hasChanges = 
-        formData.first_name !== (profile.first_name || '') ||
-        formData.last_name !== (profile.last_name || '') ||
-        formData.age !== (profile.age?.toString() || '') ||
-        formData.gender !== (profile.gender || '') ||
-        formData.height !== (profile.height?.toString() || '') ||
-        formData.weight !== (profile.weight?.toString() || '') ||
-        formData.nationality !== (profile.nationality || '') ||
-        formData.body_shape !== (profile.body_shape || '') ||
-        formData.fitness_goal !== (profile.fitness_goal || '') ||
-        formData.activity_level !== (profile.activity_level || '');
-      
-      setHasUnsavedChanges(hasChanges);
-    }
-  }, [formData, profile]);
-
-  const handleStepClick = (step: string) => {
-    if (hasUnsavedChanges) {
-      toast.error('Please save your current changes before switching sections');
-      return;
-    }
-
-    switch (step) {
-      case 'basic_info':
-        setActiveTab('basic');
-        break;
-      case 'health_assessment':
-        setActiveTab('health');
-        break;
-      case 'goals_setup':
-        setActiveTab('goals');
-        break;
-      case 'preferences':
-        setActiveTab('settings');
-        break;
-      default:
-        setActiveTab('overview');
-    }
-  };
-
-  const handleTabChange = (newTab: string) => {
-    if (hasUnsavedChanges) {
-      toast.error('Please save your current changes before switching tabs');
-      return;
-    }
-    setActiveTab(newTab);
-  };
+  const { profile, isLoading } = useProfile();
 
   if (isLoading) {
-    console.log('Profile page - Showing loading state');
     return (
-      <ProtectedRoute requireProfile={false}>
+      <ProtectedRoute>
         <Layout>
-          <ProfileLoadingState />
-        </Layout>
-      </ProtectedRoute>
-    );
-  }
-
-  if (error) {
-    console.error('Profile page - Showing error state:', error);
-    return (
-      <ProtectedRoute requireProfile={false}>
-        <Layout>
-          <div className="p-6">
-            <Alert className="max-w-md mx-auto">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                Failed to load profile data. Please refresh the page or try again later.
-                <div className="mt-2 text-xs text-gray-500">
-                  Error: {error?.message || 'Unknown error'}
-                </div>
-              </AlertDescription>
-            </Alert>
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
           </div>
         </Layout>
       </ProtectedRoute>
     );
   }
 
-  console.log('Profile page - Rendering main content with profile:', !!profile);
+  const completionScore = profile?.profile_completion_score || 0;
 
   return (
-    <ProtectedRoute requireProfile={false}>
+    <ProtectedRoute>
       <Layout>
-        <div className="p-4 md:p-6 bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/30 min-h-screen">
-          <div className="max-w-6xl mx-auto">
-            <ProfilePageHeader
-              hasUnsavedChanges={hasUnsavedChanges}
-              completionPercentage={completionPercentage}
-              formData={formData}
-              user={user}
-            />
+        <PageHeader
+          title="Profile"
+          description={`Complete your profile to get personalized recommendations (${completionScore}% complete)`}
+          icon={<User className="h-6 w-6 text-blue-600" />}
+        />
 
-            <ProfileUserInfoCard
-              formData={formData}
-              user={user}
-              completionPercentage={completionPercentage}
-            />
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="grid w-full grid-cols-5 bg-white/80 backdrop-blur-sm border border-gray-200 shadow-sm">
+            <TabsTrigger 
+              value="overview" 
+              className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+            >
+              Overview
+            </TabsTrigger>
+            <TabsTrigger 
+              value="basic" 
+              className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+            >
+              Basic Info
+            </TabsTrigger>
+            <TabsTrigger 
+              value="health" 
+              className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+            >
+              Health
+            </TabsTrigger>
+            <TabsTrigger 
+              value="goals" 
+              className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+            >
+              Goals
+            </TabsTrigger>
+            <TabsTrigger 
+              value="settings" 
+              className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+            >
+              Settings
+            </TabsTrigger>
+          </TabsList>
 
-            <div className="mb-6 mt-4">
-              <CompactProfileCompletionCard onStepClick={handleStepClick} />
-            </div>
+          <TabsContent value="overview" className="mt-6">
+            <ProfileOverviewTab />
+          </TabsContent>
 
-            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-              <ProfileTabNavigation activeTab={activeTab} onTabChange={handleTabChange} />
-              <ProfileTabContent
-                formData={formData}
-                updateFormData={updateFormData}
-                handleArrayInput={handleArrayInput}
-                saveBasicInfo={saveBasicInfo}
-                saveGoalsAndActivity={saveGoalsAndActivity}
-                isUpdating={isUpdating}
-                validationErrors={validationErrors}
-              />
-            </Tabs>
-          </div>
-        </div>
+          <TabsContent value="basic" className="mt-6">
+            <ProfileBasicTab />
+          </TabsContent>
+
+          <TabsContent value="health" className="mt-6">
+            <ProfileHealthTab />
+          </TabsContent>
+
+          <TabsContent value="goals" className="mt-6">
+            <ProfileGoalsTab />
+          </TabsContent>
+
+          <TabsContent value="settings" className="mt-6">
+            <ProfileSettingsTab />
+          </TabsContent>
+        </Tabs>
       </Layout>
     </ProtectedRoute>
   );

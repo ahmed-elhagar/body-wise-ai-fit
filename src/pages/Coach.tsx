@@ -26,11 +26,9 @@ const Coach = () => {
     return (
       <ProtectedRoute>
         <Layout>
-          <div className="p-6">
-            <div className="animate-pulse">
-              <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-            </div>
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
           </div>
         </Layout>
       </ProtectedRoute>
@@ -50,7 +48,7 @@ const Coach = () => {
           <PageHeader
             title="Coach Panel"
             description="Manage and support your trainees"
-            icon={<Users className="h-6 w-6 md:h-8 md:w-8 text-green-600" />}
+            icon={<Users className="h-6 w-6 text-green-600" />}
           />
           <Card className="border-red-200 bg-red-50">
             <CardContent className="p-6">
@@ -89,13 +87,13 @@ const Coach = () => {
   return (
     <ProtectedRoute>
       <Layout>
+        <PageHeader
+          title="Coach Panel"
+          description="Manage and support your trainees"
+          icon={<Users className="h-6 w-6 text-green-600" />}
+        />
+        
         <div className="space-y-6">
-          <PageHeader
-            title="Coach Panel"
-            description="Manage and support your trainees"
-            icon={<Users className="h-6 w-6 md:h-8 md:w-8 text-green-600" />}
-          />
-          
           <CoachStatsCards stats={{
             totalClients,
             messagesToday: 0,

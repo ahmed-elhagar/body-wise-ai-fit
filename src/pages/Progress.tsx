@@ -64,89 +64,87 @@ const Progress = () => {
   return (
     <ProtectedRoute>
       <Layout>
-        <div className="space-y-6">
-          <PageHeader
-            title={t('Progress & Analytics')}
-            description={t('Track your fitness journey with AI-powered insights and comprehensive analytics')}
-            icon={<TrendingUp className="h-6 w-6 md:h-8 md:w-8 text-blue-600" />}
-          >
-            <ProgressBadges />
-          </PageHeader>
+        <PageHeader
+          title={t('Progress & Analytics')}
+          description={t('Track your fitness journey with AI-powered insights and comprehensive analytics')}
+          icon={<TrendingUp className="h-6 w-6 text-blue-600" />}
+        >
+          <ProgressBadges />
+        </PageHeader>
 
-          <Tabs value={activeTab} onValueChange={(value) => navigate(`/progress/${value}`)} className="w-full">
-            <TabsList className="grid w-full grid-cols-5 max-w-2xl bg-white/80 backdrop-blur-sm">
-              <TabsTrigger value="analytics" className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4" />
-                <span className="hidden sm:inline">{t('Analytics')}</span>
-              </TabsTrigger>
-              <TabsTrigger value="weight" className="flex items-center gap-2">
-                <Scale className="h-4 w-4" />
-                <span className="hidden sm:inline">{t('Weight')}</span>
-              </TabsTrigger>
-              <TabsTrigger value="goals" className="flex items-center gap-2">
-                <Goal className="h-4 w-4" />
-                <span className="hidden sm:inline">{t('Goals')}</span>
-              </TabsTrigger>
-              <TabsTrigger value="achievements" className="flex items-center gap-2">
-                <Trophy className="h-4 w-4" />
-                <span className="hidden sm:inline">{t('Badges')}</span>
-              </TabsTrigger>
-              <TabsTrigger value="trends" className="flex items-center gap-2">
-                <Brain className="h-4 w-4" />
-                <span className="hidden sm:inline">{t('AI Trends')}</span>
-              </TabsTrigger>
-            </TabsList>
+        <Tabs value={activeTab} onValueChange={(value) => navigate(`/progress/${value}`)} className="w-full">
+          <TabsList className="grid w-full grid-cols-5 max-w-2xl bg-white/80 backdrop-blur-sm">
+            <TabsTrigger value="analytics" className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('Analytics')}</span>
+            </TabsTrigger>
+            <TabsTrigger value="weight" className="flex items-center gap-2">
+              <Scale className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('Weight')}</span>
+            </TabsTrigger>
+            <TabsTrigger value="goals" className="flex items-center gap-2">
+              <Goal className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('Goals')}</span>
+            </TabsTrigger>
+            <TabsTrigger value="achievements" className="flex items-center gap-2">
+              <Trophy className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('Badges')}</span>
+            </TabsTrigger>
+            <TabsTrigger value="trends" className="flex items-center gap-2">
+              <Brain className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('AI Trends')}</span>
+            </TabsTrigger>
+          </TabsList>
 
-            <TabsContent value="analytics" className="space-y-6 mt-6">
-              <ProgressAnalytics weightEntries={weightEntries} macroGoals={macroGoals} />
-            </TabsContent>
+          <TabsContent value="analytics" className="space-y-6 mt-6">
+            <ProgressAnalytics weightEntries={weightEntries} macroGoals={macroGoals} />
+          </TabsContent>
 
-            <TabsContent value="weight" className="space-y-6 mt-6">
-              <WeightStatsCards weightEntries={weightEntries} />
+          <TabsContent value="weight" className="space-y-6 mt-6">
+            <WeightStatsCards weightEntries={weightEntries} />
 
-              <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                <div className="xl:col-span-2">
-                  <WeightProgressChart weightEntries={weightEntries} />
-                </div>
-                <div className="xl:col-span-1">
-                  <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg h-fit">
-                    <h3 className="text-lg font-semibold mb-4">{t('Add Weight Entry')}</h3>
-                    <WeightEntryForm />
-                  </Card>
-                </div>
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+              <div className="xl:col-span-2">
+                <WeightProgressChart weightEntries={weightEntries} />
               </div>
-            </TabsContent>
+              <div className="xl:col-span-1">
+                <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg h-fit">
+                  <h3 className="text-lg font-semibold mb-4">{t('Add Weight Entry')}</h3>
+                  <WeightEntryForm />
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
 
-            <TabsContent value="goals" className="space-y-6 mt-6">
-              <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Goal className="h-5 w-5 text-blue-600" />
-                    {t('Fitness Goals Management')}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <EnhancedGoalsForm
-                    formData={{}}
-                    updateFormData={() => {}}
-                    handleArrayInput={() => {}}
-                    onSave={() => Promise.resolve(true)}
-                    isUpdating={false}
-                    validationErrors={{}}
-                  />
-                </CardContent>
-              </Card>
-            </TabsContent>
+          <TabsContent value="goals" className="space-y-6 mt-6">
+            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Goal className="h-5 w-5 text-blue-600" />
+                  {t('Fitness Goals Management')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <EnhancedGoalsForm
+                  formData={{}}
+                  updateFormData={() => {}}
+                  handleArrayInput={() => {}}
+                  onSave={() => Promise.resolve(true)}
+                  isUpdating={false}
+                  validationErrors={{}}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-            <TabsContent value="achievements" className="space-y-6 mt-6">
-              <AchievementBadges />
-            </TabsContent>
+          <TabsContent value="achievements" className="space-y-6 mt-6">
+            <AchievementBadges />
+          </TabsContent>
 
-            <TabsContent value="trends" className="space-y-6 mt-6">
-              <TrendAnalysis />
-            </TabsContent>
-          </Tabs>
-        </div>
+          <TabsContent value="trends" className="space-y-6 mt-6">
+            <TrendAnalysis />
+          </TabsContent>
+        </Tabs>
       </Layout>
     </ProtectedRoute>
   );

@@ -18,10 +18,10 @@ export const PageHeader = ({
   className 
 }: PageHeaderProps) => {
   return (
-    <div className={cn("space-y-6 mb-8", className)}>
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="space-y-2">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-3">
+    <div className={cn("mb-6", className)}>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+        <div className="space-y-1">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
             {icon}
             {title}
           </h1>

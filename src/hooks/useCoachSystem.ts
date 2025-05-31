@@ -16,7 +16,7 @@ export interface CoachInfo {
     first_name?: string;
     last_name?: string;
     email?: string;
-  };
+  } | null;
 }
 
 export interface CoachTraineeRelationship {
@@ -32,7 +32,11 @@ export interface CoachTraineeRelationship {
     email?: string;
     profile_completion_score?: number;
     ai_generations_remaining?: number;
-  };
+    age?: number;
+    weight?: number;
+    height?: number;
+    fitness_goal?: string;
+  } | null;
 }
 
 export const useCoachSystem = () => {
@@ -93,7 +97,11 @@ export const useCoachSystem = () => {
             last_name,
             email,
             profile_completion_score,
-            ai_generations_remaining
+            ai_generations_remaining,
+            age,
+            weight,
+            height,
+            fitness_goal
           )
         `)
         .eq('coach_id', user.id);
