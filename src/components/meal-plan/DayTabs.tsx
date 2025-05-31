@@ -1,7 +1,6 @@
 
-import { format, addDays } from "date-fns";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useMealPlanTranslation } from "@/utils/translationHelpers";
+import { format, addDays, isSameDay } from "date-fns";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface DayTabsProps {
   weekStartDate: Date;
@@ -9,40 +8,75 @@ interface DayTabsProps {
   onDayChange: (dayNumber: number) => void;
 }
 
-const DayTabs = ({
-  weekStartDate,
-  selectedDayNumber,
-  onDayChange
-}: DayTabsProps) => {
-  const { mealPlanT } = useMealPlanTranslation();
+const DayTabs = ({ weekStartDate, selectedDayNumber, onDayChange }: DayTabsProps) => {
+  const { t, isRTL } = useLanguage();
+  const today = new Date();
 
-  const weekDays = [
-    { number: 1, name: mealPlanT('sat'), fullName: mealPlanT('saturday'), date: weekStartDate },
-    { number: 2, name: mealPlanT('sun'), fullName: mealPlanT('sunday'), date: addDays(weekStartDate, 1) },
-    { number: 3, name: mealPlanT('mon'), fullName: mealPlanT('monday'), date: addDays(weekStartDate, 2) },
-    { number: 4, name: mealPlanT('tue'), fullName: mealPlanT('tuesday'), date: addDays(weekStartDate, 3) },
-    { number: 5, name: mealPlanT('wed'), fullName: mealPlanT('wednesday'), date: addDays(weekStartDate, 4) },
-    { number: 6, name: mealPlanT('thu'), fullName: mealPlanT('thursday'), date: addDays(weekStartDate, 5) },
-    { number: 7, name: mealPlanT('fri'), fullName: mealPlanT('friday'), date: addDays(weekStartDate, 6) }
-  ];
+  const days = Array.from({ length: 7 }, (_, index) => {
+    const dayNumber = index + 1;
+    const date = addDays(weekStartDate, index);
+    const isSelected = selectedDayNumber === dayNumber;
+    const isToday = isSameDay(date, today);
+    
+    return {
+      dayNumber,
+      date,
+      isSelected,
+      isToday,
+      dayName: format(date, 'EEE'),
+      dayDate: format(date, 'd')
+    };
+  });
 
   return (
-    <div className="card-enhanced card-padding">
-      <Tabs value={selectedDayNumber.toString()} onValueChange={(value) => onDayChange(parseInt(value))}>
-        <TabsList className="grid w-full grid-cols-7 bg-fitness-neutral-100/90 rounded-xl p-2 h-auto border border-fitness-neutral-200/50">
-          {weekDays.map((day) => (
-            <TabsTrigger 
-              key={day.number} 
-              value={day.number.toString()}
-              className="flex flex-col py-4 px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-fitness-primary-500 data-[state=active]:to-fitness-primary-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-fitness-primary-500/25 rounded-xl font-semibold transition-all duration-300 min-h-[70px] text-center hover:bg-white/80 transform data-[state=active]:scale-105 touch-target"
-            >
-              <span className="text-xs opacity-80 mb-1 font-medium">{day.name}</span>
-              <span className="text-xl font-bold">{format(day.date, 'd')}</span>
-              <span className="text-xs opacity-80 mt-1 hidden sm:block font-medium">{format(day.date, 'MMM')}</span>
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
+    <div className="p-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+      <div className="flex overflow-x-auto scrollbar-hide gap-2">
+        {days.map(({ dayNumber, date, isSelected, isToday, dayName, dayDate }) => (
+          <button
+            key={dayNumber}
+            onClick={() => onDayChange(dayNumber)}
+            className={`flex flex-col items-center min-w-[80px] px-4 py-3 rounded-xl font-medium transition-all duration-300 transform ${
+              isSelected
+                ? "bg-gradient-to-br from-fitness-primary-500 to-fitness-primary-600 text-white shadow-lg scale-105 border-2 border-fitness-primary-400"
+                : isToday
+                ? "bg-fitness-orange-100 text-fitness-orange-700 border-2 border-fitness-orange-300 hover:bg-fitness-orange-200"
+                : "bg-white text-gray-600 border-2 border-gray-200 hover:bg-gray-50 hover:border-gray-300"
+            }`}
+          >
+            {/* Day Name */}
+            <span className={`text-xs font-semibold mb-1 ${
+              isSelected 
+                ? "text-white" 
+                : isToday 
+                ? "text-fitness-orange-700" 
+                : "text-gray-500"
+            }`}>
+              {dayName}
+            </span>
+            
+            {/* Day Date */}
+            <span className={`text-lg font-bold ${
+              isSelected 
+                ? "text-white" 
+                : isToday 
+                ? "text-fitness-orange-800" 
+                : "text-gray-700"
+            }`}>
+              {dayDate}
+            </span>
+            
+            {/* Today Indicator */}
+            {isToday && !isSelected && (
+              <div className="w-2 h-2 bg-fitness-orange-500 rounded-full mt-1"></div>
+            )}
+            
+            {/* Selected Indicator */}
+            {isSelected && (
+              <div className="w-2 h-2 bg-white rounded-full mt-1"></div>
+            )}
+          </button>
+        ))}
+      </div>
     </div>
   );
 };
