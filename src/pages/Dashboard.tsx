@@ -7,10 +7,8 @@ import EnhancedStatsGrid from "@/components/dashboard/EnhancedStatsGrid";
 import InteractiveProgressChart from "@/components/dashboard/InteractiveProgressChart";
 import WeightTrackingWidget from "@/components/dashboard/WeightTrackingWidget";
 import GoalProgressWidget from "@/components/dashboard/GoalProgressWidget";
-import { DashboardAchievements } from "@/components/dashboard/DashboardAchievements";
-import CollapsibleQuickActions from "@/components/dashboard/CollapsibleQuickActions";
-import HeaderDropdowns from "@/components/dashboard/HeaderDropdowns";
 import CoachChatWidget from "@/components/dashboard/CoachChatWidget";
+import HeaderDropdowns from "@/components/dashboard/HeaderDropdowns";
 import { useProfile } from "@/hooks/useProfile";
 import { useNavigate } from "react-router-dom";
 
@@ -61,11 +59,6 @@ const Dashboard = () => {
               {/* Left Column */}
               <div className="space-y-4 md:space-y-6">
                 <InteractiveProgressChart />
-                
-                <CollapsibleQuickActions 
-                  onViewMealPlan={handleViewMealPlan}
-                  onViewExercise={handleViewExercise}
-                />
               </div>
               
               {/* Right Column */}
@@ -77,13 +70,6 @@ const Dashboard = () => {
                 <WeightTrackingWidget />
               </div>
             </div>
-            
-            {/* Achievements - Full Width */}
-            <DashboardAchievements 
-              profile={profile}
-              currentMealPlan={null}
-              currentExerciseProgram={null}
-            />
           </div>
         </div>
       </Layout>
