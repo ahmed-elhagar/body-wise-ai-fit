@@ -1,5 +1,6 @@
 
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ShoppingBasket } from "lucide-react";
 
 interface IngredientsCardProps {
   ingredients: any[];
@@ -7,22 +8,24 @@ interface IngredientsCardProps {
 
 const IngredientsCard = ({ ingredients }: IngredientsCardProps) => {
   return (
-    <Card className="bg-white border-fitness-primary-200 shadow-lg">
-      <CardContent className="p-6">
-        <h3 className="text-xl font-semibold mb-4 flex items-center text-fitness-primary-700">
-          <span className="text-2xl mr-3">🥘</span>
+    <Card className="bg-white border-0 shadow-lg">
+      <CardHeader className="pb-4">
+        <CardTitle className="text-xl font-bold text-gray-800 flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
+            <ShoppingBasket className="w-5 h-5 text-white" />
+          </div>
           Ingredients
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {ingredients.map((ingredient: any, index: number) => (
-            <div key={index} className="flex justify-between items-center p-3 bg-fitness-primary-50 rounded-lg border border-fitness-primary-100">
-              <span className="font-medium text-fitness-primary-700">{ingredient.name}</span>
-              <span className="text-fitness-accent-600 font-semibold">
-                {ingredient.quantity} {ingredient.unit}
-              </span>
-            </div>
-          ))}
-        </div>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {ingredients.map((ingredient: any, index: number) => (
+          <div key={index} className="flex justify-between items-center p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-100 hover:from-green-100 hover:to-emerald-100 transition-colors">
+            <span className="font-medium text-gray-800">{ingredient.name}</span>
+            <span className="text-green-600 font-semibold bg-white px-2 py-1 rounded-lg text-sm">
+              {ingredient.quantity} {ingredient.unit}
+            </span>
+          </div>
+        ))}
       </CardContent>
     </Card>
   );

@@ -12,11 +12,11 @@ const RecipeImage = ({ meal, detailedMeal }: RecipeImageProps) => {
   if (!imageUrl) return null;
 
   return (
-    <div className="w-full h-64 rounded-lg overflow-hidden">
+    <div className="w-full h-72 rounded-2xl overflow-hidden shadow-lg">
       <img 
         src={imageUrl} 
         alt={meal.name}
-        className="w-full h-full object-cover"
+        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
       />
     </div>
   );
