@@ -10,6 +10,7 @@ export const mealPlan = {
   shuffleMeals: "خلط الوجبات",
   generateAIPlan: "توليد خطة ذكية",
   todaysProgress: "تقدم اليوم",
+  todaysSummary: "ملخص اليوم",
   caloriesConsumed: "سعرة حرارية مستهلكة",
   protein: "بروتين",
   meals: "وجبات",
@@ -56,7 +57,6 @@ export const mealPlan = {
   viewMode: "نمط العرض",
   personalizedPlan: "خطة شخصية",
   generateAIMealPlan: "توليد خطة وجبات ذكية",
-  todaysSummary: "ملخص اليوم",
   proteinGoal: "هدف البروتين",
   mealsToday: "وجبات اليوم",
   weekOf: "أسبوع",
@@ -72,5 +72,12 @@ export const mealPlan = {
   servings: "حصص",
   minutes: "دقائق",
   prepTime: "وقت التحضير",
-  cookTime: "وقت الطبخ"
+  cookTime: "وقت الطبخ",
+  of: "من",
+  target: "الهدف",
+  plannedMeals: "وجبات مخططة",
+  snackAddedSuccess: "تم إضافة الوجبة الخفيفة بنجاح!",
+  planGeneratedSuccess: "تم إنشاء خطة الوجبات بنجاح!",
+  planGenerationFailed: "فشل في إنشاء خطة الوجبات. يرجى المحاولة مرة أخرى.",
+  shoppingListUpdated: "تم تحديث قائمة التسوق بنجاح!"
 } as const;

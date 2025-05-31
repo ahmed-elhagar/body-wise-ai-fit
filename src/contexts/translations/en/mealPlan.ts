@@ -10,6 +10,7 @@ export const mealPlan = {
   shuffleMeals: "Shuffle Meals",
   generateAIPlan: "Generate AI Plan",
   todaysProgress: "Today's Progress",
+  todaysSummary: "Today's Summary",
   caloriesConsumed: "calories consumed",
   protein: "protein",
   meals: "meals",
@@ -56,7 +57,6 @@ export const mealPlan = {
   viewMode: "View Mode",
   personalizedPlan: "Personalized Plan",
   generateAIMealPlan: "Generate AI Meal Plan",
-  todaysSummary: "Today's Summary",
   proteinGoal: "Protein Goal",
   mealsToday: "Meals Today",
   weekOf: "Week of",
@@ -72,5 +72,12 @@ export const mealPlan = {
   servings: "servings",
   minutes: "minutes",
   prepTime: "prep time",
-  cookTime: "cook time"
+  cookTime: "cook time",
+  of: "of",
+  target: "target",
+  plannedMeals: "planned meals",
+  snackAddedSuccess: "Snack added successfully!",
+  planGeneratedSuccess: "Meal plan generated successfully!",
+  planGenerationFailed: "Failed to generate meal plan. Please try again.",
+  shoppingListUpdated: "Shopping list updated successfully!"
 } as const;
