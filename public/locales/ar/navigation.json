@@ -8,6 +8,9 @@
   "profile": "الملف الشخصي",
   "progress": "التقدم",
   "weightTracking": "تتبع الوزن",
+  "calorieChecker": "فحص السعرات",
+  "notifications": "الإشعارات",
+  "aiChat": "محادثة الذكي",
   "settings": "الإعدادات",
   "logout": "تسجيل الخروج",
   "menu": "القائمة",
@@ -21,5 +24,6 @@
   "activeClients": "عملاء نشطون",
   "professionalCoach": "مدرب محترف",
   "systemAdmin": "إدارة النظام والتحكم",
-  "signOut": "تسجيل الخروج"
+  "signOut": "تسجيل الخروج",
+  "navigation": "التنقل"
 }

@@ -8,6 +8,9 @@
   "profile": "Profile",
   "progress": "Progress",
   "weightTracking": "Weight Tracking",
+  "calorieChecker": "Calorie Checker",
+  "notifications": "Notifications",
+  "aiChat": "AI Chat",
   "settings": "Settings",
   "logout": "Logout",
   "menu": "Menu",
@@ -21,5 +24,6 @@
   "activeClients": "Active clients",
   "professionalCoach": "Professional Coach",
   "systemAdmin": "System administration and management",
-  "signOut": "Sign Out"
+  "signOut": "Sign Out",
+  "navigation": "Navigation"
 }

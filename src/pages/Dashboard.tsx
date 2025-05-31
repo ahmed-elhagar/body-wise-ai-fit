@@ -1,4 +1,3 @@
-
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,6 +12,7 @@ import WeightTrackingWidget from "@/components/dashboard/WeightTrackingWidget";
 import InteractiveProgressChart from "@/components/dashboard/InteractiveProgressChart";
 import EnhancedAnalyticsCard from "@/components/dashboard/EnhancedAnalyticsCard";
 import GoalProgressWidget from "@/components/dashboard/GoalProgressWidget";
+import NotificationWidget from "@/components/dashboard/NotificationWidget";
 
 // Import the existing components
 import { DashboardWelcomeHeader } from "@/components/dashboard/DashboardWelcomeHeader";
@@ -124,10 +124,11 @@ const Dashboard = () => {
               </Card>
             </div>
 
-            {/* Weight Tracking and Goals */}
-            <div className="grid gap-4 md:gap-6 grid-cols-1 lg:grid-cols-2">
+            {/* Weight Tracking, Goals and Notifications */}
+            <div className="grid gap-4 md:gap-6 grid-cols-1 lg:grid-cols-3">
               <WeightTrackingWidget />
               <GoalProgressWidget />
+              <NotificationWidget />
             </div>
 
             {/* Quick Actions */}
