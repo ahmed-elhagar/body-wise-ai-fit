@@ -28,6 +28,8 @@ export const useCoachTasks = () => {
       if (!user?.id) return [];
 
       try {
+        console.log('Fetching tasks for coach:', user.id);
+        
         // Get tasks with trainee information
         const { data: taskData, error: taskError } = await supabase
           .from('coach_tasks')
@@ -43,7 +45,9 @@ export const useCoachTasks = () => {
           throw taskError;
         }
 
-        return taskData?.map((task: any) => ({
+        console.log('Raw task data from database:', taskData);
+
+        const mappedTasks = taskData?.map((task: any) => ({
           id: task.id,
           title: task.title,
           description: task.description || '',
@@ -55,12 +59,16 @@ export const useCoachTasks = () => {
           completed: task.completed,
           createdAt: new Date(task.created_at)
         })) || [];
+
+        console.log('Mapped tasks:', mappedTasks);
+        return mappedTasks;
       } catch (error) {
         console.error('Error in coach tasks query:', error);
         return [];
       }
     },
     enabled: !!user?.id,
+    refetchOnWindowFocus: false,
   });
 
   // Create task mutation
@@ -94,9 +102,11 @@ export const useCoachTasks = () => {
       return data;
     },
     onSuccess: (data) => {
+      console.log('Task creation successful, invalidating queries');
+      // Force refetch of tasks
       queryClient.invalidateQueries({ queryKey: ['coach-tasks'] });
+      queryClient.refetchQueries({ queryKey: ['coach-tasks'] });
       toast.success('Task created successfully');
-      console.log('Task creation successful, data:', data);
     },
     onError: (error: any) => {
       console.error('Task creation failed:', error);
@@ -107,6 +117,8 @@ export const useCoachTasks = () => {
   // Toggle task completion
   const toggleTaskMutation = useMutation({
     mutationFn: async ({ taskId, completed }: { taskId: string; completed: boolean }) => {
+      console.log('Toggling task completion:', taskId, completed);
+      
       const { error } = await supabase
         .from('coach_tasks')
         .update({ completed, updated_at: new Date().toISOString() })
@@ -118,6 +130,7 @@ export const useCoachTasks = () => {
       }
     },
     onSuccess: () => {
+      console.log('Task toggle successful, invalidating queries');
       queryClient.invalidateQueries({ queryKey: ['coach-tasks'] });
       toast.success('Task updated successfully');
     },

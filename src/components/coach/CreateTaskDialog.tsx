@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Loader2 } from "lucide-react";
+import { CalendarIcon, Loader2, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useCoachTasks, CoachTask } from "@/hooks/useCoachTasks";
@@ -41,6 +41,7 @@ export const CreateTaskDialog = ({ open, onOpenChange, trainees }: CreateTaskDia
     type: 'review' as CoachTask['type'],
     traineeId: 'none',
     dueDate: undefined as Date | undefined,
+    dueTime: '09:00' as string,
   });
 
   const resetForm = () => {
@@ -51,6 +52,7 @@ export const CreateTaskDialog = ({ open, onOpenChange, trainees }: CreateTaskDia
       type: 'review',
       traineeId: 'none',
       dueDate: undefined,
+      dueTime: '09:00',
     });
   };
 
@@ -66,6 +68,14 @@ export const CreateTaskDialog = ({ open, onOpenChange, trainees }: CreateTaskDia
       const selectedTrainee = formData.traineeId !== 'none' ? 
         trainees.find(t => t.trainee_id === formData.traineeId) : null;
       
+      // Combine date and time if both are provided
+      let finalDueDate = formData.dueDate;
+      if (formData.dueDate && formData.dueTime) {
+        const [hours, minutes] = formData.dueTime.split(':');
+        finalDueDate = new Date(formData.dueDate);
+        finalDueDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+      }
+      
       await createTaskAsync({
         title: formData.title.trim(),
         description: formData.description.trim(),
@@ -75,7 +85,7 @@ export const CreateTaskDialog = ({ open, onOpenChange, trainees }: CreateTaskDia
         traineeName: selectedTrainee ? 
           `${selectedTrainee.trainee_profile?.first_name || ''} ${selectedTrainee.trainee_profile?.last_name || ''}`.trim() : 
           undefined,
-        dueDate: formData.dueDate,
+        dueDate: finalDueDate,
         completed: false,
       });
 
@@ -195,32 +205,46 @@ export const CreateTaskDialog = ({ open, onOpenChange, trainees }: CreateTaskDia
           </div>
 
           <div>
-            <Label>Due Date (Optional)</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !formData.dueDate && "text-muted-foreground"
-                  )}
+            <Label>Due Date & Time (Optional)</Label>
+            <div className="flex gap-2">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className={cn(
+                      "flex-1 justify-start text-left font-normal",
+                      !formData.dueDate && "text-muted-foreground"
+                    )}
+                    disabled={isCreating}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {formData.dueDate ? format(formData.dueDate, "PPP") : "Pick a date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={formData.dueDate}
+                    onSelect={(date) => setFormData(prev => ({ ...prev, dueDate: date }))}
+                    initialFocus
+                    disabled={isCreating}
+                    className="p-3 pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+              
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-gray-500" />
+                <Input
+                  type="time"
+                  value={formData.dueTime}
+                  onChange={(e) => setFormData(prev => ({ ...prev, dueTime: e.target.value }))}
                   disabled={isCreating}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {formData.dueDate ? format(formData.dueDate, "PPP") : "Pick a date"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={formData.dueDate}
-                  onSelect={(date) => setFormData(prev => ({ ...prev, dueDate: date }))}
-                  initialFocus
-                  disabled={isCreating}
+                  className="w-32"
                 />
-              </PopoverContent>
-            </Popover>
+              </div>
+            </div>
           </div>
 
           <div className="flex justify-end gap-2 pt-4">
