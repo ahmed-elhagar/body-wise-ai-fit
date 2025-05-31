@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -34,6 +33,12 @@ const MealPlanPageRefactored = () => {
   const [showRecipeDialog, setShowRecipeDialog] = useState(false);
   const [showExchangeDialog, setShowExchangeDialog] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState<DailyMeal | null>(null);
+
+  // TEST BUTTON HANDLER - Add this here to test button functionality
+  const handleGlobalTestClick = () => {
+    console.log('🟢 GLOBAL TEST BUTTON CLICKED! Buttons work on this page');
+    alert('Global test button works! This proves buttons can fire on this page.');
+  };
 
   // Get current week dates for display with error handling
   const weekDays = (() => {
@@ -215,6 +220,20 @@ const MealPlanPageRefactored = () => {
       
       <Container className="py-2 lg:py-4">
         <ContentArea>
+          {/* GLOBAL TEST BUTTON - Add this at the very top to test button functionality */}
+          <Section>
+            <div className="bg-yellow-100 p-4 rounded-lg border-2 border-yellow-400 mb-4">
+              <h3 className="text-yellow-800 font-bold mb-2">🟢 GLOBAL TEST AREA</h3>
+              <Button
+                onClick={handleGlobalTestClick}
+                className="bg-yellow-500 hover:bg-yellow-600 text-white"
+              >
+                🟢 GLOBAL TEST BUTTON - Click me first!
+              </Button>
+              <p className="text-sm text-yellow-700 mt-2">If this works, buttons can fire on this page</p>
+            </div>
+          </Section>
+
           {/* Enhanced Hero Header */}
           <Section>
             <MealPlanHero
