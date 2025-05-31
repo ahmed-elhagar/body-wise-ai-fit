@@ -17,17 +17,7 @@ export const useCoachInfo = () => {
         return null;
       }
 
-      // Only fetch coach info for non-coaches (trainees)
-      if (isRoleCoach && !isAdmin) {
-        console.log('❌ useCoachInfo: User is a coach, not fetching coach info');
-        return {
-          coaches: [],
-          totalUnreadMessages: 0,
-          unreadMessagesByCoach: {}
-        };
-      }
-
-      console.log('🔍 useCoachInfo: Fetching coach info for user:', user.id);
+      console.log('🔍 useCoachInfo: Starting coach info fetch for user:', user.id);
       console.log('🔍 useCoachInfo: User role check - isRoleCoach:', isRoleCoach, 'isAdmin:', isAdmin);
 
       try {
@@ -48,6 +38,16 @@ export const useCoachInfo = () => {
 
         if (!relationships || relationships.length === 0) {
           console.log('📭 useCoachInfo: No coaches assigned to this user');
+          
+          // Check if we have any coach-trainee messages for this user
+          const { data: messages, error: messagesError } = await supabase
+            .from('coach_trainee_messages')
+            .select('coach_id')
+            .eq('trainee_id', user.id)
+            .limit(1);
+          
+          console.log('🔍 useCoachInfo: Checking for orphaned messages:', { messages, messagesError });
+          
           return {
             coaches: [],
             totalUnreadMessages: 0,
@@ -90,18 +90,23 @@ export const useCoachInfo = () => {
         let totalUnreadMessages = 0;
 
         for (const coach of coaches) {
+          console.log('🔍 useCoachInfo: Checking unread messages for coach:', coach.coach_id);
+          
           const { count, error: unreadError } = await supabase
             .from('coach_trainee_messages')
             .select('*', { count: 'exact', head: true })
             .eq('trainee_id', user.id)
             .eq('coach_id', coach.coach_id)
             .eq('is_read', false)
-            .eq('sender_type', 'coach')
-            .neq('sender_id', user.id);
+            .eq('sender_type', 'coach');
 
-          if (!unreadError && count) {
+          console.log('🔍 useCoachInfo: Unread messages count for coach', coach.coach_id, ':', count);
+
+          if (!unreadError && count !== null) {
             unreadMessagesByCoach[coach.coach_id] = count;
             totalUnreadMessages += count;
+          } else if (unreadError) {
+            console.error('❌ useCoachInfo: Error counting unread messages:', unreadError);
           }
         }
 
@@ -111,20 +116,20 @@ export const useCoachInfo = () => {
           unreadMessagesByCoach
         };
 
-        console.log('✅ useCoachInfo: Multiple coaches info fetched successfully:', result);
+        console.log('✅ useCoachInfo: Final result:', result);
         return result;
       } catch (error) {
         console.error('❌ useCoachInfo: Error in coach info query:', error);
         throw error;
       }
     },
-    enabled: !!user?.id && !isRoleCoach, // Only enabled for non-coaches
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    refetchOnWindowFocus: false,
+    enabled: !!user?.id, // Always enabled when user exists
+    staleTime: 1000 * 60 * 2, // 2 minutes
+    refetchOnWindowFocus: true,
     retry: (failureCount, error) => {
       console.log('🔄 useCoachInfo: Retry attempt:', failureCount, 'Error:', error);
-      return failureCount < 3; // Retry up to 3 times
+      return failureCount < 3;
     },
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 3000),
   });
 };

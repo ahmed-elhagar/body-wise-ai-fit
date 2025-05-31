@@ -28,7 +28,7 @@ const CoachChatWidget = () => {
       const lastName = coach.coach_profile.last_name || '';
       return `${firstName} ${lastName}`.trim();
     }
-    return 'Your Coach';
+    return coach.coach_profile?.email || 'Your Coach';
   };
 
   // Helper function to get coach initials
@@ -127,31 +127,7 @@ const CoachChatWidget = () => {
 
   // Don't show if no coaches assigned
   if (coaches.length === 0) {
-    return (
-      <Card className="bg-white border border-gray-200 shadow-lg rounded-xl">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-lg text-gray-900">
-            <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-              <UserCheck className="h-4 w-4 text-gray-400" />
-            </div>
-            Your Coaches
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-6">
-            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-              <Users className="h-6 w-6 text-gray-400" />
-            </div>
-            <p className="text-gray-500 text-xs mb-2">
-              No coaches assigned yet
-            </p>
-            <p className="text-xs text-gray-400">
-              Contact support to get matched with a coach
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return null; // Hide widget completely when no coaches
   }
 
   return (
