@@ -112,29 +112,29 @@ const EnhancedStatsGrid = () => {
   };
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
       {stats.map((stat, index) => {
         const IconComponent = stat.icon;
         const colors = getColorClasses(stat.color);
 
         return (
-          <Card key={index} className={`relative overflow-hidden ${colors.bg} border ${colors.border} shadow-md hover:shadow-lg transition-all duration-200 rounded-xl p-4`}>
+          <Card key={index} className={`relative overflow-hidden ${colors.bg} border ${colors.border} shadow-md hover:shadow-lg transition-all duration-200 rounded-xl p-3`}>
             {/* Content */}
             <div className="relative">
               {/* Header */}
-              <div className={`flex items-center justify-between mb-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                <div className={`w-10 h-10 bg-gradient-to-br ${colors.icon} rounded-lg flex items-center justify-center shadow-sm`}>
-                  <IconComponent className="w-5 h-5 text-white" />
+              <div className={`flex items-center justify-between mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                <div className={`w-8 h-8 bg-gradient-to-br ${colors.icon} rounded-lg flex items-center justify-center shadow-sm`}>
+                  <IconComponent className="w-4 h-4 text-white" />
                 </div>
               </div>
 
               {/* Value */}
               <div className={`mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-2xl font-bold text-gray-800">
+                  <span className="text-xl font-bold text-gray-800">
                     {stat.value}
                   </span>
-                  <span className="text-sm font-medium text-gray-600">
+                  <span className="text-xs font-medium text-gray-600">
                     {stat.unit}
                   </span>
                 </div>
@@ -144,13 +144,13 @@ const EnhancedStatsGrid = () => {
               <div className="mb-2">
                 <Progress 
                   value={stat.progress} 
-                  className="h-2 bg-gray-200"
+                  className="h-1.5 bg-gray-200"
                 />
               </div>
 
               {/* Title & Target */}
               <div>
-                <p className="text-sm font-semibold text-gray-700 mb-1">
+                <p className="text-xs font-semibold text-gray-700 mb-1">
                   {stat.title}
                 </p>
                 <p className="text-xs text-gray-500">

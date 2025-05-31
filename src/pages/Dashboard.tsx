@@ -9,7 +9,6 @@ import WeightTrackingWidget from "@/components/dashboard/WeightTrackingWidget";
 import GoalProgressWidget from "@/components/dashboard/GoalProgressWidget";
 import CoachChatWidget from "@/components/dashboard/CoachChatWidget";
 import HeaderDropdowns from "@/components/dashboard/HeaderDropdowns";
-import CollapsibleQuickActions from "@/components/dashboard/CollapsibleQuickActions";
 import { useProfile } from "@/hooks/useProfile";
 import { useNavigate } from "react-router-dom";
 
@@ -52,7 +51,7 @@ const Dashboard = () => {
               </div>
             </div>
             
-            {/* Full Width Stats Grid */}
+            {/* Compact Stats Grid */}
             <EnhancedStatsGrid />
             
             {/* Progress Chart Section */}
@@ -69,12 +68,6 @@ const Dashboard = () => {
               {/* Right Column */}
               <div className="space-y-4 md:space-y-6">
                 <CoachChatWidget />
-                
-                {/* Quick Actions - Collapsible */}
-                <CollapsibleQuickActions 
-                  onViewMealPlan={handleViewMealPlan}
-                  onViewExercise={handleViewExercise}
-                />
               </div>
             </div>
           </div>
