@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useMealPlanPage } from "@/hooks/useMealPlanPage";
 import { Card } from "@/components/ui/card";
@@ -9,8 +10,8 @@ import EmptyWeekState from "./EmptyWeekState";
 import EnhancedRecipeDialog from "./EnhancedRecipeDialog";
 import EnhancedAddSnackDialog from "./EnhancedAddSnackDialog";
 import MealPlanDialogs from "../MealPlanDialogs";
+import MealExchangeDialog from "./MealExchangeDialog";
 import { ErrorBoundary } from "../ErrorBoundary";
-import MealPlanPageTitle from "./MealPlanPageTitle";
 import DayOverviewSection from "./DayOverviewSection";
 
 const MealPlanPage = () => {
@@ -77,6 +78,11 @@ const MealPlanPage = () => {
     handleRegeneratePlan();
   };
 
+  const handleExchangeComplete = async () => {
+    setShowExchangeDialog(false);
+    await refetch();
+  };
+
   if (error) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -96,11 +102,8 @@ const MealPlanPage = () => {
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-gradient-to-br from-fitness-primary-25 via-white to-fitness-accent-25">
-        <div className="container mx-auto px-4 py-6 space-y-6">
-          {/* Page Title */}
-          <MealPlanPageTitle />
-
-          {/* Enhanced Header with Actions Dropdown */}
+        <div className="container mx-auto px-4 py-6 space-y-4">
+          {/* Clean Header Section */}
           <EnhancedMealPlanHeader
             onGenerateAI={() => setShowAIDialog(true)}
             onShuffle={handleShuffle}
@@ -115,7 +118,7 @@ const MealPlanPage = () => {
             selectedDayNumber={selectedDayNumber}
           />
 
-          {/* Compact Navigation Bar */}
+          {/* Compact Navigation Section */}
           {currentWeekPlan?.weeklyPlan && (
             <CompactNavigationBar
               weekStartDate={weekStartDate}
@@ -194,6 +197,14 @@ const MealPlanPage = () => {
             targetDayCalories={targetDayCalories}
           />
 
+          {/* Enhanced Exchange Dialog */}
+          <MealExchangeDialog
+            isOpen={showExchangeDialog}
+            onClose={() => setShowExchangeDialog(false)}
+            currentMeal={selectedMeal}
+            onExchange={handleExchangeComplete}
+          />
+
           {/* All Other Dialogs */}
           <MealPlanDialogs
             showAIDialog={showAIDialog}
@@ -219,8 +230,8 @@ const MealPlanPage = () => {
             onCloseRecipeDialog={() => {}}
             selectedMeal={null}
             
-            showExchangeDialog={showExchangeDialog}
-            onCloseExchangeDialog={() => setShowExchangeDialog(false)}
+            showExchangeDialog={false}
+            onCloseExchangeDialog={() => {}}
             selectedMealIndex={selectedMealIndex}
             onExchange={() => refetch()}
             
