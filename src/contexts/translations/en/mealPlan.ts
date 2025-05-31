@@ -8,10 +8,13 @@ export const mealPlan = {
   shoppingList: "Shopping List",
   regenerate: "Regenerate",
   shuffleMeals: "Shuffle Meals",
+  shuffling: "Shuffling...",
   generateAIPlan: "Generate AI Plan",
   todaysProgress: "Today's Progress",
+  dailyProgress: "Daily Progress",
   todaysSummary: "Today's Summary",
   caloriesConsumed: "calories consumed",
+  calories: "Calories",
   protein: "Protein",
   meals: "Meals",
   quickActions: "Quick Actions",
@@ -85,5 +88,6 @@ export const mealPlan = {
   avgPerMeal: "Avg per meal",
   remainingCalories: "Remaining calories",
   progressPercent: "Progress",
+  complete: "Complete",
   calPerDay: "cal/day"
 } as const;

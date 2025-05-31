@@ -8,10 +8,13 @@ export const mealPlan = {
   shoppingList: "قائمة التسوق",
   regenerate: "إعادة التوليد",
   shuffleMeals: "خلط الوجبات",
+  shuffling: "جاري الخلط...",
   generateAIPlan: "توليد خطة ذكية",
   todaysProgress: "تقدم اليوم",
+  dailyProgress: "التقدم اليومي",
   todaysSummary: "ملخص اليوم",
   caloriesConsumed: "سعرة حرارية مستهلكة",
+  calories: "السعرات الحرارية",
   protein: "بروتين",
   meals: "وجبات",
   quickActions: "إجراءات سريعة",
@@ -85,5 +88,6 @@ export const mealPlan = {
   avgPerMeal: "متوسط كل وجبة",
   remainingCalories: "السعرات المتبقية",
   progressPercent: "النسبة المئوية",
+  complete: "مكتمل",
   calPerDay: "سعرة/يوم"
 } as const;
