@@ -30,29 +30,33 @@ export const TraineesTab = ({ trainees, onChatClick }: TraineesTabProps) => {
   const handleChatClick = (trainee: any) => {
     console.log('Chat clicked for trainee:', trainee.trainee_id, 'Full trainee object:', trainee);
     
-    // More lenient validation - just check for essential IDs
-    if (!trainee.trainee_id) {
-      console.error('Missing trainee_id:', trainee);
+    // Validate trainee data before proceeding
+    if (!trainee.trainee_id && !trainee.id) {
+      console.error('Missing trainee ID:', trainee);
       toast.error('Error: Missing trainee ID. Please refresh and try again.');
       return;
     }
 
-    setSelectedTrainee(trainee);
+    // Use trainee_id or fallback to id
+    const traineeId = trainee.trainee_id || trainee.id;
+    setSelectedTrainee({ ...trainee, trainee_id: traineeId });
     setViewMode('chat');
-    onChatClick(trainee.trainee_id);
+    onChatClick(traineeId);
   };
 
   const handleProgressClick = (trainee: any) => {
     console.log('Progress clicked for trainee:', trainee.trainee_id);
     
-    // More lenient validation
-    if (!trainee.trainee_id) {
-      console.error('Missing trainee_id:', trainee);
+    // Validate trainee data before proceeding
+    if (!trainee.trainee_id && !trainee.id) {
+      console.error('Missing trainee ID:', trainee);
       toast.error('Error: Missing trainee ID. Please refresh and try again.');
       return;
     }
 
-    setSelectedTrainee(trainee);
+    // Use trainee_id or fallback to id
+    const traineeId = trainee.trainee_id || trainee.id;
+    setSelectedTrainee({ ...trainee, trainee_id: traineeId });
     setViewMode('progress');
   };
 
@@ -107,13 +111,14 @@ export const TraineesTab = ({ trainees, onChatClick }: TraineesTabProps) => {
               {trainees.map((trainee: any) => {
                 console.log('Rendering trainee:', trainee.id, 'trainee_id:', trainee.trainee_id, 'profile:', trainee.trainee_profile);
                 
-                // More lenient validation - show trainee even with minimal data
-                const hasMinimalData = trainee.trainee_id || trainee.id;
+                // More robust ID handling
+                const traineeId = trainee.trainee_id || trainee.id;
+                const hasValidId = Boolean(traineeId);
                 const profile = trainee.trainee_profile || {};
-                const unreadCount = unreadCounts[trainee.trainee_id] || 0;
+                const unreadCount = unreadCounts[traineeId] || 0;
                 
-                if (!hasMinimalData) {
-                  console.warn('Skipping trainee with no ID:', trainee);
+                if (!hasValidId) {
+                  console.warn('Skipping trainee with no valid ID:', trainee);
                   return (
                     <div key={trainee.id || Math.random()} className="flex items-center justify-between p-4 border rounded-lg bg-red-50 border-red-200">
                       <div className="flex items-center gap-2">
@@ -125,7 +130,7 @@ export const TraineesTab = ({ trainees, onChatClick }: TraineesTabProps) => {
                 }
 
                 return (
-                  <div key={trainee.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div key={trainee.id || traineeId} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
                     <div>
                       <h3 className="font-semibold">
                         {profile.first_name || 'Unknown'} {profile.last_name || 'User'}

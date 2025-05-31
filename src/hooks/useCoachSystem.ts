@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -35,7 +36,7 @@ export const useCoachSystem = () => {
   const { language, t } = useLanguage();
   const queryClient = useQueryClient();
 
-  // Get trainees assigned to the current coach
+  // Get trainees assigned to the current coach - with better error handling and stability
   const { data: trainees = [], isLoading: isLoadingTrainees, refetch: refetchTrainees, error: traineesError } = useQuery({
     queryKey: ['coach-trainees', user?.id],
     queryFn: async () => {
@@ -47,7 +48,7 @@ export const useCoachSystem = () => {
       console.log('🏃‍♂️ Fetching trainees for coach:', user.id);
 
       try {
-        // Get coach-trainee relationships first
+        // Get coach-trainee relationships first with more stable query
         const { data: relationships, error: relationshipsError } = await supabase
           .from('coach_trainees')
           .select('*')
@@ -56,7 +57,9 @@ export const useCoachSystem = () => {
 
         if (relationshipsError) {
           console.error('❌ Error fetching coach-trainee relationships:', relationshipsError);
-          throw relationshipsError;
+          // Don't throw error immediately, try to continue with empty data
+          console.warn('Continuing with empty relationships due to error');
+          return [];
         }
 
         console.log('📊 Found relationships:', relationships?.length || 0, relationships);
@@ -66,7 +69,7 @@ export const useCoachSystem = () => {
           return [];
         }
 
-        // Get profile data for each trainee separately with better error handling
+        // Get profile data for each trainee with individual error handling
         const traineeIds = relationships.map(rel => rel.trainee_id);
         console.log('🔍 Looking for profiles for trainee IDs:', traineeIds);
         
@@ -77,30 +80,31 @@ export const useCoachSystem = () => {
 
         if (profilesError) {
           console.error('❌ Error fetching trainee profiles:', profilesError);
-          // Don't throw error, continue with empty profiles
+          // Continue with relationships but no profile data
+          console.warn('Continuing without profile data due to error');
         }
 
         console.log('👤 Found profiles:', profiles?.length || 0, profiles);
 
-        // Combine relationships with profiles - more lenient approach
+        // Combine relationships with profiles - very robust approach
         const transformedData = relationships.map(relationship => {
           const profile = profiles?.find(p => p.id === relationship.trainee_id);
           
-          // Create a more robust trainee profile with fallbacks
+          // Create trainee profile with comprehensive fallbacks
           const traineeProfile = {
             id: profile?.id || relationship.trainee_id,
             first_name: profile?.first_name || 'Unknown',
             last_name: profile?.last_name || 'User',
             email: profile?.email || 'unknown@example.com',
-            age: profile?.age,
-            weight: profile?.weight,
-            height: profile?.height,
-            fitness_goal: profile?.fitness_goal,
-            activity_level: profile?.activity_level,
+            age: profile?.age || undefined,
+            weight: profile?.weight || undefined,
+            height: profile?.height || undefined,
+            fitness_goal: profile?.fitness_goal || 'General Fitness',
+            activity_level: profile?.activity_level || 'Moderate',
             profile_completion_score: profile?.profile_completion_score || 0,
             ai_generations_remaining: profile?.ai_generations_remaining || 0,
             assigned_at: relationship.assigned_at,
-            notes: relationship.notes
+            notes: relationship.notes || undefined
           };
           
           return {
@@ -122,12 +126,13 @@ export const useCoachSystem = () => {
       }
     },
     enabled: !!user?.id,
-    staleTime: 30000,
-    gcTime: 300000,
+    staleTime: 60000, // Increased stale time for better stability
+    gcTime: 600000, // Increased garbage collection time
     refetchOnWindowFocus: false,
+    refetchOnMount: true,
     retry: (failureCount, error) => {
       console.log('🔄 Retry attempt:', failureCount, 'Error:', error);
-      return failureCount < 2;
+      return failureCount < 1; // Reduced retry attempts
     },
   });
 
@@ -156,7 +161,7 @@ export const useCoachSystem = () => {
       }
     },
     enabled: !!user?.id,
-    staleTime: 60000,
+    staleTime: 300000, // Cache coach status for 5 minutes
   });
 
   // Get coach info if user is a trainee
@@ -261,7 +266,8 @@ export const useCoachSystem = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['coach-trainees'] });
+      // Only invalidate the specific coach-trainees query
+      queryClient.invalidateQueries({ queryKey: ['coach-trainees', user?.id] });
       toast.success(language === 'ar' ? 
         'تم تعيين المتدرب بنجاح!' : 
         'Trainee assigned successfully!'
@@ -287,10 +293,8 @@ export const useCoachSystem = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['coach-trainees'] });
-      // Also invalidate chat-related queries
-      queryClient.invalidateQueries({ queryKey: ['coach-chat-messages'] });
-      queryClient.invalidateQueries({ queryKey: ['unread-messages'] });
+      // Only invalidate specific queries
+      queryClient.invalidateQueries({ queryKey: ['coach-trainees', user?.id] });
       toast.success(language === 'ar' ? 
         'تم إلغاء تعيين المتدرب!' : 
         'Trainee unassigned successfully!'
@@ -316,7 +320,7 @@ export const useCoachSystem = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['coach-trainees'] });
+      queryClient.invalidateQueries({ queryKey: ['coach-trainees', user?.id] });
       toast.success(language === 'ar' ? 
         'تم تحديث الملاحظات!' : 
         'Notes updated successfully!'
@@ -331,25 +335,39 @@ export const useCoachSystem = () => {
     },
   });
 
-  // Simplified real-time subscription with less aggressive invalidation
+  // Simplified real-time subscription that doesn't interfere with data
   useEffect(() => {
     if (!user?.id || !isCoach) return;
 
-    console.log('🔄 Setting up simplified coach system subscription');
+    console.log('🔄 Setting up stable coach system subscription');
 
     const channel = supabase
-      .channel('coach-system-changes')
+      .channel('coach-system-stable')
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'INSERT',
           schema: 'public',
           table: 'coach_trainees',
           filter: `coach_id=eq.${user.id}`,
         },
         (payload) => {
-          console.log('📡 Real-time coach system update:', payload);
-          // Only invalidate coach-trainees query, not all queries
+          console.log('📡 New trainee assigned:', payload);
+          // Only invalidate on new assignments
+          queryClient.invalidateQueries({ queryKey: ['coach-trainees', user.id] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'coach_trainees',
+          filter: `coach_id=eq.${user.id}`,
+        },
+        (payload) => {
+          console.log('📡 Trainee unassigned:', payload);
+          // Only invalidate on deletions
           queryClient.invalidateQueries({ queryKey: ['coach-trainees', user.id] });
         }
       )
