@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { User, Edit, Heart, Target, Calendar, MapPin } from "lucide-react";
+import { User, Edit, Heart, Target, Calendar, MapPin, TrendingUp, Activity } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 
 interface ProfileOverviewCardProps {
@@ -29,10 +29,10 @@ const ProfileOverviewCard = ({ formData, onEdit }: ProfileOverviewCardProps) => 
   };
 
   const getBMICategory = (bmi: number) => {
-    if (bmi < 18.5) return { label: 'Underweight', color: 'bg-blue-100 text-blue-800' };
-    if (bmi < 25) return { label: 'Normal', color: 'bg-green-100 text-green-800' };
-    if (bmi < 30) return { label: 'Overweight', color: 'bg-yellow-100 text-yellow-800' };
-    return { label: 'Obese', color: 'bg-red-100 text-red-800' };
+    if (bmi < 18.5) return { label: 'Underweight', color: 'bg-blue-100 text-blue-800 border-blue-200' };
+    if (bmi < 25) return { label: 'Normal', color: 'bg-green-100 text-green-800 border-green-200' };
+    if (bmi < 30) return { label: 'Overweight', color: 'bg-yellow-100 text-yellow-800 border-yellow-200' };
+    return { label: 'Obese', color: 'bg-red-100 text-red-800 border-red-200' };
   };
 
   const completionScore = profile?.profile_completion_score || 0;
@@ -40,121 +40,152 @@ const ProfileOverviewCard = ({ formData, onEdit }: ProfileOverviewCardProps) => 
   const bmiCategory = bmi ? getBMICategory(parseFloat(bmi)) : null;
 
   return (
-    <Card>
-      <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <User className="w-5 h-5 text-blue-600" />
-            Profile Overview
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Personal Information Card */}
+      <Card className="lg:col-span-2 bg-gradient-to-br from-white via-blue-50/30 to-indigo-50/20 border-0 shadow-xl">
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-3 text-xl">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <User className="w-6 h-6 text-blue-600" />
+              </div>
+              Personal Information
+            </CardTitle>
+            <Button variant="outline" size="sm" onClick={onEdit} className="hover:bg-blue-50">
+              <Edit className="w-4 h-4 mr-2" />
+              Edit Profile
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* User Avatar and Basic Info */}
+          <div className="flex items-center gap-4 p-4 bg-white/70 rounded-xl border border-gray-100">
+            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+              <span className="text-white font-bold text-2xl">
+                {formData.first_name ? formData.first_name.charAt(0).toUpperCase() : 'U'}
+              </span>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-xl font-bold text-gray-800">
+                {formData.first_name && formData.last_name 
+                  ? `${formData.first_name} ${formData.last_name}` 
+                  : "Complete your profile"}
+              </h3>
+              <p className="text-gray-600">{formData.nationality || 'Add your nationality'}</p>
+              <div className="flex items-center gap-4 mt-2">
+                <span className="text-sm text-gray-500">
+                  {formData.age ? `${formData.age} years old` : 'Age not set'}
+                </span>
+                <span className="text-sm text-gray-500">•</span>
+                <span className="text-sm text-gray-500 capitalize">
+                  {formData.gender || 'Gender not set'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-white/70 p-4 rounded-xl border border-gray-100 text-center">
+              <div className="text-2xl font-bold text-blue-600">
+                {formData.height ? `${formData.height}` : '—'}
+              </div>
+              <div className="text-xs text-gray-500 mt-1">Height (cm)</div>
+            </div>
+            <div className="bg-white/70 p-4 rounded-xl border border-gray-100 text-center">
+              <div className="text-2xl font-bold text-green-600">
+                {formData.weight ? `${formData.weight}` : '—'}
+              </div>
+              <div className="text-xs text-gray-500 mt-1">Weight (kg)</div>
+            </div>
+            <div className="bg-white/70 p-4 rounded-xl border border-gray-100 text-center">
+              <div className="text-2xl font-bold text-purple-600">
+                {bmi || '—'}
+              </div>
+              <div className="text-xs text-gray-500 mt-1">BMI</div>
+              {bmiCategory && (
+                <Badge className={`text-xs mt-1 ${bmiCategory.color} border`}>
+                  {bmiCategory.label}
+                </Badge>
+              )}
+            </div>
+            <div className="bg-white/70 p-4 rounded-xl border border-gray-100 text-center">
+              <div className="text-2xl font-bold text-orange-600 capitalize">
+                {formData.body_shape?.substring(0, 4) || '—'}
+              </div>
+              <div className="text-xs text-gray-500 mt-1">Body Type</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Progress and Health Card */}
+      <Card className="bg-gradient-to-br from-white via-green-50/30 to-emerald-50/20 border-0 shadow-xl">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-3 text-lg">
+            <div className="p-2 bg-green-100 rounded-lg">
+              <TrendingUp className="w-5 h-5 text-green-600" />
+            </div>
+            Health Status
           </CardTitle>
-          <Button variant="outline" size="sm" onClick={onEdit}>
-            <Edit className="w-4 h-4 mr-2" />
-            Edit Profile
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Basic Information */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <h4 className="font-medium text-gray-700 flex items-center gap-2">
-              <User className="w-4 h-4" />
-              Personal Info
-            </h4>
-            <div className="space-y-1 text-sm">
-              <p><span className="text-gray-500">Name:</span> {formData.first_name} {formData.last_name}</p>
-              <p><span className="text-gray-500">Age:</span> {formData.age || 'Not set'}</p>
-              <p><span className="text-gray-500">Gender:</span> {formData.gender || 'Not set'}</p>
-              {formData.nationality && (
-                <p className="flex items-center gap-1">
-                  <MapPin className="w-3 h-3" />
-                  <span className="text-gray-500">From:</span> {formData.nationality}
-                </p>
-              )}
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Profile Completion */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-gray-700">Profile Completion</span>
+              <span className="text-sm font-bold text-gray-800">{completionScore}%</span>
             </div>
+            <Progress value={completionScore} className="h-2" />
+            <p className="text-xs text-gray-600">
+              {completionScore < 50 
+                ? "Complete your profile for better AI recommendations"
+                : completionScore < 80 
+                ? "Great progress! Add more details"
+                : "Excellent! Your profile is comprehensive"}
+            </p>
           </div>
 
-          <div className="space-y-2">
-            <h4 className="font-medium text-gray-700 flex items-center gap-2">
-              <Heart className="w-4 h-4" />
-              Physical Stats
-            </h4>
-            <div className="space-y-1 text-sm">
-              <p><span className="text-gray-500">Height:</span> {formData.height ? `${formData.height} cm` : 'Not set'}</p>
-              <p><span className="text-gray-500">Weight:</span> {formData.weight ? `${formData.weight} kg` : 'Not set'}</p>
-              {bmi && (
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-500">BMI:</span>
-                  <span>{bmi}</span>
-                  {bmiCategory && (
-                    <Badge className={`text-xs ${bmiCategory.color}`}>
-                      {bmiCategory.label}
-                    </Badge>
-                  )}
-                </div>
-              )}
-              <p><span className="text-gray-500">Body Type:</span> {formData.body_shape || 'Not set'}</p>
-            </div>
-          </div>
-
-          <div className="space-y-2">
+          {/* Fitness Goals */}
+          <div className="space-y-3">
             <h4 className="font-medium text-gray-700 flex items-center gap-2">
               <Target className="w-4 h-4" />
-              Fitness Info
+              Fitness Goals
             </h4>
-            <div className="space-y-1 text-sm">
-              <p><span className="text-gray-500">Goal:</span> {formData.fitness_goal || 'Not set'}</p>
-              <p><span className="text-gray-500">Activity:</span> {formData.activity_level || 'Not set'}</p>
-              {profile?.last_health_assessment_date && (
-                <p className="flex items-center gap-1">
-                  <Calendar className="w-3 h-3" />
-                  <span className="text-gray-500">Last Assessment:</span> 
-                  {new Date(profile.last_health_assessment_date).toLocaleDateString()}
-                </p>
-              )}
+            <div className="space-y-2">
+              <Badge className="w-full justify-center py-2 bg-blue-100 text-blue-800 border-blue-200">
+                {formData.fitness_goal?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Not set'}
+              </Badge>
+              <Badge className="w-full justify-center py-2 bg-purple-100 text-purple-800 border-purple-200">
+                {formData.activity_level?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Not set'}
+              </Badge>
             </div>
           </div>
-        </div>
 
-        {/* Profile Completion */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h4 className="font-medium text-gray-700">Profile Completion</h4>
-            <span className="text-sm font-semibold text-gray-800">{completionScore}%</span>
-          </div>
-          <Progress value={completionScore} className="h-2" />
-          <p className="text-sm text-gray-600">
-            {completionScore < 50 
-              ? "Complete your profile to get better AI recommendations"
-              : completionScore < 80 
-              ? "Great progress! Add more details for personalized plans"
-              : "Excellent! Your profile is comprehensive"}
-          </p>
-        </div>
-
-        {/* Health Summary */}
-        {(formData.health_conditions?.length > 0 || formData.allergies?.length > 0) && (
-          <div className="space-y-3 p-4 bg-red-50 rounded-lg border border-red-200">
-            <h4 className="font-medium text-red-800 flex items-center gap-2">
-              <Heart className="w-4 h-4" />
-              Health Considerations
-            </h4>
-            {formData.health_conditions?.length > 0 && (
-              <div>
-                <p className="text-sm text-red-700 font-medium">Conditions:</p>
-                <p className="text-sm text-red-600">{formData.health_conditions.join(', ')}</p>
-              </div>
-            )}
-            {formData.allergies?.length > 0 && (
-              <div>
-                <p className="text-sm text-red-700 font-medium">Allergies:</p>
-                <p className="text-sm text-red-600">{formData.allergies.join(', ')}</p>
-              </div>
-            )}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          {/* Health Info */}
+          {(formData.health_conditions?.length > 0 || formData.allergies?.length > 0) && (
+            <div className="space-y-3 p-3 bg-red-50 rounded-lg border border-red-100">
+              <h4 className="font-medium text-red-800 flex items-center gap-2">
+                <Heart className="w-4 h-4" />
+                Health Notes
+              </h4>
+              {formData.health_conditions?.length > 0 && (
+                <div>
+                  <p className="text-xs text-red-700 font-medium">Conditions:</p>
+                  <p className="text-xs text-red-600">{formData.health_conditions.slice(0, 2).join(', ')}</p>
+                </div>
+              )}
+              {formData.allergies?.length > 0 && (
+                <div>
+                  <p className="text-xs text-red-700 font-medium">Allergies:</p>
+                  <p className="text-xs text-red-600">{formData.allergies.slice(0, 2).join(', ')}</p>
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
