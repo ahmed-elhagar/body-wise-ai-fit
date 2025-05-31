@@ -18,12 +18,37 @@ export const MultipleCoachesChat = ({ coaches, unreadMessagesByCoach, onBack }: 
   const { t } = useLanguage();
   const [selectedCoach, setSelectedCoach] = useState<CoachInfo | null>(null);
 
+  // Helper function to get coach display name
+  const getCoachDisplayName = (coach: CoachInfo) => {
+    if (coach.coach_profile?.first_name || coach.coach_profile?.last_name) {
+      const firstName = coach.coach_profile.first_name || '';
+      const lastName = coach.coach_profile.last_name || '';
+      return `${firstName} ${lastName}`.trim();
+    }
+    return 'Coach'; // Fallback instead of "Unknown Coach"
+  };
+
+  // Helper function to get coach initials
+  const getCoachInitials = (coach: CoachInfo) => {
+    const firstName = coach.coach_profile?.first_name;
+    const lastName = coach.coach_profile?.last_name;
+    
+    if (firstName && lastName) {
+      return `${firstName[0]}${lastName[0]}`.toUpperCase();
+    } else if (firstName) {
+      return firstName[0].toUpperCase();
+    } else if (lastName) {
+      return lastName[0].toUpperCase();
+    }
+    return 'C'; // Fallback to 'C' for Coach
+  };
+
   // If a specific coach is selected, show the chat interface
   if (selectedCoach) {
     return (
       <TraineeCoachChat
         coachId={selectedCoach.coach_id}
-        coachName={`${selectedCoach.coach_profile?.first_name || 'Unknown'} ${selectedCoach.coach_profile?.last_name || 'Coach'}`}
+        coachName={getCoachDisplayName(selectedCoach)}
         onBack={() => setSelectedCoach(null)}
       />
     );
@@ -49,21 +74,24 @@ export const MultipleCoachesChat = ({ coaches, unreadMessagesByCoach, onBack }: 
         <div className="space-y-3">
           {coaches.map((coach) => {
             const unreadCount = unreadMessagesByCoach[coach.coach_id] || 0;
+            const coachName = getCoachDisplayName(coach);
+            const coachInitials = getCoachInitials(coach);
             
             return (
               <div
                 key={coach.id}
-                className="flex items-center justify-between p-4 rounded-lg bg-green-50 border border-green-200 hover:bg-green-100 transition-colors"
+                className="flex items-center justify-between p-4 rounded-lg bg-green-50 border border-green-200 hover:bg-green-100 transition-colors cursor-pointer"
+                onClick={() => setSelectedCoach(coach)}
               >
                 <div className="flex items-center space-x-3">
                   <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
                     <span className="text-green-700 font-semibold">
-                      {coach.coach_profile?.first_name?.[0]}{coach.coach_profile?.last_name?.[0]}
+                      {coachInitials}
                     </span>
                   </div>
                   <div>
                     <h4 className="font-semibold text-green-800">
-                      {coach.coach_profile?.first_name || 'Unknown'} {coach.coach_profile?.last_name || 'Coach'}
+                      {coachName}
                     </h4>
                     <p className="text-sm text-green-600">
                       {t('Assigned')} {new Date(coach.assigned_at).toLocaleDateString()}
@@ -82,7 +110,10 @@ export const MultipleCoachesChat = ({ coaches, unreadMessagesByCoach, onBack }: 
                     </Badge>
                   )}
                   <Button
-                    onClick={() => setSelectedCoach(coach)}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent the card click from firing
+                      setSelectedCoach(coach);
+                    }}
                     className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg flex items-center gap-2 transition-colors"
                     size="sm"
                   >

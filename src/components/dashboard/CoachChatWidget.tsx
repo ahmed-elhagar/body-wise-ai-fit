@@ -8,6 +8,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useState } from "react";
 import { MultipleCoachesChat } from "@/components/coach/MultipleCoachesChat";
 import { useRole } from "@/hooks/useRole";
+import type { CoachInfo } from "@/hooks/coach/types";
 
 const CoachChatWidget = () => {
   const { t } = useLanguage();
@@ -17,6 +18,31 @@ const CoachChatWidget = () => {
   const [retryCount, setRetryCount] = useState(0);
 
   console.log('CoachChatWidget - coaches:', coaches.length, 'loading:', isLoadingCoachInfo, 'error:', coachInfoError);
+
+  // Helper function to get coach display name
+  const getCoachDisplayName = (coach: CoachInfo) => {
+    if (coach.coach_profile?.first_name || coach.coach_profile?.last_name) {
+      const firstName = coach.coach_profile.first_name || '';
+      const lastName = coach.coach_profile.last_name || '';
+      return `${firstName} ${lastName}`.trim();
+    }
+    return 'Coach'; // Fallback instead of "Unknown Coach"
+  };
+
+  // Helper function to get coach initials
+  const getCoachInitials = (coach: CoachInfo) => {
+    const firstName = coach.coach_profile?.first_name;
+    const lastName = coach.coach_profile?.last_name;
+    
+    if (firstName && lastName) {
+      return `${firstName[0]}${lastName[0]}`.toUpperCase();
+    } else if (firstName) {
+      return firstName[0].toUpperCase();
+    } else if (lastName) {
+      return lastName[0].toUpperCase();
+    }
+    return 'C'; // Fallback to 'C' for Coach
+  };
 
   // Don't show for coaches
   if (isCoach) {
@@ -135,18 +161,24 @@ const CoachChatWidget = () => {
         <div className="space-y-3">
           {coaches.slice(0, 2).map((coach) => {
             const unreadCount = unreadMessagesByCoach[coach.coach_id] || 0;
+            const coachName = getCoachDisplayName(coach);
+            const coachInitials = getCoachInitials(coach);
             
             return (
-              <div key={coach.id} className="flex items-center justify-between p-3 rounded-lg bg-green-50 border border-green-200">
+              <div 
+                key={coach.id} 
+                className="flex items-center justify-between p-3 rounded-lg bg-green-50 border border-green-200 hover:bg-green-100 transition-colors cursor-pointer"
+                onClick={() => setShowChat(true)}
+              >
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                     <span className="text-green-700 font-semibold text-sm">
-                      {coach.coach_profile?.first_name?.[0]}{coach.coach_profile?.last_name?.[0]}
+                      {coachInitials}
                     </span>
                   </div>
                   <div>
                     <h4 className="font-medium text-green-800">
-                      {coach.coach_profile?.first_name || 'Unknown'} {coach.coach_profile?.last_name || 'Coach'}
+                      {coachName}
                     </h4>
                     <p className="text-xs text-green-600">
                       {t('Assigned')} {new Date(coach.assigned_at).toLocaleDateString()}
@@ -162,7 +194,10 @@ const CoachChatWidget = () => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setShowChat(true)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowChat(true);
+                    }}
                     className="text-green-700 hover:text-green-800 hover:bg-green-100"
                   >
                     <MessageCircle className="w-4 h-4" />
