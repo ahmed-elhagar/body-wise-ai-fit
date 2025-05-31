@@ -57,35 +57,35 @@ const AppSidebar = () => {
   const isCoach = trainees && trainees.length > 0;
 
   const navigationItems: NavigationItem[] = [
-    { href: "/dashboard", icon: LayoutDashboard, label: tNav("dashboard") },
-    { href: "/meal-plan", icon: UtensilsCrossed, label: tNav("mealPlan") },
+    { href: "/dashboard", icon: LayoutDashboard, label: String(tNav("dashboard")) },
+    { href: "/meal-plan", icon: UtensilsCrossed, label: String(tNav("mealPlan")) },
     { 
       href: "/food-tracker", 
       icon: Apple, 
-      label: tNav("foodTracker"),
+      label: String(tNav("foodTracker")),
       hasNotification: hasUnreadComments 
     },
-    { href: "/exercise", icon: Dumbbell, label: tNav("exercise") },
-    { href: "/goals", icon: Target, label: tNav("goals") },
-    { href: "/profile", icon: User, label: tNav("profile") },
+    { href: "/exercise", icon: Dumbbell, label: String(tNav("exercise")) },
+    { href: "/goals", icon: Target, label: String(tNav("goals")) },
+    { href: "/profile", icon: User, label: String(tNav("profile")) },
   ];
 
   const coachItems: NavigationItem[] = [
-    { href: "/coach/trainees", icon: Users, label: tNav("trainees") },
-    { href: "/coach/settings", icon: Settings, label: tNav("coachSettings") },
+    { href: "/coach/trainees", icon: Users, label: String(tNav("trainees")) },
+    { href: "/coach/settings", icon: Settings, label: String(tNav("coachSettings")) },
   ];
 
   const adminItems: NavigationItem[] = [
-    { href: "/admin/dashboard", icon: ShieldCheck, label: tNav("adminDashboard") },
+    { href: "/admin/dashboard", icon: ShieldCheck, label: String(tNav("adminDashboard")) },
   ];
 
   const handleSignOut = async () => {
     try {
       await signOut();
-      toast.success(t('common:success'));
+      toast.success(String(t('common:success')));
       navigate("/auth");
     } catch (error) {
-      toast.error(t('common:error'));
+      toast.error(String(t('common:error')));
     }
   };
 
@@ -146,8 +146,8 @@ const AppSidebar = () => {
             <Dumbbell className="w-4 h-4 text-white" />
           </div>
           <div className={isRTL ? "text-right" : ""}>
-            <h2 className="font-bold text-lg text-gray-900">{t('common:appName')}</h2>
-            <p className="text-xs text-gray-500">{t('common:aiPoweredFitness')}</p>
+            <h2 className="font-bold text-lg text-gray-900">{String(t('common:appName'))}</h2>
+            <p className="text-xs text-gray-500">{String(t('common:aiPoweredFitness'))}</p>
           </div>
         </div>
 
@@ -196,7 +196,7 @@ const AppSidebar = () => {
               isRTL && "flex-row-reverse justify-end text-right"
             )} data-sidebar="group-label">
               <Users className="w-4 h-4" />
-              {tNav("coachPanel")}
+              {String(tNav("coachPanel"))}
             </SidebarGroupLabel>
             <SidebarMenu className="space-y-1">
               {coachItems.map((item) => {
@@ -237,7 +237,7 @@ const AppSidebar = () => {
               isRTL && "flex-row-reverse justify-end text-right"
             )} data-sidebar="group-label">
               <Crown className="w-4 h-4" />
-              {tNav("admin")}
+              {String(tNav("admin"))}
             </SidebarGroupLabel>
             <SidebarMenu className="space-y-1">
               {adminItems.map((item) => {
@@ -288,7 +288,7 @@ const AppSidebar = () => {
           )}
         >
           <LogOut className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
-          <span className="font-medium">{tNav("logout")}</span>
+          <span className="font-medium">{String(tNav("logout"))}</span>
         </Button>
       </SidebarFooter>
     </Sidebar>
