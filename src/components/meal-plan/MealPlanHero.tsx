@@ -70,7 +70,7 @@ const MealPlanHero = ({
             {hasWeeklyPlan && onRegeneratePlan && (
               <Button
                 onClick={onRegeneratePlan}
-                className="bg-gradient-to-r from-fitness-orange-500 to-fitness-orange-600 hover:from-fitness-orange-600 hover:to-fitness-orange-700 text-white font-semibold shadow-lg border-0"
+                className="bg-gradient-to-r from-fitness-orange-500 to-fitness-orange-600 hover:from-fitness-orange-600 hover:to-fitness-orange-700 text-white font-semibold shadow-lg border-0 transition-all duration-300 hover:shadow-xl"
                 size="sm"
               >
                 <Shuffle className="w-4 h-4 mr-2" />
@@ -80,11 +80,11 @@ const MealPlanHero = ({
             
             <Button
               onClick={onShowAIDialog}
-              className="bg-white text-fitness-primary-600 hover:bg-fitness-primary-50 shadow-lg font-semibold border-0"
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg font-semibold border-0 transition-all duration-300 hover:shadow-xl"
               size="sm"
             >
               <Sparkles className="w-4 h-4 mr-2" />
-              {hasWeeklyPlan ? 'Regenerate Plan' : 'Generate AI Plan'}
+              {hasWeeklyPlan ? 'Generate New Plan' : 'Generate Meal Plan'}
             </Button>
           </div>
         </div>
