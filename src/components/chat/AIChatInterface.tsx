@@ -31,7 +31,7 @@ const AIChatInterface = () => {
     clearConversation,
     cancelRequest,
   } = useAIChat({
-    systemPrompt: "You are FitGenius AI, a knowledgeable and supportive fitness assistant. Provide helpful, accurate advice about fitness, nutrition, and health. Keep responses concise but informative. Always encourage users and remind them to consult healthcare professionals for medical concerns.",
+    systemPrompt: "You are FitGenius AI, a knowledgeable and supportive fitness assistant. Provide helpful, accurate advice about fitness, nutrition, and health. Keep responses well-structured with clear paragraphs, bullet points when appropriate, and easy-to-read formatting. Always encourage users and remind them to consult healthcare professionals for medical concerns.",
     maxMessages: 100,
   });
 
@@ -64,65 +64,40 @@ const AIChatInterface = () => {
   const hasMessages = messages.length > 0;
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col bg-gradient-to-b from-blue-50/30 to-white">
       {/* Messages Area */}
-      <CardContent className="flex-1 flex flex-col p-0 overflow-hidden bg-gradient-to-b from-blue-50/50 to-white">
-        <ScrollArea className="flex-1 p-6" ref={scrollAreaRef}>
+      <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
+        <ScrollArea className="flex-1 px-6 py-4" ref={scrollAreaRef}>
           {!hasMessages ? (
-            <div className="h-full flex flex-col items-center justify-center text-center">
+            <div className="h-full flex flex-col items-center justify-center text-center py-12">
               <div className="mb-8">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                  <Bot className="h-8 w-8 text-white" />
+                <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                  <Bot className="h-10 w-10 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">
                   Welcome to FitGenius AI
                 </h3>
-                <p className="text-gray-600 text-sm max-w-md mx-auto mb-6">
+                <p className="text-gray-600 text-base max-w-lg mx-auto mb-8 leading-relaxed">
                   I'm here to help you with personalized fitness advice, nutrition guidance, 
-                  and wellness tips. What would you like to know?
+                  and wellness tips. What would you like to know today?
                 </p>
-                
-                {hasMessages && (
-                  <div className="flex items-center gap-2 justify-center mb-4">
-                    <Badge variant="secondary" className="text-xs">
-                      {messages.length} messages
-                    </Badge>
-                    {isLoading && (
-                      <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 text-xs animate-pulse">
-                        AI Responding...
-                      </Badge>
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={exportConversation}
-                      className="text-gray-600 hover:text-gray-800 p-1"
-                    >
-                      <Download className="h-3 w-3" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={clearConversation}
-                      className="text-gray-600 hover:text-gray-800 p-1"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </div>
-                )}
               </div>
               
               <ConversationStarters 
                 onStarterClick={sendMessage}
-                className="w-full max-w-2xl"
+                className="w-full max-w-3xl"
               />
             </div>
           ) : (
-            <div className="space-y-1">
-              {hasMessages && (
-                <div className="flex items-center gap-2 justify-between mb-6 p-3 bg-white/80 rounded-lg border border-blue-100">
+            <div className="max-w-4xl mx-auto w-full">
+              {/* Chat Controls */}
+              <div className="flex items-center gap-2 justify-between mb-6 p-4 bg-white/80 rounded-xl border border-blue-100 backdrop-blur-sm">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <Bot className="h-4 w-4 text-white" />
+                  </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-800">
                       {messages.length} messages
                     </Badge>
                     {isLoading && (
@@ -131,49 +106,54 @@ const AIChatInterface = () => {
                       </Badge>
                     )}
                   </div>
-                  <div className="flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={exportConversation}
-                      className="text-gray-600 hover:text-gray-800 p-1"
-                    >
-                      <Download className="h-3 w-3" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={clearConversation}
-                      className="text-gray-600 hover:text-gray-800 p-1"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </div>
                 </div>
-              )}
+                <div className="flex gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={exportConversation}
+                    className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 h-8 w-8 p-0"
+                  >
+                    <Download className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearConversation}
+                    className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 h-8 w-8 p-0"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
               
-              {messages.map((message) => (
-                <AIChatMessage
-                  key={message.id}
-                  message={message}
-                  onRegenerate={message.role === 'assistant' ? regenerateLastMessage : undefined}
-                  onFeedback={handleFeedback}
-                />
-              ))}
-              <div ref={messagesEndRef} />
+              {/* Messages */}
+              <div className="space-y-1">
+                {messages.map((message) => (
+                  <AIChatMessage
+                    key={message.id}
+                    message={message}
+                    onRegenerate={message.role === 'assistant' ? regenerateLastMessage : undefined}
+                    onFeedback={handleFeedback}
+                  />
+                ))}
+                <div ref={messagesEndRef} />
+              </div>
             </div>
           )}
         </ScrollArea>
 
         {/* Input Area */}
-        <ChatInput
-          onSendMessage={sendMessage}
-          disabled={false}
-          isLoading={isLoading}
-          onCancel={cancelRequest}
-          placeholder="Ask me anything about fitness, nutrition, or health..."
-          className="border-t border-gray-200 bg-white"
-        />
+        <div className="border-t border-gray-200 bg-white">
+          <ChatInput
+            onSendMessage={sendMessage}
+            disabled={false}
+            isLoading={isLoading}
+            onCancel={cancelRequest}
+            placeholder="Ask me anything about fitness, nutrition, or health..."
+            className="border-0"
+          />
+        </div>
       </CardContent>
     </div>
   );

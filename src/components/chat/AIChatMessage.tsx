@@ -37,45 +37,99 @@ const AIChatMessage = ({ message, onRegenerate, onFeedback }: AIChatMessageProps
     onFeedback?.(message.id, type);
   };
 
+  const formatAIResponse = (content: string) => {
+    // Split content into paragraphs
+    const paragraphs = content.split('\n\n').filter(p => p.trim());
+    
+    return paragraphs.map((paragraph, index) => {
+      // Check if it's a list
+      if (paragraph.includes('•') || paragraph.includes('-') || /^\d+\./.test(paragraph)) {
+        const lines = paragraph.split('\n');
+        return (
+          <div key={index} className="mb-4">
+            {lines.map((line, lineIndex) => (
+              <div key={lineIndex} className="mb-1 flex items-start">
+                {line.trim().startsWith('•') || line.trim().startsWith('-') ? (
+                  <>
+                    <span className="text-blue-600 mr-2 mt-1">•</span>
+                    <span>{line.replace(/^[•\-]\s*/, '')}</span>
+                  </>
+                ) : /^\d+\./.test(line.trim()) ? (
+                  <>
+                    <span className="text-blue-600 mr-2 font-semibold">{line.match(/^\d+\./)?.[0]}</span>
+                    <span>{line.replace(/^\d+\.\s*/, '')}</span>
+                  </>
+                ) : (
+                  <span>{line}</span>
+                )}
+              </div>
+            ))}
+          </div>
+        );
+      }
+      
+      // Check if it's a heading (starts with # or **text**)
+      if (paragraph.startsWith('#') || (paragraph.startsWith('**') && paragraph.endsWith('**'))) {
+        const headingText = paragraph.replace(/^#+\s*/, '').replace(/\*\*/g, '');
+        return (
+          <h3 key={index} className="font-semibold text-gray-900 mb-2 text-base">
+            {headingText}
+          </h3>
+        );
+      }
+      
+      // Regular paragraph
+      return (
+        <p key={index} className="mb-3 leading-relaxed">
+          {paragraph}
+        </p>
+      );
+    });
+  };
+
   const isUser = message.role === 'user';
   const isAssistant = message.role === 'assistant';
 
   return (
     <div className={cn(
-      "group flex gap-3 max-w-[85%] mb-4",
-      isUser ? "ml-auto flex-row-reverse" : "mr-auto"
+      "group flex gap-4 mb-6 max-w-none",
+      isUser ? "justify-end" : "justify-start"
     )}>
-      <Avatar className="h-8 w-8 flex-shrink-0">
-        <AvatarFallback className={cn(
-          "text-xs font-semibold",
-          isUser 
-            ? "bg-blue-100 text-blue-700" 
-            : "bg-green-100 text-green-700"
-        )}>
-          {isUser ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
-        </AvatarFallback>
-      </Avatar>
+      {/* Avatar for assistant */}
+      {isAssistant && (
+        <Avatar className="h-10 w-10 flex-shrink-0 ring-2 ring-green-100">
+          <AvatarFallback className="bg-gradient-to-br from-green-500 to-emerald-600 text-white">
+            <Bot className="h-5 w-5" />
+          </AvatarFallback>
+        </Avatar>
+      )}
       
-      <div className="flex-1 space-y-2">
+      <div className={cn(
+        "flex-1 max-w-[80%]",
+        isUser && "max-w-[70%]"
+      )}>
         <div className={cn(
-          "rounded-lg px-4 py-3 text-sm relative",
+          "rounded-2xl px-4 py-3 text-sm relative shadow-sm border",
           isUser
-            ? "bg-blue-600 text-white ml-4"
-            : "bg-gray-100 text-gray-900 mr-4",
+            ? "bg-blue-600 text-white ml-auto rounded-br-md"
+            : "bg-white text-gray-900 border-gray-200 rounded-bl-md",
           message.isLoading && "animate-pulse"
         )}>
           {message.isLoading ? (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <div className="flex gap-1">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
               </div>
               <span className="text-gray-500">AI is thinking...</span>
             </div>
           ) : (
-            <div className="whitespace-pre-wrap break-words leading-relaxed">
-              {message.content}
+            <div className={cn(
+              "break-words",
+              isUser ? "text-white" : "text-gray-900"
+            )}>
+              {isAssistant ? formatAIResponse(message.content) : message.content}
             </div>
           )}
           
@@ -92,12 +146,12 @@ const AIChatMessage = ({ message, onRegenerate, onFeedback }: AIChatMessageProps
         
         {/* Action buttons for assistant messages */}
         {isAssistant && !message.isLoading && (
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
             <Button
               variant="ghost"
               size="sm"
               onClick={handleCopy}
-              className="h-6 px-2 text-xs"
+              className="h-7 px-2 text-xs hover:bg-gray-100"
             >
               {copied ? (
                 <>
@@ -117,7 +171,7 @@ const AIChatMessage = ({ message, onRegenerate, onFeedback }: AIChatMessageProps
                 variant="ghost"
                 size="sm"
                 onClick={onRegenerate}
-                className="h-6 px-2 text-xs"
+                className="h-7 px-2 text-xs hover:bg-gray-100"
               >
                 <RefreshCw className="h-3 w-3 mr-1" />
                 Regenerate
@@ -131,7 +185,7 @@ const AIChatMessage = ({ message, onRegenerate, onFeedback }: AIChatMessageProps
                   size="sm"
                   onClick={() => handleFeedback('positive')}
                   className={cn(
-                    "h-6 w-6 p-0",
+                    "h-7 w-7 p-0 hover:bg-green-100",
                     feedback === 'positive' && "bg-green-100 text-green-600"
                   )}
                 >
@@ -142,7 +196,7 @@ const AIChatMessage = ({ message, onRegenerate, onFeedback }: AIChatMessageProps
                   size="sm"
                   onClick={() => handleFeedback('negative')}
                   className={cn(
-                    "h-6 w-6 p-0",
+                    "h-7 w-7 p-0 hover:bg-red-100",
                     feedback === 'negative' && "bg-red-100 text-red-600"
                   )}
                 >
@@ -153,6 +207,15 @@ const AIChatMessage = ({ message, onRegenerate, onFeedback }: AIChatMessageProps
           </div>
         )}
       </div>
+
+      {/* Avatar for user */}
+      {isUser && (
+        <Avatar className="h-10 w-10 flex-shrink-0 ring-2 ring-blue-100">
+          <AvatarFallback className="bg-blue-600 text-white">
+            <User className="h-5 w-5" />
+          </AvatarFallback>
+        </Avatar>
+      )}
     </div>
   );
 };

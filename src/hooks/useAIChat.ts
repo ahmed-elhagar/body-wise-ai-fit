@@ -85,7 +85,6 @@ export const useAIChat = (options: UseChatOptions = {}) => {
         body: {
           messages: apiMessages,
         },
-        signal: abortControllerRef.current.signal,
       });
 
       if (error) {
