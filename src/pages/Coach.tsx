@@ -1,43 +1,70 @@
 
-import { Suspense } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
-import CoachDashboard from "@/components/coach/CoachDashboard";
-import { Skeleton } from "@/components/ui/skeleton";
-
-const CoachLoadingSkeleton = () => (
-  <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4 md:p-6">
-    <div className="max-w-7xl mx-auto">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <Skeleton className="h-8 w-48 mb-2" />
-          <Skeleton className="h-4 w-64" />
-        </div>
-        <Skeleton className="h-10 w-32" />
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        {[1, 2, 3, 4].map((i) => (
-          <Skeleton key={i} className="h-24" />
-        ))}
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {[1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-64" />
-        ))}
-      </div>
-    </div>
-  </div>
-);
+import CoachHeader from "@/components/coach/CoachHeader";
+import CoachStatsCards from "@/components/coach/CoachStatsCards";
+import TraineesTab from "@/components/coach/TraineesTab";
+import AnalyticsTab from "@/components/admin/AnalyticsTab";
+import { useRole } from "@/hooks/useRole";
+import { Navigate } from "react-router-dom";
 
 const Coach = () => {
+  const { isAdmin, isLoading } = useRole();
+
+  if (isLoading) {
+    return (
+      <ProtectedRoute>
+        <Layout>
+          <div className="p-6">
+            <div className="animate-pulse">
+              <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+            </div>
+          </div>
+        </Layout>
+      </ProtectedRoute>
+    );
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return (
-    <ProtectedRoute requireProfile>
+    <ProtectedRoute>
       <Layout>
-        <Suspense fallback={<CoachLoadingSkeleton />}>
-          <CoachDashboard />
-        </Suspense>
+        <div className="p-3 md:p-4 lg:p-6 bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/30 min-h-screen">
+          <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
+            <CoachHeader />
+            <CoachStatsCards />
+            
+            <Tabs defaultValue="trainees" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 bg-white border border-gray-200 shadow-sm">
+                <TabsTrigger 
+                  value="trainees" 
+                  className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                >
+                  My Trainees
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="analytics" 
+                  className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                >
+                  Analytics
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="trainees" className="mt-6">
+                <TraineesTab />
+              </TabsContent>
+
+              <TabsContent value="analytics" className="mt-6">
+                <AnalyticsTab />
+              </TabsContent>
+            </Tabs>
+          </div>
+        </div>
       </Layout>
     </ProtectedRoute>
   );

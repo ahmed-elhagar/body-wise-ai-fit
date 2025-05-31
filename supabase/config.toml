@@ -1,14 +1,133 @@
 
 project_id = "xnoslfftfktqvyoefccw"
 
-[functions.create-subscription]
-verify_jwt = true
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
 
-[functions.cancel-subscription]
-verify_jwt = true
+[auth]
+enabled = true
+port = 54322
+site_url = "http://localhost:5173"
+additional_redirect_urls = ["https://localhost:5173"]
+jwt_expiry = 3600
+enable_signup = true
+enable_email_confirmations = false
 
-[functions.admin-cancel-subscription]
-verify_jwt = true
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = false
 
-[functions.stripe-webhook-handler]
-verify_jwt = false
+[auth.external.apple]
+enabled = false
+client_id = ""
+secret = ""
+
+[auth.external.azure]
+enabled = false
+client_id = ""
+secret = ""
+url = ""
+
+[auth.external.bitbucket]
+enabled = false
+client_id = ""
+secret = ""
+
+[auth.external.discord]
+enabled = false
+client_id = ""
+secret = ""
+
+[auth.external.facebook]
+enabled = false
+client_id = ""
+secret = ""
+
+[auth.external.github]
+enabled = false
+client_id = ""
+secret = ""
+
+[auth.external.gitlab]
+enabled = false
+client_id = ""
+secret = ""
+
+[auth.external.google]
+enabled = false
+client_id = ""
+secret = ""
+
+[auth.external.keycloak]
+enabled = false
+client_id = ""
+secret = ""
+url = ""
+
+[auth.external.linkedin]
+enabled = false
+client_id = ""
+secret = ""
+
+[auth.external.notion]
+enabled = false
+client_id = ""
+secret = ""
+
+[auth.external.twitch]
+enabled = false
+client_id = ""
+secret = ""
+
+[auth.external.twitter]
+enabled = false
+client_id = ""
+secret = ""
+
+[auth.external.slack]
+enabled = false
+client_id = ""
+secret = ""
+
+[auth.external.spotify]
+enabled = false
+client_id = ""
+secret = ""
+
+[auth.external.workos]
+enabled = false
+client_id = ""
+secret = ""
+
+[auth.external.zoom]
+enabled = false
+client_id = ""
+secret = ""
+
+[db]
+port = 54323
+
+[studio]
+enabled = true
+port = 54324
+
+[inbucket]
+enabled = true
+port = 54325
+smtp_port = 54326
+pop3_port = 54327
+
+[storage]
+enabled = true
+port = 54326
+file_size_limit = "52428800"
+
+[analytics]
+enabled = false
+port = 54327
+vector_port = 54328
