@@ -17,7 +17,9 @@ export const useFoodPhotoIntegration = () => {
       // Check and use AI credit
       const creditResult = await checkAndUseCreditAsync('food_analysis');
 
-      if (!creditResult || !creditResult.success) {
+      // Type guard to check if creditResult has success property
+      const creditData = creditResult as any;
+      if (!creditData || !creditData.success) {
         throw new Error('Insufficient AI credits');
       }
 
@@ -32,22 +34,23 @@ export const useFoodPhotoIntegration = () => {
 
       if (error) {
         // Log failed generation
-        await completeGenerationAsync({
-          generationType: 'food_analysis',
-          promptData: { fileName: photoFile.name },
-          status: 'failed',
-          errorMessage: error.message,
-        });
+        if (creditData.log_id) {
+          await completeGenerationAsync({
+            logId: creditData.log_id,
+            responseData: { fileName: photoFile.name },
+            errorMessage: error.message,
+          });
+        }
         throw error;
       }
 
       // Log successful generation
-      await completeGenerationAsync({
-        generationType: 'food_analysis',
-        promptData: { fileName: photoFile.name },
-        responseData: data,
-        status: 'completed',
-      });
+      if (creditData.log_id) {
+        await completeGenerationAsync({
+          logId: creditData.log_id,
+          responseData: data,
+        });
+      }
 
       setAnalysisResult(data);
       return data;

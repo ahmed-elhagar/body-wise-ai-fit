@@ -29,14 +29,7 @@ export const useMealRecipe = () => {
       });
 
       // Use centralized credit system with valid generation type
-      const creditResult = await checkAndUseCreditAsync({
-        generationType: 'meal_plan',
-        promptData: {
-          mealId: mealId,
-          language: language,
-          action: 'recipe_generation'
-        }
-      });
+      const creditResult = await checkAndUseCreditAsync('meal_plan');
 
       try {
         const { data, error } = await supabase.functions.invoke('generate-meal-recipe', {
@@ -59,14 +52,17 @@ export const useMealRecipe = () => {
           console.log('✅ Recipe generated successfully!');
           
           // Complete the AI generation log with success
-          await completeGenerationAsync({
-            logId: creditResult.log_id!,
-            responseData: {
-              mealId: mealId,
-              recipeGenerated: true,
-              language: language
-            }
-          });
+          const creditData = creditResult as any;
+          if (creditData?.log_id) {
+            await completeGenerationAsync({
+              logId: creditData.log_id,
+              responseData: {
+                mealId: mealId,
+                recipeGenerated: true,
+                language: language
+              }
+            });
+          }
 
           if (data.message.includes('already available')) {
             toast.success('Recipe loaded from cache!');
@@ -95,10 +91,13 @@ export const useMealRecipe = () => {
         }
       } catch (error) {
         // Mark generation as failed
-        await completeGenerationAsync({
-          logId: creditResult.log_id!,
-          errorMessage: error instanceof Error ? error.message : 'Recipe generation failed'
-        });
+        const creditData = creditResult as any;
+        if (creditData?.log_id) {
+          await completeGenerationAsync({
+            logId: creditData.log_id,
+            errorMessage: error instanceof Error ? error.message : 'Recipe generation failed'
+          });
+        }
         throw error;
       }
       
