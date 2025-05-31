@@ -21,7 +21,7 @@ export const useCoachInfo = () => {
       console.log('🔍 useCoachInfo: User role check - isRoleCoach:', isRoleCoach, 'isAdmin:', isAdmin);
 
       try {
-        // Get all coach-trainee relationships for this user
+        // Get all coach-trainee relationships for this user as a trainee
         console.log('🔍 useCoachInfo: Querying coach_trainees table...');
         const { data: relationships, error: relationshipError } = await supabase
           .from('coach_trainees')
@@ -38,7 +38,11 @@ export const useCoachInfo = () => {
 
         if (!relationships || relationships.length === 0) {
           console.log('📭 useCoachInfo: No coaches assigned to this user');
-          return null;
+          return {
+            coaches: [],
+            totalUnreadMessages: 0,
+            unreadMessagesByCoach: {}
+          };
         }
 
         console.log('✅ useCoachInfo: Found coach relationships:', relationships.length);
@@ -104,7 +108,7 @@ export const useCoachInfo = () => {
         throw error;
       }
     },
-    enabled: !!user?.id && !isRoleCoach && !isAdmin, // Only fetch for regular users
+    enabled: !!user?.id, // Always enabled if user exists, regardless of role
     staleTime: 1000 * 60 * 5, // 5 minutes
     refetchOnWindowFocus: false,
     retry: (failureCount, error) => {
