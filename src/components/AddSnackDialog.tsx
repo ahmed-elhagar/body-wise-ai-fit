@@ -139,7 +139,7 @@ const AddSnackDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg mx-4 sm:mx-auto bg-white border-0 shadow-2xl rounded-2xl">
+      <DialogContent className="max-w-lg mx-4 sm:mx-auto bg-gradient-to-br from-fitness-primary-50 to-fitness-accent-50 border-fitness-primary-200 shadow-2xl rounded-2xl">
         <div className="p-6 space-y-6">
           <AddSnackHeader selectedDay={selectedDay} />
           

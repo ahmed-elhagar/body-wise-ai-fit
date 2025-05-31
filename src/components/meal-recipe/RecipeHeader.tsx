@@ -15,14 +15,14 @@ const RecipeHeader = ({ meal }: RecipeHeaderProps) => {
     <DialogHeader className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <div className={`w-14 h-14 ${isSnack ? 'bg-gradient-to-br from-emerald-500 to-green-600' : 'bg-gradient-to-br from-blue-500 to-indigo-600'} rounded-2xl flex items-center justify-center shadow-lg`}>
+          <div className={`w-14 h-14 ${isSnack ? 'bg-gradient-to-br from-fitness-accent-500 to-fitness-accent-600' : 'bg-gradient-to-br from-fitness-primary-500 to-fitness-primary-600'} rounded-2xl flex items-center justify-center shadow-lg`}>
             {isSnack ? <Apple className="w-7 h-7 text-white" /> : <ChefHat className="w-7 h-7 text-white" />}
           </div>
           <div>
-            <DialogTitle className="text-2xl lg:text-3xl font-bold text-gray-800 leading-tight">
+            <DialogTitle className="text-2xl lg:text-3xl font-bold text-fitness-primary-700 leading-tight">
               {isSnack ? meal.name.replace('🍎 ', '') : meal.name}
             </DialogTitle>
-            <p className="text-gray-600 font-medium mt-1">
+            <p className="text-fitness-primary-600 font-medium mt-1">
               {isSnack ? 'Healthy Snack Recipe' : 'Delicious Meal Recipe'}
             </p>
           </div>
@@ -30,11 +30,11 @@ const RecipeHeader = ({ meal }: RecipeHeaderProps) => {
       </div>
       
       <div className="flex flex-wrap items-center gap-3">
-        <Badge className={`${isSnack ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-blue-100 text-blue-700 border-blue-200'} font-medium`}>
+        <Badge className={`${isSnack ? 'bg-fitness-accent-100 text-fitness-accent-700 border-fitness-accent-200' : 'bg-fitness-primary-100 text-fitness-primary-700 border-fitness-primary-200'} font-medium`}>
           <Clock className="w-3 h-3 mr-1" />
           {(meal.prepTime || 0) + (meal.cookTime || 0) || (isSnack ? 5 : 20)} min
         </Badge>
-        <Badge className="bg-orange-100 text-orange-700 border-orange-200 font-medium">
+        <Badge className="bg-fitness-orange-100 text-fitness-orange-700 border-fitness-orange-200 font-medium">
           <Users className="w-3 h-3 mr-1" />
           {meal.servings || 1} serving{meal.servings !== 1 ? 's' : ''}
         </Badge>
@@ -42,7 +42,7 @@ const RecipeHeader = ({ meal }: RecipeHeaderProps) => {
           {meal.calories} calories
         </Badge>
         {isSnack && (
-          <Badge className="bg-amber-100 text-amber-700 border-amber-200 font-medium">
+          <Badge className="bg-fitness-accent-100 text-fitness-accent-700 border-fitness-accent-200 font-medium">
             🍎 Snack
           </Badge>
         )}

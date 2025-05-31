@@ -21,7 +21,7 @@ const RecipeActionButtons = ({ onOpenYouTube, onClose }: RecipeActionButtonsProp
       <Button 
         onClick={onClose} 
         variant="outline"
-        className="flex-1 max-w-xs border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-800 font-semibold py-3 rounded-xl shadow-md hover:shadow-lg transition-all"
+        className="flex-1 max-w-xs border-fitness-primary-300 bg-white text-fitness-primary-600 hover:bg-fitness-primary-50 hover:text-fitness-primary-700 font-semibold py-3 rounded-xl shadow-md hover:shadow-lg transition-all"
       >
         <X className="w-4 h-4 mr-2" />
         Close

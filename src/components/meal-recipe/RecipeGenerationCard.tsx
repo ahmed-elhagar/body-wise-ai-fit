@@ -37,20 +37,20 @@ const RecipeGenerationCard = ({
   }
 
   const gradientColor = isSnack 
-    ? "from-emerald-50 to-green-50" 
-    : "from-blue-50 to-indigo-50";
+    ? "from-fitness-accent-50 to-fitness-accent-100" 
+    : "from-fitness-primary-50 to-fitness-primary-100";
   
   const borderColor = isSnack 
-    ? "border-emerald-200" 
-    : "border-blue-200";
+    ? "border-fitness-accent-200" 
+    : "border-fitness-primary-200";
   
   const iconColor = isSnack 
-    ? "from-emerald-500 to-green-600" 
-    : "from-blue-500 to-indigo-600";
+    ? "from-fitness-accent-500 to-fitness-accent-600" 
+    : "from-fitness-primary-500 to-fitness-primary-600";
 
   const buttonColor = isSnack
-    ? "from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700"
-    : "from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700";
+    ? "from-fitness-accent-500 to-fitness-accent-600 hover:from-fitness-accent-600 hover:to-fitness-accent-700"
+    : "from-fitness-primary-500 to-fitness-primary-600 hover:from-fitness-primary-600 hover:to-fitness-primary-700";
 
   return (
     <Card className={`bg-gradient-to-br ${gradientColor} ${borderColor} border-2 shadow-xl hover:shadow-2xl transition-all duration-300`}>
@@ -62,21 +62,21 @@ const RecipeGenerationCard = ({
         </div>
         
         <div className="space-y-4">
-          <h3 className="text-2xl font-bold text-gray-800">
+          <h3 className="text-2xl font-bold text-fitness-primary-700">
             Get Detailed {isSnack ? 'Snack' : 'Recipe'} with AI
           </h3>
-          <p className="text-gray-600 font-medium max-w-md mx-auto leading-relaxed">
+          <p className="text-fitness-primary-600 font-medium max-w-md mx-auto leading-relaxed">
             Generate detailed ingredients, step-by-step instructions, and {isSnack ? 'healthy snack tips' : 'professional cooking techniques'} powered by AI
           </p>
           <div className="flex flex-wrap gap-2 justify-center">
-            <Badge variant="outline" className="bg-white/70 border-gray-300 text-gray-700 font-medium">
+            <Badge variant="outline" className="bg-white/70 border-fitness-primary-300 text-fitness-primary-700 font-medium">
               ✨ AI-Powered
             </Badge>
-            <Badge variant="outline" className="bg-white/70 border-gray-300 text-gray-700 font-medium">
+            <Badge variant="outline" className="bg-white/70 border-fitness-primary-300 text-fitness-primary-700 font-medium">
               🎯 Personalized
             </Badge>
             {isSnack && (
-              <Badge variant="outline" className="bg-emerald-100 border-emerald-300 text-emerald-700 font-medium">
+              <Badge variant="outline" className="bg-fitness-accent-100 border-fitness-accent-300 text-fitness-accent-700 font-medium">
                 🍎 Healthy
               </Badge>
             )}
@@ -86,12 +86,12 @@ const RecipeGenerationCard = ({
         {isGeneratingRecipe ? (
           <div className="space-y-4">
             <div className="flex items-center justify-center gap-3">
-              <Loader2 className={`w-6 h-6 ${isSnack ? 'text-emerald-600' : 'text-blue-600'} animate-spin`} />
-              <span className="text-lg font-semibold text-gray-800">
+              <Loader2 className={`w-6 h-6 ${isSnack ? 'text-fitness-accent-600' : 'text-fitness-primary-600'} animate-spin`} />
+              <span className="text-lg font-semibold text-fitness-primary-700">
                 Generating {isSnack ? 'Snack' : 'Recipe'}...
               </span>
             </div>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-fitness-primary-600">
               Creating {isSnack ? 'healthy snack ideas' : 'ingredients, instructions, and nutritional info'}
             </p>
           </div>

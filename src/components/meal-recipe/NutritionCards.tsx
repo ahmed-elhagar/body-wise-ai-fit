@@ -16,37 +16,37 @@ const NutritionCards = ({ meal }: NutritionCardsProps) => {
       value: meal.calories,
       unit: "",
       icon: Flame,
-      color: isSnack ? "from-emerald-400 to-green-500" : "from-orange-400 to-red-500",
-      bgColor: isSnack ? "bg-emerald-50" : "bg-orange-50",
-      textColor: isSnack ? "text-emerald-700" : "text-orange-700",
-      borderColor: isSnack ? "border-emerald-200" : "border-orange-200"
+      color: isSnack ? "from-fitness-accent-400 to-fitness-accent-500" : "from-fitness-orange-400 to-fitness-orange-500",
+      bgColor: isSnack ? "bg-fitness-accent-50" : "bg-fitness-orange-50",
+      textColor: isSnack ? "text-fitness-accent-700" : "text-fitness-orange-700",
+      borderColor: isSnack ? "border-fitness-accent-200" : "border-fitness-orange-200"
     },
     {
       label: "Protein",
       value: meal.protein,
       unit: "g",
       icon: Beef,
-      color: isSnack ? "from-teal-400 to-cyan-500" : "from-blue-400 to-indigo-500",
-      bgColor: isSnack ? "bg-teal-50" : "bg-blue-50",
-      textColor: isSnack ? "text-teal-700" : "text-blue-700",
-      borderColor: isSnack ? "border-teal-200" : "border-blue-200"
+      color: isSnack ? "from-fitness-primary-400 to-fitness-primary-500" : "from-fitness-primary-400 to-fitness-primary-500",
+      bgColor: isSnack ? "bg-fitness-primary-50" : "bg-fitness-primary-50",
+      textColor: isSnack ? "text-fitness-primary-700" : "text-fitness-primary-700",
+      borderColor: isSnack ? "border-fitness-primary-200" : "border-fitness-primary-200"
     },
     {
       label: "Carbs",
       value: meal.carbs,
       unit: "g",
       icon: Wheat,
-      color: isSnack ? "from-lime-400 to-green-500" : "from-green-400 to-emerald-500",
-      bgColor: isSnack ? "bg-lime-50" : "bg-green-50",
-      textColor: isSnack ? "text-lime-700" : "text-green-700",
-      borderColor: isSnack ? "border-lime-200" : "border-green-200"
+      color: isSnack ? "from-green-400 to-green-500" : "from-green-400 to-green-500",
+      bgColor: isSnack ? "bg-green-50" : "bg-green-50",
+      textColor: isSnack ? "text-green-700" : "text-green-700",
+      borderColor: isSnack ? "border-green-200" : "border-green-200"
     },
     {
       label: "Fat",
       value: meal.fat,
       unit: "g",
       icon: Droplets,
-      color: isSnack ? "from-yellow-400 to-amber-500" : "from-purple-400 to-pink-500",
+      color: isSnack ? "from-yellow-400 to-yellow-500" : "from-purple-400 to-purple-500",
       bgColor: isSnack ? "bg-yellow-50" : "bg-purple-50",
       textColor: isSnack ? "text-yellow-700" : "text-purple-700",
       borderColor: isSnack ? "border-yellow-200" : "border-purple-200"
