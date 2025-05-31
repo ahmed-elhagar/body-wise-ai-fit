@@ -32,3 +32,10 @@ export interface CoachTraineeRelationship {
     fitness_goal?: string;
   } | null;
 }
+
+// New type for multiple coaches
+export interface MultipleCoachesInfo {
+  coaches: CoachInfo[];
+  totalUnreadMessages: number;
+  unreadMessagesByCoach: Record<string, number>;
+}

@@ -9,9 +9,9 @@ export * from './coach/types';
 export const useCoachSystem = () => {
   const { isCoach: isRoleCoach, isAdmin } = useRole();
   
-  // Get coach info (for trainees)
+  // Get coach info (for trainees) - now returns multiple coaches
   const { 
-    data: coachInfo, 
+    data: multipleCoachesInfo, 
     isLoading: isLoadingCoachInfo, 
     error: coachInfoError, 
     refetch: refetchCoachInfo 
@@ -38,11 +38,17 @@ export const useCoachSystem = () => {
   const isCoach = isRoleCoach || isAdmin || trainees.length > 0;
 
   return {
-    // Coach info (for trainees)
-    coachInfo,
+    // Multiple coaches info (for trainees)
+    multipleCoachesInfo,
+    coaches: multipleCoachesInfo?.coaches || [],
+    totalUnreadMessages: multipleCoachesInfo?.totalUnreadMessages || 0,
+    unreadMessagesByCoach: multipleCoachesInfo?.unreadMessagesByCoach || {},
     isLoadingCoachInfo,
     coachInfoError,
     refetchCoachInfo,
+    
+    // Legacy single coach support (returns first coach for backward compatibility)
+    coachInfo: multipleCoachesInfo?.coaches?.[0] || null,
     
     // Trainees (for coaches)
     trainees,
