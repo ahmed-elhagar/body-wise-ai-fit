@@ -1,10 +1,9 @@
-
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, Target, Calendar, Activity, Scale, Goal } from "lucide-react";
+import { TrendingUp, Target, Calendar, Activity, Scale, Goal, Trophy, Brain } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import WeightStatsCards from "@/components/weight/WeightStatsCards";
@@ -13,6 +12,9 @@ import WeightEntryForm from "@/components/weight/WeightEntryForm";
 import ProgressBadges from "@/components/goals/ProgressBadges";
 import GoalHistoryTimeline from "@/components/goals/GoalHistoryTimeline";
 import EnhancedGoalsForm from "@/components/profile/enhanced/EnhancedGoalsForm";
+import ProgressAnalytics from "@/components/progress/ProgressAnalytics";
+import AchievementBadges from "@/components/progress/AchievementBadges";
+import TrendAnalysis from "@/components/progress/TrendAnalysis";
 import { useWeightTracking } from "@/hooks/useWeightTracking";
 import { useGoals } from "@/hooks/useGoals";
 import { useProfile } from "@/hooks/useProfile";
@@ -24,11 +26,11 @@ const Progress = () => {
   const { getMacroGoals } = useGoals();
   const { profile } = useProfile();
 
-  const activeTab = tab || 'overview';
+  const activeTab = tab || 'analytics';
 
   useEffect(() => {
     if (!tab) {
-      navigate('/progress/overview', { replace: true });
+      navigate('/progress/analytics', { replace: true });
     }
   }, [tab, navigate]);
 
@@ -112,20 +114,20 @@ const Progress = () => {
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
                   <TrendingUp className="h-6 w-6 md:h-8 md:w-8 text-blue-600" />
-                  Progress & Goals
+                  Progress & Analytics
                 </h1>
                 <p className="text-gray-600 mt-1 text-sm md:text-base">
-                  Track your fitness journey and manage your goals
+                  Track your fitness journey with AI-powered insights and comprehensive analytics
                 </p>
               </div>
               <ProgressBadges />
             </div>
 
             <Tabs value={activeTab} onValueChange={(value) => navigate(`/progress/${value}`)} className="w-full">
-              <TabsList className="grid w-full grid-cols-4 max-w-lg">
-                <TabsTrigger value="overview" className="flex items-center gap-2">
-                  <Target className="h-4 w-4" />
-                  <span className="hidden sm:inline">Overview</span>
+              <TabsList className="grid w-full grid-cols-5 max-w-2xl">
+                <TabsTrigger value="analytics" className="flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4" />
+                  <span className="hidden sm:inline">Analytics</span>
                 </TabsTrigger>
                 <TabsTrigger value="weight" className="flex items-center gap-2">
                   <Scale className="h-4 w-4" />
@@ -135,110 +137,18 @@ const Progress = () => {
                   <Goal className="h-4 w-4" />
                   <span className="hidden sm:inline">Goals</span>
                 </TabsTrigger>
-                <TabsTrigger value="history" className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  <span className="hidden sm:inline">History</span>
+                <TabsTrigger value="achievements" className="flex items-center gap-2">
+                  <Trophy className="h-4 w-4" />
+                  <span className="hidden sm:inline">Badges</span>
+                </TabsTrigger>
+                <TabsTrigger value="trends" className="flex items-center gap-2">
+                  <Brain className="h-4 w-4" />
+                  <span className="hidden sm:inline">AI Trends</span>
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="overview" className="space-y-6 mt-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
-                  {/* BMI Card */}
-                  {bmi && (
-                    <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-                      <CardHeader className="pb-3">
-                        <CardTitle className="flex items-center gap-2 text-lg">
-                          <Activity className="h-5 w-5 text-blue-600" />
-                          BMI Status
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-center">
-                          <div className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
-                            {bmi.toFixed(1)}
-                          </div>
-                          <Badge className={getBMICategory(bmi).color}>
-                            {getBMICategory(bmi).label}
-                          </Badge>
-                          <p className="text-sm text-gray-600 mt-2">
-                            Current BMI calculation
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  {/* Macro Goals Ring */}
-                  {macroGoals.length > 0 && (
-                    <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-                      <CardHeader className="pb-3">
-                        <CardTitle className="flex items-center gap-2 text-lg">
-                          <Target className="h-5 w-5 text-green-600" />
-                          Daily Macros
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="grid grid-cols-2 gap-4">
-                          {macroGoals.map(goal => (
-                            <div key={goal.id} className="text-center">
-                              <MacroRing 
-                                goal={goal} 
-                                color={
-                                  goal.goal_type === 'calories' ? '#f59e0b' :
-                                  goal.goal_type === 'protein' ? '#ef4444' :
-                                  goal.goal_type === 'carbs' ? '#3b82f6' : '#10b981'
-                                } 
-                              />
-                              <p className="text-xs font-medium mt-1 capitalize">
-                                {goal.goal_type}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                        {macroGoals.every(g => (g.current_value / g.target_value) >= 0.9) && (
-                          <Badge className="w-full mt-4 bg-yellow-100 text-yellow-800 border-yellow-300 justify-center">
-                            🏆 All Targets Met!
-                          </Badge>
-                        )}
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  {/* Weekly Progress */}
-                  {weightEntries.length > 1 && (
-                    <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-                      <CardHeader className="pb-3">
-                        <CardTitle className="flex items-center gap-2 text-lg">
-                          <TrendingUp className="h-5 w-5 text-purple-600" />
-                          Weekly Progress
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-center">
-                          <div className="text-xl md:text-2xl font-bold text-gray-800 mb-2">
-                            {(() => {
-                              const current = weightEntries[0]?.weight || 0;
-                              const weekAgo = weightEntries.find(entry => {
-                                const entryDate = new Date(entry.recorded_at);
-                                const weekAgoDate = new Date();
-                                weekAgoDate.setDate(weekAgoDate.getDate() - 7);
-                                return entryDate <= weekAgoDate;
-                              })?.weight || current;
-                              const change = current - weekAgo;
-                              return `${change > 0 ? '+' : ''}${change.toFixed(1)} kg`;
-                            })()}
-                          </div>
-                          <p className="text-sm text-gray-600">
-                            Last 7 days
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-                </div>
-
-                {/* Quick Stats */}
-                {weightEntries.length > 0 && <WeightStatsCards weightEntries={weightEntries} />}
+              <TabsContent value="analytics" className="space-y-6 mt-6">
+                <ProgressAnalytics weightEntries={weightEntries} macroGoals={macroGoals} />
               </TabsContent>
 
               <TabsContent value="weight" className="space-y-6 mt-6">
@@ -278,8 +188,12 @@ const Progress = () => {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="history" className="space-y-6 mt-6">
-                <GoalHistoryTimeline />
+              <TabsContent value="achievements" className="space-y-6 mt-6">
+                <AchievementBadges />
+              </TabsContent>
+
+              <TabsContent value="trends" className="space-y-6 mt-6">
+                <TrendAnalysis />
               </TabsContent>
             </Tabs>
           </div>

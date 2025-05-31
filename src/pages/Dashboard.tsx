@@ -11,8 +11,9 @@ import { useNavigate } from "react-router-dom";
 import { memo, useMemo, useCallback } from "react";
 import WeightTrackingWidget from "@/components/dashboard/WeightTrackingWidget";
 import InteractiveProgressChart from "@/components/dashboard/InteractiveProgressChart";
+import EnhancedAnalyticsCard from "@/components/dashboard/EnhancedAnalyticsCard";
 
-// Import the new components
+// Import the existing components
 import { DashboardWelcomeHeader } from "@/components/dashboard/DashboardWelcomeHeader";
 import { DashboardQuickStatsGrid } from "@/components/dashboard/DashboardQuickStatsGrid";
 import { MealList } from "@/components/dashboard/MealList";
@@ -98,9 +99,9 @@ const Dashboard = () => {
                 </CardContent>
               </Card>
 
-              {/* Weight Tracking Widget */}
+              {/* Enhanced Analytics Card */}
               <div className="lg:col-span-4">
-                <WeightTrackingWidget />
+                <EnhancedAnalyticsCard />
               </div>
             </div>
 
@@ -122,14 +123,19 @@ const Dashboard = () => {
               </Card>
             </div>
 
-            {/* Quick Actions */}
-            <DashboardQuickActions
-              handleViewMealPlan={handleViewMealPlan}
-              handleViewExercise={handleViewExercise}
-              handleViewWeight={handleViewWeight}
-              handleViewProgress={handleViewProgress}
-              handleViewProfile={handleViewProfile}
-            />
+            {/* Weight Tracking Widget */}
+            <div className="grid gap-4 md:gap-6 grid-cols-1 lg:grid-cols-2">
+              <WeightTrackingWidget />
+              
+              {/* Quick Actions */}
+              <DashboardQuickActions
+                handleViewMealPlan={handleViewMealPlan}
+                handleViewExercise={handleViewExercise}
+                handleViewWeight={handleViewWeight}
+                handleViewProgress={handleViewProgress}
+                handleViewProfile={handleViewProfile}
+              />
+            </div>
 
             {/* Achievements */}
             <DashboardAchievements
