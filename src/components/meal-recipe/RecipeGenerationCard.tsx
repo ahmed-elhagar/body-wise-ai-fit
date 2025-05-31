@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles } from "lucide-react";
-import LoadingIndicator from "@/components/ui/loading-indicator";
+import EnhancedLoadingIndicator from "@/components/ui/enhanced-loading-indicator";
 
 interface RecipeGenerationCardProps {
   hasDetailedRecipe: boolean;
@@ -49,12 +49,14 @@ const RecipeGenerationCard = ({
         </div>
         
         {isGeneratingRecipe ? (
-          <LoadingIndicator
+          <EnhancedLoadingIndicator
             status="loading"
-            message="Generating Recipe..."
-            description="Creating detailed instructions and ingredients"
+            type="recipe"
+            message="Generating Detailed Recipe..."
+            description="Creating ingredients, instructions, and nutritional info"
             variant="card"
             size="md"
+            showSteps={true}
           />
         ) : (
           <Button

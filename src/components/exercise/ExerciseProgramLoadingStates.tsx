@@ -1,5 +1,5 @@
 
-import LoadingIndicator from "@/components/ui/loading-indicator";
+import PageLoadingOverlay from "@/components/ui/page-loading-overlay";
 import AILoadingDialog from "@/components/ui/ai-loading-dialog";
 import { Dumbbell, Brain, Target, Calendar } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -21,25 +21,25 @@ export const ExerciseProgramLoadingStates = ({
   const generationSteps = [
     {
       id: "analyzing",
-      label: t('exercise.analyzingProfile'),
+      label: 'Analyzing your fitness profile...',
       icon: Brain,
       duration: 2000
     },
     {
       id: "selecting",
-      label: t('exercise.selectingExercises'),
+      label: 'Selecting optimal exercises...',
       icon: Target,
       duration: 3000
     },
     {
       id: "scheduling",
-      label: t('exercise.creatingSchedule'),
+      label: 'Creating workout schedule...',
       icon: Calendar,
       duration: 2500
     },
     {
       id: "finalizing",
-      label: t('exercise.finalizingProgram'),
+      label: 'Finalizing your program...',
       icon: Dumbbell,
       duration: 1500
     }
@@ -89,9 +89,9 @@ export const ExerciseProgramLoadingStates = ({
       <AILoadingDialog
         open={true}
         status="loading"
-        title={t('exercise.generatingProgram')}
-        message={generationSteps[currentStep]?.label || t('exercise.generatingProgram')}
-        description={t('exercise.generatingProgramDesc')}
+        title="Generating Exercise Program"
+        message={generationSteps[currentStep]?.label || "Generating your program..."}
+        description="Creating a personalized workout plan just for you"
         steps={dialogSteps}
         progress={progress}
         allowClose={false}
@@ -101,14 +101,12 @@ export const ExerciseProgramLoadingStates = ({
 
   if (isLoading) {
     return (
-      <div className={`min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 ${isRTL ? 'rtl' : 'ltr'}`}>
-        <LoadingIndicator
-          status="loading"
-          message={t('exercise.loadingProgram')}
-          variant="card"
-          size="lg"
-        />
-      </div>
+      <PageLoadingOverlay
+        isLoading={true}
+        type="exercise"
+        message="Loading Exercise Program"
+        description="Fetching your workout data..."
+      />
     );
   }
 

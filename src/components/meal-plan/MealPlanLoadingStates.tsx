@@ -1,6 +1,5 @@
 
 import React, { useMemo } from "react";
-import { ChefHat, Utensils } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import AILoadingDialog from "@/components/ui/ai-loading-dialog";
 import LoadingIndicator from "@/components/ui/loading-indicator";
@@ -28,8 +27,8 @@ export const MealPlanLoadingStates = ({
   const { currentStep, progress } = useLoadingProgress(steps, isGenerating || isShuffling);
 
   if (isGenerating || isShuffling) {
-    const mainTitle = isShuffling ? t('mealPlan.shufflingMeals') : t('mealPlan.generatingMealPlan');
-    const mainDescription = isShuffling ? t('mealPlan.shufflingMealsDesc') : t('mealPlan.generatingMealPlanDesc');
+    const mainTitle = isShuffling ? 'Shuffling Meals' : 'Generating Meal Plan';
+    const mainDescription = isShuffling ? 'Creating new meal combinations...' : 'Creating your personalized meal plan...';
 
     // Convert steps to AI dialog format
     const dialogSteps = steps.map((step, index) => ({
@@ -58,8 +57,8 @@ export const MealPlanLoadingStates = ({
       <div className={`min-h-screen flex items-center justify-center ${isRTL ? 'rtl' : 'ltr'}`}>
         <LoadingIndicator
           status="loading"
-          message={t('mealPlan.loadingMealPlan')}
-          description="Please wait..."
+          message="Loading Meal Plan"
+          description="Please wait while we fetch your meal plan..."
           variant="card"
           size="lg"
         />

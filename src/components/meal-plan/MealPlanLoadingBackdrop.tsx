@@ -1,21 +1,23 @@
 
-import LoadingIndicator from "@/components/ui/loading-indicator";
+import PageLoadingOverlay from "@/components/ui/page-loading-overlay";
 
 interface MealPlanLoadingBackdropProps {
   isLoading: boolean;
   message?: string;
+  type?: 'meal-plan' | 'recipe' | 'analysis' | 'general';
 }
 
-const MealPlanLoadingBackdrop = ({ isLoading, message = "Loading..." }: MealPlanLoadingBackdropProps) => {
-  if (!isLoading) return null;
-
+const MealPlanLoadingBackdrop = ({ 
+  isLoading, 
+  message,
+  type = 'meal-plan'
+}: MealPlanLoadingBackdropProps) => {
   return (
-    <LoadingIndicator
-      status="loading"
+    <PageLoadingOverlay
+      isLoading={isLoading}
+      type={type}
       message={message}
       description="Please wait while we process your request..."
-      variant="overlay"
-      size="lg"
     />
   );
 };

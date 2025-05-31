@@ -4,7 +4,6 @@ import AILoadingDialog from "@/components/ui/ai-loading-dialog";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useLoadingProgress } from "./useLoadingProgress";
 import { getGenerationSteps } from "./loadingStepsData";
-import { ChefHat } from "lucide-react";
 
 interface MealPlanGenerationLoadingProps {
   isGenerating: boolean;
@@ -23,8 +22,8 @@ const MealPlanGenerationLoading = ({
   if (!isGenerating) return null;
 
   const title = generationType === 'regenerate' 
-    ? t('mealPlan.regeneratingYourPlan') 
-    : t('mealPlan.generatingYourPlan');
+    ? 'Regenerating Your Plan' 
+    : 'Generating Your Plan';
 
   const dialogSteps = steps.map((step, index) => ({
     id: step.id,
@@ -39,7 +38,7 @@ const MealPlanGenerationLoading = ({
       status="loading"
       title={title}
       message={steps[currentStep]?.text || title}
-      description={t('mealPlan.pleaseWait')}
+      description="Please wait while we create your personalized meal plan"
       steps={dialogSteps}
       progress={progress}
       allowClose={false}
