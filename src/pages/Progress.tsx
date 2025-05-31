@@ -3,8 +3,8 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { TrendingUp, Target, Scale, Goal, Trophy, Brain } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import WeightStatsCards from "@/components/weight/WeightStatsCards";
@@ -65,22 +65,16 @@ const Progress = () => {
     <ProtectedRoute>
       <Layout>
         <div className="space-y-6">
-          {/* Header */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
-                <TrendingUp className="h-6 w-6 md:h-8 md:w-8 text-blue-600" />
-                {t('Progress & Analytics')}
-              </h1>
-              <p className="text-gray-600 mt-1 text-sm md:text-base">
-                {t('Track your fitness journey with AI-powered insights and comprehensive analytics')}
-              </p>
-            </div>
+          <PageHeader
+            title={t('Progress & Analytics')}
+            description={t('Track your fitness journey with AI-powered insights and comprehensive analytics')}
+            icon={<TrendingUp className="h-6 w-6 md:h-8 md:w-8 text-blue-600" />}
+          >
             <ProgressBadges />
-          </div>
+          </PageHeader>
 
           <Tabs value={activeTab} onValueChange={(value) => navigate(`/progress/${value}`)} className="w-full">
-            <TabsList className="grid w-full grid-cols-5 max-w-2xl">
+            <TabsList className="grid w-full grid-cols-5 max-w-2xl bg-white/80 backdrop-blur-sm">
               <TabsTrigger value="analytics" className="flex items-center gap-2">
                 <TrendingUp className="h-4 w-4" />
                 <span className="hidden sm:inline">{t('Analytics')}</span>

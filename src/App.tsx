@@ -49,7 +49,7 @@ function App() {
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/meal-plan" element={<MealPlan />} />
                     <Route path="/exercise" element={<Exercise />} />
-                    <Route path="/progress" element={<Progress />} />
+                    <Route path="/progress/:tab?" element={<Progress />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/coach" element={<Coach />} />
                     <Route path="/admin" element={<Admin />} />

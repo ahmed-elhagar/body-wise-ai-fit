@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { MessageCircle, Bot, Users, AlertCircle, Loader2 } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { useCoachSystem } from "@/hooks/useCoachSystem";
 import { useUnreadMessagesFromCoach } from "@/hooks/useUnreadMessages";
 import { TraineeCoachChat } from "@/components/coach/TraineeCoachChat";
@@ -39,21 +40,14 @@ const Chat = () => {
     <ProtectedRoute>
       <Layout>
         <div className="space-y-6">
-          {/* Header */}
-          <div className="flex items-center gap-3">
-            <MessageCircle className="h-8 w-8 text-blue-600" />
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-                {t('Chat')}
-              </h1>
-              <p className="text-gray-600 mt-1">
-                {t('Connect with AI assistant and your coach')}
-              </p>
-            </div>
-          </div>
+          <PageHeader
+            title={t('Chat')}
+            description={t('Connect with AI assistant and your coach')}
+            icon={<MessageCircle className="h-6 w-6 md:h-8 md:w-8 text-blue-600" />}
+          />
 
           <Tabs defaultValue="ai" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 bg-white border border-gray-200 shadow-sm">
+            <TabsList className="grid w-full grid-cols-2 bg-white/80 backdrop-blur-sm border border-gray-200 shadow-sm">
               <TabsTrigger 
                 value="ai" 
                 className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
@@ -80,7 +74,7 @@ const Chat = () => {
             </TabsContent>
 
             <TabsContent value="coach" className="mt-6">
-              <Card>
+              <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Users className="h-5 w-5 text-green-600" />

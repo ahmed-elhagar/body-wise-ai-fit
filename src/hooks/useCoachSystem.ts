@@ -19,6 +19,22 @@ export interface CoachInfo {
   };
 }
 
+export interface CoachTraineeRelationship {
+  id: string;
+  coach_id: string;
+  trainee_id: string;
+  assigned_at: string;
+  notes?: string;
+  trainee_profile: {
+    id: string;
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+    profile_completion_score?: number;
+    ai_generations_remaining?: number;
+  };
+}
+
 export const useCoachSystem = () => {
   const { user } = useAuth();
   const { isCoach: isRoleCoach, isAdmin } = useRole();
@@ -88,7 +104,7 @@ export const useCoachSystem = () => {
       }
 
       console.log('✅ Trainees fetched:', data);
-      return data || [];
+      return data as CoachTraineeRelationship[] || [];
     },
     enabled: !!user?.id && (isRoleCoach || isAdmin),
     staleTime: 1000 * 60 * 5, // 5 minutes

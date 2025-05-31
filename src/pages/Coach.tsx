@@ -2,6 +2,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
+import { PageHeader } from "@/components/ui/page-header";
 import { CoachHeader } from "@/components/coach/CoachHeader";
 import { CoachStatsCards } from "@/components/coach/CoachStatsCards";
 import { TraineesTab } from "@/components/coach/TraineesTab";
@@ -46,29 +47,32 @@ const Coach = () => {
     return (
       <ProtectedRoute>
         <Layout>
-          <div className="p-6">
-            <Card className="border-red-200 bg-red-50">
-              <CardContent className="p-6">
-                <div className="flex items-center space-x-3">
-                  <AlertCircle className="h-6 w-6 text-red-600" />
-                  <div>
-                    <h3 className="text-lg font-semibold text-red-900">
-                      Error Loading Trainee Data
-                    </h3>
-                    <p className="text-red-700 mb-4">
-                      {error?.message || 'Unable to load trainee information. Please try refreshing the page.'}
-                    </p>
-                    <button 
-                      onClick={() => refetchTrainees()}
-                      className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-                    >
-                      Retry
-                    </button>
-                  </div>
+          <PageHeader
+            title="Coach Panel"
+            description="Manage and support your trainees"
+            icon={<Users className="h-6 w-6 md:h-8 md:w-8 text-green-600" />}
+          />
+          <Card className="border-red-200 bg-red-50">
+            <CardContent className="p-6">
+              <div className="flex items-center space-x-3">
+                <AlertCircle className="h-6 w-6 text-red-600" />
+                <div>
+                  <h3 className="text-lg font-semibold text-red-900">
+                    Error Loading Trainee Data
+                  </h3>
+                  <p className="text-red-700 mb-4">
+                    {error?.message || 'Unable to load trainee information. Please try refreshing the page.'}
+                  </p>
+                  <button 
+                    onClick={() => refetchTrainees()}
+                    className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                  >
+                    Retry
+                  </button>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+            </CardContent>
+          </Card>
         </Layout>
       </ProtectedRoute>
     );
@@ -85,43 +89,46 @@ const Coach = () => {
   return (
     <ProtectedRoute>
       <Layout>
-        <div className="p-3 md:p-4 lg:p-6 bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/30 min-h-screen">
-          <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
-            <CoachHeader totalClients={totalClients} />
-            <CoachStatsCards stats={{
-              totalClients,
-              messagesToday: 0,
-              successRate: totalClients > 0 ? Math.round((completedProfiles / totalClients) * 100) : 0,
-              monthlyGoals: activeTrainees
-            }} />
-            
-            <Tabs defaultValue="trainees" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 bg-white border border-gray-200 shadow-sm">
-                <TabsTrigger 
-                  value="trainees" 
-                  className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
-                >
-                  My Trainees
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="analytics" 
-                  className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
-                >
-                  Analytics
-                </TabsTrigger>
-              </TabsList>
+        <div className="space-y-6">
+          <PageHeader
+            title="Coach Panel"
+            description="Manage and support your trainees"
+            icon={<Users className="h-6 w-6 md:h-8 md:w-8 text-green-600" />}
+          />
+          
+          <CoachStatsCards stats={{
+            totalClients,
+            messagesToday: 0,
+            successRate: totalClients > 0 ? Math.round((completedProfiles / totalClients) * 100) : 0,
+            monthlyGoals: activeTrainees
+          }} />
+          
+          <Tabs defaultValue="trainees" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 bg-white/80 backdrop-blur-sm border border-gray-200 shadow-sm">
+              <TabsTrigger 
+                value="trainees" 
+                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+              >
+                My Trainees
+              </TabsTrigger>
+              <TabsTrigger 
+                value="analytics" 
+                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+              >
+                Analytics
+              </TabsTrigger>
+            </TabsList>
 
-              <TabsContent value="trainees" className="mt-6">
-                <TraineesTab trainees={trainees} onChatClick={(traineeId) => {
-                  console.log('Chat with trainee:', traineeId);
-                }} />
-              </TabsContent>
+            <TabsContent value="trainees" className="mt-6">
+              <TraineesTab trainees={trainees} onChatClick={(traineeId) => {
+                console.log('Chat with trainee:', traineeId);
+              }} />
+            </TabsContent>
 
-              <TabsContent value="analytics" className="mt-6">
-                <AnalyticsTab />
-              </TabsContent>
-            </Tabs>
-          </div>
+            <TabsContent value="analytics" className="mt-6">
+              <AnalyticsTab />
+            </TabsContent>
+          </Tabs>
         </div>
       </Layout>
     </ProtectedRoute>

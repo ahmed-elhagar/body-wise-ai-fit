@@ -27,8 +27,8 @@ const Layout = ({ children }: LayoutProps) => {
       <SidebarProvider>
         <div className="min-h-screen flex w-full">
           <AppSidebar />
-          <main className="flex-1 overflow-auto">
-            <div className="container mx-auto p-6 max-w-7xl">
+          <main className="flex-1 overflow-auto bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/30">
+            <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
               {children}
             </div>
           </main>
