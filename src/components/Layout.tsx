@@ -21,13 +21,13 @@ const Layout = memo(({ children }: LayoutProps) => {
         isRTL && 'font-arabic'
       )}>
         <AppSidebar />
-        <SidebarInset className="flex-1 w-full min-w-0" data-sidebar="inset">
+        <SidebarInset className="flex-1 w-full min-w-0">
           {/* Mobile header with sidebar trigger */}
           <div className={cn(
             "flex h-16 items-center gap-4 border-b bg-white px-6 md:hidden shadow-sm",
             isRTL && 'flex-row-reverse'
           )}>
-            <SidebarTrigger className="h-8 w-8 text-gray-600 hover:text-gray-900" data-sidebar="trigger" />
+            <SidebarTrigger className="h-8 w-8 text-gray-600 hover:text-gray-900" />
             <h1 className="font-bold text-lg text-gray-900">{String(t('common:appName'))}</h1>
           </div>
           
@@ -36,7 +36,7 @@ const Layout = memo(({ children }: LayoutProps) => {
             "hidden md:flex h-16 items-center gap-4 border-b bg-white px-6 shadow-sm",
             isRTL && 'flex-row-reverse justify-end'
           )}>
-            <SidebarTrigger className="h-8 w-8 text-gray-600 hover:text-gray-900" data-sidebar="trigger" />
+            <SidebarTrigger className="h-8 w-8 text-gray-600 hover:text-gray-900" />
             <div className="flex-1" />
           </div>
           
