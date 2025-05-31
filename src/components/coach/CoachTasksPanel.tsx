@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -31,6 +30,13 @@ const CoachTasksPanel = ({ trainees, className }: CoachTasksPanelProps) => {
 
   const handleToggleTask = (taskId: string, completed: boolean) => {
     toggleTask({ taskId, completed: !completed });
+  };
+
+  const handleAddTaskClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Add task button clicked');
+    setShowCreateDialog(true);
   };
 
   const getPriorityColor = (priority: CoachTask['priority']) => {
@@ -86,7 +92,12 @@ const CoachTasksPanel = ({ trainees, className }: CoachTasksPanelProps) => {
               <Clock className="h-5 w-5" />
               Tasks & Reminders
             </CardTitle>
-            <Button size="sm" variant="outline" onClick={() => setShowCreateDialog(true)}>
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={handleAddTaskClick}
+              type="button"
+            >
               <Plus className="h-4 w-4 mr-1" />
               Add Task
             </Button>
@@ -140,7 +151,8 @@ const CoachTasksPanel = ({ trainees, className }: CoachTasksPanelProps) => {
                   variant="outline" 
                   size="sm" 
                   className="mt-2"
-                  onClick={() => setShowCreateDialog(true)}
+                  onClick={handleAddTaskClick}
+                  type="button"
                 >
                   <Plus className="h-4 w-4 mr-1" />
                   Create your first task

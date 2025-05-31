@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -78,12 +77,12 @@ export const CreateTaskDialog = ({ open, onOpenChange, trainees }: CreateTaskDia
         completed: false,
       });
 
-      // Reset form and close dialog on success
+      toast.success('Task created successfully');
       resetForm();
       onOpenChange(false);
     } catch (error) {
       console.error('Failed to create task:', error);
-      // Error is already handled in the hook
+      toast.error('Failed to create task. Please try again.');
     }
   };
 
@@ -96,7 +95,7 @@ export const CreateTaskDialog = ({ open, onOpenChange, trainees }: CreateTaskDia
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px]" onClick={(e) => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle>Create New Task</DialogTitle>
           <DialogDescription>
@@ -198,6 +197,7 @@ export const CreateTaskDialog = ({ open, onOpenChange, trainees }: CreateTaskDia
             <Popover>
               <PopoverTrigger asChild>
                 <Button
+                  type="button"
                   variant="outline"
                   className={cn(
                     "w-full justify-start text-left font-normal",
