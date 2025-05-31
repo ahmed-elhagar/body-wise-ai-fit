@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Trophy, Star, Target, Flame, Award, Calendar, Zap } from "lucide-react";
+import { Trophy, Star, Target, Flame, Award, Calendar, Zap, TrendingDown } from "lucide-react";
 import { useWeightTracking } from "@/hooks/useWeightTracking";
 import { useGoals } from "@/hooks/useGoals";
 import { useMealPlanData } from "@/hooks/useMealPlanData";

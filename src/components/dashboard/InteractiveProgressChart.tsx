@@ -118,17 +118,20 @@ const InteractiveProgressChart = () => {
     
     switch (activeChart) {
       case 'weight':
-        const weightChange = data[data.length - 1].value - data[0].value;
+        const weightData = data as Array<{ date: string; value: number; target: number; }>;
+        const weightChange = weightData[weightData.length - 1].value - weightData[0].value;
         return weightChange > 0 
           ? t(`+${weightChange.toFixed(1)}kg change`) 
           : t(`${weightChange.toFixed(1)}kg change`);
       
       case 'calories':
-        const avgConsumed = data.reduce((sum, d) => sum + d.consumed, 0) / data.length;
+        const calorieData = data as Array<{ date: string; consumed: number; target: number; burned: number; }>;
+        const avgConsumed = calorieData.reduce((sum, d) => sum + d.consumed, 0) / calorieData.length;
         return t(`Avg: ${Math.round(avgConsumed)} cal/day`);
       
       case 'workouts':
-        const totalWorkouts = data.filter(d => d.duration > 0).length;
+        const workoutData = data as Array<{ date: string; duration: number; calories: number; }>;
+        const totalWorkouts = workoutData.filter(d => d.duration > 0).length;
         return t(`${totalWorkouts} active days`);
       
       default:
