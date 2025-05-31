@@ -2,155 +2,224 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { TrendingUp, TrendingDown, AlertCircle, CheckCircle, Brain, Lightbulb } from "lucide-react";
+import { Brain, TrendingUp, TrendingDown, Target, Activity, Calendar } from "lucide-react";
+import { useWeightTracking } from "@/hooks/useWeightTracking";
+import { useGoals } from "@/hooks/useGoals";
+import { useMealPlanData } from "@/hooks/useMealPlanData";
+import { useExerciseProgramData } from "@/hooks/useExerciseProgramData";
+import { useMemo } from "react";
 
-interface TrendAnalysisProps {
-  className?: string;
-}
-
-const TrendAnalysis = ({ className = "" }: TrendAnalysisProps) => {
+const TrendAnalysis = () => {
   const { t } = useLanguage();
+  const { weightEntries } = useWeightTracking();
+  const { goals } = useGoals();
+  const { data: currentMealPlan } = useMealPlanData(0);
+  const { currentProgram: currentExerciseProgram } = useExerciseProgramData(0, "home");
 
-  const trends = [
-    {
-      id: 'weight_loss',
-      title: t('Weight Loss Trend'),
-      description: t('Consistent downward trend over the past 2 weeks'),
-      trend: 'positive',
-      confidence: 'high',
-      insight: t('Your current calorie deficit is working well. Keep up the good work!'),
-      recommendation: t('Continue with your current meal plan and consider adding 1 more workout per week.')
-    },
-    {
-      id: 'calorie_intake',
-      title: t('Calorie Intake Pattern'),
-      description: t('Slightly above target on weekends'),
-      trend: 'neutral',
-      confidence: 'medium',
-      insight: t('Weekend calorie intake is 15% higher than weekdays on average.'),
-      recommendation: t('Plan healthier weekend activities and prepare snacks in advance.')
-    },
-    {
-      id: 'workout_consistency',
-      title: t('Workout Consistency'),
-      description: t('Excellent consistency in the last month'),
-      trend: 'positive',
-      confidence: 'high',
-      insight: t('92% workout completion rate - you\'re building a strong habit!'),
-      recommendation: t('Consider gradually increasing workout intensity or duration.')
-    },
-    {
-      id: 'macro_balance',
-      title: t('Macro Balance Analysis'),
-      description: t('Protein intake could be improved'),
-      trend: 'attention',
-      confidence: 'high',
-      insight: t('Protein intake is 20% below target, which may slow muscle recovery.'),
-      recommendation: t('Add a protein shake post-workout or increase lean meat portions.')
+  // Generate AI insights based on real data
+  const aiInsights = useMemo(() => {
+    const insights = [];
+    
+    // Weight trend analysis
+    if (weightEntries.length >= 3) {
+      const recent = weightEntries.slice(0, 3);
+      const weightTrend = recent[0].weight - recent[2].weight;
+      
+      if (Math.abs(weightTrend) > 1) {
+        insights.push({
+          type: weightTrend > 0 ? 'warning' : 'positive',
+          title: weightTrend > 0 ? t('Weight Increase Detected') : t('Weight Loss Progress'),
+          message: t(`You've ${weightTrend > 0 ? 'gained' : 'lost'} ${Math.abs(weightTrend).toFixed(1)}kg in recent entries. ${weightTrend > 0 ? 'Consider reviewing your meal plan.' : 'Great progress towards your goal!'}`),
+          icon: weightTrend > 0 ? TrendingUp : TrendingDown,
+          priority: 'high'
+        });
+      }
     }
-  ];
 
-  const getTrendIcon = (trend: string) => {
-    switch (trend) {
-      case 'positive': return <TrendingUp className="w-5 h-5 text-green-600" />;
-      case 'negative': return <TrendingDown className="w-5 h-5 text-red-600" />;
-      case 'attention': return <AlertCircle className="w-5 h-5 text-yellow-600" />;
-      default: return <CheckCircle className="w-5 h-5 text-blue-600" />;
+    // Goal progress analysis
+    const activeGoals = goals.filter(goal => goal.status === 'active');
+    const overachievingGoals = activeGoals.filter(goal => {
+      if (!goal.target_value) return false;
+      const progress = (goal.current_value / goal.target_value) * 100;
+      return progress >= 90;
+    });
+
+    if (overachievingGoals.length > 0) {
+      insights.push({
+        type: 'positive',
+        title: t('Exceptional Goal Progress'),
+        message: t(`You're excelling at ${overachievingGoals.length} goal(s)! Consider setting more challenging targets.`),
+        icon: Target,
+        priority: 'medium'
+      });
+    }
+
+    // Exercise consistency analysis
+    if (currentExerciseProgram?.daily_workouts) {
+      const totalExercises = currentExerciseProgram.daily_workouts.reduce(
+        (sum, workout) => sum + (workout.exercises?.length || 0), 0
+      );
+      const completedExercises = currentExerciseProgram.daily_workouts.reduce(
+        (sum, workout) => sum + (workout.exercises?.filter(ex => ex.completed).length || 0), 0
+      );
+      
+      const completionRate = totalExercises > 0 ? (completedExercises / totalExercises) * 100 : 0;
+      
+      if (completionRate < 50) {
+        insights.push({
+          type: 'warning',
+          title: t('Low Exercise Completion'),
+          message: t(`Your exercise completion rate is ${Math.round(completionRate)}%. Try shorter workouts or adjust your schedule.`),
+          icon: Activity,
+          priority: 'high'
+        });
+      } else if (completionRate > 80) {
+        insights.push({
+          type: 'positive',
+          title: t('Outstanding Exercise Consistency'),
+          message: t(`${Math.round(completionRate)}% completion rate! You're building excellent habits.`),
+          icon: Activity,
+          priority: 'low'
+        });
+      }
+    }
+
+    // Nutrition pattern analysis
+    if (currentMealPlan?.dailyMeals) {
+      const avgCalories = currentMealPlan.dailyMeals.reduce(
+        (sum, meal) => sum + (meal.calories || 0), 0
+      ) / 7;
+      
+      const avgProtein = currentMealPlan.dailyMeals.reduce(
+        (sum, meal) => sum + (meal.protein || 0), 0
+      ) / 7;
+
+      if (avgCalories < 1200) {
+        insights.push({
+          type: 'warning',
+          title: t('Low Caloric Intake'),
+          message: t(`Your average daily intake is ${Math.round(avgCalories)} calories. Consider consulting a nutritionist.`),
+          icon: TrendingDown,
+          priority: 'high'
+        });
+      }
+
+      if (avgProtein < 50) {
+        insights.push({
+          type: 'tip',
+          title: t('Increase Protein Intake'),
+          message: t(`Your average protein intake is ${Math.round(avgProtein)}g. Aim for 0.8-1g per kg of body weight.`),
+          icon: Target,
+          priority: 'medium'
+        });
+      }
+    }
+
+    // If no specific insights, provide general encouragement
+    if (insights.length === 0) {
+      insights.push({
+        type: 'positive',
+        title: t('Steady Progress'),
+        message: t('You\'re maintaining consistent habits! Keep tracking your progress for better insights.'),
+        icon: Brain,
+        priority: 'low'
+      });
+    }
+
+    return insights.sort((a, b) => {
+      const priorityOrder = { high: 3, medium: 2, low: 1 };
+      return priorityOrder[b.priority] - priorityOrder[a.priority];
+    });
+  }, [weightEntries, goals, currentMealPlan, currentExerciseProgram, t]);
+
+  const getInsightStyle = (type: string) => {
+    switch (type) {
+      case 'positive': return 'bg-green-50 text-green-800 border-green-200';
+      case 'warning': return 'bg-red-50 text-red-800 border-red-200';
+      case 'tip': return 'bg-blue-50 text-blue-800 border-blue-200';
+      default: return 'bg-gray-50 text-gray-800 border-gray-200';
     }
   };
 
-  const getTrendBadge = (trend: string) => {
-    switch (trend) {
-      case 'positive': return <Badge className="bg-green-100 text-green-800 border-green-200">{t('Positive')}</Badge>;
-      case 'negative': return <Badge className="bg-red-100 text-red-800 border-red-200">{t('Needs Attention')}</Badge>;
-      case 'attention': return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">{t('Monitor')}</Badge>;
-      default: return <Badge className="bg-blue-100 text-blue-800 border-blue-200">{t('Stable')}</Badge>;
-    }
-  };
-
-  const getConfidenceBadge = (confidence: string) => {
-    switch (confidence) {
-      case 'high': return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">{t('High Confidence')}</Badge>;
-      case 'medium': return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">{t('Medium Confidence')}</Badge>;
-      default: return <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">{t('Low Confidence')}</Badge>;
+  const getPriorityBadge = (priority: string) => {
+    switch (priority) {
+      case 'high': return 'bg-red-100 text-red-800';
+      case 'medium': return 'bg-yellow-100 text-yellow-800';
+      case 'low': return 'bg-green-100 text-green-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
   return (
-    <div className={`space-y-6 ${className}`}>
-      {/* AI Insights Header */}
-      <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 shadow-lg">
+    <div className="space-y-6">
+      <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-blue-800">
-            <Brain className="w-5 h-5" />
+          <CardTitle className="flex items-center gap-2">
+            <Brain className="w-5 h-5 text-purple-600" />
             {t('AI-Powered Trend Analysis')}
           </CardTitle>
-          <p className="text-sm text-blue-600">
-            {t('Based on your data from the last 30 days, here are the key trends and insights')}
-          </p>
         </CardHeader>
-      </Card>
-
-      {/* Trend Analysis Cards */}
-      <div className="space-y-4">
-        {trends.map((trend) => (
-          <Card key={trend.id} className="bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-shadow">
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                {/* Header */}
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    {getTrendIcon(trend.trend)}
-                    <div>
-                      <h3 className="font-semibold text-gray-800">{trend.title}</h3>
-                      <p className="text-sm text-gray-600">{trend.description}</p>
+        <CardContent className="space-y-4">
+          {aiInsights.map((insight, index) => {
+            const IconComponent = insight.icon;
+            return (
+              <div
+                key={index}
+                className={`p-4 rounded-lg border ${getInsightStyle(insight.type)}`}
+              >
+                <div className="flex items-start gap-3">
+                  <IconComponent className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-semibold">{insight.title}</h4>
+                      <Badge className={getPriorityBadge(insight.priority)}>
+                        {insight.priority}
+                      </Badge>
                     </div>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    {getTrendBadge(trend.trend)}
-                    {getConfidenceBadge(trend.confidence)}
-                  </div>
-                </div>
-
-                {/* Insight */}
-                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                  <div className="flex items-start gap-2">
-                    <Lightbulb className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <h4 className="font-medium text-gray-800 text-sm mb-1">{t('AI Insight')}</h4>
-                      <p className="text-sm text-gray-700">{trend.insight}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Recommendation */}
-                <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-                  <div className="flex items-start gap-2">
-                    <CheckCircle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <h4 className="font-medium text-blue-800 text-sm mb-1">{t('Recommendation')}</h4>
-                      <p className="text-sm text-blue-700">{trend.recommendation}</p>
-                    </div>
+                    <p className="text-sm">{insight.message}</p>
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+            );
+          })}
+        </CardContent>
+      </Card>
 
-      {/* Summary Card */}
-      <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 shadow-lg">
-        <CardContent className="p-6">
-          <div className="text-center space-y-2">
-            <CheckCircle className="w-8 h-8 text-green-600 mx-auto" />
-            <h3 className="font-bold text-green-800">{t('Overall Progress: Excellent!')}</h3>
-            <p className="text-sm text-green-700">
-              {t('You\'re on track to reach your goals. Keep following the AI recommendations for optimal results.')}
-            </p>
-            <Badge className="bg-green-100 text-green-800 border-green-300 mt-4">
-              {t('Analysis updated daily')}
-            </Badge>
+      {/* Data Quality Indicators */}
+      <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-blue-600" />
+            {t('Data Quality & Recommendations')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="text-center p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <div className="text-2xl font-bold text-blue-800">{weightEntries.length}</div>
+              <div className="text-sm text-blue-600">{t('Weight Entries')}</div>
+              {weightEntries.length < 5 && (
+                <div className="text-xs text-blue-500 mt-1">{t('Add more for better trends')}</div>
+              )}
+            </div>
+            
+            <div className="text-center p-3 bg-purple-50 rounded-lg border border-purple-200">
+              <div className="text-2xl font-bold text-purple-800">{goals.length}</div>
+              <div className="text-sm text-purple-600">{t('Active Goals')}</div>
+              {goals.length === 0 && (
+                <div className="text-xs text-purple-500 mt-1">{t('Set goals for personalized insights')}</div>
+              )}
+            </div>
+            
+            <div className="text-center p-3 bg-green-50 rounded-lg border border-green-200">
+              <div className="text-2xl font-bold text-green-800">
+                {currentMealPlan ? '✓' : '✗'}
+              </div>
+              <div className="text-sm text-green-600">{t('Meal Plan Active')}</div>
+              {!currentMealPlan && (
+                <div className="text-xs text-green-500 mt-1">{t('Generate a meal plan')}</div>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>

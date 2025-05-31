@@ -5,6 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Bell, X, Check, Clock, Target, Apple, Dumbbell, Scale } from "lucide-react";
+import { useMealPlanData } from "@/hooks/useMealPlanData";
+import { useExerciseProgramData } from "@/hooks/useExerciseProgramData";
+import { useGoals } from "@/hooks/useGoals";
+import { useWeightTracking } from "@/hooks/useWeightTracking";
 
 interface Notification {
   id: string;
@@ -19,38 +23,160 @@ interface Notification {
 
 const NotificationCenter = () => {
   const { t } = useLanguage();
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: '1',
-      type: 'meal',
-      title: t('Lunch Reminder'),
-      message: t('Time for your planned lunch - Grilled Chicken Salad'),
-      time: '12:30 PM',
-      priority: 'medium',
-      read: false,
-      actionable: true
-    },
-    {
-      id: '2',
-      type: 'exercise',
-      title: t('Workout Time'),
-      message: t('Your scheduled workout starts in 30 minutes'),
-      time: '2:30 PM',
-      priority: 'high',
-      read: false,
-      actionable: true
-    },
-    {
-      id: '3',
-      type: 'goal',
-      title: t('Goal Progress'),
-      message: t('Great job! You\'re 80% towards your weekly protein goal'),
-      time: '1 hour ago',
-      priority: 'low',
-      read: true,
-      actionable: false
-    }
-  ]);
+  const { data: currentMealPlan } = useMealPlanData(0);
+  const { currentProgram: currentExerciseProgram } = useExerciseProgramData(0, "home");
+  const { goals } = useGoals();
+  const { weightEntries } = useWeightTracking();
+
+  // Generate real notifications based on user data
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+
+  useEffect(() => {
+    const generateNotifications = () => {
+      const newNotifications: Notification[] = [];
+      const now = new Date();
+      const today = now.getDay() || 7;
+
+      // Meal reminders based on actual meal plan
+      if (currentMealPlan?.dailyMeals) {
+        const todaysMeals = currentMealPlan.dailyMeals.filter(meal => meal.day_number === today);
+        
+        if (todaysMeals.length > 0) {
+          // Find next meal
+          const currentHour = now.getHours();
+          let nextMeal = null;
+          
+          if (currentHour < 9) {
+            nextMeal = todaysMeals.find(meal => meal.meal_type === 'breakfast');
+          } else if (currentHour < 13) {
+            nextMeal = todaysMeals.find(meal => meal.meal_type === 'lunch');
+          } else if (currentHour < 19) {
+            nextMeal = todaysMeals.find(meal => meal.meal_type === 'dinner');
+          }
+
+          if (nextMeal) {
+            newNotifications.push({
+              id: `meal-${nextMeal.id}`,
+              type: 'meal',
+              title: t(`${nextMeal.meal_type.charAt(0).toUpperCase() + nextMeal.meal_type.slice(1)} Reminder`),
+              message: t(`Time for your ${nextMeal.name} - ${nextMeal.calories} calories`),
+              time: '30 min',
+              priority: 'medium',
+              read: false,
+              actionable: true
+            });
+          }
+        }
+      }
+
+      // Exercise reminders based on actual program
+      if (currentExerciseProgram?.daily_workouts) {
+        const todaysWorkouts = currentExerciseProgram.daily_workouts.filter(workout => workout.day_number === today);
+        
+        if (todaysWorkouts.length > 0) {
+          const workout = todaysWorkouts[0];
+          const pendingExercises = workout.exercises?.filter(ex => !ex.completed) || [];
+          
+          if (pendingExercises.length > 0) {
+            newNotifications.push({
+              id: `workout-${workout.id}`,
+              type: 'exercise',
+              title: t('Workout Time'),
+              message: t(`${workout.workout_name} - ${pendingExercises.length} exercises remaining`),
+              time: '1 hour',
+              priority: 'high',
+              read: false,
+              actionable: true
+            });
+          }
+        }
+      }
+
+      // Goal progress notifications
+      const activeGoals = goals.filter(goal => goal.status === 'active');
+      activeGoals.forEach(goal => {
+        if (goal.target_value && goal.current_value) {
+          const progress = (goal.current_value / goal.target_value) * 100;
+          
+          if (progress >= 75 && progress < 90) {
+            newNotifications.push({
+              id: `goal-${goal.id}`,
+              type: 'goal',
+              title: t('Goal Progress'),
+              message: t(`You're ${Math.round(progress)}% towards your ${goal.title} goal!`),
+              time: '2 hours ago',
+              priority: 'low',
+              read: false,
+              actionable: false
+            });
+          } else if (progress >= 90) {
+            newNotifications.push({
+              id: `goal-complete-${goal.id}`,
+              type: 'goal',
+              title: t('Goal Almost Complete!'),
+              message: t(`You're ${Math.round(progress)}% towards completing ${goal.title}!`),
+              time: '1 hour ago',
+              priority: 'medium',
+              read: false,
+              actionable: true
+            });
+          }
+        }
+      });
+
+      // Weight tracking reminders
+      if (weightEntries.length > 0) {
+        const lastEntry = weightEntries[0];
+        const daysSinceLastEntry = Math.floor((now.getTime() - new Date(lastEntry.recorded_at).getTime()) / (1000 * 60 * 60 * 24));
+        
+        if (daysSinceLastEntry >= 7) {
+          newNotifications.push({
+            id: 'weight-reminder',
+            type: 'weight',
+            title: t('Weight Check Reminder'),
+            message: t(`It's been ${daysSinceLastEntry} days since your last weigh-in`),
+            time: '3 hours ago',
+            priority: 'medium',
+            read: false,
+            actionable: true
+          });
+        }
+      } else {
+        newNotifications.push({
+          id: 'weight-first',
+          type: 'weight',
+          title: t('Track Your Progress'),
+          message: t('Record your first weight entry to start tracking your journey'),
+          time: '1 day ago',
+          priority: 'medium',
+          read: false,
+          actionable: true
+        });
+      }
+
+      // Add some encouraging notifications if user is doing well
+      if (currentMealPlan && currentExerciseProgram && goals.length > 0) {
+        newNotifications.push({
+          id: 'encouragement',
+          type: 'reminder',
+          title: t('Great Progress!'),
+          message: t('You have an active meal plan, exercise program, and goals set. Keep it up!'),
+          time: '6 hours ago',
+          priority: 'low',
+          read: true,
+          actionable: false
+        });
+      }
+
+      setNotifications(newNotifications.slice(0, 10)); // Limit to 10 notifications
+    };
+
+    generateNotifications();
+    
+    // Update notifications every 30 minutes
+    const interval = setInterval(generateNotifications, 30 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [currentMealPlan, currentExerciseProgram, goals, weightEntries, t]);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -118,6 +244,7 @@ const NotificationCenter = () => {
           <div className="text-center py-8 text-gray-500">
             <Bell className="w-12 h-12 mx-auto mb-3 text-gray-300" />
             <p>{t('No notifications')}</p>
+            <p className="text-xs mt-1">{t('Start using the app to receive personalized reminders')}</p>
           </div>
         ) : (
           <div className="space-y-3">
