@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -72,12 +71,14 @@ export const useCoachChat = (coachId: string, traineeId: string) => {
     },
     enabled: !!user?.id && !!coachId && !!traineeId,
     refetchInterval: 5000,
-    staleTime: 1000, // Consider data stale after 1 second for real-time feel
+    staleTime: 1000,
   });
 
   // Create notification for new message
   const createChatNotification = async (message: string, senderName: string, receiverId: string) => {
     try {
+      console.log('🔔 Creating notification for:', { receiverId, senderName, messagePreview: message.substring(0, 50) });
+      
       const { error } = await supabase
         .from('user_notifications')
         .insert({
@@ -85,7 +86,7 @@ export const useCoachChat = (coachId: string, traineeId: string) => {
           title: `New message from ${senderName}`,
           message: message.length > 100 ? message.substring(0, 100) + '...' : message,
           type: 'info',
-          action_url: '/coach',
+          action_url: '/chat', // Updated to point to unified chat page
           metadata: {
             chat_type: 'coach_trainee',
             sender_id: user?.id,
@@ -96,11 +97,13 @@ export const useCoachChat = (coachId: string, traineeId: string) => {
 
       if (error) {
         console.error('❌ Error creating chat notification:', error);
+        throw error;
       } else {
         console.log('✅ Chat notification created successfully');
       }
     } catch (error) {
       console.error('❌ Error in createChatNotification:', error);
+      throw error;
     }
   };
 
@@ -125,9 +128,22 @@ export const useCoachChat = (coachId: string, traineeId: string) => {
         throw new Error('Coach-trainee relationship no longer exists');
       }
 
-      // Determine sender type based on user role
-      const senderType = user.id === coachId ? 'coach' : 'trainee';
+      // Get sender name for notification
+      const { data: senderProfile } = await supabase
+        .from('profiles')
+        .select('first_name, last_name')
+        .eq('id', user.id)
+        .single();
 
+      const senderName = senderProfile 
+        ? `${senderProfile.first_name || ''} ${senderProfile.last_name || ''}`.trim() || 'Unknown'
+        : 'Unknown';
+
+      // Determine sender type and receiver
+      const senderType = user.id === coachId ? 'coach' : 'trainee';
+      const receiverId = senderType === 'coach' ? traineeId : coachId;
+
+      // Insert message
       const { data, error } = await supabase
         .from('coach_trainee_messages')
         .insert({
@@ -149,19 +165,18 @@ export const useCoachChat = (coachId: string, traineeId: string) => {
         throw error;
       }
 
-      // Create notification for the recipient
-      const receiverId = senderType === 'coach' ? traineeId : coachId;
-      const senderName = data.sender 
-        ? `${data.sender.first_name || ''} ${data.sender.last_name || ''}`.trim() || 'Unknown'
-        : 'Unknown';
-      
-      await createChatNotification(message.trim(), senderName, receiverId);
+      // Create notification for the recipient - ALWAYS CREATE IT
+      try {
+        await createChatNotification(message.trim(), senderName, receiverId);
+      } catch (notificationError) {
+        console.error('❌ Failed to create notification, but message was sent:', notificationError);
+        // Don't throw here - message was sent successfully
+      }
 
       console.log('✅ Message sent successfully:', data);
       return data;
     },
     onSuccess: () => {
-      // Only invalidate chat queries, not coach-trainee queries
       queryClient.invalidateQueries({ queryKey: ['coach-chat-messages', coachId, traineeId] });
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
       queryClient.invalidateQueries({ queryKey: ['unread-messages'] });
@@ -171,7 +186,6 @@ export const useCoachChat = (coachId: string, traineeId: string) => {
       console.error('Error sending message:', error);
       if (error.message.includes('relationship no longer exists')) {
         toast.error('Cannot send message: Trainee assignment has been removed');
-        // Refresh the coach trainees list
         queryClient.invalidateQueries({ queryKey: ['coach-trainees'] });
       } else {
         toast.error(`Failed to send message: ${error.message}`);
