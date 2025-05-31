@@ -2,20 +2,22 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Sparkles, Loader2, Apple, ChefHat } from "lucide-react";
 
 interface RecipeGenerationCardProps {
   hasDetailedRecipe: boolean;
   mealId?: string;
   isGeneratingRecipe: boolean;
   onGenerateRecipe: () => void;
+  isSnack?: boolean;
 }
 
 const RecipeGenerationCard = ({ 
   hasDetailedRecipe, 
   mealId, 
   isGeneratingRecipe, 
-  onGenerateRecipe 
+  onGenerateRecipe,
+  isSnack = false
 }: RecipeGenerationCardProps) => {
   if (hasDetailedRecipe) return null;
 
@@ -27,50 +29,76 @@ const RecipeGenerationCard = ({
             <Sparkles className="w-6 h-6 text-gray-500" />
           </div>
           <p className="text-gray-600 font-medium">
-            Recipe generation not available for this meal. Please regenerate your meal plan to enable detailed recipes.
+            Recipe generation not available for this {isSnack ? 'snack' : 'meal'}. Please regenerate your meal plan to enable detailed recipes.
           </p>
         </CardContent>
       </Card>
     );
   }
 
+  const gradientColor = isSnack 
+    ? "from-green-50 to-emerald-100" 
+    : "from-orange-50 to-red-50";
+  
+  const iconColor = isSnack 
+    ? "from-green-500 to-emerald-500" 
+    : "from-orange-500 to-red-500";
+
+  const buttonColor = isSnack
+    ? "from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
+    : "from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600";
+
   return (
-    <Card className="bg-gradient-to-br from-orange-50 to-red-50 border-0 shadow-lg">
-      <CardContent className="p-6 text-center space-y-6">
+    <Card className={`bg-gradient-to-br ${gradientColor} border-0 shadow-lg hover:shadow-xl transition-all duration-300`}>
+      <CardContent className="p-8 text-center space-y-6">
         <div className="flex justify-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl flex items-center justify-center shadow-lg">
-            <Sparkles className="w-8 h-8 text-white" />
+          <div className={`w-20 h-20 bg-gradient-to-br ${iconColor} rounded-3xl flex items-center justify-center shadow-lg`}>
+            {isSnack ? <Apple className="w-10 h-10 text-white" /> : <ChefHat className="w-10 h-10 text-white" />}
           </div>
         </div>
         
-        <div className="space-y-3">
+        <div className="space-y-4">
           <h3 className="text-2xl font-bold text-gray-800">
-            Get Detailed Recipe with AI
+            Get Detailed {isSnack ? 'Snack' : 'Recipe'} with AI
           </h3>
           <p className="text-gray-600 font-medium max-w-md mx-auto leading-relaxed">
-            Generate detailed ingredients, step-by-step instructions, and professional food images powered by AI
+            Generate detailed ingredients, step-by-step instructions, and {isSnack ? 'healthy snack tips' : 'professional cooking techniques'} powered by AI
           </p>
-          <Badge variant="outline" className="bg-white border-orange-200 text-orange-700 font-medium">
-            Daily limit: 10 recipes per day
-          </Badge>
+          <div className="flex flex-wrap gap-2 justify-center">
+            <Badge variant="outline" className="bg-white/80 border-gray-300 text-gray-700 font-medium">
+              ✨ AI-Powered
+            </Badge>
+            <Badge variant="outline" className="bg-white/80 border-gray-300 text-gray-700 font-medium">
+              🎯 Personalized
+            </Badge>
+            {isSnack && (
+              <Badge variant="outline" className="bg-white/80 border-green-300 text-green-700 font-medium">
+                🍎 Healthy
+              </Badge>
+            )}
+          </div>
         </div>
         
         {isGeneratingRecipe ? (
           <div className="space-y-4">
             <div className="flex items-center justify-center gap-3">
-              <Loader2 className="w-6 h-6 text-orange-500 animate-spin" />
-              <span className="text-lg font-semibold text-gray-700">Generating Recipe...</span>
+              <Loader2 className={`w-6 h-6 ${isSnack ? 'text-green-500' : 'text-orange-500'} animate-spin`} />
+              <span className="text-lg font-semibold text-gray-700">
+                Generating {isSnack ? 'Snack' : 'Recipe'}...
+              </span>
             </div>
-            <p className="text-sm text-gray-600">Creating ingredients, instructions, and nutritional info</p>
+            <p className="text-sm text-gray-600">
+              Creating {isSnack ? 'healthy snack ideas' : 'ingredients, instructions, and nutritional info'}
+            </p>
           </div>
         ) : (
           <Button
             onClick={onGenerateRecipe}
             disabled={isGeneratingRecipe}
-            className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all text-lg"
+            className={`bg-gradient-to-r ${buttonColor} text-white font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all text-lg`}
           >
             <Sparkles className="w-5 h-5 mr-2" />
-            Generate Detailed Recipe
+            Generate Detailed {isSnack ? 'Snack Guide' : 'Recipe'}
           </Button>
         )}
       </CardContent>

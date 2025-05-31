@@ -1,6 +1,7 @@
 
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ChefHat, Clock, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ChefHat, Clock, Users, X, Apple } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { Meal } from "@/types/meal";
 
@@ -9,30 +10,43 @@ interface RecipeHeaderProps {
 }
 
 const RecipeHeader = ({ meal }: RecipeHeaderProps) => {
+  const isSnack = meal.name.includes('🍎') || meal.meal_type === 'snack';
+  
   return (
-    <DialogHeader className="text-center space-y-4">
-      <div className="flex justify-center">
-        <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl flex items-center justify-center shadow-lg">
-          <ChefHat className="w-8 h-8 text-white" />
+    <DialogHeader className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div className={`w-14 h-14 ${isSnack ? 'bg-gradient-to-br from-green-500 to-emerald-600' : 'bg-gradient-to-br from-orange-500 to-red-500'} rounded-2xl flex items-center justify-center shadow-lg`}>
+            {isSnack ? <Apple className="w-7 h-7 text-white" /> : <ChefHat className="w-7 h-7 text-white" />}
+          </div>
+          <div>
+            <DialogTitle className="text-2xl lg:text-3xl font-bold text-gray-800 leading-tight">
+              {isSnack ? meal.name.replace('🍎 ', '') : meal.name}
+            </DialogTitle>
+            <p className="text-gray-600 font-medium mt-1">
+              {isSnack ? 'Healthy Snack Recipe' : 'Delicious Meal Recipe'}
+            </p>
+          </div>
         </div>
       </div>
       
-      <DialogTitle className="text-3xl font-bold text-gray-800 leading-tight">
-        {meal.name}
-      </DialogTitle>
-      
-      <div className="flex flex-wrap items-center justify-center gap-3">
-        <Badge variant="secondary" className="bg-orange-100 text-orange-700 border-orange-200">
+      <div className="flex flex-wrap items-center gap-3">
+        <Badge className={`${isSnack ? 'bg-green-100 text-green-700 border-green-200' : 'bg-orange-100 text-orange-700 border-orange-200'} font-medium`}>
           <Clock className="w-3 h-3 mr-1" />
-          {(meal.prepTime || 0) + (meal.cookTime || 0)} min
+          {(meal.prepTime || 0) + (meal.cookTime || 0) || (isSnack ? 5 : 20)} min
         </Badge>
-        <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-200">
+        <Badge className="bg-blue-100 text-blue-700 border-blue-200 font-medium">
           <Users className="w-3 h-3 mr-1" />
-          {meal.servings} serving{meal.servings !== 1 ? 's' : ''}
+          {meal.servings || 1} serving{meal.servings !== 1 ? 's' : ''}
         </Badge>
-        <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-200">
+        <Badge className={`${isSnack ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-purple-100 text-purple-700 border-purple-200'} font-medium`}>
           {meal.calories} calories
         </Badge>
+        {isSnack && (
+          <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200 font-medium">
+            🍎 Snack
+          </Badge>
+        )}
       </div>
     </DialogHeader>
   );
