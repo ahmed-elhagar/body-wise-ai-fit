@@ -19,17 +19,18 @@ const buttonVariants = cva(
         success: "bg-gradient-to-r from-success-500 to-success-600 text-white hover:from-success-600 hover:to-success-700 hover:shadow-lg hover:shadow-success-500/25 active:scale-[0.98] transform",
         warning: "bg-gradient-to-r from-warning-500 to-warning-600 text-white hover:from-warning-600 hover:to-warning-700 hover:shadow-lg hover:shadow-warning-500/25 active:scale-[0.98] transform",
         info: "bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 text-white hover:from-fitness-primary-600 hover:to-fitness-primary-700 hover:shadow-lg hover:shadow-fitness-primary-500/25 active:scale-[0.98] transform",
-        orange: "bg-gradient-to-r from-fitness-orange-500 to-fitness-orange-600 text-white hover:from-fitness-orange-600 hover:to-fitness-orange-700 hover:shadow-lg hover:shadow-fitness-orange-500/25 active:scale-[0.98] transform"
+        orange: "bg-gradient-to-r from-fitness-orange-500 to-fitness-orange-600 text-white hover:from-fitness-orange-600 hover:to-fitness-orange-700 hover:shadow-lg hover:shadow-fitness-orange-500/25 active:scale-[0.98] transform",
+        accent: "bg-gradient-to-r from-fitness-accent-500 to-fitness-accent-600 text-white hover:from-fitness-accent-600 hover:to-fitness-accent-700 hover:shadow-lg hover:shadow-fitness-accent-500/25 active:scale-[0.98] transform"
       },
       size: {
-        sm: "h-8 rounded-lg px-3 text-xs font-medium",
-        default: "h-9 px-4 py-2",
-        lg: "h-10 rounded-lg px-6 text-base font-semibold",
-        xl: "h-12 rounded-xl px-8 text-lg font-bold",
-        icon: "h-9 w-9 rounded-lg",
-        "icon-sm": "h-8 w-8 rounded-lg",
-        "icon-lg": "h-10 w-10 rounded-lg",
-        xs: "h-7 rounded-md px-2 text-xs"
+        sm: "h-7 rounded-md px-2 text-xs font-medium",
+        default: "h-8 px-3 py-1.5 text-sm",
+        lg: "h-9 rounded-lg px-4 text-sm font-semibold",
+        xl: "h-10 rounded-xl px-6 text-base font-bold",
+        icon: "h-8 w-8 rounded-md",
+        "icon-sm": "h-7 w-7 rounded-md",
+        "icon-lg": "h-9 w-9 rounded-lg",
+        xs: "h-6 rounded-sm px-1.5 text-xs"
       },
     },
     defaultVariants: {

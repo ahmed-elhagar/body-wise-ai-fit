@@ -68,10 +68,11 @@ const DayOverviewSection = ({
             </Badge>
             <Button
               onClick={onAddSnack}
-              size="sm"
-              className="bg-gradient-to-r from-fitness-accent-500 to-fitness-accent-600 hover:from-fitness-accent-600 hover:to-fitness-accent-700 text-white shadow-lg"
+              size="xs"
+              variant="accent"
+              className="shadow-md"
             >
-              <Plus className="w-4 h-4 mr-2" />
+              <Plus className="w-3 h-3 mr-1" />
               {mealPlanT('addSnack')}
             </Button>
           </div>

@@ -155,7 +155,7 @@ const EnhancedAddSnackDialog = ({
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent 
-        className="max-w-2xl mx-4 sm:mx-auto bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 shadow-2xl rounded-2xl"
+        className="max-w-2xl mx-4 sm:mx-auto bg-gradient-to-br from-fitness-accent-25 to-fitness-primary-25 border-fitness-accent-200 shadow-2xl rounded-2xl"
         onPointerDownOutside={(e) => {
           if (isGenerating) {
             e.preventDefault();
@@ -174,14 +174,14 @@ const EnhancedAddSnackDialog = ({
         <DialogHeader className="pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-br from-fitness-accent-500 to-fitness-accent-600 rounded-xl flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
               <div>
-                <DialogTitle className="text-xl font-bold text-green-800">
+                <DialogTitle className="text-xl font-bold text-fitness-accent-800">
                   {t('mealPlan.addSnackDialog.title') || 'Add Healthy Snack'}
                 </DialogTitle>
-                <p className="text-green-600 text-sm">
+                <p className="text-fitness-accent-600 text-sm">
                   {t('mealPlan.addSnackDialog.subtitle') || 'Perfect snack for your remaining calories'}
                 </p>
               </div>
@@ -191,7 +191,7 @@ const EnhancedAddSnackDialog = ({
               size="icon-sm"
               onClick={handleClose}
               disabled={isGenerating}
-              className="hover:bg-green-100"
+              className="hover:bg-fitness-accent-100"
             >
               <X className="w-4 h-4" />
             </Button>
@@ -200,14 +200,14 @@ const EnhancedAddSnackDialog = ({
         
         <div className="space-y-6 pb-2">
           {/* Daily Progress Card */}
-          <Card className="bg-white/80 backdrop-blur-sm border-green-200">
+          <Card className="bg-white/80 backdrop-blur-sm border-fitness-accent-200">
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-semibold text-gray-800 flex items-center gap-2">
-                  <Target className="w-4 h-4 text-green-600" />
+                  <Target className="w-4 h-4 text-fitness-accent-600" />
                   {t('mealPlan.dailyProgress') || 'Daily Progress'}
                 </h3>
-                <Badge className="bg-green-100 text-green-700 border-green-200">
+                <Badge className="bg-fitness-accent-100 text-fitness-accent-700 border-fitness-accent-200">
                   Day {selectedDay}
                 </Badge>
               </div>
@@ -235,58 +235,58 @@ const EnhancedAddSnackDialog = ({
 
           {/* Generation Content */}
           {isGenerating ? (
-            <Card className="bg-white/80 backdrop-blur-sm border-green-200">
+            <Card className="bg-white/80 backdrop-blur-sm border-fitness-accent-200">
               <CardContent className="p-6 text-center">
-                <div className="w-16 h-16 mx-auto bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center animate-pulse mb-4">
+                <div className="w-16 h-16 mx-auto bg-gradient-to-br from-fitness-accent-500 to-fitness-accent-600 rounded-full flex items-center justify-center animate-pulse mb-4">
                   <Sparkles className="w-8 h-8 text-white animate-spin" />
                 </div>
-                <h3 className="text-lg font-semibold text-green-800 mb-2">
+                <h3 className="text-lg font-semibold text-fitness-accent-800 mb-2">
                   {getStepLabel(generationStep)}
                 </h3>
-                <div className="w-full bg-green-100 rounded-full h-2 mb-4">
-                  <div className="bg-gradient-to-r from-green-500 to-emerald-600 h-2 rounded-full transition-all duration-500 w-1/3"></div>
+                <div className="w-full bg-fitness-accent-100 rounded-full h-2 mb-4">
+                  <div className="bg-gradient-to-r from-fitness-accent-500 to-fitness-accent-600 h-2 rounded-full transition-all duration-500 w-1/3"></div>
                 </div>
-                <p className="text-green-600 text-sm">
+                <p className="text-fitness-accent-600 text-sm">
                   {t('mealPlan.addSnackDialog.pleaseWait') || 'Please wait while we create the perfect snack for you...'}
                 </p>
               </CardContent>
             </Card>
           ) : remainingCalories < 50 ? (
-            <Card className="bg-white/80 backdrop-blur-sm border-green-200">
+            <Card className="bg-white/80 backdrop-blur-sm border-fitness-accent-200">
               <CardContent className="p-6 text-center">
-                <div className="w-16 h-16 mx-auto bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center mb-4">
+                <div className="w-16 h-16 mx-auto bg-gradient-to-br from-fitness-accent-500 to-fitness-accent-600 rounded-full flex items-center justify-center mb-4">
                   <CheckCircle className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-lg font-semibold text-green-800 mb-2">
+                <h3 className="text-lg font-semibold text-fitness-accent-800 mb-2">
                   {t('mealPlan.addSnackDialog.targetReached') || 'Daily target reached!'}
                 </h3>
-                <p className="text-green-600 mb-4">
+                <p className="text-fitness-accent-600 mb-4">
                   {t('mealPlan.addSnackDialog.targetReachedDesc') || "You've reached your calorie goal for today. Great job!"}
                 </p>
                 <Button
                   onClick={handleClose}
                   size="sm"
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700"
+                  variant="accent"
                 >
                   {t('mealPlan.addSnackDialog.close') || 'Close'}
                 </Button>
               </CardContent>
             </Card>
           ) : (
-            <Card className="bg-white/80 backdrop-blur-sm border-green-200">
+            <Card className="bg-white/80 backdrop-blur-sm border-fitness-accent-200">
               <CardContent className="p-6">
                 <div className="text-center mb-6">
-                  <div className="w-16 h-16 mx-auto bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center mb-4">
+                  <div className="w-16 h-16 mx-auto bg-gradient-to-br from-fitness-accent-500 to-fitness-accent-600 rounded-full flex items-center justify-center mb-4">
                     <Sparkles className="w-8 h-8 text-white" />
                   </div>
-                  <h3 className="text-lg font-semibold text-green-800 mb-2">
+                  <h3 className="text-lg font-semibold text-fitness-accent-800 mb-2">
                     {t('mealPlan.addSnackDialog.generateSnack') || 'Generate AI Snack'}
                   </h3>
-                  <p className="text-green-600 mb-4">
+                  <p className="text-fitness-accent-600 mb-4">
                     {t('mealPlan.addSnackDialog.perfectFit') || 'Perfect fit for your remaining calories'}
                   </p>
                   
-                  <Badge className="bg-green-100 text-green-700 border-green-200 px-4 py-2 text-lg font-semibold">
+                  <Badge className="bg-fitness-accent-100 text-fitness-accent-700 border-fitness-accent-200 px-4 py-2 text-lg font-semibold">
                     {remainingCalories} {t('mealPlan.cal') || 'cal'}
                   </Badge>
                 </div>
@@ -296,7 +296,7 @@ const EnhancedAddSnackDialog = ({
                     variant="outline"
                     onClick={handleClose}
                     size="sm"
-                    className="border-green-300 text-green-700 hover:bg-green-50"
+                    className="border-fitness-accent-300 text-fitness-accent-700 hover:bg-fitness-accent-50"
                   >
                     {t('mealPlan.addSnackDialog.cancel') || 'Cancel'}
                   </Button>
@@ -305,7 +305,7 @@ const EnhancedAddSnackDialog = ({
                     onClick={handleGenerateAISnack}
                     disabled={isGenerating}
                     size="sm"
-                    className="bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700"
+                    variant="accent"
                   >
                     <Sparkles className="w-4 h-4 mr-2" />
                     {t('mealPlan.addSnackDialog.generateAISnack') || 'Generate AI Snack'}
