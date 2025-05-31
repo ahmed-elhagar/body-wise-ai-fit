@@ -6,16 +6,62 @@ import { Users, MessageCircle, Target, UserPlus } from "lucide-react";
 import { useI18n } from "@/hooks/useI18n";
 import { useState } from "react";
 import { AssignTraineeDialog } from "./AssignTraineeDialog";
+import { CoachTraineeChat } from "./CoachTraineeChat";
+import { TraineeProgressView } from "./TraineeProgressView";
 
 interface TraineesTabProps {
   trainees: any[];
   onChatClick: (traineeId: string) => void;
 }
 
+type ViewMode = 'list' | 'chat' | 'progress';
+
 export const TraineesTab = ({ trainees, onChatClick }: TraineesTabProps) => {
   const { t } = useI18n();
   const [showAssignDialog, setShowAssignDialog] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [selectedTrainee, setSelectedTrainee] = useState<any>(null);
 
+  const handleChatClick = (trainee: any) => {
+    setSelectedTrainee(trainee);
+    setViewMode('chat');
+    onChatClick(trainee.trainee_id);
+  };
+
+  const handleProgressClick = (trainee: any) => {
+    setSelectedTrainee(trainee);
+    setViewMode('progress');
+  };
+
+  const handleBackToList = () => {
+    setViewMode('list');
+    setSelectedTrainee(null);
+  };
+
+  // Show chat view
+  if (viewMode === 'chat' && selectedTrainee) {
+    return (
+      <CoachTraineeChat
+        traineeId={selectedTrainee.trainee_id}
+        traineeName={`${selectedTrainee.trainee_profile?.first_name} ${selectedTrainee.trainee_profile?.last_name}`}
+        onBack={handleBackToList}
+      />
+    );
+  }
+
+  // Show progress view
+  if (viewMode === 'progress' && selectedTrainee) {
+    return (
+      <TraineeProgressView
+        traineeId={selectedTrainee.trainee_id}
+        traineeName={`${selectedTrainee.trainee_profile?.first_name} ${selectedTrainee.trainee_profile?.last_name}`}
+        traineeProfile={selectedTrainee.trainee_profile}
+        onBack={handleBackToList}
+      />
+    );
+  }
+
+  // Show main trainees list
   return (
     <>
       <Card>
@@ -49,12 +95,16 @@ export const TraineesTab = ({ trainees, onChatClick }: TraineesTabProps) => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => onChatClick(trainee.trainee_id)}
+                      onClick={() => handleChatClick(trainee)}
                     >
                       <MessageCircle className="h-4 w-4 mr-1" />
                       {t("Chat")}
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleProgressClick(trainee)}
+                    >
                       <Target className="h-4 w-4 mr-1" />
                       {t("Progress")}
                     </Button>
