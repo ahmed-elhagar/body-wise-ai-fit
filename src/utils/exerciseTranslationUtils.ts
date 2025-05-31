@@ -1,5 +1,4 @@
-
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage, Language } from '@/contexts/LanguageContext';
 
 // Exercise name translations mapping (string to string)
 const exerciseNameTranslations: Record<string, string> = {
@@ -57,7 +56,7 @@ const instructionTranslations: Record<string, string> = {
   'Stand straight then lower as if sitting on a chair': 'قف مستقيماً ثم انزل كأنك تجلس على كرسي'
 };
 
-export const translateExerciseContent = (exercise: any, targetLanguage: 'en' | 'ar') => {
+export const translateExerciseContent = (exercise: any, targetLanguage: Language) => {
   if (!exercise) return exercise;
 
   const translatedExercise = { ...exercise };
@@ -140,7 +139,7 @@ export const isArabicText = (text: string): boolean => {
 };
 
 // Utility to get exercise name in specific language
-export const getExerciseNameInLanguage = (exerciseName: string, targetLanguage: 'en' | 'ar'): string => {
+export const getExerciseNameInLanguage = (exerciseName: string, targetLanguage: Language): string => {
   const translation = exerciseNameTranslations[exerciseName];
   if (translation) return translation;
   

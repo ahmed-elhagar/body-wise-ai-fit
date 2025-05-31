@@ -1,9 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
+import { useRouter } from 'react-router-dom';
+
+export type Language = 'en' | 'ar';
 
 interface LanguageContextProps {
-  language: string;
-  setLanguage: (language: string) => void;
+  language: Language;
+  setLanguage: (language: Language) => void;
   t: (key: string) => string;
   isRTL: boolean;
 }
@@ -123,6 +125,10 @@ const translations = {
     'Coach left feedback 👋': 'Coach left feedback 👋',
     'Viewing meals as': 'Viewing meals as',
     'Meals': 'Meals',
+    'Trainees': 'Trainees',
+    'Admin Dashboard': 'Admin Dashboard',
+    'Coach Panel': 'Coach Panel',
+    'Admin': 'Admin',
   },
   ar: {
     'Dashboard': 'لوحة القيادة',
@@ -227,16 +233,20 @@ const translations = {
     'Coach left feedback 👋': 'ترك المدرب ملاحظة 👋',
     'Viewing meals as': 'عرض وجبات',
     'Meals': 'الوجبات',
+    'Trainees': 'المتدربين',
+    'Admin Dashboard': 'لوحة الإدارة',
+    'Coach Panel': 'لوحة المدرب',
+    'Admin': 'إدارة',
   }
 };
 
 export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
-  const [language, setLanguage] = useState<string>('en');
+  const [language, setLanguage] = useState<Language>('en');
   const router = useRouter();
 
   useEffect(() => {
     const storedLanguage = localStorage.getItem('language') || router.locale || 'en';
-    setLanguage(storedLanguage);
+    setLanguage(storedLanguage as Language);
   }, [router.locale]);
 
   useEffect(() => {
@@ -245,7 +255,7 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
   }, [language, router]);
 
   const t = (key: string) => {
-    const translation = (translations[language as keyof typeof translations] && translations[language as keyof typeof translations][key]) || key;
+    const translation = (translations[language] && translations[language][key]) || key;
     return translation;
   };
 
