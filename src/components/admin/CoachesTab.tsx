@@ -54,24 +54,38 @@ const CoachesTab = () => {
     }
   });
 
-  // Get coach-trainee relationships
+  // Get coach-trainee relationships - Fixed query
   const { data: coachTrainees, isLoading: coachTraineesLoading } = useQuery({
     queryKey: ['admin-coach-trainees'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First get the coach-trainee relationships
+      const { data: relationships, error: relationshipsError } = await supabase
         .from('coach_trainees')
-        .select(`
-          *,
-          profiles!coach_trainees_trainee_id_fkey(first_name, last_name, email)
-        `);
+        .select('*');
 
-      if (error) throw error;
-      
-      // Transform the data to match our interface
-      return (data || []).map(item => ({
-        ...item,
-        trainee_profile: item.profiles || { first_name: '', last_name: '', email: '' }
-      })) as CoachTrainee[];
+      if (relationshipsError) throw relationshipsError;
+
+      if (!relationships || relationships.length === 0) {
+        return [];
+      }
+
+      // Then get the trainee profiles separately
+      const traineeIds = relationships.map(rel => rel.trainee_id);
+      const { data: traineeProfiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, email')
+        .in('id', traineeIds);
+
+      if (profilesError) throw profilesError;
+
+      // Combine the data
+      return relationships.map(relationship => {
+        const traineeProfile = traineeProfiles?.find(profile => profile.id === relationship.trainee_id);
+        return {
+          ...relationship,
+          trainee_profile: traineeProfile || { first_name: '', last_name: '', email: '' }
+        };
+      }) as CoachTrainee[];
     }
   });
 
