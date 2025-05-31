@@ -1,304 +1,127 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
-import { ShoppingCart, Printer, Download, Share2, Package, CheckCircle2, AlertCircle } from "lucide-react";
-import { useState, useMemo } from "react";
-import { useLanguage } from "@/contexts/LanguageContext";
-
-interface ShoppingItem {
-  name: string;
-  quantity: string;
-  unit: string;
-  category: string;
-}
+import { Card, CardContent } from "@/components/ui/card";
+import { ShoppingCart, Mail, Download } from "lucide-react";
+import { useEnhancedShoppingList } from "@/hooks/useEnhancedShoppingList";
+import { useState } from "react";
 
 interface ShoppingListDialogProps {
-  items: ShoppingItem[];
   isOpen: boolean;
   onClose: () => void;
+  items: any[];
 }
 
-const ShoppingListDialog = ({ items, isOpen, onClose }: ShoppingListDialogProps) => {
-  const { t, isRTL } = useLanguage();
+const ShoppingListDialog = ({ isOpen, onClose, items }: ShoppingListDialogProps) => {
+  const { sendShoppingListEmail } = useEnhancedShoppingList(null);
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
 
-  console.log('🛒 ShoppingListDialog - Items received:', items);
-
-  const toggleItem = (itemName: string) => {
-    const newCheckedItems = new Set(checkedItems);
-    if (newCheckedItems.has(itemName)) {
-      newCheckedItems.delete(itemName);
-    } else {
-      newCheckedItems.add(itemName);
+  // Group items by category
+  const groupedItems = items.reduce((acc, item) => {
+    const category = item.category || 'Other';
+    if (!acc[category]) {
+      acc[category] = [];
     }
-    setCheckedItems(newCheckedItems);
-  };
+    acc[category].push(item);
+    return acc;
+  }, {} as Record<string, any[]>);
 
-  const toggleCategory = (category: string) => {
-    const categoryItems = groupedItems[category].map(item => item.name);
-    const allChecked = categoryItems.every(item => checkedItems.has(item));
-    
-    const newCheckedItems = new Set(checkedItems);
-    if (allChecked) {
-      categoryItems.forEach(item => newCheckedItems.delete(item));
+  const toggleItem = (itemKey: string) => {
+    const newChecked = new Set(checkedItems);
+    if (newChecked.has(itemKey)) {
+      newChecked.delete(itemKey);
     } else {
-      categoryItems.forEach(item => newCheckedItems.add(item));
+      newChecked.add(itemKey);
     }
-    setCheckedItems(newCheckedItems);
+    setCheckedItems(newChecked);
   };
 
-  const exportList = () => {
-    const listText = Object.entries(groupedItems)
-      .map(([category, items]) => {
-        const itemsText = items
-          .map(item => `- ${item.name} (${item.quantity} ${item.unit})`)
-          .join('\n');
-        return `${category.toUpperCase()}\n${itemsText}`;
-      })
-      .join('\n\n');
-
-    const blob = new Blob([listText], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'shopping-list.txt';
-    a.click();
-    URL.revokeObjectURL(url);
+  const handleSendEmail = async () => {
+    await sendShoppingListEmail();
   };
-
-  const shareList = async () => {
-    const listText = Object.entries(groupedItems)
-      .map(([category, items]) => {
-        const itemsText = items
-          .map(item => `• ${item.name} (${item.quantity} ${item.unit})`)
-          .join('\n');
-        return `${category.toUpperCase()}\n${itemsText}`;
-      })
-      .join('\n\n');
-
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: t('mealPlan.shoppingList'),
-          text: listText,
-        });
-      } catch (error) {
-        console.error('Error sharing:', error);
-      }
-    } else {
-      navigator.clipboard.writeText(listText);
-    }
-  };
-
-  // Enhanced consolidation and categorization
-  const consolidatedItems = useMemo(() => {
-    if (!items || items.length === 0) return [];
-    
-    return items.reduce((acc, item) => {
-      // Ensure item has required properties
-      if (!item.name || !item.quantity || !item.unit) {
-        console.warn('Invalid item found:', item);
-        return acc;
-      }
-      
-      const existing = acc.find(i => 
-        i.name.toLowerCase() === item.name.toLowerCase() && 
-        i.unit === item.unit
-      );
-      
-      if (existing) {
-        const existingQty = parseFloat(existing.quantity) || 0;
-        const newQty = parseFloat(item.quantity) || 0;
-        existing.quantity = (existingQty + newQty).toString();
-      } else {
-        acc.push({ 
-          ...item,
-          category: item.category || 'Other'
-        });
-      }
-      return acc;
-    }, [] as ShoppingItem[]);
-  }, [items]);
-
-  const groupedItems = useMemo(() => {
-    return consolidatedItems.reduce((acc, item) => {
-      const category = item.category || 'Other';
-      if (!acc[category]) {
-        acc[category] = [];
-      }
-      acc[category].push(item);
-      return acc;
-    }, {} as Record<string, ShoppingItem[]>);
-  }, [consolidatedItems]);
-
-  const categories = Object.keys(groupedItems).sort();
-  const totalItems = consolidatedItems.length;
-  const checkedCount = checkedItems.size;
-
-  // Show empty state if no items
-  if (!items || items.length === 0) {
-    return (
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className={`max-w-2xl max-h-[90vh] ${isRTL ? 'text-right' : 'text-left'}`}>
-          <DialogHeader>
-            <DialogTitle className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <ShoppingCart className="w-6 h-6 text-blue-600" />
-              {t('mealPlan.shoppingList')}
-            </DialogTitle>
-          </DialogHeader>
-          
-          <Card className="p-8 text-center">
-            <Package className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-            <h3 className="text-lg font-semibold text-gray-600 mb-2">
-              {isRTL ? 'قائمة التسوق فارغة' : 'Shopping List is Empty'}
-            </h3>
-            <p className="text-gray-500 mb-4">
-              {isRTL ? 'أضف وجبات إلى خطتك الأسبوعية لإنشاء قائمة التسوق' : 'Add meals to your weekly plan to generate a shopping list'}
-            </p>
-            <Button onClick={onClose} variant="outline">
-              {isRTL ? 'إغلاق' : 'Close'}
-            </Button>
-          </Card>
-        </DialogContent>
-      </Dialog>
-    );
-  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={`max-w-2xl max-h-[90vh] ${isRTL ? 'text-right' : 'text-left'}`}>
-        <DialogHeader>
-          <DialogTitle className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <ShoppingCart className="w-6 h-6 text-blue-600" />
-              <span>{t('mealPlan.shoppingList')}</span>
-              <Badge variant="secondary" className="ml-2">
-                {totalItems} {isRTL ? 'عنصر' : 'items'}
+      <DialogContent className="max-w-2xl max-h-[90vh]">
+        <DialogHeader className="space-y-4">
+          <div className="flex items-center justify-between">
+            <DialogTitle className="flex items-center gap-2">
+              <ShoppingCart className="w-5 h-5" />
+              Shopping List
+            </DialogTitle>
+            <div className="flex items-center gap-2">
+              <Badge>
+                {items.length} items
+              </Badge>
+              <Badge>
+                {Object.keys(groupedItems).length} categories
               </Badge>
             </div>
-            <div className={`flex items-center space-x-2 ${isRTL ? 'space-x-reverse' : ''}`}>
-              <Button variant="outline" size="sm" onClick={shareList}>
-                <Share2 className="w-4 h-4" />
-              </Button>
-              <Button variant="outline" size="sm" onClick={exportList}>
-                <Download className="w-4 h-4" />
-              </Button>
-            </div>
-          </DialogTitle>
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex gap-2">
+            <Button
+              onClick={handleSendEmail}
+              variant="outline"
+              size="sm"
+              className="flex-1"
+            >
+              <Mail className="w-4 h-4 mr-2" />
+              Send Email
+            </Button>
+            
+            <Button
+              onClick={() => {
+                console.log('Download shopping list');
+              }}
+              variant="outline"
+              size="sm"
+            >
+              <Download className="w-4 h-4" />
+            </Button>
+          </div>
         </DialogHeader>
-        
-        {/* Progress Summary */}
-        <Card className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
-          <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <CheckCircle2 className="w-5 h-5 text-green-600" />
-              <span className="font-medium text-gray-700">
-                {isRTL ? 'التقدم' : 'Progress'}
-              </span>
-            </div>
-            <div className="text-sm text-gray-600">
-              {checkedCount}/{totalItems} {isRTL ? 'مكتمل' : 'completed'}
-            </div>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-            <div 
-              className="bg-green-500 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${totalItems > 0 ? (checkedCount / totalItems) * 100 : 0}%` }}
-            />
-          </div>
-        </Card>
-        
-        <ScrollArea className="max-h-[50vh]">
-          <div className="space-y-6">
-            {categories.map((category) => {
-              const categoryItems = groupedItems[category];
-              const categoryCheckedCount = categoryItems.filter(item => checkedItems.has(item.name)).length;
-              const allChecked = categoryCheckedCount === categoryItems.length;
-              const someChecked = categoryCheckedCount > 0 && categoryCheckedCount < categoryItems.length;
 
-              return (
-                <div key={category} className="space-y-3">
-                  <div className={`flex items-center justify-between border-b pb-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                    <div className={`flex items-center space-x-3 ${isRTL ? 'space-x-reverse' : ''}`}>
-                      <Checkbox
-                        checked={allChecked}
-                        onCheckedChange={() => toggleCategory(category)}
-                        className={someChecked ? "data-[state=checked]:bg-orange-500" : ""}
-                      />
-                      <h3 className="text-lg font-semibold text-fitness-primary capitalize">
-                        {category}
-                      </h3>
-                    </div>
-                    <Badge variant="outline" className="text-xs">
-                      {categoryCheckedCount}/{categoryItems.length}
-                    </Badge>
-                  </div>
-                  
-                  <div className="grid gap-2">
-                    {categoryItems.map((item, index) => (
-                      <Card
-                        key={`${category}-${index}`}
-                        className={`p-3 transition-all duration-200 cursor-pointer hover:shadow-md ${
-                          checkedItems.has(item.name) 
-                            ? 'bg-green-50 border-green-200 shadow-sm' 
-                            : 'bg-white border-gray-200 hover:bg-gray-50'
+        <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+          {Object.entries(groupedItems).map(([category, categoryItems]) => (
+            <Card key={category}>
+              <CardContent className="p-4">
+                <h3 className="font-semibold mb-3 capitalize">{category}</h3>
+                <div className="space-y-2">
+                  {categoryItems.map((item, index) => {
+                    const itemKey = `${category}-${index}`;
+                    const isChecked = checkedItems.has(itemKey);
+                    
+                    return (
+                      <div
+                        key={itemKey}
+                        className={`flex items-center justify-between p-2 rounded cursor-pointer transition-colors ${
+                          isChecked ? 'bg-gray-100 line-through text-gray-500' : 'hover:bg-gray-50'
                         }`}
-                        onClick={() => toggleItem(item.name)}
+                        onClick={() => toggleItem(itemKey)}
                       >
-                        <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-                          <div className={`flex items-center space-x-3 ${isRTL ? 'space-x-reverse' : ''}`}>
-                            <Checkbox
-                              checked={checkedItems.has(item.name)}
-                              onCheckedChange={() => toggleItem(item.name)}
-                            />
-                            <span className={`font-medium transition-all ${
-                              checkedItems.has(item.name) 
-                                ? 'line-through text-gray-500' 
-                                : 'text-gray-800'
-                            }`}>
-                              {item.name}
-                            </span>
-                          </div>
-                          <Badge 
-                            variant="outline" 
-                            className={`transition-all ${
-                              checkedItems.has(item.name) 
-                                ? 'opacity-50 bg-green-100 text-green-700' 
-                                : 'bg-blue-50 text-blue-700'
-                            }`}
-                          >
+                        <span>{item.name || item}</span>
+                        {item.quantity && item.unit && (
+                          <span className="text-sm text-gray-500">
                             {item.quantity} {item.unit}
-                          </Badge>
-                        </div>
-                      </Card>
-                    ))}
-                  </div>
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
-              );
-            })}
-          </div>
-        </ScrollArea>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
-        <Separator />
-
-        <div className={`flex justify-between items-center pt-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
-          <div className="text-sm text-gray-600">
-            {checkedCount} {isRTL ? 'من' : 'of'} {totalItems} {isRTL ? 'عنصر مكتمل' : 'items completed'}
-          </div>
-          <div className={`flex space-x-2 ${isRTL ? 'space-x-reverse' : ''}`}>
-            <Button variant="outline" onClick={() => window.print()}>
-              <Printer className="w-4 h-4 mr-2" />
-              {isRTL ? 'طباعة' : 'Print'}
-            </Button>
-            <Button variant="outline" onClick={onClose}>
-              {isRTL ? 'إغلاق' : 'Close'}
-            </Button>
-          </div>
+        <div className="flex justify-between items-center pt-4 border-t">
+          <span className="text-sm text-gray-500">
+            {checkedItems.size} of {items.length} items checked
+          </span>
+          <Button onClick={onClose}>Close</Button>
         </div>
       </DialogContent>
     </Dialog>
