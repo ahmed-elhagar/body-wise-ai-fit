@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -60,15 +59,17 @@ export const useCoachSystem = () => {
           throw relationshipsError;
         }
 
-        console.log('📊 Found relationships:', relationships?.length || 0);
+        console.log('📊 Found relationships:', relationships?.length || 0, relationships);
 
         if (!relationships || relationships.length === 0) {
           console.log('✅ No trainees found for coach');
           return [];
         }
 
-        // Get profile data for each trainee separately
+        // Get profile data for each trainee separately with better error handling
         const traineeIds = relationships.map(rel => rel.trainee_id);
+        console.log('🔍 Looking for profiles for trainee IDs:', traineeIds);
+        
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
           .select('*')
@@ -76,12 +77,31 @@ export const useCoachSystem = () => {
 
         if (profilesError) {
           console.error('❌ Error fetching trainee profiles:', profilesError);
-          throw profilesError;
+          // Don't throw error, continue with empty profiles
         }
 
-        // Combine relationships with profiles
+        console.log('👤 Found profiles:', profiles?.length || 0, profiles);
+
+        // Combine relationships with profiles - more lenient approach
         const transformedData = relationships.map(relationship => {
           const profile = profiles?.find(p => p.id === relationship.trainee_id);
+          
+          // Create a more robust trainee profile with fallbacks
+          const traineeProfile = {
+            id: profile?.id || relationship.trainee_id,
+            first_name: profile?.first_name || 'Unknown',
+            last_name: profile?.last_name || 'User',
+            email: profile?.email || 'unknown@example.com',
+            age: profile?.age,
+            weight: profile?.weight,
+            height: profile?.height,
+            fitness_goal: profile?.fitness_goal,
+            activity_level: profile?.activity_level,
+            profile_completion_score: profile?.profile_completion_score || 0,
+            ai_generations_remaining: profile?.ai_generations_remaining || 0,
+            assigned_at: relationship.assigned_at,
+            notes: relationship.notes
+          };
           
           return {
             id: relationship.id,
@@ -89,21 +109,7 @@ export const useCoachSystem = () => {
             trainee_id: relationship.trainee_id,
             assigned_at: relationship.assigned_at,
             notes: relationship.notes,
-            trainee_profile: {
-              id: profile?.id || relationship.trainee_id,
-              first_name: profile?.first_name || 'Unknown',
-              last_name: profile?.last_name || 'User',
-              email: profile?.email || 'unknown@example.com',
-              age: profile?.age,
-              weight: profile?.weight,
-              height: profile?.height,
-              fitness_goal: profile?.fitness_goal,
-              activity_level: profile?.activity_level,
-              profile_completion_score: profile?.profile_completion_score || 0,
-              ai_generations_remaining: profile?.ai_generations_remaining || 0,
-              assigned_at: relationship.assigned_at,
-              notes: relationship.notes
-            }
+            trainee_profile: traineeProfile
           };
         }) as CoachTraineeRelationship[];
 
@@ -111,7 +117,8 @@ export const useCoachSystem = () => {
         return transformedData;
       } catch (error) {
         console.error('💥 Error in trainee fetch:', error);
-        throw error;
+        // Return empty array instead of throwing to prevent UI crashes
+        return [];
       }
     },
     enabled: !!user?.id,
@@ -324,11 +331,11 @@ export const useCoachSystem = () => {
     },
   });
 
-  // Real-time subscription for coach-trainee updates
+  // Simplified real-time subscription with less aggressive invalidation
   useEffect(() => {
     if (!user?.id || !isCoach) return;
 
-    console.log('🔄 Setting up real-time coach system subscription');
+    console.log('🔄 Setting up simplified coach system subscription');
 
     const channel = supabase
       .channel('coach-system-changes')
@@ -342,8 +349,8 @@ export const useCoachSystem = () => {
         },
         (payload) => {
           console.log('📡 Real-time coach system update:', payload);
-          queryClient.invalidateQueries({ queryKey: ['coach-trainees'] });
-          // Don't invalidate chat queries here to avoid conflicts
+          // Only invalidate coach-trainees query, not all queries
+          queryClient.invalidateQueries({ queryKey: ['coach-trainees', user.id] });
         }
       )
       .subscribe();
