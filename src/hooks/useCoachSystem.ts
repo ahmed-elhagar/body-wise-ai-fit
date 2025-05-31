@@ -56,22 +56,10 @@ export const useCoachSystem = () => {
       console.log('🔍 Fetching coach info for user:', user.id);
 
       try {
-        // Get the coach-trainee relationship with coach profile in one query
+        // First get the coach-trainee relationship
         const { data: relationship, error: relationshipError } = await supabase
           .from('coach_trainees')
-          .select(`
-            id,
-            coach_id,
-            trainee_id,
-            assigned_at,
-            notes,
-            coach_profile:profiles!coach_trainees_coach_id_fkey(
-              id,
-              first_name,
-              last_name,
-              email
-            )
-          `)
+          .select('*')
           .eq('trainee_id', user.id)
           .maybeSingle();
 
@@ -85,13 +73,25 @@ export const useCoachSystem = () => {
           return null;
         }
 
+        // Then get the coach profile
+        const { data: coachProfile, error: coachProfileError } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name, email')
+          .eq('id', relationship.coach_id)
+          .maybeSingle();
+
+        if (coachProfileError) {
+          console.error('❌ Error fetching coach profile:', coachProfileError);
+          // Don't throw here, just log and continue with null profile
+        }
+
         const result: CoachInfo = {
           id: relationship.id,
           coach_id: relationship.coach_id,
           trainee_id: relationship.trainee_id,
           assigned_at: relationship.assigned_at,
           notes: relationship.notes,
-          coach_profile: relationship.coach_profile || null
+          coach_profile: coachProfile || null
         };
 
         console.log('✅ Coach info fetched successfully:', result);
@@ -116,28 +116,10 @@ export const useCoachSystem = () => {
       console.log('🔍 Fetching trainees for coach:', user.id);
 
       try {
-        // Get coach-trainee relationships with trainee profiles in one query
+        // First get coach-trainee relationships
         const { data: relationships, error: relationshipError } = await supabase
           .from('coach_trainees')
-          .select(`
-            id,
-            coach_id,
-            trainee_id,
-            assigned_at,
-            notes,
-            trainee_profile:profiles!coach_trainees_trainee_id_fkey(
-              id,
-              first_name,
-              last_name,
-              email,
-              profile_completion_score,
-              ai_generations_remaining,
-              age,
-              weight,
-              height,
-              fitness_goal
-            )
-          `)
+          .select('*')
           .eq('coach_id', user.id);
 
         if (relationshipError) {
@@ -150,14 +132,41 @@ export const useCoachSystem = () => {
           return [];
         }
 
-        const result: CoachTraineeRelationship[] = relationships.map(relationship => ({
-          id: relationship.id,
-          coach_id: relationship.coach_id,
-          trainee_id: relationship.trainee_id,
-          assigned_at: relationship.assigned_at,
-          notes: relationship.notes,
-          trainee_profile: relationship.trainee_profile || null
-        }));
+        // Then get trainee profiles for each relationship
+        const result: CoachTraineeRelationship[] = [];
+        
+        for (const relationship of relationships) {
+          const { data: traineeProfile, error: traineeProfileError } = await supabase
+            .from('profiles')
+            .select(`
+              id,
+              first_name,
+              last_name,
+              email,
+              profile_completion_score,
+              ai_generations_remaining,
+              age,
+              weight,
+              height,
+              fitness_goal
+            `)
+            .eq('id', relationship.trainee_id)
+            .maybeSingle();
+
+          if (traineeProfileError) {
+            console.error('❌ Error fetching trainee profile:', traineeProfileError);
+            // Continue with null profile rather than failing
+          }
+
+          result.push({
+            id: relationship.id,
+            coach_id: relationship.coach_id,
+            trainee_id: relationship.trainee_id,
+            assigned_at: relationship.assigned_at,
+            notes: relationship.notes,
+            trainee_profile: traineeProfile || null
+          });
+        }
 
         console.log('✅ Trainees fetched successfully:', result);
         return result;
