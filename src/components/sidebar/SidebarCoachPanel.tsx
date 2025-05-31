@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Users, Settings } from "lucide-react";
+import { Users, Settings, Calendar, MessageSquare, BarChart3 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { 
   SidebarMenu, 
@@ -17,20 +17,46 @@ interface NavigationItem {
   href: string;
   icon: React.ComponentType<any>;
   label: string;
+  description?: string;
 }
 
 const SidebarCoachPanel = () => {
   const { tFrom, isRTL } = useI18n();
   const tNav = tFrom('navigation');
   const location = useLocation();
-  const { trainees } = useCoach();
-  
-  // Check if user is a coach (has trainees)
-  const isCoach = trainees && trainees.length > 0;
+  const { trainees, isCoach } = useCoach();
 
   const coachItems: NavigationItem[] = [
-    { href: "/coach/trainees", icon: Users, label: String(tNav("trainees")) },
-    { href: "/coach/settings", icon: Settings, label: String(tNav("coachSettings")) },
+    { 
+      href: "/coach/trainees", 
+      icon: Users, 
+      label: String(tNav("trainees")),
+      description: `${trainees?.length || 0} ${String(tNav("activeClients"))}`
+    },
+    { 
+      href: "/coach/schedule", 
+      icon: Calendar, 
+      label: "Schedule",
+      description: "Manage appointments"
+    },
+    { 
+      href: "/coach/messages", 
+      icon: MessageSquare, 
+      label: "Messages",
+      description: "Client communications"
+    },
+    { 
+      href: "/coach/analytics", 
+      icon: BarChart3, 
+      label: "Analytics",
+      description: "Client progress tracking"
+    },
+    { 
+      href: "/coach/settings", 
+      icon: Settings, 
+      label: String(tNav("coachSettings")),
+      description: "Profile & preferences"
+    },
   ];
 
   if (!isCoach) {
@@ -38,14 +64,19 @@ const SidebarCoachPanel = () => {
   }
 
   return (
-    <SidebarGroup className="px-4 py-2">
+    <SidebarGroup className="px-4 py-2 bg-gradient-to-br from-green-50 to-emerald-50 mx-2 rounded-lg border border-green-200">
       <SidebarGroupLabel className={cn(
-        "text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2 px-2",
+        "text-xs font-bold text-green-700 uppercase tracking-wider mb-3 flex items-center gap-2 px-2",
         isRTL && "flex-row-reverse text-right"
       )} data-sidebar="group-label">
-        <Users className="w-4 h-4" />
+        <Users className="w-4 h-4 text-green-600" />
         {String(tNav("coachPanel"))}
       </SidebarGroupLabel>
+      
+      <div className="text-xs text-green-600 mb-3 px-2 font-medium">
+        {String(tNav("professionalCoach"))}
+      </div>
+
       <SidebarMenu className="space-y-1">
         {coachItems.map((item) => {
           const isActive = location.pathname === item.href;
@@ -55,8 +86,8 @@ const SidebarCoachPanel = () => {
                 asChild
                 isActive={isActive}
                 className={cn(
-                  "w-full text-gray-600 hover:text-gray-900 hover:bg-green-50 transition-colors",
-                  isActive && "bg-green-50 text-green-700 border-r-2 border-green-600",
+                  "w-full text-green-700 hover:text-green-900 hover:bg-green-100 transition-colors rounded-lg",
+                  isActive && "bg-green-100 text-green-800 border-r-2 border-green-600 shadow-sm",
                   isRTL && "text-right",
                   isRTL && isActive && "border-r-0 border-l-2 border-green-600"
                 )}
@@ -65,13 +96,23 @@ const SidebarCoachPanel = () => {
                 <Link 
                   to={item.href} 
                   className={cn(
-                    "flex items-center gap-3 px-3 py-2 w-full",
-                    isRTL && "flex-row-reverse"
+                    "flex flex-col gap-1 px-3 py-2 w-full",
+                    isRTL && "text-right"
                   )} 
                   data-sidebar="menu-item"
                 >
-                  <item.icon className="h-5 w-5 flex-shrink-0" />
-                  <span className="font-medium truncate">{item.label}</span>
+                  <div className={cn(
+                    "flex items-center gap-2",
+                    isRTL && "flex-row-reverse"
+                  )}>
+                    <item.icon className="h-4 w-4 flex-shrink-0" />
+                    <span className="font-medium text-sm truncate">{item.label}</span>
+                  </div>
+                  {item.description && (
+                    <span className="text-xs text-green-600 ml-6 truncate">
+                      {item.description}
+                    </span>
+                  )}
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

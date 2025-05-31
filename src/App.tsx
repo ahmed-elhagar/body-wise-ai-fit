@@ -9,7 +9,6 @@ import Dashboard from './pages/Dashboard';
 import MealPlan from './pages/MealPlan';
 import Exercise from './pages/Exercise';
 import Progress from './pages/Progress';
-import Goals from './pages/Goals';
 import Profile from './pages/Profile';
 import Coach from './pages/Coach';
 import Pro from './pages/Pro';
@@ -46,10 +45,10 @@ function App() {
               <Route path="/food-tracker" element={<FoodTracker />} />
               <Route path="/progress" element={<Progress />} />
               <Route path="/progress/:tab" element={<Progress />} />
-              <Route path="/goals" element={<Goals />} />
               <Route path="/profile" element={<Profile />} />
-              {/* Redirect old weight-tracking to progress weight tab */}
+              {/* Redirect old routes to new structure */}
               <Route path="/weight-tracking" element={<Navigate to="/progress/weight" replace />} />
+              <Route path="/goals" element={<Navigate to="/progress/goals" replace />} />
               <Route path="/coach" element={<Coach />} />
               <Route path="/coach/trainees" element={<Coach />} />
               <Route path="/coach/settings" element={<Coach />} />

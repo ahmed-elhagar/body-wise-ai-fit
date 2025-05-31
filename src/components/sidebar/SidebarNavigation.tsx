@@ -27,7 +27,6 @@ export const SidebarNavigation = () => {
     { href: "/dashboard", icon: Home, label: String(tNav("dashboard")) },
     { href: "/meal-plan", icon: Utensils, label: String(tNav("mealPlan")) },
     { href: "/exercise", icon: Dumbbell, label: String(tNav("exercise")) },
-    { href: "/goals", icon: Target, label: String(tNav("goals")) },
     { href: "/progress", icon: TrendingUp, label: String(tNav("progress")) },
     { href: "/profile", icon: User, label: String(tNav("profile")) },
   ];
@@ -35,7 +34,6 @@ export const SidebarNavigation = () => {
   const toolItems: NavigationItem[] = [
     { href: "/calorie-checker", icon: Calculator, label: String(tNav("calorieChecker")) },
     { href: "/food-tracker", icon: Utensils, label: String(tNav("foodTracker")) },
-    { href: "/weight-tracking", icon: TrendingUp, label: String(tNav("weightTracking")) },
     { href: "/ai-chat", icon: MessageCircle, label: String(tNav("aiChat")) },
   ];
 

@@ -81,7 +81,7 @@ const MealPlanHero = ({
                   className="bg-white/20 border-white/30 text-white hover:bg-white/30 hover:border-white/50 backdrop-blur-sm shadow-xl font-semibold transform hover:scale-105 transition-all duration-300"
                 >
                   <Shuffle className="w-5 h-5 mr-2" />
-                  {isShuffling ? mealPlanT('shuffling') : mealPlanT('shuffleMeals')}
+                  {isShuffling ? mealPlanT('shuffling') || 'Shuffling...' : mealPlanT('shuffleMeals')}
                 </Button>
                 
                 <Button

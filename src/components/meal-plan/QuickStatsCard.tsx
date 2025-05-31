@@ -34,7 +34,7 @@ const QuickStatsCard = ({
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-fitness-primary-700">
           <TrendingUp className="w-5 h-5" />
-          {mealPlanT('dailyProgress')}
+          {mealPlanT('dailyProgress') || 'Daily Progress'}
         </CardTitle>
       </CardHeader>
       
@@ -45,7 +45,7 @@ const QuickStatsCard = ({
             <div className="flex items-center gap-2">
               <Target className="w-4 h-4 text-fitness-primary-600" />
               <span className="text-sm font-medium text-gray-700">
-                {mealPlanT('calories')}
+                {mealPlanT('calories') || 'Calories'}
               </span>
             </div>
             <div className="text-right">
@@ -101,7 +101,7 @@ const QuickStatsCard = ({
               {mealCount}
             </div>
             <div className="text-xs text-fitness-primary-600 font-medium">
-              {mealPlanT('mealsToday')}
+              {mealPlanT('mealsToday') || 'Meals Today'}
             </div>
           </div>
           
@@ -111,7 +111,7 @@ const QuickStatsCard = ({
               {Math.round(caloriesProgress)}%
             </div>
             <div className="text-xs text-fitness-accent-600 font-medium">
-              {mealPlanT('complete')}
+              {mealPlanT('complete') || 'Complete'}
             </div>
           </div>
         </div>

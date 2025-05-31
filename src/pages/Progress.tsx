@@ -4,7 +4,7 @@ import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, Target, Calendar, Activity, Scale } from "lucide-react";
+import { TrendingUp, Target, Calendar, Activity, Scale, Goal } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import WeightStatsCards from "@/components/weight/WeightStatsCards";
@@ -12,6 +12,7 @@ import WeightProgressChart from "@/components/weight/WeightProgressChart";
 import WeightEntryForm from "@/components/weight/WeightEntryForm";
 import ProgressBadges from "@/components/goals/ProgressBadges";
 import GoalHistoryTimeline from "@/components/goals/GoalHistoryTimeline";
+import EnhancedGoalsForm from "@/components/profile/enhanced/EnhancedGoalsForm";
 import { useWeightTracking } from "@/hooks/useWeightTracking";
 import { useGoals } from "@/hooks/useGoals";
 import { useProfile } from "@/hooks/useProfile";
@@ -111,17 +112,17 @@ const Progress = () => {
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
                   <TrendingUp className="h-6 w-6 md:h-8 md:w-8 text-blue-600" />
-                  Progress Tracking
+                  Progress & Goals
                 </h1>
                 <p className="text-gray-600 mt-1 text-sm md:text-base">
-                  Monitor your fitness journey and achievements
+                  Track your fitness journey and manage your goals
                 </p>
               </div>
               <ProgressBadges />
             </div>
 
             <Tabs value={activeTab} onValueChange={(value) => navigate(`/progress/${value}`)} className="w-full">
-              <TabsList className="grid w-full grid-cols-3 max-w-md">
+              <TabsList className="grid w-full grid-cols-4 max-w-lg">
                 <TabsTrigger value="overview" className="flex items-center gap-2">
                   <Target className="h-4 w-4" />
                   <span className="hidden sm:inline">Overview</span>
@@ -129,6 +130,10 @@ const Progress = () => {
                 <TabsTrigger value="weight" className="flex items-center gap-2">
                   <Scale className="h-4 w-4" />
                   <span className="hidden sm:inline">Weight</span>
+                </TabsTrigger>
+                <TabsTrigger value="goals" className="flex items-center gap-2">
+                  <Goal className="h-4 w-4" />
+                  <span className="hidden sm:inline">Goals</span>
                 </TabsTrigger>
                 <TabsTrigger value="history" className="flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
@@ -250,6 +255,27 @@ const Progress = () => {
                     </Card>
                   </div>
                 </div>
+              </TabsContent>
+
+              <TabsContent value="goals" className="space-y-6 mt-6">
+                <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Goal className="h-5 w-5 text-blue-600" />
+                      Fitness Goals Management
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <EnhancedGoalsForm
+                      formData={{}}
+                      updateFormData={() => {}}
+                      handleArrayInput={() => {}}
+                      onSave={() => Promise.resolve(true)}
+                      isUpdating={false}
+                      validationErrors={{}}
+                    />
+                  </CardContent>
+                </Card>
               </TabsContent>
 
               <TabsContent value="history" className="space-y-6 mt-6">
