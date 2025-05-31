@@ -105,5 +105,20 @@ export const mealPlan = {
   
   // Additional terms
   description: "الوصف",
-  dayOverview: "نظرة عامة على اليوم"
+  dayOverview: "نظرة عامة على اليوم",
+  
+  // Add Snack specific translations
+  addSnackDialog: {
+    title: "إضافة وجبة خفيفة صحية",
+    subtitle: "الوجبة الخفيفة المثالية للسعرات المتبقية",
+    generateSnack: "إنشاء وجبة خفيفة بالذكاء الاصطناعي",
+    perfectFit: "مناسبة تماماً للسعرات المتبقية",
+    caloriesAvailable: "سعرة حرارية متاحة",
+    generatingAISnack: "جارٍ إنشاء وجبة خفيفة بالذكاء الاصطناعي",
+    generateAISnack: "إنشاء وجبة خفيفة بالذكاء الاصطناعي",
+    cancel: "إلغاء",
+    targetReached: "تم الوصول للهدف اليومي!",
+    targetReachedDesc: "لقد وصلت لهدف السعرات الحرارية اليوم. عمل رائع!",
+    close: "إغلاق"
+  }
 } as const;

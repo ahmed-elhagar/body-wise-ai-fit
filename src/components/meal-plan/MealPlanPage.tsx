@@ -2,9 +2,10 @@
 import { useState } from "react";
 import { useMealPlanPage } from "@/hooks/useMealPlanPage";
 import { Card } from "@/components/ui/card";
+import MealPlanHeader from "./MealPlanHeader";
+import NavigationSection from "./NavigationSection";
 import DayOverview from "./DayOverview";
 import WeeklyMealGrid from "./WeeklyMealGrid";
-import EnhancedNavigationBar from "./EnhancedNavigationBar";
 import EnhancedActionBar from "./EnhancedActionBar";
 import EnhancedRecipeDialog from "./EnhancedRecipeDialog";
 import EmptyWeekState from "./EmptyWeekState";
@@ -71,6 +72,11 @@ const MealPlanPage = () => {
     setShowShoppingListDialog(true);
   };
 
+  const handleShuffle = () => {
+    // Implement shuffle functionality
+    handleRegeneratePlan();
+  };
+
   if (error) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -91,18 +97,29 @@ const MealPlanPage = () => {
     <ErrorBoundary>
       <div className="min-h-screen bg-gradient-to-br from-fitness-primary-25 via-white to-fitness-accent-25">
         <div className="container mx-auto px-4 py-6 space-y-6">
-          {/* Enhanced Navigation Bar */}
-          <EnhancedNavigationBar
+          {/* Header with Week Navigation and Actions */}
+          <MealPlanHeader
             weekStartDate={weekStartDate}
-            selectedDayNumber={selectedDayNumber}
-            onDayChange={setSelectedDayNumber}
-            viewMode={viewMode}
-            onViewModeChange={setViewMode}
             currentWeekOffset={currentWeekOffset}
             onWeekChange={setCurrentWeekOffset}
+            onGenerateAI={() => setShowAIDialog(true)}
+            onShuffle={handleShuffle}
+            isGenerating={isGenerating}
+            hasWeeklyPlan={!!currentWeekPlan?.weeklyPlan}
           />
 
-          {/* Enhanced Action Bar */}
+          {/* Navigation Section with Day/Week Toggle and Day Selector */}
+          {currentWeekPlan?.weeklyPlan && (
+            <NavigationSection
+              weekStartDate={weekStartDate}
+              selectedDayNumber={selectedDayNumber}
+              onDayChange={setSelectedDayNumber}
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+            />
+          )}
+
+          {/* Enhanced Action Bar with Stats and Actions */}
           {currentWeekPlan?.weeklyPlan && (
             <EnhancedActionBar
               onAddSnack={handleAddSnack}
@@ -179,7 +196,7 @@ const MealPlanPage = () => {
             onCloseShoppingListDialog={() => setShowShoppingListDialog(false)}
             shoppingItems={shoppingItems}
             
-            showRecipeDialog={false} // Using EnhancedRecipeDialog instead
+            showRecipeDialog={false}
             onCloseRecipeDialog={() => {}}
             selectedMeal={null}
             

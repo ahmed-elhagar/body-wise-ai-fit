@@ -105,5 +105,20 @@ export const mealPlan = {
   
   // Additional terms
   description: "Description",
-  dayOverview: "Day Overview"
+  dayOverview: "Day Overview",
+  
+  // Add Snack specific translations
+  addSnackDialog: {
+    title: "Add Healthy Snack",
+    subtitle: "Perfect snack for your remaining calories",
+    generateSnack: "Generate AI Snack",
+    perfectFit: "Perfect fit for your remaining calories",
+    caloriesAvailable: "calories available",
+    generatingAISnack: "Generating AI Snack",
+    generateAISnack: "Generate AI Snack",
+    cancel: "Cancel",
+    targetReached: "Daily target reached!",
+    targetReachedDesc: "You've reached your calorie goal for today. Great job!",
+    close: "Close"
+  }
 } as const;

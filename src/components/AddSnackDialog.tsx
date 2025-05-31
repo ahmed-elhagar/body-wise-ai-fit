@@ -37,7 +37,6 @@ const AddSnackDialog = ({
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationStep, setGenerationStep] = useState('');
 
-  // Calculate dynamic target calories from profile if available
   const getDynamicTargetCalories = () => {
     if (profile?.weight && profile?.height && profile?.age) {
       const weight = Number(profile.weight);
@@ -79,23 +78,21 @@ const AddSnackDialog = ({
 
   const handleGenerateAISnack = async () => {
     if (!user || !weeklyPlanId) {
-      toast.error(t('mealPlan.addSnack.error'));
+      toast.error(t('mealPlan.addSnackDialog.error') || 'Error generating snack');
       return;
     }
 
     if (remainingCalories < 50) {
-      toast.error(t('mealPlan.addSnack.notEnoughCalories'));
+      toast.error('Not enough calories remaining for a snack');
       return;
     }
 
     setIsGenerating(true);
     
     try {
-      // Step 1: Analyzing
       setGenerationStep('analyzing');
       await new Promise(resolve => setTimeout(resolve, 1200));
       
-      // Step 2: Creating
       setGenerationStep('creating');
       await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -111,26 +108,25 @@ const AddSnackDialog = ({
 
       if (error) {
         console.error('❌ Error generating AI snack:', error);
-        toast.error(t('mealPlan.addSnack.error'));
+        toast.error('Failed to generate snack');
         return;
       }
 
-      // Step 3: Saving
       setGenerationStep('saving');
       await new Promise(resolve => setTimeout(resolve, 800));
 
       if (data?.success) {
-        toast.success(data.message || t('mealPlan.addSnack.success'));
+        toast.success(data.message || t('mealPlan.snackAddedSuccess'));
         onClose();
         onSnackAdded();
       } else {
         console.error('❌ Generation failed:', data?.error);
-        toast.error(data?.error || t('mealPlan.addSnack.error'));
+        toast.error(data?.error || 'Failed to generate snack');
       }
       
     } catch (error) {
       console.error('❌ Error generating AI snack:', error);
-      toast.error(t('mealPlan.addSnack.error'));
+      toast.error('Failed to generate snack');
     } finally {
       setIsGenerating(false);
       setGenerationStep('');
@@ -139,7 +135,7 @@ const AddSnackDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg mx-4 sm:mx-auto bg-gradient-to-br from-fitness-primary-50 to-fitness-accent-50 border-fitness-primary-200 shadow-2xl rounded-2xl">
+      <DialogContent className="max-w-2xl mx-4 sm:mx-auto bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 shadow-2xl rounded-2xl">
         <div className="p-6 space-y-6">
           <AddSnackHeader selectedDay={selectedDay} />
           
