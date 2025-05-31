@@ -2,13 +2,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Bell, CheckCircle, AlertTriangle, Trophy, Calendar, MessageSquare } from "lucide-react";
+import { Bell, CheckCircle, AlertTriangle, Trophy, Calendar, MessageSquare, ArrowRight } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { formatDistanceToNow } from "date-fns";
+import { useNavigate } from "react-router-dom";
 
 const NotificationCenter = () => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const { 
     notifications, 
     isLoading, 
@@ -36,6 +38,18 @@ const NotificationCenter = () => {
       case 'success': return 'bg-green-100 text-green-800 border-green-300';
       case 'reminder': return 'bg-blue-100 text-blue-800 border-blue-300';
       default: return 'bg-gray-100 text-gray-800 border-gray-300';
+    }
+  };
+
+  const handleNotificationClick = (notification: any) => {
+    // Mark as read if unread
+    if (!notification.is_read) {
+      markAsRead(notification.id);
+    }
+
+    // Navigate to action URL if available
+    if (notification.action_url) {
+      navigate(notification.action_url);
     }
   };
 
@@ -98,16 +112,17 @@ const NotificationCenter = () => {
             notifications.map((notification) => {
               const IconComponent = getNotificationIcon(notification.type);
               const isUnread = !notification.is_read;
+              const isChatNotification = notification.metadata?.chat_type === 'coach_trainee';
               
               return (
                 <div
                   key={notification.id}
-                  className={`p-4 rounded-lg border transition-all cursor-pointer ${
+                  className={`p-4 rounded-lg border transition-all cursor-pointer hover:shadow-md ${
                     isUnread 
                       ? 'bg-blue-50 border-blue-200 shadow-sm' 
                       : 'bg-gray-50 border-gray-200'
                   }`}
-                  onClick={() => !notification.is_read && markAsRead(notification.id)}
+                  onClick={() => handleNotificationClick(notification)}
                 >
                   <div className="flex items-start gap-3">
                     <div className={`p-2 rounded-full ${getNotificationColor(notification.type)}`}>
@@ -118,9 +133,14 @@ const NotificationCenter = () => {
                         <h4 className={`font-medium truncate ${isUnread ? 'text-gray-900' : 'text-gray-600'}`}>
                           {notification.title}
                         </h4>
-                        {isUnread && (
-                          <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
-                        )}
+                        <div className="flex items-center gap-2">
+                          {isUnread && (
+                            <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
+                          )}
+                          {isChatNotification && (
+                            <ArrowRight className="w-3 h-3 text-gray-400" />
+                          )}
+                        </div>
                       </div>
                       <p className={`text-sm ${isUnread ? 'text-gray-700' : 'text-gray-500'}`}>
                         {notification.message}
@@ -128,6 +148,13 @@ const NotificationCenter = () => {
                       <p className="text-xs text-gray-400 mt-1">
                         {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                       </p>
+                      {isChatNotification && (
+                        <div className="mt-2">
+                          <Badge variant="outline" className="text-xs">
+                            Chat Message
+                          </Badge>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

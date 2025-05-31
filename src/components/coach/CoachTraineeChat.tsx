@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Send, ArrowLeft } from "lucide-react";
+import { Send, ArrowLeft, Clock, CheckCheck } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useCoachChat } from "@/hooks/useCoachChat";
 import { toast } from "sonner";
@@ -20,6 +20,7 @@ export const CoachTraineeChat = ({ traineeId, traineeName, onBack }: CoachTraine
   const { user } = useAuth();
   const [newMessage, setNewMessage] = useState('');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   
   // Use the coach ID (current user) and trainee ID for the chat
   const coachId = user?.id || '';
@@ -27,12 +28,7 @@ export const CoachTraineeChat = ({ traineeId, traineeName, onBack }: CoachTraine
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
-      if (scrollContainer) {
-        scrollContainer.scrollTop = scrollContainer.scrollHeight;
-      }
-    }
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   const handleSendMessage = async () => {
@@ -53,6 +49,18 @@ export const CoachTraineeChat = ({ traineeId, traineeName, onBack }: CoachTraine
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
+    }
+  };
+
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    
+    if (isToday) {
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } else {
+      return date.toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
     }
   };
 
@@ -79,19 +87,20 @@ export const CoachTraineeChat = ({ traineeId, traineeName, onBack }: CoachTraine
 
   return (
     <Card className="h-[600px] flex flex-col">
-      <CardHeader className="flex flex-row items-center space-y-0 pb-4">
+      <CardHeader className="flex flex-row items-center space-y-0 pb-4 border-b">
         <Button variant="ghost" size="sm" onClick={onBack} className="mr-2">
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div className="flex items-center space-x-3">
           <Avatar>
-            <AvatarFallback>
+            <AvatarFallback className="bg-blue-100 text-blue-700">
               {traineeName.split(' ').map(n => n[0]).join('').toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div>
             <CardTitle className="text-lg">{traineeName}</CardTitle>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground flex items-center gap-1">
+              <Clock className="h-3 w-3" />
               {isLoading ? 'Loading...' : `${messages.length} messages`}
             </p>
           </div>
@@ -100,51 +109,71 @@ export const CoachTraineeChat = ({ traineeId, traineeName, onBack }: CoachTraine
 
       <CardContent className="flex-1 flex flex-col p-0">
         <ScrollArea className="flex-1 px-4" ref={scrollAreaRef}>
-          <div className="space-y-4 pb-4">
+          <div className="space-y-4 py-4">
             {isLoading && messages.length === 0 ? (
               <div className="flex justify-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
               </div>
             ) : messages.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
-                <p>No messages yet. Start the conversation!</p>
+                <p className="text-lg mb-2">👋 Start the conversation!</p>
+                <p className="text-sm">No messages yet. Send your first message below.</p>
               </div>
             ) : (
-              messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex ${message.sender_type === 'coach' ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div
-                    className={`max-w-[70%] rounded-lg px-3 py-2 ${
-                      message.sender_type === 'coach'
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 text-gray-900'
-                    }`}
-                  >
-                    <p className="text-sm">{message.message}</p>
-                    <div className="flex justify-between items-center mt-1">
-                      <p className={`text-xs ${
-                        message.sender_type === 'coach' ? 'text-blue-100' : 'text-gray-500'
-                      }`}>
-                        {new Date(message.created_at).toLocaleString()}
-                      </p>
-                      {message.sender_type === 'coach' && (
-                        <span className={`text-xs ml-2 ${
-                          message.is_read ? 'text-blue-200' : 'text-blue-300'
-                        }`}>
-                          {message.is_read ? '✓✓' : '✓'}
+              messages.map((message, index) => {
+                const isCoach = message.sender_type === 'coach';
+                const isOwnMessage = message.sender_id === user?.id;
+                const showDateSeparator = index === 0 || 
+                  new Date(message.created_at).toDateString() !== new Date(messages[index - 1].created_at).toDateString();
+
+                return (
+                  <div key={message.id}>
+                    {showDateSeparator && (
+                      <div className="flex justify-center py-2">
+                        <span className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                          {new Date(message.created_at).toLocaleDateString([], { 
+                            weekday: 'long', 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric' 
+                          })}
                         </span>
-                      )}
+                      </div>
+                    )}
+                    <div className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`max-w-[70%] rounded-2xl px-4 py-2 ${
+                        isOwnMessage
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-100 text-gray-900 border border-gray-200'
+                      }`}>
+                        <p className="text-sm whitespace-pre-wrap break-words">{message.message}</p>
+                        <div className={`flex justify-between items-center mt-1 ${
+                          isOwnMessage ? 'text-blue-100' : 'text-gray-500'
+                        }`}>
+                          <span className="text-xs">
+                            {formatTime(message.created_at)}
+                          </span>
+                          {isOwnMessage && (
+                            <div className="flex items-center ml-2">
+                              {message.is_read ? (
+                                <CheckCheck className="h-3 w-3 text-blue-200" />
+                              ) : (
+                                <CheckCheck className="h-3 w-3 text-blue-300 opacity-60" />
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
+            <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
 
-        <div className="border-t p-4">
+        <div className="border-t p-4 bg-gray-50">
           <div className="flex space-x-2">
             <Input
               value={newMessage}
@@ -152,12 +181,14 @@ export const CoachTraineeChat = ({ traineeId, traineeName, onBack }: CoachTraine
               onKeyPress={handleKeyPress}
               placeholder="Type your message..."
               disabled={isSending || isLoading}
-              className="flex-1"
+              className="flex-1 bg-white"
+              maxLength={500}
             />
             <Button 
               onClick={handleSendMessage} 
               disabled={isSending || !newMessage.trim() || isLoading}
               size="sm"
+              className="px-4"
             >
               {isSending ? (
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
@@ -166,6 +197,11 @@ export const CoachTraineeChat = ({ traineeId, traineeName, onBack }: CoachTraine
               )}
             </Button>
           </div>
+          {newMessage.length > 450 && (
+            <p className="text-xs text-gray-500 mt-1">
+              {500 - newMessage.length} characters remaining
+            </p>
+          )}
         </div>
       </CardContent>
     </Card>

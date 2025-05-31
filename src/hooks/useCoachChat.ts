@@ -61,6 +61,35 @@ export const useCoachChat = (coachId: string, traineeId: string) => {
     refetchInterval: 5000, // Refetch every 5 seconds as fallback
   });
 
+  // Create notification for new message
+  const createChatNotification = async (message: string, senderName: string, receiverId: string) => {
+    try {
+      const { error } = await supabase
+        .from('user_notifications')
+        .insert({
+          user_id: receiverId,
+          title: `New message from ${senderName}`,
+          message: message.length > 100 ? message.substring(0, 100) + '...' : message,
+          type: 'info',
+          action_url: '/coach', // Navigate to coach page
+          metadata: {
+            chat_type: 'coach_trainee',
+            sender_id: user?.id,
+            coach_id: coachId,
+            trainee_id: traineeId
+          }
+        });
+
+      if (error) {
+        console.error('❌ Error creating chat notification:', error);
+      } else {
+        console.log('✅ Chat notification created successfully');
+      }
+    } catch (error) {
+      console.error('❌ Error in createChatNotification:', error);
+    }
+  };
+
   // Send message mutation
   const sendMessage = useMutation({
     mutationFn: async ({ message, messageType = 'text' }: { message: string; messageType?: 'text' | 'image' | 'file' }) => {
@@ -94,11 +123,20 @@ export const useCoachChat = (coachId: string, traineeId: string) => {
         throw error;
       }
 
+      // Create notification for the recipient
+      const receiverId = senderType === 'coach' ? traineeId : coachId;
+      const senderName = data.sender 
+        ? `${data.sender.first_name || ''} ${data.sender.last_name || ''}`.trim() || 'Unknown'
+        : 'Unknown';
+      
+      await createChatNotification(message.trim(), senderName, receiverId);
+
       console.log('✅ Message sent successfully:', data);
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['coach-chat-messages', coachId, traineeId] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] }); // Refresh notifications
       toast.success('Message sent successfully');
     },
     onError: (error: Error) => {
@@ -127,6 +165,7 @@ export const useCoachChat = (coachId: string, traineeId: string) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['coach-chat-messages', coachId, traineeId] });
+      queryClient.invalidateQueries({ queryKey: ['unread-messages', user?.id] });
     },
   });
 
@@ -149,6 +188,12 @@ export const useCoachChat = (coachId: string, traineeId: string) => {
         (payload) => {
           console.log('📨 Real-time message received:', payload);
           queryClient.invalidateQueries({ queryKey: ['coach-chat-messages', coachId, traineeId] });
+          queryClient.invalidateQueries({ queryKey: ['notifications'] }); // Refresh notifications
+          
+          // Show toast notification for new messages from others
+          if (payload.new?.sender_id !== user?.id) {
+            toast.info('New message received');
+          }
         }
       )
       .on(
@@ -170,7 +215,7 @@ export const useCoachChat = (coachId: string, traineeId: string) => {
       console.log('🔌 Cleaning up chat subscription');
       supabase.removeChannel(channel);
     };
-  }, [coachId, traineeId, queryClient]);
+  }, [coachId, traineeId, queryClient, user?.id]);
 
   // Auto-mark messages as read when viewing chat
   useEffect(() => {
