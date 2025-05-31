@@ -108,6 +108,67 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_trainee_messages: {
+        Row: {
+          coach_id: string
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          message_type: string
+          sender_id: string
+          sender_type: string
+          trainee_id: string
+          updated_at: string
+        }
+        Insert: {
+          coach_id: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          message_type?: string
+          sender_id: string
+          sender_type: string
+          trainee_id: string
+          updated_at?: string
+        }
+        Update: {
+          coach_id?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          message_type?: string
+          sender_id?: string
+          sender_type?: string
+          trainee_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_trainee_messages_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coach_trainee_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coach_trainee_messages_trainee_id_fkey"
+            columns: ["trainee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coach_trainees: {
         Row: {
           assigned_at: string | null

@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +7,7 @@ import { useState } from "react";
 import { AssignTraineeDialog } from "./AssignTraineeDialog";
 import { CoachTraineeChat } from "./CoachTraineeChat";
 import { TraineeProgressView } from "./TraineeProgressView";
+import { useUnreadMessagesByTrainee } from "@/hooks/useUnreadMessages";
 
 interface TraineesTabProps {
   trainees: any[];
@@ -21,6 +21,7 @@ export const TraineesTab = ({ trainees, onChatClick }: TraineesTabProps) => {
   const [showAssignDialog, setShowAssignDialog] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [selectedTrainee, setSelectedTrainee] = useState<any>(null);
+  const { data: unreadCounts = {} } = useUnreadMessagesByTrainee();
 
   console.log('TraineesTab render - trainees:', trainees?.length || 0, 'viewMode:', viewMode);
 
@@ -87,6 +88,8 @@ export const TraineesTab = ({ trainees, onChatClick }: TraineesTabProps) => {
             <div className="space-y-4">
               {trainees.map((trainee: any) => {
                 console.log('Rendering trainee:', trainee.id, trainee.trainee_profile?.first_name);
+                const unreadCount = unreadCounts[trainee.trainee_id] || 0;
+                
                 return (
                   <div key={trainee.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
@@ -103,9 +106,15 @@ export const TraineesTab = ({ trainees, onChatClick }: TraineesTabProps) => {
                         variant="outline"
                         size="sm"
                         onClick={() => handleChatClick(trainee)}
+                        className="relative"
                       >
                         <MessageCircle className="h-4 w-4 mr-1" />
                         {t("Chat")}
+                        {unreadCount > 0 && (
+                          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                            {unreadCount > 9 ? '9+' : unreadCount}
+                          </span>
+                        )}
                       </Button>
                       <Button 
                         variant="outline" 
