@@ -5,10 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Send, ArrowLeft, Clock, CheckCheck } from "lucide-react";
+import { Send, ArrowLeft, Clock, CheckCheck, AlertCircle, RefreshCw } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useCoachChat } from "@/hooks/useCoachChat";
-import { toast } from "sonner";
 
 interface TraineeCoachChatProps {
   coachId: string;
@@ -19,12 +18,15 @@ interface TraineeCoachChatProps {
 export const TraineeCoachChat = ({ coachId, coachName, onBack }: TraineeCoachChatProps) => {
   const { user } = useAuth();
   const [newMessage, setNewMessage] = useState('');
+  const [retryCount, setRetryCount] = useState(0);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   // Use the coach ID and trainee ID (current user) for the chat
   const traineeId = user?.id || '';
   const { messages, isLoading, sendMessage, isSending, error } = useCoachChat(coachId, traineeId);
+
+  console.log('TraineeCoachChat - coachId:', coachId, 'traineeId:', traineeId, 'messages:', messages.length, 'error:', error);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -64,6 +66,11 @@ export const TraineeCoachChat = ({ coachId, coachName, onBack }: TraineeCoachCha
     }
   };
 
+  const handleRetry = () => {
+    setRetryCount(prev => prev + 1);
+    window.location.reload();
+  };
+
   if (error) {
     return (
       <Card className="h-[600px] flex flex-col">
@@ -71,14 +78,29 @@ export const TraineeCoachChat = ({ coachId, coachName, onBack }: TraineeCoachCha
           <Button variant="ghost" size="sm" onClick={onBack} className="mr-2">
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <CardTitle className="text-lg text-red-600">Error Loading Chat</CardTitle>
+          <CardTitle className="text-lg text-red-600 flex items-center gap-2">
+            <AlertCircle className="h-5 w-5" />
+            Error Loading Chat
+          </CardTitle>
         </CardHeader>
         <CardContent className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <p className="text-red-600 mb-4">Failed to load chat messages</p>
-            <Button onClick={() => window.location.reload()} variant="outline">
-              Retry
-            </Button>
+            <p className="text-red-600 mb-4">
+              {retryCount > 2 
+                ? "Unable to load chat messages. Please check your internet connection."
+                : "Failed to load chat messages"
+              }
+            </p>
+            <div className="flex gap-2 justify-center">
+              <Button 
+                onClick={handleRetry} 
+                variant="outline"
+                disabled={retryCount > 3}
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Retry {retryCount > 0 && `(${retryCount})`}
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>

@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -45,11 +44,11 @@ export const useCoachSystem = () => {
   const queryClient = useQueryClient();
 
   // Get coach info for current user (if they are a trainee)
-  const { data: coachInfo, isLoading: isLoadingCoachInfo, error: coachInfoError } = useQuery({
+  const { data: coachInfo, isLoading: isLoadingCoachInfo, error: coachInfoError, refetch: refetchCoachInfo } = useQuery({
     queryKey: ['coach-info', user?.id],
     queryFn: async () => {
       if (!user?.id) {
-        console.log('No user ID found');
+        console.log('❌ No user ID found');
         return null;
       }
 
@@ -72,6 +71,8 @@ export const useCoachSystem = () => {
           console.log('📭 No coach assigned to this user');
           return null;
         }
+
+        console.log('✅ Found coach relationship:', relationship);
 
         // Then get the coach profile
         const { data: coachProfile, error: coachProfileError } = await supabase
@@ -101,11 +102,14 @@ export const useCoachSystem = () => {
         throw error;
       }
     },
-    enabled: !!user?.id,
-    staleTime: 1000 * 60 * 10, // 10 minutes - longer stale time
-    refetchOnWindowFocus: false, // Disable refetch on window focus
-    retry: 2, // Reduce retry attempts
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000), // Shorter retry delays
+    enabled: !!user?.id && !isRoleCoach && !isAdmin, // Only fetch for regular users
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: false,
+    retry: (failureCount, error) => {
+      console.log('🔄 Retry attempt:', failureCount, 'Error:', error);
+      return failureCount < 2; // Only retry twice
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
   });
 
   // Get trainees for current user (if they are a coach)
@@ -267,6 +271,7 @@ export const useCoachSystem = () => {
     coachInfo,
     isLoadingCoachInfo,
     coachInfoError,
+    refetchCoachInfo,
     
     // Trainees (for coaches)
     trainees,

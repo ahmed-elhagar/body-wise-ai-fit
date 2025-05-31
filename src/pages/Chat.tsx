@@ -5,7 +5,8 @@ import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { MessageCircle, Bot, Users, AlertCircle, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { MessageCircle, Bot, Users, AlertCircle, Loader2, RefreshCw } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { useCoachSystem } from "@/hooks/useCoachSystem";
 import { useUnreadMessagesFromCoach } from "@/hooks/useUnreadMessages";
@@ -15,9 +16,10 @@ import AIChatInterface from "@/components/chat/AIChatInterface";
 
 const Chat = () => {
   const { t } = useLanguage();
-  const { coachInfo, isLoadingCoachInfo, coachInfoError } = useCoachSystem();
+  const { coachInfo, isLoadingCoachInfo, coachInfoError, refetchCoachInfo } = useCoachSystem();
   const { data: unreadCoachMessages = 0 } = useUnreadMessagesFromCoach();
   const [showCoachChat, setShowCoachChat] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   console.log('Chat page - coachInfo:', coachInfo, 'loading:', isLoadingCoachInfo, 'error:', coachInfoError);
 
@@ -35,6 +37,11 @@ const Chat = () => {
       </ProtectedRoute>
     );
   }
+
+  const handleRetry = () => {
+    setRetryCount(prev => prev + 1);
+    refetchCoachInfo();
+  };
 
   return (
     <ProtectedRoute>
@@ -92,15 +99,30 @@ const Chat = () => {
                     <h3 className="text-xl font-semibold text-gray-900 mb-2">
                       {t('Error Loading Coach Information')}
                     </h3>
-                    <p className="text-gray-600 mb-4">
-                      {t('Unable to load your coach information. Please try refreshing the page.')}
+                    <p className="text-red-600 text-sm mb-4">
+                      {retryCount > 2 
+                        ? t('Unable to connect to coach system. Please check your internet connection.')
+                        : t('Failed to load coach information')
+                      }
                     </p>
-                    <button 
-                      onClick={() => window.location.reload()}
-                      className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
-                    >
-                      {t('Refresh Page')}
-                    </button>
+                    <div className="flex gap-2 justify-center">
+                      <Button 
+                        onClick={handleRetry}
+                        variant="outline" 
+                        size="sm"
+                        disabled={retryCount > 3}
+                      >
+                        <RefreshCw className="w-4 h-4 mr-2" />
+                        {t('Retry')} {retryCount > 0 && `(${retryCount})`}
+                      </Button>
+                      <Button 
+                        onClick={() => window.location.reload()}
+                        variant="default" 
+                        size="sm"
+                      >
+                        {t('Refresh Page')}
+                      </Button>
+                    </div>
                   </div>
                 ) : !coachInfo ? (
                   <div className="text-center py-12">
@@ -137,7 +159,7 @@ const Chat = () => {
                       </div>
                       <button
                         onClick={() => setShowCoachChat(true)}
-                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
                       >
                         <MessageCircle className="w-4 h-4" />
                         {t('Open Chat')}
