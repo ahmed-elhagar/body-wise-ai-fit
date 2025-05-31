@@ -97,8 +97,38 @@ const MealPlanPageRefactored = () => {
     }
   };
 
+  const handleRecipeGenerated = async () => {
+    try {
+      await mealPlanState.refetch();
+      mealPlanState.setShowRecipeDialog(false);
+    } catch (error) {
+      console.error('❌ Error refreshing after recipe generation:', error);
+    }
+  };
+
+  const handleMealExchange = async () => {
+    try {
+      await mealPlanState.refetch();
+      mealPlanState.setShowExchangeDialog(false);
+    } catch (error) {
+      console.error('❌ Error refreshing after meal exchange:', error);
+    }
+  };
+
   if (mealPlanState.isLoading) {
     return <MealPlanLoadingBackdrop isLoading={true} message={mealPlanT('loading')} />;
+  }
+
+  if (mealPlanState.error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-fitness-neutral-50 via-fitness-primary-50/30 to-fitness-accent-50/30 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-2">Something went wrong</h2>
+          <p className="text-gray-600 mb-4">{mealPlanState.error.message}</p>
+          <Button onClick={() => window.location.reload()}>Refresh Page</Button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -217,7 +247,7 @@ const MealPlanPageRefactored = () => {
           isOpen={mealPlanState.showRecipeDialog}
           onClose={() => mealPlanState.setShowRecipeDialog(false)}
           meal={mealPlanState.selectedMeal}
-          onRecipeGenerated={mealPlanState.handleRecipeGenerated}
+          onRecipeGenerated={handleRecipeGenerated}
         />
       )}
 
@@ -226,7 +256,7 @@ const MealPlanPageRefactored = () => {
           isOpen={mealPlanState.showExchangeDialog}
           onClose={() => mealPlanState.setShowExchangeDialog(false)}
           currentMeal={mealPlanState.selectedMeal}
-          onExchange={mealPlanState.handleRegeneratePlan}
+          onExchange={handleMealExchange}
         />
       )}
     </div>
