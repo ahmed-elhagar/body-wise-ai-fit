@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -30,7 +29,7 @@ const MealPlanPageRefactored = () => {
   const [selectedDayForSnack, setSelectedDayForSnack] = useState(1);
   const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
 
-  // Local dialog states for better control
+  // Dialog states - simplified and clear
   const [showRecipeDialog, setShowRecipeDialog] = useState(false);
   const [showExchangeDialog, setShowExchangeDialog] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState<DailyMeal | null>(null);
@@ -126,6 +125,7 @@ const MealPlanPageRefactored = () => {
       await mealPlanState.refetch();
       setShowRecipeDialog(false);
       setSelectedMeal(null);
+      console.log('✅ Recipe generated and dialog closed');
     } catch (error) {
       console.error('❌ Error refreshing after recipe generation:', error);
     }
@@ -136,23 +136,26 @@ const MealPlanPageRefactored = () => {
       await mealPlanState.refetch();
       setShowExchangeDialog(false);
       setSelectedMeal(null);
+      console.log('✅ Meal exchanged and dialog closed');
     } catch (error) {
       console.error('❌ Error refreshing after meal exchange:', error);
     }
   };
 
   const handleShowRecipe = (meal: DailyMeal) => {
-    console.log('🍽️ MealPlanPage: Show recipe for:', meal.name, meal.id);
-    console.log('🍽️ Setting selectedMeal and opening dialog');
+    console.log('🍽️ MealPlanPage: handleShowRecipe called with meal:', meal.name, meal.id);
+    console.log('🍽️ Setting selectedMeal and opening recipe dialog');
     setSelectedMeal(meal);
     setShowRecipeDialog(true);
+    console.log('🍽️ Recipe dialog state set to true');
   };
 
   const handleExchangeMeal = (meal: DailyMeal) => {
-    console.log('🔄 MealPlanPage: Exchange meal:', meal.name, meal.id);
+    console.log('🔄 MealPlanPage: handleExchangeMeal called with meal:', meal.name, meal.id);
     console.log('🔄 Setting selectedMeal and opening exchange dialog');
     setSelectedMeal(meal);
     setShowExchangeDialog(true);
+    console.log('🔄 Exchange dialog state set to true');
   };
 
   const handleCloseRecipeDialog = () => {
@@ -184,7 +187,12 @@ const MealPlanPageRefactored = () => {
     );
   }
 
-  console.log('🖥️ MealPlanPage: Rendering with selectedMeal:', selectedMeal?.name, 'showRecipeDialog:', showRecipeDialog);
+  console.log('🖥️ MealPlanPage: Rendering with dialog states:', {
+    showRecipeDialog,
+    showExchangeDialog,
+    selectedMealName: selectedMeal?.name,
+    selectedMealId: selectedMeal?.id
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-fitness-neutral-50 via-fitness-primary-50/30 to-fitness-accent-50/30">
@@ -271,7 +279,7 @@ const MealPlanPageRefactored = () => {
         </ContentArea>
       </Container>
 
-      {/* Dialogs */}
+      {/* All Dialogs - Always rendered, controlled by isOpen prop */}
       <MealPlanAIDialog
         open={mealPlanState.showAIDialog}
         onOpenChange={mealPlanState.setShowAIDialog}
@@ -297,25 +305,23 @@ const MealPlanPageRefactored = () => {
         onShoppingListUpdate={handleShoppingListUpdate}
       />
 
-      {/* Recipe Dialog with proper debugging */}
-      {selectedMeal && (
-        <MealRecipeDialog
-          isOpen={showRecipeDialog}
-          onClose={handleCloseRecipeDialog}
-          meal={selectedMeal}
-          onRecipeGenerated={handleRecipeGenerated}
-        />
-      )}
+      {/* Recipe Dialog - Always rendered, key ensures it updates with new meal */}
+      <MealRecipeDialog
+        key={selectedMeal?.id || 'no-meal'}
+        isOpen={showRecipeDialog}
+        onClose={handleCloseRecipeDialog}
+        meal={selectedMeal}
+        onRecipeGenerated={handleRecipeGenerated}
+      />
 
-      {/* Exchange Dialog */}
-      {selectedMeal && (
-        <MealExchangeDialog
-          isOpen={showExchangeDialog}
-          onClose={handleCloseExchangeDialog}
-          currentMeal={selectedMeal}
-          onExchange={handleMealExchange}
-        />
-      )}
+      {/* Exchange Dialog - Always rendered, key ensures it updates with new meal */}
+      <MealExchangeDialog
+        key={`exchange-${selectedMeal?.id || 'no-meal'}`}
+        isOpen={showExchangeDialog}
+        onClose={handleCloseExchangeDialog}
+        currentMeal={selectedMeal}
+        onExchange={handleMealExchange}
+      />
     </div>
   );
 };

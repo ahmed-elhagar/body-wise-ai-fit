@@ -21,17 +21,33 @@ const MealCard = ({ meal, onShowRecipe, onExchangeMeal }: MealCardProps) => {
   const handleViewRecipe = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log('🔍 View Recipe button clicked for meal:', meal.name, meal.id);
-    console.log('🔍 Calling onShowRecipe with meal:', meal);
-    onShowRecipe(meal);
+    console.log('🔍 *** VIEW RECIPE BUTTON CLICKED ***');
+    console.log('🔍 Meal details:', { id: meal.id, name: meal.name });
+    console.log('🔍 onShowRecipe function exists:', !!onShowRecipe);
+    console.log('🔍 About to call onShowRecipe with meal:', meal);
+    
+    try {
+      onShowRecipe(meal);
+      console.log('🔍 ✅ onShowRecipe called successfully');
+    } catch (error) {
+      console.error('🔍 ❌ Error calling onShowRecipe:', error);
+    }
   };
 
   const handleExchangeMeal = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log('🔄 Exchange Meal button clicked for meal:', meal.name, meal.id);
-    console.log('🔄 Calling onExchangeMeal with meal:', meal);
-    onExchangeMeal(meal);
+    console.log('🔄 *** EXCHANGE MEAL BUTTON CLICKED ***');
+    console.log('🔄 Meal details:', { id: meal.id, name: meal.name });
+    console.log('🔄 onExchangeMeal function exists:', !!onExchangeMeal);
+    console.log('🔄 About to call onExchangeMeal with meal:', meal);
+    
+    try {
+      onExchangeMeal(meal);
+      console.log('🔄 ✅ onExchangeMeal called successfully');
+    } catch (error) {
+      console.error('🔄 ❌ Error calling onExchangeMeal:', error);
+    }
   };
 
   return (
@@ -55,7 +71,6 @@ const MealCard = ({ meal, onShowRecipe, onExchangeMeal }: MealCardProps) => {
           </div>
         </div>
 
-        {/* Nutrition Info */}
         <div className="grid grid-cols-3 gap-2 mb-4 text-center text-sm">
           <div className="bg-green-50 p-2 rounded">
             <div className="font-semibold text-green-600">{meal.protein}g</div>
@@ -71,12 +86,13 @@ const MealCard = ({ meal, onShowRecipe, onExchangeMeal }: MealCardProps) => {
           </div>
         </div>
 
-        {/* Action Buttons */}
+        {/* Action Buttons with enhanced logging */}
         <div className="flex gap-2">
           <Button
             onClick={handleViewRecipe}
             size="sm"
             className="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white"
+            data-testid="view-recipe-button"
           >
             <ChefHat className="w-4 h-4 mr-2" />
             View Recipe
@@ -86,6 +102,7 @@ const MealCard = ({ meal, onShowRecipe, onExchangeMeal }: MealCardProps) => {
             size="sm"
             variant="outline"
             className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50"
+            data-testid="exchange-meal-button"
           >
             <ArrowLeftRight className="w-4 h-4 mr-2" />
             Exchange Meal
