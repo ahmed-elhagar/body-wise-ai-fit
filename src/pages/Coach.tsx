@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,14 +7,13 @@ import { MessageCircle, Users, TrendingUp, Star, Calendar, Target } from "lucide
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { useCoach } from "@/hooks/useCoach";
+import { useI18n } from "@/hooks/useI18n";
 import { Navigate } from "react-router-dom";
 
 const Coach = () => {
-  const { trainees, isLoading } = useCoach();
+  const { trainees, isLoading, isCoach } = useCoach();
+  const { t } = useI18n();
   const [selectedClient, setSelectedClient] = useState<string | null>(null);
-
-  // Check if user is a coach based on having trainees
-  const isCoach = trainees && trainees.length > 0;
 
   // Mock stats data for now
   const coachStats = {
@@ -63,10 +61,10 @@ const Coach = () => {
                     </div>
                     <div>
                       <h1 className="text-xl md:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-                        Coach Dashboard
+                        {t("Coach")} {t("Dashboard")}
                       </h1>
                       <p className="text-sm md:text-base text-gray-600 font-medium">
-                        Manage your clients and coaching sessions
+                        {t("Manage your clients and coaching sessions")}
                       </p>
                     </div>
                   </div>
@@ -74,11 +72,11 @@ const Coach = () => {
                   <div className="flex flex-wrap gap-2">
                     <Badge className="bg-gradient-to-r from-green-500 to-blue-500 text-white border-0 px-3 py-1 text-xs md:text-sm font-semibold shadow-md">
                       <Users className="w-3 h-3 md:w-4 md:h-4 mr-1" />
-                      {coachStats.totalClients} Active Clients
+                      {coachStats.totalClients} {t("Active clients")}
                     </Badge>
                     <Badge variant="outline" className="bg-white/80 border-gray-200 text-gray-700 px-3 py-1 text-xs md:text-sm font-medium">
                       <Star className="w-3 h-3 md:w-4 md:h-4 mr-1" />
-                      Professional Coach
+                      {t("Professional Coach")}
                     </Badge>
                   </div>
                 </div>
@@ -89,45 +87,45 @@ const Coach = () => {
             <div className="grid gap-3 md:gap-4 grid-cols-2 lg:grid-cols-4">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-xs md:text-sm font-medium">Total Clients</CardTitle>
+                  <CardTitle className="text-xs md:text-sm font-medium">{t("Trainees")}</CardTitle>
                   <Users className="h-4 w-4 text-green-500" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-lg md:text-2xl font-bold">{coachStats.totalClients}</div>
-                  <p className="text-xs text-muted-foreground">Active coaching relationships</p>
+                  <p className="text-xs text-muted-foreground">{t("Active clients")}</p>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-xs md:text-sm font-medium">Messages Today</CardTitle>
+                  <CardTitle className="text-xs md:text-sm font-medium">{t("Messages Today")}</CardTitle>
                   <MessageCircle className="h-4 w-4 text-blue-500" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-lg md:text-2xl font-bold">{coachStats.messagesToday}</div>
-                  <p className="text-xs text-muted-foreground">Client interactions</p>
+                  <p className="text-xs text-muted-foreground">{t("Client interactions")}</p>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-xs md:text-sm font-medium">Success Rate</CardTitle>
+                  <CardTitle className="text-xs md:text-sm font-medium">{t("Success Rate")}</CardTitle>
                   <TrendingUp className="h-4 w-4 text-purple-500" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-lg md:text-2xl font-bold">{coachStats.successRate}%</div>
-                  <p className="text-xs text-muted-foreground">Client goal achievement</p>
+                  <p className="text-xs text-muted-foreground">{t("Client goal achievement")}</p>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-xs md:text-sm font-medium">This Month</CardTitle>
+                  <CardTitle className="text-xs md:text-sm font-medium">{t("This Month")}</CardTitle>
                   <Calendar className="h-4 w-4 text-orange-500" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-lg md:text-2xl font-bold">{coachStats.monthlyGoals}</div>
-                  <p className="text-xs text-muted-foreground">Goals completed</p>
+                  <p className="text-xs text-muted-foreground">{t("Goals completed")}</p>
                 </CardContent>
               </Card>
             </div>
@@ -139,19 +137,19 @@ const Coach = () => {
                   value="clients" 
                   className="data-[state=active]:bg-green-600 data-[state=active]:text-white"
                 >
-                  My Clients
+                  {t("Trainees")}
                 </TabsTrigger>
                 <TabsTrigger 
                   value="chats" 
                   className="data-[state=active]:bg-green-600 data-[state=active]:text-white"
                 >
-                  Active Chats
+                  {t("Active Chats")}
                 </TabsTrigger>
                 <TabsTrigger 
                   value="analytics" 
                   className="data-[state=active]:bg-green-600 data-[state=active]:text-white"
                 >
-                  Analytics
+                  {t("Analytics")}
                 </TabsTrigger>
               </TabsList>
 
@@ -160,7 +158,7 @@ const Coach = () => {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Users className="h-5 w-5" />
-                      Client Management
+                      {t("Trainees")} {t("Management")}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -174,7 +172,7 @@ const Coach = () => {
                               </h3>
                               <p className="text-sm text-gray-600">{trainee.trainee_profile?.email}</p>
                               <Badge variant="outline" className="mt-1">
-                                General Fitness
+                                {t("General Fitness")}
                               </Badge>
                             </div>
                             <div className="flex gap-2">
@@ -184,11 +182,11 @@ const Coach = () => {
                                 onClick={() => setSelectedClient(trainee.trainee_id)}
                               >
                                 <MessageCircle className="h-4 w-4 mr-1" />
-                                Chat
+                                {t("Chat")}
                               </Button>
                               <Button variant="outline" size="sm">
                                 <Target className="h-4 w-4 mr-1" />
-                                Progress
+                                {t("Progress")}
                               </Button>
                             </div>
                           </div>
@@ -197,8 +195,8 @@ const Coach = () => {
                     ) : (
                       <div className="text-center py-8">
                         <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">No clients yet</h3>
-                        <p className="text-gray-600">Clients will appear here when they're assigned to you.</p>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">{t("No clients yet")}</h3>
+                        <p className="text-gray-600">{t("Clients will appear here when they're assigned to you.")}</p>
                       </div>
                     )}
                   </CardContent>
@@ -210,14 +208,14 @@ const Coach = () => {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <MessageCircle className="h-5 w-5" />
-                      Active Conversations
+                      {t("Active Conversations")}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="text-center py-8">
                       <MessageCircle className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No active chats</h3>
-                      <p className="text-gray-600">Recent conversations with your clients will appear here.</p>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{t("No active chats")}</h3>
+                      <p className="text-gray-600">{t("Recent conversations with your clients will appear here.")}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -228,14 +226,14 @@ const Coach = () => {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <TrendingUp className="h-5 w-5" />
-                      Coaching Analytics
+                      {t("Coaching Analytics")}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="text-center py-8">
                       <TrendingUp className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">Analytics Coming Soon</h3>
-                      <p className="text-gray-600">Detailed coaching analytics and client progress reports will be available here.</p>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{t("Analytics Coming Soon")}</h3>
+                      <p className="text-gray-600">{t("Detailed coaching analytics and client progress reports will be available here.")}</p>
                     </div>
                   </CardContent>
                 </Card>

@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -206,8 +205,8 @@ export function AppSidebar() {
                       {state === "expanded" && !isCollapsing && (
                         <div className={cn("flex items-center gap-2", isRTL && "flex-row-reverse")}>
                           <span>{t("Coach")}</span>
-                          <Badge variant="secondary" className="bg-blue-100 text-blue-700 text-xs">
-                            {t("Professional Coach")}
+                          <Badge variant="secondary" className="bg-blue-100 text-blue-700 text-xs px-1 py-0">
+                            Pro
                           </Badge>
                         </div>
                       )}
@@ -228,8 +227,8 @@ export function AppSidebar() {
                       {state === "expanded" && !isCollapsing && (
                         <div className={cn("flex items-center gap-2", isRTL && "flex-row-reverse")}>
                           <span>{t("Admin")}</span>
-                          <Badge variant="destructive" className="text-xs">
-                            {t("System administration and management")}
+                          <Badge variant="destructive" className="text-xs px-1 py-0">
+                            Sys
                           </Badge>
                         </div>
                       )}

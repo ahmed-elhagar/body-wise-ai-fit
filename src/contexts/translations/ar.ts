@@ -49,10 +49,16 @@ export const arTranslations = {
   "Coach Panel": "لوحة المدرب",
   "Admin": "الإدارة",
   "Coach": "مدرب",
-  "Manage your clients and coaching sessions": "إدارة عملائك وجلسات التدريب",
+  "Management": "إدارة",
   "Active clients": "عملاء نشطون",
   "Professional Coach": "مدرب محترف",
-  "System administration and management": "إدارة النظام والتحكم",
+  "System administration and management": "إدارة النظام",
+  "General Fitness": "لياقة عامة",
+  "No clients yet": "لا يوجد عملاء بعد",
+  "Clients will appear here when they're assigned to you.": "سيظهر العملاء هنا عند تعيينهم لك.",
+  "Active Chats": "المحادثات",
+  "Analytics": "التحليلات",
+  "Chat": "محادثة",
   
   // App branding
   "FitFatta": "فت فاتا",
