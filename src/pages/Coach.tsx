@@ -2,9 +2,9 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
-import CoachHeader from "@/components/coach/CoachHeader";
-import CoachStatsCards from "@/components/coach/CoachStatsCards";
-import TraineesTab from "@/components/coach/TraineesTab";
+import { CoachHeader } from "@/components/coach/CoachHeader";
+import { CoachStatsCards } from "@/components/coach/CoachStatsCards";
+import { TraineesTab } from "@/components/coach/TraineesTab";
 import AnalyticsTab from "@/components/admin/AnalyticsTab";
 import { useRole } from "@/hooks/useRole";
 import { Navigate } from "react-router-dom";
@@ -36,8 +36,13 @@ const Coach = () => {
       <Layout>
         <div className="p-3 md:p-4 lg:p-6 bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/30 min-h-screen">
           <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
-            <CoachHeader />
-            <CoachStatsCards />
+            <CoachHeader totalClients={0} />
+            <CoachStatsCards stats={{
+              totalClients: 0,
+              messagesToday: 0,
+              successRate: 0,
+              monthlyGoals: 0
+            }} />
             
             <Tabs defaultValue="trainees" className="w-full">
               <TabsList className="grid w-full grid-cols-2 bg-white border border-gray-200 shadow-sm">
@@ -56,7 +61,7 @@ const Coach = () => {
               </TabsList>
 
               <TabsContent value="trainees" className="mt-6">
-                <TraineesTab />
+                <TraineesTab trainees={[]} onChatClick={() => {}} />
               </TabsContent>
 
               <TabsContent value="analytics" className="mt-6">

@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Camera, Search, Heart, BarChart3, Database } from "lucide-react";
+import { ArrowLeft, Camera, Search, Heart, BarChart3 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useLanguage } from "@/contexts/LanguageContext";
 import FoodPhotoAnalyzer from "@/components/calorie/FoodPhotoAnalyzer";
@@ -10,8 +10,6 @@ import EnhancedFoodSearch from "@/components/calorie/EnhancedFoodSearch";
 import FoodConsumptionTracker from "@/components/calorie/FoodConsumptionTracker";
 import { useFoodDatabase } from "@/hooks/useFoodDatabase";
 import AddFoodDialog from "@/components/calorie/AddFoodDialog";
-import { seedBasicFoods } from "@/utils/seedBasicFoods";
-import { toast } from "sonner";
 
 const CalorieChecker = () => {
   const navigate = useNavigate();
@@ -22,7 +20,6 @@ const CalorieChecker = () => {
   const [selectedFood, setSelectedFood] = useState<any>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [activeView, setActiveView] = useState("today");
-  const [isSeeding, setIsSeeding] = useState(false);
 
   const handleSelectFood = (food: any) => {
     console.log('Selected food:', food);
@@ -35,21 +32,6 @@ const CalorieChecker = () => {
     logConsumption(logData);
     setIsAddDialogOpen(false);
     setSelectedFood(null);
-  };
-
-  const handleSeedFoods = async () => {
-    setIsSeeding(true);
-    try {
-      await seedBasicFoods();
-      toast.success("Basic foods added to database!");
-      // Refresh the page to update the search component
-      window.location.reload();
-    } catch (error) {
-      console.error('Failed to seed foods:', error);
-      toast.error("Failed to add foods to database");
-    } finally {
-      setIsSeeding(false);
-    }
   };
 
   const views = [
@@ -103,18 +85,6 @@ const CalorieChecker = () => {
                 <p className="text-sm text-gray-600 hidden sm:block">Track your daily nutrition and analyze foods</p>
               </div>
             </div>
-
-            {/* Seed Foods Button */}
-            <Button
-              onClick={handleSeedFoods}
-              disabled={isSeeding}
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-2"
-            >
-              <Database className="w-4 h-4" />
-              {isSeeding ? "Adding..." : "Add Basic Foods"}
-            </Button>
           </div>
 
           {/* Navigation Tabs */}
