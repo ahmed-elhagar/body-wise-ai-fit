@@ -1,15 +1,13 @@
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MessageCircle, Users, TrendingUp, Star, Calendar, Target } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { useCoach } from "@/hooks/useCoach";
 import { useI18n } from "@/hooks/useI18n";
 import { Navigate } from "react-router-dom";
+import { CoachHeader } from "@/components/coach/CoachHeader";
+import { CoachStatsCards } from "@/components/coach/CoachStatsCards";
+import { CoachTabs } from "@/components/coach/CoachTabs";
 
 const Coach = () => {
   const { trainees, isLoading, isCoach } = useCoach();
@@ -48,198 +46,13 @@ const Coach = () => {
       <Layout>
         <div className="p-3 md:p-4 lg:p-6 bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/30 min-h-screen">
           <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
-            {/* Enhanced Header */}
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 via-blue-500/5 to-purple-500/10 rounded-2xl" />
-              
-              <Card className="relative p-4 md:p-6 border-0 shadow-lg bg-white/90 backdrop-blur-sm rounded-2xl overflow-hidden">
-                <div className="absolute top-2 right-2 md:top-4 md:right-4 w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-green-500/20 to-blue-500/20 rounded-full blur-xl" />
-                
-                <div className="relative z-10">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-green-600 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-                      <MessageCircle className="w-5 h-5 md:w-6 md:h-6 text-white" />
-                    </div>
-                    <div>
-                      <h1 className="text-xl md:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-                        {t("Coach")} {t("Dashboard")}
-                      </h1>
-                      <p className="text-sm md:text-base text-gray-600 font-medium">
-                        {t("Manage your clients and coaching sessions")}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    <Badge className="bg-gradient-to-r from-green-500 to-blue-500 text-white border-0 px-3 py-1 text-xs md:text-sm font-semibold shadow-md">
-                      <Users className="w-3 h-3 md:w-4 md:h-4 mr-1" />
-                      {coachStats.totalClients} {t("Active clients")}
-                    </Badge>
-                    <Badge variant="outline" className="bg-white/80 border-gray-200 text-gray-700 px-3 py-1 text-xs md:text-sm font-medium">
-                      <Star className="w-3 h-3 md:w-4 md:h-4 mr-1" />
-                      {t("Professional Coach")}
-                    </Badge>
-                  </div>
-                </div>
-              </Card>
-            </div>
-
-            {/* Stats Cards */}
-            <div className="grid gap-3 md:gap-4 grid-cols-2 lg:grid-cols-4">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-xs md:text-sm font-medium">{t("Trainees")}</CardTitle>
-                  <Users className="h-4 w-4 text-green-500" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-lg md:text-2xl font-bold">{coachStats.totalClients}</div>
-                  <p className="text-xs text-muted-foreground">{t("Active clients")}</p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-xs md:text-sm font-medium">{t("Messages Today")}</CardTitle>
-                  <MessageCircle className="h-4 w-4 text-blue-500" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-lg md:text-2xl font-bold">{coachStats.messagesToday}</div>
-                  <p className="text-xs text-muted-foreground">{t("Client interactions")}</p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-xs md:text-sm font-medium">{t("Success Rate")}</CardTitle>
-                  <TrendingUp className="h-4 w-4 text-purple-500" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-lg md:text-2xl font-bold">{coachStats.successRate}%</div>
-                  <p className="text-xs text-muted-foreground">{t("Client goal achievement")}</p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-xs md:text-sm font-medium">{t("This Month")}</CardTitle>
-                  <Calendar className="h-4 w-4 text-orange-500" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-lg md:text-2xl font-bold">{coachStats.monthlyGoals}</div>
-                  <p className="text-xs text-muted-foreground">{t("Goals completed")}</p>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Main Content */}
-            <Tabs defaultValue="clients" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 bg-white border border-gray-200 shadow-sm">
-                <TabsTrigger 
-                  value="clients" 
-                  className="data-[state=active]:bg-green-600 data-[state=active]:text-white"
-                >
-                  {t("Trainees")}
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="chats" 
-                  className="data-[state=active]:bg-green-600 data-[state=active]:text-white"
-                >
-                  {t("Active Chats")}
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="analytics" 
-                  className="data-[state=active]:bg-green-600 data-[state=active]:text-white"
-                >
-                  {t("Analytics")}
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="clients" className="mt-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Users className="h-5 w-5" />
-                      {t("Trainees")} {t("Management")}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {trainees && trainees.length > 0 ? (
-                      <div className="space-y-4">
-                        {trainees.map((trainee: any) => (
-                          <div key={trainee.id} className="flex items-center justify-between p-4 border rounded-lg">
-                            <div>
-                              <h3 className="font-semibold">
-                                {trainee.trainee_profile?.first_name} {trainee.trainee_profile?.last_name}
-                              </h3>
-                              <p className="text-sm text-gray-600">{trainee.trainee_profile?.email}</p>
-                              <Badge variant="outline" className="mt-1">
-                                {t("General Fitness")}
-                              </Badge>
-                            </div>
-                            <div className="flex gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setSelectedClient(trainee.trainee_id)}
-                              >
-                                <MessageCircle className="h-4 w-4 mr-1" />
-                                {t("Chat")}
-                              </Button>
-                              <Button variant="outline" size="sm">
-                                <Target className="h-4 w-4 mr-1" />
-                                {t("Progress")}
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-8">
-                        <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">{t("No clients yet")}</h3>
-                        <p className="text-gray-600">{t("Clients will appear here when they're assigned to you.")}</p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="chats" className="mt-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <MessageCircle className="h-5 w-5" />
-                      {t("Active Conversations")}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center py-8">
-                      <MessageCircle className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{t("No active chats")}</h3>
-                      <p className="text-gray-600">{t("Recent conversations with your clients will appear here.")}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="analytics" className="mt-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <TrendingUp className="h-5 w-5" />
-                      {t("Coaching Analytics")}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center py-8">
-                      <TrendingUp className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{t("Analytics Coming Soon")}</h3>
-                      <p className="text-gray-600">{t("Detailed coaching analytics and client progress reports will be available here.")}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
+            <CoachHeader totalClients={coachStats.totalClients} />
+            <CoachStatsCards stats={coachStats} />
+            <CoachTabs 
+              trainees={trainees} 
+              selectedClient={selectedClient}
+              setSelectedClient={setSelectedClient}
+            />
           </div>
         </div>
       </Layout>
