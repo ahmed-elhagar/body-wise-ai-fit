@@ -21,14 +21,16 @@ const MealCard = ({ meal, onShowRecipe, onExchangeMeal }: MealCardProps) => {
   const handleViewRecipe = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log('🔍 View Recipe clicked for meal:', meal.name, meal.id);
+    console.log('🔍 View Recipe button clicked for meal:', meal.name, meal.id);
+    console.log('🔍 Calling onShowRecipe with meal:', meal);
     onShowRecipe(meal);
   };
 
   const handleExchangeMeal = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log('🔄 Exchange Meal clicked for meal:', meal.name, meal.id);
+    console.log('🔄 Exchange Meal button clicked for meal:', meal.name, meal.id);
+    console.log('🔄 Calling onExchangeMeal with meal:', meal);
     onExchangeMeal(meal);
   };
 

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -13,8 +14,8 @@ import EmptyState from "./EmptyState";
 import DayTabs from "./DayTabs";
 import ShoppingListDrawer from "../shopping-list/ShoppingListDrawer";
 import MealPlanLoadingBackdrop from "./MealPlanLoadingBackdrop";
-import MealRecipeDialog from "./MealRecipeDialog";
-import MealExchangeDialog from "./MealExchangeDialog";
+import MealRecipeDialog from "../MealRecipeDialog";
+import MealExchangeDialog from "../MealExchangeDialog";
 import SnackPickerDialog from "./SnackPickerDialog";
 import MealPlanAIDialog from "./MealPlanAIDialog";
 import { toast } from "sonner";
@@ -28,6 +29,11 @@ const MealPlanPageRefactored = () => {
   const [showSnackDialog, setShowSnackDialog] = useState(false);
   const [selectedDayForSnack, setSelectedDayForSnack] = useState(1);
   const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
+
+  // Local dialog states for better control
+  const [showRecipeDialog, setShowRecipeDialog] = useState(false);
+  const [showExchangeDialog, setShowExchangeDialog] = useState(false);
+  const [selectedMeal, setSelectedMeal] = useState<DailyMeal | null>(null);
 
   // Get current week dates for display with error handling
   const weekDays = (() => {
@@ -118,7 +124,8 @@ const MealPlanPageRefactored = () => {
   const handleRecipeGenerated = async () => {
     try {
       await mealPlanState.refetch();
-      mealPlanState.setShowRecipeDialog(false);
+      setShowRecipeDialog(false);
+      setSelectedMeal(null);
     } catch (error) {
       console.error('❌ Error refreshing after recipe generation:', error);
     }
@@ -127,7 +134,8 @@ const MealPlanPageRefactored = () => {
   const handleMealExchange = async () => {
     try {
       await mealPlanState.refetch();
-      mealPlanState.setShowExchangeDialog(false);
+      setShowExchangeDialog(false);
+      setSelectedMeal(null);
     } catch (error) {
       console.error('❌ Error refreshing after meal exchange:', error);
     }
@@ -135,14 +143,28 @@ const MealPlanPageRefactored = () => {
 
   const handleShowRecipe = (meal: DailyMeal) => {
     console.log('🍽️ MealPlanPage: Show recipe for:', meal.name, meal.id);
-    mealPlanState.setSelectedMeal(meal);
-    mealPlanState.setShowRecipeDialog(true);
+    console.log('🍽️ Setting selectedMeal and opening dialog');
+    setSelectedMeal(meal);
+    setShowRecipeDialog(true);
   };
 
   const handleExchangeMeal = (meal: DailyMeal) => {
     console.log('🔄 MealPlanPage: Exchange meal:', meal.name, meal.id);
-    mealPlanState.setSelectedMeal(meal);
-    mealPlanState.setShowExchangeDialog(true);
+    console.log('🔄 Setting selectedMeal and opening exchange dialog');
+    setSelectedMeal(meal);
+    setShowExchangeDialog(true);
+  };
+
+  const handleCloseRecipeDialog = () => {
+    console.log('🔒 Closing recipe dialog');
+    setShowRecipeDialog(false);
+    setSelectedMeal(null);
+  };
+
+  const handleCloseExchangeDialog = () => {
+    console.log('🔒 Closing exchange dialog');
+    setShowExchangeDialog(false);
+    setSelectedMeal(null);
   };
 
   if (mealPlanState.isLoading) {
@@ -161,6 +183,8 @@ const MealPlanPageRefactored = () => {
       </div>
     );
   }
+
+  console.log('🖥️ MealPlanPage: Rendering with selectedMeal:', selectedMeal?.name, 'showRecipeDialog:', showRecipeDialog);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-fitness-neutral-50 via-fitness-primary-50/30 to-fitness-accent-50/30">
@@ -273,20 +297,22 @@ const MealPlanPageRefactored = () => {
         onShoppingListUpdate={handleShoppingListUpdate}
       />
 
-      {mealPlanState.selectedMeal && (
+      {/* Recipe Dialog with proper debugging */}
+      {selectedMeal && (
         <MealRecipeDialog
-          isOpen={mealPlanState.showRecipeDialog}
-          onClose={() => mealPlanState.setShowRecipeDialog(false)}
-          meal={mealPlanState.selectedMeal}
+          isOpen={showRecipeDialog}
+          onClose={handleCloseRecipeDialog}
+          meal={selectedMeal}
           onRecipeGenerated={handleRecipeGenerated}
         />
       )}
 
-      {mealPlanState.selectedMeal && (
+      {/* Exchange Dialog */}
+      {selectedMeal && (
         <MealExchangeDialog
-          isOpen={mealPlanState.showExchangeDialog}
-          onClose={() => mealPlanState.setShowExchangeDialog(false)}
-          currentMeal={mealPlanState.selectedMeal}
+          isOpen={showExchangeDialog}
+          onClose={handleCloseExchangeDialog}
+          currentMeal={selectedMeal}
           onExchange={handleMealExchange}
         />
       )}
