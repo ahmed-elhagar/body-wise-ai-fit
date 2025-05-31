@@ -31,16 +31,13 @@ const DayTabs = ({ weekStartDate, selectedDayNumber, onDayChange }: DayTabsProps
 
   return (
     <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
-      <div className="p-4">
-        <h3 className="text-base font-semibold text-gray-900 mb-3 text-center">
-          Week Days
-        </h3>
+      <div className="p-3">
         <div className="flex overflow-x-auto scrollbar-hide gap-2">
           {days.map(({ dayNumber, date, isSelected, isToday, dayName, dayDate, fullDayName }) => (
             <button
               key={dayNumber}
               onClick={() => onDayChange(dayNumber)}
-              className={`flex flex-col items-center min-w-[75px] px-3 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 ${
+              className={`flex flex-col items-center min-w-[70px] px-3 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 ${
                 isSelected
                   ? "bg-gradient-to-br from-fitness-primary-500 to-fitness-primary-600 text-white shadow-lg scale-105 border-2 border-fitness-primary-400"
                   : isToday

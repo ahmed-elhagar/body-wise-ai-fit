@@ -6,11 +6,9 @@ import {
   Shuffle,
   ChevronLeft,
   ChevronRight,
-  RotateCcw,
-  Calendar,
-  Target
+  RotateCcw
 } from "lucide-react";
-import { format, addDays } from "date-fns";
+import { format, addDays, isSameDay } from "date-fns";
 import { useMealPlanTranslation } from "@/utils/translationHelpers";
 import { useMealShuffle } from "@/hooks/useMealShuffle";
 

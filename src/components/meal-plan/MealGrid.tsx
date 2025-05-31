@@ -2,7 +2,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Book, ArrowLeftRight, RotateCcw } from "lucide-react";
+import { Clock, Book, ArrowLeftRight } from "lucide-react";
 import { useMealPlanTranslation } from "@/utils/translationHelpers";
 
 interface MealGridProps {
@@ -19,7 +19,6 @@ const MealGrid = ({
   meals,
   onShowRecipe,
   onExchangeMeal,
-  onRegeneratePlan,
   dayNumber
 }: MealGridProps) => {
   const { mealPlanT } = useMealPlanTranslation();
@@ -72,31 +71,21 @@ const MealGrid = ({
 
   return (
     <div className="space-y-4">
-      {/* Day Header with Stats - More Compact */}
-      <div className="bg-gradient-to-r from-white to-slate-50 rounded-xl p-4 shadow-lg border border-slate-200/50">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
-          <h2 className="text-xl font-bold text-slate-800">{mealPlanT('dayOverview')}</h2>
+      {/* Minimized Day Header */}
+      <div className="bg-gradient-to-r from-white to-slate-50 rounded-lg p-3 shadow-md border border-slate-200/50">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-lg font-bold text-slate-800">{mealPlanT('dayOverview')}</h2>
           <div className="flex flex-wrap gap-2">
-            <Badge className="bg-gradient-to-r from-red-500 to-pink-600 text-white border-0 px-3 py-1 text-sm font-semibold">
+            <Badge className="bg-gradient-to-r from-red-500 to-pink-600 text-white border-0 px-2 py-1 text-xs font-semibold">
               {dayStats.calories} {mealPlanT('cal')}
             </Badge>
-            <Badge className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-0 px-3 py-1 text-sm font-semibold">
+            <Badge className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-0 px-2 py-1 text-xs font-semibold">
               {dayStats.protein.toFixed(1)}g {mealPlanT('protein')}
             </Badge>
-            <Badge className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-0 px-3 py-1 text-sm font-semibold">
+            <Badge className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-0 px-2 py-1 text-xs font-semibold">
               {meals.length} {mealPlanT('meals')}
             </Badge>
           </div>
-        </div>
-
-        <div className="flex justify-center">
-          <Button
-            onClick={onRegeneratePlan}
-            className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 px-4 py-2 rounded-lg font-semibold text-sm"
-          >
-            <RotateCcw className="w-4 h-4 mr-2" />
-            {mealPlanT('shuffleMeals')}
-          </Button>
         </div>
       </div>
 

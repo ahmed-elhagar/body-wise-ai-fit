@@ -10,6 +10,7 @@ import CompactControlBar from "./CompactControlBar";
 import MealGrid from "./MealGrid";
 import WeeklyView from "./WeeklyView";
 import EmptyState from "./EmptyState";
+import DayTabs from "./DayTabs";
 import ShoppingListDrawer from "../shopping-list/ShoppingListDrawer";
 import MealPlanLoadingBackdrop from "./MealPlanLoadingBackdrop";
 import MealRecipeDialog from "./MealRecipeDialog";
@@ -99,7 +100,7 @@ const MealPlanPageRefactored = () => {
       
       <Container className="py-2 lg:py-4">
         <ContentArea>
-          {/* Enhanced Hero Header with integrated week days and daily progress */}
+          {/* Enhanced Hero Header */}
           <Section>
             <MealPlanHero
               weekStartDate={mealPlanState.weekStartDate}
@@ -109,17 +110,20 @@ const MealPlanPageRefactored = () => {
               weeklyStats={weeklyStats}
               hasWeeklyPlan={!!mealPlanState.currentWeekPlan}
               weeklyPlanId={mealPlanState.currentWeekPlan?.weeklyPlan?.id}
-              selectedDayNumber={mealPlanState.selectedDayNumber}
-              onDayChange={mealPlanState.setSelectedDayNumber}
-              totalCalories={mealPlanState.totalCalories}
-              totalProtein={mealPlanState.totalProtein}
-              targetDayCalories={mealPlanState.targetDayCalories}
-              mealCount={mealPlanState.todaysMeals?.length || 0}
             />
           </Section>
 
           {mealPlanState.currentWeekPlan ? (
             <>
+              {/* Week Days Navigation */}
+              <Section>
+                <DayTabs
+                  weekStartDate={mealPlanState.weekStartDate}
+                  selectedDayNumber={mealPlanState.selectedDayNumber}
+                  onDayChange={mealPlanState.setSelectedDayNumber}
+                />
+              </Section>
+
               {/* Compact Control Bar */}
               <Section>
                 <CompactControlBar
