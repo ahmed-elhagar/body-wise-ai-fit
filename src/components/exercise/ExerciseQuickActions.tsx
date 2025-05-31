@@ -33,15 +33,16 @@ export const ExerciseQuickActions = ({
 
   if (isRestDay) {
     return (
-      <Card className="p-6 bg-gradient-to-br from-orange-50 to-yellow-50 border-2 border-orange-200 shadow-lg rounded-2xl">
-        <div className="text-center space-y-4">
-          <h3 className="text-xl font-bold text-orange-800">
+      <Card className="card-enhanced card-padding">
+        <div className="text-center content-spacing">
+          <h3 className="text-h4 text-fitness-orange-800">
             {t('exercise.restDayActivities')}
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Button 
               variant="outline" 
-              className="h-12 text-orange-700 border-2 border-orange-300 hover:bg-orange-100 hover:border-orange-400 font-semibold rounded-xl"
+              size="lg"
+              className="border-2 border-fitness-orange-300 text-fitness-orange-700 hover:bg-fitness-orange-50 hover:border-fitness-orange-400 font-semibold"
               onClick={() => window.open('https://www.youtube.com/results?search_query=stretching+routine', '_blank')}
             >
               <Youtube className="w-5 h-5 mr-2" />
@@ -50,7 +51,8 @@ export const ExerciseQuickActions = ({
             
             <Button 
               variant="outline"
-              className="h-12 text-purple-700 border-2 border-purple-300 hover:bg-purple-100 hover:border-purple-400 font-semibold rounded-xl"
+              size="lg"
+              className="border-2 border-fitness-secondary-300 text-fitness-secondary-700 hover:bg-fitness-secondary-50 hover:border-fitness-secondary-400 font-semibold"
               onClick={() => window.open('https://www.youtube.com/results?search_query=meditation+relaxation', '_blank')}
             >
               <BookOpen className="w-5 h-5 mr-2" />
@@ -63,18 +65,18 @@ export const ExerciseQuickActions = ({
   }
 
   return (
-    <Card className="p-6 bg-gradient-to-br from-health-primary/5 to-health-secondary/5 border-2 border-health-border shadow-lg rounded-2xl backdrop-blur-sm">
-      <div className="space-y-6">
+    <Card className="card-enhanced card-padding">
+      <div className="content-spacing">
         {/* Enhanced Timer Display */}
         {isWorkoutActive && (
-          <div className="text-center bg-white/80 rounded-2xl p-4 border border-health-border/30">
+          <div className="text-center bg-white/80 rounded-2xl card-padding border border-fitness-neutral-200/50">
             <div className="flex items-center justify-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-health-primary to-health-secondary rounded-xl flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-br from-fitness-primary-500 to-fitness-secondary-500 rounded-xl flex items-center justify-center">
                 <Timer className="w-5 h-5 text-white" />
               </div>
-              <span className="text-3xl font-bold bg-gradient-to-r from-health-primary to-health-secondary bg-clip-text text-transparent">{totalTime}</span>
+              <span className="text-h2 font-bold bg-gradient-to-r from-fitness-primary-500 to-fitness-secondary-500 bg-clip-text text-transparent">{totalTime}</span>
               {isPaused && (
-                <span className="text-sm text-orange-600 font-bold bg-orange-100 px-3 py-1 rounded-lg">
+                <span className="text-sm text-fitness-orange-600 font-bold bg-fitness-orange-100 px-3 py-1 rounded-lg">
                   ({t('exercise.pause')})
                 </span>
               )}
@@ -100,9 +102,9 @@ export const ExerciseQuickActions = ({
               {!isPaused ? (
                 <Button 
                   onClick={onPauseWorkout}
-                  variant="outline"
+                  variant="orange"
                   size="lg"
-                  className="border-2 border-orange-300 text-orange-700 hover:bg-orange-100 hover:border-orange-400 font-semibold"
+                  className="font-semibold"
                 >
                   <Pause className="w-5 h-5 mr-2" />
                   {t('exercise.pause')}
@@ -133,16 +135,16 @@ export const ExerciseQuickActions = ({
 
           <Button 
             onClick={onShareProgress}
-            variant="outline"
+            variant="info"
             size="lg"
-            className="border-2 border-health-primary/30 text-health-primary hover:bg-health-primary/10 hover:border-health-primary/50 font-semibold"
+            className="font-semibold"
           >
             <Share2 className="w-4 h-4 mr-2" />
             {t('exercise.share')}
           </Button>
 
           <Button 
-            variant="accent"
+            variant="secondary"
             size="lg"
             className="font-semibold"
             onClick={() => window.open('https://www.youtube.com/results?search_query=workout+tutorial', '_blank')}

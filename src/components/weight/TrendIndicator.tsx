@@ -1,5 +1,6 @@
 
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface TrendIndicatorProps {
   chartData: Array<{ weight: number }>;
@@ -23,24 +24,24 @@ const TrendIndicator = ({ chartData }: TrendIndicatorProps) => {
   if (chartData.length < 2) return null;
 
   return (
-    <div className="flex items-center space-x-2">
+    <div className="flex items-center gap-2">
       {trend.direction === 'up' && (
-        <div className="flex items-center text-orange-600">
-          <TrendingUp className="w-4 h-4 mr-1" />
-          <span className="text-sm font-medium">+{trend.change.toFixed(1)} kg</span>
-        </div>
+        <Badge variant="warning" size="sm" className="flex items-center gap-1">
+          <TrendingUp className="w-3 h-3" />
+          +{trend.change.toFixed(1)} kg
+        </Badge>
       )}
       {trend.direction === 'down' && (
-        <div className="flex items-center text-green-600">
-          <TrendingDown className="w-4 h-4 mr-1" />
-          <span className="text-sm font-medium">{trend.change.toFixed(1)} kg</span>
-        </div>
+        <Badge variant="success" size="sm" className="flex items-center gap-1">
+          <TrendingDown className="w-3 h-3" />
+          {trend.change.toFixed(1)} kg
+        </Badge>
       )}
       {trend.direction === 'neutral' && (
-        <div className="flex items-center text-gray-600">
-          <Minus className="w-4 h-4 mr-1" />
-          <span className="text-sm font-medium">Stable</span>
-        </div>
+        <Badge variant="secondary" size="sm" className="flex items-center gap-1">
+          <Minus className="w-3 h-3" />
+          Stable
+        </Badge>
       )}
     </div>
   );

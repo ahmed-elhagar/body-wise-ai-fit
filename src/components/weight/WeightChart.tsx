@@ -1,110 +1,130 @@
 
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { useWeightTracking } from "@/hooks/useWeightTracking";
+import { useWeightChartData } from "./useWeightChartData";
+import TimeRangeSelector from "./TimeRangeSelector";
+import DataSummary from "./DataSummary";
+import ChartLegend from "./ChartLegend";
+import TrendIndicator from "./TrendIndicator";
+import EmptyWeightChart from "./EmptyWeightChart";
 
-interface WeightChartProps {
-  chartData: Array<{
-    date: string;
-    weight: number;
-    bodyFat: number | null;
-    muscleMass: number | null;
-    formattedDate: string;
-  }>;
-  goalWeight?: number;
-}
+const WeightChart = () => {
+  const [timeRange, setTimeRange] = useState<30 | 90 | 180>(30);
+  const { weightEntries, isLoading, goalWeight } = useWeightTracking();
+  const chartData = useWeightChartData(weightEntries, timeRange);
 
-const WeightChart = ({ chartData, goalWeight }: WeightChartProps) => {
-  const formatTooltipValue = (value: any, name: string) => {
-    if (typeof value === 'number') {
-      if (name === 'bodyFat') return `${value.toFixed(1)}%`;
-      return `${value.toFixed(1)} kg`;
-    }
-    return '0.0';
-  };
+  if (isLoading) {
+    return (
+      <Card className="card-enhanced">
+        <CardHeader className="card-padding">
+          <CardTitle className="text-h4">Weight Progress</CardTitle>
+        </CardHeader>
+        <CardContent className="card-padding">
+          <div className="animate-pulse space-y-4">
+            <div className="h-64 bg-fitness-neutral-200 rounded-xl"></div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
-  const customTooltipFormatter = (value: any, name: string) => {
-    return [formatTooltipValue(value, name), name === 'weight' ? 'Weight' : name === 'bodyFat' ? 'Body Fat' : 'Muscle Mass'];
-  };
+  if (chartData.length === 0) {
+    return (
+      <Card className="card-enhanced">
+        <CardHeader className="card-padding">
+          <CardTitle className="text-h4">Weight Progress</CardTitle>
+        </CardHeader>
+        <CardContent className="card-padding">
+          <EmptyWeightChart />
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
-    <div className="h-80">
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-          <XAxis 
-            dataKey="formattedDate"
-            tick={{ fontSize: 12 }}
-            interval="preserveStartEnd"
-          />
-          <YAxis 
-            domain={['dataMin - 2', 'dataMax + 2']}
-            tick={{ fontSize: 12 }}
-            tickFormatter={(value) => `${value} kg`}
-          />
-          <Tooltip 
-            labelFormatter={(value) => `Date: ${value}`}
-            formatter={customTooltipFormatter}
-            contentStyle={{
-              backgroundColor: 'white',
-              border: '1px solid #e5e7eb',
-              borderRadius: '8px',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-            }}
-          />
-          
-          {/* Goal Weight Line */}
-          {goalWeight && (
-            <ReferenceLine 
-              y={goalWeight} 
-              stroke="#ef4444" 
-              strokeDasharray="5 5"
-              strokeWidth={2}
-              label={{ 
-                value: `Goal: ${goalWeight}kg`, 
-                position: "right",
-                style: { fontSize: '12px', fill: '#ef4444' }
-              }}
-            />
-          )}
-          
-          {/* Main Weight Line */}
-          <Line 
-            type="monotone" 
-            dataKey="weight" 
-            stroke="#3b82f6" 
-            strokeWidth={3}
-            dot={{ fill: '#3b82f6', strokeWidth: 2, r: 5 }}
-            activeDot={{ r: 7, stroke: '#3b82f6', strokeWidth: 2, fill: 'white' }}
-            connectNulls={false}
-          />
-          
-          {/* Body Fat Line */}
-          {chartData.some(d => d.bodyFat !== null) && (
-            <Line 
-              type="monotone" 
-              dataKey="bodyFat" 
-              stroke="#f59e0b" 
-              strokeWidth={2}
-              strokeDasharray="5 5"
-              dot={{ fill: '#f59e0b', strokeWidth: 2, r: 3 }}
-              connectNulls={false}
-            />
-          )}
-          
-          {/* Muscle Mass Line */}
-          {chartData.some(d => d.muscleMass !== null) && (
-            <Line 
-              type="monotone" 
-              dataKey="muscleMass" 
-              stroke="#10b981" 
-              strokeWidth={2}
-              strokeDasharray="3 3"
-              dot={{ fill: '#10b981', strokeWidth: 2, r: 3 }}
-              connectNulls={false}
-            />
-          )}
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
+    <Card className="card-enhanced">
+      <CardHeader className="card-padding">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="space-y-2">
+            <CardTitle className="text-h4 flex items-center gap-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-fitness-primary-500 to-fitness-accent-500 rounded-lg flex items-center justify-center">
+                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+              Weight Progress
+            </CardTitle>
+            <TrendIndicator chartData={chartData} />
+          </div>
+          <TimeRangeSelector timeRange={timeRange} onTimeRangeChange={setTimeRange} />
+        </div>
+      </CardHeader>
+      
+      <CardContent className="card-padding pt-0">
+        <div className="h-64 mb-6">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--fitness-neutral-200))" />
+              <XAxis 
+                dataKey="formattedDate" 
+                stroke="hsl(var(--fitness-neutral-500))"
+                fontSize={12}
+              />
+              <YAxis 
+                stroke="hsl(var(--fitness-neutral-500))"
+                fontSize={12}
+              />
+              <Tooltip 
+                contentStyle={{
+                  backgroundColor: 'hsl(var(--card))',
+                  border: '1px solid hsl(var(--border))',
+                  borderRadius: '12px',
+                  boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)'
+                }}
+              />
+              <Legend />
+              
+              <Line 
+                type="monotone" 
+                dataKey="weight" 
+                stroke="hsl(var(--fitness-primary-500))" 
+                strokeWidth={3}
+                dot={{ fill: 'hsl(var(--fitness-primary-500))', strokeWidth: 2, r: 6 }}
+                activeDot={{ r: 8, fill: 'hsl(var(--fitness-primary-600))' }}
+                name="Weight (kg)"
+              />
+              
+              {chartData.some(d => d.bodyFat !== null) && (
+                <Line 
+                  type="monotone" 
+                  dataKey="bodyFat" 
+                  stroke="hsl(var(--fitness-orange-500))" 
+                  strokeWidth={2}
+                  dot={{ fill: 'hsl(var(--fitness-orange-500))', strokeWidth: 2, r: 4 }}
+                  name="Body Fat %"
+                />
+              )}
+              
+              {chartData.some(d => d.muscleMass !== null) && (
+                <Line 
+                  type="monotone" 
+                  dataKey="muscleMass" 
+                  stroke="hsl(var(--success-500))" 
+                  strokeWidth={2}
+                  dot={{ fill: 'hsl(var(--success-500))', strokeWidth: 2, r: 4 }}
+                  name="Muscle Mass (kg)"
+                />
+              )}
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        <ChartLegend chartData={chartData} goalWeight={goalWeight} />
+        <DataSummary chartData={chartData} timeRange={timeRange} />
+      </CardContent>
+    </Card>
   );
 };
 
