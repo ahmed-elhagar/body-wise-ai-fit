@@ -1,115 +1,123 @@
 
-import { useLocation, useNavigate } from "react-router-dom";
-import { useI18n } from "@/hooks/useI18n";
-import { useSidebar } from "@/components/ui/sidebar";
-import { cn } from "@/lib/utils";
-import { useState, useEffect } from "react";
-import {
-  LayoutDashboard,
-  UtensilsCrossed,
-  Camera,
-  Dumbbell,
-  Target,
-  User,
-  BarChart3,
-  Scale,
-} from "lucide-react";
-import {
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
+import React from "react";
+import { Home, Utensils, Dumbbell, Target, User, TrendingUp, MessageCircle, Calculator } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { 
+  SidebarMenu, 
+  SidebarMenuItem, 
+  SidebarMenuButton, 
+  SidebarGroup,
+  SidebarGroupLabel 
 } from "@/components/ui/sidebar";
+import { useI18n } from "@/hooks/useI18n";
+import { cn } from "@/lib/utils";
+
+interface NavigationItem {
+  href: string;
+  icon: React.ComponentType<any>;
+  label: string;
+}
 
 export const SidebarNavigation = () => {
-  const { t, isRTL } = useI18n();
+  const { tFrom, isRTL } = useI18n();
+  const tNav = tFrom('navigation');
   const location = useLocation();
-  const navigate = useNavigate();
-  const { state } = useSidebar();
-  const [isCollapsing, setIsCollapsing] = useState(false);
 
-  useEffect(() => {
-    if (state === "collapsed") {
-      setIsCollapsing(true);
-      const timer = setTimeout(() => setIsCollapsing(false), 300);
-      return () => clearTimeout(timer);
-    }
-  }, [state]);
-
-  const navigationItems = [
-    { 
-      title: t("Dashboard"), 
-      icon: LayoutDashboard, 
-      href: "/dashboard" 
-    },
-    { 
-      title: t("Meal Plan"), 
-      icon: UtensilsCrossed, 
-      href: "/meal-plan" 
-    },
-    { 
-      title: t("Food Tracker"), 
-      icon: Camera, 
-      href: "/food-tracker" 
-    },
-    { 
-      title: t("Exercise"), 
-      icon: Dumbbell, 
-      href: "/exercise" 
-    },
-    { 
-      title: t("Goals"), 
-      icon: Target, 
-      href: "/goals" 
-    },
-    { 
-      title: t("Profile"), 
-      icon: User, 
-      href: "/profile" 
-    },
-    { 
-      title: t("Progress"), 
-      icon: BarChart3, 
-      href: "/progress" 
-    },
-    { 
-      title: t("Weight Tracking"), 
-      icon: Scale, 
-      href: "/weight-tracking" 
-    },
+  const mainItems: NavigationItem[] = [
+    { href: "/dashboard", icon: Home, label: String(tNav("dashboard")) },
+    { href: "/meal-plan", icon: Utensils, label: String(tNav("mealPlan")) },
+    { href: "/exercise", icon: Dumbbell, label: String(tNav("exercise")) },
+    { href: "/goals", icon: Target, label: String(tNav("goals")) },
+    { href: "/progress", icon: TrendingUp, label: String(tNav("progress")) },
+    { href: "/profile", icon: User, label: String(tNav("profile")) },
   ];
 
-  const handleNavigation = (href: string) => {
-    navigate(href);
-  };
+  const toolItems: NavigationItem[] = [
+    { href: "/calorie-checker", icon: Calculator, label: String(tNav("calorieChecker")) },
+    { href: "/food-tracker", icon: Utensils, label: String(tNav("foodTracker")) },
+    { href: "/weight-tracking", icon: TrendingUp, label: String(tNav("weightTracking")) },
+    { href: "/ai-chat", icon: MessageCircle, label: String(tNav("aiChat")) },
+  ];
 
   return (
-    <SidebarMenu>
-      {navigationItems.map((item) => {
-        const Icon = item.icon;
-        const isActive = location.pathname === item.href;
-        
-        return (
-          <SidebarMenuItem key={item.href}>
-            <SidebarMenuButton
-              onClick={() => handleNavigation(item.href)}
-              className={cn(
-                "nav-link-rtl w-full justify-start transition-all duration-200",
-                isActive && "bg-primary/10 text-primary border-e-2 border-primary",
-                !isActive && "hover:bg-muted/50",
-                isRTL && isActive && "border-s-2 border-e-0"
-              )}
-              aria-label={item.title}
-            >
-              <Icon className={cn("w-5 h-5 icon-start", isActive && "text-primary")} />
-              {state === "expanded" && !isCollapsing && (
-                <span className={cn("font-medium", isActive && "text-primary")}>
-                  {item.title}
-                </span>
-              )}
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        );
-      })}
-    </SidebarMenu>
+    <>
+      <SidebarGroup className="px-4 py-2">
+        <SidebarGroupLabel className={cn(
+          "text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2",
+          isRTL && "text-right"
+        )}>
+          {String(tNav("main"))}
+        </SidebarGroupLabel>
+        <SidebarMenu className="space-y-1">
+          {mainItems.map((item) => {
+            const isActive = location.pathname === item.href;
+            return (
+              <SidebarMenuItem key={item.href}>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive}
+                  className={cn(
+                    "w-full text-gray-600 hover:text-gray-900 hover:bg-blue-50 transition-colors",
+                    isActive && "bg-blue-50 text-blue-700 border-r-2 border-blue-600",
+                    isRTL && "text-right",
+                    isRTL && isActive && "border-r-0 border-l-2 border-blue-600"
+                  )}
+                >
+                  <Link 
+                    to={item.href} 
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 w-full",
+                      isRTL && "flex-row-reverse"
+                    )}
+                  >
+                    <item.icon className="h-5 w-5 flex-shrink-0" />
+                    <span className="font-medium truncate">{item.label}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
+        </SidebarMenu>
+      </SidebarGroup>
+
+      <SidebarGroup className="px-4 py-2">
+        <SidebarGroupLabel className={cn(
+          "text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2",
+          isRTL && "text-right"
+        )}>
+          {String(tNav("tools"))}
+        </SidebarGroupLabel>
+        <SidebarMenu className="space-y-1">
+          {toolItems.map((item) => {
+            const isActive = location.pathname === item.href;
+            return (
+              <SidebarMenuItem key={item.href}>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive}
+                  className={cn(
+                    "w-full text-gray-600 hover:text-gray-900 hover:bg-orange-50 transition-colors",
+                    isActive && "bg-orange-50 text-orange-700 border-r-2 border-orange-600",
+                    isRTL && "text-right",
+                    isRTL && isActive && "border-r-0 border-l-2 border-orange-600"
+                  )}
+                >
+                  <Link 
+                    to={item.href} 
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 w-full",
+                      isRTL && "flex-row-reverse"
+                    )}
+                  >
+                    <item.icon className="h-5 w-5 flex-shrink-0" />
+                    <span className="font-medium truncate">{item.label}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
+        </SidebarMenu>
+      </SidebarGroup>
+    </>
   );
 };
