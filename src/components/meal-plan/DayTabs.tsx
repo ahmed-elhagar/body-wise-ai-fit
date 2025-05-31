@@ -30,26 +30,23 @@ const DayTabs = ({ weekStartDate, selectedDayNumber, onDayChange }: DayTabsProps
   });
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-      <div className="p-4 bg-gradient-to-r from-fitness-primary-50 to-fitness-accent-50">
-        <h3 className="text-sm font-semibold text-fitness-primary-700 text-center mb-3">
-          Week Days
-        </h3>
+    <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+      <div className="p-3 bg-gradient-to-r from-fitness-primary-50 to-fitness-accent-50">
         <div className="flex gap-1 overflow-x-auto scrollbar-hide">
-          {days.map(({ dayNumber, date, isSelected, isToday, dayName, dayDate, fullDayName }) => (
+          {days.map(({ dayNumber, date, isSelected, isToday, dayName, dayDate }) => (
             <button
               key={dayNumber}
               onClick={() => onDayChange(dayNumber)}
-              className={`flex flex-col items-center min-w-[80px] px-4 py-4 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 border-2 ${
+              className={`flex flex-col items-center min-w-[60px] px-3 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 border ${
                 isSelected
-                  ? "bg-gradient-to-br from-fitness-primary-500 to-fitness-primary-600 text-white shadow-xl scale-105 border-fitness-primary-400"
+                  ? "bg-gradient-to-br from-fitness-primary-500 to-fitness-primary-600 text-white shadow-lg scale-105 border-fitness-primary-400"
                   : isToday
-                  ? "bg-gradient-to-br from-fitness-orange-100 to-fitness-orange-200 text-fitness-orange-800 border-fitness-orange-300 hover:from-fitness-orange-200 hover:to-fitness-orange-300 shadow-lg"
-                  : "bg-gradient-to-br from-gray-50 to-white text-gray-700 border-gray-200 hover:from-gray-100 hover:to-gray-50 hover:border-gray-300 shadow-md hover:shadow-lg"
+                  ? "bg-gradient-to-br from-fitness-orange-100 to-fitness-orange-200 text-fitness-orange-800 border-fitness-orange-300 hover:from-fitness-orange-200 hover:to-fitness-orange-300 shadow-md"
+                  : "bg-gradient-to-br from-gray-50 to-white text-gray-700 border-gray-200 hover:from-gray-100 hover:to-gray-50 hover:border-gray-300 shadow-sm hover:shadow-md"
               }`}
             >
               {/* Day Date */}
-              <span className={`text-2xl font-bold mb-1 ${
+              <span className={`text-lg font-bold mb-0.5 ${
                 isSelected 
                   ? "text-white" 
                   : isToday 
@@ -72,12 +69,12 @@ const DayTabs = ({ weekStartDate, selectedDayNumber, onDayChange }: DayTabsProps
               
               {/* Today Indicator */}
               {isToday && !isSelected && (
-                <div className="w-2 h-2 bg-fitness-orange-500 rounded-full mt-1 animate-pulse shadow-lg"></div>
+                <div className="w-1.5 h-1.5 bg-fitness-orange-500 rounded-full mt-0.5 animate-pulse"></div>
               )}
               
               {/* Selected Indicator */}
               {isSelected && (
-                <div className="w-2.5 h-2.5 bg-white rounded-full mt-1 shadow-lg"></div>
+                <div className="w-2 h-2 bg-white rounded-full mt-0.5"></div>
               )}
             </button>
           ))}

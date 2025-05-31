@@ -59,7 +59,7 @@ const MealRecipeDialog = ({ isOpen, onClose, meal, onRecipeGenerated }: MealReci
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-white to-gray-50 border-0 shadow-2xl">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-white via-fitness-neutral-50/30 to-fitness-primary-50/20 border-0 shadow-2xl">
         <div className="space-y-6 p-6">
           <RecipeHeader meal={meal} />
           

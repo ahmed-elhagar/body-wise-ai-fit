@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { addDays } from "date-fns";
@@ -123,6 +122,7 @@ const MealPlanPageRefactored = () => {
               hasWeeklyPlan={!!mealPlanState.currentWeekPlan}
               weeklyPlanId={mealPlanState.currentWeekPlan?.weeklyPlan?.id}
               selectedDayNumber={mealPlanState.selectedDayNumber}
+              onRegeneratePlan={handleRegeneratePlan}
             />
           </Section>
 
@@ -144,7 +144,6 @@ const MealPlanPageRefactored = () => {
                   onViewModeChange={setViewMode}
                   onAddSnack={() => handleAddSnack(mealPlanState.selectedDayNumber)}
                   onShowShoppingList={() => setShowShoppingDrawer(true)}
-                  onShowAIDialog={() => mealPlanState.setShowAIDialog(true)}
                 />
               </Section>
 

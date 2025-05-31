@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Calendar, Grid3X3, Plus, ShoppingCart, Sparkles } from "lucide-react";
+import { Calendar, Grid3X3, Plus, ShoppingCart } from "lucide-react";
 import { useMealPlanTranslation } from "@/utils/translationHelpers";
 
 interface CompactControlBarProps {
@@ -9,15 +9,13 @@ interface CompactControlBarProps {
   onViewModeChange: (mode: 'daily' | 'weekly') => void;
   onAddSnack: () => void;
   onShowShoppingList: () => void;
-  onShowAIDialog: () => void;
 }
 
 const CompactControlBar = ({
   viewMode,
   onViewModeChange,
   onAddSnack,
-  onShowShoppingList,
-  onShowAIDialog
+  onShowShoppingList
 }: CompactControlBarProps) => {
   const { mealPlanT } = useMealPlanTranslation();
 
@@ -70,15 +68,6 @@ const CompactControlBar = ({
             >
               <ShoppingCart className="w-4 h-4 mr-1.5" />
               {mealPlanT('shoppingList')}
-            </Button>
-
-            <Button
-              onClick={onShowAIDialog}
-              size="sm"
-              className="bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 text-white hover:from-fitness-primary-600 hover:to-fitness-primary-700 shadow-lg"
-            >
-              <Sparkles className="w-4 h-4 mr-1.5" />
-              {mealPlanT('generateAIPlan')}
             </Button>
           </div>
         </div>
