@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { ImageIcon, ChefHat, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useMealImageGeneration } from "@/hooks/useMealImageGeneration";
 
 interface Meal {
   id?: string;
@@ -26,12 +27,26 @@ interface MealCardImageProps {
   meal: Meal;
   mealImage: string | null;
   isLoadingImage: boolean;
-  onGenerateImage: () => Promise<void>;
+  onGenerateImage?: () => Promise<void>;
 }
 
 const MealCardImage = ({ meal, mealImage, isLoadingImage, onGenerateImage }: MealCardImageProps) => {
   const [imageError, setImageError] = useState(false);
   const [isImageLoading, setIsImageLoading] = useState(true);
+  const { generateMealImage, isGeneratingImage } = useMealImageGeneration();
+
+  const handleGenerateImage = async () => {
+    if (onGenerateImage) {
+      await onGenerateImage();
+    } else {
+      // Use enhanced image generation as fallback
+      const imageUrl = await generateMealImage(meal.name, meal.ingredients);
+      if (imageUrl) {
+        // Handle image URL update logic here if needed
+        console.log('Generated image URL:', imageUrl);
+      }
+    }
+  };
 
   const getMealTypeGradient = (type: string) => {
     switch (type.toLowerCase()) {
@@ -66,15 +81,15 @@ const MealCardImage = ({ meal, mealImage, isLoadingImage, onGenerateImage }: Mea
             {meal.name.replace('🍎 ', '')}
           </p>
           
-          {/* Generate Image Button */}
+          {/* Generate Image Button with enhanced functionality */}
           <Button
             size="sm"
             variant="outline"
             className="bg-white/20 border-white/30 text-white hover:bg-white/30 backdrop-blur-sm"
-            onClick={onGenerateImage}
-            disabled={isLoadingImage}
+            onClick={handleGenerateImage}
+            disabled={isLoadingImage || isGeneratingImage}
           >
-            {isLoadingImage ? (
+            {isLoadingImage || isGeneratingImage ? (
               <>
                 <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin mr-1"></div>
                 Generating...
