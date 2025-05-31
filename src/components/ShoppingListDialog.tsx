@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -108,7 +109,7 @@ const ShoppingListDialog = ({ isOpen, onClose, items }: ShoppingListDialogProps)
                         }`}
                         onClick={() => toggleItem(itemKey)}
                       >
-                        <span>{item.name || item}</span>
+                        <span>{item.name}</span>
                         {item.quantity && item.unit && (
                           <span className="text-sm text-gray-500">
                             {item.quantity} {item.unit}
