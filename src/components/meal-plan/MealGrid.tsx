@@ -28,7 +28,9 @@ const MealGrid = ({
     mealsCount: meals.length,
     dayNumber,
     hasShowRecipeHandler: !!onShowRecipe,
-    hasExchangeMealHandler: !!onExchangeMeal
+    hasExchangeMealHandler: !!onExchangeMeal,
+    onShowRecipeType: typeof onShowRecipe,
+    onExchangeMealType: typeof onExchangeMeal
   });
 
   // Group meals by type
@@ -68,14 +70,20 @@ const MealGrid = ({
 
             {typeMeals.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {typeMeals.map((meal) => (
-                  <MealCard
-                    key={meal.id}
-                    meal={meal}
-                    onShowRecipe={onShowRecipe}
-                    onExchangeMeal={onExchangeMeal}
-                  />
-                ))}
+                {typeMeals.map((meal) => {
+                  console.log('🍽️ Rendering MealCard for:', meal.name, 'with handlers:', {
+                    hasShowRecipe: !!onShowRecipe,
+                    hasExchangeMeal: !!onExchangeMeal
+                  });
+                  return (
+                    <MealCard
+                      key={meal.id}
+                      meal={meal}
+                      onShowRecipe={onShowRecipe}
+                      onExchangeMeal={onExchangeMeal}
+                    />
+                  );
+                })}
               </div>
             ) : mealType === 'snack' ? (
               <div className="text-center py-8 text-gray-500">

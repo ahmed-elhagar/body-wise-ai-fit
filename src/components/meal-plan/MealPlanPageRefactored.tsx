@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -143,19 +144,25 @@ const MealPlanPageRefactored = () => {
   };
 
   const handleShowRecipe = (meal: DailyMeal) => {
-    console.log('🍽️ MealPlanPage: handleShowRecipe called with meal:', meal.name, meal.id);
-    console.log('🍽️ Setting selectedMeal and opening recipe dialog');
+    console.log('🎯 MealPlanPageRefactored: handleShowRecipe called with meal:', meal.name, meal.id);
+    console.log('🎯 Setting selectedMeal and opening recipe dialog');
+    console.log('🎯 Current showRecipeDialog state:', showRecipeDialog);
+    
     setSelectedMeal(meal);
     setShowRecipeDialog(true);
-    console.log('🍽️ Recipe dialog state set to true');
+    
+    console.log('🎯 Recipe dialog state set to true, selectedMeal set to:', meal.name);
   };
 
   const handleExchangeMeal = (meal: DailyMeal) => {
-    console.log('🔄 MealPlanPage: handleExchangeMeal called with meal:', meal.name, meal.id);
+    console.log('🔄 MealPlanPageRefactored: handleExchangeMeal called with meal:', meal.name, meal.id);
     console.log('🔄 Setting selectedMeal and opening exchange dialog');
+    console.log('🔄 Current showExchangeDialog state:', showExchangeDialog);
+    
     setSelectedMeal(meal);
     setShowExchangeDialog(true);
-    console.log('🔄 Exchange dialog state set to true');
+    
+    console.log('🔄 Exchange dialog state set to true, selectedMeal set to:', meal.name);
   };
 
   const handleCloseRecipeDialog = () => {
@@ -169,6 +176,18 @@ const MealPlanPageRefactored = () => {
     setShowExchangeDialog(false);
     setSelectedMeal(null);
   };
+
+  // Enhanced logging for current dialog states
+  console.log('🖥️ MealPlanPageRefactored: Current dialog states:', {
+    showRecipeDialog,
+    showExchangeDialog,
+    selectedMealName: selectedMeal?.name,
+    selectedMealId: selectedMeal?.id,
+    hasHandlers: {
+      showRecipe: !!handleShowRecipe,
+      exchangeMeal: !!handleExchangeMeal
+    }
+  });
 
   if (mealPlanState.isLoading) {
     return <MealPlanLoadingBackdrop isLoading={true} message={mealPlanT('loading')} />;
@@ -186,13 +205,6 @@ const MealPlanPageRefactored = () => {
       </div>
     );
   }
-
-  console.log('🖥️ MealPlanPage: Rendering with dialog states:', {
-    showRecipeDialog,
-    showExchangeDialog,
-    selectedMealName: selectedMeal?.name,
-    selectedMealId: selectedMeal?.id
-  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-fitness-neutral-50 via-fitness-primary-50/30 to-fitness-accent-50/30">
