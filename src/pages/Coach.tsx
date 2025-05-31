@@ -3,7 +3,6 @@ import { useState } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { useCoach } from "@/hooks/useCoach";
-import { useI18n } from "@/hooks/useI18n";
 import { Navigate } from "react-router-dom";
 import { CoachHeader } from "@/components/coach/CoachHeader";
 import { CoachStatsCards } from "@/components/coach/CoachStatsCards";
@@ -11,10 +10,8 @@ import { CoachTabs } from "@/components/coach/CoachTabs";
 
 const Coach = () => {
   const { trainees, isLoading, isCoach } = useCoach();
-  const { t } = useI18n();
   const [selectedClient, setSelectedClient] = useState<string | null>(null);
 
-  // Mock stats data for now
   const coachStats = {
     totalClients: trainees?.length || 0,
     messagesToday: 0,
