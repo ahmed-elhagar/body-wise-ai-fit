@@ -31,6 +31,19 @@ export const useCoachChat = (coachId: string, traineeId: string) => {
 
       console.log('🔄 Fetching chat messages for coach:', coachId, 'trainee:', traineeId);
 
+      // First verify the relationship exists
+      const { data: relationship, error: relationshipError } = await supabase
+        .from('coach_trainees')
+        .select('id')
+        .eq('coach_id', coachId)
+        .eq('trainee_id', traineeId)
+        .single();
+
+      if (relationshipError) {
+        console.error('❌ No valid coach-trainee relationship found:', relationshipError);
+        throw new Error('Invalid coach-trainee relationship');
+      }
+
       const { data, error } = await supabase
         .from('coach_trainee_messages')
         .select(`
@@ -58,7 +71,8 @@ export const useCoachChat = (coachId: string, traineeId: string) => {
       return transformedMessages;
     },
     enabled: !!user?.id && !!coachId && !!traineeId,
-    refetchInterval: 5000, // Refetch every 5 seconds as fallback
+    refetchInterval: 5000,
+    staleTime: 1000, // Consider data stale after 1 second for real-time feel
   });
 
   // Create notification for new message
@@ -71,7 +85,7 @@ export const useCoachChat = (coachId: string, traineeId: string) => {
           title: `New message from ${senderName}`,
           message: message.length > 100 ? message.substring(0, 100) + '...' : message,
           type: 'info',
-          action_url: '/coach', // Navigate to coach page
+          action_url: '/coach',
           metadata: {
             chat_type: 'coach_trainee',
             sender_id: user?.id,
@@ -98,6 +112,18 @@ export const useCoachChat = (coachId: string, traineeId: string) => {
       }
 
       console.log('📤 Sending message:', { coachId, traineeId, senderId: user.id, message });
+
+      // Verify relationship still exists before sending
+      const { data: relationship, error: relationshipError } = await supabase
+        .from('coach_trainees')
+        .select('id')
+        .eq('coach_id', coachId)
+        .eq('trainee_id', traineeId)
+        .single();
+
+      if (relationshipError) {
+        throw new Error('Coach-trainee relationship no longer exists');
+      }
 
       // Determine sender type based on user role
       const senderType = user.id === coachId ? 'coach' : 'trainee';
@@ -135,13 +161,21 @@ export const useCoachChat = (coachId: string, traineeId: string) => {
       return data;
     },
     onSuccess: () => {
+      // Only invalidate chat queries, not coach-trainee queries
       queryClient.invalidateQueries({ queryKey: ['coach-chat-messages', coachId, traineeId] });
-      queryClient.invalidateQueries({ queryKey: ['notifications'] }); // Refresh notifications
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['unread-messages'] });
       toast.success('Message sent successfully');
     },
     onError: (error: Error) => {
       console.error('Error sending message:', error);
-      toast.error(`Failed to send message: ${error.message}`);
+      if (error.message.includes('relationship no longer exists')) {
+        toast.error('Cannot send message: Trainee assignment has been removed');
+        // Refresh the coach trainees list
+        queryClient.invalidateQueries({ queryKey: ['coach-trainees'] });
+      } else {
+        toast.error(`Failed to send message: ${error.message}`);
+      }
     },
   });
 
@@ -169,7 +203,7 @@ export const useCoachChat = (coachId: string, traineeId: string) => {
     },
   });
 
-  // Set up real-time subscription
+  // Set up real-time subscription for messages only
   useEffect(() => {
     if (!coachId || !traineeId) return;
 
@@ -188,7 +222,8 @@ export const useCoachChat = (coachId: string, traineeId: string) => {
         (payload) => {
           console.log('📨 Real-time message received:', payload);
           queryClient.invalidateQueries({ queryKey: ['coach-chat-messages', coachId, traineeId] });
-          queryClient.invalidateQueries({ queryKey: ['notifications'] }); // Refresh notifications
+          queryClient.invalidateQueries({ queryKey: ['notifications'] });
+          queryClient.invalidateQueries({ queryKey: ['unread-messages'] });
           
           // Show toast notification for new messages from others
           if (payload.new?.sender_id !== user?.id) {

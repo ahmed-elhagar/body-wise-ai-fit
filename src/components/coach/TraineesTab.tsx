@@ -1,13 +1,15 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Users, MessageCircle, Target, UserPlus, ArrowLeft } from "lucide-react";
+import { Users, MessageCircle, Target, UserPlus, ArrowLeft, AlertCircle } from "lucide-react";
 import { useI18n } from "@/hooks/useI18n";
 import { useState } from "react";
 import { AssignTraineeDialog } from "./AssignTraineeDialog";
 import { CoachTraineeChat } from "./CoachTraineeChat";
 import { TraineeProgressView } from "./TraineeProgressView";
 import { useUnreadMessagesByTrainee } from "@/hooks/useUnreadMessages";
+import { toast } from "sonner";
 
 interface TraineesTabProps {
   trainees: any[];
@@ -26,7 +28,15 @@ export const TraineesTab = ({ trainees, onChatClick }: TraineesTabProps) => {
   console.log('TraineesTab render - trainees:', trainees?.length || 0, 'viewMode:', viewMode);
 
   const handleChatClick = (trainee: any) => {
-    console.log('Chat clicked for trainee:', trainee.trainee_id);
+    console.log('Chat clicked for trainee:', trainee.trainee_id, 'Full trainee object:', trainee);
+    
+    // Validate trainee data before opening chat
+    if (!trainee.trainee_id || !trainee.trainee_profile) {
+      console.error('Invalid trainee data:', trainee);
+      toast.error('Error: Invalid trainee data. Please refresh and try again.');
+      return;
+    }
+
     setSelectedTrainee(trainee);
     setViewMode('chat');
     onChatClick(trainee.trainee_id);
@@ -34,6 +44,14 @@ export const TraineesTab = ({ trainees, onChatClick }: TraineesTabProps) => {
 
   const handleProgressClick = (trainee: any) => {
     console.log('Progress clicked for trainee:', trainee.trainee_id);
+    
+    // Validate trainee data before opening progress view
+    if (!trainee.trainee_id || !trainee.trainee_profile) {
+      console.error('Invalid trainee data:', trainee);
+      toast.error('Error: Invalid trainee data. Please refresh and try again.');
+      return;
+    }
+
     setSelectedTrainee(trainee);
     setViewMode('progress');
   };
@@ -46,10 +64,18 @@ export const TraineesTab = ({ trainees, onChatClick }: TraineesTabProps) => {
 
   // Show chat view
   if (viewMode === 'chat' && selectedTrainee) {
+    // Double-check trainee data is still valid
+    if (!selectedTrainee.trainee_id || !selectedTrainee.trainee_profile) {
+      console.error('Selected trainee data became invalid:', selectedTrainee);
+      toast.error('Error: Trainee data is invalid. Returning to list.');
+      handleBackToList();
+      return null;
+    }
+
     return (
       <CoachTraineeChat
         traineeId={selectedTrainee.trainee_id}
-        traineeName={`${selectedTrainee.trainee_profile?.first_name} ${selectedTrainee.trainee_profile?.last_name}`}
+        traineeName={`${selectedTrainee.trainee_profile?.first_name || 'Unknown'} ${selectedTrainee.trainee_profile?.last_name || 'User'}`}
         onBack={handleBackToList}
       />
     );
@@ -57,17 +83,25 @@ export const TraineesTab = ({ trainees, onChatClick }: TraineesTabProps) => {
 
   // Show progress view
   if (viewMode === 'progress' && selectedTrainee) {
+    // Double-check trainee data is still valid
+    if (!selectedTrainee.trainee_id || !selectedTrainee.trainee_profile) {
+      console.error('Selected trainee data became invalid:', selectedTrainee);
+      toast.error('Error: Trainee data is invalid. Returning to list.');
+      handleBackToList();
+      return null;
+    }
+
     return (
       <TraineeProgressView
         traineeId={selectedTrainee.trainee_id}
-        traineeName={`${selectedTrainee.trainee_profile?.first_name} ${selectedTrainee.trainee_profile?.last_name}`}
+        traineeName={`${selectedTrainee.trainee_profile?.first_name || 'Unknown'} ${selectedTrainee.trainee_profile?.last_name || 'User'}`}
         traineeProfile={selectedTrainee.trainee_profile}
         onBack={handleBackToList}
       />
     );
   }
 
-  // Show main trainees list - this should always render when viewMode is 'list'
+  // Show main trainees list
   return (
     <>
       <Card>
@@ -87,16 +121,29 @@ export const TraineesTab = ({ trainees, onChatClick }: TraineesTabProps) => {
           {trainees && trainees.length > 0 ? (
             <div className="space-y-4">
               {trainees.map((trainee: any) => {
-                console.log('Rendering trainee:', trainee.id, trainee.trainee_profile?.first_name);
+                // Validate each trainee before rendering
+                if (!trainee.trainee_id || !trainee.trainee_profile) {
+                  console.warn('Skipping invalid trainee:', trainee);
+                  return (
+                    <div key={trainee.id || Math.random()} className="flex items-center justify-between p-4 border rounded-lg bg-red-50 border-red-200">
+                      <div className="flex items-center gap-2">
+                        <AlertCircle className="h-4 w-4 text-red-500" />
+                        <span className="text-red-700">Invalid trainee data - please contact support</span>
+                      </div>
+                    </div>
+                  );
+                }
+
+                console.log('Rendering valid trainee:', trainee.id, trainee.trainee_profile?.first_name);
                 const unreadCount = unreadCounts[trainee.trainee_id] || 0;
                 
                 return (
                   <div key={trainee.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
                       <h3 className="font-semibold">
-                        {trainee.trainee_profile?.first_name} {trainee.trainee_profile?.last_name}
+                        {trainee.trainee_profile?.first_name || 'Unknown'} {trainee.trainee_profile?.last_name || 'User'}
                       </h3>
-                      <p className="text-sm text-gray-600">{trainee.trainee_profile?.email}</p>
+                      <p className="text-sm text-gray-600">{trainee.trainee_profile?.email || 'No email'}</p>
                       <Badge variant="outline" className="mt-1">
                         {trainee.trainee_profile?.fitness_goal || t("General Fitness")}
                       </Badge>

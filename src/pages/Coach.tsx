@@ -13,10 +13,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle, Users } from "lucide-react";
 
 const Coach = () => {
-  const { isAdmin, isCoach, isLoading } = useRole();
-  const { trainees, isLoadingTrainees, error } = useCoachSystem();
+  const { isAdmin, isCoach: isRoleCoach, isLoading: isRoleLoading } = useRole();
+  const { trainees, isLoadingTrainees, isCoach: isSystemCoach, error, refetchTrainees } = useCoachSystem();
 
-  if (isLoading || isLoadingTrainees) {
+  const isLoading = isRoleLoading || isLoadingTrainees;
+  const isCoach = isAdmin || isRoleCoach || isSystemCoach;
+
+  console.log('Coach page - isAdmin:', isAdmin, 'isRoleCoach:', isRoleCoach, 'isSystemCoach:', isSystemCoach, 'trainees:', trainees?.length);
+
+  if (isLoading) {
     return (
       <ProtectedRoute>
         <Layout>
@@ -32,7 +37,7 @@ const Coach = () => {
   }
 
   // Allow access for both coaches and admins
-  if (!isAdmin && !isCoach) {
+  if (!isCoach) {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -50,9 +55,15 @@ const Coach = () => {
                     <h3 className="text-lg font-semibold text-red-900">
                       Error Loading Trainee Data
                     </h3>
-                    <p className="text-red-700">
+                    <p className="text-red-700 mb-4">
                       {error?.message || 'Unable to load trainee information. Please try refreshing the page.'}
                     </p>
+                    <button 
+                      onClick={() => refetchTrainees()}
+                      className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                    >
+                      Retry
+                    </button>
                   </div>
                 </div>
               </CardContent>
@@ -65,10 +76,10 @@ const Coach = () => {
 
   const totalClients = trainees.length;
   const completedProfiles = trainees.filter(t => 
-    (t.trainee_profile.profile_completion_score || 0) >= 80
+    (t.trainee_profile?.profile_completion_score || 0) >= 80
   ).length;
   const activeTrainees = trainees.filter(t => 
-    (t.trainee_profile.ai_generations_remaining || 0) > 0
+    (t.trainee_profile?.ai_generations_remaining || 0) > 0
   ).length;
 
   return (

@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -47,10 +48,29 @@ export const useCoachSystem = () => {
       console.log('🏃‍♂️ Fetching trainees for coach:', user.id);
 
       try {
-        // First, get coach-trainee relationships
+        // Get coach-trainee relationships with profile data in a single query
         const { data: relationships, error: relationshipsError } = await supabase
           .from('coach_trainees')
-          .select('*')
+          .select(`
+            id,
+            coach_id,
+            trainee_id,
+            assigned_at,
+            notes,
+            trainee_profile:profiles!coach_trainees_trainee_id_fkey(
+              id,
+              first_name,
+              last_name,
+              email,
+              age,
+              weight,
+              height,
+              fitness_goal,
+              activity_level,
+              profile_completion_score,
+              ai_generations_remaining
+            )
+          `)
           .eq('coach_id', user.id)
           .order('assigned_at', { ascending: false });
 
@@ -59,61 +79,39 @@ export const useCoachSystem = () => {
           throw relationshipsError;
         }
 
-        console.log('📊 Found relationships:', relationships?.length || 0, relationships);
+        console.log('📊 Found relationships:', relationships?.length || 0);
 
         if (!relationships || relationships.length === 0) {
           console.log('✅ No trainees found for coach');
           return [];
         }
 
-        // Get trainee profile data
-        const traineeIds = relationships.map(rel => rel.trainee_id);
-        console.log('👥 Fetching profiles for trainee IDs:', traineeIds);
-
-        const { data: profiles, error: profilesError } = await supabase
-          .from('profiles')
-          .select('id, first_name, last_name, email, age, weight, height, fitness_goal, activity_level, profile_completion_score, ai_generations_remaining')
-          .in('id', traineeIds);
-
-        if (profilesError) {
-          console.error('❌ Error fetching trainee profiles:', profilesError);
-          // Continue with basic data if profiles can't be fetched
-          console.warn('⚠️ Continuing without full profile data');
-        }
-
-        console.log('👥 Found profiles:', profiles?.length || 0, profiles);
-
-        // Combine relationships with profiles
-        const combinedData = relationships.map(relationship => {
-          const profile = profiles?.find(p => p.id === relationship.trainee_id);
-          console.log(`🔗 Combining relationship ${relationship.id} with profile:`, profile);
-          
-          return {
-            id: relationship.id,
-            coach_id: relationship.coach_id,
-            trainee_id: relationship.trainee_id,
+        // Transform the data to match our interface
+        const transformedData = relationships.map(relationship => ({
+          id: relationship.id,
+          coach_id: relationship.coach_id,
+          trainee_id: relationship.trainee_id,
+          assigned_at: relationship.assigned_at,
+          notes: relationship.notes,
+          trainee_profile: {
+            id: relationship.trainee_profile?.id || relationship.trainee_id,
+            first_name: relationship.trainee_profile?.first_name || 'Unknown',
+            last_name: relationship.trainee_profile?.last_name || 'User',
+            email: relationship.trainee_profile?.email || 'unknown@example.com',
+            age: relationship.trainee_profile?.age,
+            weight: relationship.trainee_profile?.weight,
+            height: relationship.trainee_profile?.height,
+            fitness_goal: relationship.trainee_profile?.fitness_goal,
+            activity_level: relationship.trainee_profile?.activity_level,
+            profile_completion_score: relationship.trainee_profile?.profile_completion_score || 0,
+            ai_generations_remaining: relationship.trainee_profile?.ai_generations_remaining || 0,
             assigned_at: relationship.assigned_at,
-            notes: relationship.notes,
-            trainee_profile: {
-              id: profile?.id || relationship.trainee_id,
-              first_name: profile?.first_name || 'Unknown',
-              last_name: profile?.last_name || 'User',
-              email: profile?.email || 'unknown@example.com',
-              age: profile?.age,
-              weight: profile?.weight,
-              height: profile?.height,
-              fitness_goal: profile?.fitness_goal,
-              activity_level: profile?.activity_level,
-              profile_completion_score: profile?.profile_completion_score,
-              ai_generations_remaining: profile?.ai_generations_remaining,
-              assigned_at: relationship.assigned_at,
-              notes: relationship.notes
-            }
-          };
-        }) as CoachTraineeRelationship[];
+            notes: relationship.notes
+          }
+        })) as CoachTraineeRelationship[];
 
-        console.log('✅ Final combined data:', combinedData.length, combinedData);
-        return combinedData;
+        console.log('✅ Final transformed data:', transformedData.length, transformedData);
+        return transformedData;
       } catch (error) {
         console.error('💥 Error in trainee fetch:', error);
         throw error;
@@ -121,7 +119,7 @@ export const useCoachSystem = () => {
     },
     enabled: !!user?.id,
     staleTime: 30000,
-    gcTime: 300000, // Keep data in cache for 5 minutes
+    gcTime: 300000,
     refetchOnWindowFocus: false,
     retry: (failureCount, error) => {
       console.log('🔄 Retry attempt:', failureCount, 'Error:', error);
@@ -157,29 +155,6 @@ export const useCoachSystem = () => {
     staleTime: 60000,
   });
 
-  // Log errors with better context
-  useEffect(() => {
-    if (traineesError) {
-      console.error('🚨 Trainees fetch error:', traineesError);
-      const errorMessage = traineesError.message || 'Unknown error';
-      if (errorMessage.includes('infinite recursion')) {
-        toast.error('Database configuration issue. Please contact support.');
-      } else if (errorMessage.includes('permission denied')) {
-        toast.error('Access denied. Please check your coach permissions.');
-      } else {
-        toast.error('Failed to load trainees. Please refresh the page.');
-      }
-    }
-    if (isCoachError) {
-      console.error('🚨 Coach status check error:', isCoachError);
-    }
-  }, [traineesError, isCoachError]);
-
-  // Debug log when trainees change
-  useEffect(() => {
-    console.log('🔄 Trainees data changed:', trainees?.length || 0, trainees);
-  }, [trainees]);
-
   // Get coach info if user is a trainee
   const { data: coachInfo } = useQuery({
     queryKey: ['trainee-coach', user?.id],
@@ -189,7 +164,17 @@ export const useCoachSystem = () => {
       try {
         const { data: relationship, error: relationshipError } = await supabase
           .from('coach_trainees')
-          .select('*')
+          .select(`
+            id,
+            assigned_at,
+            notes,
+            coach_profile:profiles!coach_trainees_coach_id_fkey(
+              id,
+              first_name,
+              last_name,
+              email
+            )
+          `)
           .eq('trainee_id', user.id)
           .single();
 
@@ -200,22 +185,11 @@ export const useCoachSystem = () => {
 
         if (!relationship) return null;
 
-        const { data: coachProfile, error: profileError } = await supabase
-          .from('profiles')
-          .select('id, first_name, last_name, email')
-          .eq('id', relationship.coach_id)
-          .single();
-
-        if (profileError) {
-          console.error('Error fetching coach profile:', profileError);
-          return null;
-        }
-
         return {
           id: relationship.id,
           assigned_at: relationship.assigned_at,
           notes: relationship.notes,
-          coach_profile: coachProfile
+          coach_profile: relationship.coach_profile
         };
       } catch (error) {
         console.error('Error in coach info fetch:', error);
@@ -298,6 +272,9 @@ export const useCoachSystem = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['coach-trainees'] });
+      // Also invalidate chat-related queries
+      queryClient.invalidateQueries({ queryKey: ['coach-chat-messages'] });
+      queryClient.invalidateQueries({ queryKey: ['unread-messages'] });
       toast.success(language === 'ar' ? 
         'تم إلغاء تعيين المتدرب!' : 
         'Trainee unassigned successfully!'
@@ -357,6 +334,7 @@ export const useCoachSystem = () => {
         (payload) => {
           console.log('📡 Real-time coach system update:', payload);
           queryClient.invalidateQueries({ queryKey: ['coach-trainees'] });
+          // Don't invalidate chat queries here to avoid conflicts
         }
       )
       .subscribe();
