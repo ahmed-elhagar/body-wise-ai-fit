@@ -14,10 +14,15 @@ export const useMealPlanHandlers = (
     setShowRecipeDialog(true);
   }, [setSelectedMeal, setShowRecipeDialog]);
 
-  const handleExchangeMeal = useCallback((meal: DailyMeal) => {
+  const handleViewMeal = useCallback((meal: DailyMeal) => {
+    console.log('👁️ Viewing meal details:', meal.name);
+    handleShowRecipe(meal);
+  }, [handleShowRecipe]);
+
+  const handleExchangeMeal = useCallback((meal: DailyMeal, index?: number) => {
     console.log('🔄 Exchanging meal:', meal.name);
     setSelectedMeal(meal);
-    setSelectedMealIndex(0); // Set a default index since we removed the parameter
+    setSelectedMealIndex(index || 0);
     setShowExchangeDialog(true);
   }, [setSelectedMeal, setSelectedMealIndex, setShowExchangeDialog]);
 
@@ -29,6 +34,7 @@ export const useMealPlanHandlers = (
 
   return {
     handleShowRecipe,
+    handleViewMeal,
     handleExchangeMeal,
     handleRecipeGenerated
   };
