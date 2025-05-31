@@ -1,6 +1,6 @@
-
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import LoadingIndicator from "@/components/ui/loading-indicator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 const MealPlanLoadingState = () => {
   return (

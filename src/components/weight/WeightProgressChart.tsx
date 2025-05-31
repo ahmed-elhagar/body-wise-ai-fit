@@ -52,8 +52,8 @@ const WeightProgressChart = ({ weightEntries }: WeightProgressChartProps) => {
 
       {chartData.length > 0 ? (
         <>
-          <WeightChart chartData={chartData} goalWeight={goalWeight} />
-          <ChartLegend chartData={chartData} goalWeight={goalWeight} />
+          <WeightChart />
+          <ChartLegend chartData={chartData} />
           <DataSummary chartData={chartData} timeRange={timeRange} />
         </>
       ) : (

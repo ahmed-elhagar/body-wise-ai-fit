@@ -1,64 +1,52 @@
-
-import { ChefHat, Brain, Target, Calendar, Utensils, Shuffle } from "lucide-react";
 import { LucideIcon } from "lucide-react";
+import { BookOpen, ChefHat, Shuffle, Utensils } from "lucide-react";
+import { LanguageContextType } from "@/contexts/LanguageContext";
 
-interface Step {
+export interface LoadingStep {
+  id: string;
+  text: string;
   icon: LucideIcon;
-  title: string;
-  description: string;
   duration: number;
 }
 
-export const getGenerationSteps = (t: (key: string) => string): Step[] => [
+export const getGenerationSteps = (t: LanguageContextType['t']): LoadingStep[] => [
   {
-    icon: Brain,
-    title: t('mealPlan.analyzingProfile'),
-    description: t('mealPlan.analyzingProfileDesc'),
-    duration: 3000
+    id: "analyzingProfile",
+    text: t('mealPlan.loading.analyzingProfile'),
+    icon: BookOpen,
+    duration: 2000,
   },
   {
-    icon: Target,
-    title: t('mealPlan.calculatingNutrition'),
-    description: t('mealPlan.calculatingNutritionDesc'),
-    duration: 4000
-  },
-  {
-    icon: ChefHat,
-    title: t('mealPlan.selectingMeals'),
-    description: t('mealPlan.selectingMealsDesc'),
-    duration: 5000
-  },
-  {
-    icon: Calendar,
-    title: t('mealPlan.creatingWeeklyPlan'),
-    description: t('mealPlan.creatingWeeklyPlanDesc'),
-    duration: 3000
-  },
-  {
+    id: "selectingMeals",
+    text: t('mealPlan.loading.selectingMeals'),
     icon: Utensils,
-    title: t('mealPlan.finalizingMealPlan'),
-    description: t('mealPlan.finalizingMealPlanDesc'),
-    duration: 2000
-  }
+    duration: 3000,
+  },
+  {
+    id: "finalizingPlan",
+    text: t('mealPlan.loading.finalizingPlan'),
+    icon: ChefHat,
+    duration: 2500,
+  },
 ];
 
-export const getShuffleSteps = (t: (key: string) => string): Step[] => [
+export const getShuffleSteps = (t: LanguageContextType['t']): LoadingStep[] => [
   {
-    icon: Target,
-    title: t('mealPlan.analyzingCurrentPlan'),
-    description: t('mealPlan.analyzingCurrentPlanDesc'),
-    duration: 2000
+    id: "shufflingMeals",
+    text: t('mealPlan.loading.shufflingMeals'),
+    icon: Shuffle,
+    duration: 2000,
   },
   {
+    id: "adjustingNutrition",
+    text: t('mealPlan.loading.adjustingNutrition'),
+    icon: Utensils,
+    duration: 3000,
+  },
+  {
+    id: "finalizingShuffle",
+    text: t('mealPlan.loading.finalizingShuffle'),
     icon: ChefHat,
-    title: t('mealPlan.selectingAlternatives'),
-    description: t('mealPlan.selectingAlternativesDesc'),
-    duration: 3000
+    duration: 2500,
   },
-  {
-    icon: Calendar,
-    title: t('mealPlan.reorganizingWeek'),
-    description: t('mealPlan.reorganizingWeekDesc'),
-    duration: 2000
-  }
 ];
