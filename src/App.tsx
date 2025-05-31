@@ -14,8 +14,6 @@ import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
 import Coach from "./pages/Coach";
 import Admin from "./pages/Admin";
-import AddSnack from "./pages/AddSnack";
-import CalorieTracker from "./pages/CalorieTracker";
 import Profile from "./pages/Profile";
 import Notifications from "./pages/Notifications";
 import Chat from "./pages/Chat";
@@ -54,8 +52,6 @@ function App() {
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/coach" element={<Coach />} />
                     <Route path="/admin" element={<Admin />} />
-                    <Route path="/add-snack" element={<AddSnack />} />
-                    <Route path="/calorie-tracker" element={<CalorieTracker />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/notifications" element={<Notifications />} />
                     <Route path="/chat" element={<Chat />} />
