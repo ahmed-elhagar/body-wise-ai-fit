@@ -55,8 +55,12 @@ export const useCoachSystem = () => {
       const { data, error } = await supabase
         .from('coach_trainees')
         .select(`
-          *,
-          coach_profile:profiles!coach_trainees_coach_id_fkey(
+          id,
+          coach_id,
+          trainee_id,
+          assigned_at,
+          notes,
+          profiles!coach_trainees_coach_id_fkey(
             id,
             first_name,
             last_name,
@@ -71,8 +75,26 @@ export const useCoachSystem = () => {
         throw error;
       }
 
-      console.log('✅ Coach info fetched:', data);
-      return data as CoachInfo | null;
+      if (data) {
+        const coachProfile = data.profiles as any;
+        const result: CoachInfo = {
+          id: data.id,
+          coach_id: data.coach_id,
+          trainee_id: data.trainee_id,
+          assigned_at: data.assigned_at,
+          notes: data.notes,
+          coach_profile: coachProfile ? {
+            id: coachProfile.id,
+            first_name: coachProfile.first_name,
+            last_name: coachProfile.last_name,
+            email: coachProfile.email
+          } : null
+        };
+        console.log('✅ Coach info fetched:', result);
+        return result;
+      }
+
+      return null;
     },
     enabled: !!user?.id,
     staleTime: 1000 * 60 * 5, // 5 minutes
@@ -90,8 +112,12 @@ export const useCoachSystem = () => {
       const { data, error } = await supabase
         .from('coach_trainees')
         .select(`
-          *,
-          trainee_profile:profiles!coach_trainees_trainee_id_fkey(
+          id,
+          coach_id,
+          trainee_id,
+          assigned_at,
+          notes,
+          profiles!coach_trainees_trainee_id_fkey(
             id,
             first_name,
             last_name,
@@ -112,7 +138,31 @@ export const useCoachSystem = () => {
       }
 
       console.log('✅ Trainees fetched:', data);
-      return data as CoachTraineeRelationship[] || [];
+      
+      const result: CoachTraineeRelationship[] = (data || []).map(item => {
+        const traineeProfile = item.profiles as any;
+        return {
+          id: item.id,
+          coach_id: item.coach_id,
+          trainee_id: item.trainee_id,
+          assigned_at: item.assigned_at,
+          notes: item.notes,
+          trainee_profile: traineeProfile ? {
+            id: traineeProfile.id,
+            first_name: traineeProfile.first_name,
+            last_name: traineeProfile.last_name,
+            email: traineeProfile.email,
+            profile_completion_score: traineeProfile.profile_completion_score,
+            ai_generations_remaining: traineeProfile.ai_generations_remaining,
+            age: traineeProfile.age,
+            weight: traineeProfile.weight,
+            height: traineeProfile.height,
+            fitness_goal: traineeProfile.fitness_goal
+          } : null
+        };
+      });
+
+      return result;
     },
     enabled: !!user?.id && (isRoleCoach || isAdmin),
     staleTime: 1000 * 60 * 5, // 5 minutes

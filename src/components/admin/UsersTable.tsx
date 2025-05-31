@@ -1,6 +1,8 @@
 
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 interface User {
   id: string;
@@ -11,11 +13,35 @@ interface User {
   created_at: string;
 }
 
-interface UsersTableProps {
-  users: User[];
-}
+const UsersTable = () => {
+  const { data: users = [], isLoading } = useQuery({
+    queryKey: ['admin-users'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, email, ai_generations_remaining, created_at')
+        .order('created_at', { ascending: false });
 
-const UsersTable = ({ users }: UsersTableProps) => {
+      if (error) throw error;
+      return data as User[];
+    }
+  });
+
+  if (isLoading) {
+    return (
+      <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg mb-8">
+        <div className="animate-pulse space-y-4">
+          <div className="h-6 bg-gray-200 rounded w-1/4"></div>
+          <div className="space-y-3">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="h-10 bg-gray-200 rounded"></div>
+            ))}
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
   return (
     <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg mb-8">
       <h2 className="text-xl font-semibold mb-4">Users Overview</h2>
