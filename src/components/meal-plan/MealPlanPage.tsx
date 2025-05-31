@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,8 +19,8 @@ import {
   Shuffle,
   Eye,
   Activity,
-  MenuBook,
-  SwapHoriz
+  Book,
+  ArrowLeftRight
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useMealPlanState } from "@/hooks/useMealPlanState";
@@ -478,7 +477,7 @@ const MealPlanPage = () => {
                                                   size="sm"
                                                   className="flex-1 text-blue-600 border-blue-200 hover:bg-blue-50"
                                                 >
-                                                  <MenuBook className="w-3 h-3 mr-1" />
+                                                  <Book className="w-3 h-3 mr-1" />
                                                   {t('mealPlan.recipe')}
                                                 </Button>
                                                 <Button
@@ -487,7 +486,7 @@ const MealPlanPage = () => {
                                                   size="sm"
                                                   className="flex-1 text-purple-600 border-purple-200 hover:bg-purple-50"
                                                 >
-                                                  <SwapHoriz className="w-3 h-3 mr-1" />
+                                                  <ArrowLeftRight className="w-3 h-3 mr-1" />
                                                   {t('mealPlan.exchange')}
                                                 </Button>
                                               </div>
