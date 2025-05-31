@@ -1,5 +1,5 @@
 
-import { Calendar, Home, Utensils, Dumbbell, TrendingUp, Settings, Shield, Users, MessageCircle, User, Bell } from "lucide-react"
+import { Calendar, Home, Utensils, Dumbbell, TrendingUp, Settings, Shield, Users, MessageCircle, User, Bell, LogOut } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
 import {
   Sidebar,
@@ -18,6 +18,7 @@ import { useI18n } from "@/hooks/useI18n"
 import { useRole } from "@/hooks/useRole"
 import { useUnreadMessages } from "@/hooks/useUnreadMessages"
 import { useNotifications } from "@/hooks/useNotifications"
+import { useAuth } from "@/hooks/useAuth"
 import LanguageToggle from "./LanguageToggle"
 
 const AppSidebar = () => {
@@ -26,8 +27,17 @@ const AppSidebar = () => {
   const { isCoach, isAdmin } = useRole()
   const { data: unreadCount = 0 } = useUnreadMessages()
   const { unreadCount: notificationCount = 0 } = useNotifications()
+  const { signOut } = useAuth()
 
   const isActive = (path: string) => location.pathname === path
+
+  const handleSignOut = async () => {
+    try {
+      await signOut()
+    } catch (error) {
+      console.error('Error signing out:', error)
+    }
+  }
 
   // Main navigation items
   const mainItems = [
@@ -188,7 +198,16 @@ const AppSidebar = () => {
       </SidebarContent>
 
       <SidebarFooter className="p-4 border-t border-gray-200">
-        <LanguageToggle />
+        <div className="space-y-2">
+          <LanguageToggle />
+          <SidebarMenuButton 
+            onClick={handleSignOut}
+            className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            <span className="font-medium">{t("Sign Out")}</span>
+          </SidebarMenuButton>
+        </div>
       </SidebarFooter>
     </Sidebar>
   )

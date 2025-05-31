@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
@@ -61,7 +62,6 @@ const Chat = () => {
               <TabsTrigger 
                 value="coach" 
                 className="data-[state=active]:bg-green-600 data-[state=active]:text-white relative"
-                disabled={!coachInfo}
               >
                 <Users className="w-4 h-4 mr-2" />
                 {t('Your Coach')}

@@ -54,7 +54,12 @@ const AIChatInterface = () => {
     setIsLoading(true);
 
     try {
-      const response = await sendMessage(inputMessage);
+      const response = await new Promise<string>((resolve, reject) => {
+        sendMessage(inputMessage, {
+          onSuccess: (data: string) => resolve(data),
+          onError: (error: any) => reject(error)
+        });
+      });
       
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
