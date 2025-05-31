@@ -4,8 +4,7 @@ import { Button } from "@/components/ui/button";
 import { 
   UtensilsCrossed, 
   ChevronLeft,
-  ChevronRight,
-  RotateCcw
+  ChevronRight
 } from "lucide-react";
 import { format, addDays } from "date-fns";
 import { useMealPlanTranslation } from "@/utils/translationHelpers";
@@ -35,18 +34,12 @@ const MealPlanHero = ({
   weekStartDate,
   currentWeekOffset,
   onWeekChange,
-  onShowAIDialog,
   weeklyStats,
   dailyStats,
   hasWeeklyPlan,
-  weeklyPlanId,
   selectedDayNumber
 }: MealPlanHeroProps) => {
   const { mealPlanT } = useMealPlanTranslation();
-
-  const handleRegeneratePlan = () => {
-    onShowAIDialog();
-  };
 
   return (
     <div className="space-y-3">
@@ -68,20 +61,6 @@ const MealPlanHero = ({
                   {format(weekStartDate, 'MMM d')} - {format(addDays(weekStartDate, 6), 'MMM d, yyyy')}
                 </p>
               </div>
-            </div>
-
-            <div className="flex gap-2">
-              {hasWeeklyPlan && (
-                <Button
-                  onClick={handleRegeneratePlan}
-                  variant="outline"
-                  size="sm"
-                  className="bg-white/20 border-white/30 text-white hover:bg-white/30 hover:border-white/50 backdrop-blur-sm shadow-lg font-medium transform hover:scale-105 transition-all duration-300 text-xs px-2 py-1"
-                >
-                  <RotateCcw className="w-3 h-3 mr-1" />
-                  {mealPlanT('regenerate')}
-                </Button>
-              )}
             </div>
           </div>
 

@@ -20,19 +20,19 @@ const IngredientRow = ({ item, isChecked, onToggle }: IngredientRowProps) => {
 
   return (
     <div 
-      className="flex items-center space-x-3 p-2 rounded bg-gray-800/50 hover:bg-gray-800 transition-colors cursor-pointer"
+      className="flex items-center space-x-3 p-3 rounded-lg bg-white hover:bg-fitness-primary-50 transition-colors cursor-pointer border border-fitness-primary-100 shadow-sm"
       onClick={onToggle}
     >
       <Checkbox
         checked={isChecked}
         onCheckedChange={onToggle}
-        className="border-gray-500"
+        className="border-fitness-primary-300 data-[state=checked]:bg-fitness-primary-500 data-[state=checked]:border-fitness-primary-500"
       />
       <div className="flex-1">
-        <span className={`font-medium ${isChecked ? 'line-through text-gray-500' : 'text-white'}`}>
+        <span className={`font-medium ${isChecked ? 'line-through text-fitness-primary-400' : 'text-fitness-primary-700'}`}>
           {item.name}
         </span>
-        <span className={`text-sm ml-2 ${isChecked ? 'line-through text-gray-600' : 'text-gray-400'}`}>
+        <span className={`text-sm ml-2 ${isChecked ? 'line-through text-fitness-primary-400' : 'text-fitness-primary-500'}`}>
           {item.quantity} {isRTL && item.unit === 'g' ? 'جم' : item.unit}
         </span>
       </div>

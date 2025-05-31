@@ -150,11 +150,13 @@ const DrawerHeader = ({
 
   return (
     <>
-      <SheetTitle className="text-white flex items-center gap-2">
-        <ShoppingCart className="w-5 h-5 text-[#FF6F3C]" />
+      <SheetTitle className="text-fitness-primary-700 flex items-center gap-3 text-xl font-bold">
+        <div className="w-10 h-10 bg-fitness-accent-500 rounded-lg flex items-center justify-center">
+          <ShoppingCart className="w-5 h-5 text-white" />
+        </div>
         {isRTL ? 'قائمة التسوق' : 'Shopping List'}
         {totalItems > 0 && (
-          <Badge className="bg-[#FF6F3C] text-white ml-2">
+          <Badge className="bg-fitness-accent-500 text-white ml-2">
             {totalItems} {isRTL ? 'عنصر' : 'items'}
           </Badge>
         )}
@@ -162,10 +164,10 @@ const DrawerHeader = ({
 
       {/* Action Buttons */}
       {totalItems > 0 && (
-        <div className="flex gap-2 mt-4">
+        <div className="flex gap-3 mt-4">
           <Button 
             onClick={generateShoppingPdf}
-            className="flex-1 bg-gradient-to-r from-[#FF6F3C] to-[#FF8F4C] hover:from-[#FF5F2C] hover:to-[#FF7F3C] text-white"
+            className="flex-1 bg-gradient-to-r from-fitness-accent-500 to-fitness-accent-600 hover:from-fitness-accent-600 hover:to-fitness-accent-700 text-white shadow-lg"
           >
             <Download className="w-4 h-4 mr-2" />
             {isRTL ? 'تصدير PDF' : 'Export PDF'}
@@ -175,7 +177,7 @@ const DrawerHeader = ({
             onClick={sendShoppingListEmail}
             disabled={isEmailSending}
             variant="outline"
-            className="bg-gray-800 border-gray-600 text-gray-300 hover:bg-blue-600 hover:text-white hover:border-blue-600"
+            className="border-fitness-primary-300 text-fitness-primary-600 hover:bg-fitness-primary-50"
           >
             {isEmailSending ? (
               <Loader2 className="w-4 h-4 animate-spin" />

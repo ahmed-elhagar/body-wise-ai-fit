@@ -63,7 +63,7 @@ const CategoryAccordion = ({
   };
 
   return (
-    <Accordion type="multiple" className="w-full">
+    <Accordion type="multiple" className="w-full space-y-3">
       {categories.map((category) => {
         const categoryItems = groupedItems[category];
         const categoryCheckedCount = categoryItems.filter(item => 
@@ -72,23 +72,23 @@ const CategoryAccordion = ({
         const allChecked = categoryCheckedCount === categoryItems.length;
 
         return (
-          <AccordionItem key={category} value={category} className="border-gray-700">
-            <AccordionTrigger className="text-white hover:text-[#FF8F4C] transition-colors">
-              <div className="flex items-center gap-2 flex-1">
+          <AccordionItem key={category} value={category} className="bg-white rounded-lg border-fitness-primary-200 shadow-md">
+            <AccordionTrigger className="text-fitness-primary-700 hover:text-fitness-accent-600 transition-colors px-4 py-3 font-medium">
+              <div className="flex items-center gap-3 flex-1">
                 <Checkbox
                   checked={allChecked}
                   onCheckedChange={() => toggleCategory(category)}
                   onClick={(e) => e.stopPropagation()}
-                  className="border-gray-500"
+                  className="border-fitness-primary-300 data-[state=checked]:bg-fitness-primary-500 data-[state=checked]:border-fitness-primary-500"
                 />
-                <span className="text-lg">{categoryIcons[category] || '📦'}</span>
-                <span className="flex-1 text-left">{category}</span>
-                <Badge variant="outline" className="text-xs border-gray-500">
+                <span className="text-xl">{categoryIcons[category] || '📦'}</span>
+                <span className="flex-1 text-left font-semibold">{category}</span>
+                <Badge className="bg-fitness-primary-100 text-fitness-primary-700 border-fitness-primary-200">
                   {categoryCheckedCount}/{categoryItems.length}
                 </Badge>
               </div>
             </AccordionTrigger>
-            <AccordionContent>
+            <AccordionContent className="px-4 pb-4">
               <div className="space-y-2 pt-2">
                 {categoryItems.map((item, index) => (
                   <IngredientRow

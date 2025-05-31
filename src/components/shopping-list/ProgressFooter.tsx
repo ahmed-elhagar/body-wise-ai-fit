@@ -11,23 +11,23 @@ const ProgressFooter = ({ checkedCount, totalItems }: ProgressFooterProps) => {
   const { isRTL } = useLanguage();
 
   return (
-    <Card className="bg-gray-800 border-gray-600">
+    <Card className="bg-white border-fitness-primary-200 shadow-lg">
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-gray-300">
+          <span className="text-fitness-primary-600 font-medium">
             {isRTL ? 'التقدم' : 'Progress'}
           </span>
-          <span className="text-[#FF6F3C] font-medium">
+          <span className="text-fitness-accent-600 font-bold">
             {checkedCount} / {totalItems} {isRTL ? 'مكتمل' : 'completed'}
           </span>
         </div>
-        <div className="w-full bg-gray-700 rounded-full h-2">
+        <div className="w-full bg-fitness-primary-100 rounded-full h-3">
           <div 
-            className="bg-gradient-to-r from-[#FF6F3C] to-[#FF8F4C] h-2 rounded-full transition-all duration-300"
+            className="bg-gradient-to-r from-fitness-accent-500 to-fitness-accent-600 h-3 rounded-full transition-all duration-300"
             style={{ width: `${totalItems > 0 ? (checkedCount / totalItems) * 100 : 0}%` }}
           />
         </div>
-        <div className="text-center text-sm text-gray-400 mt-1">
+        <div className="text-center text-sm text-fitness-primary-500 mt-2 font-medium">
           {totalItems > 0 ? Math.round((checkedCount / totalItems) * 100) : 0}%
         </div>
       </CardContent>
