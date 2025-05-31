@@ -59,7 +59,7 @@ export const useCoachSystem = () => {
           throw relationshipsError;
         }
 
-        console.log('📊 Found relationships:', relationships?.length || 0);
+        console.log('📊 Found relationships:', relationships?.length || 0, relationships);
 
         if (!relationships || relationships.length === 0) {
           console.log('✅ No trainees found for coach');
@@ -68,6 +68,8 @@ export const useCoachSystem = () => {
 
         // Get trainee profile data
         const traineeIds = relationships.map(rel => rel.trainee_id);
+        console.log('👥 Fetching profiles for trainee IDs:', traineeIds);
+
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
           .select('id, first_name, last_name, email, age, weight, height, fitness_goal, activity_level, profile_completion_score, ai_generations_remaining')
@@ -79,11 +81,13 @@ export const useCoachSystem = () => {
           console.warn('⚠️ Continuing without full profile data');
         }
 
-        console.log('👥 Found profiles:', profiles?.length || 0);
+        console.log('👥 Found profiles:', profiles?.length || 0, profiles);
 
         // Combine relationships with profiles
         const combinedData = relationships.map(relationship => {
           const profile = profiles?.find(p => p.id === relationship.trainee_id);
+          console.log(`🔗 Combining relationship ${relationship.id} with profile:`, profile);
+          
           return {
             id: relationship.id,
             coach_id: relationship.coach_id,
@@ -108,7 +112,7 @@ export const useCoachSystem = () => {
           };
         }) as CoachTraineeRelationship[];
 
-        console.log('✅ Trainees processed successfully:', combinedData.length);
+        console.log('✅ Final combined data:', combinedData.length, combinedData);
         return combinedData;
       } catch (error) {
         console.error('💥 Error in trainee fetch:', error);
@@ -117,6 +121,8 @@ export const useCoachSystem = () => {
     },
     enabled: !!user?.id,
     staleTime: 30000,
+    gcTime: 300000, // Keep data in cache for 5 minutes
+    refetchOnWindowFocus: false,
     retry: (failureCount, error) => {
       console.log('🔄 Retry attempt:', failureCount, 'Error:', error);
       return failureCount < 2;
@@ -168,6 +174,11 @@ export const useCoachSystem = () => {
       console.error('🚨 Coach status check error:', isCoachError);
     }
   }, [traineesError, isCoachError]);
+
+  // Debug log when trainees change
+  useEffect(() => {
+    console.log('🔄 Trainees data changed:', trainees?.length || 0, trainees);
+  }, [trainees]);
 
   // Get coach info if user is a trainee
   const { data: coachInfo } = useQuery({

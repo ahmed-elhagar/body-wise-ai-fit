@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Users, MessageCircle, Target, UserPlus } from "lucide-react";
+import { Users, MessageCircle, Target, UserPlus, ArrowLeft } from "lucide-react";
 import { useI18n } from "@/hooks/useI18n";
 import { useState } from "react";
 import { AssignTraineeDialog } from "./AssignTraineeDialog";
@@ -22,18 +22,23 @@ export const TraineesTab = ({ trainees, onChatClick }: TraineesTabProps) => {
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [selectedTrainee, setSelectedTrainee] = useState<any>(null);
 
+  console.log('TraineesTab render - trainees:', trainees?.length || 0, 'viewMode:', viewMode);
+
   const handleChatClick = (trainee: any) => {
+    console.log('Chat clicked for trainee:', trainee.trainee_id);
     setSelectedTrainee(trainee);
     setViewMode('chat');
     onChatClick(trainee.trainee_id);
   };
 
   const handleProgressClick = (trainee: any) => {
+    console.log('Progress clicked for trainee:', trainee.trainee_id);
     setSelectedTrainee(trainee);
     setViewMode('progress');
   };
 
   const handleBackToList = () => {
+    console.log('Back to list clicked');
     setViewMode('list');
     setSelectedTrainee(null);
   };
@@ -61,7 +66,7 @@ export const TraineesTab = ({ trainees, onChatClick }: TraineesTabProps) => {
     );
   }
 
-  // Show main trainees list
+  // Show main trainees list - this should always render when viewMode is 'list'
   return (
     <>
       <Card>
@@ -80,37 +85,40 @@ export const TraineesTab = ({ trainees, onChatClick }: TraineesTabProps) => {
         <CardContent>
           {trainees && trainees.length > 0 ? (
             <div className="space-y-4">
-              {trainees.map((trainee: any) => (
-                <div key={trainee.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <h3 className="font-semibold">
-                      {trainee.trainee_profile?.first_name} {trainee.trainee_profile?.last_name}
-                    </h3>
-                    <p className="text-sm text-gray-600">{trainee.trainee_profile?.email}</p>
-                    <Badge variant="outline" className="mt-1">
-                      {trainee.trainee_profile?.fitness_goal || t("General Fitness")}
-                    </Badge>
+              {trainees.map((trainee: any) => {
+                console.log('Rendering trainee:', trainee.id, trainee.trainee_profile?.first_name);
+                return (
+                  <div key={trainee.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <h3 className="font-semibold">
+                        {trainee.trainee_profile?.first_name} {trainee.trainee_profile?.last_name}
+                      </h3>
+                      <p className="text-sm text-gray-600">{trainee.trainee_profile?.email}</p>
+                      <Badge variant="outline" className="mt-1">
+                        {trainee.trainee_profile?.fitness_goal || t("General Fitness")}
+                      </Badge>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleChatClick(trainee)}
+                      >
+                        <MessageCircle className="h-4 w-4 mr-1" />
+                        {t("Chat")}
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleProgressClick(trainee)}
+                      >
+                        <Target className="h-4 w-4 mr-1" />
+                        {t("Progress")}
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleChatClick(trainee)}
-                    >
-                      <MessageCircle className="h-4 w-4 mr-1" />
-                      {t("Chat")}
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => handleProgressClick(trainee)}
-                    >
-                      <Target className="h-4 w-4 mr-1" />
-                      {t("Progress")}
-                    </Button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="text-center py-12">
