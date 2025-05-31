@@ -45,6 +45,15 @@ serve(async (req) => {
       )
     }
 
+    // Check for existing coach-trainee relationships to avoid duplicates
+    const { data: existingRelationships } = await supabaseClient
+      .from('coach_trainees')
+      .select('coach_id, trainee_id')
+
+    const existingPairs = new Set(
+      existingRelationships?.map(rel => `${rel.coach_id}-${rel.trainee_id}`) || []
+    )
+
     // Use existing users for our sample data
     const users = existingProfiles.slice(0, 7) // Take up to 7 users
     
@@ -127,125 +136,185 @@ serve(async (req) => {
 
     console.log('Updated trainees successfully:', traineeUpdates.length)
 
-    // Create coach-trainee relationships
-    const relationships = []
+    // Create coach-trainee relationships (only new ones)
+    const newRelationships = []
     
-    // Distribute trainees among coaches
+    // Distribute trainees among coaches, avoiding duplicates
     trainees.forEach((trainee, index) => {
       const coachIndex = index % coaches.length
-      relationships.push({
-        coach_id: coaches[coachIndex].id,
-        trainee_id: trainee.id,
-        notes: `Sample coaching relationship for ${trainee.first_name || 'trainee'}`
-      })
+      const pairKey = `${coaches[coachIndex].id}-${trainee.id}`
+      
+      if (!existingPairs.has(pairKey)) {
+        newRelationships.push({
+          coach_id: coaches[coachIndex].id,
+          trainee_id: trainee.id,
+          notes: `Sample coaching relationship for ${trainee.first_name || 'trainee'}`
+        })
+      }
     })
 
-    const { error: relationshipError } = await supabaseClient
-      .from('coach_trainees')
-      .insert(relationships)
+    if (newRelationships.length > 0) {
+      const { error: relationshipError } = await supabaseClient
+        .from('coach_trainees')
+        .insert(newRelationships)
 
-    if (relationshipError) {
-      console.error('Error creating coach-trainee relationships:', relationshipError)
-      throw relationshipError
-    }
-
-    console.log('Coach-trainee relationships created successfully')
-
-    // Create sample meal plans for trainees
-    const mealPlans = trainees.map(trainee => ({
-      user_id: trainee.id,
-      week_start_date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      total_calories: 1600 + Math.floor(Math.random() * 400),
-      total_protein: 120 + Math.floor(Math.random() * 30),
-      total_carbs: 150 + Math.floor(Math.random() * 60),
-      total_fat: 50 + Math.floor(Math.random() * 20)
-    }))
-
-    const { error: mealPlanError } = await supabaseClient
-      .from('weekly_meal_plans')
-      .insert(mealPlans)
-
-    if (mealPlanError) {
-      console.error('Error creating meal plans:', mealPlanError)
-      throw mealPlanError
-    }
-
-    console.log('Meal plans created successfully')
-
-    // Create sample exercise programs for trainees
-    const exercisePrograms = trainees.map(trainee => ({
-      user_id: trainee.id,
-      program_name: 'Sample Fitness Program',
-      difficulty_level: ['beginner', 'intermediate', 'advanced'][Math.floor(Math.random() * 3)],
-      workout_type: Math.random() > 0.5 ? 'home' : 'gym',
-      current_week: 1,
-      week_start_date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-    }))
-
-    const { error: exerciseError } = await supabaseClient
-      .from('weekly_exercise_programs')
-      .insert(exercisePrograms)
-
-    if (exerciseError) {
-      console.error('Error creating exercise programs:', exerciseError)
-      throw exerciseError
-    }
-
-    console.log('Exercise programs created successfully')
-
-    // Create sample weight entries for trainees
-    const weightEntries = trainees.flatMap(trainee => [
-      {
-        user_id: trainee.id,
-        weight: (traineeUpdates.find(t => t.id === trainee.id)?.weight || 70) - Math.random() * 2,
-        recorded_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-        notes: 'Weekly check-in'
-      },
-      {
-        user_id: trainee.id,
-        weight: (traineeUpdates.find(t => t.id === trainee.id)?.weight || 70) - Math.random() * 1.5,
-        recorded_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-        notes: 'Progress tracking'
+      if (relationshipError) {
+        console.error('Error creating coach-trainee relationships:', relationshipError)
+        throw relationshipError
       }
-    ])
 
-    const { error: weightError } = await supabaseClient
+      console.log('New coach-trainee relationships created:', newRelationships.length)
+    } else {
+      console.log('All coach-trainee relationships already exist')
+    }
+
+    // Create sample meal plans for trainees (check for existing ones first)
+    const { data: existingMealPlans } = await supabaseClient
+      .from('weekly_meal_plans')
+      .select('user_id')
+      .in('user_id', trainees.map(t => t.id))
+
+    const existingMealPlanUsers = new Set(existingMealPlans?.map(mp => mp.user_id) || [])
+    
+    const mealPlans = trainees
+      .filter(trainee => !existingMealPlanUsers.has(trainee.id))
+      .map(trainee => ({
+        user_id: trainee.id,
+        week_start_date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        total_calories: 1600 + Math.floor(Math.random() * 400),
+        total_protein: 120 + Math.floor(Math.random() * 30),
+        total_carbs: 150 + Math.floor(Math.random() * 60),
+        total_fat: 50 + Math.floor(Math.random() * 20)
+      }))
+
+    if (mealPlans.length > 0) {
+      const { error: mealPlanError } = await supabaseClient
+        .from('weekly_meal_plans')
+        .insert(mealPlans)
+
+      if (mealPlanError) {
+        console.error('Error creating meal plans:', mealPlanError)
+        throw mealPlanError
+      }
+
+      console.log('New meal plans created:', mealPlans.length)
+    } else {
+      console.log('All meal plans already exist')
+    }
+
+    // Create sample exercise programs for trainees (check for existing ones first)
+    const { data: existingExercisePrograms } = await supabaseClient
+      .from('weekly_exercise_programs')
+      .select('user_id')
+      .in('user_id', trainees.map(t => t.id))
+
+    const existingExerciseProgramUsers = new Set(existingExercisePrograms?.map(ep => ep.user_id) || [])
+    
+    const exercisePrograms = trainees
+      .filter(trainee => !existingExerciseProgramUsers.has(trainee.id))
+      .map(trainee => ({
+        user_id: trainee.id,
+        program_name: 'Sample Fitness Program',
+        difficulty_level: ['beginner', 'intermediate', 'advanced'][Math.floor(Math.random() * 3)],
+        workout_type: Math.random() > 0.5 ? 'home' : 'gym',
+        current_week: 1,
+        week_start_date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+      }))
+
+    if (exercisePrograms.length > 0) {
+      const { error: exerciseError } = await supabaseClient
+        .from('weekly_exercise_programs')
+        .insert(exercisePrograms)
+
+      if (exerciseError) {
+        console.error('Error creating exercise programs:', exerciseError)
+        throw exerciseError
+      }
+
+      console.log('New exercise programs created:', exercisePrograms.length)
+    } else {
+      console.log('All exercise programs already exist')
+    }
+
+    // Create sample weight entries for trainees (check for existing ones first)
+    const { data: existingWeightEntries } = await supabaseClient
       .from('weight_entries')
-      .insert(weightEntries)
+      .select('user_id')
+      .in('user_id', trainees.map(t => t.id))
 
-    if (weightError) {
-      console.error('Error creating weight entries:', weightError)
-      throw weightError
+    const existingWeightEntryUsers = new Set(existingWeightEntries?.map(we => we.user_id) || [])
+    
+    const weightEntries = trainees
+      .filter(trainee => !existingWeightEntryUsers.has(trainee.id))
+      .flatMap(trainee => [
+        {
+          user_id: trainee.id,
+          weight: (traineeUpdates.find(t => t.id === trainee.id)?.weight || 70) - Math.random() * 2,
+          recorded_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+          notes: 'Weekly check-in'
+        },
+        {
+          user_id: trainee.id,
+          weight: (traineeUpdates.find(t => t.id === trainee.id)?.weight || 70) - Math.random() * 1.5,
+          recorded_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+          notes: 'Progress tracking'
+        }
+      ])
+
+    if (weightEntries.length > 0) {
+      const { error: weightError } = await supabaseClient
+        .from('weight_entries')
+        .insert(weightEntries)
+
+      if (weightError) {
+        console.error('Error creating weight entries:', weightError)
+        throw weightError
+      }
+
+      console.log('New weight entries created:', weightEntries.length)
+    } else {
+      console.log('All weight entries already exist')
     }
 
-    console.log('Weight entries created successfully')
-
-    // Create sample goals for trainees
-    const goals = trainees.map(trainee => ({
-      user_id: trainee.id,
-      category: 'fitness',
-      goal_type: 'weight',
-      title: 'Sample Fitness Goal',
-      description: 'Working with coach to achieve fitness goals',
-      target_value: (traineeUpdates.find(t => t.id === trainee.id)?.weight || 70) - 5,
-      current_value: traineeUpdates.find(t => t.id === trainee.id)?.weight || 70,
-      target_unit: 'kg',
-      status: 'active',
-      priority: 'high',
-      start_date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      target_date: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-    }))
-
-    const { error: goalsError } = await supabaseClient
+    // Create sample goals for trainees (check for existing ones first)
+    const { data: existingGoals } = await supabaseClient
       .from('user_goals')
-      .insert(goals)
+      .select('user_id')
+      .in('user_id', trainees.map(t => t.id))
 
-    if (goalsError) {
-      console.error('Error creating goals:', goalsError)
-      throw goalsError
+    const existingGoalUsers = new Set(existingGoals?.map(g => g.user_id) || [])
+    
+    const goals = trainees
+      .filter(trainee => !existingGoalUsers.has(trainee.id))
+      .map(trainee => ({
+        user_id: trainee.id,
+        category: 'fitness',
+        goal_type: 'weight',
+        title: 'Sample Fitness Goal',
+        description: 'Working with coach to achieve fitness goals',
+        target_value: (traineeUpdates.find(t => t.id === trainee.id)?.weight || 70) - 5,
+        current_value: traineeUpdates.find(t => t.id === trainee.id)?.weight || 70,
+        target_unit: 'kg',
+        status: 'active',
+        priority: 'high',
+        start_date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        target_date: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+      }))
+
+    if (goals.length > 0) {
+      const { error: goalsError } = await supabaseClient
+        .from('user_goals')
+        .insert(goals)
+
+      if (goalsError) {
+        console.error('Error creating goals:', goalsError)
+        throw goalsError
+      }
+
+      console.log('New goals created:', goals.length)
+    } else {
+      console.log('All goals already exist')
     }
-
-    console.log('Goals created successfully')
 
     return new Response(
       JSON.stringify({
@@ -254,11 +323,11 @@ serve(async (req) => {
         data: {
           coaches: coaches.length,
           trainees: trainees.length,
-          relationships: relationships.length,
-          mealPlans: mealPlans.length,
-          exercisePrograms: exercisePrograms.length,
-          weightEntries: weightEntries.length,
-          goals: goals.length
+          newRelationships: newRelationships.length,
+          newMealPlans: mealPlans.length,
+          newExercisePrograms: exercisePrograms.length,
+          newWeightEntries: weightEntries.length / 2, // Divided by 2 since we create 2 per user
+          newGoals: goals.length
         }
       }),
       {

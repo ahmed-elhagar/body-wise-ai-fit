@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Users, Play, AlertCircle, Info } from "lucide-react";
+import { CheckCircle, Users, Play, AlertCircle, Info, RefreshCw } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { createSampleProfiles } from "@/utils/sampleDataHelper";
 import { useState } from "react";
@@ -11,11 +11,13 @@ export const TestDataStatus = () => {
   const { language } = useLanguage();
   const [isCreating, setIsCreating] = useState(false);
   const [isCreated, setIsCreated] = useState(false);
+  const [lastResult, setLastResult] = useState<any>(null);
 
   const handleCreateSampleData = async () => {
     setIsCreating(true);
     try {
-      await createSampleProfiles();
+      const result = await createSampleProfiles();
+      setLastResult(result);
       setIsCreated(true);
       toast.success(language === 'ar' ? 
         'تم إنشاء البيانات التجريبية بنجاح!' :
@@ -32,7 +34,13 @@ export const TestDataStatus = () => {
     }
   };
 
-  if (isCreated) {
+  const handleRefreshData = async () => {
+    setIsCreated(false);
+    setLastResult(null);
+    await handleCreateSampleData();
+  };
+
+  if (isCreated && lastResult) {
     return (
       <Card className="mb-6 border-green-200 bg-green-50">
         <CardHeader>
@@ -42,7 +50,7 @@ export const TestDataStatus = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-start gap-3">
+          <div className="flex items-start gap-3 mb-4">
             <Users className="h-5 w-5 text-green-600 mt-0.5" />
             <div>
               <p className="text-green-700 font-medium">
@@ -51,14 +59,25 @@ export const TestDataStatus = () => {
                   'Sample coach-trainee relationships created successfully!'
                 }
               </p>
-              <p className="text-sm text-green-600 mt-1">
-                {language === 'ar' ? 
-                  'تم استخدام المستخدمين الحاليين لإنشاء علاقات المدرب والمتدرب' :
-                  'Used existing users to create coach-trainee relationships with sample data'
-                }
-              </p>
+              <div className="text-sm text-green-600 mt-2 space-y-1">
+                <p>• {lastResult.data?.coaches || 0} coaches updated</p>
+                <p>• {lastResult.data?.trainees || 0} trainees updated</p>
+                <p>• {lastResult.data?.newRelationships || 0} new relationships created</p>
+                <p>• {lastResult.data?.newMealPlans || 0} new meal plans</p>
+                <p>• {lastResult.data?.newExercisePrograms || 0} new exercise programs</p>
+                <p>• {lastResult.data?.newGoals || 0} new goals</p>
+              </div>
             </div>
           </div>
+          <Button 
+            onClick={handleRefreshData}
+            variant="outline"
+            size="sm"
+            className="text-green-700 border-green-300 hover:bg-green-100"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            {language === 'ar' ? 'تحديث البيانات' : 'Refresh Data'}
+          </Button>
         </CardContent>
       </Card>
     );
@@ -102,8 +121,8 @@ export const TestDataStatus = () => {
             
             <p className="text-sm text-blue-600 mb-4">
               {language === 'ar' ? 
-                'سيتم استخدام المستخدمين الحاليين لإنشاء مدربين ومتدربين مع جميع البيانات المطلوبة' :
-                'Will use existing users to create coaches and trainees with all necessary sample data'
+                'سيتم استخدام المستخدمين الحاليين لإنشاء مدربين ومتدربين مع جميع البيانات المطلوبة. إذا كانت البيانات موجودة بالفعل، فسيتم تحديثها فقط.' :
+                'Will use existing users to create coaches and trainees with all necessary sample data. If data already exists, it will only be updated.'
               }
             </p>
             <Button 
