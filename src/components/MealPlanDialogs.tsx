@@ -38,7 +38,7 @@ interface MealPlanDialogsProps {
   showExchangeDialog: boolean;
   onCloseExchangeDialog: () => void;
   selectedMealIndex: number;
-  onExchange: (alternative: any) => void;
+  onExchange: () => void;
   
   // New callback for recipe generation
   onRecipeGenerated?: () => void;
