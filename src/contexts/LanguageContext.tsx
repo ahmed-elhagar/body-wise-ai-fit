@@ -1,6 +1,4 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
 
 export type Language = 'en' | 'ar';
 
@@ -243,8 +241,6 @@ const translations = {
 
 export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
   const [language, setLanguage] = useState<Language>('en');
-  const navigate = useNavigate();
-  const location = useLocation();
 
   useEffect(() => {
     const storedLanguage = localStorage.getItem('language') || 'en';
@@ -253,9 +249,7 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
 
   useEffect(() => {
     localStorage.setItem('language', language);
-    // Note: React Router doesn't have locale-based routing like Next.js
-    // We just store the language preference
-  }, [language, navigate, location]);
+  }, [language]);
 
   const t = (key: string) => {
     const translation = (translations[language] && translations[language][key]) || key;
