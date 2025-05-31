@@ -1,5 +1,5 @@
 
-import { Calendar, Home, Utensils, Dumbbell, TrendingUp, Settings, Shield, Users, MessageCircle, User, Bell, LogOut } from "lucide-react"
+import { Calendar, Home, Utensils, Dumbbell, TrendingUp, Shield, Users, MessageCircle, User, Bell, LogOut } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
 import {
   Sidebar,
@@ -69,7 +69,7 @@ const AppSidebar = () => {
     },
   ]
 
-  // Utility items
+  // Utility items (removed Settings from here since it's in Profile)
   const utilityItems = [
     {
       title: t("Notifications"),
@@ -81,11 +81,6 @@ const AppSidebar = () => {
       title: t("Profile"),
       url: "/profile",
       icon: User,
-    },
-    {
-      title: t("Settings"),
-      url: "/settings",
-      icon: Settings,
     },
   ]
 
@@ -161,7 +156,7 @@ const AppSidebar = () => {
                         <span className="font-medium">{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
-                  </SidebarMenuItem>
+                    </SidebarMenuItem>
                 ))}
               </SidebarMenu>
             </SidebarGroupContent>
