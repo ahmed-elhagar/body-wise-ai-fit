@@ -70,7 +70,7 @@ const DayOverviewSection = ({
               onClick={onAddSnack}
               size="xs"
               variant="accent"
-              className="shadow-sm px-2 py-1 h-6 text-xs"
+              className="shadow-sm px-2 py-1 h-6 text-xs font-medium"
             >
               <Plus className="w-3 h-3 mr-1" />
               {mealPlanT('addSnack')}

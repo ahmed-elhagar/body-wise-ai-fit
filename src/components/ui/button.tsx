@@ -23,14 +23,14 @@ const buttonVariants = cva(
         accent: "bg-gradient-to-r from-fitness-accent-500 to-fitness-accent-600 text-white hover:from-fitness-accent-600 hover:to-fitness-accent-700 hover:shadow-lg hover:shadow-fitness-accent-500/25 active:scale-[0.98] transform"
       },
       size: {
-        sm: "h-6 rounded-md px-2 text-xs font-medium",
-        default: "h-7 px-3 py-1 text-sm",
-        lg: "h-8 rounded-lg px-3 text-sm font-semibold",
-        xl: "h-9 rounded-xl px-4 text-base font-bold",
-        icon: "h-7 w-7 rounded-md",
-        "icon-sm": "h-6 w-6 rounded-md",
-        "icon-lg": "h-8 w-8 rounded-lg",
-        xs: "h-5 rounded-sm px-1.5 text-xs"
+        sm: "h-7 rounded-md px-2.5 text-xs font-medium",
+        default: "h-8 px-3 py-1.5 text-sm",
+        lg: "h-9 rounded-lg px-4 text-sm font-semibold",
+        xl: "h-10 rounded-xl px-5 text-base font-bold",
+        icon: "h-8 w-8 rounded-md",
+        "icon-sm": "h-7 w-7 rounded-md",
+        "icon-lg": "h-9 w-9 rounded-lg",
+        xs: "h-6 rounded-sm px-2 text-xs"
       },
     },
     defaultVariants: {
@@ -59,7 +59,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       >
         {loading && (
           <svg
-            className="animate-spin -ml-1 mr-2 h-4 w-4"
+            className="animate-spin -ml-1 mr-2 h-3 w-3"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"

@@ -1,3 +1,5 @@
+
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -20,6 +22,11 @@ const EnhancedMealPlanHeader = ({
   hasWeeklyPlan
 }: EnhancedMealPlanHeaderProps) => {
   const { mealPlanT } = useMealPlanTranslation();
+  const navigate = useNavigate();
+
+  const handleNavigateToMealPlan = () => {
+    navigate('/meal-plan');
+  };
 
   return (
     <Card className="bg-white border-fitness-primary-100 shadow-sm">

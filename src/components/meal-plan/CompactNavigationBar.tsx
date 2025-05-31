@@ -43,6 +43,21 @@ const CompactNavigationBar = ({
     };
   });
 
+  const handleDayClick = (dayNumber: number) => {
+    console.log('🗓️ Day clicked:', dayNumber);
+    onDayChange(dayNumber);
+  };
+
+  const handleWeekChange = (offset: number) => {
+    console.log('🗓️ Week change:', offset);
+    onWeekChange(offset);
+  };
+
+  const handleViewModeChange = (mode: 'daily' | 'weekly') => {
+    console.log('👁️ View mode change:', mode);
+    onViewModeChange(mode);
+  };
+
   return (
     <Card className="bg-white/95 backdrop-blur-sm border-fitness-primary-100 shadow-sm">
       <div className="px-4 py-3">
@@ -52,7 +67,7 @@ const CompactNavigationBar = ({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => onWeekChange(currentWeekOffset - 1)}
+              onClick={() => handleWeekChange(currentWeekOffset - 1)}
               className="h-8 w-8 p-0 hover:bg-fitness-primary-50"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -72,7 +87,7 @@ const CompactNavigationBar = ({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => onWeekChange(currentWeekOffset + 1)}
+              onClick={() => handleWeekChange(currentWeekOffset + 1)}
               className="h-8 w-8 p-0 hover:bg-fitness-primary-50"
             >
               <ChevronRight className="w-4 h-4" />
@@ -85,7 +100,7 @@ const CompactNavigationBar = ({
               {days.map(({ dayNumber, date, isSelected, isToday, dayName, dayDate }) => (
                 <button
                   key={dayNumber}
-                  onClick={() => onDayChange(dayNumber)}
+                  onClick={() => handleDayClick(dayNumber)}
                   className={`
                     flex flex-col items-center px-3 py-2 rounded-lg font-medium transition-all duration-200 min-w-[52px]
                     ${isSelected 
@@ -112,7 +127,7 @@ const CompactNavigationBar = ({
           {/* View Mode Toggle - Icons Only */}
           <div className="flex bg-gray-100 rounded-lg p-1">
             <button
-              onClick={() => onViewModeChange('daily')}
+              onClick={() => handleViewModeChange('daily')}
               className={`flex items-center justify-center w-8 h-8 rounded-md transition-all ${
                 viewMode === 'daily'
                   ? 'bg-white text-fitness-primary-600 shadow-sm'
@@ -123,7 +138,7 @@ const CompactNavigationBar = ({
               <Calendar className="w-4 h-4" />
             </button>
             <button
-              onClick={() => onViewModeChange('weekly')}
+              onClick={() => handleViewModeChange('weekly')}
               className={`flex items-center justify-center w-8 h-8 rounded-md transition-all ${
                 viewMode === 'weekly'
                   ? 'bg-white text-fitness-primary-600 shadow-sm'

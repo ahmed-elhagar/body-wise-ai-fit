@@ -35,7 +35,7 @@ const MealPlanHeader = ({
   const nutritionContext = getNutritionContext();
 
   return (
-    <Card className="p-4 sm:p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-0 shadow-lg">
+    <Card className="p-4 sm:p-6 bg-gradient-to-r from-fitness-primary-50 to-fitness-accent-50 border-0 shadow-lg">
       {/* Life Phase Ribbon - Only show if feature flag is enabled and user has life phase data */}
       {flags.life_phase_nutrition && (
         <LifePhaseRibbon
@@ -49,7 +49,7 @@ const MealPlanHeader = ({
       <div className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 ${isRTL ? 'sm:flex-row-reverse' : ''}`}>
         <div className={`flex-1 ${isRTL ? 'text-right' : 'text-left'}`}>
           <div className={`flex items-center gap-2 mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <Calendar className="w-5 h-5 text-blue-600" />
+            <Calendar className="w-5 h-5 text-fitness-primary-600" />
             <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
               {t('mealPlan.title')}
             </h1>
@@ -80,7 +80,7 @@ const MealPlanHeader = ({
             disabled={isGenerating || isShuffling}
             variant="outline"
             size="sm"
-            className="whitespace-nowrap hover:bg-blue-50"
+            className="whitespace-nowrap hover:bg-fitness-primary-50"
           >
             <Shuffle className="w-4 h-4 mr-2" />
             {t('mealPlan.shuffleMeals')}
@@ -89,7 +89,7 @@ const MealPlanHeader = ({
           <Button
             onClick={onShowAIDialog}
             disabled={isGenerating || isShuffling}
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white whitespace-nowrap"
+            className="bg-gradient-to-r from-fitness-primary-600 to-fitness-accent-600 hover:from-fitness-primary-700 hover:to-fitness-accent-700 text-white whitespace-nowrap"
             size="sm"
           >
             <Sparkles className="w-4 h-4 mr-2" />

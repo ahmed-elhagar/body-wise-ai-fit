@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -154,21 +155,9 @@ const EnhancedAddSnackDialog = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={!isGenerating ? handleClose : undefined}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent 
         className="max-w-2xl mx-4 sm:mx-auto bg-gradient-to-br from-fitness-accent-25 to-fitness-primary-25 border-fitness-accent-200 shadow-2xl rounded-2xl"
-        onPointerDownOutside={(e) => {
-          if (isGenerating) {
-            e.preventDefault();
-            return;
-          }
-        }}
-        onEscapeKeyDown={(e) => {
-          if (isGenerating) {
-            e.preventDefault();
-            return;
-          }
-        }}
       >
         <DialogHeader className="pb-4">
           <div className="flex items-center justify-between">
