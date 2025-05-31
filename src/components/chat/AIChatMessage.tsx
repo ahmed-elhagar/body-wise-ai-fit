@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Bot, User, Copy, Check, ThumbsUp, ThumbsDown, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface AIChatMessageProps {
   message: {
@@ -21,6 +22,7 @@ interface AIChatMessageProps {
 const AIChatMessage = ({ message, onRegenerate, onFeedback }: AIChatMessageProps) => {
   const [copied, setCopied] = useState(false);
   const [feedback, setFeedback] = useState<'positive' | 'negative' | null>(null);
+  const { isRTL } = useLanguage();
 
   const handleCopy = async () => {
     try {
@@ -37,42 +39,88 @@ const AIChatMessage = ({ message, onRegenerate, onFeedback }: AIChatMessageProps
     onFeedback?.(message.id, type);
   };
 
+  const formatText = (text: string) => {
+    // Handle bold text **text** or __text__
+    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    text = text.replace(/__(.*?)__/g, '<strong>$1</strong>');
+    
+    // Handle italic text *text* or _text_
+    text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    text = text.replace(/_(.*?)_/g, '<em>$1</em>');
+    
+    // Handle inline code `code`
+    text = text.replace(/`(.*?)`/g, '<code class="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono">$1</code>');
+    
+    return text;
+  };
+
   const formatAIResponse = (content: string) => {
     // Split content into paragraphs
     const paragraphs = content.split('\n\n').filter(p => p.trim());
     
     return paragraphs.map((paragraph, index) => {
+      const trimmedParagraph = paragraph.trim();
+      
       // Check if it's a list
-      if (paragraph.includes('•') || paragraph.includes('-') || /^\d+\./.test(paragraph)) {
-        const lines = paragraph.split('\n');
+      if (trimmedParagraph.includes('•') || trimmedParagraph.includes('-') || /^\d+\./.test(trimmedParagraph)) {
+        const lines = trimmedParagraph.split('\n');
         return (
           <div key={index} className="mb-4">
-            {lines.map((line, lineIndex) => (
-              <div key={lineIndex} className="mb-1 flex items-start">
-                {line.trim().startsWith('•') || line.trim().startsWith('-') ? (
-                  <>
-                    <span className="text-blue-600 mr-2 mt-1">•</span>
-                    <span>{line.replace(/^[•\-]\s*/, '')}</span>
-                  </>
-                ) : /^\d+\./.test(line.trim()) ? (
-                  <>
-                    <span className="text-blue-600 mr-2 font-semibold">{line.match(/^\d+\./)?.[0]}</span>
-                    <span>{line.replace(/^\d+\.\s*/, '')}</span>
-                  </>
-                ) : (
-                  <span>{line}</span>
-                )}
-              </div>
-            ))}
+            {lines.map((line, lineIndex) => {
+              const trimmedLine = line.trim();
+              if (!trimmedLine) return null;
+              
+              return (
+                <div key={lineIndex} className={cn(
+                  "mb-2 flex items-start gap-2",
+                  isRTL ? "text-right" : "text-left"
+                )}>
+                  {trimmedLine.startsWith('•') || trimmedLine.startsWith('-') ? (
+                    <>
+                      <span className="text-blue-600 mt-1 flex-shrink-0">•</span>
+                      <span 
+                        className="flex-1"
+                        dangerouslySetInnerHTML={{ 
+                          __html: formatText(trimmedLine.replace(/^[•\-]\s*/, '')) 
+                        }} 
+                      />
+                    </>
+                  ) : /^\d+\./.test(trimmedLine) ? (
+                    <>
+                      <span className="text-blue-600 font-semibold flex-shrink-0">
+                        {trimmedLine.match(/^\d+\./)?.[0]}
+                      </span>
+                      <span 
+                        className="flex-1"
+                        dangerouslySetInnerHTML={{ 
+                          __html: formatText(trimmedLine.replace(/^\d+\.\s*/, '')) 
+                        }} 
+                      />
+                    </>
+                  ) : (
+                    <span 
+                      className="flex-1"
+                      dangerouslySetInnerHTML={{ __html: formatText(trimmedLine) }} 
+                    />
+                  )}
+                </div>
+              );
+            })}
           </div>
         );
       }
       
       // Check if it's a heading (starts with # or **text**)
-      if (paragraph.startsWith('#') || (paragraph.startsWith('**') && paragraph.endsWith('**'))) {
-        const headingText = paragraph.replace(/^#+\s*/, '').replace(/\*\*/g, '');
+      if (trimmedParagraph.startsWith('#') || (trimmedParagraph.startsWith('**') && trimmedParagraph.endsWith('**'))) {
+        const headingText = trimmedParagraph.replace(/^#+\s*/, '').replace(/\*\*/g, '');
         return (
-          <h3 key={index} className="font-semibold text-gray-900 mb-2 text-base">
+          <h3 
+            key={index} 
+            className={cn(
+              "font-semibold text-gray-900 mb-3 text-base",
+              isRTL ? "text-right" : "text-left"
+            )}
+          >
             {headingText}
           </h3>
         );
@@ -80,9 +128,14 @@ const AIChatMessage = ({ message, onRegenerate, onFeedback }: AIChatMessageProps
       
       // Regular paragraph
       return (
-        <p key={index} className="mb-3 leading-relaxed">
-          {paragraph}
-        </p>
+        <p 
+          key={index} 
+          className={cn(
+            "mb-3 leading-relaxed",
+            isRTL ? "text-right" : "text-left"
+          )}
+          dangerouslySetInnerHTML={{ __html: formatText(trimmedParagraph) }}
+        />
       );
     });
   };
@@ -93,7 +146,8 @@ const AIChatMessage = ({ message, onRegenerate, onFeedback }: AIChatMessageProps
   return (
     <div className={cn(
       "group flex gap-4 mb-6 max-w-none",
-      isUser ? "justify-end" : "justify-start"
+      isUser ? "justify-end" : "justify-start",
+      isRTL && "flex-row-reverse"
     )}>
       {/* Avatar for assistant */}
       {isAssistant && (
@@ -113,7 +167,9 @@ const AIChatMessage = ({ message, onRegenerate, onFeedback }: AIChatMessageProps
           isUser
             ? "bg-blue-600 text-white ml-auto rounded-br-md"
             : "bg-white text-gray-900 border-gray-200 rounded-bl-md",
-          message.isLoading && "animate-pulse"
+          message.isLoading && "animate-pulse",
+          isUser && isRTL && "mr-auto ml-0 rounded-bl-md rounded-br-2xl",
+          isAssistant && isRTL && "rounded-br-md rounded-bl-2xl"
         )}>
           {message.isLoading ? (
             <div className="flex items-center gap-3">
@@ -127,15 +183,26 @@ const AIChatMessage = ({ message, onRegenerate, onFeedback }: AIChatMessageProps
           ) : (
             <div className={cn(
               "break-words",
-              isUser ? "text-white" : "text-gray-900"
+              isUser ? "text-white" : "text-gray-900",
+              isRTL ? "text-right" : "text-left"
             )}>
-              {isAssistant ? formatAIResponse(message.content) : message.content}
+              {isAssistant ? (
+                <div className="prose prose-sm max-w-none">
+                  {formatAIResponse(message.content)}
+                </div>
+              ) : (
+                <div 
+                  className={cn(isRTL ? "text-right" : "text-left")}
+                  dangerouslySetInnerHTML={{ __html: formatText(message.content) }}
+                />
+              )}
             </div>
           )}
           
           <div className={cn(
             "text-xs mt-2 opacity-70",
-            isUser ? "text-blue-100" : "text-gray-500"
+            isUser ? "text-blue-100" : "text-gray-500",
+            isRTL ? "text-right" : "text-left"
           )}>
             {message.timestamp.toLocaleTimeString([], { 
               hour: '2-digit', 
@@ -146,7 +213,10 @@ const AIChatMessage = ({ message, onRegenerate, onFeedback }: AIChatMessageProps
         
         {/* Action buttons for assistant messages */}
         {isAssistant && !message.isLoading && (
-          <div className="flex items-center gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className={cn(
+            "flex items-center gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity",
+            isRTL && "flex-row-reverse"
+          )}>
             <Button
               variant="ghost"
               size="sm"
@@ -179,7 +249,10 @@ const AIChatMessage = ({ message, onRegenerate, onFeedback }: AIChatMessageProps
             )}
             
             {onFeedback && (
-              <div className="flex gap-1 ml-2">
+              <div className={cn(
+                "flex gap-1 ml-2",
+                isRTL && "mr-2 ml-0"
+              )}>
                 <Button
                   variant="ghost"
                   size="sm"
