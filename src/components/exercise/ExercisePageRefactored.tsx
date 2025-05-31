@@ -46,7 +46,7 @@ const ExercisePageRefactored = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/30 to-purple-50/30 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center text-red-600">
           Error loading exercise data. Please try again.
         </div>
@@ -56,7 +56,7 @@ const ExercisePageRefactored = () => {
 
   if (!currentProgram) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/30 to-purple-50/30">
+      <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto p-6">
           <EmptyExerciseState
             onGenerateProgram={() => setShowAIDialog(true)}
@@ -74,7 +74,7 @@ const ExercisePageRefactored = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/30 to-purple-50/30">
+    <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto p-6 space-y-6">
         {/* Header */}
         <ExerciseHeader

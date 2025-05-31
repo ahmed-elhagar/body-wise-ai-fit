@@ -17,11 +17,11 @@ const StatsSidebar = ({ todaysMeals, totalCalories, totalProtein, targetDayCalor
 
   return (
     <div className="space-y-4">
-      <Card className="bg-gradient-to-br from-orange-500 to-red-600 text-white border-0 shadow-lg">
+      <Card className="bg-gradient-to-br from-orange-500 to-red-500 text-white border-0 shadow-sm rounded-lg">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base font-semibold flex items-center gap-2">
-            <Flame className="w-5 h-5" />
-            {t('mealPlan:todaysSummary')}
+          <CardTitle className="text-base font-medium flex items-center gap-2">
+            <Flame className="w-4 h-4" />
+            Today's Summary
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -38,7 +38,7 @@ const StatsSidebar = ({ todaysMeals, totalCalories, totalProtein, targetDayCalor
                 />
               </div>
               <div className="flex justify-between text-sm mt-1">
-                <span>{totalCalories}</span>
+                <span className="font-medium">{totalCalories}</span>
                 <span>{targetDayCalories}</span>
               </div>
             </div>
@@ -46,31 +46,31 @@ const StatsSidebar = ({ todaysMeals, totalCalories, totalProtein, targetDayCalor
         </CardContent>
       </Card>
 
-      <Card className="bg-gradient-to-br from-blue-500 to-purple-600 text-white border-0 shadow-lg">
+      <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-sm rounded-lg">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base font-semibold flex items-center gap-2">
-            <Target className="w-5 h-5" />
+          <CardTitle className="text-base font-medium flex items-center gap-2">
+            <Target className="w-4 h-4" />
             Protein Goal
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center">
-            <div className="text-2xl font-bold">{totalProtein.toFixed(1)}g</div>
+            <div className="text-xl font-medium">{totalProtein.toFixed(1)}g</div>
             <div className="text-sm opacity-90">Total Protein</div>
           </div>
         </CardContent>
       </Card>
 
-      <Card className="bg-gradient-to-br from-green-500 to-teal-600 text-white border-0 shadow-lg">
+      <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white border-0 shadow-sm rounded-lg">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base font-semibold flex items-center gap-2">
-            <Utensils className="w-5 h-5" />
+          <CardTitle className="text-base font-medium flex items-center gap-2">
+            <Utensils className="w-4 h-4" />
             Meals Today
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center">
-            <div className="text-2xl font-bold">{todaysMeals.length}</div>
+            <div className="text-xl font-medium">{todaysMeals.length}</div>
             <div className="text-sm opacity-90">Planned Meals</div>
           </div>
         </CardContent>

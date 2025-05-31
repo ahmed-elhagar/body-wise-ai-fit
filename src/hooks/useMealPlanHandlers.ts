@@ -14,10 +14,10 @@ export const useMealPlanHandlers = (
     setShowRecipeDialog(true);
   }, [setSelectedMeal, setShowRecipeDialog]);
 
-  const handleExchangeMeal = useCallback((meal: DailyMeal, index: number) => {
-    console.log('🔄 Exchanging meal:', meal.name, 'at index:', index);
+  const handleExchangeMeal = useCallback((meal: DailyMeal) => {
+    console.log('🔄 Exchanging meal:', meal.name);
     setSelectedMeal(meal);
-    setSelectedMealIndex(index);
+    setSelectedMealIndex(0); // Set a default index since we removed the parameter
     setShowExchangeDialog(true);
   }, [setSelectedMeal, setSelectedMealIndex, setShowExchangeDialog]);
 

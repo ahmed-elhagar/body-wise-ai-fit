@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { addDays } from "date-fns";
@@ -78,7 +79,7 @@ const MealPlanPageRefactored = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/30">
+    <div className="min-h-screen bg-gray-50">
       <MealPlanLoadingBackdrop 
         isLoading={mealPlanState.isGenerating} 
         message="Generating your meal plan..."
