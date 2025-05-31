@@ -108,6 +108,21 @@ export const enTranslations = {
   "Yes": "Yes",
   "No": "No",
 
+  // Coach page specific translations
+  "Manage your clients and coaching sessions": "Manage your clients and coaching sessions",
+  "Messages Today": "Messages Today",
+  "Client interactions": "Client interactions",
+  "Success Rate": "Success Rate",
+  "Client goal achievement": "Client goal achievement",
+  "This Month": "This Month",
+  "Goals completed": "Goals completed",
+  "Active Conversations": "Active Conversations",
+  "No active chats": "No active chats",
+  "Recent conversations with your clients will appear here.": "Recent conversations with your clients will appear here.",
+  "Coaching Analytics": "Coaching Analytics",
+  "Analytics Coming Soon": "Analytics Coming Soon",
+  "Detailed coaching analytics and client progress reports will be available here.": "Detailed coaching analytics and client progress reports will be available here.",
+
   // Food Tracker specific
   "Track your nutrition and maintain healthy eating habits": "Track your nutrition and maintain healthy eating habits",
   "Today": "Today",
@@ -196,4 +211,7 @@ export const enTranslations = {
   "Underweight": "Underweight",
   "Overweight": "Overweight",
   "Obese": "Obese",
+
+  // General user interface
+  "user": "user",
 };

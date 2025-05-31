@@ -107,6 +107,21 @@ export const arTranslations = {
   "Yes": "نعم",
   "No": "لا",
 
+  // Coach page specific translations
+  "Manage your clients and coaching sessions": "إدارة عملائك وجلسات التدريب",
+  "Messages Today": "رسائل اليوم",
+  "Client interactions": "تفاعلات العملاء",
+  "Success Rate": "معدل النجاح",
+  "Client goal achievement": "تحقيق أهداف العملاء",
+  "This Month": "هذا الشهر",
+  "Goals completed": "الأهداف المكتملة",
+  "Active Conversations": "المحادثات النشطة",
+  "No active chats": "لا توجد محادثات نشطة",
+  "Recent conversations with your clients will appear here.": "ستظهر المحادثات الأخيرة مع عملائك هنا.",
+  "Coaching Analytics": "تحليلات التدريب",
+  "Analytics Coming Soon": "التحليلات قريباً",
+  "Detailed coaching analytics and client progress reports will be available here.": "ستكون تحليلات التدريب المفصلة وتقارير تقدم العملاء متوفرة هنا.",
+
   // Food Tracker specific in Arabic
   "Track your nutrition and maintain healthy eating habits": "تتبع تغذيتك واحتفظ بعادات أكل صحية",
   "Today": "اليوم",
@@ -195,4 +210,7 @@ export const arTranslations = {
   "Underweight": "نقص في الوزن",
   "Overweight": "زيادة في الوزن",
   "Obese": "سمنة",
+
+  // General user interface
+  "user": "مستخدم",
 };
