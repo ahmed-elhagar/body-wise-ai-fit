@@ -5,7 +5,7 @@ import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { MessageCircle, Bot, Users } from "lucide-react";
+import { MessageCircle, Bot, Users, AlertCircle, Loader2 } from "lucide-react";
 import { useCoachSystem } from "@/hooks/useCoachSystem";
 import { useUnreadMessagesFromCoach } from "@/hooks/useUnreadMessages";
 import { TraineeCoachChat } from "@/components/coach/TraineeCoachChat";
@@ -14,9 +14,11 @@ import AIChatInterface from "@/components/chat/AIChatInterface";
 
 const Chat = () => {
   const { t } = useLanguage();
-  const { coachInfo } = useCoachSystem();
+  const { coachInfo, isLoadingCoachInfo, coachInfoError } = useCoachSystem();
   const { data: unreadCoachMessages = 0 } = useUnreadMessagesFromCoach();
   const [showCoachChat, setShowCoachChat] = useState(false);
+
+  console.log('Chat page - coachInfo:', coachInfo, 'loading:', isLoadingCoachInfo, 'error:', coachInfoError);
 
   // Show coach chat interface
   if (showCoachChat && coachInfo) {
@@ -24,7 +26,7 @@ const Chat = () => {
       <ProtectedRoute>
         <Layout>
           <TraineeCoachChat
-            coachId={coachInfo.coach_profile?.id || ''}
+            coachId={coachInfo.coach_id}
             coachName={`${coachInfo.coach_profile?.first_name || 'Unknown'} ${coachInfo.coach_profile?.last_name || 'Coach'}`}
             onBack={() => setShowCoachChat(false)}
           />
@@ -86,7 +88,28 @@ const Chat = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {!coachInfo ? (
+                  {isLoadingCoachInfo ? (
+                    <div className="text-center py-12">
+                      <Loader2 className="h-8 w-8 text-gray-400 mx-auto mb-4 animate-spin" />
+                      <p className="text-gray-600">{t('Loading coach information...')}</p>
+                    </div>
+                  ) : coachInfoError ? (
+                    <div className="text-center py-12">
+                      <AlertCircle className="h-16 w-16 text-red-300 mx-auto mb-4" />
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                        {t('Error Loading Coach Information')}
+                      </h3>
+                      <p className="text-gray-600 mb-4">
+                        {t('Unable to load your coach information. Please try refreshing the page.')}
+                      </p>
+                      <button 
+                        onClick={() => window.location.reload()}
+                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
+                      >
+                        {t('Refresh Page')}
+                      </button>
+                    </div>
+                  ) : !coachInfo ? (
                     <div className="text-center py-12">
                       <Users className="h-16 w-16 text-gray-300 mx-auto mb-4" />
                       <h3 className="text-xl font-semibold text-gray-900 mb-2">

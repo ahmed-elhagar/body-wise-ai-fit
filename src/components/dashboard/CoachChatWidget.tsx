@@ -2,28 +2,56 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MessageCircle, ArrowRight, UserCheck } from "lucide-react";
+import { MessageCircle, ArrowRight, UserCheck, Loader2, AlertCircle } from "lucide-react";
 import { useCoachSystem } from "@/hooks/useCoachSystem";
-import { useUnreadMessages } from "@/hooks/useUnreadMessages";
+import { useUnreadMessagesFromCoach } from "@/hooks/useUnreadMessages";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useState } from "react";
 import { TraineeCoachChat } from "@/components/coach/TraineeCoachChat";
+import { useRole } from "@/hooks/useRole";
 
 const CoachChatWidget = () => {
   const { t } = useLanguage();
-  const { coachInfo, isCoach } = useCoachSystem();
-  const { data: unreadCount = 0 } = useUnreadMessages();
+  const { coachInfo, isLoadingCoachInfo, coachInfoError } = useCoachSystem();
+  const { data: unreadCount = 0 } = useUnreadMessagesFromCoach();
+  const { isCoach } = useRole();
   const [showChat, setShowChat] = useState(false);
 
-  // Don't show for coaches or if no coach assigned
-  if (isCoach || !coachInfo) {
+  console.log('CoachChatWidget - coachInfo:', coachInfo, 'loading:', isLoadingCoachInfo, 'error:', coachInfoError);
+
+  // Don't show for coaches or if there's an error loading
+  if (isCoach || coachInfoError) {
+    return null;
+  }
+
+  // Show loading state
+  if (isLoadingCoachInfo) {
+    return (
+      <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <UserCheck className="h-5 w-5 text-green-600" />
+            {t('Your Coach')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-8 w-8 text-gray-400 animate-spin" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Don't show if no coach assigned
+  if (!coachInfo) {
     return null;
   }
 
   if (showChat) {
     return (
       <TraineeCoachChat
-        coachId={coachInfo.coach_profile?.id || ''}
+        coachId={coachInfo.coach_id}
         coachName={`${coachInfo.coach_profile?.first_name || 'Unknown'} ${coachInfo.coach_profile?.last_name || 'Coach'}`}
         onBack={() => setShowChat(false)}
       />
@@ -64,14 +92,14 @@ const CoachChatWidget = () => {
                   {coachInfo.coach_profile?.first_name || 'Unknown'} {coachInfo.coach_profile?.last_name || 'Coach'}
                 </h4>
                 <p className="text-sm text-green-600">
-                  Assigned {new Date(coachInfo.assigned_at).toLocaleDateString()}
+                  {t('Assigned')} {new Date(coachInfo.assigned_at).toLocaleDateString()}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               {unreadCount > 0 && (
                 <Badge variant="destructive" className="text-xs">
-                  {unreadCount} new
+                  {unreadCount} {t('new')}
                 </Badge>
               )}
               <Button
@@ -88,7 +116,7 @@ const CoachChatWidget = () => {
           {coachInfo.notes && (
             <div className="p-3 bg-gray-50 rounded-lg border">
               <p className="text-sm text-gray-600">
-                <strong>Coach Notes:</strong> {coachInfo.notes}
+                <strong>{t('Coach Notes')}:</strong> {coachInfo.notes}
               </p>
             </div>
           )}

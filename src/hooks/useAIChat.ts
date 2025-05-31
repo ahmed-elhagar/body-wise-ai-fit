@@ -2,142 +2,50 @@
 import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
-import { useProfile } from './useProfile';
-import { toast } from 'sonner';
-import { useState, useEffect } from 'react';
 
-export interface ChatMessage {
-  id: string;
-  message_type: 'user' | 'assistant';
-  message?: string;
-  response?: string;
-  created_at: string;
-  [key: string]: any; // Add index signature for JSON compatibility
+interface SendMessageOptions {
+  onSuccess?: (data: string) => void;
+  onError?: (error: any) => void;
 }
 
 export const useAIChat = () => {
   const { user } = useAuth();
-  const { profile } = useProfile();
-  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
 
-  // Load chat history from localStorage on mount
-  useEffect(() => {
-    if (user?.id) {
-      const savedHistory = localStorage.getItem(`chat_history_${user.id}`);
-      if (savedHistory) {
-        try {
-          setChatHistory(JSON.parse(savedHistory));
-        } catch (error) {
-          console.error('Failed to load chat history:', error);
-        }
-      }
+  const sendMessage = (message: string, options?: SendMessageOptions) => {
+    if (!user?.id) {
+      options?.onError?.(new Error('User not authenticated'));
+      return;
     }
-  }, [user?.id]);
 
-  // Save chat history to localStorage whenever it changes
-  useEffect(() => {
-    if (user?.id && chatHistory.length > 0) {
-      localStorage.setItem(`chat_history_${user.id}`, JSON.stringify(chatHistory));
-    }
-  }, [chatHistory, user?.id]);
+    console.log('🤖 Sending AI chat message:', message);
 
-  const sendMessage = useMutation({
-    mutationFn: async (message: string) => {
-      if (!user?.id) {
-        throw new Error('Please sign in to use AI chat');
+    // Call the AI chat edge function
+    fetch('/api/ai-chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${supabase.auth.session()?.access_token}`,
+      },
+      body: JSON.stringify({
+        message,
+        userId: user.id,
+      }),
+    })
+    .then(async (response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-
-      console.log('Sending message:', message);
-      console.log('Current chat history length:', chatHistory.length);
-      console.log('Current user profile:', profile);
-
-      try {
-        // Convert chat history to the format expected by the API
-        const apiChatHistory = chatHistory.map(msg => ({
-          role: msg.message_type === 'user' ? 'user' : 'assistant',
-          content: msg.message_type === 'user' ? msg.message : msg.response
-        }));
-
-        const { data, error } = await supabase.functions.invoke('fitness-chat', {
-          body: {
-            message,
-            userProfile: profile || {}, // Ensure we always send an object even if profile is null
-            chatHistory: apiChatHistory
-          }
-        });
-
-        if (error) {
-          console.error('AI chat error:', error);
-          throw error;
-        }
-
-        console.log('AI response received:', data);
-
-        // Log the chat interaction with proper JSON serialization
-        try {
-          // Prepare data for JSON storage
-          const promptData = {
-            message,
-            chatHistory: apiChatHistory
-          };
-
-          const responseData = {
-            response: data.response
-          };
-
-          await supabase
-            .from('ai_generation_logs')
-            .insert({
-              user_id: user.id,
-              generation_type: 'fitness_chat',
-              status: 'completed',
-              prompt_data: promptData,
-              response_data: responseData
-            });
-        } catch (logError) {
-          console.error('Failed to log chat interaction:', logError);
-          // Don't throw here, as the main functionality worked
-        }
-
-        // Update local chat history
-        const newUserMessage: ChatMessage = { 
-          id: Date.now().toString(), 
-          message_type: 'user', 
-          message, 
-          created_at: new Date().toISOString() 
-        };
-        const newAiMessage: ChatMessage = { 
-          id: (Date.now() + 1).toString(), 
-          message_type: 'assistant', 
-          response: data.response, 
-          created_at: new Date().toISOString() 
-        };
-        
-        setChatHistory(prev => [...prev, newUserMessage, newAiMessage]);
-
-        return data.response;
-      } catch (error) {
-        console.error('Error in AI chat:', error);
-        throw error;
-      }
-    },
-    onError: (error: any) => {
-      console.error('Error in AI chat:', error);
-      toast.error('Failed to send message. Please try again.');
-    },
-  });
-
-  const clearHistory = () => {
-    setChatHistory([]);
-    if (user?.id) {
-      localStorage.removeItem(`chat_history_${user.id}`);
-    }
+      const data = await response.json();
+      console.log('✅ AI response:', data);
+      options?.onSuccess?.(data.response || 'Sorry, I couldn\'t generate a response.');
+    })
+    .catch((error) => {
+      console.error('❌ AI chat error:', error);
+      options?.onError?.(error);
+    });
   };
 
   return {
-    sendMessage: sendMessage.mutate,
-    isSending: sendMessage.isPending,
-    chatHistory,
-    clearHistory,
+    sendMessage,
   };
 };

@@ -50,14 +50,23 @@ const AIChatInterface = () => {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const currentMessage = inputMessage;
     setInputMessage('');
     setIsLoading(true);
 
     try {
+      console.log('🤖 Sending AI message:', currentMessage);
+      
       const response = await new Promise<string>((resolve, reject) => {
-        sendMessage(inputMessage, {
-          onSuccess: (data: string) => resolve(data),
-          onError: (error: any) => reject(error)
+        sendMessage(currentMessage, {
+          onSuccess: (data: string) => {
+            console.log('✅ AI response received:', data);
+            resolve(data);
+          },
+          onError: (error: any) => {
+            console.error('❌ AI error:', error);
+            reject(error);
+          }
         });
       });
       
