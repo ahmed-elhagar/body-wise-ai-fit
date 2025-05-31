@@ -57,24 +57,31 @@ export const useCoachSystem = () => {
       console.log('🔍 useCoachSystem: User role check - isRoleCoach:', isRoleCoach, 'isAdmin:', isAdmin);
 
       try {
-        // First get the coach-trainee relationship
+        // First get the coach-trainee relationships (using select() instead of maybeSingle())
         console.log('🔍 useCoachSystem: Querying coach_trainees table...');
-        const { data: relationship, error: relationshipError } = await supabase
+        const { data: relationships, error: relationshipError } = await supabase
           .from('coach_trainees')
           .select('*')
           .eq('trainee_id', user.id)
-          .maybeSingle();
+          .order('assigned_at', { ascending: false }); // Get most recent assignment first
 
-        console.log('🔍 useCoachSystem: Relationship query result:', { relationship, relationshipError });
+        console.log('🔍 useCoachSystem: Relationship query result:', { relationships, relationshipError });
 
         if (relationshipError) {
           console.error('❌ useCoachSystem: Error fetching coach relationship:', relationshipError);
           throw new Error(`Failed to fetch coach relationship: ${relationshipError.message}`);
         }
 
-        if (!relationship) {
+        if (!relationships || relationships.length === 0) {
           console.log('📭 useCoachSystem: No coach assigned to this user');
           return null;
+        }
+
+        // Take the most recent relationship (first one due to ordering)
+        const relationship = relationships[0];
+        
+        if (relationships.length > 1) {
+          console.warn('⚠️ useCoachSystem: Multiple coach relationships found, using most recent:', relationship);
         }
 
         console.log('✅ useCoachSystem: Found coach relationship:', relationship);
@@ -85,7 +92,7 @@ export const useCoachSystem = () => {
           .from('profiles')
           .select('id, first_name, last_name, email')
           .eq('id', relationship.coach_id)
-          .maybeSingle();
+          .single();
 
         console.log('🔍 useCoachSystem: Coach profile query result:', { coachProfile, coachProfileError });
 
