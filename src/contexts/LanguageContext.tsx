@@ -128,6 +128,7 @@ const translations = {
     'Admin Dashboard': 'Admin Dashboard',
     'Coach Panel': 'Coach Panel',
     'Admin': 'Admin',
+    'nav.aiPoweredFitness': 'AI-Powered Fitness',
   },
   ar: {
     'Dashboard': 'لوحة القيادة',
@@ -236,6 +237,7 @@ const translations = {
     'Admin Dashboard': 'لوحة الإدارة',
     'Coach Panel': 'لوحة المدرب',
     'Admin': 'إدارة',
+    'nav.aiPoweredFitness': 'لياقة مدعومة بالذكاء الاصطناعي',
   }
 };
 
