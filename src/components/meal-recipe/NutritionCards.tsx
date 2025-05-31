@@ -16,40 +16,40 @@ const NutritionCards = ({ meal }: NutritionCardsProps) => {
       value: meal.calories,
       unit: "",
       icon: Flame,
-      color: isSnack ? "from-green-400 to-emerald-400" : "from-purple-400 to-pink-400",
-      bgColor: isSnack ? "bg-green-500/10" : "bg-purple-500/10",
-      textColor: isSnack ? "text-green-300" : "text-purple-300",
-      borderColor: isSnack ? "border-green-500/20" : "border-purple-500/20"
+      color: isSnack ? "from-emerald-400 to-green-500" : "from-orange-400 to-red-500",
+      bgColor: isSnack ? "bg-emerald-50" : "bg-orange-50",
+      textColor: isSnack ? "text-emerald-700" : "text-orange-700",
+      borderColor: isSnack ? "border-emerald-200" : "border-orange-200"
     },
     {
       label: "Protein",
       value: meal.protein,
       unit: "g",
       icon: Beef,
-      color: isSnack ? "from-emerald-400 to-teal-400" : "from-blue-400 to-indigo-400",
-      bgColor: isSnack ? "bg-emerald-500/10" : "bg-blue-500/10",
-      textColor: isSnack ? "text-emerald-300" : "text-blue-300",
-      borderColor: isSnack ? "border-emerald-500/20" : "border-blue-500/20"
+      color: isSnack ? "from-teal-400 to-cyan-500" : "from-blue-400 to-indigo-500",
+      bgColor: isSnack ? "bg-teal-50" : "bg-blue-50",
+      textColor: isSnack ? "text-teal-700" : "text-blue-700",
+      borderColor: isSnack ? "border-teal-200" : "border-blue-200"
     },
     {
       label: "Carbs",
       value: meal.carbs,
       unit: "g",
       icon: Wheat,
-      color: isSnack ? "from-teal-400 to-cyan-400" : "from-green-400 to-emerald-400",
-      bgColor: isSnack ? "bg-teal-500/10" : "bg-green-500/10",
-      textColor: isSnack ? "text-teal-300" : "text-green-300",
-      borderColor: isSnack ? "border-teal-500/20" : "border-green-500/20"
+      color: isSnack ? "from-lime-400 to-green-500" : "from-green-400 to-emerald-500",
+      bgColor: isSnack ? "bg-lime-50" : "bg-green-50",
+      textColor: isSnack ? "text-lime-700" : "text-green-700",
+      borderColor: isSnack ? "border-lime-200" : "border-green-200"
     },
     {
       label: "Fat",
       value: meal.fat,
       unit: "g",
       icon: Droplets,
-      color: isSnack ? "from-amber-400 to-orange-400" : "from-yellow-400 to-amber-400",
-      bgColor: isSnack ? "bg-amber-500/10" : "bg-yellow-500/10",
-      textColor: isSnack ? "text-amber-300" : "text-yellow-300",
-      borderColor: isSnack ? "border-amber-500/20" : "border-yellow-500/20"
+      color: isSnack ? "from-yellow-400 to-amber-500" : "from-purple-400 to-pink-500",
+      bgColor: isSnack ? "bg-yellow-50" : "bg-purple-50",
+      textColor: isSnack ? "text-yellow-700" : "text-purple-700",
+      borderColor: isSnack ? "border-yellow-200" : "border-purple-200"
     }
   ];
 
@@ -58,7 +58,7 @@ const NutritionCards = ({ meal }: NutritionCardsProps) => {
       {nutritionItems.map((item) => {
         const IconComponent = item.icon;
         return (
-          <Card key={item.label} className={`${item.bgColor} ${item.borderColor} border backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105`}>
+          <Card key={item.label} className={`${item.bgColor} ${item.borderColor} border-2 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105`}>
             <CardContent className="p-4 text-center space-y-3">
               <div className={`w-12 h-12 bg-gradient-to-br ${item.color} rounded-xl flex items-center justify-center mx-auto shadow-md`}>
                 <IconComponent className="w-6 h-6 text-white" />
@@ -66,7 +66,7 @@ const NutritionCards = ({ meal }: NutritionCardsProps) => {
               <div className={`text-2xl font-bold ${item.textColor}`}>
                 {item.value}{item.unit}
               </div>
-              <div className="text-sm text-gray-300 font-medium uppercase tracking-wide">
+              <div className="text-sm text-gray-600 font-medium uppercase tracking-wide">
                 {item.label}
               </div>
             </CardContent>

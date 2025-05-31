@@ -23,12 +23,12 @@ const RecipeGenerationCard = ({
 
   if (!mealId) {
     return (
-      <Card className="bg-gray-800/50 border-gray-600/30 shadow-lg backdrop-blur-sm">
+      <Card className="bg-gray-100 border-gray-300 shadow-lg">
         <CardContent className="p-6 text-center">
-          <div className="w-12 h-12 bg-gray-600/50 rounded-xl flex items-center justify-center mx-auto mb-4">
-            <Sparkles className="w-6 h-6 text-gray-400" />
+          <div className="w-12 h-12 bg-gray-400 rounded-xl flex items-center justify-center mx-auto mb-4">
+            <Sparkles className="w-6 h-6 text-white" />
           </div>
-          <p className="text-gray-300 font-medium">
+          <p className="text-gray-600 font-medium">
             Recipe generation not available for this {isSnack ? 'snack' : 'meal'}. Please regenerate your meal plan to enable detailed recipes.
           </p>
         </CardContent>
@@ -37,23 +37,23 @@ const RecipeGenerationCard = ({
   }
 
   const gradientColor = isSnack 
-    ? "from-green-500/10 to-emerald-500/10" 
-    : "from-purple-500/10 to-pink-500/10";
+    ? "from-emerald-50 to-green-50" 
+    : "from-blue-50 to-indigo-50";
   
   const borderColor = isSnack 
-    ? "border-green-500/20" 
-    : "border-purple-500/20";
+    ? "border-emerald-200" 
+    : "border-blue-200";
   
   const iconColor = isSnack 
-    ? "from-green-400 to-emerald-400" 
-    : "from-purple-400 to-pink-400";
+    ? "from-emerald-500 to-green-600" 
+    : "from-blue-500 to-indigo-600";
 
   const buttonColor = isSnack
-    ? "from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
-    : "from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600";
+    ? "from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700"
+    : "from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700";
 
   return (
-    <Card className={`bg-gradient-to-br ${gradientColor} ${borderColor} border backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300`}>
+    <Card className={`bg-gradient-to-br ${gradientColor} ${borderColor} border-2 shadow-xl hover:shadow-2xl transition-all duration-300`}>
       <CardContent className="p-8 text-center space-y-6">
         <div className="flex justify-center">
           <div className={`w-20 h-20 bg-gradient-to-br ${iconColor} rounded-3xl flex items-center justify-center shadow-lg`}>
@@ -62,21 +62,21 @@ const RecipeGenerationCard = ({
         </div>
         
         <div className="space-y-4">
-          <h3 className="text-2xl font-bold text-white">
+          <h3 className="text-2xl font-bold text-gray-800">
             Get Detailed {isSnack ? 'Snack' : 'Recipe'} with AI
           </h3>
-          <p className="text-gray-300 font-medium max-w-md mx-auto leading-relaxed">
+          <p className="text-gray-600 font-medium max-w-md mx-auto leading-relaxed">
             Generate detailed ingredients, step-by-step instructions, and {isSnack ? 'healthy snack tips' : 'professional cooking techniques'} powered by AI
           </p>
           <div className="flex flex-wrap gap-2 justify-center">
-            <Badge variant="outline" className="bg-white/10 border-white/20 text-gray-300 font-medium backdrop-blur-sm">
+            <Badge variant="outline" className="bg-white/70 border-gray-300 text-gray-700 font-medium">
               ✨ AI-Powered
             </Badge>
-            <Badge variant="outline" className="bg-white/10 border-white/20 text-gray-300 font-medium backdrop-blur-sm">
+            <Badge variant="outline" className="bg-white/70 border-gray-300 text-gray-700 font-medium">
               🎯 Personalized
             </Badge>
             {isSnack && (
-              <Badge variant="outline" className="bg-green-500/20 border-green-500/30 text-green-300 font-medium backdrop-blur-sm">
+              <Badge variant="outline" className="bg-emerald-100 border-emerald-300 text-emerald-700 font-medium">
                 🍎 Healthy
               </Badge>
             )}
@@ -86,12 +86,12 @@ const RecipeGenerationCard = ({
         {isGeneratingRecipe ? (
           <div className="space-y-4">
             <div className="flex items-center justify-center gap-3">
-              <Loader2 className={`w-6 h-6 ${isSnack ? 'text-green-400' : 'text-purple-400'} animate-spin`} />
-              <span className="text-lg font-semibold text-white">
+              <Loader2 className={`w-6 h-6 ${isSnack ? 'text-emerald-600' : 'text-blue-600'} animate-spin`} />
+              <span className="text-lg font-semibold text-gray-800">
                 Generating {isSnack ? 'Snack' : 'Recipe'}...
               </span>
             </div>
-            <p className="text-sm text-gray-300">
+            <p className="text-sm text-gray-600">
               Creating {isSnack ? 'healthy snack ideas' : 'ingredients, instructions, and nutritional info'}
             </p>
           </div>
