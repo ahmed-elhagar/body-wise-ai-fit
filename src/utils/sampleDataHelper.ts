@@ -24,25 +24,16 @@ export const createSampleProfiles = async () => {
   }
 };
 
-// Valid fitness goal values based on constraint
-export const validFitnessGoals = [
-  'lose_weight',
-  'build_muscle', 
-  'maintain_weight'
-];
-
 export const sampleCoaches = [
   {
     email: 'coach1@fitgenius.com',
     first_name: 'Sarah',
-    last_name: 'Johnson',
-    fitness_goal: 'maintain_weight'
+    last_name: 'Johnson'
   },
   {
     email: 'coach2@fitgenius.com', 
     first_name: 'Mike',
-    last_name: 'Rodriguez',
-    fitness_goal: 'build_muscle'
+    last_name: 'Rodriguez'
   }
 ];
 
@@ -50,31 +41,26 @@ export const sampleTrainees = [
   {
     email: 'trainee1@fitgenius.com',
     first_name: 'Emma', 
-    last_name: 'Davis',
-    fitness_goal: 'lose_weight'
+    last_name: 'Davis'
   },
   {
     email: 'trainee2@fitgenius.com',
     first_name: 'James',
-    last_name: 'Wilson', 
-    fitness_goal: 'build_muscle'
+    last_name: 'Wilson'
   },
   {
     email: 'trainee3@fitgenius.com',
     first_name: 'Lisa',
-    last_name: 'Brown',
-    fitness_goal: 'maintain_weight'
+    last_name: 'Brown'
   },
   {
     email: 'trainee4@fitgenius.com',
     first_name: 'David',
-    last_name: 'Taylor',
-    fitness_goal: 'lose_weight'
+    last_name: 'Taylor'
   },
   {
     email: 'trainee5@fitgenius.com',
     first_name: 'Anna',
-    last_name: 'Martinez',
-    fitness_goal: 'build_muscle'
+    last_name: 'Martinez'
   }
 ];

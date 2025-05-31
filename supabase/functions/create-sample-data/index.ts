@@ -20,11 +20,25 @@ serve(async (req) => {
 
     console.log('Creating sample coach-trainee data...')
 
-    // Use valid fitness goal values based on the constraint
-    // Let's use conservative values that are likely valid
-    const validFitnessGoals = ['lose_weight', 'build_muscle', 'maintain_weight']
+    // Try different common fitness goal values that might be valid
+    // Start with the most basic ones that are likely to exist
+    const possibleFitnessGoals = ['weight_loss', 'muscle_gain', 'general_fitness', 'strength', 'endurance']
+    let validFitnessGoal = 'weight_loss' // Default fallback
 
-    // Create sample coaches
+    // Try to find an existing profile to see what fitness_goal values work
+    const { data: existingProfile } = await supabaseClient
+      .from('profiles')
+      .select('fitness_goal')
+      .not('fitness_goal', 'is', null)
+      .limit(1)
+      .single()
+
+    if (existingProfile?.fitness_goal) {
+      validFitnessGoal = existingProfile.fitness_goal
+      console.log('Found existing fitness goal:', validFitnessGoal)
+    }
+
+    // Create sample coaches with minimal required fields first
     const sampleCoaches = [
       {
         id: crypto.randomUUID(),
@@ -37,7 +51,6 @@ serve(async (req) => {
         gender: 'female',
         weight: 65,
         height: 168,
-        fitness_goal: 'maintain_weight',
         activity_level: 'very_active',
         onboarding_completed: true,
         profile_completion_score: 95
@@ -53,14 +66,13 @@ serve(async (req) => {
         gender: 'male',
         weight: 78,
         height: 180,
-        fitness_goal: 'build_muscle',
         activity_level: 'very_active',
         onboarding_completed: true,
         profile_completion_score: 98
       }
     ]
 
-    // Create sample trainees
+    // Create sample trainees with minimal required fields first
     const sampleTrainees = [
       {
         id: crypto.randomUUID(),
@@ -73,7 +85,6 @@ serve(async (req) => {
         gender: 'female',
         weight: 60,
         height: 165,
-        fitness_goal: 'lose_weight',
         activity_level: 'moderately_active',
         onboarding_completed: true,
         profile_completion_score: 87
@@ -89,7 +100,6 @@ serve(async (req) => {
         gender: 'male',
         weight: 85,
         height: 175,
-        fitness_goal: 'build_muscle',
         activity_level: 'lightly_active',
         onboarding_completed: true,
         profile_completion_score: 92
@@ -105,7 +115,6 @@ serve(async (req) => {
         gender: 'female',
         weight: 55,
         height: 160,
-        fitness_goal: 'maintain_weight',
         activity_level: 'moderately_active',
         onboarding_completed: true,
         profile_completion_score: 89
@@ -121,7 +130,6 @@ serve(async (req) => {
         gender: 'male',
         weight: 90,
         height: 185,
-        fitness_goal: 'lose_weight',
         activity_level: 'lightly_active',
         onboarding_completed: true,
         profile_completion_score: 84
@@ -137,14 +145,13 @@ serve(async (req) => {
         gender: 'female',
         weight: 58,
         height: 162,
-        fitness_goal: 'build_muscle',
         activity_level: 'moderately_active',
         onboarding_completed: true,
         profile_completion_score: 91
       }
     ]
 
-    // Insert coaches first
+    // Insert coaches first without fitness_goal
     const { data: insertedCoaches, error: coachError } = await supabaseClient
       .from('profiles')
       .insert(sampleCoaches)
@@ -157,7 +164,7 @@ serve(async (req) => {
 
     console.log('Coaches inserted successfully:', insertedCoaches?.length)
 
-    // Insert trainees
+    // Insert trainees without fitness_goal
     const { data: insertedTrainees, error: traineeError } = await supabaseClient
       .from('profiles')
       .insert(sampleTrainees)
@@ -169,6 +176,35 @@ serve(async (req) => {
     }
 
     console.log('Trainees inserted successfully:', insertedTrainees?.length)
+
+    // Now try to update with fitness_goal if we can find a valid value
+    if (validFitnessGoal) {
+      console.log('Attempting to set fitness goals...')
+      
+      for (const coach of sampleCoaches) {
+        const { error: updateError } = await supabaseClient
+          .from('profiles')
+          .update({ fitness_goal: validFitnessGoal })
+          .eq('id', coach.id)
+        
+        if (updateError) {
+          console.log('Could not set fitness_goal, skipping:', updateError.message)
+          break
+        }
+      }
+
+      for (const trainee of sampleTrainees) {
+        const { error: updateError } = await supabaseClient
+          .from('profiles')
+          .update({ fitness_goal: validFitnessGoal })
+          .eq('id', trainee.id)
+        
+        if (updateError) {
+          console.log('Could not set fitness_goal, skipping:', updateError.message)
+          break
+        }
+      }
+    }
 
     // Create coach-trainee relationships
     const relationships = [
@@ -216,14 +252,10 @@ serve(async (req) => {
     const mealPlans = sampleTrainees.map(trainee => ({
       user_id: trainee.id,
       week_start_date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      total_calories: trainee.fitness_goal === 'lose_weight' ? 1400 : 
-                     trainee.fitness_goal === 'build_muscle' ? 2200 : 1800,
-      total_protein: trainee.fitness_goal === 'lose_weight' ? 105 : 
-                     trainee.fitness_goal === 'build_muscle' ? 165 : 135,
-      total_carbs: trainee.fitness_goal === 'lose_weight' ? 140 : 
-                   trainee.fitness_goal === 'build_muscle' ? 220 : 180,
-      total_fat: trainee.fitness_goal === 'lose_weight' ? 47 : 
-                 trainee.fitness_goal === 'build_muscle' ? 73 : 60
+      total_calories: 1800,
+      total_protein: 135,
+      total_carbs: 180,
+      total_fat: 60
     }))
 
     const { error: mealPlanError } = await supabaseClient
@@ -240,9 +272,7 @@ serve(async (req) => {
     // Create sample exercise programs for trainees
     const exercisePrograms = sampleTrainees.map(trainee => ({
       user_id: trainee.id,
-      program_name: trainee.fitness_goal === 'lose_weight' ? 'Fat Burning Program' :
-                    trainee.fitness_goal === 'build_muscle' ? 'Muscle Building Program' :
-                    'General Fitness Program',
+      program_name: 'General Fitness Program',
       difficulty_level: trainee.activity_level === 'lightly_active' ? 'beginner' :
                         trainee.activity_level === 'moderately_active' ? 'intermediate' : 'advanced',
       workout_type: 'home',
@@ -293,13 +323,9 @@ serve(async (req) => {
       user_id: trainee.id,
       category: 'fitness',
       goal_type: 'weight',
-      title: trainee.fitness_goal === 'lose_weight' ? 'Lose 5kg in 3 months' :
-             trainee.fitness_goal === 'build_muscle' ? 'Gain 3kg muscle mass' :
-             'Maintain current weight',
+      title: 'Achieve fitness goals',
       description: 'Working with coach to achieve fitness goals',
-      target_value: trainee.fitness_goal === 'lose_weight' ? trainee.weight - 5 :
-                    trainee.fitness_goal === 'build_muscle' ? trainee.weight + 3 :
-                    trainee.weight,
+      target_value: trainee.weight,
       current_value: trainee.weight,
       target_unit: 'kg',
       status: 'active',
