@@ -48,54 +48,63 @@ export const useCoachSystem = () => {
   const { data: coachInfo, isLoading: isLoadingCoachInfo, error: coachInfoError } = useQuery({
     queryKey: ['coach-info', user?.id],
     queryFn: async () => {
-      if (!user?.id) return null;
-
-      console.log('🔍 Fetching coach info for user:', user.id);
-
-      // First try to get the coach-trainee relationship
-      const { data: relationship, error: relationshipError } = await supabase
-        .from('coach_trainees')
-        .select('id, coach_id, trainee_id, assigned_at, notes')
-        .eq('trainee_id', user.id)
-        .maybeSingle();
-
-      if (relationshipError) {
-        console.error('❌ Error fetching coach relationship:', relationshipError);
-        throw relationshipError;
-      }
-
-      if (!relationship) {
-        console.log('📭 No coach assigned to this user');
+      if (!user?.id) {
+        console.log('No user ID found');
         return null;
       }
 
-      // Then get the coach's profile information
-      const { data: coachProfile, error: profileError } = await supabase
-        .from('profiles')
-        .select('id, first_name, last_name, email')
-        .eq('id', relationship.coach_id)
-        .maybeSingle();
+      console.log('🔍 Fetching coach info for user:', user.id);
 
-      if (profileError) {
-        console.error('❌ Error fetching coach profile:', profileError);
-        // Don't throw here, just return relationship without profile
+      try {
+        // Get the coach-trainee relationship with coach profile in one query
+        const { data: relationship, error: relationshipError } = await supabase
+          .from('coach_trainees')
+          .select(`
+            id,
+            coach_id,
+            trainee_id,
+            assigned_at,
+            notes,
+            coach_profile:profiles!coach_trainees_coach_id_fkey(
+              id,
+              first_name,
+              last_name,
+              email
+            )
+          `)
+          .eq('trainee_id', user.id)
+          .maybeSingle();
+
+        if (relationshipError) {
+          console.error('❌ Error fetching coach relationship:', relationshipError);
+          throw new Error(`Failed to fetch coach relationship: ${relationshipError.message}`);
+        }
+
+        if (!relationship) {
+          console.log('📭 No coach assigned to this user');
+          return null;
+        }
+
+        const result: CoachInfo = {
+          id: relationship.id,
+          coach_id: relationship.coach_id,
+          trainee_id: relationship.trainee_id,
+          assigned_at: relationship.assigned_at,
+          notes: relationship.notes,
+          coach_profile: relationship.coach_profile || null
+        };
+
+        console.log('✅ Coach info fetched successfully:', result);
+        return result;
+      } catch (error) {
+        console.error('❌ Error in coach info query:', error);
+        throw error;
       }
-
-      const result: CoachInfo = {
-        id: relationship.id,
-        coach_id: relationship.coach_id,
-        trainee_id: relationship.trainee_id,
-        assigned_at: relationship.assigned_at,
-        notes: relationship.notes,
-        coach_profile: coachProfile || null
-      };
-
-      console.log('✅ Coach info fetched:', result);
-      return result;
     },
     enabled: !!user?.id,
     staleTime: 1000 * 60 * 5, // 5 minutes
-    refetchInterval: 1000 * 30, // 30 seconds
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
   // Get trainees for current user (if they are a coach)
@@ -106,52 +115,61 @@ export const useCoachSystem = () => {
 
       console.log('🔍 Fetching trainees for coach:', user.id);
 
-      // First get the coach-trainee relationships
-      const { data: relationships, error: relationshipError } = await supabase
-        .from('coach_trainees')
-        .select('id, coach_id, trainee_id, assigned_at, notes')
-        .eq('coach_id', user.id);
+      try {
+        // Get coach-trainee relationships with trainee profiles in one query
+        const { data: relationships, error: relationshipError } = await supabase
+          .from('coach_trainees')
+          .select(`
+            id,
+            coach_id,
+            trainee_id,
+            assigned_at,
+            notes,
+            trainee_profile:profiles!coach_trainees_trainee_id_fkey(
+              id,
+              first_name,
+              last_name,
+              email,
+              profile_completion_score,
+              ai_generations_remaining,
+              age,
+              weight,
+              height,
+              fitness_goal
+            )
+          `)
+          .eq('coach_id', user.id);
 
-      if (relationshipError) {
-        console.error('❌ Error fetching trainee relationships:', relationshipError);
-        throw relationshipError;
-      }
+        if (relationshipError) {
+          console.error('❌ Error fetching trainee relationships:', relationshipError);
+          throw new Error(`Failed to fetch trainee relationships: ${relationshipError.message}`);
+        }
 
-      if (!relationships || relationships.length === 0) {
-        console.log('📭 No trainees found for this coach');
-        return [];
-      }
+        if (!relationships || relationships.length === 0) {
+          console.log('📭 No trainees found for this coach');
+          return [];
+        }
 
-      // Then get the trainee profiles
-      const traineeIds = relationships.map(r => r.trainee_id);
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, first_name, last_name, email, profile_completion_score, ai_generations_remaining, age, weight, height, fitness_goal')
-        .in('id', traineeIds);
-
-      if (profilesError) {
-        console.error('❌ Error fetching trainee profiles:', profilesError);
-        // Don't throw, just return relationships without profiles
-      }
-
-      // Combine relationships with profiles
-      const result: CoachTraineeRelationship[] = relationships.map(relationship => {
-        const profile = profiles?.find(p => p.id === relationship.trainee_id);
-        return {
+        const result: CoachTraineeRelationship[] = relationships.map(relationship => ({
           id: relationship.id,
           coach_id: relationship.coach_id,
           trainee_id: relationship.trainee_id,
           assigned_at: relationship.assigned_at,
           notes: relationship.notes,
-          trainee_profile: profile || null
-        };
-      });
+          trainee_profile: relationship.trainee_profile || null
+        }));
 
-      console.log('✅ Trainees fetched:', result);
-      return result;
+        console.log('✅ Trainees fetched successfully:', result);
+        return result;
+      } catch (error) {
+        console.error('❌ Error in trainees query:', error);
+        throw error;
+      }
     },
     enabled: !!user?.id && (isRoleCoach || isAdmin),
     staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
   // Assign trainee mutation
