@@ -52,143 +52,157 @@ const MealGrid = ({
   const mealsByType = getMealsByType(meals);
   const dayStats = calculateDayStats(meals);
 
+  const getMealTypeColor = (mealType: string) => {
+    switch (mealType) {
+      case 'breakfast': return 'from-orange-400 to-amber-500';
+      case 'lunch': return 'from-green-400 to-emerald-500';
+      case 'dinner': return 'from-blue-400 to-indigo-500';
+      default: return 'from-purple-400 to-pink-500';
+    }
+  };
+
+  const getMealTypeBadgeColor = (mealType: string) => {
+    switch (mealType) {
+      case 'breakfast': return 'bg-orange-50 text-orange-700 border-orange-200';
+      case 'lunch': return 'bg-green-50 text-green-700 border-green-200';
+      case 'dinner': return 'bg-blue-50 text-blue-700 border-blue-200';
+      default: return 'bg-purple-50 text-purple-700 border-purple-200';
+    }
+  };
+
   return (
-    <div className="space-y-6">
-      {/* Day Header with Stats */}
-      <div className="bg-gradient-to-r from-white to-slate-50 rounded-2xl p-6 shadow-lg border border-slate-200/50">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <h2 className="text-2xl lg:text-3xl font-bold text-slate-800">{mealPlanT('dayOverview')}</h2>
-          <div className="flex flex-wrap gap-3">
-            <Badge className="bg-gradient-to-r from-red-500 to-pink-600 text-white border-0 px-4 py-2 text-sm font-semibold">
+    <div className="space-y-4">
+      {/* Day Header with Stats - More Compact */}
+      <div className="bg-gradient-to-r from-white to-slate-50 rounded-xl p-4 shadow-lg border border-slate-200/50">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
+          <h2 className="text-xl font-bold text-slate-800">{mealPlanT('dayOverview')}</h2>
+          <div className="flex flex-wrap gap-2">
+            <Badge className="bg-gradient-to-r from-red-500 to-pink-600 text-white border-0 px-3 py-1 text-sm font-semibold">
               {dayStats.calories} {mealPlanT('cal')}
             </Badge>
-            <Badge className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-0 px-4 py-2 text-sm font-semibold">
+            <Badge className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-0 px-3 py-1 text-sm font-semibold">
               {dayStats.protein.toFixed(1)}g {mealPlanT('protein')}
             </Badge>
-            <Badge className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-0 px-4 py-2 text-sm font-semibold">
+            <Badge className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-0 px-3 py-1 text-sm font-semibold">
               {meals.length} {mealPlanT('meals')}
             </Badge>
           </div>
         </div>
 
-        {/* Action Button */}
         <div className="flex justify-center">
           <Button
             onClick={onRegeneratePlan}
-            className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 px-6 py-3 rounded-xl font-semibold"
+            className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 px-4 py-2 rounded-lg font-semibold text-sm"
           >
-            <RotateCcw className="w-5 h-5 mr-2" />
+            <RotateCcw className="w-4 h-4 mr-2" />
             {mealPlanT('shuffleMeals')}
           </Button>
         </div>
       </div>
 
-      {/* Meals by Type */}
-      <div className="space-y-8">
+      {/* Compact Meals Display - Organized by Type */}
+      <div className="space-y-3">
         {Object.entries(mealsByType).map(([mealType, mealList]) => {
           if (mealList.length === 0 && mealType !== 'snack') return null;
           
           return (
-            <div key={mealType} className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xl lg:text-2xl font-bold text-slate-800 capitalize flex items-center gap-3">
-                  <div className={`w-3 h-8 rounded-full ${
-                    mealType === 'breakfast' ? 'bg-gradient-to-b from-orange-400 to-amber-500' :
-                    mealType === 'lunch' ? 'bg-gradient-to-b from-green-400 to-emerald-500' :
-                    mealType === 'dinner' ? 'bg-gradient-to-b from-blue-400 to-indigo-500' :
-                    'bg-gradient-to-b from-purple-400 to-pink-500'
-                  }`}></div>
-                  {mealPlanT(mealType as any)}
-                </h3>
-                <div className="text-sm text-slate-500 font-medium">
-                  {mealList.length} {mealList.length === 1 ? mealPlanT('item') : mealPlanT('items')}
+            <Card key={mealType} className="border-0 shadow-md hover:shadow-lg transition-all duration-300">
+              <CardContent className="p-4">
+                {/* Meal Type Header */}
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-2 h-6 rounded-full bg-gradient-to-b ${getMealTypeColor(mealType)}`}></div>
+                    <h3 className="text-lg font-bold text-slate-800 capitalize">
+                      {mealPlanT(mealType as any)}
+                    </h3>
+                    <span className="text-sm text-slate-500 font-medium">
+                      {mealList.length} {mealList.length === 1 ? mealPlanT('item') : mealPlanT('items')}
+                    </span>
+                  </div>
                 </div>
-              </div>
 
-              {mealList.length > 0 ? (
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {mealList.map((meal, index) => (
-                    <Card key={`${meal.id}-${index}`} className="group hover:shadow-2xl transition-all duration-300 border-0 bg-white/90 backdrop-blur-sm overflow-hidden rounded-2xl hover:scale-105 transform">
-                      <CardContent className="p-6">
-                        <div className="flex items-start justify-between mb-4">
-                          <h4 className="font-bold text-slate-800 flex-1 text-lg mr-3 line-clamp-2 leading-tight">
-                            {meal.name}
-                          </h4>
-                          <Badge 
-                            variant="outline" 
-                            className={`text-xs font-semibold shrink-0 border-2 px-3 py-1 ${
-                              mealType === 'breakfast' ? 'bg-orange-50 text-orange-700 border-orange-200' :
-                              mealType === 'lunch' ? 'bg-green-50 text-green-700 border-green-200' :
-                              mealType === 'dinner' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                              'bg-purple-50 text-purple-700 border-purple-200'
-                            }`}
-                          >
-                            {mealPlanT(mealType as any)}
-                          </Badge>
+                {mealList.length > 0 ? (
+                  <div className="space-y-3">
+                    {mealList.map((meal, index) => (
+                      <div key={`${meal.id}-${index}`} className="bg-gradient-to-r from-gray-50 to-white rounded-lg p-3 border border-gray-100 hover:shadow-md transition-all duration-200">
+                        <div className="flex items-start justify-between gap-3">
+                          {/* Meal Info */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Badge 
+                                variant="outline" 
+                                className={`text-xs font-semibold px-2 py-1 ${getMealTypeBadgeColor(mealType)}`}
+                              >
+                                {mealPlanT(mealType as any)}
+                              </Badge>
+                              {meal.prep_time && (
+                                <div className="flex items-center gap-1 text-xs text-slate-600">
+                                  <Clock className="w-3 h-3" />
+                                  <span>{meal.prep_time} {mealPlanT('minutes')}</span>
+                                </div>
+                              )}
+                            </div>
+                            
+                            <h4 className="font-semibold text-slate-800 text-sm mb-2 truncate">
+                              {meal.name}
+                            </h4>
+
+                            {/* Compact Nutrition Grid */}
+                            <div className="grid grid-cols-3 gap-2 text-xs">
+                              <div className="text-center bg-red-50 rounded p-1.5 border border-red-100">
+                                <div className="font-bold text-red-600">{Math.round(meal.calories || 0)}</div>
+                                <div className="text-red-500 font-medium">{mealPlanT('cal')}</div>
+                              </div>
+                              <div className="text-center bg-blue-50 rounded p-1.5 border border-blue-100">
+                                <div className="font-bold text-blue-600">{Math.round(meal.protein || 0)}g</div>
+                                <div className="text-blue-500 font-medium">{mealPlanT('protein')}</div>
+                              </div>
+                              <div className="text-center bg-green-50 rounded p-1.5 border border-green-100">
+                                <div className="font-bold text-green-600">{Math.round(meal.carbs || 0)}g</div>
+                                <div className="text-green-500 font-medium">{mealPlanT('carbs')}</div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Action Buttons */}
+                          <div className="flex flex-col gap-1 shrink-0">
+                            <Button
+                              onClick={() => onShowRecipe(meal)}
+                              variant="outline"
+                              size="sm"
+                              className="text-blue-600 border-blue-200 hover:bg-blue-50 font-medium px-2 py-1 h-7 text-xs"
+                            >
+                              <Book className="w-3 h-3 mr-1" />
+                              {mealPlanT('recipe')}
+                            </Button>
+                            <Button
+                              onClick={() => onExchangeMeal(meal)}
+                              variant="outline"
+                              size="sm"
+                              className="text-purple-600 border-purple-200 hover:bg-purple-50 font-medium px-2 py-1 h-7 text-xs"
+                            >
+                              <ArrowLeftRight className="w-3 h-3 mr-1" />
+                              {mealPlanT('exchange')}
+                            </Button>
+                          </div>
                         </div>
-
-                        {/* Nutrition Info */}
-                        <div className="grid grid-cols-3 gap-3 mb-4">
-                          <div className="text-center bg-gradient-to-br from-red-50 to-pink-50 rounded-xl p-3 border border-red-100">
-                            <div className="font-bold text-red-600 text-lg">{Math.round(meal.calories || 0)}</div>
-                            <div className="text-xs text-red-500 font-medium">{mealPlanT('cal')}</div>
-                          </div>
-                          <div className="text-center bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-3 border border-blue-100">
-                            <div className="font-bold text-blue-600 text-lg">{Math.round(meal.protein || 0)}g</div>
-                            <div className="text-xs text-blue-500 font-medium">{mealPlanT('protein')}</div>
-                          </div>
-                          <div className="text-center bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-3 border border-green-100">
-                            <div className="font-bold text-green-600 text-lg">{Math.round(meal.carbs || 0)}g</div>
-                            <div className="text-xs text-green-500 font-medium">{mealPlanT('carbs')}</div>
-                          </div>
-                        </div>
-
-                        {/* Prep Time */}
-                        {meal.prep_time && (
-                          <div className="flex items-center gap-2 text-sm text-slate-600 mb-4 bg-slate-50 rounded-lg p-2">
-                            <Clock className="w-4 h-4" />
-                            <span className="font-medium">{meal.prep_time} {mealPlanT('minutes')}</span>
-                          </div>
-                        )}
-
-                        {/* Action Buttons */}
-                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                          <Button
-                            onClick={() => onShowRecipe(meal)}
-                            variant="outline"
-                            size="sm"
-                            className="flex-1 text-blue-600 border-blue-200 hover:bg-blue-50 font-medium"
-                          >
-                            <Book className="w-4 h-4 mr-1" />
-                            {mealPlanT('recipe')}
-                          </Button>
-                          <Button
-                            onClick={() => onExchangeMeal(meal)}
-                            variant="outline"
-                            size="sm"
-                            className="flex-1 text-purple-600 border-purple-200 hover:bg-purple-50 font-medium"
-                          >
-                            <ArrowLeftRight className="w-4 h-4 mr-1" />
-                            {mealPlanT('exchange')}
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              ) : mealType === 'snack' ? (
-                <Card className="border-dashed border-2 border-slate-300 bg-slate-50/50 rounded-2xl">
-                  <CardContent className="p-8 text-center">
-                    <div className="w-12 h-12 bg-slate-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <svg className="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                      </svg>
-                    </div>
-                    <p className="text-slate-500 font-medium">{mealPlanT('noMealsPlanned')}</p>
-                  </CardContent>
-                </Card>
-              ) : null}
-            </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : mealType === 'snack' ? (
+                  <Card className="border-dashed border-2 border-slate-300 bg-slate-50/50 rounded-lg">
+                    <CardContent className="p-4 text-center">
+                      <div className="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                      </div>
+                      <p className="text-slate-500 font-medium text-sm">{mealPlanT('noMealsPlanned')}</p>
+                    </CardContent>
+                  </Card>
+                ) : null}
+              </CardContent>
+            </Card>
           );
         })}
       </div>
