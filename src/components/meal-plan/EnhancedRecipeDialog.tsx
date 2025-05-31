@@ -2,21 +2,11 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { 
-  Clock, 
-  Users, 
-  ChefHat, 
-  Sparkles, 
-  BookOpen, 
-  Utensils,
-  Timer,
-  ArrowRight,
-  Zap
-} from "lucide-react";
+import { Clock, Users, ChefHat, Sparkles, Youtube, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -29,38 +19,28 @@ interface EnhancedRecipeDialogProps {
   onRecipeGenerated?: () => void;
 }
 
-const EnhancedRecipeDialog = ({ 
-  isOpen, 
-  onClose, 
-  meal, 
-  onRecipeGenerated 
-}: EnhancedRecipeDialogProps) => {
+const EnhancedRecipeDialog = ({ isOpen, onClose, meal, onRecipeGenerated }: EnhancedRecipeDialogProps) => {
   const { user } = useAuth();
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedRecipe, setGeneratedRecipe] = useState<any>(null);
 
   const handleGenerateRecipe = async () => {
     if (!meal || !user) return;
 
     setIsGenerating(true);
     try {
-      const { data, error } = await supabase.functions.invoke('generate-recipe', {
+      const { data, error } = await supabase.functions.invoke('generate-meal-recipe', {
         body: {
+          mealId: meal.id,
           mealName: meal.name,
-          servings: meal.servings,
-          targetCalories: meal.calories,
-          prepTime: meal.prep_time,
-          cookTime: meal.cook_time,
           ingredients: meal.ingredients,
-          mealType: meal.meal_type
+          servings: meal.servings
         }
       });
 
       if (error) throw error;
 
-      setGeneratedRecipe(data);
+      toast.success('Recipe generated successfully!');
       onRecipeGenerated?.();
-      toast.success('Recipe generated successfully! 🍳');
     } catch (error) {
       console.error('Error generating recipe:', error);
       toast.error('Failed to generate recipe');
@@ -71,198 +51,142 @@ const EnhancedRecipeDialog = ({
 
   if (!meal) return null;
 
-  const recipe = generatedRecipe || {
-    instructions: meal.instructions || [],
-    ingredients: meal.ingredients || []
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] bg-gradient-to-br from-fitness-primary-50 to-fitness-accent-50 border-fitness-primary-200 p-0">
-        <div className="flex flex-col h-full">
-          {/* Header */}
-          <DialogHeader className="p-6 pb-4 bg-gradient-to-r from-fitness-primary-600 to-fitness-accent-600 text-white">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <DialogTitle className="text-2xl font-bold text-white flex items-center gap-3">
-                  <ChefHat className="w-7 h-7" />
+      <DialogContent className="max-w-3xl max-h-[85vh] bg-white border-gray-200 p-0">
+        {/* Header */}
+        <DialogHeader className="p-6 pb-4 border-b border-gray-100">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-fitness-primary-500 to-fitness-primary-600 rounded-xl flex items-center justify-center">
+                <ChefHat className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <DialogTitle className="text-xl font-bold text-gray-800">
                   {meal.name}
                 </DialogTitle>
-                <div className="flex items-center gap-4 mt-3">
-                  <Badge className="bg-white/20 text-white px-3 py-1">
-                    <Utensils className="w-3 h-3 mr-1" />
-                    {meal.meal_type}
-                  </Badge>
-                  <Badge className="bg-white/20 text-white px-3 py-1">
+                <div className="flex items-center gap-3 mt-1">
+                  <Badge className="bg-fitness-primary-100 text-fitness-primary-700">
                     <Clock className="w-3 h-3 mr-1" />
                     {(meal.prep_time || 0) + (meal.cook_time || 0)} min
                   </Badge>
-                  <Badge className="bg-white/20 text-white px-3 py-1">
+                  <Badge className="bg-blue-100 text-blue-700">
                     <Users className="w-3 h-3 mr-1" />
                     {meal.servings} serving{meal.servings !== 1 ? 's' : ''}
                   </Badge>
+                  <Badge className="bg-green-100 text-green-700">
+                    {meal.calories} cal
+                  </Badge>
                 </div>
               </div>
-              
-              {!generatedRecipe && (
-                <Button
-                  onClick={handleGenerateRecipe}
-                  disabled={isGenerating}
-                  className="bg-white/20 hover:bg-white/30 text-white border-white/30 ml-4"
-                  variant="outline"
-                >
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  {isGenerating ? 'Generating...' : 'Generate Recipe'}
-                </Button>
-              )}
             </div>
-          </DialogHeader>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="h-8 w-8 p-0 hover:bg-gray-100"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+        </DialogHeader>
 
-          <ScrollArea className="flex-1">
-            <div className="p-6 space-y-6">
-              {/* Nutrition Cards */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200">
-                  <CardContent className="p-4 text-center">
-                    <div className="text-2xl font-bold text-red-700">{meal.calories}</div>
-                    <div className="text-sm text-red-600">Calories</div>
-                  </CardContent>
-                </Card>
-                <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-                  <CardContent className="p-4 text-center">
-                    <div className="text-2xl font-bold text-blue-700">{meal.protein}g</div>
-                    <div className="text-sm text-blue-600">Protein</div>
-                  </CardContent>
-                </Card>
-                <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-                  <CardContent className="p-4 text-center">
-                    <div className="text-2xl font-bold text-green-700">{meal.carbs}g</div>
-                    <div className="text-sm text-green-600">Carbs</div>
-                  </CardContent>
-                </Card>
-                <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
-                  <CardContent className="p-4 text-center">
-                    <div className="text-2xl font-bold text-orange-700">{meal.fat}g</div>
-                    <div className="text-sm text-orange-600">Fat</div>
-                  </CardContent>
-                </Card>
-              </div>
+        <ScrollArea className="max-h-[calc(85vh-140px)]">
+          <div className="p-6 space-y-6">
+            {/* Nutrition Grid */}
+            <Card className="bg-gray-50 border-gray-200">
+              <CardContent className="p-4">
+                <h3 className="font-semibold text-gray-800 mb-3">Nutrition per serving</h3>
+                <div className="grid grid-cols-4 gap-4">
+                  <div className="text-center">
+                    <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center mx-auto mb-2">
+                      <span className="text-red-600 font-bold text-sm">{meal.calories}</span>
+                    </div>
+                    <p className="text-xs text-gray-600">Calories</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-2">
+                      <span className="text-green-600 font-bold text-sm">{meal.protein}g</span>
+                    </div>
+                    <p className="text-xs text-gray-600">Protein</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-2">
+                      <span className="text-blue-600 font-bold text-sm">{meal.carbs}g</span>
+                    </div>
+                    <p className="text-xs text-gray-600">Carbs</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center mx-auto mb-2">
+                      <span className="text-yellow-600 font-bold text-sm">{meal.fat}g</span>
+                    </div>
+                    <p className="text-xs text-gray-600">Fat</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-              {/* Timing Information */}
-              {(meal.prep_time || meal.cook_time) && (
-                <Card className="bg-white border-fitness-primary-200">
-                  <CardContent className="p-4">
-                    <h3 className="font-semibold text-fitness-primary-700 mb-3 flex items-center gap-2">
-                      <Timer className="w-5 h-5" />
-                      Timing
-                    </h3>
-                    <div className="flex items-center gap-6">
-                      {meal.prep_time && (
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 bg-fitness-primary-100 rounded-lg flex items-center justify-center">
-                            <ChefHat className="w-4 h-4 text-fitness-primary-600" />
-                          </div>
-                          <div>
-                            <div className="text-sm font-medium text-fitness-primary-700">Prep Time</div>
-                            <div className="text-lg font-bold text-fitness-primary-600">{meal.prep_time} min</div>
-                          </div>
+            {/* Ingredients */}
+            {meal.ingredients && meal.ingredients.length > 0 && (
+              <Card className="border-gray-200">
+                <CardContent className="p-4">
+                  <h3 className="font-semibold text-gray-800 mb-3">Ingredients</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {meal.ingredients.map((ingredient, index) => (
+                      <div key={index} className="flex justify-between items-center py-2 px-3 bg-gray-50 rounded-lg">
+                        <span className="text-gray-700 font-medium">{ingredient.name}</span>
+                        <span className="text-gray-500 text-sm">{ingredient.quantity} {ingredient.unit}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Instructions */}
+            {meal.instructions && meal.instructions.length > 0 && (
+              <Card className="border-gray-200">
+                <CardContent className="p-4">
+                  <h3 className="font-semibold text-gray-800 mb-3">Instructions</h3>
+                  <div className="space-y-3">
+                    {meal.instructions.map((instruction, index) => (
+                      <div key={index} className="flex gap-3">
+                        <div className="w-6 h-6 bg-fitness-primary-500 text-white text-xs rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                          {index + 1}
                         </div>
-                      )}
-                      
-                      {meal.cook_time && (
-                        <>
-                          {meal.prep_time && <ArrowRight className="w-4 h-4 text-gray-400" />}
-                          <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                              <Timer className="w-4 h-4 text-orange-600" />
-                            </div>
-                            <div>
-                              <div className="text-sm font-medium text-orange-700">Cook Time</div>
-                              <div className="text-lg font-bold text-orange-600">{meal.cook_time} min</div>
-                            </div>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+                        <p className="text-gray-700 leading-relaxed">{instruction}</p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </ScrollArea>
 
-              {/* Ingredients */}
-              {recipe.ingredients && recipe.ingredients.length > 0 && (
-                <Card className="bg-white border-fitness-primary-200">
-                  <CardContent className="p-4">
-                    <h3 className="font-semibold text-fitness-primary-700 mb-4 flex items-center gap-2">
-                      <BookOpen className="w-5 h-5" />
-                      Ingredients ({recipe.ingredients.length} items)
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {recipe.ingredients.map((ingredient: any, index: number) => (
-                        <div key={index} className="flex items-center gap-3 p-3 bg-fitness-primary-25 rounded-lg border border-fitness-primary-100">
-                          <div className="w-2 h-2 bg-fitness-primary-400 rounded-full flex-shrink-0" />
-                          <div className="flex-1">
-                            <div className="font-medium text-fitness-primary-700">{ingredient.name}</div>
-                            <div className="text-sm text-fitness-primary-600">
-                              {ingredient.quantity} {ingredient.unit}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Instructions */}
-              {recipe.instructions && recipe.instructions.length > 0 && (
-                <Card className="bg-white border-fitness-primary-200">
-                  <CardContent className="p-4">
-                    <h3 className="font-semibold text-fitness-primary-700 mb-4 flex items-center gap-2">
-                      <Utensils className="w-5 h-5" />
-                      Instructions ({recipe.instructions.length} steps)
-                    </h3>
-                    <div className="space-y-4">
-                      {recipe.instructions.map((instruction: string, index: number) => (
-                        <div key={index} className="flex gap-4">
-                          <div className="w-8 h-8 bg-gradient-to-br from-fitness-primary-500 to-fitness-primary-600 text-white rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">
-                            {index + 1}
-                          </div>
-                          <div className="flex-1 pt-1">
-                            <p className="text-fitness-primary-700 leading-relaxed">{instruction}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* AI Generation Prompt */}
-              {!generatedRecipe && (
-                <Card className="bg-gradient-to-r from-fitness-accent-50 to-fitness-primary-50 border-fitness-accent-200">
-                  <CardContent className="p-6 text-center">
-                    <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-fitness-accent-500 to-fitness-primary-500 rounded-full flex items-center justify-center">
-                      <Zap className="w-8 h-8 text-white" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-fitness-primary-700 mb-2">
-                      Generate Detailed Recipe
-                    </h3>
-                    <p className="text-fitness-primary-600 mb-4 max-w-md mx-auto">
-                      Let AI create a detailed recipe with step-by-step instructions tailored to your meal.
-                    </p>
-                    <Button
-                      onClick={handleGenerateRecipe}
-                      disabled={isGenerating}
-                      className="bg-gradient-to-r from-fitness-accent-500 to-fitness-primary-500 hover:from-fitness-accent-600 hover:to-fitness-primary-600 text-white shadow-lg"
-                    >
-                      <Sparkles className="w-4 h-4 mr-2" />
-                      {isGenerating ? 'Generating Recipe...' : 'Generate Recipe with AI'}
-                    </Button>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </ScrollArea>
+        {/* Footer Actions */}
+        <div className="p-6 pt-4 border-t border-gray-100 bg-gray-50">
+          <div className="flex gap-3 justify-end">
+            {meal.youtube_search_term && (
+              <Button
+                onClick={() => window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(meal.youtube_search_term)}`, '_blank')}
+                variant="outline"
+                className="border-gray-300 text-gray-700 hover:bg-red-50 hover:border-red-300 hover:text-red-700"
+              >
+                <Youtube className="w-4 h-4 mr-2" />
+                Watch Tutorial
+              </Button>
+            )}
+            
+            <Button
+              onClick={handleGenerateRecipe}
+              disabled={isGenerating}
+              className="bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 hover:from-fitness-primary-600 hover:to-fitness-primary-700 text-white"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              {isGenerating ? 'Generating...' : 'Generate Detailed Recipe'}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

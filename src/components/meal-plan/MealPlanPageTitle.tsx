@@ -1,0 +1,28 @@
+
+import { UtensilsCrossed, Sparkles } from "lucide-react";
+import { useMealPlanTranslation } from "@/utils/translationHelpers";
+
+const MealPlanPageTitle = () => {
+  const { mealPlanT } = useMealPlanTranslation();
+
+  return (
+    <div className="text-center mb-6">
+      <div className="flex items-center justify-center gap-3 mb-2">
+        <div className="w-12 h-12 bg-gradient-to-br from-fitness-primary-500 to-fitness-primary-600 rounded-2xl flex items-center justify-center shadow-lg">
+          <UtensilsCrossed className="w-6 h-6 text-white" />
+        </div>
+        <h1 className="text-3xl font-bold text-fitness-primary-800">
+          {mealPlanT('title')}
+        </h1>
+      </div>
+      <div className="flex items-center justify-center gap-2 text-fitness-primary-600">
+        <Sparkles className="w-4 h-4" />
+        <p className="text-lg">
+          {mealPlanT('aiPoweredNutrition')}
+        </p>
+      </div>
+    </div>
+  );
+};
+
+export default MealPlanPageTitle;

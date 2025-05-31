@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useMealPlanPage } from "@/hooks/useMealPlanPage";
 import { Card } from "@/components/ui/card";
@@ -11,6 +10,8 @@ import EnhancedRecipeDialog from "./EnhancedRecipeDialog";
 import EnhancedAddSnackDialog from "./EnhancedAddSnackDialog";
 import MealPlanDialogs from "../MealPlanDialogs";
 import { ErrorBoundary } from "../ErrorBoundary";
+import MealPlanPageTitle from "./MealPlanPageTitle";
+import DayOverviewSection from "./DayOverviewSection";
 
 const MealPlanPage = () => {
   const {
@@ -95,7 +96,10 @@ const MealPlanPage = () => {
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-gradient-to-br from-fitness-primary-25 via-white to-fitness-accent-25">
-        <div className="container mx-auto px-4 py-6 space-y-4">
+        <div className="container mx-auto px-4 py-6 space-y-6">
+          {/* Page Title */}
+          <MealPlanPageTitle />
+
           {/* Enhanced Header with Actions Dropdown */}
           <EnhancedMealPlanHeader
             onGenerateAI={() => setShowAIDialog(true)}
@@ -121,6 +125,18 @@ const MealPlanPage = () => {
               onViewModeChange={setViewMode}
               currentWeekOffset={currentWeekOffset}
               onWeekChange={setCurrentWeekOffset}
+            />
+          )}
+
+          {/* Day Overview Section */}
+          {currentWeekPlan?.weeklyPlan && viewMode === 'daily' && (
+            <DayOverviewSection
+              selectedDayNumber={selectedDayNumber}
+              weekStartDate={weekStartDate}
+              totalCalories={totalCalories}
+              totalProtein={totalProtein}
+              targetDayCalories={targetDayCalories}
+              mealsCount={dailyMeals?.length || 0}
             />
           )}
 
