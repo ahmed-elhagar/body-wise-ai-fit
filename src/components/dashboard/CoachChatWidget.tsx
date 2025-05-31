@@ -19,8 +19,8 @@ const CoachChatWidget = () => {
 
   console.log('CoachChatWidget - coachInfo:', coachInfo, 'loading:', isLoadingCoachInfo, 'error:', coachInfoError);
 
-  // Don't show for coaches or if there's an error loading
-  if (isCoach || coachInfoError) {
+  // Don't show for coaches
+  if (isCoach) {
     return null;
   }
 
@@ -37,6 +37,34 @@ const CoachChatWidget = () => {
         <CardContent>
           <div className="flex items-center justify-center py-8">
             <Loader2 className="h-8 w-8 text-gray-400 animate-spin" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Show error state
+  if (coachInfoError) {
+    return (
+      <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <AlertCircle className="h-5 w-5 text-red-600" />
+            {t('Coach Info Error')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-4">
+            <p className="text-red-600 text-sm mb-4">
+              {t('Unable to load coach information')}
+            </p>
+            <Button 
+              onClick={() => window.location.reload()} 
+              variant="outline" 
+              size="sm"
+            >
+              {t('Refresh Page')}
+            </Button>
           </div>
         </CardContent>
       </Card>

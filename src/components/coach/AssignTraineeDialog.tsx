@@ -24,8 +24,10 @@ export const AssignTraineeDialog = ({ open, onOpenChange }: AssignTraineeDialogP
     e.preventDefault();
     if (!traineeEmail.trim()) return;
 
+    // Note: This would need to be implemented to find user by email first
+    // For now, we'll pass the email as traineeId (this needs backend support)
     assignTrainee(
-      { traineeEmail: traineeEmail.trim(), notes: notes.trim() || undefined },
+      { traineeId: traineeEmail.trim(), notes: notes.trim() || undefined },
       {
         onSuccess: () => {
           setTraineeEmail("");

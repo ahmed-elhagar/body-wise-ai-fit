@@ -23,7 +23,7 @@ export const UpdateNotesDialog = ({ trainee, open, onOpenChange }: UpdateNotesDi
     e.preventDefault();
     
     updateTraineeNotes(
-      { relationshipId: trainee.id, notes: notes.trim() },
+      { traineeId: trainee.trainee_id, notes: notes.trim() },
       {
         onSuccess: () => {
           onOpenChange(false);
@@ -48,7 +48,7 @@ export const UpdateNotesDialog = ({ trainee, open, onOpenChange }: UpdateNotesDi
               {language === 'ar' ? 'المتدرب' : 'Trainee'}
             </Label>
             <p className="text-sm text-gray-600">
-              {trainee.trainee_profile.first_name} {trainee.trainee_profile.last_name}
+              {trainee.trainee_profile?.first_name} {trainee.trainee_profile?.last_name}
             </p>
           </div>
 
