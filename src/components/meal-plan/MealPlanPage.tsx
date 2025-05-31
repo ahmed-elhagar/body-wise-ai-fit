@@ -14,7 +14,10 @@ import {
   Calendar,
   Clock,
   Target,
-  TrendingUp
+  TrendingUp,
+  ChevronLeft,
+  ChevronRight,
+  Shuffle
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useMealPlanState } from "@/hooks/useMealPlanState";
@@ -34,15 +37,16 @@ const MealPlanPage = () => {
   const [showShoppingDrawer, setShowShoppingDrawer] = useState(false);
   const [showSnackDialog, setShowSnackDialog] = useState(false);
   const [selectedDayForSnack, setSelectedDayForSnack] = useState(1);
+  const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
 
   const weekDays = [
-    { number: 1, name: 'Sat', fullName: 'Saturday', date: mealPlanState.weekStartDate },
-    { number: 2, name: 'Sun', fullName: 'Sunday', date: addDays(mealPlanState.weekStartDate, 1) },
-    { number: 3, name: 'Mon', fullName: 'Monday', date: addDays(mealPlanState.weekStartDate, 2) },
-    { number: 4, name: 'Tue', fullName: 'Tuesday', date: addDays(mealPlanState.weekStartDate, 3) },
-    { number: 5, name: 'Wed', fullName: 'Wednesday', date: addDays(mealPlanState.weekStartDate, 4) },
-    { number: 6, name: 'Thu', fullName: 'Thursday', date: addDays(mealPlanState.weekStartDate, 5) },
-    { number: 7, name: 'Fri', fullName: 'Friday', date: addDays(mealPlanState.weekStartDate, 6) }
+    { number: 1, name: t('mealPlan.sat'), fullName: t('mealPlan.saturday'), date: mealPlanState.weekStartDate },
+    { number: 2, name: t('mealPlan.sun'), fullName: t('mealPlan.sunday'), date: addDays(mealPlanState.weekStartDate, 1) },
+    { number: 3, name: t('mealPlan.mon'), fullName: t('mealPlan.monday'), date: addDays(mealPlanState.weekStartDate, 2) },
+    { number: 4, name: t('mealPlan.tue'), fullName: t('mealPlan.tuesday'), date: addDays(mealPlanState.weekStartDate, 3) },
+    { number: 5, name: t('mealPlan.wed'), fullName: t('mealPlan.wednesday'), date: addDays(mealPlanState.weekStartDate, 4) },
+    { number: 6, name: t('mealPlan.thu'), fullName: t('mealPlan.thursday'), date: addDays(mealPlanState.weekStartDate, 5) },
+    { number: 7, name: t('mealPlan.fri'), fullName: t('mealPlan.friday'), date: addDays(mealPlanState.weekStartDate, 6) }
   ];
 
   const handleAddSnack = (dayNumber: number) => {
@@ -99,7 +103,7 @@ const MealPlanPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className={`min-h-screen bg-gray-50 ${isRTL ? 'rtl' : 'ltr'}`}>
       <MealPlanLoadingBackdrop 
         isLoading={mealPlanState.isGenerating} 
         message="Generating your meal plan..."
@@ -108,29 +112,64 @@ const MealPlanPage = () => {
       {/* Header */}
       <div className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div className="flex items-center gap-4">
+          <div className={`flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 ${isRTL ? 'lg:flex-row-reverse' : ''}`}>
+            <div className={`flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
                 <UtensilsCrossed className="w-6 h-6 text-white" />
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Meal Plan</h1>
+              <div className={isRTL ? 'text-right' : 'text-left'}>
+                <h1 className="text-2xl font-bold text-gray-900">{t('mealPlan.title')}</h1>
                 <p className="text-gray-600">
                   {format(mealPlanState.weekStartDate, 'MMMM d')} - {format(addDays(mealPlanState.weekStartDate, 6), 'MMMM d, yyyy')}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              {mealPlanState.currentWeekPlan && (
-                <Button
-                  onClick={() => setShowShoppingDrawer(true)}
-                  variant="outline"
-                  className="border-gray-300"
+            <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              {/* View Mode Toggle */}
+              <div className="flex bg-gray-100 rounded-lg p-1">
+                <button
+                  onClick={() => setViewMode('daily')}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
+                    viewMode === 'daily'
+                      ? 'bg-white text-blue-600 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
                 >
-                  <ShoppingCart className="w-4 h-4 mr-2" />
-                  Shopping List
-                </Button>
+                  {t('mealPlan.dailyView')}
+                </button>
+                <button
+                  onClick={() => setViewMode('weekly')}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
+                    viewMode === 'weekly'
+                      ? 'bg-white text-blue-600 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  {t('mealPlan.weeklyView')}
+                </button>
+              </div>
+
+              {mealPlanState.currentWeekPlan && (
+                <>
+                  <Button
+                    onClick={() => setShowShoppingDrawer(true)}
+                    variant="outline"
+                    className="border-gray-300"
+                  >
+                    <ShoppingCart className="w-4 h-4 mr-2" />
+                    {t('mealPlan.shoppingList')}
+                  </Button>
+                  
+                  <Button
+                    onClick={() => mealPlanState.handleRegeneratePlan()}
+                    variant="outline"
+                    className="border-gray-300"
+                  >
+                    <Shuffle className="w-4 h-4 mr-2" />
+                    {t('mealPlan.shuffleMeals')}
+                  </Button>
+                </>
               )}
               
               <Button
@@ -138,7 +177,7 @@ const MealPlanPage = () => {
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
               >
                 <Sparkles className="w-4 h-4 mr-2" />
-                {mealPlanState.currentWeekPlan ? 'Regenerate' : 'Generate Plan'}
+                {mealPlanState.currentWeekPlan ? t('mealPlan.regenerate') : t('mealPlan.generateAIPlan')}
               </Button>
             </div>
           </div>
@@ -146,6 +185,61 @@ const MealPlanPage = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Week Navigation */}
+        <Card className="mb-6">
+          <CardContent className="p-4">
+            <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => mealPlanState.setCurrentWeekOffset(mealPlanState.currentWeekOffset - 1)}
+                className="h-10 w-10 p-0"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </Button>
+
+              <div className="text-center flex-1">
+                <div className={`flex items-center justify-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                  <Calendar className="w-5 h-5 text-blue-600" />
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      {t('mealPlan.week')} {Math.abs(mealPlanState.currentWeekOffset) + 1}
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      {format(mealPlanState.weekStartDate, 'MMM d')} - {format(addDays(mealPlanState.weekStartDate, 6), 'MMM d, yyyy')}
+                    </p>
+                  </div>
+                </div>
+                
+                {mealPlanState.currentWeekOffset === 0 ? (
+                  <Badge variant="secondary" className="mt-2">
+                    {t('mealPlan.currentWeek')}
+                  </Badge>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => mealPlanState.setCurrentWeekOffset(0)}
+                    className="mt-2 text-xs"
+                  >
+                    <RotateCcw className="w-3 h-3 mr-2" />
+                    {t('mealPlan.backToCurrentWeek')}
+                  </Button>
+                )}
+              </div>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => mealPlanState.setCurrentWeekOffset(mealPlanState.currentWeekOffset + 1)}
+                className="h-10 w-10 p-0"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
         {mealPlanState.currentWeekPlan ? (
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {/* Sidebar */}
@@ -154,23 +248,23 @@ const MealPlanPage = () => {
                 {/* Today's Stats */}
                 <Card className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                    <CardTitle className={`text-lg font-semibold flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
                       <Target className="w-5 h-5" />
-                      Today's Progress
+                      {t('mealPlan.todaysProgress')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="text-center">
                       <div className="text-3xl font-bold mb-1">{mealPlanState.totalCalories}</div>
-                      <div className="text-blue-100 text-sm mb-4">calories consumed</div>
+                      <div className="text-blue-100 text-sm mb-4">{t('mealPlan.caloriesConsumed')}</div>
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
                           <div className="font-semibold">{mealPlanState.totalProtein.toFixed(1)}g</div>
-                          <div className="text-blue-100">protein</div>
+                          <div className="text-blue-100">{t('mealPlan.protein')}</div>
                         </div>
                         <div>
                           <div className="font-semibold">{mealPlanState.todaysMeals?.length || 0}</div>
-                          <div className="text-blue-100">meals</div>
+                          <div className="text-blue-100">{t('mealPlan.meals')}</div>
                         </div>
                       </div>
                     </div>
@@ -180,7 +274,7 @@ const MealPlanPage = () => {
                 {/* Quick Actions */}
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-lg font-semibold text-gray-900">Quick Actions</CardTitle>
+                    <CardTitle className="text-lg font-semibold text-gray-900">{t('mealPlan.quickActions')}</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <Button 
@@ -189,7 +283,7 @@ const MealPlanPage = () => {
                       className="w-full justify-start"
                     >
                       <Plus className="w-4 h-4 mr-2" />
-                      Add Snack
+                      {t('mealPlan.addSnack')}
                     </Button>
                     <Button 
                       onClick={() => mealPlanState.setShowAIDialog(true)}
@@ -197,8 +291,44 @@ const MealPlanPage = () => {
                       className="w-full justify-start"
                     >
                       <RotateCcw className="w-4 h-4 mr-2" />
-                      Regenerate Plan
+                      {t('mealPlan.regeneratePlan')}
                     </Button>
+                  </CardContent>
+                </Card>
+
+                {/* Weekly Overview */}
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className={`text-lg font-semibold text-gray-900 flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                      <TrendingUp className="w-5 h-5 text-blue-600" />
+                      {t('mealPlan.weeklyOverview')}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className={`flex justify-between items-center ${isRTL ? 'flex-row-reverse' : ''}`}>
+                      <span className="text-sm text-gray-600">{t('mealPlan.totalCalories')}</span>
+                      <span className="font-bold text-blue-600">{mealPlanState.currentWeekPlan?.weeklyPlan?.total_calories || 0}</span>
+                    </div>
+                    <div className={`flex justify-between items-center ${isRTL ? 'flex-row-reverse' : ''}`}>
+                      <span className="text-sm text-gray-600">{t('mealPlan.totalProtein')}</span>
+                      <span className="font-bold text-green-600">{mealPlanState.currentWeekPlan?.weeklyPlan?.total_protein || 0}g</span>
+                    </div>
+                    <div className={`flex justify-between items-center ${isRTL ? 'flex-row-reverse' : ''}`}>
+                      <span className="text-sm text-gray-600">{t('mealPlan.totalMeals')}</span>
+                      <span className="font-bold text-purple-600">{mealPlanState.currentWeekPlan?.dailyMeals?.length || 0}</span>
+                    </div>
+                    <div className="pt-2 border-t border-gray-100">
+                      <div className={`flex items-center justify-between mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                        <span className="text-xs font-medium text-gray-600">{t('mealPlan.dailyAverage')}</span>
+                        <Target className="w-3 h-3 text-gray-400" />
+                      </div>
+                      <div className="text-center">
+                        <div className="text-lg font-bold text-gray-900">
+                          {Math.round((mealPlanState.currentWeekPlan?.weeklyPlan?.total_calories || 0) / 7)}
+                        </div>
+                        <div className="text-xs text-gray-500">{t('mealPlan.caloriesPerDay')}</div>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               </div>
@@ -206,143 +336,190 @@ const MealPlanPage = () => {
 
             {/* Main Content */}
             <div className="lg:col-span-3">
-              {/* Day Tabs */}
-              <Tabs value={mealPlanState.selectedDayNumber.toString()} onValueChange={(value) => mealPlanState.setSelectedDayNumber(parseInt(value))}>
-                <TabsList className="grid w-full grid-cols-7 mb-6">
-                  {weekDays.map((day) => (
-                    <TabsTrigger 
-                      key={day.number} 
-                      value={day.number.toString()}
-                      className="flex flex-col py-3"
-                    >
-                      <span className="text-xs mb-1">{day.name}</span>
-                      <span className="text-lg font-semibold">{format(day.date, 'd')}</span>
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
+              {viewMode === 'daily' ? (
+                <>
+                  {/* Day Tabs */}
+                  <Tabs value={mealPlanState.selectedDayNumber.toString()} onValueChange={(value) => mealPlanState.setSelectedDayNumber(parseInt(value))}>
+                    <TabsList className="grid w-full grid-cols-7 mb-6">
+                      {weekDays.map((day) => (
+                        <TabsTrigger 
+                          key={day.number} 
+                          value={day.number.toString()}
+                          className="flex flex-col py-3"
+                        >
+                          <span className="text-xs mb-1">{day.name}</span>
+                          <span className="text-lg font-semibold">{format(day.date, 'd')}</span>
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
 
-                {weekDays.map((day) => {
-                  const dayMeals = mealPlanState.currentWeekPlan?.dailyMeals?.filter(
-                    meal => meal.day_number === day.number
-                  ) || [];
-                  
-                  const mealsByType = getMealsByType(dayMeals);
-                  const dayStats = calculateDayStats(dayMeals);
+                    {weekDays.map((day) => {
+                      const dayMeals = mealPlanState.currentWeekPlan?.dailyMeals?.filter(
+                        meal => meal.day_number === day.number
+                      ) || [];
+                      
+                      const mealsByType = getMealsByType(dayMeals);
+                      const dayStats = calculateDayStats(dayMeals);
 
-                  return (
-                    <TabsContent key={day.number} value={day.number.toString()} className="space-y-6">
-                      {/* Day Header */}
-                      <div className="flex items-center justify-between">
-                        <h2 className="text-xl font-semibold text-gray-900">{day.fullName}</h2>
-                        <div className="flex items-center gap-4 text-sm text-gray-600">
-                          <span>{dayStats.calories} cal</span>
-                          <span>{dayStats.protein.toFixed(1)}g protein</span>
-                          <span>{dayMeals.length} meals</span>
-                        </div>
-                      </div>
-
-                      {/* Meals by Type */}
-                      {Object.entries(mealsByType).map(([mealType, meals]) => {
-                        if (meals.length === 0 && mealType !== 'snack') return null;
-                        
-                        return (
-                          <div key={mealType} className="space-y-3">
-                            <div className="flex items-center justify-between">
-                              <h3 className="text-lg font-medium text-gray-900 capitalize">
-                                {mealType}
-                              </h3>
-                              {mealType === 'snack' && (
-                                <Button
-                                  onClick={() => handleAddSnack(day.number)}
-                                  variant="outline"
-                                  size="sm"
-                                >
-                                  <Plus className="w-4 h-4 mr-1" />
-                                  Add Snack
-                                </Button>
-                              )}
+                      return (
+                        <TabsContent key={day.number} value={day.number.toString()} className="space-y-6">
+                          {/* Day Header */}
+                          <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+                            <h2 className="text-xl font-semibold text-gray-900">{day.fullName}</h2>
+                            <div className={`flex items-center gap-4 text-sm text-gray-600 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                              <span>{dayStats.calories} {t('mealPlan.cal')}</span>
+                              <span>{dayStats.protein.toFixed(1)}g {t('mealPlan.protein')}</span>
+                              <span>{dayMeals.length} {t('mealPlan.meals')}</span>
                             </div>
+                          </div>
 
-                            {meals.length > 0 ? (
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {meals.map((meal, index) => (
-                                  <Card key={`${meal.id}-${index}`} className="hover:shadow-md transition-shadow">
-                                    <CardContent className="p-4">
-                                      <div className="flex items-start justify-between mb-3">
-                                        <h4 className="font-medium text-gray-900 flex-1 mr-2">{meal.name}</h4>
-                                        <Badge variant="secondary" className="text-xs">
-                                          {mealType}
-                                        </Badge>
-                                      </div>
+                          {/* Meals by Type */}
+                          {Object.entries(mealsByType).map(([mealType, meals]) => {
+                            if (meals.length === 0 && mealType !== 'snack') return null;
+                            
+                            return (
+                              <div key={mealType} className="space-y-3">
+                                <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+                                  <h3 className="text-lg font-medium text-gray-900">
+                                    {t(`mealPlan.${mealType}`)}
+                                  </h3>
+                                  {mealType === 'snack' && (
+                                    <Button
+                                      onClick={() => handleAddSnack(day.number)}
+                                      variant="outline"
+                                      size="sm"
+                                    >
+                                      <Plus className="w-4 h-4 mr-1" />
+                                      {t('mealPlan.addSnack')}
+                                    </Button>
+                                  )}
+                                </div>
 
-                                      <div className="grid grid-cols-3 gap-3 mb-3 text-sm">
-                                        <div className="text-center">
-                                          <div className="font-semibold text-red-600">{Math.round(meal.calories || 0)}</div>
-                                          <div className="text-gray-500">cal</div>
-                                        </div>
-                                        <div className="text-center">
-                                          <div className="font-semibold text-blue-600">{Math.round(meal.protein || 0)}g</div>
-                                          <div className="text-gray-500">protein</div>
-                                        </div>
-                                        <div className="text-center">
-                                          <div className="font-semibold text-green-600">{Math.round(meal.carbs || 0)}g</div>
-                                          <div className="text-gray-500">carbs</div>
-                                        </div>
-                                      </div>
+                                {meals.length > 0 ? (
+                                  <div className="grid grid-cols-1 gap-4">
+                                    {meals.map((meal, index) => (
+                                      <Card key={`${meal.id}-${index}`} className="hover:shadow-md transition-shadow">
+                                        <CardContent className="p-4">
+                                          <div className={`flex items-start justify-between mb-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                                            <h4 className={`font-medium text-gray-900 flex-1 ${isRTL ? 'ml-2 text-right' : 'mr-2'}`}>{meal.name}</h4>
+                                            <Badge variant="secondary" className="text-xs">
+                                              {t(`mealPlan.${mealType}`)}
+                                            </Badge>
+                                          </div>
 
-                                      {meal.prep_time && (
-                                        <div className="flex items-center gap-1 text-xs text-gray-500 mb-3">
-                                          <Clock className="w-3 h-3" />
-                                          <span>{meal.prep_time} min prep</span>
-                                        </div>
-                                      )}
+                                          <div className="grid grid-cols-3 gap-3 mb-3 text-sm">
+                                            <div className="text-center">
+                                              <div className="font-semibold text-red-600">{Math.round(meal.calories || 0)}</div>
+                                              <div className="text-gray-500">{t('mealPlan.cal')}</div>
+                                            </div>
+                                            <div className="text-center">
+                                              <div className="font-semibold text-blue-600">{Math.round(meal.protein || 0)}g</div>
+                                              <div className="text-gray-500">{t('mealPlan.protein')}</div>
+                                            </div>
+                                            <div className="text-center">
+                                              <div className="font-semibold text-green-600">{Math.round(meal.carbs || 0)}g</div>
+                                              <div className="text-gray-500">{t('mealPlan.carbs')}</div>
+                                            </div>
+                                          </div>
 
-                                      <div className="flex gap-2">
-                                        <Button
-                                          onClick={() => mealPlanState.handleShowRecipe(meal)}
-                                          variant="outline"
-                                          size="sm"
-                                          className="flex-1"
-                                        >
-                                          <ChefHat className="w-3 h-3 mr-1" />
-                                          Recipe
-                                        </Button>
-                                        <Button
-                                          onClick={() => mealPlanState.handleExchangeMeal(meal)}
-                                          variant="outline"
-                                          size="sm"
-                                          className="flex-1"
-                                        >
-                                          <RotateCcw className="w-3 h-3 mr-1" />
-                                          Exchange
-                                        </Button>
-                                      </div>
+                                          {meal.prep_time && (
+                                            <div className={`flex items-center gap-1 text-xs text-gray-500 mb-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                                              <Clock className="w-3 h-3" />
+                                              <span>{meal.prep_time} {t('mealPlan.minPrep')}</span>
+                                            </div>
+                                          )}
+
+                                          <div className="flex gap-2">
+                                            <Button
+                                              onClick={() => mealPlanState.handleShowRecipe(meal)}
+                                              variant="outline"
+                                              size="sm"
+                                              className="flex-1"
+                                            >
+                                              <ChefHat className="w-3 h-3 mr-1" />
+                                              {t('mealPlan.recipe')}
+                                            </Button>
+                                            <Button
+                                              onClick={() => mealPlanState.handleExchangeMeal(meal)}
+                                              variant="outline"
+                                              size="sm"
+                                              className="flex-1"
+                                            >
+                                              <RotateCcw className="w-3 h-3 mr-1" />
+                                              {t('mealPlan.exchange')}
+                                            </Button>
+                                          </div>
+                                        </CardContent>
+                                      </Card>
+                                    ))}
+                                  </div>
+                                ) : mealType === 'snack' ? (
+                                  <Card className="border-dashed border-2 border-gray-200">
+                                    <CardContent className="p-6 text-center">
+                                      <Plus className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                                      <p className="text-gray-500 mb-3">{t('mealPlan.noMealsPlanned')}</p>
+                                      <Button
+                                        onClick={() => handleAddSnack(day.number)}
+                                        variant="outline"
+                                        size="sm"
+                                      >
+                                        {t('mealPlan.addSnack')}
+                                      </Button>
                                     </CardContent>
                                   </Card>
-                                ))}
+                                ) : null}
                               </div>
-                            ) : mealType === 'snack' ? (
-                              <Card className="border-dashed border-2 border-gray-200">
-                                <CardContent className="p-6 text-center">
-                                  <Plus className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                                  <p className="text-gray-500 mb-3">No snacks planned</p>
-                                  <Button
-                                    onClick={() => handleAddSnack(day.number)}
-                                    variant="outline"
-                                    size="sm"
-                                  >
-                                    Add Snack
-                                  </Button>
-                                </CardContent>
-                              </Card>
-                            ) : null}
-                          </div>
+                            );
+                          })}
+                        </TabsContent>
+                      );
+                    })}
+                  </Tabs>
+                </>
+              ) : (
+                // Weekly View
+                <Card>
+                  <CardHeader>
+                    <CardTitle>{t('mealPlan.weeklyView')}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {weekDays.map((day) => {
+                        const dayMeals = mealPlanState.currentWeekPlan?.dailyMeals?.filter(
+                          meal => meal.day_number === day.number
+                        ) || [];
+                        const dayStats = calculateDayStats(dayMeals);
+
+                        return (
+                          <Card key={day.number} className="cursor-pointer hover:shadow-md transition-shadow"
+                                onClick={() => {setViewMode('daily'); mealPlanState.setSelectedDayNumber(day.number);}}>
+                            <CardHeader className="pb-2">
+                              <CardTitle className="text-sm font-medium">{day.fullName}</CardTitle>
+                              <p className="text-xs text-gray-500">{format(day.date, 'MMM d')}</p>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="space-y-2 text-xs">
+                                <div className={`flex justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+                                  <span>{t('mealPlan.meals')}:</span>
+                                  <span className="font-semibold">{dayMeals.length}</span>
+                                </div>
+                                <div className={`flex justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+                                  <span>{t('mealPlan.cal')}:</span>
+                                  <span className="font-semibold">{dayStats.calories}</span>
+                                </div>
+                                <div className={`flex justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+                                  <span>{t('mealPlan.protein')}:</span>
+                                  <span className="font-semibold">{dayStats.protein.toFixed(1)}g</span>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
                         );
                       })}
-                    </TabsContent>
-                  );
-                })}
-              </Tabs>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </div>
         ) : (
@@ -351,16 +528,16 @@ const MealPlanPage = () => {
             <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl flex items-center justify-center">
               <ChefHat className="w-12 h-12 text-blue-600" />
             </div>
-            <h3 className="text-2xl font-semibold text-gray-900 mb-3">No Meal Plan Yet</h3>
+            <h3 className="text-2xl font-semibold text-gray-900 mb-3">{t('mealPlan.noMealPlanYet')}</h3>
             <p className="text-gray-600 mb-6 max-w-md mx-auto">
-              Generate your personalized meal plan to get started with healthy eating habits
+              {t('mealPlan.generatePersonalizedPlan')}
             </p>
             <Button 
               onClick={() => mealPlanState.setShowAIDialog(true)}
               className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-8 py-3"
             >
               <Sparkles className="w-5 h-5 mr-2" />
-              Generate Meal Plan
+              {t('mealPlan.generateMealPlan')}
             </Button>
           </Card>
         )}
