@@ -11,7 +11,7 @@ import { useCoachSystem } from "@/hooks/useCoachSystem";
 import { Navigate } from "react-router-dom";
 
 const Coach = () => {
-  const { isAdmin, isLoading } = useRole();
+  const { isAdmin, isCoach, isLoading } = useRole();
   const { trainees, isLoadingTrainees } = useCoachSystem();
 
   if (isLoading || isLoadingTrainees) {
@@ -29,7 +29,8 @@ const Coach = () => {
     );
   }
 
-  if (!isAdmin) {
+  // Allow access for both coaches and admins
+  if (!isAdmin && !isCoach) {
     return <Navigate to="/dashboard" replace />;
   }
 
