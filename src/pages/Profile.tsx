@@ -27,6 +27,18 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
+  // Add debugging
+  useEffect(() => {
+    console.log('Profile page - Current state:', {
+      userExists: !!user,
+      userId: user?.id,
+      userEmail: user?.email,
+      profileExists: !!profile,
+      isLoading,
+      error: error?.message || error
+    });
+  }, [user, profile, isLoading, error]);
+
   const {
     formData,
     updateFormData,
@@ -90,6 +102,7 @@ const Profile = () => {
   };
 
   if (isLoading) {
+    console.log('Profile page - Showing loading state');
     return (
       <ProtectedRoute requireProfile={false}>
         <Layout>
@@ -100,6 +113,7 @@ const Profile = () => {
   }
 
   if (error) {
+    console.error('Profile page - Showing error state:', error);
     return (
       <ProtectedRoute requireProfile={false}>
         <Layout>
@@ -108,6 +122,9 @@ const Profile = () => {
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
                 Failed to load profile data. Please refresh the page or try again later.
+                <div className="mt-2 text-xs text-gray-500">
+                  Error: {error?.message || 'Unknown error'}
+                </div>
               </AlertDescription>
             </Alert>
           </div>
@@ -115,6 +132,8 @@ const Profile = () => {
       </ProtectedRoute>
     );
   }
+
+  console.log('Profile page - Rendering main content with profile:', !!profile);
 
   return (
     <ProtectedRoute requireProfile={false}>
