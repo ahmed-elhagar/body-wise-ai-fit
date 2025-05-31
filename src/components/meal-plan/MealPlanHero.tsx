@@ -3,14 +3,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
   UtensilsCrossed, 
-  Shuffle,
   ChevronLeft,
   ChevronRight,
   RotateCcw
 } from "lucide-react";
-import { format, addDays, isSameDay } from "date-fns";
+import { format, addDays } from "date-fns";
 import { useMealPlanTranslation } from "@/utils/translationHelpers";
-import { useMealShuffle } from "@/hooks/useMealShuffle";
 
 interface MealPlanHeroProps {
   weekStartDate: Date;
@@ -23,8 +21,14 @@ interface MealPlanHeroProps {
     totalMeals: number;
     avgDailyCalories: number;
   };
+  dailyStats: {
+    calories: number;
+    protein: number;
+    meals: number;
+  };
   hasWeeklyPlan: boolean;
   weeklyPlanId?: string;
+  selectedDayNumber: number;
 }
 
 const MealPlanHero = ({
@@ -33,17 +37,12 @@ const MealPlanHero = ({
   onWeekChange,
   onShowAIDialog,
   weeklyStats,
+  dailyStats,
   hasWeeklyPlan,
-  weeklyPlanId
+  weeklyPlanId,
+  selectedDayNumber
 }: MealPlanHeroProps) => {
   const { mealPlanT } = useMealPlanTranslation();
-  const { shuffleMeals, isShuffling } = useMealShuffle();
-
-  const handleShuffleMeals = () => {
-    if (weeklyPlanId) {
-      shuffleMeals(weeklyPlanId);
-    }
-  };
 
   const handleRegeneratePlan = () => {
     onShowAIDialog();
@@ -73,28 +72,15 @@ const MealPlanHero = ({
 
             <div className="flex gap-2">
               {hasWeeklyPlan && (
-                <>
-                  <Button
-                    onClick={handleShuffleMeals}
-                    disabled={isShuffling}
-                    variant="outline"
-                    size="sm"
-                    className="bg-white/20 border-white/30 text-white hover:bg-white/30 hover:border-white/50 backdrop-blur-sm shadow-lg font-medium transform hover:scale-105 transition-all duration-300 text-xs px-2 py-1"
-                  >
-                    <Shuffle className="w-3 h-3 mr-1" />
-                    {isShuffling ? mealPlanT('shuffling') || 'Shuffling...' : mealPlanT('shuffleMeals')}
-                  </Button>
-                  
-                  <Button
-                    onClick={handleRegeneratePlan}
-                    variant="outline"
-                    size="sm"
-                    className="bg-white/20 border-white/30 text-white hover:bg-white/30 hover:border-white/50 backdrop-blur-sm shadow-lg font-medium transform hover:scale-105 transition-all duration-300 text-xs px-2 py-1"
-                  >
-                    <RotateCcw className="w-3 h-3 mr-1" />
-                    {mealPlanT('regenerate')}
-                  </Button>
-                </>
+                <Button
+                  onClick={handleRegeneratePlan}
+                  variant="outline"
+                  size="sm"
+                  className="bg-white/20 border-white/30 text-white hover:bg-white/30 hover:border-white/50 backdrop-blur-sm shadow-lg font-medium transform hover:scale-105 transition-all duration-300 text-xs px-2 py-1"
+                >
+                  <RotateCcw className="w-3 h-3 mr-1" />
+                  {mealPlanT('regenerate')}
+                </Button>
               )}
             </div>
           </div>
@@ -128,14 +114,14 @@ const MealPlanHero = ({
         </CardContent>
       </Card>
 
-      {/* Shortcut Cards Row */}
+      {/* Daily Stats Cards Row */}
       {hasWeeklyPlan && (
         <div className="grid grid-cols-3 gap-2">
           {/* Daily Calories Card */}
           <Card className="bg-gradient-to-br from-red-500 to-red-600 text-white border-0 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer">
             <CardContent className="p-3 text-center">
               <div className="text-lg font-bold">
-                {weeklyStats.avgDailyCalories}
+                {dailyStats.calories}
               </div>
               <div className="text-xs text-white/90 font-medium">cal</div>
             </CardContent>
@@ -145,7 +131,7 @@ const MealPlanHero = ({
           <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer">
             <CardContent className="p-3 text-center">
               <div className="text-lg font-bold">
-                {(weeklyStats.totalProtein / 7).toFixed(1)}g
+                {dailyStats.protein.toFixed(1)}g
               </div>
               <div className="text-xs text-white/90 font-medium">Protein</div>
             </CardContent>
@@ -155,7 +141,7 @@ const MealPlanHero = ({
           <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white border-0 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer">
             <CardContent className="p-3 text-center">
               <div className="text-lg font-bold">
-                {Math.round(weeklyStats.totalMeals / 7)}
+                {dailyStats.meals}
               </div>
               <div className="text-xs text-white/90 font-medium">Meals</div>
             </CardContent>

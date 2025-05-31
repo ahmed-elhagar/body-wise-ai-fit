@@ -39,6 +39,17 @@ const MealPlanPageRefactored = () => {
     { number: 7, name: 'Friday', date: addDays(mealPlanState.weekStartDate, 6) }
   ];
 
+  // Calculate daily stats for the selected day
+  const dailyMeals = mealPlanState.currentWeekPlan?.dailyMeals?.filter(
+    meal => meal.day_number === mealPlanState.selectedDayNumber
+  ) || [];
+
+  const dailyStats = {
+    calories: dailyMeals.reduce((sum, meal) => sum + (meal.calories || 0), 0),
+    protein: dailyMeals.reduce((sum, meal) => sum + (meal.protein || 0), 0),
+    meals: dailyMeals.length
+  };
+
   // Calculate weekly stats from processed data
   const weeklyStats = {
     totalCalories: mealPlanState.currentWeekPlan?.weeklyPlan?.total_calories || 0,
@@ -108,8 +119,10 @@ const MealPlanPageRefactored = () => {
               onWeekChange={mealPlanState.setCurrentWeekOffset}
               onShowAIDialog={() => mealPlanState.setShowAIDialog(true)}
               weeklyStats={weeklyStats}
+              dailyStats={dailyStats}
               hasWeeklyPlan={!!mealPlanState.currentWeekPlan}
               weeklyPlanId={mealPlanState.currentWeekPlan?.weeklyPlan?.id}
+              selectedDayNumber={mealPlanState.selectedDayNumber}
             />
           </Section>
 

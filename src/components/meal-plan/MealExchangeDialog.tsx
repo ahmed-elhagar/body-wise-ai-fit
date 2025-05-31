@@ -58,27 +58,27 @@ const MealExchangeDialog = ({ isOpen, onClose, currentMeal, onExchange }: MealEx
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md bg-[#1E1F23] border-gray-700 text-white">
+      <DialogContent className="max-w-md bg-gradient-to-br from-fitness-primary-50 to-fitness-accent-50 border-fitness-primary-200">
         <DialogHeader>
-          <DialogTitle className="text-white flex items-center gap-2">
-            <ArrowLeftRight className="w-5 h-5 text-[#FF6F3C]" />
+          <DialogTitle className="text-fitness-primary-700 flex items-center gap-2">
+            <ArrowLeftRight className="w-5 h-5 text-fitness-accent-600" />
             Exchange Meal
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           {/* Current Meal Info */}
-          <Card className="bg-gray-800 border-gray-600">
+          <Card className="bg-white border-fitness-primary-200 shadow-md">
             <CardContent className="p-4">
-              <h3 className="font-semibold text-white mb-2">Current Meal</h3>
-              <p className="text-gray-300 mb-3">{currentMeal.name}</p>
+              <h3 className="font-semibold text-fitness-primary-700 mb-2">Current Meal</h3>
+              <p className="text-fitness-primary-600 mb-3">{currentMeal.name}</p>
               
               <div className="flex flex-wrap gap-2 mb-3">
-                <Badge className="bg-[#FF6F3C] text-white">
+                <Badge className="bg-fitness-accent-500 text-white">
                   <Clock className="w-3 h-3 mr-1" />
                   {(currentMeal.prep_time || 0) + (currentMeal.cook_time || 0)} min
                 </Badge>
-                <Badge className="bg-blue-600 text-white">
+                <Badge className="bg-fitness-primary-500 text-white">
                   <Users className="w-3 h-3 mr-1" />
                   {currentMeal.servings} serving{currentMeal.servings !== 1 ? 's' : ''}
                 </Badge>
@@ -88,45 +88,45 @@ const MealExchangeDialog = ({ isOpen, onClose, currentMeal, onExchange }: MealEx
               </div>
 
               <div className="grid grid-cols-3 gap-2 text-xs">
-                <div className="bg-gray-700 p-2 rounded text-center">
-                  <span className="font-medium text-green-400">{currentMeal.protein}g</span>
-                  <div className="text-gray-400">protein</div>
+                <div className="bg-fitness-primary-50 p-2 rounded text-center border border-fitness-primary-200">
+                  <span className="font-medium text-green-600">{currentMeal.protein}g</span>
+                  <div className="text-fitness-primary-600">protein</div>
                 </div>
-                <div className="bg-gray-700 p-2 rounded text-center">
-                  <span className="font-medium text-blue-400">{currentMeal.carbs}g</span>
-                  <div className="text-gray-400">carbs</div>
+                <div className="bg-fitness-primary-50 p-2 rounded text-center border border-fitness-primary-200">
+                  <span className="font-medium text-blue-600">{currentMeal.carbs}g</span>
+                  <div className="text-fitness-primary-600">carbs</div>
                 </div>
-                <div className="bg-gray-700 p-2 rounded text-center">
-                  <span className="font-medium text-yellow-400">{currentMeal.fat}g</span>
-                  <div className="text-gray-400">fat</div>
+                <div className="bg-fitness-primary-50 p-2 rounded text-center border border-fitness-primary-200">
+                  <span className="font-medium text-yellow-600">{currentMeal.fat}g</span>
+                  <div className="text-fitness-primary-600">fat</div>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Exchange Info */}
-          <Card className="bg-gray-800 border-gray-600">
+          <Card className="bg-white border-fitness-primary-200 shadow-md">
             <CardContent className="p-4">
-              <h3 className="font-semibold text-white mb-2 flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-[#FF6F3C]" />
+              <h3 className="font-semibold text-fitness-primary-700 mb-2 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-fitness-accent-600" />
                 AI Exchange
               </h3>
-              <p className="text-gray-400 text-sm mb-4">
+              <p className="text-fitness-primary-600 text-sm mb-4">
                 AI will find a similar meal with comparable nutrition that matches your dietary preferences and restrictions.
               </p>
               
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Target Calories:</span>
-                  <span className="text-white">{currentMeal.calories} kcal</span>
+                  <span className="text-fitness-primary-600">Target Calories:</span>
+                  <span className="text-fitness-primary-700 font-medium">{currentMeal.calories} kcal</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Meal Type:</span>
-                  <span className="text-white capitalize">{currentMeal.meal_type}</span>
+                  <span className="text-fitness-primary-600">Meal Type:</span>
+                  <span className="text-fitness-primary-700 font-medium capitalize">{currentMeal.meal_type}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Day:</span>
-                  <span className="text-white">Day {currentMeal.day_number}</span>
+                  <span className="text-fitness-primary-600">Day:</span>
+                  <span className="text-fitness-primary-700 font-medium">Day {currentMeal.day_number}</span>
                 </div>
               </div>
             </CardContent>
@@ -137,14 +137,14 @@ const MealExchangeDialog = ({ isOpen, onClose, currentMeal, onExchange }: MealEx
             <Button
               onClick={() => onClose(false)}
               variant="outline"
-              className="flex-1 bg-gray-800 border-gray-600 text-gray-300 hover:bg-gray-700"
+              className="flex-1 border-fitness-primary-300 text-fitness-primary-600 hover:bg-fitness-primary-50"
             >
               Cancel
             </Button>
             <Button
               onClick={handleExchangeMeal}
               disabled={isExchanging}
-              className="flex-1 bg-gradient-to-r from-[#FF6F3C] to-[#FF8F4C] hover:from-[#FF5F2C] hover:to-[#FF7F3C] text-white"
+              className="flex-1 bg-gradient-to-r from-fitness-accent-500 to-fitness-accent-600 hover:from-fitness-accent-600 hover:to-fitness-accent-700 text-white"
             >
               <ArrowLeftRight className="w-4 h-4 mr-2" />
               {isExchanging ? 'Exchanging...' : 'Exchange Meal'}

@@ -83,7 +83,7 @@ const ShoppingListDrawer = ({
   if (isLoading) {
     return (
       <Sheet open={isOpen} onOpenChange={onClose}>
-        <SheetContent side={isRTL ? "left" : "right"} className="w-full sm:max-w-lg bg-gray-900 border-gray-700 overflow-y-auto">
+        <SheetContent side={isRTL ? "left" : "right"} className="w-full sm:max-w-lg bg-gradient-to-br from-fitness-primary-50 to-fitness-accent-50 border-fitness-primary-200 overflow-y-auto">
           <LoadingState />
         </SheetContent>
       </Sheet>
@@ -93,7 +93,7 @@ const ShoppingListDrawer = ({
   if (isEmpty) {
     return (
       <Sheet open={isOpen} onOpenChange={onClose}>
-        <SheetContent side={isRTL ? "left" : "right"} className="w-full sm:max-w-lg bg-gray-900 border-gray-700 overflow-y-auto">
+        <SheetContent side={isRTL ? "left" : "right"} className="w-full sm:max-w-lg bg-gradient-to-br from-fitness-primary-50 to-fitness-accent-50 border-fitness-primary-200 overflow-y-auto">
           <EmptyState />
         </SheetContent>
       </Sheet>
@@ -102,7 +102,7 @@ const ShoppingListDrawer = ({
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent side={isRTL ? "left" : "right"} className="w-full sm:max-w-lg bg-gray-900 border-gray-700 overflow-y-auto">
+      <SheetContent side={isRTL ? "left" : "right"} className="w-full sm:max-w-lg bg-gradient-to-br from-fitness-primary-50 to-fitness-accent-50 border-fitness-primary-200 overflow-y-auto">
         <div className="space-y-6 h-full">
           <DrawerHeader 
             totalItems={shoppingItems.length}
