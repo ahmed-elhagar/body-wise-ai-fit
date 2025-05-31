@@ -103,23 +103,23 @@ const MealPlanPage = () => {
   }
 
   return (
-    <div className={`min-h-screen bg-gray-50 ${isRTL ? 'rtl' : 'ltr'}`}>
+    <div className={`min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 ${isRTL ? 'rtl' : 'ltr'}`}>
       <MealPlanLoadingBackdrop 
         isLoading={mealPlanState.isGenerating} 
         message="Generating your meal plan..."
       />
       
-      {/* Header */}
+      {/* Enhanced Header */}
       <div className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className={`flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 ${isRTL ? 'lg:flex-row-reverse' : ''}`}>
             <div className={`flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
                 <UtensilsCrossed className="w-6 h-6 text-white" />
               </div>
               <div className={isRTL ? 'text-right' : 'text-left'}>
                 <h1 className="text-2xl font-bold text-gray-900">{t('mealPlan.title')}</h1>
-                <p className="text-gray-600">
+                <p className="text-gray-600 font-medium">
                   {format(mealPlanState.weekStartDate, 'MMMM d')} - {format(addDays(mealPlanState.weekStartDate, 6), 'MMMM d, yyyy')}
                 </p>
               </div>
@@ -127,10 +127,10 @@ const MealPlanPage = () => {
 
             <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
               {/* View Mode Toggle */}
-              <div className="flex bg-gray-100 rounded-lg p-1">
+              <div className="flex bg-gray-100 rounded-lg p-1 shadow-inner">
                 <button
                   onClick={() => setViewMode('daily')}
-                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
+                  className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
                     viewMode === 'daily'
                       ? 'bg-white text-blue-600 shadow-sm'
                       : 'text-gray-600 hover:text-gray-900'
@@ -140,7 +140,7 @@ const MealPlanPage = () => {
                 </button>
                 <button
                   onClick={() => setViewMode('weekly')}
-                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
+                  className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
                     viewMode === 'weekly'
                       ? 'bg-white text-blue-600 shadow-sm'
                       : 'text-gray-600 hover:text-gray-900'
@@ -155,7 +155,7 @@ const MealPlanPage = () => {
                   <Button
                     onClick={() => setShowShoppingDrawer(true)}
                     variant="outline"
-                    className="border-gray-300"
+                    className="border-gray-300 hover:bg-gray-50 shadow-sm"
                   >
                     <ShoppingCart className="w-4 h-4 mr-2" />
                     {t('mealPlan.shoppingList')}
@@ -164,7 +164,7 @@ const MealPlanPage = () => {
                   <Button
                     onClick={() => mealPlanState.handleRegeneratePlan()}
                     variant="outline"
-                    className="border-gray-300"
+                    className="border-orange-300 text-orange-600 hover:bg-orange-50 shadow-sm"
                   >
                     <Shuffle className="w-4 h-4 mr-2" />
                     {t('mealPlan.shuffleMeals')}
@@ -174,7 +174,7 @@ const MealPlanPage = () => {
               
               <Button
                 onClick={() => mealPlanState.setShowAIDialog(true)}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg"
               >
                 <Sparkles className="w-4 h-4 mr-2" />
                 {mealPlanState.currentWeekPlan ? t('mealPlan.regenerate') : t('mealPlan.generateAIPlan')}
@@ -186,14 +186,14 @@ const MealPlanPage = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Week Navigation */}
-        <Card className="mb-6">
+        <Card className="mb-6 shadow-sm border-0 bg-white/80 backdrop-blur-sm">
           <CardContent className="p-4">
             <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => mealPlanState.setCurrentWeekOffset(mealPlanState.currentWeekOffset - 1)}
-                className="h-10 w-10 p-0"
+                className="h-10 w-10 p-0 hover:bg-gray-100"
               >
                 <ChevronLeft className="w-5 h-5" />
               </Button>
@@ -212,7 +212,7 @@ const MealPlanPage = () => {
                 </div>
                 
                 {mealPlanState.currentWeekOffset === 0 ? (
-                  <Badge variant="secondary" className="mt-2">
+                  <Badge variant="secondary" className="mt-2 bg-green-100 text-green-700">
                     {t('mealPlan.currentWeek')}
                   </Badge>
                 ) : (
@@ -232,7 +232,7 @@ const MealPlanPage = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => mealPlanState.setCurrentWeekOffset(mealPlanState.currentWeekOffset + 1)}
-                className="h-10 w-10 p-0"
+                className="h-10 w-10 p-0 hover:bg-gray-100"
               >
                 <ChevronRight className="w-5 h-5" />
               </Button>
@@ -246,7 +246,7 @@ const MealPlanPage = () => {
             <div className="xl:col-span-1">
               <div className="sticky top-6 space-y-4">
                 {/* Today's Stats */}
-                <Card className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                <Card className="bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-xl border-0">
                   <CardHeader className="pb-3">
                     <CardTitle className={`text-lg font-semibold flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
                       <Target className="w-5 h-5" />
@@ -272,7 +272,7 @@ const MealPlanPage = () => {
                 </Card>
 
                 {/* Quick Actions */}
-                <Card>
+                <Card className="shadow-lg border-0">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg font-semibold text-gray-900">{t('mealPlan.quickActions')}</CardTitle>
                   </CardHeader>
@@ -280,7 +280,7 @@ const MealPlanPage = () => {
                     <Button 
                       onClick={() => handleAddSnack(mealPlanState.selectedDayNumber)}
                       variant="outline" 
-                      className="w-full justify-start"
+                      className="w-full justify-start hover:bg-green-50 border-green-200 text-green-600"
                     >
                       <Plus className="w-4 h-4 mr-2" />
                       {t('mealPlan.addSnack')}
@@ -288,7 +288,7 @@ const MealPlanPage = () => {
                     <Button 
                       onClick={() => mealPlanState.setShowAIDialog(true)}
                       variant="outline" 
-                      className="w-full justify-start"
+                      className="w-full justify-start hover:bg-purple-50 border-purple-200 text-purple-600"
                     >
                       <RotateCcw className="w-4 h-4 mr-2" />
                       {t('mealPlan.regeneratePlan')}
@@ -297,7 +297,7 @@ const MealPlanPage = () => {
                 </Card>
 
                 {/* Weekly Overview */}
-                <Card>
+                <Card className="shadow-lg border-0">
                   <CardHeader className="pb-3">
                     <CardTitle className={`text-lg font-semibold text-gray-900 flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
                       <TrendingUp className="w-5 h-5 text-blue-600" />
@@ -340,12 +340,12 @@ const MealPlanPage = () => {
                 <>
                   {/* Day Tabs */}
                   <Tabs value={mealPlanState.selectedDayNumber.toString()} onValueChange={(value) => mealPlanState.setSelectedDayNumber(parseInt(value))}>
-                    <TabsList className="grid w-full grid-cols-7 mb-6">
+                    <TabsList className="grid w-full grid-cols-7 mb-6 bg-white shadow-sm">
                       {weekDays.map((day) => (
                         <TabsTrigger 
                           key={day.number} 
                           value={day.number.toString()}
-                          className="flex flex-col py-3"
+                          className="flex flex-col py-3 data-[state=active]:bg-blue-500 data-[state=active]:text-white"
                         >
                           <span className="text-xs mb-1">{day.name}</span>
                           <span className="text-lg font-semibold">{format(day.date, 'd')}</span>
@@ -367,9 +367,9 @@ const MealPlanPage = () => {
                           <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
                             <h2 className="text-xl font-semibold text-gray-900">{day.fullName}</h2>
                             <div className={`flex items-center gap-4 text-sm text-gray-600 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                              <span>{dayStats.calories} {t('mealPlan.cal')}</span>
-                              <span>{dayStats.protein.toFixed(1)}g {t('mealPlan.protein')}</span>
-                              <span>{dayMeals.length} {t('mealPlan.meals')}</span>
+                              <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full">{dayStats.calories} {t('mealPlan.cal')}</span>
+                              <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full">{dayStats.protein.toFixed(1)}g {t('mealPlan.protein')}</span>
+                              <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full">{dayMeals.length} {t('mealPlan.meals')}</span>
                             </div>
                           </div>
 
@@ -389,6 +389,7 @@ const MealPlanPage = () => {
                                         onClick={() => handleAddSnack(day.number)}
                                         variant="outline"
                                         size="sm"
+                                        className="text-green-600 border-green-200 hover:bg-green-50"
                                       >
                                         <Plus className="w-4 h-4 mr-1" />
                                         {t('mealPlan.addSnack')}
@@ -399,11 +400,11 @@ const MealPlanPage = () => {
                                   {meals.length > 0 ? (
                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                                       {meals.map((meal, index) => (
-                                        <Card key={`${meal.id}-${index}`} className="hover:shadow-md transition-shadow">
+                                        <Card key={`${meal.id}-${index}`} className="hover:shadow-lg transition-all shadow-sm border-0 bg-white/90 backdrop-blur-sm">
                                           <CardContent className="p-4">
                                             <div className={`flex items-start justify-between mb-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
                                               <h4 className={`font-medium text-gray-900 flex-1 ${isRTL ? 'ml-2 text-right' : 'mr-2'}`}>{meal.name}</h4>
-                                              <Badge variant="secondary" className="text-xs">
+                                              <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-700">
                                                 {t(`mealPlan.${mealType}`)}
                                               </Badge>
                                             </div>
@@ -435,7 +436,7 @@ const MealPlanPage = () => {
                                                 onClick={() => mealPlanState.handleShowRecipe(meal)}
                                                 variant="outline"
                                                 size="sm"
-                                                className="flex-1"
+                                                className="flex-1 text-blue-600 border-blue-200 hover:bg-blue-50"
                                               >
                                                 <ChefHat className="w-3 h-3 mr-1" />
                                                 {t('mealPlan.recipe')}
@@ -444,7 +445,7 @@ const MealPlanPage = () => {
                                                 onClick={() => mealPlanState.handleExchangeMeal(meal)}
                                                 variant="outline"
                                                 size="sm"
-                                                className="flex-1"
+                                                className="flex-1 text-purple-600 border-purple-200 hover:bg-purple-50"
                                               >
                                                 <RotateCcw className="w-3 h-3 mr-1" />
                                                 {t('mealPlan.exchange')}
@@ -455,7 +456,7 @@ const MealPlanPage = () => {
                                       ))}
                                     </div>
                                   ) : mealType === 'snack' ? (
-                                    <Card className="border-dashed border-2 border-gray-200">
+                                    <Card className="border-dashed border-2 border-gray-200 bg-gray-50/50">
                                       <CardContent className="p-6 text-center">
                                         <Plus className="w-8 h-8 text-gray-400 mx-auto mb-2" />
                                         <p className="text-gray-500 mb-3">{t('mealPlan.noMealsPlanned')}</p>
@@ -463,6 +464,7 @@ const MealPlanPage = () => {
                                           onClick={() => handleAddSnack(day.number)}
                                           variant="outline"
                                           size="sm"
+                                          className="text-green-600 border-green-200 hover:bg-green-50"
                                         >
                                           {t('mealPlan.addSnack')}
                                         </Button>
@@ -480,9 +482,9 @@ const MealPlanPage = () => {
                 </>
               ) : (
                 // Weekly View
-                <Card>
+                <Card className="shadow-lg border-0">
                   <CardHeader>
-                    <CardTitle>{t('mealPlan.weeklyView')}</CardTitle>
+                    <CardTitle className="text-xl font-semibold">{t('mealPlan.weeklyView')}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -493,7 +495,7 @@ const MealPlanPage = () => {
                         const dayStats = calculateDayStats(dayMeals);
 
                         return (
-                          <Card key={day.number} className="cursor-pointer hover:shadow-md transition-shadow"
+                          <Card key={day.number} className="cursor-pointer hover:shadow-lg transition-all bg-gradient-to-br from-white to-blue-50/50 border-0"
                                 onClick={() => {setViewMode('daily'); mealPlanState.setSelectedDayNumber(day.number);}}>
                             <CardHeader className="pb-2">
                               <CardTitle className="text-sm font-medium">{day.fullName}</CardTitle>
@@ -526,7 +528,7 @@ const MealPlanPage = () => {
           </div>
         ) : (
           // Empty State
-          <Card className="p-12 text-center">
+          <Card className="p-12 text-center shadow-xl border-0 bg-white/90 backdrop-blur-sm">
             <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl flex items-center justify-center">
               <ChefHat className="w-12 h-12 text-blue-600" />
             </div>
@@ -536,7 +538,7 @@ const MealPlanPage = () => {
             </p>
             <Button 
               onClick={() => mealPlanState.setShowAIDialog(true)}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-8 py-3"
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-8 py-3 shadow-lg"
             >
               <Sparkles className="w-5 h-5 mr-2" />
               {t('mealPlan.generateMealPlan')}
