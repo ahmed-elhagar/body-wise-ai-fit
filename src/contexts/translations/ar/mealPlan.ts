@@ -80,5 +80,9 @@ export const mealPlan = {
   planGeneratedSuccess: "تم إنشاء خطة الوجبات بنجاح!",
   planGenerationFailed: "فشل في إنشاء خطة الوجبات. يرجى المحاولة مرة أخرى.",
   shoppingListUpdated: "تم تحديث قائمة التسوق بنجاح!",
-  dayOverview: "نظرة عامة على اليوم"
+  dayOverview: "نظرة عامة على اليوم",
+  quickStats: "إحصائيات سريعة",
+  avgPerMeal: "متوسط كل وجبة",
+  remainingCalories: "السعرات المتبقية",
+  progressPercent: "النسبة المئوية"
 } as const;

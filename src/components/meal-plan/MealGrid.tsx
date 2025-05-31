@@ -95,7 +95,7 @@ const MealGrid = ({
               {mealList.length > 0 ? (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   {mealList.map((meal, index) => (
-                    <Card key={`${meal.id}-${index}`} className="hover:shadow-lg transition-all duration-200 shadow-sm rounded-lg group">
+                    <Card key={`${meal.id}-${index}`} className="hover:shadow-lg transition-all duration-200 shadow-sm rounded-xl group border-0 bg-white">
                       <CardContent className="p-4">
                         <div className={`flex items-start justify-between mb-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
                           <h4 className={`font-semibold text-gray-900 flex-1 text-lg ${isRTL ? 'ml-3 text-right' : 'mr-3'}`}>
@@ -116,16 +116,16 @@ const MealGrid = ({
 
                         <div className="flex items-center justify-between mb-3 text-sm">
                           <div className="text-center">
-                            <div className="font-semibold text-red-600">{Math.round(meal.calories || 0)}</div>
-                            <div className="text-gray-500 text-xs">{t('mealPlan.cal')}</div>
+                            <div className="font-bold text-red-600">{Math.round(meal.calories || 0)}</div>
+                            <div className="text-xs text-gray-500">{t('mealPlan.cal')}</div>
                           </div>
                           <div className="text-center">
-                            <div className="font-semibold text-blue-600">{Math.round(meal.protein || 0)}g</div>
-                            <div className="text-gray-500 text-xs">{t('mealPlan.protein')}</div>
+                            <div className="font-bold text-blue-600">{Math.round(meal.protein || 0)}g</div>
+                            <div className="text-xs text-gray-500">{t('mealPlan.protein')}</div>
                           </div>
                           <div className="text-center">
-                            <div className="font-semibold text-green-600">{Math.round(meal.carbs || 0)}g</div>
-                            <div className="text-gray-500 text-xs">{t('mealPlan.carbs')}</div>
+                            <div className="font-bold text-green-600">{Math.round(meal.carbs || 0)}g</div>
+                            <div className="text-xs text-gray-500">{t('mealPlan.carbs')}</div>
                           </div>
                         </div>
 
@@ -161,7 +161,7 @@ const MealGrid = ({
                   ))}
                 </div>
               ) : mealType === 'snack' ? (
-                <Card className="border-dashed border-2 border-gray-200 bg-gray-50 rounded-lg">
+                <Card className="border-dashed border-2 border-gray-200 bg-gray-50 rounded-xl">
                   <CardContent className="p-6 text-center">
                     <Plus className="w-8 h-8 text-gray-400 mx-auto mb-2" />
                     <p className="text-gray-500 mb-3">{t('mealPlan.noMealsPlanned')}</p>

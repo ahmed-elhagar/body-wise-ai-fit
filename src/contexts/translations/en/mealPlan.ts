@@ -12,8 +12,8 @@ export const mealPlan = {
   todaysProgress: "Today's Progress",
   todaysSummary: "Today's Summary",
   caloriesConsumed: "calories consumed",
-  protein: "protein",
-  meals: "meals",
+  protein: "Protein",
+  meals: "Meals",
   quickActions: "Quick Actions",
   addSnack: "Add Snack",
   regeneratePlan: "Regenerate Plan",
@@ -31,8 +31,8 @@ export const mealPlan = {
   exchange: "Exchange",
   minPrep: "min prep",
   cal: "cal",
-  carbs: "carbs",
-  fat: "fat",
+  carbs: "Carbs",
+  fat: "Fat",
   noMealsPlanned: "No meals planned for today",
   noMealPlanYet: "No Meal Plan Yet",
   generatePersonalizedPlan: "Generate your personalized meal plan to get started with healthy eating habits",
@@ -80,5 +80,9 @@ export const mealPlan = {
   planGeneratedSuccess: "Meal plan generated successfully!",
   planGenerationFailed: "Failed to generate meal plan. Please try again.",
   shoppingListUpdated: "Shopping list updated successfully!",
-  dayOverview: "Day Overview"
+  dayOverview: "Day Overview",
+  quickStats: "Quick Stats",
+  avgPerMeal: "Avg per meal",
+  remainingCalories: "Remaining calories",
+  progressPercent: "Progress"
 } as const;

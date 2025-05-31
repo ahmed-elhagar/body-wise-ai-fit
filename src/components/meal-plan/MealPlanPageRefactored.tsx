@@ -4,10 +4,11 @@ import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { addDays } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useMealPlanState } from "@/hooks/useMealPlanState";
-import MealPlanHeader from "./MealPlanHeader";
+import MealPlanHero from "./MealPlanHero";
 import DayTabs from "./DayTabs";
 import MealGrid from "./MealGrid";
-import StatsSidebar from "./StatsSidebar";
+import QuickStatsCard from "./QuickStatsCard";
+import SummaryCards from "./SummaryCards";
 import WeeklyView from "./WeeklyView";
 import EmptyState from "./EmptyState";
 import ShoppingListDrawer from "../shopping-list/ShoppingListDrawer";
@@ -17,9 +18,6 @@ import MealExchangeDialog from "./MealExchangeDialog";
 import SnackPickerDialog from "./SnackPickerDialog";
 import MealPlanAIDialog from "./MealPlanAIDialog";
 import { toast } from "sonner";
-import { Card, CardContent } from "@/components/ui/card";
-import { ChefHat, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 const MealPlanPageRefactored = () => {
   const { t, isRTL } = useLanguage();
@@ -57,24 +55,23 @@ const MealPlanPageRefactored = () => {
   const handleSnackAdded = async () => {
     setShowSnackDialog(false);
     await mealPlanState.refetch();
-    toast.success("Snack added and shopping list updated ✅");
+    toast.success(t('mealPlan.snackAddedSuccess'));
   };
 
   const handleShoppingListUpdate = () => {
-    toast.success("Shopping list updated ✅");
+    toast.success(t('mealPlan.shoppingListUpdated'));
   };
 
   const handleRegeneratePlan = async () => {
     try {
       await mealPlanState.handleRegeneratePlan();
-      toast.success("Meal plan regenerated successfully! 🎉");
+      toast.success(t('mealPlan.planGeneratedSuccess'));
     } catch (error) {
       console.error('❌ Regeneration failed:', error);
-      toast.error("Failed to regenerate meal plan. Please try again.");
+      toast.error(t('mealPlan.planGenerationFailed'));
     }
   };
 
-  // Enhanced AI generation handler
   const handleGenerateAIPlan = async () => {
     console.log('🎯 MealPlanPage: Starting AI generation with preferences:', mealPlanState.aiPreferences);
     
@@ -82,28 +79,28 @@ const MealPlanPageRefactored = () => {
       const success = await mealPlanState.handleGenerateAIPlan();
       if (success) {
         mealPlanState.setShowAIDialog(false);
-        toast.success("Meal plan generated successfully! 🎉");
+        toast.success(t('mealPlan.planGeneratedSuccess'));
       }
     } catch (error) {
       console.error('❌ AI generation failed:', error);
-      toast.error("Failed to generate meal plan. Please try again.");
+      toast.error(t('mealPlan.planGenerationFailed'));
     }
   };
 
   if (mealPlanState.isLoading) {
-    return <MealPlanLoadingBackdrop isLoading={true} message="Loading your meal plan..." />;
+    return <MealPlanLoadingBackdrop isLoading={true} message={t('mealPlan.loading')} />;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/50">
+    <div className={`min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/50 ${isRTL ? 'rtl' : 'ltr'}`}>
       <MealPlanLoadingBackdrop 
         isLoading={mealPlanState.isGenerating} 
-        message="Generating your meal plan..."
+        message={t('mealPlan.generating')}
       />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {/* Header */}
-        <MealPlanHeader
+        {/* Hero Header */}
+        <MealPlanHero
           weekStartDate={mealPlanState.weekStartDate}
           currentWeekOffset={mealPlanState.currentWeekOffset}
           onWeekChange={mealPlanState.setCurrentWeekOffset}
@@ -126,9 +123,19 @@ const MealPlanPageRefactored = () => {
                 onSwitchToDaily={() => setViewMode('daily')}
               />
             ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              <div className={`grid gap-6 ${isRTL ? 'grid-cols-1 lg:grid-cols-[1fr_300px_300px]' : 'grid-cols-1 lg:grid-cols-[300px_1fr_300px]'}`}>
+                {/* Quick Stats - Left Sidebar */}
+                <div className={`${isRTL ? 'order-3' : 'order-1'} space-y-6`}>
+                  <QuickStatsCard
+                    totalCalories={mealPlanState.totalCalories}
+                    totalProtein={mealPlanState.totalProtein}
+                    targetDayCalories={mealPlanState.targetDayCalories}
+                    mealCount={mealPlanState.todaysMeals?.length || 0}
+                  />
+                </div>
+
                 {/* Main Content */}
-                <div className="lg:col-span-3 order-1 space-y-6">
+                <div className="order-2 space-y-6">
                   {/* Day Tabs */}
                   <DayTabs
                     weekStartDate={mealPlanState.weekStartDate}
@@ -154,9 +161,9 @@ const MealPlanPageRefactored = () => {
                   </Tabs>
                 </div>
 
-                {/* Sidebar Stats - Moved to right */}
-                <div className="lg:col-span-1 order-2">
-                  <StatsSidebar
+                {/* Summary Cards - Right Sidebar */}
+                <div className={`${isRTL ? 'order-1' : 'order-3'} space-y-6`}>
+                  <SummaryCards
                     todaysMeals={mealPlanState.todaysMeals || []}
                     totalCalories={mealPlanState.totalCalories}
                     totalProtein={mealPlanState.totalProtein}
