@@ -3,9 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { PageHeader } from "@/components/ui/page-header";
-import { CoachHeader } from "@/components/coach/CoachHeader";
-import { CoachStatsCards } from "@/components/coach/CoachStatsCards";
-import { TraineesTab } from "@/components/coach/TraineesTab";
+import { EnhancedTraineesTab } from "@/components/coach/EnhancedTraineesTab";
 import AnalyticsTab from "@/components/admin/AnalyticsTab";
 import { useRole } from "@/hooks/useRole";
 import { useCoachSystem } from "@/hooks/useCoachSystem";
@@ -76,51 +74,39 @@ const Coach = () => {
     );
   }
 
-  const totalClients = trainees.length;
-  const completedProfiles = trainees.filter(t => 
-    (t.trainee_profile?.profile_completion_score || 0) >= 80
-  ).length;
-  const activeTrainees = trainees.filter(t => 
-    (t.trainee_profile?.ai_generations_remaining || 0) > 0
-  ).length;
-
   return (
     <ProtectedRoute>
       <Layout>
         <PageHeader
           title="Coach Panel"
-          description="Manage and support your trainees"
+          description="Advanced trainee management and coaching tools"
           icon={<Users className="h-6 w-6 text-green-600" />}
         />
         
         <div className="space-y-6">
-          <CoachStatsCards stats={{
-            totalClients,
-            messagesToday: 0,
-            successRate: totalClients > 0 ? Math.round((completedProfiles / totalClients) * 100) : 0,
-            monthlyGoals: activeTrainees
-          }} />
-          
           <Tabs defaultValue="trainees" className="w-full">
             <TabsList className="grid w-full grid-cols-2 bg-white/80 backdrop-blur-sm border border-gray-200 shadow-sm">
               <TabsTrigger 
                 value="trainees" 
                 className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
               >
-                My Trainees
+                Trainees Management
               </TabsTrigger>
               <TabsTrigger 
                 value="analytics" 
                 className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
               >
-                Analytics
+                Analytics & Reports
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="trainees" className="mt-6">
-              <TraineesTab trainees={trainees} onChatClick={(traineeId) => {
-                console.log('Chat with trainee:', traineeId);
-              }} />
+              <EnhancedTraineesTab 
+                trainees={trainees} 
+                onChatClick={(traineeId) => {
+                  console.log('Chat with trainee:', traineeId);
+                }} 
+              />
             </TabsContent>
 
             <TabsContent value="analytics" className="mt-6">
