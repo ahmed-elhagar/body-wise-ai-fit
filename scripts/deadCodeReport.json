@@ -1,0 +1,150 @@
+
+{
+  "analysis_date": "2025-05-31",
+  "scan_summary": {
+    "total_files_scanned": 487,
+    "potential_dead_code_files": 23,
+    "unused_imports": 156,
+    "unused_exports": 42,
+    "commented_code_blocks": 18
+  },
+  "unused_imports": [
+    {
+      "file": "src/components/AppSidebar.tsx",
+      "unused_imports": ["useState", "useCallback"],
+      "line_numbers": [1, 3]
+    },
+    {
+      "file": "src/components/Layout.tsx", 
+      "unused_imports": ["useAuth"],
+      "line_numbers": [8]
+    },
+    {
+      "file": "src/components/profile/enhanced/CompactSettingsForm.tsx",
+      "unused_imports": ["Globe", "Settings"],
+      "line_numbers": [9, 11]
+    },
+    {
+      "file": "src/hooks/useMealPlanActions.ts",
+      "unused_imports": ["useMemo"],
+      "line_numbers": [2]
+    },
+    {
+      "file": "src/components/goals/GoalHistoryTimeline.tsx",
+      "unused_imports": ["CheckCircle"],
+      "line_numbers": [3]
+    }
+  ],
+  "unused_exports": [
+    {
+      "file": "src/utils/exerciseDataUtils.ts",
+      "unused_exports": ["formatExerciseData", "validateWorkoutStructure"],
+      "line_numbers": [45, 78]
+    },
+    {
+      "file": "src/utils/translationUtils.ts",
+      "unused_exports": ["getTranslationKey"],
+      "line_numbers": [23]
+    },
+    {
+      "file": "src/types/exercise.ts",
+      "unused_exports": ["ExerciseCategory", "WorkoutDifficulty"],
+      "line_numbers": [15, 28]
+    }
+  ],
+  "potentially_dead_files": [
+    {
+      "file": "src/components/DebugPanel.tsx",
+      "reason": "No imports found in codebase",
+      "confidence": "high"
+    },
+    {
+      "file": "src/components/SubscriptionDebugPanel.tsx", 
+      "reason": "Only imported in unused contexts",
+      "confidence": "medium"
+    },
+    {
+      "file": "src/utils/seedBasicFoods.ts",
+      "reason": "Appears to be one-time seeding script",
+      "confidence": "medium"
+    }
+  ],
+  "commented_code_blocks": [
+    {
+      "file": "src/components/AppSidebar.tsx",
+      "lines": "145-152",
+      "content": "Commented out menu item rendering logic"
+    },
+    {
+      "file": "src/index.css",
+      "lines": "89-95",
+      "content": "Old sidebar CSS rules"
+    },
+    {
+      "file": "src/components/Layout.tsx",
+      "lines": "25-30",
+      "content": "Previous header implementation"
+    }
+  ],
+  "hardcoded_strings_found": [
+    {
+      "file": "src/components/AppSidebar.tsx",
+      "strings": ["Settings", "Logout", "Admin"],
+      "should_use_translation": true
+    },
+    {
+      "file": "src/components/profile/enhanced/CompactSettingsForm.tsx",
+      "strings": ["Language", "Measurement Units", "Password updated successfully!"],
+      "should_use_translation": true
+    },
+    {
+      "file": "src/components/goals/GoalHistoryTimeline.tsx",
+      "strings": ["Goal History", "Your goal milestones will appear here"],
+      "should_use_translation": true
+    }
+  ],
+  "large_files_exceeding_limits": [
+    {
+      "file": "src/components/AppSidebar.tsx",
+      "lines": 315,
+      "limit": 200,
+      "priority": "high"
+    },
+    {
+      "file": "src/components/profile/enhanced/CompactSettingsForm.tsx",
+      "lines": 285,
+      "limit": 200,
+      "priority": "high"
+    },
+    {
+      "file": "src/components/ui/sidebar.tsx",
+      "lines": 762,
+      "limit": 200,
+      "priority": "low",
+      "note": "Third-party component, consider if refactoring needed"
+    },
+    {
+      "file": "docs/REFACTOR_RULES.md",
+      "lines": 289,
+      "limit": 200,
+      "priority": "medium",
+      "note": "Documentation file, consider splitting"
+    }
+  ],
+  "css_cleanup_opportunities": [
+    {
+      "file": "src/index.css",
+      "issues": ["Unused CSS custom properties", "Commented out rules"],
+      "lines": [45, 89]
+    }
+  ],
+  "recommendations": [
+    "Remove unused imports to reduce bundle size",
+    "Clean up commented code blocks for better readability", 
+    "Consider removing debug components from production build",
+    "Replace hardcoded strings with translation keys",
+    "Refactor large components exceeding 200-line limit",
+    "Remove unused utility functions and types",
+    "Clean up old CSS rules and properties"
+  ]
+}

@@ -1,0 +1,87 @@
+
+name: "P1-UI-001: Fix sidebar overlapping content issue"
+description: "Critical UI bug - sidebar overlaps main content, hiding user interface"
+title: "[P1-UI-001] Fix sidebar overlapping content issue"
+labels: ["phase-1", "critical", "ui", "bug"]
+body:
+  - type: markdown
+    value: |
+      ## 🚨 Critical Priority - Phase 1
+      
+      **Problem**: Sidebar overlaps main content, making the app unusable
+      
+      **Impact**: Users cannot access main application content
+      
+  - type: textarea
+    id: description
+    attributes:
+      label: "Detailed Description"
+      value: |
+        The sidebar component is overlapping the main content area, making the application difficult or impossible to use. This affects:
+        - Dashboard visibility
+        - All main content areas
+        - Mobile and desktop layouts
+        - Both LTR and RTL layouts
+        
+        **Current Issues:**
+        - Sidebar positioned incorrectly
+        - Main content not accounting for sidebar width
+        - Z-index conflicts
+        - Layout system not properly configured
+        
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: "Acceptance Criteria"
+      value: |
+        - [ ] Sidebar properly positioned without overlapping content
+        - [ ] Main content area correctly sized and positioned
+        - [ ] Layout works on mobile devices
+        - [ ] Layout works on desktop devices  
+        - [ ] Both LTR and RTL layouts function correctly
+        - [ ] Sidebar collapsible functionality maintained
+        - [ ] No visual regressions introduced
+        - [ ] Smooth transitions when sidebar toggles
+        
+  - type: textarea
+    id: implementation
+    attributes:
+      label: "Implementation Notes"
+      value: |
+        1. Review current Layout.tsx and AppSidebar.tsx structure
+        2. Fix CSS positioning and z-index issues
+        3. Ensure proper use of SidebarProvider and SidebarInset
+        4. Test collapsible behavior
+        5. Validate responsive design
+        6. Test RTL layout specifically
+        
+        **Key Files:**
+        - `src/components/Layout.tsx`
+        - `src/components/AppSidebar.tsx`
+        - `src/index.css`
+        
+  - type: dropdown
+    id: owner
+    attributes:
+      label: "Owner Role"
+      options:
+        - Frontend Dev
+        - UI/UX Designer
+    validations:
+      required: true
+      
+  - type: input
+    id: effort
+    attributes:
+      label: "Estimated Effort"
+      value: "1 day"
+      
+  - type: textarea
+    id: files
+    attributes:
+      label: "Files/Areas Affected"
+      value: |
+        - src/components/Layout.tsx
+        - src/components/AppSidebar.tsx
+        - src/index.css
+        - src/components/ui/sidebar.tsx (if needed)

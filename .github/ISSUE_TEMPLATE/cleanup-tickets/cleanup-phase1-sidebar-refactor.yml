@@ -1,0 +1,122 @@
+
+name: "P1-UI-002: Refactor AppSidebar.tsx (315 lines → <200 lines)"
+description: "Large component refactoring - break down AppSidebar into smaller, maintainable components"
+title: "[P1-UI-002] Refactor AppSidebar.tsx (315 lines → <200 lines)"
+labels: ["phase-1", "refactor", "ui", "maintainability"]
+body:
+  - type: markdown
+    value: |
+      ## 🔧 High Priority - Phase 1
+      
+      **Problem**: AppSidebar.tsx is 315 lines long, exceeding our 200-line limit
+      
+      **Impact**: Hard to maintain, test, and understand
+      
+  - type: textarea
+    id: description
+    attributes:
+      label: "Detailed Description"
+      value: |
+        The AppSidebar component has grown to 315 lines, making it difficult to maintain and violating our component size guidelines. The component handles multiple concerns:
+        
+        **Current Responsibilities:**
+        - Main navigation rendering
+        - User info display
+        - Coach panel management
+        - Admin panel management
+        - Language toggle
+        - Logout functionality
+        - RTL/LTR layout handling
+        
+        **Refactoring Goals:**
+        - Break into focused, single-responsibility components
+        - Maintain exact same functionality
+        - Improve testability
+        - Follow our modularization rules
+        
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: "Acceptance Criteria"
+      value: |
+        - [ ] Main AppSidebar.tsx file under 200 lines
+        - [ ] Each extracted component under 200 lines
+        - [ ] All original functionality preserved
+        - [ ] Same visual appearance and behavior
+        - [ ] All navigation items work correctly
+        - [ ] User info displays correctly
+        - [ ] Coach/admin panels function identically
+        - [ ] RTL layout works perfectly
+        - [ ] Language toggle functions correctly
+        - [ ] Logout functionality preserved
+        - [ ] No broken imports or references
+        - [ ] All components properly exported
+        
+  - type: textarea
+    id: implementation
+    attributes:
+      label: "Implementation Strategy"
+      value: |
+        **Suggested Component Breakdown:**
+        
+        1. **SidebarHeader.tsx** (~50 lines)
+           - App branding
+           - User avatar and info
+           
+        2. **SidebarNavigation.tsx** (~60 lines)
+           - Main navigation items
+           - Navigation rendering logic
+           
+        3. **SidebarCoachPanel.tsx** (~40 lines)
+           - Coach-specific navigation
+           - Trainee management links
+           
+        4. **SidebarAdminPanel.tsx** (~30 lines)
+           - Admin-specific navigation
+           - Admin dashboard links
+           
+        5. **SidebarFooter.tsx** (~40 lines)
+           - Language toggle
+           - Logout button
+           
+        6. **AppSidebar.tsx** (~80 lines)
+           - Main container
+           - Orchestrates sub-components
+           
+        **Implementation Steps:**
+        1. Create new component files
+        2. Extract logic piece by piece
+        3. Test each extraction
+        4. Update imports and exports
+        5. Verify functionality unchanged
+        
+  - type: dropdown
+    id: owner
+    attributes:
+      label: "Owner Role"
+      options:
+        - Frontend Dev
+    validations:
+      required: true
+      
+  - type: input
+    id: effort
+    attributes:
+      label: "Estimated Effort"
+      value: "3 days"
+      
+  - type: textarea
+    id: files
+    attributes:
+      label: "Files/Areas Affected"
+      value: |
+        **Existing:**
+        - src/components/AppSidebar.tsx (refactor)
+        
+        **New Components:**
+        - src/components/sidebar/SidebarHeader.tsx
+        - src/components/sidebar/SidebarNavigation.tsx  
+        - src/components/sidebar/SidebarCoachPanel.tsx
+        - src/components/sidebar/SidebarAdminPanel.tsx
+        - src/components/sidebar/SidebarFooter.tsx
+        - src/components/sidebar/index.ts (exports)

@@ -1,0 +1,119 @@
+
+name: "P1-I18N-001: Replace all hardcoded strings with translation keys"
+description: "Critical i18n issue - eliminate hardcoded strings breaking translations"
+title: "[P1-I18N-001] Replace all hardcoded strings with translation keys"
+labels: ["phase-1", "critical", "i18n", "translation"]
+body:
+  - type: markdown
+    value: |
+      ## 🌍 Critical Priority - Phase 1
+      
+      **Problem**: Hardcoded strings throughout the app break translation functionality
+      
+      **Impact**: Arabic users see English text, poor user experience
+      
+  - type: textarea
+    id: description
+    attributes:
+      label: "Detailed Description"
+      value: |
+        Multiple components contain hardcoded English strings instead of using the translation system. This breaks the internationalization functionality and provides a poor experience for Arabic-speaking users.
+        
+        **Known Locations with Hardcoded Strings:**
+        - Exercise exchange dialogs
+        - Error messages in hooks  
+        - Toast notifications
+        - Loading states
+        - Form validation messages
+        - Button labels
+        - Placeholder text
+        - Status messages
+        
+        **Current Issues:**
+        - Arabic users see English text in mixed interfaces
+        - Inconsistent translation coverage
+        - Violation of i18n architecture
+        - Poor accessibility for non-English speakers
+        
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: "Acceptance Criteria"
+      value: |
+        - [ ] No hardcoded English strings in components
+        - [ ] All user-facing text uses t() function
+        - [ ] All new strings added to appropriate namespace files
+        - [ ] Both English and Arabic translations provided
+        - [ ] Error messages properly translated
+        - [ ] Loading states use translation keys
+        - [ ] Toast notifications translated
+        - [ ] Form labels and placeholders translated
+        - [ ] App works correctly in both EN and AR locales
+        - [ ] No translation key errors in console
+        - [ ] Run `npm run i18n:extract` successfully
+        
+  - type: textarea
+    id: implementation
+    attributes:
+      label: "Implementation Notes"
+      value: |
+        **Process:**
+        1. Audit all components for hardcoded strings
+        2. Identify appropriate namespace for each string
+        3. Add translation keys to JSON files
+        4. Replace hardcoded strings with t() calls
+        5. Test in both locales
+        6. Verify no regressions
+        
+        **Translation Namespaces:**
+        - `common` - Generic app strings
+        - `navigation` - Menu items, routes  
+        - `dashboard` - Dashboard content
+        - `mealPlan` - Meal planning features
+        - `exercise` - Exercise content
+        - `profile` - Profile forms
+        - `errors` - Error messages
+        - `loading` - Loading states
+        
+        **Example Fix:**
+        ```typescript
+        // Before
+        <button>Save Changes</button>
+        
+        // After  
+        <button>{t('common:saveChanges')}</button>
+        ```
+        
+  - type: dropdown
+    id: owner
+    attributes:
+      label: "Owner Role"
+      options:
+        - Frontend Dev
+        - Content/Translation
+    validations:
+      required: true
+      
+  - type: input
+    id: effort
+    attributes:
+      label: "Estimated Effort"
+      value: "4 days"
+      
+  - type: textarea
+    id: files
+    attributes:
+      label: "Files/Areas Affected"
+      value: |
+        **Components with hardcoded strings:**
+        - Exercise dialog components
+        - Hook error messages
+        - Toast notification calls
+        - Loading state components
+        - Form validation messages
+        
+        **Translation files to update:**
+        - public/locales/en/*.json
+        - public/locales/ar/*.json
+        - src/contexts/translations/en/*.ts
+        - src/contexts/translations/ar/*.ts

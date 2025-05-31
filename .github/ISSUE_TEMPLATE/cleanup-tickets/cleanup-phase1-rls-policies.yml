@@ -1,0 +1,91 @@
+
+name: "P1-DB-001: Fix missing RLS policies for data visibility"
+description: "Critical database security issue - implement missing RLS policies for all tables"
+title: "[P1-DB-001] Fix missing RLS policies for data visibility"
+labels: ["phase-1", "critical", "database", "security"]
+body:
+  - type: markdown
+    value: |
+      ## 🚨 Critical Priority - Phase 1
+      
+      **Problem**: Most tables have RLS enabled but NO policies defined, causing data visibility issues.
+      
+      **Impact**: Users cannot see their own data, security vulnerabilities
+      
+  - type: textarea
+    id: description
+    attributes:
+      label: "Detailed Description"
+      value: |
+        Current state shows that most database tables have Row Level Security (RLS) enabled but lack proper policies. This causes:
+        - Users unable to see their own data
+        - Potential security vulnerabilities
+        - Failed queries due to access restrictions
+        
+        **Affected Tables:**
+        - profiles
+        - weekly_meal_plans  
+        - daily_meals
+        - weekly_exercise_programs
+        - daily_workouts
+        - exercises
+        - food_consumption_log
+        - user_goals
+        - weight_entries
+        - And others as identified in current state analysis
+        
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: "Acceptance Criteria"
+      value: |
+        - [ ] All tables have proper SELECT policies (users can view own data)
+        - [ ] All tables have proper INSERT policies (users can create own data) 
+        - [ ] All tables have proper UPDATE policies (users can modify own data)
+        - [ ] All tables have proper DELETE policies (users can remove own data)
+        - [ ] Admin users have appropriate elevated permissions
+        - [ ] Coach users can access trainee data appropriately
+        - [ ] All policies tested and working in staging
+        - [ ] No infinite recursion errors in policies
+        
+  - type: textarea
+    id: implementation
+    attributes:
+      label: "Implementation Notes"
+      value: |
+        1. Review current RLS setup for each table
+        2. Create security definer functions where needed to prevent recursion
+        3. Implement standard policy patterns:
+           ```sql
+           -- Example pattern
+           CREATE POLICY "Users can view own records" ON table_name
+             FOR SELECT USING (auth.uid() = user_id);
+           ```
+        4. Test each policy thoroughly
+        5. Document policy rationale
+        
+  - type: dropdown
+    id: owner
+    attributes:
+      label: "Owner Role"
+      options:
+        - DBA
+        - Frontend Dev
+        - Backend Dev
+    validations:
+      required: true
+      
+  - type: input
+    id: effort
+    attributes:
+      label: "Estimated Effort"
+      value: "2 days"
+      
+  - type: textarea
+    id: files
+    attributes:
+      label: "Files/Areas Affected"
+      value: |
+        - Supabase database policies
+        - All tables with RLS enabled
+        - Security definer functions (new)

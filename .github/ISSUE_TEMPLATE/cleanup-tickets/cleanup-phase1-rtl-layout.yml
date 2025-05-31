@@ -1,0 +1,114 @@
+
+name: "P1-UI-003: Fix RTL layout positioning bugs"
+description: "Critical RTL issue - Arabic layout has positioning and alignment problems"
+title: "[P1-UI-003] Fix RTL layout positioning bugs"
+labels: ["phase-1", "critical", "ui", "rtl", "accessibility"]
+body:
+  - type: markdown
+    value: |
+      ## 🌍 Critical Priority - Phase 1
+      
+      **Problem**: RTL layout has positioning bugs affecting Arabic users
+      
+      **Impact**: Poor user experience for Arabic speakers, accessibility issues
+      
+  - type: textarea
+    id: description
+    attributes:
+      label: "Detailed Description"
+      value: |
+        The RTL (Right-to-Left) layout for Arabic users has several positioning and alignment issues that make the app difficult to use. Current state analysis identified gaps in RTL layout consistency.
+        
+        **Known RTL Issues:**
+        - Sidebar positioning problems in RTL mode
+        - Incorrect text alignment  
+        - Icon positioning not mirrored properly
+        - Dropdown and modal positioning
+        - Navigation item alignment
+        - Form field label positioning
+        - Button icon placement
+        
+        **Impact:**
+        - Arabic users have degraded experience
+        - Accessibility compliance issues
+        - Visual layout breaks
+        - Navigation becomes confusing
+        
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: "Acceptance Criteria"
+      value: |
+        - [ ] Sidebar positions correctly in RTL mode
+        - [ ] All text properly right-aligned in Arabic
+        - [ ] Icons mirror correctly (arrows, chevrons, etc.)
+        - [ ] Dropdowns open in correct direction
+        - [ ] Modals position appropriately
+        - [ ] Navigation items align properly
+        - [ ] Form labels and inputs align correctly
+        - [ ] Button icons positioned correctly
+        - [ ] No visual overlap or positioning bugs
+        - [ ] App fully functional in Arabic locale
+        - [ ] Visual parity between LTR and RTL layouts
+        - [ ] Smooth transitions between locales
+        
+  - type: textarea
+    id: implementation
+    attributes:
+      label: "Implementation Notes"
+      value: |
+        **Key Areas to Fix:**
+        
+        1. **CSS Logical Properties**
+           - Replace `margin-left/right` with `margin-inline-start/end`
+           - Use `border-inline-start` instead of `border-left`
+           - Apply `text-align: start` instead of `text-align: left`
+           
+        2. **Component RTL Awareness**
+           - Update flex direction handling
+           - Fix icon positioning in buttons
+           - Correct dropdown positioning
+           
+        3. **Sidebar Specific**
+           - Fix border positioning (left vs right)
+           - Correct navigation item alignment
+           - Fix user info layout
+           
+        4. **Testing Strategy**
+           - Test every major component in Arabic
+           - Verify layout switching works
+           - Check responsive behavior
+           
+        **Files Requiring Updates:**
+        - `src/components/AppSidebar.tsx`
+        - `src/index.css` 
+        - Components with custom positioning
+        - Any components using physical CSS properties
+        
+  - type: dropdown
+    id: owner
+    attributes:
+      label: "Owner Role"
+      options:
+        - Frontend Dev
+        - UI/UX Designer
+    validations:
+      required: true
+      
+  - type: input
+    id: effort
+    attributes:
+      label: "Estimated Effort"
+      value: "2 days"
+      
+  - type: textarea
+    id: files
+    attributes:
+      label: "Files/Areas Affected"
+      value: |
+        - src/components/AppSidebar.tsx
+        - src/index.css
+        - src/components/Layout.tsx
+        - Components with custom positioning
+        - All modal and dropdown components
+        - Form components with label positioning

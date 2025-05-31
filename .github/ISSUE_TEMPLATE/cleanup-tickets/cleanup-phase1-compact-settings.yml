@@ -1,0 +1,120 @@
+
+name: "P1-MOD-001: Refactor CompactSettingsForm.tsx (285 lines → <200 lines)"
+description: "Large component refactoring - break down CompactSettingsForm into smaller components"
+title: "[P1-MOD-001] Refactor CompactSettingsForm.tsx (285 lines → <200 lines)"
+labels: ["phase-1", "refactor", "ui", "maintainability"]
+body:
+  - type: markdown
+    value: |
+      ## 🔧 High Priority - Phase 1
+      
+      **Problem**: CompactSettingsForm.tsx is 285 lines long, exceeding our 200-line limit
+      
+      **Impact**: Hard to maintain, test, and understand
+      
+  - type: textarea
+    id: description
+    attributes:
+      label: "Detailed Description"
+      value: |
+        The CompactSettingsForm component has grown to 285 lines, making it difficult to maintain and violating our component size guidelines. The component handles multiple settings concerns:
+        
+        **Current Responsibilities:**
+        - General settings (language, units)
+        - Notification preferences  
+        - Account security (email, password)
+        - Preference saving
+        - State management for all settings
+        
+        **Refactoring Goals:**
+        - Break into focused, single-responsibility components
+        - Maintain exact same functionality
+        - Improve testability
+        - Follow our modularization rules
+        
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: "Acceptance Criteria"
+      value: |
+        - [ ] Main CompactSettingsForm.tsx file under 200 lines
+        - [ ] Each extracted component under 200 lines
+        - [ ] All original functionality preserved
+        - [ ] Same visual appearance and behavior
+        - [ ] Language switching works correctly
+        - [ ] Notification toggles function identically
+        - [ ] Email update functionality preserved
+        - [ ] Password update functionality preserved
+        - [ ] Preference saving works correctly
+        - [ ] Form validation maintained
+        - [ ] Error handling preserved
+        - [ ] Loading states maintained
+        - [ ] No broken imports or references
+        
+  - type: textarea
+    id: implementation
+    attributes:
+      label: "Implementation Strategy"
+      value: |
+        **Suggested Component Breakdown:**
+        
+        1. **GeneralSettingsSection.tsx** (~60 lines)
+           - Language selection
+           - Measurement units
+           - Basic preferences
+           
+        2. **NotificationSettingsSection.tsx** (~50 lines)
+           - Push notification toggle
+           - Email update toggle
+           - Notification preferences
+           
+        3. **AccountSecuritySection.tsx** (~80 lines)
+           - Email update form
+           - Password update form
+           - Security settings
+           
+        4. **SettingsFormActions.tsx** (~30 lines)
+           - Save button
+           - Form submission logic
+           
+        5. **CompactSettingsForm.tsx** (~80 lines)
+           - Main container
+           - State management
+           - Orchestrates sections
+           
+        **Implementation Steps:**
+        1. Create section components
+        2. Extract related logic and state
+        3. Implement proper prop passing
+        4. Test each section independently
+        5. Verify overall functionality
+        
+  - type: dropdown
+    id: owner
+    attributes:
+      label: "Owner Role"
+      options:
+        - Frontend Dev
+    validations:
+      required: true
+      
+  - type: input
+    id: effort
+    attributes:
+      label: "Estimated Effort"
+      value: "2 days"
+      
+  - type: textarea
+    id: files
+    attributes:
+      label: "Files/Areas Affected"
+      value: |
+        **Existing:**
+        - src/components/profile/enhanced/CompactSettingsForm.tsx (refactor)
+        
+        **New Components:**
+        - src/components/profile/enhanced/settings/GeneralSettingsSection.tsx
+        - src/components/profile/enhanced/settings/NotificationSettingsSection.tsx
+        - src/components/profile/enhanced/settings/AccountSecuritySection.tsx
+        - src/components/profile/enhanced/settings/SettingsFormActions.tsx
+        - src/components/profile/enhanced/settings/index.ts (exports)
