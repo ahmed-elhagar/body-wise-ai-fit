@@ -47,6 +47,7 @@ const EnhancedMealPlanHeader = ({
             <Button
               onClick={onGenerateAI}
               disabled={isGenerating}
+              size="sm"
               className="bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 hover:from-fitness-primary-600 hover:to-fitness-primary-700 text-white shadow-lg"
             >
               <Sparkles className="w-4 h-4 mr-2" />
@@ -58,7 +59,7 @@ const EnhancedMealPlanHeader = ({
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="outline"
-                  size="sm"
+                  size="icon-sm"
                   className="border-fitness-primary-300 text-fitness-primary-600 hover:bg-fitness-primary-50"
                 >
                   <MoreVertical className="w-4 h-4" />

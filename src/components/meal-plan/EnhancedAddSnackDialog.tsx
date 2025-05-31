@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -36,6 +35,12 @@ const EnhancedAddSnackDialog = ({
   const { t, language } = useLanguage();
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationStep, setGenerationStep] = useState('');
+
+  const handleClose = () => {
+    setIsGenerating(false);
+    setGenerationStep('');
+    onClose();
+  };
 
   const getDynamicTargetCalories = () => {
     if (profile?.weight && profile?.height && profile?.age) {
@@ -148,8 +153,24 @@ const EnhancedAddSnackDialog = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl mx-4 sm:mx-auto bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 shadow-2xl rounded-2xl">
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent 
+        className="max-w-2xl mx-4 sm:mx-auto bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 shadow-2xl rounded-2xl"
+        onPointerDownOutside={(e) => {
+          if (isGenerating) {
+            e.preventDefault();
+            return;
+          }
+          handleClose();
+        }}
+        onEscapeKeyDown={(e) => {
+          if (isGenerating) {
+            e.preventDefault();
+            return;
+          }
+          handleClose();
+        }}
+      >
         <DialogHeader className="pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -167,9 +188,10 @@ const EnhancedAddSnackDialog = ({
             </div>
             <Button
               variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="h-8 w-8 p-0 hover:bg-green-100"
+              size="icon-sm"
+              onClick={handleClose}
+              disabled={isGenerating}
+              className="hover:bg-green-100"
             >
               <X className="w-4 h-4" />
             </Button>
@@ -242,7 +264,8 @@ const EnhancedAddSnackDialog = ({
                   {t('mealPlan.addSnackDialog.targetReachedDesc') || "You've reached your calorie goal for today. Great job!"}
                 </p>
                 <Button
-                  onClick={onClose}
+                  onClick={handleClose}
+                  size="sm"
                   className="bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700"
                 >
                   {t('mealPlan.addSnackDialog.close') || 'Close'}
@@ -271,7 +294,8 @@ const EnhancedAddSnackDialog = ({
                 <div className="flex gap-3 justify-center">
                   <Button
                     variant="outline"
-                    onClick={onClose}
+                    onClick={handleClose}
+                    size="sm"
                     className="border-green-300 text-green-700 hover:bg-green-50"
                   >
                     {t('mealPlan.addSnackDialog.cancel') || 'Cancel'}
@@ -280,7 +304,8 @@ const EnhancedAddSnackDialog = ({
                   <Button
                     onClick={handleGenerateAISnack}
                     disabled={isGenerating}
-                    className="bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 px-6"
+                    size="sm"
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700"
                   >
                     <Sparkles className="w-4 h-4 mr-2" />
                     {t('mealPlan.addSnackDialog.generateAISnack') || 'Generate AI Snack'}

@@ -6,30 +6,30 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium ring-offset-background transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 relative overflow-hidden touch-target",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium ring-offset-background transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 relative overflow-hidden touch-target",
   {
     variants: {
       variant: {
         default: "bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 text-white hover:from-fitness-primary-600 hover:to-fitness-primary-700 hover:shadow-lg hover:shadow-fitness-primary-500/25 active:scale-[0.98] transform",
         destructive: "bg-gradient-to-r from-error-500 to-error-600 text-white hover:from-error-600 hover:to-error-700 hover:shadow-lg hover:shadow-error-500/25 active:scale-[0.98] transform",
-        outline: "border-2 border-fitness-primary-200 bg-white hover:bg-fitness-primary-50 hover:border-fitness-primary-300 text-fitness-primary-700 hover:text-fitness-primary-800 active:scale-[0.98] transform",
+        outline: "border border-fitness-primary-200 bg-white hover:bg-fitness-primary-50 hover:border-fitness-primary-300 text-fitness-primary-700 hover:text-fitness-primary-800 active:scale-[0.98] transform",
         secondary: "bg-fitness-neutral-100 text-fitness-neutral-800 hover:bg-fitness-neutral-200 border border-fitness-neutral-200 hover:border-fitness-neutral-300 active:scale-[0.98] transform",
         ghost: "hover:bg-fitness-primary-50 text-fitness-neutral-600 hover:text-fitness-primary-700 active:scale-[0.98] transform",
         link: "text-fitness-primary-600 underline-offset-4 hover:underline hover:text-fitness-primary-700",
         success: "bg-gradient-to-r from-success-500 to-success-600 text-white hover:from-success-600 hover:to-success-700 hover:shadow-lg hover:shadow-success-500/25 active:scale-[0.98] transform",
         warning: "bg-gradient-to-r from-warning-500 to-warning-600 text-white hover:from-warning-600 hover:to-warning-700 hover:shadow-lg hover:shadow-warning-500/25 active:scale-[0.98] transform",
-        info: "bg-gradient-to-r from-info-500 to-info-600 text-white hover:from-info-600 hover:to-info-700 hover:shadow-lg hover:shadow-info-500/25 active:scale-[0.98] transform",
+        info: "bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 text-white hover:from-fitness-primary-600 hover:to-fitness-primary-700 hover:shadow-lg hover:shadow-fitness-primary-500/25 active:scale-[0.98] transform",
         orange: "bg-gradient-to-r from-fitness-orange-500 to-fitness-orange-600 text-white hover:from-fitness-orange-600 hover:to-fitness-orange-700 hover:shadow-lg hover:shadow-fitness-orange-500/25 active:scale-[0.98] transform"
       },
       size: {
-        sm: "h-9 rounded-lg px-4 text-xs font-medium",
-        default: "h-11 px-6 py-2.5",
-        lg: "h-13 rounded-xl px-8 text-base font-semibold",
-        xl: "h-16 rounded-2xl px-10 text-lg font-bold",
-        icon: "h-11 w-11 rounded-xl",
-        "icon-sm": "h-9 w-9 rounded-lg",
-        "icon-lg": "h-13 w-13 rounded-xl",
-        xs: "h-7 rounded-lg px-3 text-xs"
+        sm: "h-8 rounded-lg px-3 text-xs font-medium",
+        default: "h-9 px-4 py-2",
+        lg: "h-10 rounded-lg px-6 text-base font-semibold",
+        xl: "h-12 rounded-xl px-8 text-lg font-bold",
+        icon: "h-9 w-9 rounded-lg",
+        "icon-sm": "h-8 w-8 rounded-lg",
+        "icon-lg": "h-10 w-10 rounded-lg",
+        xs: "h-7 rounded-md px-2 text-xs"
       },
     },
     defaultVariants: {
