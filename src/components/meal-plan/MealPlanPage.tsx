@@ -83,6 +83,16 @@ const MealPlanPage = () => {
     await refetch();
   };
 
+  // Enhanced week change handler with error catching
+  const handleWeekChange = (offset: number) => {
+    try {
+      console.log('🗓️ MealPlanPage - Week change requested:', offset);
+      setCurrentWeekOffset(offset);
+    } catch (error) {
+      console.error('❌ MealPlanPage - Week change error:', error);
+    }
+  };
+
   if (error) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -107,15 +117,9 @@ const MealPlanPage = () => {
           <EnhancedMealPlanHeader
             onGenerateAI={() => setShowAIDialog(true)}
             onShuffle={handleShuffle}
-            onAddSnack={handleAddSnack}
             onShowShoppingList={handleShowShoppingList}
             isGenerating={isGenerating}
             hasWeeklyPlan={!!currentWeekPlan?.weeklyPlan}
-            totalCalories={totalCalories}
-            totalProtein={totalProtein}
-            targetDayCalories={targetDayCalories}
-            mealsCount={dailyMeals?.length || 0}
-            selectedDayNumber={selectedDayNumber}
           />
 
           {/* Compact Navigation Section */}
@@ -127,11 +131,11 @@ const MealPlanPage = () => {
               viewMode={viewMode}
               onViewModeChange={setViewMode}
               currentWeekOffset={currentWeekOffset}
-              onWeekChange={setCurrentWeekOffset}
+              onWeekChange={handleWeekChange}
             />
           )}
 
-          {/* Day Overview Section */}
+          {/* Day Overview Section with Add Snack */}
           {currentWeekPlan?.weeklyPlan && viewMode === 'daily' && (
             <DayOverviewSection
               selectedDayNumber={selectedDayNumber}
@@ -140,6 +144,7 @@ const MealPlanPage = () => {
               totalProtein={totalProtein}
               targetDayCalories={targetDayCalories}
               mealsCount={dailyMeals?.length || 0}
+              onAddSnack={handleAddSnack}
             />
           )}
 

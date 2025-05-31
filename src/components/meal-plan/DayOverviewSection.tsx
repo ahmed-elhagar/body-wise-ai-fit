@@ -1,8 +1,9 @@
 
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Target, TrendingUp, Calendar } from "lucide-react";
+import { Target, TrendingUp, Calendar, Plus } from "lucide-react";
 import { format, addDays } from "date-fns";
 import { useMealPlanTranslation } from "@/utils/translationHelpers";
 
@@ -13,6 +14,7 @@ interface DayOverviewSectionProps {
   totalProtein: number;
   targetDayCalories: number;
   mealsCount: number;
+  onAddSnack: () => void;
 }
 
 const DayOverviewSection = ({
@@ -21,7 +23,8 @@ const DayOverviewSection = ({
   totalCalories,
   totalProtein,
   targetDayCalories,
-  mealsCount
+  mealsCount,
+  onAddSnack
 }: DayOverviewSectionProps) => {
   const { mealPlanT } = useMealPlanTranslation();
   
@@ -48,7 +51,7 @@ const DayOverviewSection = ({
             </div>
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <Badge className="bg-fitness-primary-100 text-fitness-primary-700 border-fitness-primary-200 px-3 py-2">
               <TrendingUp className="w-4 h-4 mr-1" />
               {mealsCount} meals
@@ -63,6 +66,13 @@ const DayOverviewSection = ({
               <Target className="w-4 h-4 mr-1" />
               {Math.round(calorieProgress)}% complete
             </Badge>
+            <Button
+              onClick={onAddSnack}
+              className="bg-gradient-to-r from-fitness-accent-500 to-fitness-accent-600 hover:from-fitness-accent-600 hover:to-fitness-accent-700 text-white shadow-lg"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              {mealPlanT('addSnack')}
+            </Button>
           </div>
         </div>
 

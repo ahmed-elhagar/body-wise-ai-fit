@@ -2,35 +2,23 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { UtensilsCrossed, Sparkles, Shuffle, Plus, ShoppingCart, MoreVertical } from "lucide-react";
+import { UtensilsCrossed, Sparkles, Shuffle, ShoppingCart, MoreVertical } from "lucide-react";
 import { useMealPlanTranslation } from "@/utils/translationHelpers";
 
 interface EnhancedMealPlanHeaderProps {
   onGenerateAI: () => void;
   onShuffle: () => void;
-  onAddSnack: () => void;
   onShowShoppingList: () => void;
   isGenerating: boolean;
   hasWeeklyPlan: boolean;
-  totalCalories: number;
-  totalProtein: number;
-  targetDayCalories: number;
-  mealsCount: number;
-  selectedDayNumber: number;
 }
 
 const EnhancedMealPlanHeader = ({
   onGenerateAI,
   onShuffle,
-  onAddSnack,
   onShowShoppingList,
   isGenerating,
-  hasWeeklyPlan,
-  totalCalories,
-  totalProtein,
-  targetDayCalories,
-  mealsCount,
-  selectedDayNumber
+  hasWeeklyPlan
 }: EnhancedMealPlanHeaderProps) => {
   const { mealPlanT } = useMealPlanTranslation();
 
@@ -48,7 +36,7 @@ const EnhancedMealPlanHeader = ({
                 {mealPlanT('title')}
               </h1>
               <p className="text-sm text-fitness-primary-600">
-                {mealPlanT('aiPoweredNutrition')}
+                Smart nutrition planning for your healthy lifestyle
               </p>
             </div>
           </div>
@@ -76,14 +64,7 @@ const EnhancedMealPlanHeader = ({
                   <MoreVertical className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 bg-white border-fitness-primary-200 shadow-lg">
-                <DropdownMenuItem
-                  onClick={onAddSnack}
-                  className="flex items-center gap-2 text-fitness-primary-700 hover:bg-fitness-primary-50"
-                >
-                  <Plus className="w-4 h-4" />
-                  {mealPlanT('addSnack')}
-                </DropdownMenuItem>
+              <DropdownMenuContent align="end" className="w-48 bg-white border-fitness-primary-200 shadow-lg z-50">
                 <DropdownMenuItem
                   onClick={onShowShoppingList}
                   className="flex items-center gap-2 text-fitness-primary-700 hover:bg-fitness-primary-50"

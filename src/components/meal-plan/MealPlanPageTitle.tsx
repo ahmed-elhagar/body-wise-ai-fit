@@ -1,5 +1,5 @@
 
-import { UtensilsCrossed, Sparkles } from "lucide-react";
+import { UtensilsCrossed } from "lucide-react";
 import { useMealPlanTranslation } from "@/utils/translationHelpers";
 
 const MealPlanPageTitle = () => {
@@ -15,12 +15,9 @@ const MealPlanPageTitle = () => {
           {mealPlanT('title')}
         </h1>
       </div>
-      <div className="flex items-center justify-center gap-2 text-fitness-primary-600">
-        <Sparkles className="w-4 h-4" />
-        <p className="text-lg">
-          {mealPlanT('aiPoweredNutrition')}
-        </p>
-      </div>
+      <p className="text-lg text-fitness-primary-600">
+        Smart nutrition planning for your healthy lifestyle
+      </p>
     </div>
   );
 };
