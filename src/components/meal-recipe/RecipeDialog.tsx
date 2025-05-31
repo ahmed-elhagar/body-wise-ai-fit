@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Clock, Users, ChefHat, Sparkles, Youtube } from "lucide-react";
-import { useMealRecipe } from "@/hooks/useMealRecipe";
+import { useEnhancedMealRecipe } from "@/hooks/useEnhancedMealRecipe";
 import type { Meal } from "@/types/meal";
 
 interface RecipeDialogProps {
@@ -17,19 +17,22 @@ interface RecipeDialogProps {
 }
 
 const RecipeDialog = ({ isOpen, onClose, meal, onRecipeGenerated }: RecipeDialogProps) => {
-  const { generateRecipe, isGeneratingRecipe } = useMealRecipe();
+  const { generateEnhancedRecipe, generateYouTubeSearchTerm, isGeneratingRecipe } = useEnhancedMealRecipe();
 
   const handleGenerateRecipe = async () => {
-    if (!meal.id) return;
+    if (!meal.id) {
+      console.error('No meal ID available for recipe generation');
+      return;
+    }
     
-    const updatedMeal = await generateRecipe(meal.id);
-    if (updatedMeal && onRecipeGenerated) {
+    const result = await generateEnhancedRecipe(meal.id, meal);
+    if (result && onRecipeGenerated) {
       onRecipeGenerated();
     }
   };
 
   const openYouTubeSearch = () => {
-    const searchTerm = meal.youtube_search_term || `${meal.name} recipe cooking tutorial`;
+    const searchTerm = meal.youtube_search_term || generateYouTubeSearchTerm(meal.name);
     window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(searchTerm)}`, '_blank');
   };
 

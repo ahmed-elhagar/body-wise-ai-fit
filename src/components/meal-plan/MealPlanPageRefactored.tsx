@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -28,16 +29,32 @@ const MealPlanPageRefactored = () => {
   const [selectedDayForSnack, setSelectedDayForSnack] = useState(1);
   const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
 
-  // Get current week dates for display
-  const weekDays = [
-    { number: 1, name: 'Saturday', date: mealPlanState.weekStartDate },
-    { number: 2, name: 'Sunday', date: addDays(mealPlanState.weekStartDate, 1) },
-    { number: 3, name: 'Monday', date: addDays(mealPlanState.weekStartDate, 2) },
-    { number: 4, name: 'Tuesday', date: addDays(mealPlanState.weekStartDate, 3) },
-    { number: 5, name: 'Wednesday', date: addDays(mealPlanState.weekStartDate, 4) },
-    { number: 6, name: 'Thursday', date: addDays(mealPlanState.weekStartDate, 5) },
-    { number: 7, name: 'Friday', date: addDays(mealPlanState.weekStartDate, 6) }
-  ];
+  // Get current week dates for display with error handling
+  const weekDays = (() => {
+    try {
+      return [
+        { number: 1, name: 'Saturday', date: mealPlanState.weekStartDate },
+        { number: 2, name: 'Sunday', date: addDays(mealPlanState.weekStartDate, 1) },
+        { number: 3, name: 'Monday', date: addDays(mealPlanState.weekStartDate, 2) },
+        { number: 4, name: 'Tuesday', date: addDays(mealPlanState.weekStartDate, 3) },
+        { number: 5, name: 'Wednesday', date: addDays(mealPlanState.weekStartDate, 4) },
+        { number: 6, name: 'Thursday', date: addDays(mealPlanState.weekStartDate, 5) },
+        { number: 7, name: 'Friday', date: addDays(mealPlanState.weekStartDate, 6) }
+      ];
+    } catch (error) {
+      console.error('Error creating week days:', error);
+      const today = new Date();
+      return [
+        { number: 1, name: 'Saturday', date: today },
+        { number: 2, name: 'Sunday', date: today },
+        { number: 3, name: 'Monday', date: today },
+        { number: 4, name: 'Tuesday', date: today },
+        { number: 5, name: 'Wednesday', date: today },
+        { number: 6, name: 'Thursday', date: today },
+        { number: 7, name: 'Friday', date: today }
+      ];
+    }
+  })();
 
   // Calculate daily stats for the selected day
   const dailyMeals = mealPlanState.currentWeekPlan?.dailyMeals?.filter(
@@ -121,11 +138,12 @@ const MealPlanPageRefactored = () => {
   }
 
   if (mealPlanState.error) {
+    console.error('MealPlan error:', mealPlanState.error);
     return (
       <div className="min-h-screen bg-gradient-to-br from-fitness-neutral-50 via-fitness-primary-50/30 to-fitness-accent-50/30 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-xl font-semibold mb-2">Something went wrong</h2>
-          <p className="text-gray-600 mb-4">{mealPlanState.error.message}</p>
+          <p className="text-gray-600 mb-4">{mealPlanState.error.message || 'An unexpected error occurred'}</p>
           <Button onClick={() => window.location.reload()}>Refresh Page</Button>
         </div>
       </div>

@@ -5,29 +5,32 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeftRight, Sparkles, Clock, Users } from "lucide-react";
-import { useAIMealExchange } from "@/hooks/useAIMealExchange";
+import { useEnhancedMealExchange } from "@/hooks/useEnhancedMealExchange";
 import type { Meal } from "@/types/meal";
 
 interface MealExchangeDialogProps {
   isOpen: boolean;
   onClose: () => void;
   currentMeal: Meal;
-  onExchange: (alternative: any) => void;
+  onExchange: () => void;
 }
 
 const MealExchangeDialog = ({ isOpen, onClose, currentMeal, onExchange }: MealExchangeDialogProps) => {
-  const { generateAlternatives, isGenerating, alternatives } = useAIMealExchange();
+  const { generateMealAlternatives, exchangeMeal, isExchanging, alternatives } = useEnhancedMealExchange();
   const [selectedAlternative, setSelectedAlternative] = useState<any>(null);
 
   const handleGenerateAlternatives = async () => {
-    await generateAlternatives(currentMeal);
+    console.log('🔄 Generating alternatives for meal:', currentMeal.name);
+    await generateMealAlternatives(currentMeal);
   };
 
   const handleExchange = async (alternative: any) => {
-    // Here you could call a backend function to exchange the meal
-    // For now, we'll just call the onExchange callback
-    onExchange(alternative);
-    onClose();
+    console.log('🔄 Exchanging meal with alternative:', alternative.name);
+    const success = await exchangeMeal(currentMeal, alternative);
+    if (success) {
+      onExchange();
+      onClose();
+    }
   };
 
   return (
@@ -92,11 +95,11 @@ const MealExchangeDialog = ({ isOpen, onClose, currentMeal, onExchange }: MealEx
                 
                 <Button
                   onClick={handleGenerateAlternatives}
-                  disabled={isGenerating}
+                  disabled={isExchanging}
                   className="w-full"
                 >
                   <Sparkles className="w-4 h-4 mr-2" />
-                  {isGenerating ? 'Finding Alternatives...' : 'Find Meal Alternatives'}
+                  {isExchanging ? 'Finding Alternatives...' : 'Find Meal Alternatives'}
                 </Button>
               </CardContent>
             </Card>
@@ -125,10 +128,10 @@ const MealExchangeDialog = ({ isOpen, onClose, currentMeal, onExchange }: MealEx
                           e.stopPropagation();
                           handleExchange(alternative);
                         }}
-                        disabled={isGenerating}
+                        disabled={isExchanging}
                         size="sm"
                       >
-                        {isGenerating ? 'Exchanging...' : 'Select'}
+                        {isExchanging ? 'Exchanging...' : 'Select'}
                       </Button>
                     </div>
                   </CardContent>
@@ -149,7 +152,7 @@ const MealExchangeDialog = ({ isOpen, onClose, currentMeal, onExchange }: MealEx
             {alternatives.length > 0 && (
               <Button
                 onClick={handleGenerateAlternatives}
-                disabled={isGenerating}
+                disabled={isExchanging}
                 variant="outline"
                 className="flex-1"
               >
