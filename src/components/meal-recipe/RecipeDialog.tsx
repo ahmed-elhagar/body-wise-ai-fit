@@ -60,9 +60,9 @@ const RecipeDialog = ({ isOpen, onClose, meal, onRecipeGenerated }: RecipeDialog
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[95vh] overflow-hidden bg-gradient-to-br from-slate-50 to-blue-50 border-0 shadow-2xl rounded-3xl p-0">
+      <DialogContent className="max-w-4xl max-h-[95vh] overflow-hidden bg-gradient-to-br from-[#1E1F23] to-[#2A1B3D] border-0 shadow-2xl rounded-3xl p-0">
         <div className="relative overflow-y-auto max-h-[95vh]">
-          <div className="sticky top-0 z-10 bg-gradient-to-r from-white/95 to-blue-50/95 backdrop-blur-sm border-b border-gray-200/50 p-6 pb-4">
+          <div className="sticky top-0 z-10 bg-gradient-to-r from-[#1E1F23]/95 to-[#2A1B3D]/95 backdrop-blur-sm border-b border-purple-500/20 p-6 pb-4">
             <RecipeHeader meal={meal} />
           </div>
 
@@ -72,7 +72,7 @@ const RecipeDialog = ({ isOpen, onClose, meal, onRecipeGenerated }: RecipeDialog
 
             {/* Nutrition Cards */}
             <div className="space-y-4">
-              <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">
                 {isSnack ? '🍎' : '🍽️'} 
                 {isSnack ? 'Snack Nutrition' : 'Meal Nutrition'}
               </h3>
@@ -85,6 +85,7 @@ const RecipeDialog = ({ isOpen, onClose, meal, onRecipeGenerated }: RecipeDialog
               mealId={meal.id}
               isGeneratingRecipe={isGeneratingRecipe}
               onGenerateRecipe={handleGenerateRecipe}
+              isSnack={isSnack}
             />
 
             {/* Ingredients */}
