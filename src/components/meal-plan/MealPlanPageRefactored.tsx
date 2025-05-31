@@ -18,6 +18,7 @@ import MealExchangeDialog from "./MealExchangeDialog";
 import SnackPickerDialog from "./SnackPickerDialog";
 import MealPlanAIDialog from "./MealPlanAIDialog";
 import { toast } from "sonner";
+import type { DailyMeal } from "@/hooks/useMealPlanData";
 
 const MealPlanPageRefactored = () => {
   const { mealPlanT } = useMealPlanTranslation();

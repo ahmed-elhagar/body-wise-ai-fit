@@ -4,7 +4,7 @@ import AddSnackDialog from "./AddSnackDialog";
 import ShoppingListDialog from "./ShoppingListDialog";
 import MealRecipeDialog from "./MealRecipeDialog";
 import MealExchangeDialog from "./MealExchangeDialog";
-import type { Meal } from "@/types/meal";
+import type { DailyMeal } from "@/hooks/useMealPlanData";
 
 interface MealPlanDialogsProps {
   // AI Dialog
@@ -29,12 +29,12 @@ interface MealPlanDialogsProps {
   onCloseShoppingListDialog: () => void;
   shoppingItems: any[];
   
-  // Recipe Dialog
+  // Recipe Dialog - Updated to use DailyMeal
   showRecipeDialog: boolean;
   onCloseRecipeDialog: () => void;
-  selectedMeal: Meal | null;
+  selectedMeal: DailyMeal | null;
   
-  // Exchange Dialog
+  // Exchange Dialog - Updated to use DailyMeal
   showExchangeDialog: boolean;
   onCloseExchangeDialog: () => void;
   selectedMealIndex: number;
