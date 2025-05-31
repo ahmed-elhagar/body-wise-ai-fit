@@ -18,16 +18,11 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // First, let's check what valid fitness goals are allowed
-    const { data: existingProfiles, error: checkError } = await supabaseClient
-      .from('profiles')
-      .select('fitness_goal')
-      .limit(1)
-    
-    console.log('Checking existing profiles to understand valid fitness goals...')
+    console.log('Creating sample coach-trainee data...')
 
-    // Use common valid fitness goal values that are likely in the constraint
-    const validFitnessGoals = ['lose_weight', 'build_muscle', 'improve_endurance', 'general_fitness']
+    // Use valid fitness goal values based on the constraint
+    // Let's use conservative values that are likely valid
+    const validFitnessGoals = ['lose_weight', 'build_muscle', 'maintain_weight']
 
     // Create sample coaches
     const sampleCoaches = [
@@ -42,7 +37,7 @@ serve(async (req) => {
         gender: 'female',
         weight: 65,
         height: 168,
-        fitness_goal: 'improve_endurance',
+        fitness_goal: 'maintain_weight',
         activity_level: 'very_active',
         onboarding_completed: true,
         profile_completion_score: 95
@@ -110,7 +105,7 @@ serve(async (req) => {
         gender: 'female',
         weight: 55,
         height: 160,
-        fitness_goal: 'improve_endurance',
+        fitness_goal: 'maintain_weight',
         activity_level: 'moderately_active',
         onboarding_completed: true,
         profile_completion_score: 89
@@ -160,6 +155,8 @@ serve(async (req) => {
       throw coachError
     }
 
+    console.log('Coaches inserted successfully:', insertedCoaches?.length)
+
     // Insert trainees
     const { data: insertedTrainees, error: traineeError } = await supabaseClient
       .from('profiles')
@@ -170,6 +167,8 @@ serve(async (req) => {
       console.error('Error inserting trainees:', traineeError)
       throw traineeError
     }
+
+    console.log('Trainees inserted successfully:', insertedTrainees?.length)
 
     // Create coach-trainee relationships
     const relationships = [
@@ -211,6 +210,8 @@ serve(async (req) => {
       throw relationshipError
     }
 
+    console.log('Coach-trainee relationships created successfully')
+
     // Create sample meal plans for trainees
     const mealPlans = sampleTrainees.map(trainee => ({
       user_id: trainee.id,
@@ -234,6 +235,8 @@ serve(async (req) => {
       throw mealPlanError
     }
 
+    console.log('Meal plans created successfully')
+
     // Create sample exercise programs for trainees
     const exercisePrograms = sampleTrainees.map(trainee => ({
       user_id: trainee.id,
@@ -255,6 +258,8 @@ serve(async (req) => {
       console.error('Error creating exercise programs:', exerciseError)
       throw exerciseError
     }
+
+    console.log('Exercise programs created successfully')
 
     // Create sample weight entries for trainees
     const weightEntries = sampleTrainees.flatMap(trainee => [
@@ -280,6 +285,8 @@ serve(async (req) => {
       console.error('Error creating weight entries:', weightError)
       throw weightError
     }
+
+    console.log('Weight entries created successfully')
 
     // Create sample goals for trainees
     const goals = sampleTrainees.map(trainee => ({
@@ -309,6 +316,8 @@ serve(async (req) => {
       console.error('Error creating goals:', goalsError)
       throw goalsError
     }
+
+    console.log('Goals created successfully')
 
     return new Response(
       JSON.stringify({

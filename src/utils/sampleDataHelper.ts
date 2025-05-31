@@ -24,12 +24,11 @@ export const createSampleProfiles = async () => {
   }
 };
 
-// Valid fitness goal values based on common constraint patterns
+// Valid fitness goal values based on constraint
 export const validFitnessGoals = [
   'lose_weight',
   'build_muscle', 
-  'improve_endurance',
-  'general_fitness'
+  'maintain_weight'
 ];
 
 export const sampleCoaches = [
@@ -37,7 +36,7 @@ export const sampleCoaches = [
     email: 'coach1@fitgenius.com',
     first_name: 'Sarah',
     last_name: 'Johnson',
-    fitness_goal: 'improve_endurance'
+    fitness_goal: 'maintain_weight'
   },
   {
     email: 'coach2@fitgenius.com', 
@@ -64,7 +63,7 @@ export const sampleTrainees = [
     email: 'trainee3@fitgenius.com',
     first_name: 'Lisa',
     last_name: 'Brown',
-    fitness_goal: 'improve_endurance'
+    fitness_goal: 'maintain_weight'
   },
   {
     email: 'trainee4@fitgenius.com',
