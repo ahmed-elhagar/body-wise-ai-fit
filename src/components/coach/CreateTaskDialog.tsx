@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -38,7 +39,7 @@ export const CreateTaskDialog = ({ open, onOpenChange, trainees }: CreateTaskDia
     description: '',
     priority: 'medium' as CoachTask['priority'],
     type: 'review' as CoachTask['type'],
-    traineeId: '',
+    traineeId: 'none',
     dueDate: undefined as Date | undefined,
   });
 
@@ -48,7 +49,7 @@ export const CreateTaskDialog = ({ open, onOpenChange, trainees }: CreateTaskDia
       description: '',
       priority: 'medium',
       type: 'review',
-      traineeId: '',
+      traineeId: 'none',
       dueDate: undefined,
     });
   };
@@ -62,14 +63,15 @@ export const CreateTaskDialog = ({ open, onOpenChange, trainees }: CreateTaskDia
     }
 
     try {
-      const selectedTrainee = trainees.find(t => t.trainee_id === formData.traineeId);
+      const selectedTrainee = formData.traineeId !== 'none' ? 
+        trainees.find(t => t.trainee_id === formData.traineeId) : null;
       
       await createTaskAsync({
         title: formData.title.trim(),
         description: formData.description.trim(),
         priority: formData.priority,
         type: formData.type,
-        traineeId: formData.traineeId || undefined,
+        traineeId: formData.traineeId !== 'none' ? formData.traineeId : undefined,
         traineeName: selectedTrainee ? 
           `${selectedTrainee.trainee_profile?.first_name || ''} ${selectedTrainee.trainee_profile?.last_name || ''}`.trim() : 
           undefined,
@@ -182,7 +184,7 @@ export const CreateTaskDialog = ({ open, onOpenChange, trainees }: CreateTaskDia
                 <SelectValue placeholder="Select a trainee (optional)" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">No specific trainee</SelectItem>
+                <SelectItem value="none">No specific trainee</SelectItem>
                 {trainees.map((trainee) => (
                   <SelectItem key={trainee.trainee_id} value={trainee.trainee_id}>
                     {trainee.trainee_profile?.first_name || ''} {trainee.trainee_profile?.last_name || ''}
