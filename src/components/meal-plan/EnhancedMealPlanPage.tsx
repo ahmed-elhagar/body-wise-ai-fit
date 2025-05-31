@@ -178,7 +178,7 @@ const EnhancedMealPlanPage = () => {
                     size="sm"
                     variant="outline"
                     className="flex-1 bg-gray-800 border-gray-600 text-gray-300 hover:bg-orange-500 hover:text-white hover:border-orange-500"
-                    onClick={() => mealPlanState.handleExchangeMeal(meal, index)}
+                    onClick={() => mealPlanState.handleExchangeMeal(meal)}
                   >
                     <ArrowLeftRight className="w-3 h-3 mr-1" />
                     Exchange

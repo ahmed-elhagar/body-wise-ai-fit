@@ -29,12 +29,12 @@ const MealGrid = ({ meals, onShowRecipe, onExchangeMeal, onAddSnack, dayNumber }
 
   const getMealTypeColor = (type: string) => {
     const colors: Record<string, string> = {
-      breakfast: 'bg-orange-500',
-      lunch: 'bg-green-500',
-      dinner: 'bg-blue-500',
-      snack: 'bg-purple-500'
+      breakfast: 'bg-orange-100 text-orange-700',
+      lunch: 'bg-green-100 text-green-700',
+      dinner: 'bg-blue-100 text-blue-700',
+      snack: 'bg-purple-100 text-purple-700'
     };
-    return colors[type] || 'bg-gray-500';
+    return colors[type] || 'bg-gray-100 text-gray-700';
   };
 
   // Group meals by type
@@ -74,7 +74,6 @@ const MealGrid = ({ meals, onShowRecipe, onExchangeMeal, onAddSnack, dayNumber }
           <div key={mealType} className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className={`w-3 h-3 rounded-full ${getMealTypeColor(mealType)}`} />
                 <h3 className="text-xl font-medium text-gray-800">
                   {getMealTypeLabel(mealType)}
                 </h3>
@@ -105,11 +104,11 @@ const MealGrid = ({ meals, onShowRecipe, onExchangeMeal, onAddSnack, dayNumber }
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
                       <CardTitle className="text-lg font-medium text-gray-800 leading-tight">
-                        {meal.name || meal.food_item_name}
+                        {meal.name}
                       </CardTitle>
                       <Badge 
                         variant="secondary" 
-                        className={`${getMealTypeColor(mealType)} text-white text-xs`}
+                        className={`text-xs ${getMealTypeColor(mealType)}`}
                       >
                         {getMealTypeLabel(mealType)}
                       </Badge>
@@ -117,26 +116,26 @@ const MealGrid = ({ meals, onShowRecipe, onExchangeMeal, onAddSnack, dayNumber }
                   </CardHeader>
                   
                   <CardContent className="pt-0">
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center justify-between mb-4 text-sm">
                       <div className="text-center">
-                        <div className="text-sm font-medium text-red-600">
+                        <div className="font-medium text-red-600">
                           {Math.round(meal.calories || 0)}
                         </div>
-                        <div className="text-xs text-gray-500">cal</div>
+                        <div className="text-gray-500">cal</div>
                       </div>
                       
                       <div className="text-center">
-                        <div className="text-sm font-medium text-blue-600">
+                        <div className="font-medium text-blue-600">
                           {Math.round(meal.protein || 0)}g
                         </div>
-                        <div className="text-xs text-gray-500">protein</div>
+                        <div className="text-gray-500">protein</div>
                       </div>
                       
                       <div className="text-center">
-                        <div className="text-sm font-medium text-green-600">
+                        <div className="font-medium text-green-600">
                           {Math.round(meal.carbs || 0)}g
                         </div>
-                        <div className="text-xs text-gray-500">carbs</div>
+                        <div className="text-gray-500">carbs</div>
                       </div>
                     </div>
 
