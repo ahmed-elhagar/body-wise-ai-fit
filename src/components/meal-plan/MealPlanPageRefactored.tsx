@@ -4,12 +4,10 @@ import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { addDays } from "date-fns";
 import { useMealPlanTranslation } from "@/utils/translationHelpers";
 import { useMealPlanState } from "@/hooks/useMealPlanState";
-import { Container, Section, ContentArea, Grid, Flex } from "@/components/ui/layout";
+import { Container, Section, ContentArea } from "@/components/ui/layout";
 import MealPlanHero from "./MealPlanHero";
 import CompactControlBar from "./CompactControlBar";
-import DayTabs from "./DayTabs";
 import MealGrid from "./MealGrid";
-import QuickStatsCard from "./QuickStatsCard";
 import WeeklyView from "./WeeklyView";
 import EmptyState from "./EmptyState";
 import ShoppingListDrawer from "../shopping-list/ShoppingListDrawer";
@@ -101,7 +99,7 @@ const MealPlanPageRefactored = () => {
       
       <Container className="py-2 lg:py-4">
         <ContentArea>
-          {/* Compact Hero Header */}
+          {/* Enhanced Hero Header with integrated week days and daily progress */}
           <Section>
             <MealPlanHero
               weekStartDate={mealPlanState.weekStartDate}
@@ -111,6 +109,12 @@ const MealPlanPageRefactored = () => {
               weeklyStats={weeklyStats}
               hasWeeklyPlan={!!mealPlanState.currentWeekPlan}
               weeklyPlanId={mealPlanState.currentWeekPlan?.weeklyPlan?.id}
+              selectedDayNumber={mealPlanState.selectedDayNumber}
+              onDayChange={mealPlanState.setSelectedDayNumber}
+              totalCalories={mealPlanState.totalCalories}
+              totalProtein={mealPlanState.totalProtein}
+              targetDayCalories={mealPlanState.targetDayCalories}
+              mealCount={mealPlanState.todaysMeals?.length || 0}
             />
           </Section>
 
@@ -137,102 +141,25 @@ const MealPlanPageRefactored = () => {
                   />
                 </Section>
               ) : (
-                <ContentArea>
-                  {/* Mobile Layout: Stack vertically */}
-                  <div className="block xl:hidden">
-                    <ContentArea>
-                      {/* Day Tabs - Mobile */}
-                      <Section>
-                        <DayTabs
-                          weekStartDate={mealPlanState.weekStartDate}
-                          selectedDayNumber={mealPlanState.selectedDayNumber}
-                          onDayChange={mealPlanState.setSelectedDayNumber}
+                <Section>
+                  <Tabs value={mealPlanState.selectedDayNumber.toString()}>
+                    {weekDays.map((day) => (
+                      <TabsContent key={day.number} value={day.number.toString()}>
+                        <MealGrid
+                          meals={mealPlanState.currentWeekPlan?.dailyMeals?.filter(
+                            meal => meal.day_number === day.number
+                          ) || []}
+                          onShowRecipe={mealPlanState.handleShowRecipe}
+                          onExchangeMeal={mealPlanState.handleExchangeMeal}
+                          onAddSnack={() => handleAddSnack(day.number)}
+                          onShowShoppingList={() => setShowShoppingDrawer(true)}
+                          onRegeneratePlan={handleRegeneratePlan}
+                          dayNumber={day.number}
                         />
-                      </Section>
-
-                      {/* Quick Stats - Mobile - Below tabs */}
-                      <Section>
-                        <QuickStatsCard
-                          totalCalories={mealPlanState.totalCalories}
-                          totalProtein={mealPlanState.totalProtein}
-                          targetDayCalories={mealPlanState.targetDayCalories}
-                          mealCount={mealPlanState.todaysMeals?.length || 0}
-                        />
-                      </Section>
-
-                      {/* Meal Content - Mobile */}
-                      <Section>
-                        <Tabs value={mealPlanState.selectedDayNumber.toString()}>
-                          {weekDays.map((day) => (
-                            <TabsContent key={day.number} value={day.number.toString()}>
-                              <MealGrid
-                                meals={mealPlanState.currentWeekPlan?.dailyMeals?.filter(
-                                  meal => meal.day_number === day.number
-                                ) || []}
-                                onShowRecipe={mealPlanState.handleShowRecipe}
-                                onExchangeMeal={mealPlanState.handleExchangeMeal}
-                                onAddSnack={() => handleAddSnack(day.number)}
-                                onShowShoppingList={() => setShowShoppingDrawer(true)}
-                                onRegeneratePlan={handleRegeneratePlan}
-                                dayNumber={day.number}
-                              />
-                            </TabsContent>
-                          ))}
-                        </Tabs>
-                      </Section>
-                    </ContentArea>
-                  </div>
-
-                  {/* Desktop Layout: Sidebar + Main Content */}
-                  <div className="hidden xl:grid xl:grid-cols-12 gap-4">
-                    {/* Compact Sidebar - Stats */}
-                    <div className="xl:col-span-3">
-                      <div className="sticky top-4 space-y-4">
-                        <QuickStatsCard
-                          totalCalories={mealPlanState.totalCalories}
-                          totalProtein={mealPlanState.totalProtein}
-                          targetDayCalories={mealPlanState.targetDayCalories}
-                          mealCount={mealPlanState.todaysMeals?.length || 0}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Main Content */}
-                    <div className="xl:col-span-9">
-                      <ContentArea>
-                        {/* Day Tabs */}
-                        <Section>
-                          <DayTabs
-                            weekStartDate={mealPlanState.weekStartDate}
-                            selectedDayNumber={mealPlanState.selectedDayNumber}
-                            onDayChange={mealPlanState.setSelectedDayNumber}
-                          />
-                        </Section>
-
-                        {/* Meal Content */}
-                        <Section>
-                          <Tabs value={mealPlanState.selectedDayNumber.toString()}>
-                            {weekDays.map((day) => (
-                              <TabsContent key={day.number} value={day.number.toString()}>
-                                <MealGrid
-                                  meals={mealPlanState.currentWeekPlan?.dailyMeals?.filter(
-                                    meal => meal.day_number === day.number
-                                  ) || []}
-                                  onShowRecipe={mealPlanState.handleShowRecipe}
-                                  onExchangeMeal={mealPlanState.handleExchangeMeal}
-                                  onAddSnack={() => handleAddSnack(day.number)}
-                                  onShowShoppingList={() => setShowShoppingDrawer(true)}
-                                  onRegeneratePlan={handleRegeneratePlan}
-                                  dayNumber={day.number}
-                                />
-                              </TabsContent>
-                            ))}
-                          </Tabs>
-                        </Section>
-                      </ContentArea>
-                    </div>
-                  </div>
-                </ContentArea>
+                      </TabsContent>
+                    ))}
+                  </Tabs>
+                </Section>
               )}
             </>
           ) : (
