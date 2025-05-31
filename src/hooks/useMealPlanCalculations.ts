@@ -1,89 +1,86 @@
-import { useMemo } from "react";
-import type { DailyMeal, WeeklyMealPlan } from "@/hooks/useMealPlanData";
-import { getCategoryForIngredient } from "@/utils/mealPlanUtils";
 
-interface MealPlanData {
-  weeklyPlan: WeeklyMealPlan;
-  dailyMeals: DailyMeal[];
-}
+import { useMemo } from 'react';
+import type { DailyMeal } from '@/hooks/useMealPlanData';
 
-export const useMealPlanCalculations = (
-  currentWeekPlan: MealPlanData | null, 
-  selectedDayNumber: number
-) => {
-  // Get daily meals for the selected day
+export const useMealPlanCalculations = (currentWeekPlan: any, selectedDayNumber: number) => {
   const dailyMeals = useMemo(() => {
     if (!currentWeekPlan?.dailyMeals) return [];
     return currentWeekPlan.dailyMeals.filter(
-      meal => meal.day_number === selectedDayNumber
+      (meal: DailyMeal) => meal.day_number === selectedDayNumber
     );
-  }, [currentWeekPlan, selectedDayNumber]);
+  }, [currentWeekPlan?.dailyMeals, selectedDayNumber]);
 
-  // Get today's meals (alias for dailyMeals for backward compatibility)
-  const todaysMeals = dailyMeals;
+  const todaysMeals = useMemo(() => {
+    const today = new Date();
+    const todayDayNumber = today.getDay() === 6 ? 1 : today.getDay() + 2;
+    
+    if (!currentWeekPlan?.dailyMeals) return [];
+    return currentWeekPlan.dailyMeals.filter(
+      (meal: DailyMeal) => meal.day_number === todayDayNumber
+    );
+  }, [currentWeekPlan?.dailyMeals]);
 
-  // Calculate shopping items from all meals in the week
+  const totalCalories = useMemo(() => {
+    return dailyMeals.reduce((sum: number, meal: DailyMeal) => sum + (meal.calories || 0), 0);
+  }, [dailyMeals]);
+
+  const totalProtein = useMemo(() => {
+    return dailyMeals.reduce((sum: number, meal: DailyMeal) => sum + (meal.protein || 0), 0);
+  }, [dailyMeals]);
+
+  const targetDayCalories = useMemo(() => {
+    if (!currentWeekPlan?.weeklyPlan?.total_calories) return 2000;
+    return Math.round(currentWeekPlan.weeklyPlan.total_calories / 7);
+  }, [currentWeekPlan?.weeklyPlan?.total_calories]);
+
   const shoppingItems = useMemo(() => {
     if (!currentWeekPlan?.dailyMeals) return [];
     
-    const allIngredients = currentWeekPlan.dailyMeals.flatMap(meal => 
-      meal.ingredients?.map(ingredient => ({
-        name: ingredient.name,
-        quantity: ingredient.quantity,
-        unit: ingredient.unit,
-        category: getCategoryForIngredient(ingredient.name)
-      })) || []
-    );
-
-    // Group ingredients by name to avoid duplicates
-    const groupedIngredients = allIngredients.reduce((acc, ingredient) => {
-      const key = ingredient.name.toLowerCase();
-      if (acc[key]) {
-        // For now, just keep the first occurrence
-        // In a real app, you'd want to combine quantities
-        return acc;
+    const ingredients: any[] = [];
+    currentWeekPlan.dailyMeals.forEach((meal: DailyMeal) => {
+      if (meal.ingredients && Array.isArray(meal.ingredients)) {
+        meal.ingredients.forEach((ingredient: any) => {
+          ingredients.push({
+            name: ingredient.name,
+            quantity: ingredient.quantity,
+            unit: ingredient.unit,
+            category: getCategoryForIngredient(ingredient.name)
+          });
+        });
       }
-      acc[key] = ingredient;
-      return acc;
-    }, {} as Record<string, any>);
-
-    return Object.values(groupedIngredients);
-  }, [currentWeekPlan]);
-
-  // Calculate totals for the selected day
-  const { totalCalories, totalProtein, totalCarbs, totalFat } = useMemo(() => {
-    return dailyMeals.reduce((acc, meal) => ({
-      totalCalories: acc.totalCalories + (meal.calories || 0),
-      totalProtein: acc.totalProtein + (meal.protein || 0),
-      totalCarbs: acc.totalCarbs + (meal.carbs || 0),
-      totalFat: acc.totalFat + (meal.fat || 0)
-    }), {
-      totalCalories: 0,
-      totalProtein: 0,
-      totalCarbs: 0,
-      totalFat: 0
     });
-  }, [dailyMeals]);
-
-  // Default target calories (this could be made dynamic based on user profile)
-  const targetDayCalories = 2000;
-
-  console.log('📊 Meal calculations:', {
-    selectedDay: selectedDayNumber,
-    dailyMealsCount: dailyMeals.length,
-    totalCalories,
-    totalProtein,
-    shoppingItemsCount: shoppingItems.length
-  });
+    
+    return ingredients;
+  }, [currentWeekPlan?.dailyMeals]);
 
   return {
     dailyMeals,
     todaysMeals,
-    shoppingItems,
     totalCalories,
     totalProtein,
-    totalCarbs,
-    totalFat,
-    targetDayCalories
+    targetDayCalories,
+    shoppingItems
   };
+};
+
+const getCategoryForIngredient = (ingredientName: string): string => {
+  const categories = {
+    'Proteins': ['chicken', 'beef', 'pork', 'fish', 'eggs', 'tofu', 'beans', 'lentils'],
+    'Vegetables': ['tomato', 'onion', 'garlic', 'carrot', 'spinach', 'broccoli', 'pepper'],
+    'Grains': ['rice', 'bread', 'pasta', 'quinoa', 'oats', 'flour'],
+    'Dairy': ['milk', 'cheese', 'yogurt', 'butter', 'cream'],
+    'Fruits': ['apple', 'banana', 'orange', 'berry', 'lemon', 'lime'],
+    'Spices': ['salt', 'pepper', 'cumin', 'paprika', 'oregano', 'basil'],
+    'Others': []
+  };
+
+  const ingredient = ingredientName.toLowerCase();
+  
+  for (const [category, items] of Object.entries(categories)) {
+    if (items.some(item => ingredient.includes(item))) {
+      return category;
+    }
+  }
+  
+  return 'Others';
 };

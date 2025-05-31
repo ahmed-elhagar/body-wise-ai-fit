@@ -2,6 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { useEnhancedErrorHandling } from './useEnhancedErrorHandling';
 import { getWeekStartDate } from '@/utils/mealPlanUtils';
 import { format } from 'date-fns';
 
@@ -45,35 +46,9 @@ export interface WeeklyMealPlan {
   life_phase_context?: any;
 }
 
-// Enhanced helper function to safely parse JSON fields with better error handling
-const safeParseJson = (jsonField: any, fallback: any = []) => {
-  // If it's already an array, return it
-  if (Array.isArray(jsonField)) return jsonField;
-  
-  // If it's null or undefined, return fallback
-  if (!jsonField) return fallback;
-  
-  // If it's a string, try to parse it
-  if (typeof jsonField === 'string') {
-    try {
-      const parsed = JSON.parse(jsonField);
-      return Array.isArray(parsed) ? parsed : fallback;
-    } catch (error) {
-      console.warn('Failed to parse JSON field:', jsonField, error);
-      return fallback;
-    }
-  }
-  
-  // If it's an object, return it as is
-  if (typeof jsonField === 'object') {
-    return jsonField;
-  }
-  
-  return fallback;
-};
-
 export const useMealPlanData = (weekOffset: number = 0) => {
   const { user } = useAuth();
+  const { handleError, handleAPITimeout } = useEnhancedErrorHandling();
 
   return useQuery({
     queryKey: ['weekly-meal-plan', user?.id, weekOffset],
@@ -84,175 +59,166 @@ export const useMealPlanData = (weekOffset: number = 0) => {
       }
       
       try {
-        // Use CONSISTENT week calculation with proper date formatting
         const weekStartDate = getWeekStartDate(weekOffset);
         const weekStartDateStr = format(weekStartDate, 'yyyy-MM-dd');
         
-        console.log('🎯 MEAL PLAN FETCH - ENHANCED CONSISTENCY:', {
-          userId: user.id,
+        console.log('🎯 MEAL PLAN FETCH:', {
+          userId: user.id.substring(0, 8) + '...',
           weekOffset,
-          searchingForDate: weekStartDateStr,
-          today: format(new Date(), 'yyyy-MM-dd'),
-          weekStartCalculated: weekStartDate.toISOString().split('T')[0]
+          searchingForDate: weekStartDateStr
         });
         
-        // Fetch ONLY the exact week - no fallbacks
-        const { data: weeklyPlan, error: weeklyError } = await supabase
-          .from('weekly_meal_plans')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('week_start_date', weekStartDateStr)
-          .maybeSingle();
-
-        if (weeklyError) {
-          console.error('❌ Error fetching weekly plan:', weeklyError);
-          throw weeklyError;
-        }
-
-        if (!weeklyPlan) {
-          console.log('❌ NO MEAL PLAN FOUND for exact week:', {
-            searchedDate: weekStartDateStr,
-            weekOffset,
-            userId: user.id
-          });
-          
-          // Enhanced debugging - check what weeks exist
-          const { data: allPlans } = await supabase
-            .from('weekly_meal_plans')
-            .select('id, week_start_date, total_calories')
-            .eq('user_id', user.id)
-            .order('week_start_date', { ascending: false });
-          
-          console.log('🔍 AVAILABLE WEEKS FOR USER:', {
-            searchedWeek: weekStartDateStr,
-            availableWeeks: allPlans?.map(p => ({
-              date: p.week_start_date,
-              id: p.id,
-              calories: p.total_calories
-            })) || [],
-            totalPlans: allPlans?.length || 0
-          });
-          
-          // Return null for no data
-          return null;
-        }
-
-        console.log('✅ Found EXACT meal plan for week:', {
-          planId: weeklyPlan.id,
-          weekStartDate: weeklyPlan.week_start_date,
-          weekOffset,
-          totalCalories: weeklyPlan.total_calories
-        });
-
-        // Fetch meals for the exact plan
-        const { data: dailyMeals, error: mealsError } = await supabase
-          .from('daily_meals')
-          .select('*')
-          .eq('weekly_plan_id', weeklyPlan.id)
-          .order('day_number', { ascending: true })
-          .order('meal_type', { ascending: true });
-
-        if (mealsError) {
-          console.error('❌ Error fetching daily meals:', mealsError);
-          throw mealsError;
-        }
-
-        console.log('✅ Found meals for exact week:', {
-          weekOffset,
-          planId: weeklyPlan.id,
-          mealsCount: dailyMeals?.length || 0,
-          weekStartDate: weeklyPlan.week_start_date,
-          mealsByDay: dailyMeals?.reduce((acc, meal) => {
-            acc[meal.day_number] = (acc[meal.day_number] || 0) + 1;
-            return acc;
-          }, {} as Record<number, number>)
-        });
-
-        // Process meals data with proper type conversion
-        const processedMeals: DailyMeal[] = (dailyMeals || []).map(meal => {
-          try {
-            // Properly parse ingredients and instructions
-            const ingredients = safeParseJson(meal.ingredients, []) as MealIngredient[];
-            const instructions = safeParseJson(meal.instructions, []) as string[];
-            const alternatives = safeParseJson(meal.alternatives, []);
-
-            return {
-              id: meal.id,
-              weekly_plan_id: meal.weekly_plan_id,
-              day_number: meal.day_number,
-              meal_type: meal.meal_type,
-              name: meal.name,
-              calories: meal.calories || 0,
-              protein: meal.protein || 0,
-              carbs: meal.carbs || 0,
-              fat: meal.fat || 0,
-              prep_time: meal.prep_time || 0,
-              cook_time: meal.cook_time || 0,
-              servings: meal.servings || 1,
-              youtube_search_term: meal.youtube_search_term,
-              image_url: meal.image_url,
-              recipe_fetched: meal.recipe_fetched || false,
-              ingredients,
-              instructions,
-              alternatives
-            };
-          } catch (parseError) {
-            console.error('Error parsing meal data:', parseError, meal);
-            return {
-              id: meal.id,
-              weekly_plan_id: meal.weekly_plan_id,
-              day_number: meal.day_number,
-              meal_type: meal.meal_type,
-              name: meal.name,
-              calories: meal.calories || 0,
-              protein: meal.protein || 0,
-              carbs: meal.carbs || 0,
-              fat: meal.fat || 0,
-              prep_time: meal.prep_time || 0,
-              cook_time: meal.cook_time || 0,
-              servings: meal.servings || 1,
-              youtube_search_term: meal.youtube_search_term,
-              image_url: meal.image_url,
-              recipe_fetched: meal.recipe_fetched || false,
-              ingredients: [],
-              instructions: [],
-              alternatives: []
-            };
-          }
-        });
-
-        const result = {
-          weeklyPlan: {
-            id: weeklyPlan.id,
-            user_id: weeklyPlan.user_id,
-            week_start_date: weeklyPlan.week_start_date,
-            total_calories: weeklyPlan.total_calories || 0,
-            total_protein: weeklyPlan.total_protein || 0,
-            total_carbs: weeklyPlan.total_carbs || 0,
-            total_fat: weeklyPlan.total_fat || 0,
-            generation_prompt: weeklyPlan.generation_prompt,
-            created_at: weeklyPlan.created_at,
-            life_phase_context: weeklyPlan.life_phase_context
-          } as WeeklyMealPlan,
-          dailyMeals: processedMeals
-        };
+        // Use enhanced API timeout handling
+        const result = await handleAPITimeout(async () => {
+          return await fetchMealPlanData(user.id, weekStartDateStr);
+        }, 15000, 1); // 15 second timeout, 1 retry
 
         return result;
       } catch (error) {
-        console.error('❌ useMealPlanData - Unexpected error:', error);
+        handleError(error, {
+          operation: 'Meal Plan Fetch',
+          userId: user.id,
+          weekOffset,
+          retryable: true
+        });
         throw error;
       }
     },
     enabled: !!user?.id,
-    staleTime: 0, // Always fetch fresh data
-    gcTime: 2000, // Short cache time
+    staleTime: 30000, // 30 seconds
+    gcTime: 120000, // 2 minutes
     retry: (failureCount, error) => {
-      // Don't retry on authentication errors
       if (error?.message?.includes('JWT') || error?.message?.includes('auth')) return false;
       return failureCount < 2;
     },
-    refetchOnWindowFocus: true,
+    refetchOnWindowFocus: false,
     refetchOnMount: true,
     refetchOnReconnect: true
   });
+};
+
+const fetchMealPlanData = async (userId: string, weekStartDateStr: string) => {
+  // Fetch weekly plan
+  const { data: weeklyPlan, error: weeklyError } = await supabase
+    .from('weekly_meal_plans')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('week_start_date', weekStartDateStr)
+    .maybeSingle();
+
+  if (weeklyError) {
+    console.error('❌ Error fetching weekly plan:', weeklyError);
+    throw weeklyError;
+  }
+
+  if (!weeklyPlan) {
+    console.log('❌ NO MEAL PLAN FOUND for week:', weekStartDateStr);
+    return null;
+  }
+
+  // Fetch meals for the plan
+  const { data: dailyMeals, error: mealsError } = await supabase
+    .from('daily_meals')
+    .select('*')
+    .eq('weekly_plan_id', weeklyPlan.id)
+    .order('day_number', { ascending: true })
+    .order('meal_type', { ascending: true });
+
+  if (mealsError) {
+    console.error('❌ Error fetching daily meals:', mealsError);
+    throw mealsError;
+  }
+
+  console.log('✅ Found meals for week:', {
+    planId: weeklyPlan.id,
+    mealsCount: dailyMeals?.length || 0,
+    weekStartDate: weeklyPlan.week_start_date
+  });
+
+  // Process meals data with safe JSON parsing
+  const processedMeals: DailyMeal[] = (dailyMeals || []).map(meal => {
+    try {
+      return {
+        id: meal.id,
+        weekly_plan_id: meal.weekly_plan_id,
+        day_number: meal.day_number,
+        meal_type: meal.meal_type,
+        name: meal.name,
+        calories: meal.calories || 0,
+        protein: meal.protein || 0,
+        carbs: meal.carbs || 0,
+        fat: meal.fat || 0,
+        prep_time: meal.prep_time || 0,
+        cook_time: meal.cook_time || 0,
+        servings: meal.servings || 1,
+        youtube_search_term: meal.youtube_search_term,
+        image_url: meal.image_url,
+        recipe_fetched: meal.recipe_fetched || false,
+        ingredients: safeParseJson(meal.ingredients, []),
+        instructions: safeParseJson(meal.instructions, []),
+        alternatives: safeParseJson(meal.alternatives, [])
+      };
+    } catch (parseError) {
+      console.error('Error parsing meal data:', parseError, meal);
+      // Return meal with safe defaults
+      return {
+        id: meal.id,
+        weekly_plan_id: meal.weekly_plan_id,
+        day_number: meal.day_number,
+        meal_type: meal.meal_type,
+        name: meal.name,
+        calories: meal.calories || 0,
+        protein: meal.protein || 0,
+        carbs: meal.carbs || 0,
+        fat: meal.fat || 0,
+        prep_time: meal.prep_time || 0,
+        cook_time: meal.cook_time || 0,
+        servings: meal.servings || 1,
+        youtube_search_term: meal.youtube_search_term,
+        image_url: meal.image_url,
+        recipe_fetched: meal.recipe_fetched || false,
+        ingredients: [],
+        instructions: [],
+        alternatives: []
+      };
+    }
+  });
+
+  return {
+    weeklyPlan: {
+      id: weeklyPlan.id,
+      user_id: weeklyPlan.user_id,
+      week_start_date: weeklyPlan.week_start_date,
+      total_calories: weeklyPlan.total_calories || 0,
+      total_protein: weeklyPlan.total_protein || 0,
+      total_carbs: weeklyPlan.total_carbs || 0,
+      total_fat: weeklyPlan.total_fat || 0,
+      generation_prompt: weeklyPlan.generation_prompt,
+      created_at: weeklyPlan.created_at,
+      life_phase_context: weeklyPlan.life_phase_context
+    } as WeeklyMealPlan,
+    dailyMeals: processedMeals
+  };
+};
+
+// Enhanced JSON parsing with better error handling
+const safeParseJson = (jsonField: any, fallback: any = []) => {
+  if (Array.isArray(jsonField)) return jsonField;
+  if (!jsonField) return fallback;
+  
+  if (typeof jsonField === 'string') {
+    try {
+      const parsed = JSON.parse(jsonField);
+      return Array.isArray(parsed) ? parsed : fallback;
+    } catch (error) {
+      console.warn('Failed to parse JSON field:', jsonField, error);
+      return fallback;
+    }
+  }
+  
+  if (typeof jsonField === 'object') {
+    return jsonField;
+  }
+  
+  return fallback;
 };
