@@ -20,222 +20,125 @@ serve(async (req) => {
 
     console.log('Creating sample coach-trainee data...')
 
-    // Try different common fitness goal values that might be valid
-    // Start with the most basic ones that are likely to exist
-    const possibleFitnessGoals = ['weight_loss', 'muscle_gain', 'general_fitness', 'strength', 'endurance']
-    let validFitnessGoal = 'weight_loss' // Default fallback
-
-    // Try to find an existing profile to see what fitness_goal values work
-    const { data: existingProfile } = await supabaseClient
+    // Get existing users from the database to use as sample data
+    const { data: existingProfiles, error: profilesError } = await supabaseClient
       .from('profiles')
-      .select('fitness_goal')
-      .not('fitness_goal', 'is', null)
-      .limit(1)
-      .single()
+      .select('id, role, first_name, last_name, email')
+      .limit(10)
 
-    if (existingProfile?.fitness_goal) {
-      validFitnessGoal = existingProfile.fitness_goal
-      console.log('Found existing fitness goal:', validFitnessGoal)
+    if (profilesError) {
+      console.error('Error fetching existing profiles:', profilesError)
+      throw profilesError
     }
 
-    // Create sample coaches with minimal required fields first
-    const sampleCoaches = [
-      {
-        id: crypto.randomUUID(),
-        email: 'coach1@fitgenius.com',
-        first_name: 'Sarah',
-        last_name: 'Johnson',
-        role: 'coach',
-        ai_generations_remaining: 10,
-        age: 32,
-        gender: 'female',
-        weight: 65,
-        height: 168,
-        activity_level: 'very_active',
-        onboarding_completed: true,
-        profile_completion_score: 95
-      },
-      {
-        id: crypto.randomUUID(),
-        email: 'coach2@fitgenius.com',
-        first_name: 'Mike',
-        last_name: 'Rodriguez',
-        role: 'coach',
-        ai_generations_remaining: 10,
-        age: 28,
-        gender: 'male',
-        weight: 78,
-        height: 180,
-        activity_level: 'very_active',
-        onboarding_completed: true,
-        profile_completion_score: 98
-      }
-    ]
-
-    // Create sample trainees with minimal required fields first
-    const sampleTrainees = [
-      {
-        id: crypto.randomUUID(),
-        email: 'trainee1@fitgenius.com',
-        first_name: 'Emma',
-        last_name: 'Davis',
-        role: 'normal',
-        ai_generations_remaining: 5,
-        age: 25,
-        gender: 'female',
-        weight: 60,
-        height: 165,
-        activity_level: 'moderately_active',
-        onboarding_completed: true,
-        profile_completion_score: 87
-      },
-      {
-        id: crypto.randomUUID(),
-        email: 'trainee2@fitgenius.com',
-        first_name: 'James',
-        last_name: 'Wilson',
-        role: 'normal',
-        ai_generations_remaining: 5,
-        age: 30,
-        gender: 'male',
-        weight: 85,
-        height: 175,
-        activity_level: 'lightly_active',
-        onboarding_completed: true,
-        profile_completion_score: 92
-      },
-      {
-        id: crypto.randomUUID(),
-        email: 'trainee3@fitgenius.com',
-        first_name: 'Lisa',
-        last_name: 'Brown',
-        role: 'normal',
-        ai_generations_remaining: 5,
-        age: 27,
-        gender: 'female',
-        weight: 55,
-        height: 160,
-        activity_level: 'moderately_active',
-        onboarding_completed: true,
-        profile_completion_score: 89
-      },
-      {
-        id: crypto.randomUUID(),
-        email: 'trainee4@fitgenius.com',
-        first_name: 'David',
-        last_name: 'Taylor',
-        role: 'normal',
-        ai_generations_remaining: 5,
-        age: 35,
-        gender: 'male',
-        weight: 90,
-        height: 185,
-        activity_level: 'lightly_active',
-        onboarding_completed: true,
-        profile_completion_score: 84
-      },
-      {
-        id: crypto.randomUUID(),
-        email: 'trainee5@fitgenius.com',
-        first_name: 'Anna',
-        last_name: 'Martinez',
-        role: 'normal',
-        ai_generations_remaining: 5,
-        age: 22,
-        gender: 'female',
-        weight: 58,
-        height: 162,
-        activity_level: 'moderately_active',
-        onboarding_completed: true,
-        profile_completion_score: 91
-      }
-    ]
-
-    // Insert coaches first without fitness_goal
-    const { data: insertedCoaches, error: coachError } = await supabaseClient
-      .from('profiles')
-      .insert(sampleCoaches)
-      .select()
-
-    if (coachError) {
-      console.error('Error inserting coaches:', coachError)
-      throw coachError
+    if (!existingProfiles || existingProfiles.length < 2) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Not enough existing users to create sample data. Please create at least 2 user accounts first.',
+          suggestion: 'Create some user accounts through the authentication system first, then try again.'
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400,
+        },
+      )
     }
 
-    console.log('Coaches inserted successfully:', insertedCoaches?.length)
+    // Use existing users for our sample data
+    const users = existingProfiles.slice(0, 7) // Take up to 7 users
+    
+    // Assign roles: first 2 as coaches, rest as trainees
+    const coaches = users.slice(0, 2)
+    const trainees = users.slice(2, 7)
 
-    // Insert trainees without fitness_goal
-    const { data: insertedTrainees, error: traineeError } = await supabaseClient
-      .from('profiles')
-      .insert(sampleTrainees)
-      .select()
-
-    if (traineeError) {
-      console.error('Error inserting trainees:', traineeError)
-      throw traineeError
+    if (trainees.length === 0) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Need at least 3 users total (2 coaches + 1 trainee minimum)',
+          suggestion: 'Create more user accounts through the authentication system first.'
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400,
+        },
+      )
     }
 
-    console.log('Trainees inserted successfully:', insertedTrainees?.length)
+    // Update the selected users to have coach/trainee roles and complete profile data
+    const coachUpdates = coaches.map(coach => ({
+      id: coach.id,
+      role: 'coach',
+      ai_generations_remaining: 10,
+      age: 30 + Math.floor(Math.random() * 10),
+      gender: Math.random() > 0.5 ? 'male' : 'female',
+      weight: 60 + Math.floor(Math.random() * 30),
+      height: 160 + Math.floor(Math.random() * 25),
+      activity_level: 'very_active',
+      onboarding_completed: true,
+      profile_completion_score: 95 + Math.floor(Math.random() * 5),
+      first_name: coach.first_name || `Coach${Math.floor(Math.random() * 100)}`,
+      last_name: coach.last_name || 'Sample'
+    }))
 
-    // Now try to update with fitness_goal if we can find a valid value
-    if (validFitnessGoal) {
-      console.log('Attempting to set fitness goals...')
+    const traineeUpdates = trainees.map(trainee => ({
+      id: trainee.id,
+      role: 'normal',
+      ai_generations_remaining: 5,
+      age: 20 + Math.floor(Math.random() * 20),
+      gender: Math.random() > 0.5 ? 'male' : 'female',
+      weight: 50 + Math.floor(Math.random() * 40),
+      height: 155 + Math.floor(Math.random() * 30),
+      activity_level: ['lightly_active', 'moderately_active', 'very_active'][Math.floor(Math.random() * 3)],
+      onboarding_completed: true,
+      profile_completion_score: 80 + Math.floor(Math.random() * 15),
+      first_name: trainee.first_name || `Trainee${Math.floor(Math.random() * 100)}`,
+      last_name: trainee.last_name || 'Sample'
+    }))
+
+    // Update coaches
+    for (const coach of coachUpdates) {
+      const { error: updateError } = await supabaseClient
+        .from('profiles')
+        .update(coach)
+        .eq('id', coach.id)
       
-      for (const coach of sampleCoaches) {
-        const { error: updateError } = await supabaseClient
-          .from('profiles')
-          .update({ fitness_goal: validFitnessGoal })
-          .eq('id', coach.id)
-        
-        if (updateError) {
-          console.log('Could not set fitness_goal, skipping:', updateError.message)
-          break
-        }
-      }
-
-      for (const trainee of sampleTrainees) {
-        const { error: updateError } = await supabaseClient
-          .from('profiles')
-          .update({ fitness_goal: validFitnessGoal })
-          .eq('id', trainee.id)
-        
-        if (updateError) {
-          console.log('Could not set fitness_goal, skipping:', updateError.message)
-          break
-        }
+      if (updateError) {
+        console.error('Error updating coach:', updateError)
+        throw updateError
       }
     }
+
+    console.log('Updated coaches successfully:', coachUpdates.length)
+
+    // Update trainees
+    for (const trainee of traineeUpdates) {
+      const { error: updateError } = await supabaseClient
+        .from('profiles')
+        .update(trainee)
+        .eq('id', trainee.id)
+      
+      if (updateError) {
+        console.error('Error updating trainee:', updateError)
+        throw updateError
+      }
+    }
+
+    console.log('Updated trainees successfully:', traineeUpdates.length)
 
     // Create coach-trainee relationships
-    const relationships = [
-      // Sarah Johnson's trainees
-      {
-        coach_id: sampleCoaches[0].id,
-        trainee_id: sampleTrainees[0].id, // Emma
-        notes: 'Focused on weight loss journey. Very motivated and consistent with workouts.'
-      },
-      {
-        coach_id: sampleCoaches[0].id,
-        trainee_id: sampleTrainees[1].id, // James
-        notes: 'Looking to build muscle mass. Needs guidance on proper form and nutrition.'
-      },
-      {
-        coach_id: sampleCoaches[0].id,
-        trainee_id: sampleTrainees[2].id, // Lisa
-        notes: 'Maintaining current fitness level. Enjoys variety in workout routines.'
-      },
-      // Mike Rodriguez's trainees
-      {
-        coach_id: sampleCoaches[1].id,
-        trainee_id: sampleTrainees[3].id, // David
-        notes: 'New to fitness. Starting with basic movements and building confidence.'
-      },
-      {
-        coach_id: sampleCoaches[1].id,
-        trainee_id: sampleTrainees[4].id, // Anna
-        notes: 'Athletic background. Ready for more advanced training techniques.'
-      }
-    ]
+    const relationships = []
+    
+    // Distribute trainees among coaches
+    trainees.forEach((trainee, index) => {
+      const coachIndex = index % coaches.length
+      relationships.push({
+        coach_id: coaches[coachIndex].id,
+        trainee_id: trainee.id,
+        notes: `Sample coaching relationship for ${trainee.first_name || 'trainee'}`
+      })
+    })
 
     const { error: relationshipError } = await supabaseClient
       .from('coach_trainees')
@@ -249,13 +152,13 @@ serve(async (req) => {
     console.log('Coach-trainee relationships created successfully')
 
     // Create sample meal plans for trainees
-    const mealPlans = sampleTrainees.map(trainee => ({
+    const mealPlans = trainees.map(trainee => ({
       user_id: trainee.id,
       week_start_date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      total_calories: 1800,
-      total_protein: 135,
-      total_carbs: 180,
-      total_fat: 60
+      total_calories: 1600 + Math.floor(Math.random() * 400),
+      total_protein: 120 + Math.floor(Math.random() * 30),
+      total_carbs: 150 + Math.floor(Math.random() * 60),
+      total_fat: 50 + Math.floor(Math.random() * 20)
     }))
 
     const { error: mealPlanError } = await supabaseClient
@@ -270,12 +173,11 @@ serve(async (req) => {
     console.log('Meal plans created successfully')
 
     // Create sample exercise programs for trainees
-    const exercisePrograms = sampleTrainees.map(trainee => ({
+    const exercisePrograms = trainees.map(trainee => ({
       user_id: trainee.id,
-      program_name: 'General Fitness Program',
-      difficulty_level: trainee.activity_level === 'lightly_active' ? 'beginner' :
-                        trainee.activity_level === 'moderately_active' ? 'intermediate' : 'advanced',
-      workout_type: 'home',
+      program_name: 'Sample Fitness Program',
+      difficulty_level: ['beginner', 'intermediate', 'advanced'][Math.floor(Math.random() * 3)],
+      workout_type: Math.random() > 0.5 ? 'home' : 'gym',
       current_week: 1,
       week_start_date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
     }))
@@ -292,16 +194,16 @@ serve(async (req) => {
     console.log('Exercise programs created successfully')
 
     // Create sample weight entries for trainees
-    const weightEntries = sampleTrainees.flatMap(trainee => [
+    const weightEntries = trainees.flatMap(trainee => [
       {
         user_id: trainee.id,
-        weight: trainee.weight - Math.random() * 2,
+        weight: (traineeUpdates.find(t => t.id === trainee.id)?.weight || 70) - Math.random() * 2,
         recorded_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-        notes: 'Weekly check-in with coach'
+        notes: 'Weekly check-in'
       },
       {
         user_id: trainee.id,
-        weight: trainee.weight - Math.random() * 1.5,
+        weight: (traineeUpdates.find(t => t.id === trainee.id)?.weight || 70) - Math.random() * 1.5,
         recorded_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
         notes: 'Progress tracking'
       }
@@ -319,14 +221,14 @@ serve(async (req) => {
     console.log('Weight entries created successfully')
 
     // Create sample goals for trainees
-    const goals = sampleTrainees.map(trainee => ({
+    const goals = trainees.map(trainee => ({
       user_id: trainee.id,
       category: 'fitness',
       goal_type: 'weight',
-      title: 'Achieve fitness goals',
+      title: 'Sample Fitness Goal',
       description: 'Working with coach to achieve fitness goals',
-      target_value: trainee.weight,
-      current_value: trainee.weight,
+      target_value: (traineeUpdates.find(t => t.id === trainee.id)?.weight || 70) - 5,
+      current_value: traineeUpdates.find(t => t.id === trainee.id)?.weight || 70,
       target_unit: 'kg',
       status: 'active',
       priority: 'high',
@@ -348,10 +250,10 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        message: 'Sample data created successfully',
+        message: 'Sample coach-trainee data created successfully using existing users',
         data: {
-          coaches: insertedCoaches?.length || 0,
-          trainees: insertedTrainees?.length || 0,
+          coaches: coaches.length,
+          trainees: trainees.length,
           relationships: relationships.length,
           mealPlans: mealPlans.length,
           exercisePrograms: exercisePrograms.length,

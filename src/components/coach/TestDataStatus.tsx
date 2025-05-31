@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Users, Play, AlertCircle } from "lucide-react";
+import { CheckCircle, Users, Play, AlertCircle, Info } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { createSampleProfiles } from "@/utils/sampleDataHelper";
 import { useState } from "react";
@@ -53,8 +53,8 @@ export const TestDataStatus = () => {
               </p>
               <p className="text-sm text-green-600 mt-1">
                 {language === 'ar' ? 
-                  '٢ مدربين و ٥ متدربين مع خطط وجبات وتمارين وأهداف' :
-                  '2 coaches and 5 trainees with meal plans, exercise programs, and goals'
+                  'تم استخدام المستخدمين الحاليين لإنشاء علاقات المدرب والمتدرب' :
+                  'Used existing users to create coach-trainee relationships with sample data'
                 }
               </p>
             </div>
@@ -82,10 +82,28 @@ export const TestDataStatus = () => {
                 'Create sample data to test the coach system'
               }
             </p>
+            
+            <div className="mb-4 p-3 bg-blue-100 rounded-lg border border-blue-200">
+              <div className="flex items-start gap-2">
+                <Info className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-blue-800 mb-1">
+                    {language === 'ar' ? 'متطلبات مسبقة:' : 'Prerequisites:'}
+                  </p>
+                  <p className="text-sm text-blue-700">
+                    {language === 'ar' ? 
+                      'يجب أن يكون لديك على الأقل 3 حسابات مستخدمين مسجلة في النظام' :
+                      'You need at least 3 user accounts registered in the system'
+                    }
+                  </p>
+                </div>
+              </div>
+            </div>
+            
             <p className="text-sm text-blue-600 mb-4">
               {language === 'ar' ? 
-                'سيتم إنشاء ٢ مدربين و ٥ متدربين مع جميع البيانات المطلوبة للاختبار' :
-                'This will create 2 coaches and 5 trainees with all necessary data for testing'
+                'سيتم استخدام المستخدمين الحاليين لإنشاء مدربين ومتدربين مع جميع البيانات المطلوبة' :
+                'Will use existing users to create coaches and trainees with all necessary sample data'
               }
             </p>
             <Button 
