@@ -21,7 +21,7 @@ const Layout = memo(({ children }: LayoutProps) => {
           {/* Mobile header with sidebar trigger */}
           <div className="flex h-14 items-center gap-3 border-b bg-white px-4 md:hidden">
             <SidebarTrigger className="h-8 w-8" />
-            <h1 className="font-semibold text-gray-900">Fitness Tracker</h1>
+            <h1 className="font-semibold text-gray-900">FitFatta</h1>
           </div>
           
           {/* Desktop header with sidebar trigger */}

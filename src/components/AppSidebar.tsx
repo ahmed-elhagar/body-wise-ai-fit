@@ -69,7 +69,7 @@ const AppSidebar = () => {
 
   const coachItems: NavigationItem[] = [
     { href: "/coach/trainees", icon: Users, label: t("Trainees") },
-    { href: "/coach/settings", icon: Settings, label: t("Settings") },
+    { href: "/coach/settings", icon: Settings, label: t("Coach Settings") },
   ];
 
   const adminItems: NavigationItem[] = [
@@ -79,10 +79,10 @@ const AppSidebar = () => {
   const handleSignOut = async () => {
     try {
       await signOut();
-      toast.success("Signed out successfully");
+      toast.success(t("Success"));
       navigate("/auth");
     } catch (error) {
-      toast.error("Failed to sign out");
+      toast.error(t("Error"));
     }
   };
 
