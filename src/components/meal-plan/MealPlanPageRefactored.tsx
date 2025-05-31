@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -133,6 +132,18 @@ const MealPlanPageRefactored = () => {
     }
   };
 
+  const handleShowRecipe = (meal: DailyMeal) => {
+    console.log('🍽️ MealPlanPage: Show recipe for:', meal.name, meal.id);
+    mealPlanState.setSelectedMeal(meal);
+    mealPlanState.setShowRecipeDialog(true);
+  };
+
+  const handleExchangeMeal = (meal: DailyMeal) => {
+    console.log('🔄 MealPlanPage: Exchange meal:', meal.name, meal.id);
+    mealPlanState.setSelectedMeal(meal);
+    mealPlanState.setShowExchangeDialog(true);
+  };
+
   if (mealPlanState.isLoading) {
     return <MealPlanLoadingBackdrop isLoading={true} message={mealPlanT('loading')} />;
   }
@@ -214,8 +225,8 @@ const MealPlanPageRefactored = () => {
                           meals={mealPlanState.currentWeekPlan?.dailyMeals?.filter(
                             meal => meal.day_number === day.number
                           ) || []}
-                          onShowRecipe={mealPlanState.handleShowRecipe}
-                          onExchangeMeal={mealPlanState.handleExchangeMeal}
+                          onShowRecipe={handleShowRecipe}
+                          onExchangeMeal={handleExchangeMeal}
                           onAddSnack={() => handleAddSnack(day.number)}
                           onShowShoppingList={() => setShowShoppingDrawer(true)}
                           onRegeneratePlan={handleRegeneratePlan}
