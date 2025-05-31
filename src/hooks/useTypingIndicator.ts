@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
@@ -9,13 +9,22 @@ export const useTypingIndicator = (coachId: string, traineeId: string) => {
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const channelRef = useRef<any>(null);
   const chatRoomId = `chat-${coachId}-${traineeId}`;
+  const lastTypingSentRef = useRef<number>(0);
+  const isTypingRef = useRef(false);
 
-  // Send typing indicator
-  const sendTypingIndicator = async () => {
+  // Throttled typing indicator to prevent spam
+  const sendTypingIndicator = useCallback(async () => {
     if (!user?.id) return;
 
+    const now = Date.now();
+    // Throttle typing indicators to max once per 2 seconds
+    if (now - lastTypingSentRef.current < 2000 && isTypingRef.current) {
+      return;
+    }
+
     try {
-      // Insert or update typing indicator
+      console.log('⌨️ Sending typing indicator');
+      
       await supabase
         .from('typing_indicators')
         .upsert({
@@ -27,6 +36,9 @@ export const useTypingIndicator = (coachId: string, traineeId: string) => {
           onConflict: 'user_id,chat_room_id'
         });
 
+      lastTypingSentRef.current = now;
+      isTypingRef.current = true;
+
       // Clear existing timeout
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
@@ -35,17 +47,20 @@ export const useTypingIndicator = (coachId: string, traineeId: string) => {
       // Set timeout to stop typing indicator
       typingTimeoutRef.current = setTimeout(() => {
         stopTypingIndicator();
-      }, 3000);
+      }, 4000); // Stop after 4 seconds of inactivity
+
     } catch (error) {
-      console.error('Error sending typing indicator:', error);
+      console.error('❌ Error sending typing indicator:', error);
     }
-  };
+  }, [user?.id, chatRoomId]);
 
   // Stop typing indicator
-  const stopTypingIndicator = async () => {
-    if (!user?.id) return;
+  const stopTypingIndicator = useCallback(async () => {
+    if (!user?.id || !isTypingRef.current) return;
 
     try {
+      console.log('⌨️ Stopping typing indicator');
+      
       await supabase
         .from('typing_indicators')
         .upsert({
@@ -57,19 +72,21 @@ export const useTypingIndicator = (coachId: string, traineeId: string) => {
           onConflict: 'user_id,chat_room_id'
         });
 
+      isTypingRef.current = false;
+
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
         typingTimeoutRef.current = null;
       }
     } catch (error) {
-      console.error('Error stopping typing indicator:', error);
+      console.error('❌ Error stopping typing indicator:', error);
     }
-  };
+  }, [user?.id, chatRoomId]);
 
   useEffect(() => {
     if (!coachId || !traineeId || !user?.id) return;
 
-    console.log('🔄 Setting up typing indicators subscription');
+    console.log('🔄 Setting up enhanced typing indicators subscription for:', chatRoomId);
 
     // Clean up existing channel
     if (channelRef.current) {
@@ -77,7 +94,7 @@ export const useTypingIndicator = (coachId: string, traineeId: string) => {
     }
 
     const channel = supabase
-      .channel(`typing-indicators-${chatRoomId}`)
+      .channel(`typing-indicators-${chatRoomId}-${Date.now()}`)
       .on(
         'postgres_changes',
         {
@@ -102,19 +119,24 @@ export const useTypingIndicator = (coachId: string, traineeId: string) => {
               
               if (record.is_typing) {
                 newSet.add(record.user_id);
+                console.log(`👤 ${record.user_id} is typing`);
               } else {
                 newSet.delete(record.user_id);
+                console.log(`👤 ${record.user_id} stopped typing`);
               }
             } else if (eventType === 'DELETE' && oldRecord) {
               const record = oldRecord as any;
               newSet.delete(record.user_id);
+              console.log(`👤 ${record.user_id} typing indicator deleted`);
             }
             
             return newSet;
           });
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('📡 Typing indicators subscription status:', status);
+      });
 
     channelRef.current = channel;
 
@@ -122,8 +144,9 @@ export const useTypingIndicator = (coachId: string, traineeId: string) => {
     const cleanupOldIndicators = async () => {
       try {
         await supabase.rpc('cleanup_typing_indicators');
+        console.log('🧹 Cleaned up old typing indicators');
       } catch (error) {
-        console.error('Error cleaning up typing indicators:', error);
+        console.error('❌ Error cleaning up typing indicators:', error);
       }
     };
 
@@ -141,11 +164,12 @@ export const useTypingIndicator = (coachId: string, traineeId: string) => {
       // Stop typing when component unmounts
       stopTypingIndicator();
     };
-  }, [coachId, traineeId, user?.id, chatRoomId]);
+  }, [coachId, traineeId, user?.id, chatRoomId, stopTypingIndicator]);
 
   return {
     typingUsers: Array.from(typingUsers),
     sendTypingIndicator,
-    stopTypingIndicator
+    stopTypingIndicator,
+    isTyping: isTypingRef.current
   };
 };

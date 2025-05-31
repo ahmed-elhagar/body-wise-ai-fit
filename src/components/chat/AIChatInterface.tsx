@@ -10,16 +10,22 @@ import {
   Download, 
   Settings,
   MessageSquare,
-  Sparkles
+  Sparkles,
+  BarChart3
 } from "lucide-react";
 import { useAIChat } from "@/hooks/useAIChat";
 import AIChatMessage from "./AIChatMessage";
 import ConversationStarters from "./ConversationStarters";
 import ChatInput from "./ChatInput";
+import SmartReplySuggestions from "./SmartReplySuggestions";
+import ConversationAnalytics from "./ConversationAnalytics";
+import ConnectionStatus from "./ConnectionStatus";
 import { cn } from "@/lib/utils";
 
 const AIChatInterface = () => {
   const [showSettings, setShowSettings] = useState(false);
+  const [showAnalytics, setShowAnalytics] = useState(false);
+  const [inputMessage, setInputMessage] = useState("");
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -45,6 +51,15 @@ const AIChatInterface = () => {
     // Here you could send feedback to your analytics service
   };
 
+  const handleSendMessage = async (message: string) => {
+    setInputMessage("");
+    await sendMessage(message);
+  };
+
+  const handleSmartReplySelect = (reply: string) => {
+    setInputMessage(reply);
+  };
+
   const exportConversation = () => {
     const conversationText = messages
       .map(msg => `${msg.role.toUpperCase()}: ${msg.content}`)
@@ -62,6 +77,7 @@ const AIChatInterface = () => {
   };
 
   const hasMessages = messages.length > 0;
+  const lastAssistantMessage = messages.filter(m => m.role === 'assistant').pop()?.content || "";
 
   return (
     <div className="h-full flex flex-col bg-gradient-to-b from-blue-50/30 to-white">
@@ -90,7 +106,7 @@ const AIChatInterface = () => {
             </div>
           ) : (
             <div className="max-w-4xl mx-auto w-full">
-              {/* Chat Controls */}
+              {/* Enhanced Chat Controls */}
               <div className="flex items-center gap-2 justify-between mb-6 p-4 bg-white/80 rounded-xl border border-blue-100 backdrop-blur-sm">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
@@ -105,9 +121,21 @@ const AIChatInterface = () => {
                         AI Responding...
                       </Badge>
                     )}
+                    <ConnectionStatus isConnected={true} showText={false} />
                   </div>
                 </div>
                 <div className="flex gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowAnalytics(!showAnalytics)}
+                    className={cn(
+                      "text-gray-600 hover:text-gray-800 hover:bg-gray-100 h-8 w-8 p-0",
+                      showAnalytics && "bg-blue-100 text-blue-700"
+                    )}
+                  >
+                    <BarChart3 className="h-4 w-4" />
+                  </Button>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -127,6 +155,14 @@ const AIChatInterface = () => {
                 </div>
               </div>
               
+              {/* Conversation Analytics */}
+              {showAnalytics && (
+                <ConversationAnalytics 
+                  messages={messages}
+                  className="mb-6"
+                />
+              )}
+              
               {/* Messages */}
               <div className="space-y-1">
                 {messages.map((message) => (
@@ -143,15 +179,27 @@ const AIChatInterface = () => {
           )}
         </ScrollArea>
 
-        {/* Input Area */}
+        {/* Enhanced Input Area */}
         <div className="border-t border-gray-200 bg-white">
+          {/* Smart Reply Suggestions */}
+          {hasMessages && lastAssistantMessage && (
+            <SmartReplySuggestions
+              lastMessage={lastAssistantMessage}
+              conversationHistory={messages}
+              onSelectReply={handleSmartReplySelect}
+              className="mx-4 mt-4"
+            />
+          )}
+          
           <ChatInput
-            onSendMessage={sendMessage}
+            onSendMessage={handleSendMessage}
             disabled={false}
             isLoading={isLoading}
             onCancel={cancelRequest}
             placeholder="Ask me anything about fitness, nutrition, or health..."
             className="border-0"
+            value={inputMessage}
+            onChange={setInputMessage}
           />
         </div>
       </CardContent>
