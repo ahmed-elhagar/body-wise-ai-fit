@@ -52,20 +52,20 @@ const CoachChatWidget = () => {
   // Show loading state
   if (isLoadingCoachInfo) {
     return (
-      <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl rounded-2xl">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-3 text-xl">
-            <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-              <UserCheck className="h-5 w-5 text-green-600" />
+      <Card className="bg-white border border-gray-200 shadow-lg rounded-xl">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg text-gray-900">
+            <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+              <UserCheck className="h-4 w-4 text-green-600" />
             </div>
             Your Coaches
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-center py-12">
+          <div className="flex items-center justify-center py-8">
             <div className="text-center">
-              <Loader2 className="h-10 w-10 text-green-600 animate-spin mx-auto mb-4" />
-              <p className="text-gray-600">Finding your coaches...</p>
+              <Loader2 className="h-8 w-8 text-green-600 animate-spin mx-auto mb-3" />
+              <p className="text-gray-600 text-sm">Finding your coaches...</p>
             </div>
           </div>
         </CardContent>
@@ -76,18 +76,18 @@ const CoachChatWidget = () => {
   // Show error state with retry option
   if (coachInfoError) {
     return (
-      <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl rounded-2xl">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-3 text-xl text-red-600">
-            <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center">
-              <AlertCircle className="h-5 w-5 text-red-600" />
+      <Card className="bg-white border border-gray-200 shadow-lg rounded-xl">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg text-red-600">
+            <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+              <AlertCircle className="h-4 w-4 text-red-600" />
             </div>
             Coach Connection Error
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8">
-            <p className="text-red-600 text-sm mb-6">
+          <div className="text-center py-6">
+            <p className="text-red-600 text-xs mb-4">
               {retryCount > 2 
                 ? 'Unable to connect to coaching system. Please check your connection.'
                 : 'Failed to load coach information'
@@ -101,9 +101,9 @@ const CoachChatWidget = () => {
               variant="outline" 
               size="sm"
               disabled={retryCount > 3}
-              className="border-green-200 hover:bg-green-50"
+              className="border-green-200 hover:bg-green-50 text-xs"
             >
-              <RefreshCw className="w-4 h-4 mr-2" />
+              <RefreshCw className="w-3 h-3 mr-1" />
               Try Again {retryCount > 0 && `(${retryCount})`}
             </Button>
           </div>
@@ -115,21 +115,21 @@ const CoachChatWidget = () => {
   // Don't show if no coaches assigned
   if (coaches.length === 0) {
     return (
-      <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl rounded-2xl">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-3 text-xl">
-            <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-              <UserCheck className="h-5 w-5 text-gray-400" />
+      <Card className="bg-white border border-gray-200 shadow-lg rounded-xl">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg text-gray-900">
+            <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+              <UserCheck className="h-4 w-4 text-gray-400" />
             </div>
             Your Coaches
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8">
-            <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Users className="h-8 w-8 text-gray-400" />
+          <div className="text-center py-6">
+            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+              <Users className="h-6 w-6 text-gray-400" />
             </div>
-            <p className="text-gray-500 text-sm mb-4">
+            <p className="text-gray-500 text-xs mb-2">
               No coaches assigned yet
             </p>
             <p className="text-xs text-gray-400">
@@ -152,12 +152,12 @@ const CoachChatWidget = () => {
   }
 
   return (
-    <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl rounded-2xl overflow-hidden">
-      <CardHeader className="bg-gradient-to-r from-green-600 to-emerald-600 text-white pb-4">
+    <Card className="bg-white border border-gray-200 shadow-lg rounded-xl overflow-hidden">
+      <CardHeader className="bg-gradient-to-r from-green-600 to-green-700 text-white pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-3 text-xl">
-            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-              <Users className="h-5 w-5 text-white" />
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+              <Users className="h-4 w-4 text-white" />
             </div>
             Your Coaches ({coaches.length})
           </CardTitle>
@@ -165,16 +165,16 @@ const CoachChatWidget = () => {
             variant="ghost"
             size="sm"
             onClick={() => setShowChat(true)}
-            className="text-white hover:bg-white/20 px-4 py-2"
+            className="text-white hover:bg-white/20 px-3 py-1 text-xs"
           >
-            <MessageCircle className="w-4 h-4 mr-2" />
+            <MessageCircle className="w-3 h-3 mr-1" />
             Chat
-            <ArrowRight className="w-4 h-4 ml-2" />
+            <ArrowRight className="w-3 h-3 ml-1" />
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="p-6">
-        <div className="space-y-4">
+      <CardContent className="p-4">
+        <div className="space-y-3">
           {coaches.slice(0, 2).map((coach) => {
             const unreadCount = unreadMessagesByCoach[coach.coach_id] || 0;
             const coachName = getCoachDisplayName(coach);
@@ -183,34 +183,34 @@ const CoachChatWidget = () => {
             return (
               <div 
                 key={coach.id} 
-                className="group flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 hover:border-green-300 hover:shadow-lg transition-all duration-300 cursor-pointer"
+                className="group flex items-center justify-between p-3 rounded-lg bg-green-50 border border-green-200 hover:border-green-300 hover:shadow-md transition-all duration-200 cursor-pointer"
                 onClick={() => setShowChat(true)}
               >
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-3">
                   <div className="relative">
-                    <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
-                      <span className="text-white font-bold">
+                    <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center shadow-sm">
+                      <span className="text-white font-bold text-sm">
                         {coachInitials}
                       </span>
                     </div>
-                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white animate-pulse"></div>
+                    <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full border-2 border-white"></div>
                   </div>
                   <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <h4 className="font-bold text-green-800 group-hover:text-green-700">
+                    <div className="flex items-center gap-1 mb-0.5">
+                      <h4 className="font-bold text-gray-900 group-hover:text-green-700 text-sm">
                         {coachName}
                       </h4>
                       <Star className="w-3 h-3 text-yellow-500 fill-current" />
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-green-600">
+                    <div className="flex items-center gap-1 text-xs text-gray-600">
                       <Calendar className="w-3 h-3" />
                       <span>Assigned {new Date(coach.assigned_at).toLocaleDateString()}</span>
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                   {unreadCount > 0 && (
-                    <Badge variant="destructive" className="text-xs animate-pulse">
+                    <Badge variant="destructive" className="text-xs animate-pulse bg-red-500 text-white px-1.5 py-0.5">
                       {unreadCount}
                     </Badge>
                   )}
@@ -221,9 +221,9 @@ const CoachChatWidget = () => {
                       e.stopPropagation();
                       setShowChat(true);
                     }}
-                    className="text-green-700 hover:text-green-800 hover:bg-green-100 p-2"
+                    className="text-green-700 hover:text-green-800 hover:bg-green-100 p-1"
                   >
-                    <MessageCircle className="w-4 h-4" />
+                    <MessageCircle className="w-3 h-3" />
                   </Button>
                 </div>
               </div>
@@ -231,12 +231,12 @@ const CoachChatWidget = () => {
           })}
           
           {coaches.length > 2 && (
-            <div className="text-center py-3">
+            <div className="text-center py-2">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowChat(true)}
-                className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                className="text-green-600 hover:text-green-700 hover:bg-green-50 text-xs"
               >
                 View {coaches.length - 2} more coaches →
               </Button>
@@ -244,8 +244,8 @@ const CoachChatWidget = () => {
           )}
           
           {coaches.length > 0 && coaches[0].notes && (
-            <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
-              <p className="text-sm text-gray-700">
+            <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <p className="text-xs text-gray-700">
                 <strong className="text-blue-800">Latest Coach Notes:</strong> {coaches[0].notes}
               </p>
             </div>
