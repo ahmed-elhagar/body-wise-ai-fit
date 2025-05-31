@@ -1,8 +1,8 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&display=swap');
-@import "tailwindcss/base";
-@import "tailwindcss/components";
-@import "tailwindcss/utilities";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 @layer base {
   :root {
@@ -12,7 +12,7 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
+    --primary: 221.2 83.2% 53.3%;
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96%;
     --secondary-foreground: 222.2 84% 4.9%;
@@ -24,23 +24,18 @@
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.75rem;
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
-    
-    /* Sidebar specific variables */
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 222.2 84% 4.9%;
-    --sidebar-primary: 221.2 83.2% 53.3%;
-    --sidebar-primary-foreground: 210 40% 98%;
-    --sidebar-accent: 210 40% 96%;
-    --sidebar-accent-foreground: 222.2 84% 4.9%;
-    --sidebar-border: 214.3 31.8% 91.4%;
-    --sidebar-ring: 222.2 84% 4.9%;
+    --fitness-primary: 268 83% 58%;
+    --fitness-secondary: 338 76% 68%;
+    --fitness-accent: 220 91% 69%;
+    --fitness-surface: 270 20% 98%;
+    --fitness-border: 270 10% 91%;
   }
 
   .dark {
@@ -50,8 +45,8 @@
     --card-foreground: 210 40% 98%;
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
     --muted: 217.2 32.6% 17.5%;
@@ -62,79 +57,224 @@
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --ring: 224.3 76.3% 94.1%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
-    
-    /* Dark mode sidebar */
-    --sidebar-background: 222.2 84% 4.9%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 217.2 91.2% 59.8%;
-    --sidebar-primary-foreground: 222.2 47.4% 11.2%;
-    --sidebar-accent: 217.2 32.6% 17.5%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217.2 32.6% 17.5%;
-    --sidebar-ring: 212.7 26.8% 83.9%;
   }
+}
 
+@layer base {
   * {
     @apply border-border;
   }
-
+  
+  html {
+    font-family: 'Inter', sans-serif;
+  }
+  
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 
-  /* Arabic font family */
-  .font-arabic {
-    font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    line-height: 1.7;
-    letter-spacing: 0.01em;
-  }
-
-  /* RTL specific styles */
+  /* RTL-aware layout utilities */
   [dir="rtl"] {
-    text-align: right;
-  }
-
-  [dir="rtl"] .ltr {
-    direction: ltr;
-    text-align: left;
-  }
-
-  [dir="ltr"] .rtl {
     direction: rtl;
-    text-align: right;
+  }
+
+  [dir="ltr"] {
+    direction: ltr;
+  }
+
+  /* RTL-aware margin and padding utilities */
+  .ms-auto {
+    margin-inline-start: auto;
+  }
+
+  .me-auto {
+    margin-inline-end: auto;
+  }
+
+  .ps-4 {
+    padding-inline-start: 1rem;
+  }
+
+  .pe-4 {
+    padding-inline-end: 1rem;
+  }
+
+  .border-s {
+    border-inline-start-width: 1px;
+  }
+
+  .border-e {
+    border-inline-end-width: 1px;
+  }
+
+  /* RTL-aware text alignment */
+  .text-start {
+    text-align: start;
+  }
+
+  .text-end {
+    text-align: end;
+  }
+
+  /* Custom fitness gradient */
+  .bg-fitness-gradient {
+    background: linear-gradient(135deg, hsl(var(--fitness-primary)), hsl(var(--fitness-secondary)));
+  }
+
+  /* RTL-aware flexbox utilities */
+  .flex-row-rtl {
+    flex-direction: row;
+  }
+
+  [dir="rtl"] .flex-row-rtl {
+    flex-direction: row-reverse;
+  }
+
+  /* Animation utilities */
+  .animate-pulse-soft {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  .animate-bounce-gentle {
+    animation: bounce 2s infinite;
+  }
+
+  /* Sidebar RTL fixes */
+  .sidebar-rtl {
+    border-inline-end: 1px solid hsl(var(--border));
+    border-inline-start: none;
+  }
+
+  [dir="rtl"] .sidebar-rtl {
+    border-inline-start: 1px solid hsl(var(--border));
+    border-inline-end: none;
+  }
+
+  /* Navigation link RTL fixes */
+  .nav-link-rtl {
+    padding-inline-start: 0.75rem;
+    padding-inline-end: 0.75rem;
+    text-align: start;
+  }
+
+  /* Icon positioning RTL fixes */
+  .icon-start {
+    margin-inline-end: 0.5rem;
+    margin-inline-start: 0;
+  }
+
+  [dir="rtl"] .icon-start {
+    margin-inline-start: 0.5rem;
+    margin-inline-end: 0;
+  }
+
+  .icon-end {
+    margin-inline-start: 0.5rem;
+    margin-inline-end: 0;
+  }
+
+  [dir="rtl"] .icon-end {
+    margin-inline-end: 0.5rem;
+    margin-inline-start: 0;
+  }
+
+  /* Dropdown positioning RTL fixes */
+  .dropdown-rtl {
+    left: 0;
+    right: auto;
+  }
+
+  [dir="rtl"] .dropdown-rtl {
+    right: 0;
+    left: auto;
+  }
+
+  /* Modal positioning RTL fixes */
+  .modal-rtl {
+    text-align: start;
+  }
+
+  /* Form field RTL fixes */
+  .form-field-rtl label {
+    text-align: start;
+    display: block;
+  }
+
+  .form-field-rtl input,
+  .form-field-rtl textarea,
+  .form-field-rtl select {
+    text-align: start;
+  }
+
+  /* Button icon RTL fixes */
+  .btn-icon-start svg {
+    margin-inline-end: 0.5rem;
+    margin-inline-start: 0;
+  }
+
+  .btn-icon-end svg {
+    margin-inline-start: 0.5rem;
+    margin-inline-end: 0;
+  }
+
+  /* Responsive RTL utilities */
+  @media (max-width: 768px) {
+    .mobile-rtl-center {
+      text-align: center;
+    }
   }
 }
 
-/* RTL form and input fixes */
-[dir="rtl"] input,
-[dir="rtl"] select,
-[dir="rtl"] textarea {
-  text-align: right;
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
 }
 
-[dir="rtl"] input::placeholder,
-[dir="rtl"] select::placeholder,
-[dir="rtl"] textarea::placeholder {
-  text-align: right;
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
 }
 
-/* Dropdown and modal RTL fixes */
-[dir="rtl"] .dropdown-content {
-  right: 0;
-  left: auto;
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 3px;
 }
 
-[dir="rtl"] .modal-content {
-  text-align: right;
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground));
 }
 
-/* Language toggle button alignment */
-[dir="rtl"] .language-toggle {
-  flex-direction: row-reverse;
+/* Loading animations */
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+.loading-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Enhanced focus styles for accessibility */
+.focus-visible:focus {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
 }
