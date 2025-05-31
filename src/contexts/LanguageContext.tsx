@@ -1,7 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { arTranslations } from './translations/ar';
-import { enTranslations } from './translations/en';
+import { useTranslation } from 'react-i18next';
 
 export type Language = 'en' | 'ar';
 
@@ -23,38 +22,33 @@ interface LanguageProviderProps {
   children: React.ReactNode;
 }
 
-const translations = {
-  en: enTranslations,
-  ar: arTranslations,
-};
-
 export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
-  const [language, setLanguage] = useState<Language>('en');
+  const { t, i18n } = useTranslation();
+  const [language, setLanguageState] = useState<Language>('en');
 
   useEffect(() => {
     const storedLanguage = localStorage.getItem('language') || 'en';
-    setLanguage(storedLanguage as Language);
-  }, []);
+    setLanguageState(storedLanguage as Language);
+    i18n.changeLanguage(storedLanguage);
+  }, [i18n]);
 
   useEffect(() => {
     localStorage.setItem('language', language);
+    i18n.changeLanguage(language);
     // Set document direction
     document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
     document.documentElement.lang = language;
-  }, [language]);
+  }, [language, i18n]);
 
-  const t = (key: string) => {
-    const translation = (translations[language] && translations[language][key]) || key;
-    return translation;
+  const setLanguage = (newLanguage: Language) => {
+    setLanguageState(newLanguage);
   };
 
   const isRTL = language === 'ar';
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t, isRTL }}>
-      <div dir={isRTL ? 'rtl' : 'ltr'}>
-        {children}
-      </div>
+      {children}
     </LanguageContext.Provider>
   );
 };

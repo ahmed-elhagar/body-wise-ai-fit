@@ -111,116 +111,97 @@
   }
 }
 
-/* CRITICAL RTL SIDEBAR FIXES */
-[dir="rtl"] .group\/sidebar-wrapper {
-  flex-direction: row-reverse !important;
+/* IMPROVED RTL SIDEBAR LAYOUT */
+.sidebar-layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
 }
 
-/* Force RTL sidebar to right side with highest specificity */
+[dir="rtl"] .sidebar-layout {
+  flex-direction: row-reverse;
+}
+
+/* Sidebar positioning - use logical properties */
+[data-sidebar="sidebar"] {
+  position: fixed;
+  top: 0;
+  inset-inline-start: 0;
+  height: 100vh;
+  border-inline-end: 1px solid hsl(var(--sidebar-border));
+  z-index: 50;
+}
+
 [dir="rtl"] [data-sidebar="sidebar"] {
-  right: 0 !important;
-  left: auto !important;
-  border-right: none !important;
-  border-left: 1px solid hsl(var(--sidebar-border)) !important;
-  transform: translateX(0) !important;
+  inset-inline-start: auto;
+  inset-inline-end: 0;
+  border-inline-end: none;
+  border-inline-start: 1px solid hsl(var(--sidebar-border));
 }
 
-/* RTL sidebar states */
-[dir="rtl"] [data-sidebar="sidebar"][data-state="expanded"] {
-  right: 0 !important;
-  left: auto !important;
+/* Main content positioning */
+[data-sidebar="inset"] {
+  margin-inline-start: var(--sidebar-width, 280px);
+  transition: margin-inline-start 0.2s ease;
+  flex: 1;
+  min-width: 0;
 }
 
-[dir="rtl"] [data-sidebar="sidebar"][data-state="collapsed"] {
-  right: calc(var(--sidebar-width) * -1 + var(--sidebar-width-icon)) !important;
-  left: auto !important;
+[data-sidebar="inset"][data-state="collapsed"] {
+  margin-inline-start: var(--sidebar-width-icon, 68px);
 }
 
-/* RTL main content margins */
-[dir="rtl"] [data-sidebar="inset"] {
-  margin-right: var(--sidebar-width) !important;
-  margin-left: 0 !important;
-}
-
-[dir="rtl"] [data-sidebar="inset"][data-state="collapsed"] {
-  margin-right: var(--sidebar-width-icon) !important;
-  margin-left: 0 !important;
-}
-
-/* RTL sidebar trigger positioning */
-[dir="rtl"] [data-sidebar="trigger"] {
-  order: 999 !important;
-}
-
-/* RTL sidebar content alignment */
+/* Sidebar content alignment */
 [dir="rtl"] [data-sidebar="sidebar"] [data-sidebar="menu-button"] {
-  flex-direction: row-reverse !important;
-  text-align: right !important;
+  flex-direction: row-reverse;
+  text-align: right;
 }
 
-[dir="rtl"] [data-sidebar="sidebar"] [data-sidebar="header"] {
-  text-align: right !important;
-}
-
+[dir="rtl"] [data-sidebar="sidebar"] [data-sidebar="header"],
 [dir="rtl"] [data-sidebar="sidebar"] [data-sidebar="footer"] {
-  text-align: right !important;
+  text-align: right;
 }
 
-/* RTL sidebar menu items */
 [dir="rtl"] [data-sidebar="menu-item"] {
-  direction: rtl !important;
-  text-align: right !important;
+  direction: rtl;
+  text-align: right;
 }
 
 [dir="rtl"] [data-sidebar="menu-item"] a {
-  flex-direction: row-reverse !important;
+  flex-direction: row-reverse;
 }
 
 [dir="rtl"] [data-sidebar="menu-item"] svg {
-  margin-left: 0.5rem !important;
-  margin-right: 0 !important;
+  margin-inline-start: 0.5rem;
+  margin-inline-end: 0;
 }
 
-/* RTL sidebar group labels */
 [dir="rtl"] [data-sidebar="group-label"] {
-  text-align: right !important;
-  direction: rtl !important;
+  text-align: right;
+  direction: rtl;
 }
 
-/* Force proper RTL layout */
-[dir="rtl"] .sidebar-inset {
-  margin-right: var(--sidebar-width) !important;
-  margin-left: 0 !important;
+/* Sidebar trigger positioning */
+[dir="rtl"] [data-sidebar="trigger"] {
+  order: 999;
 }
 
-/* RTL animations */
-[dir="rtl"] .animate-slide-in-from-left {
-  animation: slideInFromRight 0.3s ease-out;
-}
-
-[dir="rtl"] .animate-slide-in-from-right {
-  animation: slideInFromLeft 0.3s ease-out;
-}
-
-@keyframes slideInFromRight {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
+/* Mobile responsive */
+@media (max-width: 768px) {
+  [data-sidebar="inset"] {
+    margin-inline-start: 0;
   }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes slideInFromLeft {
-  from {
+  
+  [data-sidebar="sidebar"] {
     transform: translateX(-100%);
-    opacity: 0;
   }
-  to {
+  
+  [dir="rtl"] [data-sidebar="sidebar"] {
+    transform: translateX(100%);
+  }
+  
+  [data-sidebar="sidebar"][data-state="expanded"] {
     transform: translateX(0);
-    opacity: 1;
   }
 }
 
@@ -237,15 +218,6 @@
   text-align: right;
 }
 
-/* Global RTL utilities */
-.rtl-flip {
-  transform: scaleX(-1);
-}
-
-[dir="rtl"] .rtl-flip {
-  transform: scaleX(1);
-}
-
 /* Fix for dropdowns and modals in RTL */
 [dir="rtl"] .dropdown-content {
   right: 0;
@@ -254,12 +226,4 @@
 
 [dir="rtl"] .modal-content {
   text-align: right;
-}
-
-/* Responsive RTL adjustments */
-@media (max-width: 768px) {
-  [dir="rtl"] .mobile-nav {
-    right: 0;
-    left: auto;
-  }
 }

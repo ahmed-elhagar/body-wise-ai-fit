@@ -4,24 +4,24 @@ import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/s
 import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "@/hooks/useAuth";
 import AppSidebar from "./AppSidebar";
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useI18n } from '@/hooks/useI18n';
 
 interface LayoutProps {
   children: ReactNode;
 }
 
 const Layout = memo(({ children }: LayoutProps) => {
-  const { isRTL, language } = useLanguage();
+  const { isRTL, t } = useI18n();
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className={`min-h-screen flex w-full bg-gray-50 ${isRTL ? 'rtl' : 'ltr'} ${language === 'ar' ? 'font-arabic' : ''}`} dir={isRTL ? 'rtl' : 'ltr'}>
+      <div className={`sidebar-layout bg-gray-50 ${isRTL ? 'font-arabic' : ''}`}>
         <AppSidebar />
-        <SidebarInset className="flex-1 w-full" data-sidebar="inset">
+        <SidebarInset className="flex-1 w-full min-w-0" data-sidebar="inset">
           {/* Mobile header with sidebar trigger */}
           <div className={`flex h-14 items-center gap-3 border-b bg-white px-4 md:hidden ${isRTL ? 'flex-row-reverse' : ''}`}>
             <SidebarTrigger className="h-8 w-8" data-sidebar="trigger" />
-            <h1 className="font-semibold text-gray-900">FitFatta</h1>
+            <h1 className="font-semibold text-gray-900">{t('common:appName')}</h1>
           </div>
           
           {/* Desktop header with sidebar trigger */}

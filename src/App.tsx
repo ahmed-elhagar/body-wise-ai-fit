@@ -21,6 +21,7 @@ import Onboarding from './pages/Onboarding';
 import NotFound from './pages/NotFound';
 import FoodTracker from './pages/FoodTracker';
 import { Toaster } from "@/components/ui/sonner"
+import './i18n/config';
 
 const queryClient = new QueryClient({
   defaultOptions: {
