@@ -70,6 +70,8 @@ const MealPlanDialogs = ({
   onExchange,
   onRecipeGenerated
 }: MealPlanDialogsProps) => {
+  console.log('🔧 MealPlanDialogs rendered with selectedMeal:', selectedMeal?.name);
+
   return (
     <>
       {/* Enhanced AI Generation Dialog */}

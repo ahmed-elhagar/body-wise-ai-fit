@@ -6,12 +6,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeftRight, Sparkles, Clock, Users } from "lucide-react";
 import { useEnhancedMealExchange } from "@/hooks/useEnhancedMealExchange";
-import type { Meal } from "@/types/meal";
+import type { DailyMeal } from "@/hooks/useMealPlanData";
 
 interface MealExchangeDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  currentMeal: Meal;
+  currentMeal: DailyMeal;
   onExchange: () => void;
 }
 
@@ -19,14 +19,56 @@ const MealExchangeDialog = ({ isOpen, onClose, currentMeal, onExchange }: MealEx
   const { generateMealAlternatives, exchangeMeal, isExchanging, alternatives } = useEnhancedMealExchange();
   const [selectedAlternative, setSelectedAlternative] = useState<any>(null);
 
+  console.log('🔄 MealExchangeDialog rendered with meal:', currentMeal?.name);
+
   const handleGenerateAlternatives = async () => {
     console.log('🔄 Generating alternatives for meal:', currentMeal.name);
-    await generateMealAlternatives(currentMeal);
+    // Convert DailyMeal to Meal format for the hook
+    const mealForHook = {
+      id: currentMeal.id,
+      type: currentMeal.meal_type,
+      time: "12:00",
+      name: currentMeal.name,
+      calories: currentMeal.calories,
+      protein: currentMeal.protein,
+      carbs: currentMeal.carbs,
+      fat: currentMeal.fat,
+      ingredients: currentMeal.ingredients || [],
+      instructions: currentMeal.instructions || [],
+      cookTime: currentMeal.cook_time || 0,
+      prepTime: currentMeal.prep_time || 0,
+      servings: currentMeal.servings,
+      image: currentMeal.image_url || "",
+      imageUrl: currentMeal.image_url,
+      image_url: currentMeal.image_url,
+      youtube_search_term: currentMeal.youtube_search_term
+    };
+    await generateMealAlternatives(mealForHook);
   };
 
   const handleExchange = async (alternative: any) => {
     console.log('🔄 Exchanging meal with alternative:', alternative.name);
-    const success = await exchangeMeal(currentMeal, alternative);
+    // Convert DailyMeal to Meal format for the hook
+    const mealForHook = {
+      id: currentMeal.id,
+      type: currentMeal.meal_type,
+      time: "12:00",
+      name: currentMeal.name,
+      calories: currentMeal.calories,
+      protein: currentMeal.protein,
+      carbs: currentMeal.carbs,
+      fat: currentMeal.fat,
+      ingredients: currentMeal.ingredients || [],
+      instructions: currentMeal.instructions || [],
+      cookTime: currentMeal.cook_time || 0,
+      prepTime: currentMeal.prep_time || 0,
+      servings: currentMeal.servings,
+      image: currentMeal.image_url || "",
+      imageUrl: currentMeal.image_url,
+      image_url: currentMeal.image_url,
+      youtube_search_term: currentMeal.youtube_search_term
+    };
+    const success = await exchangeMeal(mealForHook, alternative);
     if (success) {
       onExchange();
       onClose();
@@ -53,7 +95,7 @@ const MealExchangeDialog = ({ isOpen, onClose, currentMeal, onExchange }: MealEx
               <div className="flex flex-wrap gap-2 mb-3">
                 <Badge>
                   <Clock className="w-3 h-3 mr-1" />
-                  {(currentMeal.prepTime || 0) + (currentMeal.cookTime || 0)} min
+                  {(currentMeal.prep_time || 0) + (currentMeal.cook_time || 0)} min
                 </Badge>
                 <Badge>
                   <Users className="w-3 h-3 mr-1" />
