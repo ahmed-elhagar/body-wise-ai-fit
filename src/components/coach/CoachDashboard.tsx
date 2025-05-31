@@ -7,6 +7,7 @@ import { useCoachSystem } from "@/hooks/useCoachSystem";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { AssignTraineeDialog } from "./AssignTraineeDialog";
 import { TraineeCard } from "./TraineeCard";
+import { TestDataStatus } from "./TestDataStatus";
 import { useState } from "react";
 
 const CoachDashboard = () => {
@@ -88,6 +89,9 @@ const CoachDashboard = () => {
             {language === 'ar' ? 'إضافة متدرب' : 'Add Trainee'}
           </Button>
         </div>
+
+        {/* Test Data Status */}
+        <TestDataStatus />
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
