@@ -18,13 +18,39 @@ export const useEnhancedMealRecipe = () => {
       return null;
     }
 
+    if (!mealId) {
+      toast.error('Meal ID is required to generate recipe');
+      return null;
+    }
+
     setIsGeneratingRecipe(true);
     
     try {
-      console.log('🍳 Generating enhanced recipe for meal:', mealId, 'in language:', language);
+      console.log('🍳 Starting enhanced recipe generation for meal:', mealId, 'in language:', language);
       
+      // First, check if recipe already exists in database
+      const { data: existingMeal, error: fetchError } = await supabase
+        .from('daily_meals')
+        .select('*')
+        .eq('id', mealId)
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching meal:', fetchError);
+        throw new Error('Failed to fetch meal data');
+      }
+
+      // If recipe already exists and is complete, return it
+      if (existingMeal?.recipe_fetched && 
+          existingMeal?.ingredients?.length > 0 && 
+          existingMeal?.instructions?.length > 0) {
+        console.log('✅ Recipe already exists in database, returning cached version');
+        toast.success('Recipe loaded from cache!');
+        return existingMeal;
+      }
+
       // Show loading feedback
-      toast.loading('Generating detailed recipe with images...', {
+      toast.loading('Generating detailed recipe with AI...', {
         duration: 15000,
       });
 
@@ -34,17 +60,20 @@ export const useEnhancedMealRecipe = () => {
         promptData: {
           mealId: mealId,
           language: language,
-          action: 'recipe_generation'
+          action: 'recipe_generation',
+          mealName: mealData?.name || existingMeal?.name
         }
       });
 
       try {
+        console.log('🔄 Making API call to generate-meal-recipe function');
+        
         const { data, error } = await supabase.functions.invoke('generate-meal-recipe', {
           body: {
             mealId: mealId,
             userId: user.id,
             language: language,
-            mealData: mealData
+            mealData: mealData || existingMeal
           }
         });
 
@@ -68,26 +97,28 @@ export const useEnhancedMealRecipe = () => {
             }
           });
 
-          if (data.message.includes('already available')) {
+          if (data.message?.includes('already available')) {
             toast.success('Recipe loaded from cache!');
           } else {
             toast.success(
-              `🎉 Recipe generated! (${data.recipeCount}/${data.dailyLimit} today)`,
+              `🎉 Recipe generated! (${data.recipeCount || 1}/${data.dailyLimit || 10} today)`,
               { duration: 3000 }
             );
           }
           
-          // Fetch updated meal data
-          const { data: updatedMeal, error: fetchError } = await supabase
+          // Fetch updated meal data from database
+          const { data: updatedMeal, error: refetchError } = await supabase
             .from('daily_meals')
             .select('*')
             .eq('id', mealId)
             .single();
 
-          if (fetchError) {
-            throw fetchError;
+          if (refetchError) {
+            console.error('Error refetching updated meal:', refetchError);
+            throw refetchError;
           }
 
+          console.log('📄 Updated meal data:', updatedMeal);
           return updatedMeal;
           
         } else {
@@ -121,6 +152,8 @@ export const useEnhancedMealRecipe = () => {
   };
 
   const generateYouTubeSearchTerm = (mealName: string) => {
+    if (!mealName) return 'cooking recipe tutorial';
+    
     const cleanName = mealName.replace(/🍎\s*/, '').trim();
     return `${cleanName} recipe cooking tutorial`;
   };

@@ -18,11 +18,15 @@ serve(async (req) => {
   }
 
   try {
-    const { mealId, userId, language = 'en' } = await req.json();
+    const { mealId, userId, language = 'en', mealData } = await req.json();
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 
     if (!openAIApiKey) {
       throw new Error('OpenAI API key not configured');
+    }
+
+    if (!mealId || !userId) {
+      throw new Error('Meal ID and User ID are required');
     }
 
     console.log('=== MEAL RECIPE GENERATION START ===');
@@ -38,11 +42,21 @@ serve(async (req) => {
       .single();
 
     if (mealError || !meal) {
+      console.error('Meal fetch error:', mealError);
       throw new Error('Meal not found');
     }
 
-    // Check if recipe already exists
-    if (meal.recipe_fetched && meal.ingredients?.length > 0 && meal.instructions?.length > 0) {
+    console.log('📊 Current meal data:', {
+      name: meal.name,
+      recipe_fetched: meal.recipe_fetched,
+      has_ingredients: meal.ingredients?.length > 0,
+      has_instructions: meal.instructions?.length > 0
+    });
+
+    // Check if recipe already exists and is complete
+    if (meal.recipe_fetched && 
+        meal.ingredients?.length > 0 && 
+        meal.instructions?.length > 0) {
       console.log('✅ Recipe already exists for meal:', meal.name);
       return new Response(JSON.stringify({ 
         success: true,
@@ -59,7 +73,7 @@ serve(async (req) => {
       .from('ai_generation_logs')
       .select('id')
       .eq('user_id', userId)
-      .eq('generation_type', 'recipe')
+      .eq('generation_type', 'meal_plan')
       .gte('created_at', `${today}T00:00:00.000Z`)
       .lte('created_at', `${today}T23:59:59.999Z`);
 
@@ -72,13 +86,13 @@ serve(async (req) => {
       throw new Error('Daily recipe generation limit reached (10 per day)');
     }
 
-    console.log(`Generating detailed recipe for: ${meal.name} (${todayRecipeCount + 1}/10 today) in ${language}`);
+    console.log(`🔄 Generating detailed recipe for: ${meal.name} (${todayRecipeCount + 1}/10 today) in ${language}`);
 
     // Language-aware prompt generation
     const isArabic = language === 'ar';
     const systemPrompt = isArabic 
-      ? 'أنت طاهٍ محترف. قم بإنشاء وصفات مفصلة باللغة العربية بتنسيق JSON فقط.'
-      : 'You are a professional chef. Generate detailed recipes in JSON format only.';
+      ? 'أنت طاهٍ محترف متخصص. قم بإنشاء وصفات مفصلة باللغة العربية بتنسيق JSON فقط.'
+      : 'You are a professional chef specialist. Generate detailed recipes in JSON format only.';
 
     const userPrompt = isArabic 
       ? `أنت طاهٍ محترف. قم بإنشاء وصفة مفصلة لـ "${meal.name}" تحتوي على ${meal.calories} سعرة حرارية بالضبط و ${meal.servings} حصة.
@@ -92,7 +106,6 @@ serve(async (req) => {
 - وقت التحضير: ${meal.prep_time} دقيقة
 - وقت الطبخ: ${meal.cook_time} دقيقة
 - عدد الحصص: ${meal.servings}
-- المطبخ: ${meal.cuisine || 'عالمي'}
 
 أنشئ JSON صحيح فقط مع مكونات مفصلة وتعليمات وموجه لإنشاء الصورة:
 
@@ -101,11 +114,7 @@ serve(async (req) => {
     {
       "name": "اسم المكون",
       "quantity": "100",
-      "unit": "جم",
-      "calories": 50,
-      "protein": 5,
-      "carbs": 10,
-      "fat": 2
+      "unit": "جم"
     }
   ],
   "instructions": [
@@ -115,8 +124,7 @@ serve(async (req) => {
   ],
   "imagePrompt": "تصوير طعام احترافي لـ ${meal.name}، مقدم بشكل جميل، إضاءة طبيعية، عرض شهي",
   "youtubeSearchTerm": "${meal.name} وصفة طبخ تعليمي",
-  "tips": "نصائح الطاهي للحصول على أفضل النتائج",
-  "nutritionBenefits": "الفوائد الصحية لهذه الوجبة"
+  "tips": "نصائح الطاهي للحصول على أفضل النتائج"
 }`
       : `You are a professional chef. Generate a detailed recipe for "${meal.name}" with exactly ${meal.calories} calories and ${meal.servings} serving(s).
 
@@ -129,20 +137,15 @@ MEAL INFO:
 - Prep Time: ${meal.prep_time} minutes
 - Cook Time: ${meal.cook_time} minutes
 - Servings: ${meal.servings}
-- Cuisine: ${meal.cuisine || 'international'}
 
-Generate ONLY valid JSON with detailed ingredients, instructions, and image generation prompt:
+Generate ONLY valid JSON with detailed ingredients and instructions:
 
 {
   "ingredients": [
     {
       "name": "ingredient name",
       "quantity": "100",
-      "unit": "g",
-      "calories": 50,
-      "protein": 5,
-      "carbs": 10,
-      "fat": 2
+      "unit": "g"
     }
   ],
   "instructions": [
@@ -152,9 +155,10 @@ Generate ONLY valid JSON with detailed ingredients, instructions, and image gene
   ],
   "imagePrompt": "Professional food photography of ${meal.name}, beautifully plated, natural lighting, appetizing presentation",
   "youtubeSearchTerm": "${meal.name} recipe cooking tutorial",
-  "tips": "Chef tips for best results",
-  "nutritionBenefits": "Health benefits of this meal"
+  "tips": "Chef tips for best results"
 }`;
+
+    console.log('🤖 Sending request to OpenAI API...');
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -174,12 +178,15 @@ Generate ONLY valid JSON with detailed ingredients, instructions, and image gene
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('OpenAI API error:', response.status, errorText);
       throw new Error(`OpenAI API error: ${response.status}`);
     }
 
     const data = await response.json();
     
     if (!data.choices?.[0]?.message?.content) {
+      console.error('Invalid OpenAI response:', data);
       throw new Error('Invalid response from OpenAI API');
     }
 
@@ -189,14 +196,17 @@ Generate ONLY valid JSON with detailed ingredients, instructions, and image gene
       const content = data.choices[0].message.content.trim();
       const cleanedContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       recipeData = JSON.parse(cleanedContent);
+      console.log('✅ Recipe data parsed successfully');
     } catch (parseError) {
       console.error('Failed to parse recipe response:', parseError);
+      console.error('Raw content:', data.choices[0].message.content);
       throw new Error('Failed to parse AI recipe response');
     }
 
-    // Generate meal image using the image prompt
+    // Generate meal image using DALL-E 3
     let imageUrl = null;
     try {
+      console.log('🎨 Generating recipe image...');
       const imageResponse = await fetch('https://api.openai.com/v1/images/generations', {
         method: 'POST',
         headers: {
@@ -205,7 +215,7 @@ Generate ONLY valid JSON with detailed ingredients, instructions, and image gene
         },
         body: JSON.stringify({
           model: 'dall-e-3',
-          prompt: recipeData.imagePrompt || `Professional food photography of ${meal.name}, beautifully plated`,
+          prompt: recipeData.imagePrompt || `Professional food photography of ${meal.name}, beautifully plated, natural lighting, appetizing presentation`,
           n: 1,
           size: '1024x1024',
           quality: 'standard',
@@ -216,47 +226,71 @@ Generate ONLY valid JSON with detailed ingredients, instructions, and image gene
       if (imageResponse.ok) {
         const imageData = await imageResponse.json();
         imageUrl = imageData.data[0].url;
-        console.log('✅ Image generated for meal:', meal.name);
+        console.log('✅ Image generated successfully');
+      } else {
+        console.warn('Image generation failed:', await imageResponse.text());
       }
     } catch (imageError) {
       console.error('Image generation failed:', imageError);
       // Continue without image
     }
 
-    // Update meal with detailed recipe
+    // Update meal with detailed recipe in database
+    console.log('💾 Saving recipe to database...');
+    
+    const updateData = {
+      ingredients: recipeData.ingredients || [],
+      instructions: recipeData.instructions || [],
+      youtube_search_term: recipeData.youtubeSearchTerm || `${meal.name} recipe cooking tutorial`,
+      recipe_fetched: true
+    };
+
+    if (imageUrl) {
+      updateData.image_url = imageUrl;
+    }
+
     const { error: updateError } = await supabase
       .from('daily_meals')
-      .update({
-        ingredients: recipeData.ingredients || [],
-        instructions: recipeData.instructions || [],
-        youtube_search_term: recipeData.youtubeSearchTerm || `${meal.name} recipe`,
-        image_url: imageUrl,
-        recipe_fetched: true
-      })
+      .update(updateData)
       .eq('id', mealId);
 
     if (updateError) {
+      console.error('Database update error:', updateError);
       throw new Error('Failed to update meal with recipe data');
     }
 
-    // Log the generation
+    console.log('✅ Recipe saved to database successfully');
+
+    // Log the successful generation
     await supabase
       .from('ai_generation_logs')
       .insert({
         user_id: userId,
-        generation_type: 'recipe',
-        prompt_data: { meal_name: meal.name, meal_id: mealId, language: language },
-        response_data: { recipe_generated: true, image_generated: !!imageUrl },
-        status: 'success'
+        generation_type: 'meal_plan',
+        prompt_data: { 
+          meal_name: meal.name, 
+          meal_id: mealId, 
+          language: language,
+          action: 'recipe_generation'
+        },
+        response_data: { 
+          recipe_generated: true, 
+          image_generated: !!imageUrl,
+          ingredients_count: recipeData.ingredients?.length || 0,
+          instructions_count: recipeData.instructions?.length || 0
+        },
+        status: 'completed'
       });
 
-    console.log('✅ Recipe generated and saved for:', meal.name);
+    console.log('✅ Generation logged successfully');
+    console.log('=== MEAL RECIPE GENERATION COMPLETE ===');
 
     return new Response(JSON.stringify({ 
       success: true,
       message: `Recipe generated for ${meal.name}`,
       recipeCount: todayRecipeCount + 1,
-      dailyLimit: 10
+      dailyLimit: 10,
+      imageGenerated: !!imageUrl
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
@@ -265,24 +299,6 @@ Generate ONLY valid JSON with detailed ingredients, instructions, and image gene
     console.error('=== RECIPE GENERATION FAILED ===');
     console.error('Error details:', error);
     
-    // Log the error
-    if (req.body) {
-      try {
-        const { userId } = await req.json();
-        await supabase
-          .from('ai_generation_logs')
-          .insert({
-            user_id: userId,
-            generation_type: 'recipe',
-            prompt_data: { error: true },
-            status: 'failed',
-            error_message: error.message
-          });
-      } catch (logError) {
-        console.error('Failed to log error:', logError);
-      }
-    }
-
     return new Response(JSON.stringify({ 
       success: false,
       error: error.message || 'Failed to generate recipe'
