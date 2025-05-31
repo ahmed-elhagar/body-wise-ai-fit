@@ -42,9 +42,27 @@ const MealGrid = ({
   }, {} as Record<string, DailyMeal[]>);
 
   const mealTypeOrder = ['breakfast', 'lunch', 'dinner', 'snack'];
+
+  // Test button handler
+  const handleTestClick = () => {
+    console.log('🧪 TEST BUTTON CLICKED! This proves buttons can fire in this context');
+    alert('Test button works!');
+  };
   
   return (
     <div className="space-y-6">
+      {/* TEST BUTTON - Remove this after testing */}
+      <div className="bg-red-100 p-4 rounded-lg border-2 border-red-300">
+        <h3 className="text-red-800 font-bold mb-2">🧪 TEST AREA - Remove after testing</h3>
+        <Button
+          onClick={handleTestClick}
+          className="bg-red-500 hover:bg-red-600 text-white"
+        >
+          🧪 TEST BUTTON - Click me to verify buttons work
+        </Button>
+        <p className="text-sm text-red-700 mt-2">If this button works, the issue is specific to MealCard buttons</p>
+      </div>
+
       {mealTypeOrder.map(mealType => {
         const typeMeals = mealsByType[mealType] || [];
         if (typeMeals.length === 0 && mealType !== 'snack') return null;
