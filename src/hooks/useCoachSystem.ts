@@ -48,29 +48,10 @@ export const useCoachSystem = () => {
       console.log('🏃‍♂️ Fetching trainees for coach:', user.id);
 
       try {
-        // Get coach-trainee relationships with profile data in a single query
+        // Get coach-trainee relationships first
         const { data: relationships, error: relationshipsError } = await supabase
           .from('coach_trainees')
-          .select(`
-            id,
-            coach_id,
-            trainee_id,
-            assigned_at,
-            notes,
-            trainee_profile:profiles!coach_trainees_trainee_id_fkey(
-              id,
-              first_name,
-              last_name,
-              email,
-              age,
-              weight,
-              height,
-              fitness_goal,
-              activity_level,
-              profile_completion_score,
-              ai_generations_remaining
-            )
-          `)
+          .select('*')
           .eq('coach_id', user.id)
           .order('assigned_at', { ascending: false });
 
@@ -86,29 +67,45 @@ export const useCoachSystem = () => {
           return [];
         }
 
-        // Transform the data to match our interface
-        const transformedData = relationships.map(relationship => ({
-          id: relationship.id,
-          coach_id: relationship.coach_id,
-          trainee_id: relationship.trainee_id,
-          assigned_at: relationship.assigned_at,
-          notes: relationship.notes,
-          trainee_profile: {
-            id: relationship.trainee_profile?.id || relationship.trainee_id,
-            first_name: relationship.trainee_profile?.first_name || 'Unknown',
-            last_name: relationship.trainee_profile?.last_name || 'User',
-            email: relationship.trainee_profile?.email || 'unknown@example.com',
-            age: relationship.trainee_profile?.age,
-            weight: relationship.trainee_profile?.weight,
-            height: relationship.trainee_profile?.height,
-            fitness_goal: relationship.trainee_profile?.fitness_goal,
-            activity_level: relationship.trainee_profile?.activity_level,
-            profile_completion_score: relationship.trainee_profile?.profile_completion_score || 0,
-            ai_generations_remaining: relationship.trainee_profile?.ai_generations_remaining || 0,
+        // Get profile data for each trainee separately
+        const traineeIds = relationships.map(rel => rel.trainee_id);
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('*')
+          .in('id', traineeIds);
+
+        if (profilesError) {
+          console.error('❌ Error fetching trainee profiles:', profilesError);
+          throw profilesError;
+        }
+
+        // Combine relationships with profiles
+        const transformedData = relationships.map(relationship => {
+          const profile = profiles?.find(p => p.id === relationship.trainee_id);
+          
+          return {
+            id: relationship.id,
+            coach_id: relationship.coach_id,
+            trainee_id: relationship.trainee_id,
             assigned_at: relationship.assigned_at,
-            notes: relationship.notes
-          }
-        })) as CoachTraineeRelationship[];
+            notes: relationship.notes,
+            trainee_profile: {
+              id: profile?.id || relationship.trainee_id,
+              first_name: profile?.first_name || 'Unknown',
+              last_name: profile?.last_name || 'User',
+              email: profile?.email || 'unknown@example.com',
+              age: profile?.age,
+              weight: profile?.weight,
+              height: profile?.height,
+              fitness_goal: profile?.fitness_goal,
+              activity_level: profile?.activity_level,
+              profile_completion_score: profile?.profile_completion_score || 0,
+              ai_generations_remaining: profile?.ai_generations_remaining || 0,
+              assigned_at: relationship.assigned_at,
+              notes: relationship.notes
+            }
+          };
+        }) as CoachTraineeRelationship[];
 
         console.log('✅ Final transformed data:', transformedData.length, transformedData);
         return transformedData;
@@ -164,17 +161,7 @@ export const useCoachSystem = () => {
       try {
         const { data: relationship, error: relationshipError } = await supabase
           .from('coach_trainees')
-          .select(`
-            id,
-            assigned_at,
-            notes,
-            coach_profile:profiles!coach_trainees_coach_id_fkey(
-              id,
-              first_name,
-              last_name,
-              email
-            )
-          `)
+          .select('*')
           .eq('trainee_id', user.id)
           .single();
 
@@ -185,11 +172,33 @@ export const useCoachSystem = () => {
 
         if (!relationship) return null;
 
+        // Get coach profile separately
+        const { data: coachProfile, error: coachProfileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', relationship.coach_id)
+          .single();
+
+        if (coachProfileError) {
+          console.error('Error fetching coach profile:', coachProfileError);
+          return {
+            id: relationship.id,
+            assigned_at: relationship.assigned_at,
+            notes: relationship.notes,
+            coach_profile: {
+              id: relationship.coach_id,
+              first_name: 'Unknown',
+              last_name: 'Coach',
+              email: 'unknown@example.com'
+            }
+          };
+        }
+
         return {
           id: relationship.id,
           assigned_at: relationship.assigned_at,
           notes: relationship.notes,
-          coach_profile: relationship.coach_profile
+          coach_profile: coachProfile
         };
       } catch (error) {
         console.error('Error in coach info fetch:', error);

@@ -11,23 +11,28 @@ export const useUnreadMessages = () => {
     queryFn: async () => {
       if (!user?.id) return 0;
 
+      console.log('🔔 Fetching unread messages for user:', user.id);
+
       // Count unread messages where current user is the recipient
+      // This works for both coaches and trainees
       const { count, error } = await supabase
         .from('coach_trainee_messages')
         .select('*', { count: 'exact', head: true })
         .eq('is_read', false)
-        .or(`coach_id.eq.${user.id},trainee_id.eq.${user.id}`)
+        .or(`and(coach_id.eq.${user.id},sender_type.eq.trainee),and(trainee_id.eq.${user.id},sender_type.eq.coach)`)
         .neq('sender_id', user.id);
 
       if (error) {
-        console.error('Error fetching unread message count:', error);
+        console.error('❌ Error fetching unread message count:', error);
         return 0;
       }
 
+      console.log('📊 Unread messages count:', count);
       return count || 0;
     },
     enabled: !!user?.id,
     refetchInterval: 10000, // Check every 10 seconds
+    staleTime: 5000, // Consider data stale after 5 seconds for real-time feel
   });
 };
 
@@ -40,15 +45,18 @@ export const useUnreadMessagesByTrainee = () => {
     queryFn: async () => {
       if (!user?.id) return {};
 
+      console.log('🔔 Fetching unread messages by trainee for coach:', user.id);
+
       const { data, error } = await supabase
         .from('coach_trainee_messages')
         .select('trainee_id')
         .eq('coach_id', user.id)
         .eq('is_read', false)
+        .eq('sender_type', 'trainee') // Only messages from trainees to coach
         .neq('sender_id', user.id);
 
       if (error) {
-        console.error('Error fetching unread messages by trainee:', error);
+        console.error('❌ Error fetching unread messages by trainee:', error);
         return {};
       }
 
@@ -58,9 +66,44 @@ export const useUnreadMessagesByTrainee = () => {
         unreadCounts[msg.trainee_id] = (unreadCounts[msg.trainee_id] || 0) + 1;
       });
 
+      console.log('📊 Unread counts by trainee:', unreadCounts);
       return unreadCounts;
     },
     enabled: !!user?.id,
     refetchInterval: 10000, // Check every 10 seconds
+    staleTime: 5000,
+  });
+};
+
+// Hook to get unread messages from coach for trainees
+export const useUnreadMessagesFromCoach = () => {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ['unread-messages-from-coach', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return 0;
+
+      console.log('🔔 Fetching unread messages from coach for trainee:', user.id);
+
+      const { count, error } = await supabase
+        .from('coach_trainee_messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('trainee_id', user.id)
+        .eq('is_read', false)
+        .eq('sender_type', 'coach') // Only messages from coach to trainee
+        .neq('sender_id', user.id);
+
+      if (error) {
+        console.error('❌ Error fetching unread messages from coach:', error);
+        return 0;
+      }
+
+      console.log('📊 Unread messages from coach:', count);
+      return count || 0;
+    },
+    enabled: !!user?.id,
+    refetchInterval: 10000,
+    staleTime: 5000,
   });
 };
