@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -48,41 +49,48 @@ export const useCoachSystem = () => {
     queryKey: ['coach-info', user?.id],
     queryFn: async () => {
       if (!user?.id) {
-        console.log('❌ No user ID found');
+        console.log('❌ useCoachSystem: No user ID found');
         return null;
       }
 
-      console.log('🔍 Fetching coach info for user:', user.id);
+      console.log('🔍 useCoachSystem: Fetching coach info for user:', user.id);
+      console.log('🔍 useCoachSystem: User role check - isRoleCoach:', isRoleCoach, 'isAdmin:', isAdmin);
 
       try {
         // First get the coach-trainee relationship
+        console.log('🔍 useCoachSystem: Querying coach_trainees table...');
         const { data: relationship, error: relationshipError } = await supabase
           .from('coach_trainees')
           .select('*')
           .eq('trainee_id', user.id)
           .maybeSingle();
 
+        console.log('🔍 useCoachSystem: Relationship query result:', { relationship, relationshipError });
+
         if (relationshipError) {
-          console.error('❌ Error fetching coach relationship:', relationshipError);
+          console.error('❌ useCoachSystem: Error fetching coach relationship:', relationshipError);
           throw new Error(`Failed to fetch coach relationship: ${relationshipError.message}`);
         }
 
         if (!relationship) {
-          console.log('📭 No coach assigned to this user');
+          console.log('📭 useCoachSystem: No coach assigned to this user');
           return null;
         }
 
-        console.log('✅ Found coach relationship:', relationship);
+        console.log('✅ useCoachSystem: Found coach relationship:', relationship);
 
         // Then get the coach profile
+        console.log('🔍 useCoachSystem: Fetching coach profile for coach_id:', relationship.coach_id);
         const { data: coachProfile, error: coachProfileError } = await supabase
           .from('profiles')
           .select('id, first_name, last_name, email')
           .eq('id', relationship.coach_id)
           .maybeSingle();
 
+        console.log('🔍 useCoachSystem: Coach profile query result:', { coachProfile, coachProfileError });
+
         if (coachProfileError) {
-          console.error('❌ Error fetching coach profile:', coachProfileError);
+          console.error('❌ useCoachSystem: Error fetching coach profile:', coachProfileError);
           // Don't throw here, just log and continue with null profile
         }
 
@@ -95,10 +103,10 @@ export const useCoachSystem = () => {
           coach_profile: coachProfile || null
         };
 
-        console.log('✅ Coach info fetched successfully:', result);
+        console.log('✅ useCoachSystem: Coach info fetched successfully:', result);
         return result;
       } catch (error) {
-        console.error('❌ Error in coach info query:', error);
+        console.error('❌ useCoachSystem: Error in coach info query:', error);
         throw error;
       }
     },
@@ -106,8 +114,8 @@ export const useCoachSystem = () => {
     staleTime: 1000 * 60 * 5, // 5 minutes
     refetchOnWindowFocus: false,
     retry: (failureCount, error) => {
-      console.log('🔄 Retry attempt:', failureCount, 'Error:', error);
-      return failureCount < 2; // Only retry twice
+      console.log('🔄 useCoachSystem: Retry attempt:', failureCount, 'Error:', error);
+      return failureCount < 3; // Retry up to 3 times
     },
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
   });

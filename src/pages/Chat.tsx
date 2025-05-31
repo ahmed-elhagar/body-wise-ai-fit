@@ -6,22 +6,35 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MessageCircle, Bot, Users, AlertCircle, Loader2, RefreshCw } from "lucide-react";
+import { MessageCircle, Bot, Users, AlertCircle, Loader2, RefreshCw, Bug } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { useCoachSystem } from "@/hooks/useCoachSystem";
 import { useUnreadMessagesFromCoach } from "@/hooks/useUnreadMessages";
 import { TraineeCoachChat } from "@/components/coach/TraineeCoachChat";
 import { useLanguage } from "@/contexts/LanguageContext";
 import AIChatInterface from "@/components/chat/AIChatInterface";
+import { useAuth } from "@/hooks/useAuth";
+import { useRole } from "@/hooks/useRole";
 
 const Chat = () => {
   const { t } = useLanguage();
+  const { user } = useAuth();
+  const { isCoach: isRoleCoach, isAdmin } = useRole();
   const { coachInfo, isLoadingCoachInfo, coachInfoError, refetchCoachInfo } = useCoachSystem();
   const { data: unreadCoachMessages = 0 } = useUnreadMessagesFromCoach();
   const [showCoachChat, setShowCoachChat] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const [showDebugInfo, setShowDebugInfo] = useState(false);
 
-  console.log('Chat page - coachInfo:', coachInfo, 'loading:', isLoadingCoachInfo, 'error:', coachInfoError);
+  console.log('Chat page - Debug info:', {
+    userId: user?.id,
+    isRoleCoach,
+    isAdmin,
+    coachInfo,
+    isLoadingCoachInfo,
+    coachInfoError: coachInfoError?.message,
+    unreadCoachMessages
+  });
 
   // Show coach chat interface
   if (showCoachChat && coachInfo) {
@@ -40,7 +53,13 @@ const Chat = () => {
 
   const handleRetry = () => {
     setRetryCount(prev => prev + 1);
+    console.log('🔄 Chat page: Manual retry triggered, count:', retryCount + 1);
     refetchCoachInfo();
+  };
+
+  const handleForceRefresh = () => {
+    console.log('🔄 Chat page: Force refresh triggered');
+    window.location.reload();
   };
 
   return (
@@ -82,16 +101,45 @@ const Chat = () => {
           <TabsContent value="coach" className="mt-6">
             <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-green-600" />
-                  {t('Coach Chat')}
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5 text-green-600" />
+                    {t('Coach Chat')}
+                    {unreadCoachMessages > 0 && (
+                      <Badge variant="destructive" className="text-xs">
+                        {unreadCoachMessages} unread
+                      </Badge>
+                    )}
+                  </CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowDebugInfo(!showDebugInfo)}
+                    className="text-gray-500"
+                  >
+                    <Bug className="h-4 w-4" />
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
+                {showDebugInfo && (
+                  <div className="mb-4 p-3 bg-gray-100 rounded-lg text-xs">
+                    <strong>Debug Info:</strong><br />
+                    User ID: {user?.id}<br />
+                    Is Coach: {isRoleCoach ? 'Yes' : 'No'}<br />
+                    Is Admin: {isAdmin ? 'Yes' : 'No'}<br />
+                    Loading: {isLoadingCoachInfo ? 'Yes' : 'No'}<br />
+                    Coach Info: {coachInfo ? 'Found' : 'None'}<br />
+                    Error: {coachInfoError?.message || 'None'}<br />
+                    Unread Messages: {unreadCoachMessages}
+                  </div>
+                )}
+
                 {isLoadingCoachInfo ? (
                   <div className="text-center py-12">
                     <Loader2 className="h-8 w-8 text-gray-400 mx-auto mb-4 animate-spin" />
                     <p className="text-gray-600">{t('Loading coach information...')}</p>
+                    <p className="text-xs text-gray-500 mt-2">Checking your coach assignment...</p>
                   </div>
                 ) : coachInfoError ? (
                   <div className="text-center py-12">
@@ -99,24 +147,24 @@ const Chat = () => {
                     <h3 className="text-xl font-semibold text-gray-900 mb-2">
                       {t('Error Loading Coach Information')}
                     </h3>
-                    <p className="text-red-600 text-sm mb-4">
-                      {retryCount > 2 
-                        ? t('Unable to connect to coach system. Please check your internet connection.')
-                        : t('Failed to load coach information')
-                      }
+                    <p className="text-red-600 text-sm mb-2">
+                      {coachInfoError.message || 'Unknown error occurred'}
+                    </p>
+                    <p className="text-gray-500 text-xs mb-4">
+                      Retry count: {retryCount}
                     </p>
                     <div className="flex gap-2 justify-center">
                       <Button 
                         onClick={handleRetry}
                         variant="outline" 
                         size="sm"
-                        disabled={retryCount > 3}
+                        disabled={retryCount > 5}
                       >
                         <RefreshCw className="w-4 h-4 mr-2" />
                         {t('Retry')} {retryCount > 0 && `(${retryCount})`}
                       </Button>
                       <Button 
-                        onClick={() => window.location.reload()}
+                        onClick={handleForceRefresh}
                         variant="default" 
                         size="sm"
                       >
@@ -130,9 +178,16 @@ const Chat = () => {
                     <h3 className="text-xl font-semibold text-gray-900 mb-2">
                       {t('No Coach Assigned')}
                     </h3>
-                    <p className="text-gray-600">
+                    <p className="text-gray-600 mb-4">
                       {t('You don\'t have a coach assigned yet. Contact support to get paired with a coach.')}
                     </p>
+                    {unreadCoachMessages > 0 && (
+                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                        <p className="text-yellow-700 text-sm">
+                          <strong>Note:</strong> You have {unreadCoachMessages} unread messages, but no coach assignment found. This might be a data inconsistency.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -158,7 +213,10 @@ const Chat = () => {
                         </div>
                       </div>
                       <button
-                        onClick={() => setShowCoachChat(true)}
+                        onClick={() => {
+                          console.log('🔄 Chat page: Opening coach chat with coach_id:', coachInfo.coach_id);
+                          setShowCoachChat(true);
+                        }}
                         className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
                       >
                         <MessageCircle className="w-4 h-4" />
