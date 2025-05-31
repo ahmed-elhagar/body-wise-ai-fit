@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Target, Plus, RotateCcw, Award, Calendar } from "lucide-react";
+import { Target, RotateCcw, Award, Calendar } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface SummaryCardsProps {
@@ -105,14 +105,6 @@ const SummaryCards = ({
           <CardTitle className="text-base lg:text-lg font-bold text-gray-900">{t('mealPlan.quickActions')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <Button 
-            onClick={onAddSnack}
-            className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg text-sm"
-            size="sm"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            {t('mealPlan.addSnack')}
-          </Button>
           <Button 
             onClick={onRegeneratePlan}
             variant="outline" 

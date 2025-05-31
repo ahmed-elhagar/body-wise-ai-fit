@@ -3,9 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
   UtensilsCrossed, 
-  ShoppingCart, 
   Sparkles,
-  Shuffle,
   ChevronLeft,
   ChevronRight
 } from "lucide-react";
@@ -17,8 +15,6 @@ interface MealPlanHeroProps {
   currentWeekOffset: number;
   onWeekChange: (offset: number) => void;
   onShowAIDialog: () => void;
-  onShowShoppingList: () => void;
-  onRegeneratePlan: () => void;
   weeklyStats: {
     totalCalories: number;
     totalProtein: number;
@@ -33,8 +29,6 @@ const MealPlanHero = ({
   currentWeekOffset,
   onWeekChange,
   onShowAIDialog,
-  onShowShoppingList,
-  onRegeneratePlan,
   weeklyStats,
   hasWeeklyPlan
 }: MealPlanHeroProps) => {
@@ -58,40 +52,13 @@ const MealPlanHero = ({
           </div>
 
           <div className={`flex items-center gap-2 lg:gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            {hasWeeklyPlan && (
-              <>
-                <Button
-                  onClick={onShowShoppingList}
-                  variant="outline"
-                  size="sm"
-                  className="bg-white/15 border-white/30 text-white hover:bg-white/20 text-xs lg:text-sm px-2 lg:px-3"
-                >
-                  <ShoppingCart className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
-                  <span className="hidden sm:inline">{t('mealPlan.shoppingList')}</span>
-                </Button>
-                
-                <Button
-                  onClick={onRegeneratePlan}
-                  variant="outline"
-                  size="sm"
-                  className="bg-white/15 border-white/30 text-white hover:bg-white/20 text-xs lg:text-sm px-2 lg:px-3"
-                >
-                  <Shuffle className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
-                  <span className="hidden sm:inline">{t('mealPlan.shuffleMeals')}</span>
-                </Button>
-              </>
-            )}
-            
             <Button
               onClick={onShowAIDialog}
-              className="bg-white text-blue-600 hover:bg-blue-50 shadow-lg font-semibold text-xs lg:text-sm px-2 lg:px-3"
+              className="bg-white text-blue-600 hover:bg-blue-50 shadow-lg font-semibold text-xs lg:text-sm px-3 lg:px-4"
               size="sm"
             >
               <Sparkles className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
-              <span className="hidden sm:inline">
-                {hasWeeklyPlan ? t('mealPlan.regenerate') : t('mealPlan.generateAIPlan')}
-              </span>
-              <span className="sm:hidden">AI</span>
+              {hasWeeklyPlan ? t('mealPlan.regenerate') : t('mealPlan.generateAIPlan')}
             </Button>
           </div>
         </div>

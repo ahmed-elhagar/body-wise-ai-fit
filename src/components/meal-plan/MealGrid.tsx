@@ -2,7 +2,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Book, ArrowLeftRight, Plus } from "lucide-react";
+import { Clock, Book, ArrowLeftRight, Plus, ShoppingCart, Shuffle } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface MealGridProps {
@@ -10,6 +10,8 @@ interface MealGridProps {
   onShowRecipe: (meal: any) => void;
   onExchangeMeal: (meal: any) => void;
   onAddSnack: () => void;
+  onShowShoppingList: () => void;
+  onRegeneratePlan: () => void;
   dayNumber: number;
 }
 
@@ -18,6 +20,8 @@ const MealGrid = ({
   onShowRecipe,
   onExchangeMeal,
   onAddSnack,
+  onShowShoppingList,
+  onRegeneratePlan,
   dayNumber
 }: MealGridProps) => {
   const { t, isRTL } = useLanguage();
@@ -52,19 +56,54 @@ const MealGrid = ({
 
   return (
     <div className="space-y-4 lg:space-y-6">
-      {/* Day Header */}
-      <div className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 ${isRTL ? 'sm:flex-row-reverse' : ''}`}>
-        <h2 className="text-xl lg:text-2xl font-bold text-gray-900">{t('mealPlan.dayOverview')}</h2>
-        <div className={`flex items-center gap-2 text-sm ${isRTL ? 'flex-row-reverse' : ''}`}>
-          <Badge className="bg-red-100 text-red-700 px-2 lg:px-3 py-1 text-xs lg:text-sm">
-            {dayStats.calories} {t('mealPlan.cal')}
-          </Badge>
-          <Badge className="bg-blue-100 text-blue-700 px-2 lg:px-3 py-1 text-xs lg:text-sm">
-            {dayStats.protein.toFixed(1)}g {t('mealPlan.protein')}
-          </Badge>
-          <Badge className="bg-green-100 text-green-700 px-2 lg:px-3 py-1 text-xs lg:text-sm">
-            {meals.length} {t('mealPlan.meals')}
-          </Badge>
+      {/* Day Header with Actions */}
+      <div className={`flex flex-col gap-4 ${isRTL ? '' : ''}`}>
+        <div className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 ${isRTL ? 'sm:flex-row-reverse' : ''}`}>
+          <h2 className="text-xl lg:text-2xl font-bold text-gray-900">{t('mealPlan.dayOverview')}</h2>
+          <div className={`flex items-center gap-2 text-sm ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <Badge className="bg-red-100 text-red-700 px-2 lg:px-3 py-1 text-xs lg:text-sm">
+              {dayStats.calories} {t('mealPlan.cal')}
+            </Badge>
+            <Badge className="bg-blue-100 text-blue-700 px-2 lg:px-3 py-1 text-xs lg:text-sm">
+              {dayStats.protein.toFixed(1)}g {t('mealPlan.protein')}
+            </Badge>
+            <Badge className="bg-green-100 text-green-700 px-2 lg:px-3 py-1 text-xs lg:text-sm">
+              {meals.length} {t('mealPlan.meals')}
+            </Badge>
+          </div>
+        </div>
+
+        {/* Action Buttons Row */}
+        <div className={`flex flex-wrap gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+          <Button
+            onClick={onAddSnack}
+            variant="outline"
+            size="sm"
+            className="text-green-600 border-green-200 hover:bg-green-50 text-xs lg:text-sm"
+          >
+            <Plus className="w-3 h-3 lg:w-4 lg:h-4 mr-1" />
+            {t('mealPlan.addSnack')}
+          </Button>
+          
+          <Button
+            onClick={onShowShoppingList}
+            variant="outline"
+            size="sm"
+            className="text-blue-600 border-blue-200 hover:bg-blue-50 text-xs lg:text-sm"
+          >
+            <ShoppingCart className="w-3 h-3 lg:w-4 lg:h-4 mr-1" />
+            {t('mealPlan.shoppingList')}
+          </Button>
+          
+          <Button
+            onClick={onRegeneratePlan}
+            variant="outline"
+            size="sm"
+            className="text-purple-600 border-purple-200 hover:bg-purple-50 text-xs lg:text-sm"
+          >
+            <Shuffle className="w-3 h-3 lg:w-4 lg:h-4 mr-1" />
+            {t('mealPlan.shuffleMeals')}
+          </Button>
         </div>
       </div>
 
@@ -79,17 +118,6 @@ const MealGrid = ({
                 <h3 className="text-lg lg:text-xl font-semibold text-gray-900">
                   {t(`mealPlan.${mealType}`)}
                 </h3>
-                {mealType === 'snack' && (
-                  <Button
-                    onClick={onAddSnack}
-                    variant="outline"
-                    size="sm"
-                    className="text-green-600 border-green-200 hover:bg-green-50 text-xs lg:text-sm"
-                  >
-                    <Plus className="w-3 h-3 lg:w-4 lg:h-4 mr-1" />
-                    {t('mealPlan.addSnack')}
-                  </Button>
-                )}
               </div>
 
               {mealList.length > 0 ? (
@@ -165,14 +193,6 @@ const MealGrid = ({
                   <CardContent className="p-4 lg:p-6 text-center">
                     <Plus className="w-6 h-6 lg:w-8 lg:h-8 text-gray-400 mx-auto mb-2" />
                     <p className="text-gray-500 mb-3 text-sm lg:text-base">{t('mealPlan.noMealsPlanned')}</p>
-                    <Button
-                      onClick={onAddSnack}
-                      variant="outline"
-                      size="sm"
-                      className="text-green-600 border-green-200 hover:bg-green-50 text-xs lg:text-sm"
-                    >
-                      {t('mealPlan.addSnack')}
-                    </Button>
                   </CardContent>
                 </Card>
               ) : null}

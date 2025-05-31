@@ -7,7 +7,7 @@ export type Language = 'en' | 'ar';
 interface LanguageContextProps {
   language: Language;
   setLanguage: (language: Language) => void;
-  t: (key: string) => string;
+  t: (key: string, options?: any) => string;
   isRTL: boolean;
 }
 
@@ -23,7 +23,7 @@ interface LanguageProviderProps {
 }
 
 export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
-  const { t, i18n } = useTranslation();
+  const { t: i18nT, i18n } = useTranslation(['common', 'mealPlan', 'navigation', 'dashboard']);
   const [language, setLanguageState] = useState<Language>('en');
 
   useEffect(() => {
@@ -42,6 +42,16 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
 
   const setLanguage = (newLanguage: Language) => {
     setLanguageState(newLanguage);
+  };
+
+  const t = (key: string, options?: any) => {
+    // Handle nested keys like 'mealPlan.title'
+    if (key.includes('.')) {
+      const [namespace, ...keyParts] = key.split('.');
+      const finalKey = keyParts.join('.');
+      return i18nT(finalKey, { ns: namespace, ...options });
+    }
+    return i18nT(key, options);
   };
 
   const isRTL = language === 'ar';

@@ -106,8 +106,6 @@ const MealPlanPageRefactored = () => {
           currentWeekOffset={mealPlanState.currentWeekOffset}
           onWeekChange={mealPlanState.setCurrentWeekOffset}
           onShowAIDialog={() => mealPlanState.setShowAIDialog(true)}
-          onShowShoppingList={() => setShowShoppingDrawer(true)}
-          onRegeneratePlan={handleRegeneratePlan}
           weeklyStats={weeklyStats}
           hasWeeklyPlan={!!mealPlanState.currentWeekPlan}
         />
@@ -177,6 +175,8 @@ const MealPlanPageRefactored = () => {
                             onShowRecipe={mealPlanState.handleShowRecipe}
                             onExchangeMeal={mealPlanState.handleExchangeMeal}
                             onAddSnack={() => handleAddSnack(day.number)}
+                            onShowShoppingList={() => setShowShoppingDrawer(true)}
+                            onRegeneratePlan={handleRegeneratePlan}
                             dayNumber={day.number}
                           />
                         </TabsContent>
