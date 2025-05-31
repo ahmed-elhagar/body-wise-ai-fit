@@ -2,12 +2,12 @@
 import { useState } from "react";
 import { useMealPlanPage } from "@/hooks/useMealPlanPage";
 import { Card } from "@/components/ui/card";
-import MealPlanDayContent from "./MealPlanDayContent";
-import WeeklyMealPlanView from "../WeeklyMealPlanView";
+import DayOverview from "./DayOverview";
+import WeeklyMealGrid from "./WeeklyMealGrid";
 import WeeklyPlanHeader from "./WeeklyPlanHeader";
 import DayTabs from "./DayTabs";
 import CompactControlBar from "./CompactControlBar";
-import MealPlanEmptyState from "./MealPlanEmptyState";
+import EmptyWeekState from "./EmptyWeekState";
 import MealPlanDialogs from "../MealPlanDialogs";
 import { ErrorBoundary } from "../ErrorBoundary";
 
@@ -38,7 +38,9 @@ const MealPlanPage = () => {
     setAiPreferences,
     
     // Calculations
+    dailyMeals,
     todaysMeals,
+    shoppingItems,
     totalCalories,
     totalProtein,
     targetDayCalories,
@@ -58,21 +60,6 @@ const MealPlanPage = () => {
   const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
   const [showAddSnackDialog, setShowAddSnackDialog] = useState(false);
   const [showShoppingListDialog, setShowShoppingListDialog] = useState(false);
-
-  // Get daily meals for selected day
-  const dailyMeals = currentWeekPlan?.dailyMeals?.filter(
-    meal => meal.day_number === selectedDayNumber
-  ) || [];
-
-  // Calculate shopping items from all meals
-  const shoppingItems = currentWeekPlan?.dailyMeals?.flatMap(meal => 
-    meal.ingredients?.map(ingredient => ({
-      name: ingredient.name,
-      quantity: ingredient.quantity,
-      unit: ingredient.unit,
-      category: 'General'
-    })) || []
-  ) || [];
 
   console.log('🎯 MealPlanPage - Selected day meals:', selectedDayNumber, dailyMeals?.length);
 
@@ -140,20 +127,23 @@ const MealPlanPage = () => {
               <p className="text-fitness-primary-600">Loading your meal plan...</p>
             </Card>
           ) : !currentWeekPlan?.weeklyPlan ? (
-            <MealPlanEmptyState onGenerateClick={() => setShowAIDialog(true)} />
+            <EmptyWeekState onGenerateClick={() => setShowAIDialog(true)} />
           ) : (
             <div className="space-y-6">
               {viewMode === 'daily' ? (
-                <MealPlanDayContent
-                  selectedDay={selectedDayNumber}
-                  todaysMeals={dailyMeals}
-                  onMealClick={handleShowRecipe}
-                  onRecipeClick={handleShowRecipe}
-                  onExchangeClick={handleExchangeMeal}
+                <DayOverview
+                  selectedDayNumber={selectedDayNumber}
+                  dailyMeals={dailyMeals}
+                  totalCalories={totalCalories}
+                  totalProtein={totalProtein}
+                  targetDayCalories={targetDayCalories}
+                  onViewMeal={handleShowRecipe}
+                  onExchangeMeal={handleExchangeMeal}
+                  onAddSnack={handleAddSnack}
                   weekStartDate={weekStartDate}
                 />
               ) : (
-                <WeeklyMealPlanView
+                <WeeklyMealGrid
                   currentWeekPlan={currentWeekPlan}
                   onViewMeal={handleShowRecipe}
                   onExchangeMeal={handleExchangeMeal}
