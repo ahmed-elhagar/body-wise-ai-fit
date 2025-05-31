@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Clock, Users, ChefHat, Sparkles, Youtube } from "lucide-react";
 import { useEnhancedMealRecipe } from "@/hooks/useEnhancedMealRecipe";
-import type { Meal } from "@/types/meal";
+import type { Meal, Ingredient } from "@/types/meal";
 
 interface RecipeDialogProps {
   isOpen: boolean;
@@ -37,11 +37,27 @@ const RecipeDialog = ({ isOpen, onClose, meal, onRecipeGenerated }: RecipeDialog
     if (result) {
       console.log('✅ Recipe generated successfully, updating meal data');
       
+      // Safely handle the ingredients type conversion
+      const processedIngredients: Ingredient[] = Array.isArray(result.ingredients) 
+        ? result.ingredients.map((ing: any) => {
+            if (typeof ing === 'string') {
+              return { name: ing, quantity: '', unit: '' };
+            } else if (ing && typeof ing === 'object') {
+              return {
+                name: ing.name || '',
+                quantity: ing.quantity || '',
+                unit: ing.unit || ''
+              };
+            }
+            return { name: '', quantity: '', unit: '' };
+          })
+        : currentMeal.ingredients || [];
+
       // Update the current meal with the new recipe data
-      const updatedMeal = {
+      const updatedMeal: Meal = {
         ...currentMeal,
-        ingredients: result.ingredients || currentMeal.ingredients,
-        instructions: result.instructions || currentMeal.instructions,
+        ingredients: processedIngredients,
+        instructions: Array.isArray(result.instructions) ? result.instructions : currentMeal.instructions || [],
         youtube_search_term: result.youtube_search_term || currentMeal.youtube_search_term,
         image_url: result.image_url || currentMeal.image_url
       };
@@ -143,10 +159,8 @@ const RecipeDialog = ({ isOpen, onClose, meal, onRecipeGenerated }: RecipeDialog
                   <ul className="space-y-2">
                     {currentMeal.ingredients.map((ingredient, index) => (
                       <li key={index} className="flex justify-between">
-                        <span>{typeof ingredient === 'string' ? ingredient : ingredient.name}</span>
-                        {typeof ingredient === 'object' && (
-                          <span className="text-gray-500">{ingredient.quantity} {ingredient.unit}</span>
-                        )}
+                        <span>{ingredient.name}</span>
+                        <span className="text-gray-500">{ingredient.quantity} {ingredient.unit}</span>
                       </li>
                     ))}
                   </ul>

@@ -42,8 +42,12 @@ export const useEnhancedMealRecipe = () => {
 
       // If recipe already exists and is complete, return it
       if (existingMeal?.recipe_fetched && 
-          existingMeal?.ingredients?.length > 0 && 
-          existingMeal?.instructions?.length > 0) {
+          existingMeal?.ingredients && 
+          Array.isArray(existingMeal.ingredients) &&
+          existingMeal.ingredients.length > 0 && 
+          existingMeal?.instructions && 
+          Array.isArray(existingMeal.instructions) &&
+          existingMeal.instructions.length > 0) {
         console.log('✅ Recipe already exists in database, returning cached version');
         toast.success('Recipe loaded from cache!');
         return existingMeal;
