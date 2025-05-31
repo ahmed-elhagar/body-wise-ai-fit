@@ -1,18 +1,18 @@
 
 import { commonTranslations } from './en/common';
 import { navigationTranslations } from './en/navigation';
-import { dashboardTranslations } from './en/dashboard';
+import { dashboard } from './en/dashboard';
 import { exercise } from './en/exercise';
-import { mealPlanTranslations } from './en/mealPlan';
+import { mealPlan } from './en/mealPlan';
 import { lifePhase } from './en/lifePhase';
 import { profile } from './en/profile';
 
 export const enTranslations = {
   ...commonTranslations,
   ...navigationTranslations,
-  ...dashboardTranslations,
+  dashboard: dashboard,
   exercise: exercise,
-  mealPlan: mealPlanTranslations,
+  mealPlan: mealPlan,
   profile: profile,
   
   // Navigation items

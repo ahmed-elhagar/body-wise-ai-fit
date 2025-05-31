@@ -1,7 +1,7 @@
 
 import { commonTranslations } from './ar/common';
 import { navigationTranslations } from './ar/navigation';
-import { dashboardTranslations } from './ar/dashboard';
+import { dashboard } from './ar/dashboard';
 import { exercise } from './ar/exercise';
 import { mealPlan } from './ar/mealPlan';
 import { lifePhase } from './ar/lifePhase';
@@ -10,7 +10,7 @@ import { profile } from './ar/profile';
 export const arTranslations = {
   ...commonTranslations,
   ...navigationTranslations,
-  ...dashboardTranslations,
+  dashboard: dashboard,
   exercise: exercise,
   mealPlan: mealPlan,
   profile: profile,
