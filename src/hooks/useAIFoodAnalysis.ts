@@ -48,9 +48,9 @@ export const useAIFoodAnalysis = () => {
     try {
       console.log('🔍 Starting AI food analysis...');
 
-      // Check and use credits
+      // Check and use credits with correct generation type
       creditResult = await checkAndUseCreditAsync({
-        generationType: 'food_analysis',
+        generationType: 'meal_plan',
         promptData: {
           analysisType: 'food_image',
           fileName: imageFile.name,
