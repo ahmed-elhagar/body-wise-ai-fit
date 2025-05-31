@@ -29,6 +29,35 @@ export const arTranslations = {
     signOut: "تسجيل الخروج"
   },
   
+  // Core navigation and sidebar
+  "Dashboard": "لوحة التحكم",
+  "Meal Plan": "خطة الوجبات",
+  "Food Tracker": "متتبع الطعام",
+  "Exercise": "التمارين",
+  "Goals": "الأهداف",
+  "Profile": "الملف الشخصي",
+  "Progress": "التقدم",
+  "Weight Tracking": "تتبع الوزن",
+  "Settings": "الإعدادات",
+  "Logout": "تسجيل الخروج",
+  "Menu": "القائمة",
+  
+  // Coach and Admin sections
+  "Trainees": "المتدربين",
+  "Coach Settings": "إعدادات المدرب",
+  "Admin Dashboard": "لوحة الإدارة",
+  "Coach Panel": "لوحة المدرب",
+  "Admin": "الإدارة",
+  "Coach": "مدرب",
+  "Manage your clients and coaching sessions": "إدارة عملائك وجلسات التدريب",
+  "Active clients": "عملاء نشطون",
+  "Professional Coach": "مدرب محترف",
+  "System administration and management": "إدارة النظام والتحكم",
+  
+  // App branding
+  "FitFatta": "فت فاتا",
+  "AI-Powered Fitness": "لياقة مدعومة بالذكاء الاصطناعي",
+  
   // Days of week (global level for reuse)
   saturday: "السبت",
   sunday: "الأحد", 
@@ -58,8 +87,21 @@ export const arTranslations = {
   authRequired: "يرجى تسجيل الدخول للمتابعة",
   signInRequired: "يرجى تسجيل الدخول للوصول لهذه الميزة",
 
+  // Common actions and states
+  "Success": "نجح",
+  "Error": "خطأ",
+  "Loading": "جاري التحميل",
+  "Save": "حفظ",
+  "Edit": "تعديل",
+  "Delete": "حذف",
+  "Add": "إضافة",
+  "View": "عرض",
+  "Close": "إغلاق",
+  "Open": "فتح",
+  "Yes": "نعم",
+  "No": "لا",
+
   // Food Tracker specific in Arabic
-  "Food Tracker": "متتبع الطعام",
   "Track your nutrition and maintain healthy eating habits": "تتبع تغذيتك واحتفظ بعادات أكل صحية",
   "Today": "اليوم",
   "History": "التاريخ",
@@ -133,7 +175,6 @@ export const arTranslations = {
   "days with logged food this month": "أيام مع طعام مسجل هذا الشهر",
 
   // Weight Tracking specific
-  "Weight Tracking": "تتبع الوزن",
   "Current Weight": "الوزن الحالي",
   "Weight Change": "تغيير الوزن",
   "Body Fat": "دهون الجسم",
@@ -148,26 +189,4 @@ export const arTranslations = {
   "Underweight": "نقص في الوزن",
   "Overweight": "زيادة في الوزن",
   "Obese": "سمنة",
-
-  // Sidebar specific translations
-  "Dashboard": "لوحة التحكم",
-  "Meal Plan": "خطة الوجبات",
-  "Exercise": "التمارين",
-  "Goals": "الأهداف",
-  "Profile": "الملف الشخصي",
-  "Trainees": "المتدربين",
-  "Coach Settings": "إعدادات المدرب",
-  "Admin Dashboard": "لوحة الإدارة",
-  "Coach Panel": "لوحة المدرب",
-  "Admin": "الإدارة",
-  "Logout": "تسجيل الخروج",
-  "Success": "نجح",
-  "Error": "خطأ",
-
-  // Missing coach and admin related
-  "Coach": "مدرب",
-  "Manage your clients and coaching sessions": "إدارة عملائك وجلسات التدريب",
-  "Active clients": "عملاء نشطون",
-  "Professional Coach": "مدرب محترف",
-  "System administration and management": "إدارة النظام والتحكم"
 };

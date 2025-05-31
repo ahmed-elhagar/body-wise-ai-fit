@@ -30,6 +30,35 @@ export const enTranslations = {
     signIn: "Sign In"
   },
   
+  // Core navigation and sidebar
+  "Dashboard": "Dashboard",
+  "Meal Plan": "Meal Plan",
+  "Food Tracker": "Food Tracker",
+  "Exercise": "Exercise",
+  "Goals": "Goals",
+  "Profile": "Profile",
+  "Progress": "Progress",
+  "Weight Tracking": "Weight Tracking",
+  "Settings": "Settings",
+  "Logout": "Logout",
+  "Menu": "Menu",
+  
+  // Coach and Admin sections
+  "Trainees": "Trainees",
+  "Coach Settings": "Coach Settings",
+  "Admin Dashboard": "Admin Dashboard",
+  "Coach Panel": "Coach Panel",
+  "Admin": "Admin",
+  "Coach": "Coach",
+  "Manage your clients and coaching sessions": "Manage your clients and coaching sessions",
+  "Active clients": "Active clients",
+  "Professional Coach": "Professional Coach",
+  "System administration and management": "System administration and management",
+  
+  // App branding
+  "FitFatta": "FitFatta",
+  "AI-Powered Fitness": "AI-Powered Fitness",
+  
   // Days of week (global level for reuse)
   saturday: "Saturday",
   sunday: "Sunday",
@@ -59,8 +88,21 @@ export const enTranslations = {
   authRequired: "Please sign in to continue",
   signInRequired: "Please sign in to access this feature",
 
+  // Common actions and states
+  "Success": "Success",
+  "Error": "Error",
+  "Loading": "Loading",
+  "Save": "Save",
+  "Edit": "Edit",
+  "Delete": "Delete",
+  "Add": "Add",
+  "View": "View",
+  "Close": "Close",
+  "Open": "Open",
+  "Yes": "Yes",
+  "No": "No",
+
   // Food Tracker specific
-  "Food Tracker": "Food Tracker",
   "Track your nutrition and maintain healthy eating habits": "Track your nutrition and maintain healthy eating habits",
   "Today": "Today",
   "History": "History",
@@ -134,7 +176,6 @@ export const enTranslations = {
   "days with logged food this month": "days with logged food this month",
 
   // Weight Tracking specific
-  "Weight Tracking": "Weight Tracking",
   "Current Weight": "Current Weight",
   "Weight Change": "Weight Change",
   "Body Fat": "Body Fat",
@@ -149,26 +190,4 @@ export const enTranslations = {
   "Underweight": "Underweight",
   "Overweight": "Overweight",
   "Obese": "Obese",
-
-  // Sidebar specific translations
-  "Dashboard": "Dashboard",
-  "Meal Plan": "Meal Plan",
-  "Exercise": "Exercise",
-  "Goals": "Goals",
-  "Profile": "Profile",
-  "Trainees": "Trainees",
-  "Coach Settings": "Coach Settings",
-  "Admin Dashboard": "Admin Dashboard",
-  "Coach Panel": "Coach Panel",
-  "Admin": "Admin",
-  "Logout": "Logout",
-  "Success": "Success",
-  "Error": "Error",
-
-  // Missing coach and admin related
-  "Coach": "Coach",
-  "Manage your clients and coaching sessions": "Manage your clients and coaching sessions",
-  "Active clients": "Active clients",
-  "Professional Coach": "Professional Coach",
-  "System administration and management": "System administration and management"
 };

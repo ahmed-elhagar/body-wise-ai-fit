@@ -19,13 +19,13 @@ const Layout = memo(({ children }: LayoutProps) => {
         <AppSidebar />
         <SidebarInset className="flex-1 w-full" data-sidebar="inset">
           {/* Mobile header with sidebar trigger */}
-          <div className="flex h-14 items-center gap-3 border-b bg-white px-4 md:hidden">
+          <div className={`flex h-14 items-center gap-3 border-b bg-white px-4 md:hidden ${isRTL ? 'flex-row-reverse' : ''}`}>
             <SidebarTrigger className="h-8 w-8" data-sidebar="trigger" />
             <h1 className="font-semibold text-gray-900">FitFatta</h1>
           </div>
           
           {/* Desktop header with sidebar trigger */}
-          <div className="hidden md:flex h-14 items-center gap-3 border-b bg-white px-4">
+          <div className={`hidden md:flex h-14 items-center gap-3 border-b bg-white px-4 ${isRTL ? 'flex-row-reverse justify-end' : ''}`}>
             <SidebarTrigger className="h-8 w-8" data-sidebar="trigger" />
           </div>
           
