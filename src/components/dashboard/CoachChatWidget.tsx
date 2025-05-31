@@ -6,15 +6,17 @@ import { MessageCircle, ArrowRight, UserCheck, Loader2, AlertCircle, RefreshCw, 
 import { useCoachSystem } from "@/hooks/useCoachSystem";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useState } from "react";
-import { MultipleCoachesChat } from "@/components/coach/MultipleCoachesChat";
+import { TraineeCoachChat } from "@/components/coach/TraineeCoachChat";
 import { useRole } from "@/hooks/useRole";
+import { useNavigate } from "react-router-dom";
 import type { CoachInfo } from "@/hooks/coach/types";
 
 const CoachChatWidget = () => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const { coaches, totalUnreadMessages, unreadMessagesByCoach, isLoadingCoachInfo, coachInfoError } = useCoachSystem();
   const { isCoach } = useRole();
-  const [showChat, setShowChat] = useState(false);
+  const [selectedCoach, setSelectedCoach] = useState<CoachInfo | null>(null);
   const [retryCount, setRetryCount] = useState(0);
 
   console.log('CoachChatWidget - coaches:', coaches.length, 'loading:', isLoadingCoachInfo, 'error:', coachInfoError);
@@ -26,7 +28,7 @@ const CoachChatWidget = () => {
       const lastName = coach.coach_profile.last_name || '';
       return `${firstName} ${lastName}`.trim();
     }
-    return 'Your Coach'; // Better fallback
+    return 'Your Coach';
   };
 
   // Helper function to get coach initials
@@ -41,12 +43,23 @@ const CoachChatWidget = () => {
     } else if (lastName) {
       return lastName[0].toUpperCase();
     }
-    return 'C'; // Fallback to 'C' for Coach
+    return 'C';
   };
 
   // Don't show for coaches
   if (isCoach) {
     return null;
+  }
+
+  // Show selected coach chat directly
+  if (selectedCoach) {
+    return (
+      <TraineeCoachChat
+        coachId={selectedCoach.coach_id}
+        coachName={getCoachDisplayName(selectedCoach)}
+        onBack={() => setSelectedCoach(null)}
+      />
+    );
   }
 
   // Show loading state
@@ -141,16 +154,6 @@ const CoachChatWidget = () => {
     );
   }
 
-  if (showChat) {
-    return (
-      <MultipleCoachesChat
-        coaches={coaches}
-        unreadMessagesByCoach={unreadMessagesByCoach}
-        onBack={() => setShowChat(false)}
-      />
-    );
-  }
-
   return (
     <Card className="bg-white border border-gray-200 shadow-lg rounded-xl overflow-hidden">
       <CardHeader className="bg-gradient-to-r from-green-600 to-green-700 text-white pb-3">
@@ -164,11 +167,11 @@ const CoachChatWidget = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setShowChat(true)}
+            onClick={() => navigate('/chat')}
             className="text-white hover:bg-white/20 px-3 py-1 text-xs"
           >
             <MessageCircle className="w-3 h-3 mr-1" />
-            Chat
+            View All
             <ArrowRight className="w-3 h-3 ml-1" />
           </Button>
         </div>
@@ -184,7 +187,7 @@ const CoachChatWidget = () => {
               <div 
                 key={coach.id} 
                 className="group flex items-center justify-between p-3 rounded-lg bg-green-50 border border-green-200 hover:border-green-300 hover:shadow-md transition-all duration-200 cursor-pointer"
-                onClick={() => setShowChat(true)}
+                onClick={() => setSelectedCoach(coach)}
               >
                 <div className="flex items-center space-x-3">
                   <div className="relative">
@@ -219,7 +222,7 @@ const CoachChatWidget = () => {
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
-                      setShowChat(true);
+                      setSelectedCoach(coach);
                     }}
                     className="text-green-700 hover:text-green-800 hover:bg-green-100 p-1"
                   >
@@ -235,7 +238,7 @@ const CoachChatWidget = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setShowChat(true)}
+                onClick={() => navigate('/chat')}
                 className="text-green-600 hover:text-green-700 hover:bg-green-50 text-xs"
               >
                 View {coaches.length - 2} more coaches →

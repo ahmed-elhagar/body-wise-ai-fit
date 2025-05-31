@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { MessageCircle, Bot, Users, AlertCircle, Loader2, RefreshCw, Bug, UserCheck, Calendar, Star, Sparkles, MessageSquare } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { useCoachSystem } from "@/hooks/useCoachSystem";
-import { MultipleCoachesChat } from "@/components/coach/MultipleCoachesChat";
+import { TraineeCoachChat } from "@/components/coach/TraineeCoachChat";
 import { useLanguage } from "@/contexts/LanguageContext";
 import AIChatInterface from "@/components/chat/AIChatInterface";
 import { useAuth } from "@/hooks/useAuth";
@@ -27,9 +27,9 @@ const Chat = () => {
     coachInfoError, 
     refetchCoachInfo 
   } = useCoachSystem();
-  const [showCoachChat, setShowCoachChat] = useState(false);
+  const [selectedCoach, setSelectedCoach] = useState<CoachInfo | null>(null);
   const [retryCount, setRetryCount] = useState(0);
-  const [showDebugInfo, setShowDebugInfo] = useState(true); // Always show debug for now
+  const [showDebugInfo, setShowDebugInfo] = useState(false);
 
   console.log('Chat page - Debug info:', {
     userId: user?.id,
@@ -54,7 +54,7 @@ const Chat = () => {
       const lastName = coach.coach_profile.last_name || '';
       return `${firstName} ${lastName}`.trim();
     }
-    return 'Your Coach'; // Better fallback
+    return 'Your Coach';
   };
 
   // Helper function to get coach initials
@@ -69,18 +69,18 @@ const Chat = () => {
     } else if (lastName) {
       return lastName[0].toUpperCase();
     }
-    return 'C'; // Fallback to 'C' for Coach
+    return 'C';
   };
 
-  // Show coach chat interface
-  if (showCoachChat && coaches.length > 0) {
+  // Show selected coach chat directly
+  if (selectedCoach) {
     return (
       <ProtectedRoute>
         <Layout>
-          <MultipleCoachesChat
-            coaches={coaches}
-            unreadMessagesByCoach={unreadMessagesByCoach}
-            onBack={() => setShowCoachChat(false)}
+          <TraineeCoachChat
+            coachId={selectedCoach.coach_id}
+            coachName={getCoachDisplayName(selectedCoach)}
+            onBack={() => setSelectedCoach(null)}
           />
         </Layout>
       </ProtectedRoute>
@@ -102,7 +102,7 @@ const Chat = () => {
     <ProtectedRoute>
       <Layout>
         <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
-          {/* Enhanced Page Header with better contrast */}
+          {/* Enhanced Page Header */}
           <div className="relative overflow-hidden bg-gradient-to-r from-slate-900 via-gray-900 to-blue-900 text-white">
             <div className="absolute inset-0 bg-black/30"></div>
             <div className="relative max-w-6xl mx-auto px-4 py-6">
@@ -315,22 +315,15 @@ const Chat = () => {
                                     : `You have ${coaches.length} personal coaches`
                                   }
                                 </p>
-                                <p className="text-green-600 text-xs">Ready to support your fitness journey</p>
+                                <p className="text-green-600 text-xs">Click on any coach below to start chatting</p>
                               </div>
                             </div>
-                            <Button
-                              onClick={() => setShowCoachChat(true)}
-                              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-200 transform hover:scale-105 shadow-md text-xs"
-                            >
-                              <MessageCircle className="w-3 h-3" />
-                              Start Chatting
-                            </Button>
                           </div>
                         </div>
 
-                        {/* Enhanced Coach Preview Grid */}
+                        {/* Enhanced Coach List - Direct Click to Chat */}
                         <div className="grid gap-3">
-                          {coaches.slice(0, 3).map((coach) => {
+                          {coaches.map((coach) => {
                             const unreadCount = unreadMessagesByCoach[coach.coach_id] || 0;
                             const coachName = getCoachDisplayName(coach);
                             const coachInitials = getCoachInitials(coach);
@@ -339,7 +332,7 @@ const Chat = () => {
                               <div 
                                 key={coach.id} 
                                 className="group relative overflow-hidden rounded-xl bg-white border-2 border-gray-200 hover:border-green-300 hover:shadow-lg transition-all duration-300 cursor-pointer transform hover:-translate-y-1"
-                                onClick={() => setShowCoachChat(true)}
+                                onClick={() => setSelectedCoach(coach)}
                               >
                                 <div className="absolute inset-0 bg-green-50 opacity-0 group-hover:opacity-50 transition-opacity duration-300"></div>
                                 
@@ -381,7 +374,7 @@ const Chat = () => {
                                       )}
                                       <div className="flex items-center gap-1">
                                         <MessageCircle className="w-3 h-3 text-green-600 group-hover:text-green-700 transition-colors" />
-                                        <span className="text-xs text-gray-600 font-medium">Tap to chat</span>
+                                        <span className="text-xs text-gray-600 font-medium">Click to chat</span>
                                       </div>
                                     </div>
                                   </div>
@@ -397,18 +390,6 @@ const Chat = () => {
                               </div>
                             );
                           })}
-                          
-                          {coaches.length > 3 && (
-                            <div className="text-center py-2">
-                              <Button
-                                variant="ghost"
-                                onClick={() => setShowCoachChat(true)}
-                                className="text-green-600 hover:text-green-700 hover:bg-green-50 px-4 py-2 rounded-lg font-medium text-xs"
-                              >
-                                View {coaches.length - 3} more coaches →
-                              </Button>
-                            </div>
-                          )}
                         </div>
                       </div>
                     )}

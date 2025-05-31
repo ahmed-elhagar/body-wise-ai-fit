@@ -17,6 +17,16 @@ export const useCoachInfo = () => {
         return null;
       }
 
+      // Only fetch coach info for non-coaches (trainees)
+      if (isRoleCoach && !isAdmin) {
+        console.log('❌ useCoachInfo: User is a coach, not fetching coach info');
+        return {
+          coaches: [],
+          totalUnreadMessages: 0,
+          unreadMessagesByCoach: {}
+        };
+      }
+
       console.log('🔍 useCoachInfo: Fetching coach info for user:', user.id);
       console.log('🔍 useCoachInfo: User role check - isRoleCoach:', isRoleCoach, 'isAdmin:', isAdmin);
 
@@ -108,7 +118,7 @@ export const useCoachInfo = () => {
         throw error;
       }
     },
-    enabled: !!user?.id, // Always enabled if user exists, regardless of role
+    enabled: !!user?.id && !isRoleCoach, // Only enabled for non-coaches
     staleTime: 1000 * 60 * 5, // 5 minutes
     refetchOnWindowFocus: false,
     retry: (failureCount, error) => {
