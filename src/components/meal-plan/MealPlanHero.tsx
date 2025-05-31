@@ -3,13 +3,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
   UtensilsCrossed, 
-  Sparkles,
+  Shuffle,
   ChevronLeft,
   ChevronRight,
   RotateCcw
 } from "lucide-react";
 import { format, addDays } from "date-fns";
 import { useMealPlanTranslation } from "@/utils/translationHelpers";
+import { useMealShuffle } from "@/hooks/useMealShuffle";
 
 interface MealPlanHeroProps {
   weekStartDate: Date;
@@ -23,6 +24,7 @@ interface MealPlanHeroProps {
     avgDailyCalories: number;
   };
   hasWeeklyPlan: boolean;
+  weeklyPlanId?: string;
 }
 
 const MealPlanHero = ({
@@ -31,9 +33,21 @@ const MealPlanHero = ({
   onWeekChange,
   onShowAIDialog,
   weeklyStats,
-  hasWeeklyPlan
+  hasWeeklyPlan,
+  weeklyPlanId
 }: MealPlanHeroProps) => {
   const { mealPlanT } = useMealPlanTranslation();
+  const { shuffleMeals, isShuffling } = useMealShuffle();
+
+  const handleShuffleMeals = () => {
+    if (weeklyPlanId) {
+      shuffleMeals(weeklyPlanId);
+    }
+  };
+
+  const handleRegeneratePlan = () => {
+    onShowAIDialog();
+  };
 
   return (
     <Card className="bg-gradient-to-br from-fitness-primary-600 via-fitness-accent-600 to-fitness-secondary-700 text-white border-0 shadow-2xl overflow-hidden relative">
@@ -58,25 +72,29 @@ const MealPlanHero = ({
 
           <div className="flex gap-3">
             {hasWeeklyPlan && (
-              <Button
-                variant="warning"
-                size="lg"
-                className="shadow-xl font-semibold transform hover:scale-105 transition-all duration-300"
-              >
-                <RotateCcw className="w-5 h-5 mr-2" />
-                {mealPlanT('regenerate')}
-              </Button>
+              <>
+                <Button
+                  onClick={handleShuffleMeals}
+                  disabled={isShuffling}
+                  variant="outline"
+                  size="lg"
+                  className="bg-white/20 border-white/30 text-white hover:bg-white/30 hover:border-white/50 backdrop-blur-sm shadow-xl font-semibold transform hover:scale-105 transition-all duration-300"
+                >
+                  <Shuffle className="w-5 h-5 mr-2" />
+                  {isShuffling ? mealPlanT('shuffling') : mealPlanT('shuffleMeals')}
+                </Button>
+                
+                <Button
+                  onClick={handleRegeneratePlan}
+                  variant="outline"
+                  size="lg"
+                  className="bg-white/20 border-white/30 text-white hover:bg-white/30 hover:border-white/50 backdrop-blur-sm shadow-xl font-semibold transform hover:scale-105 transition-all duration-300"
+                >
+                  <RotateCcw className="w-5 h-5 mr-2" />
+                  {mealPlanT('regenerate')}
+                </Button>
+              </>
             )}
-            
-            <Button
-              onClick={onShowAIDialog}
-              variant="success"
-              size="lg"
-              className="shadow-xl font-semibold transform hover:scale-105 transition-all duration-300"
-            >
-              <Sparkles className="w-5 h-5 mr-2" />
-              {hasWeeklyPlan ? mealPlanT('generateAIPlan') : mealPlanT('generateAIPlan')}
-            </Button>
           </div>
         </div>
 

@@ -1,8 +1,15 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { TrendingUp, Target, Calculator, Award } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { 
+  Target, 
+  TrendingUp, 
+  Zap, 
+  Award,
+  Calendar,
+  Clock
+} from "lucide-react";
+import { useMealPlanTranslation } from "@/utils/translationHelpers";
 
 interface QuickStatsCardProps {
   totalCalories: number;
@@ -17,68 +24,109 @@ const QuickStatsCard = ({
   targetDayCalories,
   mealCount
 }: QuickStatsCardProps) => {
-  const { t, isRTL } = useLanguage();
-
-  const avgPerMeal = mealCount > 0 ? totalCalories / mealCount : 0;
-  const remainingCalories = Math.max(0, targetDayCalories - totalCalories);
-  const progress = targetDayCalories > 0 ? (totalCalories / targetDayCalories) * 100 : 0;
-
+  const { mealPlanT } = useMealPlanTranslation();
+  
+  const caloriesProgress = Math.min((totalCalories / targetDayCalories) * 100, 100);
+  const proteinProgress = Math.min((totalProtein / 150) * 100, 100); // Assuming 150g target
+  
   return (
-    <Card className="card-gradient-border">
-      <CardHeader className="pb-4 bg-gradient-to-r from-fitness-primary-50 to-fitness-accent-50">
-        <CardTitle className={`text-h5 font-bold text-fitness-neutral-800 flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-          <div className="w-10 h-10 bg-gradient-to-br from-fitness-primary-500 to-fitness-accent-600 rounded-xl flex items-center justify-center">
-            <TrendingUp className="w-5 h-5 text-white" />
-          </div>
-          {t('mealPlan.quickStats')}
+    <Card className="bg-gradient-to-br from-white to-fitness-neutral-50 shadow-xl border-2 border-fitness-primary-100 hover:shadow-2xl transition-all duration-300">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-fitness-primary-700">
+          <TrendingUp className="w-5 h-5" />
+          {mealPlanT('dailyProgress')}
         </CardTitle>
       </CardHeader>
-      <CardContent className="content-spacing">
-        {/* Progress Section */}
+      
+      <CardContent className="space-y-6">
+        {/* Calories Progress */}
         <div className="space-y-3">
-          <div className="flex justify-between text-sm font-semibold">
-            <span className="text-fitness-neutral-700">{totalCalories} cal</span>
-            <span className="text-fitness-neutral-500">{targetDayCalories} cal</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Target className="w-4 h-4 text-fitness-primary-600" />
+              <span className="text-sm font-medium text-gray-700">
+                {mealPlanT('calories')}
+              </span>
+            </div>
+            <div className="text-right">
+              <span className="text-lg font-bold text-fitness-primary-700">
+                {totalCalories}
+              </span>
+              <span className="text-sm text-gray-500 ml-1">
+                / {targetDayCalories}
+              </span>
+            </div>
           </div>
-          <Progress value={Math.min(100, progress)} className="h-3 bg-fitness-neutral-200" />
-          <div className="text-center">
-            <span className="text-3xl font-bold bg-gradient-to-r from-fitness-primary-600 to-fitness-accent-600 bg-clip-text text-transparent">
-              {progress.toFixed(0)}%
-            </span>
-            <p className="text-xs text-fitness-neutral-500 mt-1 font-medium">{t('mealPlan.progressPercent')}</p>
+          <Progress 
+            value={caloriesProgress} 
+            className="h-3 bg-fitness-primary-100"
+          />
+          <div className="text-xs text-gray-500 text-center">
+            {caloriesProgress.toFixed(0)}% of daily target
           </div>
         </div>
 
-        {/* Stats Grid */}
-        <div className="space-y-4">
-          <div className={`flex items-center justify-between card-padding bg-gradient-to-r from-success-50 to-success-100/80 rounded-xl border border-success-200 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <div className="w-8 h-8 bg-gradient-to-br from-success-500 to-success-600 rounded-lg flex items-center justify-center">
-                <Calculator className="w-4 h-4 text-white" />
-              </div>
-              <span className="text-sm font-semibold text-success-800">{t('mealPlan.avgPerMeal')}</span>
+        {/* Protein Progress */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Zap className="w-4 h-4 text-fitness-secondary-600" />
+              <span className="text-sm font-medium text-gray-700">
+                {mealPlanT('protein')}
+              </span>
             </div>
-            <span className="font-bold text-success-700 text-lg">{avgPerMeal.toFixed(0)} {t('mealPlan.cal')}</span>
+            <div className="text-right">
+              <span className="text-lg font-bold text-fitness-secondary-700">
+                {totalProtein.toFixed(1)}g
+              </span>
+              <span className="text-sm text-gray-500 ml-1">
+                / 150g
+              </span>
+            </div>
           </div>
-
-          <div className={`flex items-center justify-between card-padding bg-gradient-to-r from-fitness-orange-50 to-fitness-orange-100/80 rounded-xl border border-fitness-orange-200 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <div className="w-8 h-8 bg-gradient-to-br from-fitness-orange-500 to-fitness-orange-600 rounded-lg flex items-center justify-center">
-                <Target className="w-4 h-4 text-white" />
-              </div>
-              <span className="text-sm font-semibold text-fitness-orange-800">{t('mealPlan.remainingCalories')}</span>
-            </div>
-            <span className="font-bold text-fitness-orange-700 text-lg">{remainingCalories} {t('mealPlan.cal')}</span>
+          <Progress 
+            value={proteinProgress} 
+            className="h-3 bg-fitness-secondary-100"
+          />
+          <div className="text-xs text-gray-500 text-center">
+            {proteinProgress.toFixed(0)}% of daily target
           </div>
+        </div>
 
-          <div className={`flex items-center justify-between card-padding bg-gradient-to-r from-fitness-secondary-50 to-fitness-secondary-100/80 rounded-xl border border-fitness-secondary-200 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <div className="w-8 h-8 bg-gradient-to-br from-fitness-secondary-500 to-fitness-secondary-600 rounded-lg flex items-center justify-center">
-                <Award className="w-4 h-4 text-white" />
-              </div>
-              <span className="text-sm font-semibold text-fitness-secondary-800">{t('mealPlan.protein')}</span>
+        {/* Quick Stats Grid */}
+        <div className="grid grid-cols-2 gap-4 pt-4 border-t border-fitness-primary-100">
+          <div className="text-center p-3 bg-fitness-primary-50 rounded-xl">
+            <Calendar className="w-5 h-5 text-fitness-primary-600 mx-auto mb-1" />
+            <div className="text-lg font-bold text-fitness-primary-700">
+              {mealCount}
             </div>
-            <span className="font-bold text-fitness-secondary-700 text-lg">{totalProtein.toFixed(1)}g</span>
+            <div className="text-xs text-fitness-primary-600 font-medium">
+              {mealPlanT('mealsToday')}
+            </div>
+          </div>
+          
+          <div className="text-center p-3 bg-fitness-accent-50 rounded-xl">
+            <Award className="w-5 h-5 text-fitness-accent-600 mx-auto mb-1" />
+            <div className="text-lg font-bold text-fitness-accent-700">
+              {Math.round(caloriesProgress)}%
+            </div>
+            <div className="text-xs text-fitness-accent-600 font-medium">
+              {mealPlanT('complete')}
+            </div>
+          </div>
+        </div>
+
+        {/* Motivational Message */}
+        <div className="text-center p-4 bg-gradient-to-r from-fitness-primary-50 to-fitness-secondary-50 rounded-xl border border-fitness-primary-200">
+          <div className="text-sm font-medium text-fitness-primary-700">
+            {caloriesProgress >= 100 
+              ? "🎉 Daily goal achieved!" 
+              : caloriesProgress >= 75 
+              ? "💪 Almost there, keep going!" 
+              : caloriesProgress >= 50 
+              ? "🔥 Halfway to your goal!" 
+              : "🌟 Great start, let's continue!"
+            }
           </div>
         </div>
       </CardContent>
