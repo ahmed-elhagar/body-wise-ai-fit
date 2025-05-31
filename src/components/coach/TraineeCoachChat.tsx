@@ -1,10 +1,11 @@
+
 import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ArrowLeft, Send, Loader2, UserCheck, Badge as BadgeIcon } from "lucide-react";
+import { ArrowLeft, Send, Loader2, UserCheck, Badge as BadgeIcon, AlertCircle } from "lucide-react";
 import { useCoachChat } from "@/hooks/useCoachChat";
 import { useRealtimeChat } from "@/hooks/useRealtimeChat";
 import { useAuth } from "@/hooks/useAuth";
@@ -105,7 +106,7 @@ const TraineeCoachChat = ({ coachId, coachName, onBack }: TraineeCoachChatProps)
     return (
       <div className="h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <Alert className="h-8 w-8 mx-auto mb-3 text-red-600" />
+          <AlertCircle className="h-8 w-8 mx-auto mb-3 text-red-600" />
           <p className="text-red-600 text-sm">Error: {error.message}</p>
         </div>
       </div>

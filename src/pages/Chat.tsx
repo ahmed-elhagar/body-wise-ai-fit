@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
@@ -7,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, Bot, Users, AlertCircle, Loader2, RefreshCw, UserCheck, Calendar, Star, MessageSquare, Bug } from "lucide-react";
 import { useCoachSystem } from "@/hooks/useCoachSystem";
-import { TraineeCoachChat } from "@/components/coach/TraineeCoachChat";
+import TraineeCoachChat from "@/components/coach/TraineeCoachChat";
 import { useLanguage } from "@/contexts/LanguageContext";
 import AIChatInterface from "@/components/chat/AIChatInterface";
 import { useAuth } from "@/hooks/useAuth";
