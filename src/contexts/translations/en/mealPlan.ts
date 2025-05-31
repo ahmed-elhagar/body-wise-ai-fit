@@ -84,5 +84,6 @@ export const mealPlan = {
   quickStats: "Quick Stats",
   avgPerMeal: "Avg per meal",
   remainingCalories: "Remaining calories",
-  progressPercent: "Progress"
+  progressPercent: "Progress",
+  calPerDay: "cal/day"
 } as const;

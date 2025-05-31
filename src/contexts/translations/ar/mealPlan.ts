@@ -84,5 +84,6 @@ export const mealPlan = {
   quickStats: "إحصائيات سريعة",
   avgPerMeal: "متوسط كل وجبة",
   remainingCalories: "السعرات المتبقية",
-  progressPercent: "النسبة المئوية"
+  progressPercent: "النسبة المئوية",
+  calPerDay: "سعرة/يوم"
 } as const;

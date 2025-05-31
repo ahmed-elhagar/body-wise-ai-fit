@@ -44,14 +44,16 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
     setLanguageState(newLanguage);
   };
 
-  const t = (key: string, options?: any) => {
+  const t = (key: string, options?: any): string => {
     // Handle nested keys like 'mealPlan.title'
     if (key.includes('.')) {
       const [namespace, ...keyParts] = key.split('.');
       const finalKey = keyParts.join('.');
-      return i18nT(finalKey, { ns: namespace, ...options });
+      const result = i18nT(finalKey, { ns: namespace, ...options });
+      return typeof result === 'string' ? result : finalKey;
     }
-    return i18nT(key, options);
+    const result = i18nT(key, options);
+    return typeof result === 'string' ? result : key;
   };
 
   const isRTL = language === 'ar';

@@ -2,13 +2,12 @@
 import { useState } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { addDays } from "date-fns";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useMealPlanTranslation } from "@/utils/translationHelpers";
 import { useMealPlanState } from "@/hooks/useMealPlanState";
 import MealPlanHero from "./MealPlanHero";
 import DayTabs from "./DayTabs";
 import MealGrid from "./MealGrid";
 import QuickStatsCard from "./QuickStatsCard";
-import SummaryCards from "./SummaryCards";
 import WeeklyView from "./WeeklyView";
 import EmptyState from "./EmptyState";
 import ShoppingListDrawer from "../shopping-list/ShoppingListDrawer";
@@ -21,7 +20,7 @@ import ViewModeToggle from "./ViewModeToggle";
 import { toast } from "sonner";
 
 const MealPlanPageRefactored = () => {
-  const { t, isRTL } = useLanguage();
+  const { mealPlanT } = useMealPlanTranslation();
   const mealPlanState = useMealPlanState();
   
   const [showShoppingDrawer, setShowShoppingDrawer] = useState(false);
@@ -56,20 +55,20 @@ const MealPlanPageRefactored = () => {
   const handleSnackAdded = async () => {
     setShowSnackDialog(false);
     await mealPlanState.refetch();
-    toast.success(t('mealPlan.snackAddedSuccess'));
+    toast.success(mealPlanT('snackAddedSuccess'));
   };
 
   const handleShoppingListUpdate = () => {
-    toast.success(t('mealPlan.shoppingListUpdated'));
+    toast.success(mealPlanT('shoppingListUpdated'));
   };
 
   const handleRegeneratePlan = async () => {
     try {
       await mealPlanState.handleRegeneratePlan();
-      toast.success(t('mealPlan.planGeneratedSuccess'));
+      toast.success(mealPlanT('planGeneratedSuccess'));
     } catch (error) {
       console.error('❌ Regeneration failed:', error);
-      toast.error(t('mealPlan.planGenerationFailed'));
+      toast.error(mealPlanT('planGenerationFailed'));
     }
   };
 
@@ -80,26 +79,26 @@ const MealPlanPageRefactored = () => {
       const success = await mealPlanState.handleGenerateAIPlan();
       if (success) {
         mealPlanState.setShowAIDialog(false);
-        toast.success(t('mealPlan.planGeneratedSuccess'));
+        toast.success(mealPlanT('planGeneratedSuccess'));
       }
     } catch (error) {
       console.error('❌ AI generation failed:', error);
-      toast.error(t('mealPlan.planGenerationFailed'));
+      toast.error(mealPlanT('planGenerationFailed'));
     }
   };
 
   if (mealPlanState.isLoading) {
-    return <MealPlanLoadingBackdrop isLoading={true} message={t('mealPlan.loading')} />;
+    return <MealPlanLoadingBackdrop isLoading={true} message={mealPlanT('loading')} />;
   }
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/50 ${isRTL ? 'rtl' : 'ltr'}`}>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/50">
       <MealPlanLoadingBackdrop 
         isLoading={mealPlanState.isGenerating} 
-        message={t('mealPlan.generating')}
+        message={mealPlanT('generating')}
       />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 lg:py-6 space-y-4 lg:space-y-6">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-3 lg:py-6 space-y-4 lg:space-y-6">
         {/* Hero Header */}
         <MealPlanHero
           weekStartDate={mealPlanState.weekStartDate}
@@ -112,12 +111,24 @@ const MealPlanPageRefactored = () => {
 
         {mealPlanState.currentWeekPlan ? (
           <>
-            {/* View Mode Toggle - Moved outside of hero for better space utilization */}
-            <div className="flex justify-center lg:justify-end">
+            {/* Control Bar - View Mode & Shopping List */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white rounded-xl p-3 shadow-sm border border-gray-100">
               <ViewModeToggle 
                 viewMode={viewMode} 
                 onViewModeChange={setViewMode} 
               />
+              
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowShoppingDrawer(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all text-sm font-medium"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.1 5M7 13l-1.1 5m0 0h9.2M16 18a2 2 0 11-4 0 2 2 0 014 0zm-8 0a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                  {mealPlanT('shoppingList')}
+                </button>
+              </div>
             </div>
 
             {viewMode === 'weekly' ? (
@@ -129,34 +140,57 @@ const MealPlanPageRefactored = () => {
               />
             ) : (
               <div className="space-y-4 lg:space-y-6">
-                {/* Mobile: Stack vertically, Desktop: 3-column layout */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
-                  {/* Quick Stats - Mobile: Full width, Desktop: Left column */}
-                  <div className="lg:col-span-3 order-1">
-                    <div className="space-y-4">
-                      <QuickStatsCard
-                        totalCalories={mealPlanState.totalCalories}
-                        totalProtein={mealPlanState.totalProtein}
-                        targetDayCalories={mealPlanState.targetDayCalories}
-                        mealCount={mealPlanState.todaysMeals?.length || 0}
-                      />
-                      
-                      {/* Summary Cards - Hidden on mobile for better space utilization */}
-                      <div className="hidden lg:block">
-                        <SummaryCards
-                          todaysMeals={mealPlanState.todaysMeals || []}
-                          totalCalories={mealPlanState.totalCalories}
-                          totalProtein={mealPlanState.totalProtein}
-                          targetDayCalories={mealPlanState.targetDayCalories}
-                          onAddSnack={() => handleAddSnack(mealPlanState.selectedDayNumber)}
+                {/* Mobile/Tablet Layout: Stack vertically */}
+                <div className="block lg:hidden space-y-4">
+                  {/* Quick Stats - Mobile */}
+                  <QuickStatsCard
+                    totalCalories={mealPlanState.totalCalories}
+                    totalProtein={mealPlanState.totalProtein}
+                    targetDayCalories={mealPlanState.targetDayCalories}
+                    mealCount={mealPlanState.todaysMeals?.length || 0}
+                  />
+                  
+                  {/* Day Tabs - Mobile */}
+                  <DayTabs
+                    weekStartDate={mealPlanState.weekStartDate}
+                    selectedDayNumber={mealPlanState.selectedDayNumber}
+                    onDayChange={mealPlanState.setSelectedDayNumber}
+                  />
+
+                  {/* Meal Content - Mobile */}
+                  <Tabs value={mealPlanState.selectedDayNumber.toString()}>
+                    {weekDays.map((day) => (
+                      <TabsContent key={day.number} value={day.number.toString()}>
+                        <MealGrid
+                          meals={mealPlanState.currentWeekPlan?.dailyMeals?.filter(
+                            meal => meal.day_number === day.number
+                          ) || []}
+                          onShowRecipe={mealPlanState.handleShowRecipe}
+                          onExchangeMeal={mealPlanState.handleExchangeMeal}
+                          onAddSnack={() => handleAddSnack(day.number)}
+                          onShowShoppingList={() => setShowShoppingDrawer(true)}
                           onRegeneratePlan={handleRegeneratePlan}
+                          dayNumber={day.number}
                         />
-                      </div>
-                    </div>
+                      </TabsContent>
+                    ))}
+                  </Tabs>
+                </div>
+
+                {/* Desktop Layout: 3-column grid */}
+                <div className="hidden lg:grid lg:grid-cols-12 gap-6">
+                  {/* Left Sidebar - Stats */}
+                  <div className="lg:col-span-3 space-y-4 sticky top-6 self-start">
+                    <QuickStatsCard
+                      totalCalories={mealPlanState.totalCalories}
+                      totalProtein={mealPlanState.totalProtein}
+                      targetDayCalories={mealPlanState.targetDayCalories}
+                      mealCount={mealPlanState.todaysMeals?.length || 0}
+                    />
                   </div>
 
-                  {/* Main Content - Mobile: Full width, Desktop: Center and right columns */}
-                  <div className="lg:col-span-9 order-2 space-y-4 lg:space-y-6">
+                  {/* Main Content */}
+                  <div className="lg:col-span-9 space-y-6">
                     {/* Day Tabs */}
                     <DayTabs
                       weekStartDate={mealPlanState.weekStartDate}
@@ -182,22 +216,6 @@ const MealPlanPageRefactored = () => {
                         </TabsContent>
                       ))}
                     </Tabs>
-
-                    {/* Mobile Summary Cards - Show as horizontal scroll on mobile */}
-                    <div className="lg:hidden">
-                      <div className="overflow-x-auto pb-4">
-                        <div className="flex gap-4 min-w-max">
-                          <SummaryCards
-                            todaysMeals={mealPlanState.todaysMeals || []}
-                            totalCalories={mealPlanState.totalCalories}
-                            totalProtein={mealPlanState.totalProtein}
-                            targetDayCalories={mealPlanState.targetDayCalories}
-                            onAddSnack={() => handleAddSnack(mealPlanState.selectedDayNumber)}
-                            onRegeneratePlan={handleRegeneratePlan}
-                          />
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -208,7 +226,7 @@ const MealPlanPageRefactored = () => {
         )}
       </div>
 
-      {/* AI Generation Dialog */}
+      {/* Dialogs */}
       <MealPlanAIDialog
         open={mealPlanState.showAIDialog}
         onOpenChange={mealPlanState.setShowAIDialog}
@@ -218,7 +236,6 @@ const MealPlanPageRefactored = () => {
         isGenerating={mealPlanState.isGenerating}
       />
 
-      {/* Other Dialogs */}
       <SnackPickerDialog
         isOpen={showSnackDialog}
         onClose={() => setShowSnackDialog(false)}
