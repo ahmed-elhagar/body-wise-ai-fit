@@ -95,19 +95,23 @@ const AppSidebar = () => {
         asChild
         isActive={isActive}
         className={cn(
-          "w-full justify-start text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors",
+          "w-full text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors relative",
           isActive && "bg-blue-50 text-blue-600 border-r-2 border-blue-600",
-          isRTL && "flex-row-reverse text-right",
+          isRTL && "text-right",
           isRTL && isActive && "border-r-0 border-l-2 border-blue-600"
         )}
         data-sidebar="menu-button"
       >
-        <Link to={item.href} className={cn(
-          "flex items-center gap-3 px-3 py-2 relative w-full",
-          isRTL && "flex-row-reverse justify-end"
-        )} data-sidebar="menu-item">
+        <Link 
+          to={item.href} 
+          className={cn(
+            "flex items-center gap-3 px-3 py-2 relative w-full",
+            isRTL && "flex-row-reverse"
+          )} 
+          data-sidebar="menu-item"
+        >
           <item.icon className="h-5 w-5 flex-shrink-0" />
-          <span className="font-medium">{item.label}</span>
+          <span className="font-medium truncate">{item.label}</span>
           {item.hasNotification && (
             <div className={cn(
               "absolute w-2 h-2 bg-red-500 rounded-full",
@@ -132,10 +136,14 @@ const AppSidebar = () => {
   };
 
   return (
-    <Sidebar className={cn(
-      "border-r border-gray-200",
-      isRTL && "border-r-0 border-l border-gray-200"
-    )} data-sidebar="sidebar">
+    <Sidebar 
+      className={cn(
+        "border-r border-gray-200",
+        isRTL && "border-r-0 border-l border-gray-200"
+      )} 
+      side={isRTL ? "right" : "left"}
+      data-sidebar="sidebar"
+    >
       {/* Header */}
       <SidebarHeader className="p-4 border-b border-gray-200" data-sidebar="header">
         <div className={cn(
@@ -193,7 +201,7 @@ const AppSidebar = () => {
           <SidebarGroup className="px-3 py-2">
             <SidebarGroupLabel className={cn(
               "text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-2",
-              isRTL && "flex-row-reverse justify-end text-right"
+              isRTL && "flex-row-reverse text-right"
             )} data-sidebar="group-label">
               <Users className="w-4 h-4" />
               {String(tNav("coachPanel"))}
@@ -207,19 +215,23 @@ const AppSidebar = () => {
                       asChild
                       isActive={isActive}
                       className={cn(
-                        "w-full justify-start text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors",
+                        "w-full text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors",
                         isActive && "bg-green-50 text-green-600 border-r-2 border-green-600",
-                        isRTL && "flex-row-reverse text-right",
+                        isRTL && "text-right",
                         isRTL && isActive && "border-r-0 border-l-2 border-green-600"
                       )}
                       data-sidebar="menu-button"
                     >
-                      <Link to={item.href} className={cn(
-                        "flex items-center gap-3 px-3 py-2 w-full",
-                        isRTL && "flex-row-reverse justify-end"
-                      )} data-sidebar="menu-item">
+                      <Link 
+                        to={item.href} 
+                        className={cn(
+                          "flex items-center gap-3 px-3 py-2 w-full",
+                          isRTL && "flex-row-reverse"
+                        )} 
+                        data-sidebar="menu-item"
+                      >
                         <item.icon className="h-5 w-5 flex-shrink-0" />
-                        <span className="font-medium">{item.label}</span>
+                        <span className="font-medium truncate">{item.label}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -234,7 +246,7 @@ const AppSidebar = () => {
           <SidebarGroup className="px-3 py-2">
             <SidebarGroupLabel className={cn(
               "text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-2",
-              isRTL && "flex-row-reverse justify-end text-right"
+              isRTL && "flex-row-reverse text-right"
             )} data-sidebar="group-label">
               <Crown className="w-4 h-4" />
               {String(tNav("admin"))}
@@ -248,19 +260,23 @@ const AppSidebar = () => {
                       asChild
                       isActive={isActive}
                       className={cn(
-                        "w-full justify-start text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors",
+                        "w-full text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors",
                         isActive && "bg-purple-50 text-purple-600 border-r-2 border-purple-600",
-                        isRTL && "flex-row-reverse text-right",
+                        isRTL && "text-right",
                         isRTL && isActive && "border-r-0 border-l-2 border-purple-600"
                       )}
                       data-sidebar="menu-button"
                     >
-                      <Link to={item.href} className={cn(
-                        "flex items-center gap-3 px-3 py-2 w-full",
-                        isRTL && "flex-row-reverse justify-end"
-                      )} data-sidebar="menu-item">
+                      <Link 
+                        to={item.href} 
+                        className={cn(
+                          "flex items-center gap-3 px-3 py-2 w-full",
+                          isRTL && "flex-row-reverse"
+                        )} 
+                        data-sidebar="menu-item"
+                      >
                         <item.icon className="h-5 w-5 flex-shrink-0" />
-                        <span className="font-medium">{item.label}</span>
+                        <span className="font-medium truncate">{item.label}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -283,8 +299,8 @@ const AppSidebar = () => {
           onClick={handleSignOut}
           variant="ghost"
           className={cn(
-            "w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors",
-            isRTL && "flex-row-reverse justify-end"
+            "w-full text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors",
+            isRTL && "flex-row-reverse"
           )}
         >
           <LogOut className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />

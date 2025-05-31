@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "@/hooks/useAuth";
 import AppSidebar from "./AppSidebar";
 import { useI18n } from '@/hooks/useI18n';
+import { cn } from '@/lib/utils';
 
 interface LayoutProps {
   children: ReactNode;
@@ -15,17 +16,26 @@ const Layout = memo(({ children }: LayoutProps) => {
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className={`sidebar-layout bg-gray-50 ${isRTL ? 'font-arabic' : ''}`}>
+      <div className={cn(
+        "sidebar-layout bg-gray-50 w-full min-h-screen",
+        isRTL && 'font-arabic'
+      )}>
         <AppSidebar />
         <SidebarInset className="flex-1 w-full min-w-0" data-sidebar="inset">
           {/* Mobile header with sidebar trigger */}
-          <div className={`flex h-14 items-center gap-3 border-b bg-white px-4 md:hidden ${isRTL ? 'flex-row-reverse' : ''}`}>
+          <div className={cn(
+            "flex h-14 items-center gap-3 border-b bg-white px-4 md:hidden",
+            isRTL && 'flex-row-reverse'
+          )}>
             <SidebarTrigger className="h-8 w-8" data-sidebar="trigger" />
             <h1 className="font-semibold text-gray-900">{t('common:appName')}</h1>
           </div>
           
           {/* Desktop header with sidebar trigger */}
-          <div className={`hidden md:flex h-14 items-center gap-3 border-b bg-white px-4 ${isRTL ? 'flex-row-reverse justify-end' : ''}`}>
+          <div className={cn(
+            "hidden md:flex h-14 items-center gap-3 border-b bg-white px-4",
+            isRTL && 'flex-row-reverse justify-end'
+          )}>
             <SidebarTrigger className="h-8 w-8" data-sidebar="trigger" />
           </div>
           
