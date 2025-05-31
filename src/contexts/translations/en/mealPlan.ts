@@ -40,6 +40,7 @@ export const mealPlan = {
   target: "target",
   recipe: "Recipe",
   exchange: "Exchange",
+  shoppingList: "Shopping List",
   
   // States & Messages
   noMealPlan: "No Meal Plan Found",
@@ -48,6 +49,19 @@ export const mealPlan = {
   personalizedPlan: "Personalized Plan",
   aiPowered: "AI Powered",
   aiPoweredNutrition: "AI Powered Nutrition",
+  loading: "Loading...",
+  generating: "Generating...",
+  
+  // Success/Error Messages
+  snackAddedSuccess: "Snack added successfully!",
+  shoppingListUpdated: "Shopping list updated!",
+  planGeneratedSuccess: "Meal plan generated successfully!",
+  planGenerationFailed: "Failed to generate meal plan",
+  
+  // Stats
+  dailyProgress: "Daily Progress",
+  mealsToday: "Meals Today",
+  complete: "Complete",
   
   // Meal Types
   breakfast: "Breakfast",

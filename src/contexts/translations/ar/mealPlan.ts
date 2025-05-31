@@ -40,6 +40,7 @@ export const mealPlan = {
   target: "الهدف",
   recipe: "الوصفة",
   exchange: "استبدال",
+  shoppingList: "قائمة التسوق",
   
   // States & Messages
   noMealPlan: "لم يتم العثور على خطة وجبات",
@@ -48,6 +49,19 @@ export const mealPlan = {
   personalizedPlan: "خطة مخصصة",
   aiPowered: "مدعوم بالذكاء الاصطناعي",
   aiPoweredNutrition: "تغذية مدعومة بالذكاء الاصطناعي",
+  loading: "جارٍ التحميل...",
+  generating: "جارٍ الإنشاء...",
+  
+  // Success/Error Messages
+  snackAddedSuccess: "تم إضافة الوجبة الخفيفة بنجاح!",
+  shoppingListUpdated: "تم تحديث قائمة التسوق!",
+  planGeneratedSuccess: "تم إنشاء خطة الوجبات بنجاح!",
+  planGenerationFailed: "فشل في إنشاء خطة الوجبات",
+  
+  // Stats
+  dailyProgress: "التقدم اليومي",
+  mealsToday: "وجبات اليوم",
+  complete: "مكتمل",
   
   // Meal Types
   breakfast: "الإفطار",

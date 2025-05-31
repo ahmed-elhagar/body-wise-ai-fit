@@ -2,7 +2,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Clock, Users, ChefHat, Book, ArrowLeftRight } from "lucide-react";
+import { Clock, Users, ChefHat, Book, ArrowLeftRight, Sparkles } from "lucide-react";
 import { format, addDays } from "date-fns";
 import type { DailyMeal } from "@/hooks/useMealPlanData";
 import { useMealPlanTranslation } from "@/utils/translationHelpers";
@@ -33,7 +33,7 @@ const DayOverview = ({
   const { mealPlanT } = useMealPlanTranslation();
 
   const getDayName = (dayNumber: number) => {
-    const days = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const days = ['', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
     return days[dayNumber] || 'Day';
   };
 
@@ -46,64 +46,21 @@ const DayOverview = ({
 
   return (
     <div className="space-y-6">
-      {/* Day Header with Stats */}
-      <Card className="bg-gradient-to-r from-white to-slate-50 border-slate-200/50 shadow-lg">
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <ChefHat className="w-6 h-6 text-fitness-primary" />
-              <div>
-                <h2 className="text-2xl font-bold text-gray-800">
-                  {getDayName(selectedDayNumber)} - {format(dayDate, 'MMM d')}
-                </h2>
-                <p className="text-gray-600">{mealPlanT('dailyOverview')}</p>
-              </div>
-            </div>
-            <Button onClick={onAddSnack} variant="outline" size="sm">
-              Add Snack
-            </Button>
-          </div>
-
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-gradient-to-r from-red-50 to-red-100 p-4 rounded-lg border border-red-200">
-              <div className="text-sm font-medium text-red-700 mb-1">Calories</div>
-              <div className="text-2xl font-bold text-red-800">{totalCalories}</div>
-              <div className="text-xs text-red-600">of {targetDayCalories}</div>
-            </div>
-            <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
-              <div className="text-sm font-medium text-blue-700 mb-1">Protein</div>
-              <div className="text-2xl font-bold text-blue-800">{totalProtein.toFixed(1)}g</div>
-            </div>
-            <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
-              <div className="text-sm font-medium text-green-700 mb-1">Meals</div>
-              <div className="text-2xl font-bold text-green-800">{dailyMeals.length}</div>
-            </div>
-            <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
-              <div className="text-sm font-medium text-purple-700 mb-1">Progress</div>
-              <div className="text-2xl font-bold text-purple-800">
-                {Math.round((totalCalories / targetDayCalories) * 100)}%
-              </div>
-            </div>
-          </div>
-        </div>
-      </Card>
-
       {/* Meals List */}
       {dailyMeals.length > 0 ? (
         <div className="space-y-4">
           {dailyMeals.map((meal, index) => (
-            <Card key={meal.id} className="border-l-4 border-l-fitness-primary shadow-md hover:shadow-lg transition-shadow">
+            <Card key={meal.id} className="border-l-4 border-l-fitness-primary shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-r from-white to-fitness-primary-25">
               <div className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Badge variant="secondary" className="capitalize">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Badge className="bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 text-white capitalize px-3 py-1">
                         {meal.meal_type}
                       </Badge>
                       <span className="text-sm text-gray-500 flex items-center gap-1">
                         <Clock className="h-3 w-3" />
-                        {meal.prep_time + meal.cook_time} min
+                        {(meal.prep_time || 0) + (meal.cook_time || 0)} min
                       </span>
                       <span className="text-sm text-gray-500 flex items-center gap-1">
                         <Users className="h-3 w-3" />
@@ -111,24 +68,26 @@ const DayOverview = ({
                       </span>
                     </div>
                     
-                    <h4 className="font-semibold text-lg mb-3 text-gray-800">{meal.name}</h4>
+                    <h4 className="font-bold text-xl mb-4 text-fitness-primary-700 hover:text-fitness-primary-600 transition-colors">
+                      {meal.name}
+                    </h4>
                     
-                    <div className="grid grid-cols-4 gap-4 text-sm mb-4">
-                      <div className="text-center bg-red-50 rounded p-2 border border-red-100">
-                        <span className="text-gray-600 block">Calories</span>
-                        <p className="font-bold text-red-600">{meal.calories}</p>
+                    <div className="grid grid-cols-4 gap-4 text-sm mb-6">
+                      <div className="text-center bg-gradient-to-br from-red-50 to-red-100 rounded-lg p-3 border border-red-200">
+                        <span className="text-gray-600 block text-xs mb-1">Calories</span>
+                        <p className="font-bold text-red-600 text-lg">{meal.calories}</p>
                       </div>
-                      <div className="text-center bg-blue-50 rounded p-2 border border-blue-100">
-                        <span className="text-gray-600 block">Protein</span>
-                        <p className="font-bold text-blue-600">{meal.protein}g</p>
+                      <div className="text-center bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-3 border border-blue-200">
+                        <span className="text-gray-600 block text-xs mb-1">Protein</span>
+                        <p className="font-bold text-blue-600 text-lg">{meal.protein}g</p>
                       </div>
-                      <div className="text-center bg-green-50 rounded p-2 border border-green-100">
-                        <span className="text-gray-600 block">Carbs</span>
-                        <p className="font-bold text-green-600">{meal.carbs}g</p>
+                      <div className="text-center bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-3 border border-green-200">
+                        <span className="text-gray-600 block text-xs mb-1">Carbs</span>
+                        <p className="font-bold text-green-600 text-lg">{meal.carbs}g</p>
                       </div>
-                      <div className="text-center bg-orange-50 rounded p-2 border border-orange-100">
-                        <span className="text-gray-600 block">Fat</span>
-                        <p className="font-bold text-orange-600">{meal.fat}g</p>
+                      <div className="text-center bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg p-3 border border-orange-200">
+                        <span className="text-gray-600 block text-xs mb-1">Fat</span>
+                        <p className="font-bold text-orange-600 text-lg">{meal.fat}g</p>
                       </div>
                     </div>
                   </div>
@@ -137,9 +96,8 @@ const DayOverview = ({
                 <div className="flex gap-3 mt-4">
                   <Button 
                     size="sm" 
-                    variant="outline"
                     onClick={() => onViewMeal(meal)}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 hover:from-fitness-primary-600 hover:to-fitness-primary-700 text-white shadow-lg"
                   >
                     <Book className="w-4 h-4" />
                     View Recipe
@@ -148,7 +106,7 @@ const DayOverview = ({
                     size="sm" 
                     variant="outline"
                     onClick={() => onExchangeMeal(meal, index)}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 border-fitness-accent-300 text-fitness-accent-600 hover:bg-fitness-accent-50"
                   >
                     <ArrowLeftRight className="w-4 h-4" />
                     Exchange Meal
@@ -159,10 +117,17 @@ const DayOverview = ({
           ))}
         </div>
       ) : (
-        <Card className="p-8 text-center border-dashed border-2 border-gray-300">
-          <ChefHat className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500 mb-4">No meals planned for this day</p>
-          <Button onClick={onAddSnack} variant="outline">
+        <Card className="p-12 text-center border-dashed border-2 border-fitness-primary-300 bg-gradient-to-br from-fitness-primary-25 to-fitness-accent-25">
+          <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-fitness-primary-500 to-fitness-accent-500 rounded-full flex items-center justify-center">
+            <ChefHat className="h-10 w-10 text-white" />
+          </div>
+          <h3 className="text-xl font-bold text-fitness-primary-700 mb-3">No meals planned for this day</h3>
+          <p className="text-fitness-primary-600 mb-6">Start building your perfect day with AI-powered meal suggestions</p>
+          <Button 
+            onClick={onAddSnack} 
+            className="bg-gradient-to-r from-fitness-accent-500 to-fitness-accent-600 hover:from-fitness-accent-600 hover:to-fitness-accent-700 text-white shadow-lg px-8 py-3"
+          >
+            <Sparkles className="w-5 h-5 mr-2" />
             Add Your First Meal
           </Button>
         </Card>

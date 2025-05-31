@@ -4,9 +4,9 @@ import { useMealPlanPage } from "@/hooks/useMealPlanPage";
 import { Card } from "@/components/ui/card";
 import DayOverview from "./DayOverview";
 import WeeklyMealGrid from "./WeeklyMealGrid";
-import WeeklyPlanHeader from "./WeeklyPlanHeader";
-import DayTabs from "./DayTabs";
-import CompactControlBar from "./CompactControlBar";
+import EnhancedNavigationBar from "./EnhancedNavigationBar";
+import EnhancedActionBar from "./EnhancedActionBar";
+import EnhancedRecipeDialog from "./EnhancedRecipeDialog";
 import EmptyWeekState from "./EmptyWeekState";
 import MealPlanDialogs from "../MealPlanDialogs";
 import { ErrorBoundary } from "../ErrorBoundary";
@@ -91,32 +91,29 @@ const MealPlanPage = () => {
     <ErrorBoundary>
       <div className="min-h-screen bg-gradient-to-br from-fitness-primary-25 via-white to-fitness-accent-25">
         <div className="container mx-auto px-4 py-6 space-y-6">
-          {/* Header */}
-          <WeeklyPlanHeader
+          {/* Enhanced Navigation Bar */}
+          <EnhancedNavigationBar
+            weekStartDate={weekStartDate}
+            selectedDayNumber={selectedDayNumber}
+            onDayChange={setSelectedDayNumber}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
             currentWeekOffset={currentWeekOffset}
             onWeekChange={setCurrentWeekOffset}
-            onOpenAIDialog={() => setShowAIDialog(true)}
-            onRegeneratePlan={handleRegeneratePlan}
-            isGenerating={isGenerating}
-            weekStartDate={weekStartDate}
           />
 
-          {/* Enhanced Control Bar with Day Tabs Integration */}
-          <div className="space-y-4">
-            <CompactControlBar
-              viewMode={viewMode}
-              onViewModeChange={setViewMode}
+          {/* Enhanced Action Bar */}
+          {currentWeekPlan?.weeklyPlan && (
+            <EnhancedActionBar
               onAddSnack={handleAddSnack}
               onShowShoppingList={handleShowShoppingList}
-            />
-
-            {/* Day Tabs - Always Visible */}
-            <DayTabs
-              weekStartDate={weekStartDate}
+              totalCalories={totalCalories}
+              totalProtein={totalProtein}
+              targetDayCalories={targetDayCalories}
+              mealsCount={dailyMeals?.length || 0}
               selectedDayNumber={selectedDayNumber}
-              onDayChange={setSelectedDayNumber}
             />
-          </div>
+          )}
 
           {/* Content */}
           {isLoading ? (
@@ -153,7 +150,15 @@ const MealPlanPage = () => {
             </div>
           )}
 
-          {/* All Dialogs */}
+          {/* Enhanced Recipe Dialog */}
+          <EnhancedRecipeDialog
+            isOpen={showRecipeDialog}
+            onClose={() => setShowRecipeDialog(false)}
+            meal={selectedMeal}
+            onRecipeGenerated={handleRecipeGenerated}
+          />
+
+          {/* All Other Dialogs */}
           <MealPlanDialogs
             showAIDialog={showAIDialog}
             onCloseAIDialog={() => setShowAIDialog(false)}
@@ -174,9 +179,9 @@ const MealPlanPage = () => {
             onCloseShoppingListDialog={() => setShowShoppingListDialog(false)}
             shoppingItems={shoppingItems}
             
-            showRecipeDialog={showRecipeDialog}
-            onCloseRecipeDialog={() => setShowRecipeDialog(false)}
-            selectedMeal={selectedMeal}
+            showRecipeDialog={false} // Using EnhancedRecipeDialog instead
+            onCloseRecipeDialog={() => {}}
+            selectedMeal={null}
             
             showExchangeDialog={showExchangeDialog}
             onCloseExchangeDialog={() => setShowExchangeDialog(false)}
