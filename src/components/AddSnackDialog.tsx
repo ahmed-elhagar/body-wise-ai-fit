@@ -77,16 +77,6 @@ const AddSnackDialog = ({
   const dynamicTargetCalories = getDynamicTargetCalories();
   const remainingCalories = Math.max(0, dynamicTargetCalories - currentDayCalories);
 
-  console.log('🍎 AddSnackDialog - Debug:', {
-    currentDayCalories,
-    originalTarget: targetDayCalories,
-    dynamicTarget: dynamicTargetCalories,
-    remainingCalories,
-    weeklyPlanId,
-    selectedDay,
-    language
-  });
-
   const handleGenerateAISnack = async () => {
     if (!user || !weeklyPlanId) {
       toast.error(t('mealPlan.addSnack.error'));
@@ -109,14 +99,6 @@ const AddSnackDialog = ({
       setGenerationStep('creating');
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      console.log('🍎 Calling generate-ai-snack function with:', {
-        userProfile: profile,
-        day: selectedDay,
-        calories: remainingCalories,
-        weeklyPlanId,
-        language
-      });
-
       const { data, error } = await supabase.functions.invoke('generate-ai-snack', {
         body: {
           userProfile: profile,
@@ -137,8 +119,6 @@ const AddSnackDialog = ({
       setGenerationStep('saving');
       await new Promise(resolve => setTimeout(resolve, 800));
 
-      console.log('✅ AI snack generated successfully:', data);
-      
       if (data?.success) {
         toast.success(data.message || t('mealPlan.addSnack.success'));
         onClose();
@@ -159,10 +139,10 @@ const AddSnackDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={`max-w-lg mx-4 sm:mx-auto ${isRTL ? 'text-right' : 'text-left'}`}>
-        <AddSnackHeader selectedDay={selectedDay} />
-        
-        <div className="space-y-6">
+      <DialogContent className="max-w-lg mx-4 sm:mx-auto bg-white border-0 shadow-2xl rounded-2xl">
+        <div className="p-6 space-y-6">
+          <AddSnackHeader selectedDay={selectedDay} />
+          
           <CalorieProgressCard 
             currentDayCalories={currentDayCalories}
             targetDayCalories={dynamicTargetCalories}
