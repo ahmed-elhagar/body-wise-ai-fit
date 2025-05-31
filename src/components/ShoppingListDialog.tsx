@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,17 +6,24 @@ import { ShoppingCart, Mail, Download } from "lucide-react";
 import { useEnhancedShoppingList } from "@/hooks/useEnhancedShoppingList";
 import { useState } from "react";
 
+interface ShoppingItem {
+  name: string;
+  quantity?: string;
+  unit?: string;
+  category?: string;
+}
+
 interface ShoppingListDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  items: any[];
+  items: ShoppingItem[];
 }
 
 const ShoppingListDialog = ({ isOpen, onClose, items }: ShoppingListDialogProps) => {
   const { sendShoppingListEmail } = useEnhancedShoppingList(null);
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
 
-  // Group items by category
+  // Group items by category with proper typing
   const groupedItems = items.reduce((acc, item) => {
     const category = item.category || 'Other';
     if (!acc[category]) {
@@ -25,7 +31,7 @@ const ShoppingListDialog = ({ isOpen, onClose, items }: ShoppingListDialogProps)
     }
     acc[category].push(item);
     return acc;
-  }, {} as Record<string, any[]>);
+  }, {} as Record<string, ShoppingItem[]>);
 
   const toggleItem = (itemKey: string) => {
     const newChecked = new Set(checkedItems);
