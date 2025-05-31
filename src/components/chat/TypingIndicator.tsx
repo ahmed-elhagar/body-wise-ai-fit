@@ -15,19 +15,26 @@ const TypingIndicator = ({ typingUsers, getCoachName, className }: TypingIndicat
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
 
+  const getTypingText = () => {
+    if (typingUsers.length === 1) {
+      return `${getCoachName()} is typing`;
+    }
+    return `${typingUsers.length} people are typing`;
+  };
+
   return (
-    <div className={cn("flex items-center gap-2 px-4 py-2 text-sm text-gray-500", className)}>
-      <Avatar className="h-6 w-6">
-        <AvatarFallback className="bg-green-100 text-green-700 text-xs">
+    <div className={cn("flex items-center gap-3 px-4 py-3 animate-fade-in", className)}>
+      <Avatar className="h-7 w-7 ring-2 ring-green-100">
+        <AvatarFallback className="bg-green-100 text-green-700 text-xs font-medium">
           {getInitials(getCoachName())}
         </AvatarFallback>
       </Avatar>
-      <div className="flex items-center gap-2">
-        <span>{getCoachName()} is typing</span>
+      <div className="flex items-center gap-3">
+        <span className="text-sm text-gray-600 font-medium">{getTypingText()}</span>
         <div className="flex gap-1">
-          <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-          <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-          <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+          <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+          <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+          <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
         </div>
       </div>
     </div>

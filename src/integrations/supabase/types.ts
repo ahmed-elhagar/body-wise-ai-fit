@@ -820,8 +820,10 @@ export type Database = {
           health_conditions: string[] | null
           height: number | null
           id: string
+          is_online: boolean | null
           last_health_assessment_date: string | null
           last_name: string | null
+          last_seen: string | null
           location: string | null
           nationality: string | null
           onboarding_completed: boolean | null
@@ -854,8 +856,10 @@ export type Database = {
           health_conditions?: string[] | null
           height?: number | null
           id: string
+          is_online?: boolean | null
           last_health_assessment_date?: string | null
           last_name?: string | null
+          last_seen?: string | null
           location?: string | null
           nationality?: string | null
           onboarding_completed?: boolean | null
@@ -888,8 +892,10 @@ export type Database = {
           health_conditions?: string[] | null
           height?: number | null
           id?: string
+          is_online?: boolean | null
           last_health_assessment_date?: string | null
           last_name?: string | null
+          last_seen?: string | null
           location?: string | null
           nationality?: string | null
           onboarding_completed?: boolean | null
@@ -952,6 +958,30 @@ export type Database = {
           stripe_subscription_id?: string | null
           trial_end?: string | null
           updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      typing_indicators: {
+        Row: {
+          chat_room_id: string
+          id: string
+          is_typing: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          chat_room_id: string
+          id?: string
+          is_typing?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          chat_room_id?: string
+          id?: string
+          is_typing?: boolean | null
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -1388,6 +1418,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      cleanup_typing_indicators: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       complete_ai_generation: {
         Args: {
           log_id_param: string
@@ -1540,6 +1574,10 @@ export type Database = {
       show_trgm: {
         Args: { "": string }
         Returns: string[]
+      }
+      update_user_online_status: {
+        Args: { user_id: string; is_online: boolean }
+        Returns: undefined
       }
       update_user_role: {
         Args: {

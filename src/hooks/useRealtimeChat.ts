@@ -4,7 +4,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
-import type { ChatMessage } from './useCoachChat';
 
 export const useRealtimeChat = (coachId: string, traineeId: string) => {
   const { user } = useAuth();
@@ -45,8 +44,20 @@ export const useRealtimeChat = (coachId: string, traineeId: string) => {
             queryKey: ['coach-chat-messages', coachId, traineeId] 
           });
           
-          // Show notification for messages from others
-          if (payload.new?.sender_id !== user?.id) {
+          // Show notification for messages from others (with sound)
+          const message = payload.new as any;
+          if (message.sender_id !== user?.id) {
+            // Play notification sound
+            try {
+              const audio = new Audio('/notification-sound.mp3');
+              audio.volume = 0.3;
+              audio.play().catch(() => {
+                // Ignore errors if audio can't play
+              });
+            } catch (error) {
+              // Ignore audio errors
+            }
+
             toast.info('New message received', {
               duration: 3000,
             });
@@ -68,6 +79,31 @@ export const useRealtimeChat = (coachId: string, traineeId: string) => {
           });
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'coach_trainee_messages',
+          filter: `coach_id=eq.${coachId},trainee_id=eq.${traineeId}`,
+        },
+        (payload) => {
+          console.log('🗑️ Message deleted:', payload);
+          queryClient.invalidateQueries({ 
+            queryKey: ['coach-chat-messages', coachId, traineeId] 
+          });
+        }
+      )
+      .on('presence', { event: 'sync' }, () => {
+        const state = channel.presenceState();
+        console.log('👥 Presence sync:', state);
+      })
+      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
+        console.log('👋 User joined:', key, newPresences);
+      })
+      .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
+        console.log('👋 User left:', key, leftPresences);
+      })
       .subscribe();
 
     channelRef.current = channel;

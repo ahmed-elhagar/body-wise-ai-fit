@@ -6,8 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { ArrowLeft, Send, Loader2, UserCheck, Badge as BadgeIcon, AlertCircle, X, Edit } from "lucide-react";
+import { ArrowLeft, Send, Loader2, UserCheck, Badge as BadgeIcon, AlertCircle, X, Edit, Wifi, WifiOff } from "lucide-react";
 import { useCoachChat } from "@/hooks/useCoachChat";
 import { useRealtimeChat } from "@/hooks/useRealtimeChat";
 import { useAuth } from "@/hooks/useAuth";
@@ -15,6 +14,9 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useMessageSearch } from "@/hooks/useMessageSearch";
 import { useTypingIndicator } from "@/hooks/useTypingIndicator";
 import { useMessageActions } from "@/hooks/useMessageActions";
+import { useUserOnlineStatus } from "@/hooks/useUserOnlineStatus";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
+import { useLiveNotifications } from "@/hooks/useLiveNotifications";
 import { cn } from "@/lib/utils";
 import MobileChatInterface from "@/components/chat/MobileChatInterface";
 import ChatSearchBar from "@/components/chat/ChatSearchBar";
@@ -36,6 +38,10 @@ const TraineeCoachChat = ({ coachId, coachName, onBack }: TraineeCoachChatProps)
   
   const traineeId = user?.id || '';
   
+  // Initialize real-time features
+  useOnlineStatus(); // Track current user's online status
+  useLiveNotifications(); // Listen for live notifications
+  
   const { 
     messages, 
     isLoading, 
@@ -45,6 +51,11 @@ const TraineeCoachChat = ({ coachId, coachName, onBack }: TraineeCoachChatProps)
   } = useCoachChat(coachId, traineeId);
   
   const { isConnected } = useRealtimeChat(coachId, traineeId);
+  
+  // Check coach's online status
+  const { isUserOnline, getUserLastSeen } = useUserOnlineStatus([coachId]);
+  const isCoachOnline = isUserOnline(coachId);
+  const coachLastSeen = getUserLastSeen(coachId);
   
   // Phase 2 features
   const { 
@@ -151,6 +162,19 @@ const TraineeCoachChat = ({ coachId, coachName, onBack }: TraineeCoachChatProps)
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
 
+  const formatLastSeen = (lastSeen?: string) => {
+    if (!lastSeen) return 'Never';
+    
+    const date = new Date(lastSeen);
+    const now = new Date();
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+    
+    if (diffInMinutes < 1) return 'Just now';
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
+    return date.toLocaleDateString();
+  };
+
   // Use mobile interface on mobile devices
   if (isMobile) {
     return (
@@ -187,7 +211,7 @@ const TraineeCoachChat = ({ coachId, coachName, onBack }: TraineeCoachChatProps)
 
   const displayMessages = searchStats.isFiltered ? filteredMessages : messages;
 
-  // Desktop interface with enhanced features
+  // Desktop interface with enhanced real-time features
   return (
     <Card className="h-[600px] flex flex-col bg-white shadow-lg rounded-xl">
       <CardHeader className="bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-t-xl pb-4">
@@ -214,11 +238,21 @@ const TraineeCoachChat = ({ coachId, coachName, onBack }: TraineeCoachChatProps)
             <div className="flex items-center gap-2">
               <div className={cn(
                 "w-2 h-2 rounded-full",
-                isConnected ? "bg-green-300" : "bg-white/50"
+                isCoachOnline ? "bg-green-300" : "bg-white/50"
               )} />
               <span className="text-green-100 text-sm">
-                {isConnected ? "Connected" : "Connecting..."}
+                {isCoachOnline ? "Online" : `Last seen ${formatLastSeen(coachLastSeen)}`}
               </span>
+              <div className="flex items-center gap-1 ml-2">
+                {isConnected ? (
+                  <Wifi className="w-3 h-3 text-green-200" />
+                ) : (
+                  <WifiOff className="w-3 h-3 text-red-200" />
+                )}
+                <span className="text-xs text-green-100">
+                  {isConnected ? "Connected" : "Reconnecting..."}
+                </span>
+              </div>
             </div>
           </div>
           
