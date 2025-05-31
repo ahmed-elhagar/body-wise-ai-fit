@@ -34,47 +34,56 @@ const Dashboard = () => {
       <Layout>
         <div className="p-3 md:p-4 lg:p-6 bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/30 min-h-screen">
           <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
-            {/* Enhanced Header with Dropdowns */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <DashboardWelcomeHeader 
-                userName={userName}
-                onViewMealPlan={handleViewMealPlan}
-                onViewExercise={handleViewExercise}
-              />
-              <HeaderDropdowns />
+            {/* Enhanced Header with integrated notifications and activity */}
+            <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-700 border-0 shadow-xl rounded-2xl">
+              {/* Background Pattern */}
+              <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
+              <div className="absolute -top-20 -right-20 w-40 h-40 bg-white/5 rounded-full" />
+              <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/5 rounded-full" />
+              
+              <div className="relative p-6 md:p-8">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <DashboardWelcomeHeader 
+                    userName={userName}
+                    onViewMealPlan={handleViewMealPlan}
+                    onViewExercise={handleViewExercise}
+                  />
+                  <HeaderDropdowns />
+                </div>
+              </div>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:space-y-6">
-              {/* Main Content - Left Side */}
-              <div className="lg:col-span-2 space-y-4 md:space-y-6">
-                <EnhancedStatsGrid />
+            {/* Full Width Stats Grid */}
+            <EnhancedStatsGrid />
+            
+            {/* 50-50 Layout for remaining content */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+              {/* Left Column */}
+              <div className="space-y-4 md:space-y-6">
+                <InteractiveProgressChart />
                 
-                <InteractiveProgressChart 
-                  timeRange={activeTimeRange}
-                  onTimeRangeChange={setActiveTimeRange}
-                />
-                
-                <GoalProgressWidget />
-                
-                {/* Collapsible Quick Actions moved down */}
                 <CollapsibleQuickActions 
                   onViewMealPlan={handleViewMealPlan}
                   onViewExercise={handleViewExercise}
                 />
-                
-                <DashboardAchievements 
-                  profile={profile}
-                  currentMealPlan={null}
-                  currentExerciseProgram={null}
-                />
               </div>
               
-              {/* Sidebar - Right Side */}
+              {/* Right Column */}
               <div className="space-y-4 md:space-y-6">
+                <GoalProgressWidget />
+                
                 <CoachChatWidget />
+                
                 <WeightTrackingWidget />
               </div>
             </div>
+            
+            {/* Achievements - Full Width */}
+            <DashboardAchievements 
+              profile={profile}
+              currentMealPlan={null}
+              currentExerciseProgram={null}
+            />
           </div>
         </div>
       </Layout>
