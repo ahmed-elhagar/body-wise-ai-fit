@@ -29,14 +29,7 @@ export const useEnhancedMealExchange = () => {
       toast.loading('Finding meal alternatives...', { duration: 15000 });
 
       // Use credit system for meal exchange
-      const creditResult = await checkAndUseCreditAsync({
-        generationType: 'meal_plan',
-        promptData: {
-          type: 'meal_exchange',
-          currentMeal: currentMeal.name,
-          language: language
-        }
-      });
+      const creditResult = await checkAndUseCreditAsync('meal_plan');
 
       try {
         const { data, error } = await supabase.functions.invoke('generate-meal-alternatives', {
@@ -69,13 +62,16 @@ export const useEnhancedMealExchange = () => {
         });
 
         // Complete the AI generation log
-        await completeGenerationAsync({
-          logId: creditResult.log_id!,
-          responseData: {
-            alternativesCount: data.alternatives?.length || 0,
-            sources: data.source_breakdown
-          }
-        });
+        const creditData = creditResult as any;
+        if (creditData?.log_id) {
+          await completeGenerationAsync({
+            logId: creditData.log_id,
+            responseData: {
+              alternativesCount: data.alternatives?.length || 0,
+              sources: data.source_breakdown
+            }
+          });
+        }
 
         const generatedAlternatives = data.alternatives || [];
         setAlternatives(generatedAlternatives);
@@ -85,10 +81,13 @@ export const useEnhancedMealExchange = () => {
 
       } catch (error) {
         // Mark generation as failed
-        await completeGenerationAsync({
-          logId: creditResult.log_id!,
-          errorMessage: error instanceof Error ? error.message : 'Generation failed'
-        });
+        const creditData = creditResult as any;
+        if (creditData?.log_id) {
+          await completeGenerationAsync({
+            logId: creditData.log_id,
+            errorMessage: error instanceof Error ? error.message : 'Generation failed'
+          });
+        }
         throw error;
       }
       

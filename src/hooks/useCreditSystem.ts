@@ -57,6 +57,7 @@ export const useCreditSystem = () => {
       .rpc('check_and_use_ai_generation', {
         user_id_param: user?.id,
         generation_type_param: generationType,
+        prompt_data_param: {},
       });
 
     if (error) throw error;
@@ -68,22 +69,15 @@ export const useCreditSystem = () => {
   };
 
   const completeGenerationAsync = async (params: {
-    logId?: string;
-    generationType: string;
-    promptData: any;
+    logId: string;
     responseData?: any;
-    status: string;
     errorMessage?: string;
   }) => {
     const { error } = await supabase
-      .from('ai_generation_logs')
-      .insert({
-        user_id: user?.id,
-        generation_type: params.generationType,
-        prompt_data: params.promptData,
-        response_data: params.responseData,
-        status: params.status,
-        error_message: params.errorMessage,
+      .rpc('complete_ai_generation', {
+        log_id_param: params.logId,
+        response_data_param: params.responseData || {},
+        error_message_param: params.errorMessage,
       });
 
     if (error) throw error;

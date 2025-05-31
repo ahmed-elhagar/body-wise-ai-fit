@@ -37,14 +37,7 @@ export const useAIMealExchange = () => {
       console.log('🔄 Generating meal alternatives for:', currentMeal.name, 'in language:', language);
 
       // Use centralized credit system
-      const creditResult = await checkAndUseCreditAsync({
-        generationType: 'meal_plan', // Using meal_plan type for meal exchanges
-        promptData: {
-          type: 'meal_exchange',
-          currentMeal: currentMeal.name,
-          language: language
-        }
-      });
+      const creditResult = await checkAndUseCreditAsync('meal_plan');
 
       try {
         const { data, error } = await supabase.functions.invoke('generate-meal-alternatives', {
@@ -75,21 +68,27 @@ export const useAIMealExchange = () => {
         });
 
         // Complete the AI generation log with success
-        await completeGenerationAsync({
-          logId: creditResult.log_id!,
-          responseData: {
-            alternativesCount: data.alternatives?.length || 0,
-            sources: data.source_breakdown
-          }
-        });
+        const creditData = creditResult as any;
+        if (creditData?.log_id) {
+          await completeGenerationAsync({
+            logId: creditData.log_id,
+            responseData: {
+              alternativesCount: data.alternatives?.length || 0,
+              sources: data.source_breakdown
+            }
+          });
+        }
 
         return data.alternatives || [];
       } catch (error) {
         // Mark generation as failed
-        await completeGenerationAsync({
-          logId: creditResult.log_id!,
-          errorMessage: error instanceof Error ? error.message : 'Generation failed'
-        });
+        const creditData = creditResult as any;
+        if (creditData?.log_id) {
+          await completeGenerationAsync({
+            logId: creditData.log_id,
+            errorMessage: error instanceof Error ? error.message : 'Generation failed'
+          });
+        }
         throw error;
       }
     },

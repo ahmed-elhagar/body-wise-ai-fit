@@ -80,10 +80,7 @@ export const useAIExercise = () => {
       };
 
       // Use centralized credit system
-      const creditResult = await checkAndUseCreditAsync({
-        generationType: 'exercise_program',
-        promptData: transformedRequest
-      });
+      const creditResult = await checkAndUseCreditAsync('exercise_program');
 
       try {
         console.log('📤 Sending request to edge function with enhanced data');
@@ -118,22 +115,28 @@ export const useAIExercise = () => {
         console.log('✅ Exercise generation response:', data);
 
         // Complete the AI generation log with success
-        await completeGenerationAsync({
-          logId: creditResult.log_id!,
-          responseData: {
-            workoutType: data.workoutType,
-            workoutsCreated: data.workoutsCreated,
-            exercisesCreated: data.exercisesCreated
-          }
-        });
+        const creditData = creditResult as any;
+        if (creditData?.log_id) {
+          await completeGenerationAsync({
+            logId: creditData.log_id,
+            responseData: {
+              workoutType: data.workoutType,
+              workoutsCreated: data.workoutsCreated,
+              exercisesCreated: data.exercisesCreated
+            }
+          });
+        }
 
         return data;
       } catch (error) {
         // Mark generation as failed
-        await completeGenerationAsync({
-          logId: creditResult.log_id!,
-          errorMessage: error instanceof Error ? error.message : 'Generation failed'
-        });
+        const creditData = creditResult as any;
+        if (creditData?.log_id) {
+          await completeGenerationAsync({
+            logId: creditData.log_id,
+            errorMessage: error instanceof Error ? error.message : 'Generation failed'
+          });
+        }
         throw error;
       }
     },

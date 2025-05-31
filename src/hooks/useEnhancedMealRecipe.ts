@@ -59,15 +59,7 @@ export const useEnhancedMealRecipe = () => {
       });
 
       // Use credit system for recipe generation
-      const creditResult = await checkAndUseCreditAsync({
-        generationType: 'meal_plan',
-        promptData: {
-          mealId: mealId,
-          language: language,
-          action: 'recipe_generation',
-          mealName: mealData?.name || existingMeal?.name
-        }
-      });
+      const creditResult = await checkAndUseCreditAsync('meal_plan');
 
       try {
         console.log('🔄 Making API call to generate-meal-recipe function');
@@ -92,14 +84,17 @@ export const useEnhancedMealRecipe = () => {
           console.log('✅ Recipe generated successfully!');
           
           // Complete the AI generation log
-          await completeGenerationAsync({
-            logId: creditResult.log_id!,
-            responseData: {
-              mealId: mealId,
-              recipeGenerated: true,
-              language: language
-            }
-          });
+          const creditData = creditResult as any;
+          if (creditData?.log_id) {
+            await completeGenerationAsync({
+              logId: creditData.log_id,
+              responseData: {
+                mealId: mealId,
+                recipeGenerated: true,
+                language: language
+              }
+            });
+          }
 
           if (data.message?.includes('already available')) {
             toast.success('Recipe loaded from cache!');
@@ -130,10 +125,13 @@ export const useEnhancedMealRecipe = () => {
         }
       } catch (error) {
         // Mark generation as failed
-        await completeGenerationAsync({
-          logId: creditResult.log_id!,
-          errorMessage: error instanceof Error ? error.message : 'Recipe generation failed'
-        });
+        const creditData = creditResult as any;
+        if (creditData?.log_id) {
+          await completeGenerationAsync({
+            logId: creditData.log_id,
+            errorMessage: error instanceof Error ? error.message : 'Recipe generation failed'
+          });
+        }
         throw error;
       }
       

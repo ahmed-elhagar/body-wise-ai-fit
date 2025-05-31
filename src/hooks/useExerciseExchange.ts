@@ -73,16 +73,7 @@ export const useExerciseExchange = () => {
       }
 
       // Use credit system
-      const creditResult = await checkAndUseCreditAsync({
-        generationType: 'exercise_program',
-        promptData: {
-          action: 'exercise_exchange',
-          exerciseId,
-          reason,
-          preferences,
-          originalExercise: originalExercise.name
-        }
-      });
+      const creditResult = await checkAndUseCreditAsync('exercise_program');
 
       try {
         console.log('🤖 Calling exchange-exercise function...');
@@ -111,24 +102,30 @@ export const useExerciseExchange = () => {
         }
 
         // Complete generation log
-        await completeGenerationAsync({
-          logId: creditResult.log_id!,
-          responseData: {
-            action: 'exercise_exchange',
-            originalExercise: originalExercise.name,
-            newExercise: data.newExercise?.name,
-            reason
-          }
-        });
+        const creditData = creditResult as any;
+        if (creditData?.log_id) {
+          await completeGenerationAsync({
+            logId: creditData.log_id,
+            responseData: {
+              action: 'exercise_exchange',
+              originalExercise: originalExercise.name,
+              newExercise: data.newExercise?.name,
+              reason
+            }
+          });
+        }
 
         console.log('✅ Exercise exchange completed successfully');
         return data;
       } catch (error) {
         // Mark generation as failed
-        await completeGenerationAsync({
-          logId: creditResult.log_id!,
-          errorMessage: error instanceof Error ? error.message : 'Exchange failed'
-        });
+        const creditData = creditResult as any;
+        if (creditData?.log_id) {
+          await completeGenerationAsync({
+            logId: creditData.log_id,
+            errorMessage: error instanceof Error ? error.message : 'Exchange failed'
+          });
+        }
         throw error;
       }
     },
