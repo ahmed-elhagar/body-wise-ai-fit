@@ -1,4 +1,5 @@
 
+import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -7,20 +8,16 @@ import { toast } from 'sonner';
 
 export const useFoodPhotoIntegration = () => {
   const { user } = useAuth();
-  const { useCredit, logGeneration } = useCreditSystem();
+  const { checkAndUseCreditAsync, completeGenerationAsync } = useCreditSystem();
   const queryClient = useQueryClient();
+  const [analysisResult, setAnalysisResult] = useState<any>(null);
 
   const analyzePhoto = useMutation({
     mutationFn: async (photoFile: File) => {
       // Check and use AI credit
-      const creditResult = await new Promise((resolve, reject) => {
-        useCredit('food_analysis', {
-          onSuccess: resolve,
-          onError: reject,
-        });
-      });
+      const creditResult = await checkAndUseCreditAsync('food_analysis');
 
-      if (!creditResult || !(creditResult as any).success) {
+      if (!creditResult || !creditResult.success) {
         throw new Error('Insufficient AI credits');
       }
 
@@ -35,7 +32,7 @@ export const useFoodPhotoIntegration = () => {
 
       if (error) {
         // Log failed generation
-        logGeneration({
+        await completeGenerationAsync({
           generationType: 'food_analysis',
           promptData: { fileName: photoFile.name },
           status: 'failed',
@@ -45,13 +42,14 @@ export const useFoodPhotoIntegration = () => {
       }
 
       // Log successful generation
-      logGeneration({
+      await completeGenerationAsync({
         generationType: 'food_analysis',
         promptData: { fileName: photoFile.name },
         responseData: data,
         status: 'completed',
       });
 
+      setAnalysisResult(data);
       return data;
     },
     onError: (error) => {
@@ -61,12 +59,14 @@ export const useFoodPhotoIntegration = () => {
   });
 
   const logAnalyzedFood = useMutation({
-    mutationFn: async (
-      analyzedFood: any,
-      quantity: number,
-      mealType: string,
-      notes: string
-    ) => {
+    mutationFn: async (params: {
+      analyzedFood: any;
+      quantity: number;
+      mealType: string;
+      notes: string;
+    }) => {
+      const { analyzedFood, quantity, mealType, notes } = params;
+      
       // First, create or find the food item
       let foodItemId = analyzedFood.id;
 
@@ -135,11 +135,23 @@ export const useFoodPhotoIntegration = () => {
     };
   };
 
+  // Convenience method that combines analysis and logging
+  const processImageAndLog = async (photoFile: File, mealType: string) => {
+    const result = await analyzePhoto.mutateAsync(photoFile);
+    setAnalysisResult(result);
+    return result;
+  };
+
   return {
     analyzePhoto: analyzePhoto.mutate,
-    logAnalyzedFood: logAnalyzedFood.mutate,
+    logAnalyzedFood: (analyzedFood: any, quantity: number, mealType: string, notes: string) => 
+      logAnalyzedFood.mutate({ analyzedFood, quantity, mealType, notes }),
     convertToFoodItem,
     isAnalyzing: analyzePhoto.isPending,
     isLoggingFood: logAnalyzedFood.isPending,
+    // Add missing properties
+    analysisResult,
+    isProcessing: analyzePhoto.isPending,
+    processImageAndLog,
   };
 };

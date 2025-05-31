@@ -23,15 +23,16 @@ export const useFoodDatabase = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const searchFoodItems = (searchTerm: string) => {
+  const searchFoodItems = (searchTerm: string, category?: string) => {
     return useQuery({
-      queryKey: ['food-search', searchTerm],
+      queryKey: ['food-search', searchTerm, category],
       queryFn: async () => {
         if (!searchTerm || searchTerm.length < 2) return [];
 
         const { data, error } = await supabase
           .rpc('search_food_items', { 
             search_term: searchTerm,
+            category_filter: category,
             limit_count: 20 
           });
 
@@ -45,6 +46,53 @@ export const useFoodDatabase = () => {
       enabled: !!searchTerm && searchTerm.length >= 2,
     });
   };
+
+  // Favorites functionality
+  const { data: favoriteFoods, isLoading: isLoadingFavorites } = useQuery({
+    queryKey: ['favorite-foods', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+
+      const { data, error } = await supabase
+        .from('user_favorite_foods')
+        .select(`
+          *,
+          food_item:food_items(*)
+        `)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user?.id,
+  });
+
+  const addToFavorites = useMutation({
+    mutationFn: async (params: {
+      foodItemId: string;
+      customName?: string;
+      notes?: string;
+    }) => {
+      const { error } = await supabase
+        .from('user_favorite_foods')
+        .insert({
+          user_id: user?.id,
+          food_item_id: params.foodItemId,
+          custom_name: params.customName,
+          notes: params.notes,
+        });
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['favorite-foods', user?.id] });
+      toast.success('Added to favorites!');
+    },
+    onError: (error) => {
+      console.error('Error adding to favorites:', error);
+      toast.error('Failed to add to favorites');
+    },
+  });
 
   const logConsumption = useMutation({
     mutationFn: async (consumption: {
@@ -87,6 +135,10 @@ export const useFoodDatabase = () => {
 
   return {
     searchFoodItems,
+    favoriteFoods: favoriteFoods || [],
+    isLoadingFavorites,
+    addToFavorites: addToFavorites.mutate,
+    isAddingToFavorites: addToFavorites.isPending,
     logConsumption: logConsumption.mutate,
     isLoggingConsumption: logConsumption.isPending,
   };

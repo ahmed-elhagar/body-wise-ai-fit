@@ -14,9 +14,9 @@ const MealPhotoUpload = () => {
   const { t } = useLanguage();
   
   const { 
-    processImageAndLog, 
+    analyzePhoto,
     analysisResult, 
-    isProcessing, 
+    isAnalyzing, 
     logAnalyzedFood 
   } = useFoodPhotoIntegration();
 
@@ -31,7 +31,7 @@ const MealPhotoUpload = () => {
 
   const handleAnalyze = () => {
     if (selectedFile) {
-      processImageAndLog(selectedFile, 'meal');
+      analyzePhoto(selectedFile);
     }
   };
 
@@ -44,7 +44,7 @@ const MealPhotoUpload = () => {
   };
 
   const handleAddToLog = async (food: any) => {
-    await logAnalyzedFood(food, 100, 'meal', `Added from meal photo analysis`);
+    logAnalyzedFood(food, 100, 'meal', `Added from meal photo analysis`);
   };
 
   return (
@@ -98,10 +98,10 @@ const MealPhotoUpload = () => {
 
               <Button
                 onClick={handleAnalyze}
-                disabled={isProcessing}
+                disabled={isAnalyzing}
                 className="bg-fitness-gradient hover:opacity-90 w-full"
               >
-                {isProcessing ? (
+                {isAnalyzing ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     {t('Analyzing...')}

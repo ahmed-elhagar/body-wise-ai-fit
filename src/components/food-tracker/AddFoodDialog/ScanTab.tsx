@@ -1,5 +1,5 @@
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Zap, Plus } from "lucide-react";
@@ -25,29 +25,26 @@ const ScanTab = ({ onFoodAdded, onClose }: ScanTabProps) => {
   const { userCredits } = useCreditSystem();
   const { 
     logAnalyzedFood, 
-    isLoggingFood, 
-    convertToFoodItem 
+    isLoggingFood 
   } = useFoodPhotoIntegration();
 
   const handleSelectFood = (food: any) => {
     setSelectedFood(food);
   };
 
-  const handleAddFood = async () => {
+  const handleAddFood = () => {
     if (!selectedFood) return;
 
     try {
-      const success = await logAnalyzedFood(
+      logAnalyzedFood(
         selectedFood,
         quantity,
         mealType,
         notes || `AI detected: ${selectedFood.quantity || 'estimated portion'}`
       );
       
-      if (success) {
-        onFoodAdded();
-        onClose();
-      }
+      onFoodAdded();
+      onClose();
     } catch (error) {
       console.error('Error logging scanned food:', error);
       toast.error(t('Failed to log food'));

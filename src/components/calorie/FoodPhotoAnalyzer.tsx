@@ -1,5 +1,4 @@
 
-import { useState, useRef } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import FoodPhotoAnalysisCard from "@/components/food-photo-analysis/FoodPhotoAnalysisCard";
 import FoodAnalysisResults from "@/components/food-photo-analysis/FoodAnalysisResults";
@@ -26,7 +25,7 @@ const FoodPhotoAnalyzer = ({ onSelectFood }: FoodPhotoAnalyzerProps) => {
   };
 
   const handleAddToLog = async (food: any) => {
-    await logAnalyzedFood(food, 100, 'snack', `Added from AI analysis`);
+    logAnalyzedFood(food, 100, 'snack', `Added from AI analysis`);
   };
 
   return (
