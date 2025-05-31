@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -33,12 +34,6 @@ const MealPlanPageRefactored = () => {
   const [showRecipeDialog, setShowRecipeDialog] = useState(false);
   const [showExchangeDialog, setShowExchangeDialog] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState<DailyMeal | null>(null);
-
-  // TEST BUTTON HANDLER - Add this here to test button functionality
-  const handleGlobalTestClick = () => {
-    console.log('🟢 GLOBAL TEST BUTTON CLICKED! Buttons work on this page');
-    alert('Global test button works! This proves buttons can fire on this page.');
-  };
 
   // Get current week dates for display with error handling
   const weekDays = (() => {
@@ -149,50 +144,24 @@ const MealPlanPageRefactored = () => {
   };
 
   const handleShowRecipe = (meal: DailyMeal) => {
-    console.log('🎯 MealPlanPageRefactored: handleShowRecipe called with meal:', meal.name, meal.id);
-    console.log('🎯 Setting selectedMeal and opening recipe dialog');
-    console.log('🎯 Current showRecipeDialog state:', showRecipeDialog);
-    
     setSelectedMeal(meal);
     setShowRecipeDialog(true);
-    
-    console.log('🎯 Recipe dialog state set to true, selectedMeal set to:', meal.name);
   };
 
   const handleExchangeMeal = (meal: DailyMeal) => {
-    console.log('🔄 MealPlanPageRefactored: handleExchangeMeal called with meal:', meal.name, meal.id);
-    console.log('🔄 Setting selectedMeal and opening exchange dialog');
-    console.log('🔄 Current showExchangeDialog state:', showExchangeDialog);
-    
     setSelectedMeal(meal);
     setShowExchangeDialog(true);
-    
-    console.log('🔄 Exchange dialog state set to true, selectedMeal set to:', meal.name);
   };
 
   const handleCloseRecipeDialog = () => {
-    console.log('🔒 Closing recipe dialog');
     setShowRecipeDialog(false);
     setSelectedMeal(null);
   };
 
   const handleCloseExchangeDialog = () => {
-    console.log('🔒 Closing exchange dialog');
     setShowExchangeDialog(false);
     setSelectedMeal(null);
   };
-
-  // Enhanced logging for current dialog states
-  console.log('🖥️ MealPlanPageRefactored: Current dialog states:', {
-    showRecipeDialog,
-    showExchangeDialog,
-    selectedMealName: selectedMeal?.name,
-    selectedMealId: selectedMeal?.id,
-    hasHandlers: {
-      showRecipe: !!handleShowRecipe,
-      exchangeMeal: !!handleExchangeMeal
-    }
-  });
 
   if (mealPlanState.isLoading) {
     return <MealPlanLoadingBackdrop isLoading={true} message={mealPlanT('loading')} />;
@@ -220,20 +189,6 @@ const MealPlanPageRefactored = () => {
       
       <Container className="py-2 lg:py-4">
         <ContentArea>
-          {/* GLOBAL TEST BUTTON - Add this at the very top to test button functionality */}
-          <Section>
-            <div className="bg-yellow-100 p-4 rounded-lg border-2 border-yellow-400 mb-4">
-              <h3 className="text-yellow-800 font-bold mb-2">🟢 GLOBAL TEST AREA</h3>
-              <Button
-                onClick={handleGlobalTestClick}
-                className="bg-yellow-500 hover:bg-yellow-600 text-white"
-              >
-                🟢 GLOBAL TEST BUTTON - Click me first!
-              </Button>
-              <p className="text-sm text-yellow-700 mt-2">If this works, buttons can fire on this page</p>
-            </div>
-          </Section>
-
           {/* Enhanced Hero Header */}
           <Section>
             <MealPlanHero

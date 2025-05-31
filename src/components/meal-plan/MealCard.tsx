@@ -13,57 +13,12 @@ interface MealCardProps {
 }
 
 const MealCard = ({ meal, onShowRecipe, onExchangeMeal }: MealCardProps) => {
-  console.log('🍽️ MealCard rendered for:', meal.name, 'with handlers:', {
-    hasShowRecipe: !!onShowRecipe,
-    hasExchangeMeal: !!onExchangeMeal,
-    onShowRecipeType: typeof onShowRecipe,
-    onExchangeMealType: typeof onExchangeMeal
-  });
-
-  const handleViewRecipe = (e: React.MouseEvent) => {
-    console.log('🔥 BUTTON CLICK DETECTED - VIEW RECIPE');
-    console.log('🔥 Event details:', e.type, e.currentTarget);
-    console.log('🔥 Meal:', meal.name, meal.id);
-    console.log('🔥 onShowRecipe function:', typeof onShowRecipe, !!onShowRecipe);
-    
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (!onShowRecipe) {
-      console.error('🔥 ❌ onShowRecipe is not defined!');
-      return;
-    }
-    
-    try {
-      console.log('🔥 Calling onShowRecipe with meal:', meal);
-      onShowRecipe(meal);
-      console.log('🔥 ✅ onShowRecipe called successfully');
-    } catch (error) {
-      console.error('🔥 ❌ Error calling onShowRecipe:', error);
-    }
+  const handleViewRecipe = () => {
+    onShowRecipe(meal);
   };
 
-  const handleExchangeMeal = (e: React.MouseEvent) => {
-    console.log('🔄 BUTTON CLICK DETECTED - EXCHANGE MEAL');
-    console.log('🔄 Event details:', e.type, e.currentTarget);
-    console.log('🔄 Meal:', meal.name, meal.id);
-    console.log('🔄 onExchangeMeal function:', typeof onExchangeMeal, !!onExchangeMeal);
-    
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (!onExchangeMeal) {
-      console.error('🔄 ❌ onExchangeMeal is not defined!');
-      return;
-    }
-    
-    try {
-      console.log('🔄 Calling onExchangeMeal with meal:', meal);
-      onExchangeMeal(meal);
-      console.log('🔄 ✅ onExchangeMeal called successfully');
-    } catch (error) {
-      console.error('🔄 ❌ Error calling onExchangeMeal:', error);
-    }
+  const handleExchangeMeal = () => {
+    onExchangeMeal(meal);
   };
 
   return (
@@ -102,37 +57,21 @@ const MealCard = ({ meal, onShowRecipe, onExchangeMeal }: MealCardProps) => {
           </div>
         </div>
 
-        {/* Action Buttons with direct onClick console logs */}
+        {/* Action Buttons */}
         <div className="flex gap-2">
           <Button
-            onClick={(e) => {
-              console.log('🚨 DIRECT JSX CLICK - VIEW RECIPE BUTTON CLICKED!');
-              console.log('🚨 Event:', e);
-              console.log('🚨 Target:', e.target);
-              console.log('🚨 CurrentTarget:', e.currentTarget);
-              handleViewRecipe(e);
-            }}
+            onClick={handleViewRecipe}
             size="sm"
             className="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white"
-            data-testid="view-recipe-button"
-            type="button"
           >
             <ChefHat className="w-4 h-4 mr-2" />
             View Recipe
           </Button>
           <Button
-            onClick={(e) => {
-              console.log('🚨 DIRECT JSX CLICK - EXCHANGE MEAL BUTTON CLICKED!');
-              console.log('🚨 Event:', e);
-              console.log('🚨 Target:', e.target);
-              console.log('🚨 CurrentTarget:', e.currentTarget);
-              handleExchangeMeal(e);
-            }}
+            onClick={handleExchangeMeal}
             size="sm"
             variant="outline"
             className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50"
-            data-testid="exchange-meal-button"
-            type="button"
           >
             <ArrowLeftRight className="w-4 h-4 mr-2" />
             Exchange Meal
