@@ -130,7 +130,7 @@ const SnackPickerDialog = ({
           <Card className="bg-gray-800 border-gray-600">
             <CardContent className="p-4">
               <h3 className="font-semibold text-white mb-3 flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-[#FF6F3C]" />
+                <Sparkles className="w-4 h-4 text-fitness-accent-500" />
                 AI Generated Snack
               </h3>
               <p className="text-gray-400 text-sm mb-4">
@@ -139,7 +139,8 @@ const SnackPickerDialog = ({
               <Button 
                 onClick={handleGenerateAISnack}
                 disabled={isGenerating}
-                className="w-full bg-gradient-to-r from-[#FF6F3C] to-[#FF8F4C] hover:from-[#FF5F2C] hover:to-[#FF7F3C] text-white"
+                variant="accent"
+                className="w-full"
               >
                 <Sparkles className="w-4 h-4 mr-2" />
                 {isGenerating ? 'Generating...' : 'Generate AI Snack'}
@@ -151,7 +152,7 @@ const SnackPickerDialog = ({
           <Card className="bg-gray-800 border-gray-600">
             <CardContent className="p-4">
               <h3 className="font-semibold text-white mb-3 flex items-center gap-2">
-                <Plus className="w-4 h-4 text-[#FF6F3C]" />
+                <Plus className="w-4 h-4 text-fitness-accent-500" />
                 Custom Snack
               </h3>
               
@@ -219,7 +220,8 @@ const SnackPickerDialog = ({
                 
                 <Button 
                   onClick={handleAddCustomSnack}
-                  className="w-full bg-gradient-to-r from-[#FF6F3C] to-[#FF8F4C] hover:from-[#FF5F2C] hover:to-[#FF7F3C] text-white"
+                  variant="accent"
+                  className="w-full"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Add Custom Snack

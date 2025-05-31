@@ -94,7 +94,10 @@ const EnhancedShoppingListDrawer = ({
   if (isLoading) {
     return (
       <Sheet open={isOpen} onOpenChange={onClose}>
-        <SheetContent side={isRTL ? "left" : "right"} className="w-full sm:max-w-lg bg-white border-gray-200 overflow-y-auto">
+        <SheetContent 
+          side={isRTL ? "left" : "right"} 
+          className="w-full sm:max-w-lg bg-white border-gray-200 overflow-y-auto z-[100]"
+        >
           <LoadingState />
         </SheetContent>
       </Sheet>
@@ -104,7 +107,10 @@ const EnhancedShoppingListDrawer = ({
   if (isEmpty) {
     return (
       <Sheet open={isOpen} onOpenChange={onClose}>
-        <SheetContent side={isRTL ? "left" : "right"} className="w-full sm:max-w-lg bg-white border-gray-200 overflow-y-auto">
+        <SheetContent 
+          side={isRTL ? "left" : "right"} 
+          className="w-full sm:max-w-lg bg-white border-gray-200 overflow-y-auto z-[100]"
+        >
           <EmptyState />
         </SheetContent>
       </Sheet>
@@ -113,7 +119,10 @@ const EnhancedShoppingListDrawer = ({
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent side={isRTL ? "left" : "right"} className="w-full sm:max-w-lg bg-white border-gray-200 overflow-y-auto">
+      <SheetContent 
+        side={isRTL ? "left" : "right"} 
+        className="w-full sm:max-w-lg bg-white border-gray-200 overflow-y-auto z-[100]"
+      >
         <div className="space-y-6 h-full">
           <DrawerHeader 
             totalItems={shoppingItems.length}

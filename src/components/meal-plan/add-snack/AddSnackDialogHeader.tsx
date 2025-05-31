@@ -24,10 +24,10 @@ export const AddSnackDialogHeader = ({
         </div>
         <div>
           <h2 className="text-xl font-bold text-fitness-accent-800">
-            {t('mealPlan.addSnackDialog.title') || 'Add Healthy Snack'}
+            {t('mealPlan.addSnackDialog.title')}
           </h2>
           <p className="text-fitness-accent-600 text-sm">
-            {t('mealPlan.addSnackDialog.subtitle') || 'Perfect snack for your remaining calories'}
+            {t('mealPlan.addSnackDialog.subtitle')}
           </p>
         </div>
       </div>
