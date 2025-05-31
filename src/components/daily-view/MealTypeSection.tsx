@@ -1,6 +1,6 @@
 
 import { Badge } from "@/components/ui/badge";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import CompactMealCard from "./CompactMealCard";
 import type { Meal } from "@/types/meal";
 
@@ -17,7 +17,8 @@ const MealTypeSection = ({
   onShowRecipe,
   onExchangeMeal
 }: MealTypeSectionProps) => {
-  const { t, isRTL } = useLanguage();
+  const { tFrom, isRTL } = useI18n();
+  const tMealPlan = tFrom('mealPlan');
 
   // Filter meals properly to avoid snacks appearing in dinner section
   const filteredMeals = meals.filter(meal => {
@@ -68,10 +69,10 @@ const MealTypeSection = ({
           <span className="text-base" role="img" aria-label={mealType}>
             {getMealTypeIcon(mealType)}
           </span>
-          <h3 className="font-semibold text-sm">{t(mealType)}</h3>
+          <h3 className="font-semibold text-sm">{String(tMealPlan(mealType))}</h3>
         </div>
         <Badge variant="secondary" className="bg-white/80 text-xs font-medium px-2 py-1">
-          {sectionCalories} {t('cal')}
+          {sectionCalories} {String(tMealPlan('cal'))}
         </Badge>
       </div>
 

@@ -1,71 +1,37 @@
 
-export const dashboardTranslations = {
-  // Dashboard specific
-  'dashboard.welcome': 'Welcome',
-  'dashboard.trackProgress': 'Track your fitness journey and reach your goals',
-  'dashboard.aiGenerationsRemaining': 'AI generations remaining',
-  'dashboard.generatingContent': 'Generating Your Personalized Content',
-  'dashboard.generatingDescription': 'We\'re creating your personalized meal plans and exercise programs. This may take a few moments.',
-  'dashboard.pleaseWait': 'Please wait while we set up your fitness journey...',
-  'dashboard.currentWeight': 'Current Weight',
-  'dashboard.fromProfile': 'From Profile',
-  'dashboard.fromTracking': 'From Tracking',
-  'dashboard.bmiIndex': 'BMI Index',
-  'dashboard.fitnessGoal': 'Fitness Goal',
-  'dashboard.activityLevel': 'Activity Level',
-  'dashboard.setYourGoal': 'Set Your Goal',
-  'dashboard.notSet': 'Not Set',
-  'dashboard.completeProfile': 'Complete Profile',
-
-  // Missing dashboard translations
-  'dashboard.goodMorning': 'Good Morning',
-  'dashboard.goodAfternoon': 'Good Afternoon',
-  'dashboard.goodEvening': 'Good Evening',
-  'dashboard.goalProgress': 'Goal Progress',
-  'dashboard.workoutsWeek': 'Workouts This Week',
-  'dashboard.todayCalories': 'Today\'s Calories',
-
-  // Quick Actions
-  'quickActions.title': 'Quick Actions',
-  'quickActions.logWeight': 'Log Weight',
-  'quickActions.trackProgress': 'Track your progress',
-  'quickActions.logFood': 'Log Food',
-  'quickActions.checkCalories': 'Check calories',
-  'quickActions.mealPlan': 'Meal Plan',
-  'quickActions.viewWeeklyMeals': 'View weekly meals',
-  'quickActions.workout': 'Workout',
-  'quickActions.startExercising': 'Start exercising',
-  'quickActions.updateGoals': 'Update Goals',
-  'quickActions.modifyTargets': 'Modify targets',
-  'quickActions.schedule': 'Schedule',
-  'quickActions.planWeek': 'Plan your week',
-
+export const dashboard = {
+  // Welcome messages
+  goodMorning: "Good Morning",
+  goodAfternoon: "Good Afternoon", 
+  goodEvening: "Good Evening",
+  user: "User",
+  fitnessJourney: "Fitness Journey",
+  trackProgress: "Ready to achieve your fitness goals today? Let's track your progress and stay motivated!",
+  aiGenerationsRemaining: "AI Credits Remaining",
+  
+  // Quick stats
+  dayStreak: "Day Streak",
+  goalsMet: "Goals Met", 
+  calories: "Calories",
+  
   // Recent Activity
-  'recentActivity.title': 'Recent Activity',
-  'recentActivity.noActivity': 'No recent activity found. Start your fitness journey!',
-  'recentActivity.loggedWeight': 'Logged weight',
-  'recentActivity.createdMealPlan': 'Created meal plan for',
-  'recentActivity.createdProgram': 'Created',
-  'recentActivity.program': 'program',
-  'recentActivity.badges.weight': 'Weight',
-  'recentActivity.badges.nutrition': 'Nutrition',
-  'recentActivity.badges.exercise': 'Exercise',
-
-  // Goals and BMI
-  'goal.weightLoss': 'Weight Loss',
-  'goal.weightGain': 'Weight Gain',
-  'goal.muscleGain': 'Muscle Gain',
-  'goal.endurance': 'Endurance',
-  'bmi.underweight': 'Underweight',
-  'bmi.normal': 'Normal',
-  'bmi.overweight': 'Overweight',
-  'bmi.obese': 'Obese',
-  'activity.sedentary': 'Sedentary',
-  'activity.lightlyActive': 'Lightly Active',
-  'activity.moderatelyActive': 'Moderately Active',
-  'activity.veryActive': 'Very Active',
-  'activity.extremelyActive': 'Extremely Active',
-
+  recentActivity: {
+    title: "Recent Activity",
+    noActivity: "No recent activity yet. Start your fitness journey!",
+    loggedWeight: "Logged weight",
+    createdMealPlan: "Created meal plan for",
+    createdProgram: "Created exercise program",
+    weeklyMealPlan: "Weekly meal plan",
+    program: "program",
+    badges: {
+      weight: "Weight",
+      nutrition: "Nutrition", 
+      exercise: "Exercise"
+    }
+  },
+  
   // Common
-  'common.kg': 'kg',
-};
+  common: {
+    kg: "kg"
+  }
+} as const;

@@ -1,4 +1,3 @@
-
 export const profile = {
   // Profile page specific translations
   title: "الملف الشخصي",
@@ -29,10 +28,10 @@ export const profile = {
   sectionsCompleted: "أقسام مكتملة",
   
   // Profile header messages
-  unsavedChanges: "لديك تغييرات غير محفوظة. احفظ قبل التبديل بين الأقسام.",
+  unsavedChanges: "لديك تغييرات غير محفوظة. يرجى الحفظ قبل المغادرة.",
   unsavedChangesSignOut: "لديك تغييرات غير محفوظة. هل أنت متأكد من تسجيل الخروج؟",
   signOutFailed: "فشل في تسجيل الخروج. يرجى المحاولة مرة أخرى.",
-  admin: "الإدارة",
+  admin: "المدير",
   signOut: "تسجيل الخروج",
   
   // Enhanced profile
@@ -89,4 +88,4 @@ export const profile = {
     ramadanSchedule: "جدول وجبات رمضان",
     nutritionBoost: "تعزيز التغذية لمرحلة حياتك"
   }
-};
+} as const;

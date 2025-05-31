@@ -1,11 +1,10 @@
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle, Target, AlertCircle, Sparkles, Shield, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import { toast } from "sonner";
 
 interface ProfilePageHeaderProps {
@@ -23,11 +22,12 @@ const ProfilePageHeader = ({
 }: ProfilePageHeaderProps) => {
   const navigate = useNavigate();
   const { isAdmin, signOut } = useAuth();
-  const { t, isRTL } = useLanguage();
+  const { tFrom, isRTL } = useI18n();
+  const tProfile = tFrom('profile');
 
   const handleSignOut = async () => {
     if (hasUnsavedChanges) {
-      if (!confirm(t('profile.unsavedChangesSignOut'))) {
+      if (!confirm(String(tProfile('unsavedChangesSignOut')))) {
         return;
       }
     }
@@ -37,7 +37,7 @@ const ProfilePageHeader = ({
       navigate('/auth');
     } catch (error) {
       console.error('Sign out error:', error);
-      toast.error(t('profile.signOutFailed'));
+      toast.error(String(tProfile('signOutFailed')));
     }
   };
 
@@ -52,7 +52,7 @@ const ProfilePageHeader = ({
       <div className={`flex items-center justify-between mb-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
         <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
           <h1 className={`text-xl lg:text-2xl font-bold text-gray-800 ${isRTL ? 'font-arabic' : ''}`}>
-            {t('profile.title')}
+            {String(tProfile('title'))}
           </h1>
           {getCompletionIcon()}
         </div>
@@ -66,7 +66,7 @@ const ProfilePageHeader = ({
               className={`bg-yellow-50 border-yellow-200 text-yellow-700 hover:bg-yellow-100 text-xs h-8 ${isRTL ? 'font-arabic' : ''}`}
             >
               <Shield className={`w-3 h-3 ${isRTL ? 'ml-1' : 'mr-1'}`} />
-              {t('profile.admin')}
+              {String(tProfile('admin'))}
             </Button>
           )}
           <Button
@@ -76,7 +76,7 @@ const ProfilePageHeader = ({
             className={`text-red-600 hover:bg-red-50 border-red-200 text-xs h-8 ${isRTL ? 'font-arabic' : ''}`}
           >
             <LogOut className={`w-3 h-3 ${isRTL ? 'ml-1' : 'mr-1'}`} />
-            {t('profile.signOut')}
+            {String(tProfile('signOut'))}
           </Button>
         </div>
       </div>
@@ -85,7 +85,7 @@ const ProfilePageHeader = ({
         <Alert className="mb-3 border-amber-200 bg-amber-50 p-3">
           <AlertCircle className="h-4 w-4 text-amber-600" />
           <AlertDescription className={`text-amber-800 text-sm ${isRTL ? 'font-arabic text-right' : ''}`}>
-            {t('profile.unsavedChanges')}
+            {String(tProfile('unsavedChanges'))}
           </AlertDescription>
         </Alert>
       )}

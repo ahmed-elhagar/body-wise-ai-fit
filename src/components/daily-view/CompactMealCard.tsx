@@ -2,7 +2,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChefHat, ArrowLeftRight, Clock, Flame, Zap } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import type { Meal } from "@/types/meal";
 
 interface CompactMealCardProps {
@@ -20,7 +20,8 @@ const CompactMealCard = ({
   onShowRecipe,
   onExchangeMeal
 }: CompactMealCardProps) => {
-  const { t, isRTL } = useLanguage();
+  const { tFrom, isRTL } = useI18n();
+  const tMealPlan = tFrom('mealPlan');
 
   const getMealTypeIcon = (mealType: string) => {
     switch (mealType) {
@@ -89,7 +90,7 @@ const CompactMealCard = ({
             variant="ghost" 
             className="h-8 w-8 p-0 hover:bg-blue-100 hover:text-blue-600 transition-colors rounded-lg"
             onClick={() => onShowRecipe(meal)}
-            aria-label={`${t('recipe')} for ${meal.name}`}
+            aria-label={`${String(tMealPlan('recipe'))} for ${meal.name}`}
           >
             <ChefHat className="w-3 h-3" />
           </Button>
@@ -98,7 +99,7 @@ const CompactMealCard = ({
             variant="ghost" 
             className="h-8 w-8 p-0 hover:bg-orange-100 hover:text-orange-600 transition-colors rounded-lg"
             onClick={() => onExchangeMeal(meal, index)}
-            aria-label={`${t('exchange')} ${meal.name}`}
+            aria-label={`${String(tMealPlan('exchange'))} ${meal.name}`}
           >
             <ArrowLeftRight className="w-3 h-3" />
           </Button>

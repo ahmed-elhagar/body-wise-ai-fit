@@ -1,4 +1,3 @@
-
 export const profile = {
   // Profile page specific translations
   title: "Profile",
@@ -29,7 +28,7 @@ export const profile = {
   sectionsCompleted: "sections completed",
   
   // Profile header messages
-  unsavedChanges: "You have unsaved changes. Save before switching sections.",
+  unsavedChanges: "You have unsaved changes. Please save before leaving.",
   unsavedChangesSignOut: "You have unsaved changes. Are you sure you want to sign out?",
   signOutFailed: "Failed to sign out. Please try again.",
   admin: "Admin",
@@ -89,4 +88,4 @@ export const profile = {
     ramadanSchedule: "Ramadan Meal Schedule",
     nutritionBoost: "Nutrition boost for your life phase"
   }
-};
+} as const;

@@ -1300,6 +1300,10 @@ export type Database = {
           daily_workouts_count: number
         }[]
       }
+      get_current_user_role: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       get_user_role: {
         Args: { user_id: string }
         Returns: Database["public"]["Enums"]["user_role"]
@@ -1334,6 +1338,14 @@ export type Database = {
       invalidate_all_user_sessions: {
         Args: { target_user_id: string }
         Returns: undefined
+      }
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_coach: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
       is_pro_user: {
         Args: { user_id: string }

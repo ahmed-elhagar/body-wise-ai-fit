@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { useWeightTracking } from "@/hooks/useWeightTracking";
 import { useMealPlans } from "@/hooks/useMealPlans";
 import { useExercisePrograms } from "@/hooks/useExercisePrograms";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import { formatDistanceToNow } from "date-fns";
 import { Activity, Scale, Utensils, Dumbbell, Clock, TrendingUp } from "lucide-react";
 
@@ -12,7 +12,8 @@ const ActivityFeed = () => {
   const { weightEntries } = useWeightTracking();
   const { mealPlans } = useMealPlans();
   const { programs } = useExercisePrograms();
-  const { t, isRTL } = useLanguage();
+  const { tFrom, isRTL } = useI18n();
+  const tDashboard = tFrom('dashboard');
 
   const getActivityIcon = (type: string) => {
     switch (type) {
@@ -35,24 +36,24 @@ const ActivityFeed = () => {
   const activities = [
     ...(weightEntries?.slice(0, 3).map(entry => ({
       type: 'weight',
-      title: `${t('recentActivity.loggedWeight')}: ${entry.weight} ${t('common.kg')}`,
+      title: `${String(tDashboard('recentActivity.loggedWeight'))}: ${entry.weight} ${String(tDashboard('common.kg'))}`,
       time: entry.recorded_at,
-      badge: t('recentActivity.badges.weight'),
+      badge: String(tDashboard('recentActivity.badges.weight')),
       description: new Date(entry.recorded_at).toLocaleDateString()
     })) || []),
     ...(mealPlans?.slice(0, 2).map(plan => ({
       type: 'meal',
-      title: `${t('recentActivity.createdMealPlan')} ${new Date(plan.week_start_date).toLocaleDateString()}`,
+      title: `${String(tDashboard('recentActivity.createdMealPlan'))} ${new Date(plan.week_start_date).toLocaleDateString()}`,
       time: plan.created_at,
-      badge: t('recentActivity.badges.nutrition'),
-      description: `Weekly meal plan`
+      badge: String(tDashboard('recentActivity.badges.nutrition')),
+      description: String(tDashboard('recentActivity.weeklyMealPlan'))
     })) || []),
     ...(programs?.slice(0, 2).map(program => ({
       type: 'exercise',
-      title: `${t('recentActivity.createdProgram')} ${program.program_name}`,
+      title: `${String(tDashboard('recentActivity.createdProgram'))} ${program.program_name}`,
       time: program.created_at,
-      badge: t('recentActivity.badges.exercise'),
-      description: `${program.workout_type} program`
+      badge: String(tDashboard('recentActivity.badges.exercise')),
+      description: `${program.workout_type} ${String(tDashboard('recentActivity.program'))}`
     })) || [])
   ].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 6);
 
@@ -64,7 +65,7 @@ const ActivityFeed = () => {
             <TrendingUp className="w-3 h-3 text-white" />
           </div>
           <h3 className="text-sm font-semibold text-gray-800">
-            {t('recentActivity.title')}
+            {String(tDashboard('recentActivity.title'))}
           </h3>
         </div>
         
@@ -72,7 +73,7 @@ const ActivityFeed = () => {
           <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
             <Activity className="w-6 h-6 text-gray-400" />
           </div>
-          <p className="text-gray-500 text-sm">{t('recentActivity.noActivity')}</p>
+          <p className="text-gray-500 text-sm">{String(tDashboard('recentActivity.noActivity'))}</p>
         </div>
       </Card>
     );
@@ -85,7 +86,7 @@ const ActivityFeed = () => {
           <TrendingUp className="w-3 h-3 text-white" />
         </div>
         <h3 className="text-sm font-semibold text-gray-800">
-          {t('recentActivity.title')}
+          {String(tDashboard('recentActivity.title'))}
         </h3>
       </div>
       

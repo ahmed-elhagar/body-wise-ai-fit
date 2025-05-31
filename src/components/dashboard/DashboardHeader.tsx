@@ -1,12 +1,13 @@
 
 import { useProfile } from "@/hooks/useProfile";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Activity, Sparkles, TrendingUp, Clock } from "lucide-react";
 
 const DashboardHeader = () => {
   const { profile } = useProfile();
-  const { t, isRTL } = useLanguage();
+  const { tFrom, isRTL } = useI18n();
+  const tDashboard = tFrom('dashboard');
 
   const getCurrentDate = () => {
     return new Date().toLocaleDateString(isRTL ? 'ar-SA' : 'en-US', {
@@ -19,9 +20,9 @@ const DashboardHeader = () => {
 
   const getGreeting = () => {
     const hour = new Date().getHours();
-    if (hour < 12) return t('dashboard.goodMorning');
-    if (hour < 17) return t('dashboard.goodAfternoon');
-    return t('dashboard.goodEvening');
+    if (hour < 12) return String(tDashboard('goodMorning'));
+    if (hour < 17) return String(tDashboard('goodAfternoon'));
+    return String(tDashboard('goodEvening'));
   };
 
   return (
@@ -59,14 +60,14 @@ const DashboardHeader = () => {
             <div className="space-y-2">
               <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
                 <h1 className="text-2xl lg:text-3xl font-bold text-white leading-tight">
-                  {getGreeting()}, {profile?.first_name || 'User'}!
+                  {getGreeting()}, {profile?.first_name || String(tDashboard('user'))}!
                 </h1>
                 <div className="w-6 h-6 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center animate-bounce-gentle">
                   <Sparkles className="w-3 h-3 text-white" />
                 </div>
               </div>
               <p className="text-white/85 text-base max-w-2xl leading-relaxed font-medium">
-                {t('dashboard.trackProgress')}
+                {String(tDashboard('trackProgress'))}
               </p>
             </div>
 
@@ -75,7 +76,7 @@ const DashboardHeader = () => {
               <div className="inline-flex">
                 <Badge className="bg-gradient-to-r from-emerald-400 to-cyan-400 text-white border-0 text-sm px-3 py-1.5 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
                   <TrendingUp className="w-4 h-4 mr-2" />
-                  {t('dashboard.aiGenerationsRemaining')}: {profile.ai_generations_remaining}/5
+                  {String(tDashboard('aiGenerationsRemaining'))}: {profile.ai_generations_remaining}/5
                 </Badge>
               </div>
             )}
@@ -94,10 +95,10 @@ const DashboardHeader = () => {
             </div>
             <div className={isRTL ? 'text-right' : 'text-left'}>
               <p className="text-white font-bold text-base">
-                {profile?.first_name || 'User'}
+                {profile?.first_name || String(tDashboard('user'))}
               </p>
               <p className="text-white/80 text-sm">
-                Fitness Journey
+                {String(tDashboard('fitnessJourney'))}
               </p>
             </div>
           </div>
@@ -108,19 +109,19 @@ const DashboardHeader = () => {
           <div className="bg-white/15 backdrop-blur-sm rounded-xl p-3 border border-white/25 hover:bg-white/20 transition-all duration-300">
             <div className="text-center">
               <div className="text-xl font-bold text-white">12</div>
-              <div className="text-white/80 text-xs font-medium">Day Streak</div>
+              <div className="text-white/80 text-xs font-medium">{String(tDashboard('dayStreak'))}</div>
             </div>
           </div>
           <div className="bg-white/15 backdrop-blur-sm rounded-xl p-3 border border-white/25 hover:bg-white/20 transition-all duration-300">
             <div className="text-center">
               <div className="text-xl font-bold text-white">85%</div>
-              <div className="text-white/80 text-xs font-medium">Goals Met</div>
+              <div className="text-white/80 text-xs font-medium">{String(tDashboard('goalsMet'))}</div>
             </div>
           </div>
           <div className="bg-white/15 backdrop-blur-sm rounded-xl p-3 border border-white/25 hover:bg-white/20 transition-all duration-300">
             <div className="text-center">
               <div className="text-xl font-bold text-white">2.1k</div>
-              <div className="text-white/80 text-xs font-medium">Calories</div>
+              <div className="text-white/80 text-xs font-medium">{String(tDashboard('calories'))}</div>
             </div>
           </div>
         </div>
