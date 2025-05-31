@@ -21,6 +21,7 @@ import { LanguageProvider } from "./contexts/LanguageContext";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "./contexts/AuthContext";
 import "./App.css";
+import "./i18n/config";
 
 const queryClient = new QueryClient({
   defaultOptions: {

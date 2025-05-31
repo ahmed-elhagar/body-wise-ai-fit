@@ -29,12 +29,21 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
   useEffect(() => {
     const storedLanguage = localStorage.getItem('language') || 'en';
     setLanguageState(storedLanguage as Language);
-    i18n.changeLanguage(storedLanguage);
+    
+    // Only call changeLanguage if i18n is ready and the method exists
+    if (i18n && typeof i18n.changeLanguage === 'function') {
+      i18n.changeLanguage(storedLanguage);
+    }
   }, [i18n]);
 
   useEffect(() => {
     localStorage.setItem('language', language);
-    i18n.changeLanguage(language);
+    
+    // Only call changeLanguage if i18n is ready and the method exists
+    if (i18n && typeof i18n.changeLanguage === 'function') {
+      i18n.changeLanguage(language);
+    }
+    
     // Set document direction
     document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
     document.documentElement.lang = language;
