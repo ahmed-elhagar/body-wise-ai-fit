@@ -519,68 +519,69 @@ const MealPlanPage = () => {
                         );
                       })}
                     </Tabs>
-                  </>
-                ) : (
-                  // Weekly View
-                  <Card className="shadow-lg rounded-lg">
-                    <CardHeader className="pb-4">
-                      <CardTitle className="text-2xl font-bold flex items-center gap-3">
-                        <Eye className="w-6 h-6 text-blue-600" />
-                        {t('mealPlan.weeklyView')}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                        {weekDays.map((day) => {
-                          const dayMeals = mealPlanState.currentWeekPlan?.dailyMeals?.filter(
-                            meal => meal.day_number === day.number
-                          ) || [];
-                          const dayStats = calculateDayStats(dayMeals);
+                  </div>
+                </>
+              ) : (
+                // Weekly View
+                <Card className="shadow-lg rounded-lg">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-2xl font-bold flex items-center gap-3">
+                      <Eye className="w-6 h-6 text-blue-600" />
+                      {t('mealPlan.weeklyView')}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                      {weekDays.map((day) => {
+                        const dayMeals = mealPlanState.currentWeekPlan?.dailyMeals?.filter(
+                          meal => meal.day_number === day.number
+                        ) || [];
+                        const dayStats = calculateDayStats(dayMeals);
 
-                          return (
-                            <Card key={day.number} className="cursor-pointer hover:shadow-lg transition-all duration-200 bg-white rounded-lg group"
-                                  onClick={() => {setViewMode('daily'); mealPlanState.setSelectedDayNumber(day.number);}}>
-                              <CardHeader className="pb-3">
-                                <CardTitle className="text-lg font-semibold text-gray-900">{day.fullName}</CardTitle>
-                                <p className="text-sm text-gray-500">{format(day.date, 'MMM d')}</p>
-                              </CardHeader>
-                              <CardContent>
-                                <div className="space-y-2 text-sm">
-                                  <div className={`flex justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-                                    <span className="text-gray-600">{t('mealPlan.meals')}:</span>
-                                    <span className="font-semibold text-purple-600">{dayMeals.length}</span>
-                                  </div>
-                                  <div className={`flex justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-                                    <span className="text-gray-600">{t('mealPlan.cal')}:</span>
-                                    <span className="font-semibold text-red-600">{dayStats.calories}</span>
-                                  </div>
-                                  <div className={`flex justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-                                    <span className="text-gray-600">{t('mealPlan.protein')}:</span>
-                                    <span className="font-semibold text-blue-600">{dayStats.protein.toFixed(1)}g</span>
-                                  </div>
-                                  <div className={`flex justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-                                    <span className="text-gray-600">{t('mealPlan.carbs')}:</span>
-                                    <span className="font-semibold text-green-600">{dayStats.carbs.toFixed(1)}g</span>
-                                  </div>
+                        return (
+                          <Card key={day.number} className="cursor-pointer hover:shadow-lg transition-all duration-200 bg-white rounded-lg group"
+                                onClick={() => {setViewMode('daily'); mealPlanState.setSelectedDayNumber(day.number);}}>
+                            <CardHeader className="pb-3">
+                              <CardTitle className="text-lg font-semibold text-gray-900">{day.fullName}</CardTitle>
+                              <p className="text-sm text-gray-500">{format(day.date, 'MMM d')}</p>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="space-y-2 text-sm">
+                                <div className={`flex justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+                                  <span className="text-gray-600">{t('mealPlan.meals')}:</span>
+                                  <span className="font-semibold text-purple-600">{dayMeals.length}</span>
                                 </div>
-                                <div className="mt-3 pt-3 border-t border-gray-100">
-                                  <Button 
-                                    variant="ghost" 
-                                    size="sm" 
-                                    className="w-full text-blue-600 hover:bg-blue-50 group-hover:bg-blue-100"
-                                  >
-                                    <Activity className="w-4 h-4 mr-2" />
-                                    {t('mealPlan.selectDay')}
-                                  </Button>
+                                <div className={`flex justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+                                  <span className="text-gray-600">{t('mealPlan.cal')}:</span>
+                                  <span className="font-semibold text-red-600">{dayStats.calories}</span>
                                 </div>
-                              </CardContent>
-                            </Card>
-                          );
-                        })}
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
+                                <div className={`flex justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+                                  <span className="text-gray-600">{t('mealPlan.protein')}:</span>
+                                  <span className="font-semibold text-blue-600">{dayStats.protein.toFixed(1)}g</span>
+                                </div>
+                                <div className={`flex justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+                                  <span className="text-gray-600">{t('mealPlan.carbs')}:</span>
+                                  <span className="font-semibold text-green-600">{dayStats.carbs.toFixed(1)}g</span>
+                                </div>
+                              </div>
+                              <div className="mt-3 pt-3 border-t border-gray-100">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="w-full text-blue-600 hover:bg-blue-50 group-hover:bg-blue-100"
+                                >
+                                  <Activity className="w-4 h-4 mr-2" />
+                                  {t('mealPlan.selectDay')}
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </div>
         ) : (
