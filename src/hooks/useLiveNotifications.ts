@@ -10,6 +10,7 @@ export const useLiveNotifications = () => {
   const queryClient = useQueryClient();
   const channelRef = useRef<any>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [hasShownWelcomeToast, setHasShownWelcomeToast] = useState(false);
   const notificationSoundRef = useRef<HTMLAudioElement | null>(null);
 
   // Initialize notification sound
@@ -196,12 +197,24 @@ export const useLiveNotifications = () => {
       )
       .subscribe((status) => {
         console.log('📡 Live notifications subscription status:', status);
-        setIsConnected(status === 'SUBSCRIBED');
         
         if (status === 'SUBSCRIBED') {
           console.log('✅ Successfully subscribed to live notifications');
+          setIsConnected(true);
+          
+          // Show welcome toast only once when first connected
+          if (!hasShownWelcomeToast) {
+            setTimeout(() => {
+              toast.success('Real-time notifications enabled', {
+                description: 'You\'ll receive live updates for new messages and notifications.',
+                duration: 3000,
+              });
+              setHasShownWelcomeToast(true);
+            }, 1000);
+          }
         } else if (status === 'CHANNEL_ERROR') {
           console.error('❌ Channel error for live notifications');
+          setIsConnected(false);
           
           // Show connection error toast
           toast.error('Connection Error', {
@@ -212,20 +225,12 @@ export const useLiveNotifications = () => {
               onClick: () => window.location.reload(),
             },
           });
+        } else {
+          setIsConnected(false);
         }
       });
 
     channelRef.current = channel;
-
-    // Show connection established toast
-    setTimeout(() => {
-      if (isConnected) {
-        toast.success('Real-time notifications enabled', {
-          description: 'You\'ll receive live updates for new messages and notifications.',
-          duration: 3000,
-        });
-      }
-    }, 1000);
 
     return () => {
       console.log('🔌 Cleaning up live notifications');
@@ -235,7 +240,7 @@ export const useLiveNotifications = () => {
       }
       setIsConnected(false);
     };
-  }, [user?.id, queryClient, isConnected]);
+  }, [user?.id, queryClient, hasShownWelcomeToast]);
 
   return {
     isConnected,
