@@ -70,7 +70,6 @@ export const useCoachTasks = () => {
     enabled: !!user?.id,
     refetchOnWindowFocus: false,
     staleTime: 0, // Always refetch when component mounts
-    cacheTime: 0, // Don't cache data
   });
 
   // Create task mutation
