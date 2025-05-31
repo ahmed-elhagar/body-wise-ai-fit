@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -48,7 +47,7 @@ export const useCoachSystem = () => {
       console.log('🏃‍♂️ Fetching trainees for coach:', user.id);
 
       try {
-        // Use the new RLS-friendly approach - get relationships first
+        // First, get coach-trainee relationships
         const { data: relationships, error: relationshipsError } = await supabase
           .from('coach_trainees')
           .select('*')
@@ -60,14 +59,14 @@ export const useCoachSystem = () => {
           throw relationshipsError;
         }
 
+        console.log('📊 Found relationships:', relationships?.length || 0);
+
         if (!relationships || relationships.length === 0) {
           console.log('✅ No trainees found for coach');
           return [];
         }
 
-        console.log('📊 Found relationships:', relationships.length);
-
-        // Get trainee profile data - now with proper RLS policies
+        // Get trainee profile data
         const traineeIds = relationships.map(rel => rel.trainee_id);
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
@@ -76,7 +75,7 @@ export const useCoachSystem = () => {
 
         if (profilesError) {
           console.error('❌ Error fetching trainee profiles:', profilesError);
-          // Don't throw error if profiles are not accessible, continue with basic data
+          // Continue with basic data if profiles can't be fetched
           console.warn('⚠️ Continuing without full profile data');
         }
 
@@ -124,7 +123,7 @@ export const useCoachSystem = () => {
     },
   });
 
-  // Check if current user is a coach - simplified query
+  // Check if current user is a coach
   const { data: isCoach = false, error: isCoachError } = useQuery({
     queryKey: ['is-coach', user?.id],
     queryFn: async () => {
@@ -133,30 +132,15 @@ export const useCoachSystem = () => {
       console.log('🔍 Checking if user is coach:', user.id);
 
       try {
-        // Use the security definer function instead of direct profile query
         const { data, error } = await supabase.rpc('get_current_user_role');
 
         if (error) {
           console.error('❌ Error checking coach status via RPC:', error);
-          // Fallback to direct query
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', user.id)
-            .single();
-
-          if (profileError) {
-            console.error('❌ Error checking coach status:', profileError);
-            return false;
-          }
-
-          const isCoachUser = profile?.role === 'coach' || profile?.role === 'admin';
-          console.log('✅ Coach status (fallback):', isCoachUser, 'Role:', profile?.role);
-          return isCoachUser;
+          return false;
         }
 
         const isCoachUser = data === 'coach' || data === 'admin';
-        console.log('✅ Coach status (RPC):', isCoachUser, 'Role:', data);
+        console.log('✅ Coach status:', isCoachUser, 'Role:', data);
         return isCoachUser;
       } catch (error) {
         console.error('💥 Error in coach status check:', error);
@@ -192,7 +176,6 @@ export const useCoachSystem = () => {
       if (!user?.id) return null;
 
       try {
-        // Get coach-trainee relationship
         const { data: relationship, error: relationshipError } = await supabase
           .from('coach_trainees')
           .select('*')
@@ -206,7 +189,6 @@ export const useCoachSystem = () => {
 
         if (!relationship) return null;
 
-        // Get coach profile separately
         const { data: coachProfile, error: profileError } = await supabase
           .from('profiles')
           .select('id, first_name, last_name, email')
