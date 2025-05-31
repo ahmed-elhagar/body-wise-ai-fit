@@ -241,9 +241,9 @@ const MealPlanPage = () => {
         </Card>
 
         {mealPlanState.currentWeekPlan ? (
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
             {/* Sidebar */}
-            <div className="lg:col-span-1">
+            <div className="xl:col-span-1">
               <div className="sticky top-6 space-y-4">
                 {/* Today's Stats */}
                 <Card className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
@@ -335,7 +335,7 @@ const MealPlanPage = () => {
             </div>
 
             {/* Main Content */}
-            <div className="lg:col-span-3">
+            <div className="xl:col-span-3">
               {viewMode === 'daily' ? (
                 <>
                   {/* Day Tabs */}
@@ -374,103 +374,105 @@ const MealPlanPage = () => {
                           </div>
 
                           {/* Meals by Type */}
-                          {Object.entries(mealsByType).map(([mealType, meals]) => {
-                            if (meals.length === 0 && mealType !== 'snack') return null;
-                            
-                            return (
-                              <div key={mealType} className="space-y-3">
-                                <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-                                  <h3 className="text-lg font-medium text-gray-900">
-                                    {t(`mealPlan.${mealType}`)}
-                                  </h3>
-                                  {mealType === 'snack' && (
-                                    <Button
-                                      onClick={() => handleAddSnack(day.number)}
-                                      variant="outline"
-                                      size="sm"
-                                    >
-                                      <Plus className="w-4 h-4 mr-1" />
-                                      {t('mealPlan.addSnack')}
-                                    </Button>
-                                  )}
-                                </div>
-
-                                {meals.length > 0 ? (
-                                  <div className="grid grid-cols-1 gap-4">
-                                    {meals.map((meal, index) => (
-                                      <Card key={`${meal.id}-${index}`} className="hover:shadow-md transition-shadow">
-                                        <CardContent className="p-4">
-                                          <div className={`flex items-start justify-between mb-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                                            <h4 className={`font-medium text-gray-900 flex-1 ${isRTL ? 'ml-2 text-right' : 'mr-2'}`}>{meal.name}</h4>
-                                            <Badge variant="secondary" className="text-xs">
-                                              {t(`mealPlan.${mealType}`)}
-                                            </Badge>
-                                          </div>
-
-                                          <div className="grid grid-cols-3 gap-3 mb-3 text-sm">
-                                            <div className="text-center">
-                                              <div className="font-semibold text-red-600">{Math.round(meal.calories || 0)}</div>
-                                              <div className="text-gray-500">{t('mealPlan.cal')}</div>
-                                            </div>
-                                            <div className="text-center">
-                                              <div className="font-semibold text-blue-600">{Math.round(meal.protein || 0)}g</div>
-                                              <div className="text-gray-500">{t('mealPlan.protein')}</div>
-                                            </div>
-                                            <div className="text-center">
-                                              <div className="font-semibold text-green-600">{Math.round(meal.carbs || 0)}g</div>
-                                              <div className="text-gray-500">{t('mealPlan.carbs')}</div>
-                                            </div>
-                                          </div>
-
-                                          {meal.prep_time && (
-                                            <div className={`flex items-center gap-1 text-xs text-gray-500 mb-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                                              <Clock className="w-3 h-3" />
-                                              <span>{meal.prep_time} {t('mealPlan.minPrep')}</span>
-                                            </div>
-                                          )}
-
-                                          <div className="flex gap-2">
-                                            <Button
-                                              onClick={() => mealPlanState.handleShowRecipe(meal)}
-                                              variant="outline"
-                                              size="sm"
-                                              className="flex-1"
-                                            >
-                                              <ChefHat className="w-3 h-3 mr-1" />
-                                              {t('mealPlan.recipe')}
-                                            </Button>
-                                            <Button
-                                              onClick={() => mealPlanState.handleExchangeMeal(meal)}
-                                              variant="outline"
-                                              size="sm"
-                                              className="flex-1"
-                                            >
-                                              <RotateCcw className="w-3 h-3 mr-1" />
-                                              {t('mealPlan.exchange')}
-                                            </Button>
-                                          </div>
-                                        </CardContent>
-                                      </Card>
-                                    ))}
-                                  </div>
-                                ) : mealType === 'snack' ? (
-                                  <Card className="border-dashed border-2 border-gray-200">
-                                    <CardContent className="p-6 text-center">
-                                      <Plus className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                                      <p className="text-gray-500 mb-3">{t('mealPlan.noMealsPlanned')}</p>
+                          <div className="space-y-6">
+                            {Object.entries(mealsByType).map(([mealType, meals]) => {
+                              if (meals.length === 0 && mealType !== 'snack') return null;
+                              
+                              return (
+                                <div key={mealType} className="space-y-3">
+                                  <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+                                    <h3 className="text-lg font-medium text-gray-900">
+                                      {t(`mealPlan.${mealType}`)}
+                                    </h3>
+                                    {mealType === 'snack' && (
                                       <Button
                                         onClick={() => handleAddSnack(day.number)}
                                         variant="outline"
                                         size="sm"
                                       >
+                                        <Plus className="w-4 h-4 mr-1" />
                                         {t('mealPlan.addSnack')}
                                       </Button>
-                                    </CardContent>
-                                  </Card>
-                                ) : null}
-                              </div>
-                            );
-                          })}
+                                    )}
+                                  </div>
+
+                                  {meals.length > 0 ? (
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                      {meals.map((meal, index) => (
+                                        <Card key={`${meal.id}-${index}`} className="hover:shadow-md transition-shadow">
+                                          <CardContent className="p-4">
+                                            <div className={`flex items-start justify-between mb-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                                              <h4 className={`font-medium text-gray-900 flex-1 ${isRTL ? 'ml-2 text-right' : 'mr-2'}`}>{meal.name}</h4>
+                                              <Badge variant="secondary" className="text-xs">
+                                                {t(`mealPlan.${mealType}`)}
+                                              </Badge>
+                                            </div>
+
+                                            <div className="grid grid-cols-3 gap-3 mb-3 text-sm">
+                                              <div className="text-center">
+                                                <div className="font-semibold text-red-600">{Math.round(meal.calories || 0)}</div>
+                                                <div className="text-gray-500">{t('mealPlan.cal')}</div>
+                                              </div>
+                                              <div className="text-center">
+                                                <div className="font-semibold text-blue-600">{Math.round(meal.protein || 0)}g</div>
+                                                <div className="text-gray-500">{t('mealPlan.protein')}</div>
+                                              </div>
+                                              <div className="text-center">
+                                                <div className="font-semibold text-green-600">{Math.round(meal.carbs || 0)}g</div>
+                                                <div className="text-gray-500">{t('mealPlan.carbs')}</div>
+                                              </div>
+                                            </div>
+
+                                            {meal.prep_time && (
+                                              <div className={`flex items-center gap-1 text-xs text-gray-500 mb-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                                                <Clock className="w-3 h-3" />
+                                                <span>{meal.prep_time} {t('mealPlan.minPrep')}</span>
+                                              </div>
+                                            )}
+
+                                            <div className="flex gap-2">
+                                              <Button
+                                                onClick={() => mealPlanState.handleShowRecipe(meal)}
+                                                variant="outline"
+                                                size="sm"
+                                                className="flex-1"
+                                              >
+                                                <ChefHat className="w-3 h-3 mr-1" />
+                                                {t('mealPlan.recipe')}
+                                              </Button>
+                                              <Button
+                                                onClick={() => mealPlanState.handleExchangeMeal(meal)}
+                                                variant="outline"
+                                                size="sm"
+                                                className="flex-1"
+                                              >
+                                                <RotateCcw className="w-3 h-3 mr-1" />
+                                                {t('mealPlan.exchange')}
+                                              </Button>
+                                            </div>
+                                          </CardContent>
+                                        </Card>
+                                      ))}
+                                    </div>
+                                  ) : mealType === 'snack' ? (
+                                    <Card className="border-dashed border-2 border-gray-200">
+                                      <CardContent className="p-6 text-center">
+                                        <Plus className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                                        <p className="text-gray-500 mb-3">{t('mealPlan.noMealsPlanned')}</p>
+                                        <Button
+                                          onClick={() => handleAddSnack(day.number)}
+                                          variant="outline"
+                                          size="sm"
+                                        >
+                                          {t('mealPlan.addSnack')}
+                                        </Button>
+                                      </CardContent>
+                                    </Card>
+                                  ) : null}
+                                </div>
+                              );
+                            })}
+                          </div>
                         </TabsContent>
                       );
                     })}
@@ -483,7 +485,7 @@ const MealPlanPage = () => {
                     <CardTitle>{t('mealPlan.weeklyView')}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                       {weekDays.map((day) => {
                         const dayMeals = mealPlanState.currentWeekPlan?.dailyMeals?.filter(
                           meal => meal.day_number === day.number
