@@ -37,6 +37,7 @@ const EnhancedAddSnackDialog = ({
   const [generationStep, setGenerationStep] = useState('');
 
   const handleClose = () => {
+    if (isGenerating) return; // Prevent closing during generation
     setIsGenerating(false);
     setGenerationStep('');
     onClose();
@@ -153,7 +154,7 @@ const EnhancedAddSnackDialog = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog open={isOpen} onOpenChange={!isGenerating ? handleClose : undefined}>
       <DialogContent 
         className="max-w-2xl mx-4 sm:mx-auto bg-gradient-to-br from-fitness-accent-25 to-fitness-primary-25 border-fitness-accent-200 shadow-2xl rounded-2xl"
         onPointerDownOutside={(e) => {
@@ -161,14 +162,12 @@ const EnhancedAddSnackDialog = ({
             e.preventDefault();
             return;
           }
-          handleClose();
         }}
         onEscapeKeyDown={(e) => {
           if (isGenerating) {
             e.preventDefault();
             return;
           }
-          handleClose();
         }}
       >
         <DialogHeader className="pb-4">
@@ -186,15 +185,16 @@ const EnhancedAddSnackDialog = ({
                 </p>
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={handleClose}
-              disabled={isGenerating}
-              className="hover:bg-fitness-accent-100"
-            >
-              <X className="w-4 h-4" />
-            </Button>
+            {!isGenerating && (
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={handleClose}
+                className="hover:bg-fitness-accent-100"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            )}
           </div>
         </DialogHeader>
         

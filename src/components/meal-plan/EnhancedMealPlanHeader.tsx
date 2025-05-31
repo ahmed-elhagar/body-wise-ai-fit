@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -48,7 +47,8 @@ const EnhancedMealPlanHeader = ({
               onClick={onGenerateAI}
               disabled={isGenerating}
               size="sm"
-              className="bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 hover:from-fitness-primary-600 hover:to-fitness-primary-700 text-white shadow-lg"
+              variant="default"
+              className="shadow-md"
             >
               <Sparkles className="w-4 h-4 mr-2" />
               {hasWeeklyPlan ? mealPlanT('regenerate') : mealPlanT('generateAIMealPlan')}
