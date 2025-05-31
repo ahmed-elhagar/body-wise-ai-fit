@@ -7,12 +7,14 @@ import { CoachStatsCards } from "@/components/coach/CoachStatsCards";
 import { TraineesTab } from "@/components/coach/TraineesTab";
 import AnalyticsTab from "@/components/admin/AnalyticsTab";
 import { useRole } from "@/hooks/useRole";
+import { useCoachSystem } from "@/hooks/useCoachSystem";
 import { Navigate } from "react-router-dom";
 
 const Coach = () => {
   const { isAdmin, isLoading } = useRole();
+  const { trainees, isLoadingTrainees } = useCoachSystem();
 
-  if (isLoading) {
+  if (isLoading || isLoadingTrainees) {
     return (
       <ProtectedRoute>
         <Layout>
@@ -31,17 +33,25 @@ const Coach = () => {
     return <Navigate to="/dashboard" replace />;
   }
 
+  const totalClients = trainees.length;
+  const completedProfiles = trainees.filter(t => 
+    (t.trainee_profile.profile_completion_score || 0) >= 80
+  ).length;
+  const activeTrainees = trainees.filter(t => 
+    (t.trainee_profile.ai_generations_remaining || 0) > 0
+  ).length;
+
   return (
     <ProtectedRoute>
       <Layout>
         <div className="p-3 md:p-4 lg:p-6 bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/30 min-h-screen">
           <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
-            <CoachHeader totalClients={0} />
+            <CoachHeader totalClients={totalClients} />
             <CoachStatsCards stats={{
-              totalClients: 0,
+              totalClients,
               messagesToday: 0,
-              successRate: 0,
-              monthlyGoals: 0
+              successRate: totalClients > 0 ? Math.round((completedProfiles / totalClients) * 100) : 0,
+              monthlyGoals: activeTrainees
             }} />
             
             <Tabs defaultValue="trainees" className="w-full">
@@ -61,7 +71,9 @@ const Coach = () => {
               </TabsList>
 
               <TabsContent value="trainees" className="mt-6">
-                <TraineesTab trainees={[]} onChatClick={() => {}} />
+                <TraineesTab trainees={trainees} onChatClick={(traineeId) => {
+                  console.log('Chat with trainee:', traineeId);
+                }} />
               </TabsContent>
 
               <TabsContent value="analytics" className="mt-6">

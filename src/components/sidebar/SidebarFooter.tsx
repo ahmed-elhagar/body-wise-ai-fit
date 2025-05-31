@@ -29,6 +29,8 @@ export const SidebarFooter = () => {
       navigate('/auth');
     } catch (error) {
       console.error('Error signing out:', error);
+      // Even if there's an error, still navigate to auth page
+      navigate('/auth');
     }
   };
 

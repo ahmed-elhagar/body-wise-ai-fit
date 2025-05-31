@@ -70,11 +70,25 @@ export const handleSignUp = async (email: string, password: string, metadata?: a
 };
 
 export const handleSignOut = async () => {
-  const { error } = await supabase.auth.signOut();
-  if (error) throw error;
-  
-  resetAnalytics();
-  console.log('useAuth - Sign out successful');
+  try {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      // Only throw error if it's not a session missing error
+      if (error.message !== 'Auth session missing!') {
+        throw error;
+      }
+      // If session is missing, we're already logged out
+      console.log('Session already missing, considering logout successful');
+    }
+    
+    resetAnalytics();
+    console.log('useAuth - Sign out successful');
+  } catch (error) {
+    // Handle any other unexpected errors
+    console.error('Unexpected logout error:', error);
+    // Still reset analytics and consider it a successful logout
+    resetAnalytics();
+  }
 };
 
 export const handleForceLogoutAllUsers = async () => {
