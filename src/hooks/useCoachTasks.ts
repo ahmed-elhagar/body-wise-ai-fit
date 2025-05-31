@@ -22,7 +22,7 @@ export const useCoachTasks = () => {
   const queryClient = useQueryClient();
 
   // Fetch tasks from database
-  const { data: tasks = [], isLoading, error } = useQuery({
+  const { data: tasks = [], isLoading, error, refetch } = useQuery({
     queryKey: ['coach-tasks', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
@@ -69,6 +69,8 @@ export const useCoachTasks = () => {
     },
     enabled: !!user?.id,
     refetchOnWindowFocus: false,
+    staleTime: 0, // Always refetch when component mounts
+    cacheTime: 0, // Don't cache data
   });
 
   // Create task mutation
@@ -101,11 +103,11 @@ export const useCoachTasks = () => {
       console.log('Task created successfully:', data);
       return data;
     },
-    onSuccess: (data) => {
-      console.log('Task creation successful, invalidating queries');
-      // Force refetch of tasks
-      queryClient.invalidateQueries({ queryKey: ['coach-tasks'] });
-      queryClient.refetchQueries({ queryKey: ['coach-tasks'] });
+    onSuccess: async (data) => {
+      console.log('Task creation successful, refetching data');
+      // Invalidate and refetch queries
+      await queryClient.invalidateQueries({ queryKey: ['coach-tasks'] });
+      await refetch();
       toast.success('Task created successfully');
     },
     onError: (error: any) => {
@@ -129,9 +131,10 @@ export const useCoachTasks = () => {
         throw error;
       }
     },
-    onSuccess: () => {
-      console.log('Task toggle successful, invalidating queries');
-      queryClient.invalidateQueries({ queryKey: ['coach-tasks'] });
+    onSuccess: async () => {
+      console.log('Task toggle successful, refetching data');
+      await queryClient.invalidateQueries({ queryKey: ['coach-tasks'] });
+      await refetch();
       toast.success('Task updated successfully');
     },
     onError: (error: any) => {
@@ -149,5 +152,6 @@ export const useCoachTasks = () => {
     isCreating: createTaskMutation.isPending,
     isToggling: toggleTaskMutation.isPending,
     createTaskAsync: createTaskMutation.mutateAsync,
+    refetch,
   };
 };

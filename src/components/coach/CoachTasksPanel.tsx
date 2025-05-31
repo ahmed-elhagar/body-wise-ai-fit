@@ -24,9 +24,20 @@ interface CoachTasksPanelProps {
 }
 
 const CoachTasksPanel = ({ trainees, className }: CoachTasksPanelProps) => {
-  const { tasks, isLoading, toggleTask, isToggling } = useCoachTasks();
+  const { tasks, isLoading, toggleTask, isToggling, refetch } = useCoachTasks();
   const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('pending');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+
+  // Force refetch when component mounts or dialog closes
+  const handleDialogClose = (open: boolean) => {
+    setShowCreateDialog(open);
+    if (!open) {
+      // Refetch data when dialog closes
+      setTimeout(() => {
+        refetch();
+      }, 100);
+    }
+  };
 
   const handleToggleTask = (taskId: string, completed: boolean) => {
     toggleTask({ taskId, completed: !completed });
@@ -83,6 +94,8 @@ const CoachTasksPanel = ({ trainees, className }: CoachTasksPanelProps) => {
     );
   }
 
+  console.log('Rendering tasks:', tasks);
+
   return (
     <>
       <Card className={className}>
@@ -90,7 +103,7 @@ const CoachTasksPanel = ({ trainees, className }: CoachTasksPanelProps) => {
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <Clock className="h-5 w-5" />
-              Tasks & Reminders
+              Tasks & Reminders ({tasks.length})
             </CardTitle>
             <Button 
               size="sm" 
@@ -147,6 +160,7 @@ const CoachTasksPanel = ({ trainees, className }: CoachTasksPanelProps) => {
               <div className="text-center py-8 text-gray-500">
                 <Clock className="h-12 w-12 mx-auto mb-3 opacity-50" />
                 <p>No {filter === 'all' ? '' : filter} tasks found</p>
+                <p className="text-sm mt-1">Total tasks in database: {tasks.length}</p>
                 <Button 
                   variant="outline" 
                   size="sm" 
@@ -218,7 +232,7 @@ const CoachTasksPanel = ({ trainees, className }: CoachTasksPanelProps) => {
                           isOverdue ? "text-red-600" : "text-gray-500"
                         )}>
                           <Calendar className="h-3 w-3" />
-                          Due: {task.dueDate.toLocaleDateString()}
+                          Due: {task.dueDate.toLocaleDateString()} {task.dueDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           {isOverdue && (
                             <AlertTriangle className="h-3 w-3 ml-1" />
                           )}
@@ -235,7 +249,7 @@ const CoachTasksPanel = ({ trainees, className }: CoachTasksPanelProps) => {
 
       <CreateTaskDialog 
         open={showCreateDialog}
-        onOpenChange={setShowCreateDialog}
+        onOpenChange={handleDialogClose}
         trainees={trainees}
       />
     </>
