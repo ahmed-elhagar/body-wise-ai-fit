@@ -95,7 +95,7 @@ const MealRecipeDialog = ({ isOpen, onClose, meal, onRecipeGenerated }: MealReci
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-fitness-primary-500 via-fitness-primary-600 to-fitness-primary-700 border-0 shadow-2xl rounded-2xl text-white">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-fitness-primary-600 via-fitness-primary-700 to-fitness-primary-800 border-0 shadow-2xl rounded-2xl text-white">
         <div className="relative">
           {/* Close Button */}
           <Button
