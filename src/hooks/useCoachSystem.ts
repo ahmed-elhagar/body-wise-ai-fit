@@ -37,92 +37,129 @@ export const useCoachSystem = () => {
   const queryClient = useQueryClient();
 
   // Get trainees assigned to the current coach
-  const { data: trainees = [], isLoading: isLoadingTrainees, refetch: refetchTrainees } = useQuery({
+  const { data: trainees = [], isLoading: isLoadingTrainees, refetch: refetchTrainees, error: traineesError } = useQuery({
     queryKey: ['coach-trainees', user?.id],
     queryFn: async () => {
-      if (!user?.id) return [];
-
-      console.log('🏃‍♂️ Fetching trainees for coach:', user.id);
-
-      // First get coach-trainee relationships
-      const { data: relationships, error: relationshipsError } = await supabase
-        .from('coach_trainees')
-        .select('*')
-        .eq('coach_id', user.id)
-        .order('assigned_at', { ascending: false });
-
-      if (relationshipsError) {
-        console.error('❌ Error fetching coach-trainee relationships:', relationshipsError);
-        throw relationshipsError;
-      }
-
-      if (!relationships || relationships.length === 0) {
-        console.log('✅ No trainees found for coach');
+      if (!user?.id) {
+        console.log('🚫 No user ID available for fetching trainees');
         return [];
       }
 
-      // Get trainee profile data separately
-      const traineeIds = relationships.map(rel => rel.trainee_id);
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, first_name, last_name, email, age, weight, height, fitness_goal, activity_level, profile_completion_score, ai_generations_remaining')
-        .in('id', traineeIds);
+      console.log('🏃‍♂️ Fetching trainees for coach:', user.id);
 
-      if (profilesError) {
-        console.error('❌ Error fetching trainee profiles:', profilesError);
-        throw profilesError;
-      }
+      try {
+        // First get coach-trainee relationships
+        const { data: relationships, error: relationshipsError } = await supabase
+          .from('coach_trainees')
+          .select('*')
+          .eq('coach_id', user.id)
+          .order('assigned_at', { ascending: false });
 
-      // Combine relationships with profiles
-      const combinedData = relationships.map(relationship => {
-        const profile = profiles?.find(p => p.id === relationship.trainee_id);
-        return {
-          id: relationship.id,
-          coach_id: relationship.coach_id,
-          trainee_id: relationship.trainee_id,
-          assigned_at: relationship.assigned_at,
-          notes: relationship.notes,
-          trainee_profile: {
-            id: profile?.id || relationship.trainee_id,
-            first_name: profile?.first_name || 'Unknown',
-            last_name: profile?.last_name || 'User',
-            email: profile?.email || 'unknown@example.com',
-            age: profile?.age,
-            weight: profile?.weight,
-            height: profile?.height,
-            fitness_goal: profile?.fitness_goal,
-            activity_level: profile?.activity_level,
-            profile_completion_score: profile?.profile_completion_score,
-            ai_generations_remaining: profile?.ai_generations_remaining,
+        if (relationshipsError) {
+          console.error('❌ Error fetching coach-trainee relationships:', relationshipsError);
+          throw relationshipsError;
+        }
+
+        if (!relationships || relationships.length === 0) {
+          console.log('✅ No trainees found for coach');
+          return [];
+        }
+
+        console.log('📊 Found relationships:', relationships.length);
+
+        // Get trainee profile data separately
+        const traineeIds = relationships.map(rel => rel.trainee_id);
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name, email, age, weight, height, fitness_goal, activity_level, profile_completion_score, ai_generations_remaining')
+          .in('id', traineeIds);
+
+        if (profilesError) {
+          console.error('❌ Error fetching trainee profiles:', profilesError);
+          throw profilesError;
+        }
+
+        console.log('👥 Found profiles:', profiles?.length || 0);
+
+        // Combine relationships with profiles
+        const combinedData = relationships.map(relationship => {
+          const profile = profiles?.find(p => p.id === relationship.trainee_id);
+          return {
+            id: relationship.id,
+            coach_id: relationship.coach_id,
+            trainee_id: relationship.trainee_id,
             assigned_at: relationship.assigned_at,
-            notes: relationship.notes
-          }
-        };
-      }) as CoachTraineeRelationship[];
+            notes: relationship.notes,
+            trainee_profile: {
+              id: profile?.id || relationship.trainee_id,
+              first_name: profile?.first_name || 'Unknown',
+              last_name: profile?.last_name || 'User',
+              email: profile?.email || 'unknown@example.com',
+              age: profile?.age,
+              weight: profile?.weight,
+              height: profile?.height,
+              fitness_goal: profile?.fitness_goal,
+              activity_level: profile?.activity_level,
+              profile_completion_score: profile?.profile_completion_score,
+              ai_generations_remaining: profile?.ai_generations_remaining,
+              assigned_at: relationship.assigned_at,
+              notes: relationship.notes
+            }
+          };
+        }) as CoachTraineeRelationship[];
 
-      console.log('✅ Trainees fetched successfully:', combinedData.length);
-      return combinedData;
+        console.log('✅ Trainees processed successfully:', combinedData.length);
+        return combinedData;
+      } catch (error) {
+        console.error('💥 Error in trainee fetch:', error);
+        throw error;
+      }
     },
     enabled: !!user?.id,
     staleTime: 30000,
+    retry: (failureCount, error) => {
+      console.log('🔄 Retry attempt:', failureCount, 'Error:', error);
+      return failureCount < 2;
+    },
   });
 
   // Check if current user is a coach
-  const { data: isCoach = false } = useQuery({
+  const { data: isCoach = false, error: isCoachError } = useQuery({
     queryKey: ['is-coach', user?.id],
     queryFn: async () => {
       if (!user?.id) return false;
 
-      const { data: profile } = await supabase
+      console.log('🔍 Checking if user is coach:', user.id);
+
+      const { data: profile, error } = await supabase
         .from('profiles')
         .select('role')
         .eq('id', user.id)
         .single();
 
-      return profile?.role === 'coach' || profile?.role === 'admin';
+      if (error) {
+        console.error('❌ Error checking coach status:', error);
+        return false;
+      }
+
+      const isCoachUser = profile?.role === 'coach' || profile?.role === 'admin';
+      console.log('✅ Coach status:', isCoachUser, 'Role:', profile?.role);
+      return isCoachUser;
     },
     enabled: !!user?.id,
+    staleTime: 60000,
   });
+
+  // Log errors
+  useEffect(() => {
+    if (traineesError) {
+      console.error('🚨 Trainees fetch error:', traineesError);
+      toast.error('Failed to load trainees. Please refresh the page.');
+    }
+    if (isCoachError) {
+      console.error('🚨 Coach status check error:', isCoachError);
+    }
+  }, [traineesError, isCoachError]);
 
   // Get coach info if user is a trainee
   const { data: coachInfo } = useQuery({
@@ -170,6 +207,8 @@ export const useCoachSystem = () => {
   const assignTrainee = useMutation({
     mutationFn: async ({ traineeEmail, notes }: { traineeEmail: string; notes?: string }) => {
       if (!user?.id) throw new Error('Coach not authenticated');
+
+      console.log('🎯 Assigning trainee:', traineeEmail);
 
       // First, find the trainee by email
       const { data: traineeProfile, error: profileError } = await supabase
@@ -318,5 +357,6 @@ export const useCoachSystem = () => {
     isRemoving: removeTrainee.isPending,
     isUpdatingNotes: updateTraineeNotes.isPending,
     refetchTrainees,
+    error: traineesError,
   };
 };

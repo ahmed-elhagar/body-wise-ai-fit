@@ -9,10 +9,12 @@ import AnalyticsTab from "@/components/admin/AnalyticsTab";
 import { useRole } from "@/hooks/useRole";
 import { useCoachSystem } from "@/hooks/useCoachSystem";
 import { Navigate } from "react-router-dom";
+import { Card, CardContent } from "@/components/ui/card";
+import { AlertCircle, Users } from "lucide-react";
 
 const Coach = () => {
   const { isAdmin, isCoach, isLoading } = useRole();
-  const { trainees, isLoadingTrainees } = useCoachSystem();
+  const { trainees, isLoadingTrainees, error } = useCoachSystem();
 
   if (isLoading || isLoadingTrainees) {
     return (
@@ -32,6 +34,33 @@ const Coach = () => {
   // Allow access for both coaches and admins
   if (!isAdmin && !isCoach) {
     return <Navigate to="/dashboard" replace />;
+  }
+
+  // Show error state if there's an error fetching trainees
+  if (error) {
+    return (
+      <ProtectedRoute>
+        <Layout>
+          <div className="p-6">
+            <Card className="border-red-200 bg-red-50">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-3">
+                  <AlertCircle className="h-6 w-6 text-red-600" />
+                  <div>
+                    <h3 className="text-lg font-semibold text-red-900">
+                      Error Loading Trainee Data
+                    </h3>
+                    <p className="text-red-700">
+                      {error?.message || 'Unable to load trainee information. Please try refreshing the page.'}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </Layout>
+      </ProtectedRoute>
+    );
   }
 
   const totalClients = trainees.length;
