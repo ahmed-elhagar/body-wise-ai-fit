@@ -117,15 +117,27 @@ export const useSmartReplies = () => {
       // Combine and score replies
       const allReplies = [...contextReplies, ...generalReplies];
       
-      // Generate smart replies with relevance scoring
+      // Generate smart replies with relevance scoring and proper typing
       const smartReplies: SmartReply[] = allReplies
         .slice(0, 6) // Limit to 6 suggestions
-        .map((text, index) => ({
-          id: `reply-${index}`,
-          text,
-          category: index < 3 ? 'question' : index < 5 ? 'feedback' : 'acknowledgment',
-          relevanceScore: Math.max(0.9 - (index * 0.1), 0.3) // Higher score for earlier suggestions
-        }))
+        .map((text, index) => {
+          // Properly type the category based on index
+          let category: 'question' | 'feedback' | 'request' | 'acknowledgment';
+          if (index < 3) {
+            category = 'question';
+          } else if (index < 5) {
+            category = 'feedback';
+          } else {
+            category = 'acknowledgment';
+          }
+
+          return {
+            id: `reply-${index}`,
+            text,
+            category,
+            relevanceScore: Math.max(0.9 - (index * 0.1), 0.3) // Higher score for earlier suggestions
+          };
+        })
         .sort((a, b) => b.relevanceScore - a.relevanceScore);
 
       return smartReplies;

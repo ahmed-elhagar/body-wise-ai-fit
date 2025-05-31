@@ -79,6 +79,13 @@ const AIChatInterface = () => {
   const hasMessages = messages.length > 0;
   const lastAssistantMessage = messages.filter(m => m.role === 'assistant').pop()?.content || "";
 
+  // Convert messages for analytics - handle timestamp conversion
+  const analyticsMessages = messages.map(msg => ({
+    role: msg.role,
+    content: msg.content,
+    timestamp: msg.timestamp instanceof Date ? msg.timestamp.getTime() : msg.timestamp
+  }));
+
   return (
     <div className="h-full flex flex-col bg-gradient-to-b from-blue-50/30 to-white">
       {/* Messages Area */}
@@ -158,7 +165,7 @@ const AIChatInterface = () => {
               {/* Conversation Analytics */}
               {showAnalytics && (
                 <ConversationAnalytics 
-                  messages={messages}
+                  messages={analyticsMessages}
                   className="mb-6"
                 />
               )}
