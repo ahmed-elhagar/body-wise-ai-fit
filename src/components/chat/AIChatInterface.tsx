@@ -1,6 +1,6 @@
 
 import { useState, useRef, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
@@ -64,87 +64,52 @@ const AIChatInterface = () => {
   const hasMessages = messages.length > 0;
 
   return (
-    <div className="h-full flex flex-col bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      {/* Header */}
-      <CardHeader className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white p-4 border-0 rounded-t-xl">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-              <Bot className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <CardTitle className="text-lg font-bold text-white mb-1 flex items-center gap-2">
-                FitGenius AI
-                <Sparkles className="h-4 w-4 text-yellow-300" />
-              </CardTitle>
-              <p className="text-blue-100 text-sm">
-                Your personal fitness & nutrition assistant
-              </p>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            {hasMessages && (
-              <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={exportConversation}
-                  className="text-white hover:bg-white/20 p-2"
-                >
-                  <Download className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={clearConversation}
-                  className="text-white hover:bg-white/20 p-2"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowSettings(!showSettings)}
-              className="text-white hover:bg-white/20 p-2"
-            >
-              <Settings className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-        
-        {hasMessages && (
-          <div className="flex items-center gap-2 mt-2">
-            <Badge variant="secondary" className="bg-white/20 text-white border-white/20 text-xs">
-              {messages.length} messages
-            </Badge>
-            {isLoading && (
-              <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-100 border-yellow-300/20 text-xs animate-pulse">
-                AI Responding...
-              </Badge>
-            )}
-          </div>
-        )}
-      </CardHeader>
-
+    <div className="h-full flex flex-col">
       {/* Messages Area */}
-      <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
-        <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
+      <CardContent className="flex-1 flex flex-col p-0 overflow-hidden bg-gradient-to-b from-blue-50/50 to-white">
+        <ScrollArea className="flex-1 p-6" ref={scrollAreaRef}>
           {!hasMessages ? (
-            <div className="h-full flex flex-col items-center justify-center">
-              <div className="text-center mb-8">
+            <div className="h-full flex flex-col items-center justify-center text-center">
+              <div className="mb-8">
                 <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
                   <Bot className="h-8 w-8 text-white" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-2">
                   Welcome to FitGenius AI
                 </h3>
-                <p className="text-gray-600 text-sm max-w-md mx-auto">
+                <p className="text-gray-600 text-sm max-w-md mx-auto mb-6">
                   I'm here to help you with personalized fitness advice, nutrition guidance, 
                   and wellness tips. What would you like to know?
                 </p>
+                
+                {hasMessages && (
+                  <div className="flex items-center gap-2 justify-center mb-4">
+                    <Badge variant="secondary" className="text-xs">
+                      {messages.length} messages
+                    </Badge>
+                    {isLoading && (
+                      <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 text-xs animate-pulse">
+                        AI Responding...
+                      </Badge>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={exportConversation}
+                      className="text-gray-600 hover:text-gray-800 p-1"
+                    >
+                      <Download className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={clearConversation}
+                      className="text-gray-600 hover:text-gray-800 p-1"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                )}
               </div>
               
               <ConversationStarters 
@@ -154,6 +119,39 @@ const AIChatInterface = () => {
             </div>
           ) : (
             <div className="space-y-1">
+              {hasMessages && (
+                <div className="flex items-center gap-2 justify-between mb-6 p-3 bg-white/80 rounded-lg border border-blue-100">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary" className="text-xs">
+                      {messages.length} messages
+                    </Badge>
+                    {isLoading && (
+                      <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 text-xs animate-pulse">
+                        AI Responding...
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={exportConversation}
+                      className="text-gray-600 hover:text-gray-800 p-1"
+                    >
+                      <Download className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={clearConversation}
+                      className="text-gray-600 hover:text-gray-800 p-1"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+              
               {messages.map((message) => (
                 <AIChatMessage
                   key={message.id}

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
@@ -6,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MessageCircle, Bot, Users, AlertCircle, Loader2, RefreshCw, UserCheck, Calendar, Star, MessageSquare, Bug } from "lucide-react";
+import { MessageCircle, Bot, Users, AlertCircle, Loader2, RefreshCw, UserCheck, Calendar, Star, MessageSquare, Bug, Sparkles } from "lucide-react";
 import { useCoachSystem } from "@/hooks/useCoachSystem";
 import TraineeCoachChat from "@/components/coach/TraineeCoachChat";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -113,42 +112,42 @@ const Chat = () => {
     <ProtectedRoute>
       <Layout>
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-          {/* Compact Header for Mobile */}
+          {/* Enhanced Header */}
           <div className="relative overflow-hidden bg-gradient-to-r from-slate-800 via-blue-900 to-indigo-900 text-white">
             <div className="absolute inset-0 bg-black/10"></div>
             <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-400/10 to-purple-500/10 rounded-full blur-3xl"></div>
             
-            <div className="relative max-w-7xl mx-auto px-4 py-4 lg:py-6">
-              <div className="flex items-center gap-3 lg:gap-4 mb-2 lg:mb-3">
-                <div className="w-8 h-8 lg:w-10 lg:h-10 bg-white/20 rounded-lg lg:rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20 shadow-lg">
-                  <MessageSquare className="h-4 w-4 lg:h-5 lg:w-5 text-white" />
+            <div className="relative max-w-7xl mx-auto px-4 py-6 lg:py-8">
+              <div className="flex items-center gap-4 mb-3">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20 shadow-lg">
+                  <MessageSquare className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-lg lg:text-2xl font-bold mb-1 text-white">Communication Hub</h1>
-                  <p className="text-blue-100 text-xs lg:text-sm">Connect with AI assistant and personal coaches</p>
+                  <h1 className="text-2xl lg:text-3xl font-bold mb-1 text-white">Communication Hub</h1>
+                  <p className="text-blue-100 text-sm lg:text-base">Connect with AI assistant and personal coaches</p>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="max-w-6xl mx-auto px-3 lg:px-4 py-4 lg:py-6">
+          <div className="max-w-6xl mx-auto px-4 py-6">
             <Tabs defaultValue="ai" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-xl p-1 lg:p-1.5 mb-4 lg:mb-6">
+              <TabsList className="grid w-full grid-cols-2 bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-xl p-1.5 mb-6">
                 <TabsTrigger 
                   value="ai" 
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=inactive]:text-gray-700 data-[state=inactive]:hover:text-blue-600 data-[state=inactive]:hover:bg-blue-50 rounded-lg transition-all duration-200 font-medium py-2 lg:py-3 text-sm lg:text-base"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=inactive]:text-gray-700 data-[state=inactive]:hover:text-blue-600 data-[state=inactive]:hover:bg-blue-50 rounded-lg transition-all duration-200 font-medium py-3 text-base"
                 >
-                  <Bot className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
+                  <Bot className="w-4 h-4 mr-2" />
                   AI Assistant
                 </TabsTrigger>
                 <TabsTrigger 
                   value="coach" 
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-600 data-[state=active]:to-emerald-600 data-[state=active]:text-white data-[state=inactive]:text-gray-700 data-[state=inactive]:hover:text-green-600 data-[state=inactive]:hover:bg-green-50 rounded-lg transition-all duration-200 font-medium py-2 lg:py-3 text-sm lg:text-base relative"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-600 data-[state=active]:to-emerald-600 data-[state=active]:text-white data-[state=inactive]:text-gray-700 data-[state=inactive]:hover:text-green-600 data-[state=inactive]:hover:bg-green-50 rounded-lg transition-all duration-200 font-medium py-3 text-base relative"
                 >
-                  <Users className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
+                  <Users className="w-4 h-4 mr-2" />
                   Personal Coaches
                   {totalUnreadMessages > 0 && (
-                    <Badge variant="destructive" className="ml-1 lg:ml-2 text-xs animate-pulse bg-red-500 text-white shadow-md px-1 lg:px-2">
+                    <Badge variant="destructive" className="ml-2 text-xs animate-pulse bg-red-500 text-white shadow-md px-2">
                       {totalUnreadMessages}
                     </Badge>
                   )}
@@ -156,29 +155,28 @@ const Chat = () => {
               </TabsList>
 
               <TabsContent value="ai" className="mt-0">
-                <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl rounded-xl lg:rounded-2xl overflow-hidden">
-                  <CardHeader className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white p-4 lg:p-6">
-                    <div className="flex items-center gap-2 lg:gap-3">
-                      <div className="w-8 h-8 lg:w-10 lg:h-10 bg-white/20 rounded-lg lg:rounded-xl flex items-center justify-center backdrop-blur-sm">
-                        <Bot className="h-4 w-4 lg:h-5 lg:w-5 text-white" />
+                <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl rounded-2xl overflow-hidden">
+                  {/* Single AI Header */}
+                  <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white p-6">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                        <Bot className="h-5 w-5 text-white" />
                       </div>
                       <div>
-                        <CardTitle className="text-base lg:text-xl font-bold mb-1 text-white">
-                          AI Fitness Assistant
-                        </CardTitle>
-                        <p className="text-blue-100 text-xs lg:text-sm">
-                          Get instant, personalized answers to your fitness and nutrition questions
+                        <h2 className="text-xl font-bold mb-1 text-white flex items-center gap-2">
+                          FitGenius AI
+                          <Sparkles className="h-4 w-4 text-yellow-300" />
+                        </h2>
+                        <p className="text-blue-100 text-sm">
+                          Your personal fitness & nutrition assistant
                         </p>
                       </div>
                     </div>
-                  </CardHeader>
-                  <CardContent className="p-0">
-                    <div className={cn(
-                      "h-[400px] lg:h-[450px]"
-                    )}>
-                      <AIChatInterface />
-                    </div>
-                  </CardContent>
+                  </div>
+                  
+                  <div className="h-[500px]">
+                    <AIChatInterface />
+                  </div>
                 </Card>
               </TabsContent>
 

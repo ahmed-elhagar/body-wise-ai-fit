@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ChatMessage {
   id: string;
@@ -78,33 +79,27 @@ export const useAIChat = (options: UseChatOptions = {}) => {
         { role: 'user', content: userMessage.trim() }
       ];
 
-      console.log('🤖 Sending message to AI:', { userMessage, historyLength: conversationHistory.length });
+      console.log('🤖 Sending message to AI via Supabase function:', { userMessage, historyLength: conversationHistory.length });
 
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      const { data, error } = await supabase.functions.invoke('chat', {
+        body: {
           messages: apiMessages,
-        }),
+        },
         signal: abortControllerRef.current.signal,
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (error) {
+        throw new Error(error.message || 'Failed to get AI response');
       }
 
-      const data = await response.json();
-      
-      if (data.error) {
-        throw new Error(data.error);
+      if (!data || !data.response) {
+        throw new Error('No response received from AI');
       }
 
       // Update the loading message with the response
-      updateMessage(assistantMessageId, data.response || 'Sorry, I could not generate a response.', false);
+      updateMessage(assistantMessageId, data.response, false);
       
-      console.log('✅ AI response received');
+      console.log('✅ AI response received via Supabase function');
 
     } catch (error: any) {
       console.error('❌ Error sending message to AI:', error);
