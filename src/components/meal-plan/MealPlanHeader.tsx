@@ -44,44 +44,44 @@ const MealPlanHeader = ({
   const { t, isRTL } = useLanguage();
 
   return (
-    <div className="bg-gradient-to-r from-[#3D8CFF] to-[#1E60E0] h-[180px] mb-6">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 h-full flex flex-col justify-center">
+    <div className="bg-gradient-to-r from-[#3D8CFF] to-[#1E60E0] rounded-2xl shadow-xl overflow-hidden">
+      <div className="px-6 py-8">
         {/* Title and Actions Row */}
-        <div className={`flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 ${isRTL ? 'lg:flex-row-reverse' : ''}`}>
-          <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-              <UtensilsCrossed className="w-6 h-6 text-white" />
+        <div className={`flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 ${isRTL ? 'lg:flex-row-reverse' : ''}`}>
+          <div className={`flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+              <UtensilsCrossed className="w-8 h-8 text-white" />
             </div>
             <div className={isRTL ? 'text-right' : 'text-left'}>
-              <h1 className="text-2xl font-bold text-white mb-1">{t('mealPlan.title')}</h1>
-              <p className="text-blue-100 text-sm font-medium">
+              <h1 className="text-3xl font-bold text-white mb-2">Meal Plan</h1>
+              <p className="text-blue-100 text-lg font-medium">
                 {format(weekStartDate, 'MMMM d')} - {format(addDays(weekStartDate, 6), 'MMMM d, yyyy')}
               </p>
             </div>
           </div>
 
-          <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+          <div className={`flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
             {/* View Mode Toggle */}
-            <div className="flex bg-white/10 rounded-lg p-1 backdrop-blur-sm">
+            <div className="flex bg-white/15 rounded-xl p-1 backdrop-blur-sm border border-white/20">
               <button
                 onClick={() => onViewModeChange('daily')}
-                className={`px-3 py-2 text-sm font-medium rounded-md transition-all ${
+                className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${
                   viewMode === 'daily'
-                    ? 'bg-white text-blue-600 shadow-sm'
+                    ? 'bg-white text-blue-600 shadow-lg'
                     : 'text-white hover:bg-white/20'
                 }`}
               >
-                {t('mealPlan.dailyView')}
+                Daily View
               </button>
               <button
                 onClick={() => onViewModeChange('weekly')}
-                className={`px-3 py-2 text-sm font-medium rounded-md transition-all ${
+                className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${
                   viewMode === 'weekly'
-                    ? 'bg-white text-blue-600 shadow-sm'
+                    ? 'bg-white text-blue-600 shadow-lg'
                     : 'text-white hover:bg-white/20'
                 }`}
               >
-                {t('mealPlan.weeklyView')}
+                Weekly View
               </button>
             </div>
 
@@ -91,49 +91,49 @@ const MealPlanHeader = ({
                   onClick={onShowShoppingList}
                   variant="outline"
                   size="sm"
-                  className="bg-white/10 border-white/30 text-white hover:bg-white/20 hover:border-white/50"
+                  className="bg-white/15 border-white/30 text-white hover:bg-white/25 hover:border-white/50 backdrop-blur-sm"
                 >
                   <ShoppingCart className="w-4 h-4 mr-2" />
-                  {t('mealPlan.shoppingList')}
+                  Shopping List
                 </Button>
                 
                 <Button
                   onClick={onRegeneratePlan}
                   variant="outline"
                   size="sm"
-                  className="bg-white/10 border-white/30 text-white hover:bg-white/20 hover:border-white/50"
+                  className="bg-white/15 border-white/30 text-white hover:bg-white/25 hover:border-white/50 backdrop-blur-sm"
                 >
                   <Shuffle className="w-4 h-4 mr-2" />
-                  {t('mealPlan.shuffleMeals')}
+                  Shuffle Meals
                 </Button>
               </>
             )}
             
             <Button
               onClick={onShowAIDialog}
-              className="bg-white text-blue-600 hover:bg-blue-50 shadow-md"
+              className="bg-white text-blue-600 hover:bg-blue-50 shadow-lg font-semibold"
               size="sm"
             >
               <Sparkles className="w-4 h-4 mr-2" />
-              {hasWeeklyPlan ? t('mealPlan.regenerate') : t('mealPlan.generateAIPlan')}
+              {hasWeeklyPlan ? 'Regenerate' : 'Generate AI Plan'}
             </Button>
           </div>
         </div>
 
         {/* Week Navigation */}
-        <div className="flex items-center justify-center gap-4 mt-4">
+        <div className="flex items-center justify-center gap-6 mt-8">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => onWeekChange(currentWeekOffset - 1)}
-            className="text-white hover:bg-white/20 p-2"
+            className="text-white hover:bg-white/20 p-3 rounded-xl"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-6 h-6" />
           </Button>
 
           <div className="text-center">
-            <div className="text-lg font-semibold text-white">
-              {currentWeekOffset === 0 ? t('mealPlan.currentWeek') : `${t('mealPlan.week')} ${Math.abs(currentWeekOffset) + 1}`}
+            <div className="text-xl font-bold text-white">
+              {currentWeekOffset === 0 ? 'Current Week' : `Week ${Math.abs(currentWeekOffset) + 1}`}
             </div>
           </div>
 
@@ -141,41 +141,41 @@ const MealPlanHeader = ({
             variant="ghost"
             size="sm"
             onClick={() => onWeekChange(currentWeekOffset + 1)}
-            className="text-white hover:bg-white/20 p-2"
+            className="text-white hover:bg-white/20 p-3 rounded-xl"
           >
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight className="w-6 h-6" />
           </Button>
         </div>
 
         {/* Weekly Stats */}
         {hasWeeklyPlan && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-            <div className="text-center">
-              <div className="text-xl font-bold text-white">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
+            <div className="text-center bg-white/10 rounded-xl p-4 backdrop-blur-sm">
+              <div className="text-2xl font-bold text-white">
                 {weeklyStats.totalCalories.toLocaleString()}
               </div>
-              <div className="text-xs text-blue-100 font-medium">{t('mealPlan.totalCalories')}</div>
+              <div className="text-sm text-blue-100 font-medium">Total Calories</div>
             </div>
             
-            <div className="text-center">
-              <div className="text-xl font-bold text-white">
+            <div className="text-center bg-white/10 rounded-xl p-4 backdrop-blur-sm">
+              <div className="text-2xl font-bold text-white">
                 {weeklyStats.avgDailyCalories}
               </div>
-              <div className="text-xs text-blue-100 font-medium">{t('mealPlan.dailyAverage')}</div>
+              <div className="text-sm text-blue-100 font-medium">Daily Average</div>
             </div>
             
-            <div className="text-center">
-              <div className="text-xl font-bold text-white">
+            <div className="text-center bg-white/10 rounded-xl p-4 backdrop-blur-sm">
+              <div className="text-2xl font-bold text-white">
                 {weeklyStats.totalMeals}
               </div>
-              <div className="text-xs text-blue-100 font-medium">{t('mealPlan.totalMeals')}</div>
+              <div className="text-sm text-blue-100 font-medium">Total Meals</div>
             </div>
             
-            <div className="text-center">
-              <div className="text-xl font-bold text-white">
+            <div className="text-center bg-white/10 rounded-xl p-4 backdrop-blur-sm">
+              <div className="text-2xl font-bold text-white">
                 {weeklyStats.totalProtein.toFixed(1)}g
               </div>
-              <div className="text-xs text-blue-100 font-medium">{t('mealPlan.totalProtein')}</div>
+              <div className="text-sm text-blue-100 font-medium">Total Protein</div>
             </div>
           </div>
         )}

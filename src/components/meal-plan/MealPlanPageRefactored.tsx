@@ -8,6 +8,8 @@ import MealPlanHeader from "./MealPlanHeader";
 import DayTabs from "./DayTabs";
 import MealGrid from "./MealGrid";
 import StatsSidebar from "./StatsSidebar";
+import WeeklyView from "./WeeklyView";
+import EmptyState from "./EmptyState";
 import ShoppingListDrawer from "../shopping-list/ShoppingListDrawer";
 import MealPlanLoadingBackdrop from "./MealPlanLoadingBackdrop";
 import MealRecipeDialog from "./MealRecipeDialog";
@@ -26,6 +28,7 @@ const MealPlanPageRefactored = () => {
   const [showShoppingDrawer, setShowShoppingDrawer] = useState(false);
   const [showSnackDialog, setShowSnackDialog] = useState(false);
   const [selectedDayForSnack, setSelectedDayForSnack] = useState(1);
+  const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
 
   // Get current week dates for display
   const weekDays = [
@@ -61,6 +64,16 @@ const MealPlanPageRefactored = () => {
     toast.success("Shopping list updated ✅");
   };
 
+  const handleRegeneratePlan = async () => {
+    try {
+      await mealPlanState.handleRegeneratePlan();
+      toast.success("Meal plan regenerated successfully! 🎉");
+    } catch (error) {
+      console.error('❌ Regeneration failed:', error);
+      toast.error("Failed to regenerate meal plan. Please try again.");
+    }
+  };
+
   // Enhanced AI generation handler
   const handleGenerateAIPlan = async () => {
     console.log('🎯 MealPlanPage: Starting AI generation with preferences:', mealPlanState.aiPreferences);
@@ -82,7 +95,7 @@ const MealPlanPageRefactored = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/50">
       <MealPlanLoadingBackdrop 
         isLoading={mealPlanState.isGenerating} 
         message="Generating your meal plan..."
@@ -96,68 +109,67 @@ const MealPlanPageRefactored = () => {
           onWeekChange={mealPlanState.setCurrentWeekOffset}
           onShowAIDialog={() => mealPlanState.setShowAIDialog(true)}
           onShowShoppingList={() => setShowShoppingDrawer(true)}
+          onRegeneratePlan={handleRegeneratePlan}
           weeklyStats={weeklyStats}
           hasWeeklyPlan={!!mealPlanState.currentWeekPlan}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
         />
 
         {mealPlanState.currentWeekPlan ? (
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-            {/* Sidebar Stats */}
-            <div className="lg:col-span-1 order-2 lg:order-1">
-              <div className="sticky top-6">
-                <StatsSidebar
-                  todaysMeals={mealPlanState.todaysMeals || []}
-                  totalCalories={mealPlanState.totalCalories}
-                  totalProtein={mealPlanState.totalProtein}
-                  targetDayCalories={mealPlanState.targetDayCalories}
-                />
-              </div>
-            </div>
-
-            {/* Main Content */}
-            <div className="lg:col-span-4 order-1 lg:order-2 space-y-6">
-              {/* Day Tabs */}
-              <DayTabs
+          <>
+            {viewMode === 'weekly' ? (
+              <WeeklyView
                 weekStartDate={mealPlanState.weekStartDate}
-                selectedDayNumber={mealPlanState.selectedDayNumber}
-                onDayChange={mealPlanState.setSelectedDayNumber}
+                currentWeekPlan={mealPlanState.currentWeekPlan}
+                onSelectDay={mealPlanState.setSelectedDayNumber}
+                onSwitchToDaily={() => setViewMode('daily')}
               />
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                {/* Main Content */}
+                <div className="lg:col-span-3 order-1 space-y-6">
+                  {/* Day Tabs */}
+                  <DayTabs
+                    weekStartDate={mealPlanState.weekStartDate}
+                    selectedDayNumber={mealPlanState.selectedDayNumber}
+                    onDayChange={mealPlanState.setSelectedDayNumber}
+                  />
 
-              {/* Meal Content */}
-              <Tabs value={mealPlanState.selectedDayNumber.toString()}>
-                {weekDays.map((day) => (
-                  <TabsContent key={day.number} value={day.number.toString()}>
-                    <MealGrid
-                      meals={mealPlanState.currentWeekPlan?.dailyMeals?.filter(
-                        meal => meal.day_number === day.number
-                      ) || []}
-                      onShowRecipe={mealPlanState.handleShowRecipe}
-                      onExchangeMeal={mealPlanState.handleExchangeMeal}
-                      onAddSnack={() => handleAddSnack(day.number)}
-                      dayNumber={day.number}
-                    />
-                  </TabsContent>
-                ))}
-              </Tabs>
-            </div>
-          </div>
+                  {/* Meal Content */}
+                  <Tabs value={mealPlanState.selectedDayNumber.toString()}>
+                    {weekDays.map((day) => (
+                      <TabsContent key={day.number} value={day.number.toString()}>
+                        <MealGrid
+                          meals={mealPlanState.currentWeekPlan?.dailyMeals?.filter(
+                            meal => meal.day_number === day.number
+                          ) || []}
+                          onShowRecipe={mealPlanState.handleShowRecipe}
+                          onExchangeMeal={mealPlanState.handleExchangeMeal}
+                          onAddSnack={() => handleAddSnack(day.number)}
+                          dayNumber={day.number}
+                        />
+                      </TabsContent>
+                    ))}
+                  </Tabs>
+                </div>
+
+                {/* Sidebar Stats - Moved to right */}
+                <div className="lg:col-span-1 order-2">
+                  <StatsSidebar
+                    todaysMeals={mealPlanState.todaysMeals || []}
+                    totalCalories={mealPlanState.totalCalories}
+                    totalProtein={mealPlanState.totalProtein}
+                    targetDayCalories={mealPlanState.targetDayCalories}
+                    onAddSnack={() => handleAddSnack(mealPlanState.selectedDayNumber)}
+                    onRegeneratePlan={handleRegeneratePlan}
+                  />
+                </div>
+              </div>
+            )}
+          </>
         ) : (
-          <Card className="p-12 text-center bg-white border border-gray-100 shadow-sm rounded-xl">
-            <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl flex items-center justify-center">
-              <ChefHat className="w-12 h-12 text-blue-600" />
-            </div>
-            <h3 className="text-2xl font-semibold text-gray-900 mb-3">No Meal Plan Yet</h3>
-            <p className="text-gray-600 mb-6 max-w-md mx-auto">
-              Generate your personalized meal plan to get started with healthy eating habits
-            </p>
-            <Button 
-              onClick={() => mealPlanState.setShowAIDialog(true)}
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
-            >
-              <Sparkles className="w-5 h-5 mr-2" />
-              Generate Meal Plan
-            </Button>
-          </Card>
+          <EmptyState onGeneratePlan={() => mealPlanState.setShowAIDialog(true)} />
         )}
       </div>
 
