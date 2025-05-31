@@ -12,16 +12,16 @@ const ViewModeToggle = ({ viewMode, onViewModeChange }: ViewModeToggleProps) => 
   const { t, isRTL } = useLanguage();
 
   return (
-    <div className={`flex bg-slate-100/80 backdrop-blur-sm rounded-xl p-1.5 shadow-inner border border-slate-200/50 ${isRTL ? 'flex-row-reverse' : ''}`}>
+    <div className={`flex bg-fitness-neutral-100/90 backdrop-blur-sm rounded-xl p-1.5 shadow-sm border border-fitness-neutral-200/50 ${isRTL ? 'flex-row-reverse' : ''}`}>
       <Button
         onClick={() => onViewModeChange('daily')}
         variant="ghost"
         size="sm"
         className={`${
           viewMode === 'daily'
-            ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg hover:from-blue-700 hover:to-indigo-700'
-            : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-        } transition-all duration-300 rounded-lg px-4 py-2.5 font-medium`}
+            ? 'bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 text-white shadow-lg hover:from-fitness-primary-600 hover:to-fitness-primary-700'
+            : 'text-fitness-neutral-600 hover:text-fitness-neutral-900 hover:bg-white/80'
+        } transition-all duration-300 rounded-lg px-4 py-2.5 font-semibold touch-target`}
       >
         <Calendar className="w-4 h-4 mr-2" />
         {t('mealPlan.dailyView')}
@@ -32,9 +32,9 @@ const ViewModeToggle = ({ viewMode, onViewModeChange }: ViewModeToggleProps) => 
         size="sm"
         className={`${
           viewMode === 'weekly'
-            ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg hover:from-blue-700 hover:to-indigo-700'
-            : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-        } transition-all duration-300 rounded-lg px-4 py-2.5 font-medium`}
+            ? 'bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 text-white shadow-lg hover:from-fitness-primary-600 hover:to-fitness-primary-700'
+            : 'text-fitness-neutral-600 hover:text-fitness-neutral-900 hover:bg-white/80'
+        } transition-all duration-300 rounded-lg px-4 py-2.5 font-semibold touch-target`}
       >
         <Grid className="w-4 h-4 mr-2" />
         {t('mealPlan.weeklyView')}

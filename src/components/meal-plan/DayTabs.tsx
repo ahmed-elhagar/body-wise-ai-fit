@@ -27,18 +27,18 @@ const DayTabs = ({
   ];
 
   return (
-    <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-3">
+    <div className="card-enhanced card-padding">
       <Tabs value={selectedDayNumber.toString()} onValueChange={(value) => onDayChange(parseInt(value))}>
-        <TabsList className="grid w-full grid-cols-7 bg-slate-100/80 rounded-xl p-2 h-auto border border-slate-200/50">
+        <TabsList className="grid w-full grid-cols-7 bg-fitness-neutral-100/90 rounded-xl p-2 h-auto border border-fitness-neutral-200/50">
           {weekDays.map((day) => (
             <TabsTrigger 
               key={day.number} 
               value={day.number.toString()}
-              className="flex flex-col py-4 px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-blue-500/25 rounded-xl font-medium transition-all duration-300 min-h-[70px] text-center hover:bg-white/60 transform data-[state=active]:scale-105"
+              className="flex flex-col py-4 px-3 data-[state=active]:bg-gradient-to-br data-[state=active]:from-fitness-primary-500 data-[state=active]:to-fitness-primary-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-fitness-primary-500/25 rounded-xl font-semibold transition-all duration-300 min-h-[70px] text-center hover:bg-white/80 transform data-[state=active]:scale-105 touch-target"
             >
-              <span className="text-xs opacity-70 mb-1 font-medium">{day.name}</span>
+              <span className="text-xs opacity-80 mb-1 font-medium">{day.name}</span>
               <span className="text-xl font-bold">{format(day.date, 'd')}</span>
-              <span className="text-xs opacity-70 mt-1 hidden sm:block font-medium">{format(day.date, 'MMM')}</span>
+              <span className="text-xs opacity-80 mt-1 hidden sm:block font-medium">{format(day.date, 'MMM')}</span>
             </TabsTrigger>
           ))}
         </TabsList>
