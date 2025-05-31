@@ -48,7 +48,7 @@ export const useCoachSystem = () => {
       console.log('🏃‍♂️ Fetching trainees for coach:', user.id);
 
       try {
-        // First get coach-trainee relationships
+        // Use the new RLS-friendly approach - get relationships first
         const { data: relationships, error: relationshipsError } = await supabase
           .from('coach_trainees')
           .select('*')
@@ -67,7 +67,7 @@ export const useCoachSystem = () => {
 
         console.log('📊 Found relationships:', relationships.length);
 
-        // Get trainee profile data separately
+        // Get trainee profile data - now with proper RLS policies
         const traineeIds = relationships.map(rel => rel.trainee_id);
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
@@ -76,7 +76,8 @@ export const useCoachSystem = () => {
 
         if (profilesError) {
           console.error('❌ Error fetching trainee profiles:', profilesError);
-          throw profilesError;
+          // Don't throw error if profiles are not accessible, continue with basic data
+          console.warn('⚠️ Continuing without full profile data');
         }
 
         console.log('👥 Found profiles:', profiles?.length || 0);
@@ -123,7 +124,7 @@ export const useCoachSystem = () => {
     },
   });
 
-  // Check if current user is a coach
+  // Check if current user is a coach - simplified query
   const { data: isCoach = false, error: isCoachError } = useQuery({
     queryKey: ['is-coach', user?.id],
     queryFn: async () => {
@@ -131,30 +132,53 @@ export const useCoachSystem = () => {
 
       console.log('🔍 Checking if user is coach:', user.id);
 
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
+      try {
+        // Use the security definer function instead of direct profile query
+        const { data, error } = await supabase.rpc('get_current_user_role');
 
-      if (error) {
-        console.error('❌ Error checking coach status:', error);
+        if (error) {
+          console.error('❌ Error checking coach status via RPC:', error);
+          // Fallback to direct query
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single();
+
+          if (profileError) {
+            console.error('❌ Error checking coach status:', profileError);
+            return false;
+          }
+
+          const isCoachUser = profile?.role === 'coach' || profile?.role === 'admin';
+          console.log('✅ Coach status (fallback):', isCoachUser, 'Role:', profile?.role);
+          return isCoachUser;
+        }
+
+        const isCoachUser = data === 'coach' || data === 'admin';
+        console.log('✅ Coach status (RPC):', isCoachUser, 'Role:', data);
+        return isCoachUser;
+      } catch (error) {
+        console.error('💥 Error in coach status check:', error);
         return false;
       }
-
-      const isCoachUser = profile?.role === 'coach' || profile?.role === 'admin';
-      console.log('✅ Coach status:', isCoachUser, 'Role:', profile?.role);
-      return isCoachUser;
     },
     enabled: !!user?.id,
     staleTime: 60000,
   });
 
-  // Log errors
+  // Log errors with better context
   useEffect(() => {
     if (traineesError) {
       console.error('🚨 Trainees fetch error:', traineesError);
-      toast.error('Failed to load trainees. Please refresh the page.');
+      const errorMessage = traineesError.message || 'Unknown error';
+      if (errorMessage.includes('infinite recursion')) {
+        toast.error('Database configuration issue. Please contact support.');
+      } else if (errorMessage.includes('permission denied')) {
+        toast.error('Access denied. Please check your coach permissions.');
+      } else {
+        toast.error('Failed to load trainees. Please refresh the page.');
+      }
     }
     if (isCoachError) {
       console.error('🚨 Coach status check error:', isCoachError);
@@ -167,38 +191,43 @@ export const useCoachSystem = () => {
     queryFn: async () => {
       if (!user?.id) return null;
 
-      // Get coach-trainee relationship
-      const { data: relationship, error: relationshipError } = await supabase
-        .from('coach_trainees')
-        .select('*')
-        .eq('trainee_id', user.id)
-        .single();
+      try {
+        // Get coach-trainee relationship
+        const { data: relationship, error: relationshipError } = await supabase
+          .from('coach_trainees')
+          .select('*')
+          .eq('trainee_id', user.id)
+          .single();
 
-      if (relationshipError && relationshipError.code !== 'PGRST116') {
-        console.error('Error fetching coach relationship:', relationshipError);
+        if (relationshipError && relationshipError.code !== 'PGRST116') {
+          console.error('Error fetching coach relationship:', relationshipError);
+          return null;
+        }
+
+        if (!relationship) return null;
+
+        // Get coach profile separately
+        const { data: coachProfile, error: profileError } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name, email')
+          .eq('id', relationship.coach_id)
+          .single();
+
+        if (profileError) {
+          console.error('Error fetching coach profile:', profileError);
+          return null;
+        }
+
+        return {
+          id: relationship.id,
+          assigned_at: relationship.assigned_at,
+          notes: relationship.notes,
+          coach_profile: coachProfile
+        };
+      } catch (error) {
+        console.error('Error in coach info fetch:', error);
         return null;
       }
-
-      if (!relationship) return null;
-
-      // Get coach profile separately
-      const { data: coachProfile, error: profileError } = await supabase
-        .from('profiles')
-        .select('id, first_name, last_name, email')
-        .eq('id', relationship.coach_id)
-        .single();
-
-      if (profileError) {
-        console.error('Error fetching coach profile:', profileError);
-        return null;
-      }
-
-      return {
-        id: relationship.id,
-        assigned_at: relationship.assigned_at,
-        notes: relationship.notes,
-        coach_profile: coachProfile
-      };
     },
     enabled: !!user?.id,
   });

@@ -1364,6 +1364,12 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_user_assigned_trainees: {
+        Args: { coach_id: string }
+        Returns: {
+          trainee_id: string
+        }[]
+      }
       get_user_role: {
         Args: { user_id: string }
         Returns: Database["public"]["Enums"]["user_role"]
@@ -1409,6 +1415,10 @@ export type Database = {
       }
       is_pro_user: {
         Args: { user_id: string }
+        Returns: boolean
+      }
+      is_user_trainee_of_coach: {
+        Args: { trainee_id: string; coach_id: string }
         Returns: boolean
       }
       reset_ai_generations: {
