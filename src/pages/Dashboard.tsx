@@ -1,3 +1,4 @@
+
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,13 +12,14 @@ import { memo, useMemo, useCallback } from "react";
 import WeightTrackingWidget from "@/components/dashboard/WeightTrackingWidget";
 import InteractiveProgressChart from "@/components/dashboard/InteractiveProgressChart";
 import EnhancedAnalyticsCard from "@/components/dashboard/EnhancedAnalyticsCard";
+import GoalProgressWidget from "@/components/dashboard/GoalProgressWidget";
 
 // Import the existing components
 import { DashboardWelcomeHeader } from "@/components/dashboard/DashboardWelcomeHeader";
 import { DashboardQuickStatsGrid } from "@/components/dashboard/DashboardQuickStatsGrid";
 import { MealList } from "@/components/dashboard/MealList";
 import { ExerciseProgress } from "@/components/dashboard/ExerciseProgress";
-import { DashboardQuickActions } from "@/components/dashboard/DashboardQuickActions";
+import DashboardQuickActions from "@/components/dashboard/DashboardQuickActions";
 import { DashboardAchievements } from "@/components/dashboard/DashboardAchievements";
 
 const Dashboard = () => {
@@ -122,20 +124,21 @@ const Dashboard = () => {
               </Card>
             </div>
 
-            {/* Weight Tracking Widget */}
+            {/* Weight Tracking and Goals */}
             <div className="grid gap-4 md:gap-6 grid-cols-1 lg:grid-cols-2">
               <WeightTrackingWidget />
-              
-              {/* Quick Actions */}
-              <DashboardQuickActions
-                handleViewMealPlan={handleViewMealPlan}
-                handleViewExercise={handleViewExercise}
-                handleViewWeight={handleViewWeight}
-                handleViewProgress={handleViewProgress}
-                handleViewProfile={handleViewProfile}
-                handleViewGoals={() => navigate('/goals')}
-              />
+              <GoalProgressWidget />
             </div>
+
+            {/* Quick Actions */}
+            <DashboardQuickActions
+              handleViewMealPlan={handleViewMealPlan}
+              handleViewExercise={handleViewExercise}
+              handleViewWeight={handleViewWeight}
+              handleViewProgress={handleViewProgress}
+              handleViewProfile={handleViewProfile}
+              handleViewGoals={() => navigate('/goals')}
+            />
 
             {/* Achievements */}
             <DashboardAchievements

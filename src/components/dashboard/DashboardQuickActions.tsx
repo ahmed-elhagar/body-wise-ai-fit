@@ -1,7 +1,9 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TrendingUp, Apple, Dumbbell, Target, Users, Scale, User } from "lucide-react";
-import { useLanguage, useNavigate } from "@/hooks";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useNavigate } from "react-router-dom";
 
 interface DashboardQuickActionsProps {
   handleViewMealPlan: () => void;
