@@ -33,7 +33,7 @@ interface CreateTaskDialogProps {
 }
 
 export const CreateTaskDialog = ({ open, onOpenChange, trainees }: CreateTaskDialogProps) => {
-  const { createTask, isCreating } = useCoachTasks();
+  const { createTaskAsync, isCreating } = useCoachTasks();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -43,30 +43,7 @@ export const CreateTaskDialog = ({ open, onOpenChange, trainees }: CreateTaskDia
     dueDate: undefined as Date | undefined,
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.title.trim()) {
-      toast.error('Please enter a task title');
-      return;
-    }
-
-    const selectedTrainee = trainees.find(t => t.trainee_id === formData.traineeId);
-    
-    createTask({
-      title: formData.title,
-      description: formData.description,
-      priority: formData.priority,
-      type: formData.type,
-      traineeId: formData.traineeId || undefined,
-      traineeName: selectedTrainee ? 
-        `${selectedTrainee.trainee_profile?.first_name || ''} ${selectedTrainee.trainee_profile?.last_name || ''}`.trim() : 
-        undefined,
-      dueDate: formData.dueDate,
-      completed: false,
-    });
-
-    // Reset form and close dialog
+  const resetForm = () => {
     setFormData({
       title: '',
       description: '',
@@ -75,12 +52,50 @@ export const CreateTaskDialog = ({ open, onOpenChange, trainees }: CreateTaskDia
       traineeId: '',
       dueDate: undefined,
     });
-    onOpenChange(false);
-    toast.success('Task created successfully');
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.title.trim()) {
+      toast.error('Please enter a task title');
+      return;
+    }
+
+    try {
+      const selectedTrainee = trainees.find(t => t.trainee_id === formData.traineeId);
+      
+      await createTaskAsync({
+        title: formData.title.trim(),
+        description: formData.description.trim(),
+        priority: formData.priority,
+        type: formData.type,
+        traineeId: formData.traineeId || undefined,
+        traineeName: selectedTrainee ? 
+          `${selectedTrainee.trainee_profile?.first_name || ''} ${selectedTrainee.trainee_profile?.last_name || ''}`.trim() : 
+          undefined,
+        dueDate: formData.dueDate,
+        completed: false,
+      });
+
+      // Reset form and close dialog on success
+      resetForm();
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Failed to create task:', error);
+      // Error is already handled in the hook
+    }
+  };
+
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen && !isCreating) {
+      resetForm();
+    }
+    onOpenChange(newOpen);
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Create New Task</DialogTitle>
@@ -91,13 +106,14 @@ export const CreateTaskDialog = ({ open, onOpenChange, trainees }: CreateTaskDia
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="title">Task Title</Label>
+            <Label htmlFor="title">Task Title *</Label>
             <Input
               id="title"
               value={formData.title}
               onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
               placeholder="Enter task title..."
               required
+              disabled={isCreating}
             />
           </div>
 
@@ -109,6 +125,7 @@ export const CreateTaskDialog = ({ open, onOpenChange, trainees }: CreateTaskDia
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
               placeholder="Enter task description..."
               rows={3}
+              disabled={isCreating}
             />
           </div>
 
@@ -120,6 +137,7 @@ export const CreateTaskDialog = ({ open, onOpenChange, trainees }: CreateTaskDia
                 onValueChange={(value: CoachTask['priority']) => 
                   setFormData(prev => ({ ...prev, priority: value }))
                 }
+                disabled={isCreating}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -139,6 +157,7 @@ export const CreateTaskDialog = ({ open, onOpenChange, trainees }: CreateTaskDia
                 onValueChange={(value: CoachTask['type']) => 
                   setFormData(prev => ({ ...prev, type: value }))
                 }
+                disabled={isCreating}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -158,6 +177,7 @@ export const CreateTaskDialog = ({ open, onOpenChange, trainees }: CreateTaskDia
             <Select 
               value={formData.traineeId} 
               onValueChange={(value) => setFormData(prev => ({ ...prev, traineeId: value }))}
+              disabled={isCreating}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select a trainee (optional)" />
@@ -183,6 +203,7 @@ export const CreateTaskDialog = ({ open, onOpenChange, trainees }: CreateTaskDia
                     "w-full justify-start text-left font-normal",
                     !formData.dueDate && "text-muted-foreground"
                   )}
+                  disabled={isCreating}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {formData.dueDate ? format(formData.dueDate, "PPP") : "Pick a date"}
@@ -194,18 +215,24 @@ export const CreateTaskDialog = ({ open, onOpenChange, trainees }: CreateTaskDia
                   selected={formData.dueDate}
                   onSelect={(date) => setFormData(prev => ({ ...prev, dueDate: date }))}
                   initialFocus
+                  disabled={isCreating}
                 />
               </PopoverContent>
             </Popover>
           </div>
 
           <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => handleOpenChange(false)}
+              disabled={isCreating}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={isCreating}>
               {isCreating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Create Task
+              {isCreating ? 'Creating...' : 'Create Task'}
             </Button>
           </div>
         </form>

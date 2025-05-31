@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { toast } from 'sonner';
 
 export interface CoachTask {
   id: string;
@@ -67,6 +68,8 @@ export const useCoachTasks = () => {
     mutationFn: async (newTask: Omit<CoachTask, 'id' | 'createdAt'>) => {
       if (!user?.id) throw new Error('User not authenticated');
 
+      console.log('Creating task:', newTask);
+
       const { data, error } = await supabase
         .from('coach_tasks')
         .insert({
@@ -76,17 +79,28 @@ export const useCoachTasks = () => {
           priority: newTask.priority,
           type: newTask.type,
           due_date: newTask.dueDate?.toISOString(),
-          trainee_id: newTask.traineeId,
+          trainee_id: newTask.traineeId || null,
           completed: newTask.completed
         })
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error creating task:', error);
+        throw error;
+      }
+      
+      console.log('Task created successfully:', data);
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['coach-tasks'] });
+      toast.success('Task created successfully');
+      console.log('Task creation successful, data:', data);
+    },
+    onError: (error: any) => {
+      console.error('Task creation failed:', error);
+      toast.error(`Failed to create task: ${error.message}`);
     },
   });
 
@@ -98,10 +112,18 @@ export const useCoachTasks = () => {
         .update({ completed, updated_at: new Date().toISOString() })
         .eq('id', taskId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error toggling task:', error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['coach-tasks'] });
+      toast.success('Task updated successfully');
+    },
+    onError: (error: any) => {
+      console.error('Toggle task failed:', error);
+      toast.error(`Failed to update task: ${error.message}`);
     },
   });
 
@@ -113,5 +135,6 @@ export const useCoachTasks = () => {
     toggleTask: toggleTaskMutation.mutate,
     isCreating: createTaskMutation.isPending,
     isToggling: toggleTaskMutation.isPending,
+    createTaskAsync: createTaskMutation.mutateAsync,
   };
 };

@@ -176,9 +176,11 @@ const CoachTasksPanel = ({ trainees, className }: CoachTasksPanelProps) => {
                           )}>
                             {task.title}
                           </h4>
-                          <p className="text-sm text-gray-600 mt-1">
-                            {task.description}
-                          </p>
+                          {task.description && (
+                            <p className="text-sm text-gray-600 mt-1">
+                              {task.description}
+                            </p>
+                          )}
                           
                           {task.traineeName && (
                             <p className="text-xs text-blue-600 mt-1">
