@@ -1,6 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Flame, Target, Utensils } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Flame, Target, Utensils, TrendingUp } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface StatsSidebarProps {
@@ -13,65 +14,94 @@ interface StatsSidebarProps {
 const StatsSidebar = ({ todaysMeals, totalCalories, totalProtein, targetDayCalories }: StatsSidebarProps) => {
   const { t } = useLanguage();
 
-  const calorieProgress = targetDayCalories > 0 ? (totalCalories / targetDayCalories) * 100 : 0;
+  const calorieProgress = targetDayCalories > 0 ? Math.min((totalCalories / targetDayCalories) * 100, 100) : 0;
+  const proteinTarget = 150; // Default protein target
+  const proteinProgress = Math.min((totalProtein / proteinTarget) * 100, 100);
 
   return (
     <div className="space-y-4">
-      <Card className="bg-gradient-to-br from-orange-500 to-red-500 text-white border-0 shadow-sm rounded-lg">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base font-medium flex items-center gap-2">
-            <Flame className="w-4 h-4" />
+      {/* Today's Summary */}
+      <Card className="bg-gradient-to-br from-orange-500 to-red-500 text-white border-0 shadow-lg rounded-xl">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg font-semibold flex items-center gap-2">
+            <Flame className="w-5 h-5" />
             Today's Summary
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div>
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-sm opacity-90">Calories</span>
-                <span className="text-sm opacity-90">{Math.round(calorieProgress)}%</span>
-              </div>
-              <div className="w-full bg-white/20 rounded-full h-2">
-                <div 
-                  className="bg-white rounded-full h-2 transition-all duration-300"
-                  style={{ width: `${Math.min(calorieProgress, 100)}%` }}
-                />
-              </div>
-              <div className="flex justify-between text-sm mt-1">
-                <span className="font-medium">{totalCalories}</span>
-                <span>{targetDayCalories}</span>
-              </div>
+        <CardContent className="space-y-4">
+          <div>
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-medium opacity-90">Calories</span>
+              <span className="text-sm font-medium opacity-90">{Math.round(calorieProgress)}%</span>
+            </div>
+            <Progress value={calorieProgress} className="h-2 bg-white/20" />
+            <div className="flex justify-between text-sm mt-2 font-medium">
+              <span>{totalCalories}</span>
+              <span>{targetDayCalories}</span>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-sm rounded-lg">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base font-medium flex items-center gap-2">
-            <Target className="w-4 h-4" />
+      {/* Protein Goal */}
+      <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-lg rounded-xl">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg font-semibold flex items-center gap-2">
+            <Target className="w-5 h-5" />
             Protein Goal
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center">
-            <div className="text-xl font-medium">{totalProtein.toFixed(1)}g</div>
-            <div className="text-sm opacity-90">Total Protein</div>
+          <div className="text-center space-y-2">
+            <div className="text-2xl font-bold">{totalProtein.toFixed(1)}g</div>
+            <div className="text-sm opacity-90">of {proteinTarget}g target</div>
+            <Progress value={proteinProgress} className="h-2 bg-white/20" />
           </div>
         </CardContent>
       </Card>
 
-      <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white border-0 shadow-sm rounded-lg">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base font-medium flex items-center gap-2">
-            <Utensils className="w-4 h-4" />
+      {/* Meals Today */}
+      <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white border-0 shadow-lg rounded-xl">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg font-semibold flex items-center gap-2">
+            <Utensils className="w-5 h-5" />
             Meals Today
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center">
-            <div className="text-xl font-medium">{todaysMeals.length}</div>
+          <div className="text-center space-y-2">
+            <div className="text-2xl font-bold">{todaysMeals.length}</div>
             <div className="text-sm opacity-90">Planned Meals</div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Quick Stats */}
+      <Card className="bg-white border border-gray-200 shadow-sm rounded-xl">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg font-semibold flex items-center gap-2 text-gray-900">
+            <TrendingUp className="w-5 h-5 text-blue-600" />
+            Quick Stats
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-gray-600">Avg per meal</span>
+            <span className="font-medium text-gray-900">
+              {todaysMeals.length > 0 ? Math.round(totalCalories / todaysMeals.length) : 0} cal
+            </span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-gray-600">Remaining</span>
+            <span className="font-medium text-gray-900">
+              {Math.max(0, targetDayCalories - totalCalories)} cal
+            </span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-gray-600">Progress</span>
+            <span className="font-medium text-green-600">
+              {Math.round(calorieProgress)}%
+            </span>
           </div>
         </CardContent>
       </Card>

@@ -15,6 +15,9 @@ import MealExchangeDialog from "./MealExchangeDialog";
 import SnackPickerDialog from "./SnackPickerDialog";
 import MealPlanAIDialog from "./MealPlanAIDialog";
 import { toast } from "sonner";
+import { Card, CardContent } from "@/components/ui/card";
+import { ChefHat, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const MealPlanPageRefactored = () => {
   const { t, isRTL } = useLanguage();
@@ -79,13 +82,13 @@ const MealPlanPageRefactored = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       <MealPlanLoadingBackdrop 
         isLoading={mealPlanState.isGenerating} 
         message="Generating your meal plan..."
       />
       
-      <div className="max-w-7xl mx-auto p-6 space-y-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         {/* Header */}
         <MealPlanHeader
           weekStartDate={mealPlanState.weekStartDate}
@@ -98,19 +101,21 @@ const MealPlanPageRefactored = () => {
         />
 
         {mealPlanState.currentWeekPlan ? (
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
             {/* Sidebar Stats */}
-            <div className="lg:col-span-1">
-              <StatsSidebar
-                todaysMeals={mealPlanState.todaysMeals || []}
-                totalCalories={mealPlanState.totalCalories}
-                totalProtein={mealPlanState.totalProtein}
-                targetDayCalories={mealPlanState.targetDayCalories}
-              />
+            <div className="lg:col-span-1 order-2 lg:order-1">
+              <div className="sticky top-6">
+                <StatsSidebar
+                  todaysMeals={mealPlanState.todaysMeals || []}
+                  totalCalories={mealPlanState.totalCalories}
+                  totalProtein={mealPlanState.totalProtein}
+                  targetDayCalories={mealPlanState.targetDayCalories}
+                />
+              </div>
             </div>
 
             {/* Main Content */}
-            <div className="lg:col-span-3 space-y-6">
+            <div className="lg:col-span-4 order-1 lg:order-2 space-y-6">
               {/* Day Tabs */}
               <DayTabs
                 weekStartDate={mealPlanState.weekStartDate}
@@ -137,13 +142,22 @@ const MealPlanPageRefactored = () => {
             </div>
           </div>
         ) : (
-          <MealGrid
-            meals={[]}
-            onShowRecipe={mealPlanState.handleShowRecipe}
-            onExchangeMeal={mealPlanState.handleExchangeMeal}
-            onAddSnack={() => handleAddSnack(1)}
-            dayNumber={1}
-          />
+          <Card className="p-12 text-center bg-white border border-gray-100 shadow-sm rounded-xl">
+            <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl flex items-center justify-center">
+              <ChefHat className="w-12 h-12 text-blue-600" />
+            </div>
+            <h3 className="text-2xl font-semibold text-gray-900 mb-3">No Meal Plan Yet</h3>
+            <p className="text-gray-600 mb-6 max-w-md mx-auto">
+              Generate your personalized meal plan to get started with healthy eating habits
+            </p>
+            <Button 
+              onClick={() => mealPlanState.setShowAIDialog(true)}
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              <Sparkles className="w-5 h-5 mr-2" />
+              Generate Meal Plan
+            </Button>
+          </Card>
         )}
       </div>
 
