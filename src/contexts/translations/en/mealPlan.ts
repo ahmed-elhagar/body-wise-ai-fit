@@ -1,4 +1,3 @@
-
 export const mealPlan = {
   // Core functionality
   title: "Meal Plan",
@@ -119,6 +118,13 @@ export const mealPlan = {
     cancel: "Cancel",
     targetReached: "Daily target reached!",
     targetReachedDesc: "You've reached your calorie goal for today. Great job!",
-    close: "Close"
+    close: "Close",
+    analyzing: "Analyzing your nutrition needs...",
+    creating: "Creating perfect snack...",
+    saving: "Saving to your meal plan...",
+    pleaseWait: "Please wait while we create the perfect snack for you...",
+    error: "Error generating snack",
+    failed: "Failed to generate snack",
+    notEnoughCalories: "Not enough calories remaining for a snack"
   }
 } as const;

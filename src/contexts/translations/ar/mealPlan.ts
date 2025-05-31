@@ -1,4 +1,3 @@
-
 export const mealPlan = {
   // Core functionality
   title: "خطة الوجبات",
@@ -119,6 +118,13 @@ export const mealPlan = {
     cancel: "إلغاء",
     targetReached: "تم الوصول للهدف اليومي!",
     targetReachedDesc: "لقد وصلت لهدف السعرات الحرارية اليوم. عمل رائع!",
-    close: "إغلاق"
+    close: "إغلاق",
+    analyzing: "جارٍ تحليل احتياجاتك الغذائية...",
+    creating: "جارٍ إنشاء الوجبة الخفيفة المثالية...",
+    saving: "جارٍ حفظ خطة وجباتك...",
+    pleaseWait: "يرجى الانتظار بينما ننشئ الوجبة الخفيفة المثالية لك...",
+    error: "خطأ في إنشاء الوجبة الخفيفة",
+    failed: "فشل في إنشاء الوجبة الخفيفة",
+    notEnoughCalories: "لا توجد سعرات حرارية كافية متبقية للوجبة الخفيفة"
   }
 } as const;

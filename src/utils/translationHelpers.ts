@@ -1,52 +1,61 @@
 
-import { useLanguage } from '@/contexts/LanguageContext';
-import { mealPlan as enMealPlan } from '@/contexts/translations/en/mealPlan';
-import { mealPlan as arMealPlan } from '@/contexts/translations/ar/mealPlan';
+import { useLanguage } from "@/contexts/LanguageContext";
 
-// Translation mappings for direct access
-const translations = {
-  en: { mealPlan: enMealPlan },
-  ar: { mealPlan: arMealPlan }
-};
-
-export const useUnifiedTranslation = () => {
-  const { language } = useLanguage();
-
-  const t = (key: string): string => {
-    try {
-      // Split the key to get namespace and actual key
-      const [namespace, ...keyParts] = key.split('.');
-      const actualKey = keyParts.join('.');
-      
-      // Access translation directly from our structure
-      if (namespace === 'mealPlan' && translations[language as keyof typeof translations]) {
-        const translation = translations[language as keyof typeof translations].mealPlan[actualKey as keyof typeof enMealPlan];
-        return translation || actualKey;
-      }
-      
-      return actualKey;
-    } catch (error) {
-      console.warn(`Translation not found for key: ${key}`);
-      return key;
-    }
-  };
-
-  return { t, language };
-};
-
-// Helper for meal plan specific translations
 export const useMealPlanTranslation = () => {
-  const { language } = useLanguage();
+  const { t } = useLanguage();
   
-  const mealPlanT = (key: keyof typeof enMealPlan): string => {
-    try {
-      const translation = translations[language as keyof typeof translations]?.mealPlan[key];
-      return translation || key;
-    } catch (error) {
-      console.warn(`Meal plan translation not found for key: ${key}`);
-      return key;
+  const mealPlanT = (key: string): string => {
+    const value = t(`mealPlan.${key}`);
+    // Handle nested objects like addSnackDialog
+    if (typeof value === 'object' && value !== null) {
+      return JSON.stringify(value);
     }
+    return typeof value === 'string' ? value : key;
   };
 
-  return { mealPlanT, language };
+  return { mealPlanT };
+};
+
+export const useGeneralTranslation = () => {
+  const { t } = useLanguage();
+  
+  const generalT = (key: string): string => {
+    const value = t(`general.${key}`);
+    return typeof value === 'string' ? value : key;
+  };
+
+  return { generalT };
+};
+
+export const useAuthTranslation = () => {
+  const { t } = useLanguage();
+  
+  const authT = (key: string): string => {
+    const value = t(`auth.${key}`);
+    return typeof value === 'string' ? value : key;
+  };
+
+  return { authT };
+};
+
+export const useProfileTranslation = () => {
+  const { t } = useLanguage();
+  
+  const profileT = (key: string): string => {
+    const value = t(`profile.${key}`);
+    return typeof value === 'string' ? value : key;
+  };
+
+  return { profileT };
+};
+
+export const useWorkoutTranslation = () => {
+  const { t } = useLanguage();
+  
+  const workoutT = (key: string): string => {
+    const value = t(`workout.${key}`);
+    return typeof value === 'string' ? value : key;
+  };
+
+  return { workoutT };
 };

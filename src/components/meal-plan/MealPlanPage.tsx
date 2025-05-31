@@ -2,13 +2,13 @@
 import { useState } from "react";
 import { useMealPlanPage } from "@/hooks/useMealPlanPage";
 import { Card } from "@/components/ui/card";
-import MealPlanHeader from "./MealPlanHeader";
-import NavigationSection from "./NavigationSection";
+import CompactNavigationBar from "./CompactNavigationBar";
+import EnhancedMealPlanHeader from "./EnhancedMealPlanHeader";
 import DayOverview from "./DayOverview";
 import WeeklyMealGrid from "./WeeklyMealGrid";
-import EnhancedActionBar from "./EnhancedActionBar";
-import EnhancedRecipeDialog from "./EnhancedRecipeDialog";
 import EmptyWeekState from "./EmptyWeekState";
+import EnhancedRecipeDialog from "./EnhancedRecipeDialog";
+import EnhancedAddSnackDialog from "./EnhancedAddSnackDialog";
 import MealPlanDialogs from "../MealPlanDialogs";
 import { ErrorBoundary } from "../ErrorBoundary";
 
@@ -73,7 +73,6 @@ const MealPlanPage = () => {
   };
 
   const handleShuffle = () => {
-    // Implement shuffle functionality
     handleRegeneratePlan();
   };
 
@@ -96,39 +95,32 @@ const MealPlanPage = () => {
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-gradient-to-br from-fitness-primary-25 via-white to-fitness-accent-25">
-        <div className="container mx-auto px-4 py-6 space-y-6">
-          {/* Header with Week Navigation and Actions */}
-          <MealPlanHeader
-            weekStartDate={weekStartDate}
-            currentWeekOffset={currentWeekOffset}
-            onWeekChange={setCurrentWeekOffset}
+        <div className="container mx-auto px-4 py-6 space-y-4">
+          {/* Enhanced Header with Actions Dropdown */}
+          <EnhancedMealPlanHeader
             onGenerateAI={() => setShowAIDialog(true)}
             onShuffle={handleShuffle}
+            onAddSnack={handleAddSnack}
+            onShowShoppingList={handleShowShoppingList}
             isGenerating={isGenerating}
             hasWeeklyPlan={!!currentWeekPlan?.weeklyPlan}
+            totalCalories={totalCalories}
+            totalProtein={totalProtein}
+            targetDayCalories={targetDayCalories}
+            mealsCount={dailyMeals?.length || 0}
+            selectedDayNumber={selectedDayNumber}
           />
 
-          {/* Navigation Section with Day/Week Toggle and Day Selector */}
+          {/* Compact Navigation Bar */}
           {currentWeekPlan?.weeklyPlan && (
-            <NavigationSection
+            <CompactNavigationBar
               weekStartDate={weekStartDate}
               selectedDayNumber={selectedDayNumber}
               onDayChange={setSelectedDayNumber}
               viewMode={viewMode}
               onViewModeChange={setViewMode}
-            />
-          )}
-
-          {/* Enhanced Action Bar with Stats and Actions */}
-          {currentWeekPlan?.weeklyPlan && (
-            <EnhancedActionBar
-              onAddSnack={handleAddSnack}
-              onShowShoppingList={handleShowShoppingList}
-              totalCalories={totalCalories}
-              totalProtein={totalProtein}
-              targetDayCalories={targetDayCalories}
-              mealsCount={dailyMeals?.length || 0}
-              selectedDayNumber={selectedDayNumber}
+              currentWeekOffset={currentWeekOffset}
+              onWeekChange={setCurrentWeekOffset}
             />
           )}
 
@@ -175,6 +167,17 @@ const MealPlanPage = () => {
             onRecipeGenerated={handleRecipeGenerated}
           />
 
+          {/* Enhanced Add Snack Dialog */}
+          <EnhancedAddSnackDialog
+            isOpen={showAddSnackDialog}
+            onClose={() => setShowAddSnackDialog(false)}
+            selectedDay={selectedDayNumber}
+            weeklyPlanId={currentWeekPlan?.weeklyPlan?.id || null}
+            onSnackAdded={refetch}
+            currentDayCalories={totalCalories}
+            targetDayCalories={targetDayCalories}
+          />
+
           {/* All Other Dialogs */}
           <MealPlanDialogs
             showAIDialog={showAIDialog}
@@ -184,8 +187,8 @@ const MealPlanPage = () => {
             onGenerateAI={handleGenerateAIPlan}
             isGenerating={isGenerating}
             
-            showAddSnackDialog={showAddSnackDialog}
-            onCloseAddSnackDialog={() => setShowAddSnackDialog(false)}
+            showAddSnackDialog={false}
+            onCloseAddSnackDialog={() => {}}
             selectedDay={selectedDayNumber}
             weeklyPlanId={currentWeekPlan?.weeklyPlan?.id || null}
             onSnackAdded={refetch}
