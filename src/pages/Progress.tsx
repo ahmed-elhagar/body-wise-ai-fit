@@ -1,9 +1,10 @@
+
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, Target, Calendar, Activity, Scale, Goal, Trophy, Brain } from "lucide-react";
+import { TrendingUp, Target, Scale, Goal, Trophy, Brain } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import WeightStatsCards from "@/components/weight/WeightStatsCards";
@@ -18,10 +19,12 @@ import TrendAnalysis from "@/components/progress/TrendAnalysis";
 import { useWeightTracking } from "@/hooks/useWeightTracking";
 import { useGoals } from "@/hooks/useGoals";
 import { useProfile } from "@/hooks/useProfile";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Progress = () => {
   const { tab } = useParams();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const { weightEntries, isLoading: weightLoading } = useWeightTracking();
   const { getMacroGoals } = useGoals();
   const { profile } = useProfile();
@@ -42,61 +45,15 @@ const Progress = () => {
     ? latestWeight.weight / Math.pow(profile.height / 100, 2)
     : null;
 
-  const getBMICategory = (bmi: number) => {
-    if (bmi < 18.5) return { label: 'Underweight', color: 'bg-blue-100 text-blue-700' };
-    if (bmi < 25) return { label: 'Normal', color: 'bg-green-100 text-green-700' };
-    if (bmi < 30) return { label: 'Overweight', color: 'bg-orange-100 text-orange-700' };
-    return { label: 'Obese', color: 'bg-red-100 text-red-700' };
-  };
-
-  const MacroRing = ({ goal, color }: { goal: any, color: string }) => {
-    const progress = goal ? Math.min((goal.current_value / goal.target_value) * 100, 100) : 0;
-    const isGoldRing = progress >= 90;
-    
-    return (
-      <div className="relative w-16 h-16">
-        <svg className="transform -rotate-90 w-full h-full">
-          <circle
-            cx="32"
-            cy="32"
-            r="28"
-            stroke="currentColor"
-            strokeWidth="4"
-            fill="transparent"
-            className="text-gray-200"
-          />
-          <circle
-            cx="32"
-            cy="32"
-            r="28"
-            stroke={isGoldRing ? "#fbbf24" : color}
-            strokeWidth="4"
-            fill="transparent"
-            strokeDasharray={176}
-            strokeDashoffset={176 - (progress / 100) * 176}
-            className="transition-all duration-300"
-          />
-        </svg>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-xs font-medium text-gray-700">
-            {progress.toFixed(0)}%
-          </span>
-        </div>
-      </div>
-    );
-  };
-
   if (weightLoading) {
     return (
       <ProtectedRoute>
         <Layout>
-          <div className="p-4 md:p-6">
-            <div className="max-w-7xl mx-auto">
-              <div className="animate-pulse space-y-4">
-                <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-                <div className="h-12 bg-gray-200 rounded w-1/2"></div>
-                <div className="h-96 bg-gray-200 rounded"></div>
-              </div>
+          <div className="space-y-6">
+            <div className="animate-pulse space-y-4">
+              <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+              <div className="h-12 bg-gray-200 rounded w-1/2"></div>
+              <div className="h-96 bg-gray-200 rounded"></div>
             </div>
           </div>
         </Layout>
@@ -107,96 +64,94 @@ const Progress = () => {
   return (
     <ProtectedRoute>
       <Layout>
-        <div className="p-4 md:p-6">
-          <div className="max-w-7xl mx-auto space-y-6">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
-                  <TrendingUp className="h-6 w-6 md:h-8 md:w-8 text-blue-600" />
-                  Progress & Analytics
-                </h1>
-                <p className="text-gray-600 mt-1 text-sm md:text-base">
-                  Track your fitness journey with AI-powered insights and comprehensive analytics
-                </p>
-              </div>
-              <ProgressBadges />
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
+                <TrendingUp className="h-6 w-6 md:h-8 md:w-8 text-blue-600" />
+                {t('Progress & Analytics')}
+              </h1>
+              <p className="text-gray-600 mt-1 text-sm md:text-base">
+                {t('Track your fitness journey with AI-powered insights and comprehensive analytics')}
+              </p>
             </div>
-
-            <Tabs value={activeTab} onValueChange={(value) => navigate(`/progress/${value}`)} className="w-full">
-              <TabsList className="grid w-full grid-cols-5 max-w-2xl">
-                <TabsTrigger value="analytics" className="flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4" />
-                  <span className="hidden sm:inline">Analytics</span>
-                </TabsTrigger>
-                <TabsTrigger value="weight" className="flex items-center gap-2">
-                  <Scale className="h-4 w-4" />
-                  <span className="hidden sm:inline">Weight</span>
-                </TabsTrigger>
-                <TabsTrigger value="goals" className="flex items-center gap-2">
-                  <Goal className="h-4 w-4" />
-                  <span className="hidden sm:inline">Goals</span>
-                </TabsTrigger>
-                <TabsTrigger value="achievements" className="flex items-center gap-2">
-                  <Trophy className="h-4 w-4" />
-                  <span className="hidden sm:inline">Badges</span>
-                </TabsTrigger>
-                <TabsTrigger value="trends" className="flex items-center gap-2">
-                  <Brain className="h-4 w-4" />
-                  <span className="hidden sm:inline">AI Trends</span>
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="analytics" className="space-y-6 mt-6">
-                <ProgressAnalytics weightEntries={weightEntries} macroGoals={macroGoals} />
-              </TabsContent>
-
-              <TabsContent value="weight" className="space-y-6 mt-6">
-                <WeightStatsCards weightEntries={weightEntries} />
-
-                <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                  <div className="xl:col-span-2">
-                    <WeightProgressChart weightEntries={weightEntries} />
-                  </div>
-                  <div className="xl:col-span-1">
-                    <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg h-fit">
-                      <h3 className="text-lg font-semibold mb-4">Add Weight Entry</h3>
-                      <WeightEntryForm />
-                    </Card>
-                  </div>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="goals" className="space-y-6 mt-6">
-                <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Goal className="h-5 w-5 text-blue-600" />
-                      Fitness Goals Management
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <EnhancedGoalsForm
-                      formData={{}}
-                      updateFormData={() => {}}
-                      handleArrayInput={() => {}}
-                      onSave={() => Promise.resolve(true)}
-                      isUpdating={false}
-                      validationErrors={{}}
-                    />
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="achievements" className="space-y-6 mt-6">
-                <AchievementBadges />
-              </TabsContent>
-
-              <TabsContent value="trends" className="space-y-6 mt-6">
-                <TrendAnalysis />
-              </TabsContent>
-            </Tabs>
+            <ProgressBadges />
           </div>
+
+          <Tabs value={activeTab} onValueChange={(value) => navigate(`/progress/${value}`)} className="w-full">
+            <TabsList className="grid w-full grid-cols-5 max-w-2xl">
+              <TabsTrigger value="analytics" className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4" />
+                <span className="hidden sm:inline">{t('Analytics')}</span>
+              </TabsTrigger>
+              <TabsTrigger value="weight" className="flex items-center gap-2">
+                <Scale className="h-4 w-4" />
+                <span className="hidden sm:inline">{t('Weight')}</span>
+              </TabsTrigger>
+              <TabsTrigger value="goals" className="flex items-center gap-2">
+                <Goal className="h-4 w-4" />
+                <span className="hidden sm:inline">{t('Goals')}</span>
+              </TabsTrigger>
+              <TabsTrigger value="achievements" className="flex items-center gap-2">
+                <Trophy className="h-4 w-4" />
+                <span className="hidden sm:inline">{t('Badges')}</span>
+              </TabsTrigger>
+              <TabsTrigger value="trends" className="flex items-center gap-2">
+                <Brain className="h-4 w-4" />
+                <span className="hidden sm:inline">{t('AI Trends')}</span>
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="analytics" className="space-y-6 mt-6">
+              <ProgressAnalytics weightEntries={weightEntries} macroGoals={macroGoals} />
+            </TabsContent>
+
+            <TabsContent value="weight" className="space-y-6 mt-6">
+              <WeightStatsCards weightEntries={weightEntries} />
+
+              <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                <div className="xl:col-span-2">
+                  <WeightProgressChart weightEntries={weightEntries} />
+                </div>
+                <div className="xl:col-span-1">
+                  <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg h-fit">
+                    <h3 className="text-lg font-semibold mb-4">{t('Add Weight Entry')}</h3>
+                    <WeightEntryForm />
+                  </Card>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="goals" className="space-y-6 mt-6">
+              <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Goal className="h-5 w-5 text-blue-600" />
+                    {t('Fitness Goals Management')}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <EnhancedGoalsForm
+                    formData={{}}
+                    updateFormData={() => {}}
+                    handleArrayInput={() => {}}
+                    onSave={() => Promise.resolve(true)}
+                    isUpdating={false}
+                    validationErrors={{}}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="achievements" className="space-y-6 mt-6">
+              <AchievementBadges />
+            </TabsContent>
+
+            <TabsContent value="trends" className="space-y-6 mt-6">
+              <TrendAnalysis />
+            </TabsContent>
+          </Tabs>
         </div>
       </Layout>
     </ProtectedRoute>
