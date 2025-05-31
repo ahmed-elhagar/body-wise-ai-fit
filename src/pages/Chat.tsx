@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
@@ -31,6 +32,31 @@ const Chat = () => {
   const [retryCount, setRetryCount] = useState(0);
   const [showDebugInfo, setShowDebugInfo] = useState(false);
 
+  // Helper function to get coach display name - moved to top
+  const getCoachDisplayName = (coach: CoachInfo) => {
+    if (coach.coach_profile?.first_name || coach.coach_profile?.last_name) {
+      const firstName = coach.coach_profile.first_name || '';
+      const lastName = coach.coach_profile.last_name || '';
+      return `${firstName} ${lastName}`.trim();
+    }
+    return 'Your Coach';
+  };
+
+  // Helper function to get coach initials - moved to top
+  const getCoachInitials = (coach: CoachInfo) => {
+    const firstName = coach.coach_profile?.first_name;
+    const lastName = coach.coach_profile?.last_name;
+    
+    if (firstName && lastName) {
+      return `${firstName[0]}${lastName[0]}`.toUpperCase();
+    } else if (firstName) {
+      return firstName[0].toUpperCase();
+    } else if (lastName) {
+      return lastName[0].toUpperCase();
+    }
+    return 'C';
+  };
+
   console.log('Chat page - Debug info:', {
     userId: user?.id,
     isRoleCoach,
@@ -46,31 +72,6 @@ const Chat = () => {
       name: getCoachDisplayName(c)
     }))
   });
-
-  // Helper function to get coach display name
-  const getCoachDisplayName = (coach: CoachInfo) => {
-    if (coach.coach_profile?.first_name || coach.coach_profile?.last_name) {
-      const firstName = coach.coach_profile.first_name || '';
-      const lastName = coach.coach_profile.last_name || '';
-      return `${firstName} ${lastName}`.trim();
-    }
-    return 'Your Coach';
-  };
-
-  // Helper function to get coach initials
-  const getCoachInitials = (coach: CoachInfo) => {
-    const firstName = coach.coach_profile?.first_name;
-    const lastName = coach.coach_profile?.last_name;
-    
-    if (firstName && lastName) {
-      return `${firstName[0]}${lastName[0]}`.toUpperCase();
-    } else if (firstName) {
-      return firstName[0].toUpperCase();
-    } else if (lastName) {
-      return lastName[0].toUpperCase();
-    }
-    return 'C';
-  };
 
   // Show selected coach chat directly
   if (selectedCoach) {
