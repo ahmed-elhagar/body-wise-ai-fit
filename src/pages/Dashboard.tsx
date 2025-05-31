@@ -1,4 +1,3 @@
-
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -134,6 +133,7 @@ const Dashboard = () => {
                 handleViewWeight={handleViewWeight}
                 handleViewProgress={handleViewProgress}
                 handleViewProfile={handleViewProfile}
+                handleViewGoals={() => navigate('/goals')}
               />
             </div>
 
