@@ -1,84 +1,14 @@
 
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import { Calendar, TrendingUp, Activity, Scale, Flame } from "lucide-react";
 import { useState } from "react";
+import { chartConfig } from "./interactive-chart/ChartConfig";
+import ChartTypeSelector from "./interactive-chart/ChartTypeSelector";
+import ChartRenderer from "./interactive-chart/ChartRenderer";
+import ChartLegend from "./interactive-chart/ChartLegend";
 
 const InteractiveProgressChart = () => {
   const [activeChart, setActiveChart] = useState<'weight' | 'calories' | 'workouts'>('weight');
-
-  // Mock data - in real app, this would come from user's actual data
-  const weightData = [
-    { date: '2024-01-01', value: 75, target: 70 },
-    { date: '2024-01-08', value: 74.5, target: 70 },
-    { date: '2024-01-15', value: 74.2, target: 70 },
-    { date: '2024-01-22', value: 73.8, target: 70 },
-    { date: '2024-01-29', value: 73.2, target: 70 },
-    { date: '2024-02-05', value: 72.8, target: 70 },
-    { date: '2024-02-12', value: 72.5, target: 70 },
-  ];
-
-  const calorieData = [
-    { date: '2024-02-06', consumed: 2100, target: 2200, burned: 2350 },
-    { date: '2024-02-07', consumed: 1950, target: 2200, burned: 2100 },
-    { date: '2024-02-08', consumed: 2250, target: 2200, burned: 2400 },
-    { date: '2024-02-09', consumed: 2050, target: 2200, burned: 2200 },
-    { date: '2024-02-10', consumed: 1900, target: 2200, burned: 2150 },
-    { date: '2024-02-11', consumed: 2150, target: 2200, burned: 2300 },
-    { date: '2024-02-12', consumed: 1847, target: 2200, burned: 2180 },
-  ];
-
-  const workoutData = [
-    { date: '2024-02-06', duration: 45, calories: 320 },
-    { date: '2024-02-07', duration: 0, calories: 0 },
-    { date: '2024-02-08', duration: 60, calories: 450 },
-    { date: '2024-02-09', duration: 30, calories: 210 },
-    { date: '2024-02-10', duration: 50, calories: 380 },
-    { date: '2024-02-11', duration: 0, calories: 0 },
-    { date: '2024-02-12', duration: 40, calories: 290 },
-  ];
-
-  const chartConfig = {
-    weight: {
-      title: 'Weight Progress',
-      icon: Scale,
-      color: '#3b82f6',
-      data: weightData,
-      dataKey: 'value',
-      targetKey: 'target'
-    },
-    calories: {
-      title: 'Calorie Tracking',
-      icon: Flame,
-      color: '#f97316',
-      data: calorieData,
-      dataKey: 'consumed',
-      targetKey: 'target'
-    },
-    workouts: {
-      title: 'Workout Duration',
-      icon: Activity,
-      color: '#8b5cf6',
-      data: workoutData,
-      dataKey: 'duration',
-      targetKey: null
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  };
-
-  const formatTooltip = (value: any, name: string) => {
-    if (name === 'value') return [`${value} kg`, 'Weight'];
-    if (name === 'target') return [`${value} kg`, 'Target'];
-    if (name === 'consumed') return [`${value} kcal`, 'Consumed'];
-    if (name === 'burned') return [`${value} kcal`, 'Burned'];
-    if (name === 'duration') return [`${value} min`, 'Duration'];
-    return [value, name];
-  };
 
   const currentConfig = chartConfig[activeChart];
 
@@ -93,177 +23,19 @@ const InteractiveProgressChart = () => {
           </Badge>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          {Object.entries(chartConfig).map(([key, config]) => (
-            <Button
-              key={key}
-              variant={activeChart === key ? "default" : "outline"}
-              size="sm"
-              onClick={() => setActiveChart(key as any)}
-              className="text-xs flex-1 sm:flex-none min-w-0"
-            >
-              <config.icon className="w-3 h-3 mr-1 flex-shrink-0" />
-              <span className="truncate">{config.title.split(' ')[0]}</span>
-            </Button>
-          ))}
-        </div>
+        <ChartTypeSelector 
+          activeChart={activeChart} 
+          onChartChange={setActiveChart} 
+        />
       </div>
 
-      <div className="h-48 sm:h-64 lg:h-80 w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          {activeChart === 'weight' ? (
-            <LineChart data={currentConfig.data} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis 
-                dataKey="date" 
-                tickFormatter={formatDate}
-                stroke="#6b7280"
-                fontSize={10}
-                interval="preserveStartEnd"
-              />
-              <YAxis 
-                stroke="#6b7280"
-                fontSize={10}
-                domain={['dataMin - 2', 'dataMax + 1']}
-              />
-              <Tooltip 
-                formatter={formatTooltip}
-                labelFormatter={(value) => formatDate(value)}
-                contentStyle={{
-                  backgroundColor: 'white',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                  fontSize: '12px'
-                }}
-              />
-              <Line 
-                type="monotone" 
-                dataKey="value" 
-                stroke={currentConfig.color}
-                strokeWidth={2}
-                dot={{ fill: currentConfig.color, strokeWidth: 2, r: 3 }}
-                activeDot={{ r: 5, stroke: currentConfig.color, strokeWidth: 2 }}
-              />
-              <Line 
-                type="monotone" 
-                dataKey="target" 
-                stroke="#dc2626"
-                strokeWidth={2}
-                strokeDasharray="5 5"
-                dot={false}
-              />
-            </LineChart>
-          ) : activeChart === 'calories' ? (
-            <AreaChart data={currentConfig.data} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis 
-                dataKey="date" 
-                tickFormatter={formatDate}
-                stroke="#6b7280"
-                fontSize={10}
-                interval="preserveStartEnd"
-              />
-              <YAxis 
-                stroke="#6b7280"
-                fontSize={10}
-              />
-              <Tooltip 
-                formatter={formatTooltip}
-                labelFormatter={(value) => formatDate(value)}
-                contentStyle={{
-                  backgroundColor: 'white',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                  fontSize: '12px'
-                }}
-              />
-              <Area 
-                type="monotone" 
-                dataKey="consumed" 
-                stackId="1"
-                stroke={currentConfig.color}
-                fill={currentConfig.color}
-                fillOpacity={0.6}
-              />
-              <Area 
-                type="monotone" 
-                dataKey="burned" 
-                stackId="2"
-                stroke="#10b981"
-                fill="#10b981"
-                fillOpacity={0.4}
-              />
-            </AreaChart>
-          ) : (
-            <BarChart data={currentConfig.data} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis 
-                dataKey="date" 
-                tickFormatter={formatDate}
-                stroke="#6b7280"
-                fontSize={10}
-                interval="preserveStartEnd"
-              />
-              <YAxis 
-                stroke="#6b7280"
-                fontSize={10}
-              />
-              <Tooltip 
-                formatter={formatTooltip}
-                labelFormatter={(value) => formatDate(value)}
-                contentStyle={{
-                  backgroundColor: 'white',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                  fontSize: '12px'
-                }}
-              />
-              <Bar 
-                dataKey="duration" 
-                fill={currentConfig.color}
-                radius={[4, 4, 0, 0]}
-              />
-            </BarChart>
-          )}
-        </ResponsiveContainer>
-      </div>
+      <ChartRenderer 
+        activeChart={activeChart}
+        data={currentConfig.data}
+        color={currentConfig.color}
+      />
 
-      {/* Chart Legend */}
-      <div className="mt-3 sm:mt-4 flex justify-center gap-4 sm:gap-6 text-xs sm:text-sm flex-wrap">
-        {activeChart === 'weight' && (
-          <>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-              <span className="text-gray-600">Current Weight</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-1 bg-red-600 border-dashed border border-red-600"></div>
-              <span className="text-gray-600">Target Weight</span>
-            </div>
-          </>
-        )}
-        {activeChart === 'calories' && (
-          <>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-              <span className="text-gray-600">Consumed</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-              <span className="text-gray-600">Burned</span>
-            </div>
-          </>
-        )}
-        {activeChart === 'workouts' && (
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
-            <span className="text-gray-600">Duration (minutes)</span>
-          </div>
-        )}
-      </div>
+      <ChartLegend activeChart={activeChart} />
     </Card>
   );
 };
