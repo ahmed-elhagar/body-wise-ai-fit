@@ -27,17 +27,17 @@ const DayTabs = ({
   ];
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-2 mb-6">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-2 mb-4 lg:mb-6">
       <Tabs value={selectedDayNumber.toString()} onValueChange={(value) => onDayChange(parseInt(value))}>
         <TabsList className="grid w-full grid-cols-7 bg-gray-50 rounded-lg p-1">
           {weekDays.map((day) => (
             <TabsTrigger 
               key={day.number} 
               value={day.number.toString()}
-              className="flex flex-col py-3 px-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg font-medium transition-all"
+              className="flex flex-col py-2 lg:py-3 px-1 lg:px-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg font-medium transition-all"
             >
-              <span className="text-xs mb-1 opacity-70">{day.name}</span>
-              <span className="text-lg font-bold">{format(day.date, 'd')}</span>
+              <span className="text-xs opacity-70">{day.name}</span>
+              <span className="text-sm lg:text-lg font-bold">{format(day.date, 'd')}</span>
             </TabsTrigger>
           ))}
         </TabsList>
