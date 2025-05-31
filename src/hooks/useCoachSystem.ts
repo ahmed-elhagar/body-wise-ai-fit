@@ -102,9 +102,10 @@ export const useCoachSystem = () => {
       }
     },
     enabled: !!user?.id,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    retry: 3,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    staleTime: 1000 * 60 * 10, // 10 minutes - longer stale time
+    refetchOnWindowFocus: false, // Disable refetch on window focus
+    retry: 2, // Reduce retry attempts
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000), // Shorter retry delays
   });
 
   // Get trainees for current user (if they are a coach)
@@ -176,9 +177,10 @@ export const useCoachSystem = () => {
       }
     },
     enabled: !!user?.id && (isRoleCoach || isAdmin),
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    retry: 3,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    staleTime: 1000 * 60 * 10, // 10 minutes - longer stale time
+    refetchOnWindowFocus: false, // Disable refetch on window focus
+    retry: 2, // Reduce retry attempts
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000), // Shorter retry delays
   });
 
   // Assign trainee mutation

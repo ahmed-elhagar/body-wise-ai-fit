@@ -45,8 +45,9 @@ export const useSubscription = () => {
       return data as Subscription | null;
     },
     enabled: !!user?.id,
-    staleTime: 1000 * 5, // 5 seconds - refresh frequently
-    refetchInterval: 2000, // Poll every 2 seconds to catch webhook updates faster
+    staleTime: 1000 * 60 * 5, // 5 minutes - much longer stale time
+    refetchInterval: false, // Disable automatic polling
+    refetchOnWindowFocus: false, // Disable refetch on window focus
   });
 
   const createCheckoutSession = useMutation({
@@ -83,19 +84,18 @@ export const useSubscription = () => {
         // Open Stripe checkout in a new tab
         window.open(data.url, '_blank');
         
-        // Start aggressive polling while checkout is in progress
+        // Much less aggressive polling - only check every 10 seconds for 2 minutes
         const pollInterval = setInterval(() => {
           console.log('useSubscription - Polling for updates');
           refetch();
-          // Refresh role data as well
           queryClient.invalidateQueries({ queryKey: ['user-role'] });
-        }, 1000); // Poll every second during checkout
+        }, 10000); // Poll every 10 seconds instead of 1 second
         
-        // Stop aggressive polling after 5 minutes
+        // Stop polling after 2 minutes instead of 5
         setTimeout(() => {
-          console.log('useSubscription - Stopping aggressive polling');
+          console.log('useSubscription - Stopping polling');
           clearInterval(pollInterval);
-        }, 300000);
+        }, 120000); // 2 minutes
       }
     },
     onError: (error) => {

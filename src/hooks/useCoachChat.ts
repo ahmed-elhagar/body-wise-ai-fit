@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -70,8 +71,9 @@ export const useCoachChat = (coachId: string, traineeId: string) => {
       return transformedMessages;
     },
     enabled: !!user?.id && !!coachId && !!traineeId,
-    refetchInterval: 5000,
-    staleTime: 1000,
+    refetchInterval: 30000, // Reduced from 5 seconds to 30 seconds
+    staleTime: 10000, // Increased from 1 second to 10 seconds
+    refetchOnWindowFocus: false, // Disable refetch on window focus
   });
 
   // Create notification for new message
@@ -86,7 +88,7 @@ export const useCoachChat = (coachId: string, traineeId: string) => {
           title: `New message from ${senderName}`,
           message: message.length > 100 ? message.substring(0, 100) + '...' : message,
           type: 'info',
-          action_url: '/chat', // Updated to point to unified chat page
+          action_url: '/chat',
           metadata: {
             chat_type: 'coach_trainee',
             sender_id: user?.id,

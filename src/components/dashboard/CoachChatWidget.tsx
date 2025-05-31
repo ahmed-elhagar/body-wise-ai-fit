@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MessageCircle, ArrowRight, UserCheck, Loader2, AlertCircle } from "lucide-react";
+import { MessageCircle, ArrowRight, UserCheck, Loader2, AlertCircle, RefreshCw } from "lucide-react";
 import { useCoachSystem } from "@/hooks/useCoachSystem";
 import { useUnreadMessagesFromCoach } from "@/hooks/useUnreadMessages";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -16,6 +16,7 @@ const CoachChatWidget = () => {
   const { data: unreadCount = 0 } = useUnreadMessagesFromCoach();
   const { isCoach } = useRole();
   const [showChat, setShowChat] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   console.log('CoachChatWidget - coachInfo:', coachInfo, 'loading:', isLoadingCoachInfo, 'error:', coachInfoError);
 
@@ -43,7 +44,7 @@ const CoachChatWidget = () => {
     );
   }
 
-  // Show error state
+  // Show error state with retry option
   if (coachInfoError) {
     return (
       <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
@@ -56,15 +57,25 @@ const CoachChatWidget = () => {
         <CardContent>
           <div className="text-center py-4">
             <p className="text-red-600 text-sm mb-4">
-              {t('Unable to load coach information')}
+              {retryCount > 2 
+                ? t('Unable to connect to coach system. Please check your internet connection.')
+                : t('Failed to load coach information')
+              }
             </p>
-            <Button 
-              onClick={() => window.location.reload()} 
-              variant="outline" 
-              size="sm"
-            >
-              {t('Refresh Page')}
-            </Button>
+            <div className="flex gap-2 justify-center">
+              <Button 
+                onClick={() => {
+                  setRetryCount(prev => prev + 1);
+                  window.location.reload();
+                }} 
+                variant="outline" 
+                size="sm"
+                disabled={retryCount > 3}
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                {t('Retry')} {retryCount > 0 && `(${retryCount})`}
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -73,7 +84,23 @@ const CoachChatWidget = () => {
 
   // Don't show if no coach assigned
   if (!coachInfo) {
-    return null;
+    return (
+      <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <UserCheck className="h-5 w-5 text-gray-400" />
+            {t('Your Coach')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-4">
+            <p className="text-gray-500 text-sm">
+              {t('No coach assigned yet')}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   if (showChat) {
