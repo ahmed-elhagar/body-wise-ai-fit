@@ -1,0 +1,184 @@
+
+import { format, addDays, isSameDay } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Calendar, Grid3X3, ChevronLeft, ChevronRight, Eye } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+
+interface EnhancedDaySelectorProps {
+  weekStartDate: Date;
+  selectedDayNumber: number;
+  onDayChange: (dayNumber: number) => void;
+  viewMode: 'daily' | 'weekly';
+  onViewModeChange: (mode: 'daily' | 'weekly') => void;
+  currentWeekOffset: number;
+  onWeekChange: (offset: number) => void;
+  dailyMealsCount?: number;
+}
+
+const EnhancedDaySelector = ({
+  weekStartDate,
+  selectedDayNumber,
+  onDayChange,
+  viewMode,
+  onViewModeChange,
+  currentWeekOffset,
+  onWeekChange,
+  dailyMealsCount = 0
+}: EnhancedDaySelectorProps) => {
+  const { t, isRTL } = useLanguage();
+  const today = new Date();
+
+  const days = Array.from({ length: 7 }, (_, index) => {
+    const dayNumber = index + 1;
+    const date = addDays(weekStartDate, index);
+    const isSelected = selectedDayNumber === dayNumber;
+    const isToday = isSameDay(date, today);
+    
+    return {
+      dayNumber,
+      date,
+      isSelected,
+      isToday,
+      dayName: format(date, 'EEE'),
+      dayDate: format(date, 'd'),
+      fullDayName: t(`mealPlan.dayNames.${dayNumber}`)
+    };
+  });
+
+  const isCurrentWeek = currentWeekOffset === 0;
+  const weekEndDate = addDays(weekStartDate, 6);
+
+  const formatWeekRange = (startDate: Date, endDate: Date) => {
+    if (startDate.getMonth() === endDate.getMonth()) {
+      return `${format(startDate, 'MMM d')} - ${format(endDate, 'd, yyyy')}`;
+    }
+    return `${format(startDate, 'MMM d')} - ${format(endDate, 'MMM d, yyyy')}`;
+  };
+
+  return (
+    <Card className="bg-gradient-to-r from-fitness-primary-50 via-white to-fitness-accent-50 border-fitness-primary-200 shadow-lg rounded-2xl">
+      <div className="p-6">
+        {/* Top Row: Week Navigation + View Mode Toggle */}
+        <div className={`flex items-center justify-between mb-6 ${isRTL ? 'flex-row-reverse' : ''}`}>
+          {/* Week Navigation */}
+          <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onWeekChange(currentWeekOffset - 1)}
+              className="h-10 w-10 p-0 border-fitness-primary-300 text-fitness-primary-600 hover:bg-fitness-primary-50 rounded-xl"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </Button>
+            
+            <div className={`text-center min-w-0 ${isRTL ? 'text-right' : 'text-left'}`}>
+              <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                <h2 className="text-lg font-bold text-fitness-primary-800">
+                  {formatWeekRange(weekStartDate, weekEndDate)}
+                </h2>
+                {isCurrentWeek && (
+                  <Badge className="bg-fitness-accent-100 text-fitness-accent-700 border-fitness-accent-200 text-xs px-2 py-1">
+                    {t('mealPlan.currentWeek')}
+                  </Badge>
+                )}
+              </div>
+              <p className="text-sm text-fitness-primary-600 mt-1">
+                {viewMode === 'daily' ? t('mealPlan.dailyView') : t('mealPlan.weeklyView')}
+              </p>
+            </div>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onWeekChange(currentWeekOffset + 1)}
+              className="h-10 w-10 p-0 border-fitness-primary-300 text-fitness-primary-600 hover:bg-fitness-primary-50 rounded-xl"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </Button>
+          </div>
+
+          {/* View Mode Toggle */}
+          <div className="flex bg-white rounded-xl p-1 border-2 border-fitness-primary-200 shadow-sm">
+            <button
+              onClick={() => onViewModeChange('daily')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all text-sm ${
+                viewMode === 'daily'
+                  ? 'bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 text-white shadow-md transform scale-105'
+                  : 'text-fitness-primary-600 hover:text-fitness-primary-700 hover:bg-fitness-primary-50'
+              }`}
+            >
+              <Calendar className="w-4 h-4" />
+              {t('mealPlan.dailyView')}
+            </button>
+            <button
+              onClick={() => onViewModeChange('weekly')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all text-sm ${
+                viewMode === 'weekly'
+                  ? 'bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 text-white shadow-md transform scale-105'
+                  : 'text-fitness-primary-600 hover:text-fitness-primary-700 hover:bg-fitness-primary-50'
+              }`}
+            >
+              <Grid3X3 className="w-4 h-4" />
+              {t('mealPlan.weeklyView')}
+            </button>
+          </div>
+        </div>
+
+        {/* Bottom Row: Day Selector (only show in daily view) */}
+        {viewMode === 'daily' && (
+          <div className="space-y-4">
+            <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <Eye className="w-5 h-5 text-fitness-primary-600" />
+              <h3 className="text-lg font-semibold text-fitness-primary-800">
+                {t('mealPlan.selectDay')}
+              </h3>
+              {dailyMealsCount > 0 && (
+                <Badge className="bg-fitness-accent-100 text-fitness-accent-700 border-fitness-accent-200">
+                  {dailyMealsCount} {t('mealPlan.meals')}
+                </Badge>
+              )}
+            </div>
+            
+            <div className="grid grid-cols-7 gap-2">
+              {days.map(({ dayNumber, date, isSelected, isToday, dayName, dayDate, fullDayName }) => (
+                <button
+                  key={dayNumber}
+                  onClick={() => onDayChange(dayNumber)}
+                  className={`
+                    relative p-3 rounded-xl font-medium transition-all duration-300 text-center group
+                    ${isSelected 
+                      ? 'bg-gradient-to-br from-fitness-primary-500 to-fitness-primary-600 text-white shadow-lg transform scale-105 z-10' 
+                      : 'bg-white text-fitness-primary-600 hover:bg-fitness-primary-50 hover:text-fitness-primary-700 shadow-sm border-2 border-fitness-primary-100 hover:border-fitness-primary-200'
+                    }
+                    ${isToday && !isSelected ? 'ring-2 ring-fitness-accent-300 ring-offset-2' : ''}
+                  `}
+                >
+                  <div className="flex flex-col items-center gap-1">
+                    <span className={`text-xs font-bold ${isSelected ? 'text-white' : 'text-fitness-primary-500'}`}>
+                      {dayName}
+                    </span>
+                    <span className={`text-lg font-bold ${isSelected ? 'text-white' : 'text-fitness-primary-700'}`}>
+                      {dayDate}
+                    </span>
+                    {isToday && (
+                      <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-fitness-accent-200' : 'bg-fitness-accent-500'}`} />
+                    )}
+                  </div>
+                  
+                  {/* Tooltip */}
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-20">
+                    {fullDayName}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </Card>
+  );
+};
+
+export default EnhancedDaySelector;

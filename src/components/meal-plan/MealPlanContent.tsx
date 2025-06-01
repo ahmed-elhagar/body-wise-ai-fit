@@ -2,10 +2,10 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { useMealPlanPage } from "@/hooks/useMealPlanPage";
-import CompactNavigationBar from "./CompactNavigationBar";
+import EnhancedDaySelector from "./EnhancedDaySelector";
 import EnhancedMealPlanHeader from "./EnhancedMealPlanHeader";
 import DayOverview from "./DayOverview";
-import WeeklyMealGrid from "./WeeklyMealGrid";
+import WeeklyView from "./WeeklyView";
 import EmptyWeekState from "./EmptyWeekState";
 import DayOverviewSection from "./DayOverviewSection";
 
@@ -51,13 +51,12 @@ const MealPlanContent = ({
 
   const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
 
-  console.log('🎯 MealPlanContent - Selected day meals:', selectedDayNumber, dailyMeals?.length);
+  console.log('🎯 MealPlanContent - View mode:', viewMode, 'Selected day:', selectedDayNumber, 'Daily meals:', dailyMeals?.length);
 
   const handleShuffle = () => {
     handleRegeneratePlan();
   };
 
-  // Enhanced week change handler with error catching
   const handleWeekChange = (offset: number) => {
     try {
       console.log('🗓️ MealPlanContent - Week change requested:', offset);
@@ -65,6 +64,11 @@ const MealPlanContent = ({
     } catch (error) {
       console.error('❌ MealPlanContent - Week change error:', error);
     }
+  };
+
+  const handleAddSnackForDay = (dayNumber: number) => {
+    setSelectedDayNumber(dayNumber);
+    onShowAddSnackDialog();
   };
 
   if (error) {
@@ -83,7 +87,7 @@ const MealPlanContent = ({
 
   return (
     <>
-      {/* Clean Header Section */}
+      {/* Enhanced Header Section */}
       <EnhancedMealPlanHeader
         onGenerateAI={onShowAIDialog}
         onShuffle={handleShuffle}
@@ -93,9 +97,9 @@ const MealPlanContent = ({
         hasWeeklyPlan={!!currentWeekPlan?.weeklyPlan}
       />
 
-      {/* Compact Navigation Section */}
+      {/* Enhanced Day Selector with View Mode Toggle */}
       {currentWeekPlan?.weeklyPlan && (
-        <CompactNavigationBar
+        <EnhancedDaySelector
           weekStartDate={weekStartDate}
           selectedDayNumber={selectedDayNumber}
           onDayChange={setSelectedDayNumber}
@@ -103,10 +107,11 @@ const MealPlanContent = ({
           onViewModeChange={setViewMode}
           currentWeekOffset={currentWeekOffset}
           onWeekChange={handleWeekChange}
+          dailyMealsCount={dailyMeals?.length || 0}
         />
       )}
 
-      {/* Day Overview Section with Add Snack */}
+      {/* Day Overview Section (only in daily view) */}
       {currentWeekPlan?.weeklyPlan && viewMode === 'daily' && (
         <DayOverviewSection
           selectedDayNumber={selectedDayNumber}
@@ -144,11 +149,14 @@ const MealPlanContent = ({
               weekStartDate={weekStartDate}
             />
           ) : (
-            <WeeklyMealGrid
-              currentWeekPlan={currentWeekPlan}
-              onViewMeal={handleShowRecipe}
-              onExchangeMeal={handleExchangeMeal}
+            <WeeklyView
               weekStartDate={weekStartDate}
+              currentWeekPlan={currentWeekPlan}
+              onSelectDay={setSelectedDayNumber}
+              onSwitchToDaily={() => setViewMode('daily')}
+              onShowRecipe={handleShowRecipe}
+              onExchangeMeal={handleExchangeMeal}
+              onAddSnack={handleAddSnackForDay}
             />
           )}
         </div>
