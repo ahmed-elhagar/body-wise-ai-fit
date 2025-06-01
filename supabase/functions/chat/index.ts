@@ -1,6 +1,7 @@
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { AIService } from "../_shared/aiService.ts";
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 
@@ -28,36 +29,17 @@ serve(async (req) => {
 
     console.log('🤖 Processing chat request with', messages.length, 'messages');
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: messages,
-        temperature: 0.7,
-        max_tokens: 1000,
-      }),
+    // Use the new AI service for chat feature
+    const aiService = new AIService(openAIApiKey);
+    const response = await aiService.generate('chat', {
+      messages: messages,
+      temperature: 0.7,
+      maxTokens: 1000,
     });
 
-    if (!response.ok) {
-      const errorData = await response.text();
-      console.error('OpenAI API error:', response.status, errorData);
-      throw new Error(`OpenAI API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      throw new Error('Invalid response from OpenAI API');
-    }
-
-    const aiResponse = data.choices[0].message.content;
     console.log('✅ AI response generated successfully');
 
-    return new Response(JSON.stringify({ response: aiResponse }), {
+    return new Response(JSON.stringify({ response: response.content }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
