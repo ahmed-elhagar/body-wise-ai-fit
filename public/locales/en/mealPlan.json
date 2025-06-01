@@ -15,6 +15,11 @@
   "calAvailable": "cal available",
   "aiConsiders": "AI considers your dietary preferences, allergies, and nutrition goals",
   "generateAISnack": "Generate AI Snack",
+  "dailyProgress": "Daily Progress",
+  "calorieProgress": "Calorie Progress",
+  "consumed": "Consumed",
+  "target": "Target",
+  "cal": "cal",
   "addSnackDialog": {
     "analyzing": "Analyzing your nutrition needs...",
     "creating": "Creating perfect snack...",
@@ -31,6 +36,8 @@
   "considerLightSnack": "Consider a light snack or some water to complete your day.",
   "perfectDay": "Perfect Day",
   "nutritionGoalsReached": "Your nutrition goals have been successfully reached for today.",
+  "dailyView": "Daily View",
+  "weeklyView": "Weekly View",
   "dayNames": {
     "1": "Saturday",
     "2": "Sunday", 

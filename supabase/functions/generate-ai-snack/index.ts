@@ -38,6 +38,38 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // Get AI model configuration for snack generation feature
+    let modelConfig = { modelId: 'gpt-4o-mini', provider: 'openai' }; // fallback
+    
+    try {
+      const { data: modelData, error: modelError } = await supabase
+        .from('ai_feature_models')
+        .select(`
+          primary_model:ai_models!primary_model_id(
+            model_id,
+            provider,
+            is_active
+          )
+        `)
+        .eq('feature_name', 'snack_generation')
+        .eq('is_active', true)
+        .single();
+
+      if (!modelError && modelData?.primary_model) {
+        const model = modelData.primary_model as any;
+        if (model.is_active) {
+          modelConfig = {
+            modelId: model.model_id,
+            provider: model.provider
+          };
+        }
+      }
+    } catch (error) {
+      console.log('📋 Using fallback AI model for snack generation:', error);
+    }
+
+    console.log('🤖 Using AI model configuration:', modelConfig);
+
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 
     if (!openAIApiKey) {
@@ -77,9 +109,9 @@ Return ONLY a JSON object with this exact structure:
   "fat": estimated_grams
 }`;
 
-    console.log('🤖 Calling OpenAI with enhanced gpt-4o-mini model...');
+    console.log('🤖 Calling OpenAI with model:', modelConfig.modelId);
 
-    // Use the latest GPT-4o-mini model for enhanced performance
+    // Use the configured AI model
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -87,7 +119,7 @@ Return ONLY a JSON object with this exact structure:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: modelConfig.modelId,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
@@ -196,7 +228,7 @@ Return ONLY a JSON object with this exact structure:
       instructions: snackData.instructions || []
     };
 
-    console.log('💾 Saving enhanced AI-generated snack to database:', finalSnackData);
+    console.log('💾 Saving AI-generated snack to database:', finalSnackData);
 
     // Save to database with better error handling
     const { data: savedSnack, error: dbError } = await supabase
@@ -217,7 +249,7 @@ Return ONLY a JSON object with this exact structure:
       );
     }
 
-    console.log('✅ Enhanced AI snack saved successfully:', savedSnack);
+    console.log('✅ AI snack saved successfully:', savedSnack);
 
     const successMessage = isArabic ? 'تم إضافة الوجبة الخفيفة بنجاح!' : 'AI snack added successfully!';
 

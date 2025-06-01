@@ -1,6 +1,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Sparkles } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Loader2, Sparkles } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface SnackGenerationProgressProps {
@@ -8,9 +9,9 @@ interface SnackGenerationProgressProps {
 }
 
 export const SnackGenerationProgress = ({ generationStep }: SnackGenerationProgressProps) => {
-  const { t } = useLanguage();
+  const { t, isRTL } = useLanguage();
 
-  const getStepLabel = (step: string) => {
+  const getStepText = (step: string) => {
     switch (step) {
       case 'analyzing':
         return t('mealPlan.addSnackDialog.analyzing') || 'Analyzing your nutrition needs...';
@@ -23,21 +24,54 @@ export const SnackGenerationProgress = ({ generationStep }: SnackGenerationProgr
     }
   };
 
+  const getStepProgress = (step: string) => {
+    switch (step) {
+      case 'analyzing':
+        return 33;
+      case 'creating':
+        return 66;
+      case 'saving':
+        return 90;
+      default:
+        return 10;
+    }
+  };
+
   return (
-    <Card className="bg-white/80 backdrop-blur-sm border-fitness-accent-200">
-      <CardContent className="p-6 text-center">
-        <div className="w-16 h-16 mx-auto bg-gradient-to-br from-fitness-accent-500 to-fitness-accent-600 rounded-full flex items-center justify-center animate-pulse mb-4">
-          <Sparkles className="w-8 h-8 text-white animate-spin" />
+    <Card className="bg-gradient-to-br from-fitness-primary-50 to-fitness-accent-50 border-fitness-primary-200">
+      <CardContent className="p-6">
+        <div className={`text-center ${isRTL ? 'text-right' : 'text-left'}`}>
+          <div className="w-16 h-16 mx-auto bg-gradient-to-br from-fitness-primary-500 to-fitness-accent-500 rounded-full flex items-center justify-center mb-4">
+            <div className="relative">
+              <Sparkles className="w-8 h-8 text-white" />
+              <Loader2 className="w-4 h-4 text-fitness-accent-200 absolute -top-1 -right-1 animate-spin" />
+            </div>
+          </div>
+          
+          <h3 className="text-lg font-semibold text-fitness-primary-800 mb-2">
+            {t('mealPlan.addSnackDialog.generatingAISnack') || 'Generating AI Snack...'}
+          </h3>
+          
+          <p className="text-fitness-primary-600 mb-6">
+            {t('mealPlan.addSnackDialog.pleaseWait') || 'Please wait while we create the perfect snack for you...'}
+          </p>
+          
+          <div className="space-y-3">
+            <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <span className="text-sm font-medium text-fitness-primary-700">
+                {getStepText(generationStep)}
+              </span>
+              <span className="text-xs text-fitness-primary-500">
+                {getStepProgress(generationStep)}%
+              </span>
+            </div>
+            
+            <Progress 
+              value={getStepProgress(generationStep)} 
+              className="h-2"
+            />
+          </div>
         </div>
-        <h3 className="text-lg font-semibold text-fitness-accent-800 mb-2">
-          {getStepLabel(generationStep)}
-        </h3>
-        <div className="w-full bg-fitness-accent-100 rounded-full h-2 mb-4">
-          <div className="bg-gradient-to-r from-fitness-accent-500 to-fitness-accent-600 h-2 rounded-full transition-all duration-500 w-1/3"></div>
-        </div>
-        <p className="text-fitness-accent-600 text-sm">
-          {t('mealPlan.addSnackDialog.pleaseWait') || 'Please wait while we create the perfect snack for you...'}
-        </p>
       </CardContent>
     </Card>
   );
