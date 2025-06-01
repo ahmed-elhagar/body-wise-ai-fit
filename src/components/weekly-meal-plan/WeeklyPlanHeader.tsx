@@ -2,7 +2,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Utensils, Flame, TrendingUp } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 interface WeeklyPlanHeaderProps {
   dietType: string;
@@ -11,7 +11,7 @@ interface WeeklyPlanHeaderProps {
 }
 
 const WeeklyPlanHeader = ({ dietType, weeklyCalories, weeklyProtein }: WeeklyPlanHeaderProps) => {
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL } = useI18n();
 
   const getDietTypeColor = (dietType: string) => {
     if (dietType.includes('Vegetarian') || dietType.includes('نباتي')) 

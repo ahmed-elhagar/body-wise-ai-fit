@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Sparkles, X } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 interface AddSnackDialogHeaderProps {
   selectedDay: number;
@@ -14,7 +14,7 @@ export const AddSnackDialogHeader = ({
   isGenerating, 
   onClose 
 }: AddSnackDialogHeaderProps) => {
-  const { t } = useLanguage();
+  const { t } = useI18n();
 
   return (
     <div className="flex items-center justify-between">

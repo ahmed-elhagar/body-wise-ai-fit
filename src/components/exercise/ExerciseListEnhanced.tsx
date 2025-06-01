@@ -74,10 +74,8 @@ export const ExerciseListEnhanced = ({
             key={exercise.id || index}
             exercise={exercise}
             index={index}
-            onExerciseComplete={() => onExerciseComplete(exercise.id)}
-            onExerciseProgressUpdate={(sets, reps, notes) => 
-              onExerciseProgressUpdate(exercise.id, sets, reps, notes)
-            }
+            onExerciseComplete={onExerciseComplete}
+            onExerciseProgressUpdate={onExerciseProgressUpdate}
           />
         ))}
       </div>

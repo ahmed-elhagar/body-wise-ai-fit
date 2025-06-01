@@ -2,14 +2,14 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 interface TargetReachedCardProps {
   onClose: () => void;
 }
 
 export const TargetReachedCard = ({ onClose }: TargetReachedCardProps) => {
-  const { t } = useLanguage();
+  const { t } = useI18n();
 
   return (
     <Card className="bg-white/80 backdrop-blur-sm border-fitness-primary-200">

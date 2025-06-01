@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import { useFoodDatabase } from "@/hooks/useFoodDatabase";
 import QuantitySelector from "./components/QuantitySelector";
 
@@ -14,7 +14,7 @@ interface ManualTabProps {
 }
 
 const ManualTab = ({ onFoodAdded, onClose }: ManualTabProps) => {
-  const { t } = useLanguage();
+  const { t } = useI18n();
   const [foodName, setFoodName] = useState("");
   const [calories, setCalories] = useState(0);
   const [protein, setProtein] = useState(0);

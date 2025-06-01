@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { UtensilsCrossed, Sparkles, Shuffle, ShoppingCart, MoreVertical, RefreshCcw } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 interface EnhancedMealPlanHeaderProps {
   onGenerateAI: () => void;
@@ -22,7 +22,7 @@ const EnhancedMealPlanHeader = ({
   isGenerating,
   hasWeeklyPlan
 }: EnhancedMealPlanHeaderProps) => {
-  const { t } = useLanguage();
+  const { t } = useI18n();
 
   return (
     <Card className="bg-white border-fitness-primary-100 shadow-sm">

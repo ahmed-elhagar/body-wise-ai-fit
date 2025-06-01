@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Edit3 } from "lucide-react";
 import { useCoachSystem, type CoachTraineeRelationship } from "@/hooks/useCoachSystem";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 interface UpdateNotesDialogProps {
   trainee: CoachTraineeRelationship;
@@ -16,7 +16,7 @@ interface UpdateNotesDialogProps {
 
 export const UpdateNotesDialog = ({ trainee, open, onOpenChange }: UpdateNotesDialogProps) => {
   const { updateTraineeNotes, isUpdatingNotes } = useCoachSystem();
-  const { language } = useLanguage();
+  const { language } = useI18n();
   const [notes, setNotes] = useState(trainee.notes || "");
 
   const handleSubmit = (e: React.FormEvent) => {

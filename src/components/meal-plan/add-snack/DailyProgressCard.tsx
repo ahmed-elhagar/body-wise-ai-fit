@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Target } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 interface DailyProgressCardProps {
   selectedDay: number;
@@ -20,7 +20,7 @@ export const DailyProgressCard = ({
   remainingCalories,
   progressPercentage
 }: DailyProgressCardProps) => {
-  const { t } = useLanguage();
+  const { t } = useI18n();
 
   return (
     <Card className="bg-white/80 backdrop-blur-sm border-fitness-accent-200">
