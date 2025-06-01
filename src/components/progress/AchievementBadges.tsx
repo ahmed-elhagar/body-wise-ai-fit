@@ -48,3 +48,4 @@ export const AchievementBadges = ({ achievements }: AchievementBadgesProps) => {
   );
 };
 
+export default AchievementBadges;

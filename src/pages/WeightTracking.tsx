@@ -1,4 +1,3 @@
-
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,7 +6,7 @@ import { ArrowLeft, Scale, Plus, TrendingUp, TrendingDown, Target } from "lucide
 import { useWeightTracking } from "@/hooks/useWeightTracking";
 import { useProfile } from "@/hooks/useProfile";
 import { useState } from "react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import WeightEntryForm from "@/components/weight/WeightEntryForm";
 import WeightProgressChart from "@/components/weight/WeightProgressChart";
@@ -15,7 +14,7 @@ import WeightStatsCards from "@/components/weight/WeightStatsCards";
 
 const WeightTracking = () => {
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t } = useI18n();
   const { weightEntries, isLoading } = useWeightTracking();
   const { profile } = useProfile();
   const [showAddForm, setShowAddForm] = useState(false);

@@ -78,3 +78,5 @@ export const HeaderDropdowns = () => {
     </div>
   );
 };
+
+export default HeaderDropdowns;

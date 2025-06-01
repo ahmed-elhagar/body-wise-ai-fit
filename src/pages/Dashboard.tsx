@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
@@ -25,6 +24,13 @@ const Dashboard = () => {
 
   const handleViewExercise = () => {
     navigate('/exercise');
+  };
+
+  // Mock data for InteractiveProgressChart
+  const mockChartData = {
+    workoutData: [],
+    calorieData: [],
+    weightData: []
   };
 
   return (
@@ -55,7 +61,7 @@ const Dashboard = () => {
             <EnhancedStatsGrid />
             
             {/* Progress Chart Section */}
-            <InteractiveProgressChart />
+            <InteractiveProgressChart data={mockChartData} />
             
             {/* 50-50 Layout for remaining content */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">

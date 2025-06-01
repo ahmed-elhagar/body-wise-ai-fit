@@ -1,4 +1,3 @@
-
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,12 +18,12 @@ import TrendAnalysis from "@/components/progress/TrendAnalysis";
 import { useWeightTracking } from "@/hooks/useWeightTracking";
 import { useGoals } from "@/hooks/useGoals";
 import { useProfile } from "@/hooks/useProfile";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 const Progress = () => {
   const { tab } = useParams();
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t } = useI18n();
   const { weightEntries, isLoading: weightLoading } = useWeightTracking();
   const { getMacroGoals } = useGoals();
   const { profile } = useProfile();
@@ -138,11 +137,11 @@ const Progress = () => {
           </TabsContent>
 
           <TabsContent value="achievements" className="space-y-6 mt-6">
-            <AchievementBadges />
+            <AchievementBadges achievements={[]} />
           </TabsContent>
 
           <TabsContent value="trends" className="space-y-6 mt-6">
-            <TrendAnalysis />
+            <TrendAnalysis data={[]} title="AI Trend Analysis" />
           </TabsContent>
         </Tabs>
       </Layout>

@@ -70,11 +70,11 @@ const CompactDailyView = ({
 
       {/* Meals Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {meals.map((meal) => {
-          // Ensure id is present - use a default if missing
+        {meals.map((meal, index) => {
+          // Ensure meal has required id property
           const mealWithId: Meal = {
             ...meal,
-            id: meal.id || `meal-${Math.random().toString(36).substr(2, 9)}`,
+            id: meal.id || `meal-${index}-${Math.random().toString(36).substr(2, 9)}`,
             image: meal.image || meal.image_url || ""
           };
           

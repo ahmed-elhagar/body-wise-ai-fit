@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { MessageCircle, Bot, Users, AlertCircle, Loader2, RefreshCw, UserCheck, Calendar, Star, MessageSquare, Bug, Sparkles, Wifi, WifiOff } from "lucide-react";
 import { useCoachSystem } from "@/hooks/useCoachSystem";
 import TraineeCoachChat from "@/components/coach/TraineeCoachChat";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n"; // Replace LanguageContext import
 import AIChatInterface from "@/components/chat/AIChatInterface";
 import { useAuth } from "@/hooks/useAuth";
 import { useRole } from "@/hooks/useRole";
@@ -20,7 +20,8 @@ import type { CoachInfo } from "@/hooks/coach/types";
 import { cn } from "@/lib/utils";
 
 const Chat = () => {
-  const { t } = useLanguage();
+  const { t } = useI18n(); // Replace useLanguage with useI18n
+  
   const { user } = useAuth();
   const { isCoach: isRoleCoach, isAdmin } = useRole();
   const isMobile = useIsMobile();
@@ -243,7 +244,7 @@ const Chat = () => {
                   </CardHeader>
                   
                   <CardContent className="p-4 lg:p-6">
-                    {/* ... keep existing code (debug info, loading states, error states, no coaches state) the same ... */}
+                    {/* ... keep existing code (debug info, loading states, error states, no coaches state) the same ... */
 
                     {!isLoadingCoachInfo && !coachInfoError && coaches.length > 0 && (
                       <div className="space-y-3 lg:space-y-4">

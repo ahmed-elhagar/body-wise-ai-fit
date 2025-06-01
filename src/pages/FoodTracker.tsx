@@ -1,18 +1,17 @@
-
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Plus, Utensils } from "lucide-react";
 import { useState } from "react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import { useFoodConsumption } from "@/hooks/useFoodConsumption";
 import TodayTab from "@/components/food-tracker/TodayTab";
 import HistoryTab from "@/components/food-tracker/HistoryTab";
 import AddFoodDialog from "@/components/food-tracker/AddFoodDialog/AddFoodDialog";
 
 const FoodTracker = () => {
-  const { t } = useLanguage();
+  const { t } = useI18n();
   const [isAddFoodOpen, setIsAddFoodOpen] = useState(false);
   const { refetch } = useFoodConsumption();
 
