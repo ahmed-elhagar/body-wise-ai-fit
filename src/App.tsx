@@ -23,7 +23,11 @@ const SettingsPage = lazy(() => import("@/pages/Settings"));
 const FoodTrackerPage = lazy(() => import("@/pages/FoodTracker"));
 const GoalsPage = lazy(() => import("@/pages/Goals"));
 const ProgressPage = lazy(() => import("@/pages/Progress"));
+const ProgressAnalyticsPage = lazy(() => import("@/pages/ProgressAnalytics"));
 const WeightTrackingPage = lazy(() => import("@/pages/WeightTracking"));
+const CalorieCheckerPage = lazy(() => import("@/pages/CalorieChecker"));
+const NotificationsPage = lazy(() => import("@/pages/Notifications"));
+const AiChatPage = lazy(() => import("@/pages/AiChat"));
 const CoachPanelPage = lazy(() => import("@/pages/coach/CoachPanel"));
 const AdminDashboardPage = lazy(() => import("@/pages/admin/AdminDashboard"));
 const TraineeChatPage = lazy(() => import("@/pages/coach/TraineeChat"));
@@ -80,6 +84,14 @@ const App = () => {
                       }
                     />
                     <Route
+                      path="/exercise/:day"
+                      element={
+                        <ProtectedRoute>
+                          <ExercisePage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
                       path="/profile"
                       element={
                         <ProtectedRoute>
@@ -104,6 +116,14 @@ const App = () => {
                       }
                     />
                     <Route
+                      path="/calorie-checker"
+                      element={
+                        <ProtectedRoute>
+                          <CalorieCheckerPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
                       path="/goals"
                       element={
                         <ProtectedRoute>
@@ -120,10 +140,42 @@ const App = () => {
                       }
                     />
                     <Route
+                      path="/progress/analytics"
+                      element={
+                        <ProtectedRoute>
+                          <ProgressAnalyticsPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
                       path="/weight-tracking"
                       element={
                         <ProtectedRoute>
                           <WeightTrackingPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/notifications"
+                      element={
+                        <ProtectedRoute>
+                          <NotificationsPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/ai-chat"
+                      element={
+                        <ProtectedRoute>
+                          <AiChatPage />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/coach"
+                      element={
+                        <ProtectedRoute requireRole="coach">
+                          <CoachPanelPage />
                         </ProtectedRoute>
                       }
                     />
