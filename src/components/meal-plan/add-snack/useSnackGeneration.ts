@@ -25,16 +25,29 @@ export const useSnackGeneration = ({
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationStep, setGenerationStep] = useState('');
 
+  console.log('🌐 useSnackGeneration translation check:', {
+    language,
+    currentLanguage: language,
+    analyzingTranslation: t('mealPlan.addSnackDialog.analyzing'),
+    creatingTranslation: t('mealPlan.addSnackDialog.creating'),
+    savingTranslation: t('mealPlan.addSnackDialog.saving')
+  });
+
   const handleGenerateAISnack = async () => {
     console.log('🚀 Starting AI snack generation with params:', {
       weeklyPlanId,
       selectedDay,
       remainingCalories,
       profileId: profile?.id,
-      language
+      language,
+      translationContext: {
+        analyzing: t('mealPlan.addSnackDialog.analyzing'),
+        creating: t('mealPlan.addSnackDialog.creating'),
+        saving: t('mealPlan.addSnackDialog.saving')
+      }
     });
 
-    // Validation checks
+    // Enhanced validation checks with proper translations
     if (!weeklyPlanId) {
       console.error('❌ No weekly plan ID provided');
       toast.error(t('mealPlan.addSnackDialog.error') || 'Error: No meal plan found');
@@ -56,12 +69,12 @@ export const useSnackGeneration = ({
     setIsGenerating(true);
     
     try {
-      // Step 1: Analyzing user preferences
+      // Step 1: Analyzing user preferences (with translation)
       setGenerationStep('analyzing');
       console.log('🔍 Step 1: Analyzing user preferences and nutrition needs...');
       await new Promise(resolve => setTimeout(resolve, 1200));
       
-      // Step 2: Creating perfect snack
+      // Step 2: Creating perfect snack (with translation)
       setGenerationStep('creating');
       console.log('🥄 Step 2: Creating perfect snack with AI...');
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -69,7 +82,7 @@ export const useSnackGeneration = ({
       // Calculate optimal calories for snack (not more than remaining, reasonable portion)
       const targetCalories = Math.min(remainingCalories, 250);
 
-      console.log('📡 Calling generate-ai-snack edge function with data:', {
+      console.log('📡 Calling generate-ai-snack edge function with enhanced data:', {
         userProfile: {
           id: profile.id,
           age: profile.age,
@@ -77,21 +90,33 @@ export const useSnackGeneration = ({
           fitness_goal: profile.fitness_goal,
           allergies: profile.allergies,
           dietary_restrictions: profile.dietary_restrictions,
-          nationality: profile.nationality
+          nationality: profile.nationality,
+          preferred_language: profile.preferred_language || language
         },
         day: selectedDay,
         calories: targetCalories,
         weeklyPlanId,
-        language
+        language,
+        translationContext: {
+          success: t('mealPlan.snackAddedSuccess'),
+          failed: t('mealPlan.addSnackDialog.failed')
+        }
       });
 
       const { data, error } = await supabase.functions.invoke('generate-ai-snack', {
         body: {
-          userProfile: profile,
+          userProfile: {
+            ...profile,
+            preferred_language: profile.preferred_language || language
+          },
           day: selectedDay,
           calories: targetCalories,
           weeklyPlanId,
-          language
+          language,
+          translationContext: {
+            success: t('mealPlan.snackAddedSuccess'),
+            failed: t('mealPlan.addSnackDialog.failed')
+          }
         }
       });
 
@@ -101,21 +126,23 @@ export const useSnackGeneration = ({
         return;
       }
 
-      // Step 3: Saving to meal plan
+      // Step 3: Saving to meal plan (with translation)
       setGenerationStep('saving');
       console.log('💾 Step 3: Saving snack to meal plan...');
       await new Promise(resolve => setTimeout(resolve, 800));
 
       if (data?.success) {
         console.log('✅ AI snack generated successfully:', data);
-        toast.success(data.message || t('mealPlan.snackAddedSuccess') || 'Snack added successfully!');
+        const successMessage = data.message || t('mealPlan.snackAddedSuccess') || 'Snack added successfully!';
+        toast.success(successMessage);
         
         // Close dialog and refresh data
         onClose();
         onSnackAdded();
       } else {
         console.error('❌ Generation failed with response:', data);
-        toast.error(data?.error || t('mealPlan.addSnackDialog.failed') || 'Failed to generate snack');
+        const errorMessage = data?.error || t('mealPlan.addSnackDialog.failed') || 'Failed to generate snack';
+        toast.error(errorMessage);
       }
       
     } catch (error) {
