@@ -2,8 +2,8 @@
 import { useState } from "react";
 import { useMealPlanPage } from "@/hooks/useMealPlanPage";
 import MealPlanHeader from "./MealPlanHeader";
-import ViewModeSelector from "./ViewModeSelector";
-import DailyViewContainer from "./DailyViewContainer";
+import UnifiedNavigation from "./UnifiedNavigation";
+import DayOverview from "./DayOverview";
 import WeeklyViewContainer from "./WeeklyViewContainer";
 import EmptyWeekState from "./EmptyWeekState";
 import LoadingState from "./LoadingState";
@@ -79,7 +79,7 @@ const MealPlanContainer = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header with Actions */}
       <MealPlanHeader
         onGenerateAI={() => {}}
@@ -90,28 +90,30 @@ const MealPlanContainer = () => {
         hasWeeklyPlan={!!currentWeekPlan?.weeklyPlan}
       />
 
-      {/* View Mode Selector */}
-      <ViewModeSelector
+      {/* Unified Navigation */}
+      <UnifiedNavigation
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         weekStartDate={weekStartDate}
         currentWeekOffset={currentWeekOffset}
         onWeekChange={setCurrentWeekOffset}
+        selectedDayNumber={selectedDayNumber}
+        onDayChange={setSelectedDayNumber}
+        showDaySelector={viewMode === 'daily'}
       />
 
       {/* Content based on view mode */}
       {viewMode === 'daily' ? (
-        <DailyViewContainer
+        <DayOverview
           selectedDayNumber={selectedDayNumber}
-          onDayChange={setSelectedDayNumber}
-          weekStartDate={weekStartDate}
           dailyMeals={dailyMeals}
           totalCalories={totalCalories}
           totalProtein={totalProtein}
           targetDayCalories={targetDayCalories}
           onViewMeal={handleShowRecipe}
-          onExchangeMeal={handleExchangeMeal}
+          onExchangeMeal={(meal, index) => handleExchangeMeal(meal, index)}
           onAddSnack={handleAddSnack}
+          weekStartDate={weekStartDate}
         />
       ) : (
         <WeeklyViewContainer

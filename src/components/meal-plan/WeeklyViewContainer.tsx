@@ -3,7 +3,7 @@ import { format, addDays, isSameDay } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Calendar, ChefHat, Plus, Utensils, ArrowRight } from "lucide-react";
+import { Eye, Calendar, ChefHat, Plus, Utensils, ArrowRight, Book, ArrowLeftRight } from "lucide-react";
 import { useMealPlanTranslations } from "@/utils/mealPlanTranslations";
 import type { DailyMeal } from "@/hooks/useMealPlanData";
 
@@ -89,7 +89,7 @@ const WeeklyViewContainer = ({
       </CardHeader>
       
       <CardContent className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {weekDays.map((day) => {
             const dayMeals = getDayMeals(day.number);
             const dayStats = calculateDayStats(dayMeals);
@@ -147,42 +147,66 @@ const WeeklyViewContainer = ({
                   </div>
 
                   {/* Meals Preview */}
-                  <div className="space-y-2 max-h-32 overflow-y-auto">
-                    {dayMeals.slice(0, 2).map((meal: DailyMeal, index: number) => (
+                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                    {dayMeals.slice(0, 3).map((meal: DailyMeal, index: number) => (
                       <div 
                         key={meal.id} 
-                        className="p-2 bg-gray-50 rounded-lg hover:bg-fitness-primary-50 transition-colors"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onShowRecipe(meal);
-                        }}
+                        className="p-3 bg-gray-50 rounded-lg hover:bg-fitness-primary-50 transition-colors group/meal"
                       >
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2 flex-1">
                             <Utensils className="w-3 h-3 text-fitness-primary-600" />
                             <div className="min-w-0 flex-1">
-                              <h5 className="font-medium text-xs text-gray-900 truncate">
+                              <h5 className="font-medium text-sm text-gray-900 truncate">
                                 {meal.name}
                               </h5>
-                              <p className="text-xs text-gray-500">{meal.meal_type}</p>
+                              <p className="text-xs text-gray-500 capitalize">{meal.meal_type}</p>
                             </div>
                           </div>
-                          <span className="text-xs font-medium text-fitness-primary-600 bg-fitness-primary-100 px-1.5 py-0.5 rounded">
+                          <span className="text-xs font-medium text-fitness-primary-600 bg-fitness-primary-100 px-2 py-1 rounded">
                             {meal.calories || 0}
                           </span>
+                        </div>
+                        
+                        {/* Meal Actions */}
+                        <div className="flex gap-1 opacity-0 group-hover/meal:opacity-100 transition-opacity">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-1 h-6 text-xs hover:bg-blue-50 border-blue-200"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onShowRecipe(meal);
+                            }}
+                          >
+                            <Book className="w-3 h-3 mr-1" />
+                            Recipe
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-1 h-6 text-xs hover:bg-orange-50 border-orange-200"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onExchangeMeal(meal, day.number, index);
+                            }}
+                          >
+                            <ArrowLeftRight className="w-3 h-3 mr-1" />
+                            Exchange
+                          </Button>
                         </div>
                       </div>
                     ))}
                     
-                    {dayMeals.length > 2 && (
+                    {dayMeals.length > 3 && (
                       <div className="text-center text-xs text-fitness-primary-600 font-medium bg-fitness-primary-50 py-2 rounded-lg">
-                        +{dayMeals.length - 2} more
+                        +{dayMeals.length - 3} more
                       </div>
                     )}
                     
                     {dayMeals.length === 0 && (
-                      <div className="text-center text-gray-400 py-3">
-                        <ChefHat className="w-6 h-6 mx-auto mb-1 opacity-50" />
+                      <div className="text-center text-gray-400 py-4">
+                        <ChefHat className="w-8 h-8 mx-auto mb-2 opacity-50" />
                         <p className="text-xs">No meals planned</p>
                       </div>
                     )}
