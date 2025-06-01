@@ -1,6 +1,6 @@
 
 import { Checkbox } from "@/components/ui/checkbox";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 interface ShoppingItem {
   name: string;
@@ -16,7 +16,7 @@ interface IngredientRowProps {
 }
 
 const IngredientRow = ({ item, isChecked, onToggle }: IngredientRowProps) => {
-  const { isRTL } = useLanguage();
+  const { isRTL } = useI18n();
 
   return (
     <div 

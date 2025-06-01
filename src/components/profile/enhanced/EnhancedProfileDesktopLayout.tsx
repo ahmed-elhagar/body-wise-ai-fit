@@ -3,7 +3,7 @@ import { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import ProfileCompletionCard from "./ProfileCompletionCard";
 
 interface EnhancedProfileLayoutProps {
@@ -16,7 +16,7 @@ const EnhancedProfileDesktopLayout = ({
   onStepClick 
 }: EnhancedProfileLayoutProps) => {
   const navigate = useNavigate();
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL } = useI18n();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">

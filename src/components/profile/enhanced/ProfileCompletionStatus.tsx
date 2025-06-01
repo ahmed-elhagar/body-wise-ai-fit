@@ -1,6 +1,6 @@
 
 import { CheckCircle, Target, TrendingUp } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 interface ProfileCompletionStatusProps {
   completionScore: number;
@@ -15,7 +15,7 @@ const ProfileCompletionStatus = ({
   totalSteps, 
   nextIncompleteStep 
 }: ProfileCompletionStatusProps) => {
-  const { t } = useLanguage();
+  const { t } = useI18n();
 
   const getStatusColor = () => {
     if (completionScore >= 80) return "text-green-600";

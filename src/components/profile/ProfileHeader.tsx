@@ -1,12 +1,12 @@
 
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 interface ProfileHeaderProps {
   isEditMode: boolean;
 }
 
 const ProfileHeader = ({ isEditMode }: ProfileHeaderProps) => {
-  const { t } = useLanguage();
+  const { t } = useI18n();
 
   return (
     <div className="mb-6">

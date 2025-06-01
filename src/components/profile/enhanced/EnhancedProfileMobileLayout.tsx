@@ -3,7 +3,7 @@ import { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 interface EnhancedProfileMobileLayoutProps {
   children: ReactNode;
@@ -17,7 +17,7 @@ const EnhancedProfileMobileLayout = ({
   onStepChange 
 }: EnhancedProfileMobileLayoutProps) => {
   const navigate = useNavigate();
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL } = useI18n();
 
   const steps = [
     { id: 'overview', label: t('overview'), icon: '📊' },

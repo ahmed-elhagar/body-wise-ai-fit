@@ -3,7 +3,7 @@ import { SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingCart, Mail, Download } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 interface DrawerHeaderProps {
   totalItems: number;
@@ -20,7 +20,7 @@ const DrawerHeader = ({
   onShoppingListUpdate,
   onSendEmail 
 }: DrawerHeaderProps) => {
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL } = useI18n();
 
   const categoryCount = Object.keys(groupedItems).length;
 
