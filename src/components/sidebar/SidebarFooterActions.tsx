@@ -25,7 +25,7 @@ const SidebarFooterActions = () => {
         className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
       >
         <LogOut className="h-4 w-4 mr-2" />
-        <span className="font-medium">{t("Sign Out")}</span>
+        <span className="font-medium">{t("navigation:signOut")}</span>
       </SidebarMenuButton>
     </div>
   )
