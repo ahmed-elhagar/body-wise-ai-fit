@@ -3,7 +3,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { PageHeader } from "@/components/ui/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, Users, TrendingUp, CreditCard, Settings, Brain, Activity, AlertTriangle } from "lucide-react";
+import { Shield, Users, TrendingUp, CreditCard, Settings, Brain, Activity } from "lucide-react";
 import { useRole } from "@/hooks/useRole";
 import { Navigate } from "react-router-dom";
 import UsersTable from "@/components/admin/UsersTable";
@@ -15,6 +15,7 @@ import SystemHealthMonitor from "@/components/admin/SystemHealthMonitor";
 import UserGenerationManager from "@/components/admin/UserGenerationManager";
 import AIModelsTab from "@/components/admin/AIModelsTab";
 import { Card } from "@/components/ui/card";
+import { AlertTriangle } from "lucide-react";
 
 const Admin = () => {
   const { isAdmin, isLoading, error } = useRole();
@@ -37,7 +38,6 @@ const Admin = () => {
     );
   }
 
-  // Enhanced error handling
   if (error) {
     return (
       <ProtectedRoute>
@@ -71,16 +71,6 @@ const Admin = () => {
         <div className="space-y-6">
           {/* Enhanced Stats Cards */}
           <EnhancedStatsCards />
-          
-          {/* System Health Monitor */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <SystemHealthMonitor />
-            </div>
-            <div className="lg:col-span-1">
-              <UserGenerationManager />
-            </div>
-          </div>
           
           {/* Main Admin Tabs */}
           <Tabs defaultValue="users" className="w-full">
