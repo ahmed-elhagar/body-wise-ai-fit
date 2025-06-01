@@ -41,6 +41,8 @@ export class AIService {
       const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
       const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+      console.log(`🔍 Looking up AI model for feature: ${featureName}`);
+
       const { data, error } = await supabase
         .from('ai_feature_models')
         .select(`
@@ -55,7 +57,7 @@ export class AIService {
         .single();
 
       if (error || !data?.primary_model) {
-        console.warn(`No AI model configured for feature: ${featureName}, using default OpenAI`);
+        console.warn(`⚠️ No AI model configured for feature: ${featureName}, using default OpenAI`);
         return {
           modelId: 'gpt-4o-mini',
           provider: 'openai'
@@ -65,19 +67,20 @@ export class AIService {
       const model = data.primary_model as any;
       
       if (!model.is_active) {
-        console.warn(`Configured AI model is inactive for feature: ${featureName}, using default`);
+        console.warn(`⚠️ Configured AI model is inactive for feature: ${featureName}, using default`);
         return {
           modelId: 'gpt-4o-mini',
           provider: 'openai'
         };
       }
 
+      console.log(`✅ Found model for ${featureName}: ${model.provider}:${model.model_id}`);
       return {
         modelId: model.model_id,
         provider: model.provider
       };
     } catch (error) {
-      console.error('Error fetching AI model configuration:', error);
+      console.error('❌ Error fetching AI model configuration:', error);
       return {
         modelId: 'gpt-4o-mini',
         provider: 'openai'
@@ -96,16 +99,26 @@ export class AIService {
     
     console.log(`🤖 Using ${model.provider}:${model.modelId} for feature: ${featureName}`);
     
-    switch (model.provider) {
-      case 'openai':
-        return this.generateWithOpenAI(model.modelId, request);
-      case 'anthropic':
-        return this.generateWithAnthropic(model.modelId, request);
-      case 'google':
-        return this.generateWithGoogle(model.modelId, request);
-      default:
-        console.warn(`Unsupported provider: ${model.provider}, falling back to OpenAI`);
-        return this.generateWithOpenAI('gpt-4o-mini', request);
+    try {
+      switch (model.provider) {
+        case 'openai':
+          return await this.generateWithOpenAI(model.modelId, request);
+        case 'anthropic':
+          return await this.generateWithAnthropic(model.modelId, request);
+        case 'google':
+          return await this.generateWithGoogle(model.modelId, request);
+        default:
+          console.warn(`❌ Unsupported provider: ${model.provider}, falling back to OpenAI`);
+          return await this.generateWithOpenAI('gpt-4o-mini', request);
+      }
+    } catch (error) {
+      console.error(`❌ Error with ${model.provider}:${model.modelId} - ${error.message}`);
+      // Fallback to OpenAI on error
+      if (model.provider !== 'openai') {
+        console.log('🔄 Falling back to OpenAI due to error');
+        return await this.generateWithOpenAI('gpt-4o-mini', request);
+      }
+      throw error;
     }
   }
 
@@ -116,6 +129,8 @@ export class AIService {
     modelId: string, 
     request: AIRequest
   ): Promise<AIResponse> {
+    console.log(`📤 Calling OpenAI with model: ${modelId}`);
+    
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -132,10 +147,12 @@ export class AIService {
 
     if (!response.ok) {
       const errorText = await response.text();
+      console.error(`❌ OpenAI API error: ${response.status} - ${errorText}`);
       throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
+    console.log(`✅ OpenAI response received successfully`);
     
     return {
       content: data.choices[0].message.content,
@@ -155,9 +172,11 @@ export class AIService {
     request: AIRequest
   ): Promise<AIResponse> {
     if (!this.anthropicApiKey) {
-      console.warn('Anthropic API key not provided, falling back to OpenAI');
+      console.error('❌ Anthropic API key not provided, falling back to OpenAI');
       return this.generateWithOpenAI('gpt-4o-mini', request);
     }
+
+    console.log(`📤 Calling Anthropic with model: ${modelId}`);
 
     // Convert OpenAI format messages to Anthropic format
     const systemMessage = request.messages.find(m => m.role === 'system');
@@ -184,11 +203,12 @@ export class AIService {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Anthropic API error:', errorText);
+      console.error(`❌ Anthropic API error: ${response.status} - ${errorText}`);
       throw new Error(`Anthropic API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
+    console.log(`✅ Anthropic response received successfully`);
     
     return {
       content: data.content[0].text,
@@ -201,16 +221,18 @@ export class AIService {
   }
 
   /**
-   * Google Gemini implementation
+   * Google Gemini implementation - FIXED
    */
   private async generateWithGoogle(
     modelId: string, 
     request: AIRequest
   ): Promise<AIResponse> {
     if (!this.googleApiKey) {
-      console.warn('Google API key not provided, falling back to OpenAI');
+      console.error('❌ Google API key not provided, falling back to OpenAI');
       return this.generateWithOpenAI('gpt-4o-mini', request);
     }
+
+    console.log(`📤 Calling Google Gemini with model: ${modelId}`);
 
     // Convert messages to Google format
     const contents = request.messages
@@ -236,6 +258,8 @@ export class AIService {
       };
     }
 
+    console.log(`🔍 Google API Request for ${modelId}:`, JSON.stringify(requestBody, null, 2));
+
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${this.googleApiKey}`,
       {
@@ -249,15 +273,24 @@ export class AIService {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Google API error:', errorText);
+      console.error(`❌ Google API error: ${response.status} - ${errorText}`);
       throw new Error(`Google API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
+    console.log(`🔍 Google API Response:`, JSON.stringify(data, null, 2));
 
     if (!data.candidates || data.candidates.length === 0) {
+      console.error(`❌ No response generated from Google API:`, data);
       throw new Error('No response generated from Google API');
     }
+
+    if (data.candidates[0].finishReason === 'SAFETY') {
+      console.error(`❌ Google API blocked response due to safety:`, data);
+      throw new Error('Response blocked by Google safety filters');
+    }
+    
+    console.log(`✅ Google response received successfully`);
     
     return {
       content: data.candidates[0].content.parts[0].text,

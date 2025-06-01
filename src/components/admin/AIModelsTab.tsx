@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -41,12 +40,12 @@ const AIModelsTab = () => {
     is_default: false,
   });
 
-  // All AI features in the system
+  // All AI features in the system - CLARIFIED CHAT FEATURES
   const allFeatures = [
     { id: 'meal_plan', name: 'Meal Plan Generation', description: 'AI-powered weekly meal planning' },
     { id: 'exercise_program', name: 'Exercise Program', description: 'Workout program generation' },
-    { id: 'chat', name: 'General AI Chat', description: 'General purpose AI chat assistant' },
-    { id: 'fitness_chat', name: 'Fitness Chat', description: 'Specialized fitness coaching chat' },
+    { id: 'chat', name: 'General AI Chat', description: 'General purpose AI assistant (used in Chat page AI tab)' },
+    { id: 'fitness_chat', name: 'Fitness Chat Coach', description: 'Specialized fitness coaching chat with user profile context' },
     { id: 'food_analysis', name: 'Food Analysis', description: 'Image-based food analysis and recognition' },
     { id: 'meal_recipe', name: 'Recipe Generation', description: 'Individual meal recipe creation' },
     { id: 'exercise_exchange', name: 'Exercise Exchange', description: 'Exercise substitution and alternatives' },
@@ -251,15 +250,20 @@ const AIModelsTab = () => {
         </Dialog>
       </div>
 
-      {/* API Keys Alert */}
+      {/* Enhanced API Keys Alert */}
       <Alert>
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>
-          <strong>API Keys Required:</strong> Make sure to configure API keys for each provider in Supabase Edge Function Secrets:
+          <strong>API Keys Required:</strong> Configure these secrets in Supabase Edge Function Secrets:
           <div className="mt-2 space-y-1 text-sm">
-            <div>• <code>OPENAI_API_KEY</code> for OpenAI models</div>
-            <div>• <code>ANTHROPIC_API_KEY</code> for Anthropic/Claude models</div>
-            <div>• <code>GOOGLE_API_KEY</code> for Google/Gemini models</div>
+            <div>• <code>OPENAI_API_KEY</code> - Required for OpenAI models (GPT-4o, GPT-4o-mini)</div>
+            <div>• <code>ANTHROPIC_API_KEY</code> - Required for Claude models (optional)</div>
+            <div>• <code>GOOGLE_API_KEY</code> - Required for Gemini models (optional)</div>
+          </div>
+          <div className="mt-2 p-2 bg-blue-50 rounded text-sm">
+            <strong>Chat Features Clarification:</strong>
+            <br />• <strong>General AI Chat</strong> = Basic AI assistant in Chat page
+            <br />• <strong>Fitness Chat Coach</strong> = Advanced coach with user profile context
           </div>
         </AlertDescription>
       </Alert>
@@ -304,7 +308,14 @@ const AIModelsTab = () => {
                   return (
                     <div key={feature.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex-1">
-                        <h4 className="font-medium">{feature.name}</h4>
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="font-medium">{feature.name}</h4>
+                          {(feature.id === 'chat' || feature.id === 'fitness_chat') && (
+                            <Badge variant="outline" className="text-xs">
+                              {feature.id === 'chat' ? 'Basic' : 'Advanced'}
+                            </Badge>
+                          )}
+                        </div>
                         <p className="text-sm text-gray-500">{feature.description}</p>
                         <p className="text-xs text-gray-400 mt-1">
                           Current: {getAssignedModelName(feature.id)}
