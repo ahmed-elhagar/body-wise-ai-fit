@@ -1,7 +1,6 @@
-
 import { Button } from "@/components/ui/button";
 import { Calendar, Grid, Home, Dumbbell } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import { useMealPlanTranslation } from "@/utils/translationHelpers";
 
 interface ViewModeToggleProps {
@@ -17,7 +16,7 @@ const ViewModeToggle = ({
   workoutMode = 'home',
   onWorkoutModeChange
 }: ViewModeToggleProps) => {
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL } = useI18n();
   const { mealPlanT } = useMealPlanTranslation();
 
   return (

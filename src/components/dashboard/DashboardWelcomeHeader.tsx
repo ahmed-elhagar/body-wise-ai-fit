@@ -1,7 +1,6 @@
-
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import { Calendar, Sparkles, Trophy, Star, Target, Crown, Shield, User } from "lucide-react";
 import { useAchievements } from "@/hooks/useAchievements";
 import { useRole } from "@/hooks/useRole";
@@ -14,7 +13,7 @@ interface DashboardWelcomeHeaderProps {
 }
 
 export const DashboardWelcomeHeader = ({ userName }: DashboardWelcomeHeaderProps) => {
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL } = useI18n();
   const { earnedAchievements, checkAchievements } = useAchievements();
   const { role, isPro, isCoach, isAdmin } = useRole();
 

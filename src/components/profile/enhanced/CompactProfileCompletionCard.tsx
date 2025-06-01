@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -6,7 +5,7 @@ import { CheckCircle, Target, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 import { useProfileCompletionSteps } from "./profileCompletionSteps";
 import { useEnhancedProfile } from "@/hooks/useEnhancedProfile";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 interface CompactProfileCompletionCardProps {
   onStepClick: (step: string) => void;
@@ -16,7 +15,7 @@ const CompactProfileCompletionCard = ({ onStepClick }: CompactProfileCompletionC
   const { completionPercentage } = useEnhancedProfile();
   const { steps, nextIncompleteStep, completedSteps } = useProfileCompletionSteps(completionPercentage);
   const [isExpanded, setIsExpanded] = useState(completionPercentage < 100);
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL } = useI18n();
   const isCompleted = completionPercentage >= 100;
 
   if (isCompleted && !isExpanded) {
