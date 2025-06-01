@@ -12,7 +12,7 @@ interface MealPlanContentProps {
   todaysMeals: Meal[];
   onGenerate: () => void;
   onShowRecipe: (meal: Meal) => void;
-  onExchangeMeal: (meal: Meal, index: number) => void;
+  onExchangeMeal: (meal: Meal) => void;
   onAddSnack: () => void;
   onShowShoppingList: () => void;
 }
@@ -69,14 +69,11 @@ const MealPlanContent = ({
 
     return (
       <CompactDailyView
-        todaysMeals={todaysMeals}
-        totalCalories={totalCalories}
-        totalProtein={totalProtein}
+        meals={todaysMeals}
+        selectedDay={1}
         onShowRecipe={onShowRecipe}
         onExchangeMeal={onExchangeMeal}
         onAddSnack={onAddSnack}
-        onShowShoppingList={onShowShoppingList}
-        onGenerate={onGenerate}
       />
     );
   }

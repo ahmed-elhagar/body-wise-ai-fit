@@ -7,14 +7,24 @@ import { format, addDays } from "date-fns";
 
 interface CompactNavigationProps {
   currentWeekOffset: number;
-  setCurrentWeekOffset: (offset: number) => void;
+  setCurrentWeekOffset?: (offset: number) => void;
+  onWeekChange?: (offset: number) => void;
   weekStartDate: Date;
+  selectedDayNumber?: number;
+  onDaySelect?: (day: number) => void;
+  viewMode?: 'daily' | 'weekly';
+  onViewModeChange?: (mode: 'daily' | 'weekly') => void;
 }
 
 const CompactNavigation = ({
   currentWeekOffset,
   setCurrentWeekOffset,
-  weekStartDate
+  onWeekChange,
+  weekStartDate,
+  selectedDayNumber,
+  onDaySelect,
+  viewMode,
+  onViewModeChange
 }: CompactNavigationProps) => {
   const { t, isRTL } = useI18n();
 
@@ -23,13 +33,22 @@ const CompactNavigation = ({
     return `${format(startDate, 'MMM d')} - ${format(endDate, 'MMM d, yyyy')}`;
   };
 
+  const handleWeekChange = (newOffset: number) => {
+    if (setCurrentWeekOffset) {
+      setCurrentWeekOffset(newOffset);
+    }
+    if (onWeekChange) {
+      onWeekChange(newOffset);
+    }
+  };
+
   return (
     <Card className="p-4 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
       <div className="flex items-center justify-between">
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => setCurrentWeekOffset(Math.max(0, currentWeekOffset - 1))}
+          onClick={() => handleWeekChange(Math.max(0, currentWeekOffset - 1))}
           disabled={currentWeekOffset === 0}
           className="h-8 w-8 p-0"
         >
@@ -48,7 +67,7 @@ const CompactNavigation = ({
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => setCurrentWeekOffset(currentWeekOffset + 1)}
+          onClick={() => handleWeekChange(currentWeekOffset + 1)}
           disabled={currentWeekOffset >= 3}
           className="h-8 w-8 p-0"
         >
