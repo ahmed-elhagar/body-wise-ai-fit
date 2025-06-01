@@ -23,3 +23,40 @@ export const getDayName = (dayNumber: number): string => {
   const days = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
   return days[dayNumber - 1] || 'Unknown';
 };
+
+export const getDayNames = (t?: any): string[] => {
+  if (t) {
+    return [
+      t('days.saturday'),
+      t('days.sunday'), 
+      t('days.monday'),
+      t('days.tuesday'),
+      t('days.wednesday'),
+      t('days.thursday'),
+      t('days.friday')
+    ];
+  }
+  return ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+};
+
+export const getCategoryForIngredient = (ingredientName: string): string => {
+  const categories = {
+    'Proteins': ['chicken', 'beef', 'pork', 'fish', 'eggs', 'tofu', 'beans', 'lentils'],
+    'Vegetables': ['tomato', 'onion', 'garlic', 'carrot', 'spinach', 'broccoli', 'pepper'],
+    'Grains': ['rice', 'bread', 'pasta', 'quinoa', 'oats', 'flour'],
+    'Dairy': ['milk', 'cheese', 'yogurt', 'butter', 'cream'],
+    'Fruits': ['apple', 'banana', 'orange', 'berry', 'lemon', 'lime'],
+    'Spices': ['salt', 'pepper', 'cumin', 'paprika', 'oregano', 'basil'],
+    'Others': []
+  };
+
+  const ingredient = ingredientName.toLowerCase();
+  
+  for (const [category, items] of Object.entries(categories)) {
+    if (items.some(item => ingredient.includes(item))) {
+      return category;
+    }
+  }
+  
+  return 'Others';
+};
