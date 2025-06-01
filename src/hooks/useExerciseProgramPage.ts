@@ -2,6 +2,14 @@
 import { useState } from 'react';
 import { useAIExercise } from './useAIExercise';
 
+export interface ExercisePreferences {
+  focus: string;
+  equipment: string;
+  duration: number;
+  intensity: string;
+  workoutType: string;
+}
+
 export const useExerciseProgramPage = () => {
   const [currentWeek, setCurrentWeek] = useState(1);
   const [selectedDay, setSelectedDay] = useState(1);

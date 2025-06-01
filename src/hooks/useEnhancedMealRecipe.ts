@@ -64,7 +64,12 @@ export const useEnhancedMealRecipe = () => {
         protein: data.protein || 0,
         carbs: data.carbs || 0,
         fat: data.fat || 0,
-        ingredients: Array.isArray(data.ingredients) ? data.ingredients : [],
+        ingredients: Array.isArray(data.ingredients) ? 
+          data.ingredients.map((ing: any) => ({
+            name: typeof ing === 'string' ? ing : ing.name || '',
+            quantity: typeof ing === 'object' ? ing.quantity || '1' : '1',
+            unit: typeof ing === 'object' ? ing.unit || 'piece' : 'piece'
+          })) : [],
         instructions: data.instructions || [],
         prepTime: data.prep_time || 0,
         cookTime: data.cook_time || 0,
@@ -99,7 +104,7 @@ export const useEnhancedMealRecipe = () => {
       const { data, error } = await supabase
         .from('daily_meals')
         .update({
-          ingredients: updates.ingredients,
+          ingredients: updates.ingredients || [],
           instructions: updates.instructions,
           youtube_search_term: updates.youtube_search_term,
           image_url: updates.image_url || updates.image

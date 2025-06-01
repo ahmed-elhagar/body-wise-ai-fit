@@ -44,7 +44,7 @@ interface Exercise {
 export const useExerciseProgramQuery = (weekOffset: number = 0) => {
   const { user } = useAuth();
 
-  const { data: programData, isLoading: isProgramLoading, error: programError } = useQuery({
+  const { data: programData, isLoading: isProgramLoading, error: programError, refetch } = useQuery({
     queryKey: ['exercise-program', user?.id, weekOffset],
     queryFn: async () => {
       if (!user) return null;
@@ -61,17 +61,6 @@ export const useExerciseProgramQuery = (weekOffset: number = 0) => {
         status: 'active'
       };
 
-      return mockProgram;
-    },
-    enabled: !!user
-  });
-
-  const { data: workoutData, isLoading: isWorkoutLoading } = useQuery({
-    queryKey: ['workout-data', programData?.id],
-    queryFn: async () => {
-      if (!programData) return null;
-      
-      // Return mock workout data
       const mockWorkout: Workout = {
         id: 'workout-1',
         workout_name: 'Day 1 Workout',
@@ -82,17 +71,6 @@ export const useExerciseProgramQuery = (weekOffset: number = 0) => {
         completed: false
       };
 
-      return mockWorkout;
-    },
-    enabled: !!programData
-  });
-
-  const { data: exerciseData, isLoading: isExerciseLoading } = useQuery({
-    queryKey: ['exercise-data', workoutData?.id],
-    queryFn: async () => {
-      if (!workoutData) return [];
-      
-      // Return mock exercise data
       const mockExercises: Exercise[] = [
         {
           id: 'exercise-1',
@@ -113,17 +91,25 @@ export const useExerciseProgramQuery = (weekOffset: number = 0) => {
         }
       ];
 
-      return mockExercises;
+      return {
+        program: mockProgram,
+        workout: mockWorkout,
+        exercises: mockExercises,
+        isRestDay: false,
+        weekStartDate: new Date().toISOString().split('T')[0]
+      };
     },
-    enabled: !!workoutData
+    enabled: !!user
   });
 
   return {
-    program: programData || null,
-    workout: workoutData || null,
-    exercises: exerciseData || [],
-    isLoading: isProgramLoading || isWorkoutLoading || isExerciseLoading,
+    program: programData?.program || null,
+    workout: programData?.workout || null,
+    exercises: programData?.exercises || [],
+    isLoading: isProgramLoading,
     error: programError,
-    refetch: () => {}
+    isRestDay: programData?.isRestDay || false,
+    weekStartDate: programData?.weekStartDate || '',
+    refetch
   };
 };

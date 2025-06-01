@@ -70,23 +70,23 @@ const CompactDailyView = ({
 
       {/* Meals Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {meals.map((meal) => (
-          <MealCard
-            key={meal.id}
-            meal={{
-              ...meal,
-              image: meal.image || meal.image_url || ""
-            }}
-            onShowRecipe={(mealWithImage) => onShowRecipe({
-              ...mealWithImage,
-              image_url: mealWithImage.image
-            })}
-            onExchangeMeal={(mealWithImage) => onExchangeMeal({
-              ...mealWithImage,
-              image_url: mealWithImage.image
-            })}
-          />
-        ))}
+        {meals.map((meal) => {
+          // Ensure id is present - use a default if missing
+          const mealWithId: Meal = {
+            ...meal,
+            id: meal.id || `meal-${Math.random().toString(36).substr(2, 9)}`,
+            image: meal.image || meal.image_url || ""
+          };
+          
+          return (
+            <MealCard
+              key={mealWithId.id}
+              meal={mealWithId}
+              onShowRecipe={onShowRecipe}
+              onExchangeMeal={onExchangeMeal}
+            />
+          );
+        })}
       </div>
       
       {meals.length === 0 && (
