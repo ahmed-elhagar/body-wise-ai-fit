@@ -3,8 +3,8 @@ import { format, addDays } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Activity, ChefHat, Plus } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { Eye, Calendar, ChefHat, ChevronRight } from "lucide-react";
+import { useMealPlanTranslations } from "@/utils/mealPlanTranslations";
 import type { DailyMeal } from "@/hooks/useMealPlanData";
 
 interface WeeklyViewProps {
@@ -26,16 +26,28 @@ const WeeklyView = ({
   onExchangeMeal,
   onAddSnack
 }: WeeklyViewProps) => {
-  const { t, isRTL } = useLanguage();
+  const { 
+    weeklyView, 
+    cal, 
+    meals, 
+    protein, 
+    carbs, 
+    moreMeals, 
+    viewDay, 
+    addSnack, 
+    recipe,
+    today,
+    isRTL 
+  } = useMealPlanTranslations();
 
   const weekDays = [
-    { number: 1, nameKey: 'mealPlan.dayNames.1', date: weekStartDate },
-    { number: 2, nameKey: 'mealPlan.dayNames.2', date: addDays(weekStartDate, 1) },
-    { number: 3, nameKey: 'mealPlan.dayNames.3', date: addDays(weekStartDate, 2) },
-    { number: 4, nameKey: 'mealPlan.dayNames.4', date: addDays(weekStartDate, 3) },
-    { number: 5, nameKey: 'mealPlan.dayNames.5', date: addDays(weekStartDate, 4) },
-    { number: 6, nameKey: 'mealPlan.dayNames.6', date: addDays(weekStartDate, 5) },
-    { number: 7, nameKey: 'mealPlan.dayNames.7', date: addDays(weekStartDate, 6) }
+    { number: 1, date: weekStartDate },
+    { number: 2, date: addDays(weekStartDate, 1) },
+    { number: 3, date: addDays(weekStartDate, 2) },
+    { number: 4, date: addDays(weekStartDate, 3) },
+    { number: 5, date: addDays(weekStartDate, 4) },
+    { number: 6, date: addDays(weekStartDate, 5) },
+    { number: 7, date: addDays(weekStartDate, 6) }
   ];
 
   const getDayMeals = (dayNumber: number) => {
@@ -64,12 +76,17 @@ const WeeklyView = ({
     }
   };
 
+  const getDayName = (dayNumber: number) => {
+    const dayNames = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+    return dayNames[dayNumber - 1] || 'Unknown';
+  };
+
   return (
     <Card className="shadow-lg rounded-2xl border-0 bg-white/90 backdrop-blur-sm">
       <CardHeader className="pb-4">
         <CardTitle className={`text-2xl font-bold flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
           <Eye className="w-6 h-6 text-fitness-primary-600" />
-          {t('mealPlan.weeklyView')}
+          {weeklyView}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -90,7 +107,7 @@ const WeeklyView = ({
                   <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
                     <div className={isRTL ? 'text-right' : 'text-left'}>
                       <CardTitle className="text-lg font-semibold text-fitness-primary-800">
-                        {t(day.nameKey)}
+                        {getDayName(day.number)}
                       </CardTitle>
                       <p className="text-sm text-fitness-primary-500">
                         {format(day.date, 'MMM d')}
@@ -98,11 +115,11 @@ const WeeklyView = ({
                     </div>
                     <div className={`text-center ${isRTL ? 'text-left' : 'text-right'}`}>
                       <Badge className="bg-fitness-accent-100 text-fitness-accent-700 border-fitness-accent-200 font-medium">
-                        {dayStats.calories} {t('mealPlan.cal')}
+                        {dayStats.calories} {cal}
                       </Badge>
                       {isToday && (
                         <p className="text-xs text-fitness-accent-600 font-semibold mt-1">
-                          {t('mealPlan.today')}
+                          {today}
                         </p>
                       )}
                     </div>
@@ -114,15 +131,15 @@ const WeeklyView = ({
                   <div className="grid grid-cols-3 gap-2 text-xs">
                     <div className="text-center p-2 bg-fitness-primary-50 rounded-lg">
                       <div className="font-semibold text-fitness-primary-700">{dayMeals.length}</div>
-                      <div className="text-fitness-primary-500">{t('mealPlan.meals')}</div>
+                      <div className="text-fitness-primary-500">{meals}</div>
                     </div>
                     <div className="text-center p-2 bg-blue-50 rounded-lg">
                       <div className="font-semibold text-blue-700">{dayStats.protein.toFixed(0)}g</div>
-                      <div className="text-blue-500">{t('mealPlan.protein')}</div>
+                      <div className="text-blue-500">{protein}</div>
                     </div>
                     <div className="text-center p-2 bg-green-50 rounded-lg">
                       <div className="font-semibold text-green-700">{dayStats.carbs.toFixed(0)}g</div>
-                      <div className="text-green-500">{t('mealPlan.carbs')}</div>
+                      <div className="text-green-500">{carbs}</div>
                     </div>
                   </div>
 
@@ -143,14 +160,14 @@ const WeeklyView = ({
                               variant="outline" 
                               className={`text-xs mb-1 ${getMealTypeColor(meal.meal_type)}`}
                             >
-                              {t(`mealPlan.mealTypes.${meal.meal_type}`)}
+                              {meal.meal_type}
                             </Badge>
                             <h5 className="font-medium text-sm text-gray-900 line-clamp-1">
                               {meal.name}
                             </h5>
                           </div>
                           <span className="text-xs font-medium text-fitness-primary-600 ml-2">
-                            {meal.calories || 0} {t('mealPlan.cal')}
+                            {meal.calories || 0} {cal}
                           </span>
                         </div>
                         
@@ -165,7 +182,7 @@ const WeeklyView = ({
                             }}
                           >
                             <ChefHat className="w-3 h-3 mr-1" />
-                            {t('mealPlan.recipe')}
+                            {recipe}
                           </Button>
                         </div>
                       </div>
@@ -173,7 +190,7 @@ const WeeklyView = ({
                     
                     {dayMeals.length > 3 && (
                       <div className="text-center text-xs text-fitness-primary-500">
-                        +{dayMeals.length - 3} {t('mealPlan.moreMeals')}
+                        +{dayMeals.length - 3} {moreMeals}
                       </div>
                     )}
                   </div>
@@ -189,8 +206,8 @@ const WeeklyView = ({
                         onSwitchToDaily();
                       }}
                     >
-                      <Activity className="w-4 h-4 mr-2" />
-                      {t('mealPlan.viewDay')}
+                      <Calendar className="w-4 h-4 mr-2" />
+                      {viewDay}
                     </Button>
                     
                     <Button 
@@ -202,8 +219,8 @@ const WeeklyView = ({
                         onAddSnack(day.number);
                       }}
                     >
-                      <Plus className="w-4 h-4 mr-2" />
-                      {t('mealPlan.addSnack')}
+                      <ChevronRight className="w-4 h-4 mr-2" />
+                      {addSnack}
                     </Button>
                   </div>
                 </CardContent>

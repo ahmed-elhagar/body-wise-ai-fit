@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Grid3X3, ChevronLeft, ChevronRight, Eye } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useMealPlanTranslations } from "@/utils/mealPlanTranslations";
 
 interface EnhancedDaySelectorProps {
   weekStartDate: Date;
@@ -27,7 +27,15 @@ const EnhancedDaySelector = ({
   onWeekChange,
   dailyMealsCount = 0
 }: EnhancedDaySelectorProps) => {
-  const { t, isRTL } = useLanguage();
+  const { 
+    currentWeek, 
+    selectDay, 
+    dailyView, 
+    weeklyView, 
+    meals,
+    isRTL 
+  } = useMealPlanTranslations();
+  
   const today = new Date();
 
   const days = Array.from({ length: 7 }, (_, index) => {
@@ -41,9 +49,8 @@ const EnhancedDaySelector = ({
       date,
       isSelected,
       isToday,
-      dayName: format(date, 'EEE'),
       dayDate: format(date, 'd'),
-      fullDayName: t(`mealPlan.dayNames.${dayNumber}`)
+      dayName: format(date, 'EEE')
     };
   });
 
@@ -80,12 +87,12 @@ const EnhancedDaySelector = ({
                 </h2>
                 {isCurrentWeek && (
                   <Badge className="bg-fitness-accent-100 text-fitness-accent-700 border-fitness-accent-200 text-xs px-2 py-1">
-                    {t('mealPlan.currentWeek')}
+                    {currentWeek}
                   </Badge>
                 )}
               </div>
               <p className="text-sm text-fitness-primary-600 mt-1">
-                {viewMode === 'daily' ? t('mealPlan.dailyView') : t('mealPlan.weeklyView')}
+                {viewMode === 'daily' ? dailyView : weeklyView}
               </p>
             </div>
             
@@ -110,7 +117,7 @@ const EnhancedDaySelector = ({
               }`}
             >
               <Calendar className="w-4 h-4" />
-              {t('mealPlan.dailyView')}
+              {dailyView}
             </button>
             <button
               onClick={() => onViewModeChange('weekly')}
@@ -121,7 +128,7 @@ const EnhancedDaySelector = ({
               }`}
             >
               <Grid3X3 className="w-4 h-4" />
-              {t('mealPlan.weeklyView')}
+              {weeklyView}
             </button>
           </div>
         </div>
@@ -132,17 +139,17 @@ const EnhancedDaySelector = ({
             <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <Eye className="w-5 h-5 text-fitness-primary-600" />
               <h3 className="text-lg font-semibold text-fitness-primary-800">
-                {t('mealPlan.selectDay')}
+                {selectDay}
               </h3>
               {dailyMealsCount > 0 && (
                 <Badge className="bg-fitness-accent-100 text-fitness-accent-700 border-fitness-accent-200">
-                  {dailyMealsCount} {t('mealPlan.meals')}
+                  {dailyMealsCount} {meals}
                 </Badge>
               )}
             </div>
             
             <div className="grid grid-cols-7 gap-2">
-              {days.map(({ dayNumber, date, isSelected, isToday, dayName, dayDate, fullDayName }) => (
+              {days.map(({ dayNumber, date, isSelected, isToday, dayDate }) => (
                 <button
                   key={dayNumber}
                   onClick={() => onDayChange(dayNumber)}
@@ -156,20 +163,12 @@ const EnhancedDaySelector = ({
                   `}
                 >
                   <div className="flex flex-col items-center gap-1">
-                    <span className={`text-xs font-bold ${isSelected ? 'text-white' : 'text-fitness-primary-500'}`}>
-                      {dayName}
-                    </span>
                     <span className={`text-lg font-bold ${isSelected ? 'text-white' : 'text-fitness-primary-700'}`}>
                       {dayDate}
                     </span>
                     {isToday && (
                       <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-fitness-accent-200' : 'bg-fitness-accent-500'}`} />
                     )}
-                  </div>
-                  
-                  {/* Tooltip */}
-                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-20">
-                    {fullDayName}
                   </div>
                 </button>
               ))}

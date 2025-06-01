@@ -30,6 +30,8 @@
   "selectDay": "Select Day",
   "currentWeek": "Current",
   "today": "Today",
+  "dailyView": "Daily View",
+  "weeklyView": "Weekly View",
   "addSnackDialog": {
     "analyzing": "Analyzing your nutrition needs...",
     "creating": "Creating perfect snack...",
@@ -46,8 +48,6 @@
   "considerLightSnack": "Consider a light snack or some water to complete your day.",
   "perfectDay": "Perfect Day",
   "nutritionGoalsReached": "Your nutrition goals have been successfully reached for today.",
-  "dailyView": "Daily View",
-  "weeklyView": "Weekly View",
   "mealTypes": {
     "breakfast": "Breakfast",
     "lunch": "Lunch", 

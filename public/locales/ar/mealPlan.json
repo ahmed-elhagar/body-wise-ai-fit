@@ -30,6 +30,8 @@
   "selectDay": "اختر اليوم",
   "currentWeek": "الحالي",
   "today": "اليوم",
+  "dailyView": "العرض اليومي",
+  "weeklyView": "العرض الأسبوعي",
   "addSnackDialog": {
     "analyzing": "جاري تحليل احتياجاتك الغذائية...",
     "creating": "جاري إنشاء الوجبة الخفيفة المثالية...",
@@ -46,8 +48,6 @@
   "considerLightSnack": "فكر في وجبة خفيفة أو بعض الماء لإكمال يومك.",
   "perfectDay": "يوم مثالي",
   "nutritionGoalsReached": "تم الوصول بنجاح لأهداف التغذية لهذا اليوم.",
-  "dailyView": "العرض اليومي",
-  "weeklyView": "العرض الأسبوعي",
   "mealTypes": {
     "breakfast": "الإفطار",
     "lunch": "الغداء",
