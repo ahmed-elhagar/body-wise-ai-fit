@@ -3,7 +3,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { PageHeader } from "@/components/ui/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, Users, TrendingUp, CreditCard, Settings } from "lucide-react";
+import { Shield, Users, TrendingUp, CreditCard, Settings, Brain } from "lucide-react";
 import { useRole } from "@/hooks/useRole";
 import { Navigate } from "react-router-dom";
 import UsersTable from "@/components/admin/UsersTable";
@@ -11,6 +11,7 @@ import AnalyticsTab from "@/components/admin/AnalyticsTab";
 import SubscriptionsTab from "@/components/admin/SubscriptionsTab";
 import CoachesTab from "@/components/admin/CoachesTab";
 import StatsCards from "@/components/admin/StatsCards";
+import AIModelsTab from "@/components/admin/AIModelsTab";
 
 const Admin = () => {
   const { isAdmin, isLoading } = useRole();
@@ -45,7 +46,7 @@ const Admin = () => {
           <StatsCards />
           
           <Tabs defaultValue="users" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 bg-white/80 backdrop-blur-sm border border-gray-200 shadow-sm">
+            <TabsList className="grid w-full grid-cols-5 bg-white/80 backdrop-blur-sm border border-gray-200 shadow-sm">
               <TabsTrigger 
                 value="users" 
                 className="data-[state=active]:bg-purple-600 data-[state=active]:text-white"
@@ -74,6 +75,13 @@ const Admin = () => {
                 <Shield className="w-4 h-4 mr-2" />
                 Coaches
               </TabsTrigger>
+              <TabsTrigger 
+                value="ai-models" 
+                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white"
+              >
+                <Brain className="w-4 h-4 mr-2" />
+                AI Models
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="users" className="mt-6">
@@ -90,6 +98,10 @@ const Admin = () => {
 
             <TabsContent value="coaches" className="mt-6">
               <CoachesTab />
+            </TabsContent>
+
+            <TabsContent value="ai-models" className="mt-6">
+              <AIModelsTab />
             </TabsContent>
           </Tabs>
         </div>

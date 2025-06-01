@@ -39,6 +39,51 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_feature_models: {
+        Row: {
+          created_at: string
+          fallback_model_id: string | null
+          feature_name: string
+          id: string
+          is_active: boolean
+          primary_model_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          fallback_model_id?: string | null
+          feature_name: string
+          id?: string
+          is_active?: boolean
+          primary_model_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          fallback_model_id?: string | null
+          feature_name?: string
+          id?: string
+          is_active?: boolean
+          primary_model_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_feature_models_fallback_model_id_fkey"
+            columns: ["fallback_model_id"]
+            isOneToOne: false
+            referencedRelation: "ai_models"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_feature_models_primary_model_id_fkey"
+            columns: ["primary_model_id"]
+            isOneToOne: false
+            referencedRelation: "ai_models"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_generation_logs: {
         Row: {
           condition_type: string | null
@@ -78,6 +123,54 @@ export type Database = {
           response_data?: Json | null
           status?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      ai_models: {
+        Row: {
+          capabilities: string[]
+          context_window: number | null
+          cost_per_1k_tokens: number | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          is_default: boolean
+          max_tokens: number | null
+          model_id: string
+          name: string
+          provider: string
+          updated_at: string
+        }
+        Insert: {
+          capabilities?: string[]
+          context_window?: number | null
+          cost_per_1k_tokens?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          max_tokens?: number | null
+          model_id: string
+          name: string
+          provider: string
+          updated_at?: string
+        }
+        Update: {
+          capabilities?: string[]
+          context_window?: number | null
+          cost_per_1k_tokens?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          max_tokens?: number | null
+          model_id?: string
+          name?: string
+          provider?: string
+          updated_at?: string
         }
         Relationships: []
       }
