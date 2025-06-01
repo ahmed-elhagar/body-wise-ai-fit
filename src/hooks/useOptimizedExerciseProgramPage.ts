@@ -5,6 +5,7 @@ import { useExerciseProgramData } from './useExerciseProgramData';
 import { useAIExerciseProgram } from './useAIExerciseProgram';
 import { addDays, startOfWeek, format } from 'date-fns';
 
+// Use the correct ExercisePreferences type that matches the AIExerciseDialog
 export interface ExercisePreferences {
   workoutType: "home" | "gym";
   difficultyLevel: "beginner" | "intermediate" | "advanced";
@@ -30,11 +31,11 @@ export const useOptimizedExerciseProgramPage = () => {
   const [aiPreferences, setAiPreferences] = useState<ExercisePreferences>({
     workoutType: "home",
     difficultyLevel: "beginner",
-    fitnessGoals: [],
-    availableEquipment: [],
+    fitnessGoals: ["general_fitness"],
+    availableEquipment: ["bodyweight"],
     timePerWorkout: 30,
     workoutsPerWeek: 3,
-    focusAreas: []
+    focusAreas: ["full_body"]
   });
 
   // Enhanced date calculations
