@@ -5,7 +5,7 @@ import type { WeeklyMealPlan, DailyMeal } from './useMealPlanData';
 
 interface ShoppingItem {
   name: string;
-  quantity: string;
+  quantity: number;
   unit: string;
   category: string;
   mealSource: string;
@@ -32,18 +32,17 @@ export const useEnhancedShoppingList = (weeklyPlan?: {
         meal.ingredients.forEach((ingredient: any) => {
           const key = `${ingredient.name.toLowerCase()}-${ingredient.unit}`;
           const category = getCategoryForIngredient(ingredient.name);
+          const quantity = parseFloat(ingredient.quantity) || 1;
           
           if (itemMap.has(key)) {
             const existing = itemMap.get(key)!;
-            // Combine quantities if possible
-            const combinedQuantity = combineQuantities(existing.quantity, ingredient.quantity);
-            existing.quantity = combinedQuantity;
+            existing.quantity += quantity;
             existing.mealSource += `, ${meal.name}`;
           } else {
             itemMap.set(key, {
               name: ingredient.name,
-              quantity: ingredient.quantity,
-              unit: ingredient.unit,
+              quantity: quantity,
+              unit: ingredient.unit || 'piece',
               category,
               mealSource: meal.name
             });
@@ -101,16 +100,4 @@ const getCategoryForIngredient = (ingredientName: string): string => {
   }
   
   return 'Others';
-};
-
-const combineQuantities = (qty1: string, qty2: string): string => {
-  // Simple quantity combination - can be enhanced
-  const num1 = parseFloat(qty1) || 0;
-  const num2 = parseFloat(qty2) || 0;
-  
-  if (num1 > 0 && num2 > 0) {
-    return (num1 + num2).toString();
-  }
-  
-  return `${qty1}, ${qty2}`;
 };

@@ -4,7 +4,7 @@ import { Loader2, Activity } from 'lucide-react';
 import { Card } from './card';
 import { cn } from '@/lib/utils';
 
-export type LoadingType = 'meal-plan' | 'exercise' | 'general' | 'recipe';
+export type LoadingType = 'meal-plan' | 'exercise' | 'general' | 'recipe' | 'analysis';
 
 interface EnhancedLoadingIndicatorProps {
   message?: string;
@@ -49,6 +49,12 @@ const EnhancedLoadingIndicator = ({
       'Creating recipe steps...',
       'Calculating nutrition...',
       'Finalizing recipe...'
+    ],
+    'analysis': [
+      'Processing data...',
+      'Running analysis...',
+      'Generating insights...',
+      'Preparing results...'
     ],
     'general': [
       'Processing request...',

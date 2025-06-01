@@ -71,7 +71,7 @@ const ExercisePageRefactored = () => {
         <div className="flex items-center justify-center min-h-screen">
           <EnhancedLoadingIndicator
             status="loading"
-            type="general"
+            type="exercise"
             message={t('exercise.loadingProgram') || 'Loading Exercise Program'}
             description="Preparing your personalized workout plan..."
             size="lg"
@@ -127,6 +127,11 @@ const ExercisePageRefactored = () => {
             onGenerateProgram={() => setShowAIDialog(true)}
             workoutType={workoutType}
             setWorkoutType={setWorkoutType}
+            showAIDialog={showAIDialog}
+            setShowAIDialog={setShowAIDialog}
+            aiPreferences={aiPreferences}
+            setAiPreferences={setAiPreferences}
+            isGenerating={isGenerating}
           />
         </div>
       </div>
