@@ -1,6 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.8';
+import { AIService } from "../_shared/aiService.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -38,111 +39,114 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+    if (!openAIApiKey) {
+      throw new Error('OpenAI API key not configured');
+    }
+
     const isArabic = language === 'ar';
     
-    // Create culturally appropriate snacks based on language/locale
-    const arabicSnacks = [
-      { 
-        name: 'لوز محمص مع التمر', 
-        nameEn: 'Roasted Almonds with Dates',
-        ingredients: [
-          { name: 'لوز محمص', quantity: '30', unit: 'جرام' },
-          { name: 'تمر منزوع النوى', quantity: '3', unit: 'حبة' },
-          { name: 'قرفة مطحونة', quantity: '1/2', unit: 'ملعقة صغيرة' }
-        ],
-        instructions: ['قم بتقطيع التمر إلى قطع صغيرة', 'اخلط اللوز مع التمر', 'رش القرفة للنكهة', 'قدم في طبق صغير']
-      },
-      { 
-        name: 'زبادي يوناني بالعسل والجوز', 
-        nameEn: 'Greek Yogurt with Honey and Walnuts',
-        ingredients: [
-          { name: 'زبادي يوناني', quantity: '150', unit: 'جرام' },
-          { name: 'عسل طبيعي', quantity: '1', unit: 'ملعقة كبيرة' },
-          { name: 'جوز مقطع', quantity: '20', unit: 'جرام' }
-        ],
-        instructions: ['ضع الزبادي في وعاء', 'أضف العسل والجوز من الأعلى', 'اخلط برفق واستمتع']
-      },
-      { 
-        name: 'حمص مشوي بالبهارات', 
-        nameEn: 'Spiced Roasted Chickpeas',
-        ingredients: [
-          { name: 'حمص مسلوق', quantity: '100', unit: 'جرام' },
-          { name: 'كمون مطحون', quantity: '1/2', unit: 'ملعقة صغيرة' },
-          { name: 'بابريكا', quantity: '1/2', unit: 'ملعقة صغيرة' },
-          { name: 'ملح', quantity: '1/4', unit: 'ملعقة صغيرة' }
-        ],
-        instructions: ['سخن الفرن على 200 درجة مئوية', 'اخلط الحمص مع البهارات', 'اشوي لمدة 15 دقيقة', 'قدم دافئاً']
-      }
-    ];
+    // Create a smarter AI prompt for snack generation
+    const prompt = `Generate a healthy snack for ${calories} calories. User profile:
+- Age: ${userProfile.age}, Gender: ${userProfile.gender}
+- Fitness Goal: ${userProfile.fitness_goal}
+- Allergies: ${userProfile.allergies?.join(', ') || 'None'}
+- Dietary Restrictions: ${userProfile.dietary_restrictions?.join(', ') || 'None'}
+- Nationality: ${userProfile.nationality || 'International'}
 
-    const englishSnacks = [
-      { 
-        name: 'Greek Yogurt Berry Bowl', 
-        nameAr: 'وعاء الزبادي اليوناني بالتوت',
-        ingredients: [
-          { name: 'Greek yogurt', quantity: '150', unit: 'g' },
-          { name: 'Mixed berries', quantity: '80', unit: 'g' },
-          { name: 'Honey', quantity: '1', unit: 'tbsp' },
-          { name: 'Granola', quantity: '20', unit: 'g' }
-        ],
-        instructions: ['Place yogurt in bowl', 'Top with berries and granola', 'Drizzle with honey', 'Serve immediately']
-      },
-      { 
-        name: 'Apple Slices with Almond Butter', 
-        nameAr: 'شرائح التفاح بزبدة اللوز',
-        ingredients: [
-          { name: 'Medium apple', quantity: '1', unit: 'piece' },
-          { name: 'Almond butter', quantity: '2', unit: 'tbsp' },
-          { name: 'Cinnamon powder', quantity: '1/4', unit: 'tsp' }
-        ],
-        instructions: ['Wash and slice apple into wedges', 'Arrange on plate', 'Serve with almond butter for dipping', 'Sprinkle with cinnamon']
-      },
-      { 
-        name: 'Protein Energy Balls', 
-        nameAr: 'كرات الطاقة بالبروتين',
-        ingredients: [
-          { name: 'Rolled oats', quantity: '50', unit: 'g' },
-          { name: 'Protein powder', quantity: '1', unit: 'scoop' },
-          { name: 'Peanut butter', quantity: '2', unit: 'tbsp' },
-          { name: 'Honey', quantity: '1', unit: 'tbsp' }
-        ],
-        instructions: ['Mix all ingredients in a bowl', 'Form mixture into small balls', 'Refrigerate for 30 minutes', 'Enjoy chilled']
-      }
-    ];
+Generate a snack in ${isArabic ? 'Arabic' : 'English'} that:
+1. Matches the calorie target (±50 calories)
+2. Considers cultural preferences
+3. Avoids allergens and dietary restrictions
+4. Is practical and easy to prepare
 
-    const snackOptions = isArabic ? arabicSnacks : englishSnacks;
-    const selectedSnack = snackOptions[Math.floor(Math.random() * snackOptions.length)];
+Return ONLY a JSON object:
+{
+  "name": "snack name in ${language}",
+  "ingredients": [{"name": "ingredient", "quantity": "amount", "unit": "unit"}],
+  "instructions": ["step 1", "step 2"],
+  "calories": ${calories},
+  "protein": estimated_grams,
+  "carbs": estimated_grams,
+  "fat": estimated_grams
+}`;
 
-    // Calculate nutritional values based on calories with more realistic values
-    const targetCalories = Math.min(calories, 350);
-    const protein = Math.round((targetCalories * 0.20) / 4); // 20% from protein
-    const carbs = Math.round((targetCalories * 0.50) / 4); // 50% from carbs  
-    const fat = Math.round((targetCalories * 0.30) / 9); // 30% from fat
+    console.log('🤖 Using new AI service for snack generation...');
 
-    // Create the snack object with proper structure
-    const snackData = {
+    // Use the new AI service
+    const aiService = new AIService(openAIApiKey);
+    const response = await aiService.generate('snack_generation', {
+      messages: [
+        { role: 'system', content: 'You are a nutritionist AI. Generate healthy snacks based on user requirements. Always respond with valid JSON only.' },
+        { role: 'user', content: prompt }
+      ],
+      temperature: 0.7,
+      maxTokens: 800,
+    });
+
+    console.log('✅ AI snack response received');
+
+    // Parse AI response
+    let snackData;
+    try {
+      const cleanedContent = response.content.trim()
+        .replace(/```json\n?/g, '')
+        .replace(/```\n?/g, '');
+      snackData = JSON.parse(cleanedContent);
+    } catch (parseError) {
+      console.error('Failed to parse AI snack response:', parseError);
+      // Fallback to pre-defined snacks
+      const fallbackSnacks = isArabic ? [
+        { 
+          name: 'لوز وتمر', 
+          ingredients: [
+            { name: 'لوز', quantity: '20', unit: 'جرام' },
+            { name: 'تمر', quantity: '2', unit: 'حبة' }
+          ],
+          instructions: ['اخلط اللوز مع التمر واستمتع']
+        }
+      ] : [
+        { 
+          name: 'Apple with Almonds', 
+          ingredients: [
+            { name: 'Apple', quantity: '1', unit: 'medium' },
+            { name: 'Almonds', quantity: '15', unit: 'pieces' }
+          ],
+          instructions: ['Slice apple and enjoy with almonds']
+        }
+      ];
+      
+      snackData = fallbackSnacks[0];
+      snackData.calories = calories;
+      snackData.protein = Math.round(calories * 0.15 / 4);
+      snackData.carbs = Math.round(calories * 0.55 / 4);
+      snackData.fat = Math.round(calories * 0.30 / 9);
+    }
+
+    // Prepare snack data for database
+    const finalSnackData = {
       weekly_plan_id: weeklyPlanId,
       day_number: day,
-      meal_type: 'snack', // This should now work with the updated constraint
-      name: selectedSnack.name,
-      calories: targetCalories,
-      protein: protein,
-      carbs: carbs,
-      fat: fat,
+      meal_type: 'snack',
+      name: snackData.name,
+      calories: snackData.calories || calories,
+      protein: snackData.protein || Math.round(calories * 0.15 / 4),
+      carbs: snackData.carbs || Math.round(calories * 0.55 / 4),
+      fat: snackData.fat || Math.round(calories * 0.30 / 9),
       prep_time: 5,
       cook_time: 0,
       servings: 1,
       image_url: '/api/placeholder/300/200',
-      ingredients: selectedSnack.ingredients,
-      instructions: selectedSnack.instructions
+      ingredients: snackData.ingredients || [],
+      instructions: snackData.instructions || []
     };
 
-    console.log('🍎 Saving snack to database:', snackData);
+    console.log('🍎 Saving AI-generated snack to database:', finalSnackData);
 
     // Save to database
     const { data: savedSnack, error: dbError } = await supabase
       .from('daily_meals')
-      .insert([snackData])
+      .insert([finalSnackData])
       .select()
       .single();
 
@@ -158,9 +162,9 @@ serve(async (req) => {
       );
     }
 
-    console.log('✅ Snack saved successfully:', savedSnack);
+    console.log('✅ AI snack saved successfully:', savedSnack);
 
-    const successMessage = isArabic ? 'تم إضافة الوجبة الخفيفة بنجاح!' : 'Snack added successfully!';
+    const successMessage = isArabic ? 'تم إضافة الوجبة الخفيفة بنجاح!' : 'AI snack added successfully!';
 
     return new Response(
       JSON.stringify({ 

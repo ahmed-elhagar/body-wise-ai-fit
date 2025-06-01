@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -16,15 +15,15 @@ import {
   Plus, 
   Settings, 
   DollarSign, 
-  Zap, 
   Eye,
   Edit,
-  Bot
+  Bot,
+  RefreshCw
 } from "lucide-react";
 import { useAIModels, AIModel } from "@/hooks/useAIModels";
 
 const AIModelsTab = () => {
-  const { models, featureModels, isLoading, createModel, updateModel, updateFeatureModel } = useAIModels();
+  const { models, featureModels, isLoading, createModel, updateModel, updateFeatureModel, isUpdating } = useAIModels();
   const [selectedModel, setSelectedModel] = useState<AIModel | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [newModel, setNewModel] = useState({
@@ -39,6 +38,20 @@ const AIModelsTab = () => {
     is_active: true,
     is_default: false,
   });
+
+  // All AI features in the system
+  const allFeatures = [
+    { id: 'meal_plan', name: 'Meal Plan Generation', description: 'AI-powered weekly meal planning' },
+    { id: 'exercise_program', name: 'Exercise Program', description: 'Workout program generation' },
+    { id: 'chat', name: 'General AI Chat', description: 'General purpose AI chat assistant' },
+    { id: 'fitness_chat', name: 'Fitness Chat', description: 'Specialized fitness coaching chat' },
+    { id: 'food_analysis', name: 'Food Analysis', description: 'Image-based food analysis and recognition' },
+    { id: 'meal_recipe', name: 'Recipe Generation', description: 'Individual meal recipe creation' },
+    { id: 'exercise_exchange', name: 'Exercise Exchange', description: 'Exercise substitution and alternatives' },
+    { id: 'snack_generation', name: 'Snack Generation', description: 'AI-powered snack suggestions' },
+    { id: 'meal_alternatives', name: 'Meal Alternatives', description: 'Alternative meal suggestions' },
+    { id: 'meal_image', name: 'Meal Image Generation', description: 'AI-generated meal images' }
+  ];
 
   const handleCreateModel = () => {
     createModel(newModel);
@@ -58,6 +71,7 @@ const AIModelsTab = () => {
   };
 
   const handleUpdateFeatureModel = (featureName: string, primaryModelId: string, fallbackModelId?: string) => {
+    console.log('🔄 Updating feature model assignment:', { featureName, primaryModelId, fallbackModelId });
     updateFeatureModel({
       feature_name: featureName,
       primary_model_id: primaryModelId,
@@ -75,8 +89,18 @@ const AIModelsTab = () => {
     }
   };
 
-  const capabilityOptions = ['text', 'vision', 'function_calling', 'streaming'];
-  const featureNames = ['meal_plan', 'exercise_program', 'chat', 'food_analysis', 'meal_recipe'];
+  const getAssignedModel = (featureName: string) => {
+    const assignment = featureModels.find(fm => fm.feature_name === featureName);
+    return assignment?.primary_model_id || '';
+  };
+
+  const getAssignedModelName = (featureName: string) => {
+    const assignment = featureModels.find(fm => fm.feature_name === featureName);
+    if (assignment?.primary_model) {
+      return assignment.primary_model.name;
+    }
+    return 'Not assigned';
+  };
 
   if (isLoading) {
     return (
@@ -179,17 +203,78 @@ const AIModelsTab = () => {
         </Dialog>
       </div>
 
-      <Tabs defaultValue="models" className="w-full">
+      <Tabs defaultValue="assignments" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="models" className="flex items-center gap-2">
-            <Bot className="h-4 w-4" />
-            Models
-          </TabsTrigger>
           <TabsTrigger value="assignments" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
             Feature Assignments
           </TabsTrigger>
+          <TabsTrigger value="models" className="flex items-center gap-2">
+            <Bot className="h-4 w-4" />
+            Models
+          </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="assignments" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5" />
+                AI Feature Model Assignments
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.location.reload()}
+                  className="ml-auto"
+                >
+                  <RefreshCw className="h-4 w-4 mr-1" />
+                  Refresh
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {allFeatures.map((feature) => {
+                  const currentAssignment = getAssignedModel(feature.id);
+                  return (
+                    <div key={feature.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex-1">
+                        <h4 className="font-medium">{feature.name}</h4>
+                        <p className="text-sm text-gray-500">{feature.description}</p>
+                        <p className="text-xs text-gray-400 mt-1">
+                          Current: {getAssignedModelName(feature.id)}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Select
+                          value={currentAssignment}
+                          onValueChange={(value) => handleUpdateFeatureModel(feature.id, value)}
+                          disabled={isUpdating}
+                        >
+                          <SelectTrigger className="w-48">
+                            <SelectValue placeholder="Select model" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {models.filter(m => m.is_active).map((model) => (
+                              <SelectItem key={model.id} value={model.id}>
+                                <div className="flex items-center gap-2">
+                                  <Badge className={`${getProviderColor(model.provider)} text-xs`}>
+                                    {model.provider.toUpperCase()}
+                                  </Badge>
+                                  {model.name}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="models" className="space-y-4">
           <Card>
@@ -206,7 +291,7 @@ const AIModelsTab = () => {
                     <TableHead>Model</TableHead>
                     <TableHead>Provider</TableHead>
                     <TableHead>Cost</TableHead>
-                    <TableHead>Capabilities</TableHead>
+                    <TableHead>Max Tokens</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
@@ -234,15 +319,7 @@ const AIModelsTab = () => {
                           <span>{model.cost_per_1k_tokens}/1K</span>
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {model.capabilities.map((cap) => (
-                            <Badge key={cap} variant="outline" className="text-xs">
-                              {cap}
-                            </Badge>
-                          ))}
-                        </div>
-                      </TableCell>
+                      <TableCell>{model.max_tokens?.toLocaleString()}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <div className={`w-2 h-2 rounded-full ${model.is_active ? 'bg-green-500' : 'bg-red-500'}`} />
@@ -262,53 +339,6 @@ const AIModelsTab = () => {
                   ))}
                 </TableBody>
               </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="assignments" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Settings className="h-5 w-5" />
-                Feature Model Assignments
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {featureNames.map((featureName) => {
-                  const assignment = featureModels.find(fm => fm.feature_name === featureName);
-                  return (
-                    <div key={featureName} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <h4 className="font-medium capitalize">
-                          {featureName.replace('_', ' ')}
-                        </h4>
-                        <p className="text-sm text-gray-500">
-                          Current: {assignment?.primary_model?.name || 'Not assigned'}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Select
-                          value={assignment?.primary_model_id || ''}
-                          onValueChange={(value) => handleUpdateFeatureModel(featureName, value, assignment?.fallback_model_id)}
-                        >
-                          <SelectTrigger className="w-48">
-                            <SelectValue placeholder="Select primary model" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {models.filter(m => m.is_active).map((model) => (
-                              <SelectItem key={model.id} value={model.id}>
-                                {model.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
             </CardContent>
           </Card>
         </TabsContent>

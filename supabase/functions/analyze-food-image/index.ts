@@ -2,6 +2,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+import { AIService } from "../_shared/aiService.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -60,49 +61,34 @@ CRITICAL REQUIREMENTS:
 5. Make realistic nutrition estimates
 6. Confidence should be 0.1-1.0`;
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o',
-        messages: [
-          {
-            role: 'user',
-            content: [
-              { type: 'text', text: prompt },
-              {
-                type: 'image_url',
-                image_url: { url: imageBase64 }
-              }
-            ]
-          }
-        ],
-        max_tokens: 1000,
-        temperature: 0.1,
-      }),
+    console.log('🤖 Using new AI service for food analysis...');
+
+    // Use the new AI service
+    const aiService = new AIService(openAIApiKey);
+    const response = await aiService.generate('food_analysis', {
+      messages: [
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: prompt },
+            {
+              type: 'image_url',
+              image_url: { url: imageBase64 }
+            }
+          ]
+        }
+      ],
+      maxTokens: 1000,
+      temperature: 0.1,
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('OpenAI API error:', response.status, errorText);
-      throw new Error(`OpenAI API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    console.log('✅ OpenAI response received');
-
-    if (!data.choices?.[0]?.message?.content) {
-      throw new Error('Invalid response from OpenAI API');
-    }
+    console.log('✅ AI response received');
 
     // Parse the analysis
     let analysis;
     try {
-      const content = data.choices[0].message.content.trim();
-      console.log('Raw OpenAI content:', content.substring(0, 500));
+      const content = response.content.trim();
+      console.log('Raw AI content:', content.substring(0, 500));
       
       // Clean up JSON response
       let cleanedContent = content

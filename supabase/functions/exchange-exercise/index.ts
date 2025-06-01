@@ -2,6 +2,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+import { AIService } from "../_shared/aiService.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -95,39 +96,26 @@ IMPORTANT: Respond with ONLY valid JSON, no additional text or markdown formatti
       throw new Error('OpenAI API key not configured');
     }
 
-    console.log('🤖 Calling OpenAI API...');
+    console.log('🤖 Using new AI service for exercise exchange...');
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a professional fitness trainer AI that provides exercise alternatives. Always respond with valid JSON only, no markdown or additional formatting.'
-          },
-          {
-            role: 'user',
-            content: exchangePrompt
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 1000,
-      }),
+    // Use the new AI service
+    const aiService = new AIService(openAIApiKey);
+    const response = await aiService.generate('exercise_exchange', {
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a professional fitness trainer AI that provides exercise alternatives. Always respond with valid JSON only, no markdown or additional formatting.'
+        },
+        {
+          role: 'user',
+          content: exchangePrompt
+        }
+      ],
+      temperature: 0.7,
+      maxTokens: 1000,
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('OpenAI API error:', response.status, errorText);
-      throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
-    }
-
-    const aiResponse = await response.json();
-    const aiContent = aiResponse.choices[0]?.message?.content;
+    const aiContent = response.content;
 
     if (!aiContent) {
       throw new Error('No response from AI');

@@ -38,12 +38,18 @@ export const useAIModels = () => {
   const { data: models = [], isLoading: modelsLoading } = useQuery({
     queryKey: ['ai-models'],
     queryFn: async () => {
+      console.log('🔍 Fetching AI models...');
       const { data, error } = await supabase
         .from('ai_models')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Error fetching AI models:', error);
+        throw error;
+      }
+      
+      console.log('✅ AI models fetched:', data.length);
       return data as AIModel[];
     },
   });
@@ -52,6 +58,7 @@ export const useAIModels = () => {
   const { data: featureModels = [], isLoading: featureModelsLoading } = useQuery({
     queryKey: ['ai-feature-models'],
     queryFn: async () => {
+      console.log('🔍 Fetching feature model assignments...');
       const { data, error } = await supabase
         .from('ai_feature_models')
         .select(`
@@ -62,7 +69,12 @@ export const useAIModels = () => {
         .eq('is_active', true)
         .order('feature_name');
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Error fetching feature models:', error);
+        throw error;
+      }
+      
+      console.log('✅ Feature models fetched:', data.length);
       return data as AIFeatureModel[];
     },
   });
@@ -70,6 +82,7 @@ export const useAIModels = () => {
   // Create new AI model
   const createModelMutation = useMutation({
     mutationFn: async (newModel: Omit<AIModel, 'id' | 'created_at' | 'updated_at'>) => {
+      console.log('🆕 Creating new AI model:', newModel);
       const { data, error } = await supabase
         .from('ai_models')
         .insert(newModel)
@@ -84,6 +97,7 @@ export const useAIModels = () => {
       toast.success('AI model created successfully');
     },
     onError: (error: any) => {
+      console.error('❌ Failed to create AI model:', error);
       toast.error(`Failed to create AI model: ${error.message}`);
     },
   });
@@ -91,6 +105,7 @@ export const useAIModels = () => {
   // Update AI model
   const updateModelMutation = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<AIModel> & { id: string }) => {
+      console.log('🔄 Updating AI model:', id, updates);
       const { data, error } = await supabase
         .from('ai_models')
         .update(updates)
@@ -106,11 +121,12 @@ export const useAIModels = () => {
       toast.success('AI model updated successfully');
     },
     onError: (error: any) => {
+      console.error('❌ Failed to update AI model:', error);
       toast.error(`Failed to update AI model: ${error.message}`);
     },
   });
 
-  // Update feature model assignment
+  // Update feature model assignment with better error handling and immediate UI feedback
   const updateFeatureModelMutation = useMutation({
     mutationFn: async ({ 
       feature_name, 
@@ -121,26 +137,81 @@ export const useAIModels = () => {
       primary_model_id: string;
       fallback_model_id?: string;
     }) => {
-      const { data, error } = await supabase
+      console.log('🔄 Updating feature model assignment:', { feature_name, primary_model_id, fallback_model_id });
+      
+      // First try to update existing assignment
+      const { data: existingData, error: selectError } = await supabase
         .from('ai_feature_models')
-        .update({
-          primary_model_id,
-          fallback_model_id,
-        })
+        .select('id')
         .eq('feature_name', feature_name)
         .eq('is_active', true)
-        .select()
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
-      return data;
+      if (selectError) {
+        console.error('❌ Error checking existing assignment:', selectError);
+        throw selectError;
+      }
+
+      let result;
+      if (existingData) {
+        // Update existing assignment
+        const { data, error } = await supabase
+          .from('ai_feature_models')
+          .update({
+            primary_model_id,
+            fallback_model_id,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingData.id)
+          .select(`
+            *,
+            primary_model:ai_models!primary_model_id(*),
+            fallback_model:ai_models!fallback_model_id(*)
+          `)
+          .single();
+
+        if (error) throw error;
+        result = data;
+      } else {
+        // Create new assignment
+        const { data, error } = await supabase
+          .from('ai_feature_models')
+          .insert({
+            feature_name,
+            primary_model_id,
+            fallback_model_id,
+            is_active: true
+          })
+          .select(`
+            *,
+            primary_model:ai_models!primary_model_id(*),
+            fallback_model:ai_models!fallback_model_id(*)
+          `)
+          .single();
+
+        if (error) throw error;
+        result = data;
+      }
+
+      console.log('✅ Feature model assignment updated:', result);
+      return result;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      // Immediately update the cache to reflect the change
+      queryClient.setQueryData(['ai-feature-models'], (oldData: AIFeatureModel[] = []) => {
+        const newData = oldData.filter(item => item.feature_name !== data.feature_name);
+        return [...newData, data];
+      });
+      
+      // Also invalidate to ensure fresh data
       queryClient.invalidateQueries({ queryKey: ['ai-feature-models'] });
-      toast.success('Feature model assignment updated successfully');
+      
+      const modelName = data.primary_model?.name || 'Unknown Model';
+      toast.success(`Feature "${data.feature_name}" assigned to ${modelName}`);
     },
     onError: (error: any) => {
-      toast.error(`Failed to update feature model: ${error.message}`);
+      console.error('❌ Failed to update feature model assignment:', error);
+      toast.error(`Failed to update assignment: ${error.message}`);
     },
   });
 

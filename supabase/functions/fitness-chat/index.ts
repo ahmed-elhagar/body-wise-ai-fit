@@ -1,6 +1,7 @@
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { AIService } from "../_shared/aiService.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -20,7 +21,7 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    console.log('Processing chat request:', { 
+    console.log('Processing fitness chat request:', { 
       message, 
       userProfile: userProfile ? { 
         id: userProfile.id, 
@@ -67,52 +68,19 @@ Always format your responses with:
       { role: 'user', content: message }
     ];
 
-    console.log('Sending messages to OpenAI:', {
-      messageCount: messages.length,
-      userMessage: message
+    console.log('🤖 Using new AI service for fitness chat...');
+
+    // Use the new AI service
+    const aiService = new AIService(openAIApiKey);
+    const response = await aiService.generate('fitness_chat', {
+      messages: messages,
+      temperature: 0.7,
+      maxTokens: 1500,
     });
-
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: messages,
-        temperature: 0.7,
-        max_tokens: 1500,
-        presence_penalty: 0.1,
-        frequency_penalty: 0.1,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('OpenAI API error:', response.status, errorText);
-      
-      if (response.status === 429) {
-        throw new Error('Our AI coach is currently busy. Please try again in a few minutes.');
-      } else if (response.status === 401) {
-        throw new Error('AI service configuration error. Please contact support.');
-      } else {
-        throw new Error(`AI service temporarily unavailable (${response.status}). Please try again.`);
-      }
-    }
-
-    const data = await response.json();
-    
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      console.error('Invalid OpenAI response structure:', data);
-      throw new Error('Invalid response from AI service');
-    }
-
-    const aiResponse = data.choices[0].message.content;
 
     return new Response(JSON.stringify({ 
-      response: aiResponse,
-      usage: data.usage 
+      response: response.content,
+      usage: response.usage 
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
