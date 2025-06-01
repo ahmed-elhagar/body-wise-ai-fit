@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ChefHat, Sparkles, Wand2 } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import CompactDailyView from "@/components/CompactDailyView";
 import type { Meal } from "@/types/meal";
 
@@ -27,7 +27,7 @@ const MealPlanContent = ({
   onAddSnack,
   onShowShoppingList
 }: MealPlanContentProps) => {
-  const { t } = useLanguage();
+  const { t } = useI18n();
 
   if (!currentWeekPlan) {
     return (
