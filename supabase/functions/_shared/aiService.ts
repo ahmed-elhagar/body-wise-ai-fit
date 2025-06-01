@@ -221,7 +221,7 @@ export class AIService {
   }
 
   /**
-   * Google Gemini implementation - FIXED
+   * Google Gemini implementation - FIXED with correct model names
    */
   private async generateWithGoogle(
     modelId: string, 
@@ -232,7 +232,16 @@ export class AIService {
       return this.generateWithOpenAI('gpt-4o-mini', request);
     }
 
-    console.log(`📤 Calling Google Gemini with model: ${modelId}`);
+    // Map common model names to correct Google model IDs
+    const modelMapping: { [key: string]: string } = {
+      'gemini-pro': 'gemini-1.5-flash',
+      'gemini-1.5-pro': 'gemini-1.5-pro',
+      'gemini-1.5-flash': 'gemini-1.5-flash',
+      'gemini-pro-vision': 'gemini-1.5-flash'
+    };
+
+    const actualModelId = modelMapping[modelId] || modelId;
+    console.log(`📤 Calling Google Gemini with model: ${actualModelId} (mapped from: ${modelId})`);
 
     // Convert messages to Google format
     const contents = request.messages
@@ -258,10 +267,10 @@ export class AIService {
       };
     }
 
-    console.log(`🔍 Google API Request for ${modelId}:`, JSON.stringify(requestBody, null, 2));
+    console.log(`🔍 Google API Request for ${actualModelId}:`, JSON.stringify(requestBody, null, 2));
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${this.googleApiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${actualModelId}:generateContent?key=${this.googleApiKey}`,
       {
         method: 'POST',
         headers: {

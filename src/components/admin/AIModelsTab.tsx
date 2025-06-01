@@ -54,7 +54,7 @@ const AIModelsTab = () => {
     { id: 'meal_image', name: 'Meal Image Generation', description: 'AI-generated meal images' }
   ];
 
-  // Popular model configurations by provider
+  // Popular model configurations by provider - UPDATED with correct Google models
   const popularModels = {
     openai: [
       { id: 'gpt-4o', name: 'GPT-4o', cost: 0.005, maxTokens: 4096 },
@@ -69,7 +69,7 @@ const AIModelsTab = () => {
     google: [
       { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', cost: 0.0035, maxTokens: 8192 },
       { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', cost: 0.000075, maxTokens: 8192 },
-      { id: 'gemini-pro', name: 'Gemini Pro', cost: 0.0005, maxTokens: 4096 },
+      { id: 'gemini-pro', name: 'Gemini Pro (Legacy)', cost: 0.0005, maxTokens: 4096 },
     ]
   };
 
