@@ -49,14 +49,20 @@ export const useCoachChat = () => {
     coaches: []
   });
   const [coaches, setCoaches] = useState<CoachInfo[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [totalUnreadMessages, setTotalUnreadMessages] = useState(0);
   const [unreadMessagesByCoach, setUnreadMessagesByCoach] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const sendMessage = (messageData: any) => {
-    console.log('Sending message:', messageData);
-    // Implementation here
+  const sendMessage = (content: string, receiverId?: string) => {
+    console.log('Sending message:', content, 'to:', receiverId);
+    setIsSending(true);
+    // Simulate sending
+    setTimeout(() => {
+      setIsSending(false);
+    }, 1000);
   };
 
   const assignTrainee = (data: { traineeId: string; notes?: string }) => {
@@ -67,9 +73,11 @@ export const useCoachChat = () => {
   return {
     multipleCoachesInfo,
     coaches,
+    messages,
     totalUnreadMessages,
     unreadMessagesByCoach,
     isLoading,
+    isSending,
     error,
     sendMessage,
     assignTrainee,

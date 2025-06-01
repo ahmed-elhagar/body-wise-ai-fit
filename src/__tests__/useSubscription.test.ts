@@ -36,14 +36,15 @@ describe('useSubscription', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(useAuth).mockReturnValue({
-      user: mockUser as User,
+      user: mockUser as any,
       session: null,
       loading: false,
+      isLoading: false,
       isAdmin: false,
+      error: null,
       signIn: vi.fn(),
       signUp: vi.fn(),
-      signOut: vi.fn(),
-      forceLogoutAllUsers: vi.fn()
+      signOut: vi.fn()
     });
   });
 
