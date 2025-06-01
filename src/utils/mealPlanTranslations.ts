@@ -18,6 +18,23 @@ export const useMealPlanTranslations = () => {
     generating: t('mealPlan.generating') || 'Generating Plan...',
     noCreditsRemaining: t('mealPlan.noCreditsRemaining') || 'No AI credits remaining. Upgrade to continue.',
     
+    // Navigation and view translations
+    currentWeek: t('mealPlan.currentWeek') || 'Current',
+    selectDay: t('mealPlan.selectDay') || 'Select Day',
+    dailyView: t('mealPlan.dailyView') || 'Daily View',
+    weeklyView: t('mealPlan.weeklyView') || 'Weekly View',
+    today: t('mealPlan.today') || 'Today',
+    
+    // Nutrition and meal translations
+    meals: t('mealPlan.meals') || 'meals',
+    cal: t('mealPlan.cal') || 'cal',
+    protein: t('mealPlan.protein') || 'Protein',
+    carbs: t('mealPlan.carbs') || 'Carbs',
+    fat: t('mealPlan.fat') || 'Fat',
+    recipe: t('mealPlan.recipe') || 'Recipe',
+    viewDay: t('mealPlan.viewDay') || 'View Day',
+    moreMeals: t('mealPlan.moreMeals') || 'more meals',
+    
     // Add snack translations
     addSnack: t('mealPlan.addSnack') || 'Add Snack',
     smartSnackSuggestions: t('mealPlan.smartSnackSuggestions') || 'Smart snack suggestions for your day',
@@ -33,6 +50,12 @@ export const useMealPlanTranslations = () => {
     considerLightSnack: t('mealPlan.considerLightSnack') || 'Consider a light snack or some water to complete your day.',
     perfectDay: t('mealPlan.perfectDay') || 'Perfect Day',
     nutritionGoalsReached: t('mealPlan.nutritionGoalsReached') || 'Your nutrition goals have been successfully reached for today.',
+    
+    // Progress translations
+    dailyProgress: t('mealPlan.dailyProgress') || 'Daily Progress',
+    calorieProgress: t('mealPlan.calorieProgress') || 'Calorie Progress',
+    consumed: t('mealPlan.consumed') || 'Consumed',
+    target: t('mealPlan.target') || 'Target',
     
     // Dialog step translations
     analyzing: t('mealPlan.addSnackDialog.analyzing') || 'Analyzing your nutrition needs...',
