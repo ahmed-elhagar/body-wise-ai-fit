@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
@@ -7,7 +8,7 @@ import { ExerciseListEnhanced } from "./ExerciseListEnhanced";
 import { ExerciseProgramLoadingStates } from "./ExerciseProgramLoadingStates";
 import { ExerciseProgramErrorState } from "./ExerciseProgramErrorState";
 import { ExerciseProgramActions } from "./ExerciseProgramActions";
-import { ExerciseProgramWeekNavigation } from "./ExerciseProgramWeekNavigation";
+import ExerciseProgramWeekNavigation from "./ExerciseProgramWeekNavigation";
 import { WorkoutTypeSelector } from "./WorkoutTypeSelector";
 import { ExerciseProgressDialog } from "./ExerciseProgressDialog";
 import { useAIExercise } from "@/hooks/useAIExercise";
@@ -18,6 +19,7 @@ import { ExerciseProgressTracker } from "./ExerciseProgressTracker";
 import { addDays, startOfWeek } from "date-fns";
 import { OptimizedExerciseList } from "./OptimizedExerciseList";
 import { WeeklyProgramOverview } from "./WeeklyProgramOverview";
+import { supabase } from "@/integrations/supabase/client";
 
 const ExerciseProgramPageContent = () => {
   const { programId } = useParams();
@@ -34,22 +36,19 @@ const ExerciseProgramPageContent = () => {
   const weekStartDate = startOfWeek(addDays(new Date(), currentWeekOffset * 7), { weekStartsOn: 1 });
 
   const {
-    data: exerciseProgramData,
+    program: currentProgram,
+    workout: currentWorkout,
+    exercises,
     isLoading,
-    isError,
-    refetch: refetchExerciseProgram,
-  } = useExerciseProgramQuery(programId || '', workoutType, selectedDay, weekStartDate);
+    error,
+    isRestDay,
+    weekStartDate: queryWeekStartDate
+  } = useExerciseProgramQuery(selectedDay, workoutType);
 
   const {
     generateAIExercise,
     isGenerating,
-    error: aiError,
   } = useAIExercise();
-
-  const currentProgram = exerciseProgramData?.program;
-  const currentWorkout = exerciseProgramData?.workout;
-  const exercises = exerciseProgramData?.exercises || [];
-  const isRestDay = exercises.length === 0;
 
   const completedExercises = exercises.filter(ex => ex.completed).length;
   const totalExercises = exercises.length;
@@ -60,10 +59,7 @@ const ExerciseProgramPageContent = () => {
 
   const handleRegenerateProgram = async () => {
     if (!programId) return;
-    await generateAIExercise(
-      { programId: programId, workoutType: workoutType },
-      { onSuccess: () => refetchExerciseProgram() }
-    );
+    await generateAIExercise({ programId: programId, workoutType: workoutType });
   };
 
   const handleDaySelect = (day: number) => {
@@ -86,12 +82,10 @@ const ExerciseProgramPageContent = () => {
     if (!programId) return;
     
     try {
-      // Optimistically update the UI
       const updatedExercises = exercises.map(ex =>
         ex.id === exerciseId ? { ...ex, completed: !ex.completed } : ex
       );
 
-      // Call the API to update the exercise completion status
       const { error } = await supabase
         .from('user_exercises')
         .update({ completed: !exercises.find(ex => ex.id === exerciseId)?.completed })
@@ -99,15 +93,9 @@ const ExerciseProgramPageContent = () => {
 
       if (error) {
         console.error("Error updating exercise completion:", error);
-        // Revert the optimistic update if the API call fails
-        // setExercises(prevExercises);
-      } else {
-        refetchExerciseProgram();
       }
     } catch (error) {
       console.error("Unexpected error updating exercise:", error);
-      // Revert the optimistic update if an unexpected error occurs
-      // setExercises(prevExercises);
     }
   };
 
@@ -115,7 +103,6 @@ const ExerciseProgramPageContent = () => {
     if (!programId) return;
 
     try {
-      // Call the API to update the exercise progress
       const { error } = await supabase
         .from('user_exercises')
         .update({ sets: sets, reps: reps, notes: notes, completed: true })
@@ -123,8 +110,6 @@ const ExerciseProgramPageContent = () => {
 
       if (error) {
         console.error("Error updating exercise progress:", error);
-      } else {
-        refetchExerciseProgram();
       }
     } catch (error) {
       console.error("Unexpected error updating exercise progress:", error);
@@ -142,8 +127,8 @@ const ExerciseProgramPageContent = () => {
     return <ExerciseProgramLoadingStates isLoading={isLoading} isGenerating={isGenerating} />;
   }
 
-  if (isError || aiError) {
-    return <ExerciseProgramErrorState onRetry={refetchExerciseProgram} />;
+  if (error) {
+    return <ExerciseProgramErrorState onRetry={handleRegenerateProgram} />;
   }
 
   return (
@@ -204,7 +189,9 @@ const ExerciseProgramPageContent = () => {
           exercises={exercises}
           isLoading={isLoading}
           onExerciseComplete={handleExerciseComplete}
-          onExerciseProgressUpdate={handleOpenExerciseProgress}
+          onExerciseProgressUpdate={(exerciseId, sets, reps, notes) => {
+            handleExerciseProgressUpdate(exerciseId, sets, reps, notes);
+          }}
           isRestDay={isRestDay}
         />
       </div>
@@ -214,7 +201,11 @@ const ExerciseProgramPageContent = () => {
         open={exerciseProgressOpen}
         onOpenChange={setExerciseProgressOpen}
         exercise={selectedExercise}
-        onSave={handleExerciseProgressUpdate}
+        onSave={(sets, reps, notes) => {
+          if (selectedExercise) {
+            handleExerciseProgressUpdate(selectedExercise.id, sets, reps, notes);
+          }
+        }}
       />
     </div>
   );

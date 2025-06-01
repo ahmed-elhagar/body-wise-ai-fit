@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Clock, Users, ChefHat, Sparkles, Youtube, X } from "lucide-react";
-import { useEnhancedMealRecipe } from "@/hooks/useEnhancedMealRecipe";
+import { useMealRecipe } from "@/hooks/useMealRecipe";
 import type { DailyMeal } from "@/hooks/useMealPlanData";
 
 interface EnhancedRecipeDialogProps {
@@ -17,15 +17,15 @@ interface EnhancedRecipeDialogProps {
 }
 
 const EnhancedRecipeDialog = ({ isOpen, onClose, meal, onRecipeGenerated }: EnhancedRecipeDialogProps) => {
-  const { generateEnhancedRecipe, generateYouTubeSearchTerm, isGeneratingRecipe } = useEnhancedMealRecipe();
-  const [detailedMeal, setDetailedMeal] = useState<any>(null);
+  const { meal: detailedMeal, isRecipeLoading, fetchMealRecipe } = useMealRecipe();
+  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
     if (isOpen && meal) {
       if (meal.ingredients?.length > 0 && meal.instructions?.length > 0) {
-        setDetailedMeal(meal);
+        // Meal already has detailed recipe
       } else {
-        setDetailedMeal(null);
+        // Need to fetch/generate recipe
       }
     }
   }, [isOpen, meal]);
@@ -36,27 +36,28 @@ const EnhancedRecipeDialog = ({ isOpen, onClose, meal, onRecipeGenerated }: Enha
       return;
     }
     
-    const result = await generateEnhancedRecipe(meal.id, meal);
-    if (result) {
-      console.log('✅ Enhanced recipe generated, updating detailed meal:', result);
-      setDetailedMeal(result);
-      
+    setIsGenerating(true);
+    try {
+      await fetchMealRecipe(meal.id);
       if (onRecipeGenerated) {
         onRecipeGenerated();
       }
+    } catch (error) {
+      console.error('Error generating recipe:', error);
+    } finally {
+      setIsGenerating(false);
     }
   };
 
   const openYouTubeSearch = () => {
-    const searchTerm = detailedMeal?.youtube_search_term || 
-                      generateYouTubeSearchTerm(meal?.name || '');
+    const searchTerm = `how to cook ${meal?.name || ''}`;
     const youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(searchTerm)}`;
     window.open(youtubeUrl, '_blank');
   };
 
   if (!meal) return null;
 
-  const hasDetailedRecipe = detailedMeal?.ingredients?.length > 0 && detailedMeal?.instructions?.length > 0;
+  const hasDetailedRecipe = meal.ingredients?.length > 0 && meal.instructions?.length > 0;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -144,26 +145,25 @@ const EnhancedRecipeDialog = ({ isOpen, onClose, meal, onRecipeGenerated }: Enha
                   </p>
                   <Button
                     onClick={handleGenerateRecipe}
-                    disabled={isGeneratingRecipe}
+                    disabled={isGenerating || isRecipeLoading}
                     className="bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 hover:from-fitness-primary-600 hover:to-fitness-primary-700 text-white"
                   >
                     <Sparkles className="w-4 h-4 mr-2" />
-                    {isGeneratingRecipe ? 'Generating Recipe...' : 'Generate Enhanced Recipe'}
+                    {isGenerating || isRecipeLoading ? 'Generating Recipe...' : 'Generate Enhanced Recipe'}
                   </Button>
                 </CardContent>
               </Card>
             )}
 
             {/* Ingredients */}
-            {hasDetailedRecipe && detailedMeal?.ingredients?.length > 0 && (
+            {hasDetailedRecipe && meal.ingredients?.length > 0 && (
               <Card className="border-gray-200">
                 <CardContent className="p-4">
                   <h3 className="font-semibold text-gray-800 mb-3">Ingredients</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    {detailedMeal.ingredients.map((ingredient, index) => (
+                    {meal.ingredients.map((ingredient, index) => (
                       <div key={index} className="flex justify-between items-center py-2 px-3 bg-gray-50 rounded-lg">
-                        <span className="text-gray-700 font-medium">{ingredient.name}</span>
-                        <span className="text-gray-500 text-sm">{ingredient.quantity} {ingredient.unit}</span>
+                        <span className="text-gray-700 font-medium">{ingredient}</span>
                       </div>
                     ))}
                   </div>
@@ -172,12 +172,12 @@ const EnhancedRecipeDialog = ({ isOpen, onClose, meal, onRecipeGenerated }: Enha
             )}
 
             {/* Instructions */}
-            {hasDetailedRecipe && detailedMeal?.instructions?.length > 0 && (
+            {hasDetailedRecipe && meal.instructions?.length > 0 && (
               <Card className="border-gray-200">
                 <CardContent className="p-4">
                   <h3 className="font-semibold text-gray-800 mb-3">Instructions</h3>
                   <div className="space-y-3">
-                    {detailedMeal.instructions.map((instruction, index) => (
+                    {meal.instructions.map((instruction, index) => (
                       <div key={index} className="flex gap-3">
                         <div className="w-6 h-6 bg-fitness-primary-500 text-white text-xs rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                           {index + 1}
@@ -192,7 +192,7 @@ const EnhancedRecipeDialog = ({ isOpen, onClose, meal, onRecipeGenerated }: Enha
           </div>
         </ScrollArea>
 
-        {/* Footer Actions with enhanced functionality */}
+        {/* Footer Actions */}
         <div className="p-6 pt-4 border-t border-gray-100 bg-gray-50">
           <div className="flex gap-3 justify-end">
             <Button
@@ -207,11 +207,11 @@ const EnhancedRecipeDialog = ({ isOpen, onClose, meal, onRecipeGenerated }: Enha
             {!hasDetailedRecipe && (
               <Button
                 onClick={handleGenerateRecipe}
-                disabled={isGeneratingRecipe}
+                disabled={isGenerating || isRecipeLoading}
                 className="bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 hover:from-fitness-primary-600 hover:to-fitness-primary-700 text-white"
               >
                 <Sparkles className="w-4 h-4 mr-2" />
-                {isGeneratingRecipe ? 'Generating...' : 'Generate Detailed Recipe'}
+                {isGenerating || isRecipeLoading ? 'Generating...' : 'Generate Detailed Recipe'}
               </Button>
             )}
           </div>

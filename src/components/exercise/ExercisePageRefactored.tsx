@@ -162,7 +162,9 @@ const ExercisePageRefactored = () => {
               onExerciseComplete={(exerciseId) => {
                 handleExerciseComplete(exerciseId);
               }}
-              onExerciseProgressUpdate={handleExerciseProgressUpdate}
+              onExerciseProgressUpdate={(exerciseId, sets, reps, notes) => {
+                handleExerciseProgressUpdate(exerciseId, sets, reps, notes);
+              }}
               isRestDay={isRestDay}
             />
           ) : (
@@ -179,7 +181,9 @@ const ExercisePageRefactored = () => {
           open={exerciseProgressOpen}
           onOpenChange={setExerciseProgressOpen}
           exercise={selectedExercise}
-          onSave={handleExerciseProgressUpdate}
+          onSave={(sets, reps, notes) => {
+            handleExerciseProgressUpdate(selectedExercise.id, sets, reps, notes);
+          }}
         />
       )}
     </div>

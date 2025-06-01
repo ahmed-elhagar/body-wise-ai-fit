@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card } from "@/components/ui/card";
@@ -6,7 +7,7 @@ import { Sparkles, RefreshCw, Home, Building2 } from "lucide-react";
 import { WorkoutTypeToggle } from './WorkoutTypeToggle';
 import { ExerciseProgramLoadingStates } from './ExerciseProgramLoadingStates';
 import { ExerciseProgramErrorState } from './ExerciseProgramErrorState';
-import OptimizedExerciseList from './OptimizedExerciseList';
+import { OptimizedExerciseList } from './OptimizedExerciseList';
 import { ExerciseProgressDialog } from './ExerciseProgressDialog';
 import { useAIExercise } from "@/hooks/useAIExercise";
 import { useExerciseProgramQuery } from "@/hooks/useExerciseProgramQuery";
@@ -15,10 +16,11 @@ import { useProfile } from "@/hooks/useProfile";
 import { ExerciseProgramActions } from './ExerciseProgramActions';
 import ExerciseProgramDaySelector from './ExerciseProgramDaySelector';
 import { addDays, startOfWeek } from 'date-fns';
-import { ExerciseProgramWeekNavigation } from './ExerciseProgramWeekNavigation';
+import ExerciseProgramWeekNavigation from './ExerciseProgramWeekNavigation';
 import { WeeklyProgramOverview } from './WeeklyProgramOverview';
 import { ProgramTypeIndicator } from './ProgramTypeIndicator';
 import { useI18n } from "@/hooks/useI18n";
+import { supabase } from "@/integrations/supabase/client";
 
 const OptimizedExerciseProgramPageContent = () => {
   const { day } = useParams();
@@ -27,7 +29,10 @@ const OptimizedExerciseProgramPageContent = () => {
   const { profile } = useProfile();
   const { t } = useI18n();
   
-  const [workoutType, setWorkoutType] = useState<"home" | "gym">(profile?.preferred_workout_environment === 'gym' ? "gym" : "home");
+  // Use workout_environment from profile if available, default to "home"
+  const [workoutType, setWorkoutType] = useState<"home" | "gym">(
+    (profile?.workout_environment === 'gym') ? "gym" : "home"
+  );
   const [isAIDialogOpen, setIsAIDialogOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState(parseInt(day || '0') || new Date().getDay());
   const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
@@ -37,10 +42,10 @@ const OptimizedExerciseProgramPageContent = () => {
   const weekStartDate = startOfWeek(addDays(new Date(), currentWeekOffset * 7), { weekStartsOn: 1 });
 
   useEffect(() => {
-    if (profile?.preferred_workout_environment) {
-      setWorkoutType(profile.preferred_workout_environment === 'gym' ? "gym" : "home");
+    if (profile?.workout_environment) {
+      setWorkoutType(profile.workout_environment === 'gym' ? "gym" : "home");
     }
-  }, [profile?.preferred_workout_environment]);
+  }, [profile?.workout_environment]);
 
   useEffect(() => {
     const dayNumber = parseInt(day || '0');
@@ -52,16 +57,18 @@ const OptimizedExerciseProgramPageContent = () => {
   }, [day]);
 
   const { 
-    data: currentProgram,
+    program: currentProgram,
+    workout: currentWorkout,
+    exercises,
     isLoading,
     error,
-    refetch
-  } = useExerciseProgramQuery(user?.id, workoutType, selectedDay, weekStartDate);
+    isRestDay
+  } = useExerciseProgramQuery(selectedDay, workoutType);
 
   const {
-    generateAIProgram,
+    generateAIExercise,
     isGenerating,
-  } = useAIExercise(user?.id, workoutType, selectedDay, currentProgram?.id, weekStartDate);
+  } = useAIExercise();
 
   const handleShowAIDialog = () => {
     setIsAIDialogOpen(true);
@@ -72,8 +79,7 @@ const OptimizedExerciseProgramPageContent = () => {
   };
 
   const handleRegenerateProgram = async () => {
-    await generateAIProgram();
-    await refetch();
+    await generateAIExercise({ workoutType });
   };
 
   const handleDaySelect = (day: number) => {
@@ -96,7 +102,7 @@ const OptimizedExerciseProgramPageContent = () => {
   const handleExerciseComplete = async (exerciseId: string) => {
     if (!currentProgram?.id) return;
 
-    const updatedExercises = currentProgram.exercises.map((ex: any) => {
+    const updatedExercises = exercises.map((ex: any) => {
       if (ex.id === exerciseId) {
         return { ...ex, completed: !ex.completed };
       }
@@ -110,15 +116,13 @@ const OptimizedExerciseProgramPageContent = () => {
 
     if (error) {
       console.error("Error updating exercise program:", error);
-    } else {
-      await refetch();
     }
   };
 
   const handleExerciseProgressUpdate = async (exerciseId: string, sets: number, reps: string, notes?: string) => {
     if (!currentProgram?.id) return;
 
-    const updatedExercises = currentProgram.exercises.map((ex: any) => {
+    const updatedExercises = exercises.map((ex: any) => {
       if (ex.id === exerciseId) {
         return { ...ex, sets, reps, notes };
       }
@@ -132,8 +136,6 @@ const OptimizedExerciseProgramPageContent = () => {
 
     if (error) {
       console.error("Error updating exercise program:", error);
-    } else {
-      await refetch();
     }
     setExerciseProgressOpen(false);
   };
@@ -143,16 +145,15 @@ const OptimizedExerciseProgramPageContent = () => {
     setExerciseProgressOpen(true);
   };
 
-  const isRestDay = selectedDay === 7;
-  const completedExercises = currentProgram?.exercises?.filter((ex: any) => ex.completed).length || 0;
-  const totalExercises = currentProgram?.exercises?.length || 0;
+  const completedExercises = exercises?.filter((ex: any) => ex.completed).length || 0;
+  const totalExercises = exercises?.length || 0;
 
   return (
     <div className="p-6">
       <ExerciseProgramLoadingStates isLoading={isLoading} isGenerating={isGenerating} />
 
       {error && (
-        <ExerciseProgramErrorState onRetry={refetch} />
+        <ExerciseProgramErrorState onRetry={handleRegenerateProgram} />
       )}
 
       {currentProgram && (
@@ -169,7 +170,6 @@ const OptimizedExerciseProgramPageContent = () => {
               workoutType={workoutType}
               onWorkoutTypeChange={(type) => {
                 setWorkoutType(type);
-                refetch();
               }}
             />
           </div>
@@ -200,10 +200,12 @@ const OptimizedExerciseProgramPageContent = () => {
 
           {/* Exercise List */}
           <OptimizedExerciseList
-            exercises={currentProgram.exercises}
+            exercises={exercises}
             isLoading={isLoading}
             onExerciseComplete={handleExerciseComplete}
-            onExerciseProgressUpdate={handleExerciseProgressUpdate}
+            onExerciseProgressUpdate={(exerciseId, sets, reps, notes) => {
+              handleExerciseProgressUpdate(exerciseId, sets, reps, notes);
+            }}
             isRestDay={isRestDay}
           />
         </div>
@@ -214,7 +216,11 @@ const OptimizedExerciseProgramPageContent = () => {
           open={exerciseProgressOpen}
           onOpenChange={setExerciseProgressOpen}
           exercise={selectedExercise}
-          onSave={handleExerciseProgressUpdate}
+          onSave={(sets, reps, notes) => {
+            if (selectedExercise) {
+              handleExerciseProgressUpdate(selectedExercise.id, sets, reps, notes);
+            }
+          }}
         />
       )}
     </div>

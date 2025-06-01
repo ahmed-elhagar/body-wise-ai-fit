@@ -1,94 +1,108 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Utensils, MessageSquare } from 'lucide-react';
+import { Clock, Edit, Trash2, MessageCircle } from 'lucide-react';
 import { useI18n } from "@/hooks/useI18n";
-import { format, isToday, isYesterday, isPast, isFuture, parseISO } from 'date-fns';
-import { ptBR, enUS, ar } from 'date-fns/locale';
+import type { FoodConsumptionLog } from '@/types/food';
 
 interface FoodLogTimelineProps {
-  foodLogs: any[];
-  onShowMealComments: (meal: any) => void;
+  foodLogs: FoodConsumptionLog[];
 }
 
-const FoodLogTimeline = ({ foodLogs, onShowMealComments }: FoodLogTimelineProps) => {
-  const { t, language } = useI18n();
+const FoodLogTimeline = ({ foodLogs }: FoodLogTimelineProps) => {
+  const { t } = useI18n();
+  const [selectedLog, setSelectedLog] = useState<FoodConsumptionLog | null>(null);
 
-  const getLocale = () => {
-    switch (language) {
-      case 'pt':
-        return ptBR;
-      case 'ar':
-        return ar;
-      default:
-        return enUS;
+  const handleEditLog = (log: FoodConsumptionLog) => {
+    setSelectedLog(log);
+    console.log('Edit log:', log);
+  };
+
+  const handleDeleteLog = (log: FoodConsumptionLog) => {
+    console.log('Delete log:', log);
+  };
+
+  const handleAddComment = (log: FoodConsumptionLog) => {
+    console.log('Add comment to log:', log);
+  };
+
+  const groupedLogs = foodLogs.reduce((groups, log) => {
+    const mealType = log.meal_type || 'other';
+    if (!groups[mealType]) {
+      groups[mealType] = [];
     }
-  };
-
-  const formatDate = (dateStr: string) => {
-    const date = parseISO(dateStr);
-    const locale = getLocale();
-
-    if (isToday(date)) {
-      return t('Today');
-    } else if (isYesterday(date)) {
-      return t('Yesterday');
-    } else if (isPast(date, new Date())) {
-      return format(date, 'MMMM d, yyyy', { locale });
-    } else if (isFuture(date, new Date())) {
-      return t('Upcoming');
-    } else {
-      return format(date, 'MMMM d, yyyy', { locale });
-    }
-  };
-
-  const formatTime = (dateStr: string) => {
-    const date = parseISO(dateStr);
-    return format(date, 'h:mm a');
-  };
+    groups[mealType].push(log);
+    return groups;
+  }, {} as Record<string, FoodConsumptionLog[]>);
 
   return (
-    <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-      <CardHeader>
-        <CardTitle>{t('Food Log Timeline')}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {foodLogs.length === 0 ? (
-          <p className="text-center text-gray-500">{t('No food logs found')}</p>
-        ) : (
-          foodLogs.map((log) => (
-            <div key={log.id} className="border-b pb-4 last:border-b-0 last:pb-0">
-              <div className="flex items-center justify-between mb-2">
-                <div className="text-sm font-medium text-gray-700">{formatDate(log.date)}</div>
-                <div className="text-xs text-gray-500">{formatTime(log.date)}</div>
-              </div>
-              <div className="space-y-2">
-                {log.meals.map((meal: any) => (
-                  <div key={meal.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div>
-                      <h4 className="font-medium text-sm">{meal.name}</h4>
-                      <p className="text-xs text-gray-600 capitalize">{meal.meal_type}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium text-sm">{meal.calories} cal</p>
-                      <p className="text-xs text-gray-600">{meal.protein}g protein</p>
-                    </div>
+    <div className="space-y-4">
+      {Object.entries(groupedLogs).map(([mealType, logs]) => (
+        <Card key={mealType}>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg capitalize flex items-center gap-2">
+              <Clock className="w-5 h-5" />
+              {t(mealType) || mealType}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {logs.map((log) => (
+              <div
+                key={log.id}
+                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+              >
+                <div className="flex-1">
+                  <div className="font-medium">{log.food_name}</div>
+                  <div className="text-sm text-gray-600">
+                    {log.quantity}g • {log.calories} cal
+                  </div>
+                  {log.notes && (
+                    <div className="text-sm text-gray-500 mt-1">{log.notes}</div>
+                  )}
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline">
+                    {new Date(log.consumed_at).toLocaleTimeString([], { 
+                      hour: '2-digit', 
+                      minute: '2-digit' 
+                    })}
+                  </Badge>
+                  
+                  <div className="flex gap-1">
                     <Button
                       variant="ghost"
-                      size="icon"
-                      onClick={() => onShowMealComments(meal)}
+                      size="sm"
+                      onClick={() => handleEditLog(log)}
                     >
-                      <MessageSquare className="w-4 h-4" />
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                    
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleAddComment(log)}
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                    </Button>
+                    
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteLog(log)}
+                    >
+                      <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
-                ))}
+                </div>
               </div>
-            </div>
-          ))
-        )}
-      </CardContent>
-    </Card>
+            ))}
+          </CardContent>
+        </Card>
+      ))}
+    </div>
   );
 };
 

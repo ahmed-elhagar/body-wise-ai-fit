@@ -70,8 +70,18 @@ const ScanTab = ({ onFoodAdded, onClose }: ScanTabProps) => {
 
       {/* Photo Analysis */}
       <FoodPhotoAnalysisCard 
-        onFoodSelected={handleSelectFood}
-        className="w-full"
+        onAnalyze={(imageUrl) => {
+          console.log('Analyzing image:', imageUrl);
+          // Mock food selection for now
+          setSelectedFood({
+            name: "Detected Food Item",
+            calories: 250,
+            protein: 12,
+            carbs: 30,
+            fat: 8,
+            quantity: "1 serving"
+          });
+        }}
       />
 
       {/* Selected Food Details */}
