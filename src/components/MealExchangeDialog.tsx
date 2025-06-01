@@ -11,7 +11,7 @@ import type { DailyMeal } from "@/hooks/useMealPlanData";
 interface MealExchangeDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  currentMeal: DailyMeal;
+  currentMeal: DailyMeal | null;
   onExchange: () => void;
 }
 
@@ -21,6 +21,11 @@ const MealExchangeDialog = ({ isOpen, onClose, currentMeal, onExchange }: MealEx
 
   console.log('🔄 MealExchangeDialog rendered with meal:', currentMeal?.name);
 
+  // Early return if no meal is provided
+  if (!currentMeal) {
+    return null;
+  }
+
   const handleGenerateAlternatives = async () => {
     console.log('🔄 Generating alternatives for meal:', currentMeal.name);
     // Convert DailyMeal to Meal format for the hook
@@ -29,15 +34,15 @@ const MealExchangeDialog = ({ isOpen, onClose, currentMeal, onExchange }: MealEx
       type: currentMeal.meal_type,
       time: "12:00",
       name: currentMeal.name,
-      calories: currentMeal.calories,
-      protein: currentMeal.protein,
-      carbs: currentMeal.carbs,
-      fat: currentMeal.fat,
+      calories: currentMeal.calories || 0,
+      protein: currentMeal.protein || 0,
+      carbs: currentMeal.carbs || 0,
+      fat: currentMeal.fat || 0,
       ingredients: currentMeal.ingredients || [],
       instructions: currentMeal.instructions || [],
       cookTime: currentMeal.cook_time || 0,
       prepTime: currentMeal.prep_time || 0,
-      servings: currentMeal.servings,
+      servings: currentMeal.servings || 1,
       image: currentMeal.image_url || "",
       imageUrl: currentMeal.image_url,
       image_url: currentMeal.image_url,
@@ -54,15 +59,15 @@ const MealExchangeDialog = ({ isOpen, onClose, currentMeal, onExchange }: MealEx
       type: currentMeal.meal_type,
       time: "12:00",
       name: currentMeal.name,
-      calories: currentMeal.calories,
-      protein: currentMeal.protein,
-      carbs: currentMeal.carbs,
-      fat: currentMeal.fat,
+      calories: currentMeal.calories || 0,
+      protein: currentMeal.protein || 0,
+      carbs: currentMeal.carbs || 0,
+      fat: currentMeal.fat || 0,
       ingredients: currentMeal.ingredients || [],
       instructions: currentMeal.instructions || [],
       cookTime: currentMeal.cook_time || 0,
       prepTime: currentMeal.prep_time || 0,
-      servings: currentMeal.servings,
+      servings: currentMeal.servings || 1,
       image: currentMeal.image_url || "",
       imageUrl: currentMeal.image_url,
       image_url: currentMeal.image_url,
@@ -99,24 +104,24 @@ const MealExchangeDialog = ({ isOpen, onClose, currentMeal, onExchange }: MealEx
                 </Badge>
                 <Badge>
                   <Users className="w-3 h-3 mr-1" />
-                  {currentMeal.servings} serving{currentMeal.servings !== 1 ? 's' : ''}
+                  {currentMeal.servings || 1} serving{(currentMeal.servings || 1) !== 1 ? 's' : ''}
                 </Badge>
                 <Badge>
-                  {currentMeal.calories} cal
+                  {currentMeal.calories || 0} cal
                 </Badge>
               </div>
 
               <div className="grid grid-cols-3 gap-2 text-xs">
                 <div className="bg-gray-50 p-2 rounded text-center">
-                  <span className="font-medium text-green-600">{currentMeal.protein}g</span>
+                  <span className="font-medium text-green-600">{currentMeal.protein || 0}g</span>
                   <div className="text-gray-600">protein</div>
                 </div>
                 <div className="bg-gray-50 p-2 rounded text-center">
-                  <span className="font-medium text-blue-600">{currentMeal.carbs}g</span>
+                  <span className="font-medium text-blue-600">{currentMeal.carbs || 0}g</span>
                   <div className="text-gray-600">carbs</div>
                 </div>
                 <div className="bg-gray-50 p-2 rounded text-center">
-                  <span className="font-medium text-yellow-600">{currentMeal.fat}g</span>
+                  <span className="font-medium text-yellow-600">{currentMeal.fat || 0}g</span>
                   <div className="text-gray-600">fat</div>
                 </div>
               </div>
