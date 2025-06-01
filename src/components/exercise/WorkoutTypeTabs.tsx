@@ -1,7 +1,7 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Home, Building2 } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { WorkoutContentLayout } from "./WorkoutContentLayout";
 import { ExerciseProgramSelector } from "./ExerciseProgramSelector";
 import { ExerciseProgram, ExercisePreferences } from "@/hooks/useExerciseProgramPage";
@@ -39,7 +39,7 @@ export const WorkoutTypeTabs = ({
   isGenerating,
   isRestDay
 }: WorkoutTypeTabsProps) => {
-  const { t } = useI18n();
+  const { t } = useLanguage();
 
   const renderTabContent = (type: "home" | "gym") => {
     const hasValidProgram = currentProgram && currentProgram.workout_type === type;

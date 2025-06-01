@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Sparkles, Shuffle, Calendar } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { LifePhaseRibbon } from "./meal-plan/LifePhaseRibbon";
 import { useLifePhaseProfile } from "@/hooks/useLifePhaseProfile";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
@@ -28,7 +28,7 @@ const MealPlanHeader = ({
   dietType,
   totalWeeklyCalories
 }: MealPlanHeaderProps) => {
-  const { t, isRTL } = useI18n();
+  const { t, isRTL } = useLanguage();
   const { flags } = useFeatureFlags();
   const { getNutritionContext } = useLifePhaseProfile();
   

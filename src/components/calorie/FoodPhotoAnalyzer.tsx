@@ -1,5 +1,5 @@
 
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import FoodPhotoAnalysisCard from "@/components/food-photo-analysis/FoodPhotoAnalysisCard";
 import FoodAnalysisResults from "@/components/food-photo-analysis/FoodAnalysisResults";
 import { useFoodPhotoIntegration } from "@/hooks/useFoodPhotoIntegration";
@@ -9,7 +9,7 @@ interface FoodPhotoAnalyzerProps {
 }
 
 const FoodPhotoAnalyzer = ({ onSelectFood }: FoodPhotoAnalyzerProps) => {
-  const { t } = useI18n();
+  const { t } = useLanguage();
   const { 
     analysisResult, 
     convertToFoodItem,
@@ -28,16 +28,12 @@ const FoodPhotoAnalyzer = ({ onSelectFood }: FoodPhotoAnalyzerProps) => {
     logAnalyzedFood(food, 100, 'snack', `Added from AI analysis`);
   };
 
-  const handleAnalyze = (imageUrl: string) => {
-    // Mock analysis for now
-    console.log('Analyzing image:', imageUrl);
-  };
-
   return (
     <div className="space-y-6">
       {/* Photo Analysis Card */}
       <FoodPhotoAnalysisCard 
-        onAnalyze={handleAnalyze}
+        onFoodSelected={handleFoodSelected}
+        className="w-full"
       />
 
       {/* Analysis Results */}

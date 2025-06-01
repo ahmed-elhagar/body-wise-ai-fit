@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { TrendingUp, ArrowRight, Calendar, Target, Activity } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -11,7 +11,7 @@ interface EnhancedAnalyticsCardProps {
 }
 
 const EnhancedAnalyticsCard = ({ className = "" }: EnhancedAnalyticsCardProps) => {
-  const { t } = useI18n();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   const quickStats = [

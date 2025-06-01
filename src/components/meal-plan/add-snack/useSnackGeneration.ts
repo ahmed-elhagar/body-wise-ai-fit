@@ -1,7 +1,8 @@
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface UseSnackGenerationProps {
   weeklyPlanId: string | null;
@@ -20,7 +21,7 @@ export const useSnackGeneration = ({
   onSnackAdded,
   onClose
 }: UseSnackGenerationProps) => {
-  const { t, language } = useI18n();
+  const { t, language } = useLanguage();
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationStep, setGenerationStep] = useState('');
 

@@ -1,92 +1,156 @@
 
-import ProtectedRoute from "@/components/ProtectedRoute";
-import Layout from "@/components/Layout";
-import { Card } from "@/components/ui/card";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Camera, Upload, Search } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft, Camera, Search, Heart, BarChart3 } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useLanguage } from "@/contexts/LanguageContext";
+import FoodPhotoAnalyzer from "@/components/calorie/FoodPhotoAnalyzer";
+import EnhancedFoodSearch from "@/components/calorie/EnhancedFoodSearch";
+import FoodConsumptionTracker from "@/components/calorie/FoodConsumptionTracker";
+import { useFoodDatabase } from "@/hooks/useFoodDatabase";
+import AddFoodDialog from "@/components/calorie/AddFoodDialog";
 
 const CalorieChecker = () => {
-  const { t } = useI18n();
+  const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  const { t, isRTL } = useLanguage();
+  const { logConsumption, isLoggingConsumption } = useFoodDatabase();
+  
+  const [selectedFood, setSelectedFood] = useState<any>(null);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [activeView, setActiveView] = useState("today");
+
+  const handleSelectFood = (food: any) => {
+    console.log('Selected food:', food);
+    setSelectedFood(food);
+    setIsAddDialogOpen(true);
+  };
+
+  const handleLogFood = (logData: any) => {
+    console.log('Logging food data:', logData);
+    logConsumption(logData);
+    setIsAddDialogOpen(false);
+    setSelectedFood(null);
+  };
+
+  const views = [
+    {
+      id: "today",
+      label: "Today",
+      icon: BarChart3,
+      component: <FoodConsumptionTracker onSelectFood={handleSelectFood} />
+    },
+    {
+      id: "search",
+      label: "Search",
+      icon: Search,
+      component: <EnhancedFoodSearch onSelectFood={handleSelectFood} />
+    },
+    {
+      id: "scan",
+      label: "AI Scan",
+      icon: Camera,
+      component: <FoodPhotoAnalyzer onSelectFood={handleSelectFood} />
+    },
+    {
+      id: "favorites",
+      label: "Favorites",
+      icon: Heart,
+      component: <EnhancedFoodSearch onSelectFood={handleSelectFood} showFavoritesOnly />
+    }
+  ];
+
+  const activeViewData = views.find(view => view.id === activeView);
 
   return (
-    <ProtectedRoute>
-      <Layout>
-        <div className="p-6">
-          <div className="max-w-4xl mx-auto space-y-6">
-            <div className="text-center">
-              <h1 className="text-3xl font-bold text-gray-900">Calorie Checker</h1>
-              <p className="text-gray-600 mt-2">Analyze your food photos to track calories and nutrition</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="p-6 text-center hover:shadow-lg transition-shadow">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Camera className="w-8 h-8 text-blue-600" />
-                </div>
-                <h3 className="text-lg font-semibold mb-2">Take Photo</h3>
-                <p className="text-gray-600 mb-4">Capture your meal with your camera</p>
-                <Button className="w-full">
-                  <Camera className="w-4 h-4 mr-2" />
-                  Open Camera
-                </Button>
-              </Card>
-
-              <Card className="p-6 text-center hover:shadow-lg transition-shadow">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Upload className="w-8 h-8 text-green-600" />
-                </div>
-                <h3 className="text-lg font-semibold mb-2">Upload Photo</h3>
-                <p className="text-gray-600 mb-4">Upload an existing photo from your device</p>
-                <Button className="w-full" variant="outline">
-                  <Upload className="w-4 h-4 mr-2" />
-                  Upload Image
-                </Button>
-              </Card>
-
-              <Card className="p-6 text-center hover:shadow-lg transition-shadow">
-                <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Search className="w-8 h-8 text-purple-600" />
-                </div>
-                <h3 className="text-lg font-semibold mb-2">Search Food</h3>
-                <p className="text-gray-600 mb-4">Manually search for food items</p>
-                <Button className="w-full" variant="outline">
-                  <Search className="w-4 h-4 mr-2" />
-                  Search Foods
-                </Button>
-              </Card>
-            </div>
-
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Recent Scans</h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-gray-200 rounded-lg"></div>
-                    <div>
-                      <p className="font-medium">Grilled Chicken Salad</p>
-                      <p className="text-sm text-gray-600">320 calories • 2 hours ago</p>
-                    </div>
-                  </div>
-                  <Button size="sm" variant="outline">View Details</Button>
-                </div>
-
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-gray-200 rounded-lg"></div>
-                    <div>
-                      <p className="font-medium">Oatmeal with Berries</p>
-                      <p className="text-sm text-gray-600">280 calories • 5 hours ago</p>
-                    </div>
-                  </div>
-                  <Button size="sm" variant="outline">View Details</Button>
-                </div>
+    <div className={`min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 ${!isMobile ? 'ml-64' : ''}`}>
+      {/* Header Section */}
+      <div className="bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Top Bar */}
+          <div className="flex items-center justify-between py-4">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="outline"
+                onClick={() => navigate('/dashboard')}
+                className="flex items-center gap-2"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span className="hidden sm:inline">Back to Dashboard</span>
+              </Button>
+              
+              <div>
+                <h1 className="text-2xl font-bold text-gray-800">Nutrition Tracker</h1>
+                <p className="text-sm text-gray-600 hidden sm:block">Track your daily nutrition and analyze foods</p>
               </div>
-            </Card>
+            </div>
+          </div>
+
+          {/* Navigation Tabs */}
+          <div className="border-t border-gray-100">
+            <nav className="flex space-x-8 py-4" aria-label="Tabs">
+              {views.map((view) => {
+                const IconComponent = view.icon;
+                return (
+                  <button
+                    key={view.id}
+                    onClick={() => setActiveView(view.id)}
+                    className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                      activeView === view.id
+                        ? "bg-blue-100 text-blue-700 border border-blue-200"
+                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                    }`}
+                  >
+                    <IconComponent className="w-4 h-4" />
+                    <span className="hidden sm:inline">{view.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
           </div>
         </div>
-      </Layout>
-    </ProtectedRoute>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          {/* Active View Header */}
+          <div className="mb-6">
+            <div className="flex items-center gap-3 mb-2">
+              {activeViewData && (
+                <>
+                  <activeViewData.icon className="w-6 h-6 text-blue-600" />
+                  <h2 className="text-xl font-semibold text-gray-800">
+                    {activeViewData.label}
+                  </h2>
+                </>
+              )}
+            </div>
+            <p className="text-gray-600">
+              {activeView === "today" && "Monitor your daily nutrition progress and track consumed foods"}
+              {activeView === "search" && "Search our comprehensive food database to log your meals"}
+              {activeView === "scan" && "Use AI to analyze food photos and get nutrition information"}
+              {activeView === "favorites" && "Access your favorite foods and frequently logged items"}
+            </p>
+          </div>
+
+          {/* Active View Content */}
+          <div>
+            {activeViewData?.component}
+          </div>
+        </div>
+      </div>
+
+      {/* Add Food Dialog */}
+      <AddFoodDialog
+        isOpen={isAddDialogOpen}
+        onClose={() => setIsAddDialogOpen(false)}
+        selectedFood={selectedFood}
+        onLogFood={handleLogFood}
+        isLogging={isLoggingConsumption}
+      />
+    </div>
   );
 };
 

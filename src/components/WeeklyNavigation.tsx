@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface WeeklyNavigationProps {
   currentWeekOffset: number;
@@ -11,7 +11,7 @@ interface WeeklyNavigationProps {
 }
 
 const WeeklyNavigation = ({ currentWeekOffset, onWeekChange, weekStartDate }: WeeklyNavigationProps) => {
-  const { t, isRTL } = useI18n();
+  const { t, isRTL } = useLanguage();
 
   const formatWeekRange = (startDate: Date) => {
     const endDate = new Date(startDate);

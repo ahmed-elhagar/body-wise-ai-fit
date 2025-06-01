@@ -2,7 +2,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dumbbell } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { ExerciseCardEnhanced } from "./ExerciseCardEnhanced";
 import { RestDayCard } from "./RestDayCard";
 
@@ -21,7 +21,7 @@ export const ExerciseListEnhanced = ({
   onExerciseProgressUpdate,
   isRestDay = false
 }: ExerciseListEnhancedProps) => {
-  const { t } = useI18n();
+  const { t } = useLanguage();
 
   if (isLoading) {
     return (
@@ -43,14 +43,14 @@ export const ExerciseListEnhanced = ({
     return (
       <div className="lg:col-span-3">
         <Card className="p-12 bg-white border border-health-border shadow-sm text-center rounded-2xl">
-          <div className="w-16 h-16 bg-health-soft rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-health-soft rounded-2xl flex items-center justify-center mx-auto mb-6">
             <Dumbbell className="w-8 h-8 text-health-text-secondary" />
           </div>
-          <h3 className="text-xl font-semibold text-health-text-primary mb-2">
-            {t('exercise.noExercisesToday')}
+          <h3 className="text-xl font-semibold text-health-text-primary mb-3">
+            {t('exercise.noExercises')}
           </h3>
-          <p className="text-health-text-secondary">
-            {t('exercise.selectDifferentDay')}
+          <p className="text-health-text-secondary max-w-md mx-auto leading-relaxed">
+            {t('exercise.noExercisesMessage')}
           </p>
         </Card>
       </div>
@@ -60,18 +60,23 @@ export const ExerciseListEnhanced = ({
   return (
     <div className="lg:col-span-3">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-health-text-primary">
-          {t('exercise.todaysWorkout')}
-        </h2>
-        <Badge variant="outline" className="bg-health-primary text-white border-health-primary px-3 py-1">
-          {exercises.length} {exercises.length === 1 ? t('exercise.exercise') : t('exercise.exercises')}
+        <div>
+          <h2 className="text-2xl font-semibold text-health-text-primary mb-1">
+            {t('exercise.exerciseList')}
+          </h2>
+          <p className="text-health-text-secondary">
+            {t('exercise.completeWorkoutStepByStep') || 'Complete your workout step by step'}
+          </p>
+        </div>
+        <Badge variant="outline" className="bg-health-soft border-health-border text-health-primary font-medium px-3 py-1">
+          {exercises.length} {t('exercise.exercises')}
         </Badge>
       </div>
-
+      
       <div className="space-y-4">
         {exercises.map((exercise, index) => (
           <ExerciseCardEnhanced
-            key={exercise.id || index}
+            key={exercise.id}
             exercise={exercise}
             index={index}
             onExerciseComplete={onExerciseComplete}

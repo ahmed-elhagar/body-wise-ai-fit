@@ -1,6 +1,7 @@
+
 import LoadingIndicator from "@/components/ui/loading-indicator";
 import AILoadingDialog from "@/components/ui/ai-loading-dialog";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useLoadingProgress } from "./useLoadingProgress";
 import { getGenerationSteps } from "./loadingStepsData";
 
@@ -13,7 +14,7 @@ const MealPlanGenerationLoading = ({
   isGenerating, 
   generationType = 'initial' 
 }: MealPlanGenerationLoadingProps) => {
-  const { t, isRTL } = useI18n();
+  const { t, isRTL } = useLanguage();
   
   const steps = getGenerationSteps(t);
   const { currentStep, progress } = useLoadingProgress(steps, isGenerating);

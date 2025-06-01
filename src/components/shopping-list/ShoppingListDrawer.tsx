@@ -1,44 +1,108 @@
 
-import React, { useState } from 'react';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
-import { useI18n } from "@/hooks/useI18n";
-import { Button } from "@/components/ui/button";
-import { ShoppingCart } from "lucide-react";
-import EnhancedShoppingListDrawer from "./EnhancedShoppingListDrawer";
+import { useState, useMemo } from "react";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useEnhancedShoppingList } from "@/hooks/useEnhancedShoppingList";
+import type { WeeklyMealPlan, DailyMeal } from "@/hooks/useMealPlanData";
+import DrawerHeader from "./DrawerHeader";
+import CategoryAccordion from "./CategoryAccordion";
+import ProgressFooter from "./ProgressFooter";
+import LoadingState from "./LoadingState";
+import EmptyState from "./EmptyState";
 
 interface ShoppingListDrawerProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  isOpen: boolean;
+  onClose: () => void;
+  weeklyPlan?: {
+    weeklyPlan: WeeklyMealPlan;
+    dailyMeals: DailyMeal[];
+  } | null;
+  weekId?: string;
+  onShoppingListUpdate?: () => void;
 }
 
-const ShoppingListDrawer = ({ open, onOpenChange }: ShoppingListDrawerProps) => {
-  const { t } = useI18n();
-  const [isEnhanced, setIsEnhanced] = useState(false);
+const ShoppingListDrawer = ({ 
+  isOpen, 
+  onClose, 
+  weeklyPlan, 
+  weekId,
+  onShoppingListUpdate 
+}: ShoppingListDrawerProps) => {
+  const { isRTL } = useLanguage();
+  const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
+  
+  // Use enhanced shopping list functionality
+  const { enhancedShoppingItems, sendShoppingListEmail } = useEnhancedShoppingList(weeklyPlan);
+
+  const isLoading = !weeklyPlan;
+  const isEmpty = enhancedShoppingItems.items.length === 0 && !!weeklyPlan;
+
+  // Enhanced shopping list update handler
+  const handleShoppingListUpdate = async () => {
+    if (onShoppingListUpdate) {
+      onShoppingListUpdate();
+    }
+    
+    // Additional enhanced functionality can be added here
+    console.log('🛒 Shopping list updated with enhanced features');
+  };
+
+  // Enhanced email sending handler
+  const handleSendEmail = async () => {
+    const success = await sendShoppingListEmail();
+    if (success && onShoppingListUpdate) {
+      onShoppingListUpdate();
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <Sheet open={isOpen} onOpenChange={onClose}>
+        <SheetContent side={isRTL ? "left" : "right"} className="w-full sm:max-w-lg bg-gradient-to-br from-fitness-primary-50 to-fitness-accent-50 border-fitness-primary-200 overflow-y-auto">
+          <LoadingState />
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
+  if (isEmpty) {
+    return (
+      <Sheet open={isOpen} onOpenChange={onClose}>
+        <SheetContent side={isRTL ? "left" : "right"} className="w-full sm:max-w-lg bg-gradient-to-br from-fitness-primary-50 to-fitness-accent-50 border-fitness-primary-200 overflow-y-auto">
+          <EmptyState />
+        </SheetContent>
+      </Sheet>
+    );
+  }
 
   return (
-    <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="bg-white">
-        <DrawerHeader>
-          <DrawerTitle className="flex items-center gap-2">
-            <ShoppingCart className="w-5 h-5 mr-2" />
-            {t('Shopping List')}
-          </DrawerTitle>
-        </DrawerHeader>
-
-        {isEnhanced ? (
-          <EnhancedShoppingListDrawer open={open} onOpenChange={onOpenChange} />
-        ) : (
-          <div className="p-6">
-            <p className="text-gray-600 mb-4">
-              {t('Enhanced shopping list is coming soon!')}
-            </p>
-            <Button onClick={() => setIsEnhanced(true)}>
-              {t('Try Enhanced Version')}
-            </Button>
+    <Sheet open={isOpen} onOpenChange={onClose}>
+      <SheetContent side={isRTL ? "left" : "right"} className="w-full sm:max-w-lg bg-gradient-to-br from-fitness-primary-50 to-fitness-accent-50 border-fitness-primary-200 overflow-y-auto">
+        <div className="space-y-6 h-full">
+          <DrawerHeader 
+            totalItems={enhancedShoppingItems.items.length}
+            groupedItems={enhancedShoppingItems.groupedItems}
+            weekId={weekId}
+            onShoppingListUpdate={handleShoppingListUpdate}
+            onSendEmail={handleSendEmail}
+          />
+          
+          <div className="flex-1 overflow-y-auto">
+            <CategoryAccordion
+              groupedItems={enhancedShoppingItems.groupedItems}
+              checkedItems={checkedItems}
+              setCheckedItems={setCheckedItems}
+              onShoppingListUpdate={handleShoppingListUpdate}
+            />
           </div>
-        )}
-      </DrawerContent>
-    </Drawer>
+          
+          <ProgressFooter
+            checkedCount={checkedItems.size}
+            totalItems={enhancedShoppingItems.items.length}
+          />
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 };
 

@@ -1,6 +1,6 @@
 
 import { Flame } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface NutritionGridProps {
   calories: number;
@@ -10,7 +10,7 @@ interface NutritionGridProps {
 }
 
 const NutritionGrid = ({ calories, protein, carbs, fat }: NutritionGridProps) => {
-  const { t } = useI18n();
+  const { t } = useLanguage();
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3 sm:mb-4">

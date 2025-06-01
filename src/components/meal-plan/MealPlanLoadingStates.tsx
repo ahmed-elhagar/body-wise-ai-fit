@@ -1,5 +1,6 @@
+
 import React, { useMemo } from "react";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import AILoadingDialog from "@/components/ui/ai-loading-dialog";
 import LoadingIndicator from "@/components/ui/loading-indicator";
 import { useLoadingProgress } from "./loading/useLoadingProgress";
@@ -16,7 +17,7 @@ export const MealPlanLoadingStates = ({
   isLoading,
   isShuffling = false
 }: MealPlanLoadingStatesProps) => {
-  const { t, isRTL } = useI18n();
+  const { t, isRTL } = useLanguage();
   
   // Memoize steps to prevent constant recreation
   const steps = useMemo(() => {

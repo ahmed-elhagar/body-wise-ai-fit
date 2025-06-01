@@ -1,181 +1,205 @@
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeftRight, Sparkles, Dumbbell, Clock } from 'lucide-react';
-import { useI18n } from "@/hooks/useI18n";
-import { useExerciseExchange } from "@/hooks/useExerciseExchange";
+import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useExerciseExchange } from '@/hooks/useExerciseExchange';
+import { RefreshCw, AlertCircle, Zap } from 'lucide-react';
 
 interface ExerciseExchangeDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  currentExercise: any;
-  onExchange: () => void;
+  exercise: any;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-const ExerciseExchangeDialog = ({ isOpen, onClose, currentExercise, onExchange }: ExerciseExchangeDialogProps) => {
-  const { t } = useI18n();
-  const { exchangeExercise, isExchanging } = useExerciseExchange();
-  const [alternatives, setAlternatives] = useState<any[]>([]);
+export const ExerciseExchangeDialog = ({
+  exercise,
+  open,
+  onOpenChange
+}: ExerciseExchangeDialogProps) => {
+  const { t } = useLanguage();
+  const [reason, setReason] = useState('');
+  const [selectedEquipment, setSelectedEquipment] = useState<string[]>([]);
 
-  const handleGenerateAlternatives = async () => {
-    // Mock alternatives for now
-    const mockAlternatives = [
-      {
-        name: "Alternative Exercise 1",
-        muscle_groups: currentExercise.muscle_groups,
-        difficulty: currentExercise.difficulty,
-        equipment: currentExercise.equipment,
-        reason: "Similar muscle targeting with different movement pattern"
-      },
-      {
-        name: "Alternative Exercise 2",
-        muscle_groups: currentExercise.muscle_groups,
-        difficulty: currentExercise.difficulty,
-        equipment: "bodyweight",
-        reason: "Bodyweight alternative for same muscle groups"
-      }
-    ];
-    setAlternatives(mockAlternatives);
-  };
+  const { 
+    exchangeExercise, 
+    isExchanging, 
+    weeklyExchangeCount, 
+    remainingExchanges,
+    canExchange 
+  } = useExerciseExchange();
 
-  const handleExchange = async (alternative: any) => {
-    try {
-      await exchangeExercise({
-        exerciseId: currentExercise.id,
-        programId: currentExercise.daily_workout_id,
-        dayNumber: 1
-      });
-      onExchange();
-      onClose();
-    } catch (error) {
-      console.error('Error exchanging exercise:', error);
+  const equipmentOptions = [
+    'bodyweight', 'dumbbells', 'barbells', 'resistance_bands', 
+    'kettlebells', 'pull_up_bar', 'yoga_mat', 'stability_ball'
+  ];
+
+  const reasonOptions = [
+    { value: 'no_equipment', label: t('exercise.noEquipment') || 'I don\'t have the required equipment' },
+    { value: 'too_difficult', label: t('exercise.tooDifficult') || 'Too difficult for me' },
+    { value: 'too_easy', label: t('exercise.tooEasy') || 'Too easy for me' },
+    { value: 'injury_concern', label: t('exercise.injuryConcern') || 'I have an injury or physical limitation' },
+    { value: 'prefer_different', label: t('exercise.preferDifferent') || 'I prefer a different exercise type' },
+    { value: 'not_enough_space', label: t('exercise.notEnoughSpace') || 'Not enough space' }
+  ];
+
+  const handleSubmit = () => {
+    if (!reason) {
+      return;
     }
+
+    const selectedReasonLabel = reasonOptions.find(option => option.value === reason)?.label || reason;
+
+    exchangeExercise({
+      exerciseId: exercise.id,
+      reason: selectedReasonLabel,
+      preferences: {
+        equipment: selectedEquipment.length > 0 ? selectedEquipment : undefined
+      }
+    });
+
+    // Reset form
+    setReason('');
+    setSelectedEquipment([]);
+    onOpenChange(false);
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <ArrowLeftRight className="w-5 h-5" />
-            {t('Exchange Exercise')}
+            <RefreshCw className="w-5 h-5 text-health-primary" />
+            {t('exercise.exchangeExercise') || 'Exchange Exercise'}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
-          {/* Current Exercise Info */}
-          <Card>
-            <CardContent className="p-4">
-              <h3 className="font-semibold mb-2">{t('Current Exercise')}</h3>
-              <p className="mb-3">{currentExercise.name}</p>
-              
-              <div className="flex flex-wrap gap-2 mb-3">
-                <Badge>
-                  <Dumbbell className="w-3 h-3 mr-1" />
-                  {currentExercise.sets} x {currentExercise.reps}
-                </Badge>
-                {currentExercise.rest_seconds && (
-                  <Badge>
-                    <Clock className="w-3 h-3 mr-1" />
-                    {currentExercise.rest_seconds}s rest
-                  </Badge>
-                )}
-                <Badge variant="outline">
-                  {currentExercise.difficulty}
-                </Badge>
-              </div>
+        <div className="space-y-6">
+          {/* Exchange Usage Info */}
+          <div className="bg-health-soft rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Zap className="w-4 h-4 text-health-primary" />
+              <span className="font-medium text-sm">
+                {t('exercise.weeklyExchangeLimit') || 'Weekly Exchange Usage'}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant={canExchange ? "outline" : "destructive"}>
+                {weeklyExchangeCount}/2 {t('exercise.used') || 'used'}
+              </Badge>
+              <span className="text-sm text-health-text-secondary">
+                {remainingExchanges} {t('exercise.remaining') || 'remaining'}
+              </span>
+            </div>
+          </div>
 
-              {currentExercise.muscle_groups && (
-                <div className="text-sm text-gray-600">
-                  <span className="font-medium">{t('Muscle Groups')}: </span>
-                  {currentExercise.muscle_groups.join(', ')}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Generate Alternatives Button */}
-          {alternatives.length === 0 && (
-            <Card>
-              <CardContent className="p-4">
-                <h3 className="font-semibold mb-2 flex items-center gap-2">
-                  <Sparkles className="w-4 h-4" />
-                  {t('AI Exercise Exchange')}
-                </h3>
-                <p className="text-sm mb-4">
-                  {t('AI will find similar exercises targeting the same muscle groups and difficulty level.')}
+          {!canExchange && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-red-800 mb-1">
+                  {t('exercise.exchangeLimitReached') || 'Exchange Limit Reached'}
                 </p>
-                
-                <Button
-                  onClick={handleGenerateAlternatives}
-                  disabled={isExchanging}
-                  className="w-full"
-                >
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  {isExchanging ? t('Finding Alternatives...') : t('Find Exercise Alternatives')}
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Alternatives List */}
-          {alternatives.length > 0 && (
-            <div className="space-y-3">
-              <h3 className="font-semibold">{t('Alternative Exercises')}:</h3>
-              {alternatives.map((alternative, index) => (
-                <Card key={index} className="cursor-pointer hover:bg-gray-50">
-                  <CardContent className="p-4">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <h4 className="font-medium">{alternative.name}</h4>
-                        <p className="text-sm text-gray-600 mt-1">{alternative.reason}</p>
-                        <div className="flex gap-4 mt-2 text-sm">
-                          <span>{t('Difficulty')}: {alternative.difficulty}</span>
-                          <span>{t('Equipment')}: {alternative.equipment}</span>
-                        </div>
-                      </div>
-                      <Button
-                        onClick={() => handleExchange(alternative)}
-                        disabled={isExchanging}
-                        size="sm"
-                      >
-                        {isExchanging ? t('Exchanging...') : t('Select')}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                <p className="text-sm text-red-600">
+                  {t('exercise.exchangeLimitMessage') || 'You have used all 2 exercise exchanges for this week. Limit resets weekly.'}
+                </p>
+              </div>
             </div>
           )}
 
-          {/* Actions */}
-          <div className="flex gap-3">
+          {/* Current Exercise Info */}
+          <div className="border border-health-border rounded-lg p-4">
+            <h4 className="font-medium text-health-text-primary mb-2">
+              {t('exercise.currentExercise') || 'Current Exercise'}
+            </h4>
+            <p className="text-sm text-health-text-secondary font-medium">{exercise.name}</p>
+            {exercise.muscle_groups && (
+              <div className="flex flex-wrap gap-1 mt-2">
+                {exercise.muscle_groups.map((muscle: string, idx: number) => (
+                  <Badge key={idx} variant="outline" className="text-xs">
+                    {t(`exercise.${muscle}`) || muscle}
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Reason Selection */}
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              {t('exercise.exchangeReason') || 'Why do you want to exchange this exercise?'} *
+            </label>
+            <Select value={reason} onValueChange={setReason} disabled={!canExchange}>
+              <SelectTrigger>
+                <SelectValue placeholder={t('exercise.selectReason') || 'Select a reason'} />
+              </SelectTrigger>
+              <SelectContent>
+                {reasonOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Equipment Preferences */}
+          <div>
+            <label className="block text-sm font-medium mb-3">
+              {t('exercise.preferredEquipment') || 'Available Equipment (optional)'}
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {equipmentOptions.map((equipment) => (
+                <label key={equipment} className="flex items-center space-x-2 text-sm">
+                  <Checkbox
+                    checked={selectedEquipment.includes(equipment)}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        setSelectedEquipment([...selectedEquipment, equipment]);
+                      } else {
+                        setSelectedEquipment(selectedEquipment.filter(e => e !== equipment));
+                      }
+                    }}
+                    disabled={!canExchange}
+                  />
+                  <span>{t(`exercise.${equipment}`) || equipment}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-3 pt-4">
             <Button
-              onClick={onClose}
               variant="outline"
+              onClick={() => onOpenChange(false)}
               className="flex-1"
             >
-              {t('Cancel')}
+              {t('exercise.cancel') || 'Cancel'}
             </Button>
-            {alternatives.length > 0 && (
-              <Button
-                onClick={handleGenerateAlternatives}
-                disabled={isExchanging}
-                variant="outline"
-                className="flex-1"
-              >
-                <Sparkles className="w-4 h-4 mr-2" />
-                {t('Generate More')}
-              </Button>
-            )}
+            <Button
+              onClick={handleSubmit}
+              disabled={!reason || isExchanging || !canExchange}
+              className="flex-1"
+            >
+              {isExchanging ? (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  {t('exercise.exchanging') || 'Exchanging...'}
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  {t('exercise.exchange') || 'Exchange'}
+                </>
+              )}
+            </Button>
           </div>
         </div>
       </DialogContent>
     </Dialog>
   );
 };
-
-export default ExerciseExchangeDialog;

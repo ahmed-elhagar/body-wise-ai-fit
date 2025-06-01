@@ -1,13 +1,14 @@
+
 import { useProfile } from "@/hooks/useProfile";
 import { useHealthAssessment } from "@/hooks/useHealthAssessment";
 import { useOnboardingProgress } from "@/hooks/useOnboardingProgress";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export const useProfileCompletionSteps = (completionScore: number) => {
   const { profile } = useProfile();
   const { assessment, isAssessmentComplete } = useHealthAssessment();
   const { progress } = useOnboardingProgress();
-  const { t } = useI18n();
+  const { t } = useLanguage();
 
   const isBasicInfoComplete = !!(profile?.first_name && 
                                 profile?.last_name && 

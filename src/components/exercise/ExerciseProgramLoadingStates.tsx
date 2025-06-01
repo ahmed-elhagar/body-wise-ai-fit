@@ -2,7 +2,7 @@
 import PageLoadingOverlay from "@/components/ui/page-loading-overlay";
 import AILoadingDialog from "@/components/ui/ai-loading-dialog";
 import { Dumbbell, Brain, Target, Calendar } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useEffect, useState } from "react";
 
 interface ExerciseProgramLoadingStatesProps {
@@ -14,7 +14,7 @@ export const ExerciseProgramLoadingStates = ({
   isGenerating, 
   isLoading 
 }: ExerciseProgramLoadingStatesProps) => {
-  const { t, isRTL } = useI18n();
+  const { t, isRTL } = useLanguage();
   const [currentStep, setCurrentStep] = useState(0);
   const [progress, setProgress] = useState(0);
 

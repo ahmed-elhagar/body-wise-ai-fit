@@ -11,13 +11,11 @@ import CoachChatWidget from "@/components/dashboard/CoachChatWidget";
 import HeaderDropdowns from "@/components/dashboard/HeaderDropdowns";
 import { useProfile } from "@/hooks/useProfile";
 import { useNavigate } from "react-router-dom";
-import { useChartData } from "@/components/dashboard/interactive-chart/ChartData";
 
 const Dashboard = () => {
   const [activeTimeRange, setActiveTimeRange] = useState<'week' | 'month' | 'year'>('week');
   const { profile } = useProfile();
   const navigate = useNavigate();
-  const chartData = useChartData();
 
   const userName = profile?.first_name || 'User';
 
@@ -28,22 +26,6 @@ const Dashboard = () => {
   const handleViewExercise = () => {
     navigate('/exercise');
   };
-
-  // Convert chart data to the expected ProgressDataPoint array format
-  const progressData = [
-    ...chartData.weightData.map(point => ({
-      date: point.day,
-      weight: point.weight
-    })),
-    ...chartData.calorieData.map(point => ({
-      date: point.day,
-      calories: point.consumed
-    })),
-    ...chartData.workoutData.map(point => ({
-      date: point.day,
-      exercise: point.completed
-    }))
-  ];
 
   return (
     <ProtectedRoute>
@@ -73,7 +55,7 @@ const Dashboard = () => {
             <EnhancedStatsGrid />
             
             {/* Progress Chart Section */}
-            <InteractiveProgressChart data={progressData} />
+            <InteractiveProgressChart />
             
             {/* 50-50 Layout for remaining content */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">

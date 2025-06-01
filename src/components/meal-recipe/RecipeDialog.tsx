@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Clock, Users, ChefHat, Sparkles, Youtube } from "lucide-react";
 import { useEnhancedMealRecipe } from "@/hooks/useEnhancedMealRecipe";
-import type { Meal } from "@/types/meal";
+import type { Meal, Ingredient } from "@/types/meal";
 
 interface RecipeDialogProps {
   isOpen: boolean;
@@ -37,11 +37,27 @@ const RecipeDialog = ({ isOpen, onClose, meal, onRecipeGenerated }: RecipeDialog
     if (result) {
       console.log('✅ Recipe generated successfully, updating meal data');
       
+      // Safely handle the ingredients type conversion
+      const processedIngredients: Ingredient[] = Array.isArray(result.ingredients) 
+        ? result.ingredients.map((ing: any) => {
+            if (typeof ing === 'string') {
+              return { name: ing, quantity: '', unit: '' };
+            } else if (ing && typeof ing === 'object') {
+              return {
+                name: ing.name || '',
+                quantity: ing.quantity || '',
+                unit: ing.unit || ''
+              };
+            }
+            return { name: '', quantity: '', unit: '' };
+          })
+        : currentMeal.ingredients || [];
+
       // Update the current meal with the new recipe data
       const updatedMeal: Meal = {
         ...currentMeal,
-        ingredients: result.ingredients || currentMeal.ingredients || [],
-        instructions: result.instructions || currentMeal.instructions || [],
+        ingredients: processedIngredients,
+        instructions: Array.isArray(result.instructions) ? result.instructions : currentMeal.instructions || [],
         youtube_search_term: result.youtube_search_term || currentMeal.youtube_search_term,
         image_url: result.image_url || currentMeal.image_url
       };
@@ -167,6 +183,24 @@ const RecipeDialog = ({ isOpen, onClose, meal, onRecipeGenerated }: RecipeDialog
                       </li>
                     ))}
                   </ol>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Generated Recipe Image */}
+            {currentMeal.image_url && (
+              <Card>
+                <CardContent className="p-4">
+                  <h3 className="font-semibold mb-3">Recipe Image</h3>
+                  <img 
+                    src={currentMeal.image_url} 
+                    alt={currentMeal.name}
+                    className="w-full max-w-md mx-auto rounded-lg shadow-md"
+                    onError={(e) => {
+                      console.error('Failed to load recipe image:', currentMeal.image_url);
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
                 </CardContent>
               </Card>
             )}

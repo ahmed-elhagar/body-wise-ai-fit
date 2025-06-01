@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Clock, RotateCcw, CheckCircle, Play, Pause } from 'lucide-react';
-import { useI18n } from "@/hooks/useI18n";
-import { ExerciseProgressDialog } from './ExerciseProgressDialog';
+
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { CheckCircle, Clock, Dumbbell, Play, Youtube, Edit3, RefreshCw } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { ExerciseProgressDialog } from "./ExerciseProgressDialog";
+import { ExerciseExchangeDialog } from "./ExerciseExchangeDialog";
+import { translateExerciseContent } from "@/utils/exerciseTranslationUtils";
 
 interface ExerciseCardEnhancedProps {
   exercise: any;
@@ -20,97 +23,175 @@ export const ExerciseCardEnhanced = ({
   onExerciseComplete,
   onExerciseProgressUpdate
 }: ExerciseCardEnhancedProps) => {
-  const { t } = useI18n();
-  const [isCompleted, setIsCompleted] = useState(exercise.completed || false);
-  const [isTrackingProgress, setIsTrackingProgress] = useState(false);
-  const [isTimerRunning, setIsTimerRunning] = useState(false);
-  const [elapsedTime, setElapsedTime] = useState(0);
+  const { t, language } = useLanguage();
+  const [showProgressDialog, setShowProgressDialog] = useState(false);
+  const [showExchangeDialog, setShowExchangeDialog] = useState(false);
 
-  const toggleComplete = () => {
-    setIsCompleted(!isCompleted);
-    onExerciseComplete(exercise.id);
+  // Translate exercise content based on current language
+  const translatedExercise = translateExerciseContent(exercise, language);
+
+  // Debug log to track translation
+  useEffect(() => {
+    console.log('🎯 ExerciseCardEnhanced - Translation Debug:', {
+      originalName: exercise.name,
+      translatedName: translatedExercise.name,
+      currentLanguage: language,
+      exerciseId: exercise.id
+    });
+  }, [exercise.name, translatedExercise.name, language, exercise.id]);
+
+  const handleWatchVideo = () => {
+    const searchQuery = translatedExercise.youtube_search_term || translatedExercise.name;
+    const youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(searchQuery)}`;
+    window.open(youtubeUrl, '_blank');
   };
 
-  const handleProgressUpdate = (sets: number, reps: string, notes?: string) => {
-    onExerciseProgressUpdate(exercise.id, sets, reps, notes);
-    setIsTrackingProgress(false);
-  };
-
-  const toggleTimer = () => {
-    setIsTimerRunning(!isTimerRunning);
-  };
+  const progressPercentage = exercise.completed ? 100 : 0;
 
   return (
     <>
-      <Card
-        className={`p-4 bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 ${
-          isCompleted ? 'bg-green-50/80' : ''
-        }`}
-      >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-              isCompleted
-                ? 'bg-green-500 text-white'
-                : 'bg-gray-200 text-gray-600'
+      <Card className={`p-6 transition-all duration-300 border-2 ${
+        exercise.completed 
+          ? 'bg-green-50 border-green-200 shadow-md' 
+          : 'bg-white border-health-border hover:border-health-primary hover:shadow-lg'
+      }`}>
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white ${
+              exercise.completed ? 'bg-green-500' : 'bg-health-primary'
             }`}>
-              {isCompleted ? <CheckCircle className="w-5 h-5" /> : exercise.order_number || index + 1}
+              {exercise.completed ? <CheckCircle className="w-5 h-5" /> : index + 1}
             </div>
-            
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold text-gray-800 mb-1">
-                {exercise.name}
+            <div>
+              <h3 className="text-lg font-semibold text-health-text-primary mb-1">
+                {translatedExercise.name}
               </h3>
-              <div className="flex items-center space-x-4 text-sm text-gray-600 mb-2">
-                <span>{exercise.sets} sets × {exercise.reps} reps</span>
-                <span className="flex items-center">
-                  <Clock className="w-3 h-3 mr-1" />
-                  {exercise.rest_seconds}s rest
+              <div className="flex items-center gap-3 text-sm text-health-text-secondary">
+                <span className="flex items-center gap-1">
+                  <Dumbbell className="w-4 h-4" />
+                  {exercise.sets} {t('exercise.sets')} × {exercise.reps} {t('exercise.reps')}
                 </span>
+                {exercise.rest_seconds && (
+                  <span className="flex items-center gap-1">
+                    <Clock className="w-4 h-4" />
+                    {exercise.rest_seconds}s {t('exercise.rest')}
+                  </span>
+                )}
               </div>
-              <div className="flex items-center space-x-2">
-                <Badge variant="outline" className="text-xs">
-                  {exercise.equipment || 'Bodyweight'}
-                </Badge>
-                <Badge variant="outline" className="text-xs">
-                  {exercise.difficulty || 'Beginner'}
-                </Badge>
-              </div>
-              {exercise.instructions && (
-                <p className="text-sm text-gray-600 mt-2">{exercise.instructions}</p>
-              )}
             </div>
           </div>
           
-          <div className="flex space-x-2">
-            <Button
-              size="sm"
-              variant="outline"
-              className="bg-white/80"
-              onClick={() => setIsTrackingProgress(true)}
-            >
-              <RotateCcw className="w-4 h-4 mr-1" />
-              Track
-            </Button>
-            {!isCompleted && (
-              <Button
-                size="sm"
-                className="bg-fitness-gradient hover:opacity-90 text-white"
-                onClick={toggleComplete}
-              >
-                <CheckCircle className="w-4 h-4 mr-1" />
-                Complete
-              </Button>
+          <div className="flex items-center gap-2">
+            {exercise.completed && (
+              <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-200">
+                <CheckCircle className="w-3 h-3 mr-1" />
+                {t('exercise.completed')}
+              </Badge>
             )}
           </div>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="mb-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-health-text-secondary">
+              {t('exercise.progress')}
+            </span>
+            <span className="text-sm font-medium text-health-primary">
+              {progressPercentage}%
+            </span>
+          </div>
+          <Progress value={progressPercentage} className="h-2" />
+        </div>
+
+        {/* Exercise Details */}
+        {translatedExercise.instructions && (
+          <div className="mb-4 p-3 bg-health-soft rounded-lg">
+            <p className="text-sm text-health-text-secondary leading-relaxed">
+              {translatedExercise.instructions}
+            </p>
+          </div>
+        )}
+
+        {/* Muscle Groups & Equipment */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          {exercise.muscle_groups?.map((muscle: string, idx: number) => (
+            <Badge key={idx} variant="outline" className="text-xs">
+              {t(`exercise.${muscle}`) || muscle}
+            </Badge>
+          ))}
+          {exercise.equipment && (
+            <Badge variant="outline" className="text-xs bg-blue-50 border-blue-200 text-blue-700">
+              {t(`exercise.${exercise.equipment}`) || exercise.equipment}
+            </Badge>
+          )}
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {!exercise.completed ? (
+            <>
+              <Button
+                onClick={() => onExerciseComplete(exercise.id)}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+              >
+                <CheckCircle className="w-4 h-4 mr-2" />
+                {t('exercise.markComplete')}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowProgressDialog(true)}
+                className="border-health-border hover:bg-health-soft"
+              >
+                <Edit3 className="w-4 h-4 mr-2" />
+                {t('exercise.editProgress')}
+              </Button>
+            </>
+          ) : (
+            <Button
+              variant="outline"
+              onClick={() => setShowProgressDialog(true)}
+              className="flex-1 border-green-200 hover:bg-green-50 text-green-700"
+            >
+              <Edit3 className="w-4 h-4 mr-2" />
+              {t('exercise.editProgress')}
+            </Button>
+          )}
+          
+          <Button
+            variant="outline"
+            onClick={handleWatchVideo}
+            className="border-red-200 hover:bg-red-50 text-red-600"
+          >
+            <Youtube className="w-4 h-4 mr-2" />
+            {t('exercise.watchVideo')}
+          </Button>
+
+          <Button
+            variant="outline"
+            onClick={() => setShowExchangeDialog(true)}
+            className="border-orange-200 hover:bg-orange-50 text-orange-600"
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            {t('exercise.exchange')}
+          </Button>
         </div>
       </Card>
 
       <ExerciseProgressDialog
-        open={isTrackingProgress}
-        onOpenChange={setIsTrackingProgress}
         exercise={exercise}
-        onSave={handleProgressUpdate}
+        open={showProgressDialog}
+        onOpenChange={setShowProgressDialog}
+        onSave={(sets, reps, notes) => {
+          onExerciseProgressUpdate(exercise.id, sets, reps, notes);
+          setShowProgressDialog(false);
+        }}
+      />
+
+      <ExerciseExchangeDialog
+        exercise={exercise}
+        open={showExchangeDialog}
+        onOpenChange={setShowExchangeDialog}
       />
     </>
   );

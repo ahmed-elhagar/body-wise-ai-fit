@@ -19,12 +19,12 @@ import TrendAnalysis from "@/components/progress/TrendAnalysis";
 import { useWeightTracking } from "@/hooks/useWeightTracking";
 import { useGoals } from "@/hooks/useGoals";
 import { useProfile } from "@/hooks/useProfile";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Progress = () => {
   const { tab } = useParams();
   const navigate = useNavigate();
-  const { t } = useI18n();
+  const { t } = useLanguage();
   const { weightEntries, isLoading: weightLoading } = useWeightTracking();
   const { getMacroGoals } = useGoals();
   const { profile } = useProfile();
@@ -97,7 +97,7 @@ const Progress = () => {
           </TabsList>
 
           <TabsContent value="analytics" className="space-y-6 mt-6">
-            <ProgressAnalytics data={[]} />
+            <ProgressAnalytics weightEntries={weightEntries} macroGoals={macroGoals} />
           </TabsContent>
 
           <TabsContent value="weight" className="space-y-6 mt-6">
@@ -138,11 +138,11 @@ const Progress = () => {
           </TabsContent>
 
           <TabsContent value="achievements" className="space-y-6 mt-6">
-            <AchievementBadges achievements={[]} />
+            <AchievementBadges />
           </TabsContent>
 
           <TabsContent value="trends" className="space-y-6 mt-6">
-            <TrendAnalysis data={[]} title="AI Trend Analysis" />
+            <TrendAnalysis />
           </TabsContent>
         </Tabs>
       </Layout>

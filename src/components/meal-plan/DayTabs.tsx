@@ -1,6 +1,6 @@
 
 import { format, addDays, isSameDay } from "date-fns";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Card } from "@/components/ui/card";
 
 interface DayTabsProps {
@@ -10,7 +10,7 @@ interface DayTabsProps {
 }
 
 const DayTabs = ({ weekStartDate, selectedDayNumber, onDayChange }: DayTabsProps) => {
-  const { t, isRTL } = useI18n();
+  const { t, isRTL } = useLanguage();
   const today = new Date();
 
   const days = Array.from({ length: 7 }, (_, index) => {

@@ -1,115 +1,79 @@
 
 import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { addDays, startOfWeek, format } from 'date-fns';
+import { ExerciseProgram } from '@/types/exercise';
+import { generateWeeklyWorkouts } from '@/utils/exerciseDataUtils';
 
-interface ExerciseProgram {
-  id: string;
-  name: string;
-  description: string;
-  workout_type: string;
-  difficulty_level: string;
-  current_week: number;
-  weeks_duration: number;
-  status: string;
-}
-
-interface Workout {
-  id: string;
-  workout_name: string;
-  day_number: number;
-  estimated_duration: number;
-  estimated_calories: number;
-  muscle_groups: string[];
-  completed: boolean;
-}
-
-interface Exercise {
-  id: string;
-  name: string;
-  sets: number;
-  reps: string;
-  rest_seconds: number;
-  muscle_groups: string[];
-  equipment: string;
-  instructions: string;
-  difficulty: string;
-  notes: string;
-  completed: boolean;
-  actual_sets: number;
-  actual_reps: string;
-  workout_id: string;
-  daily_workout_id: string;
-}
-
-export const useExerciseProgramQuery = (weekOffset: number = 0) => {
+export const useExerciseProgramQuery = (weekOffset: number = 0, workoutType: "home" | "gym" = "home") => {
   const { user } = useAuth();
+  const { language } = useLanguage();
 
-  const { data: programData, isLoading: isProgramLoading, error: programError, refetch } = useQuery({
-    queryKey: ['exercise-program', user?.id, weekOffset],
+  // Calculate the target week start date based on offset
+  const currentDate = new Date();
+  const targetWeekStart = addDays(startOfWeek(currentDate), weekOffset * 7);
+  const targetWeekStartString = format(targetWeekStart, 'yyyy-MM-dd');
+
+  return useQuery({
+    queryKey: ['exercise-program', user?.id, weekOffset, workoutType, targetWeekStartString, language],
     queryFn: async () => {
-      if (!user) return null;
+      if (!user?.id) throw new Error('No user ID');
       
-      // Return mock data since tables don't exist
-      const mockProgram: ExerciseProgram = {
-        id: 'program-1',
-        name: 'Mock Exercise Program',
-        description: 'A sample exercise program',
-        workout_type: 'home',
-        difficulty_level: 'beginner',
-        current_week: 1,
-        weeks_duration: 4,
-        status: 'active'
-      };
+      console.log('🔍 Fetching exercise program:', {
+        weekOffset,
+        workoutType,
+        targetWeekStart: targetWeekStartString,
+        userId: user.id.substring(0, 8) + '...',
+        userLanguage: language
+      });
 
-      const mockWorkout: Workout = {
-        id: 'workout-1',
-        workout_name: 'Day 1 Workout',
-        day_number: 1,
-        estimated_duration: 45,
-        estimated_calories: 300,
-        muscle_groups: ['chest', 'arms'],
-        completed: false
-      };
+      // First try to get existing program for this specific week and workout type
+      const { data: existingProgram, error: fetchError } = await supabase
+        .from('weekly_exercise_programs')
+        .select(`
+          *,
+          daily_workouts:daily_workouts(
+            *,
+            exercises:exercises(*)
+          )
+        `)
+        .eq('user_id', user.id)
+        .eq('workout_type', workoutType)
+        .eq('week_start_date', targetWeekStartString)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-      const mockExercises: Exercise[] = [
-        {
-          id: 'exercise-1',
-          name: 'Push-ups',
-          sets: 3,
-          reps: '10-15',
-          rest_seconds: 60,
-          muscle_groups: ['chest', 'arms'],
-          equipment: 'none',
-          instructions: 'Standard push-up form',
-          difficulty: 'beginner',
-          notes: '',
-          completed: false,
-          actual_sets: 0,
-          actual_reps: '',
-          workout_id: 'workout-1',
-          daily_workout_id: 'workout-1'
-        }
-      ];
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        console.error('❌ Error fetching exercise program:', fetchError);
+        throw fetchError;
+      }
 
-      return {
-        program: mockProgram,
-        workout: mockWorkout,
-        exercises: mockExercises,
-        isRestDay: false,
-        weekStartDate: new Date().toISOString().split('T')[0]
-      };
+      // If no program found for this week, return null (empty state)
+      if (!existingProgram) {
+        console.log('📭 No program found for week:', targetWeekStartString, 'type:', workoutType);
+        return null;
+      }
+
+      console.log('✅ Found program:', existingProgram.program_name, 'with', existingProgram.daily_workouts?.length || 0, 'workouts');
+
+      // Transform data and handle rest days
+      const transformedProgram = {
+        ...existingProgram,
+        workout_type: existingProgram.workout_type || workoutType,
+        current_week: existingProgram.current_week || 1,
+        daily_workouts_count: existingProgram.daily_workouts?.length || 0,
+        daily_workouts: generateWeeklyWorkouts(existingProgram.daily_workouts || [], workoutType)
+      } as ExerciseProgram;
+
+      console.log('✅ Transformed program with', transformedProgram.daily_workouts?.length, 'daily workouts (including rest days) for language:', language);
+
+      return transformedProgram;
     },
-    enabled: !!user
+    enabled: !!user?.id,
+    staleTime: 2 * 60 * 1000, // Cache for 2 minutes
+    gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
   });
-
-  return {
-    program: programData?.program || null,
-    workout: programData?.workout || null,
-    exercises: programData?.exercises || [],
-    isLoading: isProgramLoading,
-    error: programError,
-    isRestDay: programData?.isRestDay || false,
-    weekStartDate: programData?.weekStartDate || '',
-    refetch
-  };
 };

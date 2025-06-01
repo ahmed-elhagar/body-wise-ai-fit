@@ -2,177 +2,167 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { useProfile } from './useProfile';
 import { useAuth } from './useAuth';
-import { useI18n } from "./useI18n";
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-
-export interface Meal {
-  id: string;
-  type: string;
-  time: string;
-  name: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-  ingredients: { name: string; quantity: string; unit: string; }[];
-  instructions: string[];
-  prepTime: number;
-  cookTime: number;
-  servings: number;
-  youtube_search_term?: string;
-  image_url?: string;
-  image?: string;
-}
+import { useCreditSystem } from './useCreditSystem';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export const useEnhancedMealRecipe = () => {
+  const [isGeneratingRecipe, setIsGeneratingRecipe] = useState(false);
   const { user } = useAuth();
-  const { profile } = useProfile();
-  const { t } = useI18n();
-  const queryClient = useQueryClient();
+  const { language } = useLanguage();
+  const { checkAndUseCreditAsync, completeGenerationAsync } = useCreditSystem();
 
-  const [meal, setMeal] = useState<Meal | null>(null);
-  const [isRecipeLoading, setIsRecipeLoading] = useState(false);
+  const generateEnhancedRecipe = async (mealId: string, mealData?: any) => {
+    if (!user) {
+      toast.error('Please log in to view recipes');
+      return null;
+    }
 
-  const fetchMealRecipe = async (mealId: string): Promise<Meal> => {
-    setIsRecipeLoading(true);
+    if (!mealId) {
+      toast.error('Meal ID is required to generate recipe');
+      return null;
+    }
+
+    setIsGeneratingRecipe(true);
+    
     try {
-      // Since 'meals' table doesn't exist in the schema, we'll work with daily_meals
-      const { data, error } = await supabase
+      console.log('🍳 Starting enhanced recipe generation for meal:', mealId, 'in language:', language);
+      
+      // First, check if recipe already exists in database
+      const { data: existingMeal, error: fetchError } = await supabase
         .from('daily_meals')
         .select('*')
         .eq('id', mealId)
         .single();
 
-      if (error) {
-        console.error("Error fetching meal recipe:", error);
-        throw new Error(t('mealPlan.recipeFetchFailed') || 'Failed to fetch meal recipe');
+      if (fetchError) {
+        console.error('Error fetching meal:', fetchError);
+        throw new Error('Failed to fetch meal data');
       }
 
-      if (!data) {
-        throw new Error(t('mealPlan.recipeNotFound') || 'Meal recipe not found');
+      // If recipe already exists and is complete, return it
+      if (existingMeal?.recipe_fetched && 
+          existingMeal?.ingredients && 
+          Array.isArray(existingMeal.ingredients) &&
+          existingMeal.ingredients.length > 0 && 
+          existingMeal?.instructions && 
+          Array.isArray(existingMeal.instructions) &&
+          existingMeal.instructions.length > 0) {
+        console.log('✅ Recipe already exists in database, returning cached version');
+        toast.success('Recipe loaded from cache!');
+        return existingMeal;
       }
 
-      // Convert DailyMeal to Meal format
-      const convertedMeal: Meal = {
-        id: data.id,
-        type: data.meal_type,
-        time: "12:00", // Default time
-        name: data.name,
-        calories: data.calories || 0,
-        protein: data.protein || 0,
-        carbs: data.carbs || 0,
-        fat: data.fat || 0,
-        ingredients: Array.isArray(data.ingredients) ? 
-          data.ingredients.map((ing: any) => ({
-            name: typeof ing === 'string' ? ing : ing.name || '',
-            quantity: typeof ing === 'object' ? ing.quantity || '1' : '1',
-            unit: typeof ing === 'object' ? ing.unit || 'piece' : 'piece'
-          })) : [],
-        instructions: data.instructions || [],
-        prepTime: data.prep_time || 0,
-        cookTime: data.cook_time || 0,
-        servings: data.servings || 1,
-        youtube_search_term: data.youtube_search_term,
-        image_url: data.image_url,
-        image: data.image_url || ""
-      };
+      // Show loading feedback
+      toast.loading('Generating detailed recipe with AI...', {
+        duration: 15000,
+      });
 
-      setMeal(convertedMeal);
-      return convertedMeal;
+      // Use credit system for recipe generation
+      const creditResult = await checkAndUseCreditAsync('meal_plan');
+
+      try {
+        console.log('🔄 Making API call to generate-meal-recipe function');
+        
+        const { data, error } = await supabase.functions.invoke('generate-meal-recipe', {
+          body: {
+            mealId: mealId,
+            userId: user.id,
+            language: language,
+            mealData: mealData || existingMeal
+          }
+        });
+
+        toast.dismiss();
+
+        if (error) {
+          console.error('❌ Recipe generation error:', error);
+          throw error;
+        }
+
+        if (data?.success) {
+          console.log('✅ Recipe generated successfully!');
+          
+          // Complete the AI generation log
+          const creditData = creditResult as any;
+          if (creditData?.log_id) {
+            await completeGenerationAsync({
+              logId: creditData.log_id,
+              responseData: {
+                mealId: mealId,
+                recipeGenerated: true,
+                language: language
+              }
+            });
+          }
+
+          if (data.message?.includes('already available')) {
+            toast.success('Recipe loaded from cache!');
+          } else {
+            toast.success(
+              `🎉 Recipe generated! (${data.recipeCount || 1}/${data.dailyLimit || 10} today)`,
+              { duration: 3000 }
+            );
+          }
+          
+          // Fetch updated meal data from database
+          const { data: updatedMeal, error: refetchError } = await supabase
+            .from('daily_meals')
+            .select('*')
+            .eq('id', mealId)
+            .single();
+
+          if (refetchError) {
+            console.error('Error refetching updated meal:', refetchError);
+            throw refetchError;
+          }
+
+          console.log('📄 Updated meal data:', updatedMeal);
+          return updatedMeal;
+          
+        } else {
+          throw new Error(data?.error || 'Failed to generate recipe');
+        }
+      } catch (error) {
+        // Mark generation as failed
+        const creditData = creditResult as any;
+        if (creditData?.log_id) {
+          await completeGenerationAsync({
+            logId: creditData.log_id,
+            errorMessage: error instanceof Error ? error.message : 'Recipe generation failed'
+          });
+        }
+        throw error;
+      }
+      
     } catch (error: any) {
-      console.error("Error fetching meal recipe:", error);
-      toast.error(error.message || t('mealPlan.recipeFetchError') || 'Error fetching meal recipe');
-      throw error;
+      console.error('❌ Error generating recipe:', error);
+      toast.dismiss();
+      
+      if (error.message?.includes('limit reached')) {
+        toast.error('AI generation limit reached. Please upgrade or wait for credits to reset.');
+      } else if (error.message?.includes('not found')) {
+        toast.error('Meal not found. Please refresh and try again.');
+      } else {
+        toast.error(error.message || 'Failed to generate recipe. Please try again.');
+      }
+      
+      return null;
     } finally {
-      setIsRecipeLoading(false);
-    }
-  };
-
-  const { mutate: saveMealRecipe, isPending: isSaving } = useMutation({
-    mutationFn: async (updates: Partial<Meal>) => {
-      if (!user) {
-        throw new Error(t('auth.signInRequired') || 'Please sign in to save meal recipe');
-      }
-
-      if (!meal?.id) {
-        throw new Error(t('mealPlan.noMealSelected') || 'No meal selected to update');
-      }
-
-      // Update daily_meals table instead of non-existent meals table
-      const { data, error } = await supabase
-        .from('daily_meals')
-        .update({
-          ingredients: updates.ingredients || [],
-          instructions: updates.instructions,
-          youtube_search_term: updates.youtube_search_term,
-          image_url: updates.image_url || updates.image
-        })
-        .eq('id', meal.id)
-        .select()
-        .single();
-
-      if (error) {
-        console.error("Error updating meal recipe:", error);
-        throw new Error(t('mealPlan.recipeSaveFailed') || 'Failed to save meal recipe');
-      }
-
-      return data;
-    },
-    onSuccess: () => {
-      toast.success(t('mealPlan.recipeSavedSuccess') || 'Meal recipe saved successfully!');
-    },
-    onError: (error: any) => {
-      console.error("Error saving meal recipe:", error);
-      toast.error(error.message || t('mealPlan.recipeSaveError') || 'Error saving meal recipe');
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['weekly-meal-plan'] });
-    },
-  });
-
-  const generateEnhancedRecipe = async (mealId: string, currentMeal: Meal) => {
-    try {
-      // Mock enhanced recipe generation
-      const enhancedRecipe = {
-        ingredients: [
-          { name: "Chicken breast", quantity: "200", unit: "g" },
-          { name: "Rice", quantity: "100", unit: "g" },
-          { name: "Vegetables", quantity: "150", unit: "g" }
-        ],
-        instructions: [
-          "Prepare the ingredients",
-          "Cook the chicken breast",
-          "Cook the rice",
-          "Steam the vegetables",
-          "Serve together"
-        ],
-        youtube_search_term: `how to cook ${currentMeal.name}`,
-        image_url: currentMeal.image_url
-      };
-
-      // Update the meal with enhanced recipe
-      await saveMealRecipe(enhancedRecipe);
-      return enhancedRecipe;
-    } catch (error) {
-      console.error('Error generating enhanced recipe:', error);
-      throw error;
+      setIsGeneratingRecipe(false);
     }
   };
 
   const generateYouTubeSearchTerm = (mealName: string) => {
-    return `how to cook ${mealName} recipe`;
+    if (!mealName) return 'cooking recipe tutorial';
+    
+    const cleanName = mealName.replace(/🍎\s*/, '').trim();
+    return `${cleanName} recipe cooking tutorial`;
   };
 
   return {
-    meal,
-    isRecipeLoading,
-    fetchMealRecipe,
-    saveMealRecipe,
-    isSaving,
     generateEnhancedRecipe,
     generateYouTubeSearchTerm,
-    isGeneratingRecipe: isRecipeLoading
+    isGeneratingRecipe
   };
 };

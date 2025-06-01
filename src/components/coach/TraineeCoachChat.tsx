@@ -1,7 +1,12 @@
 
 import { useState, useRef, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Send, Loader2, UserCheck, Badge as BadgeIcon, AlertCircle, X, Edit, Wifi, WifiOff } from "lucide-react";
 import { useCoachChat } from "@/hooks/useCoachChat";
 import { useRealtimeChat } from "@/hooks/useRealtimeChat";
 import { useAuth } from "@/hooks/useAuth";
@@ -12,11 +17,11 @@ import { useMessageActions } from "@/hooks/useMessageActions";
 import { useUserOnlineStatus } from "@/hooks/useUserOnlineStatus";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useLiveNotifications } from "@/hooks/useLiveNotifications";
+import { cn } from "@/lib/utils";
 import MobileChatInterface from "@/components/chat/MobileChatInterface";
 import ChatSearchBar from "@/components/chat/ChatSearchBar";
-import ChatHeader from "./chat/ChatHeader";
-import MessagesList from "./chat/MessagesList";
-import ChatInput from "./chat/ChatInput";
+import TypingIndicator from "@/components/chat/TypingIndicator";
+import MessageActionsMenu from "@/components/chat/MessageActionsMenu";
 
 interface TraineeCoachChatProps {
   coachId: string;
@@ -146,6 +151,30 @@ const TraineeCoachChat = ({ coachId, coachName, onBack }: TraineeCoachChatProps)
     }
   };
 
+  const formatTime = (dateString: string) => {
+    return new Date(dateString).toLocaleTimeString([], { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+  };
+
+  const getInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  };
+
+  const formatLastSeen = (lastSeen?: string) => {
+    if (!lastSeen) return 'Never';
+    
+    const date = new Date(lastSeen);
+    const now = new Date();
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+    
+    if (diffInMinutes < 1) return 'Just now';
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
+    return date.toLocaleDateString();
+  };
+
   // Use mobile interface on mobile devices
   if (isMobile) {
     return (
@@ -185,13 +214,54 @@ const TraineeCoachChat = ({ coachId, coachName, onBack }: TraineeCoachChatProps)
   // Desktop interface with enhanced real-time features
   return (
     <Card className="h-[600px] flex flex-col bg-white shadow-lg rounded-xl">
-      <ChatHeader
-        coachName={coachName}
-        isCoachOnline={isCoachOnline}
-        coachLastSeen={coachLastSeen}
-        isConnected={isConnected}
-        onBack={onBack}
-      />
+      <CardHeader className="bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-t-xl pb-4">
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onBack}
+            className="text-white hover:bg-white/20 p-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          
+          <Avatar className="h-10 w-10">
+            <AvatarFallback className="bg-white/20 text-white font-semibold">
+              {getInitials(coachName)}
+            </AvatarFallback>
+          </Avatar>
+          
+          <div className="flex-1">
+            <CardTitle className="text-lg font-bold text-white mb-1">
+              {coachName}
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              <div className={cn(
+                "w-2 h-2 rounded-full",
+                isCoachOnline ? "bg-green-300" : "bg-white/50"
+              )} />
+              <span className="text-green-100 text-sm">
+                {isCoachOnline ? "Online" : `Last seen ${formatLastSeen(coachLastSeen)}`}
+              </span>
+              <div className="flex items-center gap-1 ml-2">
+                {isConnected ? (
+                  <Wifi className="w-3 h-3 text-green-200" />
+                ) : (
+                  <WifiOff className="w-3 h-3 text-red-200" />
+                )}
+                <span className="text-xs text-green-100">
+                  {isConnected ? "Connected" : "Reconnecting..."}
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <Badge variant="secondary" className="bg-white/20 text-white border-white/20">
+            <UserCheck className="w-3 h-3 mr-1" />
+            Coach
+          </Badge>
+        </div>
+      </CardHeader>
       
       <CardContent className="flex-1 flex flex-col p-0">
         {/* Search Bar */}
@@ -204,33 +274,168 @@ const TraineeCoachChat = ({ coachId, coachName, onBack }: TraineeCoachChatProps)
           onClearSearch={clearSearch}
         />
 
-        <MessagesList
-          messages={displayMessages}
-          currentUserId={user?.id}
-          coachName={coachName}
-          typingUsers={typingUsers}
-          replyingTo={replyingTo}
-          onReply={setReplyingTo}
-          onEdit={handleEditMessage}
-          onDelete={deleteMessage}
-          messagesEndRef={messagesEndRef}
-        />
+        <ScrollArea className="flex-1 p-4">
+          <div className="space-y-4">
+            {displayMessages.map((msg) => {
+              const isOwn = msg.sender_id === user?.id;
+              return (
+                <div
+                  key={msg.id}
+                  className={cn(
+                    "group flex gap-3 max-w-[80%]",
+                    isOwn ? "ml-auto flex-row-reverse" : "mr-auto"
+                  )}
+                >
+                  {!isOwn && (
+                    <Avatar className="h-8 w-8 flex-shrink-0">
+                      <AvatarFallback className="bg-green-100 text-green-700">
+                        {getInitials(msg.sender_name || coachName)}
+                      </AvatarFallback>
+                    </Avatar>
+                  )}
+                  
+                  <div className="flex-1">
+                    {/* Reply indicator */}
+                    {replyingTo?.id === msg.id && (
+                      <div className="text-xs text-blue-600 mb-1">
+                        Replying to this message
+                      </div>
+                    )}
+                    
+                    <div
+                      className={cn(
+                        "rounded-lg px-3 py-2 relative",
+                        isOwn
+                          ? "bg-green-600 text-white"
+                          : "bg-gray-100 text-gray-900",
+                        msg.updated_at !== msg.created_at && "border-l-2 border-orange-400"
+                      )}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-sm whitespace-pre-wrap flex-1">
+                          {msg.message}
+                        </p>
+                        <MessageActionsMenu
+                          message={msg}
+                          isOwnMessage={isOwn}
+                          onReply={setReplyingTo}
+                          onEdit={handleEditMessage}
+                          onDelete={deleteMessage}
+                        />
+                      </div>
+                      
+                      <div className={cn(
+                        "text-xs mt-1 flex items-center justify-between",
+                        isOwn ? "text-green-100" : "text-gray-500"
+                      )}>
+                        <div className="flex items-center gap-2">
+                          <span>{formatTime(msg.created_at)}</span>
+                          {msg.updated_at !== msg.created_at && (
+                            <span className="text-xs opacity-75">(edited)</span>
+                          )}
+                        </div>
+                        {isOwn && msg.is_read && (
+                          <span className="flex items-center gap-1">
+                            <BadgeIcon className="w-3 h-3" />
+                            Read
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+            
+            {/* Typing indicator */}
+            <TypingIndicator
+              typingUsers={typingUsers}
+              getCoachName={() => coachName}
+            />
+            
+            <div ref={messagesEndRef} />
+          </div>
+        </ScrollArea>
         
-        <ChatInput
-          message={message}
-          setMessage={setMessage}
-          isSending={isSending}
-          isEditing={isEditing}
-          editingMessage={editingMessage}
-          replyingTo={replyingTo}
-          onSend={handleSendMessage}
-          onSaveEdit={handleSaveEdit}
-          onCancelEdit={handleCancelEdit}
-          onCancelReply={() => setReplyingTo(null)}
-          onKeyPress={handleKeyPress}
-          onChange={handleInputChange}
-          inputRef={inputRef}
-        />
+        <div className="border-t p-4 bg-gray-50 rounded-b-xl">
+          {/* Reply indicator */}
+          {replyingTo && (
+            <div className="mb-3 p-2 bg-blue-50 rounded-lg border border-blue-200">
+              <div className="flex items-center justify-between">
+                <div className="text-sm">
+                  <span className="text-blue-600 font-medium">Replying to:</span>
+                  <p className="text-gray-600 truncate mt-1">{replyingTo.message}</p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setReplyingTo(null)}
+                  className="p-1"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+          
+          {/* Edit indicator */}
+          {editingMessage && (
+            <div className="mb-3 p-2 bg-orange-50 rounded-lg border border-orange-200">
+              <div className="flex items-center justify-between">
+                <div className="text-sm">
+                  <span className="text-orange-600 font-medium flex items-center gap-1">
+                    <Edit className="h-3 w-3" />
+                    Editing message
+                  </span>
+                </div>
+                <div className="flex gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleSaveEdit}
+                    disabled={isEditing}
+                    className="p-1 text-green-600 hover:bg-green-100"
+                  >
+                    Save
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleCancelEdit}
+                    className="p-1"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <div className="flex gap-3">
+            <Textarea
+              ref={inputRef}
+              value={message}
+              onChange={handleInputChange}
+              onKeyPress={handleKeyPress}
+              placeholder={editingMessage ? "Edit your message..." : "Type your message..."}
+              className="flex-1 min-h-[60px] resize-none"
+              disabled={isSending || isEditing}
+            />
+            <Button
+              onClick={editingMessage ? handleSaveEdit : handleSendMessage}
+              disabled={!message.trim() || isSending || isEditing}
+              className="self-end bg-green-600 hover:bg-green-700"
+            >
+              {isSending || isEditing ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : editingMessage ? (
+                <Edit className="h-4 w-4" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

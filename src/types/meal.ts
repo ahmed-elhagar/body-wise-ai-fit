@@ -6,8 +6,9 @@ export interface Ingredient {
 }
 
 export interface Meal {
-  id: string; // Make id required with fallback generation
+  id?: string;
   type: string;
+  meal_type?: string; // Add this property to match database schema
   time: string;
   name: string;
   calories: number;
@@ -16,11 +17,11 @@ export interface Meal {
   fat: number;
   ingredients: Ingredient[];
   instructions: string[];
-  prepTime: number;
   cookTime: number;
+  prepTime: number;
   servings: number;
-  youtube_search_term?: string;
+  image: string;
+  imageUrl?: string;
   image_url?: string;
-  image: string; // Required with fallback to image_url or empty string
-  meal_type?: string;
+  youtube_search_term?: string; // Add this property for YouTube search functionality
 }

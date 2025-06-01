@@ -1,14 +1,14 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Sparkles } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface SnackGenerationProgressProps {
   generationStep: string;
 }
 
 export const SnackGenerationProgress = ({ generationStep }: SnackGenerationProgressProps) => {
-  const { t } = useI18n();
+  const { t } = useLanguage();
 
   const getStepLabel = (step: string) => {
     switch (step) {

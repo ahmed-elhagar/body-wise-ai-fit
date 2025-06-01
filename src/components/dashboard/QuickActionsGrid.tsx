@@ -2,7 +2,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { 
   Scale, 
   Utensils, 
@@ -16,7 +16,7 @@ import {
 
 const QuickActionsGrid = () => {
   const navigate = useNavigate();
-  const { t, isRTL } = useI18n();
+  const { t, isRTL } = useLanguage();
 
   const actions = [
     {

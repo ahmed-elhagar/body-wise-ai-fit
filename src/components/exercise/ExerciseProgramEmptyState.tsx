@@ -1,37 +1,31 @@
 
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Dumbbell, Sparkles } from 'lucide-react';
-import { useI18n } from "@/hooks/useI18n";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Dumbbell, Sparkles } from "lucide-react";
 
 interface ExerciseProgramEmptyStateProps {
-  workoutType: "home" | "gym";
+  workoutType: string;
   onGenerateClick: () => void;
 }
 
 const ExerciseProgramEmptyState = ({ workoutType, onGenerateClick }: ExerciseProgramEmptyStateProps) => {
-  const { t } = useI18n();
-
   return (
-    <div className="lg:col-span-3">
-      <Card className="text-center p-12">
-        <CardContent>
-          <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-            <Dumbbell className="h-10 w-10 text-white" />
-          </div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-3">
-            {t('No Exercise Program Found')}
+    <div className="flex items-center justify-center min-h-[400px]">
+      <Card className="max-w-md w-full">
+        <CardContent className="text-center p-8">
+          <Dumbbell className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">
+            No Exercise Program Yet
           </h3>
-          <p className="text-gray-600 mb-6 max-w-md mx-auto">
-            {t('Create your personalized exercise program with AI-powered recommendations.')}
+          <p className="text-gray-600 mb-6">
+            Generate your personalized {workoutType} workout program with AI to start your fitness journey.
           </p>
           <Button 
             onClick={onGenerateClick}
-            className="bg-fitness-gradient hover:opacity-90 text-white"
+            className="bg-blue-600 hover:bg-blue-700 text-white"
           >
-            <Sparkles className="w-4 h-4 mr-2" />
-            {t('Generate AI Program')}
+            <Sparkles className="h-4 w-4 mr-2" />
+            <span className="text-white">Generate AI Program</span>
           </Button>
         </CardContent>
       </Card>

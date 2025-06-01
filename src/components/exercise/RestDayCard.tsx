@@ -2,10 +2,10 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar, Youtube, BookOpen, Smile } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export const RestDayCard = () => {
-  const { t } = useI18n();
+  const { t } = useLanguage();
 
   return (
     <Card className="p-6 bg-gradient-to-br from-orange-50 to-yellow-50 border-orange-200 text-center">

@@ -1,7 +1,7 @@
 
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { 
   Scale, 
   Utensils, 
@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 const StatsGrid = () => {
-  const { t, isRTL } = useI18n();
+  const { t, isRTL } = useLanguage();
 
   const stats = [
     {

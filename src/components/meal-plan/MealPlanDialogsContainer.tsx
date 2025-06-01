@@ -1,94 +1,117 @@
 
-import React from 'react';
-import MealPlanDialogs from '../MealPlanDialogs';
+import { useMealPlanPage } from "@/hooks/useMealPlanPage";
+import EnhancedRecipeDialog from "./EnhancedRecipeDialog";
+import EnhancedAddSnackDialog from "./EnhancedAddSnackDialog";
+import MealPlanDialogs from "../MealPlanDialogs";
+import MealExchangeDialog from "./MealExchangeDialog";
 
 interface MealPlanDialogsContainerProps {
-  currentWeekPlan: any;
-  selectedDayNumber: number;
-  totalCalories: number;
-  targetDayCalories: number;
-  shoppingItems: any[];
-  selectedMeal: any;
-  showAIDialog: boolean;
-  setShowAIDialog: (show: boolean) => void;
   showAddSnackDialog: boolean;
-  setShowAddSnackDialog: (show: boolean) => void;
+  onCloseAddSnackDialog: () => void;
   showShoppingListDialog: boolean;
-  setShowShoppingListDialog: (show: boolean) => void;
-  showRecipeDialog: boolean;
-  setShowRecipeDialog: (show: boolean) => void;
-  showExchangeDialog: boolean;
-  setShowExchangeDialog: (show: boolean) => void;
-  aiPreferences: any;
-  setAiPreferences: (preferences: any) => void;
-  selectedMealIndex: number;
-  handleRecipeGenerated: () => void;
-  isGenerating?: boolean;
+  onCloseShoppingListDialog: () => void;
 }
 
 const MealPlanDialogsContainer = ({
-  currentWeekPlan,
-  selectedDayNumber,
-  totalCalories,
-  targetDayCalories,
-  shoppingItems,
-  selectedMeal,
-  showAIDialog,
-  setShowAIDialog,
   showAddSnackDialog,
-  setShowAddSnackDialog,
+  onCloseAddSnackDialog,
   showShoppingListDialog,
-  setShowShoppingListDialog,
-  showRecipeDialog,
-  setShowRecipeDialog,
-  showExchangeDialog,
-  setShowExchangeDialog,
-  aiPreferences,
-  setAiPreferences,
-  selectedMealIndex,
-  handleRecipeGenerated,
-  isGenerating = false
+  onCloseShoppingListDialog
 }: MealPlanDialogsContainerProps) => {
-  
-  const handleGenerateAI = () => {
-    console.log('Generate AI meal plan');
-  };
+  const {
+    // Data
+    currentWeekPlan,
+    selectedDayNumber,
+    totalCalories,
+    targetDayCalories,
+    shoppingItems,
+    
+    // Dialogs
+    showAIDialog,
+    setShowAIDialog,
+    showRecipeDialog,
+    setShowRecipeDialog,
+    showExchangeDialog,
+    setShowExchangeDialog,
+    selectedMeal,
+    selectedMealIndex,
+    aiPreferences,
+    setAiPreferences,
+    
+    // Actions
+    handleGenerateAIPlan,
+    handleRecipeGenerated,
+    refetch,
+    isGenerating
+  } = useMealPlanPage();
 
-  const handleSnackAdded = () => {
-    console.log('Snack added');
-  };
-
-  const handleExchange = () => {
-    console.log('Exchange meal');
+  const handleExchangeComplete = async () => {
+    setShowExchangeDialog(false);
+    await refetch();
   };
 
   return (
-    <MealPlanDialogs
-      showAIDialog={showAIDialog}
-      onCloseAIDialog={() => setShowAIDialog(false)}
-      aiPreferences={aiPreferences}
-      onPreferencesChange={setAiPreferences}
-      onGenerateAI={handleGenerateAI}
-      isGenerating={isGenerating}
-      showAddSnackDialog={showAddSnackDialog}
-      onCloseAddSnackDialog={() => setShowAddSnackDialog(false)}
-      selectedDay={selectedDayNumber}
-      weeklyPlanId={currentWeekPlan?.weeklyPlan?.id || null}
-      onSnackAdded={handleSnackAdded}
-      currentDayCalories={totalCalories}
-      targetDayCalories={targetDayCalories}
-      showShoppingListDialog={showShoppingListDialog}
-      onCloseShoppingListDialog={() => setShowShoppingListDialog(false)}
-      shoppingItems={shoppingItems}
-      showRecipeDialog={showRecipeDialog}
-      onCloseRecipeDialog={() => setShowRecipeDialog(false)}
-      selectedMeal={selectedMeal}
-      showExchangeDialog={showExchangeDialog}
-      onCloseExchangeDialog={() => setShowExchangeDialog(false)}
-      selectedMealIndex={selectedMealIndex}
-      onExchange={handleExchange}
-      onRecipeGenerated={handleRecipeGenerated}
-    />
+    <>
+      {/* Enhanced Recipe Dialog */}
+      <EnhancedRecipeDialog
+        isOpen={showRecipeDialog}
+        onClose={() => setShowRecipeDialog(false)}
+        meal={selectedMeal}
+        onRecipeGenerated={handleRecipeGenerated}
+      />
+
+      {/* Enhanced Add Snack Dialog */}
+      <EnhancedAddSnackDialog
+        isOpen={showAddSnackDialog}
+        onClose={onCloseAddSnackDialog}
+        selectedDay={selectedDayNumber}
+        weeklyPlanId={currentWeekPlan?.weeklyPlan?.id || null}
+        onSnackAdded={refetch}
+        currentDayCalories={totalCalories}
+        targetDayCalories={targetDayCalories}
+      />
+
+      {/* Enhanced Exchange Dialog */}
+      <MealExchangeDialog
+        isOpen={showExchangeDialog}
+        onClose={() => setShowExchangeDialog(false)}
+        currentMeal={selectedMeal}
+        onExchange={handleExchangeComplete}
+      />
+
+      {/* All Other Dialogs */}
+      <MealPlanDialogs
+        showAIDialog={showAIDialog}
+        onCloseAIDialog={() => setShowAIDialog(false)}
+        aiPreferences={aiPreferences}
+        onPreferencesChange={setAiPreferences}
+        onGenerateAI={handleGenerateAIPlan}
+        isGenerating={isGenerating}
+        
+        showAddSnackDialog={false}
+        onCloseAddSnackDialog={() => {}}
+        selectedDay={selectedDayNumber}
+        weeklyPlanId={currentWeekPlan?.weeklyPlan?.id || null}
+        onSnackAdded={refetch}
+        currentDayCalories={totalCalories}
+        targetDayCalories={targetDayCalories}
+        
+        showShoppingListDialog={showShoppingListDialog}
+        onCloseShoppingListDialog={onCloseShoppingListDialog}
+        shoppingItems={shoppingItems}
+        
+        showRecipeDialog={false}
+        onCloseRecipeDialog={() => {}}
+        selectedMeal={null}
+        
+        showExchangeDialog={false}
+        onCloseExchangeDialog={() => {}}
+        selectedMealIndex={selectedMealIndex}
+        onExchange={() => refetch()}
+        
+        onRecipeGenerated={handleRecipeGenerated}
+      />
+    </>
   );
 };
 

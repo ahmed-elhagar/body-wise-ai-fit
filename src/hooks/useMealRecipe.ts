@@ -1,104 +1,127 @@
 
 import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
-import { toast } from 'sonner';
-import type { Meal } from '@/types/meal';
+import { useCreditSystem } from './useCreditSystem';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export const useMealRecipe = () => {
+  const [isGeneratingRecipe, setIsGeneratingRecipe] = useState(false);
   const { user } = useAuth();
-  const queryClient = useQueryClient();
-  const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
+  const { language } = useLanguage();
+  const { checkAndUseCreditAsync, completeGenerationAsync } = useCreditSystem();
 
-  const { mutate: saveMealRecipe, isPending: isSavingRecipe } = useMutation({
-    mutationFn: async (updates: Partial<Meal> & { id: string }) => {
-      if (!user) {
-        throw new Error('Please sign in to save meal recipe');
-      }
-
-      const { data, error } = await supabase
-        .from('daily_meals')
-        .update({
-          ingredients: updates.ingredients ? JSON.stringify(updates.ingredients) : undefined,
-          instructions: updates.instructions,
-          youtube_search_term: updates.youtube_search_term,
-          image_url: updates.image_url
-        })
-        .eq('id', updates.id)
-        .select()
-        .single();
-
-      if (error) {
-        console.error("Error updating meal recipe:", error);
-        throw new Error('Failed to save meal recipe');
-      }
-
-      return data;
-    },
-    onSuccess: () => {
-      toast.success('Meal recipe saved successfully!');
-    },
-    onError: (error: any) => {
-      console.error("Error saving meal recipe:", error);
-      toast.error(error.message || 'Error saving meal recipe');
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['weekly-meal-plan'] });
-    },
-  });
-
-  const { mutate: exchangeMeal, isPending: isExchangingMeal } = useMutation({
-    mutationFn: async ({ meal, dayNumber }: { meal: Meal; dayNumber: number }) => {
-      if (!user) {
-        throw new Error('User not authenticated');
-      }
-
-      // Mock exchange functionality
-      console.log('Exchanging meal:', meal, 'for day:', dayNumber);
-      return { success: true };
-    },
-    onSuccess: () => {
-      toast.success('Meal exchanged successfully!');
-      queryClient.invalidateQueries({ queryKey: ['weekly-meal-plan'] });
-    },
-    onError: (error: any) => {
-      console.error('Error exchanging meal:', error);
-      toast.error('Failed to exchange meal');
+  const generateRecipe = async (mealId: string) => {
+    if (!user) {
+      toast.error('Please log in to view recipes');
+      return null;
     }
-  });
 
-  const generateEnhancedRecipe = async (mealId: string, currentMeal: Meal) => {
+    setIsGeneratingRecipe(true);
+    
     try {
-      const enhancedRecipe = {
-        id: mealId,
-        ingredients: [
-          { name: "Enhanced ingredient 1", quantity: "100", unit: "g" },
-          { name: "Enhanced ingredient 2", quantity: "50", unit: "ml" }
-        ],
-        instructions: [
-          "Enhanced instruction 1",
-          "Enhanced instruction 2"
-        ],
-        youtube_search_term: `how to cook ${currentMeal.name}`,
-        image_url: currentMeal.image_url
-      };
+      console.log('🍳 Generating recipe for meal:', mealId, 'in language:', language);
+      
+      // Show immediate feedback
+      toast.loading('Generating detailed recipe with images...', {
+        duration: 15000,
+      });
 
-      await saveMealRecipe(enhancedRecipe);
-      return enhancedRecipe;
-    } catch (error) {
-      console.error('Error generating enhanced recipe:', error);
-      throw error;
+      // Use centralized credit system with valid generation type
+      const creditResult = await checkAndUseCreditAsync('meal_plan');
+
+      try {
+        const { data, error } = await supabase.functions.invoke('generate-meal-recipe', {
+          body: {
+            mealId: mealId,
+            userId: user.id,
+            language: language // Pass current language to recipe generation
+          }
+        });
+
+        // Dismiss loading toast
+        toast.dismiss();
+
+        if (error) {
+          console.error('❌ Recipe generation error:', error);
+          throw error;
+        }
+
+        if (data?.success) {
+          console.log('✅ Recipe generated successfully!');
+          
+          // Complete the AI generation log with success
+          const creditData = creditResult as any;
+          if (creditData?.log_id) {
+            await completeGenerationAsync({
+              logId: creditData.log_id,
+              responseData: {
+                mealId: mealId,
+                recipeGenerated: true,
+                language: language
+              }
+            });
+          }
+
+          if (data.message.includes('already available')) {
+            toast.success('Recipe loaded from cache!');
+          } else {
+            toast.success(
+              `🎉 Recipe generated! (${data.recipeCount}/${data.dailyLimit} today)`,
+              { duration: 3000 }
+            );
+          }
+          
+          // Fetch updated meal data
+          const { data: updatedMeal, error: fetchError } = await supabase
+            .from('daily_meals')
+            .select('*')
+            .eq('id', mealId)
+            .single();
+
+          if (fetchError) {
+            throw fetchError;
+          }
+
+          return updatedMeal;
+          
+        } else {
+          throw new Error(data?.error || 'Failed to generate recipe');
+        }
+      } catch (error) {
+        // Mark generation as failed
+        const creditData = creditResult as any;
+        if (creditData?.log_id) {
+          await completeGenerationAsync({
+            logId: creditData.log_id,
+            errorMessage: error instanceof Error ? error.message : 'Recipe generation failed'
+          });
+        }
+        throw error;
+      }
+      
+    } catch (error: any) {
+      console.error('❌ Error generating recipe:', error);
+      toast.dismiss();
+      
+      // Handle specific error cases
+      if (error.message?.includes('limit reached')) {
+        toast.error('AI generation limit reached. Please upgrade or wait for credits to reset.');
+      } else if (error.message?.includes('not found')) {
+        toast.error('Meal not found. Please refresh and try again.');
+      } else {
+        toast.error(error.message || 'Failed to generate recipe. Please try again.');
+      }
+      
+      return null;
+    } finally {
+      setIsGeneratingRecipe(false);
     }
   };
 
   return {
-    selectedMeal,
-    setSelectedMeal,
-    saveMealRecipe,
-    isSavingRecipe,
-    exchangeMeal,
-    isExchangingMeal,
-    generateEnhancedRecipe
+    generateRecipe,
+    isGeneratingRecipe
   };
 };

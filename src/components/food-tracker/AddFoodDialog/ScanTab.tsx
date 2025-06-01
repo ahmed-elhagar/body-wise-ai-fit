@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Zap, Plus } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useCreditSystem } from "@/hooks/useCreditSystem";
 import { useFoodPhotoIntegration } from "@/hooks/useFoodPhotoIntegration";
 import FoodPhotoAnalysisCard from "@/components/food-photo-analysis/FoodPhotoAnalysisCard";
@@ -16,7 +16,7 @@ interface ScanTabProps {
 }
 
 const ScanTab = ({ onFoodAdded, onClose }: ScanTabProps) => {
-  const { t } = useI18n();
+  const { t } = useLanguage();
   const [selectedFood, setSelectedFood] = useState<any>(null);
   const [quantity, setQuantity] = useState(100);
   const [mealType, setMealType] = useState("snack");
@@ -70,18 +70,8 @@ const ScanTab = ({ onFoodAdded, onClose }: ScanTabProps) => {
 
       {/* Photo Analysis */}
       <FoodPhotoAnalysisCard 
-        onAnalyze={(imageUrl) => {
-          console.log('Analyzing image:', imageUrl);
-          // Mock food selection for now
-          setSelectedFood({
-            name: "Detected Food Item",
-            calories: 250,
-            protein: 12,
-            carbs: 30,
-            fat: 8,
-            quantity: "1 serving"
-          });
-        }}
+        onFoodSelected={handleSelectFood}
+        className="w-full"
       />
 
       {/* Selected Food Details */}

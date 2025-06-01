@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,7 +20,7 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { useCoachSystem, type CoachTraineeRelationship } from "@/hooks/useCoachSystem";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useState } from "react";
 import { TraineeDetailsDialog } from "./TraineeDetailsDialog";
 import { UpdateNotesDialog } from "./UpdateNotesDialog";
@@ -30,7 +31,7 @@ interface TraineeCardProps {
 
 export const TraineeCard = ({ trainee }: TraineeCardProps) => {
   const { removeTrainee } = useCoachSystem();
-  const { t } = useI18n();
+  const { language } = useLanguage();
   const [showDetails, setShowDetails] = useState(false);
   const [showNotesDialog, setShowNotesDialog] = useState(false);
 
@@ -46,9 +47,9 @@ export const TraineeCard = ({ trainee }: TraineeCardProps) => {
 
   const getActivityStatus = () => {
     const aiCredits = profile.ai_generations_remaining || 0;
-    if (aiCredits > 3) return { label: t('Active'), color: 'bg-green-500' };
-    if (aiCredits > 0) return { label: t('Low'), color: 'bg-yellow-500' };
-    return { label: t('Inactive'), color: 'bg-red-500' };
+    if (aiCredits > 3) return { label: language === 'ar' ? 'نشط' : 'Active', color: 'bg-green-500' };
+    if (aiCredits > 0) return { label: language === 'ar' ? 'منخفض' : 'Low', color: 'bg-yellow-500' };
+    return { label: language === 'ar' ? 'غير نشط' : 'Inactive', color: 'bg-red-500' };
   };
 
   const activityStatus = getActivityStatus();
@@ -80,18 +81,18 @@ export const TraineeCard = ({ trainee }: TraineeCardProps) => {
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => setShowDetails(true)}>
                   <User className="h-4 w-4 mr-2" />
-                  {t('View Details')}
+                  {language === 'ar' ? 'عرض التفاصيل' : 'View Details'}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setShowNotesDialog(true)}>
                   <Edit3 className="h-4 w-4 mr-2" />
-                  {t('Update Notes')}
+                  {language === 'ar' ? 'تحديث الملاحظات' : 'Update Notes'}
                 </DropdownMenuItem>
                 <DropdownMenuItem 
                   onClick={() => removeTrainee(trainee.id)}
                   className="text-red-600"
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
-                  {t('Remove Trainee')}
+                  {language === 'ar' ? 'إلغاء التعيين' : 'Remove Trainee'}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -102,7 +103,7 @@ export const TraineeCard = ({ trainee }: TraineeCardProps) => {
           {/* Profile Completion */}
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-600">
-              {t('Profile Completion')}
+              {language === 'ar' ? 'اكتمال الملف' : 'Profile Completion'}
             </span>
             <div className="flex items-center space-x-2">
               <div className="w-3 h-3 rounded-full bg-gray-200">
@@ -118,7 +119,7 @@ export const TraineeCard = ({ trainee }: TraineeCardProps) => {
           {/* Activity Status */}
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-600">
-              {t('Activity Status')}
+              {language === 'ar' ? 'حالة النشاط' : 'Activity Status'}
             </span>
             <Badge variant="secondary" className={`text-white ${activityStatus.color}`}>
               {activityStatus.label}
@@ -129,13 +130,13 @@ export const TraineeCard = ({ trainee }: TraineeCardProps) => {
           <div className="grid grid-cols-2 gap-4 text-sm">
             {profile.age && (
               <div>
-                <p className="text-gray-600">{t('Age')}</p>
+                <p className="text-gray-600">{language === 'ar' ? 'العمر' : 'Age'}</p>
                 <p className="font-medium">{profile.age}</p>
               </div>
             )}
             {profile.fitness_goal && (
               <div>
-                <p className="text-gray-600">{t('Goal')}</p>
+                <p className="text-gray-600">{language === 'ar' ? 'الهدف' : 'Goal'}</p>
                 <p className="font-medium text-xs capitalize">{profile.fitness_goal}</p>
               </div>
             )}
@@ -144,7 +145,7 @@ export const TraineeCard = ({ trainee }: TraineeCardProps) => {
           {/* AI Credits */}
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-600">
-              {t('AI Credits')}
+              {language === 'ar' ? 'رصيد الذكاء الاصطناعي' : 'AI Credits'}
             </span>
             <span className="text-sm font-medium">
               {profile.ai_generations_remaining || 0}
@@ -154,7 +155,7 @@ export const TraineeCard = ({ trainee }: TraineeCardProps) => {
           {/* Assignment Date */}
           <div className="flex items-center text-xs text-gray-500">
             <Calendar className="h-3 w-3 mr-1" />
-            {t('Assigned')} {new Date(trainee.assigned_at).toLocaleDateString()}
+            {language === 'ar' ? 'مُعيَّن في' : 'Assigned'} {new Date(trainee.assigned_at).toLocaleDateString()}
           </div>
 
           {/* Notes Preview */}
@@ -177,7 +178,7 @@ export const TraineeCard = ({ trainee }: TraineeCardProps) => {
               onClick={() => setShowDetails(true)}
             >
               <Activity className="h-3 w-3 mr-1" />
-              {t('Details')}
+              {language === 'ar' ? 'التفاصيل' : 'Details'}
             </Button>
           </div>
         </CardContent>

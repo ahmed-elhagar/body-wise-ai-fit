@@ -1,87 +1,152 @@
 
-import React, { useState } from 'react';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
-import { useI18n } from "@/hooks/useI18n";
-import { Button } from "@/components/ui/button";
-import { ShoppingBag } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { getCategoryForIngredient } from "@/utils/mealPlanUtils";
+import type { WeeklyMealPlan, DailyMeal } from "@/hooks/useMealPlanData";
+import DrawerHeader from "./DrawerHeader";
 import CategoryAccordion from "./CategoryAccordion";
-import { useMealPlanData } from "@/hooks/useMealPlanData";
+import ProgressFooter from "./ProgressFooter";
+import LoadingState from "./LoadingState";
+import EmptyState from "./EmptyState";
 
-interface EnhancedShoppingListDrawerProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+interface ShoppingListDrawerProps {
+  isOpen: boolean;
+  onClose: () => void;
+  weeklyPlan?: {
+    weeklyPlan: WeeklyMealPlan;
+    dailyMeals: DailyMeal[];
+  } | null;
+  weekId?: string;
+  onShoppingListUpdate?: () => void;
 }
 
-const EnhancedShoppingListDrawer = ({ open, onOpenChange }: EnhancedShoppingListDrawerProps) => {
-  const { t, isRTL } = useI18n();
-  const { data: currentWeekPlan } = useMealPlanData();
-  const [isEmailSending, setIsEmailSending] = useState(false);
+interface ShoppingItem {
+  name: string;
+  quantity: number;
+  unit: string;
+  category: string;
+}
 
-  // Create mock enhanced shopping items from current week plan
-  const enhancedShoppingItems = {
-    groupedItems: currentWeekPlan?.dailyMeals?.reduce((acc: any, meal: any) => {
-      if (meal.ingredients) {
-        const category = 'General';
-        if (!acc[category]) acc[category] = [];
+const EnhancedShoppingListDrawer = ({ 
+  isOpen, 
+  onClose, 
+  weeklyPlan, 
+  weekId,
+  onShoppingListUpdate 
+}: ShoppingListDrawerProps) => {
+  const { isRTL } = useLanguage();
+  const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
+
+  // Compute shopping list from meal plan data with proper aggregation
+  const shoppingItems = useMemo(() => {
+    console.log('🛒 Computing shopping list from meal plan data...');
+    
+    if (!weeklyPlan?.dailyMeals) {
+      return [];
+    }
+
+    const itemsMap = new Map<string, ShoppingItem>();
+    
+    weeklyPlan.dailyMeals.forEach(meal => {
+      if (meal.ingredients && Array.isArray(meal.ingredients)) {
         meal.ingredients.forEach((ingredient: any) => {
-          acc[category].push({
-            name: typeof ingredient === 'string' ? ingredient : ingredient.name,
-            quantity: typeof ingredient === 'string' ? '1' : ingredient.quantity,
-            checked: false
-          });
+          const ingredientName = ingredient.name || ingredient;
+          const quantity = parseFloat(ingredient.quantity || '1');
+          const unit = ingredient.unit || 'piece';
+          const key = `${ingredientName.toLowerCase()}-${unit}`;
+          
+          if (itemsMap.has(key)) {
+            const existing = itemsMap.get(key)!;
+            existing.quantity += quantity;
+          } else {
+            itemsMap.set(key, {
+              name: ingredientName,
+              quantity: quantity,
+              unit: unit,
+              category: getCategoryForIngredient(ingredientName)
+            });
+          }
         });
       }
+    });
+
+    const items = Array.from(itemsMap.values());
+    console.log('🛒 Generated shopping items:', items.length);
+    return items;
+  }, [weeklyPlan?.dailyMeals]);
+
+  // Group items by category
+  const groupedItems = useMemo(() => {
+    return shoppingItems.reduce((acc, item) => {
+      const category = item.category;
+      if (!acc[category]) {
+        acc[category] = [];
+      }
+      acc[category].push(item);
       return acc;
-    }, {}) || {}
-  };
+    }, {} as Record<string, ShoppingItem[]>);
+  }, [shoppingItems]);
 
-  const sendShoppingListEmail = async () => {
-    // Mock email sending
-    console.log('Sending shopping list email...');
-  };
+  const isLoading = !weeklyPlan;
+  const isEmpty = shoppingItems.length === 0 && !!weeklyPlan;
 
-  const handleSendEmail = async () => {
-    setIsEmailSending(true);
-    try {
-      await sendShoppingListEmail();
-    } finally {
-      setIsEmailSending(false);
-    }
-  };
+  if (isLoading) {
+    return (
+      <Sheet open={isOpen} onOpenChange={onClose}>
+        <SheetContent 
+          side={isRTL ? "left" : "right"} 
+          className="w-full sm:max-w-lg bg-white border-gray-200 overflow-y-auto z-[100]"
+        >
+          <LoadingState />
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
+  if (isEmpty) {
+    return (
+      <Sheet open={isOpen} onOpenChange={onClose}>
+        <SheetContent 
+          side={isRTL ? "left" : "right"} 
+          className="w-full sm:max-w-lg bg-white border-gray-200 overflow-y-auto z-[100]"
+        >
+          <EmptyState />
+        </SheetContent>
+      </Sheet>
+    );
+  }
 
   return (
-    <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className={`overflow-y-auto ${isRTL ? 'text-right' : 'text-left'}`}>
-        <DrawerHeader>
-          <DrawerTitle className="flex items-center gap-2">
-            <ShoppingBag className="w-5 h-5" />
-            {t('shoppingList')}
-          </DrawerTitle>
-        </DrawerHeader>
-
-        <div className="px-4 py-2">
-          {Object.keys(enhancedShoppingItems.groupedItems).length > 0 ? (
-            Object.entries(enhancedShoppingItems.groupedItems).map(([category, items]) => (
-              <CategoryAccordion key={category} category={category} items={items as any[]} />
-            ))
-          ) : (
-            <div className="text-center py-6">
-              <p className="text-gray-500">{t('noItemsInShoppingList')}</p>
-            </div>
-          )}
+    <Sheet open={isOpen} onOpenChange={onClose}>
+      <SheetContent 
+        side={isRTL ? "left" : "right"} 
+        className="w-full sm:max-w-lg bg-white border-gray-200 overflow-y-auto z-[100]"
+      >
+        <div className="space-y-6 h-full">
+          <DrawerHeader 
+            totalItems={shoppingItems.length}
+            groupedItems={groupedItems}
+            weekId={weekId}
+            onShoppingListUpdate={onShoppingListUpdate}
+          />
+          
+          <div className="flex-1 overflow-y-auto">
+            <CategoryAccordion
+              groupedItems={groupedItems}
+              checkedItems={checkedItems}
+              setCheckedItems={setCheckedItems}
+              onShoppingListUpdate={onShoppingListUpdate}
+            />
+          </div>
+          
+          <ProgressFooter
+            checkedCount={checkedItems.size}
+            totalItems={shoppingItems.length}
+          />
         </div>
-
-        <div className="p-4 mt-auto">
-          <Button 
-            className="w-full" 
-            onClick={handleSendEmail} 
-            disabled={isEmailSending}
-          >
-            {isEmailSending ? t('sendingEmail') : t('sendToEmail')}
-          </Button>
-        </div>
-      </DrawerContent>
-    </Drawer>
+      </SheetContent>
+    </Sheet>
   );
 };
 

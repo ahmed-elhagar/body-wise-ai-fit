@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Search, Loader2 } from 'lucide-react';
-import { useI18n } from "@/hooks/useI18n";
-import { toast } from 'sonner';
-import { useDebounce } from '@/hooks/useDebounce';
-import { searchFood } from '@/integrations/edamam';
-import FoodItem from './components/FoodItem';
+
+import { useState, useEffect } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Search, Plus } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useFoodDatabase } from "@/hooks/useFoodDatabase";
+import QuantitySelector from "./components/QuantitySelector";
+import { toast } from "sonner";
 
 interface SearchTabProps {
   onFoodAdded: () => void;
@@ -15,85 +16,170 @@ interface SearchTabProps {
 }
 
 const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const debouncedSearchTerm = useDebounce(searchTerm, 500);
-  const { t } = useI18n();
+  const { t, isRTL } = useLanguage();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedFood, setSelectedFood] = useState<any>(null);
+  const [quantity, setQuantity] = useState(100);
+  const [mealType, setMealType] = useState("snack");
+  const [notes, setNotes] = useState("");
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (debouncedSearchTerm) {
-        setIsLoading(true);
-        try {
-          const results = await searchFood(debouncedSearchTerm);
-          setSearchResults(results);
-        } catch (error) {
-          toast.error(t('searchTab.errorSearching') || 'Error searching for food');
-        } finally {
-          setIsLoading(false);
-        }
-      } else {
-        setSearchResults([]);
-      }
-    };
+  const { searchFoodItems, logConsumption, isLoggingConsumption } = useFoodDatabase();
+  const { data: searchResults, isLoading } = searchFoodItems(searchTerm);
 
-    fetchData();
-  }, [debouncedSearchTerm, t]);
+  const handleSelectFood = (food: any) => {
+    setSelectedFood(food);
+  };
+
+  const handleAddFood = async () => {
+    if (!selectedFood) return;
+
+    const multiplier = quantity / 100; // Convert to per 100g basis
+    const calories = (selectedFood.calories_per_100g || 0) * multiplier;
+    const protein = (selectedFood.protein_per_100g || 0) * multiplier;
+    const carbs = (selectedFood.carbs_per_100g || 0) * multiplier;
+    const fat = (selectedFood.fat_per_100g || 0) * multiplier;
+
+    try {
+      logConsumption({
+        foodItemId: selectedFood.id,
+        quantity,
+        mealType,
+        notes,
+        calories,
+        protein,
+        carbs,
+        fat,
+        source: 'search'
+      });
+      
+      onFoodAdded();
+      onClose();
+    } catch (error) {
+      console.error('Error logging food:', error);
+      toast.error('Failed to log food');
+    }
+  };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center space-x-2">
+    <div className="space-y-6">
+      {/* Search Input */}
+      <div className="relative">
+        <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
         <Input
-          type="text"
-          placeholder={t('searchTab.searchPlaceholder') || "Search for food"}
+          placeholder={t('Search for food items...')}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          className="pl-10"
         />
-        <Button disabled={isLoading}>
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              {t('searchTab.searching') || "Searching..."}
-            </>
-          ) : (
-            <>
-              <Search className="mr-2 h-4 w-4" />
-              {t('searchTab.search') || "Search"}
-            </>
-          )}
-        </Button>
       </div>
 
-      {isLoading && (
-        <div className="text-center">
-          <Loader2 className="mr-2 h-6 w-6 animate-spin inline-block" />
-          {t('searchTab.loadingResults') || "Loading results..."}
+      {/* Search Results */}
+      {searchTerm.length >= 2 && (
+        <div className="space-y-2">
+          <h3 className="font-medium text-gray-900">{t('Search Results')}</h3>
+          {isLoading ? (
+            <div className="flex items-center justify-center h-20">
+              <div className="w-6 h-6 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          ) : searchResults && searchResults.length > 0 ? (
+            <div className="space-y-2 max-h-60 overflow-y-auto">
+              {searchResults.map((food: any) => (
+                <Card 
+                  key={food.id} 
+                  className={`p-3 cursor-pointer transition-all hover:shadow-md ${
+                    selectedFood?.id === food.id ? 'ring-2 ring-green-600 bg-green-50' : ''
+                  }`}
+                  onClick={() => handleSelectFood(food)}
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <h4 className="font-medium text-gray-900">{food.name}</h4>
+                      {food.brand && (
+                        <p className="text-sm text-gray-500">{food.brand}</p>
+                      )}
+                      <div className="flex items-center gap-2 mt-2">
+                        <Badge variant="secondary" className="text-xs">
+                          {food.category}
+                        </Badge>
+                        {food.verified && (
+                          <Badge variant="default" className="text-xs bg-green-600">
+                            {t('Verified')}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-right text-sm text-gray-600">
+                      <div>{Math.round(food.calories_per_100g || 0)} cal</div>
+                      <div className="text-xs">per 100g</div>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500 text-center py-4">
+              {t('No food items found')}
+            </p>
+          )}
         </div>
       )}
 
-      {searchResults.length > 0 && (
-        <Card>
-          <CardContent className="p-4">
-            <ul className="space-y-2">
-              {searchResults.map((food) => (
-                <FoodItem 
-                  key={food.food.foodId} 
-                  food={food.food} 
-                  onFoodAdded={() => {
-                    onFoodAdded();
-                    onClose();
-                  }} 
-                />
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
+      {/* Selected Food Details */}
+      {selectedFood && (
+        <div className="space-y-4 border-t pt-4">
+          <h3 className="font-medium text-gray-900">{t('Add to Log')}</h3>
+          
+          <div className="bg-green-50 p-4 rounded-lg">
+            <h4 className="font-medium text-green-800">{selectedFood.name}</h4>
+            {selectedFood.brand && (
+              <p className="text-sm text-green-600">{selectedFood.brand}</p>
+            )}
+            
+            <div className="grid grid-cols-4 gap-2 mt-3 text-sm">
+              <div className="text-center">
+                <div className="font-semibold text-green-800">
+                  {Math.round((selectedFood.calories_per_100g || 0) * (quantity / 100))}
+                </div>
+                <div className="text-green-600">cal</div>
+              </div>
+              <div className="text-center">
+                <div className="font-semibold text-green-800">
+                  {Math.round((selectedFood.protein_per_100g || 0) * (quantity / 100))}g
+                </div>
+                <div className="text-green-600">protein</div>
+              </div>
+              <div className="text-center">
+                <div className="font-semibold text-green-800">
+                  {Math.round((selectedFood.carbs_per_100g || 0) * (quantity / 100))}g
+                </div>
+                <div className="text-green-600">carbs</div>
+              </div>
+              <div className="text-center">
+                <div className="font-semibold text-green-800">
+                  {Math.round((selectedFood.fat_per_100g || 0) * (quantity / 100))}g
+                </div>
+                <div className="text-green-600">fat</div>
+              </div>
+            </div>
+          </div>
 
-      {searchTerm && searchResults.length === 0 && !isLoading && (
-        <div className="text-center text-gray-500">
-          {t('searchTab.noResults') || "No results found."}
+          <QuantitySelector
+            quantity={quantity}
+            onQuantityChange={setQuantity}
+            mealType={mealType}
+            onMealTypeChange={setMealType}
+            notes={notes}
+            onNotesChange={setNotes}
+          />
+
+          <Button
+            onClick={handleAddFood}
+            disabled={isLoggingConsumption}
+            className="w-full bg-green-600 hover:bg-green-700 text-white"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            {isLoggingConsumption ? t('Adding...') : t('Add to Log')}
+          </Button>
         </div>
       )}
     </div>

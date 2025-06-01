@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Calendar, Target, Trophy, TrendingUp } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { format } from "date-fns";
 
 interface ExerciseProgressTrackerProps {
@@ -21,7 +21,7 @@ export const ExerciseProgressTracker = ({
   completedExercises,
   totalExercises
 }: ExerciseProgressTrackerProps) => {
-  const { t } = useI18n();
+  const { t } = useLanguage();
   
   const progressPercentage = totalExercises > 0 ? (completedExercises / totalExercises) * 100 : 0;
   const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];

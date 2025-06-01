@@ -2,7 +2,7 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Heart, Moon, Baby } from 'lucide-react';
-import { useI18n } from '@/hooks/useI18n';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface LifePhaseRibbonProps {
   pregnancyTrimester?: number;
@@ -17,7 +17,7 @@ export const LifePhaseRibbon: React.FC<LifePhaseRibbonProps> = ({
   fastingType,
   extraCalories
 }) => {
-  const { t, isRTL } = useI18n();
+  const { t, isRTL } = useLanguage();
 
   if (!pregnancyTrimester && !breastfeedingLevel && !fastingType) {
     return null;

@@ -1,15 +1,16 @@
+
 import { useState, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { useFoodConsumption } from "@/hooks/useFoodConsumption";
 import { format, startOfMonth, endOfMonth, addMonths, subMonths } from "date-fns";
 import NutritionHeatMap from "./components/NutritionHeatMap";
 
 const HistoryTab = () => {
-  const { t, isRTL } = useI18n();
+  const { t, isRTL } = useLanguage();
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
   const monthStart = startOfMonth(currentMonth);

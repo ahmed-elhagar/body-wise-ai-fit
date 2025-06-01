@@ -1,8 +1,9 @@
 
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ChevronLeft, ChevronRight, Calendar, RotateCcw } from "lucide-react";
+import { format, addDays } from "date-fns";
 
 interface ExerciseProgramWeekNavigationProps {
   currentWeekOffset: number;
@@ -19,34 +20,85 @@ const ExerciseProgramWeekNavigation = ({
   onCurrentWeek,
   weekStartDate
 }: ExerciseProgramWeekNavigationProps) => {
+  const formatWeekRange = (startDate: Date) => {
+    const endDate = addDays(startDate, 6);
+    const startMonth = format(startDate, 'MMM');
+    const startDay = format(startDate, 'd');
+    const endMonth = format(endDate, 'MMM');
+    const endDay = format(endDate, 'd');
+    
+    if (startMonth === endMonth) {
+      return `${startMonth} ${startDay} - ${endDay}`;
+    } else {
+      return `${startMonth} ${startDay} - ${endMonth} ${endDay}`;
+    }
+  };
+
+  const year = format(weekStartDate, 'yyyy');
+
   return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between">
-          <Button onClick={onPreviousWeek} variant="outline" size="sm">
-            <ChevronLeft className="w-4 h-4" />
-            Previous Week
-          </Button>
-          
-          <div className="text-center">
-            <p className="font-medium">Week {currentWeekOffset + 1}</p>
-            <p className="text-sm text-gray-600">
-              {weekStartDate.toLocaleDateString()}
-            </p>
+    <Card className="p-6">
+      <div className="flex items-center justify-between">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onPreviousWeek}
+          disabled={currentWeekOffset === 0}
+          className="h-10 w-10 p-0"
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </Button>
+
+        <div className="text-center flex-1">
+          <div className="flex items-center justify-center gap-3">
+            <Calendar className="w-5 h-5 text-fitness-primary" />
+            <div>
+              <h3 className="text-xl font-bold text-gray-900">
+                Week {currentWeekOffset + 1}
+              </h3>
+              <p className="text-sm text-gray-600">
+                {formatWeekRange(weekStartDate)}, {year}
+              </p>
+            </div>
           </div>
           
-          <Button onClick={onNextWeek} variant="outline" size="sm">
-            Next Week
-            <ChevronRight className="w-4 h-4" />
-          </Button>
+          {currentWeekOffset === 0 ? (
+            <Badge variant="secondary" className="mt-2">
+              Current Week
+            </Badge>
+          ) : (
+            <Badge variant="outline" className="mt-2">
+              Week {currentWeekOffset + 1} of Program
+            </Badge>
+          )}
         </div>
-        
-        {currentWeekOffset !== 0 && (
-          <Button onClick={onCurrentWeek} variant="ghost" size="sm" className="w-full mt-2">
-            Go to Current Week
-          </Button>
-        )}
-      </CardContent>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onNextWeek}
+          disabled={currentWeekOffset >= 3}
+          className="h-10 w-10 p-0"
+        >
+          <ChevronRight className="w-5 h-5" />
+        </Button>
+      </div>
+
+      {currentWeekOffset > 0 && (
+        <div className="mt-4 pt-4 border-t">
+          <div className="flex justify-center">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onCurrentWeek}
+              className="text-xs"
+            >
+              <RotateCcw className="w-3 h-3 mr-2" />
+              Back to Current Week
+            </Button>
+          </div>
+        </div>
+      )}
     </Card>
   );
 };

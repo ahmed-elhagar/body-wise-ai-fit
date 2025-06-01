@@ -2,13 +2,6 @@
 import { useState, useMemo } from 'react';
 import type { ChatMessage } from './useCoachChat';
 
-interface SearchStats {
-  totalResults: number;
-  totalMessages: number;
-  hasResults: boolean;
-  isFiltered: boolean;
-}
-
 export const useMessageSearch = (messages: ChatMessage[]) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchActive, setIsSearchActive] = useState(false);
@@ -23,7 +16,7 @@ export const useMessageSearch = (messages: ChatMessage[]) => {
     );
   }, [messages, searchQuery]);
 
-  const searchStats: SearchStats = useMemo(() => ({
+  const searchStats = useMemo(() => ({
     totalResults: filteredMessages.length,
     totalMessages: messages.length,
     hasResults: filteredMessages.length > 0,

@@ -1,10 +1,11 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Settings, Bell, Clock, Target, Apple, Dumbbell } from "lucide-react";
 
 interface ReminderSetting {
@@ -17,7 +18,7 @@ interface ReminderSetting {
 }
 
 const ReminderSettings = () => {
-  const { t } = useI18n();
+  const { t } = useLanguage();
   const [settings, setSettings] = useState<ReminderSetting[]>([
     {
       id: '1',

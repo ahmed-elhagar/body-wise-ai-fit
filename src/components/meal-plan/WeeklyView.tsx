@@ -1,8 +1,9 @@
+
 import { format, addDays } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye, Activity } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface WeeklyViewProps {
   weekStartDate: Date;
@@ -17,7 +18,7 @@ const WeeklyView = ({
   onSelectDay,
   onSwitchToDaily
 }: WeeklyViewProps) => {
-  const { t, isRTL } = useI18n();
+  const { t, isRTL } = useLanguage();
 
   const weekDays = [
     { number: 1, name: t('mealPlan.saturday'), date: weekStartDate },

@@ -1,68 +1,88 @@
 
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
-import { startOfWeek } from 'date-fns';
+import { useCallback } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useMealPlanData } from "@/hooks/useMealPlanData";
+import { useMealPlanActions } from "@/hooks/useMealPlanActions";
+import { useMealPlanNavigation } from "@/hooks/useMealPlanNavigation";
+import { useMealPlanDialogs } from "@/hooks/useMealPlanDialogs";
+import { useMealPlanCalculations } from "@/hooks/useMealPlanCalculations";
+import { useMealPlanHandlers } from "@/hooks/useMealPlanHandlers";
 
 export const useMealPlanState = () => {
-  const { user } = useAuth();
-  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+  const { t } = useLanguage();
+  
+  // Use smaller, focused hooks
+  const navigation = useMealPlanNavigation();
+  const dialogs = useMealPlanDialogs();
+  
+  const { data: currentWeekPlan, isLoading, error, refetch: refetchMealPlan } = useMealPlanData(navigation.currentWeekOffset);
+  const { handleRegeneratePlan, handleGenerateAIPlan, isGenerating, isShuffling } = useMealPlanActions(
+    currentWeekPlan,
+    navigation.currentWeekOffset,
+    dialogs.aiPreferences,
+    refetchMealPlan
+  );
 
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['weekly-meal-plan', user?.id, weekStart.toISOString()],
-    queryFn: async () => {
-      if (!user) return null;
+  const calculations = useMealPlanCalculations(currentWeekPlan, navigation.selectedDayNumber);
+  const handlers = useMealPlanHandlers(
+    dialogs.setSelectedMeal,
+    dialogs.setSelectedMealIndex,
+    dialogs.setShowRecipeDialog,
+    dialogs.setShowExchangeDialog
+  );
 
-      const { data: weeklyPlan, error: planError } = await supabase
-        .from('weekly_meal_plans')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('week_start_date', weekStart.toISOString().split('T')[0])
-        .single();
-
-      if (planError && planError.code !== 'PGRST116') {
-        throw planError;
-      }
-
-      if (!weeklyPlan) {
-        return {
-          currentWeekPlan: null,
-          dailyMeals: []
-        };
-      }
-
-      const { data: dailyMeals, error: mealsError } = await supabase
-        .from('daily_meals')
-        .select('*')
-        .eq('weekly_plan_id', weeklyPlan.id)
-        .order('day_number', { ascending: true });
-
-      if (mealsError) {
-        throw mealsError;
-      }
-
-      return {
-        currentWeekPlan: weeklyPlan,
-        dailyMeals: dailyMeals || []
-      };
-    },
-    enabled: !!user
+  // Enhanced logging for debugging
+  console.log('🔍 MEAL PLAN STATE DEBUG:', {
+    currentWeekOffset: navigation.currentWeekOffset,
+    selectedDayNumber: navigation.selectedDayNumber,
+    hasWeeklyPlan: !!currentWeekPlan?.weeklyPlan,
+    hasDailyMeals: !!currentWeekPlan?.dailyMeals,
+    dailyMealsCount: currentWeekPlan?.dailyMeals?.length || 0,
+    isLoading,
+    error: error?.message,
+    weekStartDate: navigation.weekStartDate.toDateString()
   });
 
+  const refetch = useCallback(async () => {
+    console.log('🔄 Manual refetch triggered for week offset:', navigation.currentWeekOffset);
+    try {
+      await refetchMealPlan?.();
+    } catch (error) {
+      console.error('Manual refetch failed:', error);
+    }
+  }, [navigation.currentWeekOffset, refetchMealPlan]);
+
+  const enhancedHandleGenerateAIPlan = useCallback(async () => {
+    const success = await handleGenerateAIPlan();
+    if (success) {
+      dialogs.setShowAIDialog(false);
+    }
+    return success;
+  }, [handleGenerateAIPlan, dialogs.setShowAIDialog]);
+
   return {
-    currentWeekPlan: data?.currentWeekPlan || null,
-    dailyMeals: data?.dailyMeals || [],
+    // Navigation state
+    ...navigation,
+    
+    // Dialog state
+    ...dialogs,
+    
+    // Calculations
+    ...calculations,
+    
+    // Handlers
+    ...handlers,
+    
+    // Data
+    currentWeekPlan,
     isLoading,
+    isGenerating,
+    isShuffling,
     error,
-    refetch,
-    // Mock functions for compatibility
-    fetchMealPlan: refetch,
-    createMealPlan: () => Promise.resolve(),
-    updateMealPlan: () => Promise.resolve(),
-    deleteMealPlan: () => Promise.resolve(),
-    addMealToDay: () => Promise.resolve(),
-    removeMealFromDay: () => Promise.resolve(),
-    exchangeMealInDay: () => Promise.resolve(),
-    isMealPlanLoading: isLoading
+    
+    // Actions
+    handleRegeneratePlan,
+    handleGenerateAIPlan: enhancedHandleGenerateAIPlan,
+    refetch
   };
 };

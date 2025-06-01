@@ -1,33 +1,77 @@
 
-import React, { createContext, useContext, ReactNode } from 'react';
-import { useI18n } from '@/hooks/useI18n';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
-interface LanguageContextType {
-  t: (key: string) => string;
-  language: string;
+export type Language = 'en' | 'ar';
+
+interface LanguageContextProps {
+  language: Language;
+  setLanguage: (language: Language) => void;
+  t: (key: string, options?: any) => string;
   isRTL: boolean;
-  changeLanguage: (lng: string) => void;
 }
 
-const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+const LanguageContext = createContext<LanguageContextProps>({
+  language: 'en',
+  setLanguage: () => {},
+  t: (key: string) => key,
+  isRTL: false,
+});
 
-export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  const i18nData = useI18n();
-  
+interface LanguageProviderProps {
+  children: React.ReactNode;
+}
+
+export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
+  const { t: i18nT, i18n } = useTranslation(['common', 'mealPlan', 'navigation', 'dashboard']);
+  const [language, setLanguageState] = useState<Language>('en');
+
+  useEffect(() => {
+    const storedLanguage = localStorage.getItem('language') || 'en';
+    setLanguageState(storedLanguage as Language);
+    
+    // Only call changeLanguage if i18n is ready and the method exists
+    if (i18n && typeof i18n.changeLanguage === 'function') {
+      i18n.changeLanguage(storedLanguage);
+    }
+  }, [i18n]);
+
+  useEffect(() => {
+    localStorage.setItem('language', language);
+    
+    // Only call changeLanguage if i18n is ready and the method exists
+    if (i18n && typeof i18n.changeLanguage === 'function') {
+      i18n.changeLanguage(language);
+    }
+    
+    // Set document direction
+    document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.lang = language;
+  }, [language, i18n]);
+
+  const setLanguage = (newLanguage: Language) => {
+    setLanguageState(newLanguage);
+  };
+
+  const t = (key: string, options?: any): string => {
+    // Handle nested keys like 'mealPlan.title'
+    if (key.includes('.')) {
+      const [namespace, ...keyParts] = key.split('.');
+      const finalKey = keyParts.join('.');
+      const result = i18nT(finalKey, { ns: namespace, ...options });
+      return typeof result === 'string' ? result : finalKey;
+    }
+    const result = i18nT(key, options);
+    return typeof result === 'string' ? result : key;
+  };
+
+  const isRTL = language === 'ar';
+
   return (
-    <LanguageContext.Provider value={i18nData}>
+    <LanguageContext.Provider value={{ language, setLanguage, t, isRTL }}>
       {children}
     </LanguageContext.Provider>
   );
 };
 
-export const useLanguage = () => {
-  const context = useContext(LanguageContext);
-  if (!context) {
-    throw new Error('useLanguage must be used within a LanguageProvider');
-  }
-  return context;
-};
-
-// Export for compatibility
-export { useLanguage as useLanguageContext };
+export const useLanguage = () => useContext(LanguageContext);

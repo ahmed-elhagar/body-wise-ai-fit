@@ -1,13 +1,13 @@
 
 import { Progress } from "@/components/ui/progress";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface LoadingProgressBarProps {
   progress: number;
 }
 
 export const LoadingProgressBar = ({ progress }: LoadingProgressBarProps) => {
-  const { t, isRTL } = useI18n();
+  const { t, isRTL } = useLanguage();
 
   return (
     <div className="mb-8">

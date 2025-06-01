@@ -16,50 +16,62 @@ interface MealExchangeDialogProps {
 }
 
 const MealExchangeDialog = ({ isOpen, onClose, currentMeal, onExchange }: MealExchangeDialogProps) => {
-  const { exchangeMeal, isExchanging } = useEnhancedMealExchange();
-  const [alternatives, setAlternatives] = useState<any[]>([]);
+  const { generateMealAlternatives, exchangeMeal, isExchanging, alternatives } = useEnhancedMealExchange();
   const [selectedAlternative, setSelectedAlternative] = useState<any>(null);
 
   console.log('🔄 MealExchangeDialog rendered with meal:', currentMeal?.name);
 
   const handleGenerateAlternatives = async () => {
     console.log('🔄 Generating alternatives for meal:', currentMeal.name);
-    // Mock alternatives for now
-    const mockAlternatives = [
-      {
-        name: "Alternative Meal 1",
-        calories: currentMeal.calories + 10,
-        protein: currentMeal.protein,
-        carbs: currentMeal.carbs,
-        fat: currentMeal.fat,
-        reason: "Similar nutritional profile with different ingredients"
-      },
-      {
-        name: "Alternative Meal 2", 
-        calories: currentMeal.calories - 15,
-        protein: currentMeal.protein + 2,
-        carbs: currentMeal.carbs - 5,
-        fat: currentMeal.fat,
-        reason: "Slightly higher protein, lower carbs"
-      }
-    ];
-    setAlternatives(mockAlternatives);
+    // Convert DailyMeal to Meal format for the hook
+    const mealForHook = {
+      id: currentMeal.id,
+      type: currentMeal.meal_type,
+      time: "12:00",
+      name: currentMeal.name,
+      calories: currentMeal.calories,
+      protein: currentMeal.protein,
+      carbs: currentMeal.carbs,
+      fat: currentMeal.fat,
+      ingredients: currentMeal.ingredients || [],
+      instructions: currentMeal.instructions || [],
+      cookTime: currentMeal.cook_time || 0,
+      prepTime: currentMeal.prep_time || 0,
+      servings: currentMeal.servings,
+      image: currentMeal.image_url || "",
+      imageUrl: currentMeal.image_url,
+      image_url: currentMeal.image_url,
+      youtube_search_term: currentMeal.youtube_search_term
+    };
+    await generateMealAlternatives(mealForHook);
   };
 
   const handleExchange = async (alternative: any) => {
     console.log('🔄 Exchanging meal with alternative:', alternative.name);
-    
-    try {
-      await exchangeMeal({
-        mealId: currentMeal.id,
-        mealType: currentMeal.meal_type,
-        dayNumber: currentMeal.day_number,
-        weeklyPlanId: currentMeal.weekly_plan_id
-      });
+    // Convert DailyMeal to Meal format for the hook
+    const mealForHook = {
+      id: currentMeal.id,
+      type: currentMeal.meal_type,
+      time: "12:00",
+      name: currentMeal.name,
+      calories: currentMeal.calories,
+      protein: currentMeal.protein,
+      carbs: currentMeal.carbs,
+      fat: currentMeal.fat,
+      ingredients: currentMeal.ingredients || [],
+      instructions: currentMeal.instructions || [],
+      cookTime: currentMeal.cook_time || 0,
+      prepTime: currentMeal.prep_time || 0,
+      servings: currentMeal.servings,
+      image: currentMeal.image_url || "",
+      imageUrl: currentMeal.image_url,
+      image_url: currentMeal.image_url,
+      youtube_search_term: currentMeal.youtube_search_term
+    };
+    const success = await exchangeMeal(mealForHook, alternative);
+    if (success) {
       onExchange();
       onClose();
-    } catch (error) {
-      console.error('Error exchanging meal:', error);
     }
   };
 

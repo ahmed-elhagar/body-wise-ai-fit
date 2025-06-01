@@ -1,48 +1,61 @@
 
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export const useMealPlanTranslation = () => {
-  const { t } = useI18n();
+  const { t } = useLanguage();
   
-  const mealPlanT = (key: string) => {
-    // Map meal plan specific keys to translation keys
-    const keyMap: Record<string, string> = {
-      'title': 'Meal Plan',
-      'dailyView': 'Daily View',
-      'weeklyView': 'Weekly View',
-      'addSnack': 'Add Snack',
-      'shoppingList': 'Shopping List',
-      'calories': 'Calories',
-      'protein': 'Protein',
-      'carbs': 'Carbs',
-      'fat': 'Fat',
-      'complete': 'Complete',
-      'dailyViewHelper': 'View daily meal details',
-      'weeklyViewHelper': 'View weekly overview'
-    };
-    
-    return t(keyMap[key] || key);
+  const mealPlanT = (key: string): string => {
+    const value = t(`mealPlan.${key}`);
+    // Handle nested objects like addSnackDialog
+    if (typeof value === 'object' && value !== null) {
+      return JSON.stringify(value);
+    }
+    return typeof value === 'string' ? value : key;
   };
-  
+
   return { mealPlanT };
 };
 
-export const useExerciseTranslation = () => {
-  const { t } = useI18n();
+export const useGeneralTranslation = () => {
+  const { t } = useLanguage();
   
-  const exerciseT = (key: string) => {
-    const keyMap: Record<string, string> = {
-      'title': 'Exercise Program',
-      'home': 'Home Workout',
-      'gym': 'Gym Workout',
-      'exercises': 'Exercises',
-      'sets': 'Sets',
-      'reps': 'Reps',
-      'rest': 'Rest'
-    };
-    
-    return t(keyMap[key] || key);
+  const generalT = (key: string): string => {
+    const value = t(`general.${key}`);
+    return typeof value === 'string' ? value : key;
   };
+
+  return { generalT };
+};
+
+export const useAuthTranslation = () => {
+  const { t } = useLanguage();
   
-  return { exerciseT };
+  const authT = (key: string): string => {
+    const value = t(`auth.${key}`);
+    return typeof value === 'string' ? value : key;
+  };
+
+  return { authT };
+};
+
+export const useProfileTranslation = () => {
+  const { t } = useLanguage();
+  
+  const profileT = (key: string): string => {
+    const value = t(`profile.${key}`);
+    return typeof value === 'string' ? value : key;
+  };
+
+  return { profileT };
+};
+
+export const useWorkoutTranslation = () => {
+  const { t } = useLanguage();
+  
+  const workoutT = (key: string): string => {
+    const value = t(`workout.${key}`);
+    return typeof value === 'string' ? value : key;
+  };
+
+  return { workoutT };
 };

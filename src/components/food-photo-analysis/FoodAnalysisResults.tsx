@@ -1,26 +1,11 @@
 
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { Utensils, Plus, ChefHat, Clock, Users, TrendingUp } from 'lucide-react';
-import { useI18n } from "@/hooks/useI18n";
-
-interface AIFoodAnalysisResult {
-  foodItems?: any[];
-  overallConfidence?: number;
-  mealType?: string;
-  cuisineType?: string;
-  totalNutrition?: {
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-  };
-  recommendations?: string;
-  remainingCredits?: number;
-}
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Clock, Users, ChefHat, TrendingUp } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { AIFoodAnalysisResult } from "@/types/aiAnalysis";
 
 interface FoodAnalysisResultsProps {
   result: AIFoodAnalysisResult;
@@ -29,7 +14,7 @@ interface FoodAnalysisResultsProps {
 }
 
 const FoodAnalysisResults = ({ result, onAddToLog, className = "" }: FoodAnalysisResultsProps) => {
-  const { t } = useI18n();
+  const { t } = useLanguage();
 
   const confidenceColor = result.overallConfidence > 0.8 ? "text-green-600" : 
                          result.overallConfidence > 0.6 ? "text-yellow-600" : "text-red-600";

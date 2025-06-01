@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { UserPlus, Mail } from "lucide-react";
 import { useCoachSystem } from "@/hooks/useCoachSystem";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface AssignTraineeDialogProps {
   open: boolean;
@@ -16,7 +16,7 @@ interface AssignTraineeDialogProps {
 
 export const AssignTraineeDialog = ({ open, onOpenChange }: AssignTraineeDialogProps) => {
   const { assignTrainee, isAssigning } = useCoachSystem();
-  const { language } = useI18n();
+  const { language } = useLanguage();
   const [traineeEmail, setTraineeEmail] = useState("");
   const [notes, setNotes] = useState("");
 

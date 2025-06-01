@@ -1,8 +1,9 @@
+
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { format, addDays } from "date-fns";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ExerciseCompactNavigationProps {
   currentWeekOffset: number;
@@ -23,7 +24,7 @@ export const ExerciseCompactNavigation = ({
   currentProgram,
   workoutType
 }: ExerciseCompactNavigationProps) => {
-  const { t } = useI18n();
+  const { t } = useLanguage();
   const shortDayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   
   // Define rest days based on workout type

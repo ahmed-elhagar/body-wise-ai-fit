@@ -1,14 +1,14 @@
 
 import EnhancedLoadingIndicator from "@/components/ui/enhanced-loading-indicator";
 import { Card } from "@/components/ui/card";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface SnackGenerationProgressProps {
   step: string;
 }
 
 const SnackGenerationProgress = ({ step }: SnackGenerationProgressProps) => {
-  const { t, isRTL } = useI18n();
+  const { t, isRTL } = useLanguage();
 
   const customSteps = [
     t('mealPlan.addSnack.generationSteps.analyzing') || 'Analyzing your profile...',

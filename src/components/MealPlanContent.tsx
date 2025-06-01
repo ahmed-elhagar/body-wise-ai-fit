@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ChefHat, Sparkles, Wand2 } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import CompactDailyView from "@/components/CompactDailyView";
 import type { Meal } from "@/types/meal";
 
@@ -12,7 +12,7 @@ interface MealPlanContentProps {
   todaysMeals: Meal[];
   onGenerate: () => void;
   onShowRecipe: (meal: Meal) => void;
-  onExchangeMeal: (meal: Meal) => void;
+  onExchangeMeal: (meal: Meal, index: number) => void;
   onAddSnack: () => void;
   onShowShoppingList: () => void;
 }
@@ -27,7 +27,7 @@ const MealPlanContent = ({
   onAddSnack,
   onShowShoppingList
 }: MealPlanContentProps) => {
-  const { t } = useI18n();
+  const { t } = useLanguage();
 
   if (!currentWeekPlan) {
     return (
@@ -69,11 +69,14 @@ const MealPlanContent = ({
 
     return (
       <CompactDailyView
-        meals={todaysMeals}
-        selectedDay={1}
+        todaysMeals={todaysMeals}
+        totalCalories={totalCalories}
+        totalProtein={totalProtein}
         onShowRecipe={onShowRecipe}
         onExchangeMeal={onExchangeMeal}
         onAddSnack={onAddSnack}
+        onShowShoppingList={onShowShoppingList}
+        onGenerate={onGenerate}
       />
     );
   }

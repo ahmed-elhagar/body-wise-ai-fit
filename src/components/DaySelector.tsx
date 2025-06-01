@@ -1,7 +1,7 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { getDayNames } from "@/utils/mealPlanUtils";
 
 interface DaySelectorProps {
@@ -10,7 +10,7 @@ interface DaySelectorProps {
 }
 
 const DaySelector = ({ selectedDayNumber, onDaySelect }: DaySelectorProps) => {
-  const { t, isRTL } = useI18n();
+  const { t, isRTL } = useLanguage();
   const dayNames = getDayNames(t);
   const shortDayNames = ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
 

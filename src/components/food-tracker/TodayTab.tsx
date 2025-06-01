@@ -1,89 +1,136 @@
 
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
-import FoodLogTimeline from './components/FoodLogTimeline';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react';
-import { useI18n } from "@/hooks/useI18n";
-import type { FoodConsumptionLog } from '@/types/food';
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Plus, Trash2, Edit3 } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useFoodConsumption } from "@/hooks/useFoodConsumption";
+import MacroWheel from "./components/MacroWheel";
+import FoodLogTimeline from "./components/FoodLogTimeline";
+import AddFoodDialog from "./AddFoodDialog/AddFoodDialog";
+import { format } from "date-fns";
 
 const TodayTab = () => {
-  const { user } = useAuth();
-  const { t } = useI18n();
+  const { t, isRTL } = useLanguage();
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const { todayConsumption, isLoading, refetch } = useFoodConsumption();
 
-  const { data: foodLogs = [], isLoading, error } = useQuery({
-    queryKey: ['food-logs', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
+  // Calculate daily totals
+  const dailyTotals = todayConsumption?.reduce(
+    (acc, item) => ({
+      calories: acc.calories + (item.calories_consumed || 0),
+      protein: acc.protein + (item.protein_consumed || 0),
+      carbs: acc.carbs + (item.carbs_consumed || 0),
+      fat: acc.fat + (item.fat_consumed || 0),
+    }),
+    { calories: 0, protein: 0, carbs: 0, fat: 0 }
+  ) || { calories: 0, protein: 0, carbs: 0, fat: 0 };
 
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const tomorrow = new Date(today);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-
-      const { data, error } = await supabase
-        .from('food_consumption_log')
-        .select('*')
-        .eq('user_id', user.id)
-        .gte('consumed_at', today.toISOString())
-        .lt('consumed_at', tomorrow.toISOString())
-        .order('consumed_at', { ascending: false });
-
-      if (error) throw error;
-      return data as FoodConsumptionLog[];
-    },
-    enabled: !!user?.id,
-  });
+  const handleFoodAdded = () => {
+    setShowAddDialog(false);
+    refetch();
+  };
 
   if (isLoading) {
     return (
-      <Card>
-        <CardContent className="flex items-center justify-center p-8">
-          <Loader2 className="w-6 h-6 animate-spin mr-2" />
-          {t('foodTracker.loadingToday')}
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (error) {
-    return (
-      <Card>
-        <CardContent className="p-8 text-center">
-          <p className="text-red-600">{t('foodTracker.errorLoading')}</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (foodLogs.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('foodTracker.todaysLog')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-gray-500 text-center py-8">
-            {t('foodTracker.noFoodLogged')}
-          </p>
-        </CardContent>
-      </Card>
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('foodTracker.todaysLog')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <FoodLogTimeline 
-            foodLogs={foodLogs}
-          />
-        </CardContent>
-      </Card>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Macros Overview */}
+      <div className="lg:col-span-1">
+        <Card className="sticky top-6">
+          <CardHeader>
+            <CardTitle className="text-green-700 flex items-center gap-2">
+              {t('Daily Nutrition')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <MacroWheel 
+              calories={dailyTotals.calories}
+              protein={dailyTotals.protein}
+              carbs={dailyTotals.carbs}
+              fat={dailyTotals.fat}
+            />
+            
+            <div className="mt-6 space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">{t('Calories')}</span>
+                <span className="font-semibold text-gray-900">
+                  {Math.round(dailyTotals.calories)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">{t('Protein')}</span>
+                <span className="font-semibold text-gray-900">
+                  {Math.round(dailyTotals.protein)}g
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">{t('Carbs')}</span>
+                <span className="font-semibold text-gray-900">
+                  {Math.round(dailyTotals.carbs)}g
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">{t('Fat')}</span>
+                <span className="font-semibold text-gray-900">
+                  {Math.round(dailyTotals.fat)}g
+                </span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Food Timeline */}
+      <div className="lg:col-span-2">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-gray-900">
+                {t('Today\'s Food Log')} - {format(new Date(), 'MMM d, yyyy')}
+              </CardTitle>
+              <Button
+                onClick={() => setShowAddDialog(true)}
+                className="bg-green-600 hover:bg-green-700 text-white"
+                size="sm"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                {t('Add Food')}
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <FoodLogTimeline 
+              foodLogs={todayConsumption || []}
+              onRefetch={refetch}
+            />
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Floating Add Button for Mobile */}
+      <div className="fixed bottom-6 right-6 lg:hidden">
+        <Button
+          onClick={() => setShowAddDialog(true)}
+          className="w-14 h-14 rounded-full bg-green-600 hover:bg-green-700 text-white shadow-lg"
+          size="icon"
+        >
+          <Plus className="w-6 h-6" />
+        </Button>
+      </div>
+
+      {/* Add Food Dialog */}
+      <AddFoodDialog
+        isOpen={showAddDialog}
+        onClose={() => setShowAddDialog(false)}
+        onFoodAdded={handleFoodAdded}
+      />
     </div>
   );
 };

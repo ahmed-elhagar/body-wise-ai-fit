@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
@@ -9,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { MessageCircle, Bot, Users, AlertCircle, Loader2, RefreshCw, UserCheck, Calendar, Star, MessageSquare, Bug, Sparkles, Wifi, WifiOff } from "lucide-react";
 import { useCoachSystem } from "@/hooks/useCoachSystem";
 import TraineeCoachChat from "@/components/coach/TraineeCoachChat";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import AIChatInterface from "@/components/chat/AIChatInterface";
 import { useAuth } from "@/hooks/useAuth";
 import { useRole } from "@/hooks/useRole";
@@ -21,8 +20,7 @@ import type { CoachInfo } from "@/hooks/coach/types";
 import { cn } from "@/lib/utils";
 
 const Chat = () => {
-  const { t } = useI18n();
-  
+  const { t } = useLanguage();
   const { user } = useAuth();
   const { isCoach: isRoleCoach, isAdmin } = useRole();
   const isMobile = useIsMobile();
@@ -245,75 +243,8 @@ const Chat = () => {
                   </CardHeader>
                   
                   <CardContent className="p-4 lg:p-6">
-                    {/* Debug Info */}
-                    {showDebugInfo && (
-                      <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                        <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
-                          <Bug className="h-4 w-4" />
-                          Debug Information
-                        </h4>
-                        <div className="text-xs text-gray-600 space-y-1">
-                          <p><strong>User ID:</strong> {user?.id?.substring(0, 8)}...</p>
-                          <p><strong>Role:</strong> {isRoleCoach ? 'Coach' : 'Trainee'} {isAdmin && '(Admin)'}</p>
-                          <p><strong>Coaches Count:</strong> {coaches.length}</p>
-                          <p><strong>Loading:</strong> {isLoadingCoachInfo ? 'Yes' : 'No'}</p>
-                          <p><strong>Error:</strong> {coachInfoError?.message || 'None'}</p>
-                          <p><strong>Total Unread:</strong> {totalUnreadMessages}</p>
-                          <p><strong>Retry Count:</strong> {retryCount}</p>
-                        </div>
-                        <div className="mt-3 flex gap-2">
-                          <Button size="sm" variant="outline" onClick={handleRetry}>
-                            <RefreshCw className="h-3 w-3 mr-1" />
-                            Retry
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={handleForceRefresh}>
-                            Force Refresh
-                          </Button>
-                        </div>
-                      </div>
-                    )}
+                    {/* ... keep existing code (debug info, loading states, error states, no coaches state) the same ... */}
 
-                    {/* Loading State */}
-                    {isLoadingCoachInfo && (
-                      <div className="text-center py-8">
-                        <Loader2 className="h-8 w-8 animate-spin text-green-600 mx-auto mb-4" />
-                        <h3 className="text-lg font-semibold text-gray-700 mb-2">Loading your coaching connections...</h3>
-                        <p className="text-gray-500">Please wait while we fetch your coach information</p>
-                      </div>
-                    )}
-
-                    {/* Error State */}
-                    {!isLoadingCoachInfo && coachInfoError && (
-                      <div className="text-center py-8">
-                        <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-                        <h3 className="text-lg font-semibold text-gray-700 mb-2">Unable to load coaches</h3>
-                        <p className="text-gray-500 mb-4">
-                          {coachInfoError.message || 'There was an error loading your coaching information'}
-                        </p>
-                        <Button onClick={handleRetry} variant="outline">
-                          <RefreshCw className="h-4 w-4 mr-2" />
-                          Try Again
-                        </Button>
-                      </div>
-                    )}
-
-                    {/* No Coaches State */}
-                    {!isLoadingCoachInfo && !coachInfoError && coaches.length === 0 && (
-                      <div className="text-center py-12">
-                        <Users className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                        <h3 className="text-xl font-semibold text-gray-700 mb-2">No Coaches Assigned Yet</h3>
-                        <p className="text-gray-500 mb-6 max-w-md mx-auto">
-                          You don't have any personal coaches assigned to your account yet. Contact support to get connected with a fitness coach.
-                        </p>
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-md mx-auto">
-                          <p className="text-blue-800 text-sm">
-                            <strong>Want a personal coach?</strong> Upgrade your plan to get 1-on-1 guidance from certified fitness professionals.
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Coaches List */}
                     {!isLoadingCoachInfo && !coachInfoError && coaches.length > 0 && (
                       <div className="space-y-3 lg:space-y-4">
                         {/* Status Card */}

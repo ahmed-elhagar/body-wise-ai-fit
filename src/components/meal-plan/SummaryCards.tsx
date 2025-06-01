@@ -1,7 +1,8 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Target, RotateCcw, Award, Calendar } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface SummaryCardsProps {
   todaysMeals: any[];
@@ -20,7 +21,7 @@ const SummaryCards = ({
   onAddSnack,
   onRegeneratePlan
 }: SummaryCardsProps) => {
-  const { t, isRTL } = useI18n();
+  const { t, isRTL } = useLanguage();
 
   const proteinGoal = 150;
   const proteinProgress = Math.min(100, (totalProtein / proteinGoal) * 100);
