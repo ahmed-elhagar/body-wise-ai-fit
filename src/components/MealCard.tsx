@@ -1,12 +1,6 @@
-
 import { Card } from "@/components/ui/card";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { useState, useEffect } from "react";
-import MealCardImage from "@/components/meal-card/MealCardImage";
-import NutritionGrid from "@/components/meal-card/NutritionGrid";
-import MealDetails from "@/components/meal-card/MealDetails";
-import IngredientsPreview from "@/components/meal-card/IngredientsPreview";
-import MealActionButtons from "@/components/meal-card/MealActionButtons";
+import { useI18n } from "@/hooks/useI18n";
+import type { Meal } from "@/types/meal";
 
 interface Ingredient {
   name: string;
@@ -36,11 +30,12 @@ interface Meal {
 interface MealCardProps {
   meal: Meal;
   onShowRecipe: (meal: Meal) => void;
-  onExchangeMeal: (meal: Meal) => void;
+  onExchangeMeal: (meal: Meal, index: number) => void;
+  index: number;
 }
 
-const MealCard = ({ meal, onShowRecipe, onExchangeMeal }: MealCardProps) => {
-  const { isRTL } = useLanguage();
+const MealCard = ({ meal, onShowRecipe, onExchangeMeal, index }: MealCardProps) => {
+  const { t, isRTL } = useI18n();
   
   // Enhanced image state management with proper meal ID tracking
   const [mealImage, setMealImage] = useState<string | null>(

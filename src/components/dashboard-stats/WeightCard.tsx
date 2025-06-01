@@ -2,7 +2,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 interface WeightCardProps {
   displayWeight: number | null;
@@ -12,7 +12,7 @@ interface WeightCardProps {
 }
 
 export const WeightCard = ({ displayWeight, weightLoading, weightChange, weightSource }: WeightCardProps) => {
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL } = useI18n();
 
   return (
     <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
