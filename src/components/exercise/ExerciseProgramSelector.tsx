@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -42,11 +41,13 @@ export const ExerciseProgramSelector = ({
       preferredWorkouts: workoutType === "gym" ? ["strength", "cardio"] : ["bodyweight", "cardio"],
       targetMuscleGroups: ["full_body"],
       equipment: workoutType === "gym" 
-        ? ["barbells", "dumbbells", "machines", "cables"]
-        : ["bodyweight", "resistance_bands", "light_dumbbells"],
-      duration: "4",
+        ? "barbells,dumbbells,machines,cables"
+        : "bodyweight,resistance_bands,light_dumbbells",
+      duration: 45,
       workoutDays: "4-5 days per week",
-      difficulty: selectedLevel
+      difficulty: selectedLevel,
+      focus: selectedGoal,
+      intensity: "medium"
     };
     
     onGenerateProgram(preferences);

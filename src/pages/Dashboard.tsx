@@ -29,6 +29,22 @@ const Dashboard = () => {
     navigate('/exercise');
   };
 
+  // Convert chart data to the expected ProgressDataPoint array format
+  const progressData = [
+    ...chartData.weightData.map(point => ({
+      date: point.day,
+      weight: point.weight
+    })),
+    ...chartData.calorieData.map(point => ({
+      date: point.day,
+      calories: point.consumed
+    })),
+    ...chartData.workoutData.map(point => ({
+      date: point.day,
+      exercise: point.completed
+    }))
+  ];
+
   return (
     <ProtectedRoute>
       <Layout>
@@ -57,7 +73,7 @@ const Dashboard = () => {
             <EnhancedStatsGrid />
             
             {/* Progress Chart Section */}
-            <InteractiveProgressChart data={chartData} />
+            <InteractiveProgressChart data={progressData} />
             
             {/* 50-50 Layout for remaining content */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">

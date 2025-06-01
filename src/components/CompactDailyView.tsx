@@ -71,7 +71,7 @@ const CompactDailyView = ({
       {/* Meals Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {meals.map((meal, index) => {
-          // Ensure meal has all required properties
+          // Ensure meal has all required properties with proper types
           const normalizedMeal: Meal = {
             id: meal.id || `meal-${index}-${Math.random().toString(36).substr(2, 9)}`,
             type: meal.type || meal.meal_type || 'meal',
@@ -88,7 +88,7 @@ const CompactDailyView = ({
             servings: meal.servings || 1,
             youtube_search_term: meal.youtube_search_term,
             image_url: meal.image_url,
-            image: meal.image || meal.image_url,
+            image: meal.image || meal.image_url || '',
             meal_type: meal.meal_type || meal.type
           };
           

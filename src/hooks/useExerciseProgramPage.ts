@@ -8,6 +8,22 @@ export interface ExercisePreferences {
   duration: number;
   intensity: string;
   workoutType: string;
+  goalType?: string;
+  fitnessLevel?: string;
+  availableTime?: string;
+  preferredWorkouts?: string[];
+  targetMuscleGroups?: string[];
+  difficulty?: string;
+  workoutDays?: string;
+}
+
+export interface ExerciseProgram {
+  id: string;
+  name: string;
+  workout_type: 'home' | 'gym';
+  difficulty: string;
+  duration_weeks: number;
+  created_at: string;
 }
 
 export const useExerciseProgramPage = () => {

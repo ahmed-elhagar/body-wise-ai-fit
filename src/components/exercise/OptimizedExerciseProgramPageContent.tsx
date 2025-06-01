@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card } from "@/components/ui/card";
@@ -153,6 +152,7 @@ const OptimizedExerciseProgramPageContent = () => {
   const completedExercises = exercises?.filter((ex: any) => ex.completed).length || 0;
   const totalExercises = exercises?.length || 0;
 
+  
   return (
     <div className="p-6">
       <ExerciseProgramLoadingStates isLoading={isLoading} isGenerating={isGenerating} />
