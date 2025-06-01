@@ -16,12 +16,12 @@ const SmartGoalsDashboard = () => {
   const [isCreating, setIsCreating] = useState(false);
 
   const { data: goals = [], isLoading } = useQuery({
-    queryKey: ['goals', user?.id],
+    queryKey: ['user-goals', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
 
       const { data, error } = await supabase
-        .from('smart_goals')
+        .from('user_goals')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });

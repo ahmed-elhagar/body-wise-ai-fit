@@ -1,20 +1,36 @@
 
 export interface Goal {
   id: string;
-  title: string;
-  description: string;
-  target_value: number;
-  current_value: number;
-  category: string;
-  deadline: string;
-  created_at: string;
   user_id: string;
+  goal_type: string;
+  category: string;
+  title: string;
+  description?: string;
+  target_value?: number;
+  current_value: number;
+  target_unit?: string;
+  start_date: string;
+  target_date?: string;
+  status: string;
+  priority?: string;
+  difficulty?: string;
+  tags?: string[];
+  notes?: string;
+  milestones?: any;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface CreateGoalData {
-  title: string;
-  description: string;
-  target_value: number;
+  goal_type: string;
   category: string;
-  deadline: string;
+  title: string;
+  description?: string;
+  target_value?: number;
+  target_unit?: string;
+  target_date?: string;
+  priority?: string;
+  difficulty?: string;
+  tags?: string[];
+  notes?: string;
 }

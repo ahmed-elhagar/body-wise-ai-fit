@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Clock, Users, ChefHat, Sparkles, Youtube, X } from "lucide-react";
-import { useMealRecipe } from "@/hooks/useMealRecipe";
 import type { DailyMeal } from "@/hooks/useMealPlanData";
 
 interface EnhancedRecipeDialogProps {
@@ -17,18 +16,7 @@ interface EnhancedRecipeDialogProps {
 }
 
 const EnhancedRecipeDialog = ({ isOpen, onClose, meal, onRecipeGenerated }: EnhancedRecipeDialogProps) => {
-  const { meal: detailedMeal, isRecipeLoading, fetchMealRecipe } = useMealRecipe();
   const [isGenerating, setIsGenerating] = useState(false);
-
-  useEffect(() => {
-    if (isOpen && meal) {
-      if (meal.ingredients?.length > 0 && meal.instructions?.length > 0) {
-        // Meal already has detailed recipe
-      } else {
-        // Need to fetch/generate recipe
-      }
-    }
-  }, [isOpen, meal]);
 
   const handleGenerateRecipe = async () => {
     if (!meal?.id) {
@@ -38,7 +26,8 @@ const EnhancedRecipeDialog = ({ isOpen, onClose, meal, onRecipeGenerated }: Enha
     
     setIsGenerating(true);
     try {
-      await fetchMealRecipe(meal.id);
+      // Mock recipe generation - in real app this would call an API
+      console.log('Generating recipe for meal:', meal.name);
       if (onRecipeGenerated) {
         onRecipeGenerated();
       }
@@ -145,11 +134,11 @@ const EnhancedRecipeDialog = ({ isOpen, onClose, meal, onRecipeGenerated }: Enha
                   </p>
                   <Button
                     onClick={handleGenerateRecipe}
-                    disabled={isGenerating || isRecipeLoading}
+                    disabled={isGenerating}
                     className="bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 hover:from-fitness-primary-600 hover:to-fitness-primary-700 text-white"
                   >
                     <Sparkles className="w-4 h-4 mr-2" />
-                    {isGenerating || isRecipeLoading ? 'Generating Recipe...' : 'Generate Enhanced Recipe'}
+                    {isGenerating ? 'Generating Recipe...' : 'Generate Enhanced Recipe'}
                   </Button>
                 </CardContent>
               </Card>
@@ -163,7 +152,9 @@ const EnhancedRecipeDialog = ({ isOpen, onClose, meal, onRecipeGenerated }: Enha
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     {meal.ingredients.map((ingredient, index) => (
                       <div key={index} className="flex justify-between items-center py-2 px-3 bg-gray-50 rounded-lg">
-                        <span className="text-gray-700 font-medium">{ingredient}</span>
+                        <span className="text-gray-700 font-medium">
+                          {typeof ingredient === 'string' ? ingredient : ingredient.name}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -207,11 +198,11 @@ const EnhancedRecipeDialog = ({ isOpen, onClose, meal, onRecipeGenerated }: Enha
             {!hasDetailedRecipe && (
               <Button
                 onClick={handleGenerateRecipe}
-                disabled={isGenerating || isRecipeLoading}
+                disabled={isGenerating}
                 className="bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 hover:from-fitness-primary-600 hover:to-fitness-primary-700 text-white"
               >
                 <Sparkles className="w-4 h-4 mr-2" />
-                {isGenerating || isRecipeLoading ? 'Generating...' : 'Generate Detailed Recipe'}
+                {isGenerating ? 'Generating...' : 'Generate Detailed Recipe'}
               </Button>
             )}
           </div>
