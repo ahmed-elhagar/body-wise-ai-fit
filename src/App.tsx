@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -6,7 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { lazy, Suspense } from "react";
 import { LoadingIndicator } from "@/components/ui/loading-indicator";
-import ErrorBoundary from "@/components/ErrorBoundary";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import "@/i18n/config";
 
@@ -129,7 +130,7 @@ const App = () => {
                     <Route
                       path="/coach-panel"
                       element={
-                        <ProtectedRoute requiredRole="coach">
+                        <ProtectedRoute requireRole="coach">
                           <CoachPanelPage />
                         </ProtectedRoute>
                       }
@@ -137,7 +138,7 @@ const App = () => {
                     <Route
                       path="/admin-dashboard"
                       element={
-                        <ProtectedRoute requiredRole="admin">
+                        <ProtectedRoute requireRole="admin">
                           <AdminDashboardPage />
                         </ProtectedRoute>
                       }
@@ -145,7 +146,7 @@ const App = () => {
                     <Route
                       path="/trainee-chat/:traineeId"
                       element={
-                        <ProtectedRoute requiredRole="coach">
+                        <ProtectedRoute requireRole="coach">
                           <TraineeChatPage />
                         </ProtectedRoute>
                       }
