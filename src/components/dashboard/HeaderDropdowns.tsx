@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Bell, User, Settings, LogOut, Globe } from "lucide-react";
+import { Bell, User, Settings, LogOut, Globe, ArrowRight, Clock } from "lucide-react";
 import { useI18n } from "@/hooks/useI18n";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useWeightTracking } from "@/hooks/useWeightTracking";
@@ -133,7 +134,7 @@ const HeaderDropdowns = () => {
             size="sm"
             className="relative bg-white/80 backdrop-blur-sm border-green-200 hover:bg-green-50 hover:border-green-300 transition-all duration-200"
           >
-            <Activity className="w-4 h-4 text-green-600" />
+            <Bell className="w-4 h-4 text-green-600" />
             {activities.length > 0 && (
               <Badge 
                 variant="secondary" 
@@ -154,7 +155,7 @@ const HeaderDropdowns = () => {
           <div className="max-h-64 overflow-y-auto">
             {activities.length === 0 ? (
               <div className="p-6 text-center text-gray-500">
-                <Activity className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />
                 <p className="text-sm">{t('No recent activity')}</p>
               </div>
             ) : (

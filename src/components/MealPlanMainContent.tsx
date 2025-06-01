@@ -41,7 +41,7 @@ interface MealPlanMainContentProps {
   // Handlers
   onShowShoppingList: () => void;
   onShowRecipe: (meal: Meal) => void;
-  onExchangeMeal: (meal: Meal, index: number) => void;
+  onExchangeMeal: (meal: Meal) => void;
 }
 
 const MealPlanMainContent = ({
@@ -76,8 +76,6 @@ const MealPlanMainContent = ({
         {/* Enhanced Navigation Section */}
         <div className="sticky top-0 z-10 bg-gray-50/95 backdrop-blur-sm -mx-2 sm:-mx-4 px-2 sm:px-4 py-2 border-b border-gray-200/50 rounded-lg">
           <CompactNavigation
-            currentWeekOffset={currentWeekOffset}
-            onWeekChange={onWeekChange}
             weekStartDate={weekStartDate}
             selectedDayNumber={selectedDayNumber}
             onDaySelect={onDaySelect}
@@ -204,7 +202,7 @@ const MealPlanMainContent = ({
                   <WeeklyMealPlanView
                     weeklyPlan={currentWeekPlan}
                     onShowRecipe={onShowRecipe}
-                    onExchangeMeal={onExchangeMeal}
+                    onExchangeMeal={(meal: Meal, dayNumber: number, mealIndex: number) => onExchangeMeal(meal)}
                   />
                 ) : (
                   <MealPlanContent

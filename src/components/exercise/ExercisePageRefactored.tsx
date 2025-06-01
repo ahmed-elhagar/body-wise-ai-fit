@@ -3,7 +3,6 @@ import { useI18n } from "@/hooks/useI18n";
 import { Card } from "@/components/ui/card";
 import { ExerciseHeader } from './ExerciseHeader';
 import { WorkoutTypeSelector } from './WorkoutTypeSelector';
-import { ExerciseProgramDaySelector } from './ExerciseProgramDaySelector';
 import { ExerciseList } from './ExerciseList';
 import { EmptyExerciseState } from './EmptyExerciseState';
 import { ExerciseProgramErrorState } from './ExerciseProgramErrorState';
@@ -92,8 +91,8 @@ const ExercisePageRefactored = () => {
             estimated_calories: 350,
             muscle_groups: ['Chest', 'Back', 'Legs'],
             exercises: [
-              { id: '101', name: 'Push-ups', sets: 3, reps: '8-12', completed: false },
-              { id: '102', name: 'Squats', sets: 3, reps: '12-15', completed: false },
+              { id: '101', daily_workout_id: 'dw1', name: 'Push-ups', sets: 3, reps: '8-12', completed: false },
+              { id: '102', daily_workout_id: 'dw1', name: 'Squats', sets: 3, reps: '12-15', completed: false },
             ],
           },
           {
@@ -104,8 +103,8 @@ const ExercisePageRefactored = () => {
             estimated_calories: 300,
             muscle_groups: ['Abs', 'Cardiovascular'],
             exercises: [
-              { id: '201', name: 'Running', sets: 1, reps: '30 minutes', completed: false },
-              { id: '202', name: 'Crunches', sets: 3, reps: '15-20', completed: false },
+              { id: '201', daily_workout_id: 'dw2', name: 'Running', sets: 1, reps: '30 minutes', completed: false },
+              { id: '202', daily_workout_id: 'dw2', name: 'Crunches', sets: 3, reps: '15-20', completed: false },
             ],
           },
           {
@@ -445,7 +444,7 @@ const ExercisePageRefactored = () => {
             <ExerciseProgramErrorState onRetry={handleRetry} />
           ) : !currentProgram ? (
             <EmptyExerciseState
-              onGenerateProgram={() => handleShowAIDialog()}
+              onGenerateProgram={() => setShowAIDialog(true)}
               workoutType={workoutType}
               setWorkoutType={setWorkoutType}
               showAIDialog={showAIDialog}
@@ -458,8 +457,8 @@ const ExercisePageRefactored = () => {
             <ExerciseListEnhanced
               exercises={todaysExercises}
               isLoading={isLoading}
-              onExerciseComplete={handleExerciseComplete}
-              onExerciseProgressUpdate={handleExerciseProgressUpdate}
+              onExerciseComplete={() => {}}
+              onExerciseProgressUpdate={() => {}}
               isRestDay={isRestDay}
             />
           )}
@@ -472,7 +471,7 @@ const ExercisePageRefactored = () => {
         onOpenChange={setShowAIDialog}
         preferences={aiPreferences}
         setPreferences={setAiPreferences}
-        onGenerate={handleGenerateAIProgram}
+        onGenerate={() => {}}
         isGenerating={isGenerating}
       />
     </div>
