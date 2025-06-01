@@ -1,6 +1,6 @@
 
 import CompactNavigation from "@/components/CompactNavigation";
-import MealPlanContent from "@/components/old_MealPlanContent";
+import MealPlanContent from "@/components/MealPlanContent";
 import EmptyMealPlan from "@/components/EmptyMealPlan";
 import WeeklyMealPlanView from "@/components/WeeklyMealPlanView";
 import ActionSection from "@/components/ActionSection";
