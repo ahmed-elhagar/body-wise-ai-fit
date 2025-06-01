@@ -1,5 +1,5 @@
 
-// Comprehensive meal plan types
+// Core meal plan types and interfaces
 export interface MealIngredient {
   name: string;
   quantity: string;
@@ -36,6 +36,7 @@ export interface DailyMeal {
   tips?: string;
   nutrition_benefits?: string;
   cultural_info?: string;
+  recipe_fetched?: boolean;
 }
 
 export interface WeeklyMealPlan {
@@ -48,48 +49,12 @@ export interface WeeklyMealPlan {
   total_fat: number;
   generation_prompt: any;
   created_at: string;
+  life_phase_context?: any;
 }
 
-export interface AIGeneratedDay {
-  dayNumber: number;
-  dayName: string;
-  totalCalories: number;
-  meals: AIGeneratedMeal[];
-}
-
-export interface AIGeneratedMeal {
-  type: 'breakfast' | 'lunch' | 'dinner' | 'snack1' | 'snack2';
-  name: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-  fiber?: number;
-  sugar?: number;
-  description?: string;
-  ingredients: MealIngredient[];
-  instructions: string[];
-  prepTime: number;
-  cookTime: number;
-  servings: number;
-  youtubeSearchTerm?: string;
-  cuisine?: string;
-  difficulty?: string;
-  tips?: string;
-  nutritionBenefits?: string;
-  culturalInfo?: string;
-}
-
-export interface AIGeneratedPlan {
-  weekSummary: {
-    totalCalories: number;
-    avgDailyCalories: number;
-    totalProtein: number;
-    totalCarbs: number;
-    totalFat: number;
-    dietType: string;
-  };
-  days: AIGeneratedDay[];
+export interface MealPlanFetchResult {
+  weeklyPlan: WeeklyMealPlan;
+  dailyMeals: DailyMeal[];
 }
 
 export interface MealPlanPreferences {
@@ -97,6 +62,16 @@ export interface MealPlanPreferences {
   cuisine: string;
   maxPrepTime: string;
   mealTypes: string;
+  includeSnacks: boolean;
   dietaryRestrictions?: string[];
   allergies?: string[];
+  language?: string;
+  weekOffset?: number;
+}
+
+export interface ShoppingItem {
+  name: string;
+  quantity: string;
+  unit: string;
+  category: string;
 }

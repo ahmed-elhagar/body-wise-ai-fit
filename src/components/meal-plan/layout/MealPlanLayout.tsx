@@ -1,16 +1,16 @@
 
 import { ReactNode } from "react";
-import { ErrorBoundary } from "../ErrorBoundary";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
-interface MealPlanPageLayoutProps {
+interface MealPlanLayoutProps {
   children: ReactNode;
 }
 
-const MealPlanPageLayout = ({ children }: MealPlanPageLayoutProps) => {
+const MealPlanLayout = ({ children }: MealPlanLayoutProps) => {
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-gradient-to-br from-fitness-primary-25 via-white to-fitness-accent-25">
-        <div className="container mx-auto px-4 py-6 space-y-4">
+        <div className="container mx-auto px-4 py-6 space-y-6">
           {children}
         </div>
       </div>
@@ -18,4 +18,4 @@ const MealPlanPageLayout = ({ children }: MealPlanPageLayoutProps) => {
   );
 };
 
-export default MealPlanPageLayout;
+export default MealPlanLayout;
