@@ -33,12 +33,14 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
+type UserRole = 'normal' | 'pro' | 'coach' | 'admin';
+
 interface UserProfile {
   id: string;
   email: string;
   first_name: string;
   last_name: string;
-  role: string;
+  role: UserRole;
   ai_generations_remaining: number;
   onboarding_completed: boolean;
   created_at: string;
@@ -87,7 +89,7 @@ const EnhancedUsersTable = () => {
 
   // Update user role mutation
   const updateUserRoleMutation = useMutation({
-    mutationFn: async ({ userId, newRole }: { userId: string; newRole: string }) => {
+    mutationFn: async ({ userId, newRole }: { userId: string; newRole: UserRole }) => {
       const { error } = await supabase
         .from('profiles')
         .update({ 
@@ -126,7 +128,7 @@ const EnhancedUsersTable = () => {
     }
   });
 
-  const getRoleBadgeColor = (role: string) => {
+  const getRoleBadgeColor = (role: UserRole) => {
     switch (role) {
       case 'admin': return 'bg-red-100 text-red-800 border-red-200';
       case 'coach': return 'bg-blue-100 text-blue-800 border-blue-200';
@@ -141,7 +143,7 @@ const EnhancedUsersTable = () => {
       : 'bg-yellow-100 text-yellow-800 border-yellow-200';
   };
 
-  const handleRoleChange = (userId: string, newRole: string) => {
+  const handleRoleChange = (userId: string, newRole: UserRole) => {
     updateUserRoleMutation.mutate({ userId, newRole });
   };
 
