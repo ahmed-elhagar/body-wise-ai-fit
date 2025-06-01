@@ -55,23 +55,23 @@ const DayOverview = ({
   };
 
   return (
-    <div className="space-y-4">
-      {/* Daily Summary Card */}
-      <Card className="bg-gradient-to-r from-fitness-primary-50 to-fitness-accent-50 border-fitness-primary-200 rounded-xl">
-        <div className="p-4">
-          <div className="flex items-center justify-between mb-3">
+    <div className="space-y-3">
+      {/* Daily Summary Card - More Compact */}
+      <Card className="bg-gradient-to-r from-fitness-primary-50 to-fitness-accent-50 border-fitness-primary-200 rounded-lg">
+        <div className="p-3">
+          <div className="flex items-center justify-between mb-2">
             <div>
-              <h2 className="text-xl font-bold text-fitness-primary-800">
+              <h2 className="text-lg font-bold text-fitness-primary-800">
                 {getDayName(selectedDayNumber)}
               </h2>
-              <p className="text-sm text-fitness-primary-600">
-                {format(dayDate, 'MMMM d, yyyy')}
+              <p className="text-xs text-fitness-primary-600">
+                {format(dayDate, 'MMM d, yyyy')}
               </p>
             </div>
-            <div className="text-right flex items-center gap-3">
+            <div className="text-right flex items-center gap-2">
               <div>
-                <div className="text-lg font-bold text-fitness-primary-700 flex items-center gap-1">
-                  <Flame className="w-4 h-4" />
+                <div className="text-base font-bold text-fitness-primary-700 flex items-center gap-1">
+                  <Flame className="w-3 h-3" />
                   {totalCalories} cal
                 </div>
                 <div className="text-xs text-fitness-primary-600">{remainingCalories} remaining</div>
@@ -79,38 +79,39 @@ const DayOverview = ({
               <Button
                 onClick={onAddSnack}
                 size="sm"
-                className="bg-fitness-accent-500 hover:bg-fitness-accent-600 text-white px-3 py-2 text-sm"
+                className="bg-fitness-accent-500 hover:bg-fitness-accent-600 text-white px-2 py-1 text-xs h-7"
               >
-                <Plus className="w-4 h-4 mr-1" />
+                <Plus className="w-3 h-3 mr-1" />
                 Add Snack
               </Button>
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
-            <div className="text-center p-2 bg-white rounded-lg border border-fitness-primary-200">
-              <div className="text-lg font-bold text-fitness-primary-700">{dailyMeals.length}</div>
+          {/* Compact Stats Grid */}
+          <div className="grid grid-cols-3 gap-2 mb-2">
+            <div className="text-center p-1.5 bg-white rounded border border-fitness-primary-200">
+              <div className="text-sm font-bold text-fitness-primary-700">{dailyMeals.length}</div>
               <div className="text-xs text-fitness-primary-600">Meals</div>
             </div>
-            <div className="text-center p-2 bg-white rounded-lg border border-fitness-primary-200">
-              <div className="text-lg font-bold text-blue-700">{totalProtein.toFixed(0)}g</div>
+            <div className="text-center p-1.5 bg-white rounded border border-fitness-primary-200">
+              <div className="text-sm font-bold text-blue-700">{totalProtein.toFixed(0)}g</div>
               <div className="text-xs text-blue-600">Protein</div>
             </div>
-            <div className="text-center p-2 bg-white rounded-lg border border-fitness-primary-200">
-              <div className="text-lg font-bold text-green-700">{calorieProgress.toFixed(0)}%</div>
+            <div className="text-center p-1.5 bg-white rounded border border-fitness-primary-200">
+              <div className="text-sm font-bold text-green-700">{calorieProgress.toFixed(0)}%</div>
               <div className="text-xs text-green-600">Target</div>
             </div>
           </div>
 
-          {/* Progress Bar */}
-          <div className="mt-3">
+          {/* Compact Progress Bar */}
+          <div className="mt-2">
             <div className="flex justify-between text-xs text-fitness-primary-600 mb-1">
-              <span>Calorie Progress</span>
+              <span>Progress</span>
               <span>{calorieProgress.toFixed(0)}%</span>
             </div>
-            <div className="w-full bg-fitness-primary-100 rounded-full h-2">
+            <div className="w-full bg-fitness-primary-100 rounded-full h-1.5">
               <div 
-                className="bg-gradient-to-r from-fitness-primary-500 to-fitness-accent-500 h-2 rounded-full transition-all duration-300" 
+                className="bg-gradient-to-r from-fitness-primary-500 to-fitness-accent-500 h-1.5 rounded-full transition-all duration-300" 
                 style={{ width: `${Math.min(calorieProgress, 100)}%` }}
               ></div>
             </div>
@@ -118,63 +119,60 @@ const DayOverview = ({
         </div>
       </Card>
 
-      {/* Meals List - Smaller Cards */}
+      {/* Meals List - Smaller and Better Aligned */}
       {dailyMeals.length > 0 ? (
         <div className="space-y-2">
           {dailyMeals.map((meal, index) => (
             <Card key={meal.id} className="bg-white border-fitness-primary-100 shadow-sm hover:shadow-md transition-all duration-200 rounded-lg overflow-hidden">
-              <div className="p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2 flex-1 min-w-0">
-                    <div className="w-6 h-6 bg-fitness-primary-100 rounded-md flex items-center justify-center flex-shrink-0">
-                      <Utensils className="w-3 h-3 text-fitness-primary-600" />
+              <div className="p-2.5">
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-start gap-2 flex-1 min-w-0">
+                    <div className="w-5 h-5 bg-fitness-primary-100 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Utensils className="w-2.5 h-2.5 text-fitness-primary-600" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <Badge className={`capitalize px-2 py-0.5 text-xs font-medium mb-1 ${mealTypeColors[meal.meal_type as keyof typeof mealTypeColors] || 'bg-gray-50 border-gray-200 text-gray-700'}`}>
-                        {meal.meal_type}
-                      </Badge>
-                      <h4 className="font-semibold text-sm text-fitness-primary-800 truncate">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Badge className={`capitalize px-1.5 py-0.5 text-xs font-medium ${mealTypeColors[meal.meal_type as keyof typeof mealTypeColors] || 'bg-gray-50 border-gray-200 text-gray-700'}`}>
+                          {meal.meal_type}
+                        </Badge>
+                        <span className="text-xs text-gray-500 flex items-center gap-1">
+                          <Clock className="h-2.5 w-2.5" />
+                          {(meal.prep_time || 0) + (meal.cook_time || 0)} min
+                        </span>
+                      </div>
+                      <h4 className="font-semibold text-sm text-fitness-primary-800 leading-tight">
                         {meal.name}
                       </h4>
                     </div>
                   </div>
-                  <div className="text-right flex-shrink-0">
+                  <div className="text-right flex-shrink-0 ml-2">
                     <div className="text-sm font-bold text-fitness-primary-700">{meal.calories}</div>
                     <div className="text-xs text-fitness-primary-600">cal</div>
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-3 text-xs text-gray-500 mb-2">
-                  <span className="flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    {(meal.prep_time || 0) + (meal.cook_time || 0)} min
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Users className="h-3 w-3" />
-                    {meal.servings} serving{meal.servings !== 1 ? 's' : ''}
-                  </span>
-                </div>
-
+                {/* Compact Nutrition Grid */}
                 <div className="grid grid-cols-3 gap-1 text-xs mb-2">
-                  <div className="text-center bg-blue-50 rounded-md p-1 border border-blue-100">
-                    <span className="text-gray-600 block text-xs">Protein</span>
-                    <p className="font-bold text-blue-600 text-xs">{meal.protein}g</p>
+                  <div className="text-center bg-blue-50 rounded p-1 border border-blue-100">
+                    <span className="font-bold text-blue-600 text-xs block">{meal.protein}g</span>
+                    <span className="text-gray-600 text-xs">Protein</span>
                   </div>
-                  <div className="text-center bg-green-50 rounded-md p-1 border border-green-100">
-                    <span className="text-gray-600 block text-xs">Carbs</span>
-                    <p className="font-bold text-green-600 text-xs">{meal.carbs}g</p>
+                  <div className="text-center bg-green-50 rounded p-1 border border-green-100">
+                    <span className="font-bold text-green-600 text-xs block">{meal.carbs}g</span>
+                    <span className="text-gray-600 text-xs">Carbs</span>
                   </div>
-                  <div className="text-center bg-orange-50 rounded-md p-1 border border-orange-100">
-                    <span className="text-gray-600 block text-xs">Fat</span>
-                    <p className="font-bold text-orange-600 text-xs">{meal.fat}g</p>
+                  <div className="text-center bg-orange-50 rounded p-1 border border-orange-100">
+                    <span className="font-bold text-orange-600 text-xs block">{meal.fat}g</span>
+                    <span className="text-gray-600 text-xs">Fat</span>
                   </div>
                 </div>
                 
-                <div className="flex gap-1.5">
+                {/* Better Positioned Action Buttons */}
+                <div className="flex justify-end gap-1.5">
                   <Button 
                     size="sm" 
                     onClick={() => onViewMeal(meal)}
-                    className="flex-1 bg-fitness-primary-500 hover:bg-fitness-primary-600 text-white h-6 text-xs px-2"
+                    className="bg-fitness-primary-500 hover:bg-fitness-primary-600 text-white h-6 text-xs px-2 rounded-md"
                   >
                     <Book className="w-3 h-3 mr-1" />
                     Recipe
@@ -183,7 +181,7 @@ const DayOverview = ({
                     size="sm" 
                     variant="outline"
                     onClick={() => onExchangeMeal(meal, index)}
-                    className="flex-1 border-fitness-accent-300 text-fitness-accent-600 hover:bg-fitness-accent-50 h-6 text-xs px-2"
+                    className="border-fitness-accent-300 text-fitness-accent-600 hover:bg-fitness-accent-50 h-6 text-xs px-2 rounded-md"
                   >
                     <ArrowLeftRight className="w-3 h-3 mr-1" />
                     Exchange
@@ -194,15 +192,15 @@ const DayOverview = ({
           ))}
         </div>
       ) : (
-        <Card className="p-6 text-center border-dashed border-2 border-fitness-primary-200 bg-fitness-primary-25 rounded-xl">
-          <div className="w-12 h-12 mx-auto mb-3 bg-fitness-primary-100 rounded-full flex items-center justify-center">
-            <ChefHat className="h-6 w-6 text-fitness-primary-500" />
+        <Card className="p-4 text-center border-dashed border-2 border-fitness-primary-200 bg-fitness-primary-25 rounded-lg">
+          <div className="w-10 h-10 mx-auto mb-2 bg-fitness-primary-100 rounded-full flex items-center justify-center">
+            <ChefHat className="h-5 w-5 text-fitness-primary-500" />
           </div>
-          <h3 className="text-lg font-bold text-fitness-primary-700 mb-2">No meals planned for this day</h3>
-          <p className="text-fitness-primary-600 mb-4 text-sm">Start building your perfect day with AI-powered meal suggestions</p>
+          <h3 className="text-base font-bold text-fitness-primary-700 mb-1">No meals planned for this day</h3>
+          <p className="text-fitness-primary-600 mb-3 text-sm">Start building your perfect day with AI-powered meal suggestions</p>
           <Button 
             onClick={onAddSnack} 
-            className="bg-fitness-accent-500 hover:bg-fitness-accent-600 text-white px-4 py-2"
+            className="bg-fitness-accent-500 hover:bg-fitness-accent-600 text-white px-3 py-2 text-sm"
           >
             <Plus className="w-4 h-4 mr-2" />
             Add Your First Meal

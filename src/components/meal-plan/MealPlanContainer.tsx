@@ -49,6 +49,7 @@ const MealPlanContainer = () => {
   const [showRecipeDialog, setShowRecipeDialog] = useState(false);
   const [showExchangeDialog, setShowExchangeDialog] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState(null);
+  const [isWeekChanging, setIsWeekChanging] = useState(false);
 
   console.log('🎯 MealPlanContainer - Current view mode:', viewMode);
   console.log('🎯 MealPlanContainer - Selected meal for dialog:', selectedMeal?.name);
@@ -119,6 +120,22 @@ const MealPlanContainer = () => {
     }
   };
 
+  const handleWeekChange = async (newOffset: number) => {
+    console.log('📅 Week change triggered:', newOffset);
+    setIsWeekChanging(true);
+    
+    try {
+      setCurrentWeekOffset(newOffset);
+      // Give some time for the new data to load
+      setTimeout(() => {
+        setIsWeekChanging(false);
+      }, 500);
+    } catch (error) {
+      console.error('❌ Week change failed:', error);
+      setIsWeekChanging(false);
+    }
+  };
+
   if (error) {
     return (
       <div className="p-6 text-center text-red-600 bg-red-50 rounded-lg border border-red-200">
@@ -134,7 +151,7 @@ const MealPlanContainer = () => {
     );
   }
 
-  if (isLoading) {
+  if (isLoading || isWeekChanging) {
     return <LoadingState />;
   }
 
@@ -161,7 +178,7 @@ const MealPlanContainer = () => {
         onViewModeChange={setViewMode}
         weekStartDate={weekStartDate}
         currentWeekOffset={currentWeekOffset}
-        onWeekChange={setCurrentWeekOffset}
+        onWeekChange={handleWeekChange}
         selectedDayNumber={selectedDayNumber}
         onDayChange={setSelectedDayNumber}
         showDaySelector={viewMode === 'daily'}
