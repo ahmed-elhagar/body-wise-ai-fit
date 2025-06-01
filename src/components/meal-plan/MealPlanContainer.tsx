@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { useMealPlanPage } from "@/hooks/useMealPlanPage";
+import { useEnhancedMealShuffle } from "@/hooks/useEnhancedMealShuffle";
 import MealPlanHeader from "./MealPlanHeader";
 import UnifiedNavigation from "./UnifiedNavigation";
 import DayOverview from "./DayOverview";
@@ -40,6 +41,8 @@ const MealPlanContainer = () => {
     handleShowRecipe,
     handleExchangeMeal
   } = useMealPlanPage();
+
+  const { shuffleMeals, isShuffling } = useEnhancedMealShuffle();
 
   const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
   const [showAddSnackDialog, setShowAddSnackDialog] = useState(false);
@@ -97,11 +100,22 @@ const MealPlanContainer = () => {
   };
 
   const handleShuffle = async () => {
-    console.log('🔄 Shuffle meals triggered');
+    console.log('🔄 Enhanced shuffle meals triggered');
+    if (!currentWeekPlan?.weeklyPlan?.id) {
+      console.error('❌ No weekly plan ID available for shuffle');
+      return;
+    }
+    
     try {
-      await handleRegeneratePlan();
+      const success = await shuffleMeals(currentWeekPlan.weeklyPlan.id);
+      if (success) {
+        // Refresh the data after successful shuffle
+        setTimeout(() => {
+          refetch();
+        }, 1000);
+      }
     } catch (error) {
-      console.error('❌ Shuffle failed:', error);
+      console.error('❌ Enhanced shuffle failed:', error);
     }
   };
 
@@ -137,6 +151,7 @@ const MealPlanContainer = () => {
         onShowShoppingList={() => {}}
         onRegeneratePlan={handleRegeneratePlan}
         isGenerating={isGenerating}
+        isShuffling={isShuffling}
         hasWeeklyPlan={!!currentWeekPlan?.weeklyPlan}
       />
 

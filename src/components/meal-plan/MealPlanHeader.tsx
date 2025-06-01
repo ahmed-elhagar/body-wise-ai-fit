@@ -11,6 +11,7 @@ interface MealPlanHeaderProps {
   onShowShoppingList: () => void;
   onRegeneratePlan: () => void;
   isGenerating: boolean;
+  isShuffling?: boolean;
   hasWeeklyPlan: boolean;
 }
 
@@ -20,6 +21,7 @@ const MealPlanHeader = ({
   onShowShoppingList,
   onRegeneratePlan,
   isGenerating,
+  isShuffling = false,
   hasWeeklyPlan
 }: MealPlanHeaderProps) => {
   const { 
@@ -53,78 +55,73 @@ const MealPlanHeader = ({
 
   return (
     <Card className="bg-gradient-to-r from-fitness-primary-600 via-fitness-primary-700 to-fitness-accent-600 border-0 shadow-xl rounded-2xl overflow-hidden">
-      <div className="px-6 py-5">
+      <div className="px-6 py-4">
         <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
           {/* Left: Enhanced Title Section */}
           <div className={`flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/30">
-              <UtensilsCrossed className="w-8 h-8 text-white" />
+            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/30">
+              <UtensilsCrossed className="w-6 h-6 text-white" />
             </div>
             <div className={isRTL ? 'text-right' : 'text-left'}>
-              <h1 className="text-3xl font-bold text-white mb-1 tracking-tight">
+              <h1 className="text-2xl font-bold text-white mb-1 tracking-tight">
                 {title || 'Smart Meal Plan'}
               </h1>
-              <p className="text-fitness-primary-100 text-sm font-medium leading-relaxed">
-                {personalizedNutrition || 'AI-powered personalized nutrition planning'}
+              <p className="text-fitness-primary-100 text-sm font-medium">
+                {personalizedNutrition || 'AI-powered personalized nutrition'}
               </p>
               
               {/* AI Credits Badge */}
-              <div className="mt-2">
-                <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm font-medium">
+              <div className="mt-1">
+                <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm font-medium text-xs">
                   <Zap className="w-3 h-3 mr-1" />
-                  Unlimited AI Credits
+                  Unlimited AI
                 </Badge>
               </div>
             </div>
           </div>
 
-          {/* Right: Action Buttons */}
-          <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+          {/* Right: Compact Action Buttons */}
+          <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
             {hasWeeklyPlan && (
               <div className={`flex gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
                 <Button
                   onClick={handleShuffleMeals}
-                  disabled={isGenerating}
+                  disabled={isGenerating || isShuffling}
                   variant="outline"
                   size="sm"
-                  className="bg-white/10 border-white/30 text-white hover:bg-white/20 hover:text-white backdrop-blur-sm transition-all duration-200 hover:scale-105"
+                  className="bg-white/10 border-white/30 text-white hover:bg-white/20 hover:text-white backdrop-blur-sm transition-all duration-200 hover:scale-105 px-3"
                 >
-                  {isGenerating ? (
-                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  {isShuffling ? (
+                    <RefreshCw className="w-4 h-4 animate-spin" />
                   ) : (
-                    <Shuffle className="w-4 h-4 mr-2" />
+                    <Shuffle className="w-4 h-4" />
                   )}
-                  Shuffle
+                  <span className="hidden sm:inline ml-2">Shuffle</span>
                 </Button>
 
                 <Button
                   onClick={onShowShoppingList}
                   variant="outline"
                   size="sm"
-                  className="bg-white/10 border-white/30 text-white hover:bg-white/20 hover:text-white backdrop-blur-sm transition-all duration-200 hover:scale-105"
+                  className="bg-white/10 border-white/30 text-white hover:bg-white/20 hover:text-white backdrop-blur-sm transition-all duration-200 hover:scale-105 px-3"
                 >
-                  <ShoppingCart className="w-4 h-4 mr-2" />
-                  Shopping
+                  <ShoppingCart className="w-4 h-4" />
+                  <span className="hidden sm:inline ml-2">Shop</span>
                 </Button>
               </div>
             )}
 
             <Button
               onClick={handleGenerateAI}
-              disabled={isGenerating}
-              className="bg-white text-fitness-primary-600 hover:bg-fitness-primary-50 font-semibold px-6 py-2 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+              disabled={isGenerating || isShuffling}
+              className="bg-white text-fitness-primary-600 hover:bg-fitness-primary-50 font-semibold px-4 py-2 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
             >
               {isGenerating ? (
-                <>
-                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                  {generating || 'Generating...'}
-                </>
+                <RefreshCw className="w-4 h-4 animate-spin" />
               ) : (
-                <>
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  {generateAIMealPlan || 'Generate AI Plan'}
-                </>
+                <Sparkles className="w-4 h-4" />
               )}
+              <span className="hidden sm:inline ml-2">AI Plan</span>
             </Button>
           </div>
         </div>
