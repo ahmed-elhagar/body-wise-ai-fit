@@ -17,9 +17,10 @@ import Admin from "./pages/Admin";
 import Profile from "./pages/Profile";
 import Notifications from "./pages/Notifications";
 import Chat from "./pages/Chat";
+import Landing from "./pages/Landing";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { ThemeProvider } from "next-themes";
-import { AuthProvider } from "./contexts/AuthContext";
+import { AuthProvider } from "./hooks/useAuth";
 import "./App.css";
 import "./i18n/config";
 
@@ -45,6 +46,7 @@ function App() {
                 <BrowserRouter>
                   <Routes>
                     <Route path="/" element={<Index />} />
+                    <Route path="/landing" element={<Landing />} />
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/meal-plan" element={<MealPlan />} />

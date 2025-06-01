@@ -75,23 +75,111 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [error, setError] = useState<any>(null);
 
   useEffect(() => {
-    // Simulate auth check
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 100);
+    // Get initial session
+    const getInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Error getting session:', error);
+          setError(error);
+        } else {
+          setUser(session?.user ?? null);
+          setSession(session);
+        }
+      } catch (error) {
+        console.error('Error in getInitialSession:', error);
+        setError(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.email);
+        
+        setSession(session);
+        setUser(session?.user ?? null);
+        setIsLoading(false);
+      }
+    );
+
+    getInitialSession();
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    console.log('Sign in called');
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        setError(error);
+        throw error;
+      }
+
+      console.log('Sign in successful for:', email);
+    } catch (error: any) {
+      console.error('Sign in error:', error);
+      setError(error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const signUp = async (email: string, password: string, metadata?: any) => {
-    console.log('Sign up called');
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: metadata
+        }
+      });
+
+      if (error) {
+        setError(error);
+        throw error;
+      }
+
+      console.log('Sign up successful for:', email);
+    } catch (error: any) {
+      console.error('Sign up error:', error);
+      setError(error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const signOut = () => {
-    setUser(null);
-    setSession(null);
+  const signOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        setError(error);
+        throw error;
+      }
+      
+      setUser(null);
+      setSession(null);
+    } catch (error: any) {
+      console.error('Sign out error:', error);
+      setError(error);
+    }
   };
 
   const value = {
@@ -99,7 +187,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     session,
     loading: isLoading,
     isLoading,
-    isAdmin: false,
+    isAdmin: false, // Will be implemented with proper role checking
     error,
     signIn,
     signUp,
