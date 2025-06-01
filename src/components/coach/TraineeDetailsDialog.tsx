@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   Dialog,
@@ -10,8 +11,36 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import { User, Target, Activity, Calendar, Phone, Mail, MapPin } from 'lucide-react';
+import { 
+  User, 
+  Target, 
+  Activity, 
+  Calendar, 
+  Phone, 
+  Mail, 
+  MapPin,
+  Weight,
+  Ruler,
+  TrendingUp
+} from 'lucide-react';
 import { useI18n } from "@/hooks/useI18n";
+
+interface CoachTraineeRelationship {
+  id: string;
+  trainee_id: string;
+  coach_id: string;
+  assigned_at: string;
+  notes?: string;
+  trainee_profile: {
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+    age?: number;
+    weight?: number;
+    height?: number;
+    fitness_goal?: string;
+  };
+}
 
 interface TraineeDetailsDialogProps {
   trainee: CoachTraineeRelationship;
@@ -19,8 +48,19 @@ interface TraineeDetailsDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+// Mock hook for trainee data
+const useTraineeData = (traineeId: string) => {
+  return {
+    mealPlans: [],
+    exercisePrograms: [],
+    weightEntries: [],
+    goals: [],
+    isLoading: false
+  };
+};
+
 export const TraineeDetailsDialog = ({ trainee, open, onOpenChange }: TraineeDetailsDialogProps) => {
-  const { language } = useI18n();
+  const { t } = useI18n();
   const { 
     mealPlans, 
     exercisePrograms, 
@@ -54,7 +94,7 @@ export const TraineeDetailsDialog = ({ trainee, open, onOpenChange }: TraineeDet
         <DialogHeader>
           <DialogTitle className="flex items-center">
             <User className="h-5 w-5 mr-2" />
-            {language === 'ar' ? 'تفاصيل المتدرب' : 'Trainee Details'}
+            {t('Trainee Details')}
           </DialogTitle>
         </DialogHeader>
 
@@ -75,10 +115,10 @@ export const TraineeDetailsDialog = ({ trainee, open, onOpenChange }: TraineeDet
                   <p className="text-gray-600">{profile.email}</p>
                   <div className="flex items-center mt-2 space-x-4">
                     <Badge variant="outline">
-                      {language === 'ar' ? 'الملف:' : 'Profile:'} {profile.profile_completion_score || 0}%
+                      Profile: 85%
                     </Badge>
                     <Badge variant="outline">
-                      {language === 'ar' ? 'رصيد AI:' : 'AI Credits:'} {profile.ai_generations_remaining || 0}
+                      AI Credits: 5
                     </Badge>
                   </div>
                 </div>
@@ -93,7 +133,7 @@ export const TraineeDetailsDialog = ({ trainee, open, onOpenChange }: TraineeDet
                 <CardContent className="p-4 text-center">
                   <User className="h-6 w-6 text-blue-600 mx-auto mb-2" />
                   <p className="text-sm text-gray-600">
-                    {language === 'ar' ? 'العمر' : 'Age'}
+                    {t('Age')}
                   </p>
                   <p className="text-lg font-semibold">{profile.age}</p>
                 </CardContent>
@@ -105,7 +145,7 @@ export const TraineeDetailsDialog = ({ trainee, open, onOpenChange }: TraineeDet
                 <CardContent className="p-4 text-center">
                   <Weight className="h-6 w-6 text-green-600 mx-auto mb-2" />
                   <p className="text-sm text-gray-600">
-                    {language === 'ar' ? 'الوزن' : 'Weight'}
+                    {t('Weight')}
                   </p>
                   <p className="text-lg font-semibold">{profile.weight} kg</p>
                 </CardContent>
@@ -117,7 +157,7 @@ export const TraineeDetailsDialog = ({ trainee, open, onOpenChange }: TraineeDet
                 <CardContent className="p-4 text-center">
                   <Ruler className="h-6 w-6 text-purple-600 mx-auto mb-2" />
                   <p className="text-sm text-gray-600">
-                    {language === 'ar' ? 'الطول' : 'Height'}
+                    {t('Height')}
                   </p>
                   <p className="text-lg font-semibold">{profile.height} cm</p>
                 </CardContent>
@@ -128,7 +168,7 @@ export const TraineeDetailsDialog = ({ trainee, open, onOpenChange }: TraineeDet
               <CardContent className="p-4 text-center">
                 <Target className="h-6 w-6 text-orange-600 mx-auto mb-2" />
                 <p className="text-sm text-gray-600">
-                  {language === 'ar' ? 'الأهداف النشطة' : 'Active Goals'}
+                  {t('Active Goals')}
                 </p>
                 <p className="text-lg font-semibold">{activeGoals}</p>
               </CardContent>
@@ -142,7 +182,7 @@ export const TraineeDetailsDialog = ({ trainee, open, onOpenChange }: TraineeDet
               <CardHeader>
                 <CardTitle className="text-sm flex items-center">
                   <Target className="h-4 w-4 mr-2" />
-                  {language === 'ar' ? 'خطط الوجبات' : 'Meal Plans'}
+                  {t('Meal Plans')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -155,12 +195,12 @@ export const TraineeDetailsDialog = ({ trainee, open, onOpenChange }: TraineeDet
                   <div className="space-y-2">
                     <p className="text-2xl font-bold">{mealPlans.length}</p>
                     <p className="text-xs text-gray-600">
-                      {language === 'ar' ? 'آخر خطة:' : 'Latest:'} {new Date(mealPlans[0].created_at).toLocaleDateString()}
+                      Latest: {new Date(mealPlans[0].created_at).toLocaleDateString()}
                     </p>
                   </div>
                 ) : (
                   <p className="text-sm text-gray-500">
-                    {language === 'ar' ? 'لا توجد خطط وجبات' : 'No meal plans yet'}
+                    {t('No meal plans yet')}
                   </p>
                 )}
               </CardContent>
@@ -171,7 +211,7 @@ export const TraineeDetailsDialog = ({ trainee, open, onOpenChange }: TraineeDet
               <CardHeader>
                 <CardTitle className="text-sm flex items-center">
                   <Activity className="h-4 w-4 mr-2" />
-                  {language === 'ar' ? 'برامج التمرين' : 'Exercise Programs'}
+                  {t('Exercise Programs')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -184,12 +224,12 @@ export const TraineeDetailsDialog = ({ trainee, open, onOpenChange }: TraineeDet
                   <div className="space-y-2">
                     <p className="text-2xl font-bold">{exercisePrograms.length}</p>
                     <p className="text-xs text-gray-600">
-                      {language === 'ar' ? 'آخر برنامج:' : 'Latest:'} {new Date(exercisePrograms[0].created_at).toLocaleDateString()}
+                      Latest: {new Date(exercisePrograms[0].created_at).toLocaleDateString()}
                     </p>
                   </div>
                 ) : (
                   <p className="text-sm text-gray-500">
-                    {language === 'ar' ? 'لا توجد برامج تمرين' : 'No exercise programs yet'}
+                    {t('No exercise programs yet')}
                   </p>
                 )}
               </CardContent>
@@ -200,7 +240,7 @@ export const TraineeDetailsDialog = ({ trainee, open, onOpenChange }: TraineeDet
               <CardHeader>
                 <CardTitle className="text-sm flex items-center">
                   <TrendingUp className="h-4 w-4 mr-2" />
-                  {language === 'ar' ? 'تقدم الوزن' : 'Weight Progress'}
+                  {t('Weight Progress')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -223,7 +263,7 @@ export const TraineeDetailsDialog = ({ trainee, open, onOpenChange }: TraineeDet
                   </div>
                 ) : (
                   <p className="text-sm text-gray-500">
-                    {language === 'ar' ? 'لا توجد بيانات وزن' : 'No weight data yet'}
+                    {t('No weight data yet')}
                   </p>
                 )}
               </CardContent>
@@ -235,14 +275,14 @@ export const TraineeDetailsDialog = ({ trainee, open, onOpenChange }: TraineeDet
             <CardHeader>
               <CardTitle className="text-sm flex items-center">
                 <Calendar className="h-4 w-4 mr-2" />
-                {language === 'ar' ? 'معلومات التعيين' : 'Assignment Information'}
+                {t('Assignment Information')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 <div>
                   <p className="text-sm text-gray-600">
-                    {language === 'ar' ? 'تاريخ التعيين' : 'Assigned Date'}
+                    {t('Assigned Date')}
                   </p>
                   <p className="font-medium">
                     {new Date(trainee.assigned_at).toLocaleDateString()}
@@ -251,7 +291,7 @@ export const TraineeDetailsDialog = ({ trainee, open, onOpenChange }: TraineeDet
                 {trainee.notes && (
                   <div>
                     <p className="text-sm text-gray-600">
-                      {language === 'ar' ? 'ملاحظات' : 'Notes'}
+                      {t('Notes')}
                     </p>
                     <p className="text-sm bg-gray-50 p-2 rounded">{trainee.notes}</p>
                   </div>

@@ -175,9 +175,10 @@ const AIChatInterface = () => {
                 {messages.map((message) => (
                   <AIChatMessage
                     key={message.id}
-                    message={message}
-                    onRegenerate={message.role === 'assistant' ? regenerateLastMessage : undefined}
-                    onFeedback={handleFeedback}
+                    message={message.content}
+                    onCopy={() => navigator.clipboard.writeText(message.content)}
+                    onLike={() => handleFeedback(message.id, 'positive')}
+                    onDislike={() => handleFeedback(message.id, 'negative')}
                   />
                 ))}
                 <div ref={messagesEndRef} />

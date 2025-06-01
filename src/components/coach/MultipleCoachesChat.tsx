@@ -1,15 +1,51 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Users, MessageCircle, Clock, CheckCircle } from 'lucide-react';
+import { 
+  Users, 
+  MessageCircle, 
+  Clock, 
+  CheckCircle,
+  ArrowLeft,
+  MessageSquare,
+  Star,
+  Calendar
+} from 'lucide-react';
 import { useI18n } from "@/hooks/useI18n";
+
+interface CoachInfo {
+  id: string;
+  coach_id: string;
+  assigned_at: string;
+  notes?: string;
+  coach_profile?: {
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+  };
+}
 
 interface MultipleCoachesChatProps {
   coaches: CoachInfo[];
   unreadMessagesByCoach: Record<string, number>;
   onBack?: () => void;
 }
+
+// Mock TraineeCoachChat component for now
+const TraineeCoachChat = ({ coachId, coachName, onBack }: { coachId: string; coachName: string; onBack: () => void }) => {
+  return (
+    <div className="p-4">
+      <Button onClick={onBack} className="mb-4">
+        <ArrowLeft className="w-4 h-4 mr-2" />
+        Back to Coaches
+      </Button>
+      <h2>Chat with {coachName}</h2>
+      <p>Chat interface would be implemented here</p>
+    </div>
+  );
+};
 
 export const MultipleCoachesChat = ({ coaches, unreadMessagesByCoach, onBack }: MultipleCoachesChatProps) => {
   const { t } = useI18n();

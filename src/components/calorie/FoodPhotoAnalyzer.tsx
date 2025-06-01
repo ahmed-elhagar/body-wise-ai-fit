@@ -32,7 +32,6 @@ const FoodPhotoAnalyzer = ({ onSelectFood }: FoodPhotoAnalyzerProps) => {
     <div className="space-y-6">
       {/* Photo Analysis Card */}
       <FoodPhotoAnalysisCard 
-        onFoodSelected={handleFoodSelected}
         className="w-full"
       />
 

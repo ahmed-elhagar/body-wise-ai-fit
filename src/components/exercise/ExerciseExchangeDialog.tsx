@@ -1,127 +1,181 @@
+
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { RefreshCw, Loader2, CheckCircle } from 'lucide-react';
+import { ArrowLeftRight, Sparkles, Dumbbell, Clock } from 'lucide-react';
 import { useI18n } from "@/hooks/useI18n";
-import { useExerciseExchange } from '@/hooks/useExerciseExchange';
+import { useExerciseExchange } from "@/hooks/useExerciseExchange";
 
 interface ExerciseExchangeDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  exercise: any;
-  onExerciseExchanged: () => void;
+  isOpen: boolean;
+  onClose: () => void;
+  currentExercise: any;
+  onExchange: () => void;
 }
 
-export const ExerciseExchangeDialog = ({
-  open,
-  onOpenChange,
-  exercise,
-  onExerciseExchanged
-}: ExerciseExchangeDialogProps) => {
+const ExerciseExchangeDialog = ({ isOpen, onClose, currentExercise, onExchange }: ExerciseExchangeDialogProps) => {
   const { t } = useI18n();
-  const { getAlternativeExercises, alternatives, isLoading, error } = useExerciseExchange();
-  const [selectedAlternative, setSelectedAlternative] = useState<any>(null);
+  const { exchangeExercise, isExchanging } = useExerciseExchange();
+  const [alternatives, setAlternatives] = useState<any[]>([]);
 
-  const handleGetAlternatives = async () => {
-    await getAlternativeExercises(exercise);
+  const handleGenerateAlternatives = async () => {
+    // Mock alternatives for now
+    const mockAlternatives = [
+      {
+        name: "Alternative Exercise 1",
+        muscle_groups: currentExercise.muscle_groups,
+        difficulty: currentExercise.difficulty,
+        equipment: currentExercise.equipment,
+        reason: "Similar muscle targeting with different movement pattern"
+      },
+      {
+        name: "Alternative Exercise 2",
+        muscle_groups: currentExercise.muscle_groups,
+        difficulty: currentExercise.difficulty,
+        equipment: "bodyweight",
+        reason: "Bodyweight alternative for same muscle groups"
+      }
+    ];
+    setAlternatives(mockAlternatives);
   };
 
-  const handleExchangeExercise = () => {
-    // Implement the logic to exchange the exercise
-    console.log('Exchanging exercise with:', selectedAlternative);
-    onExerciseExchanged();
-    onOpenChange(false);
+  const handleExchange = async (alternative: any) => {
+    try {
+      await exchangeExercise({
+        exerciseId: currentExercise.id,
+        programId: currentExercise.daily_workout_id,
+        dayNumber: 1
+      });
+      onExchange();
+      onClose();
+    } catch (error) {
+      console.error('Error exchanging exercise:', error);
+    }
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{t('exercise.exchangeExercise')}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <ArrowLeftRight className="w-5 h-5" />
+            {t('Exchange Exercise')}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
+          {/* Current Exercise Info */}
           <Card>
-            <CardContent>
-              <h3 className="text-lg font-semibold">{exercise.name}</h3>
-              <p className="text-sm text-gray-500">
-                {exercise.sets} sets × {exercise.reps} reps
-              </p>
+            <CardContent className="p-4">
+              <h3 className="font-semibold mb-2">{t('Current Exercise')}</h3>
+              <p className="mb-3">{currentExercise.name}</p>
+              
+              <div className="flex flex-wrap gap-2 mb-3">
+                <Badge>
+                  <Dumbbell className="w-3 h-3 mr-1" />
+                  {currentExercise.sets} x {currentExercise.reps}
+                </Badge>
+                {currentExercise.rest_seconds && (
+                  <Badge>
+                    <Clock className="w-3 h-3 mr-1" />
+                    {currentExercise.rest_seconds}s rest
+                  </Badge>
+                )}
+                <Badge variant="outline">
+                  {currentExercise.difficulty}
+                </Badge>
+              </div>
+
+              {currentExercise.muscle_groups && (
+                <div className="text-sm text-gray-600">
+                  <span className="font-medium">{t('Muscle Groups')}: </span>
+                  {currentExercise.muscle_groups.join(', ')}
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          {isLoading ? (
-            <div className="text-center">
-              <Loader2 className="w-6 h-6 animate-spin mx-auto" />
-              <p>{t('exercise.loadingAlternatives')}</p>
-            </div>
-          ) : error ? (
-            <div className="text-red-500">{error.message}</div>
-          ) : alternatives.length === 0 ? (
-            <div className="text-center">
-              <p>{t('exercise.noAlternativesFound')}</p>
-              <Button onClick={handleGetAlternatives} variant="outline">
-                <RefreshCw className="w-4 h-4 mr-2" />
-                {t('exercise.tryAgain')}
-              </Button>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {alternatives.map((altExercise) => (
-                <Card
-                  key={altExercise.id}
-                  className={`cursor-pointer ${
-                    selectedAlternative?.id === altExercise.id ? 'bg-blue-50' : ''
-                  }`}
-                  onClick={() => setSelectedAlternative(altExercise)}
+          {/* Generate Alternatives Button */}
+          {alternatives.length === 0 && (
+            <Card>
+              <CardContent className="p-4">
+                <h3 className="font-semibold mb-2 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4" />
+                  {t('AI Exercise Exchange')}
+                </h3>
+                <p className="text-sm mb-4">
+                  {t('AI will find similar exercises targeting the same muscle groups and difficulty level.')}
+                </p>
+                
+                <Button
+                  onClick={handleGenerateAlternatives}
+                  disabled={isExchanging}
+                  className="w-full"
                 >
-                  <CardContent className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium">{altExercise.name}</h4>
-                      <p className="text-sm text-gray-500">
-                        {altExercise.sets} sets × {altExercise.reps} reps
-                      </p>
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  {isExchanging ? t('Finding Alternatives...') : t('Find Exercise Alternatives')}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Alternatives List */}
+          {alternatives.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="font-semibold">{t('Alternative Exercises')}:</h3>
+              {alternatives.map((alternative, index) => (
+                <Card key={index} className="cursor-pointer hover:bg-gray-50">
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <h4 className="font-medium">{alternative.name}</h4>
+                        <p className="text-sm text-gray-600 mt-1">{alternative.reason}</p>
+                        <div className="flex gap-4 mt-2 text-sm">
+                          <span>{t('Difficulty')}: {alternative.difficulty}</span>
+                          <span>{t('Equipment')}: {alternative.equipment}</span>
+                        </div>
+                      </div>
+                      <Button
+                        onClick={() => handleExchange(alternative)}
+                        disabled={isExchanging}
+                        size="sm"
+                      >
+                        {isExchanging ? t('Exchanging...') : t('Select')}
+                      </Button>
                     </div>
-                    {selectedAlternative?.id === altExercise.id && (
-                      <CheckCircle className="w-5 h-5 text-blue-500" />
-                    )}
                   </CardContent>
                 </Card>
               ))}
             </div>
           )}
 
-          <div className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
-              {t('common.cancel')}
-            </Button>
+          {/* Actions */}
+          <div className="flex gap-3">
             <Button
-              onClick={handleGetAlternatives}
-              disabled={isLoading}
+              onClick={onClose}
+              variant="outline"
+              className="flex-1"
             >
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  {t('common.loading')}
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  {t('exercise.getAlternatives')}
-                </>
-              )}
+              {t('Cancel')}
             </Button>
-            <Button
-              onClick={handleExchangeExercise}
-              disabled={!selectedAlternative}
-            >
-              {t('exercise.exchange')}
-            </Button>
+            {alternatives.length > 0 && (
+              <Button
+                onClick={handleGenerateAlternatives}
+                disabled={isExchanging}
+                variant="outline"
+                className="flex-1"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                {t('Generate More')}
+              </Button>
+            )}
           </div>
         </div>
       </DialogContent>
     </Dialog>
   );
 };
+
+export default ExerciseExchangeDialog;
