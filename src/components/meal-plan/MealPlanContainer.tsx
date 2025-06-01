@@ -7,6 +7,7 @@ import DailyViewContainer from "./DailyViewContainer";
 import WeeklyViewContainer from "./WeeklyViewContainer";
 import EmptyWeekState from "./EmptyWeekState";
 import LoadingState from "./LoadingState";
+import EnhancedAddSnackDialog from "./EnhancedAddSnackDialog";
 
 const MealPlanContainer = () => {
   const {
@@ -39,15 +40,31 @@ const MealPlanContainer = () => {
   } = useMealPlanPage();
 
   const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
+  const [showAddSnackDialog, setShowAddSnackDialog] = useState(false);
 
   console.log('🎯 MealPlanContainer - Current view mode:', viewMode);
 
+  const handleAddSnack = () => {
+    console.log('🍎 Opening add snack dialog for day:', selectedDayNumber);
+    setShowAddSnackDialog(true);
+  };
+
+  const handleSnackAdded = () => {
+    console.log('✅ Snack added successfully, refreshing data');
+    refetch();
+    setShowAddSnackDialog(false);
+  };
+
   if (error) {
     return (
-      <div className="p-6 text-center text-red-600">
-        Error: {error.message}
-        <button onClick={() => refetch()} className="ml-4 px-4 py-2 bg-red-600 text-white rounded">
-          Retry
+      <div className="p-6 text-center text-red-600 bg-red-50 rounded-lg border border-red-200">
+        <h3 className="text-lg font-semibold mb-2">Something went wrong</h3>
+        <p className="mb-4">Error: {error.message}</p>
+        <button 
+          onClick={() => refetch()} 
+          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+        >
+          Try Again
         </button>
       </div>
     );
@@ -94,7 +111,7 @@ const MealPlanContainer = () => {
           targetDayCalories={targetDayCalories}
           onViewMeal={handleShowRecipe}
           onExchangeMeal={handleExchangeMeal}
-          onAddSnack={() => {}}
+          onAddSnack={handleAddSnack}
         />
       ) : (
         <WeeklyViewContainer
@@ -106,9 +123,21 @@ const MealPlanContainer = () => {
           onExchangeMeal={handleExchangeMeal}
           onAddSnack={(dayNumber: number) => {
             setSelectedDayNumber(dayNumber);
+            setShowAddSnackDialog(true);
           }}
         />
       )}
+
+      {/* Add Snack Dialog */}
+      <EnhancedAddSnackDialog
+        isOpen={showAddSnackDialog}
+        onClose={() => setShowAddSnackDialog(false)}
+        selectedDay={selectedDayNumber}
+        weeklyPlanId={currentWeekPlan?.weeklyPlan?.id || null}
+        onSnackAdded={handleSnackAdded}
+        currentDayCalories={totalCalories}
+        targetDayCalories={targetDayCalories}
+      />
     </div>
   );
 };

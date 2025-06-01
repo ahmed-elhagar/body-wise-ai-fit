@@ -3,7 +3,7 @@ import { format, addDays } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Grid2X2, ChevronLeft, ChevronRight, Eye } from "lucide-react";
+import { Calendar, Grid3X3, ChevronLeft, ChevronRight, Eye } from "lucide-react";
 import { useMealPlanTranslations } from "@/utils/mealPlanTranslations";
 
 interface ViewModeSelectorProps {
@@ -34,69 +34,64 @@ const ViewModeSelector = ({
   };
 
   return (
-    <Card className="bg-gradient-to-r from-fitness-primary-50 via-white to-fitness-accent-50 border-fitness-primary-200 shadow-xl">
-      <div className="p-6">
+    <Card className="bg-white border-fitness-primary-100 shadow-sm rounded-xl">
+      <div className="p-4">
         <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-          {/* Enhanced Week Navigation */}
-          <div className={`flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+          {/* Week Navigation - Left Side */}
+          <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
             <Button
               variant="outline"
               size="sm"
               onClick={() => onWeekChange(currentWeekOffset - 1)}
-              className="h-11 w-11 p-0 border-2 border-fitness-primary-300 text-fitness-primary-600 hover:bg-fitness-primary-50 hover:border-fitness-primary-400 shadow-lg rounded-xl"
+              className="h-9 w-9 p-0 border-fitness-primary-200 text-fitness-primary-600 hover:bg-fitness-primary-50 rounded-lg"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-4 h-4" />
             </Button>
             
-            <div className="text-center bg-white/80 px-6 py-3 rounded-xl border border-fitness-primary-200 shadow-sm">
-              <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                <Eye className="w-5 h-5 text-fitness-primary-600" />
-                <div>
-                  <h2 className="text-lg font-bold text-fitness-primary-800">
-                    {formatWeekRange(weekStartDate, weekEndDate)}
-                  </h2>
-                  {isCurrentWeek && (
-                    <Badge className="bg-fitness-accent-100 text-fitness-accent-700 border-fitness-accent-200 text-xs mt-1">
-                      {currentWeek}
-                    </Badge>
-                  )}
-                </div>
-              </div>
+            <div className="text-center">
+              <h3 className="text-lg font-bold text-fitness-primary-800">
+                {formatWeekRange(weekStartDate, weekEndDate)}
+              </h3>
+              {isCurrentWeek && (
+                <Badge className="bg-fitness-accent-100 text-fitness-accent-700 border-fitness-accent-200 text-xs mt-1">
+                  {currentWeek || 'Current Week'}
+                </Badge>
+              )}
             </div>
             
             <Button
               variant="outline"
               size="sm"
               onClick={() => onWeekChange(currentWeekOffset + 1)}
-              className="h-11 w-11 p-0 border-2 border-fitness-primary-300 text-fitness-primary-600 hover:bg-fitness-primary-50 hover:border-fitness-primary-400 shadow-lg rounded-xl"
+              className="h-9 w-9 p-0 border-fitness-primary-200 text-fitness-primary-600 hover:bg-fitness-primary-50 rounded-lg"
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
 
-          {/* Enhanced View Mode Toggle */}
-          <div className="flex bg-white rounded-2xl p-2 border-2 border-fitness-primary-200 shadow-xl">
+          {/* View Mode Toggle - Right Side */}
+          <div className="flex bg-fitness-primary-50 rounded-xl p-1.5 border border-fitness-primary-200">
             <button
               onClick={() => onViewModeChange('daily')}
-              className={`flex items-center gap-3 px-6 py-3 rounded-xl font-bold transition-all text-sm ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all text-sm ${
                 viewMode === 'daily'
-                  ? 'bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 text-white shadow-lg transform scale-105'
-                  : 'text-fitness-primary-600 hover:text-fitness-primary-700 hover:bg-fitness-primary-50'
+                  ? 'bg-white text-fitness-primary-700 shadow-sm border border-fitness-primary-200'
+                  : 'text-fitness-primary-600 hover:text-fitness-primary-700 hover:bg-fitness-primary-100'
               }`}
             >
-              <Calendar className="w-5 h-5" />
-              <span>{dailyView}</span>
+              <Calendar className="w-4 h-4" />
+              <span>{dailyView || 'Daily'}</span>
             </button>
             <button
               onClick={() => onViewModeChange('weekly')}
-              className={`flex items-center gap-3 px-6 py-3 rounded-xl font-bold transition-all text-sm ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all text-sm ${
                 viewMode === 'weekly'
-                  ? 'bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 text-white shadow-lg transform scale-105'
-                  : 'text-fitness-primary-600 hover:text-fitness-primary-700 hover:bg-fitness-primary-50'
+                  ? 'bg-white text-fitness-primary-700 shadow-sm border border-fitness-primary-200'
+                  : 'text-fitness-primary-600 hover:text-fitness-primary-700 hover:bg-fitness-primary-100'
               }`}
             >
-              <Grid2X2 className="w-5 h-5" />
-              <span>{weeklyView}</span>
+              <Grid3X3 className="w-4 h-4" />
+              <span>{weeklyView || 'Weekly'}</span>
             </button>
           </div>
         </div>
