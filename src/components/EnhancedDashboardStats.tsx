@@ -1,192 +1,177 @@
 
 import { Card } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Activity, Target, Calendar, TrendingUp, Zap, Award, Users, Heart } from "lucide-react";
-import { useProfile } from "@/hooks/useProfile";
-import { useWeightTracking } from "@/hooks/useWeightTracking";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { useI18n } from "@/hooks/useI18n";
+import { 
+  TrendingUp, 
+  Target, 
+  Flame, 
+  Dumbbell, 
+  Calendar,
+  ArrowRight,
+  Trophy
+} from "lucide-react";
 
 const EnhancedDashboardStats = () => {
-  const { profile } = useProfile();
-  const { weightEntries, isLoading: weightLoading } = useWeightTracking();
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL } = useI18n();
+  const navigate = useNavigate();
 
-  console.log('Dashboard - Profile data:', profile);
-  console.log('Dashboard - Weight entries:', weightEntries);
-
-  // Use profile weight as primary source
-  const profileWeight = profile?.weight;
-  const latestTrackedWeight = weightEntries && weightEntries.length > 0 ? weightEntries[0]?.weight : null;
-  const previousTrackedWeight = weightEntries && weightEntries.length > 1 ? weightEntries[1]?.weight : null;
-  
-  const displayWeight = profileWeight || latestTrackedWeight;
-  const weightSource = profileWeight ? 'profile' : 'tracking';
-  
-  // Calculate weight change only if we have tracking data
-  const weightChange = latestTrackedWeight && previousTrackedWeight ? latestTrackedWeight - previousTrackedWeight : null;
-  
-  const heightInMeters = profile?.height ? profile.height / 100 : null;
-
-  const getGoalBadgeColor = (goal?: string) => {
-    switch (goal) {
-      case 'weight_loss': return 'bg-gradient-to-r from-red-500 to-pink-500';
-      case 'weight_gain': return 'bg-gradient-to-r from-green-500 to-emerald-500';
-      case 'muscle_gain': return 'bg-gradient-to-r from-blue-500 to-cyan-500';
-      case 'endurance': return 'bg-gradient-to-r from-purple-500 to-indigo-500';
-      default: return 'bg-gradient-to-r from-gray-500 to-gray-600';
-    }
+  // Mock data - in real app this would come from hooks
+  const stats = {
+    weeklyProgress: 78,
+    todaysCalories: 1847,
+    targetCalories: 2200,
+    workoutsThisWeek: 4,
+    targetWorkouts: 5,
+    currentStreak: 12
   };
 
-  const calculateBMI = () => {
-    if (!heightInMeters || !displayWeight) return null;
-    return (displayWeight / Math.pow(heightInMeters, 2)).toFixed(1);
-  };
-
-  const getBMICategory = (bmi: number) => {
-    if (bmi < 18.5) return { text: t('bmi.underweight'), color: 'text-blue-600' };
-    if (bmi < 25) return { text: t('bmi.normal'), color: 'text-green-600' };
-    if (bmi < 30) return { text: t('bmi.overweight'), color: 'text-yellow-600' };
-    return { text: t('bmi.obese'), color: 'text-red-600' };
-  };
-
-  const getActivityLevelIcon = (level?: string) => {
-    switch (level) {
-      case 'sedentary': return <Users className="w-5 h-5 sm:w-6 sm:h-6" />;
-      case 'lightly_active': return <Calendar className="w-5 h-5 sm:w-6 sm:h-6" />;
-      case 'moderately_active': return <Activity className="w-5 h-5 sm:w-6 sm:h-6" />;
-      case 'very_active': return <Zap className="w-5 h-5 sm:w-6 sm:h-6" />;
-      case 'extremely_active': return <Award className="w-5 h-5 sm:w-6 sm:h-6" />;
-      default: return <Calendar className="w-5 h-5 sm:w-6 sm:h-6" />;
-    }
-  };
-
-  const getActivityLevelText = (level?: string) => {
-    switch (level) {
-      case 'sedentary': return t('activity.sedentary');
-      case 'lightly_active': return t('activity.lightlyActive');
-      case 'moderately_active': return t('activity.moderatelyActive');
-      case 'very_active': return t('activity.veryActive');
-      case 'extremely_active': return t('activity.extremelyActive');
-      default: return t('dashboard.notSet');
-    }
-  };
-
-  const getFitnessGoalText = (goal?: string) => {
-    switch (goal) {
-      case 'weight_loss': return t('goal.weightLoss');
-      case 'weight_gain': return t('goal.weightGain');
-      case 'muscle_gain': return t('goal.muscleGain');
-      case 'endurance': return t('goal.endurance');
-      default: return t('dashboard.setYourGoal');
-    }
-  };
-
-  const bmi = calculateBMI();
-  const bmiCategory = bmi ? getBMICategory(parseFloat(bmi)) : null;
+  const calorieProgress = (stats.todaysCalories / stats.targetCalories) * 100;
+  const workoutProgress = (stats.workoutsThisWeek / stats.targetWorkouts) * 100;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
-      {/* Weight Card - Enhanced */}
-      <Card className="p-4 sm:p-6 bg-gradient-to-br from-white to-blue-50 border-0 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-        <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-          <div className="flex-1">
-            <div className={`flex items-center gap-2 mb-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <p className="text-xs sm:text-sm font-medium text-gray-600">{t('dashboard.currentWeight')}</p>
-              {weightChange && (
-                <Badge variant="outline" className={`text-xs ${weightChange > 0 ? 'text-red-500 border-red-200' : 'text-green-500 border-green-200'}`}>
-                  {weightChange > 0 ? '+' : ''}{weightChange.toFixed(1)} kg
-                </Badge>
-              )}
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Weekly Progress */}
+      <Card className="p-6 bg-gradient-to-br from-green-50 to-emerald-100 border-green-200">
+        <div className="flex items-center justify-between mb-4">
+          <div className="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center">
+            <TrendingUp className="w-6 h-6 text-white" />
+          </div>
+          <Badge className="bg-green-100 text-green-700 border-green-200">
+            {t('This Week')}
+          </Badge>
+        </div>
+        
+        <div className="space-y-3">
+          <div>
+            <div className="flex justify-between items-baseline mb-2">
+              <span className="text-sm font-medium text-gray-700">{t('Overall Progress')}</span>
+              <span className="text-2xl font-bold text-green-700">{stats.weeklyProgress}%</span>
             </div>
-            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              {weightLoading ? (
-                "Loading..."
-              ) : displayWeight ? (
-                `${displayWeight} kg`
-              ) : (
-                '—'
-              )}
-            </p>
-            {displayWeight && (
-              <p className="text-xs text-gray-500 mt-1">
-                {weightSource === 'profile' ? `📊 ${t('dashboard.fromProfile')}` : `📈 ${t('dashboard.fromTracking')}`}
-              </p>
-            )}
+            <Progress value={stats.weeklyProgress} className="h-2 bg-green-200" />
           </div>
-          <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-            <TrendingUp className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
-          </div>
+          
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/progress')}
+            className="w-full justify-between text-green-700 hover:text-green-800 hover:bg-green-100"
+          >
+            {t('View Details')}
+            <ArrowRight className="w-4 h-4" />
+          </Button>
         </div>
       </Card>
 
-      {/* BMI Card - Enhanced */}
-      <Card className="p-4 sm:p-6 bg-gradient-to-br from-white to-green-50 border-0 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-        <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-          <div className="flex-1">
-            <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">{t('dashboard.bmiIndex')}</p>
-            <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-              {bmi || '—'}
-            </p>
-            <p className={`text-sm font-medium mt-1 ${bmiCategory?.color || 'text-gray-500'}`}>
-              {bmiCategory?.text || t('dashboard.completeProfile')}
-            </p>
+      {/* Today's Nutrition */}
+      <Card className="p-6 bg-gradient-to-br from-orange-50 to-red-100 border-orange-200">
+        <div className="flex items-center justify-between mb-4">
+          <div className="w-12 h-12 bg-orange-600 rounded-xl flex items-center justify-center">
+            <Flame className="w-6 h-6 text-white" />
           </div>
-          <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
-            <Heart className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+          <Badge className="bg-orange-100 text-orange-700 border-orange-200">
+            {t('Today')}
+          </Badge>
+        </div>
+        
+        <div className="space-y-3">
+          <div>
+            <div className="flex justify-between items-baseline mb-2">
+              <span className="text-sm font-medium text-gray-700">{t('Calories')}</span>
+              <span className="text-2xl font-bold text-orange-700">
+                {stats.todaysCalories}<span className="text-sm font-normal">/{stats.targetCalories}</span>
+              </span>
+            </div>
+            <Progress value={calorieProgress} className="h-2 bg-orange-200" />
           </div>
+          
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/food-tracker')}
+            className="w-full justify-between text-orange-700 hover:text-orange-800 hover:bg-orange-100"
+          >
+            {t('Log Food')}
+            <ArrowRight className="w-4 h-4" />
+          </Button>
         </div>
       </Card>
 
-      {/* Fitness Goal Card - Enhanced */}
-      <Card className="p-4 sm:p-6 bg-gradient-to-br from-white to-orange-50 border-0 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-        <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-          <div className="flex-1">
-            <p className="text-xs sm:text-sm font-medium text-gray-600 mb-2">{t('dashboard.fitnessGoal')}</p>
-            <div className="mt-2">
-              {profile?.fitness_goal ? (
-                <Badge className={`${getGoalBadgeColor(profile.fitness_goal)} text-white font-semibold px-2 sm:px-3 py-1 text-xs sm:text-sm shadow-lg`}>
-                  {getFitnessGoalText(profile.fitness_goal)}
-                </Badge>
-              ) : (
-                <p className="text-xs sm:text-sm text-gray-500 bg-gray-100 px-2 sm:px-3 py-2 rounded-lg">{t('dashboard.setYourGoal')}</p>
-              )}
+      {/* Weekly Workouts */}
+      <Card className="p-6 bg-gradient-to-br from-purple-50 to-indigo-100 border-purple-200">
+        <div className="flex items-center justify-between mb-4">
+          <div className="w-12 h-12 bg-purple-600 rounded-xl flex items-center justify-center">
+            <Dumbbell className="w-6 h-6 text-white" />
+          </div>
+          <Badge className="bg-purple-100 text-purple-700 border-purple-200">
+            {t('This Week')}
+          </Badge>
+        </div>
+        
+        <div className="space-y-3">
+          <div>
+            <div className="flex justify-between items-baseline mb-2">
+              <span className="text-sm font-medium text-gray-700">{t('Workouts')}</span>
+              <span className="text-2xl font-bold text-purple-700">
+                {stats.workoutsThisWeek}<span className="text-sm font-normal">/{stats.targetWorkouts}</span>
+              </span>
             </div>
+            <Progress value={workoutProgress} className="h-2 bg-purple-200" />
           </div>
-          <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center shadow-lg">
-            <Target className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
-          </div>
+          
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/exercise')}
+            className="w-full justify-between text-purple-700 hover:text-purple-800 hover:bg-purple-100"
+          >
+            {t('Start Workout')}
+            <ArrowRight className="w-4 h-4" />
+          </Button>
         </div>
       </Card>
 
-      {/* Activity Level Card - Enhanced */}
-      <Card className="p-4 sm:p-6 bg-gradient-to-br from-white to-purple-50 border-0 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-        <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-          <div className="flex-1">
-            <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">{t('dashboard.activityLevel')}</p>
-            <p className="text-base sm:text-lg font-bold text-gray-800 mt-1">
-              {getActivityLevelText(profile?.activity_level)}
-            </p>
-            <div className={`flex items-center gap-1 mt-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <div className="flex">
-                {[1, 2, 3, 4, 5].map((level) => (
-                  <div
-                    key={level}
-                    className={`w-2 h-2 rounded-full ${isRTL ? 'ml-1' : 'mr-1'} ${
-                      level <= (profile?.activity_level === 'sedentary' ? 1 :
-                              profile?.activity_level === 'lightly_active' ? 2 :
-                              profile?.activity_level === 'moderately_active' ? 3 :
-                              profile?.activity_level === 'very_active' ? 4 :
-                              profile?.activity_level === 'extremely_active' ? 5 : 0)
-                        ? 'bg-purple-500' : 'bg-gray-300'
-                    }`}
-                  />
-                ))}
-              </div>
+      {/* Current Streak */}
+      <Card className="p-6 bg-gradient-to-br from-yellow-50 to-amber-100 border-yellow-200 md:col-span-2 lg:col-span-1">
+        <div className="flex items-center justify-between mb-4">
+          <div className="w-12 h-12 bg-yellow-600 rounded-xl flex items-center justify-center">
+            <Trophy className="w-6 h-6 text-white" />
+          </div>
+          <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">
+            {t('Streak')}
+          </Badge>
+        </div>
+        
+        <div className="space-y-3">
+          <div>
+            <div className="flex justify-between items-baseline mb-2">
+              <span className="text-sm font-medium text-gray-700">{t('Active Days')}</span>
+              <span className="text-2xl font-bold text-yellow-700">{stats.currentStreak}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: 7 }).map((_, i) => (
+                <div
+                  key={i}
+                  className={`w-4 h-4 rounded-full ${
+                    i < (stats.currentStreak % 7) ? 'bg-yellow-500' : 'bg-yellow-200'
+                  }`}
+                />
+              ))}
             </div>
           </div>
-          <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
-            {getActivityLevelIcon(profile?.activity_level)}
-          </div>
+          
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/achievements')}
+            className="w-full justify-between text-yellow-700 hover:text-yellow-800 hover:bg-yellow-100"
+          >
+            {t('View Achievements')}
+            <ArrowRight className="w-4 h-4" />
+          </Button>
         </div>
       </Card>
     </div>
