@@ -6,7 +6,7 @@ export interface Ingredient {
 }
 
 export interface Meal {
-  id: string;
+  id: string; // Make id required with fallback generation
   type: string;
   time: string;
   name: string;
@@ -21,6 +21,6 @@ export interface Meal {
   servings: number;
   youtube_search_term?: string;
   image_url?: string;
-  image?: string;
+  image: string; // Required with fallback to image_url or empty string
   meal_type?: string;
 }

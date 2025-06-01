@@ -7,7 +7,7 @@ import type { Meal } from "@/types/meal";
 interface WeeklyMealPlanViewProps {
   weeklyPlan: any;
   onShowRecipe: (meal: Meal) => void;
-  onExchangeMeal: (meal: Meal, dayNumber: number, mealIndex: number) => void;
+  onExchangeMeal: (meal: Meal, dayNumber?: number, mealIndex?: number) => void;
 }
 
 const WeeklyMealPlanView = ({ weeklyPlan, onShowRecipe, onExchangeMeal }: WeeklyMealPlanViewProps) => {

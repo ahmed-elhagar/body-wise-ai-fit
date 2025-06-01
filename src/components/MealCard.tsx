@@ -1,3 +1,4 @@
+
 import { Card } from "@/components/ui/card";
 import { useI18n } from "@/hooks/useI18n";
 import { useState, useEffect } from "react";
@@ -6,31 +7,7 @@ import NutritionGrid from "@/components/meal-card/NutritionGrid";
 import MealDetails from "@/components/meal-card/MealDetails";
 import IngredientsPreview from "@/components/meal-card/IngredientsPreview";
 import MealActionButtons from "@/components/meal-card/MealActionButtons";
-
-interface Ingredient {
-  name: string;
-  quantity: string;
-  unit: string;
-}
-
-interface Meal {
-  id?: string;
-  type: string;
-  time: string;
-  name: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-  ingredients: Ingredient[];
-  instructions: string[];
-  cookTime: number;
-  prepTime: number;
-  servings: number;
-  imageUrl?: string;
-  image: string;
-  image_url?: string; // Database field
-}
+import type { Meal } from "@/types/meal";
 
 interface MealCardProps {
   meal: Meal;
@@ -43,7 +20,7 @@ const MealCard = ({ meal, onShowRecipe, onExchangeMeal }: MealCardProps) => {
   
   // Enhanced image state management with proper meal ID tracking
   const [mealImage, setMealImage] = useState<string | null>(
-    meal.image_url || meal.imageUrl || null
+    meal.image_url || meal.image || null
   );
   const [isLoadingImage, setIsLoadingImage] = useState(false);
   const [currentMealId, setCurrentMealId] = useState(meal.id);
@@ -53,7 +30,7 @@ const MealCard = ({ meal, onShowRecipe, onExchangeMeal }: MealCardProps) => {
     if (meal.id !== currentMealId) {
       console.log(`🔄 Meal changed from ${currentMealId} to ${meal.id}, resetting image`);
       setCurrentMealId(meal.id);
-      setMealImage(meal.image_url || meal.imageUrl || null);
+      setMealImage(meal.image_url || meal.image || null);
       setIsLoadingImage(false);
     }
   }, [meal.id, currentMealId]);
@@ -67,7 +44,7 @@ const MealCard = ({ meal, onShowRecipe, onExchangeMeal }: MealCardProps) => {
       });
       setMealImage(meal.image_url);
     }
-  }, [meal.image_url, meal.imageUrl, mealImage, meal.id, currentMealId]);
+  }, [meal.image_url, meal.image, mealImage, meal.id, currentMealId]);
 
   const generateMealImage = async () => {
     if (isLoadingImage || mealImage) return;

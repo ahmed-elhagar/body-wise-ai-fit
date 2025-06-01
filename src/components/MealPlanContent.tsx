@@ -4,33 +4,7 @@ import { Card } from "@/components/ui/card";
 import { ChefHat, Sparkles, Wand2 } from "lucide-react";
 import { useI18n } from "@/hooks/useI18n";
 import CompactDailyView from "@/components/CompactDailyView";
-
-// Use the same Meal interface as CompactDailyView to avoid type conflicts
-interface Ingredient {
-  name: string;
-  quantity: string;
-  unit: string;
-}
-
-interface Meal {
-  id?: string;
-  type: string;
-  time: string;
-  name: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-  ingredients: Ingredient[];
-  instructions: string[];
-  prepTime: number;
-  cookTime: number;
-  servings: number;
-  youtube_search_term?: string;
-  image_url?: string;
-  image: string;
-  meal_type?: string;
-}
+import type { Meal } from "@/types/meal";
 
 interface MealPlanContentProps {
   viewMode: 'daily' | 'weekly';
