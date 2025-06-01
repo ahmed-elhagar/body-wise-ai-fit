@@ -1,13 +1,12 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { UserPlus, Mail } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { UserPlus, Loader2 } from "lucide-react";
 import { useCoachSystem } from "@/hooks/useCoachSystem";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 interface AssignTraineeDialogProps {
   open: boolean;
@@ -15,23 +14,18 @@ interface AssignTraineeDialogProps {
 }
 
 export const AssignTraineeDialog = ({ open, onOpenChange }: AssignTraineeDialogProps) => {
-  const { assignTrainee, isAssigning } = useCoachSystem();
-  const { language } = useLanguage();
-  const [traineeEmail, setTraineeEmail] = useState("");
-  const [notes, setNotes] = useState("");
+  const { t } = useI18n();
+  const { assignTrainee, isLoading } = useCoachSystem();
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState("trainee");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!traineeEmail.trim()) return;
-
-    // Note: This would need to be implemented to find user by email first
-    // For now, we'll pass the email as traineeId (this needs backend support)
     assignTrainee(
-      { traineeId: traineeEmail.trim(), notes: notes.trim() || undefined },
+      { email, role },
       {
         onSuccess: () => {
-          setTraineeEmail("");
-          setNotes("");
+          setEmail("");
           onOpenChange(false);
         },
       }
@@ -44,66 +38,48 @@ export const AssignTraineeDialog = ({ open, onOpenChange }: AssignTraineeDialogP
         <DialogHeader>
           <DialogTitle className="flex items-center">
             <UserPlus className="h-5 w-5 mr-2" />
-            {language === 'ar' ? 'إضافة متدرب جديد' : 'Add New Trainee'}
+            {t('Assign Trainee')}
           </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="trainee-email">
-              {language === 'ar' ? 'البريد الإلكتروني للمتدرب' : 'Trainee Email'}
-            </Label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <Input
-                id="trainee-email"
-                type="email"
-                placeholder={language === 'ar' ? 
-                  'أدخل البريد الإلكتروني للمتدرب' : 
-                  'Enter trainee email address'
-                }
-                value={traineeEmail}
-                onChange={(e) => setTraineeEmail(e.target.value)}
-                className="pl-10"
-                required
-              />
-            </div>
-            <p className="text-xs text-gray-500">
-              {language === 'ar' ? 
-                'يجب أن يكون للمتدرب حساب مُسجل في التطبيق.' :
-                'The trainee must have a registered account in the app.'
-              }
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="notes">
-              {language === 'ar' ? 'ملاحظات (اختياري)' : 'Notes (Optional)'}
-            </Label>
-            <Textarea
-              id="notes"
-              placeholder={language === 'ar' ? 
-                'أضف أي ملاحظات حول المتدرب...' : 
-                'Add any notes about the trainee...'
-              }
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={3}
+            <Label htmlFor="email">{t('Trainee Email')}</Label>
+            <Input
+              id="email"
+              placeholder={t('Trainee Email')}
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
           </div>
 
+          <div className="space-y-2">
+            <Label htmlFor="role">{t('Role')}</Label>
+            <Select value={role} onValueChange={setRole}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="trainee">{t('Trainee')}</SelectItem>
+                {/* <SelectItem value="coach">Coach</SelectItem> */}
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="flex justify-end space-x-2">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => onOpenChange(false)}
-              disabled={isAssigning}
-            >
-              {language === 'ar' ? 'إلغاء' : 'Cancel'}
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              {t('Cancel')}
             </Button>
-            <Button type="submit" disabled={isAssigning || !traineeEmail.trim()}>
-              {isAssigning ? (language === 'ar' ? 'جارٍ الإضافة...' : 'Adding...') : 
-                            (language === 'ar' ? 'إضافة متدرب' : 'Add Trainee')}
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {t('Assigning')}...
+                </>
+              ) : (
+                t('Assign')
+              )}
             </Button>
           </div>
         </form>

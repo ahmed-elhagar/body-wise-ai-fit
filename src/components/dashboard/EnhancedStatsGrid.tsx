@@ -1,7 +1,6 @@
-
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import { useProfile } from "@/hooks/useProfile";
 import { useWeightTracking } from "@/hooks/useWeightTracking";
 import { 
@@ -12,7 +11,7 @@ import {
 } from "lucide-react";
 
 const EnhancedStatsGrid = () => {
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL } = useI18n();
   const { profile } = useProfile();
   const { weightEntries } = useWeightTracking();
 

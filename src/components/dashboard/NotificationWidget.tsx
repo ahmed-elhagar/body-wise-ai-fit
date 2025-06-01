@@ -1,14 +1,13 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Bell, ArrowRight } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import { useNavigate } from "react-router-dom";
 
 const NotificationWidget = () => {
-  const { t } = useLanguage();
+  const { t } = useI18n();
   const navigate = useNavigate();
   const { notifications, unreadCount, isLoading } = useNotifications();
 

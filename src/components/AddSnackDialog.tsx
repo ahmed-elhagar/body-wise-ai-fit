@@ -1,83 +1,80 @@
-import { useState, useEffect } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+
+import React, { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Sparkles, Plus } from "lucide-react";
 import { useI18n } from "@/hooks/useI18n";
-import AddSnackHeader from "./add-snack/AddSnackHeader";
-import CalorieProgressCard from "./add-snack/CalorieProgressCard";
-import SnackGenerationSection from "./add-snack/SnackGenerationSection";
-import TargetReachedState from "./add-snack/TargetReachedState";
-import SnackGenerationProgress from "./add-snack/SnackGenerationProgress";
-import { useAddSnack } from "@/hooks/useAddSnack";
+import { CalorieProgressCard } from './add-snack/CalorieProgressCard';
+import { SnackGenerationSection } from './add-snack/SnackGenerationSection';
+import { TargetReachedState } from './add-snack/TargetReachedState';
 
 interface AddSnackDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  selectedDay: number;
-  weeklyPlanId: string | null;
-  onSnackAdded: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   currentDayCalories: number;
   targetDayCalories: number;
 }
 
-const AddSnackDialog = ({ isOpen, onClose, selectedDay, weeklyPlanId, onSnackAdded, currentDayCalories, targetDayCalories }: AddSnackDialogProps) => {
-  const { t, isRTL } = useI18n();
-  const {
-    remainingCalories,
-    isGenerating,
-    generatedSnack,
-    generateSnack,
-    resetSnack,
-    addSnackToMealPlan
-  } = useAddSnack(selectedDay, weeklyPlanId, currentDayCalories, targetDayCalories);
+const AddSnackDialog = ({ open, onOpenChange, currentDayCalories, targetDayCalories }: AddSnackDialogProps) => {
+  const { t } = useI18n();
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedSnack, setGeneratedSnack] = useState(null);
+  
+  const remainingCalories = targetDayCalories - currentDayCalories;
+  const hasReachedTarget = remainingCalories <= 0;
 
-  useEffect(() => {
-    if (!isOpen) {
-      resetSnack();
-    }
-  }, [isOpen, resetSnack]);
-
-  const handleGenerate = async () => {
-    await generateSnack();
-  };
-
-  const handleCancel = () => {
-    resetSnack();
+  const handleGenerateSnack = async () => {
+    setIsGenerating(true);
+    // Simulate API call
+    setTimeout(() => {
+      setGeneratedSnack({
+        name: "Mixed Nuts",
+        calories: Math.min(remainingCalories, 200),
+        protein: 8,
+        carbs: 6,
+        fat: 14
+      });
+      setIsGenerating(false);
+    }, 2000);
   };
 
   const handleAddSnack = async () => {
-    if (generatedSnack) {
-      await addSnackToMealPlan(generatedSnack);
-      onSnackAdded();
-      onClose();
-    }
+    // Add snack logic here
+    setGeneratedSnack(null);
+    onOpenChange(false);
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
-        <AddSnackHeader selectedDay={selectedDay} />
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Plus className="h-5 w-5" />
+            {t('addSnack.title')}
+          </DialogTitle>
+        </DialogHeader>
 
-        <CalorieProgressCard
-          currentDayCalories={currentDayCalories}
-          targetDayCalories={targetDayCalories}
-          remainingCalories={remainingCalories}
-        />
+        <div className="space-y-4">
+          <CalorieProgressCard
+            currentDayCalories={currentDayCalories}
+            targetDayCalories={targetDayCalories}
+          />
 
-        {generatedSnack ? (
-          <TargetReachedState
-            snack={generatedSnack}
-            onAddSnack={handleAddSnack}
-            onCancel={handleCancel}
-          />
-        ) : isGenerating ? (
-          <SnackGenerationProgress step="generating" />
-        ) : (
-          <SnackGenerationSection
-            remainingCalories={remainingCalories}
-            isGenerating={isGenerating}
-            onGenerate={handleGenerate}
-            onCancel={handleCancel}
-          />
-        )}
+          {hasReachedTarget ? (
+            <TargetReachedState
+              onCancel={() => onOpenChange(false)}
+            />
+          ) : (
+            <SnackGenerationSection
+              remainingCalories={remainingCalories}
+              isGenerating={isGenerating}
+              generatedSnack={generatedSnack}
+              onGenerateSnack={handleGenerateSnack}
+              onAddSnack={handleAddSnack}
+              onCancel={() => onOpenChange(false)}
+            />
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );

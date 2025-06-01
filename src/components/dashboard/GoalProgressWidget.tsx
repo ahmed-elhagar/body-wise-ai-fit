@@ -1,14 +1,13 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import { Target, ArrowRight, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useGoals } from "@/hooks/useGoals";
 import GoalProgressRing from "@/components/goals/GoalProgressRing";
 
 const GoalProgressWidget = () => {
-  const { t } = useLanguage();
+  const { t } = useI18n();
   const navigate = useNavigate();
   const { goals, calculateProgress } = useGoals();
 

@@ -1,4 +1,4 @@
-
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,8 +20,7 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { useCoachSystem, type CoachTraineeRelationship } from "@/hooks/useCoachSystem";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { useState } from "react";
+import { useI18n } from "@/hooks/useI18n";
 import { TraineeDetailsDialog } from "./TraineeDetailsDialog";
 import { UpdateNotesDialog } from "./UpdateNotesDialog";
 
@@ -31,7 +30,7 @@ interface TraineeCardProps {
 
 export const TraineeCard = ({ trainee }: TraineeCardProps) => {
   const { removeTrainee } = useCoachSystem();
-  const { language } = useLanguage();
+  const { language } = useI18n();
   const [showDetails, setShowDetails] = useState(false);
   const [showNotesDialog, setShowNotesDialog] = useState(false);
 

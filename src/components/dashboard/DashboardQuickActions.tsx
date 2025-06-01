@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
@@ -11,7 +10,7 @@ import {
   Utensils,
   Bell
 } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import { useNavigate } from "react-router-dom";
 
 interface DashboardQuickActionsProps {
@@ -31,7 +30,7 @@ const DashboardQuickActions = ({
   handleViewProfile,
   handleViewGoals,
 }: DashboardQuickActionsProps) => {
-  const { t } = useLanguage();
+  const { t } = useI18n();
   const navigate = useNavigate();
 
   const quickActions = [

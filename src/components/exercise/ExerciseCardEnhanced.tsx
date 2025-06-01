@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -46,7 +47,7 @@ export const ExerciseCardEnhanced = ({ exercise, index, onExerciseComplete, onEx
         {/* Header */}
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-900">
-            {index + 1}. {exercise.exercise_name}
+            {index + 1}. {exercise.name}
           </h3>
           <Button variant="ghost" size="sm" onClick={toggleExpand}>
             <MoreHorizontal className="w-4 h-4 text-gray-600" />
@@ -69,11 +70,11 @@ export const ExerciseCardEnhanced = ({ exercise, index, onExerciseComplete, onEx
             <CheckCircle className="w-4 h-4 mr-2" />
             {t('exercise.complete')}
           </Button>
-          {exercise.youtube_url && (
+          {exercise.youtube_search_term && (
             <Button
               variant="secondary"
               size="sm"
-              onClick={() => window.open(exercise.youtube_url, '_blank')}
+              onClick={() => window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(exercise.youtube_search_term)}`, '_blank')}
               className="bg-red-50 hover:bg-red-100 text-red-700 border-red-200"
             >
               <Youtube className="w-4 h-4 mr-2" />

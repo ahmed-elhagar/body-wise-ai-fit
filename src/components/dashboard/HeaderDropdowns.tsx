@@ -1,19 +1,25 @@
-
 import { useState } from "react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Bell, Activity, Clock, ArrowRight } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Bell, User, Settings, LogOut, Globe } from "lucide-react";
+import { useI18n } from "@/hooks/useI18n";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useWeightTracking } from "@/hooks/useWeightTracking";
 import { useMealPlans } from "@/hooks/useMealPlans";
 import { useExercisePrograms } from "@/hooks/useExercisePrograms";
-import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 
 const HeaderDropdowns = () => {
-  const { t } = useLanguage();
+  const { t } = useI18n();
   const navigate = useNavigate();
   const { notifications, unreadCount } = useNotifications();
   const { weightEntries } = useWeightTracking();

@@ -1,13 +1,15 @@
-
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { useExerciseExchange } from '@/hooks/useExerciseExchange';
+import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Search, Dumbbell } from "lucide-react";
+import { useI18n } from "@/hooks/useI18n";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RefreshCw, AlertCircle, Zap } from 'lucide-react';
+import { useExerciseExchange } from "@/hooks/useExerciseExchange";
 
 interface ExerciseExchangeDialogProps {
   exercise: any;
@@ -20,7 +22,7 @@ export const ExerciseExchangeDialog = ({
   open,
   onOpenChange
 }: ExerciseExchangeDialogProps) => {
-  const { t } = useLanguage();
+  const { t } = useI18n();
   const [reason, setReason] = useState('');
   const [selectedEquipment, setSelectedEquipment] = useState<string[]>([]);
 
