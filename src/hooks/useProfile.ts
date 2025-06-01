@@ -9,16 +9,26 @@ interface UserProfile {
   last_name?: string;
   email?: string;
   age?: number;
+  gender?: string;
   weight?: number;
   height?: number;
+  nationality?: string;
+  body_shape?: string;
   fitness_goal?: string;
   activity_level?: string;
   dietary_restrictions?: string[];
   allergies?: string[];
+  health_conditions?: string[];
+  preferred_foods?: string[];
+  preferred_language?: string;
   onboarding_completed?: boolean;
   profile_completion_score?: number;
   ai_generations_remaining?: number;
   role?: string;
+  fasting_type?: string;
+  pregnancy_trimester?: number;
+  breastfeeding_level?: string;
+  condition_start_date?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -27,6 +37,7 @@ export const useProfile = () => {
   const { user } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -69,6 +80,7 @@ export const useProfile = () => {
     if (!user?.id) return { error: 'No user authenticated' };
 
     try {
+      setIsUpdating(true);
       const { data, error } = await supabase
         .from('profiles')
         .update(updates)
@@ -86,12 +98,15 @@ export const useProfile = () => {
     } catch (err) {
       console.error('Profile update error:', err);
       return { error: 'Failed to update profile' };
+    } finally {
+      setIsUpdating(false);
     }
   };
 
   return {
     profile,
     isLoading,
+    isUpdating,
     error,
     updateProfile,
     refetch: () => {

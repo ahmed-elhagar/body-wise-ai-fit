@@ -31,6 +31,7 @@ export const useRole = () => {
     isCoach: role === 'coach' || role === 'admin',
     isNormal: role === 'normal',
     isGuest: role === 'guest',
+    isPro: role === 'pro' || role === 'admin',
     isLoading,
     hasRole: (checkRole: string) => role === checkRole,
     hasAnyRole: (roles: string[]) => roles.includes(role)
