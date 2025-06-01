@@ -25,18 +25,18 @@ export const useCoachTasks = () => {
   const { data: tasks = [], isLoading, error, refetch } = useQuery({
     queryKey: ['coach-tasks', user?.id],
     queryFn: async () => {
-      if (!user?.id) return [];
+      if (!user?.id) {
+        console.log('No user ID available');
+        return [];
+      }
 
       try {
         console.log('Fetching tasks for coach:', user.id);
         
-        // Get tasks with trainee information
+        // First, get basic tasks data
         const { data: taskData, error: taskError } = await supabase
           .from('coach_tasks')
-          .select(`
-            *,
-            trainee:profiles!coach_tasks_trainee_id_fkey(first_name, last_name)
-          `)
+          .select('*')
           .eq('coach_id', user.id)
           .order('created_at', { ascending: false });
 
@@ -47,18 +47,54 @@ export const useCoachTasks = () => {
 
         console.log('Raw task data from database:', taskData);
 
-        const mappedTasks = taskData?.map((task: any) => ({
-          id: task.id,
-          title: task.title,
-          description: task.description || '',
-          priority: task.priority as 'high' | 'medium' | 'low',
-          type: task.type as 'review' | 'follow-up' | 'planning' | 'admin',
-          dueDate: task.due_date ? new Date(task.due_date) : undefined,
-          traineeId: task.trainee_id,
-          traineeName: task.trainee ? `${task.trainee.first_name || ''} ${task.trainee.last_name || ''}`.trim() : undefined,
-          completed: task.completed,
-          createdAt: new Date(task.created_at)
-        })) || [];
+        if (!taskData || taskData.length === 0) {
+          console.log('No tasks found for user');
+          return [];
+        }
+
+        // Get trainee names for tasks that have trainee_id
+        const taskIds = taskData.map(task => task.id);
+        const traineeIds = taskData
+          .filter(task => task.trainee_id)
+          .map(task => task.trainee_id);
+
+        let traineeProfiles = [];
+        if (traineeIds.length > 0) {
+          const { data: profiles, error: profileError } = await supabase
+            .from('profiles')
+            .select('id, first_name, last_name')
+            .in('id', traineeIds);
+
+          if (profileError) {
+            console.error('Error fetching trainee profiles:', profileError);
+            // Don't throw error, just continue without trainee names
+          } else {
+            traineeProfiles = profiles || [];
+          }
+        }
+
+        console.log('Trainee profiles:', traineeProfiles);
+
+        // Map tasks with trainee names
+        const mappedTasks = taskData.map((task: any) => {
+          const traineeProfile = traineeProfiles.find(p => p.id === task.trainee_id);
+          const traineeName = traineeProfile 
+            ? `${traineeProfile.first_name || ''} ${traineeProfile.last_name || ''}`.trim()
+            : undefined;
+
+          return {
+            id: task.id,
+            title: task.title,
+            description: task.description || '',
+            priority: task.priority as 'high' | 'medium' | 'low',
+            type: task.type as 'review' | 'follow-up' | 'planning' | 'admin',
+            dueDate: task.due_date ? new Date(task.due_date) : undefined,
+            traineeId: task.trainee_id,
+            traineeName,
+            completed: task.completed,
+            createdAt: new Date(task.created_at)
+          };
+        });
 
         console.log('Mapped tasks:', mappedTasks);
         return mappedTasks;
@@ -79,18 +115,22 @@ export const useCoachTasks = () => {
 
       console.log('Creating task:', newTask);
 
+      const taskData = {
+        coach_id: user.id,
+        title: newTask.title,
+        description: newTask.description,
+        priority: newTask.priority,
+        type: newTask.type,
+        due_date: newTask.dueDate?.toISOString(),
+        trainee_id: newTask.traineeId || null,
+        completed: newTask.completed
+      };
+
+      console.log('Task data to insert:', taskData);
+
       const { data, error } = await supabase
         .from('coach_tasks')
-        .insert({
-          coach_id: user.id,
-          title: newTask.title,
-          description: newTask.description,
-          priority: newTask.priority,
-          type: newTask.type,
-          due_date: newTask.dueDate?.toISOString(),
-          trainee_id: newTask.traineeId || null,
-          completed: newTask.completed
-        })
+        .insert(taskData)
         .select()
         .single();
 
@@ -103,10 +143,13 @@ export const useCoachTasks = () => {
       return data;
     },
     onSuccess: async (data) => {
-      console.log('Task creation successful, refetching data');
+      console.log('Task creation successful, invalidating and refetching queries');
       // Invalidate and refetch queries
       await queryClient.invalidateQueries({ queryKey: ['coach-tasks'] });
-      await refetch();
+      // Force immediate refetch
+      setTimeout(() => {
+        refetch();
+      }, 100);
       toast.success('Task created successfully');
     },
     onError: (error: any) => {
@@ -133,7 +176,9 @@ export const useCoachTasks = () => {
     onSuccess: async () => {
       console.log('Task toggle successful, refetching data');
       await queryClient.invalidateQueries({ queryKey: ['coach-tasks'] });
-      await refetch();
+      setTimeout(() => {
+        refetch();
+      }, 100);
       toast.success('Task updated successfully');
     },
     onError: (error: any) => {

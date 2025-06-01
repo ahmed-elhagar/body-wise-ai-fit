@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,18 +29,20 @@ const CoachTasksPanel = ({ trainees, className }: CoachTasksPanelProps) => {
   const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('pending');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
-  // Force refetch when component mounts or dialog closes
+  // Handle dialog close with forced refetch
   const handleDialogClose = (open: boolean) => {
-    setShowCreateDialog(open);
     if (!open) {
-      // Refetch data when dialog closes
+      console.log('Dialog closed, forcing data refetch');
+      // Force refetch when dialog closes
       setTimeout(() => {
         refetch();
-      }, 100);
+      }, 200);
     }
+    setShowCreateDialog(open);
   };
 
   const handleToggleTask = (taskId: string, completed: boolean) => {
+    console.log('Toggling task:', taskId, 'from', completed, 'to', !completed);
     toggleTask({ taskId, completed: !completed });
   };
 
@@ -94,7 +97,7 @@ const CoachTasksPanel = ({ trainees, className }: CoachTasksPanelProps) => {
     );
   }
 
-  console.log('Rendering tasks:', tasks);
+  console.log('Rendering CoachTasksPanel with tasks:', tasks);
 
   return (
     <>

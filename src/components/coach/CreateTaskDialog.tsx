@@ -65,8 +65,7 @@ export const CreateTaskDialog = ({ open, onOpenChange, trainees }: CreateTaskDia
     }
 
     try {
-      const selectedTrainee = formData.traineeId !== 'none' ? 
-        trainees.find(t => t.trainee_id === formData.traineeId) : null;
+      console.log('Form data before submission:', formData);
       
       // Combine date and time if both are provided
       let finalDueDate = formData.dueDate;
@@ -76,20 +75,22 @@ export const CreateTaskDialog = ({ open, onOpenChange, trainees }: CreateTaskDia
         finalDueDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
       }
       
-      await createTaskAsync({
+      const taskToCreate = {
         title: formData.title.trim(),
         description: formData.description.trim(),
         priority: formData.priority,
         type: formData.type,
         traineeId: formData.traineeId !== 'none' ? formData.traineeId : undefined,
-        traineeName: selectedTrainee ? 
-          `${selectedTrainee.trainee_profile?.first_name || ''} ${selectedTrainee.trainee_profile?.last_name || ''}`.trim() : 
-          undefined,
+        traineeName: undefined, // This will be populated by the hook
         dueDate: finalDueDate,
         completed: false,
-      });
+      };
 
-      toast.success('Task created successfully');
+      console.log('Creating task with data:', taskToCreate);
+      
+      await createTaskAsync(taskToCreate);
+
+      console.log('Task created successfully, resetting form and closing dialog');
       resetForm();
       onOpenChange(false);
     } catch (error) {
