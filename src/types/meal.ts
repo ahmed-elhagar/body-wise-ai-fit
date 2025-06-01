@@ -6,7 +6,7 @@ export interface Ingredient {
 }
 
 export interface Meal {
-  id: string; // Make required and consistent
+  id: string;
   type: string;
   time: string;
   name: string;
@@ -21,6 +21,6 @@ export interface Meal {
   servings: number;
   youtube_search_term?: string;
   image_url?: string;
-  image?: string; // Keep optional for backward compatibility
-  meal_type?: string; // Keep for compatibility
+  image?: string;
+  meal_type?: string;
 }

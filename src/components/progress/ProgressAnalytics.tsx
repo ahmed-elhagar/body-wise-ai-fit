@@ -1,103 +1,51 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useI18n } from "@/hooks/useI18n";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  BarChart,
-  Bar
-} from 'recharts';
+import { TrendingUp, Scale, Target } from "lucide-react";
 
 interface ProgressAnalyticsProps {
-  weightData: any[];
-  calorieData: any[];
-  workoutData: any[];
+  data: any[];
 }
 
-const ProgressAnalytics = ({ weightData, calorieData, workoutData }: ProgressAnalyticsProps) => {
+export const ProgressAnalytics = ({ data }: ProgressAnalyticsProps) => {
   const { t } = useI18n();
 
   return (
-    <div className="space-y-6">
-      <Card>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
         <CardHeader>
-          <CardTitle>{t('Weight Progress')}</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-blue-600" />
+            {t('Overall Progress')}
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart
-                data={weightData}
-                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="weight"
-                  stroke="#8884d8"
-                  activeDot={{ r: 8 }}
-                />
-                <Line type="monotone" dataKey="target" stroke="#82ca9d" />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+          <p className="text-gray-600">{t('Track your fitness journey over time')}</p>
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
         <CardHeader>
-          <CardTitle>{t('Calorie Intake')}</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Scale className="h-5 w-5 text-green-600" />
+            {t('Weight Trends')}
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={calorieData}
-                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="calories" fill="#8884d8" />
-                <Bar dataKey="target" fill="#82ca9d" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          <p className="text-gray-600">{t('Monitor your weight changes')}</p>
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
         <CardHeader>
-          <CardTitle>{t('Workout Frequency')}</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Target className="h-5 w-5 text-purple-600" />
+            {t('Goal Achievement')}
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={workoutData}
-                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="week" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="workouts" fill="#8884d8" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          <p className="text-gray-600">{t('See how close you are to your goals')}</p>
         </CardContent>
       </Card>
     </div>

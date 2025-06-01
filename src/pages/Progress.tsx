@@ -1,3 +1,4 @@
+
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -96,7 +97,7 @@ const Progress = () => {
           </TabsList>
 
           <TabsContent value="analytics" className="space-y-6 mt-6">
-            <ProgressAnalytics weightEntries={weightEntries} macroGoals={macroGoals} />
+            <ProgressAnalytics data={[]} />
           </TabsContent>
 
           <TabsContent value="weight" className="space-y-6 mt-6">

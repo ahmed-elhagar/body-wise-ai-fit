@@ -10,6 +10,7 @@ interface Achievement {
   title: string;
   description: string;
   icon: string;
+  rarity: string;
   earned: boolean;
   progress: number;
   category: 'workout' | 'nutrition' | 'weight' | 'streak';
@@ -19,7 +20,7 @@ export const useAchievements = () => {
   const { user } = useAuth();
   const exerciseData = useExerciseProgramQuery();
   const { weightEntries } = useWeightTracking();
-  const { currentWeekPlan } = useMealPlanData('1'); // Use string for weekOffset
+  const { data: mealPlanData } = useMealPlanData(1);
 
   const { data: achievements = [], isLoading } = useQuery({
     queryKey: ['achievements', user?.id],
@@ -32,7 +33,8 @@ export const useAchievements = () => {
           id: '1',
           title: 'First Workout',
           description: 'Complete your first workout',
-          icon: '🏋️',
+          icon: 'trophy',
+          rarity: 'common',
           earned: exerciseData.program ? true : false,
           progress: exerciseData.program ? 100 : 0,
           category: 'workout'
@@ -41,7 +43,8 @@ export const useAchievements = () => {
           id: '2',
           title: 'Weight Tracker',
           description: 'Log your weight for 7 consecutive days',
-          icon: '⚖️',
+          icon: 'star',
+          rarity: 'rare',
           earned: weightEntries.length >= 7,
           progress: Math.min(weightEntries.length * 100 / 7, 100),
           category: 'weight'
@@ -50,9 +53,10 @@ export const useAchievements = () => {
           id: '3',
           title: 'Meal Planner',
           description: 'Create your first meal plan',
-          icon: '🍽️',
-          earned: !!currentWeekPlan,
-          progress: currentWeekPlan ? 100 : 0,
+          icon: 'target',
+          rarity: 'common',
+          earned: !!mealPlanData,
+          progress: mealPlanData ? 100 : 0,
           category: 'nutrition'
         }
       ];
@@ -62,8 +66,17 @@ export const useAchievements = () => {
     enabled: !!user
   });
 
+  const earnedAchievements = achievements.filter(achievement => achievement.earned);
+
+  const checkAchievements = () => {
+    // This would trigger a refetch of achievements in a real implementation
+    console.log('Checking for new achievements...');
+  };
+
   return {
     achievements,
+    earnedAchievements,
+    checkAchievements,
     isLoading
   };
 };

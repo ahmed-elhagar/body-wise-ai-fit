@@ -25,6 +25,6 @@ export const chartConfig = {
     color: '#8b5cf6',
     data: workoutData,
     dataKey: 'duration',
-    targetKey: null
+    targetKey: 'target'
   }
 };

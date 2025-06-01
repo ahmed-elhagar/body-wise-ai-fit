@@ -71,17 +71,31 @@ const CompactDailyView = ({
       {/* Meals Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {meals.map((meal, index) => {
-          // Ensure meal has required id property
-          const mealWithId: Meal = {
-            ...meal,
+          // Ensure meal has all required properties
+          const normalizedMeal: Meal = {
             id: meal.id || `meal-${index}-${Math.random().toString(36).substr(2, 9)}`,
-            image: meal.image || meal.image_url || ""
+            type: meal.type || meal.meal_type || 'meal',
+            time: meal.time || '12:00',
+            name: meal.name,
+            calories: meal.calories || 0,
+            protein: meal.protein || 0,
+            carbs: meal.carbs || 0,
+            fat: meal.fat || 0,
+            ingredients: meal.ingredients || [],
+            instructions: meal.instructions || [],
+            prepTime: meal.prepTime || 0,
+            cookTime: meal.cookTime || 0,
+            servings: meal.servings || 1,
+            youtube_search_term: meal.youtube_search_term,
+            image_url: meal.image_url,
+            image: meal.image || meal.image_url,
+            meal_type: meal.meal_type || meal.type
           };
           
           return (
             <MealCard
-              key={mealWithId.id}
-              meal={mealWithId}
+              key={normalizedMeal.id}
+              meal={normalizedMeal}
               onShowRecipe={onShowRecipe}
               onExchangeMeal={onExchangeMeal}
             />
