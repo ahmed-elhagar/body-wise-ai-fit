@@ -1,17 +1,16 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Users, UserPlus, Activity, Target, TrendingUp } from "lucide-react";
 import { useCoachSystem } from "@/hooks/useCoachSystem";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import { AssignTraineeDialog } from "./AssignTraineeDialog";
 import { TraineeCard } from "./TraineeCard";
 import { useState } from "react";
 
 const CoachDashboard = () => {
   const { trainees, isLoadingTrainees, isCoach } = useCoachSystem();
-  const { language, t } = useLanguage();
+  const { t } = useI18n();
   const [showAssignDialog, setShowAssignDialog] = useState(false);
 
   if (!isCoach) {
@@ -22,13 +21,10 @@ const CoachDashboard = () => {
             <CardContent className="p-8">
               <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                {language === 'ar' ? 'الوصول محظور' : 'Access Denied'}
+                {t('Access Denied')}
               </h2>
               <p className="text-gray-600">
-                {language === 'ar' ? 
-                  'هذه الصفحة متاحة فقط للمدربين المعتمدين.' :
-                  'This page is only available to certified coaches.'
-                }
+                {t('This page is only available to certified coaches.')}
               </p>
             </CardContent>
           </Card>
@@ -71,13 +67,10 @@ const CoachDashboard = () => {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              {language === 'ar' ? 'لوحة المدرب' : 'Coach Dashboard'}
+              {t('Coach Dashboard')}
             </h1>
             <p className="text-gray-600">
-              {language === 'ar' ? 
-                'إدارة ومتابعة تقدم المتدربين' :
-                'Manage and track your trainees\' progress'
-              }
+              {t('Manage and track your trainees\' progress')}
             </p>
           </div>
           <Button 
@@ -85,7 +78,7 @@ const CoachDashboard = () => {
             className="mt-4 md:mt-0"
           >
             <UserPlus className="w-4 h-4 mr-2" />
-            {language === 'ar' ? 'إضافة متدرب' : 'Add Trainee'}
+            {t('Add Trainee')}
           </Button>
         </div>
 
@@ -99,7 +92,7 @@ const CoachDashboard = () => {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm text-gray-600">
-                    {language === 'ar' ? 'إجمالي المتدربين' : 'Total Trainees'}
+                    {t('Total Trainees')}
                   </p>
                   <p className="text-2xl font-bold text-gray-900">{trainees.length}</p>
                 </div>
@@ -115,7 +108,7 @@ const CoachDashboard = () => {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm text-gray-600">
-                    {language === 'ar' ? 'متدربين نشطين' : 'Active Trainees'}
+                    {t('Active Trainees')}
                   </p>
                   <p className="text-2xl font-bold text-gray-900">{activeTrainees}</p>
                 </div>
@@ -131,7 +124,7 @@ const CoachDashboard = () => {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm text-gray-600">
-                    {language === 'ar' ? 'ملفات مكتملة' : 'Completed Profiles'}
+                    {t('Completed Profiles')}
                   </p>
                   <p className="text-2xl font-bold text-gray-900">{completedProfiles}</p>
                 </div>
@@ -147,7 +140,7 @@ const CoachDashboard = () => {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm text-gray-600">
-                    {language === 'ar' ? 'معدل الإكمال' : 'Completion Rate'}
+                    {t('Completion Rate')}
                   </p>
                   <p className="text-2xl font-bold text-gray-900">
                     {trainees.length > 0 ? Math.round((completedProfiles / trainees.length) * 100) : 0}%
@@ -164,17 +157,14 @@ const CoachDashboard = () => {
             <CardContent className="p-12">
               <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                {language === 'ar' ? 'لا يوجد متدربين بعد' : 'No Trainees Yet'}
+                {t('No Trainees Yet')}
               </h3>
               <p className="text-gray-600 mb-6">
-                {language === 'ar' ? 
-                  'ابدأ بإضافة متدرب جديد لبدء رحلة التدريب معًا.' :
-                  'Start by adding a new trainee to begin your coaching journey together.'
-                }
+                {t('Start by adding a new trainee to begin your coaching journey together.')}
               </p>
               <Button onClick={() => setShowAssignDialog(true)}>
                 <UserPlus className="w-4 h-4 mr-2" />
-                {language === 'ar' ? 'إضافة أول متدرب' : 'Add First Trainee'}
+                {t('Add First Trainee')}
               </Button>
             </CardContent>
           </Card>

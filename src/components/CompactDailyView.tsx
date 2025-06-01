@@ -5,23 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { CalendarDays, Plus, TrendingUp } from "lucide-react";
 import { useI18n } from "@/hooks/useI18n";
 import MealCard from "@/components/MealCard";
-
-interface Meal {
-  id: string;
-  name: string;
-  type: string;
-  time: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-  ingredients: any[];
-  instructions: string[];
-  cookTime: number;
-  prepTime: number;
-  servings: number;
-  image: string;
-}
+import type { Meal } from "@/types/meal";
 
 interface CompactDailyViewProps {
   meals: Meal[];
@@ -40,8 +24,8 @@ const CompactDailyView = ({
 }: CompactDailyViewProps) => {
   const { t, isRTL } = useI18n();
 
-  const totalCalories = meals.reduce((sum, meal) => sum + meal.calories, 0);
-  const totalProtein = meals.reduce((sum, meal) => sum + meal.protein, 0);
+  const totalCalories = meals.reduce((sum, meal) => sum + (meal.calories || 0), 0);
+  const totalProtein = meals.reduce((sum, meal) => sum + (meal.protein || 0), 0);
 
   return (
     <div className="space-y-6">

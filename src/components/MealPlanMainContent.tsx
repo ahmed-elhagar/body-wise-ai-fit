@@ -64,6 +64,12 @@ const MealPlanMainContent = ({
   onShowRecipe,
   onExchangeMeal
 }: MealPlanMainContentProps) => {
+
+  // Wrapper function to match expected signature
+  const handleExchangeMeal = (meal: Meal) => {
+    onExchangeMeal(meal, 0); // Pass a default index
+  };
+
   return (
     <>
       {/* Generation Loading Overlay */}
@@ -204,7 +210,7 @@ const MealPlanMainContent = ({
                   <WeeklyMealPlanView
                     weeklyPlan={currentWeekPlan}
                     onShowRecipe={onShowRecipe}
-                    onExchangeMeal={onExchangeMeal}
+                    onExchangeMeal={handleExchangeMeal}
                   />
                 ) : (
                   <MealPlanContent
@@ -213,7 +219,7 @@ const MealPlanMainContent = ({
                     todaysMeals={todaysMeals}
                     onGenerate={onGenerate}
                     onShowRecipe={onShowRecipe}
-                    onExchangeMeal={onExchangeMeal}
+                    onExchangeMeal={handleExchangeMeal}
                     onAddSnack={onAddSnack}
                     onShowShoppingList={onShowShoppingList}
                   />
