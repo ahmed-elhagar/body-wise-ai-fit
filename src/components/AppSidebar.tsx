@@ -103,9 +103,9 @@ const AppSidebar = () => {
       <SidebarHeader className="p-4">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm">FG</span>
+            <span className="text-white font-bold text-sm">FF</span>
           </div>
-          <span className="font-bold text-xl text-gray-900">FitGenius</span>
+          <span className="font-bold text-xl text-gray-900">FitFatta</span>
         </div>
       </SidebarHeader>
       
