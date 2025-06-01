@@ -73,9 +73,18 @@ const CompactDailyView = ({
         {meals.map((meal) => (
           <MealCard
             key={meal.id}
-            meal={meal}
-            onShowRecipe={onShowRecipe}
-            onExchangeMeal={onExchangeMeal}
+            meal={{
+              ...meal,
+              image: meal.image || meal.image_url || ""
+            }}
+            onShowRecipe={(mealWithImage) => onShowRecipe({
+              ...mealWithImage,
+              image_url: mealWithImage.image
+            })}
+            onExchangeMeal={(mealWithImage) => onExchangeMeal({
+              ...mealWithImage,
+              image_url: mealWithImage.image
+            })}
           />
         ))}
       </div>

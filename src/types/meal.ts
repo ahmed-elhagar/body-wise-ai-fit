@@ -22,4 +22,5 @@ export interface Meal {
   youtube_search_term?: string;
   image_url?: string;
   image?: string;
+  meal_type?: string; // Add this for compatibility
 }

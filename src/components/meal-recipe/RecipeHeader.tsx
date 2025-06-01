@@ -9,7 +9,7 @@ interface RecipeHeaderProps {
 }
 
 const RecipeHeader = ({ meal }: RecipeHeaderProps) => {
-  const isSnack = meal.name.includes('🍎') || meal.meal_type === 'snack';
+  const isSnack = meal.name.includes('🍎') || meal.type === 'snack';
   
   return (
     <DialogHeader className="space-y-4">

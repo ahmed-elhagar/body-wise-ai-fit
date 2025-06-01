@@ -64,7 +64,7 @@ export const useEnhancedMealRecipe = () => {
         protein: data.protein || 0,
         carbs: data.carbs || 0,
         fat: data.fat || 0,
-        ingredients: data.ingredients || [],
+        ingredients: Array.isArray(data.ingredients) ? data.ingredients : [],
         instructions: data.instructions || [],
         prepTime: data.prep_time || 0,
         cookTime: data.cook_time || 0,
