@@ -1,7 +1,7 @@
-
 import { format, addDays } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useOptimizedExerciseProgramPage } from "@/hooks/useOptimizedExerciseProgramPage";
+import { createMockExercise } from "@/types/exercise";
 import ExerciseHeader from "./ExerciseHeader";
 import DayTabs from "../meal-plan/DayTabs";
 import ProgressRing from "./ProgressRing";
@@ -44,6 +44,24 @@ const ExercisePageRefactored = () => {
 
   const currentSelectedDate = addDays(weekStartDate, selectedDayNumber - 1);
   const isToday = format(currentSelectedDate, 'yyyy-MM-dd') === format(currentDate, 'yyyy-MM-dd');
+
+  // Mock exercises with proper types for demonstration
+  const mockExercises = [
+    createMockExercise({
+      id: 'ex1',
+      name: 'Push-ups',
+      sets: 3,
+      reps: '15',
+      daily_workout_id: 'workout-1'
+    }),
+    createMockExercise({
+      id: 'ex2',
+      name: 'Squats',
+      sets: 3,
+      reps: '20',
+      daily_workout_id: 'workout-1'
+    })
+  ];
 
   // Loading state with enhanced design
   if (isLoading) {
