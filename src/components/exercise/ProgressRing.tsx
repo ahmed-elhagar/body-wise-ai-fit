@@ -1,8 +1,7 @@
-
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Trophy, Target, Calendar, CheckCircle } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import React from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { useI18n } from "@/hooks/useI18n";
 
 interface ProgressRingProps {
   completedExercises: number;
@@ -19,7 +18,7 @@ const ProgressRing = ({
   isToday,
   isRestDay = false
 }: ProgressRingProps) => {
-  const { t } = useLanguage();
+  const { t } = useI18n();
 
   const getProgressColor = () => {
     if (progressPercentage === 100) return "text-success-500";

@@ -1,8 +1,7 @@
-
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Play, Pause, RotateCcw, Share2, BookOpen, Youtube, Timer } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { useI18n } from "@/hooks/useI18n";
 
 interface ExerciseQuickActionsProps {
   isWorkoutActive: boolean;
@@ -29,7 +28,7 @@ export const ExerciseQuickActions = ({
   canStart,
   isRestDay = false
 }: ExerciseQuickActionsProps) => {
-  const { t } = useLanguage();
+  const { t } = useI18n();
 
   if (isRestDay) {
     return (

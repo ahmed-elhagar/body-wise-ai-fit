@@ -1,12 +1,9 @@
-
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { MessageCircle, Users, ArrowLeft, Calendar, Star, Clock, MessageSquare } from "lucide-react";
-import TraineeCoachChat from "./TraineeCoachChat";
-import { useLanguage } from "@/contexts/LanguageContext";
-import type { CoachInfo } from "@/hooks/coach/types";
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Users, MessageCircle, Clock, CheckCircle } from 'lucide-react';
+import { useI18n } from "@/hooks/useI18n";
 
 interface MultipleCoachesChatProps {
   coaches: CoachInfo[];
@@ -15,7 +12,7 @@ interface MultipleCoachesChatProps {
 }
 
 export const MultipleCoachesChat = ({ coaches, unreadMessagesByCoach, onBack }: MultipleCoachesChatProps) => {
-  const { t } = useLanguage();
+  const { t } = useI18n();
   const [selectedCoach, setSelectedCoach] = useState<CoachInfo | null>(null);
 
   // Helper function to get coach display name

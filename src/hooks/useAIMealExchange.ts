@@ -1,10 +1,9 @@
-
 import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useProfile } from './useProfile';
 import { useCreditSystem } from './useCreditSystem';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useI18n } from "@/hooks/useI18n";
 import { toast } from 'sonner';
 
 export interface MealAlternative {
@@ -25,7 +24,7 @@ export interface MealAlternative {
 export const useAIMealExchange = () => {
   const { user } = useAuth();
   const { profile } = useProfile();
-  const { language, t } = useLanguage();
+  const { t, language } = useI18n();
   const { checkAndUseCreditAsync, completeGenerationAsync } = useCreditSystem();
 
   const generateAlternatives = useMutation({

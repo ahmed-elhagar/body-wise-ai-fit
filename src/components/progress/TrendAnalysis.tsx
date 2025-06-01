@@ -1,7 +1,6 @@
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { useLanguage } from "@/contexts/LanguageContext";
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useI18n } from "@/hooks/useI18n";
 import { Brain, TrendingUp, TrendingDown, Target, Activity, Calendar } from "lucide-react";
 import { useWeightTracking } from "@/hooks/useWeightTracking";
 import { useGoals } from "@/hooks/useGoals";
@@ -10,7 +9,7 @@ import { useExerciseProgramData } from "@/hooks/useExerciseProgramData";
 import { useMemo } from "react";
 
 const TrendAnalysis = () => {
-  const { t } = useLanguage();
+  const { t } = useI18n();
   const { weightEntries } = useWeightTracking();
   const { goals } = useGoals();
   const { data: currentMealPlan } = useMealPlanData(0);

@@ -1,86 +1,93 @@
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { useI18n } from "@/hooks/useI18n";
+import { supabase } from '@/integrations/supabase/client';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { WeeklyMealPlan } from './useMealPlanData';
 
-import { useCallback } from "react";
-import { toast } from "sonner";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { useAIMealPlan } from "@/hooks/useAIMealPlan";
-import { useQueryClient } from '@tanstack/react-query';
-import { useAuth } from './useAuth';
+interface UseMealPlanActionsProps {
+  weeklyPlanId: string | null;
+}
 
-export const useMealPlanActions = (
-  currentWeekPlan: any,
-  currentWeekOffset: number,
-  aiPreferences: any,
-  refetchMealPlan: any
-) => {
-  const { language } = useLanguage();
-  const { user } = useAuth();
+export const useMealPlanActions = ({ weeklyPlanId }: UseMealPlanActionsProps) => {
+  const { t } = useI18n();
   const queryClient = useQueryClient();
-  const { generateMealPlan, isGenerating } = useAIMealPlan();
 
-  // Enhanced AI generation handler with better cache management
-  const handleGenerateAIPlan = useCallback(async () => {
-    try {
-      console.log('🚀 Starting AI meal plan generation with enhanced cache management:', {
-        weekOffset: currentWeekOffset,
-        preferences: aiPreferences,
-        userId: user?.id
-      });
-      
-      const enhancedPreferences = {
-        ...aiPreferences,
-        language: language,
-        locale: language === 'ar' ? 'ar-SA' : 'en-US',
-        weekOffset: currentWeekOffset
-      };
-      
-      const result = await generateMealPlan(enhancedPreferences, { weekOffset: currentWeekOffset });
-      
-      if (result?.success) {
-        console.log('✅ Generation successful, invalidating cache and refetching:', {
-          weeklyPlanId: result.weeklyPlanId,
-          weekOffset: currentWeekOffset
-        });
-        
-        // Invalidate all meal plan queries to ensure fresh data
-        await queryClient.invalidateQueries({
-          queryKey: ['weekly-meal-plan']
-        });
-        
-        // Wait a bit for the database to be fully updated
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        // Force immediate refetch with better error handling
-        try {
-          await refetchMealPlan?.();
-          console.log('✅ Refetch completed successfully');
-          return true;
-        } catch (refetchError) {
-          console.error('❌ Refetch failed after generation:', refetchError);
-          toast.warning('Plan generated but may need a page refresh to display properly.');
-          return true; // Still consider it successful since generation worked
-        }
-      } else {
-        console.error('❌ Generation failed:', result?.error);
-        return false;
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const deleteMealPlanMutation = useMutation(
+    async (planId: string) => {
+      const { error } = await supabase
+        .from('weekly_meal_plans')
+        .delete()
+        .eq('id', planId);
+
+      if (error) {
+        throw new Error(error.message || 'Failed to delete meal plan');
       }
-      
-    } catch (error) {
-      console.error('❌ Generation failed with exception:', error);
-      toast.error("Failed to generate meal plan. Please try again.");
-      throw error;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['weeklyMealPlans']);
+        toast.success(t('mealPlan.deleteSuccess') || 'Meal plan deleted successfully!');
+      },
+      onError: (error: any) => {
+        toast.error(error.message || t('mealPlan.deleteFailed') || 'Failed to delete meal plan.');
+      },
+      onMutate: () => {
+        setIsDeleting(true);
+      },
+      onSettled: () => {
+        setIsDeleting(false);
+      },
     }
-  }, [aiPreferences, language, currentWeekOffset, generateMealPlan, refetchMealPlan, queryClient, user?.id]);
+  );
 
-  // Add the missing handleRegeneratePlan method
-  const handleRegeneratePlan = useCallback(async () => {
-    console.log('🔄 Regenerating meal plan...');
-    return await handleGenerateAIPlan();
-  }, [handleGenerateAIPlan]);
+  const deleteMealPlan = async () => {
+    if (!weeklyPlanId) {
+      toast.error(t('mealPlan.noPlanToDelete') || 'No meal plan to delete.');
+      return;
+    }
+
+    deleteMealPlanMutation.mutate(weeklyPlanId);
+  };
+
+  const regenerateMealPlan = async (weeklyPlan: WeeklyMealPlan) => {
+    if (!weeklyPlanId) {
+      toast.error(t('mealPlan.noPlanToRegenerate') || 'No meal plan to regenerate.');
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.functions.invoke('regenerate-meal-plan', {
+        body: {
+          weeklyPlanId: weeklyPlanId,
+          weeklyPlan: weeklyPlan
+        }
+      });
+
+      if (error) {
+        console.error('❌ Error regenerating meal plan:', error);
+        toast.error(t('mealPlan.regenerateFailed') || 'Failed to regenerate meal plan');
+        return;
+      }
+
+      if (data?.success) {
+        toast.success(data.message || t('mealPlan.regenerateSuccess') || 'Meal plan regenerated successfully!');
+        queryClient.invalidateQueries(['weeklyMealPlans']);
+      } else {
+        console.error('❌ Regeneration failed:', data?.error);
+        toast.error(data?.error || t('mealPlan.regenerateFailed') || 'Failed to regenerate meal plan');
+      }
+    } catch (error) {
+      console.error('❌ Error regenerating meal plan:', error);
+      toast.error(t('mealPlan.regenerateFailed') || 'Failed to regenerate meal plan');
+    }
+  };
 
   return {
-    handleGenerateAIPlan,
-    handleRegeneratePlan,
-    isGenerating,
-    isShuffling: false // Add missing isShuffling property
+    deleteMealPlan,
+    isDeleting,
+    regenerateMealPlan
   };
 };

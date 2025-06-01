@@ -1,12 +1,11 @@
-
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { supabase } from '@/integrations/supabase/client';
+import { useI18n } from "@/hooks/useI18n";
 
 export const useMealImageGeneration = () => {
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
-  const { language } = useLanguage();
+  const { language } = useI18n();
 
   const generateMealImage = async (mealName: string, ingredients?: any[]) => {
     setIsGeneratingImage(true);

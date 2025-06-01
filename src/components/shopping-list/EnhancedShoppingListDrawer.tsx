@@ -1,152 +1,65 @@
-
-import { useState, useMemo } from "react";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { getCategoryForIngredient } from "@/utils/mealPlanUtils";
-import type { WeeklyMealPlan, DailyMeal } from "@/hooks/useMealPlanData";
-import DrawerHeader from "./DrawerHeader";
+import React, { useState } from 'react';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import { useI18n } from "@/hooks/useI18n";
+import { Button } from "@/components/ui/button";
+import { ShoppingBag } from "lucide-react";
 import CategoryAccordion from "./CategoryAccordion";
-import ProgressFooter from "./ProgressFooter";
-import LoadingState from "./LoadingState";
-import EmptyState from "./EmptyState";
+import { useEnhancedShoppingList } from "@/hooks/useEnhancedShoppingList";
+import { useMealPlan } from "@/hooks/useMealPlanData";
 
-interface ShoppingListDrawerProps {
-  isOpen: boolean;
-  onClose: () => void;
-  weeklyPlan?: {
-    weeklyPlan: WeeklyMealPlan;
-    dailyMeals: DailyMeal[];
-  } | null;
-  weekId?: string;
-  onShoppingListUpdate?: () => void;
+interface EnhancedShoppingListDrawerProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-interface ShoppingItem {
-  name: string;
-  quantity: number;
-  unit: string;
-  category: string;
-}
+const EnhancedShoppingListDrawer = ({ open, onOpenChange }: EnhancedShoppingListDrawerProps) => {
+  const { t, isRTL } = useI18n();
+  const { currentWeeklyPlan } = useMealPlan();
+  const { enhancedShoppingItems, sendShoppingListEmail } = useEnhancedShoppingList(currentWeeklyPlan);
+  const [isEmailSending, setIsEmailSending] = useState(false);
 
-const EnhancedShoppingListDrawer = ({ 
-  isOpen, 
-  onClose, 
-  weeklyPlan, 
-  weekId,
-  onShoppingListUpdate 
-}: ShoppingListDrawerProps) => {
-  const { isRTL } = useLanguage();
-  const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
-
-  // Compute shopping list from meal plan data with proper aggregation
-  const shoppingItems = useMemo(() => {
-    console.log('🛒 Computing shopping list from meal plan data...');
-    
-    if (!weeklyPlan?.dailyMeals) {
-      return [];
+  const handleSendEmail = async () => {
+    setIsEmailSending(true);
+    try {
+      await sendShoppingListEmail();
+    } finally {
+      setIsEmailSending(false);
     }
-
-    const itemsMap = new Map<string, ShoppingItem>();
-    
-    weeklyPlan.dailyMeals.forEach(meal => {
-      if (meal.ingredients && Array.isArray(meal.ingredients)) {
-        meal.ingredients.forEach((ingredient: any) => {
-          const ingredientName = ingredient.name || ingredient;
-          const quantity = parseFloat(ingredient.quantity || '1');
-          const unit = ingredient.unit || 'piece';
-          const key = `${ingredientName.toLowerCase()}-${unit}`;
-          
-          if (itemsMap.has(key)) {
-            const existing = itemsMap.get(key)!;
-            existing.quantity += quantity;
-          } else {
-            itemsMap.set(key, {
-              name: ingredientName,
-              quantity: quantity,
-              unit: unit,
-              category: getCategoryForIngredient(ingredientName)
-            });
-          }
-        });
-      }
-    });
-
-    const items = Array.from(itemsMap.values());
-    console.log('🛒 Generated shopping items:', items.length);
-    return items;
-  }, [weeklyPlan?.dailyMeals]);
-
-  // Group items by category
-  const groupedItems = useMemo(() => {
-    return shoppingItems.reduce((acc, item) => {
-      const category = item.category;
-      if (!acc[category]) {
-        acc[category] = [];
-      }
-      acc[category].push(item);
-      return acc;
-    }, {} as Record<string, ShoppingItem[]>);
-  }, [shoppingItems]);
-
-  const isLoading = !weeklyPlan;
-  const isEmpty = shoppingItems.length === 0 && !!weeklyPlan;
-
-  if (isLoading) {
-    return (
-      <Sheet open={isOpen} onOpenChange={onClose}>
-        <SheetContent 
-          side={isRTL ? "left" : "right"} 
-          className="w-full sm:max-w-lg bg-white border-gray-200 overflow-y-auto z-[100]"
-        >
-          <LoadingState />
-        </SheetContent>
-      </Sheet>
-    );
-  }
-
-  if (isEmpty) {
-    return (
-      <Sheet open={isOpen} onOpenChange={onClose}>
-        <SheetContent 
-          side={isRTL ? "left" : "right"} 
-          className="w-full sm:max-w-lg bg-white border-gray-200 overflow-y-auto z-[100]"
-        >
-          <EmptyState />
-        </SheetContent>
-      </Sheet>
-    );
-  }
+  };
 
   return (
-    <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent 
-        side={isRTL ? "left" : "right"} 
-        className="w-full sm:max-w-lg bg-white border-gray-200 overflow-y-auto z-[100]"
-      >
-        <div className="space-y-6 h-full">
-          <DrawerHeader 
-            totalItems={shoppingItems.length}
-            groupedItems={groupedItems}
-            weekId={weekId}
-            onShoppingListUpdate={onShoppingListUpdate}
-          />
-          
-          <div className="flex-1 overflow-y-auto">
-            <CategoryAccordion
-              groupedItems={groupedItems}
-              checkedItems={checkedItems}
-              setCheckedItems={setCheckedItems}
-              onShoppingListUpdate={onShoppingListUpdate}
-            />
-          </div>
-          
-          <ProgressFooter
-            checkedCount={checkedItems.size}
-            totalItems={shoppingItems.length}
-          />
+    <Drawer open={open} onOpenChange={onOpenChange}>
+      <DrawerContent className={`overflow-y-auto ${isRTL ? 'text-right' : 'text-left'}`}>
+        <DrawerHeader>
+          <DrawerTitle className="flex items-center gap-2">
+            <ShoppingBag className="w-5 h-5" />
+            {t('shoppingList')}
+          </DrawerTitle>
+        </DrawerHeader>
+
+        <div className="px-4 py-2">
+          {Object.keys(enhancedShoppingItems.groupedItems).length > 0 ? (
+            Object.entries(enhancedShoppingItems.groupedItems).map(([category, items]) => (
+              <CategoryAccordion key={category} category={category} items={items as any[]} />
+            ))
+          ) : (
+            <div className="text-center py-6">
+              <p className="text-gray-500">{t('noItemsInShoppingList')}</p>
+            </div>
+          )}
         </div>
-      </SheetContent>
-    </Sheet>
+
+        <div className="p-4 mt-auto">
+          <Button 
+            className="w-full" 
+            onClick={handleSendEmail} 
+            disabled={isEmailSending}
+          >
+            {isEmailSending ? t('sendingEmail') : t('sendToEmail')}
+          </Button>
+        </div>
+      </DrawerContent>
+    </Drawer>
   );
 };
 

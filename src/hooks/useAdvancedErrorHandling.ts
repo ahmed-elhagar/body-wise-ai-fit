@@ -1,7 +1,6 @@
-
-import { useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useI18n } from "@/hooks/useI18n";
 
 export interface AdvancedErrorContext {
   operation: string;
@@ -12,7 +11,7 @@ export interface AdvancedErrorContext {
 }
 
 export const useAdvancedErrorHandling = () => {
-  const { language } = useLanguage();
+  const { language } = useI18n();
 
   const handleAdvancedError = useCallback((error: any, context: AdvancedErrorContext) => {
     console.error(`❌ Advanced Error in ${context.operation}:`, {

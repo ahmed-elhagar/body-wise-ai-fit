@@ -1,21 +1,17 @@
-
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { 
-  User, 
-  Target, 
-  Activity, 
-  TrendingUp, 
-  Calendar,
-  Weight,
-  Ruler,
-  Zap
-} from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { useTraineeData } from "@/hooks/useTraineeData";
-import { type CoachTraineeRelationship } from "@/hooks/useCoachSystem";
+import React from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Separator } from '@/components/ui/separator';
+import { User, Target, Activity, Calendar, Phone, Mail, MapPin } from 'lucide-react';
+import { useI18n } from "@/hooks/useI18n";
 
 interface TraineeDetailsDialogProps {
   trainee: CoachTraineeRelationship;
@@ -24,7 +20,7 @@ interface TraineeDetailsDialogProps {
 }
 
 export const TraineeDetailsDialog = ({ trainee, open, onOpenChange }: TraineeDetailsDialogProps) => {
-  const { language } = useLanguage();
+  const { language } = useI18n();
   const { 
     mealPlans, 
     exercisePrograms, 

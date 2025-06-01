@@ -1,243 +1,112 @@
-
-import { useState, useRef } from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Camera, Upload, Loader2, Utensils, AlertCircle, Zap } from "lucide-react";
-import { useAIFoodAnalysis } from "@/hooks/useAIFoodAnalysis";
-import { useCreditSystem } from "@/hooks/useCreditSystem";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { toast } from "sonner";
+import React, { useState, useCallback } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Camera, Upload, Loader2, ImageIcon } from 'lucide-react';
+import { useDropzone } from 'react-dropzone';
+import { toast } from 'sonner';
+import { useI18n } from "@/hooks/useI18n";
 
 interface FoodPhotoAnalysisCardProps {
-  onFoodSelected?: (food: any) => void;
-  className?: string;
+  onAnalyze: (imageUrl: string) => void;
 }
 
-const FoodPhotoAnalysisCard = ({ onFoodSelected, className = "" }: FoodPhotoAnalysisCardProps) => {
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  
-  const { analyzeFood, isAnalyzing, analysisResult, error } = useAIFoodAnalysis();
-  const { userCredits } = useCreditSystem();
-  const { t } = useLanguage();
-
-  const handleImageSelect = (file: File) => {
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast.error(t('Please select a valid image file'));
-      return;
-    }
-
-    // Validate file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error(t('Image size must be less than 10MB'));
-      return;
-    }
-
-    setSelectedImage(file);
-    
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setImagePreview(e.target?.result as string);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      handleImageSelect(file);
-    }
-  };
+const FoodPhotoAnalysisCard = ({ onAnalyze }: FoodPhotoAnalysisCardProps) => {
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const { t } = useI18n();
 
   const handleAnalyze = () => {
-    if (selectedImage && userCredits > 0) {
-      analyzeFood(selectedImage);
-    } else if (userCredits <= 0) {
-      toast.error(t('No AI credits remaining. Please upgrade to continue.'));
+    if (!imageUrl) {
+      toast.error(t('foodPhotoAnalysis.noImageError') || 'Please upload or capture an image first.');
+      return;
     }
+    setIsLoading(true);
+    onAnalyze(imageUrl);
   };
 
-  const handleSelectFood = (food: any) => {
-    if (onFoodSelected) {
-      onFoodSelected(food);
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+    const file = acceptedFiles[0];
+    if (!file) return;
+
+    setIsLoading(true);
+    try {
+      const base64 = await convertToBase64(file);
+      setImageUrl(base64);
+      toast.success(t('foodPhotoAnalysis.imageUploaded') || 'Image uploaded successfully!');
+    } catch (error) {
+      console.error("Error converting to base64:", error);
+      toast.error(t('foodPhotoAnalysis.uploadFailed') || 'Failed to upload image.');
+    } finally {
+      setIsLoading(false);
     }
+  }, [t]);
+
+  const {getRootProps, getInputProps, isDragActive} = useDropzone({ onDrop, accept: {'image/*': ['.jpeg', '.png', '.jpg']}})
+
+  const handleCapture = () => {
+    // Implement camera capture logic here
+    toast.info(t('foodPhotoAnalysis.cameraNotImplemented') || 'Camera capture feature is not yet implemented.');
   };
 
-  const resetAnalysis = () => {
-    setSelectedImage(null);
-    setImagePreview(null);
-    if (imagePreview) {
-      URL.revokeObjectURL(imagePreview);
-    }
+  const convertToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          resolve(reader.result);
+        } else {
+          reject("Failed to convert to base64: Result is not a string.");
+        }
+      };
+      reader.onerror = (error) => reject(error);
+      reader.readAsDataURL(file);
+    });
   };
-
-  const canAnalyze = userCredits === -1 || userCredits > 0;
 
   return (
-    <Card className={`p-6 bg-white shadow-sm border border-gray-200 ${className}`}>
-      <div className="space-y-4">
-        {/* Header with Credits */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
-              <Camera className="w-4 h-4 text-white" />
-            </div>
-            <div>
-              <h3 className="text-base font-semibold text-gray-800">{t('AI Food Scanner')}</h3>
-              <p className="text-xs text-gray-600">{t('Analyze food photos with AI')}</p>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <Zap className="w-4 h-4 text-blue-600" />
-            <Badge variant={canAnalyze ? "default" : "destructive"} className="text-xs">
-              {userCredits === -1 ? t('Unlimited') : userCredits}
-            </Badge>
-          </div>
-        </div>
-
-        {/* Upload Area */}
-        <div className="space-y-4">
-          {!imagePreview ? (
-            <div 
-              className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-purple-400 transition-colors"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <Upload className="w-8 h-8 text-gray-400 mx-auto mb-3" />
-              <p className="text-sm text-gray-600 mb-2">{t('Click to upload a food photo')}</p>
-              <p className="text-xs text-gray-500">{t('Supports JPG, PNG files up to 10MB')}</p>
-            </div>
+    <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+      <CardHeader>
+        <CardTitle className="text-lg font-semibold">
+          {t('foodPhotoAnalysis.title') || 'Analyze Food Photo'}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div {...getRootProps()} className={`relative border-2 border-dashed rounded-md p-4 text-center cursor-pointer ${isDragActive ? 'border-blue-500' : 'border-gray-300'}`}>
+          <input {...getInputProps()} />
+          {imageUrl ? (
+            <img src={imageUrl} alt="Uploaded Food" className="max-h-48 w-full object-contain rounded-md" />
           ) : (
-            <div className="space-y-3">
-              <div className="relative">
-                <img 
-                  src={imagePreview} 
-                  alt="Selected food" 
-                  className="w-full h-48 object-cover rounded-lg"
-                />
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={resetAnalysis}
-                  className="absolute top-2 right-2 bg-white/90"
-                >
-                  {t('Change')}
-                </Button>
-              </div>
-              
-              <Button
-                onClick={handleAnalyze}
-                disabled={isAnalyzing || !canAnalyze}
-                className="w-full bg-purple-600 hover:bg-purple-700"
-              >
-                {isAnalyzing ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    {t('Analyzing...')}
-                  </>
-                ) : (
-                  <>
-                    <Camera className="w-4 h-4 mr-2" />
-                    {t('Analyze Food')}
-                  </>
-                )}
-              </Button>
-
-              {!canAnalyze && (
-                <p className="text-xs text-red-600 text-center">
-                  {t('No AI credits remaining. Upgrade to Pro for unlimited scans.')}
-                </p>
-              )}
-            </div>
-          )}
-          
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleFileInputChange}
-            className="hidden"
-          />
-        </div>
-
-        {/* Error Display */}
-        {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-red-500" />
-              <p className="text-sm text-red-700">
-                {error.message || t('Failed to analyze food image. Please try again.')}
+            <div className="flex flex-col items-center justify-center space-y-2">
+              <ImageIcon className="w-8 h-8 text-gray-400" />
+              <p className="text-sm text-gray-500">
+                {isDragActive
+                  ? t('foodPhotoAnalysis.dropHere') || "Drop the image here..."
+                  : `${t('foodPhotoAnalysis.dragAndDrop') || "Drag 'n' drop an image here"}, ${t('foodPhotoAnalysis.orClick')} ${t('foodPhotoAnalysis.toSelect')} `}
               </p>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
-        {/* Analysis Results */}
-        {analysisResult && (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h4 className="text-sm font-semibold text-gray-800">{t('Analysis Results')}</h4>
-              <Badge variant="outline" className="text-xs">
-                {Math.round((analysisResult.overallConfidence || 0.8) * 100)}% {t('confidence')}
-              </Badge>
-            </div>
-
-            {analysisResult.foodItems && analysisResult.foodItems.length > 0 ? (
-              <div className="space-y-2">
-                {analysisResult.foodItems.map((food: any, index: number) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-3 bg-purple-50 rounded-lg border border-purple-200 hover:shadow-sm transition-shadow"
-                  >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h5 className="text-sm font-medium text-gray-900">{food.name}</h5>
-                        <Badge variant="outline" className="text-xs capitalize">
-                          {food.category || 'general'}
-                        </Badge>
-                      </div>
-                      <div className="grid grid-cols-2 gap-1 text-xs text-gray-600">
-                        <span>{food.calories || 0} cal/100g</span>
-                        <span>{food.protein || 0}g protein</span>
-                        <span>{food.carbs || 0}g carbs</span>
-                        <span>{food.fat || 0}g fat</span>
-                      </div>
-                      {food.quantity && (
-                        <p className="text-xs text-purple-600 mt-1">{t('Estimated')}: {food.quantity}</p>
-                      )}
-                    </div>
-
-                    <Button
-                      size="sm"
-                      onClick={() => handleSelectFood(food)}
-                      className="ml-3 bg-purple-600 hover:bg-purple-700 text-xs px-3 py-1"
-                    >
-                      {t('Select')}
-                    </Button>
-                  </div>
-                ))}
-              </div>
+        <div className="flex space-x-2">
+          <Button onClick={handleCapture} variant="outline" className="flex-1">
+            <Camera className="w-4 h-4 mr-2" />
+            {t('foodPhotoAnalysis.capture')}
+          </Button>
+          <Button onClick={handleAnalyze} disabled={isLoading} className="flex-1">
+            {isLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                {t('foodPhotoAnalysis.analyzing')}
+              </>
             ) : (
-              <div className="text-center py-4">
-                <Utensils className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                <p className="text-sm text-gray-600">{t('No food items detected')}</p>
-                <p className="text-xs text-gray-500">{t('Try a clearer photo with visible food')}</p>
-              </div>
+              <>
+                <Upload className="w-4 h-4 mr-2" />
+                {t('foodPhotoAnalysis.analyze')}
+              </>
             )}
-
-            {analysisResult.suggestions && (
-              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-xs text-blue-800">
-                  <strong>{t('AI Suggestion')}:</strong> {analysisResult.suggestions}
-                </p>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+          </Button>
+        </div>
+      </CardContent>
     </Card>
   );
 };

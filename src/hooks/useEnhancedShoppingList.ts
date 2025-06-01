@@ -1,9 +1,8 @@
-
-import { useMemo } from 'react';
-import { toast } from 'sonner';
+import { useState, useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { toast } from 'sonner';
+import { useI18n } from "@/hooks/useI18n";
 import { getCategoryForIngredient } from '@/utils/mealPlanUtils';
 import type { WeeklyMealPlan, DailyMeal } from '@/hooks/useMealPlanData';
 
@@ -11,8 +10,7 @@ export const useEnhancedShoppingList = (weeklyPlan?: {
   weeklyPlan: WeeklyMealPlan;
   dailyMeals: DailyMeal[];
 } | null) => {
-  const { user } = useAuth();
-  const { language } = useLanguage();
+  const { t, language } = useI18n();
 
   // Enhanced shopping list with proper aggregation and categorization
   const enhancedShoppingItems = useMemo(() => {
@@ -64,7 +62,7 @@ export const useEnhancedShoppingList = (weeklyPlan?: {
   }, [weeklyPlan?.dailyMeals]);
 
   const sendShoppingListEmail = async () => {
-    if (!user || !weeklyPlan) {
+    if (!weeklyPlan) {
       toast.error('Unable to send email - missing data');
       return false;
     }
@@ -77,8 +75,6 @@ export const useEnhancedShoppingList = (weeklyPlan?: {
 
       const { data, error } = await supabase.functions.invoke('send-shopping-list-email', {
         body: {
-          userId: user.id,
-          weekId: weeklyPlan.weeklyPlan.id,
           shoppingItems: enhancedShoppingItems.groupedItems,
           weekRange: weekRange
         }
@@ -108,3 +104,4 @@ export const useEnhancedShoppingList = (weeklyPlan?: {
     sendShoppingListEmail
   };
 };
+

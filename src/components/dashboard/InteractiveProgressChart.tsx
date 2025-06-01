@@ -1,18 +1,16 @@
-
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { useLanguage } from "@/contexts/LanguageContext";
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useI18n } from "@/hooks/useI18n";
 import { TrendingUp, Calendar, Activity, ArrowRight } from "lucide-react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { useNavigate } from "react-router-dom";
 import { useChartData } from "./interactive-chart/ChartData";
 
 type ChartType = 'weight' | 'calories' | 'workouts';
 
 const InteractiveProgressChart = () => {
-  const { t } = useLanguage();
+  const { t } = useI18n();
   const navigate = useNavigate();
   const [activeChart, setActiveChart] = useState<ChartType>('weight');
   const { weightData, calorieData, workoutData } = useChartData();

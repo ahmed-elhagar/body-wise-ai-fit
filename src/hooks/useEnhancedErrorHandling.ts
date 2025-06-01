@@ -1,7 +1,6 @@
-
-import { useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useI18n } from "@/hooks/useI18n";
 
 export interface ErrorContext {
   operation: string;
@@ -11,7 +10,7 @@ export interface ErrorContext {
 }
 
 export const useEnhancedErrorHandling = () => {
-  const { language } = useLanguage();
+  const { language } = useI18n();
 
   const handleError = useCallback((error: any, context: ErrorContext) => {
     console.error(`❌ Error in ${context.operation}:`, {

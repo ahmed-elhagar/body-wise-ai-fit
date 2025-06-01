@@ -1,127 +1,107 @@
-
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
-import { useCreditSystem } from './useCreditSystem';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useProfile } from './useProfile';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import type { Meal } from '@/types/meal';
+import { useI18n } from "@/hooks/useI18n";
 
 export const useMealRecipe = () => {
-  const [isGeneratingRecipe, setIsGeneratingRecipe] = useState(false);
   const { user } = useAuth();
-  const { language } = useLanguage();
-  const { checkAndUseCreditAsync, completeGenerationAsync } = useCreditSystem();
+  const { profile } = useProfile();
+  const { t, language } = useI18n();
+  const queryClient = useQueryClient();
 
-  const generateRecipe = async (mealId: string) => {
-    if (!user) {
-      toast.error('Please log in to view recipes');
-      return null;
-    }
+  const [isRecipeOpen, setIsRecipeOpen] = useState(false);
+  const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
 
-    setIsGeneratingRecipe(true);
-    
-    try {
-      console.log('🍳 Generating recipe for meal:', mealId, 'in language:', language);
-      
-      // Show immediate feedback
-      toast.loading('Generating detailed recipe with images...', {
-        duration: 15000,
-      });
-
-      // Use centralized credit system with valid generation type
-      const creditResult = await checkAndUseCreditAsync('meal_plan');
-
-      try {
-        const { data, error } = await supabase.functions.invoke('generate-meal-recipe', {
-          body: {
-            mealId: mealId,
-            userId: user.id,
-            language: language // Pass current language to recipe generation
-          }
-        });
-
-        // Dismiss loading toast
-        toast.dismiss();
-
-        if (error) {
-          console.error('❌ Recipe generation error:', error);
-          throw error;
-        }
-
-        if (data?.success) {
-          console.log('✅ Recipe generated successfully!');
-          
-          // Complete the AI generation log with success
-          const creditData = creditResult as any;
-          if (creditData?.log_id) {
-            await completeGenerationAsync({
-              logId: creditData.log_id,
-              responseData: {
-                mealId: mealId,
-                recipeGenerated: true,
-                language: language
-              }
-            });
-          }
-
-          if (data.message.includes('already available')) {
-            toast.success('Recipe loaded from cache!');
-          } else {
-            toast.success(
-              `🎉 Recipe generated! (${data.recipeCount}/${data.dailyLimit} today)`,
-              { duration: 3000 }
-            );
-          }
-          
-          // Fetch updated meal data
-          const { data: updatedMeal, error: fetchError } = await supabase
-            .from('daily_meals')
-            .select('*')
-            .eq('id', mealId)
-            .single();
-
-          if (fetchError) {
-            throw fetchError;
-          }
-
-          return updatedMeal;
-          
-        } else {
-          throw new Error(data?.error || 'Failed to generate recipe');
-        }
-      } catch (error) {
-        // Mark generation as failed
-        const creditData = creditResult as any;
-        if (creditData?.log_id) {
-          await completeGenerationAsync({
-            logId: creditData.log_id,
-            errorMessage: error instanceof Error ? error.message : 'Recipe generation failed'
-          });
-        }
-        throw error;
-      }
-      
-    } catch (error: any) {
-      console.error('❌ Error generating recipe:', error);
-      toast.dismiss();
-      
-      // Handle specific error cases
-      if (error.message?.includes('limit reached')) {
-        toast.error('AI generation limit reached. Please upgrade or wait for credits to reset.');
-      } else if (error.message?.includes('not found')) {
-        toast.error('Meal not found. Please refresh and try again.');
-      } else {
-        toast.error(error.message || 'Failed to generate recipe. Please try again.');
-      }
-      
-      return null;
-    } finally {
-      setIsGeneratingRecipe(false);
-    }
+  const showRecipe = (meal: Meal) => {
+    setSelectedMeal(meal);
+    setIsRecipeOpen(true);
   };
 
+  const closeRecipe = () => {
+    setIsRecipeOpen(false);
+    setSelectedMeal(null);
+  };
+
+  const updateMeal = useMutation({
+    mutationFn: async (updates: Partial<Meal> & { id: string }) => {
+      if (!user) {
+        throw new Error(t('auth.signInRequired') || 'Please sign in to update meal');
+      }
+
+      const { data, error } = await supabase
+        .from('daily_meals')
+        .update(updates)
+        .eq('id', updates.id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error updating meal:', error);
+        throw new Error(error.message || 'Could not update meal');
+      }
+
+      return data;
+    },
+    onSuccess: (data) => {
+      console.log('Meal updated successfully:', data);
+      toast.success(t('mealPlan.mealUpdatedSuccess') || 'Meal updated successfully!');
+      queryClient.invalidateQueries({ queryKey: ['meal-plan'] });
+      queryClient.invalidateQueries({ queryKey: ['daily-meals'] });
+    },
+    onError: (error: any) => {
+      console.error('Error updating meal:', error);
+      toast.error(error.message || t('mealPlan.mealUpdateFailed') || 'Failed to update meal');
+    },
+  });
+
+  const exchangeMeal = useMutation({
+    mutationFn: async ({ meal, dayNumber }: { meal: Meal, dayNumber: number }) => {
+      if (!user) {
+        throw new Error(t('auth.signInRequired') || 'Please sign in to exchange meal');
+      }
+
+      if (!profile) {
+        throw new Error(t('profile.completeProfile') || 'Please complete your profile to exchange meal');
+      }
+
+      const { data, error } = await supabase.functions.invoke('exchange-meal', {
+        body: {
+          meal,
+          dayNumber,
+          userProfile: profile,
+          language
+        }
+      });
+
+      if (error) {
+        console.error('Meal exchange error:', error);
+        throw new Error(error.message || 'Failed to exchange meal');
+      }
+
+      return data;
+    },
+    onSuccess: () => {
+      toast.success(t('mealPlan.mealExchangedSuccess') || 'Meal exchanged successfully!');
+      queryClient.invalidateQueries({ queryKey: ['meal-plan'] });
+      queryClient.invalidateQueries({ queryKey: ['daily-meals'] });
+    },
+    onError: (error: any) => {
+      console.error('Error exchanging meal:', error);
+      toast.error(error.message || t('mealPlan.mealExchangeFailed') || 'Failed to exchange meal');
+    },
+  });
+
   return {
-    generateRecipe,
-    isGeneratingRecipe
+    isRecipeOpen,
+    selectedMeal,
+    showRecipe,
+    closeRecipe,
+    updateMeal: updateMeal.mutate,
+    isUpdating: updateMeal.isLoading,
+    exchangeMeal: exchangeMeal.mutate,
+    isExchanging: exchangeMeal.isLoading
   };
 };

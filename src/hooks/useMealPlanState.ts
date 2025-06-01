@@ -1,88 +1,106 @@
-
-import { useCallback } from "react";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { useMealPlanData } from "@/hooks/useMealPlanData";
-import { useMealPlanActions } from "@/hooks/useMealPlanActions";
-import { useMealPlanNavigation } from "@/hooks/useMealPlanNavigation";
-import { useMealPlanDialogs } from "@/hooks/useMealPlanDialogs";
-import { useMealPlanCalculations } from "@/hooks/useMealPlanCalculations";
-import { useMealPlanHandlers } from "@/hooks/useMealPlanHandlers";
+import { useState, useEffect } from 'react';
+import { useI18n } from "@/hooks/useI18n";
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from './useAuth';
+import { useProfile } from './useProfile';
+import { useMealPlanData } from './useMealPlanData';
 
 export const useMealPlanState = () => {
-  const { t } = useLanguage();
+  const { t } = useI18n();
+  const { user } = useAuth();
+  const { profile } = useProfile();
+  const { 
+    currentWeekPlan, 
+    dailyMeals, 
+    isLoading, 
+    error, 
+    fetchMealPlan,
+    createMealPlan,
+    updateMealPlan,
+    deleteMealPlan,
+    addMealToDay,
+    removeMealFromDay,
+    exchangeMealInDay,
+    isMealPlanLoading
+  } = useMealPlanData();
   
-  // Use smaller, focused hooks
-  const navigation = useMealPlanNavigation();
-  const dialogs = useMealPlanDialogs();
-  
-  const { data: currentWeekPlan, isLoading, error, refetch: refetchMealPlan } = useMealPlanData(navigation.currentWeekOffset);
-  const { handleRegeneratePlan, handleGenerateAIPlan, isGenerating, isShuffling } = useMealPlanActions(
-    currentWeekPlan,
-    navigation.currentWeekOffset,
-    dialogs.aiPreferences,
-    refetchMealPlan
-  );
+  const [selectedDay, setSelectedDay] = useState<number>(1);
+  const [isShoppingListOpen, setIsShoppingListOpen] = useState(false);
+  const [isAddSnackOpen, setIsAddSnackOpen] = useState(false);
+  const [isRecipeDialogOpen, setIsRecipeDialogOpen] = useState(false);
+  const [selectedMeal, setSelectedMeal] = useState(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationType, setGenerationType] = useState<'initial' | 'regenerate' | 'ai'>('initial');
 
-  const calculations = useMealPlanCalculations(currentWeekPlan, navigation.selectedDayNumber);
-  const handlers = useMealPlanHandlers(
-    dialogs.setSelectedMeal,
-    dialogs.setSelectedMealIndex,
-    dialogs.setShowRecipeDialog,
-    dialogs.setShowExchangeDialog
-  );
-
-  // Enhanced logging for debugging
-  console.log('🔍 MEAL PLAN STATE DEBUG:', {
-    currentWeekOffset: navigation.currentWeekOffset,
-    selectedDayNumber: navigation.selectedDayNumber,
-    hasWeeklyPlan: !!currentWeekPlan?.weeklyPlan,
-    hasDailyMeals: !!currentWeekPlan?.dailyMeals,
-    dailyMealsCount: currentWeekPlan?.dailyMeals?.length || 0,
-    isLoading,
-    error: error?.message,
-    weekStartDate: navigation.weekStartDate.toDateString()
-  });
-
-  const refetch = useCallback(async () => {
-    console.log('🔄 Manual refetch triggered for week offset:', navigation.currentWeekOffset);
-    try {
-      await refetchMealPlan?.();
-    } catch (error) {
-      console.error('Manual refetch failed:', error);
+  useEffect(() => {
+    if (user && profile) {
+      fetchMealPlan();
     }
-  }, [navigation.currentWeekOffset, refetchMealPlan]);
+  }, [user, profile, fetchMealPlan]);
 
-  const enhancedHandleGenerateAIPlan = useCallback(async () => {
-    const success = await handleGenerateAIPlan();
-    if (success) {
-      dialogs.setShowAIDialog(false);
-    }
-    return success;
-  }, [handleGenerateAIPlan, dialogs.setShowAIDialog]);
+  const handleSelectDay = (dayNumber: number) => {
+    setSelectedDay(dayNumber);
+  };
+
+  const handleShowShoppingList = () => {
+    setIsShoppingListOpen(true);
+  };
+
+  const handleCloseShoppingList = () => {
+    setIsShoppingListOpen(false);
+  };
+
+  const handleOpenAddSnack = () => {
+    setIsAddSnackOpen(true);
+  };
+
+  const handleCloseAddSnack = () => {
+    setIsAddSnackOpen(false);
+  };
+
+  const handleShowRecipe = (meal: any) => {
+    setSelectedMeal(meal);
+    setIsRecipeDialogOpen(true);
+  };
+
+  const handleCloseRecipe = () => {
+    setSelectedMeal(null);
+    setIsRecipeDialogOpen(false);
+  };
 
   return {
-    // Navigation state
-    ...navigation,
-    
-    // Dialog state
-    ...dialogs,
-    
-    // Calculations
-    ...calculations,
-    
-    // Handlers
-    ...handlers,
-    
-    // Data
-    currentWeekPlan,
-    isLoading,
+    selectedDay,
+    isShoppingListOpen,
+    isAddSnackOpen,
+    isRecipeDialogOpen,
+    selectedMeal,
     isGenerating,
-    isShuffling,
+    generationType,
+    currentWeekPlan,
+    dailyMeals,
+    isLoading,
+    isMealPlanLoading,
     error,
-    
-    // Actions
-    handleRegeneratePlan,
-    handleGenerateAIPlan: enhancedHandleGenerateAIPlan,
-    refetch
+    setSelectedDay,
+    setIsShoppingListOpen,
+    setIsAddSnackOpen,
+    setIsRecipeDialogOpen,
+    setSelectedMeal,
+    setIsGenerating,
+    setGenerationType,
+    fetchMealPlan,
+    createMealPlan,
+    updateMealPlan,
+    deleteMealPlan,
+    addMealToDay,
+    removeMealFromDay,
+    exchangeMealInDay,
+    handleSelectDay,
+    handleShowShoppingList,
+    handleCloseShoppingList,
+    handleOpenAddSnack,
+    handleCloseAddSnack,
+    handleShowRecipe,
+    handleCloseRecipe
   };
 };

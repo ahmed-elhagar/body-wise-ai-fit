@@ -1,168 +1,96 @@
-
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
-import { useCreditSystem } from './useCreditSystem';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useProfile } from './useProfile';
+import { Meal } from '@/types/meal';
+import { useI18n } from "@/hooks/useI18n";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 export const useEnhancedMealRecipe = () => {
-  const [isGeneratingRecipe, setIsGeneratingRecipe] = useState(false);
   const { user } = useAuth();
-  const { language } = useLanguage();
-  const { checkAndUseCreditAsync, completeGenerationAsync } = useCreditSystem();
+  const { profile } = useProfile();
+  const { t } = useI18n();
+  const queryClient = useQueryClient();
 
-  const generateEnhancedRecipe = async (mealId: string, mealData?: any) => {
-    if (!user) {
-      toast.error('Please log in to view recipes');
-      return null;
-    }
+  const [meal, setMeal] = useState<Meal | null>(null);
+  const [isRecipeLoading, setIsRecipeLoading] = useState(false);
 
-    if (!mealId) {
-      toast.error('Meal ID is required to generate recipe');
-      return null;
-    }
-
-    setIsGeneratingRecipe(true);
-    
+  const fetchMealRecipe = async (mealId: string): Promise<Meal> => {
+    setIsRecipeLoading(true);
     try {
-      console.log('🍳 Starting enhanced recipe generation for meal:', mealId, 'in language:', language);
-      
-      // First, check if recipe already exists in database
-      const { data: existingMeal, error: fetchError } = await supabase
-        .from('daily_meals')
+      const { data, error } = await supabase
+        .from('meals')
         .select('*')
         .eq('id', mealId)
         .single();
 
-      if (fetchError) {
-        console.error('Error fetching meal:', fetchError);
-        throw new Error('Failed to fetch meal data');
+      if (error) {
+        console.error("Error fetching meal recipe:", error);
+        throw new Error(t('mealPlan.recipeFetchFailed') || 'Failed to fetch meal recipe');
       }
 
-      // If recipe already exists and is complete, return it
-      if (existingMeal?.recipe_fetched && 
-          existingMeal?.ingredients && 
-          Array.isArray(existingMeal.ingredients) &&
-          existingMeal.ingredients.length > 0 && 
-          existingMeal?.instructions && 
-          Array.isArray(existingMeal.instructions) &&
-          existingMeal.instructions.length > 0) {
-        console.log('✅ Recipe already exists in database, returning cached version');
-        toast.success('Recipe loaded from cache!');
-        return existingMeal;
+      if (!data) {
+        throw new Error(t('mealPlan.recipeNotFound') || 'Meal recipe not found');
       }
 
-      // Show loading feedback
-      toast.loading('Generating detailed recipe with AI...', {
-        duration: 15000,
-      });
-
-      // Use credit system for recipe generation
-      const creditResult = await checkAndUseCreditAsync('meal_plan');
-
-      try {
-        console.log('🔄 Making API call to generate-meal-recipe function');
-        
-        const { data, error } = await supabase.functions.invoke('generate-meal-recipe', {
-          body: {
-            mealId: mealId,
-            userId: user.id,
-            language: language,
-            mealData: mealData || existingMeal
-          }
-        });
-
-        toast.dismiss();
-
-        if (error) {
-          console.error('❌ Recipe generation error:', error);
-          throw error;
-        }
-
-        if (data?.success) {
-          console.log('✅ Recipe generated successfully!');
-          
-          // Complete the AI generation log
-          const creditData = creditResult as any;
-          if (creditData?.log_id) {
-            await completeGenerationAsync({
-              logId: creditData.log_id,
-              responseData: {
-                mealId: mealId,
-                recipeGenerated: true,
-                language: language
-              }
-            });
-          }
-
-          if (data.message?.includes('already available')) {
-            toast.success('Recipe loaded from cache!');
-          } else {
-            toast.success(
-              `🎉 Recipe generated! (${data.recipeCount || 1}/${data.dailyLimit || 10} today)`,
-              { duration: 3000 }
-            );
-          }
-          
-          // Fetch updated meal data from database
-          const { data: updatedMeal, error: refetchError } = await supabase
-            .from('daily_meals')
-            .select('*')
-            .eq('id', mealId)
-            .single();
-
-          if (refetchError) {
-            console.error('Error refetching updated meal:', refetchError);
-            throw refetchError;
-          }
-
-          console.log('📄 Updated meal data:', updatedMeal);
-          return updatedMeal;
-          
-        } else {
-          throw new Error(data?.error || 'Failed to generate recipe');
-        }
-      } catch (error) {
-        // Mark generation as failed
-        const creditData = creditResult as any;
-        if (creditData?.log_id) {
-          await completeGenerationAsync({
-            logId: creditData.log_id,
-            errorMessage: error instanceof Error ? error.message : 'Recipe generation failed'
-          });
-        }
-        throw error;
-      }
-      
+      setMeal(data);
+      return data as Meal;
     } catch (error: any) {
-      console.error('❌ Error generating recipe:', error);
-      toast.dismiss();
-      
-      if (error.message?.includes('limit reached')) {
-        toast.error('AI generation limit reached. Please upgrade or wait for credits to reset.');
-      } else if (error.message?.includes('not found')) {
-        toast.error('Meal not found. Please refresh and try again.');
-      } else {
-        toast.error(error.message || 'Failed to generate recipe. Please try again.');
-      }
-      
-      return null;
+      console.error("Error fetching meal recipe:", error);
+      toast.error(error.message || t('mealPlan.recipeFetchError') || 'Error fetching meal recipe');
+      throw error;
     } finally {
-      setIsGeneratingRecipe(false);
+      setIsRecipeLoading(false);
     }
   };
 
-  const generateYouTubeSearchTerm = (mealName: string) => {
-    if (!mealName) return 'cooking recipe tutorial';
-    
-    const cleanName = mealName.replace(/🍎\s*/, '').trim();
-    return `${cleanName} recipe cooking tutorial`;
-  };
+  const { mutate: saveMealRecipe, isLoading: isSaving } = useMutation({
+    mutationFn: async (updates: Partial<Meal>) => {
+      if (!user) {
+        throw new Error(t('auth.signInRequired') || 'Please sign in to save meal recipe');
+      }
+
+      if (!meal?.id) {
+        throw new Error(t('mealPlan.noMealSelected') || 'No meal selected to update');
+      }
+
+      const { data, error } = await supabase
+        .from('meals')
+        .update(updates)
+        .eq('id', meal.id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error updating meal recipe:", error);
+        throw new Error(t('mealPlan.recipeSaveFailed') || 'Failed to save meal recipe');
+      }
+
+      // Optimistically update the cache
+      queryClient.setQueryData(['meal', meal.id], (old: any) => ({
+        ...old,
+        ...updates,
+      }));
+
+      return data;
+    },
+    onSuccess: () => {
+      toast.success(t('mealPlan.recipeSavedSuccess') || 'Meal recipe saved successfully!');
+    },
+    onError: (error: any) => {
+      console.error("Error saving meal recipe:", error);
+      toast.error(error.message || t('mealPlan.recipeSaveError') || 'Error saving meal recipe');
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['meals'] });
+    },
+  });
 
   return {
-    generateEnhancedRecipe,
-    generateYouTubeSearchTerm,
-    isGeneratingRecipe
+    meal,
+    isRecipeLoading,
+    fetchMealRecipe,
+    saveMealRecipe,
+    isSaving
   };
 };
