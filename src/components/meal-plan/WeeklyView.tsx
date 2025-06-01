@@ -76,10 +76,21 @@ const WeeklyView = ({
     }
   };
 
+  // Localized day names using our translation system
   const getDayName = (dayNumber: number) => {
-    const dayNames = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-    return dayNames[dayNumber - 1] || 'Unknown';
+    const dayNames = {
+      1: 'Saturday',
+      2: 'Sunday',
+      3: 'Monday',
+      4: 'Tuesday', 
+      5: 'Wednesday',
+      6: 'Thursday',
+      7: 'Friday'
+    };
+    return dayNames[dayNumber as keyof typeof dayNames] || 'Unknown';
   };
+
+  console.log('🗓️ WeeklyView - Rendering weekly view with', weekDays.length, 'days');
 
   return (
     <Card className="shadow-lg rounded-2xl border-0 bg-white/90 backdrop-blur-sm">
@@ -102,6 +113,10 @@ const WeeklyView = ({
                 className={`cursor-pointer hover:shadow-xl transition-all duration-300 bg-white rounded-2xl group border-2 hover:border-fitness-primary-300 ${
                   isToday ? 'ring-2 ring-fitness-accent-400 border-fitness-accent-300' : 'border-gray-100'
                 }`}
+                onClick={() => {
+                  onSelectDay(day.number);
+                  onSwitchToDaily();
+                }}
               >
                 <CardHeader className="pb-3">
                   <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
@@ -201,7 +216,8 @@ const WeeklyView = ({
                       variant="outline" 
                       size="sm" 
                       className="w-full text-fitness-primary-600 hover:bg-fitness-primary-50 border-fitness-primary-200"
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         onSelectDay(day.number);
                         onSwitchToDaily();
                       }}

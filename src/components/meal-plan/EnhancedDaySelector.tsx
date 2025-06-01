@@ -33,24 +33,24 @@ const EnhancedDaySelector = ({
     dailyView, 
     weeklyView, 
     meals,
+    today,
     isRTL 
   } = useMealPlanTranslations();
   
-  const today = new Date();
+  const todayDate = new Date();
 
   const days = Array.from({ length: 7 }, (_, index) => {
     const dayNumber = index + 1;
     const date = addDays(weekStartDate, index);
     const isSelected = selectedDayNumber === dayNumber;
-    const isToday = isSameDay(date, today);
+    const isToday = isSameDay(date, todayDate);
     
     return {
       dayNumber,
       date,
       isSelected,
       isToday,
-      dayDate: format(date, 'd'),
-      dayName: format(date, 'EEE')
+      dayDate: format(date, 'd')
     };
   });
 
@@ -63,6 +63,8 @@ const EnhancedDaySelector = ({
     }
     return `${format(startDate, 'MMM d')} - ${format(endDate, 'MMM d, yyyy')}`;
   };
+
+  console.log('🎯 EnhancedDaySelector - Current view mode:', viewMode);
 
   return (
     <Card className="bg-gradient-to-r from-fitness-primary-50 via-white to-fitness-accent-50 border-fitness-primary-200 shadow-lg rounded-2xl">
@@ -106,29 +108,35 @@ const EnhancedDaySelector = ({
             </Button>
           </div>
 
-          {/* View Mode Toggle */}
-          <div className="flex bg-white rounded-xl p-1 border-2 border-fitness-primary-200 shadow-sm">
+          {/* View Mode Toggle - ENHANCED WITH CLEAR ICONS */}
+          <div className="flex bg-white rounded-xl p-1 border-2 border-fitness-primary-200 shadow-md">
             <button
-              onClick={() => onViewModeChange('daily')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all text-sm ${
+              onClick={() => {
+                console.log('🎯 Switching to daily view');
+                onViewModeChange('daily');
+              }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all text-sm min-w-[100px] justify-center ${
                 viewMode === 'daily'
-                  ? 'bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 text-white shadow-md transform scale-105'
+                  ? 'bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 text-white shadow-lg transform scale-105'
                   : 'text-fitness-primary-600 hover:text-fitness-primary-700 hover:bg-fitness-primary-50'
               }`}
             >
               <Calendar className="w-4 h-4" />
-              {dailyView}
+              <span>{dailyView}</span>
             </button>
             <button
-              onClick={() => onViewModeChange('weekly')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all text-sm ${
+              onClick={() => {
+                console.log('🎯 Switching to weekly view');
+                onViewModeChange('weekly');
+              }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all text-sm min-w-[100px] justify-center ${
                 viewMode === 'weekly'
-                  ? 'bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 text-white shadow-md transform scale-105'
+                  ? 'bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 text-white shadow-lg transform scale-105'
                   : 'text-fitness-primary-600 hover:text-fitness-primary-700 hover:bg-fitness-primary-50'
               }`}
             >
               <Grid3X3 className="w-4 h-4" />
-              {weeklyView}
+              <span>{weeklyView}</span>
             </button>
           </div>
         </div>
@@ -167,12 +175,32 @@ const EnhancedDaySelector = ({
                       {dayDate}
                     </span>
                     {isToday && (
-                      <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-fitness-accent-200' : 'bg-fitness-accent-500'}`} />
+                      <div className="flex flex-col items-center">
+                        <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-fitness-accent-200' : 'bg-fitness-accent-500'}`} />
+                        <span className={`text-xs font-medium mt-1 ${isSelected ? 'text-fitness-accent-200' : 'text-fitness-accent-600'}`}>
+                          {today}
+                        </span>
+                      </div>
                     )}
                   </div>
                 </button>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Weekly View Indicator */}
+        {viewMode === 'weekly' && (
+          <div className="text-center py-4">
+            <div className={`flex items-center justify-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <Grid3X3 className="w-5 h-5 text-fitness-primary-600" />
+              <h3 className="text-lg font-semibold text-fitness-primary-800">
+                {weeklyView}
+              </h3>
+            </div>
+            <p className="text-sm text-fitness-primary-600 mt-1">
+              Viewing all 7 days of the week
+            </p>
           </div>
         )}
       </div>
