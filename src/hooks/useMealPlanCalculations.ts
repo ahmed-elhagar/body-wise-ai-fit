@@ -40,12 +40,18 @@ export const useMealPlanCalculations = (currentWeekPlan: any, selectedDayNumber:
     currentWeekPlan.dailyMeals.forEach((meal: DailyMeal) => {
       if (meal.ingredients && Array.isArray(meal.ingredients)) {
         meal.ingredients.forEach((ingredient: any) => {
-          ingredients.push({
-            name: ingredient.name,
-            quantity: ingredient.quantity,
-            unit: ingredient.unit,
-            category: getCategoryForIngredient(ingredient.name)
-          });
+          // Safely handle ingredient name - check for both ingredient.name and direct string
+          const ingredientName = ingredient?.name || ingredient;
+          
+          // Only process if we have a valid ingredient name
+          if (ingredientName && typeof ingredientName === 'string') {
+            ingredients.push({
+              name: ingredientName,
+              quantity: ingredient.quantity || '1',
+              unit: ingredient.unit || 'piece',
+              category: getCategoryForIngredient(ingredientName)
+            });
+          }
         });
       }
     });
@@ -64,6 +70,11 @@ export const useMealPlanCalculations = (currentWeekPlan: any, selectedDayNumber:
 };
 
 const getCategoryForIngredient = (ingredientName: string): string => {
+  // Add safety check for undefined/null ingredientName
+  if (!ingredientName || typeof ingredientName !== 'string') {
+    return 'Others';
+  }
+
   const categories = {
     'Proteins': ['chicken', 'beef', 'pork', 'fish', 'eggs', 'tofu', 'beans', 'lentils'],
     'Vegetables': ['tomato', 'onion', 'garlic', 'carrot', 'spinach', 'broccoli', 'pepper'],
