@@ -29,9 +29,9 @@ const OptimizedExerciseProgramPageContent = () => {
   const { profile } = useProfile();
   const { t } = useI18n();
   
-  // Use workout_environment from profile if available, default to "home"
+  // Use activity_level as fallback for workout environment
   const [workoutType, setWorkoutType] = useState<"home" | "gym">(
-    (profile?.workout_environment === 'gym') ? "gym" : "home"
+    (profile?.activity_level === 'very_high') ? "gym" : "home"
   );
   const [isAIDialogOpen, setIsAIDialogOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState(parseInt(day || '0') || new Date().getDay());
@@ -42,10 +42,10 @@ const OptimizedExerciseProgramPageContent = () => {
   const weekStartDate = startOfWeek(addDays(new Date(), currentWeekOffset * 7), { weekStartsOn: 1 });
 
   useEffect(() => {
-    if (profile?.workout_environment) {
-      setWorkoutType(profile.workout_environment === 'gym' ? "gym" : "home");
+    if (profile?.activity_level) {
+      setWorkoutType(profile.activity_level === 'very_high' ? "gym" : "home");
     }
-  }, [profile?.workout_environment]);
+  }, [profile?.activity_level]);
 
   useEffect(() => {
     const dayNumber = parseInt(day || '0');
@@ -79,7 +79,12 @@ const OptimizedExerciseProgramPageContent = () => {
   };
 
   const handleRegenerateProgram = async () => {
-    await generateAIExercise({ workoutType });
+    await generateAIExercise({ 
+      focus: 'general_fitness',
+      equipment: workoutType === 'gym' ? 'full_gym' : 'bodyweight',
+      duration: 45,
+      intensity: 'medium'
+    });
   };
 
   const handleDaySelect = (day: number) => {
@@ -110,12 +115,12 @@ const OptimizedExerciseProgramPageContent = () => {
     });
 
     const { error } = await supabase
-      .from('exercise_programs')
-      .update({ exercises: updatedExercises })
-      .eq('id', currentProgram.id);
+      .from('daily_workouts')
+      .update({ completed: true })
+      .eq('id', currentWorkout?.id);
 
     if (error) {
-      console.error("Error updating exercise program:", error);
+      console.error("Error updating exercise completion:", error);
     }
   };
 
@@ -130,12 +135,12 @@ const OptimizedExerciseProgramPageContent = () => {
     });
 
     const { error } = await supabase
-      .from('exercise_programs')
-      .update({ exercises: updatedExercises })
-      .eq('id', currentProgram.id);
+      .from('exercises')
+      .update({ sets, reps, notes })
+      .eq('id', exerciseId);
 
     if (error) {
-      console.error("Error updating exercise program:", error);
+      console.error("Error updating exercise progress:", error);
     }
     setExerciseProgressOpen(false);
   };
@@ -200,7 +205,7 @@ const OptimizedExerciseProgramPageContent = () => {
 
           {/* Exercise List */}
           <OptimizedExerciseList
-            exercises={exercises}
+            exercises={exercises.map((ex: any) => ({ ...ex, daily_workout_id: currentWorkout?.id || '' }))}
             isLoading={isLoading}
             onExerciseComplete={handleExerciseComplete}
             onExerciseProgressUpdate={(exerciseId, sets, reps, notes) => {

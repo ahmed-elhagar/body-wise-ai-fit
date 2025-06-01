@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,6 +10,7 @@ interface AIExerciseOptions {
   equipment: string;
   duration: number;
   intensity: string;
+  workoutType?: string;
 }
 
 export const useAIExercise = () => {
@@ -26,6 +28,7 @@ export const useAIExercise = () => {
           equipment: options.equipment,
           duration: options.duration,
           intensity: options.intensity,
+          workoutType: options.workoutType || 'home',
           language: 'en' // TODO: use language from i18n
         }
       });

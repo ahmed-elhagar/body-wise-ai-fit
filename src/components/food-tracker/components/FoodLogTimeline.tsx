@@ -54,9 +54,9 @@ const FoodLogTimeline = ({ foodLogs }: FoodLogTimelineProps) => {
                 className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
               >
                 <div className="flex-1">
-                  <div className="font-medium">{log.food_name}</div>
+                  <div className="font-medium">Food Item</div>
                   <div className="text-sm text-gray-600">
-                    {log.quantity}g • {log.calories} cal
+                    {log.quantity_g}g • {log.calories_consumed} cal
                   </div>
                   {log.notes && (
                     <div className="text-sm text-gray-500 mt-1">{log.notes}</div>

@@ -58,8 +58,13 @@ const ExerciseProgramPageContent = () => {
   const handleCloseAIDialog = () => setAIDialogOpen(false);
 
   const handleRegenerateProgram = async () => {
-    if (!programId) return;
-    await generateAIExercise({ programId: programId, workoutType: workoutType });
+    await generateAIExercise({ 
+      focus: 'general_fitness',
+      equipment: workoutType === 'gym' ? 'full_gym' : 'bodyweight',
+      duration: 45,
+      intensity: 'medium',
+      workoutType: workoutType 
+    });
   };
 
   const handleDaySelect = (day: number) => {
@@ -79,15 +84,13 @@ const ExerciseProgramPageContent = () => {
   };
 
   const handleExerciseComplete = async (exerciseId: string) => {
-    if (!programId) return;
-    
     try {
       const updatedExercises = exercises.map(ex =>
         ex.id === exerciseId ? { ...ex, completed: !ex.completed } : ex
       );
 
       const { error } = await supabase
-        .from('user_exercises')
+        .from('exercises')
         .update({ completed: !exercises.find(ex => ex.id === exerciseId)?.completed })
         .eq('id', exerciseId);
 
@@ -100,11 +103,9 @@ const ExerciseProgramPageContent = () => {
   };
 
   const handleExerciseProgressUpdate = async (exerciseId: string, sets: number, reps: string, notes?: string) => {
-    if (!programId) return;
-
     try {
       const { error } = await supabase
-        .from('user_exercises')
+        .from('exercises')
         .update({ sets: sets, reps: reps, notes: notes, completed: true })
         .eq('id', exerciseId);
 
@@ -186,7 +187,7 @@ const ExerciseProgramPageContent = () => {
 
         {/* Exercise List */}
         <OptimizedExerciseList
-          exercises={exercises}
+          exercises={exercises.map(ex => ({ ...ex, daily_workout_id: currentWorkout?.id || '' }))}
           isLoading={isLoading}
           onExerciseComplete={handleExerciseComplete}
           onExerciseProgressUpdate={(exerciseId, sets, reps, notes) => {

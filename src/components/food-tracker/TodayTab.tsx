@@ -23,7 +23,7 @@ const TodayTab = () => {
       tomorrow.setDate(tomorrow.getDate() + 1);
 
       const { data, error } = await supabase
-        .from('food_consumption_logs')
+        .from('food_consumption_log')
         .select('*')
         .eq('user_id', user.id)
         .gte('consumed_at', today.toISOString())
