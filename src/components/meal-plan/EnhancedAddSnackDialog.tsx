@@ -32,6 +32,16 @@ const EnhancedAddSnackDialog = ({
   const { user } = useAuth();
   const { profile } = useProfile();
 
+  console.log('🍎 EnhancedAddSnackDialog - Props received:', {
+    isOpen,
+    selectedDay,
+    weeklyPlanId,
+    currentDayCalories,
+    targetDayCalories,
+    hasProfile: !!profile,
+    userId: user?.id
+  });
+
   const { dynamicTargetCalories, remainingCalories, progressPercentage } = useCalorieCalculations(
     currentDayCalories,
     targetDayCalories
@@ -47,9 +57,32 @@ const EnhancedAddSnackDialog = ({
   });
 
   const handleClose = () => {
-    if (isGenerating) return; // Prevent closing during generation
+    if (isGenerating) {
+      console.log('🚫 Cannot close dialog during generation');
+      return; // Prevent closing during generation
+    }
+    console.log('✅ Closing add snack dialog');
     onClose();
   };
+
+  // Don't render if essential data is missing
+  if (!weeklyPlanId) {
+    console.warn('⚠️ EnhancedAddSnackDialog: No weeklyPlanId provided');
+    return null;
+  }
+
+  if (!profile) {
+    console.warn('⚠️ EnhancedAddSnackDialog: No user profile available');
+    return null;
+  }
+
+  console.log('🔄 EnhancedAddSnackDialog - Calculated values:', {
+    dynamicTargetCalories,
+    remainingCalories,
+    progressPercentage,
+    isGenerating,
+    generationStep
+  });
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>

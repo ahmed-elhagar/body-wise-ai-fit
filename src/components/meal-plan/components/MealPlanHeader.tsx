@@ -27,27 +27,19 @@ const MealPlanHeader = ({
       <div className="relative z-10">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           {/* Title Section */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 bg-gradient-to-br from-fitness-primary-500 to-fitness-accent-500 rounded-2xl flex items-center justify-center shadow-lg">
                 <UtensilsCrossed className="w-7 h-7 text-white" />
               </div>
               <div>
-                <h1 className="text-4xl font-bold text-gray-900 mb-1">
-                  {t('mealPlan.title') || 'Meal Plan'}
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-fitness-primary-700 to-fitness-accent-600 bg-clip-text text-transparent mb-1">
+                  Smart Meal Planning
                 </h1>
-                <p className="text-lg text-gray-600 font-medium">
-                  {t('mealPlan.subtitle') || 'AI-Powered Personalized Nutrition Planning'}
+                <p className="text-lg text-fitness-primary-600 font-medium">
+                  Personalized nutrition plans powered by AI
                 </p>
               </div>
-            </div>
-
-            {/* Caption */}
-            <div className="bg-gradient-to-r from-fitness-primary-50 to-fitness-accent-50 p-4 rounded-xl border border-fitness-primary-100">
-              <p className="text-sm text-gray-700 leading-relaxed">
-                Create personalized meal plans tailored to your dietary preferences, health goals, and lifestyle. 
-                Our AI generates balanced nutrition plans that fit your needs perfectly.
-              </p>
             </div>
 
             {/* Credits Display */}
@@ -56,8 +48,8 @@ const MealPlanHeader = ({
                 <Zap className="w-4 h-4 mr-2" />
                 {remainingCredits} {t('credits.remaining') || 'AI Credits'}
               </Badge>
-              <span className="text-sm text-gray-500">
-                Use AI credits to generate personalized meal plans
+              <span className="text-sm text-fitness-primary-500 font-medium">
+                Generate unlimited meal plans
               </span>
             </div>
           </div>
