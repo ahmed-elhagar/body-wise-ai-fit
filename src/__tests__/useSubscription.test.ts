@@ -44,7 +44,9 @@ describe('useSubscription', () => {
       error: null,
       signIn: vi.fn(),
       signUp: vi.fn(),
-      signOut: vi.fn()
+      signOut: vi.fn(),
+      clearError: vi.fn(),
+      retryAuth: vi.fn()
     });
   });
 
