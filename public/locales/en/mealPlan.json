@@ -30,5 +30,14 @@
   "excellentProgress": "Excellent progress! You've reached your daily nutrition goals.",
   "considerLightSnack": "Consider a light snack or some water to complete your day.",
   "perfectDay": "Perfect Day",
-  "nutritionGoalsReached": "Your nutrition goals have been successfully reached for today."
+  "nutritionGoalsReached": "Your nutrition goals have been successfully reached for today.",
+  "dayNames": {
+    "1": "Saturday",
+    "2": "Sunday", 
+    "3": "Monday",
+    "4": "Tuesday",
+    "5": "Wednesday",
+    "6": "Thursday",
+    "7": "Friday"
+  }
 }

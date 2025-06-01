@@ -14,20 +14,24 @@ export const AddSnackDialogHeader = ({
   isGenerating, 
   onClose 
 }: AddSnackDialogHeaderProps) => {
-  const { t } = useLanguage();
+  const { t, isRTL } = useLanguage();
+
+  const getDayName = (dayNumber: number) => {
+    return t(`mealPlan.dayNames.${dayNumber}`) || `Day ${dayNumber}`;
+  };
 
   return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-3">
+    <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+      <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
         <div className="w-10 h-10 bg-gradient-to-br from-fitness-primary-500 to-fitness-primary-600 rounded-xl flex items-center justify-center">
           <Sparkles className="w-5 h-5 text-white" />
         </div>
-        <div>
+        <div className={isRTL ? 'text-right' : 'text-left'}>
           <h2 className="text-xl font-bold text-fitness-primary-800">
-            {t('common.addSnack') || 'Add Snack'}
+            {t('mealPlan.addSnack') || 'Add Snack'}
           </h2>
           <p className="text-fitness-primary-600 text-sm">
-            {t('common.smartSnackSuggestions') || 'Smart snack suggestions for your day'}
+            {getDayName(selectedDay)} - {t('mealPlan.smartSnackSuggestions') || 'Smart snack suggestions'}
           </p>
         </div>
       </div>
