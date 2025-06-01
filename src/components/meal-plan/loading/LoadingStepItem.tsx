@@ -1,6 +1,6 @@
 
 import { LucideIcon, CheckCircle, Loader2 } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 interface LoadingStepItemProps {
   icon: LucideIcon;
@@ -17,7 +17,7 @@ export const LoadingStepItem = ({
   isActive, 
   isCompleted 
 }: LoadingStepItemProps) => {
-  const { isRTL } = useLanguage();
+  const { isRTL } = useI18n();
 
   return (
     <div 

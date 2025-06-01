@@ -1,7 +1,7 @@
 
 import React from "react";
 import { LucideIcon } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 interface LoadingHeaderProps {
   icon: LucideIcon;
@@ -10,7 +10,7 @@ interface LoadingHeaderProps {
 }
 
 export const LoadingHeader = ({ icon: Icon, title, description }: LoadingHeaderProps) => {
-  const { isRTL } = useLanguage();
+  const { isRTL } = useI18n();
 
   return (
     <div className="mb-8">
