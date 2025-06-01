@@ -26,6 +26,8 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, metadata?: any) => Promise<void>;
   signOut: () => void;
+  clearError: () => void;
+  retryAuth: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -62,7 +64,9 @@ export const useAuth = () => {
       signOut: () => {
         setUser(null);
         setSession(null);
-      }
+      },
+      clearError: () => setError(null),
+      retryAuth: async () => {}
     };
   }
   return context;
@@ -74,41 +78,89 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<any>(null);
 
+  // Enhanced error clearing function
+  const clearError = () => {
+    setError(null);
+  };
+
+  // Enhanced retry authentication function
+  const retryAuth = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        throw error;
+      }
+      
+      if (session?.user) {
+        await enrichUserWithProfile(session);
+      }
+      
+      setSession(session);
+    } catch (err) {
+      console.error('Retry auth error:', err);
+      setError(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Enhanced user enrichment with better error handling
+  const enrichUserWithProfile = async (session: Session) => {
+    try {
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role, first_name, last_name')
+        .eq('id', session.user.id)
+        .single();
+      
+      if (profileError && profileError.code !== 'PGRST116') { // PGRST116 = no rows returned
+        console.warn('Profile fetch error (non-critical):', profileError);
+      }
+      
+      const enrichedUser: AuthUser = {
+        ...session.user,
+        role: profile?.role || session.user.user_metadata?.role || 'normal',
+        first_name: profile?.first_name || session.user.user_metadata?.first_name,
+        last_name: profile?.last_name || session.user.user_metadata?.last_name,
+      };
+      
+      console.log('User enriched with role:', enrichedUser.role);
+      setUser(enrichedUser);
+    } catch (err) {
+      console.warn('User enrichment failed, using basic user data:', err);
+      setUser(session.user);
+    }
+  };
+
   useEffect(() => {
     console.log("AuthProvider - Initializing");
+    
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state changed:', event, session?.user?.email);
-        setSession(session);
         
-        if (session?.user) {
-          // Fetch user profile to get role information
-          try {
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('role, first_name, last_name')
-              .eq('id', session.user.id)
-              .single();
-            
-            const enrichedUser = {
-              ...session.user,
-              role: profile?.role || session.user.user_metadata?.role || 'normal',
-              first_name: profile?.first_name || session.user.user_metadata?.first_name,
-              last_name: profile?.last_name || session.user.user_metadata?.last_name,
-            };
-            
-            console.log('User with role:', enrichedUser.role);
-            setUser(enrichedUser);
-          } catch (error) {
-            console.error('Error fetching user profile:', error);
-            setUser(session.user);
+        try {
+          setSession(session);
+          
+          if (session?.user) {
+            await enrichUserWithProfile(session);
+          } else {
+            setUser(null);
           }
-        } else {
-          setUser(null);
+          
+          // Clear any previous errors on successful auth state change
+          setError(null);
+        } catch (err) {
+          console.error('Auth state change error:', err);
+          setError(err);
+        } finally {
+          setIsLoading(false);
         }
-        
-        setIsLoading(false);
       }
     );
 
@@ -118,34 +170,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
-          console.error('Error getting session:', error);
-          setError(error);
-        } else {
-          console.log("Got initial session:", !!session);
-          if (session?.user) {
-            // Fetch user profile for initial session too
-            try {
-              const { data: profile } = await supabase
-                .from('profiles')
-                .select('role, first_name, last_name')
-                .eq('id', session.user.id)
-                .single();
-              
-              const enrichedUser = {
-                ...session.user,
-                role: profile?.role || session.user.user_metadata?.role || 'normal',
-                first_name: profile?.first_name || session.user.user_metadata?.first_name,
-                last_name: profile?.last_name || session.user.user_metadata?.last_name,
-              };
-              
-              setUser(enrichedUser);
-            } catch (error) {
-              console.error('Error fetching initial user profile:', error);
-              setUser(session.user);
-            }
-          }
-          setSession(session);
+          throw error;
         }
+        
+        console.log("Got initial session:", !!session);
+        
+        if (session?.user) {
+          await enrichUserWithProfile(session);
+        }
+        
+        setSession(session);
       } catch (error) {
         console.error('Error in getInitialSession:', error);
         setError(error);
@@ -172,7 +206,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
 
       if (error) {
-        setError(error);
         throw error;
       }
 
@@ -200,7 +233,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
 
       if (error) {
-        setError(error);
         throw error;
       }
 
@@ -216,14 +248,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     try {
+      setError(null);
+      
       const { error } = await supabase.auth.signOut();
       if (error) {
-        setError(error);
         throw error;
       }
       
       setUser(null);
       setSession(null);
+      console.log('Sign out successful');
     } catch (error: any) {
       console.error('Sign out error:', error);
       setError(error);
@@ -240,6 +274,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     signIn,
     signUp,
     signOut,
+    clearError,
+    retryAuth,
   };
 
   return (

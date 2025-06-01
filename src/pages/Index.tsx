@@ -2,10 +2,12 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { Card } from "@/components/ui/card";
+import { AlertTriangle } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
+  const { user, loading, error } = useAuth();
 
   useEffect(() => {
     if (!loading) {
@@ -21,6 +23,29 @@ const Index = () => {
       }
     }
   }, [user, loading, navigate]);
+
+  // Enhanced error handling for auth errors
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+        <Card className="p-6 bg-red-50 border-red-200 max-w-md">
+          <div className="flex items-center gap-3 mb-4">
+            <AlertTriangle className="h-6 w-6 text-red-600" />
+            <h2 className="text-lg font-semibold text-red-800">Authentication Error</h2>
+          </div>
+          <p className="text-red-700 mb-4">
+            There was an issue with authentication. Please try again.
+          </p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors"
+          >
+            Retry
+          </button>
+        </Card>
+      </div>
+    );
+  }
 
   // Show loading state while determining where to redirect
   if (loading) {

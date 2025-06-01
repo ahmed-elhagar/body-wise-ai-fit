@@ -3,7 +3,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { PageHeader } from "@/components/ui/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, Users, TrendingUp, CreditCard, Settings, Brain, Activity } from "lucide-react";
+import { Shield, Users, TrendingUp, CreditCard, Settings, Brain, Activity, AlertTriangle } from "lucide-react";
 import { useRole } from "@/hooks/useRole";
 import { Navigate } from "react-router-dom";
 import UsersTable from "@/components/admin/UsersTable";
@@ -14,13 +14,14 @@ import EnhancedStatsCards from "@/components/admin/EnhancedStatsCards";
 import SystemHealthMonitor from "@/components/admin/SystemHealthMonitor";
 import UserGenerationManager from "@/components/admin/UserGenerationManager";
 import AIModelsTab from "@/components/admin/AIModelsTab";
+import { Card } from "@/components/ui/card";
 
 const Admin = () => {
-  const { isAdmin, isLoading } = useRole();
+  const { isAdmin, isLoading, error } = useRole();
 
   if (isLoading) {
     return (
-      <ProtectedRoute>
+      <ProtectedRoute requireRole="admin">
         <Layout>
           <div className="animate-pulse space-y-4">
             <div className="h-8 bg-gray-200 rounded w-1/4"></div>
@@ -36,12 +37,30 @@ const Admin = () => {
     );
   }
 
+  // Enhanced error handling
+  if (error) {
+    return (
+      <ProtectedRoute>
+        <Layout>
+          <Card className="p-6 bg-red-50 border-red-200 max-w-md mx-auto mt-8">
+            <div className="flex items-center gap-3 mb-4">
+              <AlertTriangle className="h-6 w-6 text-red-600" />
+              <h2 className="text-lg font-semibold text-red-800">Authentication Error</h2>
+            </div>
+            <p className="text-red-700 mb-4">{error}</p>
+            <p className="text-sm text-red-600">Please try refreshing the page or contact support if the issue persists.</p>
+          </Card>
+        </Layout>
+      </ProtectedRoute>
+    );
+  }
+
   if (!isAdmin) {
     return <Navigate to="/dashboard" replace />;
   }
 
   return (
-    <ProtectedRoute>
+    <ProtectedRoute requireRole="admin">
       <Layout>
         <PageHeader
           title="Admin Panel"
