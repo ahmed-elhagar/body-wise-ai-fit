@@ -2,17 +2,37 @@
 import { Card } from '@/components/ui/card';
 import { Users, Activity, Shield, TrendingUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { useAdminStats } from '@/hooks/useAdminStats';
 
-interface StatsCardsProps {
-  stats?: {
-    totalUsers: number;
-    activeSessions: number;
-    activeSubscriptions: number;
-    totalGenerations: number;
-  };
-}
+const StatsCards = () => {
+  const { data: stats, isLoading, error } = useAdminStats();
 
-const StatsCards = ({ stats }: StatsCardsProps) => {
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[...Array(4)].map((_, i) => (
+          <Card key={i} className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg animate-pulse">
+            <div className="flex items-center justify-between">
+              <div className="space-y-2">
+                <div className="h-4 bg-gray-200 rounded w-20"></div>
+                <div className="h-8 bg-gray-200 rounded w-16"></div>
+              </div>
+              <div className="w-12 h-12 bg-gray-200 rounded-xl"></div>
+            </div>
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="p-6 bg-red-50 border-red-200">
+        <p className="text-red-600">Error loading statistics: {error.message}</p>
+      </Card>
+    );
+  }
+
   const statsData = [
     {
       icon: Users,
