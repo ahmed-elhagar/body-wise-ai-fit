@@ -89,7 +89,7 @@ const WeeklyViewContainer = ({
       </CardHeader>
       
       <CardContent className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {weekDays.map((day) => {
             const dayMeals = getDayMeals(day.number);
             const dayStats = calculateDayStats(dayMeals);
@@ -129,7 +129,7 @@ const WeeklyViewContainer = ({
                   </div>
                 </CardHeader>
                 
-                <CardContent className="p-4 space-y-4">
+                <CardContent className="p-4 space-y-3">
                   {/* Quick Stats */}
                   <div className="grid grid-cols-3 gap-2 text-xs">
                     <div className="text-center p-2 bg-fitness-primary-50 rounded-lg">
@@ -147,29 +147,29 @@ const WeeklyViewContainer = ({
                   </div>
 
                   {/* Meals Preview */}
-                  <div className="space-y-2 max-h-40 overflow-y-auto">
-                    {dayMeals.slice(0, 3).map((meal: DailyMeal, index: number) => (
+                  <div className="space-y-2 max-h-32 overflow-y-auto">
+                    {dayMeals.slice(0, 2).map((meal: DailyMeal, index: number) => (
                       <div 
                         key={meal.id} 
-                        className="p-3 bg-gray-50 rounded-lg hover:bg-fitness-primary-50 transition-colors group/meal"
+                        className="p-2 bg-gray-50 rounded-lg hover:bg-fitness-primary-50 transition-colors group/meal"
                       >
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2 flex-1">
-                            <Utensils className="w-3 h-3 text-fitness-primary-600" />
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <Utensils className="w-3 h-3 text-fitness-primary-600 flex-shrink-0" />
                             <div className="min-w-0 flex-1">
-                              <h5 className="font-medium text-sm text-gray-900 truncate">
+                              <h5 className="font-medium text-xs text-gray-900 truncate">
                                 {meal.name}
                               </h5>
                               <p className="text-xs text-gray-500 capitalize">{meal.meal_type}</p>
                             </div>
                           </div>
-                          <span className="text-xs font-medium text-fitness-primary-600 bg-fitness-primary-100 px-2 py-1 rounded">
+                          <span className="text-xs font-medium text-fitness-primary-600 bg-fitness-primary-100 px-2 py-1 rounded flex-shrink-0">
                             {meal.calories || 0}
                           </span>
                         </div>
                         
                         {/* Meal Actions */}
-                        <div className="flex gap-1 opacity-0 group-hover/meal:opacity-100 transition-opacity">
+                        <div className="flex gap-1 opacity-0 group-hover/meal:opacity-100 transition-opacity mt-2">
                           <Button
                             size="sm"
                             variant="outline"
@@ -198,15 +198,15 @@ const WeeklyViewContainer = ({
                       </div>
                     ))}
                     
-                    {dayMeals.length > 3 && (
+                    {dayMeals.length > 2 && (
                       <div className="text-center text-xs text-fitness-primary-600 font-medium bg-fitness-primary-50 py-2 rounded-lg">
-                        +{dayMeals.length - 3} more
+                        +{dayMeals.length - 2} more
                       </div>
                     )}
                     
                     {dayMeals.length === 0 && (
-                      <div className="text-center text-gray-400 py-4">
-                        <ChefHat className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                      <div className="text-center text-gray-400 py-3">
+                        <ChefHat className="w-6 h-6 mx-auto mb-2 opacity-50" />
                         <p className="text-xs">No meals planned</p>
                       </div>
                     )}
@@ -217,7 +217,7 @@ const WeeklyViewContainer = ({
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      className="w-full text-fitness-primary-700 hover:bg-fitness-primary-50 border-fitness-primary-200 h-8 text-xs"
+                      className="w-full text-fitness-primary-700 hover:bg-fitness-primary-50 border-fitness-primary-200 h-7 text-xs"
                       onClick={(e) => {
                         e.stopPropagation();
                         onSelectDay(day.number);
@@ -231,7 +231,7 @@ const WeeklyViewContainer = ({
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      className="w-full text-green-700 hover:bg-green-50 border-green-200 h-8 text-xs"
+                      className="w-full text-green-700 hover:bg-green-50 border-green-200 h-7 text-xs"
                       onClick={(e) => {
                         e.stopPropagation();
                         onAddSnack(day.number);

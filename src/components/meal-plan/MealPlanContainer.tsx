@@ -8,6 +8,8 @@ import WeeklyViewContainer from "./WeeklyViewContainer";
 import EmptyWeekState from "./EmptyWeekState";
 import LoadingState from "./LoadingState";
 import EnhancedAddSnackDialog from "./EnhancedAddSnackDialog";
+import EnhancedRecipeDialog from "./EnhancedRecipeDialog";
+import MealExchangeDialog from "../MealExchangeDialog";
 
 const MealPlanContainer = () => {
   const {
@@ -41,8 +43,12 @@ const MealPlanContainer = () => {
 
   const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
   const [showAddSnackDialog, setShowAddSnackDialog] = useState(false);
+  const [showRecipeDialog, setShowRecipeDialog] = useState(false);
+  const [showExchangeDialog, setShowExchangeDialog] = useState(false);
+  const [selectedMeal, setSelectedMeal] = useState(null);
 
   console.log('🎯 MealPlanContainer - Current view mode:', viewMode);
+  console.log('🎯 MealPlanContainer - Selected meal for dialog:', selectedMeal?.name);
 
   const handleAddSnack = () => {
     console.log('🍎 Opening add snack dialog for day:', selectedDayNumber);
@@ -53,6 +59,50 @@ const MealPlanContainer = () => {
     console.log('✅ Snack added successfully, refreshing data');
     refetch();
     setShowAddSnackDialog(false);
+  };
+
+  const handleViewMeal = (meal) => {
+    console.log('👁️ Opening recipe dialog for meal:', meal.name);
+    setSelectedMeal(meal);
+    setShowRecipeDialog(true);
+  };
+
+  const handleExchangeMealClick = (meal, index) => {
+    console.log('🔄 Opening exchange dialog for meal:', meal.name);
+    setSelectedMeal(meal);
+    setShowExchangeDialog(true);
+  };
+
+  const handleRecipeGenerated = () => {
+    console.log('✅ Recipe generated, refreshing data');
+    refetch();
+    setShowRecipeDialog(false);
+    setSelectedMeal(null);
+  };
+
+  const handleMealExchanged = () => {
+    console.log('✅ Meal exchanged, refreshing data');
+    refetch();
+    setShowExchangeDialog(false);
+    setSelectedMeal(null);
+  };
+
+  const handleGenerateAI = async () => {
+    console.log('✨ Generate AI meal plan triggered');
+    try {
+      await handleRegeneratePlan();
+    } catch (error) {
+      console.error('❌ AI generation failed:', error);
+    }
+  };
+
+  const handleShuffle = async () => {
+    console.log('🔄 Shuffle meals triggered');
+    try {
+      await handleRegeneratePlan();
+    } catch (error) {
+      console.error('❌ Shuffle failed:', error);
+    }
   };
 
   if (error) {
@@ -75,15 +125,15 @@ const MealPlanContainer = () => {
   }
 
   if (!currentWeekPlan?.weeklyPlan) {
-    return <EmptyWeekState onGenerateClick={() => {}} />;
+    return <EmptyWeekState onGenerateClick={handleGenerateAI} />;
   }
 
   return (
     <div className="space-y-4">
       {/* Header with Actions */}
       <MealPlanHeader
-        onGenerateAI={() => {}}
-        onShuffle={handleRegeneratePlan}
+        onGenerateAI={handleGenerateAI}
+        onShuffle={handleShuffle}
         onShowShoppingList={() => {}}
         onRegeneratePlan={handleRegeneratePlan}
         isGenerating={isGenerating}
@@ -110,8 +160,8 @@ const MealPlanContainer = () => {
           totalCalories={totalCalories}
           totalProtein={totalProtein}
           targetDayCalories={targetDayCalories}
-          onViewMeal={handleShowRecipe}
-          onExchangeMeal={(meal, index) => handleExchangeMeal(meal, index)}
+          onViewMeal={handleViewMeal}
+          onExchangeMeal={handleExchangeMealClick}
           onAddSnack={handleAddSnack}
           weekStartDate={weekStartDate}
         />
@@ -121,8 +171,8 @@ const MealPlanContainer = () => {
           currentWeekPlan={currentWeekPlan}
           onSelectDay={setSelectedDayNumber}
           onSwitchToDaily={() => setViewMode('daily')}
-          onShowRecipe={handleShowRecipe}
-          onExchangeMeal={handleExchangeMeal}
+          onShowRecipe={handleViewMeal}
+          onExchangeMeal={handleExchangeMealClick}
           onAddSnack={(dayNumber: number) => {
             setSelectedDayNumber(dayNumber);
             setShowAddSnackDialog(true);
@@ -130,7 +180,7 @@ const MealPlanContainer = () => {
         />
       )}
 
-      {/* Add Snack Dialog */}
+      {/* Dialog Components */}
       <EnhancedAddSnackDialog
         isOpen={showAddSnackDialog}
         onClose={() => setShowAddSnackDialog(false)}
@@ -139,6 +189,26 @@ const MealPlanContainer = () => {
         onSnackAdded={handleSnackAdded}
         currentDayCalories={totalCalories}
         targetDayCalories={targetDayCalories}
+      />
+
+      <EnhancedRecipeDialog
+        isOpen={showRecipeDialog}
+        onClose={() => {
+          setShowRecipeDialog(false);
+          setSelectedMeal(null);
+        }}
+        meal={selectedMeal}
+        onRecipeGenerated={handleRecipeGenerated}
+      />
+
+      <MealExchangeDialog
+        isOpen={showExchangeDialog}
+        onClose={() => {
+          setShowExchangeDialog(false);
+          setSelectedMeal(null);
+        }}
+        currentMeal={selectedMeal}
+        onExchange={handleMealExchanged}
       />
     </div>
   );
