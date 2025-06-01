@@ -1,9 +1,10 @@
+
 import React, { useState } from 'react';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { useI18n } from "@/hooks/useI18n";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart } from "lucide-react";
-import { EnhancedShoppingListDrawer } from "./EnhancedShoppingListDrawer";
+import EnhancedShoppingListDrawer from "./EnhancedShoppingListDrawer";
 
 interface ShoppingListDrawerProps {
   open: boolean;
@@ -25,7 +26,7 @@ const ShoppingListDrawer = ({ open, onOpenChange }: ShoppingListDrawerProps) => 
         </DrawerHeader>
 
         {isEnhanced ? (
-          <EnhancedShoppingListDrawer />
+          <EnhancedShoppingListDrawer open={open} onOpenChange={onOpenChange} />
         ) : (
           <div className="p-6">
             <p className="text-gray-600 mb-4">

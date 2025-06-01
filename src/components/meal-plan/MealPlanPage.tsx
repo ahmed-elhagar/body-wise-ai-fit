@@ -3,36 +3,41 @@ import { useState } from "react";
 import MealPlanPageLayout from "./MealPlanPageLayout";
 import MealPlanContent from "./MealPlanContent";
 import MealPlanDialogsContainer from "./MealPlanDialogsContainer";
+import { useMealPlanPage } from "@/hooks/useMealPlanPage";
 
 const MealPlanPage = () => {
-  const [showAddSnackDialog, setShowAddSnackDialog] = useState(false);
-  const [showShoppingListDialog, setShowShoppingListDialog] = useState(false);
-
-  const handleShowAIDialog = () => {
-    // This will be handled by the content component
-  };
-
-  const handleShowAddSnackDialog = () => {
-    setShowAddSnackDialog(true);
-  };
-
-  const handleShowShoppingListDialog = () => {
-    setShowShoppingListDialog(true);
-  };
+  const mealPlanData = useMealPlanPage();
 
   return (
     <MealPlanPageLayout>
       <MealPlanContent
-        onShowAIDialog={handleShowAIDialog}
-        onShowAddSnackDialog={handleShowAddSnackDialog}
-        onShowShoppingListDialog={handleShowShoppingListDialog}
+        onShowAIDialog={() => mealPlanData.setShowAIDialog(true)}
+        onShowAddSnackDialog={() => mealPlanData.setShowAddSnackDialog(true)}
+        onShowShoppingListDialog={() => mealPlanData.setShowShoppingListDialog(true)}
       />
       
       <MealPlanDialogsContainer
-        showAddSnackDialog={showAddSnackDialog}
-        onCloseAddSnackDialog={() => setShowAddSnackDialog(false)}
-        showShoppingListDialog={showShoppingListDialog}
-        onCloseShoppingListDialog={() => setShowShoppingListDialog(false)}
+        currentWeekPlan={mealPlanData.currentWeekPlan}
+        selectedDayNumber={mealPlanData.selectedDayNumber}
+        totalCalories={mealPlanData.totalCalories}
+        targetDayCalories={mealPlanData.targetDayCalories}
+        shoppingItems={mealPlanData.shoppingItems}
+        selectedMeal={mealPlanData.selectedMeal}
+        showAIDialog={mealPlanData.showAIDialog}
+        setShowAIDialog={mealPlanData.setShowAIDialog}
+        showAddSnackDialog={mealPlanData.showAddSnackDialog}
+        setShowAddSnackDialog={mealPlanData.setShowAddSnackDialog}
+        showShoppingListDialog={mealPlanData.showShoppingListDialog}
+        setShowShoppingListDialog={mealPlanData.setShowShoppingListDialog}
+        showRecipeDialog={mealPlanData.showRecipeDialog}
+        setShowRecipeDialog={mealPlanData.setShowRecipeDialog}
+        showExchangeDialog={mealPlanData.showExchangeDialog}
+        setShowExchangeDialog={mealPlanData.setShowExchangeDialog}
+        aiPreferences={mealPlanData.aiPreferences}
+        setAiPreferences={mealPlanData.setAiPreferences}
+        selectedMealIndex={mealPlanData.selectedMealIndex}
+        handleRecipeGenerated={mealPlanData.handleRecipeGenerated}
+        isGenerating={mealPlanData.isGenerating}
       />
     </MealPlanPageLayout>
   );
