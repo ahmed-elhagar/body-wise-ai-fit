@@ -2,6 +2,7 @@
 import { ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useLocation } from 'react-router-dom';
+import { useProfile } from '@/hooks/useProfile';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -16,11 +17,12 @@ const ProtectedRoute = ({
   requireProfile = false,
   redirectTo = '/auth' 
 }: ProtectedRouteProps) => {
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const { profile, isLoading: profileLoading } = useProfile();
   const location = useLocation();
 
   // Show loading while checking authentication
-  if (loading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
@@ -33,17 +35,24 @@ const ProtectedRoute = ({
 
   // If authentication is required but user is not authenticated
   if (requireAuth && !user) {
+    console.log("ProtectedRoute - Redirecting unauthenticated user to:", redirectTo);
     return <Navigate to={redirectTo} state={{ from: location.pathname }} replace />;
   }
 
   // If user is authenticated but trying to access auth pages
   if (!requireAuth && user) {
     const from = location.state?.from || '/dashboard';
+    console.log("ProtectedRoute - Redirecting authenticated user to:", from);
     return <Navigate to={from} replace />;
   }
 
-  // If profile is required, you can add additional profile checks here
-  // For now, just render the children
+  // If profile is required but user profile is not complete
+  if (requireProfile && user && !profileLoading && profile && !profile.onboarding_completed) {
+    console.log("ProtectedRoute - Redirecting to onboarding (incomplete profile)");
+    return <Navigate to="/onboarding" state={{ from: location.pathname }} replace />;
+  }
+
+  // All conditions passed, render the children
   return <>{children}</>;
 };
 
