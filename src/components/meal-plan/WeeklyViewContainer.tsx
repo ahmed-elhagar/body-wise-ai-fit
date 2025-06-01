@@ -3,11 +3,11 @@ import { format, addDays } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Calendar, ChefHat, ChevronRight } from "lucide-react";
+import { Eye, Calendar, ChefHat, Plus } from "lucide-react";
 import { useMealPlanTranslations } from "@/utils/mealPlanTranslations";
 import type { DailyMeal } from "@/hooks/useMealPlanData";
 
-interface WeeklyViewProps {
+interface WeeklyViewContainerProps {
   weekStartDate: Date;
   currentWeekPlan: any;
   onSelectDay: (dayNumber: number) => void;
@@ -17,7 +17,7 @@ interface WeeklyViewProps {
   onAddSnack: (dayNumber: number) => void;
 }
 
-const WeeklyView = ({
+const WeeklyViewContainer = ({
   weekStartDate,
   currentWeekPlan,
   onSelectDay,
@@ -25,14 +25,13 @@ const WeeklyView = ({
   onShowRecipe,
   onExchangeMeal,
   onAddSnack
-}: WeeklyViewProps) => {
+}: WeeklyViewContainerProps) => {
   const { 
     weeklyView, 
     cal, 
     meals, 
     protein, 
     carbs, 
-    moreMeals, 
     viewDay, 
     addSnack, 
     recipe,
@@ -65,18 +64,6 @@ const WeeklyView = ({
     }), { calories: 0, protein: 0, carbs: 0, fat: 0 });
   };
 
-  const getMealTypeColor = (mealType: string) => {
-    switch (mealType) {
-      case 'breakfast': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'lunch': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'dinner': return 'bg-purple-100 text-purple-800 border-purple-200';
-      case 'snack1':
-      case 'snack2': return 'bg-green-100 text-green-800 border-green-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
-
-  // Localized day names using our translation system
   const getDayName = (dayNumber: number) => {
     const dayNames = {
       1: 'Saturday',
@@ -90,10 +77,8 @@ const WeeklyView = ({
     return dayNames[dayNumber as keyof typeof dayNames] || 'Unknown';
   };
 
-  console.log('🗓️ WeeklyView - Rendering weekly view with', weekDays.length, 'days');
-
   return (
-    <Card className="shadow-lg rounded-2xl border-0 bg-white/90 backdrop-blur-sm">
+    <Card className="shadow-lg border-0 bg-white/90 backdrop-blur-sm">
       <CardHeader className="pb-4">
         <CardTitle className={`text-2xl font-bold flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
           <Eye className="w-6 h-6 text-fitness-primary-600" />
@@ -110,7 +95,7 @@ const WeeklyView = ({
             return (
               <Card 
                 key={day.number} 
-                className={`cursor-pointer hover:shadow-xl transition-all duration-300 bg-white rounded-2xl group border-2 hover:border-fitness-primary-300 ${
+                className={`cursor-pointer hover:shadow-xl transition-all duration-300 bg-white group border-2 hover:border-fitness-primary-300 ${
                   isToday ? 'ring-2 ring-fitness-accent-400 border-fitness-accent-300' : 'border-gray-100'
                 }`}
                 onClick={() => {
@@ -159,53 +144,33 @@ const WeeklyView = ({
                   </div>
 
                   {/* Meals Preview */}
-                  <div className="space-y-2 max-h-40 overflow-y-auto">
-                    {dayMeals.slice(0, 3).map((meal: DailyMeal, index: number) => (
+                  <div className="space-y-2 max-h-32 overflow-y-auto">
+                    {dayMeals.slice(0, 2).map((meal: DailyMeal, index: number) => (
                       <div 
                         key={meal.id} 
-                        className="p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer group/meal"
+                        className="p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                         onClick={(e) => {
                           e.stopPropagation();
                           onShowRecipe(meal);
                         }}
                       >
-                        <div className={`flex items-start justify-between mb-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                        <div className="flex items-center justify-between">
                           <div className="flex-1">
-                            <Badge 
-                              variant="outline" 
-                              className={`text-xs mb-1 ${getMealTypeColor(meal.meal_type)}`}
-                            >
-                              {meal.meal_type}
-                            </Badge>
                             <h5 className="font-medium text-sm text-gray-900 line-clamp-1">
                               {meal.name}
                             </h5>
+                            <p className="text-xs text-gray-500">{meal.meal_type}</p>
                           </div>
-                          <span className="text-xs font-medium text-fitness-primary-600 ml-2">
+                          <span className="text-xs font-medium text-fitness-primary-600">
                             {meal.calories || 0} {cal}
                           </span>
-                        </div>
-                        
-                        <div className={`flex gap-1 opacity-0 group-hover/meal:opacity-100 transition-opacity ${isRTL ? 'flex-row-reverse' : ''}`}>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="flex-1 h-6 text-xs hover:bg-blue-50 border-blue-200 text-blue-700"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onShowRecipe(meal);
-                            }}
-                          >
-                            <ChefHat className="w-3 h-3 mr-1" />
-                            {recipe}
-                          </Button>
                         </div>
                       </div>
                     ))}
                     
-                    {dayMeals.length > 3 && (
+                    {dayMeals.length > 2 && (
                       <div className="text-center text-xs text-fitness-primary-500">
-                        +{dayMeals.length - 3} {moreMeals}
+                        +{dayMeals.length - 2} more
                       </div>
                     )}
                   </div>
@@ -235,7 +200,7 @@ const WeeklyView = ({
                         onAddSnack(day.number);
                       }}
                     >
-                      <ChevronRight className="w-4 h-4 mr-2" />
+                      <Plus className="w-4 h-4 mr-2" />
                       {addSnack}
                     </Button>
                   </div>
@@ -249,4 +214,4 @@ const WeeklyView = ({
   );
 };
 
-export default WeeklyView;
+export default WeeklyViewContainer;

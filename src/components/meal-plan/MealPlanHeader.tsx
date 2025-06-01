@@ -2,99 +2,106 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Shuffle, ChevronLeft, ChevronRight } from "lucide-react";
-import { format, addDays } from "date-fns";
-import { useMealPlanTranslation } from "@/utils/translationHelpers";
+import { Sparkles, Shuffle, ShoppingCart, RefreshCw } from "lucide-react";
+import { useMealPlanTranslations } from "@/utils/mealPlanTranslations";
+import { useMealShuffle } from "@/hooks/useMealShuffle";
 
 interface MealPlanHeaderProps {
-  weekStartDate: Date;
-  currentWeekOffset: number;
-  onWeekChange: (offset: number) => void;
   onGenerateAI: () => void;
   onShuffle: () => void;
+  onShowShoppingList: () => void;
+  onRegeneratePlan: () => void;
   isGenerating: boolean;
   hasWeeklyPlan: boolean;
 }
 
 const MealPlanHeader = ({
-  weekStartDate,
-  currentWeekOffset,
-  onWeekChange,
   onGenerateAI,
   onShuffle,
+  onShowShoppingList,
+  onRegeneratePlan,
   isGenerating,
   hasWeeklyPlan
 }: MealPlanHeaderProps) => {
-  const { mealPlanT } = useMealPlanTranslation();
-  const isCurrentWeek = currentWeekOffset === 0;
-  const weekEndDate = addDays(weekStartDate, 6);
+  const { 
+    title, 
+    smartMealPlanning, 
+    personalizedNutrition, 
+    generateAIMealPlan,
+    generating,
+    isRTL 
+  } = useMealPlanTranslations();
+
+  const { shuffleMeals, isShuffling } = useMealShuffle();
+
+  const handleShuffleMeals = async () => {
+    // This would need the weekly plan ID - you might need to pass this as a prop
+    // For now, calling the existing shuffle function
+    onShuffle();
+  };
 
   return (
-    <Card className="bg-gradient-to-r from-fitness-primary-50 via-white to-fitness-accent-50 border-fitness-primary-200 shadow-lg">
+    <Card className="bg-gradient-to-r from-fitness-primary-600 via-fitness-primary-700 to-fitness-primary-800 text-white shadow-2xl border-0">
       <div className="p-6">
-        <div className="flex items-center justify-between">
-          {/* Week Navigation */}
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onWeekChange(currentWeekOffset - 1)}
-                className="h-10 w-10 p-0 border-fitness-primary-300 text-fitness-primary-600 hover:bg-fitness-primary-50"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </Button>
-              
-              <div className="text-center min-w-0">
-                <div className="flex items-center gap-3">
-                  <h1 className="text-2xl font-bold text-fitness-primary-700">
-                    {mealPlanT('title')}
-                  </h1>
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg font-semibold text-fitness-primary-600">
-                      {format(weekStartDate, 'MMM d')} - {format(weekEndDate, 'MMM d')}
-                    </span>
-                    {isCurrentWeek && (
-                      <Badge className="bg-fitness-accent-100 text-fitness-accent-700 border-fitness-accent-200">
-                        {mealPlanT('currentWeek')}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              </div>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onWeekChange(currentWeekOffset + 1)}
-                className="h-10 w-10 p-0 border-fitness-primary-300 text-fitness-primary-600 hover:bg-fitness-primary-50"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </Button>
+        <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+          <div className={isRTL ? 'text-right' : 'text-left'}>
+            <h1 className="text-3xl font-bold mb-2 text-white">
+              {title}
+            </h1>
+            <div className="space-y-1">
+              <h2 className="text-xl font-semibold text-fitness-accent-100">
+                {smartMealPlanning}
+              </h2>
+              <p className="text-fitness-primary-100 opacity-90">
+                {personalizedNutrition}
+              </p>
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex items-center gap-3">
+          <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
             {hasWeeklyPlan && (
-              <Button
-                onClick={onShuffle}
-                disabled={isGenerating}
-                variant="outline"
-                className="border-fitness-accent-300 text-fitness-accent-600 hover:bg-fitness-accent-50"
-              >
-                <Shuffle className="w-4 h-4 mr-2" />
-                {mealPlanT('shuffleMeals')}
-              </Button>
+              <>
+                <Button
+                  onClick={handleShuffleMeals}
+                  disabled={isShuffling}
+                  variant="outline"
+                  className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white"
+                >
+                  {isShuffling ? (
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Shuffle className="w-4 h-4 mr-2" />
+                  )}
+                  Shuffle Meals
+                </Button>
+
+                <Button
+                  onClick={onShowShoppingList}
+                  variant="outline"
+                  className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white"
+                >
+                  <ShoppingCart className="w-4 h-4 mr-2" />
+                  Shopping List
+                </Button>
+              </>
             )}
-            
+
             <Button
               onClick={onGenerateAI}
               disabled={isGenerating}
-              className="bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 text-white hover:from-fitness-primary-600 hover:to-fitness-primary-700 shadow-lg"
+              className="bg-gradient-to-r from-fitness-accent-500 to-fitness-accent-600 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
             >
-              <Sparkles className="w-4 h-4 mr-2" />
-              {hasWeeklyPlan ? mealPlanT('regenerate') : mealPlanT('generateAIMealPlan')}
+              {isGenerating ? (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  {generating}
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  {generateAIMealPlan}
+                </>
+              )}
             </Button>
           </div>
         </div>
