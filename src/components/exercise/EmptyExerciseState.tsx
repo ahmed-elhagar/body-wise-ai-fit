@@ -1,10 +1,10 @@
 
-import React from "react";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Dumbbell, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Dumbbell, Sparkles, Home, Building2 } from "lucide-react";
+import { AIExerciseDialog } from "./AIExerciseDialog";
 
-export interface EmptyExerciseStateProps {
+interface EmptyExerciseStateProps {
   onGenerateProgram: () => void;
   workoutType: "home" | "gym";
   setWorkoutType: (type: "home" | "gym") => void;
@@ -15,57 +15,64 @@ export interface EmptyExerciseStateProps {
   isGenerating: boolean;
 }
 
-export const EmptyExerciseState = ({
-  onGenerateProgram,
+export const EmptyExerciseState = ({ 
+  onGenerateProgram, 
   workoutType,
   setWorkoutType,
   showAIDialog,
   setShowAIDialog,
   aiPreferences,
   setAiPreferences,
-  isGenerating
+  isGenerating 
 }: EmptyExerciseStateProps) => {
   return (
-    <Card className="p-8 text-center bg-gradient-to-br from-white via-fitness-primary/5 to-pink-50 border-0 shadow-xl backdrop-blur-sm">
-      <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-fitness-primary to-pink-500 rounded-3xl flex items-center justify-center shadow-lg transform rotate-3 hover:rotate-0 transition-transform duration-300">
-        <Dumbbell className="w-12 h-12 text-white" />
-      </div>
-      
-      <h3 className="text-3xl font-bold text-gray-800 mb-3 bg-gradient-to-r from-fitness-primary to-pink-600 bg-clip-text text-transparent">
-        No Exercise Program
-      </h3>
-      
-      <p className="text-gray-600 mb-8 max-w-md mx-auto leading-relaxed text-lg">
-        Generate your first personalized workout program
-      </p>
-      
-      <div className="space-y-4">
-        <div className="flex gap-2 justify-center mb-4">
+    <>
+      <Card className="p-12 bg-white/80 backdrop-blur-sm border-0 shadow-lg text-center">
+        <Dumbbell className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+        <h3 className="text-xl font-semibold text-gray-800 mb-2">No Exercise Program Yet</h3>
+        <p className="text-gray-600 mb-6">Generate your personalized AI exercise program to get started</p>
+        
+        {/* Workout Type Selection */}
+        <div className="flex justify-center gap-3 mb-6">
           <Button
-            onClick={() => setWorkoutType("home")}
             variant={workoutType === "home" ? "default" : "outline"}
-            size="sm"
+            onClick={() => setWorkoutType("home")}
+            className={`${workoutType === "home" ? "bg-health-primary hover:bg-health-primary/90" : ""}`}
           >
-            Home Workout
+            <Home className="w-4 h-4 mr-2" />
+            Home
           </Button>
           <Button
-            onClick={() => setWorkoutType("gym")}
             variant={workoutType === "gym" ? "default" : "outline"}
-            size="sm"
+            onClick={() => setWorkoutType("gym")}
+            className={`${workoutType === "gym" ? "bg-health-primary hover:bg-health-primary/90" : ""}`}
           >
-            Gym Workout
+            <Building2 className="w-4 h-4 mr-2" />
+            Gym
           </Button>
         </div>
         
         <Button 
-          onClick={onGenerateProgram} 
-          className="bg-fitness-gradient hover:opacity-90 text-white shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 px-8 py-4 text-lg font-semibold rounded-2xl"
+          onClick={onGenerateProgram}
           disabled={isGenerating}
+          className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white"
         >
-          <Sparkles className="w-6 h-6 mr-3" />
-          {isGenerating ? 'Generating...' : 'Generate Exercise Program'}
+          <Sparkles className="w-4 h-4 mr-2" />
+          {isGenerating ? 'Generating...' : 'Generate AI Exercise Program'}
         </Button>
-      </div>
-    </Card>
+      </Card>
+
+      <AIExerciseDialog
+        open={showAIDialog}
+        onOpenChange={setShowAIDialog}
+        preferences={aiPreferences}
+        setPreferences={setAiPreferences}
+        onGenerate={(prefs) => {
+          // This will be handled by the parent component
+          setShowAIDialog(false);
+        }}
+        isGenerating={isGenerating}
+      />
+    </>
   );
 };
