@@ -6,12 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Camera, Upload, Loader2, Eye } from "lucide-react";
 import { useFoodPhotoIntegration } from "@/hooks/useFoodPhotoIntegration";
 import FoodAnalysisResults from "@/components/food-photo-analysis/FoodAnalysisResults";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 const MealPhotoUpload = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const { t } = useLanguage();
+  const { t } = useI18n();
   
   const { 
     analyzePhoto,

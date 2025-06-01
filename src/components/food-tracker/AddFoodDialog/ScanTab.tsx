@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Zap, Plus } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import { useCreditSystem } from "@/hooks/useCreditSystem";
 import { useFoodPhotoIntegration } from "@/hooks/useFoodPhotoIntegration";
 import FoodPhotoAnalysisCard from "@/components/food-photo-analysis/FoodPhotoAnalysisCard";
@@ -16,7 +16,7 @@ interface ScanTabProps {
 }
 
 const ScanTab = ({ onFoodAdded, onClose }: ScanTabProps) => {
-  const { t } = useLanguage();
+  const { t } = useI18n();
   const [selectedFood, setSelectedFood] = useState<any>(null);
   const [quantity, setQuantity] = useState(100);
   const [mealType, setMealType] = useState("snack");

@@ -1,13 +1,13 @@
 
 import { Badge } from "@/components/ui/badge";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 interface IngredientsPreviewProps {
   ingredients: any[];
 }
 
 const IngredientsPreview = ({ ingredients }: IngredientsPreviewProps) => {
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL } = useI18n();
 
   if (!ingredients || ingredients.length === 0) {
     return null;

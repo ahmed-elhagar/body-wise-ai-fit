@@ -1,6 +1,6 @@
 
 import { Clock, Users, Utensils } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 interface MealDetailsProps {
   prepTime: number;
@@ -10,7 +10,7 @@ interface MealDetailsProps {
 }
 
 const MealDetails = ({ prepTime, cookTime, servings, ingredients }: MealDetailsProps) => {
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL } = useI18n();
 
   return (
     <div className={`flex flex-wrap items-center gap-2 sm:gap-3 text-xs text-gray-600 mb-2 sm:mb-3 ${isRTL ? 'flex-row-reverse justify-end' : 'justify-start'}`}>

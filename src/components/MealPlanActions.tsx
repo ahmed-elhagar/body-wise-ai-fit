@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Calendar, Grid, Plus, ShoppingCart, Sparkles } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 interface MealPlanActionsProps {
   viewMode: 'daily' | 'weekly';
@@ -20,7 +20,7 @@ const MealPlanActions = ({
   showAddSnack,
   showShoppingList
 }: MealPlanActionsProps) => {
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL } = useI18n();
 
   return (
     <div className="mb-6 space-y-6">

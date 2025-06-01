@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { ChefHat, ArrowLeftRight } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 interface Meal {
   type: string;
@@ -27,7 +27,7 @@ interface MealActionButtonsProps {
 }
 
 const MealActionButtons = ({ meal, onShowRecipe, onExchangeMeal }: MealActionButtonsProps) => {
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL } = useI18n();
 
   return (
     <div className={`flex flex-col sm:flex-row gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>

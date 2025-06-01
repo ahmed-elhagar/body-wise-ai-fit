@@ -1,7 +1,7 @@
 
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import { useProfile } from "@/hooks/useProfile";
 import { useWeightTracking } from "@/hooks/useWeightTracking";
 import { 
@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 
 const EnhancedStatsGrid = () => {
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL } = useI18n();
   const { profile } = useProfile();
   const { weightEntries } = useWeightTracking();
 
@@ -78,85 +78,84 @@ const EnhancedStatsGrid = () => {
           bg: 'bg-orange-50',
           border: 'border-orange-200',
           icon: 'from-orange-500 to-red-500',
-          progress: 'bg-orange-500'
+          progress: 'bg-orange-500',
+          text: 'text-orange-700'
         };
       case 'blue':
         return {
           bg: 'bg-blue-50',
           border: 'border-blue-200',
-          icon: 'from-blue-500 to-cyan-500',
-          progress: 'bg-blue-500'
+          icon: 'from-blue-500 to-indigo-500',
+          progress: 'bg-blue-500',
+          text: 'text-blue-700'
         };
       case 'purple':
         return {
           bg: 'bg-purple-50',
           border: 'border-purple-200',
-          icon: 'from-purple-500 to-indigo-500',
-          progress: 'bg-purple-500'
+          icon: 'from-purple-500 to-pink-500',
+          progress: 'bg-purple-500',
+          text: 'text-purple-700'
         };
       case 'green':
         return {
           bg: 'bg-green-50',
           border: 'border-green-200',
           icon: 'from-green-500 to-emerald-500',
-          progress: 'bg-green-500'
+          progress: 'bg-green-500',
+          text: 'text-green-700'
         };
       default:
         return {
           bg: 'bg-gray-50',
           border: 'border-gray-200',
           icon: 'from-gray-500 to-gray-600',
-          progress: 'bg-gray-500'
+          progress: 'bg-gray-500',
+          text: 'text-gray-700'
         };
     }
   };
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+    <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 ${isRTL ? 'rtl' : ''}`}>
       {stats.map((stat, index) => {
-        const IconComponent = stat.icon;
         const colors = getColorClasses(stat.color);
-
+        const IconComponent = stat.icon;
+        
         return (
-          <Card key={index} className={`relative overflow-hidden ${colors.bg} border ${colors.border} shadow-md hover:shadow-lg transition-all duration-200 rounded-xl p-3`}>
-            {/* Content */}
-            <div className="relative">
+          <Card key={index} className={`${colors.bg} ${colors.border} border-2 p-6 hover:shadow-lg transition-all duration-300 hover:scale-105`}>
+            <div className="space-y-4">
               {/* Header */}
-              <div className={`flex items-center justify-between mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                <div className={`w-8 h-8 bg-gradient-to-br ${colors.icon} rounded-lg flex items-center justify-center shadow-sm`}>
-                  <IconComponent className="w-4 h-4 text-white" />
+              <div className="flex items-start justify-between">
+                <div className={`w-12 h-12 bg-gradient-to-br ${colors.icon} rounded-xl flex items-center justify-center shadow-lg`}>
+                  <IconComponent className="w-6 h-6 text-white" />
                 </div>
-              </div>
-
-              {/* Value */}
-              <div className={`mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-xl font-bold text-gray-800">
+                <div className={`text-right ${isRTL ? 'text-left' : ''}`}>
+                  <div className={`text-2xl font-bold ${colors.text}`}>
                     {stat.value}
-                  </span>
-                  <span className="text-xs font-medium text-gray-600">
-                    {stat.unit}
-                  </span>
+                    <span className="text-sm font-normal">{stat.unit}</span>
+                  </div>
                 </div>
               </div>
 
-              {/* Progress */}
-              <div className="mb-2">
-                <Progress 
-                  value={stat.progress} 
-                  className="h-1.5 bg-gray-200"
-                />
+              {/* Progress Bar */}
+              <div className="space-y-2">
+                <div className="w-full bg-white/70 rounded-full h-2">
+                  <div 
+                    className={`${colors.progress} h-2 rounded-full transition-all duration-500`}
+                    style={{ width: `${Math.min(stat.progress, 100)}%` }}
+                  />
+                </div>
+                <div className="flex justify-between text-xs text-gray-600">
+                  <span>{Math.round(stat.progress)}%</span>
+                  <span>{stat.target}</span>
+                </div>
               </div>
 
-              {/* Title & Target */}
-              <div>
-                <p className="text-xs font-semibold text-gray-700 mb-1">
-                  {stat.title}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {stat.target}
-                </p>
-              </div>
+              {/* Title */}
+              <h3 className={`text-sm font-semibold ${colors.text}`}>
+                {stat.title}
+              </h3>
             </div>
           </Card>
         );

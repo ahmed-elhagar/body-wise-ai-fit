@@ -1,5 +1,5 @@
 
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 interface GoalProgressRingProps {
   progress: number;
@@ -16,7 +16,7 @@ const GoalProgressRing = ({
   children,
   color = "#3b82f6"
 }: GoalProgressRingProps) => {
-  const { t } = useLanguage();
+  const { t } = useI18n();
   
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;

@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2, Edit3 } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import { useFoodConsumption } from "@/hooks/useFoodConsumption";
 import MacroWheel from "./components/MacroWheel";
 import FoodLogTimeline from "./components/FoodLogTimeline";
@@ -11,7 +11,7 @@ import AddFoodDialog from "./AddFoodDialog/AddFoodDialog";
 import { format } from "date-fns";
 
 const TodayTab = () => {
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL } = useI18n();
   const [showAddDialog, setShowAddDialog] = useState(false);
   const { todayConsumption, isLoading, refetch } = useFoodConsumption();
 

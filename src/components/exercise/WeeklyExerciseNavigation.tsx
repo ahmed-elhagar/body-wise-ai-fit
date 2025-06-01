@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, ChevronRight, Calendar, RotateCcw } from "lucide-react";
 import { format, addDays } from "date-fns";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 interface WeeklyExerciseNavigationProps {
   currentWeekOffset: number;
@@ -17,7 +17,7 @@ export const WeeklyExerciseNavigation = ({
   setCurrentWeekOffset,
   weekStartDate
 }: WeeklyExerciseNavigationProps) => {
-  const { t } = useLanguage();
+  const { t } = useI18n();
 
   const formatWeekRange = (startDate: Date) => {
     const endDate = addDays(startDate, 6);
