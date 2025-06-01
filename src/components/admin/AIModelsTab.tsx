@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,12 +20,13 @@ import {
   Bot,
   RefreshCw,
   Key,
-  AlertCircle
+  AlertCircle,
+  Trash2
 } from "lucide-react";
 import { useAIModels, AIModel } from "@/hooks/useAIModels";
 
 const AIModelsTab = () => {
-  const { models, featureModels, isLoading, createModel, updateModel, updateFeatureModel, isUpdating } = useAIModels();
+  const { models, featureModels, isLoading, createModel, updateModel, deleteModel, updateFeatureModel, isUpdating } = useAIModels();
   const [selectedModel, setSelectedModel] = useState<AIModel | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [newModel, setNewModel] = useState({
@@ -54,7 +56,7 @@ const AIModelsTab = () => {
     { id: 'meal_image', name: 'Meal Image Generation', description: 'AI-generated meal images' }
   ];
 
-  // Popular model configurations by provider - UPDATED with correct Google models
+  // Popular model configurations by provider - UPDATED with current Google models
   const popularModels = {
     openai: [
       { id: 'gpt-4o', name: 'GPT-4o', cost: 0.005, maxTokens: 4096 },
@@ -67,9 +69,15 @@ const AIModelsTab = () => {
       { id: 'claude-3-opus-20240229', name: 'Claude 3 Opus', cost: 0.015, maxTokens: 4096 },
     ],
     google: [
-      { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', cost: 0.0035, maxTokens: 8192 },
-      { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', cost: 0.000075, maxTokens: 8192 },
-      { id: 'gemini-pro', name: 'Gemini Pro (Legacy)', cost: 0.0005, maxTokens: 4096 },
+      // Current production models (as of 2024)
+      { id: 'gemini-1.5-pro-002', name: 'Gemini 1.5 Pro (Latest)', cost: 0.00125, maxTokens: 8192, free: false },
+      { id: 'gemini-1.5-flash-002', name: 'Gemini 1.5 Flash (Latest)', cost: 0.000075, maxTokens: 8192, free: true },
+      { id: 'gemini-1.5-flash-8b', name: 'Gemini 1.5 Flash 8B', cost: 0.0000375, maxTokens: 8192, free: true },
+      // Stable versions
+      { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro (Stable)', cost: 0.00125, maxTokens: 8192, free: false },
+      { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash (Stable)', cost: 0.000075, maxTokens: 8192, free: true },
+      // Legacy (will be deprecated)
+      { id: 'gemini-pro', name: 'Gemini Pro (Legacy)', cost: 0.0005, maxTokens: 4096, free: true },
     ]
   };
 
@@ -99,11 +107,17 @@ const AIModelsTab = () => {
       cost_per_1k_tokens: modelConfig.cost,
       max_tokens: modelConfig.maxTokens,
       context_window: modelConfig.maxTokens,
-      description: `${modelConfig.name} from ${provider}`,
+      description: `${modelConfig.name} from ${provider}${modelConfig.free ? ' (Free tier available)' : ''}`,
       is_active: true,
       is_default: false,
     });
     setIsCreateDialogOpen(true);
+  };
+
+  const handleDeleteModel = (modelId: string) => {
+    if (confirm('Are you sure you want to delete this model? This action cannot be undone.')) {
+      deleteModel(modelId);
+    }
   };
 
   const handleUpdateFeatureModel = (featureName: string, primaryModelId: string, fallbackModelId?: string) => {
@@ -260,6 +274,12 @@ const AIModelsTab = () => {
             <div>• <code>ANTHROPIC_API_KEY</code> - Required for Claude models (optional)</div>
             <div>• <code>GOOGLE_API_KEY</code> - Required for Gemini models (optional)</div>
           </div>
+          <div className="mt-2 p-2 bg-green-50 rounded text-sm">
+            <strong>📱 Free Google Models Available:</strong>
+            <br />• <strong>Gemini 1.5 Flash</strong> - Fast, efficient, good for chat
+            <br />• <strong>Gemini 1.5 Flash 8B</strong> - Lightweight version
+            <br />• <strong>Gemini Pro (Legacy)</strong> - Will be deprecated soon
+          </div>
           <div className="mt-2 p-2 bg-blue-50 rounded text-sm">
             <strong>Chat Features Clarification:</strong>
             <br />• <strong>General AI Chat</strong> = Basic AI assistant in Chat page
@@ -403,13 +423,23 @@ const AIModelsTab = () => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setSelectedModel(model)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSelectedModel(model)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteModel(model.id)}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -429,14 +459,26 @@ const AIModelsTab = () => {
                       {provider.charAt(0).toUpperCase() + provider.slice(1)}
                     </Badge>
                     Popular Models
+                    {provider === 'google' && (
+                      <Badge variant="outline" className="text-green-600 border-green-600">
+                        Free Tier Available
+                      </Badge>
+                    )}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-3">
-                    {modelsList.map((model) => (
+                    {modelsList.map((model: any) => (
                       <div key={model.id} className="flex items-center justify-between p-3 border rounded-lg">
                         <div>
-                          <h4 className="font-medium">{model.name}</h4>
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-medium">{model.name}</h4>
+                            {model.free && (
+                              <Badge variant="outline" className="text-green-600 border-green-600 text-xs">
+                                FREE
+                              </Badge>
+                            )}
+                          </div>
                           <p className="text-sm text-gray-500">
                             ${model.cost}/1K tokens • {model.maxTokens.toLocaleString()} max tokens
                           </p>

@@ -126,6 +126,43 @@ export const useAIModels = () => {
     },
   });
 
+  // Delete AI model
+  const deleteModelMutation = useMutation({
+    mutationFn: async (modelId: string) => {
+      console.log('🗑️ Deleting AI model:', modelId);
+      
+      // First check if model is being used by any features
+      const { data: usedByFeatures, error: checkError } = await supabase
+        .from('ai_feature_models')
+        .select('feature_name')
+        .or(`primary_model_id.eq.${modelId},fallback_model_id.eq.${modelId}`)
+        .eq('is_active', true);
+
+      if (checkError) throw checkError;
+
+      if (usedByFeatures && usedByFeatures.length > 0) {
+        const featureNames = usedByFeatures.map(f => f.feature_name).join(', ');
+        throw new Error(`Cannot delete model: currently assigned to features: ${featureNames}`);
+      }
+
+      const { error } = await supabase
+        .from('ai_models')
+        .delete()
+        .eq('id', modelId);
+
+      if (error) throw error;
+      return modelId;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ai-models'] });
+      toast.success('AI model deleted successfully');
+    },
+    onError: (error: any) => {
+      console.error('❌ Failed to delete AI model:', error);
+      toast.error(`Failed to delete AI model: ${error.message}`);
+    },
+  });
+
   // Update feature model assignment with better error handling and immediate UI feedback
   const updateFeatureModelMutation = useMutation({
     mutationFn: async ({ 
@@ -221,8 +258,10 @@ export const useAIModels = () => {
     isLoading: modelsLoading || featureModelsLoading,
     createModel: createModelMutation.mutate,
     updateModel: updateModelMutation.mutate,
+    deleteModel: deleteModelMutation.mutate,
     updateFeatureModel: updateFeatureModelMutation.mutate,
     isCreating: createModelMutation.isPending,
     isUpdating: updateModelMutation.isPending || updateFeatureModelMutation.isPending,
+    isDeleting: deleteModelMutation.isPending,
   };
 };

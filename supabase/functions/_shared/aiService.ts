@@ -221,7 +221,7 @@ export class AIService {
   }
 
   /**
-   * Google Gemini implementation - FIXED with correct model names
+   * Google Gemini implementation - UPDATED with current model names
    */
   private async generateWithGoogle(
     modelId: string, 
@@ -232,12 +232,18 @@ export class AIService {
       return this.generateWithOpenAI('gpt-4o-mini', request);
     }
 
-    // Map common model names to correct Google model IDs
+    // Updated model mapping with current Google AI models
     const modelMapping: { [key: string]: string } = {
+      // Legacy mappings (for backward compatibility)
       'gemini-pro': 'gemini-1.5-flash',
+      'gemini-pro-vision': 'gemini-1.5-flash',
+      
+      // Current production models (no mapping needed)
       'gemini-1.5-pro': 'gemini-1.5-pro',
+      'gemini-1.5-pro-002': 'gemini-1.5-pro-002',
       'gemini-1.5-flash': 'gemini-1.5-flash',
-      'gemini-pro-vision': 'gemini-1.5-flash'
+      'gemini-1.5-flash-002': 'gemini-1.5-flash-002',
+      'gemini-1.5-flash-8b': 'gemini-1.5-flash-8b',
     };
 
     const actualModelId = modelMapping[modelId] || modelId;
