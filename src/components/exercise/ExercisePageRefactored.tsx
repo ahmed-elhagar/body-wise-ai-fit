@@ -1,3 +1,4 @@
+
 import { format, addDays } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useOptimizedExerciseProgramPage } from "@/hooks/useOptimizedExerciseProgramPage";
@@ -126,11 +127,6 @@ const ExercisePageRefactored = () => {
             onGenerateProgram={() => setShowAIDialog(true)}
             workoutType={workoutType}
             setWorkoutType={setWorkoutType}
-            showAIDialog={showAIDialog}
-            setShowAIDialog={setShowAIDialog}
-            aiPreferences={aiPreferences}
-            setAiPreferences={setAiPreferences}
-            isGenerating={isGenerating}
           />
         </div>
       </div>

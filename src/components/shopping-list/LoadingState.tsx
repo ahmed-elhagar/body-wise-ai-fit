@@ -21,7 +21,6 @@ const LoadingState = () => {
           isRTL ? 'تنظيم القائمة...' : 'Organizing list...',
           isRTL ? 'إضافة التفاصيل...' : 'Adding details...'
         ]}
-        className="bg-white border-fitness-primary-200 text-fitness-primary-600"
       />
     </div>
   );

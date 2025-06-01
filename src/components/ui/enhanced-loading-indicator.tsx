@@ -2,6 +2,9 @@
 import React from 'react';
 import { Loader2, Activity } from 'lucide-react';
 import { Card } from './card';
+import { cn } from '@/lib/utils';
+
+export type LoadingType = 'meal-plan' | 'exercise' | 'general' | 'recipe';
 
 interface EnhancedLoadingIndicatorProps {
   message?: string;
@@ -11,7 +14,8 @@ interface EnhancedLoadingIndicatorProps {
   showSteps?: boolean;
   customSteps?: string[];
   status?: 'loading' | 'processing' | 'generating';
-  type?: 'meal-plan' | 'exercise' | 'general';
+  type?: LoadingType;
+  className?: string;
 }
 
 const EnhancedLoadingIndicator = ({
@@ -22,7 +26,8 @@ const EnhancedLoadingIndicator = ({
   showSteps = false,
   customSteps = [],
   status = 'loading',
-  type = 'general'
+  type = 'general',
+  className
 }: EnhancedLoadingIndicatorProps) => {
   const [currentStep, setCurrentStep] = React.useState(0);
 
@@ -38,6 +43,12 @@ const EnhancedLoadingIndicator = ({
       'Selecting optimal exercises...',
       'Adjusting difficulty levels...',
       'Preparing your program...'
+    ],
+    'recipe': [
+      'Analyzing ingredients...',
+      'Creating recipe steps...',
+      'Calculating nutrition...',
+      'Finalizing recipe...'
     ],
     'general': [
       'Processing request...',
@@ -65,7 +76,7 @@ const EnhancedLoadingIndicator = ({
   };
 
   const LoadingContent = () => (
-    <div className="flex flex-col items-center space-y-4">
+    <div className={cn("flex flex-col items-center space-y-4", className)}>
       <div className="relative">
         <Loader2 className={`${sizeClasses[size]} animate-spin text-fitness-primary`} />
         {status === 'processing' && (
@@ -102,7 +113,7 @@ const EnhancedLoadingIndicator = ({
 
   if (variant === 'card') {
     return (
-      <Card className="p-8 bg-white border border-gray-200 shadow-sm">
+      <Card className={cn("p-8 bg-white border border-gray-200 shadow-sm", className)}>
         <LoadingContent />
       </Card>
     );
@@ -110,7 +121,7 @@ const EnhancedLoadingIndicator = ({
 
   if (variant === 'minimal') {
     return (
-      <div className="flex items-center space-x-2">
+      <div className={cn("flex items-center space-x-2", className)}>
         <Loader2 className={`${sizeClasses[size]} animate-spin text-fitness-primary`} />
         <span className="text-sm text-gray-600">{message}</span>
       </div>
@@ -118,7 +129,7 @@ const EnhancedLoadingIndicator = ({
   }
 
   return (
-    <div className="flex items-center justify-center p-8">
+    <div className={cn("flex items-center justify-center p-8", className)}>
       <LoadingContent />
     </div>
   );
