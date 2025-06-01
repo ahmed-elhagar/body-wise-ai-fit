@@ -19,55 +19,67 @@ const MealPlanHeader = ({
   const { t } = useLanguage();
 
   return (
-    <Card className="relative p-6 border-0 shadow-xl bg-white/90 backdrop-blur-sm rounded-2xl overflow-hidden">
+    <Card className="relative p-6 border-0 shadow-xl bg-white rounded-2xl overflow-hidden">
       {/* Background decorations */}
-      <div className="absolute top-4 right-4 w-16 h-16 bg-gradient-to-br from-fitness-primary/20 to-fitness-accent/20 rounded-full blur-xl" />
-      <div className="absolute bottom-4 left-4 w-12 h-12 bg-gradient-to-br from-pink-500/20 to-orange-500/20 rounded-full blur-xl" />
+      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-fitness-primary/10 to-fitness-accent/10 rounded-full -translate-y-16 translate-x-16" />
+      <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-br from-pink-500/10 to-orange-500/10 rounded-full translate-y-12 -translate-x-12" />
       
       <div className="relative z-10">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           {/* Title Section */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-fitness-primary to-fitness-accent rounded-xl flex items-center justify-center shadow-lg">
-                <UtensilsCrossed className="w-6 h-6 text-white" />
+          <div className="space-y-4">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-gradient-to-br from-fitness-primary-500 to-fitness-accent-500 rounded-2xl flex items-center justify-center shadow-lg">
+                <UtensilsCrossed className="w-7 h-7 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+                <h1 className="text-4xl font-bold text-gray-900 mb-1">
                   {t('mealPlan.title') || 'Meal Plan'}
                 </h1>
-                <p className="text-base text-gray-600 font-medium">
-                  {t('mealPlan.subtitle') || 'AI-Powered Personalized Nutrition'}
+                <p className="text-lg text-gray-600 font-medium">
+                  {t('mealPlan.subtitle') || 'AI-Powered Personalized Nutrition Planning'}
                 </p>
               </div>
             </div>
 
+            {/* Caption */}
+            <div className="bg-gradient-to-r from-fitness-primary-50 to-fitness-accent-50 p-4 rounded-xl border border-fitness-primary-100">
+              <p className="text-sm text-gray-700 leading-relaxed">
+                Create personalized meal plans tailored to your dietary preferences, health goals, and lifestyle. 
+                Our AI generates balanced nutrition plans that fit your needs perfectly.
+              </p>
+            </div>
+
             {/* Credits Display */}
-            <div className="flex items-center gap-2">
-              <Badge className="bg-gradient-to-r from-fitness-primary to-fitness-accent text-white border-0 px-3 py-1 font-semibold shadow-md">
-                <Zap className="w-4 h-4 mr-1" />
-                {remainingCredits} {t('credits.remaining') || 'Credits'}
+            <div className="flex items-center gap-3">
+              <Badge className="bg-gradient-to-r from-fitness-primary-500 to-fitness-accent-500 text-white border-0 px-4 py-2 font-semibold shadow-md hover:shadow-lg transition-shadow">
+                <Zap className="w-4 h-4 mr-2" />
+                {remainingCredits} {t('credits.remaining') || 'AI Credits'}
               </Badge>
+              <span className="text-sm text-gray-500">
+                Use AI credits to generate personalized meal plans
+              </span>
             </div>
           </div>
 
           {/* Action Button */}
-          <div>
+          <div className="flex-shrink-0">
             <Button
               onClick={onShowAIDialog}
               disabled={isGenerating || remainingCredits <= 0}
-              className="bg-gradient-to-r from-fitness-primary to-fitness-accent hover:opacity-90 text-white border-0 shadow-lg px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:shadow-xl hover:scale-105"
+              className="bg-gradient-to-r from-fitness-primary-500 to-fitness-accent-500 hover:from-fitness-primary-600 hover:to-fitness-accent-600 text-white border-0 shadow-lg px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              size="lg"
             >
-              <Sparkles className="w-5 h-5 mr-2" />
+              <Sparkles className="w-5 h-5 mr-3" />
               {isGenerating ? 
-                (t('mealPlan.generating') || 'Generating...') : 
-                (t('mealPlan.generateAI') || 'Generate AI Plan')
+                (t('mealPlan.generating') || 'Generating Plan...') : 
+                (t('mealPlan.generateAI') || 'Generate AI Meal Plan')
               }
             </Button>
             
             {remainingCredits <= 0 && (
-              <p className="text-sm text-red-600 mt-2 text-center">
-                {t('credits.noCreditsRemaining') || 'No credits remaining'}
+              <p className="text-sm text-red-600 mt-3 text-center font-medium">
+                {t('credits.noCreditsRemaining') || 'No AI credits remaining. Upgrade to continue.'}
               </p>
             )}
           </div>
