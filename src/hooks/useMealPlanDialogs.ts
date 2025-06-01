@@ -1,44 +1,47 @@
 
-import { useState } from "react";
-import type { DailyMeal } from "@/hooks/useMealPlanData";
+import { useState } from 'react';
+import type { DailyMeal } from './meal-plan/types';
 
 export const useMealPlanDialogs = () => {
   const [showAIDialog, setShowAIDialog] = useState(false);
   const [showRecipeDialog, setShowRecipeDialog] = useState(false);
+  const [showShoppingDialog, setShowShoppingDialog] = useState(false);
   const [showExchangeDialog, setShowExchangeDialog] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState<DailyMeal | null>(null);
-  const [selectedMealIndex, setSelectedMealIndex] = useState(0);
-  
-  // AI preferences with proper defaults
+  const [selectedMealIndex, setSelectedMealIndex] = useState<number>(-1);
+
   const [aiPreferences, setAiPreferences] = useState({
-    duration: "7",
-    cuisine: "mixed",
-    maxPrepTime: "30",
+    dietaryRestrictions: [] as string[],
+    allergies: [] as string[],
+    cuisinePreferences: [] as string[],
     includeSnacks: true,
-    mealTypes: "breakfast,lunch,dinner"
+    language: 'en'
   });
 
-  console.log('🔧 useMealPlanDialogs: Current AI preferences:', aiPreferences);
+  const closeAllDialogs = () => {
+    setShowAIDialog(false);
+    setShowRecipeDialog(false);
+    setShowShoppingDialog(false);
+    setShowExchangeDialog(false);
+    setSelectedMeal(null);
+    setSelectedMealIndex(-1);
+  };
 
   return {
-    // AI Dialog state
     showAIDialog,
     setShowAIDialog,
-    aiPreferences,
-    setAiPreferences,
-    
-    // Recipe Dialog state
     showRecipeDialog,
     setShowRecipeDialog,
-    
-    // Exchange Dialog state
+    showShoppingDialog,
+    setShowShoppingDialog,
     showExchangeDialog,
     setShowExchangeDialog,
-    
-    // Selected meal state
     selectedMeal,
     setSelectedMeal,
     selectedMealIndex,
-    setSelectedMealIndex
+    setSelectedMealIndex,
+    aiPreferences,
+    setAiPreferences,
+    closeAllDialogs
   };
 };

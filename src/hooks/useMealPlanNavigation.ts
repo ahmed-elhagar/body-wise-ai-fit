@@ -1,73 +1,50 @@
 
 import { useState, useMemo } from 'react';
-import { getWeekStartDate, getCurrentSaturdayDay } from '@/utils/mealPlanUtils';
+import { getWeekStartDate } from '@/utils/mealPlanUtils';
+import { addDays } from 'date-fns';
 
 export const useMealPlanNavigation = () => {
   const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
   const [selectedDayNumber, setSelectedDayNumber] = useState(() => {
-    try {
-      return getCurrentSaturdayDay();
-    } catch (error) {
-      console.error('Error getting current Saturday day:', error);
-      return 1; // Default to day 1 if there's an error
-    }
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    return dayOfWeek === 0 ? 7 : dayOfWeek;
   });
 
   const weekStartDate = useMemo(() => {
-    try {
-      const date = getWeekStartDate(currentWeekOffset);
-      if (!date || isNaN(date.getTime())) {
-        console.error('Invalid date calculated for week offset:', currentWeekOffset);
-        return getWeekStartDate(0); // Fallback to current week
-      }
-      return date;
-    } catch (error) {
-      console.error('Error calculating week start date:', error);
-      return getWeekStartDate(0); // Fallback to current week
-    }
+    return getWeekStartDate(currentWeekOffset);
   }, [currentWeekOffset]);
 
-  const handleWeekOffsetChange = (newOffset: number) => {
-    try {
-      // Validate the new offset doesn't create invalid dates
-      const testDate = getWeekStartDate(newOffset);
-      if (testDate && !isNaN(testDate.getTime())) {
-        console.log('🧭 Changing week offset from', currentWeekOffset, 'to', newOffset);
-        setCurrentWeekOffset(newOffset);
-      } else {
-        console.error('Invalid week offset would create invalid date:', newOffset);
-        throw new Error(`Invalid week offset: ${newOffset}`);
-      }
-    } catch (error) {
-      console.error('Error changing week offset:', error);
-      // Don't change the offset if there's an error
-    }
+  const selectedDate = useMemo(() => {
+    return addDays(weekStartDate, selectedDayNumber - 1);
+  }, [weekStartDate, selectedDayNumber]);
+
+  const navigateToWeek = (offset: number) => {
+    setCurrentWeekOffset(offset);
   };
 
-  const handleDayChange = (dayNumber: number) => {
-    try {
-      if (dayNumber >= 1 && dayNumber <= 7) {
-        console.log('🧭 Changing selected day from', selectedDayNumber, 'to', dayNumber);
-        setSelectedDayNumber(dayNumber);
-      } else {
-        console.error('Invalid day number:', dayNumber);
-      }
-    } catch (error) {
-      console.error('Error changing selected day:', error);
-    }
+  const navigateToNextWeek = () => {
+    setCurrentWeekOffset(prev => prev + 1);
   };
 
-  console.log('🧭 useMealPlanNavigation:', {
-    currentWeekOffset,
-    selectedDayNumber,
-    weekStartDate: weekStartDate.toDateString()
-  });
+  const navigateToPreviousWeek = () => {
+    setCurrentWeekOffset(prev => prev - 1);
+  };
+
+  const navigateToCurrentWeek = () => {
+    setCurrentWeekOffset(0);
+  };
 
   return {
     currentWeekOffset,
-    setCurrentWeekOffset: handleWeekOffsetChange,
     selectedDayNumber,
-    setSelectedDayNumber: handleDayChange,
-    weekStartDate
+    weekStartDate,
+    selectedDate,
+    setCurrentWeekOffset,
+    setSelectedDayNumber,
+    navigateToWeek,
+    navigateToNextWeek,
+    navigateToPreviousWeek,
+    navigateToCurrentWeek
   };
 };

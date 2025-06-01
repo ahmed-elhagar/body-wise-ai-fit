@@ -1,6 +1,6 @@
 
-import { useCallback } from "react";
-import type { DailyMeal } from "@/hooks/useMealPlanData";
+import { useCallback } from 'react';
+import type { DailyMeal } from './meal-plan/types';
 
 export const useMealPlanHandlers = (
   setSelectedMeal: (meal: DailyMeal | null) => void,
@@ -14,28 +14,21 @@ export const useMealPlanHandlers = (
     setShowRecipeDialog(true);
   }, [setSelectedMeal, setShowRecipeDialog]);
 
-  const handleViewMeal = useCallback((meal: DailyMeal) => {
-    console.log('👁️ Viewing meal details:', meal.name);
-    handleShowRecipe(meal);
-  }, [handleShowRecipe]);
-
-  const handleExchangeMeal = useCallback((meal: DailyMeal, index?: number) => {
-    console.log('🔄 Exchanging meal:', meal.name);
+  const handleExchangeMeal = useCallback((meal: DailyMeal, index: number) => {
+    console.log('🔄 Exchanging meal:', meal.name, 'at index:', index);
     setSelectedMeal(meal);
-    setSelectedMealIndex(index || 0);
+    setSelectedMealIndex(index);
     setShowExchangeDialog(true);
   }, [setSelectedMeal, setSelectedMealIndex, setShowExchangeDialog]);
 
-  const handleRecipeGenerated = useCallback(() => {
-    console.log('✅ Recipe generated successfully');
-    setShowRecipeDialog(false);
-    setSelectedMeal(null);
-  }, [setShowRecipeDialog, setSelectedMeal]);
+  const handleAddSnack = useCallback(() => {
+    console.log('🍪 Adding snack functionality');
+    // Snack addition logic can be implemented here
+  }, []);
 
   return {
     handleShowRecipe,
-    handleViewMeal,
     handleExchangeMeal,
-    handleRecipeGenerated
+    handleAddSnack
   };
 };
