@@ -40,6 +40,9 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+    const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
+    const googleApiKey = Deno.env.get('GOOGLE_API_KEY');
+
     if (!openAIApiKey) {
       throw new Error('OpenAI API key not configured');
     }
@@ -71,10 +74,10 @@ Return ONLY a JSON object:
   "fat": estimated_grams
 }`;
 
-    console.log('🤖 Using new AI service for snack generation...');
+    console.log('🤖 Using multi-provider AI service for snack generation...');
 
-    // Use the new AI service
-    const aiService = new AIService(openAIApiKey);
+    // Use the enhanced AI service with multiple providers
+    const aiService = new AIService(openAIApiKey, anthropicApiKey, googleApiKey);
     const response = await aiService.generate('snack_generation', {
       messages: [
         { role: 'system', content: 'You are a nutritionist AI. Generate healthy snacks based on user requirements. Always respond with valid JSON only.' },

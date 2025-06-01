@@ -16,6 +16,8 @@ serve(async (req) => {
   try {
     const { message, userProfile, chatHistory } = await req.json();
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+    const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
+    const googleApiKey = Deno.env.get('GOOGLE_API_KEY');
 
     if (!openAIApiKey) {
       throw new Error('OpenAI API key not configured');
@@ -68,10 +70,10 @@ Always format your responses with:
       { role: 'user', content: message }
     ];
 
-    console.log('🤖 Using new AI service for fitness chat...');
+    console.log('🤖 Using multi-provider AI service for fitness chat...');
 
-    // Use the new AI service
-    const aiService = new AIService(openAIApiKey);
+    // Use the enhanced AI service with multiple providers
+    const aiService = new AIService(openAIApiKey, anthropicApiKey, googleApiKey);
     const response = await aiService.generate('fitness_chat', {
       messages: messages,
       temperature: 0.7,

@@ -92,14 +92,17 @@ IMPORTANT: Respond with ONLY valid JSON, no additional text or markdown formatti
 `;
 
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+    const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
+    const googleApiKey = Deno.env.get('GOOGLE_API_KEY');
+
     if (!openAIApiKey) {
       throw new Error('OpenAI API key not configured');
     }
 
-    console.log('🤖 Using new AI service for exercise exchange...');
+    console.log('🤖 Using multi-provider AI service for exercise exchange...');
 
-    // Use the new AI service
-    const aiService = new AIService(openAIApiKey);
+    // Use the enhanced AI service with multiple providers
+    const aiService = new AIService(openAIApiKey, anthropicApiKey, googleApiKey);
     const response = await aiService.generate('exercise_exchange', {
       messages: [
         {

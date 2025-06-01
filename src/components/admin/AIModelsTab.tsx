@@ -10,15 +10,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   Brain, 
   Plus, 
   Settings, 
   DollarSign, 
-  Eye,
   Edit,
   Bot,
-  RefreshCw
+  RefreshCw,
+  Key,
+  AlertCircle
 } from "lucide-react";
 import { useAIModels, AIModel } from "@/hooks/useAIModels";
 
@@ -53,6 +55,25 @@ const AIModelsTab = () => {
     { id: 'meal_image', name: 'Meal Image Generation', description: 'AI-generated meal images' }
   ];
 
+  // Popular model configurations by provider
+  const popularModels = {
+    openai: [
+      { id: 'gpt-4o', name: 'GPT-4o', cost: 0.005, maxTokens: 4096 },
+      { id: 'gpt-4o-mini', name: 'GPT-4o Mini', cost: 0.00015, maxTokens: 16384 },
+      { id: 'gpt-4-turbo', name: 'GPT-4 Turbo', cost: 0.01, maxTokens: 4096 },
+    ],
+    anthropic: [
+      { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet', cost: 0.003, maxTokens: 8192 },
+      { id: 'claude-3-haiku-20240307', name: 'Claude 3 Haiku', cost: 0.00025, maxTokens: 4096 },
+      { id: 'claude-3-opus-20240229', name: 'Claude 3 Opus', cost: 0.015, maxTokens: 4096 },
+    ],
+    google: [
+      { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', cost: 0.0035, maxTokens: 8192 },
+      { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', cost: 0.000075, maxTokens: 8192 },
+      { id: 'gemini-pro', name: 'Gemini Pro', cost: 0.0005, maxTokens: 4096 },
+    ]
+  };
+
   const handleCreateModel = () => {
     createModel(newModel);
     setIsCreateDialogOpen(false);
@@ -68,6 +89,22 @@ const AIModelsTab = () => {
       is_active: true,
       is_default: false,
     });
+  };
+
+  const handleQuickAddModel = (provider: string, modelConfig: any) => {
+    setNewModel({
+      name: modelConfig.name,
+      provider,
+      model_id: modelConfig.id,
+      capabilities: ['text', 'chat'],
+      cost_per_1k_tokens: modelConfig.cost,
+      max_tokens: modelConfig.maxTokens,
+      context_window: modelConfig.maxTokens,
+      description: `${modelConfig.name} from ${provider}`,
+      is_active: true,
+      is_default: false,
+    });
+    setIsCreateDialogOpen(true);
   };
 
   const handleUpdateFeatureModel = (featureName: string, primaryModelId: string, fallbackModelId?: string) => {
@@ -123,7 +160,7 @@ const AIModelsTab = () => {
           </div>
           <div>
             <h2 className="text-2xl font-bold">AI Models Management</h2>
-            <p className="text-gray-600">Configure AI models and feature assignments</p>
+            <p className="text-gray-600">Configure AI models and feature assignments across multiple providers</p>
           </div>
         </div>
         
@@ -134,7 +171,7 @@ const AIModelsTab = () => {
               Add Model
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Add New AI Model</DialogTitle>
             </DialogHeader>
@@ -174,15 +211,26 @@ const AIModelsTab = () => {
                 />
               </div>
 
-              <div>
-                <Label htmlFor="cost">Cost per 1K tokens ($)</Label>
-                <Input
-                  id="cost"
-                  type="number"
-                  step="0.001"
-                  value={newModel.cost_per_1k_tokens}
-                  onChange={(e) => setNewModel({ ...newModel, cost_per_1k_tokens: parseFloat(e.target.value) || 0 })}
-                />
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label htmlFor="cost">Cost per 1K tokens ($)</Label>
+                  <Input
+                    id="cost"
+                    type="number"
+                    step="0.001"
+                    value={newModel.cost_per_1k_tokens}
+                    onChange={(e) => setNewModel({ ...newModel, cost_per_1k_tokens: parseFloat(e.target.value) || 0 })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="max_tokens">Max Tokens</Label>
+                  <Input
+                    id="max_tokens"
+                    type="number"
+                    value={newModel.max_tokens}
+                    onChange={(e) => setNewModel({ ...newModel, max_tokens: parseInt(e.target.value) || 4096 })}
+                  />
+                </div>
               </div>
 
               <div>
@@ -203,8 +251,21 @@ const AIModelsTab = () => {
         </Dialog>
       </div>
 
+      {/* API Keys Alert */}
+      <Alert>
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          <strong>API Keys Required:</strong> Make sure to configure API keys for each provider in Supabase Edge Function Secrets:
+          <div className="mt-2 space-y-1 text-sm">
+            <div>• <code>OPENAI_API_KEY</code> for OpenAI models</div>
+            <div>• <code>ANTHROPIC_API_KEY</code> for Anthropic/Claude models</div>
+            <div>• <code>GOOGLE_API_KEY</code> for Google/Gemini models</div>
+          </div>
+        </AlertDescription>
+      </Alert>
+
       <Tabs defaultValue="assignments" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="assignments" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
             Feature Assignments
@@ -212,6 +273,10 @@ const AIModelsTab = () => {
           <TabsTrigger value="models" className="flex items-center gap-2">
             <Bot className="h-4 w-4" />
             Models
+          </TabsTrigger>
+          <TabsTrigger value="quick-add" className="flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            Quick Add
           </TabsTrigger>
         </TabsList>
 
@@ -341,6 +406,45 @@ const AIModelsTab = () => {
               </Table>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="quick-add" className="space-y-4">
+          <div className="grid gap-6">
+            {Object.entries(popularModels).map(([provider, modelsList]) => (
+              <Card key={provider}>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Badge className={getProviderColor(provider)}>
+                      {provider.charAt(0).toUpperCase() + provider.slice(1)}
+                    </Badge>
+                    Popular Models
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-3">
+                    {modelsList.map((model) => (
+                      <div key={model.id} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div>
+                          <h4 className="font-medium">{model.name}</h4>
+                          <p className="text-sm text-gray-500">
+                            ${model.cost}/1K tokens • {model.maxTokens.toLocaleString()} max tokens
+                          </p>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleQuickAddModel(provider, model)}
+                        >
+                          <Plus className="h-4 w-4 mr-1" />
+                          Add
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </TabsContent>
       </Tabs>
     </div>

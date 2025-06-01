@@ -21,6 +21,8 @@ serve(async (req) => {
   try {
     const { imageBase64, userId } = await req.json();
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+    const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
+    const googleApiKey = Deno.env.get('GOOGLE_API_KEY');
 
     if (!openAIApiKey) {
       throw new Error('OpenAI API key not configured');
@@ -61,10 +63,10 @@ CRITICAL REQUIREMENTS:
 5. Make realistic nutrition estimates
 6. Confidence should be 0.1-1.0`;
 
-    console.log('🤖 Using new AI service for food analysis...');
+    console.log('🤖 Using multi-provider AI service for food analysis...');
 
-    // Use the new AI service
-    const aiService = new AIService(openAIApiKey);
+    // Use the enhanced AI service with multiple providers
+    const aiService = new AIService(openAIApiKey, anthropicApiKey, googleApiKey);
     const response = await aiService.generate('food_analysis', {
       messages: [
         {

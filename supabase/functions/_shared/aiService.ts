@@ -1,11 +1,13 @@
 
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+
 interface AIModelConfig {
   modelId: string;
   provider: string;
 }
 
 interface AIRequest {
-  messages: Array<{ role: string; content: string }>;
+  messages: Array<{ role: string; content: any }>;
   temperature?: number;
   maxTokens?: number;
 }
@@ -21,9 +23,13 @@ interface AIResponse {
 
 export class AIService {
   private openAIApiKey: string;
+  private anthropicApiKey?: string;
+  private googleApiKey?: string;
 
-  constructor(openAIApiKey: string) {
+  constructor(openAIApiKey: string, anthropicApiKey?: string, googleApiKey?: string) {
     this.openAIApiKey = openAIApiKey;
+    this.anthropicApiKey = anthropicApiKey;
+    this.googleApiKey = googleApiKey;
   }
 
   /**
@@ -31,14 +37,47 @@ export class AIService {
    */
   async getModelForFeature(featureName: string): Promise<AIModelConfig> {
     try {
-      // This would be replaced with actual Supabase client call in edge function
-      // For now, returning default OpenAI model to maintain compatibility
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+      const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+      const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+      const { data, error } = await supabase
+        .from('ai_feature_models')
+        .select(`
+          primary_model:ai_models!primary_model_id(
+            model_id,
+            provider,
+            is_active
+          )
+        `)
+        .eq('feature_name', featureName)
+        .eq('is_active', true)
+        .single();
+
+      if (error || !data?.primary_model) {
+        console.warn(`No AI model configured for feature: ${featureName}, using default OpenAI`);
+        return {
+          modelId: 'gpt-4o-mini',
+          provider: 'openai'
+        };
+      }
+
+      const model = data.primary_model as any;
+      
+      if (!model.is_active) {
+        console.warn(`Configured AI model is inactive for feature: ${featureName}, using default`);
+        return {
+          modelId: 'gpt-4o-mini',
+          provider: 'openai'
+        };
+      }
+
       return {
-        modelId: 'gpt-4o-mini',
-        provider: 'openai'
+        modelId: model.model_id,
+        provider: model.provider
       };
     } catch (error) {
-      console.warn(`Failed to get model for ${featureName}, using default:`, error);
+      console.error('Error fetching AI model configuration:', error);
       return {
         modelId: 'gpt-4o-mini',
         provider: 'openai'
@@ -109,26 +148,124 @@ export class AIService {
   }
 
   /**
-   * Anthropic implementation (placeholder for Phase 3)
+   * Anthropic implementation
    */
   private async generateWithAnthropic(
     modelId: string, 
     request: AIRequest
   ): Promise<AIResponse> {
-    // Placeholder - will be implemented in Phase 3
-    console.log('Anthropic support coming in Phase 3, falling back to OpenAI');
-    return this.generateWithOpenAI('gpt-4o-mini', request);
+    if (!this.anthropicApiKey) {
+      console.warn('Anthropic API key not provided, falling back to OpenAI');
+      return this.generateWithOpenAI('gpt-4o-mini', request);
+    }
+
+    // Convert OpenAI format messages to Anthropic format
+    const systemMessage = request.messages.find(m => m.role === 'system');
+    const conversationMessages = request.messages.filter(m => m.role !== 'system');
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.anthropicApiKey}`,
+        'Content-Type': 'application/json',
+        'x-api-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: modelId,
+        max_tokens: request.maxTokens || 4000,
+        temperature: request.temperature || 0.7,
+        system: systemMessage?.content || '',
+        messages: conversationMessages.map(msg => ({
+          role: msg.role === 'assistant' ? 'assistant' : 'user',
+          content: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content)
+        }))
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Anthropic API error:', errorText);
+      throw new Error(`Anthropic API error: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    
+    return {
+      content: data.content[0].text,
+      usage: {
+        promptTokens: data.usage?.input_tokens || 0,
+        completionTokens: data.usage?.output_tokens || 0,
+        totalTokens: (data.usage?.input_tokens || 0) + (data.usage?.output_tokens || 0),
+      }
+    };
   }
 
   /**
-   * Google implementation (placeholder for Phase 3)
+   * Google Gemini implementation
    */
   private async generateWithGoogle(
     modelId: string, 
     request: AIRequest
   ): Promise<AIResponse> {
-    // Placeholder - will be implemented in Phase 3
-    console.log('Google support coming in Phase 3, falling back to OpenAI');
-    return this.generateWithOpenAI('gpt-4o-mini', request);
+    if (!this.googleApiKey) {
+      console.warn('Google API key not provided, falling back to OpenAI');
+      return this.generateWithOpenAI('gpt-4o-mini', request);
+    }
+
+    // Convert messages to Google format
+    const contents = request.messages
+      .filter(m => m.role !== 'system')
+      .map(msg => ({
+        role: msg.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content) }]
+      }));
+
+    const systemInstruction = request.messages.find(m => m.role === 'system')?.content;
+
+    const requestBody: any = {
+      contents,
+      generationConfig: {
+        temperature: request.temperature || 0.7,
+        maxOutputTokens: request.maxTokens || 4000,
+      }
+    };
+
+    if (systemInstruction) {
+      requestBody.systemInstruction = {
+        parts: [{ text: systemInstruction }]
+      };
+    }
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${this.googleApiKey}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Google API error:', errorText);
+      throw new Error(`Google API error: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+
+    if (!data.candidates || data.candidates.length === 0) {
+      throw new Error('No response generated from Google API');
+    }
+    
+    return {
+      content: data.candidates[0].content.parts[0].text,
+      usage: {
+        promptTokens: data.usageMetadata?.promptTokenCount || 0,
+        completionTokens: data.usageMetadata?.candidatesTokenCount || 0,
+        totalTokens: data.usageMetadata?.totalTokenCount || 0,
+      }
+    };
   }
 }
