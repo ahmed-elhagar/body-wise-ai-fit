@@ -72,7 +72,7 @@ const MealPlanHeader = ({
               
               {/* AI Credits Badge */}
               <div className="mt-1">
-                <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm font-medium text-xs">
+                <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm font-medium text-xs hover:bg-white/30">
                   <Zap className="w-3 h-3 mr-1" />
                   Unlimited AI
                 </Badge>
@@ -114,7 +114,7 @@ const MealPlanHeader = ({
             <Button
               onClick={handleGenerateAI}
               disabled={isGenerating || isShuffling}
-              className="bg-white text-fitness-primary-700 hover:bg-gray-100 font-semibold px-3 py-2 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 h-8"
+              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold px-3 py-2 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 h-8 border-0"
             >
               {isGenerating ? (
                 <RefreshCw className="w-4 h-4 animate-spin" />
