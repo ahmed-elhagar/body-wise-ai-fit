@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { lazy, Suspense } from "react";
-import { LoadingIndicator } from "@/components/ui/loading-indicator";
+import LoadingIndicator from "@/components/ui/loading-indicator";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import "@/i18n/config";
@@ -40,7 +40,7 @@ const App = () => {
             <SidebarProvider>
               <Toaster />
               <BrowserRouter>
-                <Suspense fallback={<LoadingIndicator />}>
+                <Suspense fallback={<LoadingIndicator status="loading" />}>
                   <Routes>
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
