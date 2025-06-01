@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -75,9 +74,9 @@ const EnhancedUsersTable = () => {
         query = query.or(`email.ilike.%${searchTerm}%,first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%`);
       }
 
-      // Apply role filter
-      if (roleFilter !== 'all') {
-        query = query.eq('role', roleFilter);
+      // Apply role filter - only if it's a valid role
+      if (roleFilter !== 'all' && ['normal', 'pro', 'coach', 'admin'].includes(roleFilter)) {
+        query = query.eq('role', roleFilter as UserRole);
       }
 
       const { data, error } = await query;
