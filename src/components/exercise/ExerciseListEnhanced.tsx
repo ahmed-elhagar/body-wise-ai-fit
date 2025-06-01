@@ -73,8 +73,9 @@ export const ExerciseListEnhanced = ({
           <ExerciseCardEnhanced
             key={exercise.id || index}
             exercise={exercise}
-            onComplete={() => onExerciseComplete(exercise.id)}
-            onProgressUpdate={(sets, reps, notes) => 
+            index={index}
+            onExerciseComplete={() => onExerciseComplete(exercise.id)}
+            onExerciseProgressUpdate={(sets, reps, notes) => 
               onExerciseProgressUpdate(exercise.id, sets, reps, notes)
             }
           />

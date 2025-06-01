@@ -1,5 +1,5 @@
 
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import WeeklyPlanHeader from "./weekly-meal-plan/WeeklyPlanHeader";
 import DayMealCard from "./weekly-meal-plan/DayMealCard";
 import type { Meal } from "@/types/meal";
@@ -11,7 +11,7 @@ interface WeeklyMealPlanViewProps {
 }
 
 const WeeklyMealPlanView = ({ weeklyPlan, onShowRecipe, onExchangeMeal }: WeeklyMealPlanViewProps) => {
-  const { t } = useLanguage();
+  const { t } = useI18n();
   
   const dayNames = [
     t('saturday'), t('sunday'), t('monday'), 
