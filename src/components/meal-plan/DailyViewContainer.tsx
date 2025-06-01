@@ -17,7 +17,7 @@ interface DailyViewContainerProps {
   totalProtein: number;
   targetDayCalories: number;
   onViewMeal: (meal: DailyMeal) => void;
-  onExchangeMeal: (meal: DailyMeal, dayNumber: number, mealIndex: number) => void;
+  onExchangeMeal: (meal: DailyMeal, index?: number) => void;
   onAddSnack: () => void;
 }
 
@@ -54,48 +54,55 @@ const DailyViewContainer = ({
 
   return (
     <div className="space-y-6">
-      {/* Day Selector */}
-      <Card className="bg-white/95 backdrop-blur-sm border-fitness-primary-200 shadow-lg">
-        <div className="p-4">
-          <div className={`flex items-center gap-2 mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <Eye className="w-5 h-5 text-fitness-primary-600" />
-            <h3 className="text-lg font-semibold text-fitness-primary-800">
-              {selectDay}
-            </h3>
-            {dailyMeals.length > 0 && (
-              <Badge className="bg-fitness-accent-100 text-fitness-accent-700 border-fitness-accent-200">
-                {dailyMeals.length} {meals}
-              </Badge>
-            )}
+      {/* Enhanced Day Selector with improved UI */}
+      <Card className="bg-gradient-to-r from-white via-fitness-primary-25 to-fitness-accent-25 border-fitness-primary-200 shadow-lg">
+        <div className="p-6">
+          <div className={`flex items-center gap-3 mb-6 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <div className="p-2 bg-fitness-primary-100 rounded-full">
+              <Eye className="w-5 h-5 text-fitness-primary-600" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-fitness-primary-800">
+                {selectDay}
+              </h3>
+              {dailyMeals.length > 0 && (
+                <p className="text-sm text-fitness-primary-600">
+                  {dailyMeals.length} {meals} • {totalCalories} cal
+                </p>
+              )}
+            </div>
           </div>
           
-          <div className="grid grid-cols-7 gap-2">
+          <div className="grid grid-cols-7 gap-3">
             {days.map(({ dayNumber, date, isSelected, isToday, dayDate }) => (
               <button
                 key={dayNumber}
                 onClick={() => onDayChange(dayNumber)}
                 className={`
-                  relative p-3 rounded-xl font-medium transition-all duration-300 text-center
+                  relative p-4 rounded-2xl font-bold transition-all duration-300 text-center group
                   ${isSelected 
-                    ? 'bg-gradient-to-br from-fitness-primary-500 to-fitness-primary-600 text-white shadow-lg transform scale-105' 
-                    : 'bg-white text-fitness-primary-600 hover:bg-fitness-primary-50 hover:text-fitness-primary-700 shadow-sm border-2 border-fitness-primary-100'
+                    ? 'bg-gradient-to-br from-fitness-primary-500 to-fitness-primary-600 text-white shadow-xl transform scale-105 ring-4 ring-fitness-primary-200' 
+                    : 'bg-white/80 text-fitness-primary-700 hover:bg-fitness-primary-50 hover:shadow-lg hover:scale-102 border-2 border-fitness-primary-100'
                   }
-                  ${isToday && !isSelected ? 'ring-2 ring-fitness-accent-300 ring-offset-2' : ''}
+                  ${isToday && !isSelected ? 'ring-2 ring-fitness-accent-400 border-fitness-accent-300' : ''}
                 `}
               >
-                <div className="flex flex-col items-center gap-1">
-                  <span className={`text-lg font-bold ${isSelected ? 'text-white' : 'text-fitness-primary-700'}`}>
+                <div className="flex flex-col items-center gap-2">
+                  <span className={`text-2xl font-black ${isSelected ? 'text-white' : 'text-fitness-primary-800'}`}>
                     {dayDate}
                   </span>
                   {isToday && (
                     <div className="flex flex-col items-center">
-                      <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-fitness-accent-200' : 'bg-fitness-accent-500'}`} />
-                      <span className={`text-xs font-medium mt-1 ${isSelected ? 'text-fitness-accent-200' : 'text-fitness-accent-600'}`}>
+                      <div className={`w-2 h-2 rounded-full ${isSelected ? 'bg-fitness-accent-200' : 'bg-fitness-accent-500'}`} />
+                      <span className={`text-xs font-bold mt-1 ${isSelected ? 'text-fitness-accent-200' : 'text-fitness-accent-600'}`}>
                         {today}
                       </span>
                     </div>
                   )}
                 </div>
+                
+                {/* Hover effect */}
+                <div className={`absolute inset-0 rounded-2xl transition-opacity ${isSelected ? 'opacity-0' : 'opacity-0 group-hover:opacity-10 bg-fitness-primary-500'}`} />
               </button>
             ))}
           </div>
@@ -110,7 +117,7 @@ const DailyViewContainer = ({
         totalProtein={totalProtein}
         targetDayCalories={targetDayCalories}
         onViewMeal={onViewMeal}
-        onExchangeMeal={onExchangeMeal}
+        onExchangeMeal={(meal: DailyMeal, index?: number) => onExchangeMeal(meal, index)}
         onAddSnack={onAddSnack}
         weekStartDate={weekStartDate}
       />
