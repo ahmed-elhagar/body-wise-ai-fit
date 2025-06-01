@@ -1,9 +1,8 @@
-
-# FitGenius - AI-Powered Fitness Companion
+# FitFatta - AI-Powered Fitness Companion
 
 ## 🚀 Project Overview
 
-FitGenius is a comprehensive AI-powered fitness companion that leverages cloud-based AI models to provide personalized meal plans, exercise programs, and wellness features for users worldwide.
+FitFatta is a comprehensive AI-powered fitness companion that leverages cloud-based AI models to provide personalized meal plans, exercise programs, and wellness features for users worldwide.
 
 ## ✨ Key Features
 

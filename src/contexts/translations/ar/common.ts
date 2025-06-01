@@ -54,8 +54,8 @@ export const commonTranslations = {
   congratulations: "تهانينا",
   
   // App specific
-  appName: "فت جينيس",
-  fitGenius: "فت جينيس",
+  appName: "فت فاتا",
+  fitFatta: "فت فاتا",
   
   // User related
   profile: "الملف الشخصي",
