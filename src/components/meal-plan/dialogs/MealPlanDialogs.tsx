@@ -62,7 +62,7 @@ const MealPlanDialogs = ({
     <>
       {/* AI Generation Dialog */}
       <MealPlanAIDialog
-        isOpen={showAIDialog}
+        open={showAIDialog}
         onClose={() => setShowAIDialog(false)}
         preferences={aiPreferences}
         onPreferencesChange={setAiPreferences}
@@ -81,7 +81,7 @@ const MealPlanDialogs = ({
       {/* Exchange Dialog */}
       {selectedMeal && (
         <MealPlanExchangeDialog
-          isOpen={showExchangeDialog}
+          open={showExchangeDialog}
           onClose={() => setShowExchangeDialog(false)}
           meal={selectedMeal}
           mealIndex={selectedMealIndex}
@@ -93,7 +93,7 @@ const MealPlanDialogs = ({
       <EnhancedAddSnackDialog
         isOpen={showAddSnackDialog}
         onClose={() => setShowAddSnackDialog(false)}
-        selectedDayNumber={selectedDayNumber}
+        dayNumber={selectedDayNumber}
         weekStartDate={weekStartDate}
         onSuccess={onRefetch}
       />

@@ -1,6 +1,7 @@
 
 import { useMemo } from 'react';
 import type { DailyMeal, ShoppingItem } from '@/types/mealPlan';
+import { getCategoryForIngredient } from '@/utils/mealPlanUtils';
 
 export const useMealPlanCalculations = (
   mealPlanData: any,
@@ -43,12 +44,16 @@ export const useMealPlanCalculations = (
     mealPlanData.dailyMeals.forEach((meal: DailyMeal) => {
       if (meal.ingredients && Array.isArray(meal.ingredients)) {
         meal.ingredients.forEach((ingredient: any) => {
-          ingredients.push({
-            name: ingredient.name,
-            quantity: ingredient.quantity,
-            unit: ingredient.unit,
-            category: getCategoryForIngredient(ingredient.name)
-          });
+          // Safely handle ingredient name
+          const ingredientName = ingredient?.name || ingredient;
+          if (ingredientName && typeof ingredientName === 'string') {
+            ingredients.push({
+              name: ingredientName,
+              quantity: ingredient.quantity || '1',
+              unit: ingredient.unit || 'piece',
+              category: getCategoryForIngredient(ingredientName)
+            });
+          }
         });
       }
     });
@@ -64,26 +69,4 @@ export const useMealPlanCalculations = (
     targetDayCalories,
     shoppingItems
   };
-};
-
-const getCategoryForIngredient = (ingredientName: string): string => {
-  const categories = {
-    'Proteins': ['chicken', 'beef', 'pork', 'fish', 'eggs', 'tofu', 'beans', 'lentils'],
-    'Vegetables': ['tomato', 'onion', 'garlic', 'carrot', 'spinach', 'broccoli', 'pepper'],
-    'Grains': ['rice', 'bread', 'pasta', 'quinoa', 'oats', 'flour'],
-    'Dairy': ['milk', 'cheese', 'yogurt', 'butter', 'cream'],
-    'Fruits': ['apple', 'banana', 'orange', 'berry', 'lemon', 'lime'],
-    'Spices': ['salt', 'pepper', 'cumin', 'paprika', 'oregano', 'basil'],
-    'Others': []
-  };
-
-  const ingredient = ingredientName.toLowerCase();
-  
-  for (const [category, items] of Object.entries(categories)) {
-    if (items.some(item => ingredient.includes(item))) {
-      return category;
-    }
-  }
-  
-  return 'Others';
 };
