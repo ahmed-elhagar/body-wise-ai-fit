@@ -46,12 +46,23 @@ const MealExchangeDialog = ({ isOpen, onClose, currentMeal, onExchange }: MealEx
     setAlternatives(mockAlternatives);
   };
 
+  // Convert DailyMeal to expected format for exchangeMeal function
+  const convertToMealFormat = (dailyMeal: DailyMeal) => ({
+    ...dailyMeal,
+    type: dailyMeal.meal_type,
+    time: '12:00', // Default time
+    cookTime: dailyMeal.cook_time || 0,
+    prepTime: dailyMeal.prep_time || 0,
+    image: dailyMeal.image_url || ''
+  });
+
   const handleExchange = async (alternative: any) => {
     console.log('🔄 Exchanging meal with alternative:', alternative.name);
     
     try {
+      const mealInCorrectFormat = convertToMealFormat(currentMeal);
       await exchangeMeal({
-        meal: currentMeal,
+        meal: mealInCorrectFormat,
         dayNumber: currentMeal.day_number
       });
       onExchange();

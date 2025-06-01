@@ -8,9 +8,10 @@ import { useI18n } from "@/hooks/useI18n";
 
 interface FoodPhotoAnalysisCardProps {
   onAnalyze: (imageUrl: string) => void;
+  className?: string;
 }
 
-const FoodPhotoAnalysisCard = ({ onAnalyze }: FoodPhotoAnalysisCardProps) => {
+const FoodPhotoAnalysisCard = ({ onAnalyze, className }: FoodPhotoAnalysisCardProps) => {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { t } = useI18n();
@@ -64,7 +65,7 @@ const FoodPhotoAnalysisCard = ({ onAnalyze }: FoodPhotoAnalysisCardProps) => {
   };
 
   return (
-    <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+    <Card className={`bg-white/80 backdrop-blur-sm border-0 shadow-lg ${className}`}>
       <CardHeader>
         <CardTitle className="text-lg font-semibold">
           {t('foodPhotoAnalysis.title') || 'Analyze Food Photo'}

@@ -2,6 +2,15 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useI18n } from "@/hooks/useI18n";
+import { 
+  Play, 
+  Pause, 
+  RotateCcw, 
+  Share2, 
+  Timer, 
+  Youtube, 
+  BookOpen 
+} from 'lucide-react';
 
 interface ExerciseQuickActionsProps {
   isWorkoutActive: boolean;

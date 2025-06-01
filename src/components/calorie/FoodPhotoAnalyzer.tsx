@@ -28,11 +28,16 @@ const FoodPhotoAnalyzer = ({ onSelectFood }: FoodPhotoAnalyzerProps) => {
     logAnalyzedFood(food, 100, 'snack', `Added from AI analysis`);
   };
 
+  const handleAnalyze = (imageUrl: string) => {
+    // Mock analysis for now
+    console.log('Analyzing image:', imageUrl);
+  };
+
   return (
     <div className="space-y-6">
       {/* Photo Analysis Card */}
       <FoodPhotoAnalysisCard 
-        className="w-full"
+        onAnalyze={handleAnalyze}
       />
 
       {/* Analysis Results */}

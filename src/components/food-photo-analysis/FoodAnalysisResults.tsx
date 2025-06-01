@@ -1,9 +1,26 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Utensils, Plus } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { Utensils, Plus, ChefHat, Clock, Users, TrendingUp } from 'lucide-react';
 import { useI18n } from "@/hooks/useI18n";
+
+interface AIFoodAnalysisResult {
+  foodItems?: any[];
+  overallConfidence?: number;
+  mealType?: string;
+  cuisineType?: string;
+  totalNutrition?: {
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+  };
+  recommendations?: string;
+  remainingCredits?: number;
+}
 
 interface FoodAnalysisResultsProps {
   result: AIFoodAnalysisResult;

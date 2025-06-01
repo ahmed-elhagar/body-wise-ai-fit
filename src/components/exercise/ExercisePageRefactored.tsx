@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useI18n } from "@/hooks/useI18n";
 import { useSearchParams } from 'react-router-dom';
@@ -6,7 +7,7 @@ import { ExerciseProgramLoadingStates } from './ExerciseProgramLoadingStates';
 import ExerciseProgramDaySelector from './ExerciseProgramDaySelector';
 import { ExerciseListEnhanced } from './ExerciseListEnhanced';
 import { ExerciseProgramActions } from './ExerciseProgramActions';
-import { ExerciseProgramEmptyState } from './ExerciseProgramEmptyState';
+import ExerciseProgramEmptyState from './ExerciseProgramEmptyState';
 import { ExerciseProgramErrorState } from './ExerciseProgramErrorState';
 import { WorkoutTypeSelector } from './WorkoutTypeSelector';
 import { useExerciseProgram } from '@/hooks/useExerciseProgram';

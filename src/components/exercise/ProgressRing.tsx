@@ -1,7 +1,14 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
 import { useI18n } from "@/hooks/useI18n";
+import { 
+  Calendar, 
+  CheckCircle, 
+  Target, 
+  Trophy 
+} from 'lucide-react';
 
 interface ProgressRingProps {
   completedExercises: number;
