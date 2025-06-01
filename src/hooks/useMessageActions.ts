@@ -6,6 +6,11 @@ import { useAuth } from './useAuth';
 import { toast } from 'sonner';
 import type { ChatMessage } from './useCoachChat';
 
+interface EditMessageParams {
+  messageId: string;
+  newContent: string;
+}
+
 export const useMessageActions = (coachId: string, traineeId: string) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -13,8 +18,8 @@ export const useMessageActions = (coachId: string, traineeId: string) => {
   const [editingMessage, setEditingMessage] = useState<ChatMessage | null>(null);
 
   // Edit message mutation
-  const editMessage = useMutation({
-    mutationFn: async ({ messageId, newContent }: { messageId: string; newContent: string }) => {
+  const editMessageMutation = useMutation({
+    mutationFn: async ({ messageId, newContent }: EditMessageParams) => {
       if (!user?.id) throw new Error('Not authenticated');
 
       const { error } = await supabase
@@ -40,7 +45,7 @@ export const useMessageActions = (coachId: string, traineeId: string) => {
   });
 
   // Delete message mutation
-  const deleteMessage = useMutation({
+  const deleteMessageMutation = useMutation({
     mutationFn: async (messageId: string) => {
       if (!user?.id) throw new Error('Not authenticated');
 
@@ -67,9 +72,9 @@ export const useMessageActions = (coachId: string, traineeId: string) => {
     setReplyingTo,
     editingMessage,
     setEditingMessage,
-    editMessage: editMessage.mutate,
-    deleteMessage: deleteMessage.mutate,
-    isEditing: editMessage.isPending,
-    isDeleting: deleteMessage.isPending
+    editMessage: editMessageMutation.mutate,
+    deleteMessage: deleteMessageMutation.mutate,
+    isEditing: editMessageMutation.isPending,
+    isDeleting: deleteMessageMutation.isPending
   };
 };
