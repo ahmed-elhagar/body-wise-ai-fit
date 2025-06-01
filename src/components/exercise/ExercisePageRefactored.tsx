@@ -1,227 +1,248 @@
-import { format, addDays } from "date-fns";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { useOptimizedExerciseProgramPage } from "@/hooks/useOptimizedExerciseProgramPage";
-import { createMockExercise } from "@/types/exercise";
-import ExerciseHeader from "./ExerciseHeader";
-import DayTabs from "../meal-plan/DayTabs";
-import ProgressRing from "./ProgressRing";
-import ExerciseList from "./ExerciseList";
-import { EmptyExerciseState } from "./EmptyExerciseState";
-import { AIExerciseDialog } from "./AIExerciseDialog";
-import EnhancedLoadingIndicator from "@/components/ui/enhanced-loading-indicator";
+import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { CalendarDays, ListChecks, BarChart3, Settings, Loader2, Dumbbell } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useAIExerciseProgram } from '@/hooks/useAIExerciseProgram';
+import { EmptyExerciseState } from './EmptyExerciseState';
+import { ExerciseCard } from './ExerciseCard';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+
+interface Exercise {
+  id: string;
+  name: string;
+  sets: number;
+  reps: number;
+  rest_seconds: number;
+  workout_name: string;
+  dayNumber: number;
+  muscle_groups: string[];
+}
 
 const ExercisePageRefactored = () => {
-  const { t } = useLanguage();
-  const {
-    selectedDayNumber,
-    setSelectedDayNumber,
-    currentWeekOffset,
-    setCurrentWeekOffset,
-    workoutType,
-    setWorkoutType,
-    showAIDialog,
-    setShowAIDialog,
-    aiPreferences,
-    setAiPreferences,
-    currentProgram,
-    isLoading,
-    isGenerating,
-    todaysWorkouts,
-    todaysExercises,
-    completedExercises,
-    totalExercises,
-    progressPercentage,
-    isRestDay,
-    error,
-    currentDate,
-    weekStartDate,
-    handleGenerateAIProgram,
-    handleRegenerateProgram,
-    handleExerciseComplete,
-    handleExerciseProgressUpdate,
-    refetch
-  } = useOptimizedExerciseProgramPage();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { language } = useLanguage();
+  const { generateExerciseProgram, isGenerating } = useAIExerciseProgram();
 
-  const currentSelectedDate = addDays(weekStartDate, selectedDayNumber - 1);
-  const isToday = format(currentSelectedDate, 'yyyy-MM-dd') === format(currentDate, 'yyyy-MM-dd');
+  const [selectedDay, setSelectedDay] = useState<number>(1);
+  const [selectedDayWorkouts, setSelectedDayWorkouts] = useState<any[] | null>(null);
+  const [showAIDialog, setShowAIDialog] = useState(false);
+  const [workoutType, setWorkoutType] = useState<"home" | "gym">("home");
+  const [aiPreferences, setAiPreferences] = useState({
+    difficultyLevel: "intermediate",
+    fitnessGoals: ["strength"],
+    availableEquipment: [],
+    timePerWorkout: "60",
+    workoutsPerWeek: "3",
+    workoutType: workoutType
+  });
+  const [filterBy, setFilterBy] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
 
-  // Mock exercises with proper types for demonstration
-  const mockExercises = [
-    createMockExercise({
-      id: 'ex1',
-      name: 'Push-ups',
-      sets: 3,
-      reps: '15',
-      daily_workout_id: 'workout-1'
-    }),
-    createMockExercise({
-      id: 'ex2',
-      name: 'Squats',
-      sets: 3,
-      reps: '20',
-      daily_workout_id: 'workout-1'
-    })
-  ];
+  useEffect(() => {
+    if (user) {
+      fetchWorkoutsForDay(selectedDay);
+    }
+  }, [user, selectedDay]);
 
-  // Loading state with enhanced design
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-        <div className="flex items-center justify-center min-h-screen">
-          <EnhancedLoadingIndicator
-            status="loading"
-            type="general"
-            message={t('exercise.loadingProgram') || 'Loading Exercise Program'}
-            description="Preparing your personalized workout plan..."
-            size="lg"
-            variant="card"
-            showSteps={true}
-            customSteps={[
-              'Fetching your program...',
-              'Loading exercises...',
-              'Calculating progress...',
-              'Finalizing data...'
-            ]}
-          />
-        </div>
-      </div>
+  const fetchWorkoutsForDay = async (day: number) => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('user_workouts')
+        .select(`
+          id, workout_name, day_number,
+          exercises (
+            id, name, sets, reps, rest_seconds,
+            muscle_groups: exercise_muscle_groups (muscle_group)
+          )
+        `)
+        .eq('user_id', user.id)
+        .eq('day_number', day);
+
+      if (error) {
+        console.error('Error fetching workouts:', error);
+        toast.error('Failed to load workouts for this day');
+      } else {
+        setSelectedDayWorkouts(data);
+      }
+    } catch (error) {
+      console.error('Error fetching workouts:', error);
+      toast.error('Failed to load workouts for this day');
+    }
+  };
+
+  const handleGenerateProgram = async () => {
+    setShowAIDialog(true);
+  };
+
+  const filteredExercises = useMemo(() => {
+    if (!selectedDayWorkouts?.length) return [];
+    
+    let exercises = selectedDayWorkouts.flatMap(workout => 
+      workout.exercises?.map(exercise => ({
+        ...exercise,
+        workoutName: workout.workout_name,
+        dayNumber: workout.day_number,
+        muscle_groups: exercise.exercises_muscle_groups?.map(emg => emg.muscle_group) || []
+      })) || []
     );
-  }
 
-  // Error state with enhanced design
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-        <div className="max-w-md mx-auto p-8 bg-white rounded-2xl shadow-xl border border-red-100">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-              </svg>
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              {t('exercise.errorTitle') || 'Something went wrong'}
-            </h3>
-            <p className="text-gray-600 mb-6">
-              {t('exercise.errorMessage') || 'Error loading exercise data. Please try again.'}
-            </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-fitness-primary-600 hover:to-fitness-primary-700 transition-all duration-300 transform hover:scale-105"
-            >
-              {t('exercise.retry') || 'Try Again'}
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+    if (filterBy !== 'all') {
+      exercises = exercises.filter(exercise => {
+        if (filterBy === 'muscle_group') {
+          return exercise.muscle_groups?.some(group => 
+            group.toLowerCase().includes(searchTerm.toLowerCase())
+          );
+        }
+        return exercise.name?.toLowerCase().includes(searchTerm.toLowerCase());
+      });
+    }
 
-  // Empty state with enhanced design
-  if (!currentProgram) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-        <div className="max-w-7xl mx-auto p-6">
-          <EmptyExerciseState
-            onGenerateProgram={() => setShowAIDialog(true)}
-            workoutType={workoutType}
-            setWorkoutType={setWorkoutType}
-            showAIDialog={showAIDialog}
-            setShowAIDialog={setShowAIDialog}
-            aiPreferences={aiPreferences}
-            setAiPreferences={setAiPreferences}
-            isGenerating={isGenerating}
-          />
-        </div>
-      </div>
-    );
-  }
+    return exercises;
+  }, [selectedDayWorkouts, filterBy, searchTerm]);
+
+  const totalDuration = useMemo(() => {
+    return filteredExercises.reduce((total, exercise) => {
+      // Calculate estimated duration based on sets, reps, and rest time
+      const sets = exercise.sets || 1;
+      const restSeconds = exercise.rest_seconds || 60;
+      const exerciseDuration = sets * 60 + (sets - 1) * restSeconds; // Assuming 60 seconds per set
+      return total + exerciseDuration;
+    }, 0);
+  }, [filteredExercises]);
+
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}m ${remainingSeconds}s`;
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
-        {/* Enhanced Header with better spacing and visual hierarchy */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-          <ExerciseHeader
-            currentProgram={currentProgram}
-            weekStartDate={weekStartDate}
-            currentWeekOffset={currentWeekOffset}
-            workoutType={workoutType}
-            onWeekChange={setCurrentWeekOffset}
-            onShowAIDialog={() => setShowAIDialog(true)}
-            onRegenerateProgram={handleRegenerateProgram}
-            onWorkoutTypeChange={setWorkoutType}
-            isGenerating={isGenerating}
-          />
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <div className="container mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        <header className="text-center mb-8">
+          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight mb-2">
+            Your Personalized Exercise Program
+          </h1>
+          <p className="mt-2 text-lg text-gray-600">
+            Stay consistent and achieve your fitness goals with our AI-powered program.
+          </p>
+        </header>
 
-        {/* Enhanced Layout with better grid and spacing */}
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          {/* Enhanced Progress Sidebar with better visual design */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-6 space-y-4">
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-                <ProgressRing
-                  completedExercises={completedExercises}
-                  totalExercises={totalExercises}
-                  progressPercentage={progressPercentage}
-                  isToday={isToday}
-                  isRestDay={isRestDay}
-                />
-              </div>
-              
-              {/* Enhanced Motivation Card */}
-              <div className="bg-gradient-to-br from-fitness-primary-50 to-fitness-secondary-50 rounded-2xl border border-fitness-primary-200 p-6">
-                <div className="text-center space-y-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-fitness-primary-500 to-fitness-secondary-500 rounded-xl flex items-center justify-center mx-auto">
-                    <span className="text-2xl">💪</span>
-                  </div>
-                  <h3 className="font-semibold text-fitness-primary-800">
-                    {progressPercentage === 100 ? 'Completed!' : 
-                     progressPercentage > 50 ? 'Almost There!' : 
-                     progressPercentage > 0 ? 'Keep Going!' : 'Start Strong!'}
-                  </h3>
-                  <p className="text-sm text-fitness-primary-600">
-                    {progressPercentage === 100 ? 'Great job finishing today\'s workout!' : 
-                     'Every rep counts towards your goals'}
+        {/* Day Selection Navigation */}
+        <nav className="mb-8">
+          <ul className="flex justify-center space-x-4">
+            {[1, 2, 3, 4, 5, 6, 7].map(day => (
+              <li key={day}>
+                <button
+                  onClick={() => setSelectedDay(day)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2
+                    ${selectedDay === day
+                      ? 'bg-health-primary text-white shadow'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                >
+                  Day {day}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        {/* Program Overview Section */}
+        {selectedDayWorkouts?.length ? (
+          <section className="mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Quick Stats Card */}
+              <Card className="bg-white shadow-md border-0">
+                <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                  <CardTitle className="text-sm font-medium">Day {selectedDay} Overview</CardTitle>
+                  <Dumbbell className="h-4 w-4 text-gray-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{filteredExercises.length} Exercises</div>
+                  <p className="text-sm text-gray-500">
+                    Estimated Duration: {formatTime(totalDuration)}
                   </p>
-                </div>
-              </div>
-            </div>
-          </div>
+                </CardContent>
+              </Card>
 
-          {/* Enhanced Main Content with better spacing */}
-          <div className="lg:col-span-4 space-y-6">
-            {/* Enhanced Day Tabs with better active states */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-              <DayTabs
-                weekStartDate={weekStartDate}
-                selectedDayNumber={selectedDayNumber}
-                onDayChange={setSelectedDayNumber}
+              {/* Progress Tracker Card */}
+              <Card className="bg-white shadow-md border-0">
+                <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                  <CardTitle className="text-sm font-medium">Weekly Progress</CardTitle>
+                  <ListChecks className="h-4 w-4 text-gray-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">3/7 Days</div>
+                  <p className="text-sm text-gray-500">Complete 3 of 7 workouts this week.</p>
+                  <Progress value={43} className="mt-2" />
+                </CardContent>
+              </Card>
+            </div>
+          </section>
+        ) : null}
+
+        {/* Filter and Search Section */}
+        {selectedDayWorkouts?.length ? (
+          <section className="mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <Label htmlFor="filter">Filter by:</Label>
+              <Select onValueChange={setFilterBy}>
+                <SelectTrigger id="filter">
+                  <SelectValue placeholder="All" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="name">Exercise Name</SelectItem>
+                  <SelectItem value="muscle_group">Muscle Group</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Label htmlFor="search">Search:</Label>
+              <Input
+                type="search"
+                id="search"
+                placeholder={`Search ${filterBy === 'muscle_group' ? 'Muscle Group' : 'Exercise Name'}...`}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
+          </section>
+        ) : null}
 
-            {/* Enhanced Exercise List Container */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-              <ExerciseList
-                exercises={todaysExercises}
-                onExerciseComplete={handleExerciseComplete}
-                onExerciseProgressUpdate={handleExerciseProgressUpdate}
-                isRestDay={isRestDay}
-              />
+        {/* Exercise List or Empty State */}
+        <section>
+          {selectedDayWorkouts?.length ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredExercises.map((exercise: Exercise) => (
+                <ExerciseCard key={exercise.id} exercise={exercise} />
+              ))}
             </div>
-          </div>
-        </div>
-
-        {/* Enhanced AI Dialog */}
-        <AIExerciseDialog
-          open={showAIDialog}
-          onOpenChange={setShowAIDialog}
-          preferences={aiPreferences}
-          setPreferences={setAiPreferences}
-          onGenerate={handleGenerateAIProgram}
-          isGenerating={isGenerating}
-        />
+          ) : (
+            <EmptyExerciseState 
+              onGenerateProgram={handleGenerateProgram}
+              workoutType={workoutType}
+              setWorkoutType={setWorkoutType}
+              showAIDialog={showAIDialog}
+              setShowAIDialog={setShowAIDialog}
+              aiPreferences={aiPreferences}
+              setAiPreferences={setAiPreferences}
+              isGenerating={isGenerating}
+            />
+          )}
+        </section>
       </div>
     </div>
   );
