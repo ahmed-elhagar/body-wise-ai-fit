@@ -5,10 +5,36 @@ import { Badge } from "@/components/ui/badge";
 import { CalendarDays, Plus, TrendingUp } from "lucide-react";
 import { useI18n } from "@/hooks/useI18n";
 import MealCard from "@/components/MealCard";
-import type { Meal } from "@/types/meal";
+
+// Use the Meal type from MealCard's expected interface
+interface Ingredient {
+  name: string;
+  quantity: string;
+  unit: string;
+}
+
+interface Meal {
+  id?: string;
+  type: string;
+  time: string;
+  name: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  ingredients: Ingredient[];
+  instructions: string[];
+  prepTime: number;
+  cookTime: number;
+  servings: number;
+  youtube_search_term?: string;
+  image_url?: string;
+  image: string;
+  meal_type?: string;
+}
 
 interface CompactDailyViewProps {
-  meals: Meal[];
+  meals: any[]; // Accept any meal format from external sources
   selectedDay: number;
   onShowRecipe: (meal: Meal) => void;
   onExchangeMeal: (meal: Meal) => void;
@@ -71,7 +97,7 @@ const CompactDailyView = ({
       {/* Meals Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {meals.map((meal, index) => {
-          // Ensure meal has all required properties with proper types
+          // Convert external meal format to MealCard's expected format
           const normalizedMeal: Meal = {
             id: meal.id || `meal-${index}-${Math.random().toString(36).substr(2, 9)}`,
             type: meal.type || meal.meal_type || 'meal',
