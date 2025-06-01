@@ -35,8 +35,8 @@ export const useMealPlanState = () => {
     error: error?.message
   });
 
-  // Generate meal plan with enhanced error handling
-  const handleGenerateAI = useCallback(async () => {
+  // Generate meal plan with enhanced error handling - returns Promise<boolean>
+  const handleGenerateAI = useCallback(async (): Promise<boolean> => {
     const result = await generateMealPlan(dialogs.aiPreferences, {
       weekOffset: navigation.currentWeekOffset
     });
@@ -47,9 +47,10 @@ export const useMealPlanState = () => {
       setTimeout(() => {
         refetch();
       }, 1000);
+      return true;
     }
     
-    return result;
+    return false;
   }, [generateMealPlan, dialogs.aiPreferences, navigation.currentWeekOffset, refetch]);
 
   // Manual refetch

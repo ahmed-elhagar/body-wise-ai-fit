@@ -1,9 +1,9 @@
 
-import { EnhancedRecipeDialog } from "../EnhancedRecipeDialog";
-import { MealPlanExchangeDialog } from "../MealPlanExchangeDialog";
-import { EnhancedAddSnackDialog } from "../EnhancedAddSnackDialog";
-import { MealPlanAIDialog } from "../MealPlanAIDialog";
-import { EnhancedShoppingListDrawer } from "@/components/shopping-list/EnhancedShoppingListDrawer";
+import EnhancedRecipeDialog from "../EnhancedRecipeDialog";
+import MealPlanExchangeDialog from "../MealPlanExchangeDialog";
+import EnhancedAddSnackDialog from "../EnhancedAddSnackDialog";
+import MealPlanAIDialog from "../MealPlanAIDialog";
+import EnhancedShoppingListDrawer from "@/components/shopping-list/EnhancedShoppingListDrawer";
 import type { DailyMeal, MealPlanPreferences, MealPlanFetchResult } from "@/types/mealPlan";
 
 interface MealPlanDialogsProps {
