@@ -1,26 +1,36 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from './useAuth';
+import { useProfile } from './useProfile';
 
 export const useRole = () => {
   const { user, loading: authLoading } = useAuth();
+  const { profile, isLoading: profileLoading } = useProfile();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!authLoading) {
+    if (!authLoading && !profileLoading) {
       setIsLoading(false);
     }
-  }, [authLoading]);
+  }, [authLoading, profileLoading]);
 
-  // Get role from user metadata or default role
+  // Get role from profile data first, then fallback to user metadata
   const getUserRole = () => {
     if (!user) return 'guest';
     
-    // Check multiple places for role information
+    // Check profile role first (most reliable)
+    if (profile?.role) {
+      console.log('Role from profile:', profile.role);
+      return profile.role;
+    }
+    
+    // Fallback to user metadata
     const metadataRole = user.user_metadata?.role;
     const directRole = user.role;
     
-    return metadataRole || directRole || 'normal';
+    const finalRole = metadataRole || directRole || 'normal';
+    console.log('Role from metadata/fallback:', finalRole);
+    return finalRole;
   };
 
   const role = getUserRole();

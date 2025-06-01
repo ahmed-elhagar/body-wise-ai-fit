@@ -42,6 +42,7 @@ export const useProfile = () => {
 
   useEffect(() => {
     if (!user?.id) {
+      console.log('useProfile: No user ID, clearing profile');
       setProfile(null);
       setIsLoading(false);
       return;
@@ -51,6 +52,8 @@ export const useProfile = () => {
       try {
         setIsLoading(true);
         setError(null);
+        
+        console.log('useProfile: Fetching profile for user:', user.id);
 
         const { data, error } = await supabase
           .from('profiles')
@@ -64,6 +67,7 @@ export const useProfile = () => {
           return;
         }
 
+        console.log('useProfile: Profile data fetched:', data);
         setProfile(data);
       } catch (err) {
         console.error('Profile fetch error:', err);
@@ -81,6 +85,8 @@ export const useProfile = () => {
 
     try {
       setIsUpdating(true);
+      console.log('useProfile: Updating profile with:', updates);
+      
       const { data, error } = await supabase
         .from('profiles')
         .update(updates)
@@ -93,6 +99,7 @@ export const useProfile = () => {
         return { error: error.message };
       }
 
+      console.log('useProfile: Profile updated successfully:', data);
       setProfile(data);
       return { data };
     } catch (err) {
@@ -103,18 +110,31 @@ export const useProfile = () => {
     }
   };
 
+  const refetch = async () => {
+    if (user?.id) {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+      
+      if (error) {
+        console.error('Profile refetch error:', error);
+        setError(error.message);
+      } else {
+        setProfile(data);
+      }
+      setIsLoading(false);
+    }
+  };
+
   return {
     profile,
     isLoading,
     isUpdating,
     error,
     updateProfile,
-    refetch: () => {
-      if (user?.id) {
-        setIsLoading(true);
-        // Trigger useEffect to refetch
-        setProfile(null);
-      }
-    }
+    refetch,
   };
 };

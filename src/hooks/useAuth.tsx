@@ -78,10 +78,36 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     console.log("AuthProvider - Initializing");
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         console.log('Auth state changed:', event, session?.user?.email);
         setSession(session);
-        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          // Fetch user profile to get role information
+          try {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('role, first_name, last_name')
+              .eq('id', session.user.id)
+              .single();
+            
+            const enrichedUser = {
+              ...session.user,
+              role: profile?.role || session.user.user_metadata?.role || 'normal',
+              first_name: profile?.first_name || session.user.user_metadata?.first_name,
+              last_name: profile?.last_name || session.user.user_metadata?.last_name,
+            };
+            
+            console.log('User with role:', enrichedUser.role);
+            setUser(enrichedUser);
+          } catch (error) {
+            console.error('Error fetching user profile:', error);
+            setUser(session.user);
+          }
+        } else {
+          setUser(null);
+        }
+        
         setIsLoading(false);
       }
     );
@@ -96,7 +122,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setError(error);
         } else {
           console.log("Got initial session:", !!session);
-          setUser(session?.user ?? null);
+          if (session?.user) {
+            // Fetch user profile for initial session too
+            try {
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('role, first_name, last_name')
+                .eq('id', session.user.id)
+                .single();
+              
+              const enrichedUser = {
+                ...session.user,
+                role: profile?.role || session.user.user_metadata?.role || 'normal',
+                first_name: profile?.first_name || session.user.user_metadata?.first_name,
+                last_name: profile?.last_name || session.user.user_metadata?.last_name,
+              };
+              
+              setUser(enrichedUser);
+            } catch (error) {
+              console.error('Error fetching initial user profile:', error);
+              setUser(session.user);
+            }
+          }
           setSession(session);
         }
       } catch (error) {
@@ -188,7 +235,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     session,
     loading: isLoading,
     isLoading,
-    isAdmin: false, // Will be implemented with proper role checking
+    isAdmin: user?.role === 'admin',
     error,
     signIn,
     signUp,
