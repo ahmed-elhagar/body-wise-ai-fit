@@ -45,19 +45,113 @@ function App() {
                 <Sonner />
                 <BrowserRouter>
                   <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/landing" element={<Landing />} />
-                    <Route path="/auth" element={<Auth />} />
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/meal-plan" element={<MealPlan />} />
-                    <Route path="/exercise" element={<Exercise />} />
-                    <Route path="/progress/:tab?" element={<Progress />} />
-                    <Route path="/settings" element={<Settings />} />
-                    <Route path="/coach" element={<Coach />} />
-                    <Route path="/admin" element={<Admin />} />
-                    <Route path="/profile" element={<Profile />} />
-                    <Route path="/notifications" element={<Notifications />} />
-                    <Route path="/chat" element={<Chat />} />
+                    {/* Public routes - redirect to dashboard if authenticated */}
+                    <Route 
+                      path="/" 
+                      element={
+                        <ProtectedRoute requireAuth={false}>
+                          <Index />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/landing" 
+                      element={
+                        <ProtectedRoute requireAuth={false}>
+                          <Landing />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/auth" 
+                      element={
+                        <ProtectedRoute requireAuth={false}>
+                          <Auth />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    
+                    {/* Protected routes - require authentication */}
+                    <Route 
+                      path="/dashboard" 
+                      element={
+                        <ProtectedRoute>
+                          <Dashboard />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/meal-plan" 
+                      element={
+                        <ProtectedRoute>
+                          <MealPlan />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/exercise" 
+                      element={
+                        <ProtectedRoute>
+                          <Exercise />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/progress/:tab?" 
+                      element={
+                        <ProtectedRoute>
+                          <Progress />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/settings" 
+                      element={
+                        <ProtectedRoute>
+                          <Settings />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/coach" 
+                      element={
+                        <ProtectedRoute>
+                          <Coach />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/admin" 
+                      element={
+                        <ProtectedRoute>
+                          <Admin />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/profile" 
+                      element={
+                        <ProtectedRoute>
+                          <Profile />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/notifications" 
+                      element={
+                        <ProtectedRoute>
+                          <Notifications />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/chat" 
+                      element={
+                        <ProtectedRoute>
+                          <Chat />
+                        </ProtectedRoute>
+                      } 
+                    />
                   </Routes>
                 </BrowserRouter>
               </SidebarProvider>

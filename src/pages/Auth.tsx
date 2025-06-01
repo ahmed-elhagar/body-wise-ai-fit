@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
@@ -33,6 +32,7 @@ const Auth = () => {
       return;
     }
 
+    // Check if user has completed onboarding
     if (!profile || !profile.onboarding_completed || !profile.first_name || !profile.last_name) {
       console.log('Auth - Redirecting to onboarding (incomplete profile)');
       navigate('/onboarding', { replace: true });
@@ -71,11 +71,12 @@ const Auth = () => {
           first_name: data.firstName, 
           last_name: data.lastName 
         });
-        console.log('Sign up successful, will redirect to onboarding');
+        console.log('Sign up successful, will redirect after profile check');
         toast.success('Account created! Please complete your profile.');
       } else {
         await signIn(data.email, data.password);
         console.log('Sign in successful');
+        toast.success('Welcome back!');
       }
     } catch (error: any) {
       console.error('Auth error:', error);
