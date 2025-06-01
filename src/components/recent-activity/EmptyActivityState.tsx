@@ -1,8 +1,8 @@
 
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 export const EmptyActivityState = () => {
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL } = useI18n();
 
   return (
     <div className="text-center py-8">

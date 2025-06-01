@@ -2,7 +2,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dumbbell } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import { ExerciseCardEnhanced } from "./ExerciseCardEnhanced";
 import { RestDayCard } from "./RestDayCard";
 
@@ -21,7 +21,7 @@ export const ExerciseListEnhanced = ({
   onExerciseProgressUpdate,
   isRestDay = false
 }: ExerciseListEnhancedProps) => {
-  const { t } = useLanguage();
+  const { t } = useI18n();
 
   if (isLoading) {
     return (

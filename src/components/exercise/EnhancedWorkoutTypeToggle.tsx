@@ -2,7 +2,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Home, Building2, Zap } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 interface EnhancedWorkoutTypeToggleProps {
   workoutType: "home" | "gym";
@@ -13,7 +13,7 @@ export const EnhancedWorkoutTypeToggle = ({
   workoutType, 
   onWorkoutTypeChange 
 }: EnhancedWorkoutTypeToggleProps) => {
-  const { t } = useLanguage();
+  const { t } = useI18n();
 
   return (
     <Card className="p-4 bg-white/90 backdrop-blur-sm border border-gray-200/50 shadow-lg rounded-xl">

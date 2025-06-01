@@ -1,7 +1,7 @@
 
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import { Flame, Target } from "lucide-react";
 
 interface CalorieProgressCardProps {
@@ -10,7 +10,7 @@ interface CalorieProgressCardProps {
 }
 
 const CalorieProgressCard = ({ currentDayCalories, targetDayCalories }: CalorieProgressCardProps) => {
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL } = useI18n();
 
   const progressPercentage = Math.min((currentDayCalories / targetDayCalories) * 100, 100);
   const remainingCalories = Math.max(0, targetDayCalories - currentDayCalories);

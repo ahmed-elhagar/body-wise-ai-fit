@@ -1,10 +1,10 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Package } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 const EmptyState = () => {
-  const { isRTL } = useLanguage();
+  const { isRTL } = useI18n();
 
   return (
     <Card className="bg-white border-fitness-primary-200 shadow-lg">

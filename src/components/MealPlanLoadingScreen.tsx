@@ -1,12 +1,12 @@
 
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 interface MealPlanLoadingScreenProps {
   message: string;
 }
 
 const MealPlanLoadingScreen = ({ message }: MealPlanLoadingScreenProps) => {
-  const { isRTL } = useLanguage();
+  const { isRTL } = useI18n();
 
   return (
     <div className={`min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center ${isRTL ? 'rtl' : 'ltr'}`}>

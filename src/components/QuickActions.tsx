@@ -1,13 +1,13 @@
 
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import { QuickActionItem } from "./quick-actions/QuickActionItem";
 import { getQuickActionsData } from "./quick-actions/quickActionsData";
 
 const QuickActions = () => {
   const navigate = useNavigate();
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL } = useI18n();
 
   const actions = getQuickActionsData(t, navigate);
 

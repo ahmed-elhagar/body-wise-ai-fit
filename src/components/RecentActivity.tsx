@@ -1,10 +1,10 @@
 
 import { Card } from "@/components/ui/card";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import { ActivityItem, EmptyActivityState, useActivityData } from "./recent-activity";
 
 const RecentActivity = () => {
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL } = useI18n();
   const { activities } = useActivityData();
 
   if (activities.length === 0) {

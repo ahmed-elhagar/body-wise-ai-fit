@@ -17,7 +17,6 @@ import Admin from "./pages/Admin";
 import Profile from "./pages/Profile";
 import Notifications from "./pages/Notifications";
 import Chat from "./pages/Chat";
-import { LanguageProvider } from "./contexts/LanguageContext";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "./contexts/AuthContext";
 import "./App.css";
@@ -37,30 +36,28 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
         <TooltipProvider>
-          <LanguageProvider>
-            <AuthProvider>
-              <SidebarProvider>
-                <Toaster />
-                <Sonner />
-                <BrowserRouter>
-                  <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/auth" element={<Auth />} />
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/meal-plan" element={<MealPlan />} />
-                    <Route path="/exercise" element={<Exercise />} />
-                    <Route path="/progress/:tab?" element={<Progress />} />
-                    <Route path="/settings" element={<Settings />} />
-                    <Route path="/coach" element={<Coach />} />
-                    <Route path="/admin" element={<Admin />} />
-                    <Route path="/profile" element={<Profile />} />
-                    <Route path="/notifications" element={<Notifications />} />
-                    <Route path="/chat" element={<Chat />} />
-                  </Routes>
-                </BrowserRouter>
-              </SidebarProvider>
-            </AuthProvider>
-          </LanguageProvider>
+          <AuthProvider>
+            <SidebarProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/meal-plan" element={<MealPlan />} />
+                  <Route path="/exercise" element={<Exercise />} />
+                  <Route path="/progress/:tab?" element={<Progress />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="/coach" element={<Coach />} />
+                  <Route path="/admin" element={<Admin />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/notifications" element={<Notifications />} />
+                  <Route path="/chat" element={<Chat />} />
+                </Routes>
+              </BrowserRouter>
+            </SidebarProvider>
+          </AuthProvider>
         </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>
