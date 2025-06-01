@@ -2,7 +2,7 @@
 import AIGenerationDialog from "./AIGenerationDialog";
 import AddSnackDialog from "./AddSnackDialog";
 import ShoppingListDialog from "./ShoppingListDialog";
-import MealRecipeDialog from "./MealRecipeDialog";
+import MealRecipeDialog from "./old_MealRecipeDialog";
 import MealExchangeDialog from "./MealExchangeDialog";
 import type { DailyMeal } from "@/hooks/useMealPlanData";
 

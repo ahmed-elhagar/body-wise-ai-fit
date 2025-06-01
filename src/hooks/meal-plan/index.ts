@@ -1,6 +1,6 @@
 
 // Central export file for all meal plan hooks
-export { useMealPlanData } from './mealPlanService';
+export { fetchMealPlanData } from './mealPlanService';
 export type { MealIngredient, DailyMeal, WeeklyMealPlan, MealPlanFetchResult } from './types';
 
 // Main hooks

@@ -11,10 +11,3 @@ export { default as DayOverviewSection } from './DayOverviewSection';
 export { default as WeeklyMealGrid } from './WeeklyMealGrid';
 export { default as EmptyWeekState } from './EmptyWeekState';
 export { default as MealCard } from './MealCard';
-
-// Enhanced components
-export { default as EnhancedMealPlanPage } from './EnhancedMealPlanPage';
-export { default as MealPlanHeroSection } from './MealPlanHeroSection';
-export { default as MealPlanStatsPanel } from './MealPlanStatsPanel';
-export { default as MealPlanWeekNavigationCompact } from './MealPlanWeekNavigationCompact';
-export { default as MealPlanMealsDisplay } from './MealPlanMealsDisplay';
