@@ -4,9 +4,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Sparkles, Plus } from "lucide-react";
 import { useI18n } from "@/hooks/useI18n";
-import { CalorieProgressCard } from './add-snack/CalorieProgressCard';
-import { SnackGenerationSection } from './add-snack/SnackGenerationSection';
-import { TargetReachedState } from './add-snack/TargetReachedState';
+import CalorieProgressCard from './add-snack/CalorieProgressCard';
+import SnackGenerationSection from './add-snack/SnackGenerationSection';
+import TargetReachedState from './add-snack/TargetReachedState';
 
 interface AddSnackDialogProps {
   open: boolean;
@@ -62,15 +62,13 @@ const AddSnackDialog = ({ open, onOpenChange, currentDayCalories, targetDayCalor
 
           {hasReachedTarget ? (
             <TargetReachedState
-              onCancel={() => onOpenChange(false)}
+              onClose={() => onOpenChange(false)}
             />
           ) : (
             <SnackGenerationSection
               remainingCalories={remainingCalories}
               isGenerating={isGenerating}
-              generatedSnack={generatedSnack}
-              onGenerateSnack={handleGenerateSnack}
-              onAddSnack={handleAddSnack}
+              onGenerate={handleGenerateSnack}
               onCancel={() => onOpenChange(false)}
             />
           )}

@@ -37,6 +37,8 @@ const MealCard = ({ meal, index, onShowRecipe, onExchangeMeal }: MealCardProps) 
     ? meal.image_url
     : `https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=300&fit=crop&crop=center`;
 
+  const prepTime = meal.prep_time || meal.prepTime || 0;
+
   return (
     <Card className="group overflow-hidden bg-white/90 backdrop-blur-sm border-0 shadow-lg rounded-2xl hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
       {/* Image Section */}
@@ -65,7 +67,7 @@ const MealCard = ({ meal, index, onShowRecipe, onExchangeMeal }: MealCardProps) 
               <div className="flex items-center space-x-3 text-sm">
                 <span className="flex items-center">
                   <Clock className="w-4 h-4 mr-1" />
-                  {meal.prep_time}min
+                  {prepTime}min
                 </span>
                 <span className="flex items-center">
                   <Users className="w-4 h-4 mr-1" />
