@@ -24,7 +24,7 @@ interface UserProfile {
   onboarding_completed?: boolean;
   profile_completion_score?: number;
   ai_generations_remaining?: number;
-  role?: string;
+  role?: 'normal' | 'admin' | 'coach' | 'pro';
   fasting_type?: string;
   pregnancy_trimester?: number;
   breastfeeding_level?: string;

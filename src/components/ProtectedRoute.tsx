@@ -6,12 +6,14 @@ import { Navigate, useLocation } from 'react-router-dom';
 interface ProtectedRouteProps {
   children: ReactNode;
   requireAuth?: boolean;
+  requireProfile?: boolean;
   redirectTo?: string;
 }
 
 const ProtectedRoute = ({ 
   children, 
-  requireAuth = true, 
+  requireAuth = true,
+  requireProfile = false,
   redirectTo = '/auth' 
 }: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
@@ -40,6 +42,8 @@ const ProtectedRoute = ({
     return <Navigate to={from} replace />;
   }
 
+  // If profile is required, you can add additional profile checks here
+  // For now, just render the children
   return <>{children}</>;
 };
 

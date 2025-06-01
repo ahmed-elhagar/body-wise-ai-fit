@@ -34,6 +34,11 @@ export const useRole = () => {
     isPro: role === 'pro' || role === 'admin',
     isLoading,
     hasRole: (checkRole: string) => role === checkRole,
-    hasAnyRole: (roles: string[]) => roles.includes(role)
+    hasAnyRole: (roles: string[]) => roles.includes(role),
+    refetch: () => {
+      // Force re-evaluation of role
+      setIsLoading(true);
+      setTimeout(() => setIsLoading(false), 100);
+    }
   };
 };
