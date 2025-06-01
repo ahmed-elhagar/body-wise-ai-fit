@@ -42,7 +42,7 @@ export interface MultipleCoachesInfo {
   coaches: CoachInfo[];
 }
 
-export const useCoachChat = () => {
+export const useCoachChat = (coachId?: string, traineeId?: string) => {
   const [multipleCoachesInfo, setMultipleCoachesInfo] = useState<MultipleCoachesInfo>({
     totalCoaches: 0,
     activeCoaches: 0,
@@ -56,8 +56,8 @@ export const useCoachChat = () => {
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const sendMessage = (content: string, receiverId?: string) => {
-    console.log('Sending message:', content, 'to:', receiverId);
+  const sendMessage = (messageData: { message: string }) => {
+    console.log('Sending message:', messageData.message, 'between coach:', coachId, 'and trainee:', traineeId);
     setIsSending(true);
     // Simulate sending
     setTimeout(() => {

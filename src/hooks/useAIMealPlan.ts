@@ -7,7 +7,7 @@ export const useAIMealPlan = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const generateMealPlan = async (preferences: any) => {
+  const generateMealPlan = async (preferences: any, options?: { weekOffset?: number }) => {
     setIsGenerating(true);
     setError(null);
     
@@ -15,12 +15,15 @@ export const useAIMealPlan = () => {
       // Check user role from metadata
       const userRole = user?.user_metadata?.role || 'normal';
       
-      console.log('Generating meal plan for user role:', userRole);
+      console.log('Generating meal plan for user role:', userRole, 'with options:', options);
       
       // Simulate meal plan generation
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      return { success: true };
+      return { 
+        success: true, 
+        weeklyPlanId: 'mock-plan-' + Date.now() 
+      };
     } catch (err) {
       setError('Failed to generate meal plan');
       return { success: false, error: err };
