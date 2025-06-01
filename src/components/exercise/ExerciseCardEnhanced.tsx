@@ -1,137 +1,198 @@
 
-import { useState } from "react";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Play, Youtube, MoreHorizontal } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
-import type { Exercise } from "@/types/exercise";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { CheckCircle, Clock, Dumbbell, Play, Youtube, Edit3, RefreshCw } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { ExerciseProgressDialog } from "./ExerciseProgressDialog";
+import { ExerciseExchangeDialog } from "./ExerciseExchangeDialog";
+import { translateExerciseContent } from "@/utils/exerciseTranslationUtils";
 
 interface ExerciseCardEnhancedProps {
-  exercise: Exercise;
+  exercise: any;
   index: number;
   onExerciseComplete: (exerciseId: string) => void;
   onExerciseProgressUpdate: (exerciseId: string, sets: number, reps: string, notes?: string) => void;
 }
 
-export const ExerciseCardEnhanced = ({ exercise, index, onExerciseComplete, onExerciseProgressUpdate }: ExerciseCardEnhancedProps) => {
-  const { t, isRTL } = useI18n();
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [sets, setSets] = useState(exercise.sets || 3);
-  const [reps, setReps] = useState(exercise.reps || '12');
-  const [notes, setNotes] = useState(exercise.notes || '');
+export const ExerciseCardEnhanced = ({
+  exercise,
+  index,
+  onExerciseComplete,
+  onExerciseProgressUpdate
+}: ExerciseCardEnhancedProps) => {
+  const { t, language } = useLanguage();
+  const [showProgressDialog, setShowProgressDialog] = useState(false);
+  const [showExchangeDialog, setShowExchangeDialog] = useState(false);
 
-  const handleComplete = () => {
-    onExerciseComplete(exercise.id);
+  // Translate exercise content based on current language
+  const translatedExercise = translateExerciseContent(exercise, language);
+
+  // Debug log to track translation
+  useEffect(() => {
+    console.log('🎯 ExerciseCardEnhanced - Translation Debug:', {
+      originalName: exercise.name,
+      translatedName: translatedExercise.name,
+      currentLanguage: language,
+      exerciseId: exercise.id
+    });
+  }, [exercise.name, translatedExercise.name, language, exercise.id]);
+
+  const handleWatchVideo = () => {
+    const searchQuery = translatedExercise.youtube_search_term || translatedExercise.name;
+    const youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(searchQuery)}`;
+    window.open(youtubeUrl, '_blank');
   };
 
-  const handleProgressUpdate = () => {
-    onExerciseProgressUpdate(exercise.id, sets, reps, notes);
-  };
-
-  const toggleExpand = () => {
-    setIsExpanded(!isExpanded);
-  };
+  const progressPercentage = exercise.completed ? 100 : 0;
 
   return (
-    <Card className="group relative overflow-hidden bg-white/90 backdrop-blur-sm border-0 shadow-lg rounded-2xl">
-      {/* Completed Badge */}
-      {exercise.completed && (
-        <Badge className="absolute top-3 right-3 bg-green-500 text-white z-10">
-          {t('exercise.completed')}
-        </Badge>
-      )}
+    <>
+      <Card className={`p-6 transition-all duration-300 border-2 ${
+        exercise.completed 
+          ? 'bg-green-50 border-green-200 shadow-md' 
+          : 'bg-white border-health-border hover:border-health-primary hover:shadow-lg'
+      }`}>
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white ${
+              exercise.completed ? 'bg-green-500' : 'bg-health-primary'
+            }`}>
+              {exercise.completed ? <CheckCircle className="w-5 h-5" /> : index + 1}
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-health-text-primary mb-1">
+                {translatedExercise.name}
+              </h3>
+              <div className="flex items-center gap-3 text-sm text-health-text-secondary">
+                <span className="flex items-center gap-1">
+                  <Dumbbell className="w-4 h-4" />
+                  {exercise.sets} {t('exercise.sets')} × {exercise.reps} {t('exercise.reps')}
+                </span>
+                {exercise.rest_seconds && (
+                  <span className="flex items-center gap-1">
+                    <Clock className="w-4 h-4" />
+                    {exercise.rest_seconds}s {t('exercise.rest')}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            {exercise.completed && (
+              <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-200">
+                <CheckCircle className="w-3 h-3 mr-1" />
+                {t('exercise.completed')}
+              </Badge>
+            )}
+          </div>
+        </div>
 
-      {/* Main Content */}
-      <div className="p-4 space-y-3">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-900">
-            {index + 1}. {exercise.name}
-          </h3>
-          <Button variant="ghost" size="sm" onClick={toggleExpand}>
-            <MoreHorizontal className="w-4 h-4 text-gray-600" />
-          </Button>
+        {/* Progress Bar */}
+        <div className="mb-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-health-text-secondary">
+              {t('exercise.progress')}
+            </span>
+            <span className="text-sm font-medium text-health-primary">
+              {progressPercentage}%
+            </span>
+          </div>
+          <Progress value={progressPercentage} className="h-2" />
         </div>
 
         {/* Exercise Details */}
-        <div className="text-sm text-gray-600">
-          {t('exercise.sets')}: {sets}, {t('exercise.reps')}: {reps}
-        </div>
+        {translatedExercise.instructions && (
+          <div className="mb-4 p-3 bg-health-soft rounded-lg">
+            <p className="text-sm text-health-text-secondary leading-relaxed">
+              {translatedExercise.instructions}
+            </p>
+          </div>
+        )}
 
-        {/* Actions */}
-        <div className="flex items-center space-x-3">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleComplete}
-            className="bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
-          >
-            <CheckCircle className="w-4 h-4 mr-2" />
-            {t('exercise.complete')}
-          </Button>
-          {exercise.youtube_search_term && (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(exercise.youtube_search_term)}`, '_blank')}
-              className="bg-red-50 hover:bg-red-100 text-red-700 border-red-200"
-            >
-              <Youtube className="w-4 h-4 mr-2" />
-              {t('exercise.youtube')}
-            </Button>
+        {/* Muscle Groups & Equipment */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          {exercise.muscle_groups?.map((muscle: string, idx: number) => (
+            <Badge key={idx} variant="outline" className="text-xs">
+              {t(`exercise.${muscle}`) || muscle}
+            </Badge>
+          ))}
+          {exercise.equipment && (
+            <Badge variant="outline" className="text-xs bg-blue-50 border-blue-200 text-blue-700">
+              {t(`exercise.${exercise.equipment}`) || exercise.equipment}
+            </Badge>
           )}
         </div>
-      </div>
 
-      {/* Expanded Content (Initially Hidden) */}
-      {isExpanded && (
-        <div className="border-t border-gray-200 p-4">
-          <div className="space-y-3">
-            {/* Sets and Reps Input */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">{t('exercise.sets')}</label>
-                <input
-                  type="number"
-                  value={sets}
-                  onChange={(e) => setSets(Number(e.target.value))}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">{t('exercise.reps')}</label>
-                <input
-                  type="text"
-                  value={reps}
-                  onChange={(e) => setReps(e.target.value)}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-                />
-              </div>
-            </div>
-
-            {/* Notes */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">{t('exercise.notes')}</label>
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                rows={3}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-              />
-            </div>
-
-            {/* Save Progress Button */}
+        {/* Action Buttons */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {!exercise.completed ? (
+            <>
+              <Button
+                onClick={() => onExerciseComplete(exercise.id)}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+              >
+                <CheckCircle className="w-4 h-4 mr-2" />
+                {t('exercise.markComplete')}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowProgressDialog(true)}
+                className="border-health-border hover:bg-health-soft"
+              >
+                <Edit3 className="w-4 h-4 mr-2" />
+                {t('exercise.editProgress')}
+              </Button>
+            </>
+          ) : (
             <Button
-              onClick={handleProgressUpdate}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+              variant="outline"
+              onClick={() => setShowProgressDialog(true)}
+              className="flex-1 border-green-200 hover:bg-green-50 text-green-700"
             >
-              <Play className="w-4 h-4 mr-2" />
-              {t('exercise.saveProgress')}
+              <Edit3 className="w-4 h-4 mr-2" />
+              {t('exercise.editProgress')}
             </Button>
-          </div>
+          )}
+          
+          <Button
+            variant="outline"
+            onClick={handleWatchVideo}
+            className="border-red-200 hover:bg-red-50 text-red-600"
+          >
+            <Youtube className="w-4 h-4 mr-2" />
+            {t('exercise.watchVideo')}
+          </Button>
+
+          <Button
+            variant="outline"
+            onClick={() => setShowExchangeDialog(true)}
+            className="border-orange-200 hover:bg-orange-50 text-orange-600"
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            {t('exercise.exchange')}
+          </Button>
         </div>
-      )}
-    </Card>
+      </Card>
+
+      <ExerciseProgressDialog
+        exercise={exercise}
+        open={showProgressDialog}
+        onOpenChange={setShowProgressDialog}
+        onSave={(sets, reps, notes) => {
+          onExerciseProgressUpdate(exercise.id, sets, reps, notes);
+          setShowProgressDialog(false);
+        }}
+      />
+
+      <ExerciseExchangeDialog
+        exercise={exercise}
+        open={showExchangeDialog}
+        onOpenChange={setShowExchangeDialog}
+      />
+    </>
   );
 };

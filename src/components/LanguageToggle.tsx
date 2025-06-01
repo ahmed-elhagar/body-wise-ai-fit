@@ -1,13 +1,13 @@
 
 import { Button } from "@/components/ui/button";
 import { Globe } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const LanguageToggle = () => {
-  const { language, changeLanguage, isRTL } = useI18n();
+  const { language, setLanguage, isRTL } = useLanguage();
 
   const toggleLanguage = () => {
-    changeLanguage(language === 'en' ? 'ar' : 'en');
+    setLanguage(language === 'en' ? 'ar' : 'en');
   };
 
   return (

@@ -1,8 +1,9 @@
+
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Clock, Flame, Target, Calendar, Dumbbell, TrendingUp } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { getWorkoutStatistics, getTrainingDays, getRestDays } from "@/utils/exerciseDataUtils";
 
 interface CompactWorkoutSummaryProps {
@@ -26,7 +27,7 @@ export const CompactWorkoutSummary = ({
   selectedDay,
   isRestDay = false
 }: CompactWorkoutSummaryProps) => {
-  const { t } = useI18n();
+  const { t } = useLanguage();
 
   // Get workout statistics
   const weekStats = currentProgram?.daily_workouts ? getWorkoutStatistics(currentProgram.daily_workouts) : null;

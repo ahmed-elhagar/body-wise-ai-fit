@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface QuantitySelectorProps {
   quantity: number;
@@ -22,7 +22,7 @@ const QuantitySelector = ({
   notes,
   onNotesChange
 }: QuantitySelectorProps) => {
-  const { t, isRTL } = useI18n();
+  const { t, isRTL } = useLanguage();
 
   const mealTypes = [
     { value: 'breakfast', label: t('Breakfast') },

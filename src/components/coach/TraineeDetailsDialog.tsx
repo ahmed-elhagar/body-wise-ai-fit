@@ -1,27 +1,21 @@
-import { useState } from "react";
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { 
   User, 
-  Calendar, 
   Target, 
+  Activity, 
   TrendingUp, 
-  Activity,
-  MessageSquare,
-  Edit3,
-  Mail,
-  Phone,
-  MapPin,
-  Clock
+  Calendar,
+  Weight,
+  Ruler,
+  Zap
 } from "lucide-react";
-import { useCoachSystem, type CoachTraineeRelationship } from "@/hooks/useCoachSystem";
-import { formatDistanceToNow, format } from "date-fns";
-import { UpdateNotesDialog } from "./UpdateNotesDialog";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useTraineeData } from "@/hooks/useTraineeData";
+import { type CoachTraineeRelationship } from "@/hooks/useCoachSystem";
 
 interface TraineeDetailsDialogProps {
   trainee: CoachTraineeRelationship;
@@ -30,160 +24,247 @@ interface TraineeDetailsDialogProps {
 }
 
 export const TraineeDetailsDialog = ({ trainee, open, onOpenChange }: TraineeDetailsDialogProps) => {
-  const { language } = useI18n();
-  const [showNotesDialog, setShowNotesDialog] = useState(false);
+  const { language } = useLanguage();
+  const { 
+    mealPlans, 
+    exercisePrograms, 
+    weightEntries, 
+    goals, 
+    isLoading 
+  } = useTraineeData(trainee.trainee_id);
 
   const profile = trainee.trainee_profile;
-  const initials = `${profile?.first_name?.[0] || ''}${profile?.last_name?.[0] || ''}`.toUpperCase();
+  const initials = `${profile.first_name?.[0] || ''}${profile.last_name?.[0] || ''}`.toUpperCase();
+
+  const getLatestWeight = () => {
+    if (weightEntries.length === 0) return null;
+    return weightEntries[0].weight;
+  };
+
+  const getWeightTrend = () => {
+    if (weightEntries.length < 2) return null;
+    const latest = weightEntries[0].weight;
+    const previous = weightEntries[1].weight;
+    return latest - previous;
+  };
+
+  const activeGoals = goals.filter(g => g.status === 'active').length;
+  const latestWeight = getLatestWeight();
+  const weightTrend = getWeightTrend();
 
   return (
-    <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center">
-              <User className="h-5 w-5 mr-2" />
-              {language === 'ar' ? 'تفاصيل المتدرب' : 'Trainee Details'}
-            </DialogTitle>
-          </DialogHeader>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center">
+            <User className="h-5 w-5 mr-2" />
+            {language === 'ar' ? 'تفاصيل المتدرب' : 'Trainee Details'}
+          </DialogTitle>
+        </DialogHeader>
 
-          <Tabs defaultValue="profile" className="space-y-4">
-            <TabsList>
-              <TabsTrigger value="profile">{language === 'ar' ? 'الملف الشخصي' : 'Profile'}</TabsTrigger>
-              <TabsTrigger value="activity">{language === 'ar' ? 'النشاط' : 'Activity'}</TabsTrigger>
-              <TabsTrigger value="notes">{language === 'ar' ? 'الملاحظات' : 'Notes'}</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="profile" className="space-y-2">
+        <div className="space-y-6">
+          {/* Profile Header */}
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-start space-x-4">
+                <Avatar className="h-16 w-16">
+                  <AvatarFallback className="bg-blue-100 text-blue-600 font-semibold text-lg">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <h3 className="text-xl font-semibold">
+                    {profile.first_name} {profile.last_name}
+                  </h3>
+                  <p className="text-gray-600">{profile.email}</p>
+                  <div className="flex items-center mt-2 space-x-4">
+                    <Badge variant="outline">
+                      {language === 'ar' ? 'الملف:' : 'Profile:'} {profile.profile_completion_score || 0}%
+                    </Badge>
+                    <Badge variant="outline">
+                      {language === 'ar' ? 'رصيد AI:' : 'AI Credits:'} {profile.ai_generations_remaining || 0}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Basic Info Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {profile.age && (
               <Card>
-                <CardHeader>
-                  <CardTitle>{language === 'ar' ? 'معلومات أساسية' : 'Basic Information'}</CardTitle>
-                </CardHeader>
-                <CardContent className="grid gap-4">
-                  <div className="flex items-center space-x-4">
-                    <Avatar className="h-14 w-14">
-                      <AvatarFallback className="bg-blue-100 text-blue-600 font-semibold">
-                        {initials}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="text-lg font-semibold">
-                        {profile?.first_name} {profile?.last_name}
-                      </p>
-                      <p className="text-sm text-gray-500">{profile?.email}</p>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    {profile?.age && (
-                      <div className="flex items-center space-x-2">
-                        <User className="h-4 w-4 text-gray-500" />
-                        <span>{language === 'ar' ? 'العمر' : 'Age'}: {profile.age}</span>
-                      </div>
-                    )}
-                    {profile?.gender && (
-                      <div className="flex items-center space-x-2">
-                        <User className="h-4 w-4 text-gray-500" />
-                        <span>{language === 'ar' ? 'الجنس' : 'Gender'}: {profile.gender}</span>
-                      </div>
-                    )}
-                    {profile?.fitness_goal && (
-                      <div className="flex items-center space-x-2">
-                        <Target className="h-4 w-4 text-gray-500" />
-                        <span>{language === 'ar' ? 'الهدف' : 'Goal'}: {profile.fitness_goal}</span>
-                      </div>
-                    )}
-                    {profile?.weight && (
-                      <div className="flex items-center space-x-2">
-                        <TrendingUp className="h-4 w-4 text-gray-500" />
-                        <span>{language === 'ar' ? 'الوزن' : 'Weight'}: {profile.weight} kg</span>
-                      </div>
-                    )}
-                  </div>
+                <CardContent className="p-4 text-center">
+                  <User className="h-6 w-6 text-blue-600 mx-auto mb-2" />
+                  <p className="text-sm text-gray-600">
+                    {language === 'ar' ? 'العمر' : 'Age'}
+                  </p>
+                  <p className="text-lg font-semibold">{profile.age}</p>
                 </CardContent>
               </Card>
+            )}
 
+            {profile.weight && (
               <Card>
-                <CardHeader>
-                  <CardTitle>{language === 'ar' ? 'معلومات الاتصال' : 'Contact Information'}</CardTitle>
-                </CardHeader>
-                <CardContent className="grid gap-4">
-                  {profile?.email && (
-                    <div className="flex items-center space-x-2">
-                      <Mail className="h-4 w-4 text-gray-500" />
-                      <span>{profile.email}</span>
-                    </div>
-                  )}
-                  {profile?.phone_number && (
-                    <div className="flex items-center space-x-2">
-                      <Phone className="h-4 w-4 text-gray-500" />
-                      <span>{profile.phone_number}</span>
-                    </div>
-                  )}
-                  {profile?.address && (
-                    <div className="flex items-center space-x-2">
-                      <MapPin className="h-4 w-4 text-gray-500" />
-                      <span>{profile.address}</span>
-                    </div>
-                  )}
+                <CardContent className="p-4 text-center">
+                  <Weight className="h-6 w-6 text-green-600 mx-auto mb-2" />
+                  <p className="text-sm text-gray-600">
+                    {language === 'ar' ? 'الوزن' : 'Weight'}
+                  </p>
+                  <p className="text-lg font-semibold">{profile.weight} kg</p>
                 </CardContent>
               </Card>
-            </TabsContent>
+            )}
 
-            <TabsContent value="activity" className="space-y-2">
+            {profile.height && (
               <Card>
-                <CardHeader>
-                  <CardTitle>{language === 'ar' ? 'النشاط الأخير' : 'Recent Activity'}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <Calendar className="h-4 w-4 text-gray-500" />
-                    <span>{language === 'ar' ? 'تاريخ الانضمام' : 'Joined'}: {format(new Date(trainee.assigned_at), 'MMM dd, yyyy')}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Clock className="h-4 w-4 text-gray-500" />
-                    <span>{language === 'ar' ? 'آخر تحديث' : 'Last Updated'}: {formatDistanceToNow(new Date(profile?.updated_at || trainee.assigned_at), { addSuffix: true })}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Activity className="h-4 w-4 text-gray-500" />
-                    <span>{language === 'ar' ? 'تسجيل الدخول الأخير' : 'Last Login'}: {formatDistanceToNow(new Date(profile?.last_login || trainee.assigned_at), { addSuffix: true })}</span>
-                  </div>
+                <CardContent className="p-4 text-center">
+                  <Ruler className="h-6 w-6 text-purple-600 mx-auto mb-2" />
+                  <p className="text-sm text-gray-600">
+                    {language === 'ar' ? 'الطول' : 'Height'}
+                  </p>
+                  <p className="text-lg font-semibold">{profile.height} cm</p>
                 </CardContent>
               </Card>
-            </TabsContent>
+            )}
 
-            <TabsContent value="notes" className="space-y-2">
-              <Card>
-                <CardHeader className="flex justify-between items-center">
-                  <CardTitle>{language === 'ar' ? 'ملاحظات' : 'Notes'}</CardTitle>
-                  <Button variant="ghost" size="sm" onClick={() => setShowNotesDialog(true)}>
-                    <Edit3 className="h-4 w-4 mr-2" />
-                    {language === 'ar' ? 'تحديث' : 'Update'}
-                  </Button>
-                </CardHeader>
-                <CardContent>
-                  {trainee.notes ? (
-                    <p className="text-sm text-gray-700">{trainee.notes}</p>
-                  ) : (
-                    <p className="text-sm text-gray-500">{language === 'ar' ? 'لا توجد ملاحظات' : 'No notes available'}</p>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-
-          <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              {language === 'ar' ? 'إغلاق' : 'Close'}
-            </Button>
+            <Card>
+              <CardContent className="p-4 text-center">
+                <Target className="h-6 w-6 text-orange-600 mx-auto mb-2" />
+                <p className="text-sm text-gray-600">
+                  {language === 'ar' ? 'الأهداف النشطة' : 'Active Goals'}
+                </p>
+                <p className="text-lg font-semibold">{activeGoals}</p>
+              </CardContent>
+            </Card>
           </div>
-        </DialogContent>
-      </Dialog>
 
-      <UpdateNotesDialog 
-        trainee={trainee}
-        open={showNotesDialog}
-        onOpenChange={setShowNotesDialog}
-      />
-    </>
+          {/* Progress Overview */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Meal Plans */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm flex items-center">
+                  <Target className="h-4 w-4 mr-2" />
+                  {language === 'ar' ? 'خطط الوجبات' : 'Meal Plans'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="animate-pulse space-y-2">
+                    <div className="h-4 bg-gray-200 rounded"></div>
+                    <div className="h-4 bg-gray-200 rounded"></div>
+                  </div>
+                ) : mealPlans.length > 0 ? (
+                  <div className="space-y-2">
+                    <p className="text-2xl font-bold">{mealPlans.length}</p>
+                    <p className="text-xs text-gray-600">
+                      {language === 'ar' ? 'آخر خطة:' : 'Latest:'} {new Date(mealPlans[0].created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    {language === 'ar' ? 'لا توجد خطط وجبات' : 'No meal plans yet'}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Exercise Programs */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm flex items-center">
+                  <Activity className="h-4 w-4 mr-2" />
+                  {language === 'ar' ? 'برامج التمرين' : 'Exercise Programs'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="animate-pulse space-y-2">
+                    <div className="h-4 bg-gray-200 rounded"></div>
+                    <div className="h-4 bg-gray-200 rounded"></div>
+                  </div>
+                ) : exercisePrograms.length > 0 ? (
+                  <div className="space-y-2">
+                    <p className="text-2xl font-bold">{exercisePrograms.length}</p>
+                    <p className="text-xs text-gray-600">
+                      {language === 'ar' ? 'آخر برنامج:' : 'Latest:'} {new Date(exercisePrograms[0].created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    {language === 'ar' ? 'لا توجد برامج تمرين' : 'No exercise programs yet'}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Weight Progress */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm flex items-center">
+                  <TrendingUp className="h-4 w-4 mr-2" />
+                  {language === 'ar' ? 'تقدم الوزن' : 'Weight Progress'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="animate-pulse space-y-2">
+                    <div className="h-4 bg-gray-200 rounded"></div>
+                    <div className="h-4 bg-gray-200 rounded"></div>
+                  </div>
+                ) : latestWeight ? (
+                  <div className="space-y-2">
+                    <p className="text-2xl font-bold">{latestWeight} kg</p>
+                    {weightTrend && (
+                      <p className={`text-xs flex items-center ${
+                        weightTrend > 0 ? 'text-red-600' : 'text-green-600'
+                      }`}>
+                        <TrendingUp className={`h-3 w-3 mr-1 ${weightTrend < 0 ? 'rotate-180' : ''}`} />
+                        {Math.abs(weightTrend).toFixed(1)} kg
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    {language === 'ar' ? 'لا توجد بيانات وزن' : 'No weight data yet'}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Assignment Info */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm flex items-center">
+                <Calendar className="h-4 w-4 mr-2" />
+                {language === 'ar' ? 'معلومات التعيين' : 'Assignment Information'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div>
+                  <p className="text-sm text-gray-600">
+                    {language === 'ar' ? 'تاريخ التعيين' : 'Assigned Date'}
+                  </p>
+                  <p className="font-medium">
+                    {new Date(trainee.assigned_at).toLocaleDateString()}
+                  </p>
+                </div>
+                {trainee.notes && (
+                  <div>
+                    <p className="text-sm text-gray-600">
+                      {language === 'ar' ? 'ملاحظات' : 'Notes'}
+                    </p>
+                    <p className="text-sm bg-gray-50 p-2 rounded">{trainee.notes}</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };

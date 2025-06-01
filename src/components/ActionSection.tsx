@@ -1,7 +1,8 @@
+
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Target, Flame, TrendingUp } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ActionSectionProps {
   viewMode: 'daily' | 'weekly';
@@ -18,7 +19,7 @@ const ActionSection = ({
   totalCalories,
   totalProtein,
 }: ActionSectionProps) => {
-  const { t, isRTL } = useI18n();
+  const { t, isRTL } = useLanguage();
   
   // Target values (these could come from user profile)
   const targetCalories = 2000;

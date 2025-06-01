@@ -2,7 +2,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Camera, Edit3 } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import SearchTab from "./SearchTab";
 import ScanTab from "./ScanTab";
 import ManualTab from "./ManualTab";
@@ -14,7 +14,7 @@ interface AddFoodDialogProps {
 }
 
 const AddFoodDialog = ({ isOpen, onClose, onFoodAdded }: AddFoodDialogProps) => {
-  const { t, isRTL } = useI18n();
+  const { t, isRTL } = useLanguage();
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

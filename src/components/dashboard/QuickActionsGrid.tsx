@@ -1,7 +1,8 @@
+
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { 
   Scale, 
   Utensils, 
@@ -13,12 +14,9 @@ import {
   ArrowRight
 } from "lucide-react";
 
-interface QuickActionsGridProps {
-  onAction?: (action: string) => void;
-}
-
-const QuickActionsGrid = ({ onAction }: QuickActionsGridProps) => {
-  const { t, isRTL } = useI18n();
+const QuickActionsGrid = () => {
+  const navigate = useNavigate();
+  const { t, isRTL } = useLanguage();
 
   const actions = [
     {
@@ -58,8 +56,6 @@ const QuickActionsGrid = ({ onAction }: QuickActionsGridProps) => {
       action: () => navigate('/exercise')
     }
   ];
-
-  const navigate = useNavigate();
 
   return (
     <Card className="relative overflow-hidden bg-white border-0 shadow-lg rounded-xl">

@@ -3,7 +3,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Settings } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage, Language } from "@/contexts/LanguageContext";
 import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
 
@@ -15,11 +15,11 @@ interface GeneralSettingsSectionProps {
 }
 
 export const GeneralSettingsSection = ({ preferences, setPreferences }: GeneralSettingsSectionProps) => {
-  const { language, changeLanguage } = useI18n();
+  const { language, setLanguage } = useLanguage();
   const { profile, updateProfile } = useProfile();
 
   const handleLanguageChange = async (newLanguage: string) => {
-    changeLanguage(newLanguage);
+    setLanguage(newLanguage as Language);
     if (profile) {
       await updateProfile({ preferred_language: newLanguage });
       toast.success('Language preference saved!');

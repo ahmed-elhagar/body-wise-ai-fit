@@ -1,13 +1,13 @@
 
 import { Zap, Utensils, Target } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface SnackFeaturesProps {
   remainingCalories: number;
 }
 
 const SnackFeatures = ({ remainingCalories }: SnackFeaturesProps) => {
-  const { t, isRTL } = useI18n();
+  const { t, isRTL } = useLanguage();
 
   const features = [
     {

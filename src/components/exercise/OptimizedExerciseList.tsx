@@ -3,7 +3,7 @@ import React, { memo, useMemo } from 'react';
 import { Exercise } from '@/types/exercise';
 import { ExerciseCardEnhanced } from './ExerciseCardEnhanced';
 import { RestDayCard } from './RestDayCard';
-import { useI18n } from '@/hooks/useI18n';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface OptimizedExerciseListProps {
   exercises: Exercise[];
@@ -20,7 +20,7 @@ export const OptimizedExerciseList = memo(({
   onExerciseProgressUpdate,
   isRestDay
 }: OptimizedExerciseListProps) => {
-  const { t } = useI18n();
+  const { t } = useLanguage();
 
   const sortedExercises = useMemo(() => {
     return [...exercises].sort((a, b) => (a.order_number || 0) - (b.order_number || 0));

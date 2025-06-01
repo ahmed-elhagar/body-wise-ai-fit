@@ -2,14 +2,14 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Utensils, RefreshCw } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface EmptyMealPlanProps {
   onGenerate: () => void;
 }
 
 const EmptyMealPlan = ({ onGenerate }: EmptyMealPlanProps) => {
-  const { t } = useI18n();
+  const { t } = useLanguage();
 
   const handleRefresh = () => {
     console.log('🔄 EmptyMealPlan: Force refresh triggered');

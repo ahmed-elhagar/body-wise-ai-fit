@@ -1,9 +1,9 @@
 
 import EnhancedLoadingIndicator from "@/components/ui/enhanced-loading-indicator";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const LoadingState = () => {
-  const { isRTL } = useI18n();
+  const { isRTL } = useLanguage();
 
   return (
     <div className="bg-white rounded-lg border-fitness-primary-200 shadow-lg p-6">

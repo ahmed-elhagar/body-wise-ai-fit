@@ -1,10 +1,11 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown, ChevronUp, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import QuickActionsGrid from "@/components/dashboard/QuickActionsGrid";
 
 interface CollapsibleQuickActionsProps {
@@ -14,7 +15,7 @@ interface CollapsibleQuickActionsProps {
 
 const CollapsibleQuickActions = ({ onViewMealPlan, onViewExercise }: CollapsibleQuickActionsProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const { t } = useI18n();
+  const { t } = useLanguage();
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>

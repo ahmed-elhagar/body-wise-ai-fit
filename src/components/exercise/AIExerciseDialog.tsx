@@ -1,18 +1,20 @@
-import { useState } from "react";
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Sparkles, Loader2 } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { Home, Building2, Target, Clock, Zap, Flame, Activity, Timer } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { ExercisePreferences } from "@/hooks/useExerciseProgramPage";
 
 interface AIExerciseDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  preferences: any;
-  setPreferences: (prefs: any) => void;
-  onGenerate: (prefs: any) => void;
+  preferences: ExercisePreferences;
+  setPreferences: (prefs: ExercisePreferences) => void;
+  onGenerate: (preferences: ExercisePreferences) => void;
   isGenerating: boolean;
 }
 
@@ -24,117 +26,216 @@ export const AIExerciseDialog = ({
   onGenerate,
   isGenerating
 }: AIExerciseDialogProps) => {
-  const { t } = useI18n();
+  const { t, isRTL } = useLanguage();
 
   const handleGenerate = () => {
     onGenerate(preferences);
+    onOpenChange(false);
   };
+
+  const fitnessGoals = [
+    { value: "weight_loss", label: t('exercise.weightLoss') || "Weight Loss", icon: Flame },
+    { value: "muscle_gain", label: t('exercise.muscleGain') || "Muscle Gain", icon: Activity },
+    { value: "general_fitness", label: t('exercise.generalFitness') || "General Fitness", icon: Zap },
+    { value: "strength", label: t('exercise.strength') || "Strength Building", icon: Target },
+    { value: "endurance", label: t('exercise.endurance') || "Endurance", icon: Timer },
+    { value: "flexibility", label: t('exercise.flexibility') || "Flexibility", icon: Activity }
+  ];
+
+  const fitnessLevels = [
+    { value: "beginner", label: t('exercise.beginner') + " (0-6 " + t('exercise.months') + ")" },
+    { value: "intermediate", label: t('exercise.intermediate') + " (6+ " + t('exercise.months') + ")" },
+    { value: "advanced", label: t('exercise.advanced') + " (2+ " + t('exercise.years') + ")" }
+  ];
+
+  const timeOptions = [
+    { value: "30", label: "30 " + t('exercise.minutes') },
+    { value: "45", label: "45 " + t('exercise.minutes') },
+    { value: "60", label: "60 " + t('exercise.minutes') },
+    { value: "90", label: "90+ " + t('exercise.minutes') }
+  ];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5" />
+      <DialogContent className={`max-w-4xl max-h-[90vh] overflow-y-auto ${isRTL ? 'rtl' : 'ltr'}`}>
+        <DialogHeader className={isRTL ? 'text-right' : 'text-left'}>
+          <DialogTitle className={`text-2xl font-bold text-gray-800 ${isRTL ? 'font-arabic' : ''}`}>
             {t('exercise.customizeProgram')}
           </DialogTitle>
+          <p className="text-gray-600 mt-2">
+            {t('exercise.getPersonalizedPlan')}
+          </p>
         </DialogHeader>
-        
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label>{t('exercise.goal')}</Label>
-            <Select 
-              value={preferences.goal} 
-              onValueChange={(value) => setPreferences({...preferences, goal: value})}
+
+        <div className="space-y-6">
+          {/* Workout Type Selection */}
+          <Card className="p-6">
+            <h3 className={`text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <Building2 className="w-5 h-5 text-fitness-primary" />
+              {t('exercise.trainingEnvironment')}
+            </h3>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div
+                className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-300 ${
+                  preferences.workoutType === "home" 
+                    ? "border-fitness-primary bg-fitness-primary/10 shadow-md" 
+                    : "border-gray-200 hover:border-gray-300"
+                }`}
+                onClick={() => setPreferences({...preferences, workoutType: "home"})}
+              >
+                <div className={`flex items-center space-x-3 mb-3 ${isRTL ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                  <Home className="w-6 h-6 text-fitness-primary" />
+                  <h4 className="font-semibold text-gray-800">{t('exercise.homeTraining')}</h4>
+                </div>
+                <p className={`text-sm text-gray-600 mb-3 ${isRTL ? 'text-right' : 'text-left'}`}>
+                  {t('exercise.homeTrainingDesc')}
+                </p>
+                <div className={`flex flex-wrap gap-2 ${isRTL ? 'justify-end' : 'justify-start'}`}>
+                  <Badge variant="outline" className="text-xs">{t('exercise.bodyweight')}</Badge>
+                  <Badge variant="outline" className="text-xs">{t('exercise.minimalEquipment')}</Badge>
+                  <Badge variant="outline" className="text-xs">{t('exercise.flexibleSchedule')}</Badge>
+                </div>
+              </div>
+
+              <div
+                className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-300 ${
+                  preferences.workoutType === "gym" 
+                    ? "border-fitness-primary bg-fitness-primary/10 shadow-md" 
+                    : "border-gray-200 hover:border-gray-300"
+                }`}
+                onClick={() => setPreferences({...preferences, workoutType: "gym"})}
+              >
+                <div className={`flex items-center space-x-3 mb-3 ${isRTL ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                  <Building2 className="w-6 h-6 text-fitness-primary" />
+                  <h4 className="font-semibold text-gray-800">{t('exercise.gymTraining')}</h4>
+                </div>
+                <p className={`text-sm text-gray-600 mb-3 ${isRTL ? 'text-right' : 'text-left'}`}>
+                  {t('exercise.gymTrainingDesc')}
+                </p>
+                <div className={`flex flex-wrap gap-2 ${isRTL ? 'justify-end' : 'justify-start'}`}>
+                  <Badge variant="outline" className="text-xs">{t('exercise.fullEquipment')}</Badge>
+                  <Badge variant="outline" className="text-xs">{t('exercise.progressiveOverload')}</Badge>
+                  <Badge variant="outline" className="text-xs">{t('exercise.advancedTraining')}</Badge>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* Fitness Goals */}
+          <Card className="p-6">
+            <h3 className={`text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <Target className="w-5 h-5 text-fitness-primary" />
+              {t('exercise.fitnessGoal')}
+            </h3>
+            <RadioGroup 
+              value={preferences.goalType} 
+              onValueChange={(value) => setPreferences({...preferences, goalType: value})}
+              className="grid md:grid-cols-3 gap-4"
             >
-              <SelectTrigger>
-                <SelectValue placeholder={t('exercise.selectGoal')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="weight_loss">{t('exercise.weightLoss')}</SelectItem>
-                <SelectItem value="muscle_gain">{t('exercise.muscleGain')}</SelectItem>
-                <SelectItem value="strength">{t('exercise.strength')}</SelectItem>
-                <SelectItem value="endurance">{t('exercise.endurance')}</SelectItem>
-                <SelectItem value="general_fitness">{t('exercise.generalFitness')}</SelectItem>
-              </SelectContent>
-            </Select>
+              {fitnessGoals.map((goal) => {
+                const IconComponent = goal.icon;
+                return (
+                  <div key={goal.value} className={`flex items-center space-x-2 p-3 rounded-lg border hover:bg-gray-50 transition-colors ${isRTL ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                    <RadioGroupItem value={goal.value} id={goal.value} />
+                    <Label htmlFor={goal.value} className={`cursor-pointer flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                      <IconComponent className="w-4 h-4 text-fitness-primary" />
+                      {goal.label}
+                    </Label>
+                  </div>
+                );
+              })}
+            </RadioGroup>
+          </Card>
+
+          {/* Fitness Level & Time */}
+          <div className="grid md:grid-cols-2 gap-6">
+            <Card className="p-6">
+              <h3 className={`text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                <Zap className="w-5 h-5 text-fitness-primary" />
+                {t('exercise.fitnessLevel')}
+              </h3>
+              <RadioGroup 
+                value={preferences.fitnessLevel} 
+                onValueChange={(value) => setPreferences({...preferences, fitnessLevel: value})}
+                className="space-y-3"
+              >
+                {fitnessLevels.map((level) => (
+                  <div key={level.value} className={`flex items-center space-x-2 p-3 rounded-lg border hover:bg-gray-50 transition-colors ${isRTL ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                    <RadioGroupItem value={level.value} id={level.value} />
+                    <Label htmlFor={level.value} className="cursor-pointer">{level.label}</Label>
+                  </div>
+                ))}
+              </RadioGroup>
+            </Card>
+
+            <Card className="p-6">
+              <h3 className={`text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                <Clock className="w-5 h-5 text-fitness-primary" />
+                {t('exercise.availableTime')}
+              </h3>
+              <RadioGroup 
+                value={preferences.availableTime} 
+                onValueChange={(value) => setPreferences({...preferences, availableTime: value})}
+                className="space-y-3"
+              >
+                {timeOptions.map((time) => (
+                  <div key={time.value} className={`flex items-center space-x-2 p-3 rounded-lg border hover:bg-gray-50 transition-colors ${isRTL ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                    <RadioGroupItem value={time.value} id={time.value} />
+                    <Label htmlFor={time.value} className="cursor-pointer">{time.label} {t('exercise.perSession')}</Label>
+                  </div>
+                ))}
+              </RadioGroup>
+            </Card>
           </div>
 
-          <div className="space-y-2">
-            <Label>{t('exercise.fitnessLevel')}</Label>
-            <Select 
-              value={preferences.level} 
-              onValueChange={(value) => setPreferences({...preferences, level: value})}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={t('exercise.selectLevel')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="beginner">{t('exercise.beginner')}</SelectItem>
-                <SelectItem value="intermediate">{t('exercise.intermediate')}</SelectItem>
-                <SelectItem value="advanced">{t('exercise.advanced')}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Program Features */}
+          <Card className="p-6 bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+            <h3 className={`text-lg font-semibold text-gray-800 mb-4 ${isRTL ? 'text-right' : 'text-left'}`}>
+              {t('exercise.programWillInclude')}
+            </h3>
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                <Clock className="w-5 h-5 text-blue-600" />
+                <span className="text-sm font-medium">45-{t('exercise.min')} {t('exercise.workouts')}</span>
+              </div>
+              <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                <Target className="w-5 h-5 text-purple-600" />
+                <span className="text-sm font-medium">4-5 {t('exercise.daysPerWeek')}</span>
+              </div>
+              <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                <Zap className="w-5 h-5 text-green-600" />
+                <span className="text-sm font-medium">{t('exercise.personalizedExercises')}</span>
+              </div>
+            </div>
+            <div className={`flex flex-wrap gap-2 mt-4 ${isRTL ? 'justify-end' : 'justify-start'}`}>
+              <Badge className="bg-blue-100 text-blue-800 border-blue-200">{t('exercise.bodyweightExercises')}</Badge>
+              <Badge className="bg-green-100 text-green-800 border-green-200">{t('exercise.noEquipmentNeeded')}</Badge>
+              <Badge className="bg-purple-100 text-purple-800 border-purple-200">{t('exercise.smallSpaceFriendly')}</Badge>
+            </div>
+          </Card>
+        </div>
 
-          <div className="space-y-2">
-            <Label>{t('exercise.daysPerWeek')}</Label>
-            <Select 
-              value={preferences.daysPerWeek} 
-              onValueChange={(value) => setPreferences({...preferences, daysPerWeek: value})}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={t('exercise.selectDays')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="3">3 {t('exercise.days')}</SelectItem>
-                <SelectItem value="4">4 {t('exercise.days')}</SelectItem>
-                <SelectItem value="5">5 {t('exercise.days')}</SelectItem>
-                <SelectItem value="6">6 {t('exercise.days')}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label>{t('exercise.workoutDuration')}</Label>
-            <Select 
-              value={preferences.duration} 
-              onValueChange={(value) => setPreferences({...preferences, duration: value})}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={t('exercise.selectDuration')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="30">30 {t('exercise.minutes')}</SelectItem>
-                <SelectItem value="45">45 {t('exercise.minutes')}</SelectItem>
-                <SelectItem value="60">60 {t('exercise.minutes')}</SelectItem>
-                <SelectItem value="90">90 {t('exercise.minutes')}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label>{t('exercise.additionalNotes')}</Label>
-            <Textarea
-              placeholder={t('exercise.notesPlaceholder')}
-              value={preferences.notes}
-              onChange={(e) => setPreferences({...preferences, notes: e.target.value})}
-            />
-          </div>
-
-          <Button 
-            onClick={handleGenerate} 
+        <div className={`flex justify-end space-x-3 pt-6 border-t ${isRTL ? 'flex-row-reverse space-x-reverse' : ''}`}>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
             disabled={isGenerating}
-            className="w-full bg-fitness-gradient text-white"
+          >
+            {t('common.cancel')}
+          </Button>
+          <Button
+            onClick={handleGenerate}
+            disabled={isGenerating}
+            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white"
           >
             {isGenerating ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                {t('exercise.generating')}
+                <div className="w-4 h-4 animate-spin border-2 border-white border-t-transparent rounded-full mr-2" />
+                {t('exercise.generating')}...
               </>
             ) : (
               <>
-                <Sparkles className="h-4 w-4 mr-2" />
+                <Target className="w-4 h-4 mr-2" />
                 {t('exercise.generateProgram')}
               </>
             )}

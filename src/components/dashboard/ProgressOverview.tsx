@@ -1,13 +1,13 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { TrendingUp, Target, Award, ChevronRight, Star, Trophy, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
 const ProgressOverview = () => {
-  const { t, isRTL } = useI18n();
+  const { t, isRTL } = useLanguage();
   const navigate = useNavigate();
 
   const progressData = {

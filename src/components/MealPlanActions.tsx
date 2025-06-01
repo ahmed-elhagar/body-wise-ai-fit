@@ -1,50 +1,103 @@
 
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Sparkles, RefreshCw, ChefHat } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { Calendar, Grid, Plus, ShoppingCart, Sparkles } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface MealPlanActionsProps {
-  onShowAIDialog: () => void;
-  onRegenerateMealPlan: () => void;
-  isGenerating: boolean;
+  viewMode: 'daily' | 'weekly';
+  onViewModeChange: (mode: 'daily' | 'weekly') => void;
+  onAddSnack: () => void;
+  onShowShoppingList: () => void;
+  showAddSnack: boolean;
+  showShoppingList: boolean;
 }
 
-const MealPlanActions = ({ onShowAIDialog, onRegenerateMealPlan, isGenerating }: MealPlanActionsProps) => {
-  const { t } = useI18n();
+const MealPlanActions = ({ 
+  viewMode, 
+  onViewModeChange, 
+  onAddSnack,
+  onShowShoppingList,
+  showAddSnack,
+  showShoppingList
+}: MealPlanActionsProps) => {
+  const { t, isRTL } = useLanguage();
 
   return (
-    <Card className="p-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <ChefHat className="w-5 h-5 text-green-600" />
-          <h3 className="text-lg font-semibold text-gray-800">
-            {t('mealPlan.weeklyPlan')}
-          </h3>
-        </div>
-        
-        <div className="flex space-x-3">
+    <div className="mb-6 space-y-6">
+      {/* Enhanced View Toggle */}
+      <div className="flex justify-center">
+        <div className="bg-gradient-to-r from-white to-health-soft backdrop-blur-sm rounded-2xl p-2 shadow-health border-2 border-health-border-light inline-flex">
           <Button
-            onClick={onShowAIDialog}
-            disabled={isGenerating}
-            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white"
+            variant={viewMode === 'daily' ? 'default' : 'ghost'}
+            className={`px-6 py-3 text-sm font-semibold transition-all duration-300 rounded-xl ${
+              viewMode === 'daily' 
+                ? 'bg-health-gradient text-white shadow-health transform scale-105' 
+                : 'hover:bg-health-soft text-health-text-secondary hover:text-health-primary'
+            }`}
+            onClick={() => onViewModeChange('daily')}
+            size="sm"
           >
-            <Sparkles className="w-4 h-4 mr-2" />
-            {t('mealPlan.customizePlan')}
+            <Calendar className="w-4 h-4 mr-2" />
+            {t('mealPlan.dailyView')}
           </Button>
-          
           <Button
-            onClick={onRegenerateMealPlan}
-            disabled={isGenerating}
-            variant="outline"
-            className="bg-white/80"
+            variant={viewMode === 'weekly' ? 'default' : 'ghost'}
+            className={`px-6 py-3 text-sm font-semibold transition-all duration-300 rounded-xl ${
+              viewMode === 'weekly' 
+                ? 'bg-health-gradient text-white shadow-health transform scale-105' 
+                : 'hover:bg-health-soft text-health-text-secondary hover:text-health-primary'
+            }`}
+            onClick={() => onViewModeChange('weekly')}
+            size="sm"
           >
-            <RefreshCw className="w-4 h-4 mr-2" />
-            {t('mealPlan.generateNew')}
+            <Grid className="w-4 h-4 mr-2" />
+            {t('mealPlan.weeklyView')}
           </Button>
         </div>
       </div>
-    </Card>
+
+      {/* Enhanced Action Buttons */}
+      {(showShoppingList || showAddSnack) && (
+        <div className={`flex justify-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+          {/* Enhanced Shopping List Button */}
+          {showShoppingList && (
+            <Button
+              variant="outline"
+              className="bg-gradient-to-br from-white to-health-soft-blue backdrop-blur-sm border-2 border-health-primary/30 text-health-primary hover:bg-health-soft-blue hover:border-health-primary hover:text-health-primary transition-all duration-300 shadow-soft hover:shadow-health font-semibold rounded-xl px-6 py-3 transform hover:scale-105"
+              onClick={onShowShoppingList}
+            >
+              <ShoppingCart className="w-4 h-4 mr-2" />
+              {t('mealPlan.shoppingList')}
+            </Button>
+          )}
+
+          {/* Enhanced Add Snack Button */}
+          {showAddSnack && (
+            <Button
+              variant="outline"
+              className="bg-gradient-to-br from-white to-health-soft-green backdrop-blur-sm border-2 border-health-secondary/30 text-health-secondary hover:bg-health-soft-green hover:border-health-secondary hover:text-health-secondary transition-all duration-300 shadow-soft hover:shadow-success font-semibold rounded-xl px-6 py-3 transform hover:scale-105"
+              onClick={onAddSnack}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              {t('mealPlan.addSnack')}
+            </Button>
+          )}
+        </div>
+      )}
+
+      {/* Enhanced Helper Text */}
+      <div className="text-center">
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl px-4 py-2 border border-health-border-light shadow-soft inline-block">
+          <p className="text-xs text-health-text-muted font-medium flex items-center">
+            <Sparkles className="w-3 h-3 mr-1" />
+            {viewMode === 'daily' 
+              ? t('mealPlan.dailyViewHelper') 
+              : t('mealPlan.weeklyViewHelper')
+            }
+          </p>
+        </div>
+      </div>
+    </div>
   );
 };
 

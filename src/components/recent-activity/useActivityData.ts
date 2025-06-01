@@ -2,13 +2,13 @@
 import { useWeightTracking } from "@/hooks/useWeightTracking";
 import { useMealPlans } from "@/hooks/useMealPlans";
 import { useExercisePrograms } from "@/hooks/useExercisePrograms";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export const useActivityData = () => {
   const { weightEntries } = useWeightTracking();
   const { mealPlans } = useMealPlans();
   const { programs } = useExercisePrograms();
-  const { t } = useI18n();
+  const { t } = useLanguage();
 
   const activities = [
     ...(weightEntries?.slice(0, 3).map(entry => ({

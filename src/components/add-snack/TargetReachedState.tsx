@@ -1,7 +1,7 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Trophy, Target } from "lucide-react";
 
 interface TargetReachedStateProps {
@@ -9,7 +9,7 @@ interface TargetReachedStateProps {
 }
 
 const TargetReachedState = ({ onClose }: TargetReachedStateProps) => {
-  const { t, isRTL } = useI18n();
+  const { t, isRTL } = useLanguage();
 
   return (
     <Card className="p-6 bg-gradient-to-br from-yellow-50 to-orange-100 border-yellow-200 text-center">

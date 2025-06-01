@@ -1,8 +1,9 @@
+
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { RefreshCw, Sparkles, Dumbbell, Calendar, Target } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ExercisePageHeaderProps {
   currentProgram: any;
@@ -19,7 +20,7 @@ export const ExercisePageHeader = ({
   onRegenerateProgram,
   isGenerating
 }: ExercisePageHeaderProps) => {
-  const { t } = useI18n();
+  const { t } = useLanguage();
 
   return (
     <div className="relative">

@@ -1,7 +1,7 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Sparkles, Plus, Flame } from "lucide-react";
 import EnhancedLoadingIndicator from "@/components/ui/enhanced-loading-indicator";
 
@@ -18,7 +18,7 @@ const SnackGenerationSection = ({
   onGenerate,
   onCancel
 }: SnackGenerationSectionProps) => {
-  const { t, isRTL } = useI18n();
+  const { t, isRTL } = useLanguage();
 
   return (
     <Card className="p-6 bg-gradient-to-br from-success-50 to-success-100 border-success-200">

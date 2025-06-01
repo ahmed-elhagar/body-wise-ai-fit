@@ -1,20 +1,17 @@
+
 import { useState } from "react";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Camera, Upload, Loader2, Eye } from "lucide-react";
 import { useFoodPhotoIntegration } from "@/hooks/useFoodPhotoIntegration";
 import FoodAnalysisResults from "@/components/food-photo-analysis/FoodAnalysisResults";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-interface MealPhotoUploadProps {
-  onPhotoUploaded: (photoUrl: string) => void;
-}
-
-const MealPhotoUpload = ({ onPhotoUploaded }: MealPhotoUploadProps) => {
-  const { t } = useI18n();
+const MealPhotoUpload = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const { t } = useLanguage();
   
   const { 
     analyzePhoto,

@@ -1,8 +1,9 @@
+
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Coffee } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ExerciseDaySelectorProps {
   selectedDayNumber: number;
@@ -16,7 +17,7 @@ export const ExerciseDaySelector = ({
   setSelectedDayNumber,
   currentProgram
 }: ExerciseDaySelectorProps) => {
-  const { t } = useI18n();
+  const { t } = useLanguage();
   
   const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const fullDayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];

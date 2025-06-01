@@ -86,8 +86,11 @@ const MealPlanDialogs = ({
 
       {/* Enhanced Add Snack Dialog */}
       <AddSnackDialog
-        open={showAddSnackDialog}
-        onOpenChange={onCloseAddSnackDialog}
+        isOpen={showAddSnackDialog}
+        onClose={onCloseAddSnackDialog}
+        selectedDay={selectedDay}
+        weeklyPlanId={weeklyPlanId}
+        onSnackAdded={onSnackAdded}
         currentDayCalories={currentDayCalories}
         targetDayCalories={targetDayCalories}
       />

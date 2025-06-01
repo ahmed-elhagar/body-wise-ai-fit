@@ -1,5 +1,5 @@
 
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import FoodPhotoAnalysisCard from "@/components/food-photo-analysis/FoodPhotoAnalysisCard";
 import FoodAnalysisResults from "@/components/food-photo-analysis/FoodAnalysisResults";
 import { useFoodPhotoIntegration } from "@/hooks/useFoodPhotoIntegration";
@@ -9,7 +9,7 @@ interface FoodPhotoAnalyzerProps {
 }
 
 const FoodPhotoAnalyzer = ({ onSelectFood }: FoodPhotoAnalyzerProps) => {
-  const { t } = useI18n();
+  const { t } = useLanguage();
   const { 
     analysisResult, 
     convertToFoodItem,
