@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { UtensilsCrossed, Sparkles, Shuffle, ShoppingCart, MoreVertical, RefreshCcw } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useMealPlanTranslations } from "@/hooks/useMealPlanTranslations";
 
 interface EnhancedMealPlanHeaderProps {
   onGenerateAI: () => void;
@@ -22,7 +22,7 @@ const EnhancedMealPlanHeader = ({
   isGenerating,
   hasWeeklyPlan
 }: EnhancedMealPlanHeaderProps) => {
-  const { t } = useLanguage();
+  const { t, translations } = useMealPlanTranslations();
 
   return (
     <Card className="bg-white border-fitness-primary-100 shadow-sm">
@@ -35,10 +35,10 @@ const EnhancedMealPlanHeader = ({
             </div>
             <div>
               <h1 className="text-2xl font-bold text-fitness-primary-800">
-                Meal Plan
+                {translations.title}
               </h1>
               <p className="text-sm text-fitness-primary-600">
-                Smart nutrition planning for your healthy lifestyle
+                {translations.smartMealPlanning}
               </p>
             </div>
           </div>
@@ -61,7 +61,7 @@ const EnhancedMealPlanHeader = ({
                 className="flex items-center gap-2 text-fitness-primary-700 hover:bg-fitness-primary-50 cursor-pointer"
               >
                 <Sparkles className="w-4 h-4" />
-                {t('mealPlan.generateAIMealPlan')}
+                {translations.generateAIMealPlan}
               </DropdownMenuItem>
               {hasWeeklyPlan && (
                 <DropdownMenuItem
@@ -70,7 +70,7 @@ const EnhancedMealPlanHeader = ({
                   className="flex items-center gap-2 text-fitness-primary-700 hover:bg-fitness-primary-50 cursor-pointer"
                 >
                   <RefreshCcw className="w-4 h-4" />
-                  {t('mealPlan.regenerate')}
+                  {t('regenerate', 'Regenerate')}
                 </DropdownMenuItem>
               )}
               {hasWeeklyPlan && (
@@ -80,7 +80,7 @@ const EnhancedMealPlanHeader = ({
                   className="flex items-center gap-2 text-fitness-primary-700 hover:bg-fitness-primary-50 cursor-pointer"
                 >
                   <Shuffle className="w-4 h-4" />
-                  {t('mealPlan.shuffleMeals')}
+                  {t('shuffleMeals', 'Shuffle Meals')}
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem
@@ -88,7 +88,7 @@ const EnhancedMealPlanHeader = ({
                 className="flex items-center gap-2 text-fitness-primary-700 hover:bg-fitness-primary-50 cursor-pointer"
               >
                 <ShoppingCart className="w-4 h-4" />
-                {t('mealPlan.shoppingList')}
+                {t('shoppingList', 'Shopping List')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

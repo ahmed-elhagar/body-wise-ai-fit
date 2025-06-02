@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ChefHat, Clock, Users, Utensils, Youtube, ExternalLink, Sparkles, ImageIcon } from "lucide-react";
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useMealPlanTranslations } from '@/hooks/useMealPlanTranslations';
 import { useEnhancedMealRecipe } from '@/hooks/useEnhancedMealRecipe';
 import { toast } from 'sonner';
 import EnhancedLoadingIndicator from '@/components/ui/enhanced-loading-indicator';
@@ -18,7 +18,7 @@ interface RecipeDialogProps {
 }
 
 export const RecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }: RecipeDialogProps) => {
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL, getMealTypeTranslation } = useMealPlanTranslations();
   const { generateEnhancedRecipe, isGeneratingRecipe } = useEnhancedMealRecipe();
   const [currentMeal, setCurrentMeal] = useState<DailyMeal | null>(meal);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
@@ -61,11 +61,11 @@ export const RecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }: RecipeD
         
         setCurrentMeal(convertedMeal);
         onRecipeUpdated?.();
-        toast.success('Recipe generated successfully!');
+        toast.success(t('recipeGenerated', 'Recipe generated successfully!'));
       }
     } catch (error) {
       console.error('Error generating recipe:', error);
-      toast.error('Failed to generate recipe');
+      toast.error(t('recipeFailed', 'Failed to generate recipe'));
     }
   };
 
@@ -95,11 +95,11 @@ export const RecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }: RecipeD
       if (data?.imageUrl) {
         setCurrentMeal(prev => prev ? { ...prev, image_url: data.imageUrl } : null);
         onRecipeUpdated?.();
-        toast.success('Image generated successfully!');
+        toast.success(t('imageGenerated', 'Image generated successfully!'));
       }
     } catch (error) {
       console.error('Error generating image:', error);
-      toast.error('Failed to generate image');
+      toast.error(t('imageFailed', 'Failed to generate image'));
     } finally {
       setIsGeneratingImage(false);
     }
@@ -147,7 +147,7 @@ export const RecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }: RecipeD
               <div className="w-full h-48 bg-gray-100 rounded-lg flex items-center justify-center">
                 <div className="text-center">
                   <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                  <p className="text-gray-500 text-sm">No image available</p>
+                  <p className="text-gray-500 text-sm">{t('noImageAvailable', 'No image available')}</p>
                 </div>
               </div>
             )}
@@ -164,7 +164,7 @@ export const RecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }: RecipeD
               ) : (
                 <>
                   <Sparkles className="w-3 h-3 mr-1" />
-                  Generate Image
+                  {t('generateImage', 'Generate Image')}
                 </>
               )}
             </Button>
@@ -178,11 +178,11 @@ export const RecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }: RecipeD
             </div>
             <div className={`flex items-center gap-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <Users className="w-4 h-4" />
-              <span>{currentMeal.servings} servings</span>
+              <span>{currentMeal.servings} {t('servings', 'servings')}</span>
             </div>
             <div className={`flex items-center gap-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <Utensils className="w-4 h-4" />
-              <span className="capitalize">{currentMeal.meal_type}</span>
+              <span className="capitalize">{getMealTypeTranslation(currentMeal.meal_type)}</span>
             </div>
           </div>
 
@@ -190,28 +190,28 @@ export const RecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }: RecipeD
           <div className="grid grid-cols-4 gap-4 bg-gray-50 rounded-lg p-4">
             <div className="text-center">
               <div className="text-2xl font-bold text-orange-600">{currentMeal.calories}</div>
-              <div className="text-sm text-gray-600">Calories</div>
+              <div className="text-sm text-gray-600">{t('calories', 'Calories')}</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600">{currentMeal.protein}g</div>
-              <div className="text-sm text-gray-600">Protein</div>
+              <div className="text-sm text-gray-600">{t('protein', 'Protein')}</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-600">{currentMeal.carbs || 0}g</div>
-              <div className="text-sm text-gray-600">Carbs</div>
+              <div className="text-sm text-gray-600">{t('carbs', 'Carbs')}</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-yellow-600">{currentMeal.fat || 0}g</div>
-              <div className="text-sm text-gray-600">Fat</div>
+              <div className="text-sm text-gray-600">{t('fat', 'Fat')}</div>
             </div>
           </div>
 
           {/* Generate Full Recipe Button */}
           {!hasFullRecipe && (
             <div className="text-center py-4 bg-purple-50 rounded-lg border border-purple-200">
-              <h3 className="font-semibold mb-2 text-purple-800">Generate Full Recipe</h3>
+              <h3 className="font-semibold mb-2 text-purple-800">{t('generateFullRecipe', 'Generate Full Recipe')}</h3>
               <p className="text-sm text-purple-600 mb-4">
-                Get detailed ingredients and step-by-step instructions with AI
+                {t('getDetailedInstructions', 'Get detailed ingredients and step-by-step instructions with AI')}
               </p>
               <Button
                 onClick={handleGenerateFullRecipe}
@@ -223,7 +223,7 @@ export const RecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }: RecipeD
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4 mr-2" />
-                    Generate Full Recipe
+                    {t('generateFullRecipe', 'Generate Full Recipe')}
                   </>
                 )}
               </Button>
@@ -233,7 +233,7 @@ export const RecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }: RecipeD
           {/* Ingredients */}
           {hasFullRecipe && currentMeal.ingredients && currentMeal.ingredients.length > 0 && (
             <div>
-              <h3 className="font-semibold mb-3">Ingredients</h3>
+              <h3 className="font-semibold mb-3">{t('ingredients', 'Ingredients')}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {currentMeal.ingredients.map((ingredient, index) => (
                   <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded">
@@ -250,7 +250,7 @@ export const RecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }: RecipeD
           {/* Instructions */}
           {hasFullRecipe && currentMeal.instructions && currentMeal.instructions.length > 0 && (
             <div>
-              <h3 className="font-semibold mb-3">Instructions</h3>
+              <h3 className="font-semibold mb-3">{t('instructions', 'Instructions')}</h3>
               <ol className="space-y-2">
                 {currentMeal.instructions.map((instruction, index) => (
                   <li key={index} className={`flex gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
@@ -272,12 +272,12 @@ export const RecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }: RecipeD
               className="flex-1 border-red-200 text-red-600 hover:bg-red-50"
             >
               <Youtube className="w-4 h-4 mr-2" />
-              Watch Tutorial
+              {t('watchTutorial', 'Watch Tutorial')}
               <ExternalLink className="w-4 h-4 ml-2" />
             </Button>
             
             <Button onClick={onClose} className="flex-1">
-              Close Recipe
+              {t('closeRecipe', 'Close Recipe')}
             </Button>
           </div>
         </div>
