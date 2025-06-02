@@ -1,6 +1,6 @@
 
-import { useState } from "react";
-import type { DailyMeal, MealPlanPreferences } from "../types";
+import { useState } from 'react';
+import type { DailyMeal, MealPlanPreferences } from '../types';
 
 export const useMealPlanDialogs = () => {
   const [showAIDialog, setShowAIDialog] = useState(false);
@@ -8,7 +8,6 @@ export const useMealPlanDialogs = () => {
   const [showExchangeDialog, setShowExchangeDialog] = useState(false);
   const [showAddSnackDialog, setShowAddSnackDialog] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState<DailyMeal | null>(null);
-  const [selectedMealIndex, setSelectedMealIndex] = useState(0);
   
   // AI preferences with proper defaults
   const [aiPreferences, setAiPreferences] = useState<MealPlanPreferences>({
@@ -24,9 +23,8 @@ export const useMealPlanDialogs = () => {
     setShowRecipeDialog(true);
   };
 
-  const openExchangeDialog = (meal: DailyMeal, index?: number) => {
+  const openExchangeDialog = (meal: DailyMeal) => {
     setSelectedMeal(meal);
-    setSelectedMealIndex(index || 0);
     setShowExchangeDialog(true);
   };
 
@@ -56,10 +54,8 @@ export const useMealPlanDialogs = () => {
     // Selected meal state
     selectedMeal,
     setSelectedMeal,
-    selectedMealIndex,
-    setSelectedMealIndex,
     
-    // Helper methods
+    // Helper functions
     openRecipeDialog,
     openExchangeDialog,
     openAddSnackDialog

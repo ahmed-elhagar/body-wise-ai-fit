@@ -1,179 +1,111 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { format, startOfWeek, addWeeks } from 'date-fns';
-import type { MealPlanFetchResult, DailyMeal } from '../types';
+import { format } from 'date-fns';
+import type { WeeklyMealPlan, MealPlanFetchResult, DailyMeal } from '../types';
 
-export class MealPlanService {
-  static getWeekStartDate(weekOffset: number = 0): Date {
-    const today = new Date();
-    const currentWeekStart = startOfWeek(today, { weekStartsOn: 6 }); // Saturday = 6
-    return addWeeks(currentWeekStart, weekOffset);
-  }
-
-  static async fetchMealPlanData(userId: string, weekOffset: number = 0): Promise<MealPlanFetchResult | null> {
-    const weekStartDate = this.getWeekStartDate(weekOffset);
-    const weekStartDateStr = format(weekStartDate, 'yyyy-MM-dd');
-
-    console.log('📡 Fetching meal plan for user:', userId, 'week:', weekStartDateStr);
-
-    // Fetch weekly plan
-    const { data: weeklyPlan, error: weeklyError } = await supabase
-      .from('weekly_meal_plans')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('week_start_date', weekStartDateStr)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (weeklyError) {
-      console.error('❌ Error fetching weekly plan:', weeklyError);
-      throw weeklyError;
-    }
-
-    if (!weeklyPlan) {
-      console.log('ℹ️ No meal plan found for this week');
-      return null;
-    }
-
-    // Fetch daily meals
-    const { data: dailyMeals, error: mealsError } = await supabase
-      .from('daily_meals')
-      .select('*')
-      .eq('weekly_plan_id', weeklyPlan.id)
-      .order('day_number', { ascending: true })
-      .order('meal_type', { ascending: true });
-
-    if (mealsError) {
-      console.error('❌ Error fetching daily meals:', mealsError);
-      throw mealsError;
-    }
-
-    const processedMeals = (dailyMeals || []).map(this.processMealData);
-
-    console.log('✅ Meal plan fetched successfully:', {
-      weeklyPlanId: weeklyPlan.id,
-      dailyMealsCount: processedMeals.length,
-      weekStartDate: weeklyPlan.week_start_date
-    });
-
-    return {
-      weeklyPlan,
-      dailyMeals: processedMeals
-    };
-  }
-
-  static processMealData(meal: any): DailyMeal {
-    const parseJsonField = (field: any, fallback: any = []) => {
-      if (!field) return fallback;
-      if (typeof field === 'string') {
-        try {
-          return JSON.parse(field);
-        } catch {
-          return fallback;
-        }
+const processMealData = (meal: any): DailyMeal => {
+  const safeJsonParse = (field: any, fallback: any = []) => {
+    if (!field) return fallback;
+    if (typeof field === 'string') {
+      try {
+        return JSON.parse(field);
+      } catch {
+        return fallback;
       }
-      return Array.isArray(field) ? field : fallback;
-    };
-
-    return {
-      ...meal,
-      ingredients: parseJsonField(meal.ingredients, []),
-      instructions: parseJsonField(meal.instructions, []),
-      alternatives: parseJsonField(meal.alternatives, [])
-    };
-  }
-
-  static async addSnack(weeklyPlanId: string, dayNumber: number, snack: any): Promise<boolean> {
-    try {
-      const { error } = await supabase
-        .from('daily_meals')
-        .insert({
-          weekly_plan_id: weeklyPlanId,
-          day_number: dayNumber,
-          meal_type: 'snack',
-          name: snack.name,
-          calories: snack.calories,
-          protein: snack.protein,
-          carbs: snack.carbs,
-          fat: snack.fat,
-          prep_time: 5,
-          cook_time: 0,
-          servings: 1,
-          ingredients: [{ name: snack.name, quantity: "1", unit: "serving" }],
-          instructions: [`Enjoy your ${snack.name}!`],
-          recipe_fetched: true
-        });
-
-      if (error) throw error;
-      return true;
-    } catch (error) {
-      console.error('Error adding snack:', error);
-      return false;
     }
+    if (Array.isArray(field)) return field;
+    return fallback;
+  };
+
+  return {
+    id: meal.id,
+    weekly_plan_id: meal.weekly_plan_id,
+    day_number: meal.day_number,
+    meal_type: meal.meal_type,
+    name: meal.name,
+    calories: meal.calories || 0,
+    protein: meal.protein || 0,
+    carbs: meal.carbs || 0,
+    fat: meal.fat || 0,
+    fiber: meal.fiber || 0,
+    sugar: meal.sugar || 0,
+    ingredients: safeJsonParse(meal.ingredients, []),
+    instructions: safeJsonParse(meal.instructions, []),
+    prep_time: meal.prep_time || 0,
+    cook_time: meal.cook_time || 0,
+    servings: meal.servings || 1,
+    youtube_search_term: meal.youtube_search_term,
+    image_url: meal.image_url,
+    alternatives: safeJsonParse(meal.alternatives, []),
+    description: meal.description,
+    difficulty: meal.difficulty,
+    cuisine: meal.cuisine,
+    tips: meal.tips,
+    nutrition_benefits: meal.nutrition_benefits,
+    cultural_info: meal.cultural_info,
+    recipe_fetched: meal.recipe_fetched || false
+  };
+};
+
+export const fetchMealPlanData = async (userId: string, weekStartDateStr: string): Promise<MealPlanFetchResult | null> => {
+  console.log('🎯 MEAL PLAN FETCH:', {
+    userId: userId.substring(0, 8) + '...',
+    searchingForDate: weekStartDateStr
+  });
+
+  // Fetch weekly plan
+  const { data: weeklyPlan, error: weeklyError } = await supabase
+    .from('weekly_meal_plans')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('week_start_date', weekStartDateStr)
+    .maybeSingle();
+
+  if (weeklyError) {
+    console.error('❌ Error fetching weekly plan:', weeklyError);
+    throw weeklyError;
   }
 
-  static async deleteMeal(mealId: string): Promise<boolean> {
-    try {
-      const { error } = await supabase
-        .from('daily_meals')
-        .delete()
-        .eq('id', mealId);
-
-      if (error) throw error;
-      return true;
-    } catch (error) {
-      console.error('Error deleting meal:', error);
-      return false;
-    }
+  if (!weeklyPlan) {
+    console.log('❌ NO MEAL PLAN FOUND for week:', weekStartDateStr);
+    return null;
   }
 
-  static async updateMeal(mealId: string, updates: Partial<DailyMeal>): Promise<boolean> {
-    try {
-      // Convert MealIngredient[] to proper JSON format for database
-      const dbUpdates: any = { ...updates };
-      if (updates.ingredients) {
-        dbUpdates.ingredients = updates.ingredients;
-      }
-      if (updates.instructions) {
-        dbUpdates.instructions = updates.instructions;
-      }
-      if (updates.alternatives) {
-        dbUpdates.alternatives = updates.alternatives;
-      }
+  // Fetch meals for the plan
+  const { data: dailyMeals, error: mealsError } = await supabase
+    .from('daily_meals')
+    .select('*')
+    .eq('weekly_plan_id', weeklyPlan.id)
+    .order('day_number', { ascending: true })
+    .order('meal_type', { ascending: true });
 
-      const { error } = await supabase
-        .from('daily_meals')
-        .update(dbUpdates)
-        .eq('id', mealId);
-
-      if (error) throw error;
-      return true;
-    } catch (error) {
-      console.error('Error updating meal:', error);
-      return false;
-    }
+  if (mealsError) {
+    console.error('❌ Error fetching daily meals:', mealsError);
+    throw mealsError;
   }
 
-  static getDayName(dayNumber: number): string {
-    const days = ['', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-    return days[dayNumber] || 'Day';
-  }
+  console.log('✅ Found meals for week:', {
+    planId: weeklyPlan.id,
+    mealsCount: dailyMeals?.length || 0,
+    weekStartDate: weeklyPlan.week_start_date
+  });
 
-  static getCurrentSaturdayDay(): number {
-    const today = new Date();
-    const dayOfWeek = today.getDay(); // 0 = Sunday, 6 = Saturday
-    
-    // Convert to our system where Saturday = 1
-    if (dayOfWeek === 6) return 1; // Saturday
-    if (dayOfWeek === 0) return 2; // Sunday
-    return dayOfWeek + 1; // Monday=2, Tuesday=3, etc.
-  }
+  // Process meals data with safe JSON parsing
+  const processedMeals = (dailyMeals || []).map(processMealData);
 
-  static getDateForDay(dayNumber: number, weekStartDate: Date): Date {
-    const dayOffset = dayNumber === 1 ? 0 : dayNumber - 1;
-    const date = new Date(weekStartDate);
-    date.setDate(date.getDate() + dayOffset);
-    return date;
-  }
-}
+  return {
+    weeklyPlan: {
+      id: weeklyPlan.id,
+      user_id: weeklyPlan.user_id,
+      week_start_date: weeklyPlan.week_start_date,
+      total_calories: weeklyPlan.total_calories || 0,
+      total_protein: weeklyPlan.total_protein || 0,
+      total_carbs: weeklyPlan.total_carbs || 0,
+      total_fat: weeklyPlan.total_fat || 0,
+      generation_prompt: weeklyPlan.generation_prompt,
+      created_at: weeklyPlan.created_at,
+      life_phase_context: weeklyPlan.life_phase_context
+    } as WeeklyMealPlan,
+    dailyMeals: processedMeals
+  };
+};

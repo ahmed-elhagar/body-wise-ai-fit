@@ -1,31 +1,41 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { MealPlanService } from '../services/mealPlanService';
-import type { MealPlanFetchResult } from '../types';
+import { getWeekStartDate } from '@/utils/mealPlanUtils';
+import { format } from 'date-fns';
+import { fetchMealPlanData } from '../services/mealPlanService';
 
 export const useMealPlanCore = (weekOffset: number = 0) => {
   const { user } = useAuth();
-  const { language } = useLanguage();
 
   return useQuery({
-    queryKey: ['meal-plan-core', user?.id, weekOffset],
-    queryFn: async (): Promise<MealPlanFetchResult | null> => {
+    queryKey: ['weekly-meal-plan', user?.id, weekOffset],
+    queryFn: async () => {
       if (!user?.id) {
-        console.log('❌ No user ID available for meal plan fetch');
+        console.log('❌ useMealPlanCore - No user ID for meal plan fetch');
         return null;
       }
-
-      return await MealPlanService.fetchMealPlanData(user.id, weekOffset);
+      
+      try {
+        const weekStartDate = getWeekStartDate(weekOffset);
+        const weekStartDateStr = format(weekStartDate, 'yyyy-MM-dd');
+        
+        const result = await fetchMealPlanData(user.id, weekStartDateStr);
+        return result;
+      } catch (error) {
+        console.error('❌ Error fetching meal plan:', error);
+        throw error;
+      }
     },
     enabled: !!user?.id,
     staleTime: 30000, // 30 seconds
-    refetchOnWindowFocus: false,
-    refetchOnMount: true,
+    gcTime: 120000, // 2 minutes
     retry: (failureCount, error) => {
       if (error?.message?.includes('JWT') || error?.message?.includes('auth')) return false;
       return failureCount < 2;
-    }
+    },
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
+    refetchOnReconnect: true
   });
 };
