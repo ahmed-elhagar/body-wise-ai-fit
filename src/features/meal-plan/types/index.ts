@@ -8,7 +8,7 @@ export interface MealIngredient {
 export interface DailyMeal {
   id: string;
   name: string;
-  meal_type: 'breakfast' | 'lunch' | 'dinner' | 'snack1' | 'snack2';
+  meal_type: 'breakfast' | 'lunch' | 'dinner' | 'snack'; // Fixed to use 'snack' only
   calories: number;
   protein: number;
   carbs: number;
