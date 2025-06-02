@@ -2,32 +2,14 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Users } from "lucide-react";
-
-interface MealAlternative {
-  name: string;
-  reason: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-  ingredients: Array<{
-    name: string;
-    quantity: string;
-    unit: string;
-  }>;
-  instructions: string[];
-  prep_time: number;
-  cook_time: number;
-  servings: number;
-}
+import { Clock, Users, ChefHat, ArrowRight } from "lucide-react";
 
 interface ExchangeAlternativeCardProps {
-  alternative: MealAlternative;
+  alternative: any;
   index: number;
   isExchanging: boolean;
-  onSelect: (alternative: MealAlternative) => void;
-  onExpand: (alternative: MealAlternative) => void;
+  onSelect: (alternative: any) => void;
+  onExpand: (alternative: any) => void;
 }
 
 export const ExchangeAlternativeCard = ({
@@ -38,56 +20,77 @@ export const ExchangeAlternativeCard = ({
   onExpand
 }: ExchangeAlternativeCardProps) => {
   return (
-    <Card 
-      key={index} 
-      className="cursor-pointer hover:bg-gray-50 transition-colors" 
-      onClick={() => onExpand(alternative)}
-    >
+    <Card className="border border-gray-200 hover:border-green-300 transition-colors">
       <CardContent className="p-4">
-        <div className="flex justify-between items-start">
+        <div className="flex justify-between items-start mb-3">
           <div className="flex-1">
-            <h4 className="font-medium text-gray-900 mb-1">{alternative.name}</h4>
-            <p className="text-sm text-blue-600 mb-3 italic">{alternative.reason}</p>
-            
-            {/* Nutrition badges */}
-            <div className="flex flex-wrap gap-2 mb-3">
-              <Badge variant="secondary" className="text-xs">
-                {alternative.calories} cal
+            <h4 className="font-semibold text-gray-800 mb-1">{alternative.name}</h4>
+            {alternative.cuisine_type && (
+              <Badge variant="outline" className="text-xs mb-2">
+                {alternative.cuisine_type}
               </Badge>
-              <Badge variant="outline" className="text-xs">
-                {alternative.protein}g protein
-              </Badge>
-              <Badge variant="outline" className="text-xs">
-                {alternative.carbs}g carbs
-              </Badge>
-              <Badge variant="outline" className="text-xs">
-                {alternative.fat}g fat
-              </Badge>
-            </div>
-
-            {/* Time and servings info */}
-            <div className="flex gap-4 text-sm text-gray-600 mb-3">
-              <span className="flex items-center gap-1">
-                <Clock className="w-3 h-3" />
-                {alternative.prep_time + alternative.cook_time} min
-              </span>
-              <span className="flex items-center gap-1">
-                <Users className="w-3 h-3" />
-                {alternative.servings} serving{alternative.servings !== 1 ? 's' : ''}
-              </span>
-            </div>
+            )}
           </div>
-          
+          <Badge className="bg-green-100 text-green-700 text-xs ml-2">
+            {alternative.calories} cal
+          </Badge>
+        </div>
+
+        <div className="flex flex-wrap gap-2 mb-3">
+          <Badge variant="outline" className="text-xs">
+            <Clock className="w-3 h-3 mr-1" />
+            {(alternative.prep_time || 0) + (alternative.cook_time || 0)} min
+          </Badge>
+          <Badge variant="outline" className="text-xs">
+            <Users className="w-3 h-3 mr-1" />
+            {alternative.servings} serving{alternative.servings !== 1 ? 's' : ''}
+          </Badge>
+          {alternative.difficulty && (
+            <Badge variant="outline" className="text-xs">
+              <ChefHat className="w-3 h-3 mr-1" />
+              {alternative.difficulty}
+            </Badge>
+          )}
+        </div>
+
+        <div className="grid grid-cols-3 gap-2 mb-4">
+          <div className="bg-gray-50 p-2 rounded text-center">
+            <span className="font-medium text-green-600 text-sm">{alternative.protein}g</span>
+            <div className="text-xs text-gray-600">protein</div>
+          </div>
+          <div className="bg-gray-50 p-2 rounded text-center">
+            <span className="font-medium text-blue-600 text-sm">{alternative.carbs}g</span>
+            <div className="text-xs text-gray-600">carbs</div>
+          </div>
+          <div className="bg-gray-50 p-2 rounded text-center">
+            <span className="font-medium text-yellow-600 text-sm">{alternative.fat}g</span>
+            <div className="text-xs text-gray-600">fat</div>
+          </div>
+        </div>
+
+        <div className="flex gap-2">
           <Button
-            onClick={(e) => {
-              e.stopPropagation();
-              onSelect(alternative);
-            }}
+            onClick={() => onExpand(alternative)}
+            variant="outline"
+            size="sm"
+            className="flex-1"
+          >
+            View Details
+          </Button>
+          <Button
+            onClick={() => onSelect(alternative)}
             disabled={isExchanging}
             size="sm"
-            className="ml-4"
+            className="flex-1 bg-green-500 hover:bg-green-600 text-white"
           >
-            {isExchanging ? 'Exchanging...' : 'Select'}
+            {isExchanging ? (
+              'Exchanging...'
+            ) : (
+              <>
+                <ArrowRight className="w-4 h-4 mr-1" />
+                Exchange
+              </>
+            )}
           </Button>
         </div>
       </CardContent>

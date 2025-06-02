@@ -2,9 +2,10 @@
 import React from 'react';
 import { AIGenerationDialog } from './AIGenerationDialog';
 import EnhancedAddSnackDialog from '@/components/meal-plan/EnhancedAddSnackDialog';
-import MealPlanExchangeDialog from '@/components/meal-plan/MealPlanExchangeDialog';
+import MealExchangeDialog from '@/components/MealExchangeDialog';
 import { EnhancedRecipeDialog } from '@/components/meal-plan/EnhancedRecipeDialog';
-import ShoppingListDialog from '@/components/meal-plan/ShoppingListDialog';
+import ShoppingListDialog from '@/components/ShoppingListDialog';
+import { useEnhancedShoppingList } from '@/hooks/useEnhancedShoppingList';
 import type { DailyMeal, MealPlanPreferences } from '@/types/mealPlan';
 
 interface MealPlanDialogsProps {
@@ -46,7 +47,7 @@ interface MealPlanDialogsProps {
   // Additional props
   userCredits: number;
   hasWeeklyPlan: boolean;
-  isEmailLoading: boolean; // Added missing prop
+  isEmailLoading: boolean;
 }
 
 export const MealPlanDialogs = ({
@@ -79,6 +80,14 @@ export const MealPlanDialogs = ({
   hasWeeklyPlan,
   isEmailLoading
 }: MealPlanDialogsProps) => {
+  // Get enhanced shopping list data for the current week
+  const weekPlanData = hasWeeklyPlan ? {
+    weeklyPlan: { id: weeklyPlanId, week_start_date: weekStartDate.toISOString().split('T')[0] },
+    dailyMeals: enhancedShoppingItems
+  } : null;
+
+  const { enhancedShoppingItems: shoppingListData } = useEnhancedShoppingList(weekPlanData);
+
   return (
     <>
       <AIGenerationDialog
@@ -102,11 +111,11 @@ export const MealPlanDialogs = ({
         onSnackAdded={onSnackAdded}
       />
 
-      <MealPlanExchangeDialog
-        open={showExchangeDialog}
-        onOpenChange={onCloseExchangeDialog}
-        meal={selectedMeal}
-        mealIndex={0}
+      <MealExchangeDialog
+        isOpen={showExchangeDialog}
+        onClose={onCloseExchangeDialog}
+        currentMeal={selectedMeal}
+        onExchange={onMealExchanged}
       />
 
       <EnhancedRecipeDialog
@@ -119,15 +128,7 @@ export const MealPlanDialogs = ({
       <ShoppingListDialog
         isOpen={showShoppingListDialog}
         onClose={onCloseShoppingListDialog}
-        shoppingItems={{ 
-          items: enhancedShoppingItems,
-          groupedItems: enhancedShoppingItems.reduce((acc: Record<string, any[]>, item: any) => {
-            const category = item.category || 'Other';
-            if (!acc[category]) acc[category] = [];
-            acc[category].push(item);
-            return acc;
-          }, {})
-        }}
+        shoppingItems={shoppingListData}
         onSendEmail={onSendShoppingListEmail}
         weekStartDate={weekStartDate}
         isLoading={isEmailLoading}

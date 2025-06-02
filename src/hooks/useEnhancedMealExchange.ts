@@ -1,27 +1,25 @@
 
 import { useState } from 'react';
-import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useProfile } from './useProfile';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import type { DailyMeal } from '@/features/meal-plan/types';
 
 interface MealAlternative {
   name: string;
-  reason: string;
   calories: number;
   protein: number;
   carbs: number;
   fat: number;
-  ingredients: Array<{
-    name: string;
-    quantity: string;
-    unit: string;
-  }>;
+  ingredients: any[];
   instructions: string[];
   prep_time: number;
   cook_time: number;
   servings: number;
+  meal_type: string;
+  cuisine_type?: string;
+  difficulty?: string;
 }
 
 export const useEnhancedMealExchange = () => {
@@ -30,132 +28,104 @@ export const useEnhancedMealExchange = () => {
   const [isExchanging, setIsExchanging] = useState(false);
   const [alternatives, setAlternatives] = useState<MealAlternative[]>([]);
 
-  const generateMealAlternatives = async (meal: any): Promise<boolean> => {
+  const generateMealAlternatives = async (currentMeal: any) => {
     if (!user || !profile) {
-      toast.error('User profile not found');
-      return false;
+      toast.error('User profile required for meal exchange');
+      return;
     }
 
     setIsExchanging(true);
-    
+    console.log('🔄 Generating alternatives for meal:', currentMeal.name);
+
     try {
-      console.log('🔄 Generating meal alternatives for:', meal.name);
-
-      toast.loading('Finding meal alternatives...', { duration: 15000 });
-
       const { data, error } = await supabase.functions.invoke('generate-meal-alternatives', {
         body: {
           currentMeal: {
-            name: meal.name,
-            meal_type: meal.meal_type,
-            calories: meal.calories,
-            protein: meal.protein,
-            carbs: meal.carbs,
-            fat: meal.fat,
-            ingredients: meal.ingredients,
-            prep_time: meal.prep_time || meal.prepTime,
-            cook_time: meal.cook_time || meal.cookTime,
-            servings: meal.servings
+            name: currentMeal.name,
+            meal_type: currentMeal.meal_type,
+            calories: currentMeal.calories,
+            protein: currentMeal.protein,
+            carbs: currentMeal.carbs,
+            fat: currentMeal.fat,
+            ingredients: currentMeal.ingredients || []
           },
           userProfile: {
-            ...profile,
             dietary_restrictions: profile.dietary_restrictions || [],
             allergies: profile.allergies || [],
-            preferred_foods: profile.preferred_foods || []
+            preferred_foods: profile.preferred_foods || [],
+            fitness_goal: profile.fitness_goal,
+            activity_level: profile.activity_level,
+            age: profile.age,
+            gender: profile.gender,
+            weight: profile.weight,
+            height: profile.height
           },
-          userId: user.id,
-          alternativesCount: 3
+          preferences: {
+            similar_nutrition: true,
+            avoid_allergens: true,
+            respect_dietary_restrictions: true,
+            target_calories: currentMeal.calories,
+            cuisine_variety: true
+          }
         }
       });
 
-      toast.dismiss();
-
       if (error) {
-        console.error('❌ Error generating alternatives:', error);
+        console.error('❌ Alternative generation error:', error);
         throw error;
       }
 
-      if (data?.success && data.alternatives) {
-        console.log('✅ Meal alternatives generated successfully:', data.alternatives);
+      if (data?.success && data?.alternatives) {
+        console.log('✅ Generated alternatives:', data.alternatives.length);
         setAlternatives(data.alternatives);
-        toast.success(`Found ${data.alternatives.length} meal alternatives!`);
-        return true;
+        toast.success(`Found ${data.alternatives.length} alternative meals!`);
       } else {
-        console.error('❌ Alternative generation failed:', data);
         throw new Error(data?.error || 'Failed to generate alternatives');
       }
-      
     } catch (error: any) {
-      console.error('❌ Error generating meal alternatives:', error);
-      toast.dismiss();
+      console.error('❌ Error generating alternatives:', error);
       toast.error(error.message || 'Failed to generate meal alternatives');
-      return false;
+      setAlternatives([]);
     } finally {
       setIsExchanging(false);
     }
   };
 
-  const exchangeMeal = async (originalMeal: any, selectedAlternative: MealAlternative): Promise<boolean> => {
+  const exchangeMeal = async (currentMeal: any, selectedAlternative: MealAlternative) => {
     if (!user) {
-      toast.error('User not authenticated');
+      toast.error('User authentication required');
       return false;
     }
 
     setIsExchanging(true);
-    
+    console.log('🔄 Exchanging meal:', currentMeal.name, 'with:', selectedAlternative.name);
+
     try {
-      console.log('🔄 Exchanging meal:', originalMeal.name, 'with:', selectedAlternative.name);
-
-      toast.loading('Exchanging meal...', { duration: 10000 });
-
       const { data, error } = await supabase.functions.invoke('exchange-meal', {
         body: {
-          mealId: originalMeal.id,
-          originalMeal: {
-            name: originalMeal.name,
-            meal_type: originalMeal.meal_type,
-            calories: originalMeal.calories,
-            protein: originalMeal.protein,
-            carbs: originalMeal.carbs,
-            fat: originalMeal.fat
-          },
-          newMeal: {
-            name: selectedAlternative.name,
-            calories: selectedAlternative.calories,
-            protein: selectedAlternative.protein,
-            carbs: selectedAlternative.carbs,
-            fat: selectedAlternative.fat,
-            ingredients: selectedAlternative.ingredients,
-            instructions: selectedAlternative.instructions,
-            prep_time: selectedAlternative.prep_time,
-            cook_time: selectedAlternative.cook_time,
-            servings: selectedAlternative.servings
-          },
           userId: user.id,
-          reason: selectedAlternative.reason
+          originalMealId: currentMeal.id,
+          newMeal: selectedAlternative,
+          exchangeReason: 'user_preference',
+          preserveNutrition: true
         }
       });
 
-      toast.dismiss();
-
       if (error) {
-        console.error('❌ Error exchanging meal:', error);
+        console.error('❌ Meal exchange error:', error);
         throw error;
       }
 
       if (data?.success) {
-        console.log('✅ Meal exchanged successfully!', data);
-        toast.success(`Meal exchanged! ${originalMeal.name} → ${selectedAlternative.name}`);
-        setAlternatives([]); // Clear alternatives after successful exchange
+        console.log('✅ Meal exchanged successfully');
+        toast.success(`Meal exchanged: ${selectedAlternative.name}`);
+        setAlternatives([]);
         return true;
       } else {
-        console.error('❌ Meal exchange failed:', data);
         throw new Error(data?.error || 'Failed to exchange meal');
       }
-      
     } catch (error: any) {
       console.error('❌ Error exchanging meal:', error);
-      toast.dismiss();
       toast.error(error.message || 'Failed to exchange meal');
       return false;
     } finally {
@@ -163,14 +133,9 @@ export const useEnhancedMealExchange = () => {
     }
   };
 
-  const clearAlternatives = () => {
-    setAlternatives([]);
-  };
-
   return {
     generateMealAlternatives,
     exchangeMeal,
-    clearAlternatives,
     isExchanging,
     alternatives
   };
