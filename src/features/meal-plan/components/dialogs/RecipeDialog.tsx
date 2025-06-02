@@ -8,7 +8,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useEnhancedMealRecipe } from '@/hooks/useEnhancedMealRecipe';
 import { toast } from 'sonner';
 import EnhancedLoadingIndicator from '@/components/ui/enhanced-loading-indicator';
-import type { DailyMeal } from '@/hooks/meal-plan/types';
+import type { DailyMeal } from '@/features/meal-plan/types';
 
 interface RecipeDialogProps {
   isOpen: boolean;
@@ -35,7 +35,30 @@ export const RecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }: RecipeD
       const updatedMeal = await generateEnhancedRecipe(currentMeal.id, currentMeal);
       
       if (updatedMeal) {
-        setCurrentMeal(updatedMeal);
+        // Properly convert the database response to our DailyMeal type
+        const convertedMeal: DailyMeal = {
+          ...currentMeal,
+          ingredients: Array.isArray(updatedMeal.ingredients) 
+            ? updatedMeal.ingredients 
+            : typeof updatedMeal.ingredients === 'string'
+              ? JSON.parse(updatedMeal.ingredients)
+              : [],
+          instructions: Array.isArray(updatedMeal.instructions)
+            ? updatedMeal.instructions
+            : typeof updatedMeal.instructions === 'string'
+              ? JSON.parse(updatedMeal.instructions)
+              : [],
+          alternatives: Array.isArray(updatedMeal.alternatives)
+            ? updatedMeal.alternatives
+            : typeof updatedMeal.alternatives === 'string'
+              ? JSON.parse(updatedMeal.alternatives)
+              : [],
+          youtube_search_term: updatedMeal.youtube_search_term || currentMeal.youtube_search_term,
+          image_url: updatedMeal.image_url || currentMeal.image_url,
+          recipe_fetched: true
+        };
+        
+        setCurrentMeal(convertedMeal);
         onRecipeUpdated?.();
         toast.success('Recipe generated successfully!');
       }
@@ -52,8 +75,7 @@ export const RecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }: RecipeD
     try {
       console.log('🖼️ Generating image for meal:', currentMeal.id);
       
-      // Call image generation function
-      const { data, error } = await fetch('/api/generate-meal-image', {
+      const response = await fetch('/api/generate-meal-image', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -63,7 +85,9 @@ export const RecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }: RecipeD
           mealName: currentMeal.name,
           description: currentMeal.instructions?.[0] || `Delicious ${currentMeal.name}`
         })
-      }).then(res => res.json());
+      });
+
+      const { data, error } = await response.json();
 
       if (error) throw new Error(error);
 
