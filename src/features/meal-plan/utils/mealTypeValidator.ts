@@ -1,5 +1,5 @@
 
-export type ValidMealType = 'breakfast' | 'lunch' | 'dinner' | 'snack' | 'snack1' | 'snack2';
+export type ValidMealType = 'breakfast' | 'lunch' | 'dinner' | 'snack1' | 'snack2';
 
 export const validateMealType = (mealType: string): ValidMealType => {
   // Normalize meal type

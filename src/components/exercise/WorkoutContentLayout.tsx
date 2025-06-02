@@ -78,7 +78,7 @@ export const WorkoutContentLayout = ({
         <ExerciseQuickActions
           isWorkoutActive={isWorkoutActive}
           isPaused={isPaused}
-          totalTime={0}
+          totalTime="0"
           onStartWorkout={handleStartWorkout}
           onPauseWorkout={handlePauseWorkout}
           onResumeWorkout={handleResumeWorkout}

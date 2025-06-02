@@ -45,20 +45,51 @@ export const fetchMealPlanData = async (userId: string, weekStartDate: string): 
 
     // Process and validate meal data
     const processedMeals: DailyMeal[] = (dailyMealsData || []).map(meal => ({
-      ...meal,
-      meal_type: validateMealType(meal.meal_type),
+      id: meal.id,
+      weekly_plan_id: meal.weekly_plan_id,
+      day_number: meal.day_number,
+      meal_type: validateMealType(meal.meal_type) as 'breakfast' | 'lunch' | 'dinner' | 'snack1' | 'snack2',
+      name: meal.name,
+      calories: meal.calories || 0,
+      protein: meal.protein || 0,
+      carbs: meal.carbs || 0,
+      fat: meal.fat || 0,
+      fiber: meal.fiber || 0,
+      sugar: meal.sugar || 0,
+      prep_time: meal.prep_time || 0,
+      cook_time: meal.cook_time || 0,
+      servings: meal.servings || 1,
+      youtube_search_term: meal.youtube_search_term || '',
+      image_url: meal.image_url || '',
+      recipe_fetched: meal.recipe_fetched || false,
       ingredients: Array.isArray(meal.ingredients) ? meal.ingredients : [],
       instructions: Array.isArray(meal.instructions) ? meal.instructions : [],
-      alternatives: Array.isArray(meal.alternatives) ? meal.alternatives : []
+      alternatives: Array.isArray(meal.alternatives) ? meal.alternatives : [],
+      created_at: meal.created_at || new Date().toISOString()
     }));
 
+    // Create properly typed weekly plan
+    const weeklyPlan: WeeklyMealPlan = {
+      id: weeklyPlanData.id,
+      user_id: weeklyPlanData.user_id,
+      week_start_date: weeklyPlanData.week_start_date,
+      total_calories: weeklyPlanData.total_calories || 0,
+      total_protein: weeklyPlanData.total_protein || 0,
+      total_carbs: weeklyPlanData.total_carbs || 0,
+      total_fat: weeklyPlanData.total_fat || 0,
+      preferences: weeklyPlanData.generation_prompt || {},
+      created_at: weeklyPlanData.created_at,
+      updated_at: weeklyPlanData.created_at,
+      life_phase_context: weeklyPlanData.life_phase_context || {}
+    };
+
     console.log('✅ Meal plan data fetched successfully:', {
-      weeklyPlanId: weeklyPlanData.id,
+      weeklyPlanId: weeklyPlan.id,
       mealsCount: processedMeals.length
     });
 
     return {
-      weeklyPlan: weeklyPlanData,
+      weeklyPlan,
       dailyMeals: processedMeals
     };
 
