@@ -1,10 +1,9 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, Calendar, Utensils } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import EnhancedMealCard from './EnhancedMealCard';
+import { EnhancedMealCard } from './EnhancedMealCard';
 import type { DailyMeal } from '../types';
 
 interface DayOverviewProps {
