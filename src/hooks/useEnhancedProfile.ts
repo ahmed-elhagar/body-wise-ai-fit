@@ -28,6 +28,7 @@ export const useEnhancedProfile = () => {
     allergies: [],
     preferred_foods: [],
     dietary_restrictions: [],
+    special_conditions: [],
   });
 
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
@@ -51,6 +52,7 @@ export const useEnhancedProfile = () => {
         allergies: profile.allergies || [],
         preferred_foods: profile.preferred_foods || [],
         dietary_restrictions: profile.dietary_restrictions || [],
+        special_conditions: profile.special_conditions || [],
       }));
     }
   }, [profile]);
@@ -143,6 +145,7 @@ export const useEnhancedProfile = () => {
         allergies: formData.allergies,
         preferred_foods: formData.preferred_foods,
         dietary_restrictions: formData.dietary_restrictions,
+        special_conditions: formData.special_conditions,
       };
       
       await updateProfile(profileData);

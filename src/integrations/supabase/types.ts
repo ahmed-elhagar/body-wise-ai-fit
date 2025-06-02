@@ -983,6 +983,7 @@ export type Database = {
           profile_completion_score: number | null
           profile_visibility: string | null
           role: Database["public"]["Enums"]["user_role"] | null
+          special_conditions: Json | null
           timezone: string | null
           updated_at: string | null
           weight: number | null
@@ -1019,6 +1020,7 @@ export type Database = {
           profile_completion_score?: number | null
           profile_visibility?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
+          special_conditions?: Json | null
           timezone?: string | null
           updated_at?: string | null
           weight?: number | null
@@ -1055,6 +1057,7 @@ export type Database = {
           profile_completion_score?: number | null
           profile_visibility?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
+          special_conditions?: Json | null
           timezone?: string | null
           updated_at?: string | null
           weight?: number | null

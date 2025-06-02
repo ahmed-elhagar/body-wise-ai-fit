@@ -29,6 +29,7 @@ interface UserProfile {
   pregnancy_trimester?: number;
   breastfeeding_level?: string;
   condition_start_date?: string;
+  special_conditions?: any[];
   created_at?: string;
   updated_at?: string;
 }
