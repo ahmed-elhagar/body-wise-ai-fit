@@ -9,6 +9,8 @@ export const useAIFoodAnalysis = () => {
   const { user } = useAuth();
   const { checkAndUseCreditAsync, completeGenerationAsync } = useCreditSystem();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const [error, setError] = useState<any>(null);
 
   const analyzeFood = async (imageFile: File) => {
     if (!user?.id) {
@@ -24,6 +26,7 @@ export const useAIFoodAnalysis = () => {
     }
 
     setIsAnalyzing(true);
+    setError(null);
     
     try {
       console.log('🔍 Analyzing food image with AI');
@@ -39,11 +42,13 @@ export const useAIFoodAnalysis = () => {
 
       if (error) {
         console.error('❌ Food analysis error:', error);
+        setError(error);
         throw error;
       }
 
       if (data?.success) {
         console.log('✅ Food analysis completed successfully');
+        setAnalysisResult(data);
         
         // Complete the generation process
         await completeGenerationAsync();
@@ -55,6 +60,7 @@ export const useAIFoodAnalysis = () => {
       }
     } catch (error) {
       console.error('❌ Food analysis failed:', error);
+      setError(error);
       toast.error('Failed to analyze food');
       throw error;
     } finally {
@@ -64,6 +70,8 @@ export const useAIFoodAnalysis = () => {
 
   return {
     isAnalyzing,
+    analysisResult,
+    error,
     analyzeFood
   };
 };

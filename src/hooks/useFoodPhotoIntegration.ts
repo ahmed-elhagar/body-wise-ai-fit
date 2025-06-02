@@ -58,7 +58,7 @@ export const useFoodPhotoIntegration = () => {
       } else {
         throw new Error(data?.error || 'Analysis failed');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Food photo analysis failed:', error);
       setError(error.message);
       toast.error('Failed to analyze food photo');
@@ -113,7 +113,7 @@ export const useFoodPhotoIntegration = () => {
 
       console.log('✅ Food logged successfully');
       toast.success('Food added to log!');
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Food logging failed:', error);
       toast.error('Failed to log food');
       throw error;
