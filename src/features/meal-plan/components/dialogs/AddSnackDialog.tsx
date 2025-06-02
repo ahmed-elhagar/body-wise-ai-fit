@@ -142,7 +142,7 @@ export const AddSnackDialog = ({
         <DialogHeader>
           <DialogTitle className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
             <Plus className="w-5 h-5 text-green-600" />
-            {t('mealPlan.addSnack.title') || `Add Snack - Day ${selectedDay}`}
+            {t('mealPlan.addSnack.title') || 'Add Snack'} - {t('mealPlan.day') || 'Day'} {selectedDay}
           </DialogTitle>
         </DialogHeader>
         

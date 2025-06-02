@@ -1,14 +1,12 @@
 
 import React from 'react';
 import { useMealPlanPage } from '@/hooks/useMealPlanPage';
-import { UnifiedNavigation } from './navigation/UnifiedNavigation';
 import { DayOverview } from './DayOverview';
 import { EmptyWeekState } from './EmptyWeekState';
 import { AIGenerationDialog } from './dialogs/AIGenerationDialog';
 import { AddSnackDialog } from './dialogs/AddSnackDialog';
 import { ExchangeDialog } from './dialogs/ExchangeDialog';
 import { RecipeDialog } from './dialogs/RecipeDialog';
-import { CompactDailyProgress } from './CompactDailyProgress';
 import EnhancedLoadingIndicator from '@/components/ui/enhanced-loading-indicator';
 import type { DailyMeal } from '@/hooks/useMealPlanData';
 
@@ -111,28 +109,6 @@ export const MealPlanContainer = () => {
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-4">
-      {/* Navigation */}
-      <UnifiedNavigation
-        currentWeekOffset={currentWeekOffset}
-        setCurrentWeekOffset={setCurrentWeekOffset}
-        selectedDayNumber={selectedDayNumber}
-        setSelectedDayNumber={setSelectedDayNumber}
-        weekStartDate={weekStartDate}
-        onGenerateAI={openAIDialog}
-        isGenerating={isGenerating}
-        hasWeeklyPlan={!!currentWeekPlan?.weeklyPlan}
-        remainingCredits={userCredits || 0}
-      />
-
-      {/* Only show compact daily progress at the top */}
-      {currentWeekPlan?.weeklyPlan && (
-        <CompactDailyProgress
-          totalCalories={totalCalories || 0}
-          totalProtein={totalProtein || 0}
-          targetDayCalories={targetDayCalories || 2000}
-        />
-      )}
-
       {/* Main Content */}
       {currentWeekPlan?.weeklyPlan ? (
         <DayOverview
@@ -147,6 +123,9 @@ export const MealPlanContainer = () => {
           weekStartDate={weekStartDate}
           weeklyPlan={currentWeekPlan}
           showAddSnackButton={true}
+          currentWeekOffset={currentWeekOffset}
+          setCurrentWeekOffset={setCurrentWeekOffset}
+          setSelectedDayNumber={setSelectedDayNumber}
         />
       ) : (
         <EmptyWeekState
