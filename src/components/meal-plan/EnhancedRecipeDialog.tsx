@@ -3,11 +3,12 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Clock, Users, ChefHat, Sparkles, Youtube, Camera } from "lucide-react";
+import { ChefHat, Sparkles, Youtube, Camera } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { RecipeNutritionCard } from "./recipe/RecipeNutritionCard";
+import { RecipeDetailsCard } from "./recipe/RecipeDetailsCard";
 import type { DailyMeal } from "@/features/meal-plan/types";
 
 interface EnhancedRecipeDialogProps {
@@ -156,64 +157,8 @@ export const EnhancedRecipeDialog = ({
 
           {/* Meal Info Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Nutrition Info */}
-            <Card>
-              <CardContent className="p-4">
-                <h3 className="font-semibold mb-3">Nutrition Information</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-green-50 p-3 rounded text-center">
-                    <span className="font-bold text-green-600">{meal.calories}</span>
-                    <div className="text-sm text-gray-600">calories</div>
-                  </div>
-                  <div className="bg-blue-50 p-3 rounded text-center">
-                    <span className="font-bold text-blue-600">{meal.protein}g</span>
-                    <div className="text-sm text-gray-600">protein</div>
-                  </div>
-                  <div className="bg-orange-50 p-3 rounded text-center">
-                    <span className="font-bold text-orange-600">{meal.carbs}g</span>
-                    <div className="text-sm text-gray-600">carbs</div>
-                  </div>
-                  <div className="bg-yellow-50 p-3 rounded text-center">
-                    <span className="font-bold text-yellow-600">{meal.fat}g</span>
-                    <div className="text-sm text-gray-600">fat</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Meal Details */}
-            <Card>
-              <CardContent className="p-4">
-                <h3 className="font-semibold mb-3">Meal Details</h3>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Meal Type:</span>
-                    <Badge className="capitalize">{meal.meal_type}</Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Prep Time:</span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" />
-                      {meal.prep_time || 0} min
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Cook Time:</span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" />
-                      {meal.cook_time || 0} min
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Servings:</span>
-                    <span className="flex items-center gap-1">
-                      <Users className="w-4 h-4" />
-                      {meal.servings || 1}
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <RecipeNutritionCard meal={meal} />
+            <RecipeDetailsCard meal={meal} />
           </div>
 
           {/* Ingredients */}

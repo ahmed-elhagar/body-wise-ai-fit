@@ -18,7 +18,7 @@ export const useEnhancedShoppingList = (weeklyPlan?: {
   const enhancedShoppingItems = useMemo(() => {
     console.log('🛒 Computing enhanced shopping list...', { 
       hasWeeklyPlan: !!weeklyPlan,
-      mealsCount: weeklyPlan?.dailyMeals && Array.isArray(weeklyPlan.dailyMeals) ? weeklyPlan.dailyMeals.length : 0
+      mealsCount: weeklyPlan?.dailyMeals ? weeklyPlan.dailyMeals.length : 0
     });
     
     if (!weeklyPlan?.dailyMeals || !Array.isArray(weeklyPlan.dailyMeals)) {

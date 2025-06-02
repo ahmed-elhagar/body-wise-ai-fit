@@ -3,9 +3,10 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ArrowLeftRight, Sparkles, Clock, Users } from "lucide-react";
+import { ArrowLeftRight, Sparkles } from "lucide-react";
 import { useEnhancedMealExchange } from "@/hooks/useEnhancedMealExchange";
+import { ExchangeCurrentMealCard } from "@/components/meal-plan/exchange/ExchangeCurrentMealCard";
+import { ExchangeAlternativeCard } from "@/components/meal-plan/exchange/ExchangeAlternativeCard";
 import type { DailyMeal } from "@/features/meal-plan/types";
 
 interface MealExchangeDialogProps {
@@ -82,41 +83,7 @@ const MealExchangeDialog = ({ isOpen, onClose, currentMeal, onExchange }: MealEx
 
         <div className="space-y-4">
           {/* Current Meal Info */}
-          <Card>
-            <CardContent className="p-4">
-              <h3 className="font-semibold mb-2">Current Meal</h3>
-              <p className="mb-3">{currentMeal.name}</p>
-              
-              <div className="flex flex-wrap gap-2 mb-3">
-                <Badge>
-                  <Clock className="w-3 h-3 mr-1" />
-                  {(currentMeal.prep_time || 0) + (currentMeal.cook_time || 0)} min
-                </Badge>
-                <Badge>
-                  <Users className="w-3 h-3 mr-1" />
-                  {currentMeal.servings || 1} serving{(currentMeal.servings || 1) !== 1 ? 's' : ''}
-                </Badge>
-                <Badge>
-                  {currentMeal.calories || 0} cal
-                </Badge>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2 text-xs">
-                <div className="bg-gray-50 p-2 rounded text-center">
-                  <span className="font-medium text-green-600">{currentMeal.protein || 0}g</span>
-                  <div className="text-gray-600">protein</div>
-                </div>
-                <div className="bg-gray-50 p-2 rounded text-center">
-                  <span className="font-medium text-blue-600">{currentMeal.carbs || 0}g</span>
-                  <div className="text-gray-600">carbs</div>
-                </div>
-                <div className="bg-gray-50 p-2 rounded text-center">
-                  <span className="font-medium text-yellow-600">{currentMeal.fat || 0}g</span>
-                  <div className="text-gray-600">fat</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <ExchangeCurrentMealCard meal={currentMeal} />
 
           {/* Generate Alternatives Button */}
           {alternatives.length === 0 && (
@@ -147,32 +114,14 @@ const MealExchangeDialog = ({ isOpen, onClose, currentMeal, onExchange }: MealEx
             <div className="space-y-3">
               <h3 className="font-semibold">Alternative Meals:</h3>
               {alternatives.map((alternative, index) => (
-                <Card key={index} className="cursor-pointer hover:bg-gray-50" onClick={() => setSelectedAlternative(alternative)}>
-                  <CardContent className="p-4">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <h4 className="font-medium">{alternative.name}</h4>
-                        <p className="text-sm text-gray-600 mt-1">{alternative.reason}</p>
-                        <div className="flex gap-4 mt-2 text-sm">
-                          <span>{alternative.calories} cal</span>
-                          <span>{alternative.protein}g protein</span>
-                          <span>{alternative.carbs}g carbs</span>
-                          <span>{alternative.fat}g fat</span>
-                        </div>
-                      </div>
-                      <Button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleExchange(alternative);
-                        }}
-                        disabled={isExchanging}
-                        size="sm"
-                      >
-                        {isExchanging ? 'Exchanging...' : 'Select'}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                <ExchangeAlternativeCard
+                  key={index}
+                  alternative={alternative}
+                  index={index}
+                  isExchanging={isExchanging}
+                  onSelect={handleExchange}
+                  onExpand={setSelectedAlternative}
+                />
               ))}
             </div>
           )}
