@@ -171,7 +171,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     
     let mounted = true;
     
-    // Set up auth state listener
+    // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!mounted) return;
@@ -194,7 +194,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setError(err);
         }
         
-        // CRITICAL: Always set loading to false after any auth state change
+        // CRITICAL: Always set loading to false after processing auth state change
         if (mounted) {
           console.log('Setting isLoading to false after auth state change');
           setIsLoading(false);
@@ -202,7 +202,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     );
 
-    // Get initial session
+    // Get initial session after setting up listener
     const getInitialSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
@@ -225,7 +225,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.error('Error in getInitialSession:', error);
         setError(error);
       } finally {
-        // CRITICAL: Always set loading to false
+        // CRITICAL: Always set loading to false after initial check
         if (mounted) {
           console.log('Setting isLoading to false after initial session check');
           setIsLoading(false);
