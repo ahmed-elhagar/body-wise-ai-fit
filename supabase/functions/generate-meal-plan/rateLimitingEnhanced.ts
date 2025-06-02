@@ -55,13 +55,13 @@ export const enhancedRateLimiting = {
 
     console.log('💸 Using credit for user:', userId, 'type:', generationType);
 
-    // Create generation log entry with 'pending' status (which should be allowed)
+    // Create generation log entry with 'pending' status
     const { data: logEntry, error: logError } = await supabase
       .from('ai_generation_logs')
       .insert({
         user_id: userId,
         generation_type: generationType,
-        status: 'pending', // Changed from 'started' to 'pending'
+        status: 'pending',
         prompt_data: metadata,
         credits_used: 1
       })
@@ -86,11 +86,19 @@ export const enhancedRateLimiting = {
 
     // Only decrement credits for non-pro users
     if (!isPro) {
+      // Get current credits first
+      const { data: currentProfile } = await supabase
+        .from('profiles')
+        .select('ai_generations_remaining')
+        .eq('id', userId)
+        .single();
+
+      const currentCredits = currentProfile?.ai_generations_remaining || 0;
+      const newCredits = Math.max(currentCredits - 1, 0);
+
       const { error: creditError } = await supabase
         .from('profiles')
-        .update({
-          ai_generations_remaining: supabase.sql`GREATEST(ai_generations_remaining - 1, 0)`
-        })
+        .update({ ai_generations_remaining: newCredits })
         .eq('id', userId);
 
       if (creditError) {

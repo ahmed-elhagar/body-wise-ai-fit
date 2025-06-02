@@ -17,14 +17,22 @@ export const useEnhancedAIMealPlan = () => {
 
   const generateEnhancedMealPlan = async (preferences: MealPlanPreferences, options?: { weekOffset?: number }): Promise<boolean> => {
     if (!user?.id || !profile) {
-      toast.error('User profile not found');
+      toast.error(
+        language === 'ar' 
+          ? 'الملف الشخصي غير موجود'
+          : 'User profile not found'
+      );
       return false;
     }
 
     // Check credits
     const remainingCredits = profile.ai_generations_remaining || 0;
     if (remainingCredits <= 0) {
-      toast.error('No AI generations remaining. Please upgrade your plan.');
+      toast.error(
+        language === 'ar' 
+          ? 'لا توجد أرصدة ذكاء اصطناعي متبقية'
+          : 'No AI generations remaining. Please upgrade your plan.'
+      );
       return false;
     }
 
@@ -98,7 +106,12 @@ export const useEnhancedAIMealPlan = () => {
 
       if (error) {
         console.error('❌ Error generating enhanced meal plan:', error);
-        toast.error(error.message || 'Failed to generate meal plan');
+        const errorMessage = error.message || 'Failed to generate meal plan';
+        toast.error(
+          language === 'ar' 
+            ? 'فشل في إنشاء خطة الوجبات'
+            : errorMessage
+        );
         return false;
       }
 
@@ -133,13 +146,22 @@ export const useEnhancedAIMealPlan = () => {
         return true;
       } else {
         console.error('❌ Enhanced generation failed:', data?.error);
-        toast.error(data?.error || 'Failed to generate meal plan');
+        toast.error(
+          language === 'ar' 
+            ? 'فشل في إنشاء خطة الوجبات'
+            : data?.error || 'Failed to generate meal plan'
+        );
         return false;
       }
 
     } catch (error: any) {
       console.error('❌ Exception during enhanced meal plan generation:', error);
-      toast.error(error.message || 'Failed to generate meal plan');
+      const errorMessage = error.message || 'Failed to generate meal plan';
+      toast.error(
+        language === 'ar' 
+          ? 'فشل في إنشاء خطة الوجبات'
+          : errorMessage
+      );
       return false;
     } finally {
       setIsGenerating(false);

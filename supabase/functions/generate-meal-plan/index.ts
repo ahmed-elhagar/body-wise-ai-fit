@@ -49,7 +49,7 @@ serve(async (req) => {
       language: preferences?.language
     });
     
-    // Initialize AI Service
+    // Check for OpenAI API key
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     
     if (!openAIApiKey) {
@@ -60,6 +60,7 @@ serve(async (req) => {
       );
     }
 
+    // Initialize AI Service
     const aiService = new AIService(openAIApiKey);
 
     console.log('🌐 Enhanced Language Configuration:', { 
@@ -275,16 +276,17 @@ const generateAIMealPlan = async (
   nutritionContext: any,
   aiService: AIService
 ) => {
-  const systemPrompt = language === 'ar' 
-    ? 'أنت خبير تغذية مُحترف بالذكاء الاصطناعي متخصص في التغذية لمراحل الحياة المختلفة مع الوعي المتقدم بالحالات الصحية.'
-    : 'You are a professional nutritionist AI specialized in life-phase nutrition with advanced health condition awareness.';
+  try {
+    const systemPrompt = language === 'ar' 
+      ? 'أنت خبير تغذية مُحترف بالذكاء الاصطناعي متخصص في التغذية لمراحل الحياة المختلفة مع الوعي المتقدم بالحالات الصحية.'
+      : 'You are a professional nutritionist AI specialized in life-phase nutrition with advanced health condition awareness.';
 
-  // Use enhanced prompt generator
-  const basePrompt = generateEnhancedMealPlanPrompt(userProfile, preferences, adjustedDailyCalories, includeSnacks);
-  const enhancedPrompt = enhancePromptWithLifePhase(basePrompt, nutritionContext, language);
+    // Use enhanced prompt generator
+    const basePrompt = generateEnhancedMealPlanPrompt(userProfile, preferences, adjustedDailyCalories, includeSnacks);
+    const enhancedPrompt = enhancePromptWithLifePhase(basePrompt, nutritionContext, language);
 
-  // Add explicit JSON format instruction
-  const jsonFormatPrompt = enhancedPrompt + `
+    // Add explicit JSON format instruction
+    const jsonFormatPrompt = enhancedPrompt + `
 
 CRITICAL: Return ONLY valid JSON in this exact format:
 {
@@ -314,28 +316,39 @@ CRITICAL: Return ONLY valid JSON in this exact format:
 For ${includeSnacks ? '5 meals per day: breakfast, snack1, lunch, snack2, dinner' : '3 meals per day: breakfast, lunch, dinner'}.
 Total daily calories should be approximately ${adjustedDailyCalories}.`;
 
-  console.log('🤖 Sending enhanced request to AI Service...');
-  
-  const response = await aiService.generate('meal-plan', {
-    messages: [
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: jsonFormatPrompt }
-    ],
-    temperature: 0.1,
-    maxTokens: 8000
-  });
+    console.log('🤖 Sending enhanced request to AI Service...');
+    
+    const response = await aiService.generate('meal-plan', {
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: jsonFormatPrompt }
+      ],
+      temperature: 0.1,
+      maxTokens: 8000
+    });
 
-  console.log('✅ AI Service response received successfully');
-  
-  // Parse and clean response with enhanced validation
-  const content = response.content.trim();
-  const cleanedContent = content
-    .replace(/```json\n?/g, '')
-    .replace(/```\n?/g, '')
-    .trim();
-  
-  try {
-    const parsedPlan = JSON.parse(cleanedContent);
+    console.log('✅ AI Service response received successfully');
+    
+    // Parse and clean response with enhanced validation
+    const content = response.content.trim();
+    const cleanedContent = content
+      .replace(/```json\n?/g, '')
+      .replace(/```\n?/g, '')
+      .trim();
+    
+    let parsedPlan;
+    try {
+      parsedPlan = JSON.parse(cleanedContent);
+    } catch (parseError) {
+      console.error('Failed to parse AI response:', parseError);
+      console.error('Raw response content:', content);
+      throw new MealPlanError(
+        'Invalid AI response format',
+        errorCodes.AI_GENERATION_FAILED,
+        500,
+        true
+      );
+    }
     
     // Validate and sanitize the plan
     if (parsedPlan.days && Array.isArray(parsedPlan.days)) {
@@ -350,11 +363,10 @@ Total daily calories should be approximately ${adjustedDailyCalories}.`;
     }
     
     return parsedPlan;
-  } catch (parseError) {
-    console.error('Failed to parse AI response:', parseError);
-    console.error('Raw response content:', content);
+  } catch (error) {
+    console.error('❌ AI meal plan generation failed:', error);
     throw new MealPlanError(
-      'Invalid AI response format',
+      `AI generation failed: ${error.message}`,
       errorCodes.AI_GENERATION_FAILED,
       500,
       true

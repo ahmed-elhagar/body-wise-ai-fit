@@ -1,48 +1,53 @@
 
 export const calculateDailyCalories = (userProfile: any): number => {
-  if (!userProfile.age || !userProfile.weight || !userProfile.height || !userProfile.gender) {
-    return 2000; // Default fallback
-  }
-
-  // Mifflin-St Jeor Equation
+  const { age, weight, height, gender, activity_level, fitness_goal } = userProfile;
+  
+  // Harris-Benedict equation for BMR
   let bmr: number;
-  if (userProfile.gender === 'male') {
-    bmr = 10 * userProfile.weight + 6.25 * userProfile.height - 5 * userProfile.age + 5;
+  if (gender === 'male') {
+    bmr = 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age);
   } else {
-    bmr = 10 * userProfile.weight + 6.25 * userProfile.height - 5 * userProfile.age - 161;
+    bmr = 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age);
   }
-
-  // Activity level multipliers
-  const activityMultipliers = {
+  
+  // Activity multipliers
+  const activityMultipliers: { [key: string]: number } = {
     'sedentary': 1.2,
     'lightly_active': 1.375,
     'moderately_active': 1.55,
     'very_active': 1.725,
-    'extra_active': 1.9
+    'extremely_active': 1.9
   };
-
-  const activityLevel = userProfile.activity_level || 'moderately_active';
-  const multiplier = activityMultipliers[activityLevel as keyof typeof activityMultipliers] || 1.55;
-
-  return Math.round(bmr * multiplier);
+  
+  const activityMultiplier = activityMultipliers[activity_level] || 1.55;
+  let tdee = bmr * activityMultiplier;
+  
+  // Adjust for fitness goals
+  if (fitness_goal === 'weight_loss') {
+    tdee *= 0.85; // 15% deficit
+  } else if (fitness_goal === 'weight_gain' || fitness_goal === 'muscle_gain') {
+    tdee *= 1.1; // 10% surplus
+  }
+  
+  return Math.round(tdee);
 };
 
 export const calculateLifePhaseAdjustments = (userProfile: any): number => {
-  let extraCalories = 0;
-
+  let adjustments = 0;
+  
   // Pregnancy adjustments
   if (userProfile.pregnancy_trimester === 2) {
-    extraCalories += 340;
+    adjustments += 340;
   } else if (userProfile.pregnancy_trimester === 3) {
-    extraCalories += 450;
+    adjustments += 450;
   }
-
+  
   // Breastfeeding adjustments
   if (userProfile.breastfeeding_level === 'exclusive') {
-    extraCalories += 400;
+    adjustments += 400;
   } else if (userProfile.breastfeeding_level === 'partial') {
-    extraCalories += 250;
+    adjustments += 250;
   }
-
-  return extraCalories;
+  
+  return adjustments;
 };
