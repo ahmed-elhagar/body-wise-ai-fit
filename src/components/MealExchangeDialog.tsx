@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -5,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeftRight, Sparkles, Clock, Users } from "lucide-react";
 import { useEnhancedMealExchange } from "@/hooks/useEnhancedMealExchange";
-import type { DailyMeal } from "@/hooks/meal-plan/types";
+import type { DailyMeal } from "@/features/meal-plan/types";
 
 interface MealExchangeDialogProps {
   isOpen: boolean;
@@ -27,52 +28,40 @@ const MealExchangeDialog = ({ isOpen, onClose, currentMeal, onExchange }: MealEx
 
   const handleGenerateAlternatives = async () => {
     console.log('🔄 Generating alternatives for meal:', currentMeal.name);
-    // Convert DailyMeal to Meal format for the hook
+    // Convert DailyMeal to format expected by the hook
     const mealForHook = {
       id: currentMeal.id,
-      type: currentMeal.meal_type,
-      meal_type: currentMeal.meal_type,
-      time: "12:00",
       name: currentMeal.name,
+      meal_type: currentMeal.meal_type,
       calories: currentMeal.calories || 0,
       protein: currentMeal.protein || 0,
       carbs: currentMeal.carbs || 0,
       fat: currentMeal.fat || 0,
       ingredients: currentMeal.ingredients || [],
       instructions: currentMeal.instructions || [],
-      cookTime: currentMeal.cook_time || 0,
-      prepTime: currentMeal.prep_time || 0,
-      servings: currentMeal.servings || 1,
-      image: currentMeal.image_url || "",
-      imageUrl: currentMeal.image_url,
-      image_url: currentMeal.image_url,
-      youtube_search_term: currentMeal.youtube_search_term
+      prep_time: currentMeal.prep_time || 0,
+      cook_time: currentMeal.cook_time || 0,
+      servings: currentMeal.servings || 1
     };
     await generateMealAlternatives(mealForHook);
   };
 
   const handleExchange = async (alternative: any) => {
     console.log('🔄 Exchanging meal with alternative:', alternative.name);
-    // Convert DailyMeal to Meal format for the hook
+    // Convert DailyMeal to format expected by the hook
     const mealForHook = {
       id: currentMeal.id,
-      type: currentMeal.meal_type,
-      meal_type: currentMeal.meal_type,
-      time: "12:00",
       name: currentMeal.name,
+      meal_type: currentMeal.meal_type,
       calories: currentMeal.calories || 0,
       protein: currentMeal.protein || 0,
       carbs: currentMeal.carbs || 0,
       fat: currentMeal.fat || 0,
       ingredients: currentMeal.ingredients || [],
       instructions: currentMeal.instructions || [],
-      cookTime: currentMeal.cook_time || 0,
-      prepTime: currentMeal.prep_time || 0,
-      servings: currentMeal.servings || 1,
-      image: currentMeal.image_url || "",
-      imageUrl: currentMeal.image_url,
-      image_url: currentMeal.image_url,
-      youtube_search_term: currentMeal.youtube_search_term
+      prep_time: currentMeal.prep_time || 0,
+      cook_time: currentMeal.cook_time || 0,
+      servings: currentMeal.servings || 1
     };
     const success = await exchangeMeal(mealForHook, alternative);
     if (success) {
@@ -83,7 +72,7 @@ const MealExchangeDialog = ({ isOpen, onClose, currentMeal, onExchange }: MealEx
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh]">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ArrowLeftRight className="w-5 h-5" />

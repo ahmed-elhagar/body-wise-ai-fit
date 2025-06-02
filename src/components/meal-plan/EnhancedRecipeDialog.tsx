@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ChefHat, Clock, Users, Utensils, Youtube, ExternalLink, Sparkles, ImageIcon } from "lucide-react";
-import { useLanguage } from '@/contexts/LanguageContext';
-import { useEnhancedMealRecipe } from '@/hooks/useEnhancedMealRecipe';
-import { toast } from 'sonner';
-import EnhancedLoadingIndicator from '@/components/ui/enhanced-loading-indicator';
-import type { DailyMeal } from '@/features/meal-plan/types';
+import { Clock, Users, ChefHat, Sparkles, Youtube, Camera } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
+import type { DailyMeal } from "@/features/meal-plan/types";
 
 interface EnhancedRecipeDialogProps {
   isOpen: boolean;
@@ -16,269 +17,307 @@ interface EnhancedRecipeDialogProps {
   onRecipeUpdated?: () => void;
 }
 
-export const EnhancedRecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }: EnhancedRecipeDialogProps) => {
-  const { t, isRTL } = useLanguage();
-  const { generateEnhancedRecipe, isGeneratingRecipe } = useEnhancedMealRecipe();
-  const [currentMeal, setCurrentMeal] = useState<DailyMeal | null>(meal);
-  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+export const EnhancedRecipeDialog = ({ 
+  isOpen, 
+  onClose, 
+  meal, 
+  onRecipeUpdated 
+}: EnhancedRecipeDialogProps) => {
+  const { user } = useAuth();
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationStep, setGenerationStep] = useState('');
 
-  useEffect(() => {
-    setCurrentMeal(meal);
-  }, [meal]);
+  if (!meal) return null;
 
-  const handleGenerateFullRecipe = async () => {
-    if (!currentMeal?.id) return;
+  const handleGenerateRecipe = async () => {
+    if (!user || !meal) return;
 
+    setIsGenerating(true);
+    
     try {
-      console.log('🍳 Generating full recipe for meal:', currentMeal.id);
-      const updatedMeal = await generateEnhancedRecipe(currentMeal.id, currentMeal);
+      // Step 1: Analyzing ingredients
+      setGenerationStep('analyzing');
+      console.log('🔍 Step 1: Analyzing ingredients and nutrition...');
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
-      if (updatedMeal) {
-        // Properly convert the database response to our DailyMeal type
-        const convertedMeal: DailyMeal = {
-          ...currentMeal,
-          meal_type: (updatedMeal.meal_type as 'breakfast' | 'lunch' | 'dinner' | 'snack1' | 'snack2') || currentMeal.meal_type,
-          ingredients: Array.isArray(updatedMeal.ingredients) 
-            ? updatedMeal.ingredients 
-            : typeof updatedMeal.ingredients === 'string'
-              ? JSON.parse(updatedMeal.ingredients)
-              : [],
-          instructions: Array.isArray(updatedMeal.instructions)
-            ? updatedMeal.instructions
-            : typeof updatedMeal.instructions === 'string'
-              ? JSON.parse(updatedMeal.instructions)
-              : [],
-          alternatives: Array.isArray(updatedMeal.alternatives)
-            ? updatedMeal.alternatives
-            : typeof updatedMeal.alternatives === 'string'
-              ? JSON.parse(updatedMeal.alternatives)
-              : [],
-          youtube_search_term: updatedMeal.youtube_search_term || currentMeal.youtube_search_term,
-          image_url: updatedMeal.image_url || currentMeal.image_url,
-          recipe_fetched: true
-        };
-        
-        setCurrentMeal(convertedMeal);
-        onRecipeUpdated?.();
-        toast.success('Recipe generated successfully!');
+      // Step 2: Finding perfect recipe
+      setGenerationStep('finding');
+      console.log('📚 Step 2: Finding perfect recipe...');
+      await new Promise(resolve => setTimeout(resolve, 1200));
+
+      // Step 3: Generating instructions
+      setGenerationStep('generating');
+      console.log('📝 Step 3: Generating cooking instructions...');
+      
+      const { data, error } = await supabase.functions.invoke('generate-meal-recipe', {
+        body: {
+          meal: {
+            id: meal.id,
+            name: meal.name,
+            meal_type: meal.meal_type,
+            calories: meal.calories,
+            protein: meal.protein,
+            carbs: meal.carbs,
+            fat: meal.fat,
+            ingredients: meal.ingredients,
+            servings: meal.servings
+          },
+          userId: user.id,
+          enhance: true
+        }
+      });
+
+      if (error) {
+        console.error('❌ Recipe generation error:', error);
+        throw error;
       }
-    } catch (error) {
-      console.error('Error generating recipe:', error);
-      toast.error('Failed to generate recipe');
+
+      if (data?.success) {
+        console.log('✅ Recipe generated successfully!', data);
+        toast.success('Recipe generated successfully!');
+        
+        if (onRecipeUpdated) {
+          onRecipeUpdated();
+        }
+      } else {
+        console.error('❌ Recipe generation failed:', data);
+        throw new Error(data?.error || 'Failed to generate recipe');
+      }
+      
+    } catch (error: any) {
+      console.error('❌ Error generating recipe:', error);
+      toast.error(error.message || 'Failed to generate recipe');
+    } finally {
+      setIsGenerating(false);
+      setGenerationStep('');
     }
   };
 
   const handleGenerateImage = async () => {
-    if (!currentMeal?.id) return;
+    if (!user || !meal) return;
 
-    setIsGeneratingImage(true);
     try {
-      console.log('🖼️ Generating image for meal:', currentMeal.id);
-      
-      const response = await fetch('/api/generate-meal-image', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          mealId: currentMeal.id,
-          mealName: currentMeal.name,
-          description: currentMeal.instructions?.[0] || `Delicious ${currentMeal.name}`
-        })
+      toast.loading('Generating meal image...', { duration: 10000 });
+
+      const { data, error } = await supabase.functions.invoke('generate-meal-image', {
+        body: {
+          mealId: meal.id,
+          mealName: meal.name,
+          ingredients: meal.ingredients.map(ing => ing.name).join(', '),
+          userId: user.id
+        }
       });
 
-      const { data, error } = await response.json();
+      toast.dismiss();
 
-      if (error) throw new Error(error);
-
-      if (data?.imageUrl) {
-        setCurrentMeal(prev => prev ? { ...prev, image_url: data.imageUrl } : null);
-        onRecipeUpdated?.();
-        toast.success('Image generated successfully!');
+      if (error) {
+        console.error('❌ Image generation error:', error);
+        throw error;
       }
-    } catch (error) {
-      console.error('Error generating image:', error);
-      toast.error('Failed to generate image');
-    } finally {
-      setIsGeneratingImage(false);
+
+      if (data?.success) {
+        console.log('✅ Image generated successfully!');
+        toast.success('Meal image generated!');
+        
+        if (onRecipeUpdated) {
+          onRecipeUpdated();
+        }
+      } else {
+        throw new Error(data?.error || 'Failed to generate image');
+      }
+      
+    } catch (error: any) {
+      console.error('❌ Error generating image:', error);
+      toast.error(error.message || 'Failed to generate image');
     }
   };
-
-  const handleYouTubeSearch = () => {
-    if (!currentMeal) return;
-    
-    const searchTerm = currentMeal.youtube_search_term || `${currentMeal.name} recipe tutorial`;
-    const youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(searchTerm)}`;
-    window.open(youtubeUrl, '_blank');
-  };
-
-  if (!currentMeal) return null;
-
-  const hasFullRecipe = currentMeal.ingredients && 
-                       Array.isArray(currentMeal.ingredients) && 
-                       currentMeal.ingredients.length > 0 && 
-                       currentMeal.instructions && 
-                       Array.isArray(currentMeal.instructions) && 
-                       currentMeal.instructions.length > 0;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <ChefHat className="w-5 h-5" />
-            {currentMeal.name}
+          <DialogTitle className="flex items-center gap-2 text-xl">
+            <ChefHat className="w-6 h-6" />
+            {meal.name}
           </DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-6">
           {/* Meal Image */}
-          <div className="relative">
-            {currentMeal.image_url ? (
-              <div className="w-full h-48 rounded-lg overflow-hidden">
-                <img 
-                  src={currentMeal.image_url} 
-                  alt={currentMeal.name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            ) : (
-              <div className="w-full h-48 bg-gray-100 rounded-lg flex items-center justify-center">
-                <div className="text-center">
-                  <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                  <p className="text-gray-500 text-sm">No image available</p>
-                </div>
-              </div>
-            )}
-            
-            {/* Generate Image Button */}
-            <Button
-              onClick={handleGenerateImage}
-              disabled={isGeneratingImage}
-              size="sm"
-              className="absolute top-2 right-2 bg-blue-600 hover:bg-blue-700"
-            >
-              {isGeneratingImage ? (
-                <EnhancedLoadingIndicator status="loading" type="general" size="sm" />
-              ) : (
-                <>
-                  <Sparkles className="w-3 h-3 mr-1" />
-                  Generate Image
-                </>
-              )}
-            </Button>
-          </div>
-
-          {/* Basic Info */}
-          <div className={`flex flex-wrap gap-4 text-sm ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <div className={`flex items-center gap-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <Clock className="w-4 h-4" />
-              <span>{(currentMeal.prep_time || 0) + (currentMeal.cook_time || 0)} min</span>
-            </div>
-            <div className={`flex items-center gap-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <Users className="w-4 h-4" />
-              <span>{currentMeal.servings} servings</span>
-            </div>
-            <div className={`flex items-center gap-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <Utensils className="w-4 h-4" />
-              <span className="capitalize">{currentMeal.meal_type}</span>
-            </div>
-          </div>
-
-          {/* Nutrition Info */}
-          <div className="grid grid-cols-4 gap-4 bg-gray-50 rounded-lg p-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-orange-600">{currentMeal.calories}</div>
-              <div className="text-sm text-gray-600">Calories</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{currentMeal.protein}g</div>
-              <div className="text-sm text-gray-600">Protein</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">{currentMeal.carbs || 0}g</div>
-              <div className="text-sm text-gray-600">Carbs</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-yellow-600">{currentMeal.fat || 0}g</div>
-              <div className="text-sm text-gray-600">Fat</div>
-            </div>
-          </div>
-
-          {/* Generate Full Recipe Button */}
-          {!hasFullRecipe && (
-            <div className="text-center py-4 bg-purple-50 rounded-lg border border-purple-200">
-              <h3 className="font-semibold mb-2 text-purple-800">Generate Full Recipe</h3>
-              <p className="text-sm text-purple-600 mb-4">
-                Get detailed ingredients and step-by-step instructions with AI
-              </p>
-              <Button
-                onClick={handleGenerateFullRecipe}
-                disabled={isGeneratingRecipe}
-                className="bg-purple-600 hover:bg-purple-700"
-              >
-                {isGeneratingRecipe ? (
-                  <EnhancedLoadingIndicator status="loading" type="general" size="sm" />
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    Generate Full Recipe
-                  </>
-                )}
-              </Button>
+          {meal.image_url && (
+            <div className="relative">
+              <img 
+                src={meal.image_url} 
+                alt={meal.name}
+                className="w-full h-64 object-cover rounded-lg"
+              />
             </div>
           )}
 
-          {/* Ingredients */}
-          {hasFullRecipe && currentMeal.ingredients && currentMeal.ingredients.length > 0 && (
-            <div>
-              <h3 className="font-semibold mb-3">Ingredients</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {currentMeal.ingredients.map((ingredient, index) => (
-                  <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                    <span>{ingredient.name}</span>
-                    <span className="text-sm text-gray-600">
-                      {ingredient.quantity} {ingredient.unit}
+          {/* Meal Info Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Nutrition Info */}
+            <Card>
+              <CardContent className="p-4">
+                <h3 className="font-semibold mb-3">Nutrition Information</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-green-50 p-3 rounded text-center">
+                    <span className="font-bold text-green-600">{meal.calories}</span>
+                    <div className="text-sm text-gray-600">calories</div>
+                  </div>
+                  <div className="bg-blue-50 p-3 rounded text-center">
+                    <span className="font-bold text-blue-600">{meal.protein}g</span>
+                    <div className="text-sm text-gray-600">protein</div>
+                  </div>
+                  <div className="bg-orange-50 p-3 rounded text-center">
+                    <span className="font-bold text-orange-600">{meal.carbs}g</span>
+                    <div className="text-sm text-gray-600">carbs</div>
+                  </div>
+                  <div className="bg-yellow-50 p-3 rounded text-center">
+                    <span className="font-bold text-yellow-600">{meal.fat}g</span>
+                    <div className="text-sm text-gray-600">fat</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Meal Details */}
+            <Card>
+              <CardContent className="p-4">
+                <h3 className="font-semibold mb-3">Meal Details</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Meal Type:</span>
+                    <Badge className="capitalize">{meal.meal_type}</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Prep Time:</span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-4 h-4" />
+                      {meal.prep_time || 0} min
                     </span>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Cook Time:</span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-4 h-4" />
+                      {meal.cook_time || 0} min
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Servings:</span>
+                    <span className="flex items-center gap-1">
+                      <Users className="w-4 h-4" />
+                      {meal.servings || 1}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Ingredients */}
+          <Card>
+            <CardContent className="p-4">
+              <h3 className="font-semibold mb-3">Ingredients</h3>
+              {meal.ingredients && meal.ingredients.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {meal.ingredients.map((ingredient, index) => (
+                    <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                      <span>{ingredient.name}</span>
+                      <span className="text-sm text-gray-600">
+                        {ingredient.quantity} {ingredient.unit}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 italic">No ingredients available</p>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Instructions */}
-          {hasFullRecipe && currentMeal.instructions && currentMeal.instructions.length > 0 && (
-            <div>
-              <h3 className="font-semibold mb-3">Instructions</h3>
-              <ol className="space-y-2">
-                {currentMeal.instructions.map((instruction, index) => (
-                  <li key={index} className={`flex gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                    <span className="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-medium">
-                      {index + 1}
-                    </span>
-                    <span className="text-gray-700">{instruction}</span>
-                  </li>
-                ))}
-              </ol>
-            </div>
-          )}
-          
+          <Card>
+            <CardContent className="p-4">
+              <h3 className="font-semibold mb-3">Cooking Instructions</h3>
+              {meal.instructions && meal.instructions.length > 0 ? (
+                <ol className="space-y-2">
+                  {meal.instructions.map((instruction, index) => (
+                    <li key={index} className="flex gap-3">
+                      <span className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium">
+                        {index + 1}
+                      </span>
+                      <span>{instruction}</span>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <div className="text-center py-4">
+                  <p className="text-gray-500 mb-4">No cooking instructions available</p>
+                  <Button
+                    onClick={handleGenerateRecipe}
+                    disabled={isGenerating}
+                    className="bg-blue-500 hover:bg-blue-600"
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    {isGenerating ? 'Generating Recipe...' : 'Generate AI Recipe'}
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Action Buttons */}
-          <div className={`flex gap-3 pt-4 border-t ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <Button
-              onClick={handleYouTubeSearch}
-              variant="outline"
-              className="flex-1 border-red-200 text-red-600 hover:bg-red-50"
-            >
-              <Youtube className="w-4 h-4 mr-2" />
-              Watch Tutorial
-              <ExternalLink className="w-4 h-4 ml-2" />
-            </Button>
+          <div className="flex gap-3 justify-center">
+            {!meal.image_url && (
+              <Button
+                onClick={handleGenerateImage}
+                variant="outline"
+                className="flex-1"
+              >
+                <Camera className="w-4 h-4 mr-2" />
+                Generate Image
+              </Button>
+            )}
+            
+            {meal.youtube_search_term && (
+              <Button
+                onClick={() => {
+                  const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(meal.youtube_search_term)}`;
+                  window.open(searchUrl, '_blank');
+                }}
+                variant="outline"
+                className="flex-1"
+              >
+                <Youtube className="w-4 h-4 mr-2" />
+                Watch Video
+              </Button>
+            )}
             
             <Button onClick={onClose} className="flex-1">
-              Close Recipe
+              Close
             </Button>
           </div>
+
+          {/* Generation Progress */}
+          {isGenerating && (
+            <Card className="bg-blue-50 border-blue-200">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                  <div>
+                    <p className="font-medium text-blue-800">
+                      {generationStep === 'analyzing' && 'Analyzing ingredients and nutrition...'}
+                      {generationStep === 'finding' && 'Finding perfect recipe...'}
+                      {generationStep === 'generating' && 'Generating cooking instructions...'}
+                    </p>
+                    <p className="text-sm text-blue-600">This may take a few moments</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </DialogContent>
     </Dialog>

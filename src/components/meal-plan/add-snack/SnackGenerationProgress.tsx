@@ -1,7 +1,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Loader2, Sparkles } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Sparkles, Search, ChefHat, Save } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface SnackGenerationProgressProps {
@@ -11,65 +11,119 @@ interface SnackGenerationProgressProps {
 export const SnackGenerationProgress = ({ generationStep }: SnackGenerationProgressProps) => {
   const { t, isRTL } = useLanguage();
 
-  const getStepText = (step: string) => {
-    switch (step) {
+  const getStepInfo = () => {
+    switch (generationStep) {
       case 'analyzing':
-        return t('mealPlan.addSnackDialog.analyzing') || 'Analyzing your nutrition needs...';
+        return {
+          icon: <Search className="w-8 h-8 text-blue-500" />,
+          title: t('mealPlan.analyzingPreferences') || 'Analyzing Your Preferences',
+          description: t('mealPlan.analyzingDescription') || 'Reviewing your dietary preferences, allergies, and nutrition goals...',
+          color: 'blue'
+        };
       case 'creating':
-        return t('mealPlan.addSnackDialog.creating') || 'Creating perfect snack...';
+        return {
+          icon: <ChefHat className="w-8 h-8 text-orange-500" />,
+          title: t('mealPlan.creatingSnack') || 'Creating Perfect Snack',
+          description: t('mealPlan.creatingDescription') || 'Crafting a personalized snack that fits your remaining calories...',
+          color: 'orange'
+        };
       case 'saving':
-        return t('mealPlan.addSnackDialog.saving') || 'Saving to your meal plan...';
+        return {
+          icon: <Save className="w-8 h-8 text-green-500" />,
+          title: t('mealPlan.savingToMealPlan') || 'Saving to Meal Plan',
+          description: t('mealPlan.savingDescription') || 'Adding your new snack to your daily meal plan...',
+          color: 'green'
+        };
       default:
-        return t('mealPlan.addSnackDialog.generatingAISnack') || 'Generating AI Snack...';
+        return {
+          icon: <Sparkles className="w-8 h-8 text-purple-500" />,
+          title: t('mealPlan.generatingSnack') || 'Generating Snack',
+          description: t('mealPlan.generatingDescription') || 'Creating your personalized snack...',
+          color: 'purple'
+        };
     }
   };
 
-  const getStepProgress = (step: string) => {
-    switch (step) {
-      case 'analyzing':
-        return 33;
-      case 'creating':
-        return 66;
-      case 'saving':
-        return 90;
-      default:
-        return 10;
-    }
-  };
+  const stepInfo = getStepInfo();
 
   return (
-    <Card className="bg-gradient-to-br from-fitness-primary-50 to-fitness-accent-50 border-fitness-primary-200">
+    <Card className="bg-white border-fitness-primary-200 shadow-md">
       <CardContent className="p-6">
         <div className={`text-center ${isRTL ? 'text-right' : 'text-left'}`}>
-          <div className="w-16 h-16 mx-auto bg-gradient-to-br from-fitness-primary-500 to-fitness-accent-500 rounded-full flex items-center justify-center mb-4">
-            <div className="relative">
-              <Sparkles className="w-8 h-8 text-white" />
-              <Loader2 className="w-4 h-4 text-fitness-accent-200 absolute -top-1 -right-1 animate-spin" />
+          {/* Icon */}
+          <div className="flex justify-center mb-4">
+            <div className="animate-pulse">
+              {stepInfo.icon}
             </div>
           </div>
-          
-          <h3 className="text-lg font-semibold text-fitness-primary-800 mb-2">
-            {t('mealPlan.addSnackDialog.generatingAISnack') || 'Generating AI Snack...'}
-          </h3>
-          
-          <p className="text-fitness-primary-600 mb-6">
-            {t('mealPlan.addSnackDialog.pleaseWait') || 'Please wait while we create the perfect snack for you...'}
-          </p>
-          
-          <div className="space-y-3">
-            <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <span className="text-sm font-medium text-fitness-primary-700">
-                {getStepText(generationStep)}
-              </span>
-              <span className="text-xs text-fitness-primary-500">
-                {getStepProgress(generationStep)}%
-              </span>
+
+          {/* Progress Steps */}
+          <div className={`flex justify-center mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <div className="flex items-center space-x-2">
+              <Badge 
+                className={`${
+                  ['analyzing', 'creating', 'saving'].includes(generationStep) 
+                    ? 'bg-blue-500 text-white' 
+                    : 'bg-gray-200 text-gray-600'
+                }`}
+              >
+                1
+              </Badge>
+              <div className="w-8 h-1 bg-gray-200 rounded">
+                <div 
+                  className={`h-full rounded transition-all duration-500 ${
+                    ['creating', 'saving'].includes(generationStep) 
+                      ? 'bg-blue-500 w-full' 
+                      : 'bg-blue-500 w-0'
+                  }`}
+                />
+              </div>
+              <Badge 
+                className={`${
+                  ['creating', 'saving'].includes(generationStep) 
+                    ? 'bg-blue-500 text-white' 
+                    : 'bg-gray-200 text-gray-600'
+                }`}
+              >
+                2
+              </Badge>
+              <div className="w-8 h-1 bg-gray-200 rounded">
+                <div 
+                  className={`h-full rounded transition-all duration-500 ${
+                    generationStep === 'saving' 
+                      ? 'bg-blue-500 w-full' 
+                      : 'bg-blue-500 w-0'
+                  }`}
+                />
+              </div>
+              <Badge 
+                className={`${
+                  generationStep === 'saving' 
+                    ? 'bg-blue-500 text-white' 
+                    : 'bg-gray-200 text-gray-600'
+                }`}
+              >
+                3
+              </Badge>
             </div>
-            
-            <Progress 
-              value={getStepProgress(generationStep)} 
-              className="h-2"
-            />
+          </div>
+
+          {/* Step Title */}
+          <h3 className="text-lg font-semibold text-fitness-primary-800 mb-2">
+            {stepInfo.title}
+          </h3>
+
+          {/* Step Description */}
+          <p className="text-fitness-primary-600 mb-4">
+            {stepInfo.description}
+          </p>
+
+          {/* Loading Animation */}
+          <div className="flex items-center justify-center gap-2">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-fitness-primary-500"></div>
+            <span className="text-sm text-fitness-primary-500">
+              {t('mealPlan.pleaseWait') || 'Please wait...'}
+            </span>
           </div>
         </div>
       </CardContent>
