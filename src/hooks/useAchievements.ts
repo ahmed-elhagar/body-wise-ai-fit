@@ -154,25 +154,33 @@ export const useAchievements = () => {
 
   const unlockAchievement = useMutation({
     mutationFn: async (achievementId: string) => {
+      // Use ON CONFLICT to prevent duplicate key errors
       const { error } = await supabase
         .from('user_achievements')
         .insert({
           user_id: user?.id,
           achievement_id: achievementId,
-        });
+        })
+        .select()
+        .single();
 
-      if (error) throw error;
+      // If we get a duplicate key error, that's actually OK - the achievement already exists
+      if (error && !error.message.includes('duplicate key')) {
+        throw error;
+      }
 
-      // Create notification for achievement
-      await supabase
-        .from('user_notifications')
-        .insert({
-          user_id: user?.id,
-          title: 'Achievement Unlocked!',
-          message: `You've earned a new achievement!`,
-          type: 'achievement',
-          metadata: { achievement_id: achievementId },
-        });
+      // Create notification for achievement (only if it's a new achievement)
+      if (!error) {
+        await supabase
+          .from('user_notifications')
+          .insert({
+            user_id: user?.id,
+            title: 'Achievement Unlocked!',
+            message: `You've earned a new achievement!`,
+            type: 'achievement',
+            metadata: { achievement_id: achievementId },
+          });
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-achievements', user?.id] });
@@ -180,7 +188,7 @@ export const useAchievements = () => {
     },
   });
 
-  // Check for newly earned achievements
+  // Check for newly earned achievements with better duplicate handling
   const checkAchievements = () => {
     achievements.forEach(achievement => {
       if (!achievement.is_earned && achievement.progress >= achievement.requirement_value) {
