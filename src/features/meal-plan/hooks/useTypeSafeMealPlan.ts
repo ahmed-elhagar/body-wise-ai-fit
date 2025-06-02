@@ -32,7 +32,8 @@ export const useTypeSafeMealPlan = (
       if (!acc[meal.day_number]) {
         acc[meal.day_number] = [];
       }
-      acc[meal.day_number].push(meal);
+      // Fix: Use spread operator instead of push to avoid mutating readonly array
+      acc[meal.day_number] = [...acc[meal.day_number], meal];
       return acc;
     }, {} as Record<number, typeof validatedData.dailyMeals>);
   }, [validatedData]);
