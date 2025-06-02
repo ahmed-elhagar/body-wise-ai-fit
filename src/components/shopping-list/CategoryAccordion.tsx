@@ -4,13 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import IngredientRow from "./IngredientRow";
-
-interface ShoppingItem {
-  name: string;
-  quantity: number;
-  unit: string;
-  category: string;
-}
+import type { ShoppingItem } from "@/types/shoppingList";
 
 interface CategoryAccordionProps {
   groupedItems: Record<string, ShoppingItem[]>;

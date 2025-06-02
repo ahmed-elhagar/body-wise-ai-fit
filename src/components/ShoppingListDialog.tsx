@@ -6,13 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ShoppingCart, Mail, Download } from "lucide-react";
 import { useEnhancedShoppingList } from "@/hooks/useEnhancedShoppingList";
 import { useState } from "react";
-
-interface ShoppingItem {
-  name: string;
-  quantity?: string;
-  unit?: string;
-  category?: string;
-}
+import type { ShoppingItem } from "@/types/shoppingList";
 
 interface ShoppingListDialogProps {
   isOpen: boolean;
@@ -110,11 +104,9 @@ const ShoppingListDialog = ({ isOpen, onClose, items }: ShoppingListDialogProps)
                         onClick={() => toggleItem(itemKey)}
                       >
                         <span>{item.name}</span>
-                        {item.quantity && item.unit && (
-                          <span className="text-sm text-gray-500">
-                            {item.quantity} {item.unit}
-                          </span>
-                        )}
+                        <span className="text-sm text-gray-500">
+                          {item.quantity} {item.unit}
+                        </span>
                       </div>
                     );
                   })}

@@ -6,6 +6,7 @@ import { useAuth } from './useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getCategoryForIngredient } from '@/utils/mealPlanUtils';
 import type { WeeklyMealPlan, DailyMeal } from '@/hooks/useMealPlanData';
+import type { ShoppingItem, ShoppingListData } from '@/types/shoppingList';
 
 interface WeeklyPlanData {
   weeklyPlan: WeeklyMealPlan;
@@ -18,18 +19,11 @@ interface Ingredient {
   unit?: string;
 }
 
-interface ShoppingItem {
-  name: string;
-  quantity: number;
-  unit: string;
-  category: string;
-}
-
 export const useEnhancedShoppingList = (weeklyPlan?: WeeklyPlanData | null) => {
   const { user } = useAuth();
   const { language } = useLanguage();
 
-  const enhancedShoppingItems = useMemo(() => {
+  const enhancedShoppingItems: ShoppingListData = useMemo(() => {
     console.log('🛒 Computing enhanced shopping list...', { 
       hasWeeklyPlan: !!weeklyPlan,
       mealsCount: weeklyPlan?.dailyMeals ? weeklyPlan.dailyMeals.length : 0
@@ -111,7 +105,7 @@ export const useEnhancedShoppingList = (weeklyPlan?: WeeklyPlanData | null) => {
 
     const items = Array.from(itemsMap.values());
     
-    const groupedItems: Record<string, ShoppingItem[]> = items.reduce((acc, item) => {
+    const groupedItems = items.reduce((acc, item) => {
       const category = item.category;
       if (!acc[category]) {
         acc[category] = [];

@@ -1,13 +1,7 @@
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { useLanguage } from "@/contexts/LanguageContext";
-
-interface ShoppingItem {
-  name: string;
-  quantity: number;
-  unit: string;
-  category: string;
-}
+import type { ShoppingItem } from "@/types/shoppingList";
 
 interface IngredientRowProps {
   item: ShoppingItem;
