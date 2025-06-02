@@ -16,7 +16,13 @@ export const useMealPlanState = () => {
   const dialogs = useMealPlanDialogs();
   
   const { data: currentWeekPlan, isLoading, error, refetch: refetchMealPlan } = useMealPlanData(navigation.currentWeekOffset);
-  const { handleRegeneratePlan, handleGenerateAIPlan, isGenerating, isShuffling } = useMealPlanActions(
+  const { 
+    handleRegeneratePlan, 
+    handleGenerateAIPlan, 
+    isGenerating, 
+    isShuffling, 
+    nutritionContext 
+  } = useMealPlanActions(
     currentWeekPlan,
     navigation.currentWeekOffset,
     dialogs.aiPreferences,
@@ -31,8 +37,8 @@ export const useMealPlanState = () => {
     dialogs.setShowExchangeDialog
   );
 
-  // Enhanced logging for debugging
-  console.log('🔍 MEAL PLAN STATE DEBUG:', {
+  // Enhanced logging for debugging with special conditions
+  console.log('🔍 ENHANCED MEAL PLAN STATE DEBUG:', {
     currentWeekOffset: navigation.currentWeekOffset,
     selectedDayNumber: navigation.selectedDayNumber,
     hasWeeklyPlan: !!currentWeekPlan?.weeklyPlan,
@@ -40,7 +46,11 @@ export const useMealPlanState = () => {
     dailyMealsCount: currentWeekPlan?.dailyMeals?.length || 0,
     isLoading,
     error: error?.message,
-    weekStartDate: navigation.weekStartDate.toDateString()
+    weekStartDate: navigation.weekStartDate.toDateString(),
+    isMuslimFasting: nutritionContext.isMuslimFasting,
+    fastingPeriod: nutritionContext.fastingStartDate && nutritionContext.fastingEndDate 
+      ? `${nutritionContext.fastingStartDate} to ${nutritionContext.fastingEndDate}`
+      : 'Not active'
   });
 
   const refetch = useCallback(async () => {
@@ -79,6 +89,9 @@ export const useMealPlanState = () => {
     isGenerating,
     isShuffling,
     error,
+    
+    // Enhanced context
+    nutritionContext,
     
     // Actions
     handleRegeneratePlan,

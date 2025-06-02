@@ -1,76 +1,69 @@
 
-import { useState, useEffect } from 'react';
-import { useProfile } from './useProfile';
-import { toast } from 'sonner';
+import { useProfile } from "./useProfile";
 
-export interface LifePhaseData {
-  fasting_type?: string;
-  pregnancy_trimester?: number;
-  breastfeeding_level?: string;
-  condition_start_date?: string;
+interface LifePhaseContext {
+  fastingType?: string;
+  pregnancyTrimester?: number;
+  breastfeedingLevel?: string;
+  extraCalories: number;
+  needsHydrationReminders: boolean;
+  isRamadan: boolean;
+  isMuslimFasting: boolean;
+  fastingStartDate?: string;
+  fastingEndDate?: string;
 }
 
 export const useLifePhaseProfile = () => {
-  const { profile, updateProfile } = useProfile();
-  
-  const [lifePhase, setLifePhase] = useState<LifePhaseData>({
-    fasting_type: '',
-    pregnancy_trimester: 0,
-    breastfeeding_level: '',
-    condition_start_date: '',
-  });
+  const { profile } = useProfile();
 
-  const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    if (profile) {
-      setLifePhase({
-        fasting_type: profile.fasting_type || '',
-        pregnancy_trimester: profile.pregnancy_trimester || 0,
-        breastfeeding_level: profile.breastfeeding_level || '',
-        condition_start_date: profile.condition_start_date || '',
-      });
+  const getCurrentSpecialConditions = () => {
+    if (!profile?.special_conditions || !Array.isArray(profile.special_conditions)) {
+      return [];
     }
-  }, [profile]);
-
-  const updateLifePhaseProfile = async (updates: Partial<LifePhaseData>) => {
-    setIsLoading(true);
-    try {
-      const updatedLifePhase = { ...lifePhase, ...updates };
-      setLifePhase(updatedLifePhase);
-      
-      await updateProfile(updatedLifePhase);
-      toast.success('Life phase information updated successfully');
-    } catch (error) {
-      console.error('Error updating life phase profile:', error);
-      toast.error('Failed to update life phase information');
-    } finally {
-      setIsLoading(false);
-    }
+    
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    
+    return profile.special_conditions.filter((condition: any) => {
+      return condition.startDate <= todayStr && condition.endDate >= todayStr;
+    });
   };
 
-  const getNutritionContext = () => {
-    const context: any = {};
+  const getActiveMuslimFasting = () => {
+    const activeConditions = getCurrentSpecialConditions();
+    return activeConditions.find((condition: any) => 
+      condition.type === 'muslim_fasting'
+    );
+  };
+
+  const getNutritionContext = (): LifePhaseContext => {
+    const muslimFasting = getActiveMuslimFasting();
     
-    if (lifePhase.pregnancy_trimester && lifePhase.pregnancy_trimester > 0) {
-      context.pregnancy_trimester = lifePhase.pregnancy_trimester;
-    }
+    let extraCalories = 0;
     
-    if (lifePhase.breastfeeding_level && lifePhase.breastfeeding_level !== 'none') {
-      context.breastfeeding_level = lifePhase.breastfeeding_level;
-    }
-    
-    if (lifePhase.fasting_type && lifePhase.fasting_type !== 'none') {
-      context.fasting_type = lifePhase.fasting_type;
-    }
-    
-    return context;
+    // Calculate extra calories based on life phase
+    if (profile?.pregnancy_trimester === 2) extraCalories += 340;
+    if (profile?.pregnancy_trimester === 3) extraCalories += 450;
+    if (profile?.breastfeeding_level === 'exclusive') extraCalories += 400;
+    if (profile?.breastfeeding_level === 'partial') extraCalories += 250;
+
+    return {
+      fastingType: profile?.fasting_type || (muslimFasting ? 'ramadan' : undefined),
+      pregnancyTrimester: profile?.pregnancy_trimester,
+      breastfeedingLevel: profile?.breastfeeding_level,
+      extraCalories,
+      needsHydrationReminders: !!(muslimFasting || profile?.breastfeeding_level),
+      isRamadan: profile?.fasting_type === 'ramadan' || !!muslimFasting,
+      isMuslimFasting: !!muslimFasting,
+      fastingStartDate: muslimFasting?.startDate,
+      fastingEndDate: muslimFasting?.endDate
+    };
   };
 
   return {
-    lifePhase,
-    isLoading,
-    updateLifePhaseProfile,
+    profile,
+    getCurrentSpecialConditions,
+    getActiveMuslimFasting,
     getNutritionContext
   };
 };

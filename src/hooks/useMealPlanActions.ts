@@ -2,7 +2,7 @@
 import { useCallback } from "react";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useAIMealPlan } from "@/hooks/useAIMealPlan";
+import { useEnhancedMealPlan } from "@/hooks/useEnhancedMealPlan";
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from './useAuth';
 
@@ -15,30 +15,33 @@ export const useMealPlanActions = (
   const { language } = useLanguage();
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const { generateMealPlan, isGenerating } = useAIMealPlan();
+  const { generateMealPlan, isGenerating, nutritionContext } = useEnhancedMealPlan();
 
-  // Enhanced AI generation handler with better cache management
+  // Enhanced AI generation handler with special conditions support
   const handleGenerateAIPlan = useCallback(async () => {
     try {
-      console.log('🚀 Starting AI meal plan generation with enhanced cache management:', {
+      console.log('🚀 Starting enhanced AI meal plan generation:', {
         weekOffset: currentWeekOffset,
         preferences: aiPreferences,
-        userId: user?.id
+        userId: user?.id,
+        nutritionContext
       });
       
       const enhancedPreferences = {
         ...aiPreferences,
         language: language,
         locale: language === 'ar' ? 'ar-SA' : 'en-US',
-        weekOffset: currentWeekOffset
+        weekOffset: currentWeekOffset,
+        specialConditions: nutritionContext
       };
       
       const result = await generateMealPlan(enhancedPreferences, { weekOffset: currentWeekOffset });
       
       if (result?.success) {
-        console.log('✅ Generation successful, invalidating cache and refetching:', {
+        console.log('✅ Generation successful with special conditions:', {
           weeklyPlanId: result.weeklyPlanId,
-          weekOffset: currentWeekOffset
+          weekOffset: currentWeekOffset,
+          isMuslimFasting: nutritionContext.isMuslimFasting
         });
         
         // Invalidate all meal plan queries to ensure fresh data
@@ -53,6 +56,16 @@ export const useMealPlanActions = (
         try {
           await refetchMealPlan?.();
           console.log('✅ Refetch completed successfully');
+          
+          // Show success message with special condition info
+          if (nutritionContext.isMuslimFasting) {
+            toast.success(
+              language === 'ar'
+                ? 'تم إنشاء خطة وجبات متوافقة مع الصيام الإسلامي بنجاح!'
+                : 'Muslim fasting-compatible meal plan generated successfully!'
+            );
+          }
+          
           return true;
         } catch (refetchError) {
           console.error('❌ Refetch failed after generation:', refetchError);
@@ -69,11 +82,11 @@ export const useMealPlanActions = (
       toast.error("Failed to generate meal plan. Please try again.");
       throw error;
     }
-  }, [aiPreferences, language, currentWeekOffset, generateMealPlan, refetchMealPlan, queryClient, user?.id]);
+  }, [aiPreferences, language, currentWeekOffset, generateMealPlan, refetchMealPlan, queryClient, user?.id, nutritionContext]);
 
   // Add the missing handleRegeneratePlan method
   const handleRegeneratePlan = useCallback(async () => {
-    console.log('🔄 Regenerating meal plan...');
+    console.log('🔄 Regenerating meal plan with special conditions...');
     return await handleGenerateAIPlan();
   }, [handleGenerateAIPlan]);
 
@@ -81,6 +94,7 @@ export const useMealPlanActions = (
     handleGenerateAIPlan,
     handleRegeneratePlan,
     isGenerating,
-    isShuffling: false // Add missing isShuffling property
+    isShuffling: false,
+    nutritionContext
   };
 };
