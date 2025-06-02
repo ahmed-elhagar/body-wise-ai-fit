@@ -1,11 +1,11 @@
-
 import React, { useState } from 'react';
 import { useMealPlanPage } from '@/hooks/useMealPlanPage';
 import { DayOverview } from './DayOverview';
 import { WeeklyMealPlanView } from './WeeklyMealPlanView';
 import { EmptyWeekState } from './EmptyWeekState';
+import { MealPlanPageHeader } from './MealPlanPageHeader';
 import { Button } from '@/components/ui/button';
-import { Calendar, Grid3X3, ChevronLeft, ChevronRight, Sparkles, Shuffle } from 'lucide-react';
+import { Calendar, Grid3X3 } from 'lucide-react';
 import { AIGenerationDialog } from './dialogs/AIGenerationDialog';
 import { AddSnackDialog } from './dialogs/AddSnackDialog';
 import { ExchangeDialog } from './dialogs/ExchangeDialog';
@@ -119,12 +119,6 @@ export const MealPlanContainer = () => {
     return date.toLocaleDateString();
   };
 
-  const getWeekDateRange = () => {
-    const endDate = new Date(weekStartDate);
-    endDate.setDate(endDate.getDate() + 6);
-    return `${weekStartDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
-  };
-
   const handleShuffleMeals = async () => {
     if (currentWeekPlan?.weeklyPlan?.id) {
       const success = await shuffleMeals(currentWeekPlan.weeklyPlan.id);
@@ -135,128 +129,87 @@ export const MealPlanContainer = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-2 space-y-3">
-      {/* Compact Navigation Header */}
-      <div className="bg-white rounded-lg border shadow-sm p-3">
-        {/* Top Row: View Toggle + Week Navigation */}
-        <div className="flex items-center justify-between mb-3">
+    <div className="container mx-auto px-4 py-6 space-y-4">
+      {/* Page Header */}
+      <MealPlanPageHeader
+        onGenerateAI={openAIDialog}
+        onShuffle={handleShuffleMeals}
+        isGenerating={isGenerating}
+        isShuffling={isShuffling}
+        hasWeeklyPlan={!!currentWeekPlan?.weeklyPlan}
+        currentWeekOffset={currentWeekOffset}
+        setCurrentWeekOffset={setCurrentWeekOffset}
+        weekStartDate={weekStartDate}
+      />
+
+      {/* View Mode Toggle and Day Navigation */}
+      {currentWeekPlan?.weeklyPlan && (
+        <div className="bg-white rounded-lg border shadow-sm p-4">
           {/* View Mode Toggle */}
-          {currentWeekPlan?.weeklyPlan && (
+          <div className={`flex items-center justify-between mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
             <div className={`flex gap-1 bg-gray-100 p-1 rounded-lg ${isRTL ? 'flex-row-reverse' : ''}`}>
               <Button
                 variant={viewMode === 'daily' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setViewMode('daily')}
-                className={`flex items-center gap-1 text-xs px-2 py-1 h-7 ${
+                className={`flex items-center gap-2 px-4 py-2 h-9 ${
                   viewMode === 'daily' 
                     ? 'bg-white shadow-sm text-blue-600' 
                     : 'text-gray-600 hover:text-blue-600'
                 }`}
               >
-                <Calendar className="w-3 h-3" />
+                <Calendar className="w-4 h-4" />
                 {t('mealPlan.dailyView') || 'Daily'}
               </Button>
               <Button
                 variant={viewMode === 'weekly' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setViewMode('weekly')}
-                className={`flex items-center gap-1 text-xs px-2 py-1 h-7 ${
+                className={`flex items-center gap-2 px-4 py-2 h-9 ${
                   viewMode === 'weekly' 
                     ? 'bg-white shadow-sm text-blue-600' 
                     : 'text-gray-600 hover:text-blue-600'
                 }`}
               >
-                <Grid3X3 className="w-3 h-3" />
+                <Grid3X3 className="w-4 h-4" />
                 {t('mealPlan.weeklyView') || 'Weekly'}
               </Button>
             </div>
-          )}
+          </div>
 
-          {/* Week Navigation */}
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setCurrentWeekOffset(currentWeekOffset - 1)}
-              className="h-7 w-7 p-0"
-            >
-              <ChevronLeft className="w-3 h-3" />
-            </Button>
-            
-            <div className="text-center min-w-[120px]">
-              <div className="text-xs font-medium text-gray-900">
-                {getWeekDateRange()}
-              </div>
+          {/* Day Selection (Daily View Only) */}
+          {viewMode === 'daily' && (
+            <div className={`grid grid-cols-7 gap-2 ${isRTL ? 'direction-rtl' : ''}`}>
+              {[1, 2, 3, 4, 5, 6, 7].map((dayNumber) => {
+                const isSelected = selectedDayNumber === dayNumber;
+                const isToday = new Date().toDateString() === new Date(weekStartDate.getTime() + (dayNumber - 1) * 24 * 60 * 60 * 1000).toDateString();
+                
+                return (
+                  <Button
+                    key={dayNumber}
+                    variant={isSelected ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSelectedDayNumber(dayNumber)}
+                    className={`flex flex-col items-center h-16 relative p-2 ${
+                      isSelected ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600' : 'hover:bg-blue-50 border-gray-200'
+                    }`}
+                  >
+                    <span className="font-semibold text-sm">
+                      {getDayName(dayNumber).slice(0, 3)}
+                    </span>
+                    <span className="text-xs opacity-75 mt-1">
+                      {getDayDate(dayNumber).split('/')[1]}/{getDayDate(dayNumber).split('/')[2]}
+                    </span>
+                    {isToday && (
+                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full border-2 border-white"></div>
+                    )}
+                  </Button>
+                );
+              })}
             </div>
-            
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setCurrentWeekOffset(currentWeekOffset + 1)}
-              className="h-7 w-7 p-0"
-            >
-              <ChevronRight className="w-3 h-3" />
-            </Button>
-          </div>
-
-          {/* Actions */}
-          <div className="flex gap-1">
-            {currentWeekPlan?.weeklyPlan?.id && (
-              <Button
-                onClick={handleShuffleMeals}
-                disabled={isShuffling}
-                variant="outline"
-                size="sm"
-                className="h-7 px-2 text-xs"
-              >
-                <Shuffle className="w-3 h-3 mr-1" />
-                {t('mealPlan.shuffleMeals') || 'Shuffle'}
-              </Button>
-            )}
-            <Button
-              onClick={openAIDialog}
-              disabled={isGenerating}
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white h-7 px-3 text-xs"
-              size="sm"
-            >
-              <Sparkles className="w-3 h-3 mr-1" />
-              {isGenerating ? (t('generating') || 'Generating...') : (t('mealPlan.generateAI') || 'AI Generate')}
-            </Button>
-          </div>
+          )}
         </div>
-
-        {/* Day Selection (Daily View Only) */}
-        {viewMode === 'daily' && currentWeekPlan?.weeklyPlan && (
-          <div className={`grid grid-cols-7 gap-1 ${isRTL ? 'direction-rtl' : ''}`}>
-            {[1, 2, 3, 4, 5, 6, 7].map((dayNumber) => {
-              const isSelected = selectedDayNumber === dayNumber;
-              const isToday = new Date().toDateString() === new Date(weekStartDate.getTime() + (dayNumber - 1) * 24 * 60 * 60 * 1000).toDateString();
-              
-              return (
-                <Button
-                  key={dayNumber}
-                  variant={isSelected ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedDayNumber(dayNumber)}
-                  className={`flex flex-col items-center h-10 relative text-xs ${
-                    isSelected ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'hover:bg-blue-50'
-                  }`}
-                >
-                  <span className="font-medium text-xs">
-                    {getDayName(dayNumber).slice(0, 3)}
-                  </span>
-                  <span className="text-xs opacity-75">
-                    {getDayDate(dayNumber).split('/')[1]}
-                  </span>
-                  {isToday && (
-                    <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
-                  )}
-                </Button>
-              );
-            })}
-          </div>
-        )}
-      </div>
+      )}
 
       {/* Main Content */}
       {currentWeekPlan?.weeklyPlan ? (

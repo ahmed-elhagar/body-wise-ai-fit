@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sparkles, Plus, Flame } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Sparkles, Plus, Flame, Clock, Target } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -38,6 +39,7 @@ export const AddSnackDialog = ({
   });
 
   const remainingCalories = Math.max(0, targetDayCalories - currentDayCalories);
+  const progressPercentage = Math.min(100, (currentDayCalories / targetDayCalories) * 100);
 
   const handleGenerateAISnack = async () => {
     if (!user || !weeklyPlanId) {
@@ -138,23 +140,54 @@ export const AddSnackDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <Plus className="w-5 h-5 text-green-600" />
-            {t('mealPlan.addSnack') || 'Add Snack'} - {t('mealPlan.day') || 'Day'} {selectedDay}
+          <DialogTitle className={`flex items-center gap-3 text-xl ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+              <Plus className="w-5 h-5 text-green-600" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold">{t('mealPlan.addSnack') || 'Add Snack'}</h2>
+              <p className="text-sm text-gray-500 font-normal">
+                {t('mealPlan.day') || 'Day'} {selectedDay} - {t('mealPlan.addSnack.smartSnacking') || 'Smart snacking for your goals'}
+              </p>
+            </div>
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-4">
-          {/* Calorie Info */}
-          <div className={`flex items-center gap-2 p-3 bg-blue-50 rounded-lg ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <Flame className="w-4 h-4 text-orange-500" />
-            <span className="text-sm font-medium text-blue-800">
-              {t('mealPlan.addSnack.caloriesRemaining') || 'Remaining calories for today'}: 
-              <span className="font-bold ml-1">{remainingCalories}</span>
-            </span>
-          </div>
+        <div className="space-y-5">
+          {/* Enhanced Calorie Progress Card */}
+          <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+            <CardContent className="p-4">
+              <div className={`flex items-center justify-between mb-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                  <Target className="w-5 h-5 text-blue-600" />
+                  <span className="font-semibold text-blue-800">
+                    {t('mealPlan.addSnack.dailyProgress') || 'Daily Progress'}
+                  </span>
+                </div>
+                <span className="text-sm font-bold text-blue-700">
+                  {Math.round(progressPercentage)}%
+                </span>
+              </div>
+              
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">{currentDayCalories} cal consumed</span>
+                  <span className="text-gray-600">{remainingCalories} cal remaining</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-gradient-to-r from-blue-500 to-indigo-500 h-2 rounded-full transition-all duration-300" 
+                    style={{ width: `${progressPercentage}%` }}
+                  ></div>
+                </div>
+                <div className="text-xs text-center text-gray-500">
+                  Target: {targetDayCalories} calories
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           {isGenerating ? (
             <EnhancedLoadingIndicator
@@ -169,104 +202,116 @@ export const AddSnackDialog = ({
           ) : (
             <>
               {/* AI Generated Snack Section */}
-              <div className="space-y-3 p-3 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
-                <h3 className="font-medium flex items-center gap-2 text-sm">
-                  <Sparkles className="w-4 h-4 text-green-600" />
-                  {t('mealPlan.addSnack.aiGenerated') || 'AI Generated Snack'}
-                </h3>
-                
-                <div className="space-y-2">
-                  <div>
-                    <Label htmlFor="snack-type" className="text-xs">{t('mealPlan.addSnack.snackType') || 'Snack Type'}</Label>
-                    <Select value={snackType} onValueChange={setSnackType}>
-                      <SelectTrigger className="h-8">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="healthy">{t('mealPlan.addSnack.types.healthy') || 'Healthy & Nutritious'}</SelectItem>
-                        <SelectItem value="protein">{t('mealPlan.addSnack.types.protein') || 'High Protein'}</SelectItem>
-                        <SelectItem value="energy">{t('mealPlan.addSnack.types.energy') || 'Energy Boosting'}</SelectItem>
-                        <SelectItem value="sweet">{t('mealPlan.addSnack.types.sweet') || 'Sweet Treat'}</SelectItem>
-                      </SelectContent>
-                    </Select>
+              <Card className="border-green-200 bg-gradient-to-r from-green-50 to-emerald-50">
+                <CardContent className="p-5 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                      <Sparkles className="w-4 h-4 text-green-600" />
+                    </div>
+                    <h3 className="font-semibold text-green-800">
+                      {t('mealPlan.addSnack.aiGenerated') || 'AI Generated Snack'}
+                    </h3>
                   </div>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <Label htmlFor="snack-type" className="text-sm font-medium">{t('mealPlan.addSnack.snackType') || 'Snack Type'}</Label>
+                      <Select value={snackType} onValueChange={setSnackType}>
+                        <SelectTrigger className="h-10 mt-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="healthy">{t('mealPlan.addSnack.types.healthy') || 'Healthy & Nutritious'}</SelectItem>
+                          <SelectItem value="protein">{t('mealPlan.addSnack.types.protein') || 'High Protein'}</SelectItem>
+                          <SelectItem value="energy">{t('mealPlan.addSnack.types.energy') || 'Energy Boosting'}</SelectItem>
+                          <SelectItem value="sweet">{t('mealPlan.addSnack.types.sweet') || 'Sweet Treat'}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                  <div>
-                    <Label htmlFor="custom-request" className="text-xs">{t('mealPlan.addSnack.customRequest') || 'Custom Request (Optional)'}</Label>
-                    <Input
-                      id="custom-request"
-                      placeholder={t('mealPlan.addSnack.customRequestPlaceholder') || 'e.g., nuts and fruits, low carb...'}
-                      value={customRequest}
-                      onChange={(e) => setCustomRequest(e.target.value)}
-                      className="h-8 text-sm"
-                    />
+                    <div>
+                      <Label htmlFor="custom-request" className="text-sm font-medium">{t('mealPlan.addSnack.customRequest') || 'Custom Request (Optional)'}</Label>
+                      <Input
+                        id="custom-request"
+                        placeholder={t('mealPlan.addSnack.customRequestPlaceholder') || 'e.g., nuts and fruits, low carb...'}
+                        value={customRequest}
+                        onChange={(e) => setCustomRequest(e.target.value)}
+                        className="h-10 mt-1"
+                      />
+                    </div>
+
+                    <Button 
+                      onClick={handleGenerateAISnack} 
+                      className={`w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 h-10 font-semibold ${isRTL ? 'flex-row-reverse' : ''}`}
+                      disabled={isGenerating || remainingCalories <= 0}
+                    >
+                      <Sparkles className={`w-4 h-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+                      {t('mealPlan.addSnack.generateAI') || 'Generate AI Snack'}
+                    </Button>
                   </div>
-
-                  <Button 
-                    onClick={handleGenerateAISnack} 
-                    className={`w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 h-8 text-sm ${isRTL ? 'flex-row-reverse' : ''}`}
-                    disabled={isGenerating || remainingCalories <= 0}
-                  >
-                    <Sparkles className={`w-3 h-3 ${isRTL ? 'ml-2' : 'mr-2'}`} />
-                    {t('mealPlan.addSnack.generateAI') || 'Generate AI Snack'}
-                  </Button>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
 
               {/* Custom Snack Section */}
-              <div className="space-y-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <h3 className="font-medium flex items-center gap-2 text-sm">
-                  <Plus className="w-4 h-4 text-gray-600" />
-                  {t('mealPlan.addSnack.customSnack') || 'Custom Snack'}
-                </h3>
-                
-                <div className="space-y-2">
-                  <div>
-                    <Label htmlFor="snack-name" className="text-xs">{t('mealPlan.addSnack.snackName') || 'Snack Name'}</Label>
-                    <Input
-                      id="snack-name"
-                      value={customSnack.name}
-                      onChange={(e) => setCustomSnack({...customSnack, name: e.target.value})}
-                      placeholder={t('mealPlan.addSnack.snackNamePlaceholder') || 'e.g., Apple with peanut butter'}
-                      className="h-8 text-sm"
-                    />
+              <Card className="border-gray-200 bg-gray-50">
+                <CardContent className="p-5 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                      <Plus className="w-4 h-4 text-gray-600" />
+                    </div>
+                    <h3 className="font-semibold text-gray-800">
+                      {t('mealPlan.addSnack.customSnack') || 'Custom Snack'}
+                    </h3>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-3">
                     <div>
-                      <Label htmlFor="calories" className="text-xs">{t('mealPlan.calories') || 'Calories'}</Label>
+                      <Label htmlFor="snack-name" className="text-sm font-medium">{t('mealPlan.addSnack.snackName') || 'Snack Name'}</Label>
                       <Input
-                        id="calories"
-                        type="number"
-                        value={customSnack.calories}
-                        onChange={(e) => setCustomSnack({...customSnack, calories: e.target.value})}
-                        placeholder="200"
-                        className="h-8 text-sm"
+                        id="snack-name"
+                        value={customSnack.name}
+                        onChange={(e) => setCustomSnack({...customSnack, name: e.target.value})}
+                        placeholder={t('mealPlan.addSnack.snackNamePlaceholder') || 'e.g., Apple with peanut butter'}
+                        className="h-10 mt-1"
                       />
                     </div>
-                    <div>
-                      <Label htmlFor="protein" className="text-xs">{t('mealPlan.protein') || 'Protein'} (g)</Label>
-                      <Input
-                        id="protein"
-                        type="number"
-                        value={customSnack.protein}
-                        onChange={(e) => setCustomSnack({...customSnack, protein: e.target.value})}
-                        placeholder="5"
-                        className="h-8 text-sm"
-                      />
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label htmlFor="calories" className="text-sm font-medium">{t('mealPlan.calories') || 'Calories'}</Label>
+                        <Input
+                          id="calories"
+                          type="number"
+                          value={customSnack.calories}
+                          onChange={(e) => setCustomSnack({...customSnack, calories: e.target.value})}
+                          placeholder="200"
+                          className="h-10 mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="protein" className="text-sm font-medium">{t('mealPlan.protein') || 'Protein'} (g)</Label>
+                        <Input
+                          id="protein"
+                          type="number"
+                          value={customSnack.protein}
+                          onChange={(e) => setCustomSnack({...customSnack, protein: e.target.value})}
+                          placeholder="5"
+                          className="h-10 mt-1"
+                        />
+                      </div>
                     </div>
+                    
+                    <Button 
+                      onClick={handleAddCustomSnack}
+                      className={`w-full h-10 font-semibold ${isRTL ? 'flex-row-reverse' : ''}`}
+                      variant="outline"
+                    >
+                      <Plus className={`w-4 h-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+                      {t('mealPlan.addSnack.addCustom') || 'Add Custom Snack'}
+                    </Button>
                   </div>
-                  
-                  <Button 
-                    onClick={handleAddCustomSnack}
-                    className={`w-full h-8 text-sm ${isRTL ? 'flex-row-reverse' : ''}`}
-                    variant="outline"
-                  >
-                    <Plus className={`w-3 h-3 ${isRTL ? 'ml-2' : 'mr-2'}`} />
-                    {t('mealPlan.addSnack.addCustom') || 'Add Custom Snack'}
-                  </Button>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             </>
           )}
 
@@ -274,7 +319,7 @@ export const AddSnackDialog = ({
           <Button 
             onClick={onClose} 
             variant="outline" 
-            className="w-full h-8 text-sm"
+            className="w-full h-10"
           >
             {t('cancel') || 'Cancel'}
           </Button>

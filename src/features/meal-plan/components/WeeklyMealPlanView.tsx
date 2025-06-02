@@ -55,72 +55,74 @@ export const WeeklyMealPlanView = ({
   };
 
   return (
-    <div className="space-y-3">
-      {/* Days Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+    <div className="space-y-4">
+      {/* Days Grid - 2 columns layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {[1, 2, 3, 4, 5, 6, 7].map((dayNumber) => {
           const dayMeals = getMealsByDay(dayNumber);
           const totalCalories = dayMeals.reduce((sum: number, meal: any) => sum + (meal.calories || 0), 0);
           
           return (
-            <Card key={dayNumber} className="hover:shadow-md transition-shadow">
-              <CardHeader className="pb-2">
+            <Card key={dayNumber} className="hover:shadow-lg transition-shadow border-l-4 border-l-blue-500">
+              <CardHeader className="pb-3">
                 <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
                   <div className={`${isRTL ? 'text-right' : 'text-left'}`}>
-                    <h3 className="font-semibold text-gray-900 text-sm">
+                    <h3 className="font-bold text-gray-900 text-lg">
                       {getDayName(dayNumber)}
                     </h3>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-sm text-gray-500">
                       {getDayDate(dayNumber)}
                     </p>
                   </div>
-                  <Badge variant="outline" className="text-xs">
+                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 font-semibold">
                     {totalCalories} cal
                   </Badge>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-2">
+              <CardContent className="space-y-3">
                 {dayMeals.length > 0 ? (
                   dayMeals.map((meal: any) => (
-                    <div key={meal.id} className="bg-gray-50 rounded-lg p-2">
-                      <div className={`flex items-center justify-between mb-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                    <div key={meal.id} className="bg-gray-50 rounded-lg p-3 border hover:bg-gray-100 transition-colors">
+                      <div className={`flex items-center justify-between mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
                         <Badge 
                           variant="outline" 
-                          className={`text-xs ${getMealTypeColor(meal.meal_type)}`}
+                          className={`text-xs font-medium ${getMealTypeColor(meal.meal_type)}`}
                         >
                           {meal.meal_type}
                         </Badge>
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-gray-600 font-medium">
                           {meal.calories} cal
                         </span>
                       </div>
-                      <h4 className="text-xs font-medium text-gray-800 mb-2 line-clamp-2">
+                      <h4 className="text-sm font-semibold text-gray-800 mb-3 line-clamp-2">
                         {meal.name}
                       </h4>
-                      <div className={`flex gap-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                      <div className={`flex gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
                         <Button
                           size="sm"
-                          variant="ghost"
+                          variant="outline"
                           onClick={() => onViewMeal(meal)}
-                          className="h-6 px-2 text-xs"
+                          className="h-7 px-3 text-xs hover:bg-blue-50 hover:border-blue-300"
                         >
-                          <Eye className="w-3 h-3" />
+                          <Eye className="w-3 h-3 mr-1" />
+                          Recipe
                         </Button>
                         <Button
                           size="sm"
-                          variant="ghost"
+                          variant="outline"
                           onClick={() => onExchangeMeal(meal)}
-                          className="h-6 px-2 text-xs"
+                          className="h-7 px-3 text-xs hover:bg-green-50 hover:border-green-300"
                         >
-                          <ArrowLeftRight className="w-3 h-3" />
+                          <ArrowLeftRight className="w-3 h-3 mr-1" />
+                          Exchange
                         </Button>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-4">
-                    <Utensils className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                    <p className="text-xs text-gray-500">
+                  <div className="text-center py-6">
+                    <Utensils className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+                    <p className="text-sm text-gray-500">
                       {t('mealPlan.noMealsPlanned') || 'No meals planned'}
                     </p>
                   </div>
