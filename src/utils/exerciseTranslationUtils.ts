@@ -26,3 +26,9 @@ export const useExerciseTranslation = () => {
     language: language as Language
   };
 };
+
+export const translateExerciseContent = (exercise: any, language: string) => {
+  // For now, return the exercise as-is since we don't have translation data
+  // This can be enhanced later with actual translation logic
+  return exercise;
+};
