@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -155,6 +156,16 @@ const App = () => (
                 />
                 <Route 
                   path="/progress" 
+                  element={
+                    <ProtectedRoute requireAuth={true} requireProfile={true}>
+                      <Suspense fallback={<PageLoader />}>
+                        <LazyPages.Progress />
+                      </Suspense>
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/progress/:tab" 
                   element={
                     <ProtectedRoute requireAuth={true} requireProfile={true}>
                       <Suspense fallback={<PageLoader />}>

@@ -210,11 +210,11 @@ Return ONLY a JSON object with this exact structure:
       snackData.fat = Math.round(calories * 0.30 / 9);
     }
 
-    // Prepare snack data for database with enhanced validation
+    // Prepare snack data for database with enhanced validation - fix meal_type to use valid enum
     const finalSnackData = {
       weekly_plan_id: weeklyPlanId,
       day_number: day,
-      meal_type: 'snack',
+      meal_type: 'snack', // Use valid enum value instead of 'snack1'
       name: snackData.name,
       calories: Math.min(snackData.calories || calories, calories + 50),
       protein: Math.max(snackData.protein || Math.round(calories * 0.15 / 4), 1),

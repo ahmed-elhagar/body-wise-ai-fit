@@ -37,6 +37,13 @@ export const useMealPlanState = () => {
       mealTypes: "breakfast,lunch,dinner"
     } as MealPlanPreferences
   });
+
+  // AI Loading state - separate from isGenerating to prevent hooks issues
+  const [aiLoadingState, setAiLoadingState] = useState({
+    isGenerating: false,
+    currentStep: '',
+    progress: 0
+  });
   
   // Data fetching - single source of truth
   const { 
@@ -77,7 +84,7 @@ export const useMealPlanState = () => {
     setDialogs(prev => ({ ...prev, aiPreferences: newPreferences }));
   };
 
-  // Enhanced AI generation with proper credit checking and error handling
+  // Enhanced AI generation with proper loading state management
   const handleGenerateAIPlan = useCallback(async (): Promise<boolean> => {
     // Check credits first
     if (userCredits <= 0) {
@@ -98,12 +105,30 @@ export const useMealPlanState = () => {
         userCredits
       });
       
+      // Set AI loading state
+      setAiLoadingState({
+        isGenerating: true,
+        currentStep: 'Initializing generation...',
+        progress: 0
+      });
+      
       // Include preferences with current week offset
       const enhancedPreferences = {
         ...dialogs.aiPreferences,
         weekOffset: navigation.currentWeekOffset,
         language
       };
+      
+      // Update loading steps during generation
+      const updateProgress = (step: string, progress: number) => {
+        setAiLoadingState(prev => ({
+          ...prev,
+          currentStep: step,
+          progress
+        }));
+      };
+      
+      updateProgress('Analyzing your profile...', 25);
       
       const result = await generateMealPlan(enhancedPreferences, { 
         weekOffset: navigation.currentWeekOffset 
@@ -114,6 +139,8 @@ export const useMealPlanState = () => {
           weekOffset: navigation.currentWeekOffset
         });
         
+        updateProgress('Saving meal plan...', 75);
+        
         // Invalidate queries and refetch
         await queryClient.invalidateQueries({
           queryKey: ['weekly-meal-plan']
@@ -122,11 +149,18 @@ export const useMealPlanState = () => {
         // Wait for database update
         await new Promise(resolve => setTimeout(resolve, 1500));
         
+        updateProgress('Finalizing...', 100);
+        
         // Refetch data
         await refetchMealPlan?.();
         
-        // Close dialog
+        // Close dialog and clear loading state
         closeAIDialog();
+        setAiLoadingState({
+          isGenerating: false,
+          currentStep: '',
+          progress: 0
+        });
         
         // Show success message
         toast.success(
@@ -138,14 +172,17 @@ export const useMealPlanState = () => {
         return true;
       }
       
-      toast.error(
-        language === 'ar'
-          ? 'فشل في إنشاء خطة الوجبات'
-          : 'Failed to generate meal plan'
-      );
-      return false;
+      throw new Error('Generation failed');
     } catch (error) {
       console.error('❌ Generation failed:', error);
+      
+      // Clear loading state on error
+      setAiLoadingState({
+        isGenerating: false,
+        currentStep: '',
+        progress: 0
+      });
+      
       toast.error(
         language === 'ar'
           ? 'حدث خطأ أثناء الإنشاء'
@@ -198,8 +235,11 @@ export const useMealPlanState = () => {
     // Data
     currentWeekPlan,
     isLoading,
-    isGenerating,
+    isGenerating: aiLoadingState.isGenerating || isGenerating, // Combine both states
     error,
+    
+    // AI Loading state
+    aiLoadingState,
     
     // Enhanced context
     nutritionContext,
