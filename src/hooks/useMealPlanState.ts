@@ -13,14 +13,19 @@ export const useMealPlanState = () => {
   // AI actions
   const aiActions = useMealPlanAIActions(coreState, dialogsState);
 
-  return {
-    // Core state
+  // Combine all state with explicit property inclusion
+  const combinedState = {
+    // Core state - all properties from useMealPlanCore
     ...coreState,
     
-    // Dialog state - ensure all properties are included
+    // Dialog state - all properties from useMealPlanDialogs
     ...dialogsState,
     
-    // AI actions
+    // AI actions - all methods from useMealPlanAIActions
     ...aiActions
   };
+
+  console.log('🔍 useMealPlanState combined properties:', Object.keys(combinedState));
+
+  return combinedState;
 };

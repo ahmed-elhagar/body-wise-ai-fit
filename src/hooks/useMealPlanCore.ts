@@ -104,7 +104,7 @@ export const useMealPlanCore = () => {
     // Navigation state
     ...navigation,
     
-    // Calculations
+    // Calculations - include all calculation properties
     ...calculations,
     
     // Data

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useMealPlanState } from '@/hooks/useMealPlanState';
 import { useEnhancedShoppingListEmail } from '@/hooks/useEnhancedShoppingListEmail';
@@ -112,7 +111,7 @@ export const MealPlanContainer = () => {
       <MealPlanPageHeader
         onGenerateAI={mealPlanState.openAIDialog}
         onShuffle={handleShuffleMeals}
-        onShowShoppingList={() => mealPlanState.setDialogs?.(prev => ({ ...prev, showShoppingListDialog: true }))}
+        onShowShoppingList={mealPlanState.openShoppingListDialog}
         isGenerating={mealPlanState.isGenerating}
         isShuffling={isShuffling}
         hasWeeklyPlan={!!mealPlanState.currentWeekPlan?.weeklyPlan}
@@ -174,7 +173,7 @@ export const MealPlanContainer = () => {
         onCloseRecipeDialog={mealPlanState.closeRecipeDialog}
         onRecipeUpdated={mealPlanState.refetch}
         showShoppingListDialog={mealPlanState.showShoppingListDialog || false}
-        onCloseShoppingListDialog={() => mealPlanState.setDialogs?.(prev => ({ ...prev, showShoppingListDialog: false }))}
+        onCloseShoppingListDialog={mealPlanState.closeShoppingListDialog}
         enhancedShoppingItems={[]}
         onSendShoppingListEmail={handleSendShoppingListEmail}
         userCredits={mealPlanState.userCredits}
