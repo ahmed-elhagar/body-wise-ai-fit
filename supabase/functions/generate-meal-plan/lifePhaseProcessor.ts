@@ -1,94 +1,75 @@
 
-interface LifePhaseContext {
-  fastingType?: string;
-  pregnancyTrimester?: number;
-  breastfeedingLevel?: string;
-  extraCalories: number;
-  needsHydrationReminders: boolean;
-  isRamadan: boolean;
-}
-
-export const buildNutritionContext = (userProfile: any): LifePhaseContext => {
-  const extraCalories = calculateExtraCalories(userProfile);
-  
-  return {
-    fastingType: userProfile.fasting_type,
+export const buildNutritionContext = (userProfile: any) => {
+  const context = {
+    isPregnant: !!userProfile.pregnancy_trimester,
     pregnancyTrimester: userProfile.pregnancy_trimester,
+    isBreastfeeding: !!userProfile.breastfeeding_level,
     breastfeedingLevel: userProfile.breastfeeding_level,
-    extraCalories,
-    needsHydrationReminders: !!(userProfile.fasting_type === 'ramadan' || userProfile.breastfeeding_level),
-    isRamadan: userProfile.fasting_type === 'ramadan'
+    isMuslimFasting: userProfile.fasting_type === 'ramadan' || userProfile.fasting_type === 'islamic',
+    fastingType: userProfile.fasting_type,
+    hasHealthConditions: (userProfile.health_conditions || []).length > 0,
+    healthConditions: userProfile.health_conditions || [],
+    hasSpecialConditions: (userProfile.special_conditions || []).length > 0,
+    specialConditions: userProfile.special_conditions || [],
+    extraCalories: 0
   };
+
+  // Calculate extra calories for pregnancy
+  if (context.pregnancyTrimester === 2) {
+    context.extraCalories += 340;
+  } else if (context.pregnancyTrimester === 3) {
+    context.extraCalories += 450;
+  }
+
+  // Calculate extra calories for breastfeeding
+  if (context.breastfeedingLevel === 'exclusive') {
+    context.extraCalories += 400;
+  } else if (context.breastfeedingLevel === 'partial') {
+    context.extraCalories += 250;
+  }
+
+  return context;
 };
 
-export const calculateExtraCalories = (userProfile: any): number => {
-  if (userProfile.pregnancy_trimester === 2) return 340;
-  if (userProfile.pregnancy_trimester === 3) return 450;
-  if (userProfile.breastfeeding_level === 'exclusive') return 400;
-  if (userProfile.breastfeeding_level === 'partial') return 250;
-  return 0;
-};
+export const enhancePromptWithLifePhase = (basePrompt: string, nutritionContext: any, language: string): string => {
+  const isArabic = language === 'ar';
+  let enhancements = [];
 
-export const enhancePromptWithLifePhase = (
-  basePrompt: string, 
-  nutritionContext: LifePhaseContext,
-  language: string
-): string => {
-  let enhancedPrompt = basePrompt;
-
-  // Add life-phase specific instructions
-  if (nutritionContext.isRamadan) {
-    enhancedPrompt += language === 'ar' ? 
-      `\n\nتعليمات رمضان:\n- استبدل وجبة الإفطار بـ "السحور" ووجبة العشاء بـ "الإفطار"\n- ركز على الأطعمة المرطبة والمغذية\n- اقترح وجبة خفيفة ليلية إذا لزم الأمر` :
-      `\n\nRamadan Instructions:\n- Replace breakfast with "Suhoor" and dinner with "Iftar"\n- Focus on hydrating and nutritious foods\n- Suggest a night snack if needed`;
+  if (nutritionContext.isPregnant) {
+    const pregnancyText = isArabic 
+      ? `الحمل - الثلث ${nutritionContext.pregnancyTrimester}: تحتاج لتغذية إضافية للأم والجنين`
+      : `Pregnancy - Trimester ${nutritionContext.pregnancyTrimester}: Requires additional nutrition for mother and baby`;
+    enhancements.push(pregnancyText);
   }
 
-  if (nutritionContext.pregnancyTrimester) {
-    enhancedPrompt += language === 'ar' ?
-      `\n\nتعليمات الحمل (الثلث ${nutritionContext.pregnancyTrimester}):\n- أضف ${nutritionContext.extraCalories} سعرة حرارية إضافية\n- ركز على الأطعمة الغنية بالحديد وحمض الفوليك والكالسيوم\n- تجنب الأطعمة النيئة والأسماك عالية الزئبق` :
-      `\n\nPregnancy Instructions (Trimester ${nutritionContext.pregnancyTrimester}):\n- Add ${nutritionContext.extraCalories} extra calories\n- Focus on iron-rich, folate, and calcium foods\n- Avoid raw foods and high-mercury fish`;
+  if (nutritionContext.isBreastfeeding) {
+    const breastfeedingText = isArabic
+      ? `الرضاعة الطبيعية (${nutritionContext.breastfeedingLevel}): تحتاج سعرات حرارية إضافية`
+      : `Breastfeeding (${nutritionContext.breastfeedingLevel}): Requires additional calories`;
+    enhancements.push(breastfeedingText);
   }
 
-  if (nutritionContext.breastfeedingLevel) {
-    enhancedPrompt += language === 'ar' ?
-      `\n\nتعليمات الرضاعة الطبيعية:\n- أضف ${nutritionContext.extraCalories} سعرة حرارية إضافية\n- ركز على الأطعمة المرطبة والغنية بالبروتين\n- اقترح وجبات خفيفة مغذية بين الوجبات` :
-      `\n\nBreastfeeding Instructions:\n- Add ${nutritionContext.extraCalories} extra calories\n- Focus on hydrating and protein-rich foods\n- Suggest nutritious snacks between meals`;
+  if (nutritionContext.isMuslimFasting) {
+    const fastingText = isArabic
+      ? 'الصيام الإسلامي: يجب مراعاة أوقات الإفطار والسحور'
+      : 'Islamic Fasting: Must consider Iftar and Suhur meal timing';
+    enhancements.push(fastingText);
   }
 
-  if (nutritionContext.needsHydrationReminders) {
-    enhancedPrompt += language === 'ar' ?
-      `\n\nتذكير الترطيب: اقترح أطعمة غنية بالماء وتذكير بشرب السوائل` :
-      `\n\nHydration Reminder: Suggest water-rich foods and fluid intake reminders`;
+  if (nutritionContext.hasHealthConditions) {
+    const healthText = isArabic
+      ? `حالات صحية: ${nutritionContext.healthConditions.join(', ')}`
+      : `Health Conditions: ${nutritionContext.healthConditions.join(', ')}`;
+    enhancements.push(healthText);
   }
 
-  return enhancedPrompt;
-};
-
-export const validateLifePhaseMealPlan = (generatedPlan: any, nutritionContext: LifePhaseContext): boolean => {
-  if (!generatedPlan?.days) return false;
-
-  // Validate Ramadan schedule
-  if (nutritionContext.isRamadan) {
-    const sampleDay = generatedPlan.days[0];
-    const hasSuhoor = sampleDay?.meals?.some((meal: any) => meal.type === 'suhoor' || meal.name?.toLowerCase().includes('suhoor'));
-    const hasIftar = sampleDay?.meals?.some((meal: any) => meal.type === 'iftar' || meal.name?.toLowerCase().includes('iftar'));
+  if (enhancements.length > 0) {
+    const enhancementHeader = isArabic
+      ? '\n\nاعتبارات خاصة مهمة:'
+      : '\n\nIMPORTANT SPECIAL CONSIDERATIONS:';
     
-    if (!hasSuhoor || !hasIftar) {
-      console.warn('Ramadan meal plan validation failed: missing Suhoor or Iftar');
-      return false;
-    }
+    return basePrompt + enhancementHeader + '\n- ' + enhancements.join('\n- ');
   }
 
-  // Validate calorie adjustment
-  if (nutritionContext.extraCalories > 0) {
-    const weekSummary = generatedPlan.weekSummary;
-    const expectedMinCalories = (2000 + nutritionContext.extraCalories) * 7; // Base assumption
-    
-    if (weekSummary?.totalCalories < expectedMinCalories * 0.9) { // 10% tolerance
-      console.warn('Life-phase calorie adjustment validation failed');
-      return false;
-    }
-  }
-
-  return true;
+  return basePrompt;
 };

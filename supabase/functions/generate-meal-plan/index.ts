@@ -29,8 +29,25 @@ serve(async (req) => {
     console.log('=== ENHANCED MEAL PLAN GENERATION START ===');
     
     // Parse and validate request
-    const { userProfile, preferences } = await parseAndValidateRequest(req);
+    const requestBody = await req.json();
+    console.log('📝 Raw request body:', JSON.stringify(requestBody, null, 2));
+    
+    const { userProfile, preferences } = parseAndValidateRequest(requestBody);
     language = preferences?.language || userProfile?.preferred_language || 'en';
+    
+    console.log('✅ Validated user profile:', {
+      id: userProfile.id,
+      age: userProfile.age,
+      weight: userProfile.weight,
+      height: userProfile.height,
+      gender: userProfile.gender
+    });
+    
+    console.log('✅ Validated preferences:', {
+      includeSnacks: preferences?.includeSnacks,
+      weekOffset: preferences?.weekOffset,
+      language: preferences?.language
+    });
     
     // Initialize AI Service
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
@@ -195,14 +212,31 @@ serve(async (req) => {
   }
 });
 
-const parseAndValidateRequest = async (req: Request) => {
+const parseAndValidateRequest = (requestBody: any) => {
   try {
-    const body = await req.json();
-    const { userProfile, preferences } = body;
+    console.log('🔍 Parsing request body:', typeof requestBody, Object.keys(requestBody || {}));
     
-    if (!userProfile?.id) {
+    if (!requestBody) {
       throw new MealPlanError(
-        'User profile is required',
+        'Request body is required',
+        errorCodes.VALIDATION_ERROR,
+        400,
+        true
+      );
+    }
+    
+    const { userProfile, preferences } = requestBody;
+    
+    console.log('🔍 Extracted data:', {
+      hasUserProfile: !!userProfile,
+      userProfileKeys: userProfile ? Object.keys(userProfile) : [],
+      hasPreferences: !!preferences,
+      preferencesKeys: preferences ? Object.keys(preferences) : []
+    });
+    
+    if (!userProfile || !userProfile.id) {
+      throw new MealPlanError(
+        'User profile with ID is required',
         errorCodes.INVALID_USER_PROFILE,
         400,
         true
@@ -219,10 +253,11 @@ const parseAndValidateRequest = async (req: Request) => {
       );
     }
     
-    return { userProfile, preferences };
+    return { userProfile, preferences: preferences || {} };
   } catch (error) {
     if (error instanceof MealPlanError) throw error;
     
+    console.error('❌ Request parsing error:', error);
     throw new MealPlanError(
       'Invalid request format',
       errorCodes.VALIDATION_ERROR,

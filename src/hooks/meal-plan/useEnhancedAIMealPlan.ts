@@ -49,43 +49,47 @@ export const useEnhancedAIMealPlan = () => {
         }
       });
 
-      // Enhanced preferences with user profile data
+      // Enhanced preferences with user profile data - CORRECTED STRUCTURE
       const enhancedPreferences = {
         ...preferences,
         language,
         weekOffset: options?.weekOffset || 0,
-        userProfile: {
-          age: profile.age,
-          weight: profile.weight,
-          height: profile.height,
-          gender: profile.gender,
-          activity_level: profile.activity_level,
-          fitness_goal: profile.fitness_goal,
-          health_conditions: profile.health_conditions || [],
-          dietary_restrictions: profile.dietary_restrictions || [],
-          allergies: profile.allergies || [],
-          special_conditions: profile.special_conditions || [],
-          pregnancy_trimester: profile.pregnancy_trimester,
-          breastfeeding_level: profile.breastfeeding_level,
-          fasting_type: profile.fasting_type,
-          nationality: profile.nationality,
-          preferred_language: profile.preferred_language || language
-        },
         mealsPerDay: preferences.includeSnacks ? 5 : 3,
         mealTypes: preferences.includeSnacks 
           ? ['breakfast', 'snack1', 'lunch', 'snack2', 'dinner']
           : ['breakfast', 'lunch', 'dinner']
       };
 
+      // FIXED: Proper userProfile structure matching what edge function expects
+      const userProfileData = {
+        id: profile.id,
+        age: profile.age,
+        weight: profile.weight,
+        height: profile.height,
+        gender: profile.gender,
+        activity_level: profile.activity_level,
+        fitness_goal: profile.fitness_goal,
+        health_conditions: profile.health_conditions || [],
+        dietary_restrictions: profile.dietary_restrictions || [],
+        allergies: profile.allergies || [],
+        special_conditions: profile.special_conditions || [],
+        pregnancy_trimester: profile.pregnancy_trimester,
+        breastfeeding_level: profile.breastfeeding_level,
+        fasting_type: profile.fasting_type,
+        nationality: profile.nationality,
+        preferred_language: profile.preferred_language || language
+      };
+
       console.log('📤 Calling generate-meal-plan function with enhanced data:', {
         mealsPerDay: enhancedPreferences.mealsPerDay,
         includeSnacks: preferences.includeSnacks,
-        weekOffset: enhancedPreferences.weekOffset
+        weekOffset: enhancedPreferences.weekOffset,
+        userProfileStructure: Object.keys(userProfileData)
       });
 
       const { data, error } = await supabase.functions.invoke('generate-meal-plan', {
         body: {
-          userProfile: enhancedPreferences.userProfile,
+          userProfile: userProfileData,
           preferences: enhancedPreferences
         }
       });
