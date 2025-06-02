@@ -64,42 +64,25 @@ export const useMealPlanState = () => {
   const calculations = useMealPlanCalculations(currentWeekPlan, navigation.selectedDayNumber);
   
   // Dialog actions
-  const openAIDialog = useCallback(() => {
-    console.log('🎯 Opening AI Dialog with current preferences:', dialogs.aiPreferences);
-    setDialogs(prev => ({ ...prev, showAIDialog: true }));
-  }, [dialogs.aiPreferences]);
+  const openAIDialog = () => setDialogs(prev => ({ ...prev, showAIDialog: true }));
+  const closeAIDialog = () => setDialogs(prev => ({ ...prev, showAIDialog: false }));
   
-  const closeAIDialog = useCallback(() => {
-    console.log('🎯 Closing AI Dialog');
-    setDialogs(prev => ({ ...prev, showAIDialog: false }));
-    // Reset loading state when closing dialog
-    setAiLoadingState({
-      isGenerating: false,
-      currentStep: '',
-      progress: 0
-    });
-  }, []);
-  
-  const openRecipeDialog = useCallback((meal: any) => {
+  const openRecipeDialog = (meal: any) => {
     setDialogs(prev => ({ ...prev, selectedMeal: meal, showRecipeDialog: true }));
-  }, []);
+  };
   
-  const openExchangeDialog = useCallback((meal: any, index = 0) => {
+  const openExchangeDialog = (meal: any, index = 0) => {
     setDialogs(prev => ({ 
       ...prev, 
       selectedMeal: meal, 
       selectedMealIndex: index, 
       showExchangeDialog: true 
     }));
-  }, []);
+  };
 
-  const updateAIPreferences = useCallback((newPreferences: MealPlanPreferences) => {
-    console.log('🔧 Updating AI preferences:', {
-      old: dialogs.aiPreferences,
-      new: newPreferences
-    });
+  const updateAIPreferences = (newPreferences: MealPlanPreferences) => {
     setDialogs(prev => ({ ...prev, aiPreferences: newPreferences }));
-  }, [dialogs.aiPreferences]);
+  };
 
   // Enhanced AI generation with proper loading state management
   const handleGenerateAIPlan = useCallback(async (): Promise<boolean> => {
@@ -119,27 +102,22 @@ export const useMealPlanState = () => {
         preferences: dialogs.aiPreferences,
         userId: user?.id,
         nutritionContext,
-        userCredits,
-        includeSnacks: dialogs.aiPreferences.includeSnacks
+        userCredits
       });
       
       // Set AI loading state
       setAiLoadingState({
         isGenerating: true,
         currentStep: 'Initializing generation...',
-        progress: 10
+        progress: 0
       });
       
       // Include preferences with current week offset
       const enhancedPreferences = {
         ...dialogs.aiPreferences,
         weekOffset: navigation.currentWeekOffset,
-        language,
-        includeSnacks: dialogs.aiPreferences.includeSnacks, // Ensure this is passed
-        mealsPerDay: dialogs.aiPreferences.includeSnacks ? 5 : 3
+        language
       };
-      
-      console.log('🍽️ Final preferences for generation:', enhancedPreferences);
       
       // Update loading steps during generation
       const updateProgress = (step: string, progress: number) => {
@@ -152,15 +130,13 @@ export const useMealPlanState = () => {
       
       updateProgress('Analyzing your profile...', 25);
       
-      // Start generation
       const result = await generateMealPlan(enhancedPreferences, { 
         weekOffset: navigation.currentWeekOffset 
       });
       
       if (result) {
         console.log('✅ Generation successful:', {
-          weekOffset: navigation.currentWeekOffset,
-          includeSnacks: enhancedPreferences.includeSnacks
+          weekOffset: navigation.currentWeekOffset
         });
         
         updateProgress('Saving meal plan...', 75);
@@ -171,7 +147,7 @@ export const useMealPlanState = () => {
         });
         
         // Wait for database update
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise(resolve => setTimeout(resolve, 1500));
         
         updateProgress('Finalizing...', 100);
         
@@ -179,27 +155,24 @@ export const useMealPlanState = () => {
         await refetchMealPlan?.();
         
         // Close dialog and clear loading state
-        setTimeout(() => {
-          closeAIDialog();
-          setAiLoadingState({
-            isGenerating: false,
-            currentStep: '',
-            progress: 0
-          });
-        }, 500);
+        closeAIDialog();
+        setAiLoadingState({
+          isGenerating: false,
+          currentStep: '',
+          progress: 0
+        });
         
         // Show success message
-        const mealCount = enhancedPreferences.includeSnacks ? 5 : 3;
         toast.success(
           language === 'ar'
-            ? `تم إنشاء خطة الوجبات بنجاح! (${mealCount} وجبات يومياً)`
-            : `Meal plan generated successfully! (${mealCount} meals per day)`
+            ? 'تم إنشاء خطة الوجبات بنجاح!'
+            : 'Meal plan generated successfully!'
         );
         
         return true;
       }
       
-      throw new Error('Generation failed - no result returned');
+      throw new Error('Generation failed');
     } catch (error) {
       console.error('❌ Generation failed:', error);
       
@@ -212,8 +185,8 @@ export const useMealPlanState = () => {
       
       toast.error(
         language === 'ar'
-          ? 'حدث خطأ أثناء الإنشاء. يرجى المحاولة مرة أخرى.'
-          : 'An error occurred during generation. Please try again.'
+          ? 'حدث خطأ أثناء الإنشاء'
+          : 'An error occurred during generation'
       );
       return false;
     }
@@ -226,8 +199,7 @@ export const useMealPlanState = () => {
     user?.id, 
     nutritionContext,
     userCredits,
-    language,
-    closeAIDialog
+    language
   ]);
 
   // Manual refetch with proper error handling

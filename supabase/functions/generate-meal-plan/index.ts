@@ -45,8 +45,7 @@ serve(async (req) => {
     console.log('✅ Validated preferences:', {
       includeSnacks: preferences?.includeSnacks,
       weekOffset: preferences?.weekOffset,
-      language: preferences?.language,
-      mealsPerDay: preferences?.mealsPerDay
+      language: preferences?.language
     });
     
     // Check for OpenAI API key
@@ -63,7 +62,7 @@ serve(async (req) => {
     console.log('🌐 Enhanced Language Configuration:', { 
       language,
       includeSnacks: preferences?.includeSnacks,
-      mealsPerDay: preferences?.mealsPerDay || (preferences?.includeSnacks ? 5 : 3)
+      mealsPerDay: preferences?.includeSnacks ? 5 : 3
     });
 
     // Enhanced rate limiting check
@@ -100,8 +99,7 @@ serve(async (req) => {
       total: adjustedDailyCalories
     });
 
-    // Fixed snack determination - use boolean properly
-    const includeSnacks = preferences?.includeSnacks === true || preferences?.includeSnacks === 'true';
+    const includeSnacks = preferences?.includeSnacks !== false && preferences?.includeSnacks !== 'false';
     const mealsPerDay = includeSnacks ? 5 : 3;
     
     console.log('🍽️ Meal configuration:', {
@@ -283,7 +281,7 @@ const generateAIMealPlan = async (
     const basePrompt = generateEnhancedMealPlanPrompt(userProfile, preferences, adjustedDailyCalories, includeSnacks);
     const enhancedPrompt = enhancePromptWithLifePhase(basePrompt, nutritionContext, language);
 
-    // Add explicit JSON format instruction with snack emphasis
+    // Add explicit JSON format instruction
     const jsonFormatPrompt = enhancedPrompt + `
 
 CRITICAL: Return ONLY valid JSON in this exact format:
@@ -311,11 +309,10 @@ CRITICAL: Return ONLY valid JSON in this exact format:
   ]
 }
 
-IMPORTANT: Generate exactly ${includeSnacks ? '5 meals per day: breakfast, snack1, lunch, snack2, dinner' : '3 meals per day: breakfast, lunch, dinner'}.
-Total daily calories should be approximately ${adjustedDailyCalories}.
-${includeSnacks ? 'Include healthy snacks between main meals.' : 'No snacks - only main meals.'}`;
+For ${includeSnacks ? '5 meals per day: breakfast, snack1, lunch, snack2, dinner' : '3 meals per day: breakfast, lunch, dinner'}.
+Total daily calories should be approximately ${adjustedDailyCalories}.`;
 
-    console.log('🤖 Sending enhanced request to OpenAI API with snack setting:', includeSnacks);
+    console.log('🤖 Sending enhanced request to OpenAI API...');
     
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -375,13 +372,6 @@ ${includeSnacks ? 'Include healthy snacks between main meals.' : 'No snacks - on
         ) || []
       }));
     }
-    
-    console.log('✅ Generated plan structure:', {
-      totalDays: parsedPlan.days?.length || 0,
-      mealsPerDay: parsedPlan.days?.[0]?.meals?.length || 0,
-      includeSnacks,
-      expectedMealsPerDay: includeSnacks ? 5 : 3
-    });
     
     return parsedPlan;
   } catch (error) {
