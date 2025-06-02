@@ -55,19 +55,9 @@ export const WeeklyMealPlanView = ({
   };
 
   return (
-    <div className="space-y-4">
-      {/* Weekly Overview Header */}
-      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
-        <CardHeader className="pb-3">
-          <CardTitle className={`flex items-center gap-2 text-lg ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <Grid3X3 className="w-5 h-5 text-blue-600" />
-            {t('mealPlan.weeklyOverview') || 'Weekly Overview'}
-          </CardTitle>
-        </CardHeader>
-      </Card>
-
+    <div className="space-y-3">
       {/* Days Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
         {[1, 2, 3, 4, 5, 6, 7].map((dayNumber) => {
           const dayMeals = getMealsByDay(dayNumber);
           const totalCalories = dayMeals.reduce((sum: number, meal: any) => sum + (meal.calories || 0), 0);
