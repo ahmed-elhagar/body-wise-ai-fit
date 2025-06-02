@@ -26,7 +26,7 @@ export const createUserFriendlyError = (code: string, language: string = 'en') =
       [errorCodes.INVALID_USER_PROFILE]: 'Please complete your profile before generating a meal plan.',
       [errorCodes.RATE_LIMIT_EXCEEDED]: 'You have reached your AI generation limit. Please upgrade or try again later.',
       [errorCodes.AI_GENERATION_FAILED]: 'Failed to generate meal plan. Please try again.',
-      [errorCodes.VALIDATION_ERROR]: 'Invalid request. Please check your preferences and try again.',
+      [errorCodes.VALIDATION_ERROR]: 'Invalid meal data generated. Please try again with different preferences.',
       [errorCodes.DATABASE_ERROR]: 'Database error occurred. Please try again.',
       [errorCodes.NETWORK_ERROR]: 'Network error. Please check your connection and try again.'
     },
@@ -34,7 +34,7 @@ export const createUserFriendlyError = (code: string, language: string = 'en') =
       [errorCodes.INVALID_USER_PROFILE]: 'يرجى إكمال ملفك الشخصي قبل إنشاء خطة الوجبات.',
       [errorCodes.RATE_LIMIT_EXCEEDED]: 'لقد وصلت إلى حد الإنشاء بالذكاء الاصطناعي. يرجى الترقية أو المحاولة مرة أخرى لاحقاً.',
       [errorCodes.AI_GENERATION_FAILED]: 'فشل في إنشاء خطة الوجبات. يرجى المحاولة مرة أخرى.',
-      [errorCodes.VALIDATION_ERROR]: 'طلب غير صالح. يرجى التحقق من تفضيلاتك والمحاولة مرة أخرى.',
+      [errorCodes.VALIDATION_ERROR]: 'بيانات وجبة غير صحيحة. يرجى المحاولة مرة أخرى بتفضيلات مختلفة.',
       [errorCodes.DATABASE_ERROR]: 'حدث خطأ في قاعدة البيانات. يرجى المحاولة مرة أخرى.',
       [errorCodes.NETWORK_ERROR]: 'خطأ في الشبكة. يرجى التحقق من اتصالك والمحاولة مرة أخرى.'
     }
@@ -45,7 +45,7 @@ export const createUserFriendlyError = (code: string, language: string = 'en') =
     langMessages[code] || 'An unexpected error occurred.',
     code,
     500,
-    true
+    code !== errorCodes.INVALID_USER_PROFILE // Most errors are retryable except profile issues
   );
 };
 
@@ -59,6 +59,19 @@ export const handleMealPlanError = (error: any, language: string = 'en') => {
       code: error.code,
       statusCode: error.statusCode,
       isRetryable: error.isRetryable
+    };
+  }
+
+  // Handle database constraint errors specifically
+  if (error.message?.includes('daily_meals_meal_type_check')) {
+    return {
+      success: false,
+      error: language === 'ar' 
+        ? 'خطأ في نوع الوجبة. يرجى المحاولة مرة أخرى.'
+        : 'Invalid meal type detected. Please try again.',
+      code: errorCodes.VALIDATION_ERROR,
+      statusCode: 400,
+      isRetryable: true
     };
   }
 

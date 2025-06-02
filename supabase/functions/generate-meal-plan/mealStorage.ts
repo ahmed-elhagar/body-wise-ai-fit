@@ -1,77 +1,79 @@
+import { errorCodes, MealPlanError } from './enhancedErrorHandling';
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
-
-export const saveMealsToDatabase = async (generatedPlan: any, weeklyPlanId: string) => {
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL') ?? '',
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-  );
-
-  console.log('🍽️ Saving meals to database:', { weeklyPlanId, daysCount: generatedPlan.days?.length });
-
-  if (!generatedPlan.days || !Array.isArray(generatedPlan.days)) {
-    throw new Error('Invalid meal plan structure: missing days array');
-  }
-
-  const mealsToInsert = [];
+export const saveMealsToDatabase = async (
+  supabaseClient: any,
+  weeklyPlanId: string,
+  mealsByDay: any[]
+) => {
+  console.log('🍽️ Saving meals to database:', { weeklyPlanId, daysCount: mealsByDay.length });
   
-  for (const day of generatedPlan.days) {
-    console.log(`📅 Processing day ${day.day} with ${day.meals?.length || 0} meals`);
+  const mealsToInsert = [];
+
+  for (let dayIndex = 0; dayIndex < mealsByDay.length; dayIndex++) {
+    const dayMeals = mealsByDay[dayIndex];
+    const dayNumber = dayIndex + 1;
     
-    if (!day.meals || !Array.isArray(day.meals)) {
-      console.warn(`⚠️ Day ${day.day} has no meals or invalid meals structure`);
-      continue;
-    }
+    console.log(`📅 Processing day ${dayNumber} with ${dayMeals.length} meals`);
     
-    for (const meal of day.meals) {
-      // Properly format arrays and ensure correct data types
+    for (const meal of dayMeals) {
+      // Map meal types to database-allowed values
+      let mealType = meal.meal_type;
+      if (mealType === 'snack1' || mealType === 'snack2') {
+        mealType = 'snack';
+      }
+      
+      // Validate meal type against allowed values
+      const allowedMealTypes = ['breakfast', 'lunch', 'dinner', 'snack'];
+      if (!allowedMealTypes.includes(mealType)) {
+        console.warn(`⚠️ Invalid meal type: ${meal.meal_type}, defaulting to 'snack'`);
+        mealType = 'snack';
+      }
+
       const mealData = {
         weekly_plan_id: weeklyPlanId,
-        day_number: day.day,
-        meal_type: meal.type || meal.meal_type || 'breakfast',
-        name: meal.name || 'Unnamed Meal',
-        calories: parseInt(meal.calories) || 0,
-        protein: parseFloat(meal.protein) || 0,
-        carbs: parseFloat(meal.carbs) || 0,
-        fat: parseFloat(meal.fat) || 0,
-        prep_time: parseInt(meal.prep_time) || 15,
-        cook_time: parseInt(meal.cook_time) || 15,
-        servings: parseInt(meal.servings) || 1,
-        // Properly handle arrays - ensure they are actual arrays, not strings
-        ingredients: Array.isArray(meal.ingredients) ? meal.ingredients : 
-                    (typeof meal.ingredients === 'string' ? [meal.ingredients] : []),
-        instructions: Array.isArray(meal.instructions) ? meal.instructions : 
-                     (typeof meal.instructions === 'string' ? [meal.instructions] : []),
-        alternatives: Array.isArray(meal.alternatives) ? meal.alternatives : 
-                     (typeof meal.alternatives === 'string' ? [meal.alternatives] : [])
+        day_number: dayNumber,
+        meal_type: mealType,
+        name: meal.name,
+        calories: meal.calories || 0,
+        protein: meal.protein || 0,
+        carbs: meal.carbs || 0,
+        fat: meal.fat || 0,
+        ingredients: meal.ingredients || [],
+        instructions: meal.instructions || [],
+        prep_time: meal.prep_time || 0,
+        cook_time: meal.cook_time || 0,
+        servings: meal.servings || 1,
+        substitutions: meal.substitutions || []
       };
-      
-      console.log(`✅ Prepared meal: ${mealData.name} (${mealData.meal_type}) - ${mealData.calories} cal`);
-      mealsToInsert.push(mealData);
-    }
-  }
 
-  if (mealsToInsert.length === 0) {
-    throw new Error('No valid meals to insert');
+      mealsToInsert.push(mealData);
+      console.log(`✅ Prepared meal: ${meal.name} (${mealType}) - ${meal.calories} cal`);
+    }
   }
 
   console.log(`📊 Inserting ${mealsToInsert.length} meals into database`);
 
-  try {
-    const { data, error } = await supabase
-      .from('daily_meals')
-      .insert(mealsToInsert)
-      .select('id');
+  // Delete existing meals for this weekly plan
+  const { error: deleteError } = await supabaseClient
+    .from('daily_meals')
+    .delete()
+    .eq('weekly_plan_id', weeklyPlanId);
 
-    if (error) {
-      console.error('❌ Error inserting meals:', error);
-      throw new Error(`Failed to insert meals: ${error.message}`);
-    }
-
-    console.log(`✅ Successfully inserted ${data?.length || 0} meals`);
-    return { totalMealsSaved: data?.length || 0 };
-  } catch (error) {
-    console.error('❌ Database insertion failed:', error);
-    throw error;
+  if (deleteError) {
+    console.error('❌ Error deleting existing meals:', deleteError);
+    throw new Error(`Failed to delete existing meals: ${deleteError.message}`);
   }
+
+  // Insert new meals
+  const { data, error } = await supabaseClient
+    .from('daily_meals')
+    .insert(mealsToInsert);
+
+  if (error) {
+    console.error('❌ Error inserting meals:', error);
+    throw new Error(`Failed to insert meals: ${error.message}`);
+  }
+
+  console.log('✅ Meals saved successfully to database');
+  return data;
 };
