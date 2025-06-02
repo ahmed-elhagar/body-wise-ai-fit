@@ -67,7 +67,14 @@ export const useMealPlanState = () => {
         userCredits
       });
       
-      const result = await generateMealPlan(dialogs.aiPreferences, { 
+      // Include preferences with current week offset
+      const enhancedPreferences = {
+        ...dialogs.aiPreferences,
+        weekOffset: navigation.currentWeekOffset,
+        language
+      };
+      
+      const result = await generateMealPlan(enhancedPreferences, { 
         weekOffset: navigation.currentWeekOffset 
       });
       

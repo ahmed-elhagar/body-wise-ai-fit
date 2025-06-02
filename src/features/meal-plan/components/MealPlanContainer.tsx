@@ -124,7 +124,7 @@ export const MealPlanContainer = () => {
         remainingCredits={userCredits || 0}
       />
 
-      {/* Compact Daily Progress */}
+      {/* Only show compact daily progress at the top */}
       {currentWeekPlan?.weeklyPlan && (
         <CompactDailyProgress
           totalCalories={totalCalories || 0}
@@ -146,6 +146,7 @@ export const MealPlanContainer = () => {
           onAddSnack={handleAddSnack}
           weekStartDate={weekStartDate}
           weeklyPlan={currentWeekPlan}
+          showAddSnackButton={true}
         />
       ) : (
         <EmptyWeekState

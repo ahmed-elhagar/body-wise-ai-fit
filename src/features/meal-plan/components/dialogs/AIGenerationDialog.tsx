@@ -95,10 +95,10 @@ export const AIGenerationDialog = ({
 
   const getLifePhaseLabel = () => {
     if (nutritionContext.pregnancyTrimester) {
-      return `${t('profile.lifePhase.pregnancy.title')} - ${t('profile.lifePhase.pregnancy.trimester' + nutritionContext.pregnancyTrimester)}`;
+      return `${t('profile.lifePhase.pregnancy.title') || 'Pregnancy'} - ${t('profile.lifePhase.pregnancy.trimester' + nutritionContext.pregnancyTrimester) || 'Trimester ' + nutritionContext.pregnancyTrimester}`;
     }
     if (nutritionContext.breastfeedingLevel) {
-      return `${t('profile.lifePhase.breastfeeding.title')} - ${t('profile.lifePhase.breastfeeding.' + nutritionContext.breastfeedingLevel)}`;
+      return `${t('profile.lifePhase.breastfeeding.title') || 'Breastfeeding'} - ${t('profile.lifePhase.breastfeeding.' + nutritionContext.breastfeedingLevel) || nutritionContext.breastfeedingLevel}`;
     }
     if (nutritionContext.isMuslimFasting) {
       return language === 'ar' ? 'الصيام الإسلامي' : 'Muslim Fasting';
