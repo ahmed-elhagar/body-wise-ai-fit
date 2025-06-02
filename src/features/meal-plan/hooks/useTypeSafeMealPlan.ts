@@ -32,10 +32,10 @@ export const useTypeSafeMealPlan = (
       if (!acc[meal.day_number]) {
         acc[meal.day_number] = [];
       }
-      // Fix: Use spread operator instead of push to avoid mutating readonly array
+      // Create new array instead of mutating to respect readonly constraint
       acc[meal.day_number] = [...acc[meal.day_number], meal];
       return acc;
-    }, {} as Record<number, typeof validatedData.dailyMeals>);
+    }, {} as Record<number, Array<typeof validatedData.dailyMeals[0]>>);
   }, [validatedData]);
 
   const nutritionTotals = useMemo(() => {
