@@ -130,9 +130,21 @@ export class MealPlanService {
 
   static async updateMeal(mealId: string, updates: Partial<DailyMeal>): Promise<boolean> {
     try {
+      // Convert MealIngredient[] to proper JSON format for database
+      const dbUpdates: any = { ...updates };
+      if (updates.ingredients) {
+        dbUpdates.ingredients = updates.ingredients;
+      }
+      if (updates.instructions) {
+        dbUpdates.instructions = updates.instructions;
+      }
+      if (updates.alternatives) {
+        dbUpdates.alternatives = updates.alternatives;
+      }
+
       const { error } = await supabase
         .from('daily_meals')
-        .update(updates)
+        .update(dbUpdates)
         .eq('id', mealId);
 
       if (error) throw error;

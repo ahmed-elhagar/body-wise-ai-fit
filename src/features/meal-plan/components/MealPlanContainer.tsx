@@ -14,7 +14,7 @@ import { useMealPlanCore, useMealPlanNavigation, useMealPlanCalculations, useMea
 
 export const MealPlanContainer = () => {
   const { t } = useLanguage();
-  const { credits } = useCreditSystem();
+  const creditSystem = useCreditSystem();
   
   // Use centralized hooks
   const navigation = useMealPlanNavigation();
@@ -35,7 +35,7 @@ export const MealPlanContainer = () => {
     currentWeekOffset: navigation.currentWeekOffset,
     selectedDay: navigation.selectedDayNumber,
     totalMeals: calculations.dailyMeals.length,
-    credits: credits.remaining
+    credits: creditSystem.userCredits
   });
 
   if (isLoading) {
@@ -70,7 +70,7 @@ export const MealPlanContainer = () => {
         onGenerateAI={() => dialogs.setShowAIDialog(true)}
         onRefresh={handleRefresh}
         hasWeeklyPlan={!!mealPlanData?.weeklyPlan}
-        credits={credits}
+        credits={{ remaining: creditSystem.userCredits }}
       />
 
       {/* Main Content */}
