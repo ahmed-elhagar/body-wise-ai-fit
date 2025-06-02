@@ -48,7 +48,12 @@ const EnhancedRecipeDialog = ({
             : [],
         instructions: Array.isArray(updatedMeal.instructions)
           ? updatedMeal.instructions
-          : []
+          : [],
+        alternatives: Array.isArray(updatedMeal.alternatives)
+          ? updatedMeal.alternatives
+          : typeof updatedMeal.alternatives === 'string'
+            ? JSON.parse(updatedMeal.alternatives)
+            : []
       };
       setRecipeData(typedMeal);
       onRecipeGenerated?.();
