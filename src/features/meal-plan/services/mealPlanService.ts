@@ -75,7 +75,7 @@ export const fetchMealPlanData = async (
     life_phase_context: weeklyPlan.life_phase_context
   };
 
-  // Process daily meals with proper type mapping
+  // Process daily meals with proper type mapping and safe property access
   const processedDailyMeals = (dailyMeals || []).map(meal => ({
     id: meal.id,
     weekly_plan_id: meal.weekly_plan_id,
@@ -86,8 +86,8 @@ export const fetchMealPlanData = async (
     protein: meal.protein || 0,
     carbs: meal.carbs || 0,
     fat: meal.fat || 0,
-    fiber: meal.fiber || 0, // Provide default value if missing
-    sugar: meal.sugar || 0, // Provide default value if missing
+    fiber: 0, // Default value since not in database schema
+    sugar: 0, // Default value since not in database schema
     prep_time: meal.prep_time || 0,
     cook_time: meal.cook_time || 0,
     servings: meal.servings || 1,

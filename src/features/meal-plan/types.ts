@@ -19,8 +19,8 @@ export interface DailyMeal {
   protein: number;
   carbs: number;
   fat: number;
-  fiber?: number;
-  sugar?: number;
+  fiber?: number; // Optional since not in database
+  sugar?: number; // Optional since not in database
   prep_time: number;
   cook_time: number;
   servings: number;
