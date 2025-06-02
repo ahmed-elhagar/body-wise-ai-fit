@@ -1,75 +1,22 @@
 
-import { useState, useCallback } from 'react';
-import { toast } from 'sonner';
+import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useEnhancedErrorSystem } from './useEnhancedErrorSystem';
-import type { WeeklyMealPlan, DailyMeal } from './useMealPlanData';
-
-interface ShoppingListItem {
-  name: string;
-  quantity: number;
-  unit: string;
-  category: string;
-}
+import { toast } from 'sonner';
+import type { MealPlanFetchResult } from '@/types/mealPlan';
 
 export const useEnhancedShoppingListEmail = () => {
   const { user } = useAuth();
   const { language } = useLanguage();
-  const { handleError } = useEnhancedErrorSystem();
   const [isLoading, setIsLoading] = useState(false);
 
-  const generateShoppingItems = useCallback((weeklyPlan: {
-    weeklyPlan: WeeklyMealPlan;
-    dailyMeals: DailyMeal[];
-  } | null): ShoppingListItem[] => {
-    if (!weeklyPlan?.dailyMeals) return [];
-
-    const itemsMap = new Map<string, ShoppingListItem>();
-    
-    weeklyPlan.dailyMeals.forEach(meal => {
-      if (meal.ingredients && Array.isArray(meal.ingredients)) {
-        meal.ingredients.forEach((ingredient: any) => {
-          const ingredientName = ingredient.name || ingredient;
-          const quantity = parseFloat(ingredient.quantity || '1');
-          const unit = ingredient.unit || 'piece';
-          const category = getCategoryForIngredient(ingredientName);
-          const key = `${ingredientName.toLowerCase()}-${unit}`;
-          
-          if (itemsMap.has(key)) {
-            const existing = itemsMap.get(key)!;
-            existing.quantity += quantity;
-          } else {
-            itemsMap.set(key, {
-              name: ingredientName,
-              quantity: quantity,
-              unit: unit,
-              category
-            });
-          }
-        });
-      }
-    });
-
-    return Array.from(itemsMap.values());
-  }, []);
-
-  const sendShoppingListEmail = useCallback(async (
-    weeklyPlan: {
-      weeklyPlan: WeeklyMealPlan;
-      dailyMeals: DailyMeal[];
-    } | null
-  ): Promise<boolean> => {
-    if (!user || !weeklyPlan) {
-      handleError(
-        new Error('Missing user or weekly plan data'),
-        {
-          operation: 'send_shopping_list_email',
-          userId: user?.id,
-          retryable: false,
-          severity: 'medium'
-        }
+  const sendShoppingListEmail = async (weeklyPlan: MealPlanFetchResult | null): Promise<boolean> => {
+    if (!user?.email || !weeklyPlan?.weeklyPlan) {
+      toast.error(
+        language === 'ar' 
+          ? 'لا توجد خطة وجبات أو بريد إلكتروني'
+          : 'No meal plan or email found'
       );
       return false;
     }
@@ -77,42 +24,47 @@ export const useEnhancedShoppingListEmail = () => {
     setIsLoading(true);
 
     try {
-      console.log('📧 Starting enhanced shopping list email generation...');
+      // Generate shopping items from meals
+      const shoppingItems: Record<string, Array<{ name: string; quantity: number; unit: string }>> = {};
       
-      const shoppingItems = generateShoppingItems(weeklyPlan);
-      
-      if (shoppingItems.length === 0) {
-        throw new Error('No shopping items found in meal plan');
+      if (weeklyPlan.dailyMeals) {
+        weeklyPlan.dailyMeals.forEach(meal => {
+          if (meal.ingredients) {
+            const ingredients = Array.isArray(meal.ingredients) ? meal.ingredients : [];
+            ingredients.forEach((ingredient: any) => {
+              const category = ingredient.category || 'Other';
+              if (!shoppingItems[category]) {
+                shoppingItems[category] = [];
+              }
+              shoppingItems[category].push({
+                name: ingredient.name || ingredient.ingredient || 'Unknown',
+                quantity: ingredient.quantity || 1,
+                unit: ingredient.unit || 'piece'
+              });
+            });
+          }
+        });
       }
 
-      // Group items by category
-      const groupedItems = shoppingItems.reduce((acc, item) => {
-        if (!acc[item.category]) {
-          acc[item.category] = [];
-        }
-        acc[item.category].push(item);
-        return acc;
-      }, {} as Record<string, ShoppingListItem[]>);
+      const totalItems = Object.values(shoppingItems).reduce((total, items) => total + items.length, 0);
+      const categories = Object.keys(shoppingItems);
 
-      const weekRange = `Week of ${weeklyPlan.weeklyPlan.week_start_date}`;
-
-      // Enhanced email data with better formatting
       const emailData = {
         userId: user.id,
         userEmail: user.email,
         weekId: weeklyPlan.weeklyPlan.id,
-        shoppingItems: groupedItems,
-        weekRange: weekRange,
-        totalItems: shoppingItems.length,
-        categories: Object.keys(groupedItems),
-        language: language,
+        shoppingItems,
+        weekRange: `Week of ${weeklyPlan.weeklyPlan.week_start_date}`,
+        totalItems,
+        categories,
+        language,
         generatedAt: new Date().toISOString()
       };
 
-      console.log('📧 Sending shopping list email with data:', {
-        totalItems: emailData.totalItems,
-        categories: emailData.categories.length,
-        language: emailData.language
+      console.log('📧 Sending shopping list email:', {
+        userId: user.id,
+        totalItems,
+        categories: categories.length
       });
 
       const { data, error } = await supabase.functions.invoke('send-shopping-list-email', {
@@ -120,95 +72,40 @@ export const useEnhancedShoppingListEmail = () => {
       });
 
       if (error) {
-        console.error('❌ Shopping list email error:', error);
-        throw error;
+        console.error('❌ Error sending shopping list email:', error);
+        toast.error(
+          language === 'ar'
+            ? 'فشل في إرسال قائمة التسوق'
+            : 'Failed to send shopping list'
+        );
+        return false;
       }
 
-      console.log('✅ Shopping list email sent successfully:', data);
-      
-      toast.success(
-        language === 'ar' 
-          ? `تم إرسال قائمة التسوق (${emailData.totalItems} عنصر) إلى بريدك الإلكتروني!`
-          : `Shopping list (${emailData.totalItems} items) sent to your email!`,
-        { duration: 5000 }
-      );
+      if (data?.success) {
+        toast.success(
+          language === 'ar'
+            ? 'تم إرسال قائمة التسوق بنجاح!'
+            : 'Shopping list sent successfully!'
+        );
+        return true;
+      }
 
-      return true;
-      
+      return false;
     } catch (error: any) {
-      console.error('❌ Enhanced shopping list email failed:', error);
-      
-      handleError(error, {
-        operation: 'send_shopping_list_email',
-        userId: user.id,
-        retryable: true,
-        severity: 'high'
-      });
-      
+      console.error('❌ Exception sending shopping list email:', error);
+      toast.error(
+        language === 'ar'
+          ? 'حدث خطأ أثناء إرسال قائمة التسوق'
+          : 'Error sending shopping list'
+      );
       return false;
     } finally {
       setIsLoading(false);
     }
-  }, [user, language, handleError, generateShoppingItems]);
-
-  const validateEmailConfiguration = useCallback(async (): Promise<boolean> => {
-    try {
-      // Test if the email function is accessible
-      const { error } = await supabase.functions.invoke('send-shopping-list-email', {
-        body: { test: true }
-      });
-
-      return !error || !error.message.includes('Function not found');
-    } catch (error) {
-      console.warn('Email service validation failed:', error);
-      return false;
-    }
-  }, []);
+  };
 
   return {
     sendShoppingListEmail,
-    generateShoppingItems,
-    validateEmailConfiguration,
     isLoading
   };
-};
-
-const getCategoryForIngredient = (ingredient: string): string => {
-  const lowerIngredient = ingredient.toLowerCase();
-  
-  if (lowerIngredient.includes('meat') || lowerIngredient.includes('chicken') || 
-      lowerIngredient.includes('beef') || lowerIngredient.includes('lamb') ||
-      lowerIngredient.includes('fish') || lowerIngredient.includes('salmon')) {
-    return 'Protein';
-  }
-  
-  if (lowerIngredient.includes('milk') || lowerIngredient.includes('cheese') || 
-      lowerIngredient.includes('yogurt') || lowerIngredient.includes('cream')) {
-    return 'Dairy';
-  }
-  
-  if (lowerIngredient.includes('apple') || lowerIngredient.includes('banana') || 
-      lowerIngredient.includes('orange') || lowerIngredient.includes('berry')) {
-    return 'Fruits';
-  }
-  
-  if (lowerIngredient.includes('carrot') || lowerIngredient.includes('onion') || 
-      lowerIngredient.includes('tomato') || lowerIngredient.includes('spinach') ||
-      lowerIngredient.includes('lettuce') || lowerIngredient.includes('broccoli')) {
-    return 'Vegetables';
-  }
-  
-  if (lowerIngredient.includes('rice') || lowerIngredient.includes('bread') || 
-      lowerIngredient.includes('pasta') || lowerIngredient.includes('flour') ||
-      lowerIngredient.includes('oats') || lowerIngredient.includes('quinoa')) {
-    return 'Grains';
-  }
-  
-  if (lowerIngredient.includes('oil') || lowerIngredient.includes('salt') || 
-      lowerIngredient.includes('pepper') || lowerIngredient.includes('spice') ||
-      lowerIngredient.includes('garlic') || lowerIngredient.includes('herb')) {
-    return 'Condiments & Spices';
-  }
-  
-  return 'Other';
 };
