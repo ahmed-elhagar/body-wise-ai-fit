@@ -37,8 +37,34 @@ export const useEnhancedShoppingList = (weeklyPlan?: WeeklyPlanData | null) => {
     weeklyPlan.dailyMeals.forEach((meal, mealIndex) => {
       console.log(`🍽️ Processing meal ${mealIndex + 1}: ${meal.name}`);
       
-      if (meal.ingredients && Array.isArray(meal.ingredients)) {
-        meal.ingredients.forEach((ingredient: unknown, ingIndex) => {
+      // Enhanced type checking for ingredients
+      if (meal.ingredients) {
+        let ingredientsArray: Ingredient[] = [];
+        
+        // Handle different ingredient formats
+        if (Array.isArray(meal.ingredients)) {
+          ingredientsArray = meal.ingredients;
+        } else if (typeof meal.ingredients === 'string') {
+          try {
+            const parsed = JSON.parse(meal.ingredients);
+            if (Array.isArray(parsed)) {
+              ingredientsArray = parsed;
+            }
+          } catch (error) {
+            console.warn('Failed to parse ingredients string:', meal.ingredients);
+          }
+        } else if (typeof meal.ingredients === 'object' && meal.ingredients !== null) {
+          // If it's an object, try to convert it to an array
+          ingredientsArray = Object.values(meal.ingredients).filter(
+            (item): item is Ingredient => 
+              typeof item === 'object' && 
+              item !== null && 
+              'name' in item
+          );
+        }
+
+        // Process the validated ingredients array
+        ingredientsArray.forEach((ingredient: unknown, ingIndex) => {
           // Type guard to ensure ingredient is properly typed
           let ingredientData: Ingredient;
           
