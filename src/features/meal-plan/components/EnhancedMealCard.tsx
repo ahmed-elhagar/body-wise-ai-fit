@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Eye, ArrowLeftRight } from "lucide-react";
-import { useMealPlanTranslations } from '@/utils/mealPlanTranslations';
+import { useMealPlanTranslations } from '@/hooks/useMealPlanTranslations';
 import type { DailyMeal } from '../types';
 
 interface EnhancedMealCardProps {
