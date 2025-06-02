@@ -1,6 +1,6 @@
 
 import { useMealPlanCore } from "./useMealPlanCore";
-import { useMealPlanDialogs } from "./useMealPlanDialogs";
+import { useMealPlanDialogs } from "@/features/meal-plan/hooks/useMealPlanDialogs";
 import { useMealPlanAIActions } from "./useMealPlanAIActions";
 
 export const useMealPlanState = () => {

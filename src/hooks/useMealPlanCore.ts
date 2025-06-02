@@ -1,8 +1,8 @@
 
 import { useCallback, useState, useMemo } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useMealPlanNavigation } from "./useMealPlanNavigation";
-import { useMealPlanCalculations } from "./useMealPlanCalculations";
+import { useMealPlanNavigation } from "@/features/meal-plan/hooks/useMealPlanNavigation";
+import { useMealPlanCalculations } from "@/features/meal-plan/hooks/useMealPlanCalculations";
 import { useMealPlanData } from "./useMealPlanData";
 import { useEnhancedMealPlan } from "./useEnhancedMealPlan";
 import { useCreditSystem } from './useCreditSystem';
