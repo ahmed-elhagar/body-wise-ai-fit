@@ -1,3 +1,4 @@
+
 export const mealPlan = {
   // Core functionality
   title: "Meal Plan",
@@ -16,6 +17,8 @@ export const mealPlan = {
   dailyOverview: "Daily Overview",
   weeklyView: "Weekly View",
   dailyView: "Daily View",
+  selectDay: "Select Day",
+  today: "Today",
   
   // Nutrition & Stats
   totalCalories: "Total Calories",
@@ -48,6 +51,8 @@ export const mealPlan = {
   personalizedPlan: "Personalized Plan",
   aiPowered: "AI Powered",
   aiPoweredNutrition: "AI Powered Nutrition",
+  smartMealPlanning: "Smart Meal Planning",
+  personalizedNutrition: "Get personalized nutrition plans tailored to your goals",
   loading: "Loading...",
   generating: "Generating...",
   
@@ -59,6 +64,8 @@ export const mealPlan = {
   
   // Stats
   dailyProgress: "Daily Progress",
+  calorieProgress: "Calorie Progress",
+  consumed: "Consumed",
   mealsToday: "Meals Today",
   complete: "Complete",
   
@@ -69,6 +76,9 @@ export const mealPlan = {
   snack: "Snack",
   snack1: "Morning Snack",
   snack2: "Evening Snack",
+  
+  // Credits
+  aiCredits: "AI Credits",
   
   // Cuisine Types
   cuisine: "Cuisine",
