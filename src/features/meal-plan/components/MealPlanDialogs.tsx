@@ -73,7 +73,7 @@ export const MealPlanDialogs = ({
         meal={selectedMeal}
       />
 
-      {/* Exchange Dialog */}
+      {/* Exchange Dialog - Fix props to match component interface */}
       <MealExchangeDialog
         isOpen={showExchangeDialog}
         onClose={onCloseExchangeDialog}
