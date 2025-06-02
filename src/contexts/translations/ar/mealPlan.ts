@@ -55,7 +55,17 @@ export const mealPlan = {
   smartMealPlanning: "تخطيط وجبات ذكي",
   personalizedNutrition: "احصل على خطط تغذية مخصصة تناسب أهدافك",
   loading: "جارٍ التحميل...",
+  loadingDescription: "يرجى الانتظار بينما نجلب خطة وجباتك المخصصة...",
   generating: "جارٍ الإنشاء...",
+  
+  // Error handling
+  errorLoadingMealPlan: "خطأ في تحميل خطة الوجبات",
+  somethingWentWrong: "حدث خطأ ما",
+  tryAgain: "حاول مرة أخرى",
+  goToDashboard: "الذهاب إلى لوحة التحكم",
+  authenticationRequired: "المصادقة مطلوبة",
+  pleaseSignIn: "يرجى تسجيل الدخول للمتابعة",
+  signIn: "تسجيل الدخول",
   
   // Success/Error Messages
   snackAddedSuccess: "تم إضافة الوجبة الخفيفة بنجاح!",

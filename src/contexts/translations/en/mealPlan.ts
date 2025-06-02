@@ -55,7 +55,17 @@ export const mealPlan = {
   smartMealPlanning: "Smart Meal Planning",
   personalizedNutrition: "Get personalized nutrition plans tailored to your goals",
   loading: "Loading...",
+  loadingDescription: "Please wait while we fetch your personalized meal plan...",
   generating: "Generating...",
+  
+  // Error handling
+  errorLoadingMealPlan: "Error Loading Meal Plan",
+  somethingWentWrong: "Something went wrong",
+  tryAgain: "Try Again",
+  goToDashboard: "Go to Dashboard",
+  authenticationRequired: "Authentication Required",
+  pleaseSignIn: "Please sign in to continue",
+  signIn: "Sign In",
   
   // Success/Error Messages
   snackAddedSuccess: "Snack added successfully!",

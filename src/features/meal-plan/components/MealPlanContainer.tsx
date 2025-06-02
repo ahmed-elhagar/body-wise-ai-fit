@@ -11,11 +11,16 @@ import { MealPlanContent } from './MealPlanContent';
 import { MealPlanDialogs } from './dialogs/MealPlanDialogs';
 import { LifePhaseRibbon } from '@/components/meal-plan/LifePhaseRibbon';
 import { LoadingState } from './LoadingState';
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { AlertCircle, RefreshCw, Home } from "lucide-react";
+import { useMealPlanTranslations } from "@/hooks/useMealPlanTranslations";
 
 export const MealPlanContainer = () => {
   const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
   const { shuffleMeals, isShuffling } = useEnhancedMealShuffle();
   const { nutritionContext } = useLifePhaseNutrition();
+  const { t } = useMealPlanTranslations();
   
   const mealPlanState = useMealPlanState();
   
@@ -27,12 +32,17 @@ export const MealPlanContainer = () => {
 
   console.log('🔍 MealPlanContainer state:', {
     isLoading: mealPlanState.isLoading,
+    authLoading: mealPlanState.authLoading,
     hasData: !!mealPlanState.currentWeekPlan,
-    error: mealPlanState.error?.message,
-    isGenerating: mealPlanState.isGenerating
+    hasError: !!mealPlanState.error,
+    errorMessage: mealPlanState.error?.message,
+    isGenerating: mealPlanState.isGenerating,
+    hasUser: !!mealPlanState.user
   });
 
+  // Show loading state while auth or data is loading
   if (mealPlanState.isLoading) {
+    console.log('📋 Showing loading state...');
     return (
       <EnhancedErrorBoundary>
         <LoadingState />
@@ -40,24 +50,66 @@ export const MealPlanContainer = () => {
     );
   }
 
+  // Handle errors with recovery options
   if (mealPlanState.error) {
+    console.error('💥 Error in MealPlanContainer:', mealPlanState.error);
     return (
       <EnhancedErrorBoundary>
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center p-8">
-            <h3 className="text-lg font-semibold text-red-600 mb-2">Error loading meal plan</h3>
-            <p className="text-gray-600 mb-4">{mealPlanState.error.message}</p>
-            <button 
-              onClick={mealPlanState.refetch}
-              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
-              Retry
-            </button>
-          </div>
+        <div className="min-h-screen flex items-center justify-center p-4">
+          <Card className="max-w-lg w-full p-8 text-center">
+            <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-red-600 mb-2">
+              {t('errorLoadingMealPlan', 'Error Loading Meal Plan')}
+            </h3>
+            <p className="text-gray-600 mb-4">
+              {mealPlanState.error.message || t('somethingWentWrong', 'Something went wrong while loading your meal plan.')}
+            </p>
+            <div className="space-y-3">
+              <Button 
+                onClick={mealPlanState.clearError || mealPlanState.refetch}
+                className="w-full"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                {t('tryAgain', 'Try Again')}
+              </Button>
+              <Button 
+                onClick={() => window.location.href = '/dashboard'}
+                variant="outline" 
+                className="w-full"
+              >
+                <Home className="w-4 h-4 mr-2" />
+                {t('goToDashboard', 'Go to Dashboard')}
+              </Button>
+            </div>
+          </Card>
         </div>
       </EnhancedErrorBoundary>
     );
   }
+
+  // No user (should not happen due to protected routes, but safety check)
+  if (!mealPlanState.user) {
+    console.warn('⚠️ No user in MealPlanContainer');
+    return (
+      <EnhancedErrorBoundary>
+        <div className="min-h-screen flex items-center justify-center">
+          <Card className="p-8 text-center">
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">
+              {t('authenticationRequired', 'Authentication Required')}
+            </h3>
+            <p className="text-gray-600 mb-4">
+              {t('pleaseSignIn', 'Please sign in to access your meal plan.')}
+            </p>
+            <Button onClick={() => window.location.href = '/auth'}>
+              {t('signIn', 'Sign In')}
+            </Button>
+          </Card>
+        </div>
+      </EnhancedErrorBoundary>
+    );
+  }
+
+  console.log('✅ Rendering main meal plan content');
 
   const handleShuffleMeals = async () => {
     if (mealPlanState.currentWeekPlan?.weeklyPlan?.id) {

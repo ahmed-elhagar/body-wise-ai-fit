@@ -1,3 +1,4 @@
+
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export const useMealPlanTranslations = () => {
@@ -5,11 +6,25 @@ export const useMealPlanTranslations = () => {
 
   // Helper function to safely get translations with fallbacks
   const mealPlanT = (key: string, fallback?: string) => {
-    const fullKey = key.startsWith('mealPlan.') ? key : `mealPlan.${key}`;
-    const translation = t(fullKey);
-    return typeof translation === 'string' && translation !== fullKey 
-      ? translation 
-      : fallback || key;
+    try {
+      const fullKey = key.startsWith('mealPlan.') ? key : `mealPlan.${key}`;
+      const translation = t(fullKey);
+      
+      // Check if translation is valid and not the same as key (indicating missing translation)
+      if (typeof translation === 'string' && translation !== fullKey && translation.trim().length > 0) {
+        return translation;
+      }
+      
+      // Return fallback or a formatted version of the key
+      if (fallback) return fallback;
+      
+      // Convert key to readable format as last resort
+      const readableKey = key.split('.').pop()?.replace(/([A-Z])/g, ' $1').trim() || key;
+      return readableKey.charAt(0).toUpperCase() + readableKey.slice(1);
+    } catch (error) {
+      console.warn(`Translation error for key: ${key}`, error);
+      return fallback || key;
+    }
   };
 
   // Meal type translations
@@ -84,6 +99,15 @@ export const useMealPlanTranslations = () => {
     lunch: mealPlanT('lunch', 'Lunch'),
     dinner: mealPlanT('dinner', 'Dinner'),
     snack: mealPlanT('snack', 'Snack'),
+    loading: mealPlanT('loading', 'Loading...'),
+    loadingDescription: mealPlanT('loadingDescription', 'Please wait while we fetch your personalized meal plan...'),
+    errorLoadingMealPlan: mealPlanT('errorLoadingMealPlan', 'Error Loading Meal Plan'),
+    somethingWentWrong: mealPlanT('somethingWentWrong', 'Something went wrong'),
+    tryAgain: mealPlanT('tryAgain', 'Try Again'),
+    goToDashboard: mealPlanT('goToDashboard', 'Go to Dashboard'),
+    authenticationRequired: mealPlanT('authenticationRequired', 'Authentication Required'),
+    pleaseSignIn: mealPlanT('pleaseSignIn', 'Please sign in to continue'),
+    signIn: mealPlanT('signIn', 'Sign In'),
     
     // Meal types object for easier access
     mealTypes: {
