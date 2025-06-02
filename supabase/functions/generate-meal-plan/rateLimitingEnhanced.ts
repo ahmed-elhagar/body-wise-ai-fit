@@ -55,13 +55,13 @@ export const enhancedRateLimiting = {
 
     console.log('💸 Using credit for user:', userId, 'type:', generationType);
 
-    // Create generation log entry
+    // Create generation log entry with 'pending' status (which should be allowed)
     const { data: logEntry, error: logError } = await supabase
       .from('ai_generation_logs')
       .insert({
         user_id: userId,
         generation_type: generationType,
-        status: 'started',
+        status: 'pending', // Changed from 'started' to 'pending'
         prompt_data: metadata,
         credits_used: 1
       })
@@ -73,17 +73,30 @@ export const enhancedRateLimiting = {
       throw new Error('Failed to create generation log');
     }
 
-    // Decrement user credits (only for non-pro users)
-    const { error: creditError } = await supabase
-      .from('profiles')
-      .update({
-        ai_generations_remaining: supabase.sql`ai_generations_remaining - 1`
-      })
-      .eq('id', userId);
+    // Check if user is pro to determine if we should decrement credits
+    const { data: subscription } = await supabase
+      .from('subscriptions')
+      .select('status')
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .gte('current_period_end', new Date().toISOString())
+      .single();
 
-    if (creditError) {
-      console.error('❌ Error updating credits:', creditError);
-      throw new Error('Failed to update user credits');
+    const isPro = !!subscription;
+
+    // Only decrement credits for non-pro users
+    if (!isPro) {
+      const { error: creditError } = await supabase
+        .from('profiles')
+        .update({
+          ai_generations_remaining: supabase.sql`GREATEST(ai_generations_remaining - 1, 0)`
+        })
+        .eq('id', userId);
+
+      if (creditError) {
+        console.error('❌ Error updating credits:', creditError);
+        throw new Error('Failed to update user credits');
+      }
     }
 
     console.log('✅ Credit used successfully, log ID:', logEntry.id);

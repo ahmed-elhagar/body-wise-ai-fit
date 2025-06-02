@@ -51,7 +51,6 @@ serve(async (req) => {
     
     // Initialize AI Service
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-    const googleApiKey = Deno.env.get('GOOGLE_API_KEY');
     
     if (!openAIApiKey) {
       throw new MealPlanError(
@@ -61,7 +60,7 @@ serve(async (req) => {
       );
     }
 
-    const aiService = new AIService(openAIApiKey, undefined, googleApiKey);
+    const aiService = new AIService(openAIApiKey);
 
     console.log('🌐 Enhanced Language Configuration:', { 
       language,
@@ -114,8 +113,8 @@ serve(async (req) => {
         : ['breakfast', 'lunch', 'dinner']
     });
     
-    // Generate AI meal plan with enhanced prompt and AI model selector
-    const generatedPlan = await generateAIMealPlanWithModelSelector(
+    // Generate AI meal plan
+    const generatedPlan = await generateAIMealPlan(
       userProfile,
       preferences,
       adjustedDailyCalories,
@@ -179,7 +178,7 @@ serve(async (req) => {
       weeklyPlanId: weeklyPlan.id,
       weekStartDate: weeklyPlan.week_start_date,
       totalMeals: totalMealsSaved,
-      generationsRemaining: rateLimitResult.isPro ? -1 : rateLimitResult.remaining - 1,
+      generationsRemaining: rateLimitResult.isPro ? -1 : Math.max(rateLimitResult.remaining - 1, 0),
       includeSnacks,
       mealsPerDay,
       weekOffset: preferences?.weekOffset || 0,
@@ -267,7 +266,7 @@ const parseAndValidateRequest = (requestBody: any) => {
   }
 };
 
-const generateAIMealPlanWithModelSelector = async (
+const generateAIMealPlan = async (
   userProfile: any,
   preferences: any,
   adjustedDailyCalories: number,
@@ -284,12 +283,43 @@ const generateAIMealPlanWithModelSelector = async (
   const basePrompt = generateEnhancedMealPlanPrompt(userProfile, preferences, adjustedDailyCalories, includeSnacks);
   const enhancedPrompt = enhancePromptWithLifePhase(basePrompt, nutritionContext, language);
 
-  console.log('🤖 Sending enhanced request to AI Service (Model Selector)...');
+  // Add explicit JSON format instruction
+  const jsonFormatPrompt = enhancedPrompt + `
+
+CRITICAL: Return ONLY valid JSON in this exact format:
+{
+  "days": [
+    {
+      "day": 1,
+      "meals": [
+        {
+          "type": "breakfast",
+          "name": "Meal Name",
+          "calories": 400,
+          "protein": 25,
+          "carbs": 45,
+          "fat": 15,
+          "prep_time": 15,
+          "cook_time": 10,
+          "servings": 1,
+          "ingredients": ["ingredient1", "ingredient2"],
+          "instructions": ["step1", "step2"],
+          "alternatives": ["alternative1", "alternative2"]
+        }
+      ]
+    }
+  ]
+}
+
+For ${includeSnacks ? '5 meals per day: breakfast, snack1, lunch, snack2, dinner' : '3 meals per day: breakfast, lunch, dinner'}.
+Total daily calories should be approximately ${adjustedDailyCalories}.`;
+
+  console.log('🤖 Sending enhanced request to AI Service...');
   
   const response = await aiService.generate('meal-plan', {
     messages: [
       { role: 'system', content: systemPrompt },
-      { role: 'user', content: enhancedPrompt }
+      { role: 'user', content: jsonFormatPrompt }
     ],
     temperature: 0.1,
     maxTokens: 8000
@@ -322,6 +352,7 @@ const generateAIMealPlanWithModelSelector = async (
     return parsedPlan;
   } catch (parseError) {
     console.error('Failed to parse AI response:', parseError);
+    console.error('Raw response content:', content);
     throw new MealPlanError(
       'Invalid AI response format',
       errorCodes.AI_GENERATION_FAILED,

@@ -1,3 +1,4 @@
+
 export const generateEnhancedMealPlanPrompt = (
   userProfile: any,
   preferences: any,
@@ -39,15 +40,24 @@ Preferences:
 ${dietaryRestrictions}
 ${culturalContext}
 
-IMPORTANT MEAL STRUCTURE:
-- Generate exactly ${mealsPerDay} meals per day for 7 days
-- Meal types: ${mealTypes.join(', ')}
+CRITICAL MEAL STRUCTURE REQUIREMENTS:
+- Generate exactly ${mealsPerDay} meals per day for 7 days (total: ${mealsPerDay * 7} meals)
+- Meal types MUST be: ${mealTypes.join(', ')}
 ${includeSnacks ? '- Snack1: Mid-morning snack (150-200 calories)\n- Snack2: Afternoon snack (150-200 calories)' : ''}
-- Each meal should have complete nutrition information
+- Each meal MUST have: name, type, calories, protein, carbs, fat, prep_time, cook_time, servings, ingredients (array), instructions (array), alternatives (array)
 - Total daily calories should be approximately ${dailyCalories} calories
+- Each day MUST have exactly ${mealsPerDay} meals with the correct meal types
 
-Generate a complete 7-day meal plan with exactly ${mealsPerDay} meals per day.
-Return as valid JSON with the specified structure.`;
+JSON Structure Requirements:
+- Return valid JSON with "days" array containing 7 day objects
+- Each day has "day" number (1-7) and "meals" array
+- Each meal object must include ALL required fields with correct data types
+- ingredients: array of strings
+- instructions: array of strings  
+- alternatives: array of strings
+- All numeric values (calories, protein, carbs, fat) must be numbers, not strings
+
+Generate a complete 7-day meal plan with exactly ${mealsPerDay} meals per day.`;
 
   return enhancedPrompt;
 };
