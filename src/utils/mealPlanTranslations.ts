@@ -30,7 +30,16 @@ export const useMealPlanTranslations = () => {
         selectDay: 'اختر اليوم',
         today: 'اليوم',
         mealsPerDay: 'وجبات يومياً',
-        minutes: 'دقيقة'
+        minutes: 'دقيقة',
+        // Additional missing keys
+        addSnack: 'إضافة وجبة خفيفة',
+        noMealPlan: 'لا توجد خطة وجبات',
+        generateFirstPlan: 'إنشاء أول خطة وجبات',
+        aiPowered: 'مدعوم بالذكاء الاصطناعي',
+        mealTypes: 'أنواع الوجبات',
+        cal: 'سعرة',
+        recipe: 'وصفة',
+        exchange: 'استبدال'
       };
     }
 
@@ -50,7 +59,16 @@ export const useMealPlanTranslations = () => {
       selectDay: 'Select Day',
       today: 'Today',
       mealsPerDay: 'meals per day',
-      minutes: 'minutes'
+      minutes: 'minutes',
+      // Additional missing keys
+      addSnack: 'Add Snack',
+      noMealPlan: 'No meal plan available',
+      generateFirstPlan: 'Generate your first meal plan',
+      aiPowered: 'AI-powered',
+      mealTypes: 'Meal Types',
+      cal: 'cal',
+      recipe: 'Recipe',
+      exchange: 'Exchange'
     };
   };
 

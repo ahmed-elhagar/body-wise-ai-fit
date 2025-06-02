@@ -1,10 +1,10 @@
 
 import React from 'react';
 import { AIGenerationDialog } from './AIGenerationDialog';
-import { EnhancedAddSnackDialog } from '@/components/meal-plan/EnhancedAddSnackDialog';
-import { MealPlanExchangeDialog } from '@/components/meal-plan/MealPlanExchangeDialog';
+import EnhancedAddSnackDialog from '@/components/meal-plan/EnhancedAddSnackDialog';
+import MealPlanExchangeDialog from '@/components/meal-plan/MealPlanExchangeDialog';
 import { EnhancedRecipeDialog } from '@/components/meal-plan/EnhancedRecipeDialog';
-import { ShoppingListDialog } from '@/components/meal-plan/ShoppingListDialog';
+import ShoppingListDialog from '@/components/meal-plan/ShoppingListDialog';
 import type { DailyMeal, MealPlanPreferences } from '@/types/mealPlan';
 
 interface MealPlanDialogsProps {
@@ -91,13 +91,12 @@ export const MealPlanDialogs = ({
       />
 
       <EnhancedAddSnackDialog
-        open={showAddSnackDialog}
-        onOpenChange={onCloseAddSnackDialog}
+        isOpen={showAddSnackDialog}
+        onClose={onCloseAddSnackDialog}
         selectedDay={selectedDayNumber}
-        currentCalories={totalCalories}
-        targetCalories={targetDayCalories}
+        currentDayCalories={totalCalories}
+        targetDayCalories={targetDayCalories}
         weeklyPlanId={weeklyPlanId}
-        weekStartDate={weekStartDate}
         onSnackAdded={onSnackAdded}
       />
 
@@ -109,17 +108,18 @@ export const MealPlanDialogs = ({
       />
 
       <EnhancedRecipeDialog
-        open={showRecipeDialog}
-        onOpenChange={onCloseRecipeDialog}
+        isOpen={showRecipeDialog}
+        onClose={onCloseRecipeDialog}
         meal={selectedMeal}
         onRecipeUpdated={onRecipeUpdated}
       />
 
       <ShoppingListDialog
-        open={showShoppingListDialog}
-        onOpenChange={onCloseShoppingListDialog}
-        shoppingItems={enhancedShoppingItems}
+        isOpen={showShoppingListDialog}
+        onClose={onCloseShoppingListDialog}
+        shoppingItems={{ items: enhancedShoppingItems }}
         onSendEmail={onSendShoppingListEmail}
+        weekStartDate={weekStartDate}
       />
     </>
   );

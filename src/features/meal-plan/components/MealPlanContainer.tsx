@@ -1,9 +1,10 @@
+
 import React, { useState } from 'react';
 import { useMealPlanPage } from '@/hooks/useMealPlanPage';
 import { MealPlanPageHeader } from './MealPlanPageHeader';
 import { MealPlanNavigation } from './MealPlanNavigation';
 import { MealPlanContent } from './MealPlanContent';
-import { MealPlanDialogs } from './MealPlanDialogs';
+import { MealPlanDialogs } from './dialogs/MealPlanDialogs';
 import { useEnhancedMealShuffle } from '@/hooks/useEnhancedMealShuffle';
 import { useEnhancedShoppingList } from '@/hooks/useEnhancedShoppingList';
 import EnhancedLoadingIndicator from '@/components/ui/enhanced-loading-indicator';

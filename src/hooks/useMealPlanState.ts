@@ -1,3 +1,4 @@
+
 import { useCallback, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useMealPlanNavigation } from "./useMealPlanNavigation";
@@ -202,6 +203,7 @@ export const useMealPlanState = () => {
     
     // Dialog state and actions
     ...dialogs,
+    setDialogs,
     openAIDialog,
     closeAIDialog,
     openRecipeDialog,
