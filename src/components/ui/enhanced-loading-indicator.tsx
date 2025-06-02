@@ -1,92 +1,118 @@
 
 import React from 'react';
-import { Card } from './card';
-import { Loader2 } from 'lucide-react';
-
-export type LoadingType = 'general' | 'meal-plan' | 'generation' | 'recipe' | 'exercise' | 'analysis';
+import { Loader2, Clock, AlertCircle, CheckCircle } from 'lucide-react';
+import { Card } from '@/components/ui/card';
 
 interface EnhancedLoadingIndicatorProps {
-  status: 'loading' | 'success' | 'error';
-  type: LoadingType;
+  status: 'loading' | 'success' | 'error' | 'timeout';
   message?: string;
-  description?: string;
-  variant?: 'card' | 'inline' | 'overlay';
+  type?: 'general' | 'meal-plan' | 'exercise' | 'ai-generation';
+  variant?: 'inline' | 'card' | 'overlay';
   size?: 'sm' | 'md' | 'lg';
-  showSteps?: boolean;
-  customSteps?: string[];
-  className?: string;
+  showProgress?: boolean;
+  progress?: number;
 }
 
-const EnhancedLoadingIndicator = ({
+export const EnhancedLoadingIndicator: React.FC<EnhancedLoadingIndicatorProps> = ({
   status,
-  type,
-  message = 'Loading...',
-  description,
+  message,
+  type = 'general',
   variant = 'inline',
   size = 'md',
-  showSteps = false,
-  customSteps = [],
-  className = ''
-}: EnhancedLoadingIndicatorProps) => {
-  const sizeClasses = {
-    sm: 'w-4 h-4',
-    md: 'w-6 h-6',
-    lg: 'w-8 h-8'
+  showProgress = false,
+  progress = 0
+}) => {
+  const getIcon = () => {
+    switch (status) {
+      case 'loading':
+        return <Loader2 className={`animate-spin ${getIconSize()}`} />;
+      case 'success':
+        return <CheckCircle className={`text-green-500 ${getIconSize()}`} />;
+      case 'error':
+        return <AlertCircle className={`text-red-500 ${getIconSize()}`} />;
+      case 'timeout':
+        return <Clock className={`text-orange-500 ${getIconSize()}`} />;
+      default:
+        return <Loader2 className={`animate-spin ${getIconSize()}`} />;
+    }
   };
 
-  const LoadingSpinner = () => (
-    <Loader2 className={`animate-spin ${sizeClasses[size]}`} />
-  );
+  const getIconSize = () => {
+    switch (size) {
+      case 'sm': return 'w-4 h-4';
+      case 'md': return 'w-6 h-6';
+      case 'lg': return 'w-8 h-8';
+      default: return 'w-6 h-6';
+    }
+  };
 
-  if (variant === 'card') {
-    return (
-      <Card className={`p-6 text-center ${className}`}>
-        <div className="flex flex-col items-center gap-4">
-          <LoadingSpinner />
-          <div>
-            <p className="text-gray-600 font-medium">{message}</p>
-            {description && <p className="text-sm text-gray-500 mt-1">{description}</p>}
+  const getMessage = () => {
+    if (message) return message;
+    
+    const typeMessages = {
+      'meal-plan': {
+        loading: 'Loading meal plan...',
+        success: 'Meal plan loaded!',
+        error: 'Failed to load meal plan',
+        timeout: 'Meal plan loading timed out'
+      },
+      'exercise': {
+        loading: 'Loading exercise program...',
+        success: 'Exercise program loaded!',
+        error: 'Failed to load exercise program',
+        timeout: 'Exercise loading timed out'
+      },
+      'ai-generation': {
+        loading: 'AI is generating content...',
+        success: 'AI generation complete!',
+        error: 'AI generation failed',
+        timeout: 'AI generation timed out'
+      },
+      'general': {
+        loading: 'Loading...',
+        success: 'Success!',
+        error: 'An error occurred',
+        timeout: 'Operation timed out'
+      }
+    };
+
+    return typeMessages[type][status];
+  };
+
+  const content = (
+    <div className={`flex items-center gap-3 ${variant === 'card' ? 'p-4' : ''}`}>
+      {getIcon()}
+      <div className="flex flex-col gap-1">
+        <span className={`${size === 'sm' ? 'text-sm' : size === 'lg' ? 'text-lg' : 'text-base'}`}>
+          {getMessage()}
+        </span>
+        {showProgress && status === 'loading' && (
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div 
+              className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
+            />
           </div>
-          {showSteps && customSteps.length > 0 && (
-            <div className="space-y-2 w-full">
-              {customSteps.map((step, index) => (
-                <div key={index} className="text-sm text-gray-500 text-left">
-                  {index + 1}. {step}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </Card>
-    );
-  }
+        )}
+      </div>
+    </div>
+  );
 
   if (variant === 'overlay') {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <Card className="p-6 text-center">
-          <div className="flex flex-col items-center gap-4">
-            <LoadingSpinner />
-            <div>
-              <p className="text-gray-600 font-medium">{message}</p>
-              {description && <p className="text-sm text-gray-500 mt-1">{description}</p>}
-            </div>
-          </div>
+        <Card className="p-6">
+          {content}
         </Card>
       </div>
     );
   }
 
-  return (
-    <div className={`flex items-center gap-2 ${className}`}>
-      <LoadingSpinner />
-      <div>
-        <span className="text-gray-600">{message}</span>
-        {description && <p className="text-xs text-gray-500">{description}</p>}
-      </div>
-    </div>
-  );
+  if (variant === 'card') {
+    return <Card>{content}</Card>;
+  }
+
+  return content;
 };
 
 export default EnhancedLoadingIndicator;
-export type { EnhancedLoadingIndicatorProps };
