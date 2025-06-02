@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useMealPlanPage } from "@/hooks/useMealPlanPage";
 import { useEnhancedMealShuffle } from "@/hooks/useEnhancedMealShuffle";
+import { useEnhancedShoppingList } from "@/hooks/useEnhancedShoppingList";
 import MealPlanHeader from "./MealPlanHeader";
 import UnifiedNavigation from "./UnifiedNavigation";
 import DayOverview from "./DayOverview";
@@ -11,6 +12,7 @@ import LoadingState from "./LoadingState";
 import EnhancedAddSnackDialog from "./EnhancedAddSnackDialog";
 import EnhancedRecipeDialog from "./EnhancedRecipeDialog";
 import MealExchangeDialog from "../MealExchangeDialog";
+import ShoppingListDialog from "./ShoppingListDialog";
 
 const MealPlanContainer = () => {
   const {
@@ -43,11 +45,13 @@ const MealPlanContainer = () => {
   } = useMealPlanPage();
 
   const { shuffleMeals, isShuffling } = useEnhancedMealShuffle();
+  const { enhancedShoppingItems, sendShoppingListEmail } = useEnhancedShoppingList(currentWeekPlan);
 
   const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
   const [showAddSnackDialog, setShowAddSnackDialog] = useState(false);
   const [showRecipeDialog, setShowRecipeDialog] = useState(false);
   const [showExchangeDialog, setShowExchangeDialog] = useState(false);
+  const [showShoppingDialog, setShowShoppingDialog] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState(null);
   const [isWeekChanging, setIsWeekChanging] = useState(false);
 
@@ -89,6 +93,11 @@ const MealPlanContainer = () => {
     refetch();
     setShowExchangeDialog(false);
     setSelectedMeal(null);
+  };
+
+  const handleShowShoppingList = () => {
+    console.log('🛒 Opening shopping list dialog');
+    setShowShoppingDialog(true);
   };
 
   const handleGenerateAI = async () => {
@@ -165,7 +174,7 @@ const MealPlanContainer = () => {
       <MealPlanHeader
         onGenerateAI={handleGenerateAI}
         onShuffle={handleShuffle}
-        onShowShoppingList={() => {}}
+        onShowShoppingList={handleShowShoppingList}
         onRegeneratePlan={handleRegeneratePlan}
         isGenerating={isGenerating}
         isShuffling={isShuffling}
@@ -241,6 +250,14 @@ const MealPlanContainer = () => {
         }}
         currentMeal={selectedMeal}
         onExchange={handleMealExchanged}
+      />
+
+      <ShoppingListDialog
+        isOpen={showShoppingDialog}
+        onClose={() => setShowShoppingDialog(false)}
+        shoppingItems={enhancedShoppingItems}
+        weekStartDate={weekStartDate}
+        onSendEmail={sendShoppingListEmail}
       />
     </div>
   );
