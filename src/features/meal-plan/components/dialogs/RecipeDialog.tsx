@@ -38,7 +38,7 @@ export const RecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }: RecipeD
         // Properly convert the database response to our DailyMeal type
         const convertedMeal: DailyMeal = {
           ...currentMeal,
-          meal_type: (updatedMeal.meal_type as 'breakfast' | 'lunch' | 'dinner' | 'snack1' | 'snack2') || currentMeal.meal_type,
+          meal_type: currentMeal.meal_type, // Keep the already validated type
           ingredients: Array.isArray(updatedMeal.ingredients) 
             ? updatedMeal.ingredients 
             : typeof updatedMeal.ingredients === 'string'
