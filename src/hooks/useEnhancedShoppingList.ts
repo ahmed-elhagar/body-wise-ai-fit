@@ -18,9 +18,10 @@ export const useEnhancedShoppingList = (weeklyPlan?: {
   const enhancedShoppingItems = useMemo(() => {
     console.log('🛒 Computing enhanced shopping list...', { 
       hasWeeklyPlan: !!weeklyPlan,
-      mealsCount: weeklyPlan?.dailyMeals?.length || 0 
+      mealsCount: weeklyPlan?.dailyMeals ? (Array.isArray(weeklyPlan.dailyMeals) ? weeklyPlan.dailyMeals.length : 0) : 0 
     });
     
+    // Add proper type checking
     if (!weeklyPlan?.dailyMeals || !Array.isArray(weeklyPlan.dailyMeals)) {
       return { items: [], groupedItems: {} };
     }
