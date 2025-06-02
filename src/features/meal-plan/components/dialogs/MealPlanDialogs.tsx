@@ -44,6 +44,7 @@ interface MealPlanDialogsProps {
   onSendShoppingListEmail: () => Promise<boolean>;
   
   // Additional props
+  userCredits: number;
   hasWeeklyPlan: boolean;
 }
 
@@ -73,6 +74,7 @@ export const MealPlanDialogs = ({
   onCloseShoppingListDialog,
   enhancedShoppingItems,
   onSendShoppingListEmail,
+  userCredits,
   hasWeeklyPlan
 }: MealPlanDialogsProps) => {
   return (
@@ -84,6 +86,7 @@ export const MealPlanDialogs = ({
         onPreferencesChange={() => {}} // This should be handled by the parent
         onGenerate={onGenerateAI}
         isGenerating={isGenerating}
+        userCredits={userCredits}
         hasExistingPlan={hasWeeklyPlan}
       />
 
