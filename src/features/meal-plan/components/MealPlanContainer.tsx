@@ -9,6 +9,7 @@ import { AddSnackDialog } from './dialogs/AddSnackDialog';
 import { ExchangeDialog } from './dialogs/ExchangeDialog';
 import { RecipeDialog } from './dialogs/RecipeDialog';
 import EnhancedLoadingIndicator from '@/components/ui/enhanced-loading-indicator';
+import type { DailyMeal } from '@/hooks/meal-plan/types';
 
 export const MealPlanContainer = () => {
   const {
@@ -139,14 +140,14 @@ export const MealPlanContainer = () => {
       <ExchangeDialog
         isOpen={showExchangeDialog}
         onClose={() => setShowExchangeDialog(false)}
-        meal={selectedMeal}
+        meal={selectedMeal as DailyMeal | null}
         onMealExchanged={refetch}
       />
 
       <RecipeDialog
         isOpen={showRecipeDialog}
         onClose={() => setShowRecipeDialog(false)}
-        meal={selectedMeal}
+        meal={selectedMeal as DailyMeal | null}
       />
     </div>
   );

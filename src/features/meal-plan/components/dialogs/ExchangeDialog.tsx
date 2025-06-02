@@ -8,7 +8,7 @@ import { Sparkles } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import type { DailyMeal } from '../../types';
+import type { DailyMeal } from '@/hooks/meal-plan/types';
 
 interface ExchangeDialogProps {
   isOpen: boolean;

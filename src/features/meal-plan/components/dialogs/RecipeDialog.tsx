@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ChefHat, Clock, Users, Utensils, Youtube, ExternalLink } from "lucide-react";
 import { useMealPlanTranslations } from '@/utils/mealPlanTranslations';
-import type { DailyMeal } from '../../types';
+import type { DailyMeal } from '@/hooks/meal-plan/types';
 
 interface RecipeDialogProps {
   isOpen: boolean;
@@ -62,11 +62,6 @@ export const RecipeDialog = ({ isOpen, onClose, meal }: RecipeDialogProps) => {
               <Utensils className="w-4 h-4" />
               <span className="capitalize">{meal.meal_type}</span>
             </div>
-            {meal.difficulty && (
-              <Badge variant="outline" className="capitalize">
-                {meal.difficulty}
-              </Badge>
-            )}
           </div>
 
           {/* Nutrition Info */}
@@ -88,14 +83,6 @@ export const RecipeDialog = ({ isOpen, onClose, meal }: RecipeDialogProps) => {
               <div className="text-sm text-gray-600">Fat</div>
             </div>
           </div>
-
-          {/* Description */}
-          {meal.description && (
-            <div>
-              <h3 className="font-semibold mb-2">Description</h3>
-              <p className="text-gray-700">{meal.description}</p>
-            </div>
-          )}
 
           {/* Ingredients */}
           {meal.ingredients && meal.ingredients.length > 0 && (
@@ -128,22 +115,6 @@ export const RecipeDialog = ({ isOpen, onClose, meal }: RecipeDialogProps) => {
                   </li>
                 ))}
               </ol>
-            </div>
-          )}
-
-          {/* Tips */}
-          {meal.tips && (
-            <div>
-              <h3 className="font-semibold mb-2">Tips</h3>
-              <p className="text-gray-700 bg-blue-50 p-3 rounded-lg">{meal.tips}</p>
-            </div>
-          )}
-
-          {/* Nutrition Benefits */}
-          {meal.nutrition_benefits && (
-            <div>
-              <h3 className="font-semibold mb-2">Nutrition Benefits</h3>
-              <p className="text-gray-700 bg-green-50 p-3 rounded-lg">{meal.nutrition_benefits}</p>
             </div>
           )}
           
