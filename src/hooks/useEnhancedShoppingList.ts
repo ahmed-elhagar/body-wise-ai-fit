@@ -21,7 +21,7 @@ export const useEnhancedShoppingList = (weeklyPlan?: {
       mealsCount: weeklyPlan?.dailyMeals?.length || 0 
     });
     
-    if (!weeklyPlan?.dailyMeals) {
+    if (!weeklyPlan?.dailyMeals || !Array.isArray(weeklyPlan.dailyMeals)) {
       return { items: [], groupedItems: {} };
     }
 
