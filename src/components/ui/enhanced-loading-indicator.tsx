@@ -3,24 +3,32 @@ import React from 'react';
 import { Loader2, Clock, AlertCircle, CheckCircle } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 
+export type LoadingType = 'general' | 'meal-plan' | 'exercise' | 'ai-generation' | 'generation' | 'recipe';
+
 interface EnhancedLoadingIndicatorProps {
   status: 'loading' | 'success' | 'error' | 'timeout';
   message?: string;
-  type?: 'general' | 'meal-plan' | 'exercise' | 'ai-generation';
+  description?: string;
+  type?: LoadingType;
   variant?: 'inline' | 'card' | 'overlay';
   size?: 'sm' | 'md' | 'lg';
   showProgress?: boolean;
   progress?: number;
+  showSteps?: boolean;
+  customSteps?: string[];
 }
 
 export const EnhancedLoadingIndicator: React.FC<EnhancedLoadingIndicatorProps> = ({
   status,
   message,
+  description,
   type = 'general',
   variant = 'inline',
   size = 'md',
   showProgress = false,
-  progress = 0
+  progress = 0,
+  showSteps = false,
+  customSteps = []
 }) => {
   const getIcon = () => {
     switch (status) {
@@ -68,6 +76,18 @@ export const EnhancedLoadingIndicator: React.FC<EnhancedLoadingIndicatorProps> =
         error: 'AI generation failed',
         timeout: 'AI generation timed out'
       },
+      'generation': {
+        loading: 'AI is generating content...',
+        success: 'AI generation complete!',
+        error: 'AI generation failed',
+        timeout: 'AI generation timed out'
+      },
+      'recipe': {
+        loading: 'Loading recipe...',
+        success: 'Recipe loaded!',
+        error: 'Failed to load recipe',
+        timeout: 'Recipe loading timed out'
+      },
       'general': {
         loading: 'Loading...',
         success: 'Success!',
@@ -86,12 +106,27 @@ export const EnhancedLoadingIndicator: React.FC<EnhancedLoadingIndicatorProps> =
         <span className={`${size === 'sm' ? 'text-sm' : size === 'lg' ? 'text-lg' : 'text-base'}`}>
           {getMessage()}
         </span>
+        {description && (
+          <span className={`text-gray-500 ${size === 'sm' ? 'text-xs' : 'text-sm'}`}>
+            {description}
+          </span>
+        )}
         {showProgress && status === 'loading' && (
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
             <div 
               className="bg-blue-500 h-2 rounded-full transition-all duration-300"
               style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
             />
+          </div>
+        )}
+        {showSteps && customSteps.length > 0 && status === 'loading' && (
+          <div className="mt-2 space-y-1">
+            {customSteps.map((step, index) => (
+              <div key={index} className="text-xs text-gray-500 flex items-center gap-2">
+                <div className="w-1 h-1 bg-blue-500 rounded-full animate-pulse"></div>
+                {step}
+              </div>
+            ))}
           </div>
         )}
       </div>
@@ -116,3 +151,4 @@ export const EnhancedLoadingIndicator: React.FC<EnhancedLoadingIndicatorProps> =
 };
 
 export default EnhancedLoadingIndicator;
+export type { LoadingType };
