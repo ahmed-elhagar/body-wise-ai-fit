@@ -9,14 +9,16 @@ export const useExerciseExchange = () => {
   const { user } = useAuth();
   const { checkAndUseCreditAsync, completeGenerationAsync } = useCreditSystem();
   const [isExchanging, setIsExchanging] = useState(false);
+  const [weeklyExchangeCount, setWeeklyExchangeCount] = useState(0);
+  const [remainingExchanges, setRemainingExchanges] = useState(2);
+  const [canExchange, setCanExchange] = useState(true);
 
-  const exchangeExercise = async (exerciseId: string, preferences: any) => {
+  const exchangeExercise = async (exerciseData: { exerciseId: string; reason: string; preferences: any }) => {
     if (!user?.id) {
       console.error('No user ID available for exercise exchange');
       return null;
     }
 
-    // Check and use credit before starting exchange
     const hasCredit = await checkAndUseCreditAsync();
     if (!hasCredit) {
       toast.error('No AI credits remaining');
@@ -30,8 +32,9 @@ export const useExerciseExchange = () => {
       
       const { data, error } = await supabase.functions.invoke('exchange-exercise', {
         body: {
-          exerciseId,
-          preferences,
+          exerciseId: exerciseData.exerciseId,
+          reason: exerciseData.reason,
+          preferences: exerciseData.preferences,
           userId: user.id
         }
       });
@@ -43,9 +46,12 @@ export const useExerciseExchange = () => {
 
       if (data?.success) {
         console.log('✅ Exercise exchange completed successfully');
-        
-        // Complete the generation process
         await completeGenerationAsync();
+        
+        // Update exchange counts
+        setWeeklyExchangeCount(prev => prev + 1);
+        setRemainingExchanges(prev => Math.max(0, prev - 1));
+        setCanExchange(remainingExchanges > 1);
         
         toast.success('Exercise exchanged successfully!');
         return data;
@@ -63,6 +69,9 @@ export const useExerciseExchange = () => {
 
   return {
     isExchanging,
-    exchangeExercise
+    exchangeExercise,
+    weeklyExchangeCount,
+    remainingExchanges,
+    canExchange
   };
 };

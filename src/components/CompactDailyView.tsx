@@ -1,4 +1,3 @@
-
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,7 +32,7 @@ const CompactDailyView = ({
 
   // Group meals by type
   const mealsByType = todaysMeals.reduce((acc, meal, index) => {
-    const type = meal.meal_type || meal.type || 'meal';
+    const type = (meal.meal_type || meal.type) || 'meal';
     if (!acc[type]) acc[type] = [];
     acc[type].push({ ...meal, originalIndex: index });
     return acc;

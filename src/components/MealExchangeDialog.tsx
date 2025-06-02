@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeftRight, Sparkles, Clock, Users } from "lucide-react";
 import { useEnhancedMealExchange } from "@/hooks/useEnhancedMealExchange";
-import type { DailyMeal } from "@/hooks/useMealPlanData";
+import type { DailyMeal } from "@/hooks/meal-plan/useMealPlanData";
 
 interface MealExchangeDialogProps {
   isOpen: boolean;

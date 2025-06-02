@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Flame, Beef, Wheat, Droplets } from "lucide-react";
 import type { Meal } from "@/types/meal";
@@ -8,7 +7,7 @@ interface NutritionCardsProps {
 }
 
 const NutritionCards = ({ meal }: NutritionCardsProps) => {
-  const isSnack = meal.name.includes('🍎') || meal.meal_type === 'snack';
+  const isSnack = meal.name.includes('🍎') || (meal.meal_type || meal.type) === 'snack';
   
   const nutritionItems = [
     {

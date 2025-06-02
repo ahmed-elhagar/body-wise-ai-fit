@@ -1,4 +1,3 @@
-
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ChefHat, Clock, Users, Apple } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +8,7 @@ interface RecipeHeaderProps {
 }
 
 const RecipeHeader = ({ meal }: RecipeHeaderProps) => {
-  const isSnack = meal.name.includes('🍎') || meal.meal_type === 'snack';
+  const isSnack = meal.name.includes('🍎') || (meal.meal_type || meal.type) === 'snack';
   
   return (
     <DialogHeader className="space-y-4">

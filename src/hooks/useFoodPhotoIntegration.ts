@@ -9,6 +9,13 @@ export const useFoodPhotoIntegration = () => {
   const { user } = useAuth();
   const { checkAndUseCreditAsync, completeGenerationAsync } = useCreditSystem();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isLoggingFood, setIsLoggingFood] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const analyzePhoto = async (imageFile: File) => {
+    return analyzePhotoFood(imageFile);
+  };
 
   const analyzePhotoFood = async (imageFile: File) => {
     if (!user?.id) {
@@ -16,7 +23,6 @@ export const useFoodPhotoIntegration = () => {
       return null;
     }
 
-    // Check and use credit before starting analysis
     const hasCredit = await checkAndUseCreditAsync();
     if (!hasCredit) {
       toast.error('No AI credits remaining');
@@ -24,6 +30,7 @@ export const useFoodPhotoIntegration = () => {
     }
 
     setIsAnalyzing(true);
+    setError(null);
     
     try {
       console.log('📸 Analyzing food photo with AI');
@@ -38,15 +45,14 @@ export const useFoodPhotoIntegration = () => {
 
       if (error) {
         console.error('❌ Food photo analysis error:', error);
+        setError(error.message);
         throw error;
       }
 
       if (data?.success) {
         console.log('✅ Food photo analysis completed successfully');
-        
-        // Complete the generation process
+        setAnalysisResult(data);
         await completeGenerationAsync();
-        
         toast.success('Food photo analyzed successfully!');
         return data;
       } else {
@@ -54,6 +60,7 @@ export const useFoodPhotoIntegration = () => {
       }
     } catch (error) {
       console.error('❌ Food photo analysis failed:', error);
+      setError(error.message);
       toast.error('Failed to analyze food photo');
       throw error;
     } finally {
@@ -61,8 +68,68 @@ export const useFoodPhotoIntegration = () => {
     }
   };
 
+  const convertToFoodItem = (food: any) => {
+    return {
+      name: food.name || 'Unknown Food',
+      calories: food.calories || 0,
+      protein: food.protein || 0,
+      carbs: food.carbs || 0,
+      fat: food.fat || 0,
+      quantity: food.quantity || '1 serving'
+    };
+  };
+
+  const logAnalyzedFood = async (food: any, quantity: number, mealType: string, notes: string) => {
+    if (!user?.id) {
+      console.error('No user ID available for food logging');
+      return;
+    }
+
+    setIsLoggingFood(true);
+    
+    try {
+      console.log('📝 Logging analyzed food');
+      
+      const { error } = await supabase
+        .from('food_consumption_log')
+        .insert({
+          user_id: user.id,
+          food_item_id: food.id || crypto.randomUUID(),
+          quantity_g: quantity,
+          calories_consumed: (food.calories || 0) * (quantity / 100),
+          protein_consumed: (food.protein || 0) * (quantity / 100),
+          carbs_consumed: (food.carbs || 0) * (quantity / 100),
+          fat_consumed: (food.fat || 0) * (quantity / 100),
+          meal_type: mealType,
+          notes: notes,
+          source: 'ai_analysis',
+          ai_analysis_data: food
+        });
+
+      if (error) {
+        console.error('❌ Food logging error:', error);
+        throw error;
+      }
+
+      console.log('✅ Food logged successfully');
+      toast.success('Food added to log!');
+    } catch (error) {
+      console.error('❌ Food logging failed:', error);
+      toast.error('Failed to log food');
+      throw error;
+    } finally {
+      setIsLoggingFood(false);
+    }
+  };
+
   return {
     isAnalyzing,
-    analyzePhotoFood
+    isLoggingFood,
+    analysisResult,
+    error,
+    analyzePhoto,
+    analyzePhotoFood,
+    convertToFoodItem,
+    logAnalyzedFood
   };
 };
