@@ -1,14 +1,16 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Utensils, Target, TrendingUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Utensils, Target, TrendingUp, ShoppingCart, Plus } from "lucide-react";
 import { format } from 'date-fns';
 import { useMealPlanTranslations } from '@/utils/mealPlanTranslations';
 import { getDayName } from '@/utils/mealPlanUtils';
 import { EnhancedMealCard } from './EnhancedMealCard';
 import { AddMealCard } from './AddMealCard';
+import ShoppingListDrawer from '@/components/shopping-list/ShoppingListDrawer';
 import type { DailyMeal } from '../types';
 
 interface DayOverviewProps {
@@ -21,6 +23,7 @@ interface DayOverviewProps {
   onExchangeMeal: (meal: DailyMeal) => void;
   onAddSnack: () => void;
   weekStartDate: Date;
+  weeklyPlan?: any;
 }
 
 export const DayOverview = ({
@@ -32,8 +35,11 @@ export const DayOverview = ({
   onViewMeal,
   onExchangeMeal,
   onAddSnack,
-  weekStartDate
+  weekStartDate,
+  weeklyPlan
 }: DayOverviewProps) => {
+  const [showShoppingList, setShowShoppingList] = useState(false);
+  
   const {
     dailyProgress,
     calorieProgress,
@@ -42,7 +48,8 @@ export const DayOverview = ({
     cal,
     protein,
     mealTypes,
-    language
+    language,
+    shoppingList
   } = useMealPlanTranslations();
 
   const calorieProgressPercent = Math.min((totalCalories / targetDayCalories) * 100, 100);
@@ -74,48 +81,75 @@ export const DayOverview = ({
   });
 
   return (
-    <div className="space-y-6">
-      {/* Day Header */}
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900">
-          {getDayName(selectedDayNumber)}
-        </h2>
-        <p className="text-gray-600">
-          {format(new Date(weekStartDate.getTime() + (selectedDayNumber - 1) * 24 * 60 * 60 * 1000), 'MMMM d, yyyy')}
-        </p>
+    <div className="space-y-4">
+      {/* Compact Day Header with Actions */}
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">
+            {getDayName(selectedDayNumber)}
+          </h2>
+          <p className="text-gray-600">
+            {format(new Date(weekStartDate.getTime() + (selectedDayNumber - 1) * 24 * 60 * 60 * 1000), 'MMMM d, yyyy')}
+          </p>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={() => setShowShoppingList(true)}
+            variant="outline"
+            size="sm"
+            className="border-fitness-primary-300 bg-white text-fitness-primary-600 hover:bg-fitness-primary-50"
+          >
+            <ShoppingCart className="w-4 h-4 mr-2" />
+            {shoppingList}
+          </Button>
+          <Button
+            onClick={onAddSnack}
+            size="sm"
+            className="bg-fitness-primary-500 hover:bg-fitness-primary-600 text-white"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Snack
+          </Button>
+        </div>
       </div>
 
-      {/* Daily Progress Card */}
-      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Utensils className="w-5 h-5 text-blue-600" />
+      {/* Compact Daily Progress Card */}
+      <Card className="bg-gradient-to-r from-fitness-primary-50 to-fitness-accent-50 border-fitness-primary-200">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Utensils className="w-5 h-5 text-fitness-primary-600" />
             {dailyProgress}
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Calorie Progress */}
+        <CardContent className="pt-0 space-y-4">
+          {/* Calorie Progress Bar */}
           <div>
-            <div className="flex justify-between text-sm mb-2">
+            <div className="flex justify-between items-center text-sm mb-2">
               <span className="text-gray-700">{calorieProgress}</span>
-              <span className="font-medium">{totalCalories}/{targetDayCalories} {cal}</span>
+              <span className="font-medium text-gray-900">{totalCalories}/{targetDayCalories} {cal}</span>
             </div>
-            <Progress value={calorieProgressPercent} className="h-3" />
+            <Progress value={calorieProgressPercent} className="h-2 bg-gray-200">
+              <div 
+                className="h-full bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 rounded-full transition-all duration-300"
+                style={{ width: `${calorieProgressPercent}%` }}
+              />
+            </Progress>
           </div>
           
-          {/* Stats Grid */}
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div className="bg-white/70 backdrop-blur-sm rounded-lg p-3">
-              <div className="text-2xl font-bold text-orange-600">{totalCalories}</div>
-              <div className="text-sm text-gray-600">{consumed}</div>
+          {/* Compact Stats Grid */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-white/80 backdrop-blur-sm rounded-lg p-3 text-center border border-white/50">
+              <div className="text-xl font-bold text-orange-600">{totalCalories}</div>
+              <div className="text-xs text-gray-600">{consumed}</div>
             </div>
-            <div className="bg-white/70 backdrop-blur-sm rounded-lg p-3">
-              <div className="text-2xl font-bold text-green-600">{totalProtein.toFixed(1)}g</div>
-              <div className="text-sm text-gray-600">{protein}</div>
+            <div className="bg-white/80 backdrop-blur-sm rounded-lg p-3 text-center border border-white/50">
+              <div className="text-xl font-bold text-green-600">{totalProtein.toFixed(1)}g</div>
+              <div className="text-xs text-gray-600">{protein}</div>
             </div>
-            <div className="bg-white/70 backdrop-blur-sm rounded-lg p-3">
-              <div className="text-2xl font-bold text-blue-600">{remainingCalories}</div>
-              <div className="text-sm text-gray-600">Remaining</div>
+            <div className="bg-white/80 backdrop-blur-sm rounded-lg p-3 text-center border border-white/50">
+              <div className="text-xl font-bold text-blue-600">{remainingCalories}</div>
+              <div className="text-xs text-gray-600">Remaining</div>
             </div>
           </div>
         </CardContent>
@@ -154,6 +188,18 @@ export const DayOverview = ({
           </CardContent>
         </Card>
       )}
+
+      {/* Shopping List Drawer */}
+      <ShoppingListDrawer
+        isOpen={showShoppingList}
+        onClose={() => setShowShoppingList(false)}
+        weeklyPlan={weeklyPlan}
+        weekId={weeklyPlan?.weeklyPlan?.id}
+        onShoppingListUpdate={() => {
+          // Handle shopping list updates if needed
+          console.log('Shopping list updated');
+        }}
+      />
     </div>
   );
 };

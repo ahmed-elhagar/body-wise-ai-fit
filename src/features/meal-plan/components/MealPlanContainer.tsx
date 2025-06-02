@@ -1,126 +1,152 @@
 
 import React from 'react';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { useCreditSystem } from '@/hooks/useCreditSystem';
-import { LoadingState } from './LoadingState';
-import { EmptyWeekState } from './EmptyWeekState';
-import { DayOverview } from './DayOverview';
+import { useMealPlanPage } from '@/hooks/useMealPlanPage';
 import { UnifiedNavigation } from './navigation/UnifiedNavigation';
+import { DayOverview } from './DayOverview';
+import { EmptyWeekState } from './EmptyWeekState';
 import { AIGenerationDialog } from './dialogs/AIGenerationDialog';
-import { RecipeDialog } from './dialogs/RecipeDialog';
-import { ExchangeDialog } from './dialogs/ExchangeDialog';
 import { AddSnackDialog } from './dialogs/AddSnackDialog';
-import { useMealPlanCore, useMealPlanNavigation, useMealPlanCalculations, useMealPlanDialogs } from '../hooks';
+import { ExchangeDialog } from './dialogs/ExchangeDialog';
+import { RecipeDialog } from './dialogs/RecipeDialog';
+import EnhancedLoadingIndicator from '@/components/ui/enhanced-loading-indicator';
 
 export const MealPlanContainer = () => {
-  const { t } = useLanguage();
-  const creditSystem = useCreditSystem();
-  
-  // Use centralized hooks
-  const navigation = useMealPlanNavigation();
-  const dialogs = useMealPlanDialogs();
-  
-  const { 
-    data: mealPlanData, 
-    isLoading, 
-    error, 
-    refetch 
-  } = useMealPlanCore(navigation.currentWeekOffset);
-  
-  const calculations = useMealPlanCalculations(mealPlanData, navigation.selectedDayNumber);
-
-  console.log('🍽️ MealPlanContainer State:', {
-    hasData: !!mealPlanData,
+  const {
+    // Navigation
+    currentWeekOffset,
+    setCurrentWeekOffset,
+    selectedDayNumber,
+    setSelectedDayNumber,
+    weekStartDate,
+    
+    // Data
+    currentWeekPlan,
     isLoading,
-    currentWeekOffset: navigation.currentWeekOffset,
-    selectedDay: navigation.selectedDayNumber,
-    totalMeals: calculations.dailyMeals.length,
-    credits: creditSystem.userCredits
-  });
+    error,
+    
+    // Calculations
+    dailyMeals,
+    totalCalories,
+    totalProtein,
+    targetDayCalories,
+    
+    // Dialogs
+    showAIDialog,
+    setShowAIDialog,
+    showAddSnackDialog,
+    setShowAddSnackDialog,
+    showExchangeDialog,
+    setShowExchangeDialog,
+    showRecipeDialog,
+    setShowRecipeDialog,
+    selectedMeal,
+    aiPreferences,
+    setAiPreferences,
+    
+    // Actions
+    isGenerating,
+    handleGenerateAIPlan,
+    handleViewMeal,
+    handleExchangeMeal,
+    refetch
+  } = useMealPlanPage();
+
+  const handleAddSnack = () => {
+    setShowAddSnackDialog(true);
+  };
 
   if (isLoading) {
-    return <LoadingState />;
-  }
-
-  if (error) {
-    console.error('❌ Meal plan error:', error);
     return (
-      <div className="text-center py-8 text-red-600">
-        <p>{t('mealPlan.error') || 'Error loading meal plan'}</p>
-        <button onClick={() => refetch()} className="mt-2 text-blue-600 hover:underline">
-          {t('common.retry') || 'Retry'}
-        </button>
+      <div className="min-h-screen flex items-center justify-center">
+        <EnhancedLoadingIndicator
+          status="loading"
+          type="general"
+          message="Loading meal plan..."
+          variant="card"
+          size="lg"
+        />
       </div>
     );
   }
 
-  const handleRefresh = async () => {
-    await refetch();
-  };
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center p-8">
+          <h3 className="text-lg font-semibold text-red-600 mb-2">Error loading meal plan</h3>
+          <p className="text-gray-600">{error.message}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto px-4 py-6 space-y-6">
       {/* Navigation */}
       <UnifiedNavigation
-        currentWeekOffset={navigation.currentWeekOffset}
-        setCurrentWeekOffset={navigation.setCurrentWeekOffset}
-        selectedDayNumber={navigation.selectedDayNumber}
-        setSelectedDayNumber={navigation.setSelectedDayNumber}
-        weekStartDate={navigation.weekStartDate}
-        onGenerateAI={() => dialogs.setShowAIDialog(true)}
-        onRefresh={handleRefresh}
-        hasWeeklyPlan={!!mealPlanData?.weeklyPlan}
-        credits={{ remaining: creditSystem.userCredits }}
+        currentWeekOffset={currentWeekOffset}
+        onWeekOffsetChange={setCurrentWeekOffset}
+        selectedDayNumber={selectedDayNumber}
+        onDayChange={setSelectedDayNumber}
+        weekStartDate={weekStartDate}
+        onGenerateAI={() => setShowAIDialog(true)}
+        isGenerating={isGenerating}
+        hasWeeklyPlan={!!currentWeekPlan?.weeklyPlan}
       />
 
       {/* Main Content */}
-      {!mealPlanData?.weeklyPlan ? (
-        <EmptyWeekState onGenerateClick={() => dialogs.setShowAIDialog(true)} />
-      ) : (
+      {currentWeekPlan?.weeklyPlan ? (
         <DayOverview
-          selectedDayNumber={navigation.selectedDayNumber}
-          dailyMeals={calculations.dailyMeals}
-          totalCalories={calculations.totalCalories}
-          totalProtein={calculations.totalProtein}
-          targetDayCalories={calculations.targetDayCalories}
-          onViewMeal={dialogs.openRecipeDialog}
-          onExchangeMeal={dialogs.openExchangeDialog}
-          onAddSnack={dialogs.openAddSnackDialog}
-          weekStartDate={navigation.weekStartDate}
+          selectedDayNumber={selectedDayNumber}
+          dailyMeals={dailyMeals}
+          totalCalories={totalCalories}
+          totalProtein={totalProtein}
+          targetDayCalories={targetDayCalories}
+          onViewMeal={handleViewMeal}
+          onExchangeMeal={handleExchangeMeal}
+          onAddSnack={handleAddSnack}
+          weekStartDate={weekStartDate}
+          weeklyPlan={currentWeekPlan}
+        />
+      ) : (
+        <EmptyWeekState
+          onGenerateAI={() => setShowAIDialog(true)}
+          isGenerating={isGenerating}
         />
       )}
 
       {/* Dialogs */}
       <AIGenerationDialog
-        isOpen={dialogs.showAIDialog}
-        onClose={() => dialogs.setShowAIDialog(false)}
-        preferences={dialogs.aiPreferences}
-        setPreferences={dialogs.setAiPreferences}
-        weekOffset={navigation.currentWeekOffset}
-        onSuccess={handleRefresh}
-      />
-
-      <RecipeDialog
-        isOpen={dialogs.showRecipeDialog}
-        onClose={() => dialogs.setShowRecipeDialog(false)}
-        meal={dialogs.selectedMeal}
-      />
-
-      <ExchangeDialog
-        isOpen={dialogs.showExchangeDialog}
-        onClose={() => dialogs.setShowExchangeDialog(false)}
-        meal={dialogs.selectedMeal}
-        onSuccess={handleRefresh}
+        isOpen={showAIDialog}
+        onClose={() => setShowAIDialog(false)}
+        preferences={aiPreferences}
+        onPreferencesChange={setAiPreferences}
+        onGenerate={handleGenerateAIPlan}
+        isGenerating={isGenerating}
+        weekOffset={currentWeekOffset}
       />
 
       <AddSnackDialog
-        isOpen={dialogs.showAddSnackDialog}
-        onClose={() => dialogs.setShowAddSnackDialog(false)}
-        selectedDay={navigation.selectedDayNumber}
-        weeklyPlanId={mealPlanData?.weeklyPlan?.id || null}
-        onSnackAdded={handleRefresh}
-        currentDayCalories={calculations.totalCalories}
-        targetDayCalories={calculations.targetDayCalories}
+        isOpen={showAddSnackDialog}
+        onClose={() => setShowAddSnackDialog(false)}
+        currentCalories={totalCalories}
+        targetCalories={targetDayCalories}
+        selectedDayNumber={selectedDayNumber}
+        weeklyPlanId={currentWeekPlan?.weeklyPlan?.id}
+        onSnackAdded={refetch}
+      />
+
+      <ExchangeDialog
+        isOpen={showExchangeDialog}
+        onClose={() => setShowExchangeDialog(false)}
+        meal={selectedMeal}
+        onMealExchanged={refetch}
+      />
+
+      <RecipeDialog
+        isOpen={showRecipeDialog}
+        onClose={() => setShowRecipeDialog(false)}
+        meal={selectedMeal}
       />
     </div>
   );

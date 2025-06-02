@@ -77,7 +77,7 @@ export const useMealPlanTranslations = () => {
     mealsToday: t('mealPlan.mealsToday'),
     complete: t('mealPlan.complete'),
     
-    // Meal Types - Fixed the missing property
+    // Meal Types
     mealTypes: {
       breakfast: t('mealPlan.breakfast'),
       lunch: t('mealPlan.lunch'),
