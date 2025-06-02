@@ -31,30 +31,33 @@ export const MealPlanContainer = () => {
     totalProtein,
     targetDayCalories,
     
-    // Dialogs
+    // Dialog states
     showAIDialog,
-    setShowAIDialog,
     showAddSnackDialog,
-    setShowAddSnackDialog,
     showExchangeDialog,
-    setShowExchangeDialog,
     showRecipeDialog,
-    setShowRecipeDialog,
     selectedMeal,
     aiPreferences,
     setAiPreferences,
     
-    // Actions
+    // Dialog actions
+    openAIDialog,
+    closeAIDialog,
+    openAddSnackDialog,
+    closeAddSnackDialog,
+    openExchangeDialog,
+    closeExchangeDialog,
+    openRecipeDialog,
+    closeRecipeDialog,
+    
+    // Main actions
     isGenerating,
     handleGenerateAIPlan,
     handleViewMeal,
     handleExchangeMeal,
+    handleAddSnack,
     refetch
   } = useMealPlanPage();
-
-  const handleAddSnack = () => {
-    setShowAddSnackDialog(true);
-  };
 
   console.log('🏠 MEAL PLAN CONTAINER STATE:', {
     hasWeeklyPlan: !!currentWeekPlan?.weeklyPlan,
@@ -62,7 +65,13 @@ export const MealPlanContainer = () => {
     isLoading,
     isGenerating,
     selectedDayNumber,
-    currentWeekOffset
+    currentWeekOffset,
+    dialogStates: {
+      showAIDialog,
+      showRecipeDialog,
+      showExchangeDialog,
+      showAddSnackDialog
+    }
   });
 
   if (isLoading) {
@@ -105,7 +114,7 @@ export const MealPlanContainer = () => {
         selectedDayNumber={selectedDayNumber}
         setSelectedDayNumber={setSelectedDayNumber}
         weekStartDate={weekStartDate}
-        onGenerateAI={() => setShowAIDialog(true)}
+        onGenerateAI={openAIDialog}
         isGenerating={isGenerating}
         hasWeeklyPlan={!!currentWeekPlan?.weeklyPlan}
         remainingCredits={5}
@@ -127,7 +136,7 @@ export const MealPlanContainer = () => {
         />
       ) : (
         <EmptyWeekState
-          onGenerateAI={() => setShowAIDialog(true)}
+          onGenerateAI={openAIDialog}
           isGenerating={isGenerating}
         />
       )}
@@ -135,16 +144,16 @@ export const MealPlanContainer = () => {
       {/* Dialogs */}
       <AIGenerationDialog
         isOpen={showAIDialog}
-        onClose={() => setShowAIDialog(false)}
+        onClose={closeAIDialog}
         preferences={aiPreferences}
+        onPreferencesChange={setAiPreferences}
         onGenerate={handleGenerateAIPlan}
         isGenerating={isGenerating}
-        weekOffset={currentWeekOffset}
       />
 
       <AddSnackDialog
         isOpen={showAddSnackDialog}
-        onClose={() => setShowAddSnackDialog(false)}
+        onClose={closeAddSnackDialog}
         currentDayCalories={totalCalories || 0}
         targetDayCalories={targetDayCalories || 2000}
         selectedDay={selectedDayNumber}
@@ -154,14 +163,14 @@ export const MealPlanContainer = () => {
 
       <ExchangeDialog
         isOpen={showExchangeDialog}
-        onClose={() => setShowExchangeDialog(false)}
+        onClose={closeExchangeDialog}
         meal={selectedMeal as DailyMeal | null}
         onMealExchanged={refetch}
       />
 
       <RecipeDialog
         isOpen={showRecipeDialog}
-        onClose={() => setShowRecipeDialog(false)}
+        onClose={closeRecipeDialog}
         meal={selectedMeal as DailyMeal | null}
       />
     </div>

@@ -1,12 +1,12 @@
 
 import { useCallback } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useMealPlanNavigation } from "@/hooks/useMealPlanNavigation";
-import { useMealPlanDialogs } from "@/hooks/useMealPlanDialogs";
-import { useMealPlanCalculations } from "@/hooks/useMealPlanCalculations";
-import { useMealPlanHandlers } from "@/hooks/useMealPlanHandlers";
-import { useMealPlanData } from "@/hooks/useMealPlanData";
-import { useEnhancedMealPlan } from "@/hooks/useEnhancedMealPlan";
+import { useMealPlanNavigation } from "./useMealPlanNavigation";
+import { useMealPlanDialogs } from "./useMealPlanDialogs";
+import { useMealPlanCalculations } from "./useMealPlanCalculations";
+import { useMealPlanHandlers } from "./useMealPlanHandlers";
+import { useMealPlanData } from "./useMealPlanData";
+import { useEnhancedMealPlan } from "./useEnhancedMealPlan";
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from './useAuth';
 
@@ -37,12 +37,10 @@ export const useMealPlanState = () => {
   // Calculations based on current data
   const calculations = useMealPlanCalculations(currentWeekPlan, navigation.selectedDayNumber);
   
-  // Event handlers
+  // Event handlers with proper dialog integration
   const handlers = useMealPlanHandlers(
-    dialogs.setSelectedMeal,
-    dialogs.setSelectedMealIndex,
-    dialogs.setShowRecipeDialog,
-    dialogs.setShowExchangeDialog
+    dialogs.openRecipeDialog,
+    dialogs.openExchangeDialog
   );
 
   // Enhanced AI generation with proper error handling
@@ -77,7 +75,7 @@ export const useMealPlanState = () => {
         await refetchMealPlan?.();
         
         // Close dialog
-        dialogs.setShowAIDialog(false);
+        dialogs.closeAIDialog();
         
         return true;
       }
@@ -95,7 +93,7 @@ export const useMealPlanState = () => {
     queryClient, 
     user?.id, 
     nutritionContext,
-    dialogs.setShowAIDialog
+    dialogs.closeAIDialog
   ]);
 
   // Manual refetch with proper error handling
@@ -108,12 +106,6 @@ export const useMealPlanState = () => {
     }
   }, [navigation.currentWeekOffset, refetchMealPlan]);
 
-  // Regenerate plan (same as generate for now)
-  const handleRegeneratePlan = useCallback(async () => {
-    console.log('🔄 Regenerating meal plan...');
-    return await handleGenerateAIPlan();
-  }, [handleGenerateAIPlan]);
-
   // Enhanced logging for debugging
   console.log('🔍 UNIFIED MEAL PLAN STATE:', {
     currentWeekOffset: navigation.currentWeekOffset,
@@ -125,14 +117,20 @@ export const useMealPlanState = () => {
     isGenerating,
     error: error?.message,
     weekStartDate: navigation.weekStartDate.toDateString(),
-    nutritionContext
+    nutritionContext,
+    dialogStates: {
+      showAIDialog: dialogs.showAIDialog,
+      showRecipeDialog: dialogs.showRecipeDialog,
+      showExchangeDialog: dialogs.showExchangeDialog,
+      showAddSnackDialog: dialogs.showAddSnackDialog
+    }
   });
 
   return {
     // Navigation state
     ...navigation,
     
-    // Dialog state
+    // Dialog state and actions
     ...dialogs,
     
     // Calculations
@@ -151,19 +149,10 @@ export const useMealPlanState = () => {
     nutritionContext,
     
     // Actions
-    handleRegeneratePlan,
     handleGenerateAIPlan,
     refetch,
     
-    // Helper methods for compatibility
-    openRecipeDialog: (meal: any) => {
-      dialogs.setSelectedMeal(meal);
-      dialogs.setShowRecipeDialog(true);
-    },
-    openExchangeDialog: (meal: any, index?: number) => {
-      dialogs.setSelectedMeal(meal);
-      dialogs.setSelectedMealIndex(index || 0);
-      dialogs.setShowExchangeDialog(true);
-    }
+    // Add snack handler
+    handleAddSnack: dialogs.openAddSnackDialog
   };
 };

@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import type { DailyMeal } from "@/hooks/useMealPlanData";
+import type { DailyMeal } from "./useMealPlanData";
 
 export const useMealPlanDialogs = () => {
   const [showAIDialog, setShowAIDialog] = useState(false);
@@ -19,31 +19,73 @@ export const useMealPlanDialogs = () => {
     mealTypes: "breakfast,lunch,dinner"
   });
 
-  console.log('🔧 useMealPlanDialogs: Current AI preferences:', aiPreferences);
+  // Dialog action handlers
+  const openAIDialog = () => setShowAIDialog(true);
+  const closeAIDialog = () => setShowAIDialog(false);
+  
+  const openRecipeDialog = (meal: DailyMeal) => {
+    setSelectedMeal(meal);
+    setShowRecipeDialog(true);
+  };
+  
+  const closeRecipeDialog = () => {
+    setShowRecipeDialog(false);
+    setSelectedMeal(null);
+  };
+  
+  const openExchangeDialog = (meal: DailyMeal, index = 0) => {
+    setSelectedMeal(meal);
+    setSelectedMealIndex(index);
+    setShowExchangeDialog(true);
+  };
+  
+  const closeExchangeDialog = () => {
+    setShowExchangeDialog(false);
+    setSelectedMeal(null);
+    setSelectedMealIndex(0);
+  };
+  
+  const openAddSnackDialog = () => setShowAddSnackDialog(true);
+  const closeAddSnackDialog = () => setShowAddSnackDialog(false);
+
+  console.log('🔧 useMealPlanDialogs: Dialog states:', {
+    showAIDialog,
+    showRecipeDialog,
+    showExchangeDialog,
+    showAddSnackDialog,
+    selectedMeal: selectedMeal?.name || null,
+    aiPreferences
+  });
 
   return {
-    // AI Dialog state
+    // Dialog states
     showAIDialog,
     setShowAIDialog,
-    aiPreferences,
-    setAiPreferences,
-    
-    // Recipe Dialog state
     showRecipeDialog,
     setShowRecipeDialog,
-    
-    // Exchange Dialog state
     showExchangeDialog,
     setShowExchangeDialog,
-    
-    // Add Snack Dialog state
     showAddSnackDialog,
     setShowAddSnackDialog,
     
-    // Selected meal state
+    // Selected items
     selectedMeal,
     setSelectedMeal,
     selectedMealIndex,
-    setSelectedMealIndex
+    setSelectedMealIndex,
+    
+    // AI preferences
+    aiPreferences,
+    setAiPreferences,
+    
+    // Action handlers
+    openAIDialog,
+    closeAIDialog,
+    openRecipeDialog,
+    closeRecipeDialog,
+    openExchangeDialog,
+    closeExchangeDialog,
+    openAddSnackDialog,
+    closeAddSnackDialog
   };
 };

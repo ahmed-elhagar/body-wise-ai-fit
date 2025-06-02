@@ -1,41 +1,29 @@
 
 import { useCallback } from "react";
-import type { DailyMeal } from "@/hooks/useMealPlanData";
+import type { DailyMeal } from "./useMealPlanData";
 
 export const useMealPlanHandlers = (
-  setSelectedMeal: (meal: DailyMeal | null) => void,
-  setSelectedMealIndex: (index: number) => void,
-  setShowRecipeDialog: (show: boolean) => void,
-  setShowExchangeDialog: (show: boolean) => void
+  openRecipeDialog: (meal: DailyMeal) => void,
+  openExchangeDialog: (meal: DailyMeal, index?: number) => void
 ) => {
-  const handleShowRecipe = useCallback((meal: DailyMeal) => {
-    console.log('🍽️ Showing recipe for meal:', meal.name);
-    setSelectedMeal(meal);
-    setShowRecipeDialog(true);
-  }, [setSelectedMeal, setShowRecipeDialog]);
-
   const handleViewMeal = useCallback((meal: DailyMeal) => {
     console.log('👁️ Viewing meal details:', meal.name);
-    handleShowRecipe(meal);
-  }, [handleShowRecipe]);
+    openRecipeDialog(meal);
+  }, [openRecipeDialog]);
 
-  const handleExchangeMeal = useCallback((meal: DailyMeal, index?: number) => {
-    console.log('🔄 Exchanging meal:', meal.name);
-    setSelectedMeal(meal);
-    setSelectedMealIndex(index || 0);
-    setShowExchangeDialog(true);
-  }, [setSelectedMeal, setSelectedMealIndex, setShowExchangeDialog]);
+  const handleExchangeMeal = useCallback((meal: DailyMeal, index = 0) => {
+    console.log('🔄 Exchanging meal:', meal.name, 'at index:', index);
+    openExchangeDialog(meal, index);
+  }, [openExchangeDialog]);
 
-  const handleRecipeGenerated = useCallback(() => {
-    console.log('✅ Recipe generated successfully');
-    setShowRecipeDialog(false);
-    setSelectedMeal(null);
-  }, [setShowRecipeDialog, setSelectedMeal]);
+  const handleShowRecipe = useCallback((meal: DailyMeal) => {
+    console.log('🍽️ Showing recipe for meal:', meal.name);
+    openRecipeDialog(meal);
+  }, [openRecipeDialog]);
 
   return {
-    handleShowRecipe,
     handleViewMeal,
     handleExchangeMeal,
-    handleRecipeGenerated
+    handleShowRecipe
   };
 };
