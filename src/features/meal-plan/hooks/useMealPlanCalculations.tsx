@@ -8,7 +8,7 @@ export const useMealPlanCalculations = (
 ) => {
   // Calculate daily meals for selected day
   const dailyMeals = useMemo(() => {
-    if (!currentWeekPlan?.dailyMeals) return null;
+    if (!currentWeekPlan?.dailyMeals) return [];
     return currentWeekPlan.dailyMeals.filter(
       meal => meal.day_number === selectedDayNumber
     );
@@ -19,7 +19,7 @@ export const useMealPlanCalculations = (
     const today = new Date();
     const todayDayNumber = today.getDay() === 6 ? 1 : today.getDay() + 2;
     
-    if (!currentWeekPlan?.dailyMeals) return null;
+    if (!currentWeekPlan?.dailyMeals) return [];
     return currentWeekPlan.dailyMeals.filter(
       meal => meal.day_number === todayDayNumber
     );
@@ -27,13 +27,11 @@ export const useMealPlanCalculations = (
 
   // Calculate total calories for selected day
   const totalCalories = useMemo(() => {
-    if (!dailyMeals) return null;
     return dailyMeals.reduce((total, meal) => total + (meal.calories || 0), 0);
   }, [dailyMeals]);
 
   // Calculate total protein for selected day
   const totalProtein = useMemo(() => {
-    if (!dailyMeals) return null;
     return dailyMeals.reduce((total, meal) => total + (meal.protein || 0), 0);
   }, [dailyMeals]);
 
