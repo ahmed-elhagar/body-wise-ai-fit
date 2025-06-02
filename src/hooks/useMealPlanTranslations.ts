@@ -52,6 +52,16 @@ export const useMealPlanTranslations = () => {
     return dayNames[dayNumber as keyof typeof dayNames] || `Day ${dayNumber}`;
   }, [mealPlanT]);
 
+  // Memoize meal types object
+  const mealTypes = useMemo(() => ({
+    breakfast: mealPlanT('breakfast', 'Breakfast'),
+    lunch: mealPlanT('lunch', 'Lunch'), 
+    dinner: mealPlanT('dinner', 'Dinner'),
+    snack: mealPlanT('snack', 'Snack'),
+    snack1: mealPlanT('snack', 'Snack'),
+    snack2: mealPlanT('snack', 'Snack')
+  }), [mealPlanT]);
+
   // Memoize all translations to prevent object recreation
   const translations = useMemo(() => ({
     title: mealPlanT('title', 'Meal Plan'),
@@ -97,7 +107,8 @@ export const useMealPlanTranslations = () => {
     goToDashboard: mealPlanT('goToDashboard', 'Go to Dashboard'),
     authenticationRequired: mealPlanT('authenticationRequired', 'Authentication Required'),
     pleaseSignIn: mealPlanT('pleaseSignIn', 'Please sign in to continue'),
-    signIn: mealPlanT('signIn', 'Sign In')
+    signIn: mealPlanT('signIn', 'Sign In'),
+    exchange: mealPlanT('exchange', 'Exchange')
   }), [mealPlanT]);
 
   return {
@@ -107,6 +118,12 @@ export const useMealPlanTranslations = () => {
     getMealTypeTranslation,
     getDayName,
     translations,
+    
+    // Direct access to commonly used properties for backward compatibility
+    mealTypes,
+    cal: mealPlanT('cal', 'cal'),
+    recipe: mealPlanT('recipe', 'Recipe'),
+    exchange: mealPlanT('exchange', 'Exchange'),
     
     // Individual properties for backward compatibility
     ...translations
