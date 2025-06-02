@@ -1,55 +1,69 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import type { MealPlanFetchResult } from '../types';
-import { OptimizedMealPlanService } from './optimizedMealPlanService';
+import { validateMealType } from '../utils/mealTypeValidator';
+import type { DailyMeal, WeeklyMealPlan } from '../types';
 
-// Enhanced service with proper error handling and data validation
-export const fetchMealPlanData = async (
-  userId: string, 
-  weekStartDateStr: string
-): Promise<MealPlanFetchResult | null> => {
-  console.log('🔍 Enhanced fetchMealPlanData called:', { userId, weekStartDateStr });
-  
+export interface MealPlanFetchResult {
+  weeklyPlan: WeeklyMealPlan;
+  dailyMeals: DailyMeal[];
+}
+
+export const fetchMealPlanData = async (userId: string, weekStartDate: string): Promise<MealPlanFetchResult | null> => {
+  console.log('🔄 Fetching meal plan data:', { userId, weekStartDate });
+
   try {
-    const result = await OptimizedMealPlanService.fetchMealPlanData({
-      userId,
-      weekStartDate: weekStartDateStr,
-      includeIngredients: true,
-      includeInstructions: true
-    });
+    // Fetch weekly plan
+    const { data: weeklyPlanData, error: weeklyError } = await supabase
+      .from('weekly_meal_plans')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('week_start_date', weekStartDate)
+      .maybeSingle();
 
-    if (result.error) {
-      console.error('❌ OptimizedMealPlanService error:', result.error);
-      throw result.error;
+    if (weeklyError) {
+      console.error('❌ Error fetching weekly plan:', weeklyError);
+      throw weeklyError;
     }
 
-    if (!result.data) {
-      console.log('📋 No meal plan data found');
+    if (!weeklyPlanData) {
+      console.log('📭 No weekly plan found for this week');
       return null;
     }
 
-    // Convert strict types back to legacy types for backward compatibility
-    const convertedResult: MealPlanFetchResult = {
-      weeklyPlan: {
-        ...result.data.weeklyPlan,
-        updated_at: result.data.weeklyPlan.updated_at
-      },
-      dailyMeals: result.data.dailyMeals.map(meal => ({
-        ...meal,
-        ingredients: meal.ingredients as any,
-        instructions: meal.instructions as any,
-        alternatives: meal.alternatives as any
-      }))
-    };
+    // Fetch daily meals
+    const { data: dailyMealsData, error: dailyError } = await supabase
+      .from('daily_meals')
+      .select('*')
+      .eq('weekly_plan_id', weeklyPlanData.id)
+      .order('day_number', { ascending: true })
+      .order('meal_type', { ascending: true });
 
-    console.log('✅ Meal plan data converted successfully:', {
-      weeklyPlanId: convertedResult.weeklyPlan.id,
-      mealsCount: convertedResult.dailyMeals.length
+    if (dailyError) {
+      console.error('❌ Error fetching daily meals:', dailyError);
+      throw dailyError;
+    }
+
+    // Process and validate meal data
+    const processedMeals: DailyMeal[] = (dailyMealsData || []).map(meal => ({
+      ...meal,
+      meal_type: validateMealType(meal.meal_type),
+      ingredients: Array.isArray(meal.ingredients) ? meal.ingredients : [],
+      instructions: Array.isArray(meal.instructions) ? meal.instructions : [],
+      alternatives: Array.isArray(meal.alternatives) ? meal.alternatives : []
+    }));
+
+    console.log('✅ Meal plan data fetched successfully:', {
+      weeklyPlanId: weeklyPlanData.id,
+      mealsCount: processedMeals.length
     });
 
-    return convertedResult;
+    return {
+      weeklyPlan: weeklyPlanData,
+      dailyMeals: processedMeals
+    };
+
   } catch (error) {
-    console.error('❌ Error in enhanced fetchMealPlanData:', error);
+    console.error('❌ Error in fetchMealPlanData:', error);
     throw error;
   }
 };

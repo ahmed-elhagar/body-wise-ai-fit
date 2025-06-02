@@ -2,6 +2,7 @@
 import React from 'react';
 import { Loader2, Clock, AlertCircle, CheckCircle } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 
 export type LoadingType = 'general' | 'meal-plan' | 'exercise' | 'ai-generation' | 'generation' | 'recipe';
 
@@ -33,15 +34,15 @@ export const EnhancedLoadingIndicator: React.FC<EnhancedLoadingIndicatorProps> =
   const getIcon = () => {
     switch (status) {
       case 'loading':
-        return <Loader2 className={`animate-spin ${getIconSize()}`} />;
+        return <Loader2 className={cn('animate-spin', getIconSize())} />;
       case 'success':
-        return <CheckCircle className={`text-green-500 ${getIconSize()}`} />;
+        return <CheckCircle className={cn('text-green-500', getIconSize())} />;
       case 'error':
-        return <AlertCircle className={`text-red-500 ${getIconSize()}`} />;
+        return <AlertCircle className={cn('text-red-500', getIconSize())} />;
       case 'timeout':
-        return <Clock className={`text-orange-500 ${getIconSize()}`} />;
+        return <Clock className={cn('text-orange-500', getIconSize())} />;
       default:
-        return <Loader2 className={`animate-spin ${getIconSize()}`} />;
+        return <Loader2 className={cn('animate-spin', getIconSize())} />;
     }
   };
 
@@ -100,14 +101,17 @@ export const EnhancedLoadingIndicator: React.FC<EnhancedLoadingIndicatorProps> =
   };
 
   const content = (
-    <div className={`flex items-center gap-3 ${variant === 'card' ? 'p-4' : ''}`}>
+    <div className={cn('flex items-center gap-3', variant === 'card' ? 'p-4' : '')}>
       {getIcon()}
       <div className="flex flex-col gap-1">
-        <span className={`${size === 'sm' ? 'text-sm' : size === 'lg' ? 'text-lg' : 'text-base'}`}>
+        <span className={cn(
+          size === 'sm' ? 'text-sm' : 
+          size === 'lg' ? 'text-lg' : 'text-base'
+        )}>
           {getMessage()}
         </span>
         {description && (
-          <span className={`text-gray-500 ${size === 'sm' ? 'text-xs' : 'text-sm'}`}>
+          <span className={cn('text-gray-500', size === 'sm' ? 'text-xs' : 'text-sm')}>
             {description}
           </span>
         )}
@@ -151,4 +155,3 @@ export const EnhancedLoadingIndicator: React.FC<EnhancedLoadingIndicatorProps> =
 };
 
 export default EnhancedLoadingIndicator;
-export type { LoadingType };
