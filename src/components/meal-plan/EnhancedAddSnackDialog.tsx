@@ -7,11 +7,13 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Plus, Search, Apple, Calculator } from "lucide-react";
+import { Plus, Search, Apple, Calculator, Sparkles, Flame } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import { useCalorieCalculations } from "./add-snack/useCalorieCalculations";
+import EnhancedLoadingIndicator from "@/components/ui/enhanced-loading-indicator";
 
 interface EnhancedAddSnackDialogProps {
   isOpen: boolean;
@@ -44,6 +46,7 @@ const EnhancedAddSnackDialog = ({
   targetDayCalories
 }: EnhancedAddSnackDialogProps) => {
   const { user } = useAuth();
+  const { profile } = useProfile();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSnack, setSelectedSnack] = useState<any>(null);
   const [customSnack, setCustomSnack] = useState({
@@ -54,7 +57,8 @@ const EnhancedAddSnackDialog = ({
     fat: ""
   });
   const [isAdding, setIsAdding] = useState(false);
-  const [viewMode, setViewMode] = useState<'quick' | 'custom'>('quick');
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+  const [viewMode, setViewMode] = useState<'ai' | 'quick' | 'custom'>('ai');
 
   const { remainingCalories, progressPercentage } = useCalorieCalculations(
     currentDayCalories,
@@ -64,6 +68,47 @@ const EnhancedAddSnackDialog = ({
   const filteredSnacks = commonSnacks.filter(snack =>
     snack.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleGenerateAISnack = async () => {
+    if (!user || !weeklyPlanId || !profile) {
+      toast.error('Missing required data for AI generation');
+      return;
+    }
+
+    setIsGeneratingAI(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-ai-snack', {
+        body: {
+          userProfile: profile,
+          day: selectedDay,
+          calories: Math.min(remainingCalories, 250), // Use remaining calories or max 250
+          weeklyPlanId,
+          language: profile?.preferred_language || 'en'
+        }
+      });
+
+      if (error) {
+        console.error('Error generating AI snack:', error);
+        toast.error('Failed to generate AI snack');
+        return;
+      }
+
+      if (data?.success) {
+        toast.success('AI snack added successfully!');
+        onSnackAdded();
+        onClose();
+      } else {
+        toast.error(data?.error || 'Failed to generate AI snack');
+      }
+      
+    } catch (error) {
+      console.error('Error generating AI snack:', error);
+      toast.error('Failed to generate AI snack');
+    } finally {
+      setIsGeneratingAI(false);
+    }
+  };
 
   const handleAddSnack = async (snack: any) => {
     if (!weeklyPlanId || !user) {
@@ -95,6 +140,7 @@ const EnhancedAddSnackDialog = ({
 
       toast.success(`${snack.name} added successfully!`);
       onSnackAdded();
+      onClose();
     } catch (error: any) {
       console.error('Error adding snack:', error);
       toast.error(error.message || "Failed to add snack");
@@ -141,7 +187,8 @@ const EnhancedAddSnackDialog = ({
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium">Daily Progress</span>
-                <Badge variant="outline">
+                <Badge variant="outline" className="flex items-center gap-1">
+                  <Flame className="w-3 h-3" />
                   {remainingCalories} cal remaining
                 </Badge>
               </div>
@@ -161,6 +208,15 @@ const EnhancedAddSnackDialog = ({
           {/* View Mode Toggle */}
           <div className="flex gap-2">
             <Button
+              variant={viewMode === 'ai' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('ai')}
+              className="flex-1"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              AI Generated
+            </Button>
+            <Button
               variant={viewMode === 'quick' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setViewMode('quick')}
@@ -175,11 +231,53 @@ const EnhancedAddSnackDialog = ({
               className="flex-1"
             >
               <Calculator className="w-4 h-4 mr-2" />
-              Custom Snack
+              Custom
             </Button>
           </div>
 
-          {viewMode === 'quick' ? (
+          {/* Content based on view mode */}
+          {viewMode === 'ai' ? (
+            <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200">
+              <CardContent className="p-6">
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Sparkles className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-lg font-semibold mb-2">AI-Generated Snack</h3>
+                  <p className="text-gray-600 mb-4">
+                    Let AI create a perfect snack based on your profile and remaining {remainingCalories} calories
+                  </p>
+                  
+                  {isGeneratingAI ? (
+                    <EnhancedLoadingIndicator
+                      status="loading"
+                      type="recipe"
+                      message="Generating AI Snack"
+                      description="Creating the perfect snack for your remaining calories"
+                      variant="card"
+                      size="md"
+                      showSteps={true}
+                      customSteps={[
+                        'Analyzing your dietary preferences...',
+                        'Calculating optimal nutrition...',
+                        'Creating personalized snack...',
+                        'Finalizing recipe details...'
+                      ]}
+                    />
+                  ) : (
+                    <Button
+                      onClick={handleGenerateAISnack}
+                      disabled={isGeneratingAI || !weeklyPlanId}
+                      className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 py-3 rounded-lg"
+                    >
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      Generate AI Snack
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ) : viewMode === 'quick' ? (
             <>
               {/* Search */}
               <div className="relative">
@@ -303,7 +401,7 @@ const EnhancedAddSnackDialog = ({
           )}
 
           {/* Actions */}
-          <div className="flex gap-3">
+          <div className="flex gap-3 pt-4 border-t">
             <Button
               onClick={onClose}
               variant="outline"
