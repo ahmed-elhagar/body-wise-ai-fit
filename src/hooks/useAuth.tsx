@@ -1,7 +1,14 @@
-
 import { useState, useEffect, createContext, useContext } from 'react';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { 
+  handleSignIn, 
+  handleSignUp, 
+  handleSignOut, 
+  forceRefreshSession, 
+  initializeAuthCleanup,
+  clearLocalAuthData 
+} from './auth/authHelpers';
 
 export interface AuthUser {
   id: string;
@@ -25,9 +32,10 @@ interface AuthContextType {
   error: any;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, metadata?: any) => Promise<void>;
-  signOut: () => void;
+  signOut: (forceCleanup?: boolean) => Promise<void>;
   clearError: () => void;
   retryAuth: () => Promise<void>;
+  forceLogout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -61,12 +69,13 @@ export const useAuth = () => {
       signUp: async (email: string, password: string, metadata?: any) => {
         console.log('Sign up called with:', email);
       },
-      signOut: () => {
+      signOut: async (forceCleanup?: boolean) => {
         setUser(null);
         setSession(null);
       },
       clearError: () => setError(null),
-      retryAuth: async () => {}
+      retryAuth: async () => {},
+      forceLogout: async () => {}
     };
   }
   return context;
@@ -77,9 +86,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<any>(null);
+  const [authInitialized, setAuthInitialized] = useState(false);
 
   const clearError = () => {
     setError(null);
+  };
+
+  const forceLogout = async () => {
+    console.log('Force logout initiated');
+    setIsLoading(true);
+    
+    try {
+      // Clear everything
+      await handleSignOut(true);
+      setUser(null);
+      setSession(null);
+      setError(null);
+      
+      // Reload the page to ensure clean state
+      window.location.href = '/auth?force_logout=true';
+    } catch (error) {
+      console.error('Force logout error:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const retryAuth = async () => {
@@ -87,25 +117,37 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setIsLoading(true);
       setError(null);
       
-      const { data: { session }, error } = await supabase.auth.getSession();
+      console.log('Retrying auth - refreshing session');
       
-      if (error) {
-        throw error;
-      }
+      // Try to refresh session first
+      const refreshedSession = await forceRefreshSession();
       
-      console.log('Retry auth - session retrieved:', !!session, session?.user?.id?.substring(0, 8) + '...');
-      
-      if (session?.user?.id) {
-        setSession(session);
-        await enrichUserWithProfile(session);
+      if (refreshedSession?.user?.id) {
+        setSession(refreshedSession);
+        await enrichUserWithProfile(refreshedSession);
       } else {
-        setUser(null);
-        setSession(null);
+        // If refresh fails, get current session
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          throw error;
+        }
+        
+        if (session?.user?.id) {
+          setSession(session);
+          await enrichUserWithProfile(session);
+        } else {
+          setUser(null);
+          setSession(null);
+        }
       }
       
     } catch (err) {
       console.error('Retry auth error:', err);
       setError(err);
+      // On retry failure, clear everything
+      setUser(null);
+      setSession(null);
     } finally {
       setIsLoading(false);
     }
@@ -129,13 +171,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(baseUser);
       console.log('Base user set with ID:', baseUser.id?.substring(0, 8) + '...');
       
-      // Try to enrich with profile data
+      // Try to enrich with profile data (but don't block on it)
       try {
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('role, first_name, last_name')
           .eq('id', session.user.id)
-          .single();
+          .maybeSingle(); // Use maybeSingle to avoid errors if no profile exists
         
         if (profile && !profileError) {
           console.log('Profile data fetched successfully, updating user');
@@ -151,6 +193,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       } catch (profileErr) {
         console.warn('Profile enrichment failed, keeping base user:', profileErr);
+        // Keep the base user, don't clear it
       }
       
     } catch (err) {
@@ -169,6 +212,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     console.log("AuthProvider - Initializing");
     
+    // Initialize cleanup
+    initializeAuthCleanup();
+    
     let mounted = true;
     
     // Set up auth state listener first
@@ -179,25 +225,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.log('Auth state changed:', event, session?.user?.email, 'User ID:', session?.user?.id?.substring(0, 8) + '...' || 'none');
         
         try {
-          if (session?.user?.id) {
-            setSession(session);
-            await enrichUserWithProfile(session);
-          } else {
-            console.log('No session or user ID, clearing state');
+          if (event === 'SIGNED_OUT' || !session?.user?.id) {
+            console.log('User signed out or no session, clearing state');
             setSession(null);
             setUser(null);
+            setError(null);
+          } else if (session?.user?.id) {
+            console.log('User signed in, setting session and enriching profile');
+            setSession(session);
+            await enrichUserWithProfile(session);
+            setError(null);
           }
-          
-          setError(null);
         } catch (err) {
           console.error('Auth state change error:', err);
           setError(err);
-        }
-        
-        // CRITICAL: Always set loading to false after processing auth state change
-        if (mounted) {
-          console.log('Setting isLoading to false after auth state change');
-          setIsLoading(false);
+        } finally {
+          // CRITICAL: Always set loading to false and mark as initialized
+          if (mounted) {
+            console.log('Setting isLoading to false after auth state change');
+            setIsLoading(false);
+            setAuthInitialized(true);
+          }
         }
       }
     );
@@ -205,6 +253,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Get initial session after setting up listener
     const getInitialSession = async () => {
       try {
+        console.log('Getting initial session...');
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -225,10 +274,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.error('Error in getInitialSession:', error);
         setError(error);
       } finally {
-        // CRITICAL: Always set loading to false after initial check
+        // CRITICAL: Always set loading to false and mark as initialized
         if (mounted) {
           console.log('Setting isLoading to false after initial session check');
           setIsLoading(false);
+          setAuthInitialized(true);
         }
       }
     };
@@ -247,16 +297,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setIsLoading(true);
       setError(null);
       
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      console.log('Starting sign in process for:', email);
+      const data = await handleSignIn(email, password);
 
-      if (error) {
-        throw error;
+      if (data) {
+        console.log('Sign in successful for:', email);
       }
-
-      console.log('Sign in successful for:', email);
     } catch (error: any) {
       console.error('Sign in error:', error);
       setError(error);
@@ -271,19 +317,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setIsLoading(true);
       setError(null);
       
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: metadata
-        }
-      });
+      console.log('Starting sign up process for:', email);
+      const data = await handleSignUp(email, password, metadata);
 
-      if (error) {
-        throw error;
+      if (data) {
+        console.log('Sign up successful for:', email);
       }
-
-      console.log('Sign up successful for:', email);
     } catch (error: any) {
       console.error('Sign up error:', error);
       setError(error);
@@ -293,18 +332,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const signOut = async () => {
+  const signOut = async (forceCleanup: boolean = false) => {
     try {
       setError(null);
       
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        throw error;
-      }
+      console.log('Starting sign out process...');
+      const success = await handleSignOut(forceCleanup);
       
-      setUser(null);
-      setSession(null);
-      console.log('Sign out successful');
+      if (success || forceCleanup) {
+        setUser(null);
+        setSession(null);
+        console.log('Sign out successful');
+      }
     } catch (error: any) {
       console.error('Sign out error:', error);
       setError(error);
@@ -323,6 +362,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     signOut,
     clearError,
     retryAuth,
+    forceLogout,
   };
 
   return (

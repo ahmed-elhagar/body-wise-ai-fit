@@ -69,32 +69,93 @@ export const handleSignUp = async (email: string, password: string, metadata?: a
   return data;
 };
 
-export const handleSignOut = async () => {
+export const clearLocalAuthData = () => {
+  // Clear all possible auth-related localStorage items
+  localStorage.removeItem('supabase.auth.token');
+  localStorage.removeItem('sb-xnoslfftfktqvyoefccw-auth-token');
+  sessionStorage.clear();
+  
+  // Clear any custom auth data
+  Object.keys(localStorage).forEach(key => {
+    if (key.includes('auth') || key.includes('supabase')) {
+      localStorage.removeItem(key);
+    }
+  });
+};
+
+export const handleSignOut = async (forceCleanup: boolean = false) => {
   try {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      // Only throw error if it's not a session missing error
-      if (error.message !== 'Auth session missing!') {
-        throw error;
-      }
-      // If session is missing, we're already logged out
-      console.log('Session already missing, considering logout successful');
+    console.log('Starting sign out process...');
+    
+    if (forceCleanup) {
+      // Force cleanup - clear everything first
+      clearLocalAuthData();
     }
     
+    const { error } = await supabase.auth.signOut({
+      scope: 'global' // Sign out from all sessions
+    });
+    
+    if (error && error.message !== 'Auth session missing!') {
+      console.error('Sign out error:', error);
+      // If there's an error, still try to clean up locally
+      clearLocalAuthData();
+    }
+    
+    // Always clean up analytics and local state
     resetAnalytics();
-    console.log('useAuth - Sign out successful');
+    
+    console.log('Sign out completed successfully');
+    return true;
   } catch (error) {
-    // Handle any other unexpected errors
     console.error('Unexpected logout error:', error);
-    // Still reset analytics and consider it a successful logout
+    // Force cleanup on any error
+    clearLocalAuthData();
     resetAnalytics();
+    return false;
+  }
+};
+
+export const forceRefreshSession = async () => {
+  try {
+    console.log('Force refreshing session...');
+    const { data, error } = await supabase.auth.refreshSession();
+    
+    if (error) {
+      console.error('Session refresh error:', error);
+      return null;
+    }
+    
+    console.log('Session refreshed successfully');
+    return data.session;
+  } catch (error) {
+    console.error('Force refresh error:', error);
+    return null;
   }
 };
 
 export const handleForceLogoutAllUsers = async () => {
-  const { error } = await supabase.rpc('force_logout_all_users');
-  if (error) throw error;
-  
-  toast.success('All users have been logged out successfully');
-  console.log('useAuth - Force logout all users successful');
+  try {
+    const { error } = await supabase.rpc('force_logout_all_users');
+    if (error) throw error;
+    
+    toast.success('All users have been logged out successfully');
+    console.log('useAuth - Force logout all users successful');
+  } catch (error) {
+    console.error('Force logout all users error:', error);
+    toast.error('Failed to logout all users');
+  }
+};
+
+export const initializeAuthCleanup = () => {
+  // Force cleanup on page load if needed
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('force_logout') === 'true') {
+    console.log('Force logout requested via URL parameter');
+    clearLocalAuthData();
+    
+    // Remove the parameter from URL
+    const newUrl = window.location.pathname;
+    window.history.replaceState({}, document.title, newUrl);
+  }
 };

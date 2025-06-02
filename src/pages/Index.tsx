@@ -3,11 +3,12 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Card } from "@/components/ui/card";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const Index = () => {
   const navigate = useNavigate();
-  const { user, loading, error } = useAuth();
+  const { user, loading, error, retryAuth, forceLogout } = useAuth();
 
   useEffect(() => {
     // Only redirect after loading is complete and we have a definitive auth state
@@ -39,14 +40,24 @@ const Index = () => {
             <h2 className="text-lg font-semibold text-red-800">Authentication Error</h2>
           </div>
           <p className="text-red-700 mb-4">
-            There was an issue with authentication. Please try again.
+            There was an issue with authentication. Please try again or force a fresh start.
           </p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors"
-          >
-            Retry
-          </button>
+          <div className="space-y-2">
+            <Button 
+              onClick={retryAuth} 
+              className="w-full bg-red-600 text-white hover:bg-red-700"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Retry Authentication
+            </Button>
+            <Button 
+              onClick={forceLogout} 
+              variant="outline"
+              className="w-full border-red-600 text-red-600 hover:bg-red-50"
+            >
+              Force Fresh Start
+            </Button>
+          </div>
         </Card>
       </div>
     );
