@@ -10,15 +10,20 @@ const Index = () => {
   const { user, loading, error } = useAuth();
 
   useEffect(() => {
+    // Only redirect after loading is complete and we have a definitive auth state
     if (!loading) {
-      console.log("Index - Auth state determined:", { isAuthenticated: !!user });
-      if (user) {
-        // User is authenticated, redirect to dashboard
-        console.log("Index - Redirecting to dashboard");
+      console.log("Index - Auth state determined:", { 
+        isAuthenticated: !!user,
+        userId: user?.id?.substring(0, 8) + '...' || 'none'
+      });
+      
+      if (user?.id) {
+        // User is authenticated with valid ID, redirect to dashboard
+        console.log("Index - Redirecting authenticated user to dashboard");
         navigate("/dashboard", { replace: true });
       } else {
         // User is not authenticated, redirect to landing
-        console.log("Index - Redirecting to landing");
+        console.log("Index - Redirecting unauthenticated user to landing");
         navigate("/landing", { replace: true });
       }
     }
@@ -54,7 +59,7 @@ const Index = () => {
         <div className="text-center">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">FitFatta</h1>
           <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600">Initializing...</p>
         </div>
       </div>
     );

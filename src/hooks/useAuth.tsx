@@ -1,4 +1,3 @@
-
 import { useState, useEffect, createContext, useContext } from 'react';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -132,14 +131,50 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(enrichedUser);
     } catch (err) {
       console.warn('User enrichment failed, using basic user data:', err);
-      setUser(session.user);
+      // Create user from session data directly
+      const basicUser: AuthUser = {
+        id: session.user.id,
+        email: session.user.email,
+        role: session.user.user_metadata?.role || 'normal',
+        first_name: session.user.user_metadata?.first_name,
+        last_name: session.user.user_metadata?.last_name,
+        user_metadata: session.user.user_metadata
+      };
+      setUser(basicUser);
     }
   };
 
   useEffect(() => {
     console.log("AuthProvider - Initializing");
     
-    // Set up auth state listener FIRST
+    // Check for existing session first
+    const getInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Error getting initial session:', error);
+          setError(error);
+        } else {
+          console.log("Got initial session:", !!session);
+          
+          setSession(session);
+          
+          if (session?.user) {
+            await enrichUserWithProfile(session);
+          } else {
+            setUser(null);
+          }
+        }
+      } catch (error) {
+        console.error('Error in getInitialSession:', error);
+        setError(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state changed:', event, session?.user?.email);
@@ -158,36 +193,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         } catch (err) {
           console.error('Auth state change error:', err);
           setError(err);
-        } finally {
+        }
+        
+        // Only set loading to false after initial session check
+        if (event !== 'INITIAL_SESSION') {
           setIsLoading(false);
         }
       }
     );
 
-    // THEN check for existing session
-    const getInitialSession = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          throw error;
-        }
-        
-        console.log("Got initial session:", !!session);
-        
-        if (session?.user) {
-          await enrichUserWithProfile(session);
-        }
-        
-        setSession(session);
-      } catch (error) {
-        console.error('Error in getInitialSession:', error);
-        setError(error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
+    // Initialize session
     getInitialSession();
 
     return () => {
