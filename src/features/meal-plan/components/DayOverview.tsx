@@ -2,9 +2,11 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Calendar, Utensils, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
+import { Plus, Calendar, Utensils, ChevronLeft, ChevronRight, Sparkles, Shuffle } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useEnhancedMealShuffle } from '@/hooks/useEnhancedMealShuffle';
 import { EnhancedMealCard } from './EnhancedMealCard';
+import EnhancedLoadingIndicator from '@/components/ui/enhanced-loading-indicator';
 import type { DailyMeal } from '../types';
 
 interface DayOverviewProps {
@@ -47,6 +49,7 @@ export const DayOverview = ({
   isGenerating = false
 }: DayOverviewProps) => {
   const { t, isRTL } = useLanguage();
+  const { shuffleMeals, isShuffling } = useEnhancedMealShuffle();
 
   const getDayName = (dayNumber: number) => {
     const dayNames = [
@@ -71,6 +74,16 @@ export const DayOverview = ({
     const endDate = new Date(weekStartDate);
     endDate.setDate(endDate.getDate() + 6);
     return `${weekStartDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
+  };
+
+  const handleShuffleMeals = async () => {
+    if (weeklyPlan?.weeklyPlan?.id) {
+      const success = await shuffleMeals(weeklyPlan.weeklyPlan.id);
+      if (success) {
+        // Refresh will happen automatically from the hook
+        window.location.reload();
+      }
+    }
   };
 
   const mealTypeOrder = ['breakfast', 'snack1', 'lunch', 'snack2', 'dinner', 'snack'];
@@ -112,77 +125,85 @@ export const DayOverview = ({
   const proteinProgress = Math.min(100, (totalProtein / proteinTarget) * 100);
 
   return (
-    <div className="space-y-4">
-      {/* Enhanced Header with Page Title and AI Button */}
+    <div className="space-y-3">
+      {/* Compact Header */}
       <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
-            <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-                <Utensils className="w-5 h-5 text-white" />
+            <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                <Utensils className="w-4 h-4 text-white" />
               </div>
               <div className={`${isRTL ? 'text-right' : 'text-left'}`}>
-                <h1 className="text-xl font-bold text-blue-900">
+                <h1 className="text-lg font-bold text-blue-900">
                   {t('mealPlan.title') || 'Meal Plan'}
                 </h1>
-                <p className="text-sm text-blue-600">
-                  {t('mealPlan.subtitle') || 'Your personalized nutrition journey starts here'}
+                <p className="text-xs text-blue-600">
+                  {t('mealPlan.subtitle') || 'Fuel your body, achieve your goals'}
                 </p>
               </div>
             </div>
-            {onGenerateAI && (
-              <Button
-                onClick={onGenerateAI}
-                disabled={isGenerating}
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
-                size="sm"
-              >
-                <Sparkles className={`w-4 h-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
-                {isGenerating ? (t('generating') || 'Generating...') : (t('mealPlan.generateAIMealPlan') || 'Generate AI Plan')}
-              </Button>
-            )}
+            <div className="flex gap-1">
+              {weeklyPlan?.weeklyPlan?.id && (
+                <Button
+                  onClick={handleShuffleMeals}
+                  disabled={isShuffling}
+                  variant="outline"
+                  size="sm"
+                  className="h-8 px-2 border-blue-300 hover:bg-blue-50"
+                >
+                  <Shuffle className="w-3 h-3" />
+                </Button>
+              )}
+              {onGenerateAI && (
+                <Button
+                  onClick={onGenerateAI}
+                  disabled={isGenerating}
+                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white h-8 px-3"
+                  size="sm"
+                >
+                  <Sparkles className="w-3 h-3 mr-1" />
+                  {isGenerating ? (t('generating') || 'Generating...') : (t('mealPlan.generateAI') || 'AI')}
+                </Button>
+              )}
+            </div>
           </div>
         </CardHeader>
       </Card>
 
-      {/* Compact Navigation & Progress */}
+      {/* Ultra Compact Navigation & Stats */}
       <Card className="bg-white border-blue-200">
-        <CardContent className="p-4">
-          {/* Week Navigation */}
-          <div className="flex items-center justify-between mb-4">
+        <CardContent className="p-3">
+          {/* Week Navigation - Compact */}
+          <div className="flex items-center justify-between mb-2">
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={() => setCurrentWeekOffset(currentWeekOffset - 1)}
-              className="border-blue-300 hover:bg-blue-50"
+              className="h-6 w-6 p-0"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-3 h-3" />
             </Button>
             
             <div className="text-center">
-              <div className="font-medium text-blue-900 flex items-center gap-2 text-sm">
+              <div className="text-xs font-medium text-blue-900 flex items-center gap-1">
                 <Calendar className="w-3 h-3" />
                 {getWeekDateRange()}
               </div>
-              <p className="text-xs text-blue-600">
-                {currentWeekOffset === 0 ? (t('mealPlan.thisWeek') || 'This Week') : 
-                 currentWeekOffset > 0 ? `${currentWeekOffset} ${t('mealPlan.weeksAhead') || 'weeks ahead'}` :
-                 `${Math.abs(currentWeekOffset)} ${t('mealPlan.weeksAgo') || 'weeks ago'}`}
-              </p>
             </div>
             
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={() => setCurrentWeekOffset(currentWeekOffset + 1)}
-              className="border-blue-300 hover:bg-blue-50"
+              className="h-6 w-6 p-0"
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-3 h-3" />
             </Button>
           </div>
 
-          {/* Day Selection */}
-          <div className="mb-4">
+          {/* Day Selection - More Compact */}
+          <div className="mb-2">
             <div className={`grid grid-cols-7 gap-1 ${isRTL ? 'direction-rtl' : ''}`}>
               {[1, 2, 3, 4, 5, 6, 7].map((dayNumber) => {
                 const isSelected = selectedDayNumber === dayNumber;
@@ -194,18 +215,18 @@ export const DayOverview = ({
                     variant={isSelected ? "default" : "outline"}
                     size="sm"
                     onClick={() => setSelectedDayNumber(dayNumber)}
-                    className={`flex flex-col items-center h-12 relative text-xs ${
+                    className={`flex flex-col items-center h-10 relative text-xs ${
                       isSelected ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'hover:bg-blue-50'
                     }`}
                   >
-                    <span className="font-medium">
+                    <span className="font-medium text-xs">
                       {getDayName(dayNumber).slice(0, 3)}
                     </span>
-                    <span className="text-xs">
+                    <span className="text-xs opacity-75">
                       {getDayDate(dayNumber).split('/')[1]}
                     </span>
                     {isToday && (
-                      <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-500 rounded-full"></div>
+                      <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
                     )}
                   </Button>
                 );
@@ -213,10 +234,10 @@ export const DayOverview = ({
             </div>
           </div>
 
-          {/* Current Day & Add Snack */}
-          <div className={`flex items-center justify-between mb-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+          {/* Compact Day Header with Add Snack */}
+          <div className={`flex items-center justify-between mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
             <div className={`${isRTL ? 'text-right' : 'text-left'}`}>
-              <h2 className="text-lg font-bold text-blue-900">
+              <h2 className="text-base font-bold text-blue-900">
                 {getDayName(selectedDayNumber)}
               </h2>
               <p className="text-blue-600 text-xs">
@@ -227,80 +248,87 @@ export const DayOverview = ({
               <Button
                 onClick={onAddSnack}
                 size="sm"
-                className={`bg-green-600 hover:bg-green-700 text-white ${isRTL ? 'flex-row-reverse' : ''}`}
+                className={`bg-green-600 hover:bg-green-700 text-white h-7 px-2 text-xs ${isRTL ? 'flex-row-reverse' : ''}`}
               >
                 <Plus className={`w-3 h-3 ${isRTL ? 'ml-1' : 'mr-1'}`} />
-                {t('mealPlan.addSnack.button') || 'Add Snack'}
+                {t('mealPlan.addSnack.button') || 'Snack'}
               </Button>
             )}
           </div>
 
-          {/* Compact Nutrition Progress */}
-          <div className="grid grid-cols-2 gap-3">
-            {/* Calories Progress */}
-            <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-lg p-3">
+          {/* Ultra Compact Nutrition Progress */}
+          <div className="grid grid-cols-2 gap-2">
+            {/* Calories */}
+            <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-md p-2">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs font-medium text-orange-900">
                   {t('mealPlan.calories') || 'Calories'}
                 </span>
-                <span className="text-sm font-bold text-orange-700">
-                  {totalCalories} / {targetDayCalories}
+                <span className="text-xs font-bold text-orange-700">
+                  {totalCalories}/{targetDayCalories}
                 </span>
               </div>
-              <div className="w-full bg-orange-200 rounded-full h-2 mb-1">
+              <div className="w-full bg-orange-200 rounded-full h-1.5">
                 <div 
-                  className="bg-gradient-to-r from-orange-500 to-red-500 h-2 rounded-full transition-all duration-300" 
+                  className="bg-gradient-to-r from-orange-500 to-red-500 h-1.5 rounded-full transition-all duration-300" 
                   style={{ width: `${caloriesProgress}%` }}
                 ></div>
               </div>
-              <p className="text-xs text-orange-600">
-                {remainingCalories} {t('mealPlan.caloriesRemaining') || 'remaining'}
-              </p>
             </div>
 
-            {/* Protein Progress */}
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3">
+            {/* Protein */}
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-md p-2">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs font-medium text-blue-900">
                   {t('mealPlan.protein') || 'Protein'}
                 </span>
-                <span className="text-sm font-bold text-blue-700">
-                  {totalProtein}g / {proteinTarget}g
+                <span className="text-xs font-bold text-blue-700">
+                  {totalProtein}/{proteinTarget}g
                 </span>
               </div>
-              <div className="w-full bg-blue-200 rounded-full h-2 mb-1">
+              <div className="w-full bg-blue-200 rounded-full h-1.5">
                 <div 
-                  className="bg-gradient-to-r from-blue-500 to-indigo-500 h-2 rounded-full transition-all duration-300" 
+                  className="bg-gradient-to-r from-blue-500 to-indigo-500 h-1.5 rounded-full transition-all duration-300" 
                   style={{ width: `${proteinProgress}%` }}
                 ></div>
               </div>
-              <p className="text-xs text-blue-600">
-                {Math.round(proteinProgress)}% {t('mealPlan.ofTarget') || 'of target'}
-              </p>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Meals Display - Compact Grid */}
-      <div className="space-y-3">
+      {/* Shuffling Loading State */}
+      {isShuffling && (
+        <EnhancedLoadingIndicator
+          status="loading"
+          type="meal-plan"
+          message={t('mealPlan.shuffling') || 'Shuffling meals across the week...'}
+          description={t('mealPlan.shufflingDesc') || 'Redistributing your meals for variety'}
+          variant="card"
+          size="md"
+          showSteps={true}
+        />
+      )}
+
+      {/* Compact Meals Display */}
+      <div className="space-y-2">
         {mealTypeOrder.map(mealType => {
           const mealsOfType = groupedMeals[mealType] || [];
           if (mealsOfType.length === 0) return null;
 
           return (
             <Card key={mealType} className="overflow-hidden">
-              <CardHeader className="pb-2">
-                <CardTitle className={`flex items-center gap-2 text-base ${isRTL ? 'flex-row-reverse' : ''}`}>
-                  <span className="text-lg">{getMealTypeIcon(mealType)}</span>
+              <CardHeader className="pb-1">
+                <CardTitle className={`flex items-center gap-2 text-sm ${isRTL ? 'flex-row-reverse' : ''}`}>
+                  <span className="text-base">{getMealTypeIcon(mealType)}</span>
                   {getMealTypeName(mealType)}
                   <span className="text-xs text-gray-500 font-normal">
                     ({mealsOfType.length})
                   </span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="pt-0">
-                <div className={`${mealsOfType.length === 1 ? 'max-w-md' : 'grid gap-3 md:grid-cols-2 lg:grid-cols-3'}`}>
+              <CardContent className="pt-0 pb-2">
+                <div className={`${mealsOfType.length === 1 ? 'max-w-sm' : 'grid gap-2 md:grid-cols-2 xl:grid-cols-3'}`}>
                   {mealsOfType.map((meal, index) => (
                     <EnhancedMealCard
                       key={`${meal.id}-${index}`}
@@ -318,12 +346,12 @@ export const DayOverview = ({
         {/* No Meals State */}
         {dailyMeals.length === 0 && (
           <Card className="border-dashed border-2 border-gray-300">
-            <CardContent className="p-6 text-center">
-              <Utensils className="w-10 h-10 text-gray-400 mx-auto mb-3" />
-              <h3 className="text-base font-semibold text-gray-600 mb-2">
+            <CardContent className="p-4 text-center">
+              <Utensils className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+              <h3 className="text-sm font-semibold text-gray-600 mb-1">
                 {t('mealPlan.noMealsPlanned') || 'No meals planned for this day'}
               </h3>
-              <p className="text-sm text-gray-500">
+              <p className="text-xs text-gray-500">
                 {t('mealPlan.generatePlanToSee') || 'Generate a meal plan to see your daily meals'}
               </p>
             </CardContent>
