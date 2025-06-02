@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -251,7 +250,7 @@ const EnhancedAddSnackDialog = ({
                   {isGeneratingAI ? (
                     <EnhancedLoadingIndicator
                       status="loading"
-                      type="recipe"
+                      type="generation"
                       message="Generating AI Snack"
                       description="Creating the perfect snack for your remaining calories"
                       variant="card"

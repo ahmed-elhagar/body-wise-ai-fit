@@ -49,6 +49,8 @@ export interface WeeklyMealPlan {
   total_fat: number;
   generation_prompt: any;
   created_at: string;
+  preferences?: any;
+  updated_at?: string;
   life_phase_context?: any;
 }
 

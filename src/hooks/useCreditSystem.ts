@@ -21,7 +21,7 @@ export const useCreditSystem = () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('ai_credits')
+        .select('ai_generations_remaining')
         .eq('id', user.id)
         .single();
 
@@ -30,7 +30,7 @@ export const useCreditSystem = () => {
         return;
       }
 
-      setUserCredits(data?.ai_credits || 0);
+      setUserCredits(data?.ai_generations_remaining || 0);
     } catch (error) {
       console.error('Error fetching user credits:', error);
     } finally {
@@ -38,9 +38,41 @@ export const useCreditSystem = () => {
     }
   };
 
+  const checkAndUseCreditAsync = async (): Promise<boolean> => {
+    if (userCredits <= 0) {
+      return false;
+    }
+    
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ ai_generations_remaining: userCredits - 1 })
+        .eq('id', user?.id);
+
+      if (error) {
+        console.error('Error using credit:', error);
+        return false;
+      }
+
+      setUserCredits(prev => prev - 1);
+      return true;
+    } catch (error) {
+      console.error('Error using credit:', error);
+      return false;
+    }
+  };
+
+  const completeGenerationAsync = async (): Promise<void> => {
+    // This method is called after successful generation
+    // Credits are already deducted in checkAndUseCreditAsync
+    await fetchUserCredits(); // Refresh credits to ensure sync
+  };
+
   return {
     userCredits,
     isLoading,
-    refetchCredits: fetchUserCredits
+    refetchCredits: fetchUserCredits,
+    checkAndUseCreditAsync,
+    completeGenerationAsync
   };
 };

@@ -1,8 +1,8 @@
 
 export interface MealIngredient {
   name: string;
-  quantity?: string;
-  unit?: string;
+  quantity: string;
+  unit: string;
 }
 
 export interface DailyMeal {
@@ -15,6 +15,7 @@ export interface DailyMeal {
   protein: number;
   carbs: number;
   fat: number;
+  fiber?: number;
   prep_time: number;
   cook_time: number;
   servings: number;
@@ -32,9 +33,12 @@ export interface WeeklyMealPlan {
   week_start_date: string;
   total_calories: number;
   total_protein: number;
+  total_carbs: number;
+  total_fat: number;
   preferences: any;
   created_at: string;
   updated_at: string;
+  life_phase_context?: any;
 }
 
 export interface MealPlanFetchResult {
@@ -48,4 +52,14 @@ export interface MealPlanPreferences {
   maxPrepTime: string;
   includeSnacks: boolean;
   mealTypes: string;
+}
+
+export interface AddSnackDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  selectedDay: number;
+  weeklyPlanId?: string;
+  onSnackAdded: () => void;
+  currentDayCalories: number;
+  targetDayCalories: number;
 }

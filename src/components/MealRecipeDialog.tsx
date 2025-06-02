@@ -1,6 +1,6 @@
 
 import RecipeDialog from "./meal-recipe/RecipeDialog";
-import type { DailyMeal } from "@/hooks/useMealPlanData";
+import type { DailyMeal } from "@/features/meal-plan/types";
 
 interface MealRecipeDialogProps {
   isOpen: boolean;
@@ -26,7 +26,11 @@ const MealRecipeDialog = ({ isOpen, onClose, meal, onRecipeGenerated }: MealReci
     protein: meal.protein,
     carbs: meal.carbs,
     fat: meal.fat,
-    ingredients: meal.ingredients || [],
+    ingredients: meal.ingredients.map(ingredient => ({
+      name: ingredient.name,
+      quantity: ingredient.quantity || "1",
+      unit: ingredient.unit || "piece"
+    })),
     instructions: meal.instructions || [],
     prepTime: meal.prep_time || 0,
     cookTime: meal.cook_time || 0,

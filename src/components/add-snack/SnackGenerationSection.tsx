@@ -46,7 +46,7 @@ const SnackGenerationSection = ({
       {isGenerating ? (
         <EnhancedLoadingIndicator
           status="loading"
-          type="recipe"
+          type="generation"
           message={t('mealPlan.addSnack.generatingAISnack') || "Generating AI Snack"}
           description="Creating the perfect snack for your remaining calories"
           variant="card"

@@ -3,20 +3,30 @@ import React from 'react';
 import { Card } from './card';
 import { Loader2 } from 'lucide-react';
 
+export type LoadingType = 'general' | 'meal-plan' | 'generation' | 'recipe';
+
 interface EnhancedLoadingIndicatorProps {
   status: 'loading' | 'success' | 'error';
-  type: 'general' | 'meal-plan' | 'generation';
+  type: LoadingType;
   message?: string;
-  variant?: 'card' | 'inline' | 'overlay';
+  description?: string;
+  variant?: 'card' | 'inline' | 'overlay' | 'default';
   size?: 'sm' | 'md' | 'lg';
+  showSteps?: boolean;
+  customSteps?: string[];
+  className?: string;
 }
 
 const EnhancedLoadingIndicator = ({
   status,
   type,
   message = 'Loading...',
+  description,
   variant = 'inline',
-  size = 'md'
+  size = 'md',
+  showSteps = false,
+  customSteps = [],
+  className = ''
 }: EnhancedLoadingIndicatorProps) => {
   const sizeClasses = {
     sm: 'w-4 h-4',
@@ -30,10 +40,22 @@ const EnhancedLoadingIndicator = ({
 
   if (variant === 'card') {
     return (
-      <Card className="p-6 text-center">
+      <Card className={`p-6 text-center ${className}`}>
         <div className="flex flex-col items-center gap-4">
           <LoadingSpinner />
-          <p className="text-gray-600">{message}</p>
+          <div>
+            <p className="text-gray-600 font-medium">{message}</p>
+            {description && <p className="text-sm text-gray-500 mt-1">{description}</p>}
+          </div>
+          {showSteps && customSteps.length > 0 && (
+            <div className="space-y-2 w-full">
+              {customSteps.map((step, index) => (
+                <div key={index} className="text-sm text-gray-500 text-left">
+                  {index + 1}. {step}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </Card>
     );
@@ -45,7 +67,10 @@ const EnhancedLoadingIndicator = ({
         <Card className="p-6 text-center">
           <div className="flex flex-col items-center gap-4">
             <LoadingSpinner />
-            <p className="text-gray-600">{message}</p>
+            <div>
+              <p className="text-gray-600 font-medium">{message}</p>
+              {description && <p className="text-sm text-gray-500 mt-1">{description}</p>}
+            </div>
           </div>
         </Card>
       </div>
@@ -53,11 +78,15 @@ const EnhancedLoadingIndicator = ({
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className={`flex items-center gap-2 ${className}`}>
       <LoadingSpinner />
-      <span className="text-gray-600">{message}</span>
+      <div>
+        <span className="text-gray-600">{message}</span>
+        {description && <p className="text-xs text-gray-500">{description}</p>}
+      </div>
     </div>
   );
 };
 
 export default EnhancedLoadingIndicator;
+export type { EnhancedLoadingIndicatorProps };

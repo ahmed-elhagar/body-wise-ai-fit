@@ -21,11 +21,11 @@ const SnackGenerationProgress = ({ step }: SnackGenerationProgressProps) => {
     <Card className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200">
       <EnhancedLoadingIndicator
         status="loading"
-        type="recipe"
+        type="generation"
         message={t('mealPlan.addSnack.generating') || "Generating AI Snack"}
         description="Creating the perfect snack for your remaining calories"
         size="lg"
-        variant="default"
+        variant="card"
         showSteps={true}
         customSteps={customSteps}
       />
