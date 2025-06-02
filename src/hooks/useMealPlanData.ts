@@ -1,20 +1,17 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from './useAuth';
+import { useEnhancedErrorHandling } from './useEnhancedErrorHandling';
 import { getWeekStartDate } from '@/utils/mealPlanUtils';
 import { format } from 'date-fns';
-import { fetchMealPlanData } from '@/features/meal-plan/services/mealPlanService';
+import { fetchMealPlanData } from '../features/meal-plan/services/mealPlanService';
 
-// Export types from the main types file
-export type { 
-  MealIngredient, 
-  DailyMeal, 
-  WeeklyMealPlan, 
-  MealPlanFetchResult 
-} from '@/features/meal-plan/types';
+// Re-export types for backward compatibility - use the main types from features
+export type { MealIngredient, DailyMeal, WeeklyMealPlan } from '@/features/meal-plan/types';
 
 export const useMealPlanData = (weekOffset: number = 0) => {
   const { user } = useAuth();
+  const { handleError, handleAPITimeout } = useEnhancedErrorHandling();
 
   return useQuery({
     queryKey: ['weekly-meal-plan', user?.id, weekOffset],
@@ -28,10 +25,19 @@ export const useMealPlanData = (weekOffset: number = 0) => {
         const weekStartDate = getWeekStartDate(weekOffset);
         const weekStartDateStr = format(weekStartDate, 'yyyy-MM-dd');
         
-        const result = await fetchMealPlanData(user.id, weekStartDateStr);
+        // Use enhanced API timeout handling
+        const result = await handleAPITimeout(async () => {
+          return await fetchMealPlanData(user.id, weekStartDateStr);
+        }, 15000, 1); // 15 second timeout, 1 retry
+
         return result;
       } catch (error) {
-        console.error('❌ Error fetching meal plan:', error);
+        handleError(error, {
+          operation: 'Meal Plan Fetch',
+          userId: user.id,
+          weekOffset,
+          retryable: true
+        });
         throw error;
       }
     },

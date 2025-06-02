@@ -1,8 +1,8 @@
 
 import { useCallback, useState, useMemo } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useMealPlanNavigation } from "@/features/meal-plan/hooks/useMealPlanNavigation";
-import { useMealPlanCalculations } from "@/features/meal-plan/hooks/useMealPlanCalculations";
+import { useMealPlanNavigation } from "./useMealPlanNavigation";
+import { useMealPlanCalculations } from "./useMealPlanCalculations";
 import { useMealPlanData } from "./useMealPlanData";
 import { useEnhancedMealPlan } from "./useEnhancedMealPlan";
 import { useCreditSystem } from './useCreditSystem';
@@ -71,8 +71,7 @@ export const useMealPlanCore = () => {
     dataLoading,
     isLoading,
     isError,
-    weekOffset: navigation.currentWeekOffset,
-    calculationsKeys: Object.keys(calculations)
+    weekOffset: navigation.currentWeekOffset
   });
 
   // Simplified refetch
@@ -101,21 +100,12 @@ export const useMealPlanCore = () => {
     refetch();
   }, [queryClient, user?.id, navigation.currentWeekOffset, refetch]);
 
-  // Combine all state explicitly
-  const coreState = {
+  return {
     // Navigation state
-    currentWeekOffset: navigation.currentWeekOffset,
-    setCurrentWeekOffset: navigation.setCurrentWeekOffset,
-    selectedDayNumber: navigation.selectedDayNumber,
-    setSelectedDayNumber: navigation.setSelectedDayNumber,
-    weekStartDate: navigation.weekStartDate,
+    ...navigation,
     
-    // Calculations - spread all calculation properties explicitly
-    dailyMeals: calculations.dailyMeals,
-    todaysMeals: calculations.todaysMeals,
-    totalCalories: calculations.totalCalories,
-    totalProtein: calculations.totalProtein,
-    targetDayCalories: calculations.targetDayCalories,
+    // Calculations
+    ...calculations,
     
     // Data
     currentWeekPlan,
@@ -142,8 +132,4 @@ export const useMealPlanCore = () => {
     language,
     authLoading
   };
-
-  console.log('🔍 useMealPlanCore final state keys:', Object.keys(coreState));
-
-  return coreState;
 };

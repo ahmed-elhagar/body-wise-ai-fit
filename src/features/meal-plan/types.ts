@@ -3,13 +3,17 @@ export interface MealIngredient {
   name: string;
   quantity: string;
   unit: string;
+  calories?: number;
+  protein?: number;
+  carbs?: number;
+  fat?: number;
 }
 
 export interface DailyMeal {
   id: string;
   weekly_plan_id: string;
   day_number: number;
-  meal_type: 'breakfast' | 'lunch' | 'dinner' | 'snack' | 'snack1' | 'snack2';
+  meal_type: 'breakfast' | 'lunch' | 'dinner' | 'snack';
   name: string;
   calories: number;
   protein: number;
@@ -26,6 +30,7 @@ export interface DailyMeal {
   ingredients: MealIngredient[];
   instructions: string[];
   alternatives: string[];
+  created_at?: string;
 }
 
 export interface WeeklyMealPlan {
