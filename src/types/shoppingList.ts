@@ -1,5 +1,4 @@
 
-// Centralized shopping list types
 export interface ShoppingItem {
   name: string;
   quantity: number;
@@ -7,11 +6,7 @@ export interface ShoppingItem {
   category: string;
 }
 
-export interface GroupedShoppingItems {
-  [category: string]: ShoppingItem[];
-}
-
 export interface ShoppingListData {
   items: ShoppingItem[];
-  groupedItems: GroupedShoppingItems;
+  groupedItems: Record<string, ShoppingItem[]>;
 }
