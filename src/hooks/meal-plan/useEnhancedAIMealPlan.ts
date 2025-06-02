@@ -77,12 +77,20 @@ export const useEnhancedAIMealPlan = () => {
           : ['breakfast', 'lunch', 'dinner']
       };
 
+      console.log('📤 Calling generate-meal-plan function with enhanced data:', {
+        mealsPerDay: enhancedPreferences.mealsPerDay,
+        includeSnacks: preferences.includeSnacks,
+        weekOffset: enhancedPreferences.weekOffset
+      });
+
       const { data, error } = await supabase.functions.invoke('generate-meal-plan', {
         body: {
           userProfile: enhancedPreferences.userProfile,
           preferences: enhancedPreferences
         }
       });
+
+      console.log('📥 Function response:', { data, error });
 
       if (error) {
         console.error('❌ Error generating enhanced meal plan:', error);
@@ -95,8 +103,9 @@ export const useEnhancedAIMealPlan = () => {
           weeklyPlanId: data.weeklyPlanId,
           totalMeals: data.totalMeals,
           generationsRemaining: data.generationsRemaining,
-          mealsPerDay: enhancedPreferences.mealsPerDay,
-          includeSnacks: preferences.includeSnacks
+          mealsPerDay: data.mealsPerDay,
+          includeSnacks: data.includeSnacks,
+          weekOffset: data.weekOffset
         });
 
         // Invalidate and refetch meal plan data
@@ -111,11 +120,11 @@ export const useEnhancedAIMealPlan = () => {
         // Refetch profile to update credits
         await refetchProfile();
 
-        toast.success(
-          language === 'ar' 
-            ? `تم إنشاء خطة الوجبات بنجاح! (${data.totalMeals} وجبة)`
-            : `Meal plan generated successfully! (${data.totalMeals} meals)`
-        );
+        const successMessage = language === 'ar' 
+          ? `تم إنشاء خطة الوجبات بنجاح! (${data.totalMeals} وجبة، ${data.mealsPerDay} وجبات يومياً)`
+          : `Meal plan generated successfully! (${data.totalMeals} meals, ${data.mealsPerDay} per day)`;
+        
+        toast.success(successMessage);
         
         return true;
       } else {

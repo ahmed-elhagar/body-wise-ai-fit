@@ -34,6 +34,12 @@ export const useEnhancedMealPlan = () => {
     const mealCount = enhancedPreferences.includeSnacks ? 5 : 3;
     console.log(`🍽️ Generating ${mealCount} meals per day (snacks: ${enhancedPreferences.includeSnacks})`);
 
+    toast.info(
+      language === 'ar'
+        ? `جاري إنشاء ${mealCount} وجبات يومياً...`
+        : `Generating ${mealCount} meals per day...`
+    );
+
     console.log('🕌 Generating meal plan with enhanced conditions:', {
       isMuslimFasting: nutritionContext.isMuslimFasting,
       fastingPeriod: nutritionContext.fastingStartDate && nutritionContext.fastingEndDate 

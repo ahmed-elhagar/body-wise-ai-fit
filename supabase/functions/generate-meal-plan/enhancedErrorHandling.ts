@@ -1,109 +1,100 @@
 
-// Enhanced error handling system for meal plan generation
+export const errorCodes = {
+  INVALID_USER_PROFILE: 'INVALID_USER_PROFILE',
+  RATE_LIMIT_EXCEEDED: 'RATE_LIMIT_EXCEEDED',
+  AI_GENERATION_FAILED: 'AI_GENERATION_FAILED',
+  VALIDATION_ERROR: 'VALIDATION_ERROR',
+  DATABASE_ERROR: 'DATABASE_ERROR',
+  NETWORK_ERROR: 'NETWORK_ERROR'
+};
+
 export class MealPlanError extends Error {
   constructor(
     message: string,
     public code: string,
     public statusCode: number = 500,
-    public isUserFriendly: boolean = false,
-    public arabicMessage?: string
+    public isRetryable: boolean = false
   ) {
     super(message);
     this.name = 'MealPlanError';
   }
 }
 
-export const errorCodes = {
-  RATE_LIMIT_EXCEEDED: 'RATE_LIMIT_EXCEEDED',
-  INVALID_USER_PROFILE: 'INVALID_USER_PROFILE',
-  AI_GENERATION_FAILED: 'AI_GENERATION_FAILED',
-  DATABASE_ERROR: 'DATABASE_ERROR',
-  VALIDATION_ERROR: 'VALIDATION_ERROR',
-  OPENAI_API_ERROR: 'OPENAI_API_ERROR',
-  INSUFFICIENT_CREDITS: 'INSUFFICIENT_CREDITS'
-} as const;
-
-export const createUserFriendlyError = (code: string, language: string = 'en'): MealPlanError => {
-  const errorMessages = {
+export const createUserFriendlyError = (code: string, language: string = 'en') => {
+  const messages = {
     en: {
-      [errorCodes.RATE_LIMIT_EXCEEDED]: 'You have reached your daily meal plan generation limit. Please try again tomorrow or upgrade your plan.',
-      [errorCodes.INVALID_USER_PROFILE]: 'Your profile information is incomplete. Please update your profile and try again.',
-      [errorCodes.AI_GENERATION_FAILED]: 'Our AI service is temporarily unavailable. Please try again in a few minutes.',
-      [errorCodes.DATABASE_ERROR]: 'A temporary database error occurred. Please try again.',
-      [errorCodes.VALIDATION_ERROR]: 'The meal plan data is invalid. Please check your preferences and try again.',
-      [errorCodes.OPENAI_API_ERROR]: 'AI service is temporarily overloaded. Please try again in a few minutes.',
-      [errorCodes.INSUFFICIENT_CREDITS]: 'You have insufficient AI generation credits. Please upgrade your plan or wait for your credits to reset.'
+      [errorCodes.INVALID_USER_PROFILE]: 'Please complete your profile before generating a meal plan.',
+      [errorCodes.RATE_LIMIT_EXCEEDED]: 'You have reached your AI generation limit. Please upgrade or try again later.',
+      [errorCodes.AI_GENERATION_FAILED]: 'Failed to generate meal plan. Please try again.',
+      [errorCodes.VALIDATION_ERROR]: 'Invalid request. Please check your preferences and try again.',
+      [errorCodes.DATABASE_ERROR]: 'Database error occurred. Please try again.',
+      [errorCodes.NETWORK_ERROR]: 'Network error. Please check your connection and try again.'
     },
     ar: {
-      [errorCodes.RATE_LIMIT_EXCEEDED]: 'لقد وصلت إلى الحد اليومي لتوليد خطط الوجبات. يرجى المحاولة غداً أو ترقية خطتك.',
-      [errorCodes.INVALID_USER_PROFILE]: 'معلومات ملفك الشخصي غير مكتملة. يرجى تحديث ملفك الشخصي والمحاولة مرة أخرى.',
-      [errorCodes.AI_GENERATION_FAILED]: 'خدمة الذكاء الاصطناعي غير متاحة مؤقتاً. يرجى المحاولة خلال دقائق قليلة.',
-      [errorCodes.DATABASE_ERROR]: 'حدث خطأ مؤقت في قاعدة البيانات. يرجى المحاولة مرة أخرى.',
-      [errorCodes.VALIDATION_ERROR]: 'بيانات خطة الوجبات غير صالحة. يرجى التحقق من تفضيلاتك والمحاولة مرة أخرى.',
-      [errorCodes.OPENAI_API_ERROR]: 'خدمة الذكاء الاصطناعي محملة بشكل مؤقت. يرجى المحاولة خلال دقائق قليلة.',
-      [errorCodes.INSUFFICIENT_CREDITS]: 'ليس لديك رصيد كافٍ لتوليد الذكاء الاصطناعي. يرجى ترقية خطتك أو انتظار إعادة تعيين الرصيد.'
+      [errorCodes.INVALID_USER_PROFILE]: 'يرجى إكمال ملفك الشخصي قبل إنشاء خطة الوجبات.',
+      [errorCodes.RATE_LIMIT_EXCEEDED]: 'لقد وصلت إلى حد الإنشاء بالذكاء الاصطناعي. يرجى الترقية أو المحاولة مرة أخرى لاحقاً.',
+      [errorCodes.AI_GENERATION_FAILED]: 'فشل في إنشاء خطة الوجبات. يرجى المحاولة مرة أخرى.',
+      [errorCodes.VALIDATION_ERROR]: 'طلب غير صالح. يرجى التحقق من تفضيلاتك والمحاولة مرة أخرى.',
+      [errorCodes.DATABASE_ERROR]: 'حدث خطأ في قاعدة البيانات. يرجى المحاولة مرة أخرى.',
+      [errorCodes.NETWORK_ERROR]: 'خطأ في الشبكة. يرجى التحقق من اتصالك والمحاولة مرة أخرى.'
     }
   };
 
-  const messages = errorMessages[language] || errorMessages.en;
-  const message = messages[code] || 'An unexpected error occurred. Please try again.';
-  const arabicMessage = language === 'ar' ? message : errorMessages.ar[code];
-
-  return new MealPlanError(message, code, 400, true, arabicMessage);
+  const langMessages = messages[language as keyof typeof messages] || messages.en;
+  return new MealPlanError(
+    langMessages[code] || 'An unexpected error occurred.',
+    code,
+    500,
+    true
+  );
 };
 
 export const handleMealPlanError = (error: any, language: string = 'en') => {
-  console.error('=== MEAL PLAN ERROR ===', {
-    error: error.message,
-    stack: error.stack,
-    code: error.code,
-    timestamp: new Date().toISOString()
-  });
+  console.error('🚨 Meal Plan Error:', error);
 
-  // Handle known error types
   if (error instanceof MealPlanError) {
     return {
       success: false,
       error: error.message,
       code: error.code,
-      arabicMessage: error.arabicMessage,
-      statusCode: error.statusCode
+      statusCode: error.statusCode,
+      isRetryable: error.isRetryable
     };
   }
 
-  // Handle OpenAI API errors
-  if (error.message?.includes('overloaded') || error.message?.includes('429')) {
-    const userError = createUserFriendlyError(errorCodes.OPENAI_API_ERROR, language);
+  // Handle known error patterns
+  if (error.message?.includes('JWT') || error.message?.includes('auth')) {
     return {
       success: false,
-      error: userError.message,
-      code: userError.code,
-      arabicMessage: userError.arabicMessage,
-      statusCode: 429
+      error: language === 'ar' 
+        ? 'خطأ في المصادقة. يرجى تسجيل الدخول مرة أخرى.'
+        : 'Authentication error. Please log in again.',
+      code: 'AUTH_ERROR',
+      statusCode: 401,
+      isRetryable: false
     };
   }
 
-  // Handle rate limiting
-  if (error.message?.includes('limit reached') || error.message?.includes('limit exceeded')) {
-    const userError = createUserFriendlyError(errorCodes.RATE_LIMIT_EXCEEDED, language);
+  if (error.message?.includes('timeout') || error.message?.includes('network')) {
     return {
       success: false,
-      error: userError.message,
-      code: userError.code,
-      arabicMessage: userError.arabicMessage,
-      statusCode: 429
+      error: language === 'ar'
+        ? 'انتهت مهلة الاتصال. يرجى المحاولة مرة أخرى.'
+        : 'Request timeout. Please try again.',
+      code: errorCodes.NETWORK_ERROR,
+      statusCode: 408,
+      isRetryable: true
     };
   }
 
-  // Default error response
-  const defaultMessage = language === 'ar' 
-    ? 'حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.'
-    : 'An unexpected error occurred. Please try again.';
-
+  // Generic error
   return {
     success: false,
-    error: defaultMessage,
+    error: language === 'ar'
+      ? 'حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.'
+      : 'An unexpected error occurred. Please try again.',
     code: 'UNKNOWN_ERROR',
-    statusCode: 500
+    statusCode: 500,
+    isRetryable: true
   };
 };
