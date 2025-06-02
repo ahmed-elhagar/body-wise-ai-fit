@@ -158,6 +158,7 @@ export const MealPlanContainer = () => {
           userCredits={mealPlanState.userCredits}
           hasWeeklyPlan={!!mealPlanState.currentWeekPlan?.weeklyPlan}
           isEmailLoading={isEmailLoading}
+          currentWeekPlan={mealPlanState.currentWeekPlan}
         />
       </div>
     </EnhancedErrorBoundary>

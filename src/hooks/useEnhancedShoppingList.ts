@@ -5,13 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getCategoryForIngredient } from '@/utils/mealPlanUtils';
-import type { WeeklyMealPlan, DailyMeal } from '@/hooks/useMealPlanData';
 import type { ShoppingItem, ShoppingListData } from '@/types/shoppingList';
-
-interface WeeklyPlanData {
-  weeklyPlan: WeeklyMealPlan;
-  dailyMeals: DailyMeal[];
-}
 
 interface Ingredient {
   name: string;
@@ -19,32 +13,35 @@ interface Ingredient {
   unit?: string;
 }
 
-export const useEnhancedShoppingList = (weeklyPlan?: WeeklyPlanData | null) => {
+export const useEnhancedShoppingList = (mealPlanData?: any) => {
   const { user } = useAuth();
   const { language } = useLanguage();
 
   const enhancedShoppingItems: ShoppingListData = useMemo(() => {
     console.log('🛒 Computing enhanced shopping list...', { 
-      hasWeeklyPlan: !!weeklyPlan,
-      mealsCount: weeklyPlan?.dailyMeals ? weeklyPlan.dailyMeals.length : 0,
-      dailyMeals: weeklyPlan?.dailyMeals?.map(meal => ({
+      hasMealPlanData: !!mealPlanData,
+      hasWeeklyPlan: !!mealPlanData?.weeklyPlan,
+      mealsCount: mealPlanData?.dailyMeals ? mealPlanData.dailyMeals.length : 0,
+      dailyMeals: mealPlanData?.dailyMeals?.slice(0, 3)?.map((meal: any) => ({
         name: meal.name,
-        ingredients: meal.ingredients
+        hasIngredients: !!meal.ingredients,
+        ingredientsType: typeof meal.ingredients
       }))
     });
     
-    if (!weeklyPlan?.dailyMeals || !Array.isArray(weeklyPlan.dailyMeals)) {
-      console.log('❌ No daily meals found in weekly plan');
+    if (!mealPlanData?.dailyMeals || !Array.isArray(mealPlanData.dailyMeals)) {
+      console.log('❌ No daily meals found in meal plan data');
       return { items: [], groupedItems: {} };
     }
 
     const itemsMap = new Map<string, ShoppingItem>();
     
-    weeklyPlan.dailyMeals.forEach((meal, mealIndex) => {
+    mealPlanData.dailyMeals.forEach((meal: any, mealIndex: number) => {
       console.log(`🍽️ Processing meal ${mealIndex + 1}: ${meal.name}`, {
         hasIngredients: !!meal.ingredients,
         ingredientsType: typeof meal.ingredients,
-        ingredientsLength: Array.isArray(meal.ingredients) ? meal.ingredients.length : 'not array'
+        ingredientsLength: Array.isArray(meal.ingredients) ? meal.ingredients.length : 'not array',
+        ingredientsPreview: meal.ingredients
       });
       
       if (!meal.ingredients) {
@@ -153,11 +150,11 @@ export const useEnhancedShoppingList = (weeklyPlan?: WeeklyPlanData | null) => {
     });
     
     return { items, groupedItems };
-  }, [weeklyPlan?.dailyMeals]);
+  }, [mealPlanData?.dailyMeals]);
 
   const sendShoppingListEmail = async () => {
-    if (!user || !weeklyPlan) {
-      console.error('❌ Missing data for email sending:', { hasUser: !!user, hasWeeklyPlan: !!weeklyPlan });
+    if (!user || !mealPlanData) {
+      console.error('❌ Missing data for email sending:', { hasUser: !!user, hasMealPlanData: !!mealPlanData });
       toast.error('Unable to send email - missing data');
       return false;
     }
@@ -165,16 +162,16 @@ export const useEnhancedShoppingList = (weeklyPlan?: WeeklyPlanData | null) => {
     try {
       console.log('📧 Preparing shopping list email...', {
         userId: user.id,
-        weeklyPlanId: weeklyPlan.weeklyPlan.id,
+        weeklyPlanId: mealPlanData.weeklyPlan?.id,
         itemsCount: enhancedShoppingItems.items.length
       });
 
-      const weekRange = `Week of ${weeklyPlan.weeklyPlan.week_start_date}`;
+      const weekRange = `Week of ${mealPlanData.weeklyPlan?.week_start_date}`;
 
       const emailData = {
         userId: user.id,
         userEmail: user.email,
-        weekId: weeklyPlan.weeklyPlan.id,
+        weekId: mealPlanData.weeklyPlan?.id,
         shoppingItems: enhancedShoppingItems.groupedItems,
         weekRange: weekRange,
         totalItems: enhancedShoppingItems.items.length,

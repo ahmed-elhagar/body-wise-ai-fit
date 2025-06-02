@@ -48,6 +48,9 @@ interface MealPlanDialogsProps {
   userCredits: number;
   hasWeeklyPlan: boolean;
   isEmailLoading: boolean;
+  
+  // Add current week plan data
+  currentWeekPlan?: any;
 }
 
 export const MealPlanDialogs = ({
@@ -78,27 +81,11 @@ export const MealPlanDialogs = ({
   onSendShoppingListEmail,
   userCredits,
   hasWeeklyPlan,
-  isEmailLoading
+  isEmailLoading,
+  currentWeekPlan
 }: MealPlanDialogsProps) => {
-  // Create a proper WeeklyPlanData object only if we have the necessary data
-  const weekPlanData = hasWeeklyPlan && weeklyPlanId ? {
-    weeklyPlan: {
-      id: weeklyPlanId,
-      user_id: '', // Will be populated by the hook
-      week_start_date: weekStartDate.toISOString().split('T')[0],
-      total_calories: 0,
-      total_protein: 0,
-      total_carbs: 0,
-      total_fat: 0,
-      preferences: {},
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      life_phase_context: {}
-    },
-    dailyMeals: enhancedShoppingItems || []
-  } : null;
-
-  const { enhancedShoppingItems: shoppingListData } = useEnhancedShoppingList(weekPlanData);
+  // Use the actual current week plan data for shopping list
+  const { enhancedShoppingItems: shoppingListData } = useEnhancedShoppingList(currentWeekPlan);
 
   return (
     <>

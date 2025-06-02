@@ -41,6 +41,14 @@ const MealExchangeDialog = ({ isOpen, onClose, currentMeal, onExchange }: MealEx
   const [stepProgress, setStepProgress] = useState(0);
   const [exchangeReason, setExchangeReason] = useState('preference');
 
+  // Debug logging for meal data
+  console.log('🔄 MealExchangeDialog rendered with meal:', {
+    hasMeal: !!currentMeal,
+    mealId: currentMeal?.id,
+    mealName: currentMeal?.name,
+    isOpen
+  });
+
   const handleExchangeMeal = async () => {
     if (!currentMeal || !user || !profile) {
       toast.error('Missing required information for meal exchange');
@@ -124,7 +132,11 @@ const MealExchangeDialog = ({ isOpen, onClose, currentMeal, onExchange }: MealEx
     }
   };
 
-  if (!currentMeal) return null;
+  // Don't render if no meal is selected
+  if (!currentMeal) {
+    console.log('⚠️ MealExchangeDialog: No current meal provided');
+    return null;
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
