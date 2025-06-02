@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useMealPlanPage } from "@/hooks/useMealPlanPage";
 import { useEnhancedMealShuffle } from "@/hooks/useEnhancedMealShuffle";
@@ -75,7 +74,7 @@ const MealPlanContainer = () => {
     setShowRecipeDialog(true);
   };
 
-  const handleExchangeMealClick = (meal, index) => {
+  const handleExchangeMealClick = (meal) => {
     console.log('🔄 Opening exchange dialog for meal:', meal.name);
     setSelectedMeal(meal);
     setShowExchangeDialog(true);

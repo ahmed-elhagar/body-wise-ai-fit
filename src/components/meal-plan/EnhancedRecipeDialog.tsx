@@ -38,7 +38,19 @@ const EnhancedRecipeDialog = ({
     
     const updatedMeal = await generateEnhancedRecipe(meal.id, meal);
     if (updatedMeal) {
-      setRecipeData(updatedMeal);
+      // Convert the database response to match our DailyMeal type
+      const typedMeal: DailyMeal = {
+        ...updatedMeal,
+        ingredients: Array.isArray(updatedMeal.ingredients) 
+          ? updatedMeal.ingredients 
+          : typeof updatedMeal.ingredients === 'string' 
+            ? JSON.parse(updatedMeal.ingredients)
+            : [],
+        instructions: Array.isArray(updatedMeal.instructions)
+          ? updatedMeal.instructions
+          : []
+      };
+      setRecipeData(typedMeal);
       onRecipeGenerated?.();
     }
   };
