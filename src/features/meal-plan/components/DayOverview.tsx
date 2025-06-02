@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { Utensils, Target, TrendingUp, ShoppingCart, Plus } from "lucide-react";
+import { Utensils, Target, ShoppingCart } from "lucide-react";
 import { format } from 'date-fns';
 import { useMealPlanTranslations } from '@/utils/mealPlanTranslations';
 import { getDayName } from '@/utils/mealPlanUtils';
@@ -81,14 +81,14 @@ export const DayOverview = ({
   });
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Compact Day Header with Actions */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-2xl font-bold text-fitness-primary-900">
             {getDayName(selectedDayNumber)}
           </h2>
-          <p className="text-gray-600">
+          <p className="text-fitness-primary-600">
             {format(new Date(weekStartDate.getTime() + (selectedDayNumber - 1) * 24 * 60 * 60 * 1000), 'MMMM d, yyyy')}
           </p>
         </div>
@@ -103,21 +103,13 @@ export const DayOverview = ({
             <ShoppingCart className="w-4 h-4 mr-2" />
             {shoppingList}
           </Button>
-          <Button
-            onClick={onAddSnack}
-            size="sm"
-            className="bg-fitness-primary-500 hover:bg-fitness-primary-600 text-white"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Snack
-          </Button>
         </div>
       </div>
 
       {/* Compact Daily Progress Card */}
       <Card className="bg-gradient-to-r from-fitness-primary-50 to-fitness-accent-50 border-fitness-primary-200">
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-lg">
+          <CardTitle className="flex items-center gap-2 text-lg text-fitness-primary-900">
             <Utensils className="w-5 h-5 text-fitness-primary-600" />
             {dailyProgress}
           </CardTitle>
@@ -126,10 +118,10 @@ export const DayOverview = ({
           {/* Calorie Progress Bar */}
           <div>
             <div className="flex justify-between items-center text-sm mb-2">
-              <span className="text-gray-700">{calorieProgress}</span>
-              <span className="font-medium text-gray-900">{totalCalories}/{targetDayCalories} {cal}</span>
+              <span className="text-fitness-primary-700">{calorieProgress}</span>
+              <span className="font-medium text-fitness-primary-900">{totalCalories}/{targetDayCalories} {cal}</span>
             </div>
-            <Progress value={calorieProgressPercent} className="h-2 bg-gray-200">
+            <Progress value={calorieProgressPercent} className="h-3 bg-white/50">
               <div 
                 className="h-full bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 rounded-full transition-all duration-300"
                 style={{ width: `${calorieProgressPercent}%` }}
@@ -138,18 +130,18 @@ export const DayOverview = ({
           </div>
           
           {/* Compact Stats Grid */}
-          <div className="grid grid-cols-3 gap-3">
-            <div className="bg-white/80 backdrop-blur-sm rounded-lg p-3 text-center border border-white/50">
-              <div className="text-xl font-bold text-orange-600">{totalCalories}</div>
-              <div className="text-xs text-gray-600">{consumed}</div>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 text-center border border-white/50 shadow-sm">
+              <div className="text-2xl font-bold text-orange-600">{totalCalories}</div>
+              <div className="text-xs text-fitness-primary-600 font-medium">{consumed}</div>
             </div>
-            <div className="bg-white/80 backdrop-blur-sm rounded-lg p-3 text-center border border-white/50">
-              <div className="text-xl font-bold text-green-600">{totalProtein.toFixed(1)}g</div>
-              <div className="text-xs text-gray-600">{protein}</div>
+            <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 text-center border border-white/50 shadow-sm">
+              <div className="text-2xl font-bold text-green-600">{totalProtein.toFixed(1)}g</div>
+              <div className="text-xs text-fitness-primary-600 font-medium">{protein}</div>
             </div>
-            <div className="bg-white/80 backdrop-blur-sm rounded-lg p-3 text-center border border-white/50">
-              <div className="text-xl font-bold text-blue-600">{remainingCalories}</div>
-              <div className="text-xs text-gray-600">Remaining</div>
+            <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 text-center border border-white/50 shadow-sm">
+              <div className="text-2xl font-bold text-blue-600">{remainingCalories}</div>
+              <div className="text-xs text-fitness-primary-600 font-medium">Remaining</div>
             </div>
           </div>
         </CardContent>
@@ -177,11 +169,11 @@ export const DayOverview = ({
         </div>
       ) : (
         // Empty State
-        <Card className="border-dashed border-2 border-gray-300 bg-gradient-to-br from-gray-50 to-white">
+        <Card className="border-dashed border-2 border-fitness-primary-300 bg-gradient-to-br from-fitness-primary-50 to-white">
           <CardContent className="p-8 text-center">
-            <Target className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-            <h3 className="text-xl font-semibold mb-2 text-gray-800">No meals planned for this day</h3>
-            <p className="text-gray-600 mb-6 max-w-md mx-auto">
+            <Target className="w-16 h-16 mx-auto mb-4 text-fitness-primary-400" />
+            <h3 className="text-xl font-semibold mb-2 text-fitness-primary-800">No meals planned for this day</h3>
+            <p className="text-fitness-primary-600 mb-6 max-w-md mx-auto">
               Start planning your meals to reach your daily nutrition goals.
             </p>
             <AddMealCard mealType="snack" onAddMeal={onAddSnack} />
@@ -196,7 +188,6 @@ export const DayOverview = ({
         weeklyPlan={weeklyPlan}
         weekId={weeklyPlan?.weeklyPlan?.id}
         onShoppingListUpdate={() => {
-          // Handle shopping list updates if needed
           console.log('Shopping list updated');
         }}
       />

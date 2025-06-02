@@ -23,6 +23,7 @@ interface UnifiedNavigationProps {
   onGenerateAI: () => void;
   isGenerating: boolean;
   hasWeeklyPlan: boolean;
+  remainingCredits?: number;
 }
 
 export const UnifiedNavigation = ({
@@ -33,7 +34,8 @@ export const UnifiedNavigation = ({
   weekStartDate,
   onGenerateAI,
   isGenerating,
-  hasWeeklyPlan
+  hasWeeklyPlan,
+  remainingCredits = 0
 }: UnifiedNavigationProps) => {
   const {
     currentWeek,
@@ -48,9 +50,6 @@ export const UnifiedNavigation = ({
   const weekEndDate = addDays(weekStartDate, 6);
   const isCurrentWeek = currentWeekOffset === 0;
 
-  // Provide default credits to prevent the error
-  const credits = { remaining: 0 }; // This will be replaced when credit system is properly integrated
-
   const dayButtons = Array.from({ length: 7 }, (_, index) => {
     const dayNumber = index + 1;
     const dayDate = addDays(weekStartDate, index);
@@ -63,16 +62,18 @@ export const UnifiedNavigation = ({
         variant={isSelected ? "default" : "outline"}
         size="sm"
         onClick={() => setSelectedDayNumber(dayNumber)}
-        className={`flex flex-col gap-1 h-16 relative ${isRTL ? 'flex-row-reverse' : ''}`}
+        className={`flex flex-col gap-1 h-16 relative ${isRTL ? 'flex-row-reverse' : ''} ${
+          isSelected ? 'bg-fitness-primary-600 hover:bg-fitness-primary-700' : 'hover:bg-fitness-primary-50'
+        }`}
       >
         <span className="text-xs font-medium">
           {getDayName(dayNumber).slice(0, 3)}
         </span>
-        <span className="text-xs text-gray-600">
+        <span className="text-xs">
           {format(dayDate, 'd')}
         </span>
         {isToday && (
-          <Badge variant="secondary" className="absolute -top-1 -right-1 text-xs px-1">
+          <Badge variant="secondary" className="absolute -top-1 -right-1 text-xs px-1 bg-orange-500 text-white">
             {today}
           </Badge>
         )}
@@ -83,7 +84,7 @@ export const UnifiedNavigation = ({
   return (
     <div className="space-y-4">
       {/* Week Navigation */}
-      <Card>
+      <Card className="bg-gradient-to-r from-fitness-primary-50 to-fitness-accent-50 border-fitness-primary-200">
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -91,17 +92,18 @@ export const UnifiedNavigation = ({
                 variant="outline"
                 size="sm"
                 onClick={() => setCurrentWeekOffset(currentWeekOffset - 1)}
+                className="border-fitness-primary-300 hover:bg-fitness-primary-100"
               >
                 <ChevronLeft className="w-4 h-4" />
               </Button>
               
               <div className="text-center">
-                <div className="font-semibold flex items-center gap-2">
+                <div className="font-semibold flex items-center gap-2 text-fitness-primary-900">
                   <Calendar className="w-4 h-4" />
                   {format(weekStartDate, 'MMM d')} - {format(weekEndDate, 'MMM d, yyyy')}
                 </div>
                 {isCurrentWeek && (
-                  <Badge variant="secondary" className="text-xs mt-1">
+                  <Badge variant="secondary" className="text-xs mt-1 bg-fitness-primary-100 text-fitness-primary-700">
                     {currentWeek}
                   </Badge>
                 )}
@@ -111,27 +113,28 @@ export const UnifiedNavigation = ({
                 variant="outline"
                 size="sm"
                 onClick={() => setCurrentWeekOffset(currentWeekOffset + 1)}
+                className="border-fitness-primary-300 hover:bg-fitness-primary-100"
               >
                 <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               {/* Credits Display */}
-              <div className="flex items-center gap-2 text-sm">
+              <div className="flex items-center gap-2 text-sm bg-white/80 px-3 py-1 rounded-lg border border-fitness-primary-200">
                 <Coins className="w-4 h-4 text-yellow-500" />
-                <span className="font-medium">{aiCredits}: {credits.remaining}</span>
+                <span className="font-medium text-fitness-primary-700">{aiCredits}: {remainingCredits}</span>
               </div>
 
-              {/* Action Buttons */}
+              {/* Generate AI Button */}
               <Button
                 onClick={onGenerateAI}
                 size="sm"
-                disabled={isGenerating || credits.remaining <= 0}
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                disabled={isGenerating || remainingCredits <= 0}
+                className="bg-gradient-to-r from-fitness-primary-600 to-fitness-accent-600 hover:from-fitness-primary-700 hover:to-fitness-accent-700 text-white shadow-lg"
               >
                 <Sparkles className="w-4 h-4 mr-2" />
-                {generateAIMealPlan}
+                {isGenerating ? 'Generating...' : generateAIMealPlan}
               </Button>
             </div>
           </div>
@@ -140,10 +143,10 @@ export const UnifiedNavigation = ({
 
       {/* Day Selection */}
       {hasWeeklyPlan && (
-        <Card>
+        <Card className="bg-white/80 backdrop-blur-sm border-fitness-primary-200">
           <CardContent className="p-4">
             <div className="space-y-3">
-              <h3 className="font-medium text-center">{selectDay}</h3>
+              <h3 className="font-medium text-center text-fitness-primary-900">{selectDay}</h3>
               <div className={`grid grid-cols-7 gap-2 ${isRTL ? 'direction-rtl' : ''}`}>
                 {dayButtons}
               </div>
