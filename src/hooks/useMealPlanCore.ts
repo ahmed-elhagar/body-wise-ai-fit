@@ -44,11 +44,22 @@ export const useMealPlanCore = () => {
   // Calculations based on current data
   const calculations = useMealPlanCalculations(currentWeekPlan, navigation.selectedDayNumber);
 
+  // Add console logging to track state changes
+  console.log('🔍 useMealPlanCore state:', {
+    weekOffset: navigation.currentWeekOffset,
+    selectedDay: navigation.selectedDayNumber,
+    isLoading,
+    hasData: !!currentWeekPlan,
+    error: error?.message,
+    userId: user?.id
+  });
+
   // Manual refetch with proper error handling
   const refetch = useCallback(async () => {
     console.log('🔄 Manual refetch triggered for week offset:', navigation.currentWeekOffset);
     try {
       await refetchMealPlan?.();
+      console.log('✅ Manual refetch completed successfully');
     } catch (error) {
       console.error('❌ Manual refetch failed:', error);
     }

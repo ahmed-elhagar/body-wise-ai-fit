@@ -10,7 +10,7 @@ import { MealPlanNavigation } from './MealPlanNavigation';
 import { MealPlanContent } from './MealPlanContent';
 import { MealPlanDialogs } from './dialogs/MealPlanDialogs';
 import { LifePhaseRibbon } from '@/components/meal-plan/LifePhaseRibbon';
-import EnhancedLoadingIndicator from '@/components/ui/enhanced-loading-indicator';
+import { LoadingState } from './LoadingState';
 
 export const MealPlanContainer = () => {
   const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
@@ -25,18 +25,17 @@ export const MealPlanContainer = () => {
     isLoading: isEmailLoading 
   } = useEnhancedShoppingListEmail();
 
+  console.log('🔍 MealPlanContainer state:', {
+    isLoading: mealPlanState.isLoading,
+    hasData: !!mealPlanState.currentWeekPlan,
+    error: mealPlanState.error?.message,
+    isGenerating: mealPlanState.isGenerating
+  });
+
   if (mealPlanState.isLoading) {
     return (
       <EnhancedErrorBoundary>
-        <div className="min-h-screen flex items-center justify-center">
-          <EnhancedLoadingIndicator
-            status="loading"
-            type="general"
-            message="Loading meal plan..."
-            variant="card"
-            size="lg"
-          />
-        </div>
+        <LoadingState />
       </EnhancedErrorBoundary>
     );
   }
@@ -47,7 +46,7 @@ export const MealPlanContainer = () => {
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center p-8">
             <h3 className="text-lg font-semibold text-red-600 mb-2">Error loading meal plan</h3>
-            <p className="text-gray-600">{mealPlanState.error.message}</p>
+            <p className="text-gray-600 mb-4">{mealPlanState.error.message}</p>
             <button 
               onClick={mealPlanState.refetch}
               className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
