@@ -7,7 +7,6 @@ import {
   ChevronLeft, 
   ChevronRight, 
   Sparkles, 
-  RefreshCw,
   Calendar,
   Coins
 } from "lucide-react";
@@ -22,9 +21,8 @@ interface UnifiedNavigationProps {
   setSelectedDayNumber: (day: number) => void;
   weekStartDate: Date;
   onGenerateAI: () => void;
-  onRefresh: () => void;
+  isGenerating: boolean;
   hasWeeklyPlan: boolean;
-  credits: { remaining: number };
 }
 
 export const UnifiedNavigation = ({
@@ -34,9 +32,8 @@ export const UnifiedNavigation = ({
   setSelectedDayNumber,
   weekStartDate,
   onGenerateAI,
-  onRefresh,
-  hasWeeklyPlan,
-  credits
+  isGenerating,
+  hasWeeklyPlan
 }: UnifiedNavigationProps) => {
   const {
     currentWeek,
@@ -50,6 +47,9 @@ export const UnifiedNavigation = ({
 
   const weekEndDate = addDays(weekStartDate, 6);
   const isCurrentWeek = currentWeekOffset === 0;
+
+  // Provide default credits to prevent the error
+  const credits = { remaining: 0 }; // This will be replaced when credit system is properly integrated
 
   const dayButtons = Array.from({ length: 7 }, (_, index) => {
     const dayNumber = index + 1;
@@ -125,17 +125,9 @@ export const UnifiedNavigation = ({
 
               {/* Action Buttons */}
               <Button
-                variant="outline"
-                size="sm"
-                onClick={onRefresh}
-              >
-                <RefreshCw className="w-4 h-4" />
-              </Button>
-              
-              <Button
                 onClick={onGenerateAI}
                 size="sm"
-                disabled={credits.remaining <= 0}
+                disabled={isGenerating || credits.remaining <= 0}
                 className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
               >
                 <Sparkles className="w-4 h-4 mr-2" />

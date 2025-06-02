@@ -85,9 +85,9 @@ export const MealPlanContainer = () => {
       {/* Navigation */}
       <UnifiedNavigation
         currentWeekOffset={currentWeekOffset}
-        onWeekOffsetChange={setCurrentWeekOffset}
+        setCurrentWeekOffset={setCurrentWeekOffset}
         selectedDayNumber={selectedDayNumber}
-        onDayChange={setSelectedDayNumber}
+        setSelectedDayNumber={setSelectedDayNumber}
         weekStartDate={weekStartDate}
         onGenerateAI={() => setShowAIDialog(true)}
         isGenerating={isGenerating}
@@ -129,7 +129,7 @@ export const MealPlanContainer = () => {
       <AddSnackDialog
         isOpen={showAddSnackDialog}
         onClose={() => setShowAddSnackDialog(false)}
-        currentCalories={totalCalories}
+        currentDayCalories={totalCalories}
         targetCalories={targetDayCalories}
         selectedDayNumber={selectedDayNumber}
         weeklyPlanId={currentWeekPlan?.weeklyPlan?.id}
