@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import type { DailyMeal, MealPlanPreferences } from '../types';
 
 export const useMealPlanDialogs = () => {
@@ -12,7 +12,7 @@ export const useMealPlanDialogs = () => {
   const [selectedMeal, setSelectedMeal] = useState<DailyMeal | null>(null);
   const [selectedMealIndex, setSelectedMealIndex] = useState(0);
   
-  // AI preferences with proper defaults
+  // AI preferences with proper defaults and validation
   const [aiPreferences, setAiPreferences] = useState<MealPlanPreferences>({
     duration: "7",
     cuisine: "mixed",
@@ -21,67 +21,91 @@ export const useMealPlanDialogs = () => {
     mealTypes: "breakfast,lunch,dinner"
   });
 
-  // Dialog action methods
-  const openAIDialog = () => setShowAIDialog(true);
-  const closeAIDialog = () => setShowAIDialog(false);
+  // Optimized dialog action methods with useCallback
+  const openAIDialog = useCallback(() => setShowAIDialog(true), []);
+  const closeAIDialog = useCallback(() => setShowAIDialog(false), []);
   
-  const openRecipeDialog = (meal: DailyMeal) => {
+  const openRecipeDialog = useCallback((meal: DailyMeal) => {
     setSelectedMeal(meal);
     setShowRecipeDialog(true);
-  };
-  const closeRecipeDialog = () => {
+  }, []);
+  
+  const closeRecipeDialog = useCallback(() => {
     setShowRecipeDialog(false);
     setSelectedMeal(null);
-  };
+  }, []);
 
-  const openExchangeDialog = (meal: DailyMeal, index: number = 0) => {
+  const openExchangeDialog = useCallback((meal: DailyMeal, index: number = 0) => {
     setSelectedMeal(meal);
     setSelectedMealIndex(index);
     setShowExchangeDialog(true);
-  };
-  const closeExchangeDialog = () => {
+  }, []);
+  
+  const closeExchangeDialog = useCallback(() => {
     setShowExchangeDialog(false);
     setSelectedMeal(null);
-  };
+  }, []);
 
-  const openAddSnackDialog = () => setShowAddSnackDialog(true);
-  const closeAddSnackDialog = () => setShowAddSnackDialog(false);
+  const openAddSnackDialog = useCallback(() => setShowAddSnackDialog(true), []);
+  const closeAddSnackDialog = useCallback(() => setShowAddSnackDialog(false), []);
 
-  const openShoppingListDialog = () => setShowShoppingListDialog(true);
-  const closeShoppingListDialog = () => setShowShoppingListDialog(false);
+  const openShoppingListDialog = useCallback(() => setShowShoppingListDialog(true), []);
+  const closeShoppingListDialog = useCallback(() => setShowShoppingListDialog(false), []);
 
-  const updateAIPreferences = (newPreferences: MealPlanPreferences) => {
-    setAiPreferences(newPreferences);
-  };
-
-  const handleAddSnack = () => {
-    setShowAddSnackDialog(true);
-  };
-
-  // Unified state setter for backward compatibility
-  const setDialogs = (updater: any) => {
-    if (typeof updater === 'function') {
-      const newState = updater({
-        showAIDialog,
-        showRecipeDialog,
-        showExchangeDialog,
-        showAddSnackDialog,
-        showShoppingListDialog,
-        selectedMeal,
-        selectedMealIndex,
-        aiPreferences
-      });
-      
-      if (newState.showAIDialog !== undefined) setShowAIDialog(newState.showAIDialog);
-      if (newState.showRecipeDialog !== undefined) setShowRecipeDialog(newState.showRecipeDialog);
-      if (newState.showExchangeDialog !== undefined) setShowExchangeDialog(newState.showExchangeDialog);
-      if (newState.showAddSnackDialog !== undefined) setShowAddSnackDialog(newState.showAddSnackDialog);
-      if (newState.showShoppingListDialog !== undefined) setShowShoppingListDialog(newState.showShoppingListDialog);
-      if (newState.selectedMeal !== undefined) setSelectedMeal(newState.selectedMeal);
-      if (newState.selectedMealIndex !== undefined) setSelectedMealIndex(newState.selectedMealIndex);
-      if (newState.aiPreferences !== undefined) setAiPreferences(newState.aiPreferences);
+  const updateAIPreferences = useCallback((newPreferences: MealPlanPreferences) => {
+    // Validate preferences before setting
+    if (newPreferences && typeof newPreferences === 'object') {
+      setAiPreferences(prev => ({ ...prev, ...newPreferences }));
+    } else {
+      console.error('Invalid AI preferences provided:', newPreferences);
     }
-  };
+  }, []);
+
+  const handleAddSnack = useCallback(() => {
+    setShowAddSnackDialog(true);
+  }, []);
+
+  // Optimized bulk dialog state setter
+  const setDialogs = useCallback((updater: any) => {
+    if (typeof updater === 'function') {
+      try {
+        const currentState = {
+          showAIDialog,
+          showRecipeDialog,
+          showExchangeDialog,
+          showAddSnackDialog,
+          showShoppingListDialog,
+          selectedMeal,
+          selectedMealIndex,
+          aiPreferences
+        };
+        
+        const newState = updater(currentState);
+        
+        // Batch state updates for better performance
+        if (newState.showAIDialog !== undefined) setShowAIDialog(newState.showAIDialog);
+        if (newState.showRecipeDialog !== undefined) setShowRecipeDialog(newState.showRecipeDialog);
+        if (newState.showExchangeDialog !== undefined) setShowExchangeDialog(newState.showExchangeDialog);
+        if (newState.showAddSnackDialog !== undefined) setShowAddSnackDialog(newState.showAddSnackDialog);
+        if (newState.showShoppingListDialog !== undefined) setShowShoppingListDialog(newState.showShoppingListDialog);
+        if (newState.selectedMeal !== undefined) setSelectedMeal(newState.selectedMeal);
+        if (newState.selectedMealIndex !== undefined) setSelectedMealIndex(newState.selectedMealIndex);
+        if (newState.aiPreferences !== undefined) setAiPreferences(newState.aiPreferences);
+      } catch (error) {
+        console.error('Error updating dialog state:', error);
+      }
+    }
+  }, [showAIDialog, showRecipeDialog, showExchangeDialog, showAddSnackDialog, showShoppingListDialog, selectedMeal, selectedMealIndex, aiPreferences]);
+
+  // Close all dialogs helper
+  const closeAllDialogs = useCallback(() => {
+    setShowAIDialog(false);
+    setShowRecipeDialog(false);
+    setShowExchangeDialog(false);
+    setShowAddSnackDialog(false);
+    setShowShoppingListDialog(false);
+    setSelectedMeal(null);
+  }, []);
 
   return {
     // Dialog states
@@ -106,7 +130,7 @@ export const useMealPlanDialogs = () => {
     aiPreferences,
     setAiPreferences,
     
-    // Action methods
+    // Optimized action methods
     openAIDialog,
     closeAIDialog,
     openRecipeDialog,
@@ -119,6 +143,7 @@ export const useMealPlanDialogs = () => {
     closeShoppingListDialog,
     updateAIPreferences,
     handleAddSnack,
+    closeAllDialogs,
     
     // Backward compatibility
     setDialogs

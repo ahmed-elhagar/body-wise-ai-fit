@@ -1,8 +1,9 @@
 
+import React from "react";
 import EnhancedLoadingIndicator from "@/components/ui/enhanced-loading-indicator";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-const LoadingState = () => {
+const LoadingState = React.memo(() => {
   const { isRTL } = useLanguage();
 
   return (
@@ -25,6 +26,8 @@ const LoadingState = () => {
       />
     </div>
   );
-};
+});
+
+LoadingState.displayName = 'LoadingState';
 
 export default LoadingState;

@@ -1,8 +1,9 @@
 
+import React from "react";
 import { Card } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 
-export const LoadingState = () => {
+export const LoadingState = React.memo(() => {
   return (
     <Card className="p-8 text-center bg-white/80 backdrop-blur-sm border-0 shadow-lg">
       <div className="flex flex-col items-center space-y-4">
@@ -18,4 +19,6 @@ export const LoadingState = () => {
       </div>
     </Card>
   );
-};
+});
+
+LoadingState.displayName = 'LoadingState';

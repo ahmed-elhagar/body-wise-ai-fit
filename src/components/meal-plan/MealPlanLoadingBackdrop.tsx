@@ -1,4 +1,5 @@
 
+import React from "react";
 import PageLoadingOverlay from "@/components/ui/page-loading-overlay";
 
 interface MealPlanLoadingBackdropProps {
@@ -7,11 +8,14 @@ interface MealPlanLoadingBackdropProps {
   type?: 'meal-plan' | 'recipe' | 'analysis' | 'general';
 }
 
-const MealPlanLoadingBackdrop = ({ 
+const MealPlanLoadingBackdrop = React.memo<MealPlanLoadingBackdropProps>(({ 
   isLoading, 
   message,
   type = 'meal-plan'
-}: MealPlanLoadingBackdropProps) => {
+}) => {
+  // Early return if not loading to avoid unnecessary renders
+  if (!isLoading) return null;
+
   return (
     <PageLoadingOverlay
       isLoading={isLoading}
@@ -20,6 +24,8 @@ const MealPlanLoadingBackdrop = ({
       description="Please wait while we process your request..."
     />
   );
-};
+});
+
+MealPlanLoadingBackdrop.displayName = 'MealPlanLoadingBackdrop';
 
 export default MealPlanLoadingBackdrop;

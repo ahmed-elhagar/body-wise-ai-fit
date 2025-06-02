@@ -1,5 +1,5 @@
 
-import { ReactNode, startTransition } from 'react';
+import React, { ReactNode, startTransition } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useProfile } from '@/hooks/useProfile';
@@ -13,22 +13,22 @@ interface ProtectedRouteProps {
   redirectTo?: string;
 }
 
-const ProtectedRoute = ({ 
+const ProtectedRoute = React.memo<ProtectedRouteProps>(({ 
   children, 
   requireAuth = true,
   requireProfile = false,
   requireRole,
   redirectTo = '/auth' 
-}: ProtectedRouteProps) => {
+}) => {
   const { user, loading: authLoading, error: authError } = useAuth();
   const { profile, isLoading: profileLoading } = useProfile();
   const { role, isLoading: roleLoading, error: roleError, hasRole, hasAnyRole } = useRole();
   const location = useLocation();
 
-  // Enhanced loading state handling
+  // Enhanced loading state handling with better performance
   const isLoading = authLoading || (requireProfile && profileLoading) || (requireRole && roleLoading);
 
-  // Show loading while checking authentication
+  // Early return for loading state
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
@@ -65,19 +65,24 @@ const ProtectedRoute = ({
     return <Navigate to={from} replace />;
   }
 
-  // Enhanced role-based access control
+  // Enhanced role-based access control with better error handling
   if (requireRole && user) {
     let hasRequiredRole = false;
     
-    if (Array.isArray(requireRole)) {
-      hasRequiredRole = hasAnyRole(requireRole);
-    } else {
-      hasRequiredRole = hasRole(requireRole);
-    }
-    
-    if (!hasRequiredRole) {
-      console.log(`ProtectedRoute - User role '${role}' insufficient for required role(s):`, requireRole);
-      return <Navigate to="/dashboard" state={{ error: 'Insufficient permissions' }} replace />;
+    try {
+      if (Array.isArray(requireRole)) {
+        hasRequiredRole = hasAnyRole(requireRole);
+      } else {
+        hasRequiredRole = hasRole(requireRole);
+      }
+      
+      if (!hasRequiredRole) {
+        console.log(`ProtectedRoute - User role '${role}' insufficient for required role(s):`, requireRole);
+        return <Navigate to="/dashboard" state={{ error: 'Insufficient permissions' }} replace />;
+      }
+    } catch (error) {
+      console.error('ProtectedRoute - Role check error:', error);
+      return <Navigate to="/dashboard" state={{ error: 'Role verification failed' }} replace />;
     }
   }
 
@@ -89,6 +94,8 @@ const ProtectedRoute = ({
 
   // All conditions passed, render the children
   return <>{children}</>;
-};
+});
+
+ProtectedRoute.displayName = 'ProtectedRoute';
 
 export default ProtectedRoute;
