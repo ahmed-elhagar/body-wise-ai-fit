@@ -2,46 +2,61 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from './useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
-interface UserProfile {
+export interface Profile {
   id: string;
+  email?: string;
   first_name?: string;
   last_name?: string;
-  email?: string;
   age?: number;
   gender?: string;
-  weight?: number;
   height?: number;
-  nationality?: string;
-  body_shape?: string;
+  weight?: number;
   fitness_goal?: string;
   activity_level?: string;
   dietary_restrictions?: string[];
   allergies?: string[];
   health_conditions?: string[];
   preferred_foods?: string[];
-  preferred_language?: string;
+  location?: string;
+  timezone?: string;
+  bio?: string;
+  profile_visibility?: string;
   onboarding_completed?: boolean;
-  profile_completion_score?: number;
-  ai_generations_remaining?: number;
-  role?: 'normal' | 'admin' | 'coach' | 'pro';
-  fasting_type?: string;
-  pregnancy_trimester?: number;
-  breastfeeding_level?: string;
-  condition_start_date?: string;
-  special_conditions?: any[];
+  role?: string;
   created_at?: string;
   updated_at?: string;
+  ai_generations_remaining?: number;
+  profile_completion_score?: number;
+  nationality?: string;
+  body_shape?: string;
+  pregnancy_trimester?: number;
+  breastfeeding_level?: string;
+  fasting_type?: string;
+  condition_start_date?: string;
+  special_conditions?: any;
+  preferred_language?: string;
+  last_health_assessment_date?: string;
 }
 
 export const useProfile = () => {
-  const { user } = useAuth();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const { user, loading: authLoading } = useAuth();
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<any>(null);
 
   useEffect(() => {
+    console.log('useProfile: Auth state changed', { 
+      userId: user?.id?.substring(0, 8) + '...' || 'none',
+      authLoading 
+    });
+
+    if (authLoading) {
+      console.log('useProfile: Auth still loading, waiting...');
+      return;
+    }
+
     if (!user?.id) {
       console.log('useProfile: No user ID, clearing profile');
       setProfile(null);
@@ -51,10 +66,9 @@ export const useProfile = () => {
 
     const fetchProfile = async () => {
       try {
+        console.log('useProfile: Fetching profile for user:', user.id.substring(0, 8) + '...');
         setIsLoading(true);
         setError(null);
-        
-        console.log('useProfile: Fetching profile for user:', user.id);
 
         const { data, error } = await supabase
           .from('profiles')
@@ -63,36 +77,33 @@ export const useProfile = () => {
           .single();
 
         if (error) {
-          console.error('Error fetching profile:', error);
-          setError(error.message);
-          return;
+          console.error('useProfile: Error fetching profile:', error);
+          setError(error);
+          setProfile(null);
+        } else {
+          console.log('useProfile: Profile fetched successfully');
+          setProfile(data);
         }
-
-        console.log('useProfile: Profile data fetched:', data);
-        // Convert special_conditions from Json to array if needed
-        const profileData = {
-          ...data,
-          special_conditions: Array.isArray(data.special_conditions) ? data.special_conditions : []
-        };
-        setProfile(profileData);
       } catch (err) {
-        console.error('Profile fetch error:', err);
-        setError('Failed to fetch profile');
+        console.error('useProfile: Unexpected error:', err);
+        setError(err);
+        setProfile(null);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchProfile();
-  }, [user?.id]);
+  }, [user?.id, authLoading]);
 
-  const updateProfile = async (updates: Partial<UserProfile>) => {
-    if (!user?.id) return { error: 'No user authenticated' };
+  const updateProfile = async (updates: Partial<Profile>) => {
+    if (!user?.id) {
+      console.error('useProfile: Cannot update profile - no user ID');
+      return { error: 'No user ID available' };
+    }
 
     try {
-      setIsUpdating(true);
-      console.log('useProfile: Updating profile with:', updates);
-      
+      console.log('useProfile: Updating profile');
       const { data, error } = await supabase
         .from('profiles')
         .update(updates)
@@ -101,46 +112,43 @@ export const useProfile = () => {
         .single();
 
       if (error) {
-        console.error('Error updating profile:', error);
-        return { error: error.message };
+        console.error('useProfile: Error updating profile:', error);
+        setError(error);
+        return { error };
       }
 
-      console.log('useProfile: Profile updated successfully:', data);
-      // Convert special_conditions from Json to array if needed
-      const profileData = {
-        ...data,
-        special_conditions: Array.isArray(data.special_conditions) ? data.special_conditions : []
-      };
-      setProfile(profileData);
-      return { data: profileData };
+      console.log('useProfile: Profile updated successfully');
+      setProfile(data);
+      return { data };
     } catch (err) {
-      console.error('Profile update error:', err);
-      return { error: 'Failed to update profile' };
-    } finally {
-      setIsUpdating(false);
+      console.error('useProfile: Unexpected error updating profile:', err);
+      setError(err);
+      return { error: err };
     }
   };
 
   const refetch = async () => {
-    if (user?.id) {
+    if (!user?.id) return;
+    
+    try {
       setIsLoading(true);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .single();
-      
+
       if (error) {
-        console.error('Profile refetch error:', error);
-        setError(error.message);
+        setError(error);
+        setProfile(null);
       } else {
-        // Convert special_conditions from Json to array if needed
-        const profileData = {
-          ...data,
-          special_conditions: Array.isArray(data.special_conditions) ? data.special_conditions : []
-        };
-        setProfile(profileData);
+        setProfile(data);
+        setError(null);
       }
+    } catch (err) {
+      setError(err);
+      setProfile(null);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -148,9 +156,8 @@ export const useProfile = () => {
   return {
     profile,
     isLoading,
-    isUpdating,
     error,
     updateProfile,
-    refetch,
+    refetch
   };
 };

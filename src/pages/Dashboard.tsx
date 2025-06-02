@@ -10,14 +10,24 @@ import GoalProgressWidget from "@/components/dashboard/GoalProgressWidget";
 import CoachChatWidget from "@/components/dashboard/CoachChatWidget";
 import HeaderDropdowns from "@/components/dashboard/HeaderDropdowns";
 import { useProfile } from "@/hooks/useProfile";
+import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const [activeTimeRange, setActiveTimeRange] = useState<'week' | 'month' | 'year'>('week');
-  const { profile } = useProfile();
+  const { profile, isLoading: profileLoading } = useProfile();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  const userName = profile?.first_name || 'User';
+  console.log('Dashboard - Render state:', {
+    authLoading,
+    profileLoading,
+    hasUser: !!user,
+    hasProfile: !!profile,
+    userId: user?.id?.substring(0, 8) + '...' || 'none'
+  });
+
+  const userName = profile?.first_name || user?.first_name || 'User';
 
   const handleViewMealPlan = () => {
     navigate('/meal-plan');
@@ -26,6 +36,18 @@ const Dashboard = () => {
   const handleViewExercise = () => {
     navigate('/exercise');
   };
+
+  // Show loading while auth or profile is loading
+  if (authLoading || profileLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <ProtectedRoute>
