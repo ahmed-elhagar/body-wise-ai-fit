@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, startTransition } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Card } from "@/components/ui/card";
@@ -18,15 +18,18 @@ const Index = () => {
         userId: user?.id?.substring(0, 8) + '...' || 'none'
       });
       
-      if (user?.id) {
-        // User is authenticated with valid ID, redirect to dashboard
-        console.log("Index - Redirecting authenticated user to dashboard");
-        navigate("/dashboard", { replace: true });
-      } else {
-        // User is not authenticated, redirect to landing
-        console.log("Index - Redirecting unauthenticated user to landing");
-        navigate("/landing", { replace: true });
-      }
+      // Use startTransition for navigation to prevent suspense issues
+      startTransition(() => {
+        if (user?.id) {
+          // User is authenticated with valid ID, redirect to dashboard
+          console.log("Index - Redirecting authenticated user to dashboard");
+          navigate("/dashboard", { replace: true });
+        } else {
+          // User is not authenticated, redirect to landing
+          console.log("Index - Redirecting unauthenticated user to landing");
+          navigate("/landing", { replace: true });
+        }
+      });
     }
   }, [user, loading, navigate]);
 
