@@ -12,11 +12,16 @@ interface WeeklyPlanData {
   dailyMeals: DailyMeal[];
 }
 
+interface Ingredient {
+  name: string;
+  quantity?: string;
+  unit?: string;
+}
+
 export const useEnhancedShoppingList = (weeklyPlan?: WeeklyPlanData | null) => {
   const { user } = useAuth();
   const { language } = useLanguage();
 
-  // Enhanced shopping list with proper aggregation and categorization
   const enhancedShoppingItems = useMemo(() => {
     console.log('🛒 Computing enhanced shopping list...', { 
       hasWeeklyPlan: !!weeklyPlan,
@@ -33,10 +38,22 @@ export const useEnhancedShoppingList = (weeklyPlan?: WeeklyPlanData | null) => {
       console.log(`🍽️ Processing meal ${mealIndex + 1}: ${meal.name}`);
       
       if (meal.ingredients && Array.isArray(meal.ingredients)) {
-        meal.ingredients.forEach((ingredient: any, ingIndex) => {
-          const ingredientName = ingredient.name || ingredient;
-          const quantity = parseFloat(ingredient.quantity || '1');
-          const unit = ingredient.unit || 'piece';
+        meal.ingredients.forEach((ingredient: unknown, ingIndex) => {
+          // Type guard to ensure ingredient is properly typed
+          let ingredientData: Ingredient;
+          
+          if (typeof ingredient === 'string') {
+            ingredientData = { name: ingredient, quantity: '1', unit: 'piece' };
+          } else if (ingredient && typeof ingredient === 'object' && 'name' in ingredient) {
+            ingredientData = ingredient as Ingredient;
+          } else {
+            console.warn(`Invalid ingredient at index ${ingIndex}:`, ingredient);
+            return;
+          }
+
+          const ingredientName = ingredientData.name;
+          const quantity = parseFloat(ingredientData.quantity || '1');
+          const unit = ingredientData.unit || 'piece';
           const key = `${ingredientName.toLowerCase()}-${unit}`;
           
           console.log(`📝 Processing ingredient ${ingIndex + 1}: ${ingredientName} (${quantity} ${unit})`);
@@ -61,7 +78,6 @@ export const useEnhancedShoppingList = (weeklyPlan?: WeeklyPlanData | null) => {
 
     const items = Array.from(itemsMap.values());
     
-    // Group by category
     const groupedItems = items.reduce((acc, item) => {
       const category = item.category;
       if (!acc[category]) {

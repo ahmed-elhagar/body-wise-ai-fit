@@ -17,16 +17,20 @@ interface EnhancedAddSnackDialogProps {
   onClose: () => void;
   selectedDay: number;
   weeklyPlanId?: string;
-  remainingCalories: number;
+  remainingCalories?: number;
+  currentDayCalories?: number;
+  targetDayCalories?: number;
   onSnackAdded: () => void;
 }
 
-export const EnhancedAddSnackDialog = ({
+const EnhancedAddSnackDialog = ({
   isOpen,
   onClose,
   selectedDay,
   weeklyPlanId,
-  remainingCalories,
+  remainingCalories = 0,
+  currentDayCalories = 0,
+  targetDayCalories = 2000,
   onSnackAdded
 }: EnhancedAddSnackDialogProps) => {
   const { user } = useAuth();
@@ -41,13 +45,15 @@ export const EnhancedAddSnackDialog = ({
     fat: ''
   });
 
+  const actualRemainingCalories = Math.max(0, targetDayCalories - currentDayCalories);
+
   const handleGenerateAISnack = async () => {
     if (!user || !weeklyPlanId || !profile) {
       toast.error('Missing required data for snack generation');
       return;
     }
 
-    if (remainingCalories < 50) {
+    if (actualRemainingCalories < 50) {
       toast.error('Not enough calories remaining for a snack');
       return;
     }
@@ -55,17 +61,15 @@ export const EnhancedAddSnackDialog = ({
     setIsGenerating(true);
     
     try {
-      // Step 1: Analyzing preferences
       setGenerationStep('analyzing');
       console.log('🔍 Step 1: Analyzing user preferences...');
       await new Promise(resolve => setTimeout(resolve, 1200));
       
-      // Step 2: Creating perfect snack
       setGenerationStep('creating');
       console.log('🥄 Step 2: Creating perfect snack...');
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      const targetCalories = Math.min(remainingCalories, 300);
+      const targetCalories = Math.min(actualRemainingCalories, 300);
 
       const { data, error } = await supabase.functions.invoke('generate-ai-snack', {
         body: {
@@ -82,7 +86,6 @@ export const EnhancedAddSnackDialog = ({
         throw error;
       }
 
-      // Step 3: Saving to meal plan
       setGenerationStep('saving');
       console.log('💾 Step 3: Saving snack to meal plan...');
       await new Promise(resolve => setTimeout(resolve, 800));
@@ -153,7 +156,6 @@ export const EnhancedAddSnackDialog = ({
         </DialogHeader>
         
         <div className="space-y-6">
-          {/* AI Generated Snack */}
           <Card>
             <CardContent className="p-4">
               <h3 className="font-semibold mb-3 flex items-center gap-2">
@@ -161,7 +163,7 @@ export const EnhancedAddSnackDialog = ({
                 AI Generated Snack
               </h3>
               <p className="text-sm text-gray-600 mb-4">
-                Let AI create a perfect snack based on your preferences and remaining calories ({remainingCalories} cal).
+                Let AI create a perfect snack based on your preferences and remaining calories ({actualRemainingCalories} cal).
               </p>
               
               {isGenerating && (
@@ -179,7 +181,6 @@ export const EnhancedAddSnackDialog = ({
             </CardContent>
           </Card>
 
-          {/* Custom Snack */}
           <Card>
             <CardContent className="p-4">
               <h3 className="font-semibold mb-3 flex items-center gap-2">
@@ -260,3 +261,5 @@ export const EnhancedAddSnackDialog = ({
     </Dialog>
   );
 };
+
+export default EnhancedAddSnackDialog;
