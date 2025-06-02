@@ -24,7 +24,7 @@ export interface Profile {
   bio?: string;
   profile_visibility?: string;
   onboarding_completed?: boolean;
-  role?: string;
+  role?: 'normal' | 'pro' | 'coach' | 'admin';
   created_at?: string;
   updated_at?: string;
   ai_generations_remaining?: number;
@@ -44,6 +44,7 @@ export const useProfile = () => {
   const { user, loading: authLoading } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<any>(null);
 
   useEffect(() => {
@@ -104,9 +105,16 @@ export const useProfile = () => {
 
     try {
       console.log('useProfile: Updating profile');
+      setIsUpdating(true);
+      
+      // Filter out any properties that might cause type issues
+      const filteredUpdates = Object.fromEntries(
+        Object.entries(updates).filter(([key, value]) => value !== undefined)
+      );
+      
       const { data, error } = await supabase
         .from('profiles')
-        .update(updates)
+        .update(filteredUpdates)
         .eq('id', user.id)
         .select()
         .single();
@@ -124,6 +132,8 @@ export const useProfile = () => {
       console.error('useProfile: Unexpected error updating profile:', err);
       setError(err);
       return { error: err };
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -156,6 +166,7 @@ export const useProfile = () => {
   return {
     profile,
     isLoading,
+    isUpdating,
     error,
     updateProfile,
     refetch
