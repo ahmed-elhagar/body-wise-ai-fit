@@ -94,11 +94,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         throw error;
       }
       
+      console.log('Retry auth - session retrieved:', !!session, session?.user?.id?.substring(0, 8) + '...');
+      
       if (session?.user) {
         await enrichUserWithProfile(session);
+      } else {
+        setUser(null);
+        setSession(null);
       }
       
-      setSession(session);
     } catch (err) {
       console.error('Retry auth error:', err);
       setError(err);
@@ -107,84 +111,81 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  // Enhanced user enrichment with better error handling
+  // Enhanced user enrichment with better error handling and proper ID extraction
   const enrichUserWithProfile = async (session: Session) => {
     try {
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role, first_name, last_name')
-        .eq('id', session.user.id)
-        .single();
+      console.log('Enriching user with profile for ID:', session.user.id?.substring(0, 8) + '...');
       
-      if (profileError && profileError.code !== 'PGRST116') { // PGRST116 = no rows returned
-        console.warn('Profile fetch error (non-critical):', profileError);
-      }
-      
-      const enrichedUser: AuthUser = {
-        ...session.user,
-        role: profile?.role || session.user.user_metadata?.role || 'normal',
-        first_name: profile?.first_name || session.user.user_metadata?.first_name,
-        last_name: profile?.last_name || session.user.user_metadata?.last_name,
-      };
-      
-      console.log('User enriched with role:', enrichedUser.role);
-      setUser(enrichedUser);
-    } catch (err) {
-      console.warn('User enrichment failed, using basic user data:', err);
-      // Create user from session data directly
+      // First, create a basic user object with the guaranteed session data
       const basicUser: AuthUser = {
-        id: session.user.id,
+        id: session.user.id, // This is the critical fix - ensure ID is from session.user.id
         email: session.user.email,
         role: session.user.user_metadata?.role || 'normal',
         first_name: session.user.user_metadata?.first_name,
         last_name: session.user.user_metadata?.last_name,
         user_metadata: session.user.user_metadata
       };
-      setUser(basicUser);
+
+      console.log('Basic user created with ID:', basicUser.id?.substring(0, 8) + '...');
+      
+      // Try to enrich with profile data, but don't block if it fails
+      try {
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('role, first_name, last_name')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (profile && !profileError) {
+          console.log('Profile data fetched successfully, role:', profile.role);
+          const enrichedUser: AuthUser = {
+            ...basicUser,
+            role: profile.role || basicUser.role,
+            first_name: profile.first_name || basicUser.first_name,
+            last_name: profile.last_name || basicUser.last_name,
+          };
+          setUser(enrichedUser);
+        } else {
+          console.log('Using basic user data (profile fetch failed):', profileError?.message);
+          setUser(basicUser);
+        }
+      } catch (profileErr) {
+        console.warn('Profile enrichment failed, using basic user data:', profileErr);
+        setUser(basicUser);
+      }
+      
+    } catch (err) {
+      console.error('User enrichment failed completely:', err);
+      // Even if enrichment fails, we should still set a basic user if we have session data
+      if (session?.user?.id) {
+        setUser({
+          id: session.user.id,
+          email: session.user.email,
+          role: 'normal'
+        });
+      }
     }
   };
 
   useEffect(() => {
     console.log("AuthProvider - Initializing");
     
-    // Check for existing session first
-    const getInitialSession = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('Error getting initial session:', error);
-          setError(error);
-        } else {
-          console.log("Got initial session:", !!session);
-          
-          setSession(session);
-          
-          if (session?.user) {
-            await enrichUserWithProfile(session);
-          } else {
-            setUser(null);
-          }
-        }
-      } catch (error) {
-        console.error('Error in getInitialSession:', error);
-        setError(error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    // Set up auth state listener
+    let mounted = true;
+    
+    // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email);
+        if (!mounted) return;
+        
+        console.log('Auth state changed:', event, session?.user?.email, 'User ID:', session?.user?.id?.substring(0, 8) + '...' || 'none');
         
         try {
           setSession(session);
           
-          if (session?.user) {
+          if (session?.user?.id) {
             await enrichUserWithProfile(session);
           } else {
+            console.log('No session or user ID, clearing user state');
             setUser(null);
           }
           
@@ -195,17 +196,47 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setError(err);
         }
         
-        // Only set loading to false after initial session check
+        // Only set loading to false after we've processed the auth state
         if (event !== 'INITIAL_SESSION') {
           setIsLoading(false);
         }
       }
     );
 
+    // Then check for existing session
+    const getInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Error getting initial session:', error);
+          setError(error);
+        } else {
+          console.log("Got initial session:", !!session, 'User ID:', session?.user?.id?.substring(0, 8) + '...' || 'none');
+          
+          setSession(session);
+          
+          if (session?.user?.id) {
+            await enrichUserWithProfile(session);
+          } else {
+            setUser(null);
+          }
+        }
+      } catch (error) {
+        console.error('Error in getInitialSession:', error);
+        setError(error);
+      } finally {
+        if (mounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
     // Initialize session
     getInitialSession();
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, []);

@@ -48,9 +48,11 @@ export const useProfile = () => {
   const [error, setError] = useState<any>(null);
 
   useEffect(() => {
+    const userId = user?.id;
     console.log('useProfile: Auth state changed', { 
-      userId: user?.id?.substring(0, 8) + '...' || 'none',
-      authLoading 
+      userId: userId?.substring(0, 8) + '...' || 'none',
+      authLoading,
+      hasUserId: !!userId
     });
 
     if (authLoading) {
@@ -58,23 +60,24 @@ export const useProfile = () => {
       return;
     }
 
-    if (!user?.id) {
+    if (!userId) {
       console.log('useProfile: No user ID, clearing profile');
       setProfile(null);
       setIsLoading(false);
+      setError(null);
       return;
     }
 
     const fetchProfile = async () => {
       try {
-        console.log('useProfile: Fetching profile for user:', user.id.substring(0, 8) + '...');
+        console.log('useProfile: Fetching profile for user:', userId.substring(0, 8) + '...');
         setIsLoading(true);
         setError(null);
 
         const { data, error } = await supabase
           .from('profiles')
           .select('*')
-          .eq('id', user.id)
+          .eq('id', userId)
           .single();
 
         if (error) {
@@ -82,7 +85,11 @@ export const useProfile = () => {
           setError(error);
           setProfile(null);
         } else {
-          console.log('useProfile: Profile fetched successfully');
+          console.log('useProfile: Profile fetched successfully', {
+            hasProfile: !!data,
+            profileId: data?.id?.substring(0, 8) + '...',
+            onboardingCompleted: data?.onboarding_completed
+          });
           setProfile(data);
         }
       } catch (err) {
