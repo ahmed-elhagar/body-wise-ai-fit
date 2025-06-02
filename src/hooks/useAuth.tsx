@@ -192,11 +192,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         } catch (err) {
           console.error('Auth state change error:', err);
           setError(err);
-        } finally {
-          // CRITICAL: Always set loading to false after processing
-          if (mounted) {
-            setIsLoading(false);
-          }
+        }
+        
+        // CRITICAL: Always set loading to false after any auth state change
+        if (mounted) {
+          console.log('Setting isLoading to false after auth state change');
+          setIsLoading(false);
         }
       }
     );
@@ -226,6 +227,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       } finally {
         // CRITICAL: Always set loading to false
         if (mounted) {
+          console.log('Setting isLoading to false after initial session check');
           setIsLoading(false);
         }
       }
