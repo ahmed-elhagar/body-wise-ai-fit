@@ -1,117 +1,78 @@
 
+import { useAuth } from './useAuth';
 import { useMemo } from 'react';
-import { useProfile } from './useProfile';
-import { useLanguage } from '@/contexts/LanguageContext';
 
-export interface NutritionContext {
+interface NutritionContext {
   isPregnant: boolean;
-  pregnancyTrimester?: number;
   isBreastfeeding: boolean;
-  breastfeedingLevel?: string;
   isMuslimFasting: boolean;
+  pregnancyTrimester?: number;
+  breastfeedingLevel?: string;
   fastingType?: string;
-  hasHealthConditions: boolean;
-  healthConditions: string[];
   extraCalories: number;
-  needsHydrationReminders: boolean;
-  specialMealTiming: boolean;
-  nutritionPriorities: string[];
+}
+
+interface MealPlanContext {
+  nutritionContext: NutritionContext;
+  adjustedCalories: number;
+  specialInstructions: string[];
 }
 
 export const useLifePhaseNutrition = () => {
-  const { profile } = useProfile();
-  const { language } = useLanguage();
+  const { user } = useAuth();
 
   const nutritionContext = useMemo((): NutritionContext => {
-    if (!profile) {
-      return {
-        isPregnant: false,
-        isBreastfeeding: false,
-        isMuslimFasting: false,
-        hasHealthConditions: false,
-        healthConditions: [],
-        extraCalories: 0,
-        needsHydrationReminders: false,
-        specialMealTiming: false,
-        nutritionPriorities: []
-      };
+    // This would typically come from user profile data
+    // For now, returning default values
+    return {
+      isPregnant: false,
+      isBreastfeeding: false,
+      isMuslimFasting: false,
+      pregnancyTrimester: undefined,
+      breastfeedingLevel: undefined,
+      fastingType: undefined,
+      extraCalories: 0
+    };
+  }, [user]);
+
+  const getMealPlanContext = (): MealPlanContext => {
+    const specialInstructions: string[] = [];
+    let adjustedCalories = 0;
+
+    if (nutritionContext.isPregnant && nutritionContext.pregnancyTrimester) {
+      if (nutritionContext.pregnancyTrimester === 2) {
+        adjustedCalories = 340;
+        specialInstructions.push('Include extra folic acid and calcium');
+      } else if (nutritionContext.pregnancyTrimester === 3) {
+        adjustedCalories = 450;
+        specialInstructions.push('Focus on iron and protein intake');
+      }
     }
 
-    const isPregnant = !!profile.pregnancy_trimester;
-    const isBreastfeeding = !!profile.breastfeeding_level;
-    const isMuslimFasting = profile.fasting_type === 'ramadan' || profile.fasting_type === 'islamic';
-    const hasHealthConditions = (profile.health_conditions || []).length > 0;
+    if (nutritionContext.isBreastfeeding) {
+      if (nutritionContext.breastfeedingLevel === 'exclusive') {
+        adjustedCalories = 400;
+        specialInstructions.push('Increase fluid intake and healthy fats');
+      } else if (nutritionContext.breastfeedingLevel === 'partial') {
+        adjustedCalories = 250;
+        specialInstructions.push('Maintain balanced nutrition for milk production');
+      }
+    }
 
-    // Calculate extra calories
-    let extraCalories = 0;
-    if (profile.pregnancy_trimester === 2) extraCalories += 340;
-    if (profile.pregnancy_trimester === 3) extraCalories += 450;
-    if (profile.breastfeeding_level === 'exclusive') extraCalories += 400;
-    if (profile.breastfeeding_level === 'partial') extraCalories += 250;
-
-    // Determine nutrition priorities
-    const nutritionPriorities: string[] = [];
-    if (isPregnant) nutritionPriorities.push('folic_acid', 'iron', 'calcium');
-    if (isBreastfeeding) nutritionPriorities.push('omega3', 'vitamin_d', 'protein');
-    if (isMuslimFasting) nutritionPriorities.push('hydration', 'complex_carbs', 'protein');
-    if (hasHealthConditions) nutritionPriorities.push('fiber', 'low_sodium', 'antioxidants');
+    if (nutritionContext.isMuslimFasting) {
+      specialInstructions.push('Plan meals for pre-dawn (Suhoor) and sunset (Iftar)');
+      specialInstructions.push('Focus on hydrating foods and complex carbohydrates');
+    }
 
     return {
-      isPregnant,
-      pregnancyTrimester: profile.pregnancy_trimester,
-      isBreastfeeding,
-      breastfeedingLevel: profile.breastfeeding_level,
-      isMuslimFasting,
-      fastingType: profile.fasting_type,
-      hasHealthConditions,
-      healthConditions: profile.health_conditions || [],
-      extraCalories,
-      needsHydrationReminders: isBreastfeeding || isMuslimFasting,
-      specialMealTiming: isMuslimFasting,
-      nutritionPriorities
+      nutritionContext,
+      adjustedCalories,
+      specialInstructions
     };
-  }, [profile]);
-
-  const getMealPlanContext = () => ({
-    nutritionContext,
-    language,
-    adjustedCalories: nutritionContext.extraCalories,
-    specialInstructions: generateSpecialInstructions()
-  });
-
-  const generateSpecialInstructions = (): string[] => {
-    const instructions: string[] = [];
-    
-    if (nutritionContext.isPregnant) {
-      instructions.push(
-        language === 'ar' 
-          ? 'تجنب الأسماك عالية الزئبق والطعام النيء'
-          : 'Avoid high-mercury fish and raw foods'
-      );
-    }
-    
-    if (nutritionContext.isBreastfeeding) {
-      instructions.push(
-        language === 'ar'
-          ? 'زيادة السوائل والأطعمة الغنية بأوميغا 3'
-          : 'Increase fluids and omega-3 rich foods'
-      );
-    }
-    
-    if (nutritionContext.isMuslimFasting) {
-      instructions.push(
-        language === 'ar'
-          ? 'وجبات السحور والإفطار مع التركيز على الترطيب'
-          : 'Suhoor and Iftar meals with focus on hydration'
-      );
-    }
-
-    return instructions;
   };
 
   return {
     nutritionContext,
-    getMealPlanContext,
-    generateSpecialInstructions
+    getMealPlanContext
   };
 };
