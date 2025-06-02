@@ -126,8 +126,8 @@ export const MealPlanContainer = () => {
   };
 
   const handleShuffleMeals = async () => {
-    if (weeklyPlan?.weeklyPlan?.id) {
-      const success = await shuffleMeals(weeklyPlan.weeklyPlan.id);
+    if (currentWeekPlan?.weeklyPlan?.id) {
+      const success = await shuffleMeals(currentWeekPlan.weeklyPlan.id);
       if (success) {
         window.location.reload();
       }
