@@ -1,5 +1,5 @@
 
-import MealPlanPage from "@/components/meal-plan/MealPlanPage";
+import { MealPlanPage } from "@/features/meal-plan";
 
 const MealPlan = () => {
   return <MealPlanPage />;
