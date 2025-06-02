@@ -1,4 +1,3 @@
-
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useAuth } from '@/hooks/useAuth';
@@ -46,7 +45,8 @@ describe('useSubscription', () => {
       signUp: vi.fn(),
       signOut: vi.fn(),
       clearError: vi.fn(),
-      retryAuth: vi.fn()
+      retryAuth: vi.fn(),
+      forceLogout: vi.fn() // Added missing forceLogout method
     });
   });
 
