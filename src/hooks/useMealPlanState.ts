@@ -17,13 +17,10 @@ export const useMealPlanState = () => {
     // Core state
     ...coreState,
     
-    // Dialog state
+    // Dialog state - ensure all properties are included
     ...dialogsState,
     
     // AI actions
-    ...aiActions,
-    
-    // Ensure setDialogs is available for shopping list dialog
-    setDialogs: dialogsState.setDialogs
+    ...aiActions
   };
 };
