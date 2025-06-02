@@ -46,6 +46,20 @@ export const fetchMealPlanData = async (
     dailyMealsCount: dailyMeals?.length || 0
   });
 
+  // Helper function to safely parse JSON data
+  const safeJsonParse = (value: any, fallback: any = []) => {
+    if (!value) return fallback;
+    if (Array.isArray(value)) return value;
+    if (typeof value === 'string') {
+      try {
+        return JSON.parse(value);
+      } catch {
+        return fallback;
+      }
+    }
+    return fallback;
+  };
+
   // Process and map the data to match our types
   const processedWeeklyPlan = {
     id: weeklyPlan.id,
@@ -72,17 +86,25 @@ export const fetchMealPlanData = async (
     protein: meal.protein || 0,
     carbs: meal.carbs || 0,
     fat: meal.fat || 0,
-    fiber: meal.fiber,
-    sugar: meal.sugar,
+    fiber: meal.fiber || 0, // Provide default value if missing
+    sugar: meal.sugar || 0, // Provide default value if missing
     prep_time: meal.prep_time || 0,
     cook_time: meal.cook_time || 0,
     servings: meal.servings || 1,
     youtube_search_term: meal.youtube_search_term,
     image_url: meal.image_url,
     recipe_fetched: meal.recipe_fetched || false,
-    ingredients: Array.isArray(meal.ingredients) ? meal.ingredients : [],
-    instructions: Array.isArray(meal.instructions) ? meal.instructions : [],
-    alternatives: Array.isArray(meal.alternatives) ? meal.alternatives : []
+    ingredients: safeJsonParse(meal.ingredients, []).map((ing: any) => ({
+      name: typeof ing === 'string' ? ing : ing.name || 'Unknown ingredient',
+      quantity: typeof ing === 'string' ? '1' : ing.quantity || '1',
+      unit: typeof ing === 'string' ? 'piece' : ing.unit || 'piece'
+    })),
+    instructions: safeJsonParse(meal.instructions, []).map((inst: any) => 
+      typeof inst === 'string' ? inst : String(inst)
+    ),
+    alternatives: safeJsonParse(meal.alternatives, []).map((alt: any) => 
+      typeof alt === 'string' ? alt : String(alt)
+    )
   }));
 
   return {
