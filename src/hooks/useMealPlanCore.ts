@@ -71,7 +71,8 @@ export const useMealPlanCore = () => {
     dataLoading,
     isLoading,
     isError,
-    weekOffset: navigation.currentWeekOffset
+    weekOffset: navigation.currentWeekOffset,
+    calculationsKeys: Object.keys(calculations)
   });
 
   // Simplified refetch
@@ -100,12 +101,21 @@ export const useMealPlanCore = () => {
     refetch();
   }, [queryClient, user?.id, navigation.currentWeekOffset, refetch]);
 
-  return {
+  // Combine all state explicitly
+  const coreState = {
     // Navigation state
-    ...navigation,
+    currentWeekOffset: navigation.currentWeekOffset,
+    setCurrentWeekOffset: navigation.setCurrentWeekOffset,
+    selectedDayNumber: navigation.selectedDayNumber,
+    setSelectedDayNumber: navigation.setSelectedDayNumber,
+    weekStartDate: navigation.weekStartDate,
     
-    // Calculations - include all calculation properties
-    ...calculations,
+    // Calculations - spread all calculation properties explicitly
+    dailyMeals: calculations.dailyMeals,
+    todaysMeals: calculations.todaysMeals,
+    totalCalories: calculations.totalCalories,
+    totalProtein: calculations.totalProtein,
+    targetDayCalories: calculations.targetDayCalories,
     
     // Data
     currentWeekPlan,
@@ -132,4 +142,8 @@ export const useMealPlanCore = () => {
     language,
     authLoading
   };
+
+  console.log('🔍 useMealPlanCore final state keys:', Object.keys(coreState));
+
+  return coreState;
 };

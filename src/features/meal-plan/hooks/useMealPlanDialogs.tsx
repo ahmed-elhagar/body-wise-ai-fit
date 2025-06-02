@@ -19,32 +19,7 @@ export const useMealPlanDialogs = () => {
     mealTypes: "breakfast,lunch,dinner"
   });
 
-  // Create a setDialogs function for backward compatibility
-  const setDialogs = (updater: any) => {
-    if (typeof updater === 'function') {
-      const newState = updater({
-        showAIDialog,
-        showRecipeDialog,
-        showExchangeDialog,
-        showAddSnackDialog,
-        showShoppingListDialog,
-        selectedMeal,
-        selectedMealIndex,
-        aiPreferences
-      });
-      
-      setShowAIDialog(newState.showAIDialog);
-      setShowRecipeDialog(newState.showRecipeDialog);
-      setShowExchangeDialog(newState.showExchangeDialog);
-      setShowAddSnackDialog(newState.showAddSnackDialog);
-      setShowShoppingListDialog(newState.showShoppingListDialog);
-      setSelectedMeal(newState.selectedMeal);
-      setSelectedMealIndex(newState.selectedMealIndex);
-      setAiPreferences(newState.aiPreferences);
-    }
-  };
-
-  // Dialog actions
+  // Dialog action methods
   const openAIDialog = () => setShowAIDialog(true);
   const closeAIDialog = () => setShowAIDialog(false);
   
@@ -81,6 +56,31 @@ export const useMealPlanDialogs = () => {
 
   const handleAddSnack = () => setShowAddSnackDialog(true);
 
+  // Backward compatibility setDialogs function
+  const setDialogs = (updater: any) => {
+    if (typeof updater === 'function') {
+      const newState = updater({
+        showAIDialog,
+        showRecipeDialog,
+        showExchangeDialog,
+        showAddSnackDialog,
+        showShoppingListDialog,
+        selectedMeal,
+        selectedMealIndex,
+        aiPreferences
+      });
+      
+      setShowAIDialog(newState.showAIDialog);
+      setShowRecipeDialog(newState.showRecipeDialog);
+      setShowExchangeDialog(newState.showExchangeDialog);
+      setShowAddSnackDialog(newState.showAddSnackDialog);
+      setShowShoppingListDialog(newState.showShoppingListDialog);
+      setSelectedMeal(newState.selectedMeal);
+      setSelectedMealIndex(newState.selectedMealIndex);
+      setAiPreferences(newState.aiPreferences);
+    }
+  };
+
   return {
     // Dialog states
     showAIDialog,
@@ -100,10 +100,7 @@ export const useMealPlanDialogs = () => {
     aiPreferences,
     setAiPreferences,
     
-    // Backward compatibility
-    setDialogs,
-    
-    // Actions
+    // Action methods
     openAIDialog,
     closeAIDialog,
     openRecipeDialog,
@@ -115,6 +112,9 @@ export const useMealPlanDialogs = () => {
     openShoppingListDialog,
     closeShoppingListDialog,
     updateAIPreferences,
-    handleAddSnack
+    handleAddSnack,
+    
+    // Backward compatibility
+    setDialogs
   };
 };

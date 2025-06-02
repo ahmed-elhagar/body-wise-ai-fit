@@ -40,6 +40,17 @@ export const useMealPlanCalculations = (
   // Target calories (this could be user-specific in the future)
   const targetDayCalories = 2000;
 
+  console.log('🔍 useMealPlanCalculations:', {
+    hasDailyMeals: !!dailyMeals,
+    dailyMealsCount: dailyMeals?.length || 0,
+    hasTodaysMeals: !!todaysMeals,
+    todaysMealsCount: todaysMeals?.length || 0,
+    totalCalories,
+    totalProtein,
+    targetDayCalories,
+    selectedDayNumber
+  });
+
   return {
     dailyMeals,
     todaysMeals,
