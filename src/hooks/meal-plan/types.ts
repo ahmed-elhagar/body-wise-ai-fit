@@ -7,45 +7,60 @@ export interface MealIngredient {
 
 export interface DailyMeal {
   id: string;
+  weekly_plan_id: string;
+  day_number: number;
+  meal_type: 'breakfast' | 'lunch' | 'dinner' | 'snack1' | 'snack2';
   name: string;
-  meal_type: string;
-  calories?: number;
-  protein?: number;
-  carbs?: number;
-  fat?: number;
-  ingredients?: MealIngredient[];
-  instructions?: string[];
-  prep_time?: number;
-  cook_time?: number;
-  servings?: number;
-  image_url?: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  fiber?: number;
+  sugar?: number;
+  prep_time: number;
+  cook_time: number;
+  servings: number;
   youtube_search_term?: string;
+  image_url?: string;
+  recipe_fetched: boolean;
+  ingredients: MealIngredient[];
+  instructions: string[];
+  alternatives: string[];
 }
 
 export interface WeeklyMealPlan {
-  [day: string]: DailyMeal[];
+  id: string;
+  user_id: string;
+  week_start_date: string;
+  total_calories: number;
+  total_protein: number;
+  total_carbs: number;
+  total_fat: number;
+  preferences: any;
+  created_at: string;
+  updated_at: string;
+  life_phase_context?: any;
 }
 
 export interface MealPlanFetchResult {
-  success: boolean;
   weeklyPlan: WeeklyMealPlan;
-  totalCalories: number;
-  totalProtein: number;
-  error?: string;
+  dailyMeals: DailyMeal[];
 }
 
 export interface MealPlanPreferences {
-  dietaryRestrictions?: string[];
-  allergies?: string[];
-  cuisinePreferences?: string[];
-  calorieTarget?: number;
-  proteinTarget?: number;
+  duration: string;
+  cuisine: string;
+  maxPrepTime: string;
+  includeSnacks: boolean;
+  mealTypes: string;
 }
 
 export interface AddSnackDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSnackGenerated: () => void;
-  currentCalories: number;
-  targetCalories: number;
+  selectedDay: number;
+  weeklyPlanId?: string;
+  onSnackAdded: () => void;
+  currentDayCalories: number;
+  targetDayCalories: number;
 }

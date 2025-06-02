@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -32,6 +31,7 @@ const MealExchangeDialog = ({ isOpen, onClose, currentMeal, onExchange }: MealEx
     const mealForHook = {
       id: currentMeal.id,
       type: currentMeal.meal_type,
+      meal_type: currentMeal.meal_type,
       time: "12:00",
       name: currentMeal.name,
       calories: currentMeal.calories || 0,
@@ -57,6 +57,7 @@ const MealExchangeDialog = ({ isOpen, onClose, currentMeal, onExchange }: MealEx
     const mealForHook = {
       id: currentMeal.id,
       type: currentMeal.meal_type,
+      meal_type: currentMeal.meal_type,
       time: "12:00",
       name: currentMeal.name,
       calories: currentMeal.calories || 0,

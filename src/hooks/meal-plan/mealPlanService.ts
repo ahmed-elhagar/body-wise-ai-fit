@@ -59,8 +59,9 @@ export const fetchMealPlanData = async (userId: string, weekStartDateStr: string
       total_protein: weeklyPlan.total_protein || 0,
       total_carbs: weeklyPlan.total_carbs || 0,
       total_fat: weeklyPlan.total_fat || 0,
-      generation_prompt: weeklyPlan.generation_prompt,
+      preferences: weeklyPlan.generation_prompt || {},
       created_at: weeklyPlan.created_at,
+      updated_at: weeklyPlan.created_at,
       life_phase_context: weeklyPlan.life_phase_context
     } as WeeklyMealPlan,
     dailyMeals: processedMeals
