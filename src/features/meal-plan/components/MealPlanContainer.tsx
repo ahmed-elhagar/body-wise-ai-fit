@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useMealPlanPage } from '@/hooks/useMealPlanPage';
 import { DayOverview } from './DayOverview';
@@ -108,7 +107,7 @@ export const MealPlanContainer = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 space-y-4">
+    <div className="container mx-auto px-4 py-4 space-y-4">
       {/* Main Content */}
       {currentWeekPlan?.weeklyPlan ? (
         <DayOverview
@@ -126,6 +125,8 @@ export const MealPlanContainer = () => {
           currentWeekOffset={currentWeekOffset}
           setCurrentWeekOffset={setCurrentWeekOffset}
           setSelectedDayNumber={setSelectedDayNumber}
+          onGenerateAI={openAIDialog}
+          isGenerating={isGenerating}
         />
       ) : (
         <EmptyWeekState

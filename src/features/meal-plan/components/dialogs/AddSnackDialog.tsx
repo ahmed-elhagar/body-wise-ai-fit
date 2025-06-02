@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -146,10 +145,10 @@ export const AddSnackDialog = ({
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* Calorie Info */}
           <div className={`flex items-center gap-2 p-3 bg-blue-50 rounded-lg ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <Flame className="w-5 h-5 text-orange-500" />
+            <Flame className="w-4 h-4 text-orange-500" />
             <span className="text-sm font-medium text-blue-800">
               {t('mealPlan.addSnack.caloriesRemaining') || 'Remaining calories for today'}: 
               <span className="font-bold ml-1">{remainingCalories}</span>
@@ -169,17 +168,17 @@ export const AddSnackDialog = ({
           ) : (
             <>
               {/* AI Generated Snack Section */}
-              <div className="space-y-4 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
-                <h3 className="font-semibold flex items-center gap-2">
+              <div className="space-y-3 p-3 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
+                <h3 className="font-medium flex items-center gap-2 text-sm">
                   <Sparkles className="w-4 h-4 text-green-600" />
                   {t('mealPlan.addSnack.aiGenerated') || 'AI Generated Snack'}
                 </h3>
                 
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <div>
-                    <Label htmlFor="snack-type">{t('mealPlan.addSnack.snackType') || 'Snack Type'}</Label>
+                    <Label htmlFor="snack-type" className="text-xs">{t('mealPlan.addSnack.snackType') || 'Snack Type'}</Label>
                     <Select value={snackType} onValueChange={setSnackType}>
-                      <SelectTrigger>
+                      <SelectTrigger className="h-8">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -192,96 +191,77 @@ export const AddSnackDialog = ({
                   </div>
 
                   <div>
-                    <Label htmlFor="custom-request">{t('mealPlan.addSnack.customRequest') || 'Custom Request (Optional)'}</Label>
+                    <Label htmlFor="custom-request" className="text-xs">{t('mealPlan.addSnack.customRequest') || 'Custom Request (Optional)'}</Label>
                     <Input
                       id="custom-request"
-                      placeholder={t('mealPlan.addSnack.customRequestPlaceholder') || 'e.g., nuts and fruits, low carb, quick prep...'}
+                      placeholder={t('mealPlan.addSnack.customRequestPlaceholder') || 'e.g., nuts and fruits, low carb...'}
                       value={customRequest}
                       onChange={(e) => setCustomRequest(e.target.value)}
+                      className="h-8 text-sm"
                     />
                   </div>
 
                   <Button 
                     onClick={handleGenerateAISnack} 
-                    className={`w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 ${isRTL ? 'flex-row-reverse' : ''}`}
+                    className={`w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 h-8 text-sm ${isRTL ? 'flex-row-reverse' : ''}`}
                     disabled={isGenerating || remainingCalories <= 0}
                   >
-                    <Sparkles className={`w-4 h-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+                    <Sparkles className={`w-3 h-3 ${isRTL ? 'ml-2' : 'mr-2'}`} />
                     {t('mealPlan.addSnack.generateAI') || 'Generate AI Snack'}
                   </Button>
                 </div>
               </div>
 
               {/* Custom Snack Section */}
-              <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <h3 className="font-semibold flex items-center gap-2">
+              <div className="space-y-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <h3 className="font-medium flex items-center gap-2 text-sm">
                   <Plus className="w-4 h-4 text-gray-600" />
                   {t('mealPlan.addSnack.customSnack') || 'Custom Snack'}
                 </h3>
                 
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <div>
-                    <Label htmlFor="snack-name">{t('mealPlan.addSnack.snackName') || 'Snack Name'}</Label>
+                    <Label htmlFor="snack-name" className="text-xs">{t('mealPlan.addSnack.snackName') || 'Snack Name'}</Label>
                     <Input
                       id="snack-name"
                       value={customSnack.name}
                       onChange={(e) => setCustomSnack({...customSnack, name: e.target.value})}
                       placeholder={t('mealPlan.addSnack.snackNamePlaceholder') || 'e.g., Apple with peanut butter'}
+                      className="h-8 text-sm"
                     />
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <Label htmlFor="calories">{t('mealPlan.calories') || 'Calories'}</Label>
+                      <Label htmlFor="calories" className="text-xs">{t('mealPlan.calories') || 'Calories'}</Label>
                       <Input
                         id="calories"
                         type="number"
                         value={customSnack.calories}
                         onChange={(e) => setCustomSnack({...customSnack, calories: e.target.value})}
                         placeholder="200"
+                        className="h-8 text-sm"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="protein">{t('mealPlan.protein') || 'Protein'} (g)</Label>
+                      <Label htmlFor="protein" className="text-xs">{t('mealPlan.protein') || 'Protein'} (g)</Label>
                       <Input
                         id="protein"
                         type="number"
                         value={customSnack.protein}
                         onChange={(e) => setCustomSnack({...customSnack, protein: e.target.value})}
                         placeholder="5"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label htmlFor="carbs">{t('mealPlan.carbs') || 'Carbs'} (g)</Label>
-                      <Input
-                        id="carbs"
-                        type="number"
-                        value={customSnack.carbs}
-                        onChange={(e) => setCustomSnack({...customSnack, carbs: e.target.value})}
-                        placeholder="15"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="fat">{t('mealPlan.fat') || 'Fat'} (g)</Label>
-                      <Input
-                        id="fat"
-                        type="number"
-                        value={customSnack.fat}
-                        onChange={(e) => setCustomSnack({...customSnack, fat: e.target.value})}
-                        placeholder="8"
+                        className="h-8 text-sm"
                       />
                     </div>
                   </div>
                   
                   <Button 
                     onClick={handleAddCustomSnack}
-                    className={`w-full ${isRTL ? 'flex-row-reverse' : ''}`}
+                    className={`w-full h-8 text-sm ${isRTL ? 'flex-row-reverse' : ''}`}
                     variant="outline"
                   >
-                    <Plus className={`w-4 h-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+                    <Plus className={`w-3 h-3 ${isRTL ? 'ml-2' : 'mr-2'}`} />
                     {t('mealPlan.addSnack.addCustom') || 'Add Custom Snack'}
                   </Button>
                 </div>
@@ -293,7 +273,7 @@ export const AddSnackDialog = ({
           <Button 
             onClick={onClose} 
             variant="outline" 
-            className="w-full"
+            className="w-full h-8 text-sm"
           >
             {t('cancel') || 'Cancel'}
           </Button>
