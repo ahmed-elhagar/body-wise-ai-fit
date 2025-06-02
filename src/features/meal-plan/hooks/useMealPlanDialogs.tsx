@@ -1,14 +1,6 @@
 
 import { useState } from 'react';
-import type { DailyMeal } from '../types';
-
-interface MealPlanPreferences {
-  duration: string;
-  cuisine: string;
-  maxPrepTime: string;
-  includeSnacks: boolean;
-  mealTypes: string;
-}
+import type { DailyMeal, MealPlanPreferences } from '../types';
 
 export const useMealPlanDialogs = () => {
   const [dialogs, setDialogs] = useState({

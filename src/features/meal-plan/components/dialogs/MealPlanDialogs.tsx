@@ -1,23 +1,18 @@
-
 import React from 'react';
-import { AIGenerationDialog } from './AIGenerationDialog';
-import EnhancedAddSnackDialog from '@/components/meal-plan/EnhancedAddSnackDialog';
-import MealExchangeDialog from '@/components/MealExchangeDialog';
-import { EnhancedRecipeDialog } from '@/components/meal-plan/EnhancedRecipeDialog';
-import ShoppingListDialog from '@/components/ShoppingListDialog';
-import { useEnhancedShoppingList } from '@/hooks/useEnhancedShoppingList';
-import type { DailyMeal, MealPlanPreferences } from '@/types/mealPlan';
+import MealRecipeDialog from "@/components/MealRecipeDialog";
+import MealExchangeDialog from "@/components/meal-plan/MealExchangeDialog";
+import EnhancedAddSnackDialog from "@/components/meal-plan/EnhancedAddSnackDialog";
+import MealPlanAIDialog from "../MealPlanAIDialog";
+import EnhancedShoppingListDrawer from "@/components/shopping-list/EnhancedShoppingListDrawer";
+import type { DailyMeal, MealPlanPreferences, MealPlanFetchResult } from '../../types';
 
 interface MealPlanDialogsProps {
-  // AI Dialog
   showAIDialog: boolean;
   onCloseAIDialog: () => void;
   aiPreferences: MealPlanPreferences;
   onGenerateAI: () => Promise<boolean>;
   isGenerating: boolean;
   currentWeekOffset: number;
-  
-  // Add Snack Dialog
   showAddSnackDialog: boolean;
   onCloseAddSnackDialog: () => void;
   selectedDayNumber: number;
@@ -26,31 +21,21 @@ interface MealPlanDialogsProps {
   weeklyPlanId?: string;
   weekStartDate: Date;
   onSnackAdded: () => void;
-  
-  // Exchange Dialog
   showExchangeDialog: boolean;
   onCloseExchangeDialog: () => void;
   selectedMeal: DailyMeal | null;
   onMealExchanged: () => void;
-  
-  // Recipe Dialog
   showRecipeDialog: boolean;
   onCloseRecipeDialog: () => void;
   onRecipeUpdated: () => void;
-  
-  // Shopping List Dialog
   showShoppingListDialog: boolean;
   onCloseShoppingListDialog: () => void;
   enhancedShoppingItems: any[];
   onSendShoppingListEmail: () => Promise<boolean>;
-  
-  // Additional props
-  userCredits: number;
+  userCredits: any;
   hasWeeklyPlan: boolean;
   isEmailLoading: boolean;
-  
-  // Add current week plan data
-  currentWeekPlan?: any;
+  currentWeekPlan: MealPlanFetchResult | null;
 }
 
 export const MealPlanDialogs = ({
@@ -84,53 +69,55 @@ export const MealPlanDialogs = ({
   isEmailLoading,
   currentWeekPlan
 }: MealPlanDialogsProps) => {
-  // Use the actual current week plan data for shopping list
-  const { enhancedShoppingItems: shoppingListData } = useEnhancedShoppingList(currentWeekPlan);
-
   return (
     <>
-      <AIGenerationDialog
+      {/* AI Generation Dialog */}
+      <MealPlanAIDialog
         open={showAIDialog}
-        onClose={onCloseAIDialog}
+        onOpenChange={onCloseAIDialog}
         preferences={aiPreferences}
-        onPreferencesChange={() => {}} // This should be handled by the parent
         onGenerate={onGenerateAI}
         isGenerating={isGenerating}
-        userCredits={userCredits}
-        hasExistingPlan={hasWeeklyPlan}
       />
 
+      {/* Recipe Dialog */}
+      {selectedMeal && (
+        <MealRecipeDialog
+          isOpen={showRecipeDialog}
+          onClose={onCloseRecipeDialog}
+          meal={selectedMeal}
+          onRecipeGenerated={onRecipeUpdated}
+        />
+      )}
+
+      {/* Exchange Dialog */}
+      {selectedMeal && (
+        <MealExchangeDialog
+          isOpen={showExchangeDialog}
+          onClose={onCloseExchangeDialog}
+          currentMeal={selectedMeal}
+          onExchange={onMealExchanged}
+        />
+      )}
+
+      {/* Add Snack Dialog */}
       <EnhancedAddSnackDialog
         isOpen={showAddSnackDialog}
         onClose={onCloseAddSnackDialog}
         selectedDay={selectedDayNumber}
-        currentDayCalories={totalCalories}
-        targetDayCalories={targetDayCalories}
         weeklyPlanId={weeklyPlanId}
         onSnackAdded={onSnackAdded}
+        currentDayCalories={totalCalories}
+        targetDayCalories={targetDayCalories}
       />
 
-      <MealExchangeDialog
-        isOpen={showExchangeDialog}
-        onClose={onCloseExchangeDialog}
-        currentMeal={selectedMeal}
-        onExchange={onMealExchanged}
-      />
-
-      <EnhancedRecipeDialog
-        isOpen={showRecipeDialog}
-        onClose={onCloseRecipeDialog}
-        meal={selectedMeal}
-        onRecipeUpdated={onRecipeUpdated}
-      />
-
-      <ShoppingListDialog
+      {/* Shopping List Dialog */}
+      <EnhancedShoppingListDrawer
         isOpen={showShoppingListDialog}
         onClose={onCloseShoppingListDialog}
-        shoppingItems={shoppingListData}
-        onSendEmail={onSendShoppingListEmail}
-        weekStartDate={weekStartDate}
-        isLoading={isEmailLoading}
+        weeklyPlan={currentWeekPlan}
+        weekId={weeklyPlanId}
+        onShoppingListUpdate={onSnackAdded}
       />
     </>
   );

@@ -5,6 +5,14 @@ import { getWeekStartDate } from '@/utils/mealPlanUtils';
 import { format } from 'date-fns';
 import { fetchMealPlanData } from '@/features/meal-plan/services/mealPlanService';
 
+// Export types from the main types file
+export type { 
+  MealIngredient, 
+  DailyMeal, 
+  WeeklyMealPlan, 
+  MealPlanFetchResult 
+} from '@/features/meal-plan/types';
+
 export const useMealPlanData = (weekOffset: number = 0) => {
   const { user } = useAuth();
 
