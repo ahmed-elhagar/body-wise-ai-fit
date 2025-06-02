@@ -3,14 +3,14 @@ import React from 'react';
 import { Card } from './card';
 import { Loader2 } from 'lucide-react';
 
-export type LoadingType = 'general' | 'meal-plan' | 'generation' | 'recipe';
+export type LoadingType = 'general' | 'meal-plan' | 'generation' | 'recipe' | 'exercise' | 'analysis';
 
 interface EnhancedLoadingIndicatorProps {
   status: 'loading' | 'success' | 'error';
   type: LoadingType;
   message?: string;
   description?: string;
-  variant?: 'card' | 'inline' | 'overlay' | 'default';
+  variant?: 'card' | 'inline' | 'overlay';
   size?: 'sm' | 'md' | 'lg';
   showSteps?: boolean;
   customSteps?: string[];

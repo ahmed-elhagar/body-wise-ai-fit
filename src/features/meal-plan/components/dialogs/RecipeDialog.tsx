@@ -8,7 +8,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useEnhancedMealRecipe } from '@/hooks/useEnhancedMealRecipe';
 import { toast } from 'sonner';
 import EnhancedLoadingIndicator from '@/components/ui/enhanced-loading-indicator';
-import type { DailyMeal } from '@/features/meal-plan/types';
+import type { DailyMeal } from '../../types';
 
 interface RecipeDialogProps {
   isOpen: boolean;
@@ -38,6 +38,7 @@ export const RecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }: RecipeD
         // Properly convert the database response to our DailyMeal type
         const convertedMeal: DailyMeal = {
           ...currentMeal,
+          meal_type: (updatedMeal.meal_type as 'breakfast' | 'lunch' | 'dinner' | 'snack1' | 'snack2') || currentMeal.meal_type,
           ingredients: Array.isArray(updatedMeal.ingredients) 
             ? updatedMeal.ingredients 
             : typeof updatedMeal.ingredients === 'string'
@@ -159,7 +160,7 @@ export const RecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }: RecipeD
               className="absolute top-2 right-2 bg-blue-600 hover:bg-blue-700"
             >
               {isGeneratingImage ? (
-                <EnhancedLoadingIndicator status="loading" size="sm" />
+                <EnhancedLoadingIndicator status="loading" type="general" size="sm" />
               ) : (
                 <>
                   <Sparkles className="w-3 h-3 mr-1" />
@@ -218,7 +219,7 @@ export const RecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }: RecipeD
                 className="bg-purple-600 hover:bg-purple-700"
               >
                 {isGeneratingRecipe ? (
-                  <EnhancedLoadingIndicator status="loading" size="sm" />
+                  <EnhancedLoadingIndicator status="loading" type="general" size="sm" />
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4 mr-2" />

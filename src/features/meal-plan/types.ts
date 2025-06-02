@@ -3,6 +3,10 @@ export interface MealIngredient {
   name: string;
   quantity: string;
   unit: string;
+  calories?: number;
+  protein?: number;
+  carbs?: number;
+  fat?: number;
 }
 
 export interface DailyMeal {
@@ -16,6 +20,7 @@ export interface DailyMeal {
   carbs: number;
   fat: number;
   fiber?: number;
+  sugar?: number;
   prep_time: number;
   cook_time: number;
   servings: number;
