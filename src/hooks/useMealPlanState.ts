@@ -3,7 +3,6 @@ import { useCallback, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useMealPlanNavigation } from "./useMealPlanNavigation";
 import { useMealPlanCalculations } from "./useMealPlanCalculations";
-import { useMealPlanHandlers } from "./useMealPlanHandlers";
 import { useMealPlanData } from "./useMealPlanData";
 import { useEnhancedMealPlan } from "./useEnhancedMealPlan";
 import { useCreditSystem } from './useCreditSystem';
@@ -175,27 +174,6 @@ export const useMealPlanState = () => {
       console.error('❌ Manual refetch failed:', error);
     }
   }, [navigation.currentWeekOffset, refetchMealPlan]);
-
-  // Enhanced logging for debugging
-  console.log('🔍 UNIFIED MEAL PLAN STATE:', {
-    currentWeekOffset: navigation.currentWeekOffset,
-    selectedDayNumber: navigation.selectedDayNumber,
-    hasWeeklyPlan: !!currentWeekPlan?.weeklyPlan,
-    hasDailyMeals: !!currentWeekPlan?.dailyMeals,
-    dailyMealsCount: currentWeekPlan?.dailyMeals?.length || 0,
-    isLoading,
-    isGenerating,
-    userCredits,
-    error: error?.message,
-    weekStartDate: navigation.weekStartDate.toDateString(),
-    nutritionContext,
-    dialogStates: {
-      showAIDialog: dialogs.showAIDialog,
-      showRecipeDialog: dialogs.showRecipeDialog,
-      showExchangeDialog: dialogs.showExchangeDialog,
-      showAddSnackDialog: dialogs.showAddSnackDialog
-    }
-  });
 
   return {
     // Navigation state

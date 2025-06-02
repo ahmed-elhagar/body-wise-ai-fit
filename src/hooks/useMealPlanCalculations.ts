@@ -1,79 +1,50 @@
 
 import { useMemo } from 'react';
-import type { DailyMeal } from "@/hooks/useMealPlanData";
+import type { MealPlanFetchResult, DailyMeal } from '@/features/meal-plan/types';
 
 export const useMealPlanCalculations = (
-  mealPlanData: any,
+  currentWeekPlan: MealPlanFetchResult | null,
   selectedDayNumber: number
 ) => {
+  // Calculate daily meals for selected day
   const dailyMeals = useMemo(() => {
-    if (!mealPlanData?.dailyMeals) return [];
-    return mealPlanData.dailyMeals.filter(
-      (meal: DailyMeal) => meal.day_number === selectedDayNumber
+    if (!currentWeekPlan?.dailyMeals) return null;
+    return currentWeekPlan.dailyMeals.filter(
+      meal => meal.day_number === selectedDayNumber
     );
-  }, [mealPlanData?.dailyMeals, selectedDayNumber]);
+  }, [currentWeekPlan?.dailyMeals, selectedDayNumber]);
 
+  // Calculate today's meals
   const todaysMeals = useMemo(() => {
     const today = new Date();
     const todayDayNumber = today.getDay() === 6 ? 1 : today.getDay() + 2;
     
-    if (!mealPlanData?.dailyMeals) return [];
-    return mealPlanData.dailyMeals.filter(
-      (meal: DailyMeal) => meal.day_number === todayDayNumber
+    if (!currentWeekPlan?.dailyMeals) return null;
+    return currentWeekPlan.dailyMeals.filter(
+      meal => meal.day_number === todayDayNumber
     );
-  }, [mealPlanData?.dailyMeals]);
+  }, [currentWeekPlan?.dailyMeals]);
 
+  // Calculate total calories for selected day
   const totalCalories = useMemo(() => {
-    return dailyMeals.reduce((sum: number, meal: DailyMeal) => sum + (meal.calories || 0), 0);
+    if (!dailyMeals) return null;
+    return dailyMeals.reduce((total, meal) => total + (meal.calories || 0), 0);
   }, [dailyMeals]);
 
+  // Calculate total protein for selected day
   const totalProtein = useMemo(() => {
-    return dailyMeals.reduce((sum: number, meal: DailyMeal) => sum + (meal.protein || 0), 0);
+    if (!dailyMeals) return null;
+    return dailyMeals.reduce((total, meal) => total + (meal.protein || 0), 0);
   }, [dailyMeals]);
 
-  const targetDayCalories = useMemo(() => {
-    if (!mealPlanData?.weeklyPlan?.total_calories) return 2000;
-    return Math.round(mealPlanData.weeklyPlan.total_calories / 7);
-  }, [mealPlanData?.weeklyPlan?.total_calories]);
-
-  const shoppingItems = useMemo(() => {
-    if (!mealPlanData?.dailyMeals) return [];
-    
-    const ingredients: any[] = [];
-    mealPlanData.dailyMeals.forEach((meal: DailyMeal) => {
-      if (meal.ingredients && Array.isArray(meal.ingredients)) {
-        meal.ingredients.forEach((ingredient: any) => {
-          const ingredientName = ingredient?.name || ingredient;
-          if (ingredientName && typeof ingredientName === 'string') {
-            ingredients.push({
-              name: ingredientName,
-              quantity: ingredient.quantity || '1',
-              unit: ingredient.unit || 'piece',
-              category: 'general'
-            });
-          }
-        });
-      }
-    });
-    
-    return ingredients;
-  }, [mealPlanData?.dailyMeals]);
-
-  console.log('🧮 MEAL PLAN CALCULATIONS:', {
-    selectedDayNumber,
-    dailyMealsCount: dailyMeals.length,
-    todaysMealsCount: todaysMeals.length,
-    totalCalories,
-    totalProtein,
-    targetDayCalories
-  });
+  // Target calories (this could be user-specific in the future)
+  const targetDayCalories = 2000;
 
   return {
     dailyMeals,
     todaysMeals,
     totalCalories,
     totalProtein,
-    targetDayCalories,
-    shoppingItems
+    targetDayCalories
   };
 };

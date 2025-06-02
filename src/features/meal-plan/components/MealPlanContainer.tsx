@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useMealPlanPage } from '@/hooks/useMealPlanPage';
+import { useMealPlanState } from '@/hooks/useMealPlanState';
 import { MealPlanPageHeader } from './MealPlanPageHeader';
 import { MealPlanNavigation } from './MealPlanNavigation';
 import { MealPlanContent } from './MealPlanContent';
@@ -13,7 +13,7 @@ export const MealPlanContainer = () => {
   const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
   const { shuffleMeals, isShuffling } = useEnhancedMealShuffle();
   
-  const mealPlanState = useMealPlanPage();
+  const mealPlanState = useMealPlanState();
   
   // Enhanced shopping list functionality
   const { enhancedShoppingItems, sendShoppingListEmail } = useEnhancedShoppingList(mealPlanState.currentWeekPlan);
@@ -122,8 +122,8 @@ export const MealPlanContainer = () => {
         showAddSnackDialog={mealPlanState.showAddSnackDialog}
         onCloseAddSnackDialog={mealPlanState.closeAddSnackDialog}
         selectedDayNumber={mealPlanState.selectedDayNumber}
-        totalCalories={mealPlanState.totalCalories}
-        targetDayCalories={mealPlanState.targetDayCalories}
+        totalCalories={mealPlanState.totalCalories || 0}
+        targetDayCalories={mealPlanState.targetDayCalories || 2000}
         weeklyPlanId={mealPlanState.currentWeekPlan?.weeklyPlan?.id}
         weekStartDate={mealPlanState.weekStartDate}
         onSnackAdded={mealPlanState.refetch}
