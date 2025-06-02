@@ -48,19 +48,20 @@ export const useProfile = () => {
   const [error, setError] = useState<any>(null);
 
   useEffect(() => {
-    const userId = user?.id;
     console.log('useProfile: Auth state changed', { 
-      userId: userId?.substring(0, 8) + '...' || 'none',
-      authLoading,
-      hasUserId: !!userId
+      hasUser: !!user,
+      userId: user?.id?.substring(0, 8) + '...' || 'none',
+      authLoading
     });
 
+    // If auth is still loading, wait
     if (authLoading) {
       console.log('useProfile: Auth still loading, waiting...');
       return;
     }
 
-    if (!userId) {
+    // If no user after auth is done loading, clear state
+    if (!user?.id) {
       console.log('useProfile: No user ID, clearing profile');
       setProfile(null);
       setIsLoading(false);
@@ -68,16 +69,17 @@ export const useProfile = () => {
       return;
     }
 
+    // User exists and auth is done loading, fetch profile
     const fetchProfile = async () => {
       try {
-        console.log('useProfile: Fetching profile for user:', userId.substring(0, 8) + '...');
+        console.log('useProfile: Fetching profile for user:', user.id.substring(0, 8) + '...');
         setIsLoading(true);
         setError(null);
 
         const { data, error } = await supabase
           .from('profiles')
           .select('*')
-          .eq('id', userId)
+          .eq('id', user.id)
           .single();
 
         if (error) {
@@ -102,7 +104,7 @@ export const useProfile = () => {
     };
 
     fetchProfile();
-  }, [user?.id, authLoading]);
+  }, [user?.id, authLoading]); // Only depend on user.id and authLoading
 
   const updateProfile = async (updates: Partial<Profile>) => {
     if (!user?.id) {

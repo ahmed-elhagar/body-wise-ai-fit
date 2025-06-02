@@ -1,3 +1,4 @@
+
 import { useState, useEffect, createContext, useContext } from 'react';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -96,7 +97,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       console.log('Retry auth - session retrieved:', !!session, session?.user?.id?.substring(0, 8) + '...');
       
-      if (session?.user) {
+      if (session?.user?.id) {
+        setSession(session);
         await enrichUserWithProfile(session);
       } else {
         setUser(null);
@@ -111,14 +113,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  // Enhanced user enrichment with better error handling and proper ID extraction
+  // Fixed user enrichment to ensure user always has ID first
   const enrichUserWithProfile = async (session: Session) => {
     try {
       console.log('Enriching user with profile for ID:', session.user.id?.substring(0, 8) + '...');
       
-      // First, create a basic user object with the guaranteed session data
-      const basicUser: AuthUser = {
-        id: session.user.id, // This is the critical fix - ensure ID is from session.user.id
+      // CRITICAL: Always create user with ID first, regardless of profile fetch success
+      const baseUser: AuthUser = {
+        id: session.user.id,
         email: session.user.email,
         role: session.user.user_metadata?.role || 'normal',
         first_name: session.user.user_metadata?.first_name,
@@ -126,9 +128,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         user_metadata: session.user.user_metadata
       };
 
-      console.log('Basic user created with ID:', basicUser.id?.substring(0, 8) + '...');
+      // Set the base user immediately so components have access to user.id
+      setUser(baseUser);
+      console.log('Base user set with ID:', baseUser.id?.substring(0, 8) + '...');
       
-      // Try to enrich with profile data, but don't block if it fails
+      // Try to enrich with profile data asynchronously
       try {
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
@@ -137,26 +141,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           .single();
         
         if (profile && !profileError) {
-          console.log('Profile data fetched successfully, role:', profile.role);
+          console.log('Profile data fetched successfully, updating user');
           const enrichedUser: AuthUser = {
-            ...basicUser,
-            role: profile.role || basicUser.role,
-            first_name: profile.first_name || basicUser.first_name,
-            last_name: profile.last_name || basicUser.last_name,
+            ...baseUser,
+            role: profile.role || baseUser.role,
+            first_name: profile.first_name || baseUser.first_name,
+            last_name: profile.last_name || baseUser.last_name,
           };
           setUser(enrichedUser);
         } else {
-          console.log('Using basic user data (profile fetch failed):', profileError?.message);
-          setUser(basicUser);
+          console.log('Profile fetch failed or no data, keeping base user:', profileError?.message);
         }
       } catch (profileErr) {
-        console.warn('Profile enrichment failed, using basic user data:', profileErr);
-        setUser(basicUser);
+        console.warn('Profile enrichment failed, keeping base user:', profileErr);
       }
       
     } catch (err) {
       console.error('User enrichment failed completely:', err);
-      // Even if enrichment fails, we should still set a basic user if we have session data
+      // Even if everything fails, ensure we have a user with ID if session exists
       if (session?.user?.id) {
         setUser({
           id: session.user.id,
@@ -172,7 +174,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     
     let mounted = true;
     
-    // Set up auth state listener first
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!mounted) return;
@@ -180,12 +182,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.log('Auth state changed:', event, session?.user?.email, 'User ID:', session?.user?.id?.substring(0, 8) + '...' || 'none');
         
         try {
-          setSession(session);
-          
           if (session?.user?.id) {
+            // Set session first
+            setSession(session);
+            // Then enrich user (this will set user state)
             await enrichUserWithProfile(session);
           } else {
-            console.log('No session or user ID, clearing user state');
+            console.log('No session or user ID, clearing state');
+            setSession(null);
             setUser(null);
           }
           
@@ -196,14 +200,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setError(err);
         }
         
-        // Only set loading to false after we've processed the auth state
-        if (event !== 'INITIAL_SESSION') {
+        // Set loading to false after processing
+        if (mounted) {
           setIsLoading(false);
         }
       }
     );
 
-    // Then check for existing session
+    // Get initial session
     const getInitialSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
@@ -214,12 +218,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         } else {
           console.log("Got initial session:", !!session, 'User ID:', session?.user?.id?.substring(0, 8) + '...' || 'none');
           
-          setSession(session);
-          
           if (session?.user?.id) {
+            setSession(session);
             await enrichUserWithProfile(session);
           } else {
             setUser(null);
+            setSession(null);
           }
         }
       } catch (error) {
