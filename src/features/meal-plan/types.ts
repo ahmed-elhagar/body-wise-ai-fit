@@ -1,4 +1,3 @@
-
 export interface MealPlanPreferences {
   duration?: string;
   cuisine?: string;
@@ -78,9 +77,10 @@ export interface MealPlanFetchResult {
 export interface AddSnackDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  selectedDay: number;
-  weeklyPlanId?: string;
-  onSnackAdded: () => void;
   currentDayCalories: number;
   targetDayCalories: number;
+  selectedDay: number;
+  weeklyPlanId: string | null;
+  onSnackAdded: () => void;
+  weekStartDate?: Date;
 }

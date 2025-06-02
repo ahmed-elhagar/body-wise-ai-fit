@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useMealPlanPage } from '@/hooks/useMealPlanPage';
 import { DayOverview } from './DayOverview';
@@ -312,6 +311,7 @@ export const MealPlanContainer = () => {
         selectedDay={selectedDayNumber}
         weeklyPlanId={currentWeekPlan?.weeklyPlan?.id}
         onSnackAdded={refetch}
+        weekStartDate={weekStartDate}
       />
 
       <ExchangeDialog
@@ -325,6 +325,7 @@ export const MealPlanContainer = () => {
         isOpen={showRecipeDialog}
         onClose={closeRecipeDialog}
         meal={selectedMeal as DailyMeal | null}
+        onRecipeUpdated={refetch}
       />
 
       <ShoppingListDialog

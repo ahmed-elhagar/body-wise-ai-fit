@@ -22,8 +22,9 @@ export const AddSnackDialog = ({
   targetDayCalories,
   selectedDay,
   weeklyPlanId,
-  onSnackAdded
-}: AddSnackDialogProps) => {
+  onSnackAdded,
+  weekStartDate
+}: AddSnackDialogProps & { weekStartDate: Date }) => {
   const { user } = useAuth();
   const { profile } = useProfile();
   const { t, language, isRTL } = useLanguage();
@@ -37,25 +38,40 @@ export const AddSnackDialog = ({
   const remainingCalories = Math.max(0, targetDayCalories - currentDayCalories);
   const progressPercentage = Math.min(100, (currentDayCalories / targetDayCalories) * 100);
 
+  // Get real date for selected day
+  const getRealDate = (dayNumber: number) => {
+    const date = new Date(weekStartDate);
+    date.setDate(date.getDate() + (dayNumber - 1));
+    return date.toLocaleDateString();
+  };
+
   const handleGenerateAISnack = async () => {
     if (!user || !weeklyPlanId) {
-      toast.error(t('mealPlan.errors.missingData') || 'Missing required data');
+      toast.error('Missing required data');
       return;
     }
 
     if (remainingCalories < 50) {
-      toast.error(t('mealPlan.addSnack.notEnoughCalories') || 'Not enough calories remaining for a snack');
+      toast.error('Not enough calories remaining for a snack');
       return;
     }
 
     setIsGenerating(true);
     
     try {
+      console.log('🚀 Starting AI snack generation with correct payload:', {
+        userProfile: profile,
+        day: selectedDay,
+        calories: Math.min(remainingCalories, 200),
+        weeklyPlanId,
+        language
+      });
+
       const { data, error } = await supabase.functions.invoke('generate-ai-snack', {
         body: {
           userProfile: profile,
-          dayNumber: selectedDay,
-          targetCalories: Math.min(remainingCalories, 200),
+          day: selectedDay,
+          calories: Math.min(remainingCalories, 200),
           weeklyPlanId,
           language
         }
@@ -63,21 +79,22 @@ export const AddSnackDialog = ({
 
       if (error) {
         console.error('Error generating AI snack:', error);
-        toast.error(t('mealPlan.addSnack.failed') || 'Failed to generate snack');
+        toast.error('Failed to generate snack. Please try again.');
         return;
       }
 
       if (data?.success) {
-        toast.success(t('mealPlan.addSnack.success') || 'Snack added successfully!');
+        toast.success('Snack added successfully!');
         onClose();
         await onSnackAdded();
       } else {
-        toast.error(data?.error || t('mealPlan.addSnack.failed') || 'Failed to generate snack');
+        console.error('Generation failed:', data);
+        toast.error(data?.error || 'Failed to generate snack. Please try again.');
       }
       
     } catch (error) {
       console.error('Error generating AI snack:', error);
-      toast.error(t('mealPlan.addSnack.failed') || 'Failed to generate snack');
+      toast.error('Failed to generate snack. Please check your connection and try again.');
     } finally {
       setIsGenerating(false);
     }
@@ -85,12 +102,12 @@ export const AddSnackDialog = ({
 
   const handleAddCustomSnack = async () => {
     if (!customSnack.name || !customSnack.calories) {
-      toast.error(t('mealPlan.addSnack.fillRequired') || 'Please fill in snack name and calories');
+      toast.error('Please fill in snack name and calories');
       return;
     }
 
     if (!weeklyPlanId) {
-      toast.error(t('mealPlan.errors.noMealPlan') || 'No meal plan found');
+      toast.error('No meal plan found');
       return;
     }
 
@@ -105,7 +122,7 @@ export const AddSnackDialog = ({
         carbs: 0,
         fat: 0,
         ingredients: [{ name: customSnack.name, quantity: '1', unit: 'serving' }],
-        instructions: [t('mealPlan.addSnack.enjoyAsSnack') || 'Enjoy as a healthy snack'],
+        instructions: ['Enjoy as a healthy snack'],
         prep_time: 0,
         cook_time: 0,
         servings: 1
@@ -113,13 +130,13 @@ export const AddSnackDialog = ({
 
       if (error) throw error;
 
-      toast.success(t('mealPlan.addSnack.customSuccess') || 'Custom snack added successfully!');
+      toast.success('Custom snack added successfully!');
       setCustomSnack({ name: '', calories: '', protein: '' });
       onClose();
       await onSnackAdded();
     } catch (error) {
       console.error('Error adding custom snack:', error);
-      toast.error(t('mealPlan.addSnack.failed') || 'Failed to add snack');
+      toast.error('Failed to add snack');
     }
   };
 
@@ -131,7 +148,7 @@ export const AddSnackDialog = ({
             <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
               <Plus className="w-4 h-4 text-green-600" />
             </div>
-            {t('mealPlan.addSnack') || 'Add Snack'} - {t('mealPlan.day') || 'Day'} {selectedDay}
+            Add Snack - {getRealDate(selectedDay)}
           </DialogTitle>
         </DialogHeader>
         
@@ -163,7 +180,7 @@ export const AddSnackDialog = ({
             <EnhancedLoadingIndicator
               status="loading"
               type="recipe"
-              message={t('mealPlan.addSnack.generating') || 'Generating AI Snack'}
+              message="Generating AI Snack"
               variant="card"
               size="sm"
             />
