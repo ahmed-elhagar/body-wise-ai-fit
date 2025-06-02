@@ -7,7 +7,10 @@ export const useMealPlanDialogs = () => {
   const [showRecipeDialog, setShowRecipeDialog] = useState(false);
   const [showExchangeDialog, setShowExchangeDialog] = useState(false);
   const [showAddSnackDialog, setShowAddSnackDialog] = useState(false);
+  const [showShoppingListDialog, setShowShoppingListDialog] = useState(false);
+  
   const [selectedMeal, setSelectedMeal] = useState<DailyMeal | null>(null);
+  const [selectedMealIndex, setSelectedMealIndex] = useState(0);
   
   // AI preferences with proper defaults
   const [aiPreferences, setAiPreferences] = useState<MealPlanPreferences>({
@@ -18,46 +21,106 @@ export const useMealPlanDialogs = () => {
     mealTypes: "breakfast,lunch,dinner"
   });
 
+  // Dialog action methods
+  const openAIDialog = () => setShowAIDialog(true);
+  const closeAIDialog = () => setShowAIDialog(false);
+  
   const openRecipeDialog = (meal: DailyMeal) => {
     setSelectedMeal(meal);
     setShowRecipeDialog(true);
   };
-
-  const openExchangeDialog = (meal: DailyMeal) => {
-    setSelectedMeal(meal);
-    setShowExchangeDialog(true);
+  const closeRecipeDialog = () => {
+    setShowRecipeDialog(false);
+    setSelectedMeal(null);
   };
 
-  const openAddSnackDialog = () => {
+  const openExchangeDialog = (meal: DailyMeal, index: number = 0) => {
+    setSelectedMeal(meal);
+    setSelectedMealIndex(index);
+    setShowExchangeDialog(true);
+  };
+  const closeExchangeDialog = () => {
+    setShowExchangeDialog(false);
+    setSelectedMeal(null);
+  };
+
+  const openAddSnackDialog = () => setShowAddSnackDialog(true);
+  const closeAddSnackDialog = () => setShowAddSnackDialog(false);
+
+  const openShoppingListDialog = () => setShowShoppingListDialog(true);
+  const closeShoppingListDialog = () => setShowShoppingListDialog(false);
+
+  const updateAIPreferences = (newPreferences: MealPlanPreferences) => {
+    setAiPreferences(newPreferences);
+  };
+
+  const handleAddSnack = () => {
     setShowAddSnackDialog(true);
   };
 
+  // Unified state setter for backward compatibility
+  const setDialogs = (updater: any) => {
+    if (typeof updater === 'function') {
+      const newState = updater({
+        showAIDialog,
+        showRecipeDialog,
+        showExchangeDialog,
+        showAddSnackDialog,
+        showShoppingListDialog,
+        selectedMeal,
+        selectedMealIndex,
+        aiPreferences
+      });
+      
+      if (newState.showAIDialog !== undefined) setShowAIDialog(newState.showAIDialog);
+      if (newState.showRecipeDialog !== undefined) setShowRecipeDialog(newState.showRecipeDialog);
+      if (newState.showExchangeDialog !== undefined) setShowExchangeDialog(newState.showExchangeDialog);
+      if (newState.showAddSnackDialog !== undefined) setShowAddSnackDialog(newState.showAddSnackDialog);
+      if (newState.showShoppingListDialog !== undefined) setShowShoppingListDialog(newState.showShoppingListDialog);
+      if (newState.selectedMeal !== undefined) setSelectedMeal(newState.selectedMeal);
+      if (newState.selectedMealIndex !== undefined) setSelectedMealIndex(newState.selectedMealIndex);
+      if (newState.aiPreferences !== undefined) setAiPreferences(newState.aiPreferences);
+    }
+  };
+
   return {
-    // AI Dialog state
+    // Dialog states
     showAIDialog,
     setShowAIDialog,
+    showRecipeDialog,
+    setShowRecipeDialog,
+    showExchangeDialog,
+    setShowExchangeDialog,
+    showAddSnackDialog,
+    setShowAddSnackDialog,
+    showShoppingListDialog,
+    setShowShoppingListDialog,
+    
+    // Selected items
+    selectedMeal,
+    setSelectedMeal,
+    selectedMealIndex,
+    setSelectedMealIndex,
+    
+    // AI preferences
     aiPreferences,
     setAiPreferences,
     
-    // Recipe Dialog state
-    showRecipeDialog,
-    setShowRecipeDialog,
-    
-    // Exchange Dialog state
-    showExchangeDialog,
-    setShowExchangeDialog,
-    
-    // Add Snack Dialog state
-    showAddSnackDialog,
-    setShowAddSnackDialog,
-    
-    // Selected meal state
-    selectedMeal,
-    setSelectedMeal,
-    
-    // Helper functions
+    // Action methods
+    openAIDialog,
+    closeAIDialog,
     openRecipeDialog,
+    closeRecipeDialog,
     openExchangeDialog,
-    openAddSnackDialog
+    closeExchangeDialog,
+    openAddSnackDialog,
+    closeAddSnackDialog,
+    openShoppingListDialog,
+    closeShoppingListDialog,
+    updateAIPreferences,
+    handleAddSnack,
+    
+    // Backward compatibility
+    setDialogs
   };
 };
