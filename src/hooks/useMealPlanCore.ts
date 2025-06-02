@@ -19,14 +19,14 @@ export const useMealPlanCore = () => {
   // Core navigation and UI state
   const navigation = useMealPlanNavigation();
   
-  // AI Loading state - separate from isGenerating to prevent hooks issues
+  // AI Loading state
   const [aiLoadingState, setAiLoadingState] = useState({
     isGenerating: false,
     currentStep: '',
     progress: 0
   });
   
-  // Data fetching - single source of truth with proper error handling
+  // Data fetching with proper error handling
   const { 
     data: currentWeekPlan, 
     isLoading: dataLoading, 
@@ -45,72 +45,57 @@ export const useMealPlanCore = () => {
   // Calculations based on current data
   const calculations = useMealPlanCalculations(currentWeekPlan, navigation.selectedDayNumber);
 
-  // Determine if we're actually loading (avoid infinite loading states)
+  // Simplified loading state determination
   const isLoading = useMemo(() => {
-    // If auth is still loading, wait
-    if (authLoading) {
-      console.log('🔄 Auth still loading...');
-      return true;
-    }
-    
-    // If no user, we're not loading (will redirect to auth)
-    if (!user) {
-      console.log('❌ No user found');
+    // If no user and auth is not loading, we're not loading (redirect will happen)
+    if (!user && !authLoading) {
       return false;
     }
     
-    // If data is loading and we haven't errored, show loading
+    // If auth is loading, show loading
+    if (authLoading) {
+      return true;
+    }
+    
+    // If data is loading and no error, show loading
     if (dataLoading && !isError) {
-      console.log('🔄 Data loading...');
       return true;
     }
     
     return false;
   }, [authLoading, user, dataLoading, isError]);
 
-  // Enhanced logging with better error tracking
-  console.log('🔍 useMealPlanCore state:', {
-    weekOffset: navigation.currentWeekOffset,
-    selectedDay: navigation.selectedDayNumber,
+  console.log('🔍 useMealPlanCore simplified state:', {
     authLoading,
+    hasUser: !!user,
     dataLoading,
     isLoading,
-    hasData: !!currentWeekPlan,
-    hasError: !!error,
-    errorMessage: error?.message,
-    userId: user?.id?.substring(0, 8) + '...',
-    hasWeeklyPlan: !!currentWeekPlan?.weeklyPlan
+    isError,
+    weekOffset: navigation.currentWeekOffset
   });
 
-  // Manual refetch with enhanced error handling and retry logic
+  // Simplified refetch
   const refetch = useCallback(async () => {
-    console.log('🔄 Manual refetch triggered for week offset:', navigation.currentWeekOffset);
-    
-    if (!user?.id) {
-      console.warn('⚠️ Cannot refetch without user ID');
-      return;
-    }
+    if (!user?.id) return;
     
     try {
       await refetchMealPlan?.();
-      console.log('✅ Manual refetch completed successfully');
     } catch (error) {
-      console.error('❌ Manual refetch failed:', error);
-      
-      // Show user-friendly error message
+      console.error('❌ Refetch failed:', error);
       toast.error(
         language === 'ar' 
-          ? 'فشل في تحديث البيانات. يرجى المحاولة مرة أخرى.' 
-          : 'Failed to refresh data. Please try again.'
+          ? 'فشل في تحديث البيانات' 
+          : 'Failed to refresh data'
       );
     }
-  }, [navigation.currentWeekOffset, refetchMealPlan, user?.id, language]);
+  }, [refetchMealPlan, user?.id, language]);
 
-  // Expose error recovery method
+  // Clear error method
   const clearError = useCallback(() => {
-    console.log('🧹 Clearing errors and retrying...');
+    if (!user?.id) return;
+    
     queryClient.removeQueries({ 
-      queryKey: ['weekly-meal-plan', user?.id, navigation.currentWeekOffset] 
+      queryKey: ['weekly-meal-plan', user.id, navigation.currentWeekOffset] 
     });
     refetch();
   }, [queryClient, user?.id, navigation.currentWeekOffset, refetch]);
@@ -145,7 +130,6 @@ export const useMealPlanCore = () => {
     // Core properties
     user,
     language,
-    queryClient,
     authLoading
   };
 };
