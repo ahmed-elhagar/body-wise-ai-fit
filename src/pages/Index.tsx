@@ -31,7 +31,7 @@ const Index = () => {
         }
       });
     }
-  }, [user, loading, navigate]);
+  }, [user?.id, loading, navigate]); // More specific dependency on user.id
 
   // Enhanced error handling for auth errors
   if (error) {

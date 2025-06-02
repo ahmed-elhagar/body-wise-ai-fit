@@ -1,4 +1,5 @@
-import { useState, useEffect, createContext, useContext } from 'react';
+
+import { useState, useEffect, createContext, useContext, useCallback } from 'react';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { 
@@ -51,9 +52,10 @@ export const useAuth = () => {
 
     useEffect(() => {
       // Simulate auth check
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         setIsLoading(false);
       }, 100);
+      return () => clearTimeout(timer);
     }, []);
 
     return {
@@ -88,11 +90,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [error, setError] = useState<any>(null);
   const [authInitialized, setAuthInitialized] = useState(false);
 
-  const clearError = () => {
+  const clearError = useCallback(() => {
     setError(null);
-  };
+  }, []);
 
-  const forceLogout = async () => {
+  const forceLogout = useCallback(async () => {
     console.log('Force logout initiated');
     setIsLoading(true);
     
@@ -110,9 +112,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const retryAuth = async () => {
+  const retryAuth = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -151,9 +153,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const enrichUserWithProfile = async (session: Session) => {
+  const enrichUserWithProfile = useCallback(async (session: Session) => {
     try {
       console.log('Enriching user with profile for ID:', session.user.id?.substring(0, 8) + '...');
       
@@ -207,7 +209,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         });
       }
     }
-  };
+  }, []);
 
   useEffect(() => {
     console.log("AuthProvider - Initializing");
@@ -216,43 +218,44 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     initializeAuthCleanup();
     
     let mounted = true;
+    let authSubscription: any = null;
     
     // Set up auth state listener first
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (!mounted) return;
-        
-        console.log('Auth state changed:', event, session?.user?.email, 'User ID:', session?.user?.id?.substring(0, 8) + '...' || 'none');
-        
-        try {
-          if (event === 'SIGNED_OUT' || !session?.user?.id) {
-            console.log('User signed out or no session, clearing state');
-            setSession(null);
-            setUser(null);
-            setError(null);
-          } else if (session?.user?.id) {
-            console.log('User signed in, setting session and enriching profile');
-            setSession(session);
-            await enrichUserWithProfile(session);
-            setError(null);
-          }
-        } catch (err) {
-          console.error('Auth state change error:', err);
-          setError(err);
-        } finally {
-          // CRITICAL: Always set loading to false and mark as initialized
-          if (mounted) {
-            console.log('Setting isLoading to false after auth state change');
-            setIsLoading(false);
-            setAuthInitialized(true);
-          }
-        }
-      }
-    );
-
-    // Get initial session after setting up listener
-    const getInitialSession = async () => {
+    const setupAuth = async () => {
       try {
+        authSubscription = supabase.auth.onAuthStateChange(
+          async (event, session) => {
+            if (!mounted) return;
+            
+            console.log('Auth state changed:', event, session?.user?.email, 'User ID:', session?.user?.id?.substring(0, 8) + '...' || 'none');
+            
+            try {
+              if (event === 'SIGNED_OUT' || !session?.user?.id) {
+                console.log('User signed out or no session, clearing state');
+                setSession(null);
+                setUser(null);
+                setError(null);
+              } else if (session?.user?.id) {
+                console.log('User signed in, setting session and enriching profile');
+                setSession(session);
+                await enrichUserWithProfile(session);
+                setError(null);
+              }
+            } catch (err) {
+              console.error('Auth state change error:', err);
+              setError(err);
+            } finally {
+              // CRITICAL: Always set loading to false and mark as initialized
+              if (mounted) {
+                console.log('Setting isLoading to false after auth state change');
+                setIsLoading(false);
+                setAuthInitialized(true);
+              }
+            }
+          }
+        );
+
+        // Get initial session after setting up listener
         console.log('Getting initial session...');
         const { data: { session }, error } = await supabase.auth.getSession();
         
@@ -271,7 +274,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           }
         }
       } catch (error) {
-        console.error('Error in getInitialSession:', error);
+        console.error('Error in setupAuth:', error);
         setError(error);
       } finally {
         // CRITICAL: Always set loading to false and mark as initialized
@@ -283,16 +286,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     };
 
-    // Initialize session
-    getInitialSession();
+    setupAuth();
 
     return () => {
       mounted = false;
-      subscription.unsubscribe();
+      if (authSubscription?.data?.subscription) {
+        authSubscription.data.subscription.unsubscribe();
+      }
     };
-  }, []);
+  }, [enrichUserWithProfile]);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = useCallback(async (email: string, password: string) => {
     try {
       setIsLoading(true);
       setError(null);
@@ -310,9 +314,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const signUp = async (email: string, password: string, metadata?: any) => {
+  const signUp = useCallback(async (email: string, password: string, metadata?: any) => {
     try {
       setIsLoading(true);
       setError(null);
@@ -330,9 +334,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const signOut = async (forceCleanup: boolean = false) => {
+  const signOut = useCallback(async (forceCleanup: boolean = false) => {
     try {
       setError(null);
       
@@ -348,7 +352,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('Sign out error:', error);
       setError(error);
     }
-  };
+  }, []);
 
   const value = {
     user,

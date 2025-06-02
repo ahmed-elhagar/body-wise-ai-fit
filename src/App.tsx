@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -11,9 +10,16 @@ import AuthDebugPanel from "@/components/auth/AuthDebugPanel";
 import { LazyPages } from "@/components/LazyPages";
 import { Suspense } from "react";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: 1,
+    },
+  },
+});
 
-// Loading fallback component
+// Enhanced loading fallback component
 const PageLoader = () => (
   <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
     <div className="text-center">
@@ -39,7 +45,9 @@ const App = () => (
                   path="/landing" 
                   element={
                     <ProtectedRoute requireAuth={false} redirectTo="/dashboard">
-                      <LazyPages.Landing />
+                      <Suspense fallback={<PageLoader />}>
+                        <LazyPages.Landing />
+                      </Suspense>
                     </ProtectedRoute>
                   } 
                 />
@@ -47,7 +55,9 @@ const App = () => (
                   path="/auth" 
                   element={
                     <ProtectedRoute requireAuth={false} redirectTo="/dashboard">
-                      <LazyPages.Auth />
+                      <Suspense fallback={<PageLoader />}>
+                        <LazyPages.Auth />
+                      </Suspense>
                     </ProtectedRoute>
                   } 
                 />
@@ -57,7 +67,9 @@ const App = () => (
                   path="/onboarding" 
                   element={
                     <ProtectedRoute requireAuth={true}>
-                      <LazyPages.Onboarding />
+                      <Suspense fallback={<PageLoader />}>
+                        <LazyPages.Onboarding />
+                      </Suspense>
                     </ProtectedRoute>
                   } 
                 />
@@ -65,7 +77,9 @@ const App = () => (
                   path="/dashboard" 
                   element={
                     <ProtectedRoute requireAuth={true} requireProfile={true}>
-                      <LazyPages.Dashboard />
+                      <Suspense fallback={<PageLoader />}>
+                        <LazyPages.Dashboard />
+                      </Suspense>
                     </ProtectedRoute>
                   } 
                 />
@@ -73,7 +87,9 @@ const App = () => (
                   path="/profile" 
                   element={
                     <ProtectedRoute requireAuth={true}>
-                      <LazyPages.Profile />
+                      <Suspense fallback={<PageLoader />}>
+                        <LazyPages.Profile />
+                      </Suspense>
                     </ProtectedRoute>
                   } 
                 />
@@ -81,7 +97,9 @@ const App = () => (
                   path="/meal-plan" 
                   element={
                     <ProtectedRoute requireAuth={true} requireProfile={true}>
-                      <LazyPages.MealPlan />
+                      <Suspense fallback={<PageLoader />}>
+                        <LazyPages.MealPlan />
+                      </Suspense>
                     </ProtectedRoute>
                   } 
                 />
@@ -89,7 +107,9 @@ const App = () => (
                   path="/exercise" 
                   element={
                     <ProtectedRoute requireAuth={true} requireProfile={true}>
-                      <LazyPages.Exercise />
+                      <Suspense fallback={<PageLoader />}>
+                        <LazyPages.Exercise />
+                      </Suspense>
                     </ProtectedRoute>
                   } 
                 />
@@ -97,7 +117,9 @@ const App = () => (
                   path="/food-tracker" 
                   element={
                     <ProtectedRoute requireAuth={true} requireProfile={true}>
-                      <LazyPages.FoodTracker />
+                      <Suspense fallback={<PageLoader />}>
+                        <LazyPages.FoodTracker />
+                      </Suspense>
                     </ProtectedRoute>
                   } 
                 />
@@ -105,7 +127,9 @@ const App = () => (
                   path="/calorie-checker" 
                   element={
                     <ProtectedRoute requireAuth={true} requireProfile={true}>
-                      <LazyPages.CalorieChecker />
+                      <Suspense fallback={<PageLoader />}>
+                        <LazyPages.CalorieChecker />
+                      </Suspense>
                     </ProtectedRoute>
                   } 
                 />
@@ -113,7 +137,9 @@ const App = () => (
                   path="/weight-tracking" 
                   element={
                     <ProtectedRoute requireAuth={true} requireProfile={true}>
-                      <LazyPages.WeightTracking />
+                      <Suspense fallback={<PageLoader />}>
+                        <LazyPages.WeightTracking />
+                      </Suspense>
                     </ProtectedRoute>
                   } 
                 />
@@ -121,7 +147,9 @@ const App = () => (
                   path="/goals" 
                   element={
                     <ProtectedRoute requireAuth={true} requireProfile={true}>
-                      <LazyPages.Goals />
+                      <Suspense fallback={<PageLoader />}>
+                        <LazyPages.Goals />
+                      </Suspense>
                     </ProtectedRoute>
                   } 
                 />
@@ -129,7 +157,9 @@ const App = () => (
                   path="/progress" 
                   element={
                     <ProtectedRoute requireAuth={true} requireProfile={true}>
-                      <LazyPages.Progress />
+                      <Suspense fallback={<PageLoader />}>
+                        <LazyPages.Progress />
+                      </Suspense>
                     </ProtectedRoute>
                   } 
                 />
@@ -137,7 +167,9 @@ const App = () => (
                   path="/settings" 
                   element={
                     <ProtectedRoute requireAuth={true}>
-                      <LazyPages.Settings />
+                      <Suspense fallback={<PageLoader />}>
+                        <LazyPages.Settings />
+                      </Suspense>
                     </ProtectedRoute>
                   } 
                 />
@@ -145,7 +177,9 @@ const App = () => (
                   path="/notifications" 
                   element={
                     <ProtectedRoute requireAuth={true}>
-                      <LazyPages.Notifications />
+                      <Suspense fallback={<PageLoader />}>
+                        <LazyPages.Notifications />
+                      </Suspense>
                     </ProtectedRoute>
                   } 
                 />
@@ -153,7 +187,9 @@ const App = () => (
                   path="/chat" 
                   element={
                     <ProtectedRoute requireAuth={true} requireProfile={true}>
-                      <LazyPages.Chat />
+                      <Suspense fallback={<PageLoader />}>
+                        <LazyPages.Chat />
+                      </Suspense>
                     </ProtectedRoute>
                   } 
                 />
@@ -161,7 +197,9 @@ const App = () => (
                   path="/pro" 
                   element={
                     <ProtectedRoute requireAuth={true}>
-                      <LazyPages.Pro />
+                      <Suspense fallback={<PageLoader />}>
+                        <LazyPages.Pro />
+                      </Suspense>
                     </ProtectedRoute>
                   } 
                 />
@@ -171,7 +209,9 @@ const App = () => (
                   path="/admin" 
                   element={
                     <ProtectedRoute requireAuth={true} requireRole="admin">
-                      <LazyPages.Admin />
+                      <Suspense fallback={<PageLoader />}>
+                        <LazyPages.Admin />
+                      </Suspense>
                     </ProtectedRoute>
                   } 
                 />
@@ -181,13 +221,19 @@ const App = () => (
                   path="/coach" 
                   element={
                     <ProtectedRoute requireAuth={true} requireRole={["coach", "admin"]}>
-                      <LazyPages.Coach />
+                      <Suspense fallback={<PageLoader />}>
+                        <LazyPages.Coach />
+                      </Suspense>
                     </ProtectedRoute>
                   } 
                 />
                 
                 {/* 404 route */}
-                <Route path="*" element={<LazyPages.NotFound />} />
+                <Route path="*" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <LazyPages.NotFound />
+                  </Suspense>
+                } />
               </Routes>
             </Suspense>
             
