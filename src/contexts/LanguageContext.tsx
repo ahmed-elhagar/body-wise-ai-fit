@@ -5,6 +5,9 @@ import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import Backend from 'i18next-http-backend';
 
+// Define Language type for export
+export type Language = 'en' | 'ar';
+
 // Initialize i18next properly
 i18n
   .use(Backend)
@@ -49,9 +52,11 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     document.documentElement.lang = lang;
   };
 
-  const t = (key: string, options?: any) => {
+  const t = (key: string, options?: any): string => {
     try {
-      return i18n.t(key, options);
+      const result = i18n.t(key, options);
+      // Ensure we always return a string
+      return typeof result === 'string' ? result : key;
     } catch (error) {
       console.warn('Translation key not found:', key);
       return key;
