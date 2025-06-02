@@ -10,7 +10,6 @@ import { buildNutritionContext, enhancePromptWithLifePhase } from './lifePhasePr
 import { optimizedDatabaseOperations } from './databaseOptimization.ts';
 import { handleMealPlanError, createUserFriendlyError, errorCodes, MealPlanError } from './enhancedErrorHandling.ts';
 import { enhancedRateLimiting } from './rateLimitingEnhanced.ts';
-import { AIService } from '../_shared/aiService.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -59,9 +58,6 @@ serve(async (req) => {
         500
       );
     }
-
-    // Initialize AI Service
-    const aiService = new AIService(openAIApiKey);
 
     console.log('🌐 Enhanced Language Configuration:', { 
       language,
@@ -122,7 +118,7 @@ serve(async (req) => {
       includeSnacks,
       language,
       nutritionContext,
-      aiService
+      openAIApiKey
     );
 
     // Enhanced validation
@@ -274,7 +270,7 @@ const generateAIMealPlan = async (
   includeSnacks: boolean,
   language: string,
   nutritionContext: any,
-  aiService: AIService
+  openAIApiKey: string
 ) => {
   try {
     const systemPrompt = language === 'ar' 
@@ -316,21 +312,36 @@ CRITICAL: Return ONLY valid JSON in this exact format:
 For ${includeSnacks ? '5 meals per day: breakfast, snack1, lunch, snack2, dinner' : '3 meals per day: breakfast, lunch, dinner'}.
 Total daily calories should be approximately ${adjustedDailyCalories}.`;
 
-    console.log('🤖 Sending enhanced request to AI Service...');
+    console.log('🤖 Sending enhanced request to OpenAI API...');
     
-    const response = await aiService.generate('meal-plan', {
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: jsonFormatPrompt }
-      ],
-      temperature: 0.1,
-      maxTokens: 8000
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: jsonFormatPrompt }
+        ],
+        temperature: 0.1,
+        max_tokens: 8000
+      }),
     });
 
-    console.log('✅ AI Service response received successfully');
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ OpenAI API error:', response.status, errorText);
+      throw new Error(`OpenAI API error: ${response.status} ${errorText}`);
+    }
+
+    const data = await response.json();
+    console.log('✅ OpenAI API response received successfully');
     
     // Parse and clean response with enhanced validation
-    const content = response.content.trim();
+    const content = data.choices[0].message.content.trim();
     const cleanedContent = content
       .replace(/```json\n?/g, '')
       .replace(/```\n?/g, '')

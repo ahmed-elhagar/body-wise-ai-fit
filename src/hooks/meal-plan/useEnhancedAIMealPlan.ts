@@ -102,7 +102,10 @@ export const useEnhancedAIMealPlan = () => {
         }
       });
 
-      console.log('📥 Function response:', { data, error });
+      console.log('📥 Function response:', { 
+        data: data ? { success: data.success, message: data.message } : null, 
+        error: error ? { message: error.message, details: error.details } : null 
+      });
 
       if (error) {
         console.error('❌ Error generating enhanced meal plan:', error);
