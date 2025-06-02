@@ -1,9 +1,21 @@
 
+// Enhanced type definitions with better type safety
+export interface StrictMealIngredient {
+  readonly name: string;
+  readonly quantity: string;
+  readonly unit: string;
+  readonly calories?: number;
+  readonly protein?: number;
+  readonly carbs?: number;
+  readonly fat?: number;
+  readonly category?: string;
+}
+
 export interface StrictDailyMeal {
   readonly id: string;
   readonly weekly_plan_id: string;
   readonly day_number: number;
-  readonly meal_type: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+  readonly meal_type: 'breakfast' | 'lunch' | 'dinner' | 'snack1' | 'snack2';
   readonly name: string;
   readonly calories: number;
   readonly protein: number;
@@ -17,12 +29,7 @@ export interface StrictDailyMeal {
   readonly youtube_search_term?: string;
   readonly image_url?: string;
   readonly recipe_fetched: boolean;
-  readonly ingredients: ReadonlyArray<{
-    readonly name: string;
-    readonly quantity: string;
-    readonly unit: string;
-    readonly category?: string;
-  }>;
+  readonly ingredients: ReadonlyArray<StrictMealIngredient>;
   readonly instructions: ReadonlyArray<string>;
   readonly alternatives: ReadonlyArray<string>;
 }
@@ -35,10 +42,10 @@ export interface StrictWeeklyMealPlan {
   readonly total_protein: number;
   readonly total_carbs: number;
   readonly total_fat: number;
-  readonly preferences: Record<string, any>;
+  readonly preferences: Record<string, unknown>;
   readonly created_at: string;
   readonly updated_at: string;
-  readonly life_phase_context?: Record<string, any>;
+  readonly life_phase_context?: Record<string, unknown>;
 }
 
 export interface StrictMealPlanFetchResult {
@@ -46,12 +53,13 @@ export interface StrictMealPlanFetchResult {
   readonly dailyMeals: ReadonlyArray<StrictDailyMeal>;
 }
 
+// Query optimization types
 export interface OptimizedQueryParams {
   readonly userId: string;
   readonly weekStartDate: string;
-  readonly mealTypes?: ReadonlyArray<string>;
   readonly includeIngredients?: boolean;
   readonly includeInstructions?: boolean;
+  readonly mealTypes?: ReadonlyArray<string>;
 }
 
 export interface DatabaseQueryResult<T> {

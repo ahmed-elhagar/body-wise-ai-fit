@@ -9,7 +9,7 @@ export interface DailyMeal {
   id: string;
   weekly_plan_id: string;
   day_number: number;
-  meal_type: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+  meal_type: 'breakfast' | 'lunch' | 'dinner' | 'snack1' | 'snack2';
   name: string;
   calories: number;
   protein: number;

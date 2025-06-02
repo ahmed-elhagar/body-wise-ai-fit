@@ -4,11 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingCart, Mail, Download } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import type { ShoppingItem } from "@/types/shoppingList";
 
 interface DrawerHeaderProps {
   totalItems: number;
-  groupedItems: Record<string, ShoppingItem[]>;
+  groupedItems: Record<string, any[]>;
   weekId?: string;
   onShoppingListUpdate?: () => void;
   onSendEmail?: () => Promise<void>;

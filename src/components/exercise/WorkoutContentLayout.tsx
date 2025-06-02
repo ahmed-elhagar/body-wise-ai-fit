@@ -35,30 +35,13 @@ export const WorkoutContentLayout = ({
   const workoutSession = useWorkoutSession();
 
   const handleStartWorkout = () => {
-    if (todaysExercises.length > 0) {
-      workoutSession.startSession(todaysExercises[0]);
-    }
+    workoutSession.startSession();
   };
 
   const handleCompleteExercise = (exerciseId: string) => {
-    workoutSession.endSession(exerciseId);
+    workoutSession.completeExercise(exerciseId);
     onExerciseComplete(exerciseId);
   };
-
-  const handlePauseWorkout = () => {
-    if (workoutSession.currentExercise) {
-      workoutSession.pauseSession(workoutSession.currentExercise);
-    }
-  };
-
-  const handleResumeWorkout = () => {
-    if (workoutSession.currentExercise) {
-      workoutSession.resumeSession(workoutSession.currentExercise);
-    }
-  };
-
-  const isWorkoutActive = !!workoutSession.currentExercise;
-  const isPaused = !isWorkoutActive && workoutSession.sessions.size > 0;
 
   return (
     <div className="space-y-6">
@@ -76,14 +59,14 @@ export const WorkoutContentLayout = ({
       {/* Quick Actions - Improved spacing and styling */}
       <div className="sticky top-4 z-10">
         <ExerciseQuickActions
-          isWorkoutActive={isWorkoutActive}
-          isPaused={isPaused}
-          totalTime="0"
+          isWorkoutActive={workoutSession.isActive}
+          isPaused={workoutSession.isPaused}
+          totalTime={workoutSession.totalTime}
           onStartWorkout={handleStartWorkout}
-          onPauseWorkout={handlePauseWorkout}
-          onResumeWorkout={handleResumeWorkout}
-          onRestartWorkout={handleStartWorkout}
-          onShareProgress={() => {}}
+          onPauseWorkout={workoutSession.pauseSession}
+          onResumeWorkout={workoutSession.resumeSession}
+          onRestartWorkout={workoutSession.resetSession}
+          onShareProgress={workoutSession.shareProgress}
           canStart={totalExercises > 0}
           isRestDay={isRestDay}
         />
@@ -141,13 +124,13 @@ export const WorkoutContentLayout = ({
               {/* Progress Details */}
               <div>
                 <h3 className="font-semibold text-health-text-primary mb-2 text-lg">
-                  Today's Progress
+                  {t('exercise.todaysProgress')}
                 </h3>
                 <div className="text-sm text-health-text-secondary">
                   <span className="font-medium text-health-primary">{completedExercises}</span>
                   <span className="mx-1">/</span>
                   <span>{totalExercises}</span>
-                  <span className="ml-1">exercises</span>
+                  <span className="ml-1">{t('exercise.exercises')}</span>
                 </div>
               </div>
               

@@ -1,13 +1,11 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeftRight, Sparkles } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeftRight, Sparkles, Clock, Users } from "lucide-react";
 import { useEnhancedMealExchange } from "@/hooks/useEnhancedMealExchange";
-import { ExchangeCurrentMealCard } from "@/components/meal-plan/exchange/ExchangeCurrentMealCard";
-import { ExchangeAlternativeCard } from "@/components/meal-plan/exchange/ExchangeAlternativeCard";
-import type { DailyMeal } from "@/features/meal-plan/types";
+import type { DailyMeal } from "@/hooks/meal-plan/types";
 
 interface MealExchangeDialogProps {
   isOpen: boolean;
@@ -29,40 +27,52 @@ const MealExchangeDialog = ({ isOpen, onClose, currentMeal, onExchange }: MealEx
 
   const handleGenerateAlternatives = async () => {
     console.log('🔄 Generating alternatives for meal:', currentMeal.name);
-    // Convert DailyMeal to format expected by the hook
+    // Convert DailyMeal to Meal format for the hook
     const mealForHook = {
       id: currentMeal.id,
-      name: currentMeal.name,
+      type: currentMeal.meal_type,
       meal_type: currentMeal.meal_type,
+      time: "12:00",
+      name: currentMeal.name,
       calories: currentMeal.calories || 0,
       protein: currentMeal.protein || 0,
       carbs: currentMeal.carbs || 0,
       fat: currentMeal.fat || 0,
       ingredients: currentMeal.ingredients || [],
       instructions: currentMeal.instructions || [],
-      prep_time: currentMeal.prep_time || 0,
-      cook_time: currentMeal.cook_time || 0,
-      servings: currentMeal.servings || 1
+      cookTime: currentMeal.cook_time || 0,
+      prepTime: currentMeal.prep_time || 0,
+      servings: currentMeal.servings || 1,
+      image: currentMeal.image_url || "",
+      imageUrl: currentMeal.image_url,
+      image_url: currentMeal.image_url,
+      youtube_search_term: currentMeal.youtube_search_term
     };
     await generateMealAlternatives(mealForHook);
   };
 
   const handleExchange = async (alternative: any) => {
     console.log('🔄 Exchanging meal with alternative:', alternative.name);
-    // Convert DailyMeal to format expected by the hook
+    // Convert DailyMeal to Meal format for the hook
     const mealForHook = {
       id: currentMeal.id,
-      name: currentMeal.name,
+      type: currentMeal.meal_type,
       meal_type: currentMeal.meal_type,
+      time: "12:00",
+      name: currentMeal.name,
       calories: currentMeal.calories || 0,
       protein: currentMeal.protein || 0,
       carbs: currentMeal.carbs || 0,
       fat: currentMeal.fat || 0,
       ingredients: currentMeal.ingredients || [],
       instructions: currentMeal.instructions || [],
-      prep_time: currentMeal.prep_time || 0,
-      cook_time: currentMeal.cook_time || 0,
-      servings: currentMeal.servings || 1
+      cookTime: currentMeal.cook_time || 0,
+      prepTime: currentMeal.prep_time || 0,
+      servings: currentMeal.servings || 1,
+      image: currentMeal.image_url || "",
+      imageUrl: currentMeal.image_url,
+      image_url: currentMeal.image_url,
+      youtube_search_term: currentMeal.youtube_search_term
     };
     const success = await exchangeMeal(mealForHook, alternative);
     if (success) {
@@ -73,7 +83,7 @@ const MealExchangeDialog = ({ isOpen, onClose, currentMeal, onExchange }: MealEx
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ArrowLeftRight className="w-5 h-5" />
@@ -83,7 +93,41 @@ const MealExchangeDialog = ({ isOpen, onClose, currentMeal, onExchange }: MealEx
 
         <div className="space-y-4">
           {/* Current Meal Info */}
-          <ExchangeCurrentMealCard meal={currentMeal} />
+          <Card>
+            <CardContent className="p-4">
+              <h3 className="font-semibold mb-2">Current Meal</h3>
+              <p className="mb-3">{currentMeal.name}</p>
+              
+              <div className="flex flex-wrap gap-2 mb-3">
+                <Badge>
+                  <Clock className="w-3 h-3 mr-1" />
+                  {(currentMeal.prep_time || 0) + (currentMeal.cook_time || 0)} min
+                </Badge>
+                <Badge>
+                  <Users className="w-3 h-3 mr-1" />
+                  {currentMeal.servings || 1} serving{(currentMeal.servings || 1) !== 1 ? 's' : ''}
+                </Badge>
+                <Badge>
+                  {currentMeal.calories || 0} cal
+                </Badge>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 text-xs">
+                <div className="bg-gray-50 p-2 rounded text-center">
+                  <span className="font-medium text-green-600">{currentMeal.protein || 0}g</span>
+                  <div className="text-gray-600">protein</div>
+                </div>
+                <div className="bg-gray-50 p-2 rounded text-center">
+                  <span className="font-medium text-blue-600">{currentMeal.carbs || 0}g</span>
+                  <div className="text-gray-600">carbs</div>
+                </div>
+                <div className="bg-gray-50 p-2 rounded text-center">
+                  <span className="font-medium text-yellow-600">{currentMeal.fat || 0}g</span>
+                  <div className="text-gray-600">fat</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Generate Alternatives Button */}
           {alternatives.length === 0 && (
@@ -114,14 +158,32 @@ const MealExchangeDialog = ({ isOpen, onClose, currentMeal, onExchange }: MealEx
             <div className="space-y-3">
               <h3 className="font-semibold">Alternative Meals:</h3>
               {alternatives.map((alternative, index) => (
-                <ExchangeAlternativeCard
-                  key={index}
-                  alternative={alternative}
-                  index={index}
-                  isExchanging={isExchanging}
-                  onSelect={handleExchange}
-                  onExpand={setSelectedAlternative}
-                />
+                <Card key={index} className="cursor-pointer hover:bg-gray-50" onClick={() => setSelectedAlternative(alternative)}>
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <h4 className="font-medium">{alternative.name}</h4>
+                        <p className="text-sm text-gray-600 mt-1">{alternative.reason}</p>
+                        <div className="flex gap-4 mt-2 text-sm">
+                          <span>{alternative.calories} cal</span>
+                          <span>{alternative.protein}g protein</span>
+                          <span>{alternative.carbs}g carbs</span>
+                          <span>{alternative.fat}g fat</span>
+                        </div>
+                      </div>
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleExchange(alternative);
+                        }}
+                        disabled={isExchanging}
+                        size="sm"
+                      >
+                        {isExchanging ? 'Exchanging...' : 'Select'}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
               ))}
             </div>
           )}

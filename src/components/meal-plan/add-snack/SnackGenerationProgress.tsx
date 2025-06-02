@@ -1,62 +1,76 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Sparkles, Search, Utensils, Save } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Loader2, Sparkles } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface SnackGenerationProgressProps {
-  step: string;
+  generationStep: string;
 }
 
-const STEP_CONFIG = {
-  analyzing: {
-    icon: Search,
-    title: "Analyzing Your Preferences",
-    description: "Processing your dietary requirements and remaining calories...",
-    color: "text-blue-600",
-    bgColor: "bg-blue-50",
-    borderColor: "border-blue-200"
-  },
-  creating: {
-    icon: Utensils,
-    title: "Creating Perfect Snack",
-    description: "Generating a nutritious snack that fits your meal plan...",
-    color: "text-green-600",
-    bgColor: "bg-green-50",
-    borderColor: "border-green-200"
-  },
-  saving: {
-    icon: Save,
-    title: "Saving to Meal Plan",
-    description: "Adding your new snack to today's meal plan...",
-    color: "text-purple-600",
-    bgColor: "bg-purple-50",
-    borderColor: "border-purple-200"
-  }
-};
+export const SnackGenerationProgress = ({ generationStep }: SnackGenerationProgressProps) => {
+  const { t, isRTL } = useLanguage();
 
-export const SnackGenerationProgress = ({ step }: SnackGenerationProgressProps) => {
-  const config = STEP_CONFIG[step as keyof typeof STEP_CONFIG] || STEP_CONFIG.analyzing;
-  const Icon = config.icon;
+  const getStepText = (step: string) => {
+    switch (step) {
+      case 'analyzing':
+        return t('mealPlan.addSnackDialog.analyzing') || 'Analyzing your nutrition needs...';
+      case 'creating':
+        return t('mealPlan.addSnackDialog.creating') || 'Creating perfect snack...';
+      case 'saving':
+        return t('mealPlan.addSnackDialog.saving') || 'Saving to your meal plan...';
+      default:
+        return t('mealPlan.addSnackDialog.generatingAISnack') || 'Generating AI Snack...';
+    }
+  };
+
+  const getStepProgress = (step: string) => {
+    switch (step) {
+      case 'analyzing':
+        return 33;
+      case 'creating':
+        return 66;
+      case 'saving':
+        return 90;
+      default:
+        return 10;
+    }
+  };
 
   return (
-    <Card className={`${config.bgColor} ${config.borderColor} border-2`}>
-      <CardContent className="p-4">
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <Icon className={`w-6 h-6 ${config.color}`} />
-            <div className="absolute -inset-1">
-              <div className={`w-8 h-8 rounded-full border-2 ${config.color} opacity-20 animate-ping`}></div>
+    <Card className="bg-gradient-to-br from-fitness-primary-50 to-fitness-accent-50 border-fitness-primary-200">
+      <CardContent className="p-6">
+        <div className={`text-center ${isRTL ? 'text-right' : 'text-left'}`}>
+          <div className="w-16 h-16 mx-auto bg-gradient-to-br from-fitness-primary-500 to-fitness-accent-500 rounded-full flex items-center justify-center mb-4">
+            <div className="relative">
+              <Sparkles className="w-8 h-8 text-white" />
+              <Loader2 className="w-4 h-4 text-fitness-accent-200 absolute -top-1 -right-1 animate-spin" />
             </div>
           </div>
-          <div className="flex-1">
-            <h3 className={`font-semibold ${config.color}`}>{config.title}</h3>
-            <p className="text-sm text-gray-600">{config.description}</p>
+          
+          <h3 className="text-lg font-semibold text-fitness-primary-800 mb-2">
+            {t('mealPlan.addSnackDialog.generatingAISnack') || 'Generating AI Snack...'}
+          </h3>
+          
+          <p className="text-fitness-primary-600 mb-6">
+            {t('mealPlan.addSnackDialog.pleaseWait') || 'Please wait while we create the perfect snack for you...'}
+          </p>
+          
+          <div className="space-y-3">
+            <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <span className="text-sm font-medium text-fitness-primary-700">
+                {getStepText(generationStep)}
+              </span>
+              <span className="text-xs text-fitness-primary-500">
+                {getStepProgress(generationStep)}%
+              </span>
+            </div>
+            
+            <Progress 
+              value={getStepProgress(generationStep)} 
+              className="h-2"
+            />
           </div>
-          <Sparkles className={`w-5 h-5 ${config.color} animate-pulse`} />
-        </div>
-        
-        <div className="mt-3 w-full bg-gray-200 rounded-full h-2">
-          <div className={`h-2 rounded-full transition-all duration-1000 ${config.color.replace('text-', 'bg-')} animate-pulse`} 
-               style={{ width: '60%' }}></div>
         </div>
       </CardContent>
     </Card>

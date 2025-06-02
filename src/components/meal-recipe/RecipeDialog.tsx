@@ -34,18 +34,12 @@ const RecipeDialog = ({ isOpen, onClose, meal, onRecipeGenerated }: RecipeDialog
     
     console.log('🍳 Generating recipe for meal:', currentMeal.name, 'ID:', currentMeal.id);
     
-    // Convert Meal to DailyMeal for the API call - ensure meal_type is valid
-    let mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack' = 'snack';
-    if (currentMeal.type === 'breakfast' || currentMeal.type === 'lunch' || 
-        currentMeal.type === 'dinner' || currentMeal.type === 'snack') {
-      mealType = currentMeal.type;
-    }
-
+    // Convert Meal to DailyMeal for the API call
     const dailyMealData: DailyMeal = {
       id: currentMeal.id,
       weekly_plan_id: '', // Will be handled by the API
       day_number: 1, // Will be handled by the API
-      meal_type: mealType,
+      meal_type: currentMeal.type as 'breakfast' | 'lunch' | 'dinner' | 'snack1' | 'snack2',
       name: currentMeal.name,
       calories: currentMeal.calories,
       protein: currentMeal.protein,

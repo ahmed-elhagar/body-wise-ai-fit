@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { UtensilsCrossed, Sparkles, Zap } from "lucide-react";
-import { useMealPlanTranslations } from "@/hooks/useMealPlanTranslations";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface MealPlanHeaderProps {
   remainingCredits: number;
@@ -16,7 +16,16 @@ const MealPlanHeader = ({
   onShowAIDialog, 
   isGenerating 
 }: MealPlanHeaderProps) => {
-  const { isRTL, translations } = useMealPlanTranslations();
+  const { t, isRTL } = useLanguage();
+
+  console.log('🌐 MealPlanHeader translation check:', {
+    language: isRTL ? 'ar' : 'en',
+    isRTL,
+    titleTranslation: t('mealPlan.smartMealPlanning'),
+    subtitleTranslation: t('mealPlan.personalizedNutrition'),
+    creditsTranslation: t('mealPlan.aiCredits'),
+    generateButtonTranslation: t('mealPlan.generateAIMealPlan')
+  });
 
   return (
     <Card className="relative p-6 border-0 shadow-xl bg-white rounded-2xl overflow-hidden">
@@ -34,10 +43,10 @@ const MealPlanHeader = ({
               </div>
               <div>
                 <h1 className="text-4xl font-bold bg-gradient-to-r from-fitness-primary-700 to-fitness-accent-600 bg-clip-text text-transparent mb-1">
-                  {translations.smartMealPlanning}
+                  {t('mealPlan.smartMealPlanning') || 'Smart Meal Planning'}
                 </h1>
                 <p className="text-lg text-fitness-primary-600 font-medium">
-                  {translations.personalizedNutrition}
+                  {t('mealPlan.personalizedNutrition') || 'Personalized nutrition plans powered by AI'}
                 </p>
               </div>
             </div>
@@ -46,10 +55,10 @@ const MealPlanHeader = ({
             <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <Badge className="bg-gradient-to-r from-fitness-primary-500 to-fitness-accent-500 text-white border-0 px-4 py-2 font-semibold shadow-md hover:shadow-lg transition-shadow">
                 <Zap className={`w-4 h-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
-                {remainingCredits} {translations.aiCredits}
+                {remainingCredits} {t('mealPlan.aiCredits') || 'AI Credits'}
               </Badge>
               <span className="text-sm text-fitness-primary-500 font-medium">
-                Generate unlimited meal plans
+                {t('mealPlan.unlimitedGeneration') || 'Generate unlimited meal plans'}
               </span>
             </div>
           </div>
@@ -63,12 +72,15 @@ const MealPlanHeader = ({
               size="lg"
             >
               <Sparkles className={`w-5 h-5 ${isRTL ? 'ml-3' : 'mr-3'}`} />
-              {isGenerating ? translations.generating : translations.generateAIMealPlan}
+              {isGenerating ? 
+                (t('mealPlan.generating') || 'Generating Plan...') : 
+                (t('mealPlan.generateAIMealPlan') || 'Generate AI Meal Plan')
+              }
             </Button>
             
             {remainingCredits <= 0 && (
               <p className="text-sm text-red-600 mt-3 text-center font-medium">
-                No AI credits remaining. Upgrade to continue.
+                {t('mealPlan.noCreditsRemaining') || 'No AI credits remaining. Upgrade to continue.'}
               </p>
             )}
           </div>

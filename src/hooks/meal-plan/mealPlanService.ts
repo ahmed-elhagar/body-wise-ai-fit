@@ -1,7 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import type { WeeklyMealPlan, MealPlanFetchResult, DailyMeal } from './types';
-import { validateMealType } from '../../features/meal-plan/utils/mealTypeValidator';
 
 const safeJsonParse = (value: any, fallback: any = []) => {
   if (!value) return fallback;
@@ -21,7 +20,7 @@ const processMealData = (meal: any): DailyMeal => {
     id: meal.id,
     weekly_plan_id: meal.weekly_plan_id,
     day_number: meal.day_number,
-    meal_type: validateMealType(meal.meal_type), // Use the validator function
+    meal_type: meal.meal_type as 'breakfast' | 'lunch' | 'dinner' | 'snack1' | 'snack2',
     name: meal.name,
     calories: meal.calories || 0,
     protein: meal.protein || 0,

@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Target, Zap } from "lucide-react";
-import { useMealPlanTranslations } from "@/hooks/useMealPlanTranslations";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface DailyProgressCardProps {
   selectedDay: number;
@@ -20,7 +20,11 @@ export const DailyProgressCard = ({
   remainingCalories,
   progressPercentage
 }: DailyProgressCardProps) => {
-  const { isRTL, getDayName, translations } = useMealPlanTranslations();
+  const { t, isRTL } = useLanguage();
+
+  const getDayName = (dayNumber: number) => {
+    return t(`mealPlan.dayNames.${dayNumber}`) || `Day ${dayNumber}`;
+  };
 
   return (
     <Card className="bg-white/90 backdrop-blur-sm border-fitness-primary-200">
@@ -34,7 +38,7 @@ export const DailyProgressCard = ({
               {getDayName(selectedDay)}
             </h3>
             <p className="text-fitness-primary-600 text-sm">
-              {translations.dailyProgress}
+              {t('mealPlan.dailyProgress') || 'Daily Progress'}
             </p>
           </div>
         </div>
@@ -44,7 +48,7 @@ export const DailyProgressCard = ({
             <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <Target className="w-4 h-4 text-fitness-primary-500" />
               <span className="text-sm font-medium text-fitness-primary-700">
-                Calorie Progress
+                {t('mealPlan.calorieProgress') || 'Calorie Progress'}
               </span>
             </div>
             <Badge className="bg-fitness-primary-100 text-fitness-primary-700 border-fitness-primary-200">
@@ -57,18 +61,18 @@ export const DailyProgressCard = ({
           <div className={`flex justify-between text-sm ${isRTL ? 'flex-row-reverse' : ''}`}>
             <div className={`flex items-center gap-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <span className="text-fitness-primary-600">
-                {translations.consumed}:
+                {t('mealPlan.consumed') || 'Consumed'}:
               </span>
               <span className="font-semibold text-fitness-primary-800">
-                {currentDayCalories} {translations.calories}
+                {currentDayCalories} {t('mealPlan.cal') || 'cal'}
               </span>
             </div>
             <div className={`flex items-center gap-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <span className="text-fitness-primary-600">
-                {translations.target}:
+                {t('mealPlan.target') || 'Target'}:
               </span>
               <span className="font-semibold text-fitness-primary-800">
-                {dynamicTargetCalories} {translations.calories}
+                {dynamicTargetCalories} {t('mealPlan.cal') || 'cal'}
               </span>
             </div>
           </div>
@@ -77,7 +81,7 @@ export const DailyProgressCard = ({
             <div className={`flex items-center justify-center gap-2 p-3 bg-fitness-accent-50 rounded-lg ${isRTL ? 'flex-row-reverse' : ''}`}>
               <Zap className="w-4 h-4 text-fitness-accent-600" />
               <span className="text-sm font-medium text-fitness-accent-700">
-                {remainingCalories} {translations.calAvailable}
+                {remainingCalories} {t('mealPlan.calAvailable') || 'cal available'}
               </span>
             </div>
           )}

@@ -5,7 +5,6 @@ export const mealPlan = {
   generateAIMealPlan: "إنشاء خطة وجبات بالذكاء الاصطناعي",
   generateMealPlan: "إنشاء خطة وجبات",
   generateNewPlan: "إنشاء خطة جديدة",
-  generateAI: "إنشاء بالذكاء الاصطناعي",
   regenerate: "إعادة إنتاج",
   shuffleMeals: "خلط الوجبات",
   viewRecipe: "عرض الوصفة",
@@ -55,17 +54,7 @@ export const mealPlan = {
   smartMealPlanning: "تخطيط وجبات ذكي",
   personalizedNutrition: "احصل على خطط تغذية مخصصة تناسب أهدافك",
   loading: "جارٍ التحميل...",
-  loadingDescription: "يرجى الانتظار بينما نجلب خطة وجباتك المخصصة...",
   generating: "جارٍ الإنشاء...",
-  
-  // Error handling
-  errorLoadingMealPlan: "خطأ في تحميل خطة الوجبات",
-  somethingWentWrong: "حدث خطأ ما",
-  tryAgain: "حاول مرة أخرى",
-  goToDashboard: "الذهاب إلى لوحة التحكم",
-  authenticationRequired: "المصادقة مطلوبة",
-  pleaseSignIn: "يرجى تسجيل الدخول للمتابعة",
-  signIn: "تسجيل الدخول",
   
   // Success/Error Messages
   snackAddedSuccess: "تم إضافة الوجبة الخفيفة بنجاح!",
@@ -88,14 +77,6 @@ export const mealPlan = {
   snack1: "وجبة خفيفة صباحية",
   snack2: "وجبة خفيفة مسائية",
   
-  // Meal types object
-  mealTypes: {
-    breakfast: "الإفطار",
-    lunch: "الغداء",
-    dinner: "العشاء", 
-    snack: "وجبة خفيفة"
-  },
-  
   // Credits
   aiCredits: "رصيد الذكاء الاصطناعي",
   
@@ -117,6 +98,7 @@ export const mealPlan = {
   
   // Preferences & Settings
   maxPrepTime: "الحد الأقصى لوقت التحضير",
+  mealTypes: "أنواع الوجبات",
   includeSnacks: "تضمين الوجبات الخفيفة",
   generateSevenDayPlan: "إنشاء خطة 7 أيام",
   leaveEmptyNationality: "اتركه فارغاً للمطبخ المختلط",
@@ -129,17 +111,6 @@ export const mealPlan = {
   friday: "الجمعة",
   saturday: "السبت",
   sunday: "الأحد",
-  
-  // Day names with numbers
-  dayNames: {
-    1: "السبت",
-    2: "الأحد",
-    3: "الإثنين",
-    4: "الثلاثاء",
-    5: "الأربعاء",
-    6: "الخميس",
-    7: "الجمعة"
-  },
   
   // Additional terms
   description: "الوصف",
@@ -165,14 +136,5 @@ export const mealPlan = {
     error: "خطأ في إنشاء الوجبة الخفيفة",
     failed: "فشل في إنشاء الوجبة الخفيفة",
     notEnoughCalories: "لا توجد سعرات كافية متبقية للوجبة الخفيفة"
-  },
-  
-  // Common actions
-  calAvailable: "سعرة متاحة",
-  targetReached: "تم الوصول للهدف اليومي!",
-  excellentProgress: "تقدم ممتاز! لقد وصلت لأهدافك الغذائية اليومية.",
-  perfectDay: "يوم مثالي",
-  considerLightSnack: "فكر في وجبة خفيفة أو بعض الماء لإكمال يومك.",
-  close: "إغلاق",
-  cancel: "إلغاء"
+  }
 } as const;

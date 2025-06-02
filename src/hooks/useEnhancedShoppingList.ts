@@ -5,135 +5,61 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getCategoryForIngredient } from '@/utils/mealPlanUtils';
-import type { ShoppingItem, ShoppingListData } from '@/types/shoppingList';
+import type { WeeklyMealPlan, DailyMeal } from '@/hooks/useMealPlanData';
 
-interface Ingredient {
-  name: string;
-  quantity?: string | number;
-  unit?: string;
-}
-
-export const useEnhancedShoppingList = (mealPlanData?: any) => {
+export const useEnhancedShoppingList = (weeklyPlan?: {
+  weeklyPlan: WeeklyMealPlan;
+  dailyMeals: DailyMeal[];
+} | null) => {
   const { user } = useAuth();
   const { language } = useLanguage();
 
-  const enhancedShoppingItems: ShoppingListData = useMemo(() => {
+  // Enhanced shopping list with proper aggregation and categorization
+  const enhancedShoppingItems = useMemo(() => {
     console.log('🛒 Computing enhanced shopping list...', { 
-      hasMealPlanData: !!mealPlanData,
-      hasWeeklyPlan: !!mealPlanData?.weeklyPlan,
-      mealsCount: mealPlanData?.dailyMeals ? mealPlanData.dailyMeals.length : 0,
-      dailyMeals: mealPlanData?.dailyMeals?.slice(0, 3)?.map((meal: any) => ({
-        name: meal.name,
-        hasIngredients: !!meal.ingredients,
-        ingredientsType: typeof meal.ingredients
-      }))
+      hasWeeklyPlan: !!weeklyPlan,
+      mealsCount: weeklyPlan?.dailyMeals?.length || 0 
     });
     
-    if (!mealPlanData?.dailyMeals || !Array.isArray(mealPlanData.dailyMeals)) {
-      console.log('❌ No daily meals found in meal plan data');
+    if (!weeklyPlan?.dailyMeals || !Array.isArray(weeklyPlan.dailyMeals)) {
       return { items: [], groupedItems: {} };
     }
 
-    const itemsMap = new Map<string, ShoppingItem>();
+    const itemsMap = new Map<string, any>();
     
-    mealPlanData.dailyMeals.forEach((meal: any, mealIndex: number) => {
-      console.log(`🍽️ Processing meal ${mealIndex + 1}: ${meal.name}`, {
-        hasIngredients: !!meal.ingredients,
-        ingredientsType: typeof meal.ingredients,
-        ingredientsLength: Array.isArray(meal.ingredients) ? meal.ingredients.length : 'not array',
-        ingredientsPreview: meal.ingredients
-      });
+    weeklyPlan.dailyMeals.forEach((meal, mealIndex) => {
+      console.log(`🍽️ Processing meal ${mealIndex + 1}: ${meal.name}`);
       
-      if (!meal.ingredients) {
-        console.log(`⚠️ No ingredients found for meal: ${meal.name}`);
-        return;
-      }
-
-      let ingredientsArray: Ingredient[] = [];
-      
-      // Handle different ingredient formats more robustly
-      try {
-        if (Array.isArray(meal.ingredients)) {
-          ingredientsArray = meal.ingredients;
-        } else if (typeof meal.ingredients === 'string') {
-          const parsed = JSON.parse(meal.ingredients);
-          if (Array.isArray(parsed)) {
-            ingredientsArray = parsed;
+      if (meal.ingredients && Array.isArray(meal.ingredients)) {
+        meal.ingredients.forEach((ingredient: any, ingIndex) => {
+          const ingredientName = ingredient.name || ingredient;
+          const quantity = parseFloat(ingredient.quantity || '1');
+          const unit = ingredient.unit || 'piece';
+          const key = `${ingredientName.toLowerCase()}-${unit}`;
+          
+          console.log(`📝 Processing ingredient ${ingIndex + 1}: ${ingredientName} (${quantity} ${unit})`);
+          
+          if (itemsMap.has(key)) {
+            const existing = itemsMap.get(key)!;
+            existing.quantity += quantity;
+            console.log(`🔄 Updated existing item: ${ingredientName} (${existing.quantity} ${unit})`);
           } else {
-            console.warn(`Parsed ingredients is not an array for ${meal.name}:`, parsed);
+            const newItem = {
+              name: ingredientName,
+              quantity: quantity,
+              unit: unit,
+              category: getCategoryForIngredient(ingredientName)
+            };
+            itemsMap.set(key, newItem);
+            console.log(`➕ Added new item: ${ingredientName} (${quantity} ${unit}) - Category: ${newItem.category}`);
           }
-        } else if (typeof meal.ingredients === 'object' && meal.ingredients !== null) {
-          // Convert object to array format
-          ingredientsArray = Object.values(meal.ingredients).filter(
-            (item): item is Ingredient => 
-              typeof item === 'object' && 
-              item !== null && 
-              'name' in item
-          );
-        }
-      } catch (error) {
-        console.error(`Failed to process ingredients for ${meal.name}:`, error);
-        return;
+        });
       }
-
-      console.log(`📝 Processing ${ingredientsArray.length} ingredients for ${meal.name}`);
-
-      ingredientsArray.forEach((ingredient: any, ingIndex) => {
-        // More robust ingredient processing
-        let ingredientData: Ingredient;
-        
-        if (typeof ingredient === 'string') {
-          ingredientData = { name: ingredient, quantity: 1, unit: 'piece' };
-        } else if (ingredient && typeof ingredient === 'object' && 'name' in ingredient) {
-          ingredientData = {
-            name: ingredient.name,
-            quantity: ingredient.quantity || 1,
-            unit: ingredient.unit || 'piece'
-          };
-        } else {
-          console.warn(`Invalid ingredient at index ${ingIndex} in ${meal.name}:`, ingredient);
-          return;
-        }
-
-        const ingredientName = String(ingredientData.name).trim();
-        if (!ingredientName) {
-          console.warn(`Empty ingredient name in ${meal.name}`);
-          return;
-        }
-
-        // Convert quantity to number
-        let quantity = 1;
-        if (typeof ingredientData.quantity === 'number') {
-          quantity = ingredientData.quantity;
-        } else if (typeof ingredientData.quantity === 'string') {
-          const parsed = parseFloat(ingredientData.quantity);
-          quantity = isNaN(parsed) ? 1 : parsed;
-        }
-
-        const unit = String(ingredientData.unit || 'piece');
-        const key = `${ingredientName.toLowerCase()}-${unit.toLowerCase()}`;
-        
-        console.log(`📦 Processing: ${ingredientName} (${quantity} ${unit})`);
-        
-        if (itemsMap.has(key)) {
-          const existing = itemsMap.get(key)!;
-          existing.quantity += quantity;
-          console.log(`🔄 Updated existing: ${ingredientName} -> ${existing.quantity} ${unit}`);
-        } else {
-          const newItem: ShoppingItem = {
-            name: ingredientName,
-            quantity: quantity,
-            unit: unit,
-            category: getCategoryForIngredient(ingredientName)
-          };
-          itemsMap.set(key, newItem);
-          console.log(`➕ Added new: ${ingredientName} (${quantity} ${unit}) - Category: ${newItem.category}`);
-        }
-      });
     });
 
     const items = Array.from(itemsMap.values());
     
+    // Group by category
     const groupedItems = items.reduce((acc, item) => {
       const category = item.category;
       if (!acc[category]) {
@@ -141,20 +67,20 @@ export const useEnhancedShoppingList = (mealPlanData?: any) => {
       }
       acc[category].push(item);
       return acc;
-    }, {} as Record<string, ShoppingItem[]>);
+    }, {} as Record<string, any[]>);
 
-    console.log('✅ Shopping list generation complete:', {
+    console.log('🛒 Enhanced shopping items generated:', {
       totalItems: items.length,
       categories: Object.keys(groupedItems).length,
       itemsByCategory: Object.entries(groupedItems).map(([cat, items]) => `${cat}: ${items.length}`)
     });
     
     return { items, groupedItems };
-  }, [mealPlanData?.dailyMeals]);
+  }, [weeklyPlan?.dailyMeals]);
 
   const sendShoppingListEmail = async () => {
-    if (!user || !mealPlanData) {
-      console.error('❌ Missing data for email sending:', { hasUser: !!user, hasMealPlanData: !!mealPlanData });
+    if (!user || !weeklyPlan) {
+      console.error('❌ Missing data for email sending:', { hasUser: !!user, hasWeeklyPlan: !!weeklyPlan });
       toast.error('Unable to send email - missing data');
       return false;
     }
@@ -162,16 +88,16 @@ export const useEnhancedShoppingList = (mealPlanData?: any) => {
     try {
       console.log('📧 Preparing shopping list email...', {
         userId: user.id,
-        weeklyPlanId: mealPlanData.weeklyPlan?.id,
+        weeklyPlanId: weeklyPlan.weeklyPlan.id,
         itemsCount: enhancedShoppingItems.items.length
       });
 
-      const weekRange = `Week of ${mealPlanData.weeklyPlan?.week_start_date}`;
+      const weekRange = `Week of ${weeklyPlan.weeklyPlan.week_start_date}`;
 
       const emailData = {
         userId: user.id,
         userEmail: user.email,
-        weekId: mealPlanData.weeklyPlan?.id,
+        weekId: weeklyPlan.weeklyPlan.id,
         shoppingItems: enhancedShoppingItems.groupedItems,
         weekRange: weekRange,
         totalItems: enhancedShoppingItems.items.length,

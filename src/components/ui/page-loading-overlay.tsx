@@ -1,7 +1,7 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
-import EnhancedLoadingIndicator, { LoadingType } from "./enhanced-loading-indicator";
+import EnhancedLoadingIndicator, { type LoadingType } from "./enhanced-loading-indicator";
 
 interface PageLoadingOverlayProps {
   isLoading: boolean;

@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import type { 
   StrictMealPlanFetchResult, 
@@ -7,7 +8,6 @@ import type {
   StrictWeeklyMealPlan 
 } from '../types/enhanced';
 import { validateMealType } from '../utils/mealTypeValidator';
-import { errorHandler, withTimeout } from '@/utils/enhancedErrorHandling';
 
 // Optimized database service with enhanced error handling and validation
 export class OptimizedMealPlanService {
@@ -26,87 +26,18 @@ export class OptimizedMealPlanService {
       cacheKey
     });
     
-    try {
-      // Check cache first
-      const cached = this.getFromCache<StrictMealPlanFetchResult>(cacheKey);
-      if (cached) {
-        console.log('📦 Returning cached data for:', cacheKey);
-        return {
-          data: cached,
-          error: null,
-          fromCache: true,
-          queryTime: Date.now() - startTime
-        };
-      }
-
-      // Wrap the database operation with timeout
-      const result = await withTimeout(
-        this.performDatabaseQuery(params),
-        30000,
-        'Meal plan data fetch'
-      );
-
-      if (result.error) {
-        errorHandler.handleError(result.error, {
-          operation: 'fetch_meal_plan_data',
-          component: 'OptimizedMealPlanService',
-          userId: params.userId,
-          retryable: true,
-          severity: 'medium',
-          metadata: { weekStartDate: params.weekStartDate }
-        });
-        
-        return {
-          data: null,
-          error: result.error,
-          fromCache: false,
-          queryTime: Date.now() - startTime
-        };
-      }
-
-      if (result.data) {
-        // Cache the result
-        this.setCache(cacheKey, result.data);
-      }
-
-      console.log('✅ Optimized meal plan data processed successfully:', {
-        weeklyPlanId: result.data?.weeklyPlan?.id,
-        dailyMealsCount: result.data?.dailyMeals?.length || 0,
-        queryTime: Date.now() - startTime,
-        cached: false
-      });
-
+    // Check cache first
+    const cached = this.getFromCache<StrictMealPlanFetchResult>(cacheKey);
+    if (cached) {
+      console.log('📦 Returning cached data for:', cacheKey);
       return {
-        data: result.data,
+        data: cached,
         error: null,
-        fromCache: false,
-        queryTime: Date.now() - startTime
-      };
-
-    } catch (error) {
-      console.error('❌ Exception in optimized fetch:', error);
-      
-      errorHandler.handleError(error, {
-        operation: 'fetch_meal_plan_data',
-        component: 'OptimizedMealPlanService',
-        userId: params.userId,
-        retryable: true,
-        severity: 'high',
-        metadata: { weekStartDate: params.weekStartDate, cacheKey }
-      });
-
-      return {
-        data: null,
-        error: error as Error,
-        fromCache: false,
+        fromCache: true,
         queryTime: Date.now() - startTime
       };
     }
-  }
 
-  private static async performDatabaseQuery(
-    params: OptimizedQueryParams
-  ): Promise<{ data: StrictMealPlanFetchResult | null; error: Error | null }> {
     try {
       // Optimized weekly plan query with enhanced error handling
       console.log('🔍 Fetching weekly meal plan...');
@@ -121,7 +52,12 @@ export class OptimizedMealPlanService {
 
       if (weeklyError) {
         console.error('❌ Error fetching weekly meal plan:', weeklyError);
-        return { data: null, error: weeklyError };
+        return {
+          data: null,
+          error: weeklyError,
+          fromCache: false,
+          queryTime: Date.now() - startTime
+        };
       }
 
       if (!weeklyPlan) {
@@ -129,7 +65,12 @@ export class OptimizedMealPlanService {
           userId: params.userId.substring(0, 8) + '...',
           weekStartDate: params.weekStartDate
         });
-        return { data: null, error: null };
+        return {
+          data: null,
+          error: null,
+          fromCache: false,
+          queryTime: Date.now() - startTime
+        };
       }
 
       console.log('✅ Weekly plan found:', weeklyPlan.id);
@@ -154,7 +95,12 @@ export class OptimizedMealPlanService {
 
       if (mealsError) {
         console.error('❌ Error fetching daily meals:', mealsError);
-        return { data: null, error: mealsError };
+        return {
+          data: null,
+          error: mealsError,
+          fromCache: false,
+          queryTime: Date.now() - startTime
+        };
       }
 
       console.log('✅ Daily meals fetched:', {
@@ -167,11 +113,31 @@ export class OptimizedMealPlanService {
         dailyMeals: this.processDailyMeals(dailyMeals || [])
       };
 
-      return { data: result, error: null };
+      // Cache the result
+      this.setCache(cacheKey, result);
+
+      console.log('✅ Optimized meal plan data processed successfully:', {
+        weeklyPlanId: weeklyPlan.id,
+        dailyMealsCount: dailyMeals?.length || 0,
+        queryTime: Date.now() - startTime,
+        cached: false
+      });
+
+      return {
+        data: result,
+        error: null,
+        fromCache: false,
+        queryTime: Date.now() - startTime
+      };
 
     } catch (error) {
-      console.error('❌ Database query error:', error);
-      return { data: null, error: error as Error };
+      console.error('❌ Exception in optimized fetch:', error);
+      return {
+        data: null,
+        error: error as Error,
+        fromCache: false,
+        queryTime: Date.now() - startTime
+      };
     }
   }
 
@@ -277,15 +243,6 @@ export class OptimizedMealPlanService {
         };
       } catch (error) {
         console.error(`❌ Error processing meal ${index + 1}:`, error, meal);
-        
-        errorHandler.handleError(error, {
-          operation: 'process_daily_meal',
-          component: 'OptimizedMealPlanService',
-          retryable: false,
-          severity: 'medium',
-          metadata: { mealId: meal.id, mealName: meal.name }
-        });
-        
         throw error;
       }
     });

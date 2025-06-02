@@ -1,43 +1,24 @@
 
-import React from 'react';
-import { Card, CardContent } from "@/components/ui/card";
-import EnhancedLoadingIndicator from "@/components/ui/enhanced-loading-indicator";
+import PageLoadingOverlay from "@/components/ui/page-loading-overlay";
 
 interface MealPlanLoadingBackdropProps {
-  isGenerating: boolean;
+  isLoading: boolean;
   message?: string;
-  description?: string;
+  type?: 'meal-plan' | 'recipe' | 'analysis' | 'general';
 }
 
 const MealPlanLoadingBackdrop = ({ 
-  isGenerating, 
-  message = "Generating AI meal plan...",
-  description = "Please wait while we create your personalized meal plan"
+  isLoading, 
+  message,
+  type = 'meal-plan'
 }: MealPlanLoadingBackdropProps) => {
-  if (!isGenerating) return null;
-
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
-      <Card className="w-96 mx-4">
-        <CardContent className="p-6">
-          <EnhancedLoadingIndicator
-            status="loading"
-            type="meal-plan"
-            message={message}
-            description={description}
-            variant="card"
-            size="lg"
-            showSteps={true}
-            customSteps={[
-              "Analyzing your preferences",
-              "Calculating nutritional requirements", 
-              "Generating meal suggestions",
-              "Optimizing meal plan"
-            ]}
-          />
-        </CardContent>
-      </Card>
-    </div>
+    <PageLoadingOverlay
+      isLoading={isLoading}
+      type={type}
+      message={message}
+      description="Please wait while we process your request..."
+    />
   );
 };
 

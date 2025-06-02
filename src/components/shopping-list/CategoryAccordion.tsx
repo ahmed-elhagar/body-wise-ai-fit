@@ -1,9 +1,16 @@
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import IngredientRow from "./IngredientRow";
-import type { ShoppingItem } from "@/types/shoppingList";
+
+interface ShoppingItem {
+  name: string;
+  quantity: number;
+  unit: string;
+  category: string;
+}
 
 interface CategoryAccordionProps {
   groupedItems: Record<string, ShoppingItem[]>;
@@ -15,87 +22,92 @@ interface CategoryAccordionProps {
 const CategoryAccordion = ({ 
   groupedItems, 
   checkedItems, 
-  setCheckedItems,
+  setCheckedItems, 
   onShoppingListUpdate 
 }: CategoryAccordionProps) => {
-  const { t, isRTL } = useLanguage();
+  const { isRTL } = useLanguage();
 
-  const handleToggleItem = (itemKey: string) => {
-    const newCheckedItems = new Set(checkedItems);
-    if (newCheckedItems.has(itemKey)) {
-      newCheckedItems.delete(itemKey);
-    } else {
-      newCheckedItems.add(itemKey);
-    }
-    setCheckedItems(newCheckedItems);
+  const toggleCategory = (category: string) => {
+    const categoryItems = groupedItems[category]?.map(item => `${item.name}-${item.category}`) || [];
+    const allChecked = categoryItems.every(item => checkedItems.has(item));
     
-    if (onShoppingListUpdate) {
-      onShoppingListUpdate();
+    const newChecked = new Set(checkedItems);
+    if (allChecked) {
+      categoryItems.forEach(item => newChecked.delete(item));
+    } else {
+      categoryItems.forEach(item => newChecked.add(item));
     }
+    setCheckedItems(newChecked);
+    onShoppingListUpdate?.();
   };
 
-  const getCategoryIcon = (category: string) => {
-    const icons: Record<string, string> = {
-      'Proteins': '🥩',
-      'Vegetables': '🥬',
-      'Fruits': '🍎',
-      'Grains': '🌾',
-      'Dairy': '🥛',
-      'Spices': '🧄',
-      'Condiments': '🧂',
-      'Other': '🛒'
-    };
-    return icons[category] || '🛒';
-  };
+  const categories = Object.keys(groupedItems).sort();
 
-  if (!groupedItems || Object.keys(groupedItems).length === 0) {
-    return (
-      <div className="text-center py-8 text-fitness-primary-500">
-        <p>{t?.('shoppingList.noItems') || 'No items in shopping list'}</p>
-      </div>
-    );
-  }
+  const categoryIcons: Record<string, string> = {
+    'Proteins': '🥩',
+    'البروتينات': '🥩',
+    'Dairy': '🥛',
+    'منتجات الألبان': '🥛',
+    'Vegetables': '🥕',
+    'الخضراوات': '🥕',
+    'Fruits': '🍎',
+    'الفواكه': '🍎',
+    'Grains & Carbs': '🌾',
+    'الحبوب والكربوهيدرات': '🌾',
+    'Spices & Seasonings': '🧂',
+    'التوابل والبهارات': '🧂',
+    'Oils & Fats': '🫒',
+    'الزيوت والدهون': '🫒',
+    'Other': '📦',
+    'أخرى': '📦'
+  };
 
   return (
-    <Accordion type="multiple" defaultValue={Object.keys(groupedItems)} className="space-y-2">
-      {Object.entries(groupedItems).map(([category, items]) => {
-        const categoryKey = `category-${category}`;
-        const checkedCount = items.filter(item => 
-          checkedItems.has(`${item.name.toLowerCase()}-${item.unit.toLowerCase()}`)
+    <Accordion type="multiple" className="w-full space-y-3">
+      {categories.map((category) => {
+        const categoryItems = groupedItems[category];
+        const categoryCheckedCount = categoryItems.filter(item => 
+          checkedItems.has(`${item.name}-${item.category}`)
         ).length;
-        
+        const allChecked = categoryCheckedCount === categoryItems.length;
+
         return (
-          <AccordionItem 
-            key={categoryKey} 
-            value={categoryKey}
-            className="border border-fitness-primary-200 rounded-lg overflow-hidden"
-          >
-            <AccordionTrigger className={`px-4 py-3 bg-fitness-primary-50 hover:bg-fitness-primary-100 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                <span className="text-lg" role="img" aria-label={category}>
-                  {getCategoryIcon(category)}
-                </span>
-                <span className="font-semibold text-fitness-primary-700">
-                  {category}
-                </span>
-                <Badge className="bg-fitness-accent-500 text-white">
-                  {checkedCount}/{items.length}
+          <AccordionItem key={category} value={category} className="bg-white rounded-lg border-fitness-primary-200 shadow-md">
+            <AccordionTrigger className="text-fitness-primary-700 hover:text-fitness-accent-600 transition-colors px-4 py-3 font-medium">
+              <div className="flex items-center gap-3 flex-1">
+                <Checkbox
+                  checked={allChecked}
+                  onCheckedChange={() => toggleCategory(category)}
+                  onClick={(e) => e.stopPropagation()}
+                  className="border-fitness-primary-300 data-[state=checked]:bg-fitness-primary-500 data-[state=checked]:border-fitness-primary-500"
+                />
+                <span className="text-xl">{categoryIcons[category] || '📦'}</span>
+                <span className="flex-1 text-left font-semibold">{category}</span>
+                <Badge className="bg-fitness-primary-100 text-fitness-primary-700 border-fitness-primary-200">
+                  {categoryCheckedCount}/{categoryItems.length}
                 </Badge>
               </div>
             </AccordionTrigger>
-            <AccordionContent className="px-4 py-2">
-              <div className="space-y-2">
-                {items.map((item, index) => {
-                  const itemKey = `${item.name.toLowerCase()}-${item.unit.toLowerCase()}`;
-                  return (
-                    <IngredientRow
-                      key={`${itemKey}-${index}`}
-                      item={item}
-                      isChecked={checkedItems.has(itemKey)}
-                      onToggle={() => handleToggleItem(itemKey)}
-                    />
-                  );
-                })}
+            <AccordionContent className="px-4 pb-4">
+              <div className="space-y-2 pt-2">
+                {categoryItems.map((item, index) => (
+                  <IngredientRow
+                    key={`${category}-${index}`}
+                    item={item}
+                    isChecked={checkedItems.has(`${item.name}-${item.category}`)}
+                    onToggle={() => {
+                      const itemKey = `${item.name}-${item.category}`;
+                      const newChecked = new Set(checkedItems);
+                      if (newChecked.has(itemKey)) {
+                        newChecked.delete(itemKey);
+                      } else {
+                        newChecked.add(itemKey);
+                      }
+                      setCheckedItems(newChecked);
+                      onShoppingListUpdate?.();
+                    }}
+                  />
+                ))}
               </div>
             </AccordionContent>
           </AccordionItem>

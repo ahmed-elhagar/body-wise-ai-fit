@@ -1,143 +1,134 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Download, ShoppingCart } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { ShoppingCart, Mail, Download } from "lucide-react";
+import { useEnhancedShoppingList } from "@/hooks/useEnhancedShoppingList";
 import { useState } from "react";
-import { useLanguage } from "@/contexts/LanguageContext";
-import CategoryAccordion from "./shopping-list/CategoryAccordion";
-import type { ShoppingListData } from "@/types/shoppingList";
+
+interface ShoppingItem {
+  name: string;
+  quantity?: string;
+  unit?: string;
+  category?: string;
+}
 
 interface ShoppingListDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  shoppingItems: ShoppingListData;
-  onSendEmail: () => Promise<boolean>;
-  weekStartDate: Date;
-  isLoading?: boolean;
+  items: ShoppingItem[];
 }
 
-const ShoppingListDialog = ({
-  isOpen,
-  onClose,
-  shoppingItems,
-  onSendEmail,
-  weekStartDate,
-  isLoading = false
-}: ShoppingListDialogProps) => {
-  const { t, isRTL } = useLanguage();
+const ShoppingListDialog = ({ isOpen, onClose, items }: ShoppingListDialogProps) => {
+  const { sendShoppingListEmail } = useEnhancedShoppingList(null);
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
-  const [isSendingEmail, setIsSendingEmail] = useState(false);
+
+  // Group items by category with proper typing
+  const groupedItems = items.reduce((acc, item) => {
+    const category = item.category || 'Other';
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(item);
+    return acc;
+  }, {} as Record<string, ShoppingItem[]>);
+
+  const toggleItem = (itemKey: string) => {
+    const newChecked = new Set(checkedItems);
+    if (newChecked.has(itemKey)) {
+      newChecked.delete(itemKey);
+    } else {
+      newChecked.add(itemKey);
+    }
+    setCheckedItems(newChecked);
+  };
 
   const handleSendEmail = async () => {
-    setIsSendingEmail(true);
-    try {
-      await onSendEmail();
-    } finally {
-      setIsSendingEmail(false);
-    }
+    await sendShoppingListEmail();
   };
-
-  const handleDownload = () => {
-    const content = Object.entries(shoppingItems.groupedItems)
-      .map(([category, items]) => {
-        const itemList = items
-          .map(item => `- ${item.name} (${item.quantity} ${item.unit})`)
-          .join('\n');
-        return `${category}:\n${itemList}`;
-      })
-      .join('\n\n');
-
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `shopping-list-${weekStartDate.toISOString().split('T')[0]}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
-  const totalItems = shoppingItems.items.length;
-  const categoryCount = Object.keys(shoppingItems.groupedItems).length;
-  const checkedCount = checkedItems.size;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
-        <DialogHeader className="flex-shrink-0">
-          <DialogTitle className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <ShoppingCart className="w-5 h-5 text-fitness-accent-600" />
-            {t?.('shoppingList.title') || 'Shopping List'}
-          </DialogTitle>
+      <DialogContent className="max-w-2xl max-h-[90vh]">
+        <DialogHeader className="space-y-4">
+          <div className="flex items-center justify-between">
+            <DialogTitle className="flex items-center gap-2">
+              <ShoppingCart className="w-5 h-5" />
+              Shopping List
+            </DialogTitle>
+            <div className="flex items-center gap-2">
+              <Badge>
+                {items.length} items
+              </Badge>
+              <Badge>
+                {Object.keys(groupedItems).length} categories
+              </Badge>
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex gap-2">
+            <Button
+              onClick={handleSendEmail}
+              variant="outline"
+              size="sm"
+              className="flex-1"
+            >
+              <Mail className="w-4 h-4 mr-2" />
+              Send Email
+            </Button>
+            
+            <Button
+              onClick={() => {
+                console.log('Download shopping list');
+              }}
+              variant="outline"
+              size="sm"
+            >
+              <Download className="w-4 h-4" />
+            </Button>
+          </div>
         </DialogHeader>
 
-        {/* Stats Card */}
-        <Card className="flex-shrink-0 bg-gradient-to-r from-fitness-primary-50 to-fitness-accent-50 border-fitness-primary-200">
-          <CardContent className="p-4">
-            <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <div className={`flex gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                <Badge className="bg-fitness-accent-500 text-white">
-                  {totalItems} {t?.('shoppingList.items') || 'items'}
-                </Badge>
-                <Badge className="bg-fitness-primary-500 text-white">
-                  {categoryCount} {t?.('shoppingList.categories') || 'categories'}
-                </Badge>
-                <Badge className="bg-green-500 text-white">
-                  {checkedCount} {t?.('shoppingList.checked') || 'checked'}
-                </Badge>
-              </div>
-              <div className="text-sm text-fitness-primary-600">
-                Week of {weekStartDate.toLocaleDateString()}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Shopping List Content */}
-        <div className="flex-1 overflow-y-auto px-1">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fitness-primary-500"></div>
-            </div>
-          ) : (
-            <CategoryAccordion
-              groupedItems={shoppingItems.groupedItems}
-              checkedItems={checkedItems}
-              setCheckedItems={setCheckedItems}
-            />
-          )}
+        <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+          {Object.entries(groupedItems).map(([category, categoryItems]) => (
+            <Card key={category}>
+              <CardContent className="p-4">
+                <h3 className="font-semibold mb-3 capitalize">{category}</h3>
+                <div className="space-y-2">
+                  {categoryItems.map((item, index) => {
+                    const itemKey = `${category}-${index}`;
+                    const isChecked = checkedItems.has(itemKey);
+                    
+                    return (
+                      <div
+                        key={itemKey}
+                        className={`flex items-center justify-between p-2 rounded cursor-pointer transition-colors ${
+                          isChecked ? 'bg-gray-100 line-through text-gray-500' : 'hover:bg-gray-50'
+                        }`}
+                        onClick={() => toggleItem(itemKey)}
+                      >
+                        <span>{item.name}</span>
+                        {item.quantity && item.unit && (
+                          <span className="text-sm text-gray-500">
+                            {item.quantity} {item.unit}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
-        {/* Action Buttons */}
-        <div className={`flex gap-3 pt-4 border-t border-fitness-primary-200 flex-shrink-0 ${isRTL ? 'flex-row-reverse' : ''}`}>
-          <Button
-            onClick={handleSendEmail}
-            disabled={isSendingEmail || totalItems === 0}
-            className="flex-1 bg-fitness-primary-500 hover:bg-fitness-primary-600 text-white"
-          >
-            <Mail className="w-4 h-4 mr-2" />
-            {isSendingEmail ? 'Sending...' : (t?.('shoppingList.sendEmail') || 'Email List')}
-          </Button>
-          
-          <Button
-            onClick={handleDownload}
-            variant="outline"
-            disabled={totalItems === 0}
-            className="border-fitness-accent-300 text-fitness-accent-600 hover:bg-fitness-accent-50"
-          >
-            <Download className="w-4 h-4" />
-          </Button>
-
-          <Button
-            onClick={onClose}
-            variant="outline"
-            className="px-6"
-          >
-            {t?.('common.close') || 'Close'}
-          </Button>
+        <div className="flex justify-between items-center pt-4 border-t">
+          <span className="text-sm text-gray-500">
+            {checkedItems.size} of {items.length} items checked
+          </span>
+          <Button onClick={onClose}>Close</Button>
         </div>
       </DialogContent>
     </Dialog>

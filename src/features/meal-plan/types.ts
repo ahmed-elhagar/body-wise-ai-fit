@@ -13,14 +13,14 @@ export interface DailyMeal {
   id: string;
   weekly_plan_id: string;
   day_number: number;
-  meal_type: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+  meal_type: 'breakfast' | 'lunch' | 'dinner' | 'snack1' | 'snack2';
   name: string;
   calories: number;
   protein: number;
   carbs: number;
   fat: number;
-  fiber?: number;
-  sugar?: number;
+  fiber?: number; // Optional since not in database
+  sugar?: number; // Optional since not in database
   prep_time: number;
   cook_time: number;
   servings: number;
@@ -30,7 +30,6 @@ export interface DailyMeal {
   ingredients: MealIngredient[];
   instructions: string[];
   alternatives: string[];
-  created_at?: string;
 }
 
 export interface WeeklyMealPlan {
