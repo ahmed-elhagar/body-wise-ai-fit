@@ -1,12 +1,26 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { validateMealType } from '../utils/mealTypeValidator';
-import type { DailyMeal, WeeklyMealPlan } from '../types';
+import type { DailyMeal, WeeklyMealPlan, MealIngredient } from '../types';
 
 export interface MealPlanFetchResult {
   weeklyPlan: WeeklyMealPlan;
   dailyMeals: DailyMeal[];
 }
+
+// Helper function to safely parse JSON data
+const safeJsonParse = (value: any, fallback: any = []) => {
+  if (!value) return fallback;
+  if (Array.isArray(value)) return value;
+  if (typeof value === 'string') {
+    try {
+      return JSON.parse(value);
+    } catch {
+      return fallback;
+    }
+  }
+  return fallback;
+};
 
 export const fetchMealPlanData = async (userId: string, weekStartDate: string): Promise<MealPlanFetchResult | null> => {
   console.log('🔄 Fetching meal plan data:', { userId, weekStartDate });
@@ -43,30 +57,45 @@ export const fetchMealPlanData = async (userId: string, weekStartDate: string): 
       throw dailyError;
     }
 
-    // Process and validate meal data
-    const processedMeals: DailyMeal[] = (dailyMealsData || []).map(meal => ({
-      id: meal.id,
-      weekly_plan_id: meal.weekly_plan_id,
-      day_number: meal.day_number,
-      meal_type: validateMealType(meal.meal_type) as 'breakfast' | 'lunch' | 'dinner' | 'snack1' | 'snack2',
-      name: meal.name,
-      calories: meal.calories || 0,
-      protein: meal.protein || 0,
-      carbs: meal.carbs || 0,
-      fat: meal.fat || 0,
-      fiber: meal.fiber || 0,
-      sugar: meal.sugar || 0,
-      prep_time: meal.prep_time || 0,
-      cook_time: meal.cook_time || 0,
-      servings: meal.servings || 1,
-      youtube_search_term: meal.youtube_search_term || '',
-      image_url: meal.image_url || '',
-      recipe_fetched: meal.recipe_fetched || false,
-      ingredients: Array.isArray(meal.ingredients) ? meal.ingredients : [],
-      instructions: Array.isArray(meal.instructions) ? meal.instructions : [],
-      alternatives: Array.isArray(meal.alternatives) ? meal.alternatives : [],
-      created_at: meal.created_at || new Date().toISOString()
-    }));
+    // Process and validate meal data with proper type handling
+    const processedMeals: DailyMeal[] = (dailyMealsData || []).map(meal => {
+      // Parse ingredients safely
+      const ingredients: MealIngredient[] = safeJsonParse(meal.ingredients, []).map((ing: any) => ({
+        name: ing?.name || '',
+        quantity: ing?.quantity || '',
+        unit: ing?.unit || ''
+      }));
+
+      // Parse instructions safely
+      const instructions: string[] = safeJsonParse(meal.instructions, []);
+
+      // Parse alternatives safely
+      const alternatives: string[] = safeJsonParse(meal.alternatives, []);
+
+      return {
+        id: meal.id,
+        weekly_plan_id: meal.weekly_plan_id,
+        day_number: meal.day_number,
+        meal_type: validateMealType(meal.meal_type) as 'breakfast' | 'lunch' | 'dinner' | 'snack1' | 'snack2',
+        name: meal.name,
+        calories: meal.calories || 0,
+        protein: meal.protein || 0,
+        carbs: meal.carbs || 0,
+        fat: meal.fat || 0,
+        fiber: 0, // Default value since not in database
+        sugar: 0, // Default value since not in database
+        prep_time: meal.prep_time || 0,
+        cook_time: meal.cook_time || 0,
+        servings: meal.servings || 1,
+        youtube_search_term: meal.youtube_search_term || '',
+        image_url: meal.image_url || '',
+        recipe_fetched: meal.recipe_fetched || false,
+        ingredients,
+        instructions,
+        alternatives,
+        created_at: meal.created_at || new Date().toISOString()
+      };
+    });
 
     // Create properly typed weekly plan
     const weeklyPlan: WeeklyMealPlan = {
