@@ -78,12 +78,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<any>(null);
 
-  // Enhanced error clearing function
   const clearError = () => {
     setError(null);
   };
 
-  // Enhanced retry authentication function
   const retryAuth = async () => {
     try {
       setIsLoading(true);
@@ -113,12 +111,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  // Fixed user enrichment to ensure user always has ID first
   const enrichUserWithProfile = async (session: Session) => {
     try {
       console.log('Enriching user with profile for ID:', session.user.id?.substring(0, 8) + '...');
       
-      // CRITICAL: Always create user with ID first, regardless of profile fetch success
+      // CRITICAL: Always create user with ID first
       const baseUser: AuthUser = {
         id: session.user.id,
         email: session.user.email,
@@ -128,11 +125,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         user_metadata: session.user.user_metadata
       };
 
-      // Set the base user immediately so components have access to user.id
+      // Set the base user immediately
       setUser(baseUser);
       console.log('Base user set with ID:', baseUser.id?.substring(0, 8) + '...');
       
-      // Try to enrich with profile data asynchronously
+      // Try to enrich with profile data
       try {
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
@@ -183,9 +180,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         
         try {
           if (session?.user?.id) {
-            // Set session first
             setSession(session);
-            // Then enrich user (this will set user state)
             await enrichUserWithProfile(session);
           } else {
             console.log('No session or user ID, clearing state');
@@ -193,16 +188,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setUser(null);
           }
           
-          // Clear any previous errors on successful auth state change
           setError(null);
         } catch (err) {
           console.error('Auth state change error:', err);
           setError(err);
-        }
-        
-        // Set loading to false after processing
-        if (mounted) {
-          setIsLoading(false);
+        } finally {
+          // CRITICAL: Always set loading to false after processing
+          if (mounted) {
+            setIsLoading(false);
+          }
         }
       }
     );
@@ -230,6 +224,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.error('Error in getInitialSession:', error);
         setError(error);
       } finally {
+        // CRITICAL: Always set loading to false
         if (mounted) {
           setIsLoading(false);
         }
