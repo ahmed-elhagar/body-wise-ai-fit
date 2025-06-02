@@ -80,10 +80,22 @@ export const MealPlanDialogs = ({
   hasWeeklyPlan,
   isEmailLoading
 }: MealPlanDialogsProps) => {
-  // Get enhanced shopping list data for the current week
-  const weekPlanData = hasWeeklyPlan ? {
-    weeklyPlan: { id: weeklyPlanId, week_start_date: weekStartDate.toISOString().split('T')[0] },
-    dailyMeals: enhancedShoppingItems
+  // Create a proper WeeklyPlanData object only if we have the necessary data
+  const weekPlanData = hasWeeklyPlan && weeklyPlanId ? {
+    weeklyPlan: {
+      id: weeklyPlanId,
+      user_id: '', // Will be populated by the hook
+      week_start_date: weekStartDate.toISOString().split('T')[0],
+      total_calories: 0,
+      total_protein: 0,
+      total_carbs: 0,
+      total_fat: 0,
+      preferences: {},
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      life_phase_context: {}
+    },
+    dailyMeals: enhancedShoppingItems || []
   } : null;
 
   const { enhancedShoppingItems: shoppingListData } = useEnhancedShoppingList(weekPlanData);
