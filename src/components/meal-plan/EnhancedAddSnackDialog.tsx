@@ -1,137 +1,262 @@
 
-import React from "react";
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
+import { Plus, Sparkles } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
-import { useSnackGeneration } from "./add-snack/useSnackGeneration";
-import { SnackGenerationCard } from "./add-snack/SnackGenerationCard";
+import { toast } from "sonner";
 import { SnackGenerationProgress } from "./add-snack/SnackGenerationProgress";
 
 interface EnhancedAddSnackDialogProps {
   isOpen: boolean;
   onClose: () => void;
   selectedDay: number;
-  currentDayCalories?: number;
-  targetDayCalories?: number;
-  weeklyPlanId?: string | null;
+  weeklyPlanId?: string;
+  remainingCalories: number;
   onSnackAdded: () => void;
 }
 
-const EnhancedAddSnackDialog = ({
+export const EnhancedAddSnackDialog = ({
   isOpen,
   onClose,
   selectedDay,
-  currentDayCalories = 0,
-  targetDayCalories = 2000,
   weeklyPlanId,
+  remainingCalories,
   onSnackAdded
 }: EnhancedAddSnackDialogProps) => {
-  const { t, isRTL } = useLanguage();
+  const { user } = useAuth();
   const { profile } = useProfile();
-
-  const remainingCalories = Math.max(0, targetDayCalories - currentDayCalories);
-
-  console.log('🥄 EnhancedAddSnackDialog rendered:', {
-    selectedDay,
-    currentDayCalories,
-    targetDayCalories,
-    remainingCalories,
-    weeklyPlanId,
-    profileId: profile?.id
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationStep, setGenerationStep] = useState('');
+  const [customSnack, setCustomSnack] = useState({
+    name: '',
+    calories: '',
+    protein: '',
+    carbs: '',
+    fat: ''
   });
 
-  const {
-    isGenerating,
-    generationStep,
-    handleGenerateAISnack
-  } = useSnackGeneration({
-    weeklyPlanId,
-    selectedDay,
-    remainingCalories,
-    profile,
-    onSnackAdded,
-    onClose
-  });
+  const handleGenerateAISnack = async () => {
+    if (!user || !weeklyPlanId || !profile) {
+      toast.error('Missing required data for snack generation');
+      return;
+    }
+
+    if (remainingCalories < 50) {
+      toast.error('Not enough calories remaining for a snack');
+      return;
+    }
+
+    setIsGenerating(true);
+    
+    try {
+      // Step 1: Analyzing preferences
+      setGenerationStep('analyzing');
+      console.log('🔍 Step 1: Analyzing user preferences...');
+      await new Promise(resolve => setTimeout(resolve, 1200));
+      
+      // Step 2: Creating perfect snack
+      setGenerationStep('creating');
+      console.log('🥄 Step 2: Creating perfect snack...');
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      const targetCalories = Math.min(remainingCalories, 300);
+
+      const { data, error } = await supabase.functions.invoke('generate-ai-snack', {
+        body: {
+          userProfile: profile,
+          day: selectedDay,
+          calories: targetCalories,
+          weeklyPlanId,
+          language: profile.preferred_language || 'en'
+        }
+      });
+
+      if (error) {
+        console.error('❌ Error generating AI snack:', error);
+        throw error;
+      }
+
+      // Step 3: Saving to meal plan
+      setGenerationStep('saving');
+      console.log('💾 Step 3: Saving snack to meal plan...');
+      await new Promise(resolve => setTimeout(resolve, 800));
+
+      if (data?.success) {
+        console.log('✅ AI snack generated successfully:', data);
+        toast.success('Snack added successfully!');
+        onClose();
+        onSnackAdded();
+      } else {
+        throw new Error(data?.error || 'Failed to generate snack');
+      }
+      
+    } catch (error: any) {
+      console.error('❌ Error generating AI snack:', error);
+      toast.error(error.message || 'Failed to generate snack');
+    } finally {
+      setIsGenerating(false);
+      setGenerationStep('');
+    }
+  };
+
+  const handleAddCustomSnack = async () => {
+    if (!customSnack.name || !customSnack.calories) {
+      toast.error('Please fill in snack name and calories');
+      return;
+    }
+
+    if (!weeklyPlanId) {
+      toast.error('No meal plan found');
+      return;
+    }
+
+    try {
+      const { error } = await supabase.from('daily_meals').insert({
+        weekly_plan_id: weeklyPlanId,
+        day_number: selectedDay,
+        meal_type: 'snack',
+        name: `🍎 ${customSnack.name}`,
+        calories: parseInt(customSnack.calories),
+        protein: parseFloat(customSnack.protein) || 0,
+        carbs: parseFloat(customSnack.carbs) || 0,
+        fat: parseFloat(customSnack.fat) || 0,
+        ingredients: [{ name: customSnack.name, quantity: '1', unit: 'serving' }],
+        instructions: ['Enjoy as a healthy snack'],
+        prep_time: 0,
+        cook_time: 0,
+        servings: 1
+      });
+
+      if (error) throw error;
+
+      toast.success('Custom snack added successfully!');
+      setCustomSnack({ name: '', calories: '', protein: '', carbs: '', fat: '' });
+      onClose();
+      onSnackAdded();
+    } catch (error) {
+      console.error('Error adding custom snack:', error);
+      toast.error('Failed to add snack');
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent 
-        className={`max-w-md bg-gradient-to-br from-fitness-primary-50 to-fitness-accent-50 border-fitness-primary-200 ${isRTL ? 'text-right' : 'text-left'}`}
-      >
+      <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className={`text-fitness-primary-700 ${isRTL ? 'text-right' : 'text-left'}`}>
-            {t('mealPlan.addSnack') || 'Add Snack'}
-          </DialogTitle>
+          <DialogTitle>Add Snack - Day {selectedDay}</DialogTitle>
         </DialogHeader>
-
-        <div className="space-y-4">
-          {/* Day Information */}
-          <div className={`bg-white p-4 rounded-lg border border-fitness-primary-200 ${isRTL ? 'text-right' : 'text-left'}`}>
-            <h3 className="font-medium text-fitness-primary-700 mb-2">
-              {t('mealPlan.dayInfo') || 'Day Information'}
-            </h3>
-            <div className="space-y-1 text-sm">
-              <div className={`flex justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-                <span className="text-fitness-primary-600">
-                  {t('mealPlan.selectedDay') || 'Selected Day'}:
-                </span>
-                <span className="font-medium text-fitness-primary-700">
-                  {t('mealPlan.day') || 'Day'} {selectedDay}
-                </span>
-              </div>
-              <div className={`flex justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-                <span className="text-fitness-primary-600">
-                  {t('mealPlan.currentCalories') || 'Current Calories'}:
-                </span>
-                <span className="font-medium text-fitness-primary-700">
-                  {currentDayCalories} {t('mealPlan.kcal') || 'kcal'}
-                </span>
-              </div>
-              <div className={`flex justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-                <span className="text-fitness-primary-600">
-                  {t('mealPlan.targetCalories') || 'Target Calories'}:
-                </span>
-                <span className="font-medium text-fitness-primary-700">
-                  {targetDayCalories} {t('mealPlan.kcal') || 'kcal'}
-                </span>
-              </div>
-              <div className={`flex justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-                <span className="text-fitness-primary-600">
-                  {t('mealPlan.remainingCalories') || 'Remaining Calories'}:
-                </span>
-                <span className={`font-medium ${remainingCalories > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {remainingCalories} {t('mealPlan.kcal') || 'kcal'}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Generation Progress or Card */}
-          {isGenerating ? (
-            <SnackGenerationProgress 
-              generationStep={generationStep}
-            />
-          ) : (
-            <SnackGenerationCard
-              remainingCalories={remainingCalories}
-              isGenerating={isGenerating}
-              onGenerate={handleGenerateAISnack}
-              onClose={onClose}
-            />
-          )}
-
-          {/* Warning for low calories */}
-          {remainingCalories < 50 && !isGenerating && (
-            <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg">
-              <p className="text-sm text-yellow-800 text-center">
-                {t('mealPlan.lowCaloriesWarning') || 'You have very few calories remaining. Consider a light snack or adjusting your other meals.'}
+        
+        <div className="space-y-6">
+          {/* AI Generated Snack */}
+          <Card>
+            <CardContent className="p-4">
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                <Sparkles className="w-4 h-4" />
+                AI Generated Snack
+              </h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Let AI create a perfect snack based on your preferences and remaining calories ({remainingCalories} cal).
               </p>
-            </div>
-          )}
+              
+              {isGenerating && (
+                <SnackGenerationProgress step={generationStep} />
+              )}
+              
+              <Button 
+                onClick={handleGenerateAISnack}
+                disabled={isGenerating}
+                className="w-full"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                {isGenerating ? 'Generating...' : 'Generate AI Snack'}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Custom Snack */}
+          <Card>
+            <CardContent className="p-4">
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                <Plus className="w-4 h-4" />
+                Custom Snack
+              </h3>
+              
+              <div className="space-y-3">
+                <div>
+                  <Label htmlFor="snack-name">Snack Name</Label>
+                  <Input
+                    id="snack-name"
+                    value={customSnack.name}
+                    onChange={(e) => setCustomSnack({...customSnack, name: e.target.value})}
+                    placeholder="e.g., Apple with peanut butter"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="calories">Calories</Label>
+                    <Input
+                      id="calories"
+                      type="number"
+                      value={customSnack.calories}
+                      onChange={(e) => setCustomSnack({...customSnack, calories: e.target.value})}
+                      placeholder="200"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="protein">Protein (g)</Label>
+                    <Input
+                      id="protein"
+                      type="number"
+                      value={customSnack.protein}
+                      onChange={(e) => setCustomSnack({...customSnack, protein: e.target.value})}
+                      placeholder="5"
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="carbs">Carbs (g)</Label>
+                    <Input
+                      id="carbs"
+                      type="number"
+                      value={customSnack.carbs}
+                      onChange={(e) => setCustomSnack({...customSnack, carbs: e.target.value})}
+                      placeholder="15"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="fat">Fat (g)</Label>
+                    <Input
+                      id="fat"
+                      type="number"
+                      value={customSnack.fat}
+                      onChange={(e) => setCustomSnack({...customSnack, fat: e.target.value})}
+                      placeholder="8"
+                    />
+                  </div>
+                </div>
+                
+                <Button
+                  onClick={handleAddCustomSnack}
+                  variant="outline"
+                  className="w-full"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Custom Snack
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </DialogContent>
     </Dialog>
   );
 };
-
-export default EnhancedAddSnackDialog;

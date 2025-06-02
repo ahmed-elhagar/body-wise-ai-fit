@@ -7,10 +7,12 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { getCategoryForIngredient } from '@/utils/mealPlanUtils';
 import type { WeeklyMealPlan, DailyMeal } from '@/hooks/useMealPlanData';
 
-export const useEnhancedShoppingList = (weeklyPlan?: {
+interface WeeklyPlanData {
   weeklyPlan: WeeklyMealPlan;
   dailyMeals: DailyMeal[];
-} | null) => {
+}
+
+export const useEnhancedShoppingList = (weeklyPlan?: WeeklyPlanData | null) => {
   const { user } = useAuth();
   const { language } = useLanguage();
 
