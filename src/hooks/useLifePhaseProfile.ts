@@ -13,8 +13,15 @@ interface LifePhaseContext {
   fastingEndDate?: string;
 }
 
+interface LifePhaseData {
+  fasting_type?: string;
+  pregnancy_trimester?: number;
+  breastfeeding_level?: string;
+  condition_start_date?: string;
+}
+
 export const useLifePhaseProfile = () => {
-  const { profile } = useProfile();
+  const { profile, updateProfile, isUpdating } = useProfile();
 
   const getCurrentSpecialConditions = () => {
     if (!profile?.special_conditions || !Array.isArray(profile.special_conditions)) {
@@ -60,8 +67,23 @@ export const useLifePhaseProfile = () => {
     };
   };
 
+  // Create a lifePhase object from profile data
+  const lifePhase: LifePhaseData = {
+    fasting_type: profile?.fasting_type,
+    pregnancy_trimester: profile?.pregnancy_trimester,
+    breastfeeding_level: profile?.breastfeeding_level,
+    condition_start_date: profile?.condition_start_date
+  };
+
+  const updateLifePhaseProfile = async (updates: Partial<LifePhaseData>) => {
+    return await updateProfile(updates);
+  };
+
   return {
     profile,
+    lifePhase,
+    isLoading: isUpdating,
+    updateLifePhaseProfile,
     getCurrentSpecialConditions,
     getActiveMuslimFasting,
     getNutritionContext
