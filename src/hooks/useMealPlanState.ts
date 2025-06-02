@@ -74,8 +74,7 @@ export const useMealPlanState = () => {
       if (result?.success) {
         console.log('✅ Generation successful:', {
           weeklyPlanId: result.weeklyPlanId,
-          weekOffset: navigation.currentWeekOffset,
-          creditsRemaining: result.generationsRemaining
+          weekOffset: navigation.currentWeekOffset
         });
         
         // Invalidate queries and refetch
