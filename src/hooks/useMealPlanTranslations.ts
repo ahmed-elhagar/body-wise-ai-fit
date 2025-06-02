@@ -62,6 +62,17 @@ export const useMealPlanTranslations = () => {
     snack2: mealPlanT('snack', 'Snack')
   }), [mealPlanT]);
 
+  // Memoize commonly used translations
+  const commonTranslations = useMemo(() => ({
+    cal: mealPlanT('cal', 'cal'),
+    recipe: mealPlanT('recipe', 'Recipe'),
+    exchange: mealPlanT('exchange', 'Exchange'),
+    calories: mealPlanT('calories', 'calories'),
+    protein: mealPlanT('protein', 'protein'),
+    carbs: mealPlanT('carbs', 'carbs'),
+    fat: mealPlanT('fat', 'fat')
+  }), [mealPlanT]);
+
   // Memoize all translations to prevent object recreation
   const translations = useMemo(() => ({
     title: mealPlanT('title', 'Meal Plan'),
@@ -72,11 +83,11 @@ export const useMealPlanTranslations = () => {
     generating: mealPlanT('generating', 'Generating...'),
     addSnack: mealPlanT('addSnack', 'Add Snack'),
     aiCredits: mealPlanT('aiCredits', 'AI Credits'),
-    recipe: mealPlanT('recipe', 'Recipe'),
-    calories: mealPlanT('cal', 'cal'),
-    protein: mealPlanT('protein', 'Protein'),
-    carbs: mealPlanT('carbs', 'Carbs'),
-    fat: mealPlanT('fat', 'Fat'),
+    recipe: commonTranslations.recipe,
+    calories: commonTranslations.calories,
+    protein: commonTranslations.protein,
+    carbs: commonTranslations.carbs,
+    fat: commonTranslations.fat,
     dailyProgress: mealPlanT('dailyProgress', 'Daily Progress'),
     targetReached: mealPlanT('targetReached', 'Daily calorie target reached!'),
     excellentProgress: mealPlanT('excellentProgress', "Excellent progress! You've reached your daily nutrition goals."),
@@ -108,8 +119,8 @@ export const useMealPlanTranslations = () => {
     authenticationRequired: mealPlanT('authenticationRequired', 'Authentication Required'),
     pleaseSignIn: mealPlanT('pleaseSignIn', 'Please sign in to continue'),
     signIn: mealPlanT('signIn', 'Sign In'),
-    exchange: mealPlanT('exchange', 'Exchange')
-  }), [mealPlanT]);
+    exchange: commonTranslations.exchange
+  }), [mealPlanT, commonTranslations]);
 
   return {
     t: mealPlanT,
@@ -119,13 +130,55 @@ export const useMealPlanTranslations = () => {
     getDayName,
     translations,
     
-    // Direct access to commonly used properties for backward compatibility
+    // Direct access to commonly used properties
     mealTypes,
-    cal: mealPlanT('cal', 'cal'),
-    recipe: mealPlanT('recipe', 'Recipe'),
-    exchange: mealPlanT('exchange', 'Exchange'),
+    cal: commonTranslations.cal,
+    recipe: commonTranslations.recipe,
+    exchange: commonTranslations.exchange,
+    calories: commonTranslations.calories,
+    protein: commonTranslations.protein,
+    carbs: commonTranslations.carbs,
+    fat: commonTranslations.fat,
     
-    // Individual properties for backward compatibility
-    ...translations
+    // Spread all translations for backward compatibility
+    title: translations.title,
+    smartMealPlanning: translations.smartMealPlanning,
+    personalizedNutrition: translations.personalizedNutrition,
+    generateAIMealPlan: translations.generateAIMealPlan,
+    generateAI: translations.generateAI,
+    generating: translations.generating,
+    addSnack: translations.addSnack,
+    aiCredits: translations.aiCredits,
+    dailyProgress: translations.dailyProgress,
+    targetReached: translations.targetReached,
+    excellentProgress: translations.excellentProgress,
+    perfectDay: translations.perfectDay,
+    considerLightSnack: translations.considerLightSnack,
+    consumed: translations.consumed,
+    target: translations.target,
+    calAvailable: translations.calAvailable,
+    close: translations.close,
+    cancel: translations.cancel,
+    noMealPlan: translations.noMealPlan,
+    generateFirstPlan: translations.generateFirstPlan,
+    aiPowered: translations.aiPowered,
+    currentWeek: translations.currentWeek,
+    selectDay: translations.selectDay,
+    today: translations.today,
+    dailyView: translations.dailyView,
+    weeklyView: translations.weeklyView,
+    breakfast: translations.breakfast,
+    lunch: translations.lunch,
+    dinner: translations.dinner,
+    snack: translations.snack,
+    loading: translations.loading,
+    loadingDescription: translations.loadingDescription,
+    errorLoadingMealPlan: translations.errorLoadingMealPlan,
+    somethingWentWrong: translations.somethingWentWrong,
+    tryAgain: translations.tryAgain,
+    goToDashboard: translations.goToDashboard,
+    authenticationRequired: translations.authenticationRequired,
+    pleaseSignIn: translations.pleaseSignIn,
+    signIn: translations.signIn
   };
 };
