@@ -18,6 +18,13 @@ interface Ingredient {
   unit?: string;
 }
 
+interface ShoppingItem {
+  name: string;
+  quantity: number;
+  unit: string;
+  category: string;
+}
+
 export const useEnhancedShoppingList = (weeklyPlan?: WeeklyPlanData | null) => {
   const { user } = useAuth();
   const { language } = useLanguage();
@@ -32,7 +39,7 @@ export const useEnhancedShoppingList = (weeklyPlan?: WeeklyPlanData | null) => {
       return { items: [], groupedItems: {} };
     }
 
-    const itemsMap = new Map<string, any>();
+    const itemsMap = new Map<string, ShoppingItem>();
     
     weeklyPlan.dailyMeals.forEach((meal, mealIndex) => {
       console.log(`🍽️ Processing meal ${mealIndex + 1}: ${meal.name}`);
@@ -89,7 +96,7 @@ export const useEnhancedShoppingList = (weeklyPlan?: WeeklyPlanData | null) => {
             existing.quantity += quantity;
             console.log(`🔄 Updated existing item: ${ingredientName} (${existing.quantity} ${unit})`);
           } else {
-            const newItem = {
+            const newItem: ShoppingItem = {
               name: ingredientName,
               quantity: quantity,
               unit: unit,
@@ -104,14 +111,14 @@ export const useEnhancedShoppingList = (weeklyPlan?: WeeklyPlanData | null) => {
 
     const items = Array.from(itemsMap.values());
     
-    const groupedItems = items.reduce((acc, item) => {
+    const groupedItems: Record<string, ShoppingItem[]> = items.reduce((acc, item) => {
       const category = item.category;
       if (!acc[category]) {
         acc[category] = [];
       }
       acc[category].push(item);
       return acc;
-    }, {} as Record<string, any[]>);
+    }, {} as Record<string, ShoppingItem[]>);
 
     console.log('🛒 Enhanced shopping items generated:', {
       totalItems: items.length,
