@@ -104,7 +104,7 @@ export const MealPlanDialogs = ({
         open={showExchangeDialog}
         onOpenChange={onCloseExchangeDialog}
         meal={selectedMeal}
-        onMealExchanged={onMealExchanged}
+        onExchange={onMealExchanged}
       />
 
       <EnhancedRecipeDialog
@@ -117,7 +117,15 @@ export const MealPlanDialogs = ({
       <ShoppingListDialog
         isOpen={showShoppingListDialog}
         onClose={onCloseShoppingListDialog}
-        shoppingItems={{ items: enhancedShoppingItems }}
+        shoppingItems={{ 
+          items: enhancedShoppingItems,
+          groupedItems: enhancedShoppingItems.reduce((acc: Record<string, any[]>, item: any) => {
+            const category = item.category || 'Other';
+            if (!acc[category]) acc[category] = [];
+            acc[category].push(item);
+            return acc;
+          }, {})
+        }}
         onSendEmail={onSendShoppingListEmail}
         weekStartDate={weekStartDate}
       />

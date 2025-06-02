@@ -31,15 +31,22 @@ export const useMealPlanTranslations = () => {
         today: 'اليوم',
         mealsPerDay: 'وجبات يومياً',
         minutes: 'دقيقة',
-        // Additional missing keys
         addSnack: 'إضافة وجبة خفيفة',
         noMealPlan: 'لا توجد خطة وجبات',
         generateFirstPlan: 'إنشاء أول خطة وجبات',
         aiPowered: 'مدعوم بالذكاء الاصطناعي',
-        mealTypes: 'أنواع الوجبات',
         cal: 'سعرة',
         recipe: 'وصفة',
-        exchange: 'استبدال'
+        exchange: 'استبدال',
+        // Nested meal types object
+        mealTypes: {
+          breakfast: 'إفطار',
+          lunch: 'غداء', 
+          dinner: 'عشاء',
+          snack1: 'وجبة خفيفة 1',
+          snack2: 'وجبة خفيفة 2',
+          snack: 'وجبة خفيفة'
+        }
       };
     }
 
@@ -60,15 +67,22 @@ export const useMealPlanTranslations = () => {
       today: 'Today',
       mealsPerDay: 'meals per day',
       minutes: 'minutes',
-      // Additional missing keys
       addSnack: 'Add Snack',
       noMealPlan: 'No meal plan available',
       generateFirstPlan: 'Generate your first meal plan',
       aiPowered: 'AI-powered',
-      mealTypes: 'Meal Types',
       cal: 'cal',
       recipe: 'Recipe',
-      exchange: 'Exchange'
+      exchange: 'Exchange',
+      // Nested meal types object
+      mealTypes: {
+        breakfast: 'Breakfast',
+        lunch: 'Lunch',
+        dinner: 'Dinner',
+        snack1: 'Snack 1',
+        snack2: 'Snack 2',
+        snack: 'Snack'
+      }
     };
   };
 

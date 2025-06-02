@@ -34,15 +34,8 @@ export const EnhancedMealCard = ({ meal, onViewMeal, onExchangeMeal }: EnhancedM
   };
 
   const getMealTypeLabel = (mealType: string) => {
-    const typeMap: Record<string, string> = {
-      breakfast: mealTypes.breakfast,
-      lunch: mealTypes.lunch,
-      dinner: mealTypes.dinner,
-      snack1: mealTypes.snack1,
-      snack2: mealTypes.snack2,
-      snack: mealTypes.snack
-    };
-    return typeMap[mealType.toLowerCase()] || mealType;
+    const mealTypeKey = mealType.toLowerCase() as keyof typeof mealTypes;
+    return mealTypes[mealTypeKey] || mealType;
   };
 
   return (
