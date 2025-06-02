@@ -1,5 +1,5 @@
 
-import EnhancedRecipeDialog from "../EnhancedRecipeDialog";
+import { EnhancedRecipeDialog } from "../EnhancedRecipeDialog";
 import MealPlanExchangeDialog from "../MealPlanExchangeDialog";
 import EnhancedAddSnackDialog from "../EnhancedAddSnackDialog";
 import MealPlanAIDialog from "../MealPlanAIDialog";

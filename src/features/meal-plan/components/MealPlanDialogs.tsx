@@ -12,7 +12,7 @@ interface MealPlanDialogsProps {
   showAIDialog: boolean;
   onCloseAIDialog: () => void;
   aiPreferences: MealPlanPreferences;
-  onGenerateAI: (preferences: MealPlanPreferences) => Promise<void>;
+  onGenerateAI: () => Promise<void>;
   isGenerating: boolean;
   currentWeekOffset: number;
 
@@ -71,6 +71,19 @@ export const MealPlanDialogs = ({
   enhancedShoppingItems,
   onSendShoppingListEmail
 }: MealPlanDialogsProps) => {
+  // Convert shopping items array to expected format
+  const shoppingItemsData = {
+    items: enhancedShoppingItems || [],
+    groupedItems: enhancedShoppingItems?.reduce((acc: any, item: any) => {
+      const category = item.category || 'Other';
+      if (!acc[category]) {
+        acc[category] = [];
+      }
+      acc[category].push(item);
+      return acc;
+    }, {}) || {}
+  };
+
   return (
     <>
       <AIGenerationDialog
@@ -110,7 +123,7 @@ export const MealPlanDialogs = ({
       <ShoppingListDialog
         isOpen={showShoppingListDialog}
         onClose={onCloseShoppingListDialog}
-        shoppingItems={enhancedShoppingItems}
+        shoppingItems={shoppingItemsData}
         weekStartDate={weekStartDate}
         onSendEmail={onSendShoppingListEmail}
       />

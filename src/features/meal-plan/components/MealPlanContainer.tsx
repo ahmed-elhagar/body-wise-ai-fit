@@ -115,6 +115,11 @@ export const MealPlanContainer = () => {
     return await sendShoppingListEmail();
   };
 
+  // Wrapper to handle the signature mismatch
+  const handleGenerateAIWrapper = async () => {
+    await handleGenerateAIPlan();
+  };
+
   return (
     <div className="container mx-auto px-4 py-6 space-y-4">
       {/* Page Header */}
@@ -164,7 +169,7 @@ export const MealPlanContainer = () => {
         showAIDialog={showAIDialog}
         onCloseAIDialog={closeAIDialog}
         aiPreferences={aiPreferences}
-        onGenerateAI={handleGenerateAIPlan}
+        onGenerateAI={handleGenerateAIWrapper}
         isGenerating={isGenerating}
         currentWeekOffset={currentWeekOffset}
         showAddSnackDialog={showAddSnackDialog}
@@ -184,7 +189,7 @@ export const MealPlanContainer = () => {
         onRecipeUpdated={refetch}
         showShoppingListDialog={showShoppingListDialog}
         onCloseShoppingListDialog={() => setShowShoppingListDialog(false)}
-        enhancedShoppingItems={enhancedShoppingItems}
+        enhancedShoppingItems={enhancedShoppingItems.items}
         onSendShoppingListEmail={handleSendShoppingListEmail}
       />
     </div>
