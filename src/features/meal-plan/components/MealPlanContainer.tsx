@@ -38,7 +38,6 @@ export const MealPlanContainer = () => {
     showRecipeDialog,
     selectedMeal,
     aiPreferences,
-    setAiPreferences,
     
     // Dialog actions
     openAIDialog,
@@ -146,9 +145,9 @@ export const MealPlanContainer = () => {
         isOpen={showAIDialog}
         onClose={closeAIDialog}
         preferences={aiPreferences}
-        onPreferencesChange={setAiPreferences}
         onGenerate={handleGenerateAIPlan}
         isGenerating={isGenerating}
+        weekOffset={currentWeekOffset}
       />
 
       <AddSnackDialog
