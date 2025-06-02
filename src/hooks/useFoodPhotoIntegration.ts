@@ -1,160 +1,68 @@
 
 import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useCreditSystem } from './useCreditSystem';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export const useFoodPhotoIntegration = () => {
   const { user } = useAuth();
   const { checkAndUseCreditAsync, completeGenerationAsync } = useCreditSystem();
-  const queryClient = useQueryClient();
-  const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  const analyzePhoto = useMutation({
-    mutationFn: async (photoFile: File) => {
-      // Check and use AI credit
-      const creditResult = await checkAndUseCreditAsync('food_analysis');
+  const analyzePhotoFood = async (imageFile: File) => {
+    if (!user?.id) {
+      console.error('No user ID available for photo analysis');
+      return null;
+    }
 
-      // Type guard to check if creditResult has success property
-      const creditData = creditResult as any;
-      if (!creditData || !creditData.success) {
-        throw new Error('Insufficient AI credits');
-      }
+    // Check and use credit before starting analysis
+    const hasCredit = await checkAndUseCreditAsync();
+    if (!hasCredit) {
+      toast.error('No AI credits remaining');
+      return null;
+    }
 
-      // Create form data for photo upload
+    setIsAnalyzing(true);
+    
+    try {
+      console.log('📸 Analyzing food photo with AI');
+      
       const formData = new FormData();
-      formData.append('photo', photoFile);
+      formData.append('image', imageFile);
+      formData.append('userId', user.id);
 
-      // Call Supabase Edge Function for analysis
-      const { data, error } = await supabase.functions.invoke('analyze-food-image', {
-        body: formData,
+      const { data, error } = await supabase.functions.invoke('analyze-food-photo', {
+        body: formData
       });
 
       if (error) {
-        // Log failed generation
-        if (creditData.log_id) {
-          await completeGenerationAsync({
-            logId: creditData.log_id,
-            responseData: { fileName: photoFile.name },
-            errorMessage: error.message,
-          });
-        }
+        console.error('❌ Food photo analysis error:', error);
         throw error;
       }
 
-      // Log successful generation
-      if (creditData.log_id) {
-        await completeGenerationAsync({
-          logId: creditData.log_id,
-          responseData: data,
-        });
+      if (data?.success) {
+        console.log('✅ Food photo analysis completed successfully');
+        
+        // Complete the generation process
+        await completeGenerationAsync();
+        
+        toast.success('Food photo analyzed successfully!');
+        return data;
+      } else {
+        throw new Error(data?.error || 'Analysis failed');
       }
-
-      setAnalysisResult(data);
-      return data;
-    },
-    onError: (error) => {
-      console.error('Photo analysis failed:', error);
-      toast.error('Failed to analyze photo');
-    },
-  });
-
-  const logAnalyzedFood = useMutation({
-    mutationFn: async (params: {
-      analyzedFood: any;
-      quantity: number;
-      mealType: string;
-      notes: string;
-    }) => {
-      const { analyzedFood, quantity, mealType, notes } = params;
-      
-      // First, create or find the food item
-      let foodItemId = analyzedFood.id;
-
-      if (!foodItemId) {
-        const { data: newFoodItem, error: foodError } = await supabase
-          .from('food_items')
-          .insert({
-            name: analyzedFood.name,
-            category: 'ai_detected',
-            calories_per_100g: analyzedFood.calories || 0,
-            protein_per_100g: analyzedFood.protein || 0,
-            carbs_per_100g: analyzedFood.carbs || 0,
-            fat_per_100g: analyzedFood.fat || 0,
-            source: 'ai_analysis',
-            confidence_score: analyzedFood.confidence || 0.8,
-          })
-          .select('id')
-          .single();
-
-        if (foodError) throw foodError;
-        foodItemId = newFoodItem.id;
-      }
-
-      // Log the consumption
-      const multiplier = quantity / 100;
-      const { error } = await supabase
-        .from('food_consumption_log')
-        .insert({
-          user_id: user?.id,
-          food_item_id: foodItemId,
-          quantity_g: quantity,
-          meal_type: mealType,
-          notes,
-          calories_consumed: (analyzedFood.calories || 0) * multiplier,
-          protein_consumed: (analyzedFood.protein || 0) * multiplier,
-          carbs_consumed: (analyzedFood.carbs || 0) * multiplier,
-          fat_consumed: (analyzedFood.fat || 0) * multiplier,
-          source: 'ai_analysis',
-          ai_analysis_data: analyzedFood,
-        });
-
-      if (error) throw error;
-      return true;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['food-consumption-today'] });
-      toast.success('Food logged successfully!');
-    },
-    onError: (error) => {
-      console.error('Error logging analyzed food:', error);
-      toast.error('Failed to log food');
-    },
-  });
-
-  const convertToFoodItem = (analyzedFood: any) => {
-    return {
-      id: analyzedFood.id || null,
-      name: analyzedFood.name || 'Unknown Food',
-      category: 'ai_detected',
-      calories: analyzedFood.calories || 0,
-      protein: analyzedFood.protein || 0,
-      carbs: analyzedFood.carbs || 0,
-      fat: analyzedFood.fat || 0,
-      quantity: analyzedFood.quantity || 'estimated portion',
-      confidence: analyzedFood.confidence || 0.8,
-    };
-  };
-
-  // Convenience method that combines analysis and logging
-  const processImageAndLog = async (photoFile: File, mealType: string) => {
-    const result = await analyzePhoto.mutateAsync(photoFile);
-    setAnalysisResult(result);
-    return result;
+    } catch (error) {
+      console.error('❌ Food photo analysis failed:', error);
+      toast.error('Failed to analyze food photo');
+      throw error;
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   return {
-    analyzePhoto: analyzePhoto.mutate,
-    logAnalyzedFood: (analyzedFood: any, quantity: number, mealType: string, notes: string) => 
-      logAnalyzedFood.mutate({ analyzedFood, quantity, mealType, notes }),
-    convertToFoodItem,
-    isAnalyzing: analyzePhoto.isPending,
-    isLoggingFood: logAnalyzedFood.isPending,
-    // Add missing properties
-    analysisResult,
-    isProcessing: analyzePhoto.isPending,
-    processImageAndLog,
+    isAnalyzing,
+    analyzePhotoFood
   };
 };

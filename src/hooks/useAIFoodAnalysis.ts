@@ -1,70 +1,69 @@
 
 import { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from './useAuth';
 import { useCreditSystem } from './useCreditSystem';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export const useAIFoodAnalysis = () => {
+  const { user } = useAuth();
   const { checkAndUseCreditAsync, completeGenerationAsync } = useCreditSystem();
-  const [analysisResult, setAnalysisResult] = useState<any>(null);
-  const [error, setError] = useState<Error | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  const analyzeFood = useMutation({
-    mutationFn: async (imageFile: File) => {
-      setError(null);
+  const analyzeFood = async (imageFile: File) => {
+    if (!user?.id) {
+      console.error('No user ID available for food analysis');
+      return null;
+    }
+
+    // Check and use credit before starting analysis
+    const hasCredit = await checkAndUseCreditAsync();
+    if (!hasCredit) {
+      toast.error('No AI credits remaining');
+      return null;
+    }
+
+    setIsAnalyzing(true);
+    
+    try {
+      console.log('🔍 Analyzing food image with AI');
       
-      // Check and use AI credit
-      const creditResult = await checkAndUseCreditAsync('food_analysis');
-
-      // Type guard to check if creditResult has success property
-      const creditData = creditResult as any;
-      if (!creditData || !creditData.success) {
-        throw new Error('Insufficient AI credits');
-      }
-
-      // Create form data for photo upload
+      // Upload image and analyze
       const formData = new FormData();
-      formData.append('photo', imageFile);
+      formData.append('image', imageFile);
+      formData.append('userId', user.id);
 
-      // Call Supabase Edge Function for analysis
       const { data, error } = await supabase.functions.invoke('analyze-food-image', {
-        body: formData,
+        body: formData
       });
 
       if (error) {
-        // Log failed generation
-        if (creditData.log_id) {
-          await completeGenerationAsync({
-            logId: creditData.log_id,
-            errorMessage: error.message,
-          });
-        }
+        console.error('❌ Food analysis error:', error);
         throw error;
       }
 
-      // Log successful generation
-      if (creditData.log_id) {
-        await completeGenerationAsync({
-          logId: creditData.log_id,
-          responseData: data,
-        });
+      if (data?.success) {
+        console.log('✅ Food analysis completed successfully');
+        
+        // Complete the generation process
+        await completeGenerationAsync();
+        
+        toast.success('Food analysis completed!');
+        return data;
+      } else {
+        throw new Error(data?.error || 'Analysis failed');
       }
-
-      setAnalysisResult(data);
-      return data;
-    },
-    onError: (error: Error) => {
-      console.error('Food analysis failed:', error);
-      setError(error);
-      toast.error('Failed to analyze food image');
-    },
-  });
+    } catch (error) {
+      console.error('❌ Food analysis failed:', error);
+      toast.error('Failed to analyze food');
+      throw error;
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
 
   return {
-    analyzeFood: analyzeFood.mutate,
-    isAnalyzing: analyzeFood.isPending,
-    analysisResult,
-    error,
+    isAnalyzing,
+    analyzeFood
   };
 };

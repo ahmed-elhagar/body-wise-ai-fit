@@ -1,110 +1,68 @@
 
-import { useMutation } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useState } from 'react';
 import { useAuth } from './useAuth';
-import { useProfile } from './useProfile';
 import { useCreditSystem } from './useCreditSystem';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-
-export interface MealAlternative {
-  name: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-  reason: string;
-  ingredients: Array<{ name: string; quantity: string; unit: string }>;
-  instructions: string[];
-  prepTime: number;
-  cookTime: number;
-  servings: number;
-  source?: 'database' | 'ai';
-}
 
 export const useAIMealExchange = () => {
   const { user } = useAuth();
-  const { profile } = useProfile();
-  const { language, t } = useLanguage();
   const { checkAndUseCreditAsync, completeGenerationAsync } = useCreditSystem();
+  const [isExchanging, setIsExchanging] = useState(false);
 
-  const generateAlternatives = useMutation({
-    mutationFn: async (currentMeal: any) => {
-      if (!user?.id) {
-        throw new Error(t('auth.signInRequired') || 'Please sign in to get meal alternatives');
-      }
+  const exchangeMeal = async (mealId: string, preferences: any) => {
+    if (!user?.id) {
+      console.error('No user ID available for meal exchange');
+      return null;
+    }
 
-      console.log('🔄 Generating meal alternatives for:', currentMeal.name, 'in language:', language);
+    // Check and use credit before starting exchange
+    const hasCredit = await checkAndUseCreditAsync();
+    if (!hasCredit) {
+      toast.error('No AI credits remaining');
+      return null;
+    }
 
-      // Use centralized credit system
-      const creditResult = await checkAndUseCreditAsync('meal_plan');
-
-      try {
-        const { data, error } = await supabase.functions.invoke('generate-meal-alternatives', {
-          body: {
-            currentMeal,
-            userProfile: profile || {},
-            preferences: {
-              dietaryRestrictions: profile?.dietary_restrictions || [],
-              allergies: profile?.allergies || [],
-              preferredFoods: profile?.preferred_foods || []
-            },
-            language
-          }
-        });
-
-        if (error) {
-          console.error('Meal alternatives generation error:', error);
-          throw new Error(error.message || 'Failed to generate meal alternatives');
+    setIsExchanging(true);
+    
+    try {
+      console.log('🔄 Exchanging meal with AI');
+      
+      const { data, error } = await supabase.functions.invoke('generate-meal-alternatives', {
+        body: {
+          mealId,
+          preferences,
+          userId: user.id
         }
+      });
 
-        if (!data?.success) {
-          throw new Error(data?.error || 'Failed to generate alternatives');
-        }
-
-        console.log('✅ Generated alternatives:', {
-          total: data.alternatives?.length || 0,
-          sources: data.source_breakdown
-        });
-
-        // Complete the AI generation log with success
-        const creditData = creditResult as any;
-        if (creditData?.log_id) {
-          await completeGenerationAsync({
-            logId: creditData.log_id,
-            responseData: {
-              alternativesCount: data.alternatives?.length || 0,
-              sources: data.source_breakdown
-            }
-          });
-        }
-
-        return data.alternatives || [];
-      } catch (error) {
-        // Mark generation as failed
-        const creditData = creditResult as any;
-        if (creditData?.log_id) {
-          await completeGenerationAsync({
-            logId: creditData.log_id,
-            errorMessage: error instanceof Error ? error.message : 'Generation failed'
-          });
-        }
+      if (error) {
+        console.error('❌ Meal exchange error:', error);
         throw error;
       }
-    },
-    onError: (error: any) => {
-      console.error('Error generating meal alternatives:', error);
-      toast.error(language === 'ar' ? 
-        `فشل في توليد البدائل: ${error.message}` :
-        `Failed to generate alternatives: ${error.message}`
-      );
-    },
-  });
+
+      if (data?.success) {
+        console.log('✅ Meal exchange completed successfully');
+        
+        // Complete the generation process
+        await completeGenerationAsync();
+        
+        toast.success('Meal exchanged successfully!');
+        return data;
+      } else {
+        throw new Error(data?.error || 'Exchange failed');
+      }
+    } catch (error) {
+      console.error('❌ Meal exchange failed:', error);
+      toast.error('Failed to exchange meal');
+      throw error;
+    } finally {
+      setIsExchanging(false);
+    }
+  };
 
   return {
-    generateAlternatives: generateAlternatives.mutate,
-    isGenerating: generateAlternatives.isPending,
-    alternatives: generateAlternatives.data || [],
-    error: generateAlternatives.error,
+    isExchanging,
+    exchangeMeal
   };
 };

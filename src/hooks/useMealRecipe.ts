@@ -28,8 +28,12 @@ export const useMealRecipe = () => {
         duration: 15000,
       });
 
-      // Use centralized credit system with valid generation type
-      const creditResult = await checkAndUseCreditAsync('meal_plan');
+      // Use centralized credit system
+      const hasCredit = await checkAndUseCreditAsync();
+      if (!hasCredit) {
+        toast.error('No AI credits remaining');
+        return null;
+      }
 
       try {
         const { data, error } = await supabase.functions.invoke('generate-meal-recipe', {
@@ -51,18 +55,8 @@ export const useMealRecipe = () => {
         if (data?.success) {
           console.log('✅ Recipe generated successfully!');
           
-          // Complete the AI generation log with success
-          const creditData = creditResult as any;
-          if (creditData?.log_id) {
-            await completeGenerationAsync({
-              logId: creditData.log_id,
-              responseData: {
-                mealId: mealId,
-                recipeGenerated: true,
-                language: language
-              }
-            });
-          }
+          // Complete the AI generation
+          await completeGenerationAsync();
 
           if (data.message.includes('already available')) {
             toast.success('Recipe loaded from cache!');
@@ -90,14 +84,6 @@ export const useMealRecipe = () => {
           throw new Error(data?.error || 'Failed to generate recipe');
         }
       } catch (error) {
-        // Mark generation as failed
-        const creditData = creditResult as any;
-        if (creditData?.log_id) {
-          await completeGenerationAsync({
-            logId: creditData.log_id,
-            errorMessage: error instanceof Error ? error.message : 'Recipe generation failed'
-          });
-        }
         throw error;
       }
       

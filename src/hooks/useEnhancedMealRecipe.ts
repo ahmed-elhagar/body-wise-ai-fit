@@ -80,8 +80,13 @@ export const useEnhancedMealRecipe = () => {
     }
   };
 
+  const generateYouTubeSearchTerm = (mealName: string) => {
+    return `${mealName} recipe tutorial cooking`;
+  };
+
   return {
     generateEnhancedRecipe,
+    generateYouTubeSearchTerm,
     isGeneratingRecipe
   };
 };
