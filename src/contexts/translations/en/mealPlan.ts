@@ -5,6 +5,7 @@ export const mealPlan = {
   generateAIMealPlan: "Generate AI Meal Plan",
   generateMealPlan: "Generate Meal Plan",
   generateNewPlan: "Generate New Plan",
+  generateAI: "Generate AI",
   regenerate: "Regenerate",
   shuffleMeals: "Shuffle Meals",
   viewRecipe: "View Recipe",
@@ -77,6 +78,14 @@ export const mealPlan = {
   snack1: "Morning Snack",
   snack2: "Evening Snack",
   
+  // Meal types object
+  mealTypes: {
+    breakfast: "Breakfast",
+    lunch: "Lunch", 
+    dinner: "Dinner",
+    snack: "Snack"
+  },
+  
   // Credits
   aiCredits: "AI Credits",
   
@@ -98,7 +107,6 @@ export const mealPlan = {
   
   // Preferences & Settings
   maxPrepTime: "Max Prep Time",
-  mealTypes: "Meal Types",
   includeSnacks: "Include Snacks",
   generateSevenDayPlan: "Generate 7-Day Plan",
   leaveEmptyNationality: "Leave empty for mixed cuisine",
@@ -111,6 +119,17 @@ export const mealPlan = {
   friday: "Friday",
   saturday: "Saturday",
   sunday: "Sunday",
+  
+  // Day names with numbers
+  dayNames: {
+    1: "Saturday",
+    2: "Sunday",
+    3: "Monday",
+    4: "Tuesday",
+    5: "Wednesday",
+    6: "Thursday",
+    7: "Friday"
+  },
   
   // Additional terms
   description: "Description",
@@ -136,5 +155,14 @@ export const mealPlan = {
     error: "Error generating snack",
     failed: "Failed to generate snack",
     notEnoughCalories: "Not enough calories remaining for a snack"
-  }
+  },
+  
+  // Common actions
+  calAvailable: "cal available",
+  targetReached: "Daily calorie target reached!",
+  excellentProgress: "Excellent progress! You've reached your daily nutrition goals.",
+  perfectDay: "Perfect Day",
+  considerLightSnack: "Consider a light snack or some water to complete your day.",
+  close: "Close",
+  cancel: "Cancel"
 } as const;

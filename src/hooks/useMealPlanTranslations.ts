@@ -1,4 +1,3 @@
-
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export const useMealPlanTranslations = () => {
@@ -46,7 +45,55 @@ export const useMealPlanTranslations = () => {
     isRTL,
     getMealTypeTranslation,
     getDayName,
-    // Common translations
+    
+    // Individual translation properties for backward compatibility
+    title: mealPlanT('title', 'Meal Plan'),
+    smartMealPlanning: mealPlanT('smartMealPlanning', 'Smart Meal Planning'),
+    personalizedNutrition: mealPlanT('personalizedNutrition', 'Personalized nutrition plans powered by AI'),
+    generateAIMealPlan: mealPlanT('generateAIMealPlan', 'Generate AI Meal Plan'),
+    generateAI: mealPlanT('generateAI', 'Generate AI'),
+    generating: mealPlanT('generating', 'Generating...'),
+    addSnack: mealPlanT('addSnack', 'Add Snack'),
+    aiCredits: mealPlanT('aiCredits', 'AI Credits'),
+    recipe: mealPlanT('recipe', 'Recipe'),
+    cal: mealPlanT('cal', 'cal'),
+    calories: mealPlanT('calories', 'calories'),
+    protein: mealPlanT('protein', 'Protein'),
+    carbs: mealPlanT('carbs', 'Carbs'),
+    fat: mealPlanT('fat', 'Fat'),
+    exchange: mealPlanT('exchange', 'Exchange'),
+    dailyProgress: mealPlanT('dailyProgress', 'Daily Progress'),
+    targetReached: mealPlanT('targetReached', 'Daily calorie target reached!'),
+    excellentProgress: mealPlanT('excellentProgress', "Excellent progress! You've reached your daily nutrition goals."),
+    perfectDay: mealPlanT('perfectDay', 'Perfect Day'),
+    considerLightSnack: mealPlanT('considerLightSnack', 'Consider a light snack or some water to complete your day.'),
+    consumed: mealPlanT('consumed', 'Consumed'),
+    target: mealPlanT('target', 'Target'),
+    calAvailable: mealPlanT('calAvailable', 'cal available'),
+    close: mealPlanT('close', 'Close'),
+    cancel: mealPlanT('cancel', 'Cancel'),
+    noMealPlan: mealPlanT('noMealPlan', 'No Meal Plan Found'),
+    generateFirstPlan: mealPlanT('generateFirstPlan', 'Generate your personalized weekly meal plan with AI'),
+    aiPowered: mealPlanT('aiPowered', 'AI Powered'),
+    currentWeek: mealPlanT('currentWeek', 'Current Week'),
+    selectDay: mealPlanT('selectDay', 'Select Day'),
+    today: mealPlanT('today', 'Today'),
+    dailyView: mealPlanT('dailyView', 'Daily View'),
+    weeklyView: mealPlanT('weeklyView', 'Weekly View'),
+    breakfast: mealPlanT('breakfast', 'Breakfast'),
+    lunch: mealPlanT('lunch', 'Lunch'),
+    dinner: mealPlanT('dinner', 'Dinner'),
+    snack: mealPlanT('snack', 'Snack'),
+    
+    // Meal types object for easier access
+    mealTypes: {
+      breakfast: mealPlanT('breakfast', 'Breakfast'),
+      lunch: mealPlanT('lunch', 'Lunch'),
+      dinner: mealPlanT('dinner', 'Dinner'),
+      snack: mealPlanT('snack', 'Snack')
+    },
+    
+    // Common translations object (keeping for components that expect it)
     translations: {
       title: mealPlanT('title', 'Meal Plan'),
       smartMealPlanning: mealPlanT('smartMealPlanning', 'Smart Meal Planning'),
