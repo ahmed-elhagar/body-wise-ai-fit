@@ -8,6 +8,7 @@ import { AIGenerationDialog } from './dialogs/AIGenerationDialog';
 import { AddSnackDialog } from './dialogs/AddSnackDialog';
 import { ExchangeDialog } from './dialogs/ExchangeDialog';
 import { RecipeDialog } from './dialogs/RecipeDialog';
+import { CompactDailyProgress } from './CompactDailyProgress';
 import EnhancedLoadingIndicator from '@/components/ui/enhanced-loading-indicator';
 import type { DailyMeal } from '@/hooks/useMealPlanData';
 
@@ -55,7 +56,10 @@ export const MealPlanContainer = () => {
     handleViewMeal,
     handleExchangeMeal,
     handleAddSnack,
-    refetch
+    refetch,
+    
+    // Credit system
+    userCredits
   } = useMealPlanPage();
 
   console.log('🏠 MEAL PLAN CONTAINER STATE:', {
@@ -65,6 +69,7 @@ export const MealPlanContainer = () => {
     isGenerating,
     selectedDayNumber,
     currentWeekOffset,
+    userCredits,
     dialogStates: {
       showAIDialog,
       showRecipeDialog,
@@ -105,7 +110,7 @@ export const MealPlanContainer = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 space-y-6">
+    <div className="container mx-auto px-4 py-6 space-y-4">
       {/* Navigation */}
       <UnifiedNavigation
         currentWeekOffset={currentWeekOffset}
@@ -116,8 +121,17 @@ export const MealPlanContainer = () => {
         onGenerateAI={openAIDialog}
         isGenerating={isGenerating}
         hasWeeklyPlan={!!currentWeekPlan?.weeklyPlan}
-        remainingCredits={5}
+        remainingCredits={userCredits || 0}
       />
+
+      {/* Compact Daily Progress */}
+      {currentWeekPlan?.weeklyPlan && (
+        <CompactDailyProgress
+          totalCalories={totalCalories || 0}
+          totalProtein={totalProtein || 0}
+          targetDayCalories={targetDayCalories || 2000}
+        />
+      )}
 
       {/* Main Content */}
       {currentWeekPlan?.weeklyPlan ? (

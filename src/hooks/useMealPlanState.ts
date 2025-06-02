@@ -7,13 +7,16 @@ import { useMealPlanCalculations } from "./useMealPlanCalculations";
 import { useMealPlanHandlers } from "./useMealPlanHandlers";
 import { useMealPlanData } from "./useMealPlanData";
 import { useEnhancedMealPlan } from "./useEnhancedMealPlan";
+import { useCreditSystem } from './useCreditSystem';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from './useAuth';
+import { toast } from 'sonner';
 
 export const useMealPlanState = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { userCredits } = useCreditSystem();
   
   // Core navigation and UI state
   const navigation = useMealPlanNavigation();
@@ -43,14 +46,25 @@ export const useMealPlanState = () => {
     dialogs.openExchangeDialog
   );
 
-  // Enhanced AI generation with proper error handling
+  // Enhanced AI generation with proper credit checking and error handling
   const handleGenerateAIPlan = useCallback(async (): Promise<boolean> => {
+    // Check credits first
+    if (userCredits <= 0) {
+      toast.error(
+        language === 'ar' 
+          ? 'لا توجد أرصدة ذكاء اصطناعي متبقية' 
+          : 'No AI credits remaining'
+      );
+      return false;
+    }
+
     try {
       console.log('🚀 Starting AI meal plan generation:', {
         weekOffset: navigation.currentWeekOffset,
         preferences: dialogs.aiPreferences,
         userId: user?.id,
-        nutritionContext
+        nutritionContext,
+        userCredits
       });
       
       const result = await generateMealPlan(dialogs.aiPreferences, { 
@@ -60,7 +74,8 @@ export const useMealPlanState = () => {
       if (result?.success) {
         console.log('✅ Generation successful:', {
           weeklyPlanId: result.weeklyPlanId,
-          weekOffset: navigation.currentWeekOffset
+          weekOffset: navigation.currentWeekOffset,
+          creditsRemaining: result.generationsRemaining
         });
         
         // Invalidate queries and refetch
@@ -77,12 +92,29 @@ export const useMealPlanState = () => {
         // Close dialog
         dialogs.closeAIDialog();
         
+        // Show success message
+        toast.success(
+          language === 'ar'
+            ? 'تم إنشاء خطة الوجبات بنجاح!'
+            : 'Meal plan generated successfully!'
+        );
+        
         return true;
       }
       
+      toast.error(
+        language === 'ar'
+          ? 'فشل في إنشاء خطة الوجبات'
+          : 'Failed to generate meal plan'
+      );
       return false;
     } catch (error) {
       console.error('❌ Generation failed:', error);
+      toast.error(
+        language === 'ar'
+          ? 'حدث خطأ أثناء الإنشاء'
+          : 'An error occurred during generation'
+      );
       return false;
     }
   }, [
@@ -93,7 +125,9 @@ export const useMealPlanState = () => {
     queryClient, 
     user?.id, 
     nutritionContext,
-    dialogs.closeAIDialog
+    dialogs.closeAIDialog,
+    userCredits,
+    language
   ]);
 
   // Manual refetch with proper error handling
@@ -115,6 +149,7 @@ export const useMealPlanState = () => {
     dailyMealsCount: currentWeekPlan?.dailyMeals?.length || 0,
     isLoading,
     isGenerating,
+    userCredits,
     error: error?.message,
     weekStartDate: navigation.weekStartDate.toDateString(),
     nutritionContext,
@@ -147,6 +182,7 @@ export const useMealPlanState = () => {
     
     // Enhanced context
     nutritionContext,
+    userCredits,
     
     // Actions
     handleGenerateAIPlan,
