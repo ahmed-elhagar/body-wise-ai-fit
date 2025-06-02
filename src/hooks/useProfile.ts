@@ -69,7 +69,12 @@ export const useProfile = () => {
         }
 
         console.log('useProfile: Profile data fetched:', data);
-        setProfile(data);
+        // Convert special_conditions from Json to array if needed
+        const profileData = {
+          ...data,
+          special_conditions: Array.isArray(data.special_conditions) ? data.special_conditions : []
+        };
+        setProfile(profileData);
       } catch (err) {
         console.error('Profile fetch error:', err);
         setError('Failed to fetch profile');
@@ -101,8 +106,13 @@ export const useProfile = () => {
       }
 
       console.log('useProfile: Profile updated successfully:', data);
-      setProfile(data);
-      return { data };
+      // Convert special_conditions from Json to array if needed
+      const profileData = {
+        ...data,
+        special_conditions: Array.isArray(data.special_conditions) ? data.special_conditions : []
+      };
+      setProfile(profileData);
+      return { data: profileData };
     } catch (err) {
       console.error('Profile update error:', err);
       return { error: 'Failed to update profile' };
@@ -124,7 +134,12 @@ export const useProfile = () => {
         console.error('Profile refetch error:', error);
         setError(error.message);
       } else {
-        setProfile(data);
+        // Convert special_conditions from Json to array if needed
+        const profileData = {
+          ...data,
+          special_conditions: Array.isArray(data.special_conditions) ? data.special_conditions : []
+        };
+        setProfile(profileData);
       }
       setIsLoading(false);
     }
