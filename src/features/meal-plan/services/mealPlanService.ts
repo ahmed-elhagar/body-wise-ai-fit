@@ -21,7 +21,7 @@ const processMealData = (meal: any): DailyMeal => {
     id: meal.id,
     weekly_plan_id: meal.weekly_plan_id,
     day_number: meal.day_number,
-    meal_type: meal.meal_type,
+    meal_type: meal.meal_type as 'breakfast' | 'lunch' | 'dinner' | 'snack1' | 'snack2',
     name: meal.name,
     calories: meal.calories || 0,
     protein: meal.protein || 0,
@@ -104,7 +104,7 @@ export const fetchMealPlanData = async (userId: string, weekStartDateStr: string
       total_fat: weeklyPlan.total_fat || 0,
       generation_prompt: weeklyPlan.generation_prompt,
       created_at: weeklyPlan.created_at,
-      updated_at: weeklyPlan.updated_at,
+      updated_at: weeklyPlan.updated_at || weeklyPlan.created_at,
       life_phase_context: weeklyPlan.life_phase_context
     } as WeeklyMealPlan,
     dailyMeals: processedMeals

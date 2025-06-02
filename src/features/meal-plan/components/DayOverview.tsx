@@ -94,15 +94,17 @@ export const DayOverview = ({
         </div>
         
         <div className="flex items-center gap-3">
-          <Button
-            onClick={() => setShowShoppingList(true)}
-            variant="outline"
-            size="sm"
-            className="border-fitness-primary-300 bg-white text-fitness-primary-600 hover:bg-fitness-primary-50"
-          >
-            <ShoppingCart className="w-4 h-4 mr-2" />
-            {shoppingList}
-          </Button>
+          {weeklyPlan?.dailyMeals && weeklyPlan.dailyMeals.length > 0 && (
+            <Button
+              onClick={() => setShowShoppingList(true)}
+              variant="outline"
+              size="sm"
+              className="border-fitness-primary-300 bg-white text-fitness-primary-600 hover:bg-fitness-primary-50"
+            >
+              <ShoppingCart className="w-4 h-4 mr-2" />
+              {shoppingList}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -182,15 +184,17 @@ export const DayOverview = ({
       )}
 
       {/* Shopping List Drawer */}
-      <ShoppingListDrawer
-        isOpen={showShoppingList}
-        onClose={() => setShowShoppingList(false)}
-        weeklyPlan={weeklyPlan}
-        weekId={weeklyPlan?.weeklyPlan?.id}
-        onShoppingListUpdate={() => {
-          console.log('Shopping list updated');
-        }}
-      />
+      {weeklyPlan && (
+        <ShoppingListDrawer
+          isOpen={showShoppingList}
+          onClose={() => setShowShoppingList(false)}
+          weeklyPlan={weeklyPlan}
+          weekId={weeklyPlan?.weeklyPlan?.id}
+          onShoppingListUpdate={() => {
+            console.log('Shopping list updated');
+          }}
+        />
+      )}
     </div>
   );
 };

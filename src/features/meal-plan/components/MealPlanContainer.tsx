@@ -92,7 +92,7 @@ export const MealPlanContainer = () => {
         onGenerateAI={() => setShowAIDialog(true)}
         isGenerating={isGenerating}
         hasWeeklyPlan={!!currentWeekPlan?.weeklyPlan}
-        remainingCredits={5} // This will be connected to actual credits later
+        remainingCredits={5}
       />
 
       {/* Main Content */}
@@ -131,7 +131,7 @@ export const MealPlanContainer = () => {
         onClose={() => setShowAddSnackDialog(false)}
         currentDayCalories={totalCalories}
         targetDayCalories={targetDayCalories}
-        selectedDayNumber={selectedDayNumber}
+        selectedDay={selectedDayNumber}
         weeklyPlanId={currentWeekPlan?.weeklyPlan?.id}
         onSnackAdded={refetch}
       />

@@ -3,7 +3,7 @@ import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ChefHat, Clock, Users, Utensils } from "lucide-react";
+import { ChefHat, Clock, Users, Utensils, Youtube, ExternalLink } from "lucide-react";
 import { useMealPlanTranslations } from '@/utils/mealPlanTranslations';
 import type { DailyMeal } from '../../types';
 
@@ -15,6 +15,14 @@ interface RecipeDialogProps {
 
 export const RecipeDialog = ({ isOpen, onClose, meal }: RecipeDialogProps) => {
   const { recipe } = useMealPlanTranslations();
+
+  const handleYouTubeSearch = () => {
+    if (!meal) return;
+    
+    const searchTerm = meal.youtube_search_term || `${meal.name} recipe tutorial`;
+    const youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(searchTerm)}`;
+    window.open(youtubeUrl, '_blank');
+  };
 
   if (!meal) return null;
 
@@ -139,9 +147,22 @@ export const RecipeDialog = ({ isOpen, onClose, meal }: RecipeDialogProps) => {
             </div>
           )}
           
-          <Button onClick={onClose} className="w-full">
-            Close {recipe}
-          </Button>
+          {/* Action Buttons */}
+          <div className="flex gap-3 pt-4 border-t">
+            <Button
+              onClick={handleYouTubeSearch}
+              variant="outline"
+              className="flex-1 border-red-200 text-red-600 hover:bg-red-50"
+            >
+              <Youtube className="w-4 h-4 mr-2" />
+              Watch Tutorial
+              <ExternalLink className="w-4 h-4 ml-2" />
+            </Button>
+            
+            <Button onClick={onClose} className="flex-1">
+              Close {recipe}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
