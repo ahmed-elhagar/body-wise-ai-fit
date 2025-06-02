@@ -7,8 +7,9 @@ import type {
   StrictDailyMeal,
   StrictWeeklyMealPlan 
 } from '../types/enhanced';
+import { validateMealType } from '../utils/mealTypeValidator';
 
-// Optimized database service with better query performance
+// Optimized database service with enhanced error handling and validation
 export class OptimizedMealPlanService {
   private static readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes
   private static queryCache = new Map<string, { data: unknown; timestamp: number }>();
@@ -19,9 +20,16 @@ export class OptimizedMealPlanService {
     const startTime = Date.now();
     const cacheKey = this.generateCacheKey(params);
     
+    console.log('🔍 OptimizedMealPlanService.fetchMealPlanData called:', {
+      userId: params.userId.substring(0, 8) + '...',
+      weekStartDate: params.weekStartDate,
+      cacheKey
+    });
+    
     // Check cache first
     const cached = this.getFromCache<StrictMealPlanFetchResult>(cacheKey);
     if (cached) {
+      console.log('📦 Returning cached data for:', cacheKey);
       return {
         data: cached,
         error: null,
@@ -31,12 +39,8 @@ export class OptimizedMealPlanService {
     }
 
     try {
-      console.log('🔍 Optimized fetch for meal plan:', {
-        userId: params.userId.substring(0, 8) + '...',
-        weekStartDate: params.weekStartDate
-      });
-
-      // Optimized weekly plan query
+      // Optimized weekly plan query with enhanced error handling
+      console.log('🔍 Fetching weekly meal plan...');
       const weeklyPlanQuery = supabase
         .from('weekly_meal_plans')
         .select('*')
@@ -57,7 +61,10 @@ export class OptimizedMealPlanService {
       }
 
       if (!weeklyPlan) {
-        console.log('📋 No weekly meal plan found');
+        console.log('📋 No weekly meal plan found for:', {
+          userId: params.userId.substring(0, 8) + '...',
+          weekStartDate: params.weekStartDate
+        });
         return {
           data: null,
           error: null,
@@ -66,8 +73,12 @@ export class OptimizedMealPlanService {
         };
       }
 
-      // Optimized daily meals query with selective fields
+      console.log('✅ Weekly plan found:', weeklyPlan.id);
+
+      // Optimized daily meals query with selective fields and validation
       const selectFields = this.buildSelectFields(params);
+      console.log('🔍 Fetching daily meals with fields:', selectFields);
+      
       const dailyMealsQuery = supabase
         .from('daily_meals')
         .select(selectFields)
@@ -77,6 +88,7 @@ export class OptimizedMealPlanService {
       // Add meal type filter if specified
       if (params.mealTypes && params.mealTypes.length > 0) {
         dailyMealsQuery.in('meal_type', params.mealTypes);
+        console.log('🔍 Filtering by meal types:', params.mealTypes);
       }
 
       const { data: dailyMeals, error: mealsError } = await dailyMealsQuery;
@@ -91,6 +103,11 @@ export class OptimizedMealPlanService {
         };
       }
 
+      console.log('✅ Daily meals fetched:', {
+        count: dailyMeals?.length || 0,
+        weeklyPlanId: weeklyPlan.id
+      });
+
       const result: StrictMealPlanFetchResult = {
         weeklyPlan: this.processWeeklyPlan(weeklyPlan),
         dailyMeals: this.processDailyMeals(dailyMeals || [])
@@ -99,10 +116,11 @@ export class OptimizedMealPlanService {
       // Cache the result
       this.setCache(cacheKey, result);
 
-      console.log('✅ Optimized meal plan data fetched:', {
+      console.log('✅ Optimized meal plan data processed successfully:', {
         weeklyPlanId: weeklyPlan.id,
         dailyMealsCount: dailyMeals?.length || 0,
-        queryTime: Date.now() - startTime
+        queryTime: Date.now() - startTime,
+        cached: false
       });
 
       return {
@@ -124,20 +142,30 @@ export class OptimizedMealPlanService {
   }
 
   private static generateCacheKey(params: OptimizedQueryParams): string {
-    return `meal_plan_${params.userId}_${params.weekStartDate}_${JSON.stringify(params.mealTypes || [])}`;
+    const key = `meal_plan_${params.userId}_${params.weekStartDate}_${JSON.stringify(params.mealTypes || [])}`;
+    return key;
   }
 
   private static getFromCache<T>(key: string): T | null {
-    const cached = this.queryCache.get(key);
-    if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
-      return cached.data as T;
+    try {
+      const cached = this.queryCache.get(key);
+      if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
+        return cached.data as T;
+      }
+      this.queryCache.delete(key);
+      return null;
+    } catch (error) {
+      console.error('❌ Cache retrieval error:', error);
+      return null;
     }
-    this.queryCache.delete(key);
-    return null;
   }
 
   private static setCache<T>(key: string, data: T): void {
-    this.queryCache.set(key, { data, timestamp: Date.now() });
+    try {
+      this.queryCache.set(key, { data, timestamp: Date.now() });
+    } catch (error) {
+      console.error('❌ Cache storage error:', error);
+    }
   }
 
   private static buildSelectFields(params: OptimizedQueryParams): string {
@@ -175,37 +203,49 @@ export class OptimizedMealPlanService {
   }
 
   private static processDailyMeals(meals: any[]): ReadonlyArray<StrictDailyMeal> {
-    return meals.map(meal => ({
-      id: meal.id,
-      weekly_plan_id: meal.weekly_plan_id,
-      day_number: meal.day_number,
-      meal_type: meal.meal_type as StrictDailyMeal['meal_type'],
-      name: meal.name,
-      calories: meal.calories || 0,
-      protein: meal.protein || 0,
-      carbs: meal.carbs || 0,
-      fat: meal.fat || 0,
-      fiber: 0, // Default since not in DB
-      sugar: 0, // Default since not in DB
-      prep_time: meal.prep_time || 0,
-      cook_time: meal.cook_time || 0,
-      servings: meal.servings || 1,
-      youtube_search_term: meal.youtube_search_term,
-      image_url: meal.image_url,
-      recipe_fetched: meal.recipe_fetched || false,
-      ingredients: this.safeParseArray(meal.ingredients, []).map(ing => ({
-        name: typeof ing === 'string' ? ing : ing.name || 'Unknown ingredient',
-        quantity: typeof ing === 'string' ? '1' : ing.quantity || '1',
-        unit: typeof ing === 'string' ? 'piece' : ing.unit || 'piece',
-        category: typeof ing === 'object' ? ing.category : undefined
-      })),
-      instructions: this.safeParseArray(meal.instructions, []).map(inst => 
-        typeof inst === 'string' ? inst : String(inst)
-      ),
-      alternatives: this.safeParseArray(meal.alternatives, []).map(alt => 
-        typeof alt === 'string' ? alt : String(alt)
-      )
-    }));
+    return meals.map((meal, index) => {
+      try {
+        // Validate and normalize meal type
+        const validatedMealType = validateMealType(meal.meal_type);
+        
+        console.log(`🍽️ Processing meal ${index + 1}: ${meal.name} (${meal.meal_type} -> ${validatedMealType})`);
+        
+        return {
+          id: meal.id,
+          weekly_plan_id: meal.weekly_plan_id,
+          day_number: meal.day_number,
+          meal_type: validatedMealType as StrictDailyMeal['meal_type'],
+          name: meal.name,
+          calories: meal.calories || 0,
+          protein: meal.protein || 0,
+          carbs: meal.carbs || 0,
+          fat: meal.fat || 0,
+          fiber: 0, // Default since not in DB
+          sugar: 0, // Default since not in DB
+          prep_time: meal.prep_time || 0,
+          cook_time: meal.cook_time || 0,
+          servings: meal.servings || 1,
+          youtube_search_term: meal.youtube_search_term,
+          image_url: meal.image_url,
+          recipe_fetched: meal.recipe_fetched || false,
+          ingredients: this.safeParseArray(meal.ingredients, []).map(ing => ({
+            name: typeof ing === 'string' ? ing : ing.name || 'Unknown ingredient',
+            quantity: typeof ing === 'string' ? '1' : ing.quantity || '1',
+            unit: typeof ing === 'string' ? 'piece' : ing.unit || 'piece',
+            category: typeof ing === 'object' ? ing.category : undefined
+          })),
+          instructions: this.safeParseArray(meal.instructions, []).map(inst => 
+            typeof inst === 'string' ? inst : String(inst)
+          ),
+          alternatives: this.safeParseArray(meal.alternatives, []).map(alt => 
+            typeof alt === 'string' ? alt : String(alt)
+          )
+        };
+      } catch (error) {
+        console.error(`❌ Error processing meal ${index + 1}:`, error, meal);
+        throw error;
+      }
+    });
   }
 
   private static safeParseArray(value: any, fallback: any[] = []): any[] {
@@ -224,5 +264,13 @@ export class OptimizedMealPlanService {
 
   static clearCache(): void {
     this.queryCache.clear();
+    console.log('🧹 Meal plan cache cleared');
+  }
+
+  static getCacheStats(): { size: number; keys: string[] } {
+    return {
+      size: this.queryCache.size,
+      keys: Array.from(this.queryCache.keys())
+    };
   }
 }
