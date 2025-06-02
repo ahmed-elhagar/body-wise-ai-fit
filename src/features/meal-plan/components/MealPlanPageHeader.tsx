@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Sparkles, Shuffle, UtensilsCrossed, ChevronLeft, ChevronRight, Calendar, Grid3X3, ShoppingCart } from 'lucide-react';
+import { Sparkles, Shuffle, UtensilsCrossed, ShoppingCart } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface MealPlanPageHeaderProps {
@@ -12,11 +12,6 @@ interface MealPlanPageHeaderProps {
   isGenerating: boolean;
   isShuffling: boolean;
   hasWeeklyPlan: boolean;
-  currentWeekOffset: number;
-  setCurrentWeekOffset: (offset: number) => void;
-  weekStartDate: Date;
-  viewMode: 'daily' | 'weekly';
-  onViewModeChange: (mode: 'daily' | 'weekly') => void;
 }
 
 export const MealPlanPageHeader = ({
@@ -25,20 +20,9 @@ export const MealPlanPageHeader = ({
   onShowShoppingList,
   isGenerating,
   isShuffling,
-  hasWeeklyPlan,
-  currentWeekOffset,
-  setCurrentWeekOffset,
-  weekStartDate,
-  viewMode,
-  onViewModeChange
+  hasWeeklyPlan
 }: MealPlanPageHeaderProps) => {
   const { t, isRTL } = useLanguage();
-
-  const getWeekDateRange = () => {
-    const endDate = new Date(weekStartDate);
-    endDate.setDate(endDate.getDate() + 6);
-    return `${weekStartDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
-  };
 
   return (
     <Card className="mb-6 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 border-0 text-white overflow-hidden">
@@ -96,66 +80,6 @@ export const MealPlanPageHeader = ({
             >
               <Sparkles className={`w-4 h-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
               {isGenerating ? (t('generating') || 'Generating...') : (t('mealPlan.generateAI') || 'AI Generate')}
-            </Button>
-          </div>
-        </div>
-
-        {/* Navigation Controls - Combined in single row */}
-        <div className={`flex items-center justify-between mt-6 ${isRTL ? 'flex-row-reverse' : ''}`}>
-          {/* View Mode Toggle */}
-          <div className={`flex gap-1 bg-white/20 p-1 rounded-lg backdrop-blur-sm ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onViewModeChange('daily')}
-              className={`flex items-center gap-2 px-4 py-2 h-9 text-sm font-medium transition-all ${
-                viewMode === 'daily' 
-                  ? 'bg-white text-blue-600 shadow-sm' 
-                  : 'text-white hover:bg-white/10'
-              }`}
-            >
-              <Calendar className="w-4 h-4" />
-              {t('mealPlan.dailyView') || 'Daily'}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onViewModeChange('weekly')}
-              className={`flex items-center gap-2 px-4 py-2 h-9 text-sm font-medium transition-all ${
-                viewMode === 'weekly' 
-                  ? 'bg-white text-blue-600 shadow-sm' 
-                  : 'text-white hover:bg-white/10'
-              }`}
-            >
-              <Grid3X3 className="w-4 h-4" />
-              {t('mealPlan.weeklyView') || 'Weekly'}
-            </Button>
-          </div>
-
-          {/* Week Navigation */}
-          <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setCurrentWeekOffset(currentWeekOffset - 1)}
-              className="h-9 w-9 p-0 text-white hover:bg-white/20"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-            
-            <div className="text-center min-w-[180px]">
-              <div className="text-sm font-medium text-white bg-white/10 rounded-lg px-4 py-2 backdrop-blur-sm">
-                {getWeekDateRange()}
-              </div>
-            </div>
-            
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setCurrentWeekOffset(currentWeekOffset + 1)}
-              className="h-9 w-9 p-0 text-white hover:bg-white/20"
-            >
-              <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
         </div>

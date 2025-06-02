@@ -4,7 +4,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Sparkles, Plus, Target } from "lucide-react";
@@ -29,8 +28,6 @@ export const AddSnackDialog = ({
   const { profile } = useProfile();
   const { t, language, isRTL } = useLanguage();
   const [isGenerating, setIsGenerating] = useState(false);
-  const [snackType, setSnackType] = useState('healthy');
-  const [customRequest, setCustomRequest] = useState('');
   const [customSnack, setCustomSnack] = useState({
     name: '',
     calories: '',
@@ -60,8 +57,6 @@ export const AddSnackDialog = ({
           dayNumber: selectedDay,
           targetCalories: Math.min(remainingCalories, 200),
           weeklyPlanId,
-          snackType,
-          customRequest,
           language
         }
       });
@@ -175,50 +170,28 @@ export const AddSnackDialog = ({
           ) : (
             <Tabs defaultValue="ai" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="ai" className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4" />
-                  AI Generate
-                </TabsTrigger>
-                <TabsTrigger value="custom" className="flex items-center gap-2">
-                  <Plus className="w-4 h-4" />
-                  Custom
-                </TabsTrigger>
+                <TabsTrigger value="ai" className="text-sm">AI Generate</TabsTrigger>
+                <TabsTrigger value="custom" className="text-sm">Custom</TabsTrigger>
               </TabsList>
               
               <TabsContent value="ai" className="space-y-3 mt-4">
-                <div>
-                  <Label className="text-sm">{t('mealPlan.addSnack.snackType') || 'Snack Type'}</Label>
-                  <Select value={snackType} onValueChange={setSnackType}>
-                    <SelectTrigger className="h-9 mt-1">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="healthy">Healthy & Nutritious</SelectItem>
-                      <SelectItem value="protein">High Protein</SelectItem>
-                      <SelectItem value="energy">Energy Boosting</SelectItem>
-                      <SelectItem value="sweet">Sweet Treat</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="text-center py-4">
+                  <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Sparkles className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <h3 className="text-sm font-medium mb-2">AI Generated Snack</h3>
+                  <p className="text-xs text-gray-600 mb-4">
+                    Perfect snack for your remaining {remainingCalories} calories
+                  </p>
+                  <Button 
+                    onClick={handleGenerateAISnack} 
+                    className="w-full bg-purple-600 hover:bg-purple-700 h-9"
+                    disabled={isGenerating || remainingCalories <= 0}
+                  >
+                    <Sparkles className={`w-4 h-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+                    Generate AI Snack
+                  </Button>
                 </div>
-
-                <div>
-                  <Label className="text-sm">Custom Request (Optional)</Label>
-                  <Input
-                    placeholder="e.g., nuts and fruits, low carb..."
-                    value={customRequest}
-                    onChange={(e) => setCustomRequest(e.target.value)}
-                    className="h-9 mt-1"
-                  />
-                </div>
-
-                <Button 
-                  onClick={handleGenerateAISnack} 
-                  className="w-full bg-green-600 hover:bg-green-700 h-9"
-                  disabled={isGenerating || remainingCalories <= 0}
-                >
-                  <Sparkles className={`w-4 h-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
-                  Generate AI Snack
-                </Button>
               </TabsContent>
 
               <TabsContent value="custom" className="space-y-3 mt-4">
