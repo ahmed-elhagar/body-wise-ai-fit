@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
 
@@ -15,12 +15,13 @@ interface FoodPreferencesState {
 }
 
 export const useFoodPreferences = () => {
-  const { profile, updateProfile } = useProfile();
+  const { profile, updateProfile, isLoading: profileLoading } = useProfile();
+  const [isLoading, setIsLoading] = useState(false);
   
   const [preferences, setPreferences] = useState<FoodPreferencesState>({
-    preferredCuisines: profile?.preferred_foods || [],
-    allergies: profile?.allergies || [],
-    dietaryRestrictions: profile?.dietary_restrictions || [],
+    preferredCuisines: [],
+    allergies: [],
+    dietaryRestrictions: [],
     isHalal: false,
     isVegetarian: false,
     isVegan: false,
@@ -28,7 +29,27 @@ export const useFoodPreferences = () => {
     isLowCarb: false
   });
 
+  // Update preferences when profile loads
+  useEffect(() => {
+    if (profile) {
+      const currentRestrictions = profile.dietary_restrictions || [];
+      setPreferences({
+        preferredCuisines: profile.preferred_foods || [],
+        allergies: profile.allergies || [],
+        dietaryRestrictions: currentRestrictions.filter(r => 
+          !['Halal', 'Vegetarian', 'Vegan', 'Keto', 'Low Carb'].includes(r)
+        ),
+        isHalal: currentRestrictions.includes('Halal'),
+        isVegetarian: currentRestrictions.includes('Vegetarian'),
+        isVegan: currentRestrictions.includes('Vegan'),
+        isKeto: currentRestrictions.includes('Keto'),
+        isLowCarb: currentRestrictions.includes('Low Carb')
+      });
+    }
+  }, [profile]);
+
   const handleSave = async () => {
+    setIsLoading(true);
     try {
       // Build dietary restrictions array
       const dietaryRestrictions = [...preferences.dietaryRestrictions];
@@ -41,19 +62,22 @@ export const useFoodPreferences = () => {
       await updateProfile({
         preferred_foods: preferences.preferredCuisines,
         allergies: preferences.allergies,
-        dietary_restrictions: [...new Set(dietaryRestrictions)] // Remove duplicates
+        dietary_restrictions: [...new Set(dietaryRestrictions)]
       });
       
-      toast.success('Food preferences updated successfully!');
+      toast.success('Food preferences updated successfully! This will affect your future meal plans.');
     } catch (error) {
       console.error('Error updating food preferences:', error);
       toast.error('Failed to update food preferences');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return {
     preferences,
     setPreferences,
-    handleSave
+    handleSave,
+    isLoading: isLoading || profileLoading
   };
 };

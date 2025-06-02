@@ -1,12 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { X, Calendar } from "lucide-react";
+import { X, Calendar, Loader2 } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
 
@@ -14,7 +14,7 @@ interface SpecialCondition {
   type: 'muslim_fasting' | 'vacation_mood' | 'injury';
   startDate: string;
   endDate: string;
-  details?: string; // For injury area
+  details?: string;
 }
 
 const INJURY_AREAS = [
@@ -23,14 +23,21 @@ const INJURY_AREAS = [
 ];
 
 export const SpecialConditionsSettings = () => {
-  const { profile, updateProfile } = useProfile();
+  const { profile, updateProfile, isLoading: profileLoading } = useProfile();
   const [conditions, setConditions] = useState<SpecialCondition[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [newCondition, setNewCondition] = useState({
     type: 'muslim_fasting' as SpecialCondition['type'],
     startDate: '',
     endDate: '',
     details: ''
   });
+
+  useEffect(() => {
+    if (profile?.special_conditions) {
+      setConditions(profile.special_conditions as SpecialCondition[]);
+    }
+  }, [profile]);
 
   const addCondition = () => {
     if (!newCondition.startDate || !newCondition.endDate) {
@@ -57,15 +64,17 @@ export const SpecialConditionsSettings = () => {
   };
 
   const handleSave = async () => {
+    setIsLoading(true);
     try {
-      // Save to profile - you might want to create a separate table for this
       await updateProfile({ 
         special_conditions: conditions 
       } as any);
-      toast.success('Special conditions updated successfully!');
+      toast.success('Special conditions updated successfully! This will affect your workout and meal plan generation.');
     } catch (error) {
       console.error('Error updating special conditions:', error);
       toast.error('Failed to update special conditions');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -81,7 +90,6 @@ export const SpecialConditionsSettings = () => {
         <CardTitle>Special Conditions</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Add New Condition */}
         <div className="space-y-3 p-4 border rounded-lg">
           <Label>Add Special Condition</Label>
           
@@ -139,7 +147,6 @@ export const SpecialConditionsSettings = () => {
           </Button>
         </div>
 
-        {/* Current Conditions */}
         <div className="space-y-2">
           <Label>Active Conditions</Label>
           <div className="space-y-2">
@@ -164,8 +171,19 @@ export const SpecialConditionsSettings = () => {
           </div>
         </div>
 
-        <Button onClick={handleSave} className="w-full">
-          Save Special Conditions
+        <Button 
+          onClick={handleSave} 
+          className="w-full"
+          disabled={isLoading || profileLoading}
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            'Save Special Conditions'
+          )}
         </Button>
       </CardContent>
     </Card>

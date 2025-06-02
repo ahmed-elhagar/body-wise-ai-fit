@@ -7,9 +7,10 @@ import { DietaryRestrictionsToggles } from './food-preferences/DietaryRestrictio
 import { CustomRestrictionsManager } from './food-preferences/CustomRestrictionsManager';
 import { AllergiesManager } from './food-preferences/AllergiesManager';
 import { useFoodPreferences } from './food-preferences/useFoodPreferences';
+import { Loader2 } from 'lucide-react';
 
 export const FoodPreferencesSettings = () => {
-  const { preferences, setPreferences, handleSave } = useFoodPreferences();
+  const { preferences, setPreferences, handleSave, isLoading } = useFoodPreferences();
 
   const toggleCuisine = (cuisine: string) => {
     setPreferences(prev => ({
@@ -80,8 +81,19 @@ export const FoodPreferencesSettings = () => {
           onRemove={removeAllergy}
         />
 
-        <Button onClick={handleSave} className="w-full">
-          Save Food Preferences
+        <Button 
+          onClick={handleSave} 
+          className="w-full"
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            'Save Food Preferences'
+          )}
         </Button>
       </CardContent>
     </Card>

@@ -1,11 +1,11 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { X, Plus, Search } from "lucide-react";
+import { X, Plus, Search, Loader2 } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
 
@@ -17,11 +17,16 @@ const HEALTH_CONDITIONS = [
 ];
 
 export const HealthConditionsSettings = () => {
-  const { profile, updateProfile } = useProfile();
+  const { profile, updateProfile, isLoading: profileLoading } = useProfile();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedConditions, setSelectedConditions] = useState<string[]>(
-    profile?.health_conditions || []
-  );
+  const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (profile?.health_conditions) {
+      setSelectedConditions(profile.health_conditions);
+    }
+  }, [profile]);
 
   const filteredConditions = HEALTH_CONDITIONS.filter(condition =>
     condition.toLowerCase().includes(searchTerm.toLowerCase()) &&
@@ -38,12 +43,15 @@ export const HealthConditionsSettings = () => {
   };
 
   const handleSave = async () => {
+    setIsLoading(true);
     try {
       await updateProfile({ health_conditions: selectedConditions });
-      toast.success('Health conditions updated successfully!');
+      toast.success('Health conditions updated successfully! This will affect your exercise and meal recommendations.');
     } catch (error) {
       console.error('Error updating health conditions:', error);
       toast.error('Failed to update health conditions');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -53,7 +61,6 @@ export const HealthConditionsSettings = () => {
         <CardTitle>Health Conditions</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Search and Add */}
         <div className="space-y-2">
           <Label>Search and Add Conditions</Label>
           <div className="relative">
@@ -66,7 +73,6 @@ export const HealthConditionsSettings = () => {
             />
           </div>
           
-          {/* Search Results */}
           {searchTerm && filteredConditions.length > 0 && (
             <div className="border rounded-lg p-2 max-h-40 overflow-y-auto">
               {filteredConditions.map(condition => (
@@ -83,7 +89,6 @@ export const HealthConditionsSettings = () => {
           )}
         </div>
 
-        {/* Selected Conditions */}
         <div className="space-y-2">
           <Label>Selected Conditions</Label>
           <div className="flex flex-wrap gap-2">
@@ -102,8 +107,19 @@ export const HealthConditionsSettings = () => {
           </div>
         </div>
 
-        <Button onClick={handleSave} className="w-full">
-          Save Health Conditions
+        <Button 
+          onClick={handleSave} 
+          className="w-full"
+          disabled={isLoading || profileLoading}
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            'Save Health Conditions'
+          )}
         </Button>
       </CardContent>
     </Card>

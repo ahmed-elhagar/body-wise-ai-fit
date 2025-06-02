@@ -1,21 +1,22 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Settings, Palette, Globe, Bell, Shield } from "lucide-react";
+import { Settings, Palette, Globe, Bell, Shield, Loader2 } from "lucide-react";
 import { useLanguage, Language } from "@/contexts/LanguageContext";
 import { useProfile } from "@/hooks/useProfile";
-import { useOnboardingProgress } from "@/hooks/useOnboardingProgress";
+import { useUserPreferences } from "@/hooks/useUserPreferences";
 import { toast } from "sonner";
 
 const EnhancedSettingsForm = () => {
-  const { t, language, setLanguage } = useLanguage();
+  const { language, setLanguage } = useLanguage();
   const { profile, updateProfile } = useProfile();
-  const { markStepComplete } = useOnboardingProgress();
+  const { preferences: userPreferences, updatePreferences, isUpdating } = useUserPreferences();
+  const [isLanguageLoading, setIsLanguageLoading] = useState(false);
   
   const [preferences, setPreferences] = useState({
     theme: 'light',
@@ -25,18 +26,45 @@ const EnhancedSettingsForm = () => {
     measurementUnits: 'metric',
   });
 
+  // Initialize preferences from user_preferences table
+  useEffect(() => {
+    if (userPreferences) {
+      setPreferences({
+        theme: userPreferences.theme_preference || 'light',
+        notifications: userPreferences.push_notifications ?? true,
+        emailUpdates: userPreferences.email_notifications ?? false,
+        dataSharing: userPreferences.data_sharing_analytics ?? false,
+        measurementUnits: userPreferences.measurement_units || 'metric',
+      });
+    }
+  }, [userPreferences]);
+
   const handleLanguageChange = async (newLanguage: string) => {
-    setLanguage(newLanguage as Language);
-    if (profile) {
-      await updateProfile({ preferred_language: newLanguage });
-      toast.success('Language preference saved!');
+    setIsLanguageLoading(true);
+    try {
+      setLanguage(newLanguage as Language);
+      if (profile) {
+        await updateProfile({ preferred_language: newLanguage });
+        toast.success('Language preference saved!');
+      }
+    } catch (error) {
+      console.error('Error updating language:', error);
+      toast.error('Failed to update language preference');
+    } finally {
+      setIsLanguageLoading(false);
     }
   };
 
   const handleSavePreferences = async () => {
     try {
-      markStepComplete('preferences');
-      toast.success('Preferences saved successfully!');
+      await updatePreferences({
+        theme_preference: preferences.theme as 'light' | 'dark' | 'auto',
+        push_notifications: preferences.notifications,
+        email_notifications: preferences.emailUpdates,
+        data_sharing_analytics: preferences.dataSharing,
+        measurement_units: preferences.measurementUnits as 'metric' | 'imperial',
+      });
+      toast.success('Preferences saved successfully! Changes will apply to your workout and meal plans.');
     } catch (error) {
       console.error('Error saving preferences:', error);
       toast.error('Failed to save preferences');
@@ -49,13 +77,13 @@ const EnhancedSettingsForm = () => {
       <Card className="p-6">
         <div className="flex items-center mb-4">
           <Globe className="w-5 h-5 text-fitness-primary mr-2" />
-          <h3 className="text-lg font-semibold text-gray-800">{t('language')} & Region</h3>
+          <h3 className="text-lg font-semibold text-gray-800">Language & Region</h3>
         </div>
         
         <div className="space-y-4">
           <div>
             <Label htmlFor="language">Display Language</Label>
-            <Select value={language} onValueChange={handleLanguageChange}>
+            <Select value={language} onValueChange={handleLanguageChange} disabled={isLanguageLoading}>
               <SelectTrigger className="mt-1">
                 <SelectValue />
               </SelectTrigger>
@@ -170,8 +198,16 @@ const EnhancedSettingsForm = () => {
         <Button 
           onClick={handleSavePreferences}
           className="bg-fitness-gradient hover:opacity-90"
+          disabled={isUpdating}
         >
-          Save Preferences
+          {isUpdating ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            'Save Preferences'
+          )}
         </Button>
       </div>
     </div>
