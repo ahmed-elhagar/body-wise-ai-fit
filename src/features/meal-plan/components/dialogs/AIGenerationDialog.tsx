@@ -1,251 +1,297 @@
 
-import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
-import { Sparkles, AlertCircle, Clock, Heart, Baby, Moon } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { useCreditSystem } from '@/hooks/useCreditSystem';
-import { useLifePhaseProfile } from '@/hooks/useLifePhaseProfile';
-import EnhancedLoadingIndicator from '@/components/ui/enhanced-loading-indicator';
-import type { MealPlanPreferences } from '../../types';
+import React, { useState } from 'react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Sparkles, Zap, AlertTriangle, Info } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useMealPlanTranslations } from '@/utils/mealPlanTranslations';
+import type { MealPlanPreferences } from '@/types/mealPlan';
 
 interface AIGenerationDialogProps {
-  isOpen: boolean;
+  open: boolean;
   onClose: () => void;
   preferences: MealPlanPreferences;
+  onPreferencesChange: (preferences: MealPlanPreferences) => void;
   onGenerate: () => Promise<boolean>;
   isGenerating: boolean;
-  weekOffset: number;
+  userCredits: number;
+  hasExistingPlan: boolean;
 }
 
 export const AIGenerationDialog = ({
-  isOpen,
+  open,
   onClose,
   preferences,
+  onPreferencesChange,
   onGenerate,
   isGenerating,
-  weekOffset
+  userCredits,
+  hasExistingPlan
 }: AIGenerationDialogProps) => {
-  const [localPreferences, setLocalPreferences] = React.useState(preferences);
-  const [currentStep, setCurrentStep] = React.useState(0);
-  const [error, setError] = React.useState<string | null>(null);
-  
-  const { t, isRTL, language } = useLanguage();
-  const { userCredits } = useCreditSystem();
-  const { getNutritionContext } = useLifePhaseProfile();
-  
-  const nutritionContext = getNutritionContext();
+  const { language } = useLanguage();
+  const { 
+    generateAIMealPlan,
+    mealPlanSettings,
+    includeSnacks,
+    maxPrepTime,
+    cuisine,
+    aiCredits,
+    creditsRemaining,
+    generating,
+    mealsPerDay,
+    isRTL 
+  } = useMealPlanTranslations();
 
-  const steps = [
-    t('mealPlan.generation.analyzing') || 'Analyzing preferences...',
-    t('mealPlan.generation.creating') || 'Creating meal combinations...',
-    t('mealPlan.generation.optimizing') || 'Optimizing nutrition...',
-    t('mealPlan.generation.finalizing') || 'Finalizing your plan...'
-  ];
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
-  React.useEffect(() => {
-    setLocalPreferences(preferences);
-  }, [preferences]);
-
-  React.useEffect(() => {
-    if (isGenerating) {
-      setCurrentStep(0);
-      const interval = setInterval(() => {
-        setCurrentStep(prev => (prev + 1) % steps.length);
-      }, 2000);
-      return () => clearInterval(interval);
-    }
-  }, [isGenerating, steps.length]);
-
-  const handlePreferenceChange = (key: string, value: any) => {
-    setLocalPreferences(prev => ({ ...prev, [key]: value }));
+  const handleIncludeSnacksChange = (checked: boolean) => {
+    onPreferencesChange({
+      ...preferences,
+      includeSnacks: checked
+    });
   };
 
   const handleGenerate = async () => {
-    if (userCredits <= 0) {
-      setError(t('mealPlan.errors.noCredits') || 'No AI credits remaining');
+    if (hasExistingPlan) {
+      setShowConfirmation(true);
       return;
     }
-
-    setError(null);
-    setCurrentStep(0);
-
-    try {
-      const success = await onGenerate();
-      if (success) {
-        onClose();
-      } else {
-        setError(t('mealPlan.errors.generationFailed') || 'Generation failed');
-      }
-    } catch (err: any) {
-      setError(err.message || 'Failed to generate meal plan');
+    
+    const success = await onGenerate();
+    if (success) {
+      onClose();
+      setShowConfirmation(false);
     }
   };
 
-  const getLifePhaseIcon = () => {
-    if (nutritionContext.pregnancyTrimester) return <Baby className="w-4 h-4" />;
-    if (nutritionContext.breastfeedingLevel) return <Heart className="w-4 h-4" />;
-    if (nutritionContext.isMuslimFasting) return <Moon className="w-4 h-4" />;
-    return null;
+  const handleConfirmedGenerate = async () => {
+    const success = await onGenerate();
+    if (success) {
+      onClose();
+      setShowConfirmation(false);
+    }
   };
 
-  const getLifePhaseLabel = () => {
-    if (nutritionContext.pregnancyTrimester) {
-      return `${t('profile.lifePhase.pregnancy.title') || 'Pregnancy'} - ${t('profile.lifePhase.pregnancy.trimester' + nutritionContext.pregnancyTrimester) || 'Trimester ' + nutritionContext.pregnancyTrimester}`;
-    }
-    if (nutritionContext.breastfeedingLevel) {
-      return `${t('profile.lifePhase.breastfeeding.title') || 'Breastfeeding'} - ${t('profile.lifePhase.breastfeeding.' + nutritionContext.breastfeedingLevel) || nutritionContext.breastfeedingLevel}`;
-    }
-    if (nutritionContext.isMuslimFasting) {
-      return language === 'ar' ? 'الصيام الإسلامي' : 'Muslim Fasting';
-    }
-    return null;
+  const getMealsPerDayText = () => {
+    const count = preferences.includeSnacks ? 5 : 3;
+    return language === 'ar' 
+      ? `${count} وجبات يومياً`
+      : `${count} meals per day`;
   };
+
+  const getButtonText = () => {
+    if (isGenerating) {
+      return language === 'ar' ? 'جاري الإنشاء...' : 'Generating...';
+    }
+    if (hasExistingPlan) {
+      return language === 'ar' ? 'إعادة إنشاء الخطة' : 'Regenerate Plan';
+    }
+    return language === 'ar' ? 'إنشاء خطة بالذكاء الاصطناعي' : 'Generate AI Plan';
+  };
+
+  const cuisineOptions = [
+    { value: 'mixed', label: language === 'ar' ? 'مختلط' : 'Mixed' },
+    { value: 'mediterranean', label: language === 'ar' ? 'متوسطية' : 'Mediterranean' },
+    { value: 'asian', label: language === 'ar' ? 'آسيوية' : 'Asian' },
+    { value: 'mexican', label: language === 'ar' ? 'مكسيكية' : 'Mexican' },
+    { value: 'italian', label: language === 'ar' ? 'إيطالية' : 'Italian' },
+    { value: 'middle_eastern', label: language === 'ar' ? 'شرق أوسطية' : 'Middle Eastern' },
+    { value: 'american', label: language === 'ar' ? 'أمريكية' : 'American' }
+  ];
+
+  if (showConfirmation) {
+    return (
+      <Dialog open={open} onOpenChange={onClose}>
+        <DialogContent className={`max-w-md ${isRTL ? 'text-right' : 'text-left'}`}>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-orange-500" />
+              {language === 'ar' ? 'تأكيد إعادة الإنشاء' : 'Confirm Regeneration'}
+            </DialogTitle>
+            <DialogDescription>
+              {language === 'ar' 
+                ? 'ستستبدل هذه العملية خطة الوجبات الحالية وستستهلك رصيد ذكاء اصطناعي واحد.'
+                : 'This will replace your current meal plan and consume 1 AI credit.'
+              }
+            </DialogDescription>
+          </DialogHeader>
+
+          <Card className="bg-orange-50 border-orange-200">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">
+                  {language === 'ar' ? 'الأرصدة المتبقية:' : 'Credits Remaining:'}
+                </span>
+                <Badge variant="outline" className="bg-white">
+                  <Zap className="w-3 h-3 mr-1" />
+                  {userCredits}
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className={`flex gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowConfirmation(false)}
+              className="flex-1"
+            >
+              {language === 'ar' ? 'إلغاء' : 'Cancel'}
+            </Button>
+            <Button 
+              onClick={handleConfirmedGenerate}
+              disabled={isGenerating || userCredits <= 0}
+              className="flex-1"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              {language === 'ar' ? 'تأكيد الإنشاء' : 'Confirm Generate'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className={`max-w-2xl ${isRTL ? 'text-right' : 'text-left'}`}>
         <DialogHeader>
-          <DialogTitle className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <Sparkles className="w-5 h-5 text-blue-600" />
-            {t('mealPlan.generateAIMealPlan') || 'Generate AI Meal Plan'}
+          <DialogTitle className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-blue-500" />
+            {generateAIMealPlan || 'Generate AI Meal Plan'}
           </DialogTitle>
+          <DialogDescription>
+            {language === 'ar' 
+              ? 'خصص خطة وجباتك باستخدام الذكاء الاصطناعي'
+              : 'Customize your meal plan using AI'
+            }
+          </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
+        <div className="space-y-6">
           {/* Credits Display */}
-          <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-blue-600" />
-              <span className="text-sm font-medium text-blue-900">
-                {t('mealPlan.creditsRemaining') || 'Credits remaining'}
-              </span>
-            </div>
-            <Badge variant={userCredits > 0 ? "default" : "destructive"}>
-              {userCredits}
-            </Badge>
-          </div>
-
-          {/* Special Conditions */}
-          {(nutritionContext.pregnancyTrimester || nutritionContext.breastfeedingLevel || nutritionContext.isMuslimFasting) && (
-            <div className="bg-health-soft border border-health-border rounded-lg p-4">
-              <Label className="text-sm font-medium text-health-text-primary mb-2 block">
-                {language === 'ar' ? 'الحالة الخاصة' : 'Special Condition'}
-              </Label>
-              <Badge 
-                variant="secondary" 
-                className={`bg-gradient-to-r from-health-primary/10 to-health-secondary/10 text-health-primary border-health-primary/20 ${isRTL ? 'flex-row-reverse' : ''}`}
-              >
-                {getLifePhaseIcon()}
-                <span className={isRTL ? 'mr-2' : 'ml-2'}>{getLifePhaseLabel()}</span>
-              </Badge>
-              {nutritionContext.extraCalories > 0 && (
-                <p className="text-xs text-health-text-secondary mt-2">
-                  +{nutritionContext.extraCalories} {language === 'ar' ? 'سعرة حرارية/يوم' : 'kcal/day'}
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* Generation Progress */}
-          {isGenerating && (
-            <EnhancedLoadingIndicator
-              status="loading"
-              type="meal-plan"
-              message={steps[currentStep]}
-              description={t('mealPlan.generation.pleaseWait') || 'Please wait while we create your plan'}
-              variant="card"
-              size="md"
-              showSteps={true}
-            />
-          )}
-
-          {/* Error Display */}
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-red-500 mt-0.5" />
-              <p className="text-red-800 text-sm">{error}</p>
-            </div>
-          )}
-
-          {/* Preferences Form */}
-          {!isGenerating && (
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="cuisine">{t('mealPlan.mealPlanSettings.cuisine') || 'Cuisine'}</Label>
-                <Select
-                  value={localPreferences.cuisine || 'mixed'}
-                  onValueChange={(value) => handlePreferenceChange('cuisine', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={t('mealPlan.selectCuisine') || 'Select cuisine'} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="mixed">{t('mixed') || 'Mixed'}</SelectItem>
-                    <SelectItem value="mediterranean">{t('mealPlan.cuisine.mediterranean') || 'Mediterranean'}</SelectItem>
-                    <SelectItem value="asian">{t('mealPlan.cuisine.asian') || 'Asian'}</SelectItem>
-                    <SelectItem value="mexican">{t('mealPlan.cuisine.mexican') || 'Mexican'}</SelectItem>
-                    <SelectItem value="italian">{t('mealPlan.cuisine.italian') || 'Italian'}</SelectItem>
-                    <SelectItem value="middleEastern">{t('mealPlan.cuisine.middleEastern') || 'Middle Eastern'}</SelectItem>
-                  </SelectContent>
-                </Select>
+          <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-yellow-500" />
+                  <span className="font-medium">
+                    {aiCredits || 'AI Credits'}: {creditsRemaining || 'Remaining'}
+                  </span>
+                </div>
+                <Badge variant="secondary" className="bg-white">
+                  {userCredits}
+                </Badge>
               </div>
+            </CardContent>
+          </Card>
 
-              <div>
-                <Label htmlFor="maxPrepTime">{t('mealPlan.maxPrepTime') || 'Max prep time'}</Label>
+          {/* Meal Configuration */}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-base font-medium">
+                {includeSnacks || 'Include Snacks'}
+              </Label>
+              <div className="flex items-center gap-3">
+                <Switch
+                  checked={preferences.includeSnacks}
+                  onCheckedChange={handleIncludeSnacksChange}
+                />
+                <span className="text-sm text-gray-600">
+                  {getMealsPerDayText()}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-blue-600 bg-blue-50 p-2 rounded-md">
+                <Info className="w-3 h-3" />
+                <span>
+                  {language === 'ar' 
+                    ? preferences.includeSnacks 
+                      ? 'سيتم إنشاء 5 وجبات يومياً (فطار، وجبة خفيفة، غداء، وجبة خفيفة، عشاء)'
+                      : 'سيتم إنشاء 3 وجبات يومياً (فطار، غداء، عشاء)'
+                    : preferences.includeSnacks
+                      ? 'Will generate 5 meals per day (breakfast, snack, lunch, snack, dinner)'
+                      : 'Will generate 3 meals per day (breakfast, lunch, dinner)'
+                  }
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="cuisine">
+                  {cuisine || 'Cuisine Type'}
+                </Label>
                 <Select
-                  value={localPreferences.maxPrepTime || '30'}
-                  onValueChange={(value) => handlePreferenceChange('maxPrepTime', value)}
+                  value={preferences.cuisine}
+                  onValueChange={(value) => onPreferencesChange({ ...preferences, cuisine: value })}
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="30">30 {t('minutes') || 'minutes'}</SelectItem>
-                    <SelectItem value="45">45 {t('minutes') || 'minutes'}</SelectItem>
-                    <SelectItem value="60">60 {t('minutes') || 'minutes'}</SelectItem>
+                    {cuisineOptions.map(option => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
 
-              <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-                <Label htmlFor="includeSnacks">{t('mealPlan.mealPlanSettings.includeSnacks') || 'Include snacks'}</Label>
-                <Switch
-                  id="includeSnacks"
-                  checked={localPreferences.includeSnacks !== false}
-                  onCheckedChange={(checked) => handlePreferenceChange('includeSnacks', checked)}
-                />
+              <div className="space-y-2">
+                <Label htmlFor="maxPrepTime">
+                  {maxPrepTime || 'Max Prep Time'} ({language === 'ar' ? 'دقيقة' : 'minutes'})
+                </Label>
+                <Select
+                  value={preferences.maxPrepTime}
+                  onValueChange={(value) => onPreferencesChange({ ...preferences, maxPrepTime: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="15">15 {language === 'ar' ? 'دقيقة' : 'minutes'}</SelectItem>
+                    <SelectItem value="30">30 {language === 'ar' ? 'دقيقة' : 'minutes'}</SelectItem>
+                    <SelectItem value="45">45 {language === 'ar' ? 'دقيقة' : 'minutes'}</SelectItem>
+                    <SelectItem value="60">60 {language === 'ar' ? 'دقيقة' : 'minutes'}</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-          )}
+          </div>
 
           {/* Action Buttons */}
-          <div className={`flex gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <Button variant="outline" onClick={onClose} className="flex-1">
-              {t('cancel') || 'Cancel'}
+          <div className={`flex gap-3 pt-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <Button 
+              variant="outline" 
+              onClick={onClose}
+              className="flex-1"
+            >
+              {language === 'ar' ? 'إلغاء' : 'Cancel'}
             </Button>
             <Button 
-              onClick={handleGenerate} 
+              onClick={handleGenerate}
               disabled={isGenerating || userCredits <= 0}
-              className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+              className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
             >
-              {isGenerating ? (
-                <>
-                  <Sparkles className="w-4 h-4 mr-2 animate-spin" />
-                  {t('generating') || 'Generating...'}
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  {t('mealPlan.generateSevenDayPlan') || 'Generate Plan'}
-                </>
-              )}
+              <Sparkles className="w-4 h-4 mr-2" />
+              {getButtonText()}
             </Button>
           </div>
+
+          {userCredits <= 0 && (
+            <div className="text-center text-red-600 text-sm">
+              {language === 'ar' 
+                ? 'لا توجد أرصدة ذكاء اصطناعي متبقية'
+                : 'No AI credits remaining'
+              }
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

@@ -1,8 +1,6 @@
-
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useMealPlanNavigation } from "./useMealPlanNavigation";
-import { useMealPlanDialogs } from "./useMealPlanDialogs";
 import { useMealPlanCalculations } from "./useMealPlanCalculations";
 import { useMealPlanHandlers } from "./useMealPlanHandlers";
 import { useMealPlanData } from "./useMealPlanData";
@@ -11,6 +9,7 @@ import { useCreditSystem } from './useCreditSystem';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
+import type { MealPlanPreferences } from '@/types/mealPlan';
 
 export const useMealPlanState = () => {
   const { t, language } = useLanguage();
@@ -20,7 +19,24 @@ export const useMealPlanState = () => {
   
   // Core navigation and UI state
   const navigation = useMealPlanNavigation();
-  const dialogs = useMealPlanDialogs();
+  
+  // Enhanced dialogs with proper preference management
+  const [dialogs, setDialogs] = useState({
+    showAIDialog: false,
+    showRecipeDialog: false,
+    showExchangeDialog: false,
+    showAddSnackDialog: false,
+    showShoppingListDialog: false,
+    selectedMeal: null as any,
+    selectedMealIndex: 0,
+    aiPreferences: {
+      duration: "7",
+      cuisine: "mixed",
+      maxPrepTime: "30",
+      includeSnacks: true,
+      mealTypes: "breakfast,lunch,dinner"
+    } as MealPlanPreferences
+  });
   
   // Data fetching - single source of truth
   const { 
@@ -40,11 +56,26 @@ export const useMealPlanState = () => {
   // Calculations based on current data
   const calculations = useMealPlanCalculations(currentWeekPlan, navigation.selectedDayNumber);
   
-  // Event handlers with proper dialog integration
-  const handlers = useMealPlanHandlers(
-    dialogs.openRecipeDialog,
-    dialogs.openExchangeDialog
-  );
+  // Dialog actions
+  const openAIDialog = () => setDialogs(prev => ({ ...prev, showAIDialog: true }));
+  const closeAIDialog = () => setDialogs(prev => ({ ...prev, showAIDialog: false }));
+  
+  const openRecipeDialog = (meal: any) => {
+    setDialogs(prev => ({ ...prev, selectedMeal: meal, showRecipeDialog: true }));
+  };
+  
+  const openExchangeDialog = (meal: any, index = 0) => {
+    setDialogs(prev => ({ 
+      ...prev, 
+      selectedMeal: meal, 
+      selectedMealIndex: index, 
+      showExchangeDialog: true 
+    }));
+  };
+
+  const updateAIPreferences = (newPreferences: MealPlanPreferences) => {
+    setDialogs(prev => ({ ...prev, aiPreferences: newPreferences }));
+  };
 
   // Enhanced AI generation with proper credit checking and error handling
   const handleGenerateAIPlan = useCallback(async (): Promise<boolean> => {
@@ -95,7 +126,7 @@ export const useMealPlanState = () => {
         await refetchMealPlan?.();
         
         // Close dialog
-        dialogs.closeAIDialog();
+        closeAIDialog();
         
         // Show success message
         toast.success(
@@ -130,7 +161,6 @@ export const useMealPlanState = () => {
     queryClient, 
     user?.id, 
     nutritionContext,
-    dialogs.closeAIDialog,
     userCredits,
     language
   ]);
@@ -172,12 +202,18 @@ export const useMealPlanState = () => {
     
     // Dialog state and actions
     ...dialogs,
+    openAIDialog,
+    closeAIDialog,
+    openRecipeDialog,
+    closeRecipeDialog: () => setDialogs(prev => ({ ...prev, showRecipeDialog: false, selectedMeal: null })),
+    openExchangeDialog,
+    closeExchangeDialog: () => setDialogs(prev => ({ ...prev, showExchangeDialog: false, selectedMeal: null })),
+    openAddSnackDialog: () => setDialogs(prev => ({ ...prev, showAddSnackDialog: true })),
+    closeAddSnackDialog: () => setDialogs(prev => ({ ...prev, showAddSnackDialog: false })),
+    updateAIPreferences,
     
     // Calculations
     ...calculations,
-    
-    // Handlers
-    ...handlers,
     
     // Data
     currentWeekPlan,
@@ -194,6 +230,6 @@ export const useMealPlanState = () => {
     refetch,
     
     // Add snack handler
-    handleAddSnack: dialogs.openAddSnackDialog
+    handleAddSnack: () => setDialogs(prev => ({ ...prev, showAddSnackDialog: true }))
   };
 };
