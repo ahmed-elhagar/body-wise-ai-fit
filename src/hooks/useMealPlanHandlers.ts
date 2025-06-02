@@ -1,6 +1,5 @@
-
 import { useCallback } from "react";
-import type { DailyMeal } from "./useMealPlanData";
+import type { DailyMeal } from "@/features/meal-plan/types";
 
 export const useMealPlanHandlers = (
   openRecipeDialog: (meal: DailyMeal) => void,

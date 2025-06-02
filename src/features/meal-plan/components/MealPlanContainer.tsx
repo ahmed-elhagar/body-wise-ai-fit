@@ -15,7 +15,7 @@ import { useEnhancedShoppingList } from '@/hooks/useEnhancedShoppingList';
 import EnhancedLoadingIndicator from '@/components/ui/enhanced-loading-indicator';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ChevronLeft, ChevronRight, Calendar, Grid3X3 } from 'lucide-react';
-import type { DailyMeal } from '@/hooks/useMealPlanData';
+import type { DailyMeal } from '@/features/meal-plan/types';
 
 export const MealPlanContainer = () => {
   const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
