@@ -21,6 +21,9 @@ export const useMealPlanState = () => {
     ...dialogsState,
     
     // AI actions
-    ...aiActions
+    ...aiActions,
+    
+    // Ensure setDialogs is available for shopping list dialog
+    setDialogs: dialogsState.setDialogs
   };
 };

@@ -46,6 +46,7 @@ interface MealPlanDialogsProps {
   // Additional props
   userCredits: number;
   hasWeeklyPlan: boolean;
+  isEmailLoading: boolean; // Added missing prop
 }
 
 export const MealPlanDialogs = ({
@@ -75,7 +76,8 @@ export const MealPlanDialogs = ({
   enhancedShoppingItems,
   onSendShoppingListEmail,
   userCredits,
-  hasWeeklyPlan
+  hasWeeklyPlan,
+  isEmailLoading
 }: MealPlanDialogsProps) => {
   return (
     <>
@@ -128,6 +130,7 @@ export const MealPlanDialogs = ({
         }}
         onSendEmail={onSendShoppingListEmail}
         weekStartDate={weekStartDate}
+        isLoading={isEmailLoading}
       />
     </>
   );
