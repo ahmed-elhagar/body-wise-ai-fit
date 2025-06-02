@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -127,31 +126,31 @@ export const DayOverview = ({
     <div className="space-y-3">
       {/* Compact Header */}
       <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-2 pt-3">
           <div className="flex items-center justify-between">
-            <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
-                <Utensils className="w-5 h-5 text-white" />
+            <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                <Utensils className="w-4 h-4 text-white" />
               </div>
               <div className={`${isRTL ? 'text-right' : 'text-left'}`}>
-                <h1 className="text-xl font-bold text-blue-900">
+                <h1 className="text-lg font-bold text-blue-900">
                   {t('mealPlan.title') || 'Meal Plan'}
                 </h1>
-                <p className="text-sm text-blue-600">
+                <p className="text-xs text-blue-600">
                   {t('mealPlan.personalizedNutrition') || 'Personalized nutrition for your goals'}
                 </p>
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-1">
               {weeklyPlan?.weeklyPlan?.id && (
                 <Button
                   onClick={handleShuffleMeals}
                   disabled={isShuffling}
                   variant="outline"
                   size="sm"
-                  className="h-9 px-3 border-blue-300 hover:bg-blue-50"
+                  className="h-7 px-2 border-blue-300 hover:bg-blue-50 text-xs"
                 >
-                  <Shuffle className="w-4 h-4 mr-1" />
+                  <Shuffle className="w-3 h-3 mr-1" />
                   {t('mealPlan.shuffleMeals') || 'Shuffle'}
                 </Button>
               )}
@@ -159,10 +158,10 @@ export const DayOverview = ({
                 <Button
                   onClick={onGenerateAI}
                   disabled={isGenerating}
-                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white h-9 px-4"
+                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white h-7 px-3 text-xs"
                   size="sm"
                 >
-                  <Sparkles className="w-4 h-4 mr-1" />
+                  <Sparkles className="w-3 h-3 mr-1" />
                   {isGenerating ? (t('generating') || 'Generating...') : (t('mealPlan.generateAI') || 'AI Generate')}
                 </Button>
               )}
@@ -173,21 +172,21 @@ export const DayOverview = ({
 
       {/* Navigation & Stats */}
       <Card className="bg-white border-blue-200">
-        <CardContent className="p-4">
+        <CardContent className="p-3">
           {/* Week Navigation */}
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-2">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setCurrentWeekOffset(currentWeekOffset - 1)}
-              className="h-8 w-8 p-0"
+              className="h-6 w-6 p-0"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-3 h-3" />
             </Button>
             
             <div className="text-center">
-              <div className="text-sm font-medium text-blue-900 flex items-center gap-1">
-                <Calendar className="w-4 h-4" />
+              <div className="text-xs font-medium text-blue-900 flex items-center gap-1">
+                <Calendar className="w-3 h-3" />
                 {getWeekDateRange()}
               </div>
             </div>
@@ -196,14 +195,14 @@ export const DayOverview = ({
               variant="ghost"
               size="sm"
               onClick={() => setCurrentWeekOffset(currentWeekOffset + 1)}
-              className="h-8 w-8 p-0"
+              className="h-6 w-6 p-0"
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-3 h-3" />
             </Button>
           </div>
 
           {/* Day Selection */}
-          <div className="mb-3">
+          <div className="mb-2">
             <div className={`grid grid-cols-7 gap-1 ${isRTL ? 'direction-rtl' : ''}`}>
               {[1, 2, 3, 4, 5, 6, 7].map((dayNumber) => {
                 const isSelected = selectedDayNumber === dayNumber;
@@ -215,7 +214,7 @@ export const DayOverview = ({
                     variant={isSelected ? "default" : "outline"}
                     size="sm"
                     onClick={() => setSelectedDayNumber(dayNumber)}
-                    className={`flex flex-col items-center h-12 relative text-xs ${
+                    className={`flex flex-col items-center h-10 relative text-xs ${
                       isSelected ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'hover:bg-blue-50'
                     }`}
                   >
@@ -226,7 +225,7 @@ export const DayOverview = ({
                       {getDayDate(dayNumber).split('/')[1]}
                     </span>
                     {isToday && (
-                      <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-orange-500 rounded-full"></div>
+                      <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
                     )}
                   </Button>
                 );
@@ -235,12 +234,12 @@ export const DayOverview = ({
           </div>
 
           {/* Day Header with Add Snack */}
-          <div className={`flex items-center justify-between mb-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+          <div className={`flex items-center justify-between mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
             <div className={`${isRTL ? 'text-right' : 'text-left'}`}>
-              <h2 className="text-lg font-bold text-blue-900">
+              <h2 className="text-base font-bold text-blue-900">
                 {getDayName(selectedDayNumber)}
               </h2>
-              <p className="text-blue-600 text-sm">
+              <p className="text-blue-600 text-xs">
                 {getDayDate(selectedDayNumber)}
               </p>
             </div>
@@ -248,7 +247,7 @@ export const DayOverview = ({
               <Button
                 onClick={onAddSnack}
                 size="sm"
-                className={`bg-green-600 hover:bg-green-700 text-white h-8 px-3 text-xs ${isRTL ? 'flex-row-reverse' : ''}`}
+                className={`bg-green-600 hover:bg-green-700 text-white h-6 px-2 text-xs ${isRTL ? 'flex-row-reverse' : ''}`}
               >
                 <Plus className={`w-3 h-3 ${isRTL ? 'ml-1' : 'mr-1'}`} />
                 {t('mealPlan.addSnack') || 'Add Snack'}
@@ -257,36 +256,36 @@ export const DayOverview = ({
           </div>
 
           {/* Nutrition Progress */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-lg p-3">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-orange-900">
+          <div className="grid grid-cols-2 gap-2">
+            <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-lg p-2">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-medium text-orange-900">
                   {t('mealPlan.calories') || 'Calories'}
                 </span>
-                <span className="text-sm font-bold text-orange-700">
+                <span className="text-xs font-bold text-orange-700">
                   {totalCalories}/{targetDayCalories}
                 </span>
               </div>
-              <div className="w-full bg-orange-200 rounded-full h-2">
+              <div className="w-full bg-orange-200 rounded-full h-1.5">
                 <div 
-                  className="bg-gradient-to-r from-orange-500 to-red-500 h-2 rounded-full transition-all duration-300" 
+                  className="bg-gradient-to-r from-orange-500 to-red-500 h-1.5 rounded-full transition-all duration-300" 
                   style={{ width: `${caloriesProgress}%` }}
                 ></div>
               </div>
             </div>
 
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-blue-900">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-2">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-medium text-blue-900">
                   {t('mealPlan.protein') || 'Protein'}
                 </span>
-                <span className="text-sm font-bold text-blue-700">
+                <span className="text-xs font-bold text-blue-700">
                   {totalProtein}/{proteinTarget}g
                 </span>
               </div>
-              <div className="w-full bg-blue-200 rounded-full h-2">
+              <div className="w-full bg-blue-200 rounded-full h-1.5">
                 <div 
-                  className="bg-gradient-to-r from-blue-500 to-indigo-500 h-2 rounded-full transition-all duration-300" 
+                  className="bg-gradient-to-r from-blue-500 to-indigo-500 h-1.5 rounded-full transition-all duration-300" 
                   style={{ width: `${proteinProgress}%` }}
                 ></div>
               </div>
@@ -309,26 +308,26 @@ export const DayOverview = ({
       )}
 
       {/* Meals Display - Horizontal Layout */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         {mealTypeOrder.map(mealType => {
           const mealsOfType = groupedMeals[mealType] || [];
           if (mealsOfType.length === 0) return null;
 
           return (
             <Card key={mealType} className="overflow-hidden">
-              <CardHeader className="pb-2">
+              <CardHeader className="pb-1 pt-2">
                 <CardTitle className={`flex items-center gap-2 text-sm ${isRTL ? 'flex-row-reverse' : ''}`}>
-                  <span className="text-lg">{getMealTypeIcon(mealType)}</span>
+                  <span className="text-base">{getMealTypeIcon(mealType)}</span>
                   {getMealTypeName(mealType)}
                   <span className="text-xs text-gray-500 font-normal">
                     ({mealsOfType.length})
                   </span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="pt-0 pb-3">
-                <div className="flex gap-3 overflow-x-auto pb-2">
+              <CardContent className="pt-0 pb-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
                   {mealsOfType.map((meal, index) => (
-                    <div key={`${meal.id}-${index}`} className="flex-shrink-0 w-64">
+                    <div key={`${meal.id}-${index}`}>
                       <EnhancedMealCard
                         meal={meal}
                         onViewMeal={onViewMeal}
@@ -345,12 +344,12 @@ export const DayOverview = ({
         {/* No Meals State */}
         {dailyMeals.length === 0 && (
           <Card className="border-dashed border-2 border-gray-300">
-            <CardContent className="p-6 text-center">
-              <Utensils className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-              <h3 className="text-lg font-semibold text-gray-600 mb-2">
+            <CardContent className="p-4 text-center">
+              <Utensils className="w-10 h-10 text-gray-400 mx-auto mb-2" />
+              <h3 className="text-base font-semibold text-gray-600 mb-1">
                 {t('mealPlan.noMealsPlanned') || 'No meals planned for this day'}
               </h3>
-              <p className="text-sm text-gray-500">
+              <p className="text-xs text-gray-500">
                 {t('mealPlan.generatePlanToSee') || 'Generate a meal plan to see your daily meals'}
               </p>
             </CardContent>

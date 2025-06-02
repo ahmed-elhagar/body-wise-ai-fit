@@ -1,7 +1,10 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { useMealPlanPage } from '@/hooks/useMealPlanPage';
 import { DayOverview } from './DayOverview';
+import { WeeklyMealPlanView } from './WeeklyMealPlanView';
 import { EmptyWeekState } from './EmptyWeekState';
+import { ViewModeToggle } from './ViewModeToggle';
 import { AIGenerationDialog } from './dialogs/AIGenerationDialog';
 import { AddSnackDialog } from './dialogs/AddSnackDialog';
 import { ExchangeDialog } from './dialogs/ExchangeDialog';
@@ -10,6 +13,8 @@ import EnhancedLoadingIndicator from '@/components/ui/enhanced-loading-indicator
 import type { DailyMeal } from '@/hooks/useMealPlanData';
 
 export const MealPlanContainer = () => {
+  const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
+  
   const {
     // Navigation
     currentWeekOffset,
@@ -67,6 +72,7 @@ export const MealPlanContainer = () => {
     selectedDayNumber,
     currentWeekOffset,
     userCredits,
+    viewMode,
     dialogStates: {
       showAIDialog,
       showRecipeDialog,
@@ -108,26 +114,45 @@ export const MealPlanContainer = () => {
 
   return (
     <div className="container mx-auto px-4 py-4 space-y-4">
+      {/* View Mode Toggle */}
+      {currentWeekPlan?.weeklyPlan && (
+        <div className="flex justify-center">
+          <ViewModeToggle
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+          />
+        </div>
+      )}
+
       {/* Main Content */}
       {currentWeekPlan?.weeklyPlan ? (
-        <DayOverview
-          selectedDayNumber={selectedDayNumber}
-          dailyMeals={dailyMeals || []}
-          totalCalories={totalCalories || 0}
-          totalProtein={totalProtein || 0}
-          targetDayCalories={targetDayCalories || 2000}
-          onViewMeal={handleViewMeal}
-          onExchangeMeal={handleExchangeMeal}
-          onAddSnack={handleAddSnack}
-          weekStartDate={weekStartDate}
-          weeklyPlan={currentWeekPlan}
-          showAddSnackButton={true}
-          currentWeekOffset={currentWeekOffset}
-          setCurrentWeekOffset={setCurrentWeekOffset}
-          setSelectedDayNumber={setSelectedDayNumber}
-          onGenerateAI={openAIDialog}
-          isGenerating={isGenerating}
-        />
+        viewMode === 'daily' ? (
+          <DayOverview
+            selectedDayNumber={selectedDayNumber}
+            dailyMeals={dailyMeals || []}
+            totalCalories={totalCalories || 0}
+            totalProtein={totalProtein || 0}
+            targetDayCalories={targetDayCalories || 2000}
+            onViewMeal={handleViewMeal}
+            onExchangeMeal={handleExchangeMeal}
+            onAddSnack={handleAddSnack}
+            weekStartDate={weekStartDate}
+            weeklyPlan={currentWeekPlan}
+            showAddSnackButton={true}
+            currentWeekOffset={currentWeekOffset}
+            setCurrentWeekOffset={setCurrentWeekOffset}
+            setSelectedDayNumber={setSelectedDayNumber}
+            onGenerateAI={openAIDialog}
+            isGenerating={isGenerating}
+          />
+        ) : (
+          <WeeklyMealPlanView
+            weeklyPlan={currentWeekPlan}
+            onViewMeal={handleViewMeal}
+            onExchangeMeal={handleExchangeMeal}
+            weekStartDate={weekStartDate}
+          />
+        )
       ) : (
         <EmptyWeekState
           onGenerateAI={openAIDialog}
