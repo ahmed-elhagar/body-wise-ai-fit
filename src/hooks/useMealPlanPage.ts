@@ -20,7 +20,7 @@ export const useMealPlanPage = () => {
   };
 
   // Enhanced debugging output for week-specific data
-  console.log('🚀 MEAL PLAN PAGE - ENHANCED DEBUG:', {
+  console.log('🚀 MEAL PLAN PAGE - UNIFIED DEBUG:', {
     currentWeekOffset: mealPlanState.currentWeekOffset,
     weekStartDate: mealPlanState.weekStartDate.toDateString(),
     hasWeeklyPlan: !!mealPlanState.currentWeekPlan?.weeklyPlan,
@@ -33,6 +33,7 @@ export const useMealPlanPage = () => {
     totalProtein: mealPlanState.totalProtein,
     targetDayCalories: mealPlanState.targetDayCalories,
     isLoading: mealPlanState.isLoading,
+    isGenerating: mealPlanState.isGenerating,
     error: mealPlanState.error?.message
   });
 

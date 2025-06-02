@@ -1,35 +1,43 @@
 
 import { useCallback } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useMealPlanData } from "@/hooks/useMealPlanData";
-import { useMealPlanActions } from "@/hooks/useMealPlanActions";
 import { useMealPlanNavigation } from "@/hooks/useMealPlanNavigation";
 import { useMealPlanDialogs } from "@/hooks/useMealPlanDialogs";
 import { useMealPlanCalculations } from "@/hooks/useMealPlanCalculations";
 import { useMealPlanHandlers } from "@/hooks/useMealPlanHandlers";
+import { useMealPlanData } from "@/hooks/useMealPlanData";
+import { useEnhancedMealPlan } from "@/hooks/useEnhancedMealPlan";
+import { useQueryClient } from '@tanstack/react-query';
+import { useAuth } from './useAuth';
 
 export const useMealPlanState = () => {
   const { t } = useLanguage();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   
-  // Use smaller, focused hooks
+  // Core navigation and UI state
   const navigation = useMealPlanNavigation();
   const dialogs = useMealPlanDialogs();
   
-  const { data: currentWeekPlan, isLoading, error, refetch: refetchMealPlan } = useMealPlanData(navigation.currentWeekOffset);
+  // Data fetching - single source of truth
   const { 
-    handleRegeneratePlan, 
-    handleGenerateAIPlan, 
+    data: currentWeekPlan, 
+    isLoading, 
+    error, 
+    refetch: refetchMealPlan 
+  } = useMealPlanData(navigation.currentWeekOffset);
+  
+  // Enhanced meal plan generation
+  const { 
+    generateMealPlan, 
     isGenerating, 
-    isShuffling, 
     nutritionContext 
-  } = useMealPlanActions(
-    currentWeekPlan,
-    navigation.currentWeekOffset,
-    dialogs.aiPreferences,
-    refetchMealPlan
-  );
-
+  } = useEnhancedMealPlan();
+  
+  // Calculations based on current data
   const calculations = useMealPlanCalculations(currentWeekPlan, navigation.selectedDayNumber);
+  
+  // Event handlers
   const handlers = useMealPlanHandlers(
     dialogs.setSelectedMeal,
     dialogs.setSelectedMealIndex,
@@ -37,38 +45,88 @@ export const useMealPlanState = () => {
     dialogs.setShowExchangeDialog
   );
 
-  // Enhanced logging for debugging with special conditions
-  console.log('🔍 ENHANCED MEAL PLAN STATE DEBUG:', {
+  // Enhanced AI generation with proper error handling
+  const handleGenerateAIPlan = useCallback(async (): Promise<boolean> => {
+    try {
+      console.log('🚀 Starting AI meal plan generation:', {
+        weekOffset: navigation.currentWeekOffset,
+        preferences: dialogs.aiPreferences,
+        userId: user?.id,
+        nutritionContext
+      });
+      
+      const result = await generateMealPlan(dialogs.aiPreferences, { 
+        weekOffset: navigation.currentWeekOffset 
+      });
+      
+      if (result?.success) {
+        console.log('✅ Generation successful:', {
+          weeklyPlanId: result.weeklyPlanId,
+          weekOffset: navigation.currentWeekOffset
+        });
+        
+        // Invalidate queries and refetch
+        await queryClient.invalidateQueries({
+          queryKey: ['weekly-meal-plan']
+        });
+        
+        // Wait for database update
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        // Refetch data
+        await refetchMealPlan?.();
+        
+        // Close dialog
+        dialogs.setShowAIDialog(false);
+        
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error('❌ Generation failed:', error);
+      return false;
+    }
+  }, [
+    dialogs.aiPreferences, 
+    navigation.currentWeekOffset, 
+    generateMealPlan, 
+    refetchMealPlan, 
+    queryClient, 
+    user?.id, 
+    nutritionContext,
+    dialogs.setShowAIDialog
+  ]);
+
+  // Manual refetch with proper error handling
+  const refetch = useCallback(async () => {
+    console.log('🔄 Manual refetch triggered for week offset:', navigation.currentWeekOffset);
+    try {
+      await refetchMealPlan?.();
+    } catch (error) {
+      console.error('❌ Manual refetch failed:', error);
+    }
+  }, [navigation.currentWeekOffset, refetchMealPlan]);
+
+  // Regenerate plan (same as generate for now)
+  const handleRegeneratePlan = useCallback(async () => {
+    console.log('🔄 Regenerating meal plan...');
+    return await handleGenerateAIPlan();
+  }, [handleGenerateAIPlan]);
+
+  // Enhanced logging for debugging
+  console.log('🔍 UNIFIED MEAL PLAN STATE:', {
     currentWeekOffset: navigation.currentWeekOffset,
     selectedDayNumber: navigation.selectedDayNumber,
     hasWeeklyPlan: !!currentWeekPlan?.weeklyPlan,
     hasDailyMeals: !!currentWeekPlan?.dailyMeals,
     dailyMealsCount: currentWeekPlan?.dailyMeals?.length || 0,
     isLoading,
+    isGenerating,
     error: error?.message,
     weekStartDate: navigation.weekStartDate.toDateString(),
-    isMuslimFasting: nutritionContext.isMuslimFasting,
-    fastingPeriod: nutritionContext.fastingStartDate && nutritionContext.fastingEndDate 
-      ? `${nutritionContext.fastingStartDate} to ${nutritionContext.fastingEndDate}`
-      : 'Not active'
+    nutritionContext
   });
-
-  const refetch = useCallback(async () => {
-    console.log('🔄 Manual refetch triggered for week offset:', navigation.currentWeekOffset);
-    try {
-      await refetchMealPlan?.();
-    } catch (error) {
-      console.error('Manual refetch failed:', error);
-    }
-  }, [navigation.currentWeekOffset, refetchMealPlan]);
-
-  const enhancedHandleGenerateAIPlan = useCallback(async () => {
-    const success = await handleGenerateAIPlan();
-    if (success) {
-      dialogs.setShowAIDialog(false);
-    }
-    return success;
-  }, [handleGenerateAIPlan, dialogs.setShowAIDialog]);
 
   return {
     // Navigation state
@@ -87,7 +145,6 @@ export const useMealPlanState = () => {
     currentWeekPlan,
     isLoading,
     isGenerating,
-    isShuffling,
     error,
     
     // Enhanced context
@@ -95,7 +152,18 @@ export const useMealPlanState = () => {
     
     // Actions
     handleRegeneratePlan,
-    handleGenerateAIPlan: enhancedHandleGenerateAIPlan,
-    refetch
+    handleGenerateAIPlan,
+    refetch,
+    
+    // Helper methods for compatibility
+    openRecipeDialog: (meal: any) => {
+      dialogs.setSelectedMeal(meal);
+      dialogs.setShowRecipeDialog(true);
+    },
+    openExchangeDialog: (meal: any, index?: number) => {
+      dialogs.setSelectedMeal(meal);
+      dialogs.setSelectedMealIndex(index || 0);
+      dialogs.setShowExchangeDialog(true);
+    }
   };
 };

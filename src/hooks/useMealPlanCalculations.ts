@@ -1,24 +1,27 @@
 
 import { useMemo } from 'react';
-import type { DailyMeal } from '@/hooks/useMealPlanData';
+import type { DailyMeal } from "@/hooks/useMealPlanData";
 
-export const useMealPlanCalculations = (currentWeekPlan: any, selectedDayNumber: number) => {
+export const useMealPlanCalculations = (
+  mealPlanData: any,
+  selectedDayNumber: number
+) => {
   const dailyMeals = useMemo(() => {
-    if (!currentWeekPlan?.dailyMeals) return [];
-    return currentWeekPlan.dailyMeals.filter(
+    if (!mealPlanData?.dailyMeals) return [];
+    return mealPlanData.dailyMeals.filter(
       (meal: DailyMeal) => meal.day_number === selectedDayNumber
     );
-  }, [currentWeekPlan?.dailyMeals, selectedDayNumber]);
+  }, [mealPlanData?.dailyMeals, selectedDayNumber]);
 
   const todaysMeals = useMemo(() => {
     const today = new Date();
     const todayDayNumber = today.getDay() === 6 ? 1 : today.getDay() + 2;
     
-    if (!currentWeekPlan?.dailyMeals) return [];
-    return currentWeekPlan.dailyMeals.filter(
+    if (!mealPlanData?.dailyMeals) return [];
+    return mealPlanData.dailyMeals.filter(
       (meal: DailyMeal) => meal.day_number === todayDayNumber
     );
-  }, [currentWeekPlan?.dailyMeals]);
+  }, [mealPlanData?.dailyMeals]);
 
   const totalCalories = useMemo(() => {
     return dailyMeals.reduce((sum: number, meal: DailyMeal) => sum + (meal.calories || 0), 0);
@@ -29,27 +32,24 @@ export const useMealPlanCalculations = (currentWeekPlan: any, selectedDayNumber:
   }, [dailyMeals]);
 
   const targetDayCalories = useMemo(() => {
-    if (!currentWeekPlan?.weeklyPlan?.total_calories) return 2000;
-    return Math.round(currentWeekPlan.weeklyPlan.total_calories / 7);
-  }, [currentWeekPlan?.weeklyPlan?.total_calories]);
+    if (!mealPlanData?.weeklyPlan?.total_calories) return 2000;
+    return Math.round(mealPlanData.weeklyPlan.total_calories / 7);
+  }, [mealPlanData?.weeklyPlan?.total_calories]);
 
   const shoppingItems = useMemo(() => {
-    if (!currentWeekPlan?.dailyMeals) return [];
+    if (!mealPlanData?.dailyMeals) return [];
     
     const ingredients: any[] = [];
-    currentWeekPlan.dailyMeals.forEach((meal: DailyMeal) => {
+    mealPlanData.dailyMeals.forEach((meal: DailyMeal) => {
       if (meal.ingredients && Array.isArray(meal.ingredients)) {
         meal.ingredients.forEach((ingredient: any) => {
-          // Safely handle ingredient name - check for both ingredient.name and direct string
           const ingredientName = ingredient?.name || ingredient;
-          
-          // Only process if we have a valid ingredient name
           if (ingredientName && typeof ingredientName === 'string') {
             ingredients.push({
               name: ingredientName,
               quantity: ingredient.quantity || '1',
               unit: ingredient.unit || 'piece',
-              category: getCategoryForIngredient(ingredientName)
+              category: 'general'
             });
           }
         });
@@ -57,7 +57,16 @@ export const useMealPlanCalculations = (currentWeekPlan: any, selectedDayNumber:
     });
     
     return ingredients;
-  }, [currentWeekPlan?.dailyMeals]);
+  }, [mealPlanData?.dailyMeals]);
+
+  console.log('🧮 MEAL PLAN CALCULATIONS:', {
+    selectedDayNumber,
+    dailyMealsCount: dailyMeals.length,
+    todaysMealsCount: todaysMeals.length,
+    totalCalories,
+    totalProtein,
+    targetDayCalories
+  });
 
   return {
     dailyMeals,
@@ -67,31 +76,4 @@ export const useMealPlanCalculations = (currentWeekPlan: any, selectedDayNumber:
     targetDayCalories,
     shoppingItems
   };
-};
-
-const getCategoryForIngredient = (ingredientName: string): string => {
-  // Add safety check for undefined/null ingredientName
-  if (!ingredientName || typeof ingredientName !== 'string') {
-    return 'Others';
-  }
-
-  const categories = {
-    'Proteins': ['chicken', 'beef', 'pork', 'fish', 'eggs', 'tofu', 'beans', 'lentils'],
-    'Vegetables': ['tomato', 'onion', 'garlic', 'carrot', 'spinach', 'broccoli', 'pepper'],
-    'Grains': ['rice', 'bread', 'pasta', 'quinoa', 'oats', 'flour'],
-    'Dairy': ['milk', 'cheese', 'yogurt', 'butter', 'cream'],
-    'Fruits': ['apple', 'banana', 'orange', 'berry', 'lemon', 'lime'],
-    'Spices': ['salt', 'pepper', 'cumin', 'paprika', 'oregano', 'basil'],
-    'Others': []
-  };
-
-  const ingredient = ingredientName.toLowerCase();
-  
-  for (const [category, items] of Object.entries(categories)) {
-    if (items.some(item => ingredient.includes(item))) {
-      return category;
-    }
-  }
-  
-  return 'Others';
 };
