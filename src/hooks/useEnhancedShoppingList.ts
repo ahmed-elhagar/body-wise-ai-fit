@@ -15,7 +15,7 @@ interface WeeklyPlanData {
 
 interface Ingredient {
   name: string;
-  quantity?: string;
+  quantity?: string | number;
   unit?: string;
 }
 
@@ -26,36 +26,47 @@ export const useEnhancedShoppingList = (weeklyPlan?: WeeklyPlanData | null) => {
   const enhancedShoppingItems: ShoppingListData = useMemo(() => {
     console.log('🛒 Computing enhanced shopping list...', { 
       hasWeeklyPlan: !!weeklyPlan,
-      mealsCount: weeklyPlan?.dailyMeals ? weeklyPlan.dailyMeals.length : 0
+      mealsCount: weeklyPlan?.dailyMeals ? weeklyPlan.dailyMeals.length : 0,
+      dailyMeals: weeklyPlan?.dailyMeals?.map(meal => ({
+        name: meal.name,
+        ingredients: meal.ingredients
+      }))
     });
     
     if (!weeklyPlan?.dailyMeals || !Array.isArray(weeklyPlan.dailyMeals)) {
+      console.log('❌ No daily meals found in weekly plan');
       return { items: [], groupedItems: {} };
     }
 
     const itemsMap = new Map<string, ShoppingItem>();
     
     weeklyPlan.dailyMeals.forEach((meal, mealIndex) => {
-      console.log(`🍽️ Processing meal ${mealIndex + 1}: ${meal.name}`);
+      console.log(`🍽️ Processing meal ${mealIndex + 1}: ${meal.name}`, {
+        hasIngredients: !!meal.ingredients,
+        ingredientsType: typeof meal.ingredients,
+        ingredientsLength: Array.isArray(meal.ingredients) ? meal.ingredients.length : 'not array'
+      });
       
-      // Enhanced type checking for ingredients
-      if (meal.ingredients) {
-        let ingredientsArray: Ingredient[] = [];
-        
-        // Handle different ingredient formats
+      if (!meal.ingredients) {
+        console.log(`⚠️ No ingredients found for meal: ${meal.name}`);
+        return;
+      }
+
+      let ingredientsArray: Ingredient[] = [];
+      
+      // Handle different ingredient formats more robustly
+      try {
         if (Array.isArray(meal.ingredients)) {
           ingredientsArray = meal.ingredients;
         } else if (typeof meal.ingredients === 'string') {
-          try {
-            const parsed = JSON.parse(meal.ingredients);
-            if (Array.isArray(parsed)) {
-              ingredientsArray = parsed;
-            }
-          } catch (error) {
-            console.warn('Failed to parse ingredients string:', meal.ingredients);
+          const parsed = JSON.parse(meal.ingredients);
+          if (Array.isArray(parsed)) {
+            ingredientsArray = parsed;
+          } else {
+            console.warn(`Parsed ingredients is not an array for ${meal.name}:`, parsed);
           }
         } else if (typeof meal.ingredients === 'object' && meal.ingredients !== null) {
-          // If it's an object, try to convert it to an array
+          // Convert object to array format
           ingredientsArray = Object.values(meal.ingredients).filter(
             (item): item is Ingredient => 
               typeof item === 'object' && 
@@ -63,44 +74,65 @@ export const useEnhancedShoppingList = (weeklyPlan?: WeeklyPlanData | null) => {
               'name' in item
           );
         }
-
-        // Process the validated ingredients array
-        ingredientsArray.forEach((ingredient: unknown, ingIndex) => {
-          // Type guard to ensure ingredient is properly typed
-          let ingredientData: Ingredient;
-          
-          if (typeof ingredient === 'string') {
-            ingredientData = { name: ingredient, quantity: '1', unit: 'piece' };
-          } else if (ingredient && typeof ingredient === 'object' && 'name' in ingredient) {
-            ingredientData = ingredient as Ingredient;
-          } else {
-            console.warn(`Invalid ingredient at index ${ingIndex}:`, ingredient);
-            return;
-          }
-
-          const ingredientName = ingredientData.name;
-          const quantity = parseFloat(ingredientData.quantity || '1');
-          const unit = ingredientData.unit || 'piece';
-          const key = `${ingredientName.toLowerCase()}-${unit}`;
-          
-          console.log(`📝 Processing ingredient ${ingIndex + 1}: ${ingredientName} (${quantity} ${unit})`);
-          
-          if (itemsMap.has(key)) {
-            const existing = itemsMap.get(key)!;
-            existing.quantity += quantity;
-            console.log(`🔄 Updated existing item: ${ingredientName} (${existing.quantity} ${unit})`);
-          } else {
-            const newItem: ShoppingItem = {
-              name: ingredientName,
-              quantity: quantity,
-              unit: unit,
-              category: getCategoryForIngredient(ingredientName)
-            };
-            itemsMap.set(key, newItem);
-            console.log(`➕ Added new item: ${ingredientName} (${quantity} ${unit}) - Category: ${newItem.category}`);
-          }
-        });
+      } catch (error) {
+        console.error(`Failed to process ingredients for ${meal.name}:`, error);
+        return;
       }
+
+      console.log(`📝 Processing ${ingredientsArray.length} ingredients for ${meal.name}`);
+
+      ingredientsArray.forEach((ingredient: any, ingIndex) => {
+        // More robust ingredient processing
+        let ingredientData: Ingredient;
+        
+        if (typeof ingredient === 'string') {
+          ingredientData = { name: ingredient, quantity: 1, unit: 'piece' };
+        } else if (ingredient && typeof ingredient === 'object' && 'name' in ingredient) {
+          ingredientData = {
+            name: ingredient.name,
+            quantity: ingredient.quantity || 1,
+            unit: ingredient.unit || 'piece'
+          };
+        } else {
+          console.warn(`Invalid ingredient at index ${ingIndex} in ${meal.name}:`, ingredient);
+          return;
+        }
+
+        const ingredientName = String(ingredientData.name).trim();
+        if (!ingredientName) {
+          console.warn(`Empty ingredient name in ${meal.name}`);
+          return;
+        }
+
+        // Convert quantity to number
+        let quantity = 1;
+        if (typeof ingredientData.quantity === 'number') {
+          quantity = ingredientData.quantity;
+        } else if (typeof ingredientData.quantity === 'string') {
+          const parsed = parseFloat(ingredientData.quantity);
+          quantity = isNaN(parsed) ? 1 : parsed;
+        }
+
+        const unit = String(ingredientData.unit || 'piece');
+        const key = `${ingredientName.toLowerCase()}-${unit.toLowerCase()}`;
+        
+        console.log(`📦 Processing: ${ingredientName} (${quantity} ${unit})`);
+        
+        if (itemsMap.has(key)) {
+          const existing = itemsMap.get(key)!;
+          existing.quantity += quantity;
+          console.log(`🔄 Updated existing: ${ingredientName} -> ${existing.quantity} ${unit}`);
+        } else {
+          const newItem: ShoppingItem = {
+            name: ingredientName,
+            quantity: quantity,
+            unit: unit,
+            category: getCategoryForIngredient(ingredientName)
+          };
+          itemsMap.set(key, newItem);
+          console.log(`➕ Added new: ${ingredientName} (${quantity} ${unit}) - Category: ${newItem.category}`);
+        }
+      });
     });
 
     const items = Array.from(itemsMap.values());
@@ -114,7 +146,7 @@ export const useEnhancedShoppingList = (weeklyPlan?: WeeklyPlanData | null) => {
       return acc;
     }, {} as Record<string, ShoppingItem[]>);
 
-    console.log('🛒 Enhanced shopping items generated:', {
+    console.log('✅ Shopping list generation complete:', {
       totalItems: items.length,
       categories: Object.keys(groupedItems).length,
       itemsByCategory: Object.entries(groupedItems).map(([cat, items]) => `${cat}: ${items.length}`)
