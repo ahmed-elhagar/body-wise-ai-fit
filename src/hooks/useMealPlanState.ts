@@ -78,9 +78,8 @@ export const useMealPlanState = () => {
         weekOffset: navigation.currentWeekOffset 
       });
       
-      if (result?.success) {
+      if (result) {
         console.log('✅ Generation successful:', {
-          weeklyPlanId: result.weeklyPlanId,
           weekOffset: navigation.currentWeekOffset
         });
         

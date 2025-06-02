@@ -37,9 +37,8 @@ export const useMealPlanActions = (
       
       const result = await generateMealPlan(enhancedPreferences, { weekOffset: currentWeekOffset });
       
-      if (result?.success) {
+      if (result) {
         console.log('✅ Generation successful with special conditions:', {
-          weeklyPlanId: result.weeklyPlanId,
           weekOffset: currentWeekOffset,
           isMuslimFasting: nutritionContext.isMuslimFasting
         });
@@ -73,7 +72,7 @@ export const useMealPlanActions = (
           return true; // Still consider it successful since generation worked
         }
       } else {
-        console.error('❌ Generation failed:', result?.error);
+        console.error('❌ Generation failed');
         return false;
       }
       
