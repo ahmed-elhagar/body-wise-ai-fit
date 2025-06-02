@@ -111,13 +111,13 @@ export const MealPlanContainer = () => {
     setShowShoppingListDialog(true);
   };
 
-  const handleSendShoppingListEmail = async () => {
-    return await sendShoppingListEmail();
-  };
-
-  // Wrapper to handle the signature mismatch
-  const handleGenerateAIWrapper = async () => {
-    await handleGenerateAIPlan();
+  const handleSendShoppingListEmail = async (): Promise<boolean> => {
+    try {
+      return await sendShoppingListEmail();
+    } catch (error) {
+      console.error('Failed to send shopping list email:', error);
+      return false;
+    }
   };
 
   return (
@@ -169,7 +169,7 @@ export const MealPlanContainer = () => {
         showAIDialog={showAIDialog}
         onCloseAIDialog={closeAIDialog}
         aiPreferences={aiPreferences}
-        onGenerateAI={handleGenerateAIWrapper}
+        onGenerateAI={handleGenerateAIPlan}
         isGenerating={isGenerating}
         currentWeekOffset={currentWeekOffset}
         showAddSnackDialog={showAddSnackDialog}

@@ -12,7 +12,7 @@ interface MealPlanDialogsProps {
   showAIDialog: boolean;
   onCloseAIDialog: () => void;
   aiPreferences: MealPlanPreferences;
-  onGenerateAI: () => Promise<void>;
+  onGenerateAI: () => Promise<boolean>;
   isGenerating: boolean;
   currentWeekOffset: number;
 

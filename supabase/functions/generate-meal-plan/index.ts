@@ -2,7 +2,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { calculateDailyCalories, calculateLifePhaseAdjustments } from './nutritionCalculator.ts';
-import { generateMealPlanPrompt } from './promptGenerator.ts';
+import { generateEnhancedMealPlanPrompt } from './enhancedPromptGenerator.ts';
 import { validateMealPlan, validateLifePhaseMealPlan } from './mealPlanValidator.ts';
 import { saveWeeklyPlan } from './weeklyPlanStorage.ts';
 import { saveMealsToDatabase } from './mealStorage.ts';
@@ -10,6 +10,7 @@ import { buildNutritionContext, enhancePromptWithLifePhase } from './lifePhasePr
 import { optimizedDatabaseOperations } from './databaseOptimization.ts';
 import { handleMealPlanError, createUserFriendlyError, errorCodes, MealPlanError } from './enhancedErrorHandling.ts';
 import { enhancedRateLimiting } from './rateLimitingEnhanced.ts';
+import { AIService } from '../_shared/aiService.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -31,8 +32,10 @@ serve(async (req) => {
     const { userProfile, preferences } = await parseAndValidateRequest(req);
     language = preferences?.language || userProfile?.preferred_language || 'en';
     
-    // Validate OpenAI API key
+    // Initialize AI Service
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+    const googleApiKey = Deno.env.get('GOOGLE_API_KEY');
+    
     if (!openAIApiKey) {
       throw new MealPlanError(
         'OpenAI API key not configured',
@@ -41,7 +44,13 @@ serve(async (req) => {
       );
     }
 
-    console.log('🌐 Language Configuration:', { language });
+    const aiService = new AIService(openAIApiKey, undefined, googleApiKey);
+
+    console.log('🌐 Enhanced Language Configuration:', { 
+      language,
+      includeSnacks: preferences?.includeSnacks,
+      mealsPerDay: preferences?.includeSnacks ? 5 : 3
+    });
 
     // Enhanced rate limiting check
     const rateLimitResult = await enhancedRateLimiting.checkRateLimit(userProfile.id);
@@ -64,7 +73,7 @@ serve(async (req) => {
 
     // Build nutrition context
     const nutritionContext = buildNutritionContext(userProfile);
-    console.log('🏥 Life-Phase Context:', nutritionContext);
+    console.log('🏥 Enhanced Life-Phase Context:', nutritionContext);
 
     // Calculate enhanced calories
     const baseDailyCalories = calculateDailyCalories(userProfile);
@@ -78,16 +87,25 @@ serve(async (req) => {
     });
 
     const includeSnacks = preferences?.includeSnacks !== false && preferences?.includeSnacks !== 'false';
+    const mealsPerDay = includeSnacks ? 5 : 3;
     
-    // Generate AI meal plan with caching
-    const generatedPlan = await generateAIMealPlanWithCaching(
+    console.log('🍽️ Meal configuration:', {
+      includeSnacks,
+      mealsPerDay,
+      mealTypes: includeSnacks 
+        ? ['breakfast', 'snack1', 'lunch', 'snack2', 'dinner']
+        : ['breakfast', 'lunch', 'dinner']
+    });
+    
+    // Generate AI meal plan with enhanced prompt and AI model selector
+    const generatedPlan = await generateAIMealPlanWithModelSelector(
       userProfile,
       preferences,
       adjustedDailyCalories,
       includeSnacks,
       language,
       nutritionContext,
-      openAIApiKey
+      aiService
     );
 
     // Enhanced validation
@@ -113,7 +131,7 @@ serve(async (req) => {
     const weeklyPlan = await saveWeeklyPlan(
       userProfile, 
       generatedPlan, 
-      { ...preferences, nutritionContext, language }, 
+      { ...preferences, nutritionContext, language, includeSnacks, mealsPerDay }, 
       adjustedDailyCalories
     );
     
@@ -124,7 +142,9 @@ serve(async (req) => {
       await enhancedRateLimiting.completeGeneration(logId, true, {
         weeklyPlanId: weeklyPlan.id,
         totalMeals: totalMealsSaved,
-        nutritionContext
+        nutritionContext,
+        mealsPerDay,
+        includeSnacks
       });
     }
 
@@ -132,7 +152,9 @@ serve(async (req) => {
       totalMealsSaved,
       remainingCredits: rateLimitResult.remaining - (rateLimitResult.isPro ? 0 : 1),
       language,
-      nutritionContext
+      nutritionContext,
+      mealsPerDay,
+      includeSnacks
     });
     
     return new Response(JSON.stringify({ 
@@ -142,11 +164,12 @@ serve(async (req) => {
       totalMeals: totalMealsSaved,
       generationsRemaining: rateLimitResult.isPro ? -1 : rateLimitResult.remaining - 1,
       includeSnacks,
+      mealsPerDay,
       weekOffset: preferences?.weekOffset || 0,
       language,
       nutritionContext,
       isPro: rateLimitResult.isPro,
-      message: `✨ Meal plan generated with ${totalMealsSaved} meals${lifePhaseAdjustments > 0 ? ` (+${lifePhaseAdjustments} kcal)` : ''}`
+      message: `✨ Enhanced meal plan generated with ${totalMealsSaved} meals (${mealsPerDay} per day)${lifePhaseAdjustments > 0 ? ` (+${lifePhaseAdjustments} kcal)` : ''}`
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
@@ -209,69 +232,38 @@ const parseAndValidateRequest = async (req: Request) => {
   }
 };
 
-const generateAIMealPlanWithCaching = async (
+const generateAIMealPlanWithModelSelector = async (
   userProfile: any,
   preferences: any,
   adjustedDailyCalories: number,
   includeSnacks: boolean,
   language: string,
   nutritionContext: any,
-  openAIApiKey: string
+  aiService: AIService
 ) => {
   const systemPrompt = language === 'ar' 
-    ? 'أنت خبير تغذية مُحترف بالذكاء الاصطناعي متخصص في التغذية لمراحل الحياة المختلفة.'
-    : 'You are a professional nutritionist AI specialized in life-phase nutrition.';
+    ? 'أنت خبير تغذية مُحترف بالذكاء الاصطناعي متخصص في التغذية لمراحل الحياة المختلفة مع الوعي المتقدم بالحالات الصحية.'
+    : 'You are a professional nutritionist AI specialized in life-phase nutrition with advanced health condition awareness.';
 
-  const basePrompt = generateMealPlanPrompt(userProfile, preferences, adjustedDailyCalories, includeSnacks);
+  // Use enhanced prompt generator
+  const basePrompt = generateEnhancedMealPlanPrompt(userProfile, preferences, adjustedDailyCalories, includeSnacks);
   const enhancedPrompt = enhancePromptWithLifePhase(basePrompt, nutritionContext, language);
 
-  console.log('🤖 Sending enhanced request to OpenAI...');
+  console.log('🤖 Sending enhanced request to AI Service (Model Selector)...');
   
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${openAIApiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: enhancedPrompt }
-      ],
-      temperature: 0.1,
-      max_tokens: 8000,
-      top_p: 0.8,
-      frequency_penalty: 0,
-      presence_penalty: 0,
-      stream: false
-    }),
+  const response = await aiService.generate('meal-plan', {
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: enhancedPrompt }
+    ],
+    temperature: 0.1,
+    maxTokens: 8000
   });
 
-  if (!response.ok) {
-    if (response.status === 429) {
-      throw createUserFriendlyError(errorCodes.OPENAI_API_ERROR, language);
-    }
-    throw new MealPlanError(
-      'AI generation failed',
-      errorCodes.AI_GENERATION_FAILED,
-      response.status,
-      true
-    );
-  }
-
-  const data = await response.json();
-  if (!data.choices?.[0]?.message?.content) {
-    throw new MealPlanError(
-      'Invalid AI response',
-      errorCodes.AI_GENERATION_FAILED,
-      500,
-      true
-    );
-  }
-
+  console.log('✅ AI Service response received successfully');
+  
   // Parse and clean response with enhanced validation
-  const content = data.choices[0].message.content.trim();
+  const content = response.content.trim();
   const cleanedContent = content
     .replace(/```json\n?/g, '')
     .replace(/```\n?/g, '')
