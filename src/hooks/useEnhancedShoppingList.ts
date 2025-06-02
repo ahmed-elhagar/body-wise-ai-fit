@@ -73,7 +73,7 @@ export const useEnhancedShoppingList = (weeklyPlan?: {
     console.log('🛒 Enhanced shopping items generated:', {
       totalItems: items.length,
       categories: Object.keys(groupedItems).length,
-      itemsByCategory: Object.entries(groupedItems).map(([cat, items]) => `${cat}: ${items.length}`)
+      itemsByCategory: Object.entries(groupedItems).map(([cat, items]) => `${cat}: ${Array.isArray(items) ? items.length : 0}`)
     });
     
     return { items, groupedItems };
