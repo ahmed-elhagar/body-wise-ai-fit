@@ -2,7 +2,7 @@
 import React from 'react';
 import MealPlanAIDialog from '@/components/meal-plan/MealPlanAIDialog';
 import MealRecipeDialog from '@/components/meal-plan/MealRecipeDialog';
-import MealExchangeDialog from '@/components/MealExchangeDialog';
+import MealExchangeDialog from '@/components/meal-plan/MealExchangeDialog';
 import EnhancedAddSnackDialog from '@/components/meal-plan/EnhancedAddSnackDialog';
 import type { DailyMeal, MealPlanFetchResult } from '../types';
 
@@ -73,12 +73,13 @@ export const MealPlanDialogs = ({
         meal={selectedMeal}
       />
 
-      {/* Exchange Dialog - Fix props to match MealExchangeDialog component interface */}
+      {/* Exchange Dialog */}
       <MealExchangeDialog
         isOpen={showExchangeDialog}
         onClose={onCloseExchangeDialog}
-        currentMeal={selectedMeal}
-        onExchange={onRefetch}
+        meal={selectedMeal}
+        mealIndex={selectedMealIndex}
+        onMealExchanged={onRefetch}
       />
 
       {/* Add Snack Dialog */}

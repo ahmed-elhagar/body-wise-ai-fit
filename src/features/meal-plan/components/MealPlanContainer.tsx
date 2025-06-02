@@ -1,9 +1,10 @@
+
 import React from 'react';
 import { useMealPlanState } from '@/hooks/useMealPlanState';
 import { MealPlanHeader } from './MealPlanHeader';
 import { MealPlanContent } from './MealPlanContent';
 import { MealPlanDialogs } from './MealPlanDialogs';
-import MealPlanAILoadingDialog from '@/components/meal-plan/MealPlanAILoadingDialog';
+import { MealPlanAILoadingDialog } from '@/components/meal-plan/MealPlanAILoadingDialog';
 
 export const MealPlanContainer = () => {
   const {
