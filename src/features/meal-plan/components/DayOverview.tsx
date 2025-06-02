@@ -1,13 +1,14 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ChefHat, Eye, ArrowLeftRight, Plus, Clock, Utensils } from "lucide-react";
+import { Utensils, Target, TrendingUp } from "lucide-react";
 import { format } from 'date-fns';
 import { useMealPlanTranslations } from '@/utils/mealPlanTranslations';
 import { getDayName } from '@/utils/mealPlanUtils';
+import { EnhancedMealCard } from './EnhancedMealCard';
+import { AddMealCard } from './AddMealCard';
 import type { DailyMeal } from '../types';
 
 interface DayOverviewProps {
@@ -40,8 +41,6 @@ export const DayOverview = ({
     target,
     cal,
     protein,
-    addSnack,
-    recipe,
     mealTypes,
     language
   } = useMealPlanTranslations();
@@ -49,6 +48,7 @@ export const DayOverview = ({
   const calorieProgressPercent = Math.min((totalCalories / targetDayCalories) * 100, 100);
   const remainingCalories = Math.max(0, targetDayCalories - totalCalories);
 
+  // Group meals by type
   const mealsByType = dailyMeals.reduce((acc, meal) => {
     if (!acc[meal.meal_type]) {
       acc[meal.meal_type] = [];
@@ -57,7 +57,21 @@ export const DayOverview = ({
     return acc;
   }, {} as Record<string, DailyMeal[]>);
 
+  // Define meal type order and create meal grid
   const mealTypeOrder = ['breakfast', 'lunch', 'dinner', 'snack1', 'snack2'];
+  const allMeals: Array<{ type: 'meal' | 'add'; meal?: DailyMeal; mealType?: string }> = [];
+
+  mealTypeOrder.forEach(mealType => {
+    const mealsForType = mealsByType[mealType] || [];
+    mealsForType.forEach(meal => {
+      allMeals.push({ type: 'meal', meal });
+    });
+    
+    // Add "add meal" card for empty snack slots
+    if (['snack1', 'snack2'].includes(mealType) && mealsForType.length === 0) {
+      allMeals.push({ type: 'add', mealType: 'snack' });
+    }
+  });
 
   return (
     <div className="space-y-6">
@@ -71,33 +85,35 @@ export const DayOverview = ({
         </p>
       </div>
 
-      {/* Daily Progress */}
-      <Card>
+      {/* Daily Progress Card */}
+      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Utensils className="w-5 h-5" />
+            <Utensils className="w-5 h-5 text-blue-600" />
             {dailyProgress}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Calorie Progress */}
           <div>
             <div className="flex justify-between text-sm mb-2">
-              <span>{calorieProgress}</span>
-              <span>{totalCalories}/{targetDayCalories} {cal}</span>
+              <span className="text-gray-700">{calorieProgress}</span>
+              <span className="font-medium">{totalCalories}/{targetDayCalories} {cal}</span>
             </div>
             <Progress value={calorieProgressPercent} className="h-3" />
           </div>
           
+          {/* Stats Grid */}
           <div className="grid grid-cols-3 gap-4 text-center">
-            <div>
+            <div className="bg-white/70 backdrop-blur-sm rounded-lg p-3">
               <div className="text-2xl font-bold text-orange-600">{totalCalories}</div>
               <div className="text-sm text-gray-600">{consumed}</div>
             </div>
-            <div>
+            <div className="bg-white/70 backdrop-blur-sm rounded-lg p-3">
               <div className="text-2xl font-bold text-green-600">{totalProtein.toFixed(1)}g</div>
               <div className="text-sm text-gray-600">{protein}</div>
             </div>
-            <div>
+            <div className="bg-white/70 backdrop-blur-sm rounded-lg p-3">
               <div className="text-2xl font-bold text-blue-600">{remainingCalories}</div>
               <div className="text-sm text-gray-600">Remaining</div>
             </div>
@@ -105,91 +121,39 @@ export const DayOverview = ({
         </CardContent>
       </Card>
 
-      {/* Meals by Type */}
-      <div className="space-y-4">
-        {mealTypeOrder.map(mealType => {
-          const mealsForType = mealsByType[mealType] || [];
-          
-          if (mealsForType.length === 0 && !['snack1', 'snack2'].includes(mealType)) {
-            return null; // Don't show empty main meals
-          }
-
-          return (
-            <Card key={mealType}>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span className="capitalize">
-                    {mealTypes[mealType] || mealType}
-                  </span>
-                  {['snack1', 'snack2'].includes(mealType) && mealsForType.length === 0 && (
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={onAddSnack}
-                    >
-                      <Plus className="w-4 h-4 mr-1" />
-                      {addSnack}
-                    </Button>
-                  )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {mealsForType.length === 0 ? (
-                  <p className="text-gray-500 text-center py-4">No {mealType} planned</p>
-                ) : (
-                  <div className="space-y-3">
-                    {mealsForType.map((meal) => (
-                      <div 
-                        key={meal.id}
-                        className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                      >
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-gray-900">{meal.name}</h4>
-                          <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
-                            <span className="flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              {meal.prep_time + meal.cook_time} min
-                            </span>
-                            <span>{meal.calories} {cal}</span>
-                            <span>{meal.protein}g {protein}</span>
-                          </div>
-                          {meal.description && (
-                            <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                              {meal.description}
-                            </p>
-                          )}
-                        </div>
-                        
-                        <div className="flex items-center gap-2 ml-4">
-                          {meal.difficulty && (
-                            <Badge variant="outline" className="capitalize">
-                              {meal.difficulty}
-                            </Badge>
-                          )}
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => onViewMeal(meal)}
-                          >
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => onExchangeMeal(meal)}
-                          >
-                            <ArrowLeftRight className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+      {/* Meals Grid */}
+      {allMeals.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {allMeals.map((item, index) => (
+            <div key={index}>
+              {item.type === 'meal' && item.meal ? (
+                <EnhancedMealCard
+                  meal={item.meal}
+                  onViewMeal={onViewMeal}
+                  onExchangeMeal={onExchangeMeal}
+                />
+              ) : (
+                <AddMealCard
+                  mealType={item.mealType}
+                  onAddMeal={onAddSnack}
+                />
+              )}
+            </div>
+          ))}
+        </div>
+      ) : (
+        // Empty State
+        <Card className="border-dashed border-2 border-gray-300 bg-gradient-to-br from-gray-50 to-white">
+          <CardContent className="p-8 text-center">
+            <Target className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+            <h3 className="text-xl font-semibold mb-2 text-gray-800">No meals planned for this day</h3>
+            <p className="text-gray-600 mb-6 max-w-md mx-auto">
+              Start planning your meals to reach your daily nutrition goals.
+            </p>
+            <AddMealCard mealType="snack" onAddMeal={onAddSnack} />
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
