@@ -1,5 +1,5 @@
 
-import { Bell, User } from "lucide-react"
+import { Bell, User, Settings } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
 import {
   SidebarGroup,
@@ -26,6 +26,11 @@ const SidebarAccountSection = () => {
       url: "/notifications",
       icon: Bell,
       badge: notificationCount > 0 ? notificationCount : undefined,
+    },
+    {
+      title: t("Settings"),
+      url: "/settings",
+      icon: Settings,
     },
     {
       title: t("Profile"),
