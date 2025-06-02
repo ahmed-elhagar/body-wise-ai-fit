@@ -8,7 +8,6 @@ import { MealPlanDialogs } from './dialogs/MealPlanDialogs';
 import { useEnhancedMealShuffle } from '@/hooks/useEnhancedMealShuffle';
 import { useEnhancedShoppingList } from '@/hooks/useEnhancedShoppingList';
 import EnhancedLoadingIndicator from '@/components/ui/enhanced-loading-indicator';
-import type { DailyMeal } from '@/features/meal-plan/types';
 
 export const MealPlanContainer = () => {
   const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
@@ -137,7 +136,7 @@ export const MealPlanContainer = () => {
         onRecipeUpdated={mealPlanState.refetch}
         showShoppingListDialog={mealPlanState.showShoppingListDialog || false}
         onCloseShoppingListDialog={() => mealPlanState.setDialogs?.(prev => ({ ...prev, showShoppingListDialog: false }))}
-        enhancedShoppingItems={enhancedShoppingItems.items}
+        enhancedShoppingItems={enhancedShoppingItems.items || []}
         onSendShoppingListEmail={handleSendShoppingListEmail}
         userCredits={mealPlanState.userCredits}
         hasWeeklyPlan={!!mealPlanState.currentWeekPlan?.weeklyPlan}
