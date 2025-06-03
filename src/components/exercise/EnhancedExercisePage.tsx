@@ -10,9 +10,11 @@ import { ExercisePageContent } from "./ExercisePageContent";
 import { ExerciseErrorState } from "./ExerciseErrorState";
 import { useEnhancedAIExercise } from "@/hooks/useEnhancedAIExercise";
 import EnhancedPageLoading from "@/components/ui/enhanced-page-loading";
+import { useState, useEffect } from "react";
 
 const EnhancedExercisePage = () => {
   const { t } = useLanguage();
+  const [hasEverLoadedProgram, setHasEverLoadedProgram] = useState(false);
   
   const {
     selectedDayNumber,
@@ -43,11 +45,22 @@ const EnhancedExercisePage = () => {
 
   const { isGenerating, generateExerciseProgram, regenerateProgram } = useEnhancedAIExercise();
 
+  // Track if we've ever loaded a program to distinguish initial load from week changes
+  useEffect(() => {
+    if (currentProgram && !hasEverLoadedProgram) {
+      setHasEverLoadedProgram(true);
+    }
+  }, [currentProgram, hasEverLoadedProgram]);
+
   const currentSelectedDate = addDays(weekStartDate, selectedDayNumber - 1);
   const isToday = format(currentSelectedDate, 'yyyy-MM-dd') === format(currentDate, 'yyyy-MM-dd');
 
-  // Show full page loading ONLY on initial load when there's no program data at all OR during AI generation
-  if ((isLoading && !currentProgram) || isGenerating) {
+  // Show full page loading ONLY for:
+  // 1. AI generation process
+  // 2. True initial load (never loaded any program before AND currently loading)
+  const shouldShowFullPageLoading = isGenerating || (isLoading && !hasEverLoadedProgram);
+
+  if (shouldShowFullPageLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
         <EnhancedPageLoading
@@ -119,9 +132,9 @@ const EnhancedExercisePage = () => {
         />
       </div>
 
-      {/* Main Content - Show loading overlay only when changing weeks with existing program */}
+      {/* Main Content - Show loading overlay only when changing weeks (has loaded before) */}
       <ExercisePageContent
-        isLoading={isLoading && !!currentProgram && !isGenerating}
+        isLoading={isLoading && hasEverLoadedProgram && !isGenerating}
         currentProgram={currentProgram}
         todaysExercises={todaysExercises}
         completedExercises={completedExercises}
