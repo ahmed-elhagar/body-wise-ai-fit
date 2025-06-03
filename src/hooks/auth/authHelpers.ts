@@ -70,17 +70,22 @@ export const handleSignUp = async (email: string, password: string, metadata?: a
 };
 
 export const clearLocalAuthData = () => {
-  // Clear all possible auth-related localStorage items
-  localStorage.removeItem('supabase.auth.token');
-  localStorage.removeItem('sb-xnoslfftfktqvyoefccw-auth-token');
-  sessionStorage.clear();
-  
-  // Clear any custom auth data
-  Object.keys(localStorage).forEach(key => {
-    if (key.includes('auth') || key.includes('supabase')) {
-      localStorage.removeItem(key);
-    }
-  });
+  try {
+    // Clear all possible auth-related localStorage items
+    localStorage.removeItem('supabase.auth.token');
+    localStorage.removeItem('sb-xnoslfftfktqvyoefccw-auth-token');
+    sessionStorage.clear();
+    
+    // Clear any custom auth data
+    Object.keys(localStorage).forEach(key => {
+      if (key.includes('auth') || key.includes('supabase')) {
+        localStorage.removeItem(key);
+      }
+    });
+    console.log('Local auth data cleared successfully');
+  } catch (error) {
+    console.error('Error clearing local auth data:', error);
+  }
 };
 
 export const handleSignOut = async (forceCleanup: boolean = false) => {
@@ -119,7 +124,15 @@ export const handleSignOut = async (forceCleanup: boolean = false) => {
 export const forceRefreshSession = async () => {
   try {
     console.log('Force refreshing session...');
-    const { data, error } = await supabase.auth.refreshSession();
+    
+    // Add timeout to prevent hanging
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Session refresh timeout')), 10000)
+    );
+    
+    const refreshPromise = supabase.auth.refreshSession();
+    
+    const { data, error } = await Promise.race([refreshPromise, timeoutPromise]) as any;
     
     if (error) {
       console.error('Session refresh error:', error);
@@ -148,14 +161,35 @@ export const handleForceLogoutAllUsers = async () => {
 };
 
 export const initializeAuthCleanup = () => {
-  // Force cleanup on page load if needed
-  const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get('force_logout') === 'true') {
-    console.log('Force logout requested via URL parameter');
-    clearLocalAuthData();
+  try {
+    // Force cleanup on page load if needed
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('force_logout') === 'true') {
+      console.log('Force logout requested via URL parameter');
+      clearLocalAuthData();
+      
+      // Remove the parameter from URL
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+    }
+  } catch (error) {
+    console.error('Error during auth cleanup initialization:', error);
+  }
+};
+
+// Enhanced session check with timeout
+export const getSessionWithTimeout = async (timeout: number = 5000) => {
+  try {
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Session check timeout')), timeout)
+    );
     
-    // Remove the parameter from URL
-    const newUrl = window.location.pathname;
-    window.history.replaceState({}, document.title, newUrl);
+    const sessionPromise = supabase.auth.getSession();
+    
+    const result = await Promise.race([sessionPromise, timeoutPromise]) as any;
+    return result;
+  } catch (error) {
+    console.error('Session check with timeout failed:', error);
+    return { data: { session: null }, error };
   }
 };

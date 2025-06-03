@@ -7,7 +7,8 @@ import {
   handleSignOut, 
   forceRefreshSession, 
   initializeAuthCleanup,
-  clearLocalAuthData 
+  clearLocalAuthData,
+  getSessionWithTimeout
 } from './auth/authHelpers';
 
 export interface AuthUser {
@@ -102,15 +103,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setSession(refreshedSession);
         await enrichUserWithProfile(refreshedSession);
       } else {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const sessionResult = await getSessionWithTimeout(5000);
         
-        if (error) {
-          throw error;
+        if (sessionResult.error) {
+          throw sessionResult.error;
         }
         
-        if (session?.user?.id) {
-          setSession(session);
-          await enrichUserWithProfile(session);
+        if (sessionResult.data?.session?.user?.id) {
+          setSession(sessionResult.data.session);
+          await enrichUserWithProfile(sessionResult.data.session);
         } else {
           setUser(null);
           setSession(null);
@@ -144,11 +145,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.log('Base user set with ID:', baseUser.id?.substring(0, 8) + '...');
       
       try {
-        const { data: profile, error: profileError } = await supabase
+        // Add timeout to profile fetch to prevent hanging
+        const profilePromise = supabase
           .from('profiles')
           .select('role, first_name, last_name')
           .eq('id', session.user.id)
           .maybeSingle();
+          
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
+        );
+        
+        const { data: profile, error: profileError } = await Promise.race([
+          profilePromise, 
+          timeoutPromise
+        ]) as any;
         
         if (profile && !profileError) {
           console.log('Profile data fetched successfully, updating user');
@@ -179,15 +190,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    console.log("AuthProvider - Initializing with clean flow");
+    console.log("AuthProvider - Initializing with enhanced timeout protection");
     
     initializeAuthCleanup();
     
     let mounted = true;
     let authSubscription: any = null;
+    let initializationTimeout: NodeJS.Timeout;
     
     const setupAuth = async () => {
       try {
+        // Set initialization timeout to prevent infinite loading
+        initializationTimeout = setTimeout(() => {
+          if (mounted && isLoading) {
+            console.error('Auth initialization timeout - forcing completion');
+            setIsLoading(false);
+            setError(new Error('Authentication initialization timed out'));
+          }
+        }, 10000); // 10 second timeout
+        
         // Set up auth state listener first
         authSubscription = supabase.auth.onAuthStateChange(
           async (event, session) => {
@@ -211,26 +232,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           }
         );
 
-        // Get initial session with simple timeout
-        console.log('Getting initial session...');
+        // Get initial session with timeout protection
+        console.log('Getting initial session with timeout...');
         
         try {
-          const { data: { session }, error } = await supabase.auth.getSession();
+          const sessionResult = await getSessionWithTimeout(8000);
           
           if (!mounted) return;
           
-          if (error) {
-            console.error('Error getting initial session:', error);
-            setError(error);
+          if (sessionResult.error) {
+            console.error('Error getting initial session:', sessionResult.error);
+            setError(sessionResult.error);
             setIsLoading(false);
             return;
           }
           
-          console.log("Got initial session:", !!session);
+          console.log("Got initial session:", !!sessionResult.data?.session);
           
-          if (session?.user?.id) {
-            setSession(session);
-            await enrichUserWithProfile(session);
+          if (sessionResult.data?.session?.user?.id) {
+            setSession(sessionResult.data.session);
+            await enrichUserWithProfile(sessionResult.data.session);
           } else {
             setUser(null);
             setSession(null);
@@ -245,10 +266,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.error('Error in setupAuth:', error);
         setError(error);
       } finally {
-        // Always set loading to false
+        // Always set loading to false after setup
         if (mounted) {
           console.log('Auth setup complete, setting loading to false');
           setIsLoading(false);
+        }
+        
+        // Clear initialization timeout
+        if (initializationTimeout) {
+          clearTimeout(initializationTimeout);
         }
       }
     };
@@ -259,6 +285,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       mounted = false;
       if (authSubscription?.data?.subscription) {
         authSubscription.data.subscription.unsubscribe();
+      }
+      if (initializationTimeout) {
+        clearTimeout(initializationTimeout);
       }
     };
   }, [enrichUserWithProfile]);

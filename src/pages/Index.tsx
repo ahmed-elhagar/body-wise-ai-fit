@@ -1,5 +1,5 @@
 
-import { useEffect, startTransition, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Card } from "@/components/ui/card";
@@ -10,7 +10,6 @@ const Index = () => {
   const navigate = useNavigate();
   const { user, loading, error, retryAuth, forceLogout } = useAuth();
   const [hasNavigated, setHasNavigated] = useState(false);
-  const [initializationComplete, setInitializationComplete] = useState(false);
 
   // Debug logging
   useEffect(() => {
@@ -18,55 +17,57 @@ const Index = () => {
       loading, 
       hasUser: !!user, 
       hasNavigated,
-      initializationComplete,
       userId: user?.id?.substring(0, 8) + '...' || 'none',
       error: error?.message || null
     });
-  }, [loading, user, hasNavigated, initializationComplete, error]);
+  }, [loading, user, hasNavigated, error]);
 
-  // Initialization timeout - force completion after reasonable time
+  // Simplified navigation logic - only run when auth loading is complete
   useEffect(() => {
-    const initTimer = setTimeout(() => {
-      if (!initializationComplete) {
-        console.log('Index - Forcing initialization completion after timeout');
-        setInitializationComplete(true);
-      }
-    }, 3000); // 3 second max for initialization
-
-    return () => clearTimeout(initTimer);
-  }, [initializationComplete]);
-
-  // Mark initialization as complete when auth loading finishes
-  useEffect(() => {
-    if (!loading && !initializationComplete) {
-      console.log('Index - Auth loading finished, marking initialization complete');
-      setInitializationComplete(true);
+    // Don't navigate if still loading, already navigated, or has error
+    if (loading || hasNavigated || error) {
+      return;
     }
-  }, [loading, initializationComplete]);
 
-  // Navigation logic - only run when initialization is complete
+    console.log('Index - Ready to navigate:', { 
+      isAuthenticated: !!user,
+      userId: user?.id?.substring(0, 8) + '...' || 'none'
+    });
+    
+    // Use setTimeout to avoid potential race conditions
+    const navigationTimer = setTimeout(() => {
+      if (user?.id) {
+        console.log('Index - Redirecting to dashboard');
+        navigate("/dashboard", { replace: true });
+      } else {
+        console.log('Index - Redirecting to landing');
+        navigate("/landing", { replace: true });
+      }
+      setHasNavigated(true);
+    }, 100); // Small delay to ensure state is stable
+
+    return () => clearTimeout(navigationTimer);
+  }, [loading, hasNavigated, user?.id, navigate, error]);
+
+  // Force navigation after timeout to prevent infinite loading
   useEffect(() => {
-    if (initializationComplete && !hasNavigated && !error) {
-      console.log('Index - Ready to navigate:', { 
-        isAuthenticated: !!user,
-        userId: user?.id?.substring(0, 8) + '...' || 'none'
-      });
-      
-      startTransition(() => {
+    const forceNavigationTimer = setTimeout(() => {
+      if (!hasNavigated && !error) {
+        console.log('Index - Force navigation after timeout');
         if (user?.id) {
-          console.log('Index - Redirecting to dashboard');
           navigate("/dashboard", { replace: true });
         } else {
-          console.log('Index - Redirecting to landing');
           navigate("/landing", { replace: true });
         }
         setHasNavigated(true);
-      });
-    }
-  }, [initializationComplete, hasNavigated, user?.id, navigate, error]);
+      }
+    }, 5000); // 5 second max wait
 
-  // Error handling
-  if (error && initializationComplete) {
+    return () => clearTimeout(forceNavigationTimer);
+  }, [hasNavigated, user?.id, navigate, error]);
+
+  // Enhanced error handling
+  if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
         <Card className="p-6 bg-red-50 border-red-200 max-w-md">
@@ -105,20 +106,33 @@ const Index = () => {
     );
   }
 
-  // Loading state
+  // Simplified loading state
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
       <div className="text-center">
         <h1 className="text-4xl font-bold text-gray-900 mb-4">FitFatta</h1>
         <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
         <p className="text-gray-600">
-          {!initializationComplete ? 'Initializing application...' : 'Preparing your experience...'}
+          {loading ? 'Checking authentication...' : 'Preparing your experience...'}
         </p>
         
         {/* Debug info in development */}
         {import.meta.env.DEV && (
           <div className="mt-4 text-xs text-gray-400 bg-gray-100 p-2 rounded">
-            Loading: {loading.toString()} | User: {user ? 'Yes' : 'No'} | Init: {initializationComplete.toString()} | Nav: {hasNavigated.toString()}
+            Loading: {loading.toString()} | User: {user ? 'Yes' : 'No'} | Nav: {hasNavigated.toString()}
+          </div>
+        )}
+        
+        {/* Emergency fallback button in case of hang */}
+        {!loading && !hasNavigated && (
+          <div className="mt-6">
+            <Button 
+              onClick={() => navigate('/auth')}
+              variant="outline"
+              className="text-sm"
+            >
+              Go to Login Page
+            </Button>
           </div>
         )}
       </div>
