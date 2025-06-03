@@ -2,9 +2,9 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Coffee, Calendar, Target } from "lucide-react";
+import { CheckCircle, Coffee, Calendar, Target, ChevronLeft, ChevronRight, Home, Building2 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { format, addDays } from "date-fns";
+import { format, addDays, addWeeks } from "date-fns";
 
 interface EnhancedDayNavigationProps {
   weekStartDate: Date;
@@ -12,19 +12,33 @@ interface EnhancedDayNavigationProps {
   onDayChange: (day: number) => void;
   currentProgram: any;
   workoutType: "home" | "gym";
+  currentWeekOffset: number;
+  onWeekChange: (offset: number) => void;
+  onWorkoutTypeChange: (type: "home" | "gym") => void;
 }
 
 export const EnhancedDayNavigation = ({
   weekStartDate,
   selectedDayNumber,
   onDayChange,
-  currentProgram
+  currentProgram,
+  workoutType,
+  currentWeekOffset,
+  onWeekChange,
+  onWorkoutTypeChange
 }: EnhancedDayNavigationProps) => {
   const { t } = useLanguage();
   
   const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const fullDayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   
+  const formatWeekRange = (startDate: Date) => {
+    const endDate = addWeeks(startDate, 1);
+    const startFormat = format(startDate, 'MMM d');
+    const endFormat = format(endDate, 'MMM d');
+    return `${startFormat} - ${endFormat}`;
+  };
+
   const getDayWorkout = (dayNumber: number) => {
     if (!currentProgram?.daily_workouts) return null;
     return currentProgram.daily_workouts.find((workout: any) => workout.day_number === dayNumber);
@@ -58,6 +72,73 @@ export const EnhancedDayNavigation = ({
 
   return (
     <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+      {/* Week Navigation Header */}
+      <div className="mb-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onWeekChange(currentWeekOffset - 1)}
+            className="h-12 w-12 p-0 rounded-full hover:bg-gray-100"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </Button>
+
+          <div className="text-center">
+            <div className="bg-white border-2 border-gray-200 rounded-2xl px-6 py-3 shadow-sm min-w-[160px]">
+              <div className="text-lg font-bold text-gray-900">
+                {formatWeekRange(weekStartDate)}
+              </div>
+              <div className="text-sm text-gray-600">
+                Week {currentWeekOffset + 1}
+              </div>
+            </div>
+          </div>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onWeekChange(currentWeekOffset + 1)}
+            className="h-12 w-12 p-0 rounded-full hover:bg-gray-100"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </Button>
+        </div>
+
+        {/* Workout Type Toggle */}
+        <div className="flex justify-center">
+          <div className="flex items-center bg-gray-100 rounded-2xl p-1 shadow-sm">
+            <Button
+              variant={workoutType === 'home' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => onWorkoutTypeChange('home')}
+              className={`rounded-xl px-8 py-3 font-semibold transition-all duration-300 ${
+                workoutType === 'home' 
+                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md' 
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+              }`}
+            >
+              <Home className="w-4 h-4 mr-2" />
+              Home
+            </Button>
+            <Button
+              variant={workoutType === 'gym' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => onWorkoutTypeChange('gym')}
+              className={`rounded-xl px-8 py-3 font-semibold transition-all duration-300 ${
+                workoutType === 'gym' 
+                  ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md' 
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+              }`}
+            >
+              <Building2 className="w-4 h-4 mr-2" />
+              Gym
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Weekly Schedule Header */}
       <div className="mb-6">
         <h3 className="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
           <Calendar className="w-5 h-5" />

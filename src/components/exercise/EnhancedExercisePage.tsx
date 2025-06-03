@@ -1,4 +1,3 @@
-
 import { format, addDays } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useOptimizedExerciseProgramPage } from "@/hooks/useOptimizedExerciseProgramPage";
@@ -122,18 +121,13 @@ const EnhancedExercisePage = () => {
         <div className="px-3 py-3">
           <ModernExerciseHeader
             currentProgram={currentProgram}
-            weekStartDate={weekStartDate}
-            currentWeekOffset={currentWeekOffset}
-            workoutType={workoutType}
-            onWeekChange={setCurrentWeekOffset}
             onShowAIDialog={() => setShowAIDialog(true)}
             onRegenerateProgram={handleRegenerateProgram}
-            onWorkoutTypeChange={setWorkoutType}
             isGenerating={isGenerating}
           />
         </div>
 
-        {/* Compact Day Navigation */}
+        {/* Enhanced Day Navigation with Week Controls */}
         <div className="px-3 mb-3">
           <EnhancedDayNavigation
             weekStartDate={weekStartDate}
@@ -141,6 +135,9 @@ const EnhancedExercisePage = () => {
             onDayChange={setSelectedDayNumber}
             currentProgram={currentProgram}
             workoutType={workoutType}
+            currentWeekOffset={currentWeekOffset}
+            onWeekChange={setCurrentWeekOffset}
+            onWorkoutTypeChange={setWorkoutType}
           />
         </div>
 
@@ -179,7 +176,7 @@ const EnhancedExercisePage = () => {
           </div>
         </div>
 
-        {/* AI Dialog */}
+        {/* Enhanced AI Dialog */}
         <AIExerciseDialog
           open={showAIDialog}
           onOpenChange={setShowAIDialog}

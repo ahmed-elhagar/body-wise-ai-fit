@@ -1,42 +1,23 @@
 
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { RefreshCw, Sparkles, Dumbbell, Calendar, Target, ChevronLeft, ChevronRight } from "lucide-react";
+import { RefreshCw, Sparkles, Dumbbell, Calendar, Target } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { format, addWeeks } from "date-fns";
 
 interface ModernExerciseHeaderProps {
   currentProgram: any;
-  weekStartDate: Date;
-  currentWeekOffset: number;
-  workoutType: "home" | "gym";
-  onWeekChange: (offset: number) => void;
   onShowAIDialog: () => void;
   onRegenerateProgram: () => void;
-  onWorkoutTypeChange: (type: "home" | "gym") => void;
   isGenerating: boolean;
 }
 
 export const ModernExerciseHeader = ({
   currentProgram,
-  weekStartDate,
-  currentWeekOffset,
-  workoutType,
-  onWeekChange,
   onShowAIDialog,
   onRegenerateProgram,
-  onWorkoutTypeChange,
   isGenerating
 }: ModernExerciseHeaderProps) => {
   const { t } = useLanguage();
-
-  const formatWeekRange = (startDate: Date) => {
-    const endDate = addWeeks(startDate, 1);
-    const startFormat = format(startDate, 'MMM d');
-    const endFormat = format(endDate, 'MMM d');
-    return `${startFormat} - ${endFormat}`;
-  };
 
   return (
     <div className="px-3 py-4">
@@ -103,66 +84,8 @@ export const ModernExerciseHeader = ({
           </Badge>
           
           <Badge className="bg-green-100 border-green-200 text-green-700 px-4 py-2 text-sm font-medium rounded-full">
-            {currentProgram?.program_name || `${workoutType === 'home' ? 'Home' : 'Gym'} Strength Training Program`}
+            {currentProgram?.program_name || 'Strength Training Program'}
           </Badge>
-        </div>
-
-        {/* Controls Row */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          {/* Week Navigation */}
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onWeekChange(currentWeekOffset - 1)}
-              className="h-10 px-3 rounded-xl hover:bg-gray-100"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </Button>
-            
-            <div className="bg-white border-2 border-gray-200 rounded-xl px-6 py-2 min-w-[140px] text-center shadow-sm">
-              <span className="font-semibold text-gray-700 text-sm">
-                {formatWeekRange(weekStartDate)}
-              </span>
-            </div>
-            
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onWeekChange(currentWeekOffset + 1)}
-              className="h-10 px-3 rounded-xl hover:bg-gray-100"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </Button>
-          </div>
-
-          {/* Workout Type Toggle */}
-          <div className="flex items-center bg-gray-100 rounded-2xl p-1 shadow-sm">
-            <Button
-              variant={workoutType === 'home' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => onWorkoutTypeChange('home')}
-              className={`rounded-xl px-6 py-2 font-semibold transition-all duration-300 ${
-                workoutType === 'home' 
-                  ? 'bg-white text-gray-900 shadow-md' 
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
-              }`}
-            >
-              Home
-            </Button>
-            <Button
-              variant={workoutType === 'gym' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => onWorkoutTypeChange('gym')}
-              className={`rounded-xl px-6 py-2 font-semibold transition-all duration-300 ${
-                workoutType === 'gym' 
-                  ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md' 
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
-              }`}
-            >
-              Gym
-            </Button>
-          </div>
         </div>
       </div>
     </div>
