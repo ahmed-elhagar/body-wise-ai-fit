@@ -42,6 +42,7 @@ serve(async (req) => {
     let modelConfig = { modelId: 'gpt-4o-mini', provider: 'openai' }; // fallback
     
     try {
+      console.log('🔍 Fetching AI model configuration for snack_generation feature...');
       const { data: modelData, error: modelError } = await supabase
         .from('ai_feature_models')
         .select(`
@@ -62,19 +63,30 @@ serve(async (req) => {
             modelId: model.model_id,
             provider: model.provider
           };
+          console.log('✅ Using configured AI model for snacks:', modelConfig);
+        } else {
+          console.log('⚠️ Configured snack model is inactive, using fallback');
         }
+      } else {
+        console.log('⚠️ No snack model configuration found, using fallback:', modelError?.message);
       }
     } catch (error) {
-      console.log('📋 Using fallback AI model for snack generation:', error);
+      console.log('❌ Error fetching snack AI model configuration, using fallback:', error);
     }
 
-    console.log('🤖 Using AI model configuration:', modelConfig);
+    // Get the appropriate API key based on provider
+    let apiKey: string | null = null;
+    if (modelConfig.provider === 'openai') {
+      apiKey = Deno.env.get('OPENAI_API_KEY');
+    } else if (modelConfig.provider === 'google') {
+      apiKey = Deno.env.get('GOOGLE_API_KEY');
+    } else if (modelConfig.provider === 'anthropic') {
+      apiKey = Deno.env.get('ANTHROPIC_API_KEY');
+    }
 
-    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-
-    if (!openAIApiKey) {
-      console.error('❌ OpenAI API key not configured');
-      throw new Error('OpenAI API key not configured');
+    if (!apiKey) {
+      console.error(`❌ ${modelConfig.provider} API key not configured`);
+      throw new Error(`${modelConfig.provider} API key not configured`);
     }
 
     const isArabic = language === 'ar';
@@ -109,42 +121,92 @@ Return ONLY a JSON object with this exact structure:
   "fat": estimated_grams
 }`;
 
-    console.log('🤖 Calling OpenAI with model:', modelConfig.modelId);
+    console.log(`🤖 Calling ${modelConfig.provider} API with model: ${modelConfig.modelId}`);
 
-    // Use the configured AI model
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: modelConfig.modelId,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-        temperature: 0.7,
-        max_tokens: 1000,
-        top_p: 0.9,
-      }),
-    });
+    // Use the configured AI model and provider
+    let response;
+    
+    if (modelConfig.provider === 'openai') {
+      response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: modelConfig.modelId,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+          temperature: 0.7,
+          max_tokens: 1000,
+          top_p: 0.9,
+        }),
+      });
+    } else if (modelConfig.provider === 'google') {
+      response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelConfig.modelId}:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                { text: systemPrompt + '\n\n' + userPrompt }
+              ]
+            }
+          ],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 1000
+          }
+        }),
+      });
+    } else if (modelConfig.provider === 'anthropic') {
+      response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'x-api-key': apiKey,
+          'Content-Type': 'application/json',
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: modelConfig.modelId,
+          max_tokens: 1000,
+          messages: [
+            { role: 'user', content: systemPrompt + '\n\n' + userPrompt }
+          ],
+          temperature: 0.7
+        }),
+      });
+    }
 
-    if (!response.ok) {
-      console.error('❌ OpenAI API error:', response.status, response.statusText);
-      if (response.status === 429) {
+    if (!response || !response.ok) {
+      console.error(`❌ ${modelConfig.provider} API error:`, response?.status, response?.statusText);
+      if (response?.status === 429) {
         throw new Error(isArabic ? 'تم تجاوز حد الطلبات. حاول مرة أخرى لاحقاً.' : 'Rate limit exceeded. Try again later.');
       }
       throw new Error(isArabic ? 'خطأ في الذكاء الاصطناعي' : 'AI service error');
     }
 
     const data = await response.json();
-    console.log('✅ AI response received successfully');
+    console.log(`✅ ${modelConfig.provider} API response received successfully`);
+
+    // Parse response based on provider
+    let content = '';
+    if (modelConfig.provider === 'openai') {
+      content = data.choices?.[0]?.message?.content?.trim();
+    } else if (modelConfig.provider === 'google') {
+      content = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    } else if (modelConfig.provider === 'anthropic') {
+      content = data.content?.[0]?.text?.trim();
+    }
 
     // Enhanced parsing with better error handling
     let snackData;
     try {
-      const content = data.choices?.[0]?.message?.content?.trim();
       if (!content) {
         throw new Error('Empty AI response');
       }
@@ -251,13 +313,14 @@ Return ONLY a JSON object with this exact structure:
 
     console.log('✅ AI snack saved successfully:', savedSnack);
 
-    const successMessage = isArabic ? 'تم إضافة الوجبة الخفيفة بنجاح!' : 'AI snack added successfully!';
+    const successMessage = isArabic ? 'تم إضافة الوجبة الخفيفة بنجاح!' : `AI snack added successfully using ${modelConfig.provider}!`;
 
     return new Response(
       JSON.stringify({ 
         success: true,
         snack: savedSnack,
-        message: successMessage
+        message: successMessage,
+        modelUsed: modelConfig
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

@@ -1,29 +1,216 @@
 
-import { useMealPlanCore } from "./useMealPlanCore";
-import { useMealPlanDialogs } from "./useMealPlanDialogs";
-import { useMealPlanAIActions } from "./useMealPlanAIActions";
+import { useState, useCallback, useMemo } from 'react';
+import { useMealPlanData } from '@/hooks/meal-plan/useMealPlanData';
+import { useMealPlanNavigation } from '@/hooks/meal-plan/useMealPlanNavigation';
+import { useMealPlanCalculations } from '@/features/meal-plan/hooks/useMealPlanCalculations';
+import { useMealPlanActions } from '@/hooks/useMealPlanActions';
+import { useQueryClient } from '@tanstack/react-query';
+import { useAuth } from './useAuth';
+import type { DailyMeal } from '@/features/meal-plan/types';
 
 export const useMealPlanState = () => {
-  // Core state management
-  const coreState = useMealPlanCore();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   
-  // Dialog state management
-  const dialogsState = useMealPlanDialogs();
+  // Navigation state
+  const {
+    currentWeekOffset,
+    setCurrentWeekOffset,
+    selectedDayNumber,
+    setSelectedDayNumber,
+    weekStartDate,
+  } = useMealPlanNavigation();
+
+  // Core meal plan data
+  const {
+    data: currentWeekPlan,
+    isLoading,
+    error,
+    refetch: originalRefetch,
+  } = useMealPlanData(currentWeekOffset);
+
+  // Enhanced refetch that invalidates all related queries
+  const refetch = useCallback(async () => {
+    console.log('🔄 Enhanced refetch - invalidating all meal plan queries for week offset:', currentWeekOffset);
+    
+    // Invalidate all meal plan related queries
+    await queryClient.invalidateQueries({
+      queryKey: ['weekly-meal-plan'],
+    });
+    
+    // Invalidate the specific week query
+    await queryClient.invalidateQueries({
+      queryKey: ['weekly-meal-plan', user?.id, currentWeekOffset],
+    });
+    
+    // Force refetch the current data
+    return await originalRefetch();
+  }, [queryClient, user?.id, currentWeekOffset, originalRefetch]);
+
+  // Calculations
+  const {
+    dailyMeals,
+    todaysMeals,
+    totalCalories,
+    totalProtein,
+    targetDayCalories,
+  } = useMealPlanCalculations(currentWeekPlan, selectedDayNumber);
+
+  // Dialog states
+  const [showAIDialog, setShowAIDialog] = useState(false);
+  const [showRecipeDialog, setShowRecipeDialog] = useState(false);
+  const [showExchangeDialog, setShowExchangeDialog] = useState(false);
+  const [showAddSnackDialog, setShowAddSnackDialog] = useState(false);
+  const [showShoppingListDialog, setShowShoppingListDialog] = useState(false);
+
+  // Selected items
+  const [selectedMeal, setSelectedMeal] = useState<DailyMeal | null>(null);
+  const [selectedMealIndex, setSelectedMealIndex] = useState<number | null>(null);
+
+  // AI preferences state
+  const [aiPreferences, setAiPreferences] = useState({
+    duration: "7",
+    cuisine: "mixed",
+    maxPrepTime: "30",
+    includeSnacks: true,
+    mealTypes: "breakfast,lunch,dinner",
+  });
+
+  // Actions
+  const { handleGenerateAIPlan, isGenerating } = useMealPlanActions(
+    currentWeekPlan,
+    currentWeekOffset,
+    aiPreferences,
+    refetch
+  );
+
+  // Enhanced week change handler
+  const handleWeekChange = useCallback(async (newOffset: number) => {
+    console.log('📅 Changing week from', currentWeekOffset, 'to', newOffset);
+    setCurrentWeekOffset(newOffset);
+    
+    // Preload the new week's data
+    await queryClient.prefetchQuery({
+      queryKey: ['weekly-meal-plan', user?.id, newOffset],
+      staleTime: 0 // Force fresh fetch
+    });
+  }, [currentWeekOffset, setCurrentWeekOffset, queryClient, user?.id]);
+
+  // Dialog handlers
+  const openAIDialog = useCallback(() => setShowAIDialog(true), []);
+  const closeAIDialog = useCallback(() => setShowAIDialog(false), []);
   
-  // AI actions
-  const aiActions = useMealPlanAIActions(coreState, dialogsState);
+  const openRecipeDialog = useCallback((meal: DailyMeal) => {
+    setSelectedMeal(meal);
+    setShowRecipeDialog(true);
+  }, []);
+  const closeRecipeDialog = useCallback(() => {
+    setSelectedMeal(null);
+    setShowRecipeDialog(false);
+  }, []);
+
+  const openExchangeDialog = useCallback((meal: DailyMeal) => {
+    setSelectedMeal(meal);
+    setShowExchangeDialog(true);
+  }, []);
+  const closeExchangeDialog = useCallback(() => {
+    setSelectedMeal(null);
+    setShowExchangeDialog(false);
+  }, []);
+
+  const openAddSnackDialog = useCallback(() => setShowAddSnackDialog(true), []);
+  const closeAddSnackDialog = useCallback(() => setShowAddSnackDialog(false), []);
+
+  const openShoppingListDialog = useCallback(() => setShowShoppingListDialog(true), []);
+  const closeShoppingListDialog = useCallback(() => setShowShoppingListDialog(false), []);
+
+  const updateAIPreferences = useCallback((newPrefs: any) => {
+    setAiPreferences(prev => ({ ...prev, ...newPrefs }));
+  }, []);
+
+  // Enhanced generation handler with better week sync
+  const handleGenerateAIPlanEnhanced = useCallback(async () => {
+    console.log('🚀 Starting enhanced AI generation for week offset:', currentWeekOffset);
+    
+    // Include week offset in preferences
+    const enhancedPreferences = {
+      ...aiPreferences,
+      weekOffset: currentWeekOffset,
+    };
+    
+    // Update AI preferences to include current week
+    updateAIPreferences({ weekOffset: currentWeekOffset });
+    
+    const result = await handleGenerateAIPlan();
+    
+    if (result) {
+      console.log('✅ Generation successful, forcing refresh for week:', currentWeekOffset);
+      
+      // Wait a moment for the database to be updated
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Force invalidate and refetch the specific week
+      await queryClient.invalidateQueries({
+        queryKey: ['weekly-meal-plan', user?.id, currentWeekOffset],
+      });
+      
+      // Refetch the current week data
+      await refetch();
+    }
+    
+    return result;
+  }, [aiPreferences, currentWeekOffset, handleGenerateAIPlan, updateAIPreferences, queryClient, user?.id, refetch]);
 
   return {
-    // Core state
-    ...coreState,
+    // Data
+    currentWeekPlan,
+    dailyMeals,
+    todaysMeals,
+    totalCalories,
+    totalProtein,
+    targetDayCalories,
     
-    // Dialog state
-    ...dialogsState,
+    // Navigation
+    currentWeekOffset,
+    setCurrentWeekOffset: handleWeekChange,
+    selectedDayNumber,
+    setSelectedDayNumber,
+    weekStartDate,
     
-    // AI actions
-    ...aiActions,
+    // Loading states
+    isLoading,
+    error,
+    isGenerating,
     
-    // Ensure setDialogs is available for shopping list dialog
-    setDialogs: dialogsState.setDialogs
+    // Dialog states
+    showAIDialog,
+    showRecipeDialog,
+    showExchangeDialog,
+    showAddSnackDialog,
+    showShoppingListDialog,
+    
+    // Selected items
+    selectedMeal,
+    selectedMealIndex,
+    
+    // AI preferences
+    aiPreferences,
+    updateAIPreferences,
+    
+    // Actions
+    refetch,
+    handleGenerateAIPlan: handleGenerateAIPlanEnhanced,
+    
+    // Dialog handlers
+    openAIDialog,
+    closeAIDialog,
+    openRecipeDialog,
+    closeRecipeDialog,
+    openExchangeDialog,
+    closeExchangeDialog,
+    openAddSnackDialog,
+    closeAddSnackDialog,
+    openShoppingListDialog,
+    closeShoppingListDialog,
   };
 };
