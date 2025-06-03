@@ -89,20 +89,15 @@ const Onboarding = () => {
 
         console.log("Onboarding - Saving complete profile data:", profileData);
         
-        const result = await updateProfile(profileData);
-        
-        if (result.error) {
-          console.error('Onboarding - Profile update failed:', result.error);
-          toast.error('Failed to save profile. Please try again.');
-          setIsCompleting(false);
-          return;
-        }
+        await updateProfile(profileData);
         
         console.log('Onboarding - Profile saved successfully, redirecting to dashboard');
         toast.success('🎉 Welcome to FitFatta! Your profile is complete!');
         
-        // Force immediate navigation
-        window.location.href = '/dashboard';
+        // Use a timeout to ensure the profile update is processed
+        setTimeout(() => {
+          navigate('/dashboard', { replace: true });
+        }, 500);
 
       } catch (error) {
         console.error('Onboarding - Unexpected error:', error);
