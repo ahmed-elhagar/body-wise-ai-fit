@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { useMealPlanState } from '@/hooks/useMealPlanState';
 import MealPlanHeader from '@/components/meal-plan/MealPlanHeader';
 import { MealPlanNavigation } from './MealPlanNavigation';
@@ -15,6 +14,18 @@ import { Loader2 } from 'lucide-react';
 export const MealPlanContainer = () => {
   const mealPlanState = useMealPlanState();
   const { shuffleMeals, isShuffling } = useEnhancedMealShuffle();
+  
+  // Keep track of the last successfully loaded data to show during transitions
+  const lastLoadedDataRef = useRef(mealPlanState.currentWeekPlan);
+  const [isWeekTransition, setIsWeekTransition] = useState(false);
+
+  // Update the ref when we have new data and not loading
+  if (mealPlanState.currentWeekPlan && !mealPlanState.isLoading) {
+    lastLoadedDataRef.current = mealPlanState.currentWeekPlan;
+    if (isWeekTransition) {
+      setIsWeekTransition(false);
+    }
+  }
 
   // Enhanced shuffle handler
   const handleShuffle = async () => {
@@ -34,13 +45,24 @@ export const MealPlanContainer = () => {
     }
   };
 
+  // Enhanced week change handler that manages loading states
+  const handleWeekChange = async (offset: number) => {
+    console.log('📅 Week change initiated, setting transition state');
+    setIsWeekTransition(true);
+    await mealPlanState.setCurrentWeekOffset(offset);
+  };
+
+  // Determine what data to display
+  const displayData = mealPlanState.currentWeekPlan || lastLoadedDataRef.current;
+  const showLoadingOverlay = mealPlanState.isLoading && displayData;
+
   // Only show full error state if there's an error and no existing data
-  if (mealPlanState.error && !mealPlanState.currentWeekPlan) {
+  if (mealPlanState.error && !displayData) {
     return <ErrorState error={mealPlanState.error} onRetry={mealPlanState.refetch} />;
   }
 
   // Only show full loading state on initial load (no existing data)
-  if (mealPlanState.isLoading && !mealPlanState.currentWeekPlan) {
+  if (mealPlanState.isLoading && !displayData) {
     return <LoadingState />;
   }
 
@@ -54,21 +76,21 @@ export const MealPlanContainer = () => {
           onRegeneratePlan={() => mealPlanState.openAIDialog()}
           isGenerating={mealPlanState.isGenerating}
           isShuffling={isShuffling}
-          hasWeeklyPlan={!!mealPlanState.currentWeekPlan?.weeklyPlan}
+          hasWeeklyPlan={!!displayData?.weeklyPlan}
         />
         
         <MealPlanNavigation 
           currentWeekOffset={mealPlanState.currentWeekOffset}
-          onWeekChange={mealPlanState.setCurrentWeekOffset}
+          onWeekChange={handleWeekChange}
           selectedDayNumber={mealPlanState.selectedDayNumber}
           onDayChange={mealPlanState.setSelectedDayNumber}
           weekStartDate={mealPlanState.weekStartDate}
         />
         
-        {/* Content Area with Persistent Container and Loading Overlay */}
+        {/* Content Area with Smart Loading Overlay */}
         <div className="relative">
-          {/* Loading Overlay - Only shows when loading with existing data */}
-          {mealPlanState.isLoading && mealPlanState.currentWeekPlan && (
+          {/* Loading Overlay - Shows during week transitions */}
+          {showLoadingOverlay && (
             <div className="absolute inset-0 bg-white/90 backdrop-blur-sm z-20 flex items-center justify-center rounded-lg min-h-[500px]">
               <div className="flex flex-col items-center gap-3 bg-white rounded-lg shadow-lg p-6">
                 <Loader2 className="w-8 h-8 animate-spin text-violet-600" />
@@ -77,11 +99,11 @@ export const MealPlanContainer = () => {
             </div>
           )}
           
-          {/* Main Content - Always rendered */}
-          <div className={`transition-opacity duration-200 ${mealPlanState.isLoading && mealPlanState.currentWeekPlan ? 'opacity-50' : 'opacity-100'}`}>
+          {/* Main Content - Always rendered with last known data */}
+          <div className={`transition-opacity duration-200 ${showLoadingOverlay ? 'opacity-30' : 'opacity-100'}`}>
             <MealPlanContent
               viewMode="daily"
-              currentWeekPlan={mealPlanState.currentWeekPlan}
+              currentWeekPlan={displayData}
               selectedDayNumber={mealPlanState.selectedDayNumber}
               dailyMeals={mealPlanState.dailyMeals}
               totalCalories={mealPlanState.totalCalories}
@@ -94,7 +116,7 @@ export const MealPlanContainer = () => {
               onExchangeMeal={(meal) => mealPlanState.openExchangeDialog(meal)}
               onAddSnack={() => mealPlanState.openAddSnackDialog()}
               onGenerateAI={() => mealPlanState.openAIDialog()}
-              setCurrentWeekOffset={mealPlanState.setCurrentWeekOffset}
+              setCurrentWeekOffset={handleWeekChange}
               setSelectedDayNumber={mealPlanState.setSelectedDayNumber}
             />
           </div>
