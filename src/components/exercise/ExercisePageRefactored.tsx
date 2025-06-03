@@ -1,3 +1,4 @@
+
 import { format, addDays } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useOptimizedExerciseProgramPage } from "@/hooks/useOptimizedExerciseProgramPage";
@@ -8,7 +9,7 @@ import ProgressRing from "./ProgressRing";
 import ExerciseList from "./ExerciseList";
 import { EmptyExerciseState } from "./EmptyExerciseState";
 import { AIExerciseDialog } from "./AIExerciseDialog";
-import EnhancedLoadingIndicator from "@/components/ui/enhanced-loading-indicator";
+import EnhancedPageLoading from "@/components/ui/enhanced-page-loading";
 
 const ExercisePageRefactored = () => {
   const { t } = useLanguage();
@@ -63,27 +64,16 @@ const ExercisePageRefactored = () => {
     })
   ];
 
-  // Loading state with enhanced design
+  // Enhanced loading state with progress steps
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-        <div className="flex items-center justify-center min-h-screen">
-          <EnhancedLoadingIndicator
-            status="loading"
-            type="general"
-            message={t('exercise.loadingProgram') || 'Loading Exercise Program'}
-            description="Preparing your personalized workout plan..."
-            size="lg"
-            variant="card"
-            showSteps={true}
-            customSteps={[
-              'Fetching your program...',
-              'Loading exercises...',
-              'Calculating progress...',
-              'Finalizing data...'
-            ]}
-          />
-        </div>
+        <EnhancedPageLoading
+          isLoading={true}
+          type="exercise"
+          title="Loading Your Exercise Program"
+          description="Preparing your personalized workout plan with progress tracking and exercise details"
+        />
       </div>
     );
   }

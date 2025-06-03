@@ -9,7 +9,7 @@ import WeightTrackingWidget from "@/components/dashboard/WeightTrackingWidget";
 import GoalProgressWidget from "@/components/dashboard/GoalProgressWidget";
 import CoachChatWidget from "@/components/dashboard/CoachChatWidget";
 import HeaderDropdowns from "@/components/dashboard/HeaderDropdowns";
-import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
+import EnhancedPageLoading from "@/components/ui/enhanced-page-loading";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -29,6 +29,7 @@ const Dashboard = () => {
   });
 
   const userName = profile?.first_name || user?.first_name || 'User';
+  const isLoading = authLoading || profileLoading;
 
   const handleViewMealPlan = () => {
     navigate('/meal-plan');
@@ -38,12 +39,17 @@ const Dashboard = () => {
     navigate('/exercise');
   };
 
-  // Show loading while auth or profile is loading
-  if (authLoading || profileLoading) {
+  // Show enhanced loading while auth or profile is loading
+  if (isLoading) {
     return (
       <ProtectedRoute>
         <Layout>
-          <DashboardSkeleton />
+          <EnhancedPageLoading
+            isLoading={true}
+            type="dashboard"
+            title="Loading Your Dashboard"
+            description="Setting up your personalized fitness dashboard with the latest data and insights"
+          />
         </Layout>
       </ProtectedRoute>
     );
