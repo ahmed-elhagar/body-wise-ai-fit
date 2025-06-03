@@ -1,4 +1,3 @@
-
 import { useState, useEffect, createContext, useContext, useCallback } from 'react';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -41,28 +40,26 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Simplified hook that doesn't cause violations
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  
-  // Always call all hooks before any conditional logic
-  const fallbackReturn = {
-    user: null,
-    session: null,
-    loading: false,
-    isLoading: false,
-    isAdmin: false,
-    error: null,
-    signIn: async () => {},
-    signUp: async () => {},
-    signOut: async () => {},
-    clearError: () => {},
-    retryAuth: async () => {},
-    forceLogout: async () => {}
-  };
-  
-  // Return context or fallback - no early returns before hooks
-  return context || fallbackReturn;
+  if (context === undefined) {
+    // Simplified fallback for outside provider usage
+    return {
+      user: null,
+      session: null,
+      loading: false,
+      isLoading: false,
+      isAdmin: false,
+      error: null,
+      signIn: async () => {},
+      signUp: async () => {},
+      signOut: async () => {},
+      clearError: () => {},
+      retryAuth: async () => {},
+      forceLogout: async () => {}
+    };
+  }
+  return context;
 };
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -162,6 +159,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             last_name: profile.last_name || baseUser.last_name,
           };
           setUser(enrichedUser);
+        } else {
+          console.log('Profile fetch failed or no data, keeping base user:', profileError?.message);
         }
       } catch (profileErr) {
         console.warn('Profile enrichment failed, keeping base user:', profileErr);
@@ -179,61 +178,82 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, []);
 
-  // Simplified initialization without complex logic
   useEffect(() => {
-    console.log("AuthProvider - Simple initialization");
+    console.log("AuthProvider - Initializing with clean flow");
+    
+    initializeAuthCleanup();
     
     let mounted = true;
     let authSubscription: any = null;
     
-    const initAuth = async () => {
+    const setupAuth = async () => {
       try {
-        // Set up auth listener
+        // Set up auth state listener first
         authSubscription = supabase.auth.onAuthStateChange(
-          (event, session) => {
+          async (event, session) => {
             if (!mounted) return;
             
             console.log('Auth state changed:', event, session?.user?.email || 'No user');
             
-            if (session?.user?.id) {
-              setSession(session);
-              enrichUserWithProfile(session);
-            } else {
+            if (event === 'SIGNED_OUT' || !session?.user?.id) {
+              console.log('User signed out or no session');
               setSession(null);
               setUser(null);
+              setError(null);
+              if (mounted) setIsLoading(false);
+            } else if (session?.user?.id) {
+              console.log('User signed in');
+              setSession(session);
+              await enrichUserWithProfile(session);
+              setError(null);
+              if (mounted) setIsLoading(false);
             }
-            setError(null);
-            setIsLoading(false);
           }
         );
 
-        // Get initial session
-        const { data: { session }, error } = await supabase.auth.getSession();
+        // Get initial session with simple timeout
+        console.log('Getting initial session...');
         
-        if (mounted) {
+        try {
+          const { data: { session }, error } = await supabase.auth.getSession();
+          
+          if (!mounted) return;
+          
           if (error) {
-            console.error('Initial session error:', error);
+            console.error('Error getting initial session:', error);
             setError(error);
-          } else if (session?.user?.id) {
+            setIsLoading(false);
+            return;
+          }
+          
+          console.log("Got initial session:", !!session);
+          
+          if (session?.user?.id) {
             setSession(session);
             await enrichUserWithProfile(session);
           } else {
             setUser(null);
             setSession(null);
           }
-          setIsLoading(false);
+          
+        } catch (sessionError) {
+          console.error('Session check failed:', sessionError);
+          setError(sessionError);
         }
         
       } catch (error) {
-        console.error('Auth initialization error:', error);
+        console.error('Error in setupAuth:', error);
+        setError(error);
+      } finally {
+        // Always set loading to false
         if (mounted) {
-          setError(error);
+          console.log('Auth setup complete, setting loading to false');
           setIsLoading(false);
         }
       }
     };
 
-    initAuth();
+    setupAuth();
 
     return () => {
       mounted = false;
