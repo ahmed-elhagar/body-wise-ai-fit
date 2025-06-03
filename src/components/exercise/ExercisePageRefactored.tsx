@@ -46,25 +46,7 @@ const ExercisePageRefactored = () => {
   const currentSelectedDate = addDays(weekStartDate, selectedDayNumber - 1);
   const isToday = format(currentSelectedDate, 'yyyy-MM-dd') === format(currentDate, 'yyyy-MM-dd');
 
-  // Mock exercises with proper types for demonstration
-  const mockExercises = [
-    createMockExercise({
-      id: 'ex1',
-      name: 'Push-ups',
-      sets: 3,
-      reps: '15',
-      daily_workout_id: 'workout-1'
-    }),
-    createMockExercise({
-      id: 'ex2',
-      name: 'Squats',
-      sets: 3,
-      reps: '20',
-      daily_workout_id: 'workout-1'
-    })
-  ];
-
-  // Enhanced loading state with progress steps
+  // Enhanced loading state with progress steps and timeout protection
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -73,12 +55,13 @@ const ExercisePageRefactored = () => {
           type="exercise"
           title="Loading Your Exercise Program"
           description="Preparing your personalized workout plan with progress tracking and exercise details"
+          timeout={12000} // 12 second timeout for exercise data
         />
       </div>
     );
   }
 
-  // Error state with enhanced design
+  // Enhanced error state with better recovery options
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
@@ -90,24 +73,32 @@ const ExercisePageRefactored = () => {
               </svg>
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              {t('exercise.errorTitle') || 'Something went wrong'}
+              {t('exercise.errorTitle') || 'Exercise Loading Error'}
             </h3>
             <p className="text-gray-600 mb-6">
-              {t('exercise.errorMessage') || 'Error loading exercise data. Please try again.'}
+              {t('exercise.errorMessage') || 'Unable to load your exercise program. Please try again or check your connection.'}
             </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-fitness-primary-600 hover:to-fitness-primary-700 transition-all duration-300 transform hover:scale-105"
-            >
-              {t('exercise.retry') || 'Try Again'}
-            </button>
+            <div className="space-y-3">
+              <button
+                onClick={() => refetch()}
+                className="w-full bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-fitness-primary-600 hover:to-fitness-primary-700 transition-all duration-300"
+              >
+                {t('exercise.retry') || 'Try Again'}
+              </button>
+              <button
+                onClick={() => window.location.reload()}
+                className="w-full border border-gray-300 text-gray-700 px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300"
+              >
+                Refresh Page
+              </button>
+            </div>
           </div>
         </div>
       </div>
     );
   }
 
-  // Empty state with enhanced design
+  // Enhanced empty state with better design
   if (!currentProgram) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
