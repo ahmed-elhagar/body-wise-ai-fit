@@ -58,13 +58,20 @@ export const useEnhancedAIExercise = () => {
 
       console.log('🏥 Health assessment loaded:', healthAssessment ? 'success' : 'none found');
 
+      // Create userData object as expected by the edge function
+      const userData = {
+        userId: user.id,
+        email: user.email,
+        ...profile,
+        preferred_language: profile?.preferred_language || 'en'
+      };
+
       // Enhanced preferences with user context
       const enhancedPreferences = {
         ...preferences,
         userProfile: profile,
         healthContext: healthAssessment,
-        userLanguage: profile?.preferred_language || 'en',
-        userId: user.id // Ensure userId is explicitly included
+        userLanguage: profile?.preferred_language || 'en'
       };
 
       console.log('🚀 Calling edge function with enhanced data:', {
@@ -75,8 +82,9 @@ export const useEnhancedAIExercise = () => {
 
       const { data, error } = await supabase.functions.invoke('generate-exercise-program', {
         body: {
-          userId: user.id, // Explicitly pass user ID
+          userData: userData, // Pass as userData object as expected by edge function
           preferences: enhancedPreferences,
+          userLanguage: profile?.preferred_language || 'en',
           weekStartDate: preferences.weekStartDate || new Date().toISOString().split('T')[0]
         }
       });
@@ -128,10 +136,29 @@ export const useEnhancedAIExercise = () => {
       console.log('🔄 Regenerating exercise program for week:', weekStartDate);
       console.log('👤 User ID being sent for regeneration:', user.id);
       
+      // Get user profile for regeneration
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      // Create userData object as expected by the edge function
+      const userData = {
+        userId: user.id,
+        email: user.email,
+        ...profile,
+        preferred_language: profile?.preferred_language || 'en'
+      };
+      
       const { data, error } = await supabase.functions.invoke('generate-exercise-program', {
         body: {
-          userId: user.id, // Explicitly pass user ID
-          regenerate: true,
+          userData: userData, // Pass as userData object as expected by edge function
+          preferences: {
+            regenerate: true,
+            userLanguage: profile?.preferred_language || 'en'
+          },
+          userLanguage: profile?.preferred_language || 'en',
           weekStartDate
         }
       });
