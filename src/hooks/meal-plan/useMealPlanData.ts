@@ -25,13 +25,28 @@ export const useMealPlanData = (weekOffset: number = 0) => {
         const weekStartDate = getWeekStartDate(weekOffset);
         const weekStartDateStr = format(weekStartDate, 'yyyy-MM-dd');
         
+        console.log('🔍 useMealPlanData - Fetching data:', {
+          userId: user.id.substring(0, 8) + '...',
+          weekOffset,
+          weekStartDate: weekStartDateStr,
+          calculatedDate: weekStartDate.toISOString()
+        });
+        
         // Use enhanced API timeout handling
         const result = await handleAPITimeout(async () => {
           return await fetchMealPlanData(user.id, weekStartDateStr);
         }, 15000, 1); // 15 second timeout, 1 retry
 
+        console.log('✅ useMealPlanData - Query result:', {
+          hasData: !!result,
+          hasWeeklyPlan: !!result?.weeklyPlan,
+          dailyMealsCount: result?.dailyMeals?.length || 0,
+          weekStartFromData: result?.weeklyPlan?.week_start_date
+        });
+
         return result;
       } catch (error) {
+        console.error('❌ useMealPlanData - Error:', error);
         handleError(error, {
           operation: 'Meal Plan Fetch',
           userId: user.id,
@@ -42,8 +57,8 @@ export const useMealPlanData = (weekOffset: number = 0) => {
       }
     },
     enabled: !!user?.id,
-    staleTime: 30000, // 30 seconds
-    gcTime: 120000, // 2 minutes
+    staleTime: 0, // Always fetch fresh data for debugging
+    gcTime: 30000, // 30 seconds cache time
     retry: (failureCount, error) => {
       if (error?.message?.includes('JWT') || error?.message?.includes('auth')) return false;
       return failureCount < 2;

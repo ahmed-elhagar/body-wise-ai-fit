@@ -4,15 +4,23 @@ import type { DailyMeal } from '@/features/meal-plan/types';
 
 export const getWeekStartDate = (offset: number = 0): Date => {
   const today = new Date();
-  // Use Saturday as week start (6) to match backend calculation
-  const currentWeekStart = startOfWeek(today, { weekStartsOn: 6 }); // Saturday = 6
-  const targetWeek = addWeeks(currentWeekStart, offset);
   
-  console.log('📅 getWeekStartDate calculation:', {
+  // EXACT MATCH with backend: Use Saturday as week start to match backend calculation
+  const dayOfWeek = today.getDay(); // 0 = Sunday, 6 = Saturday
+  const currentSaturday = new Date(today);
+  currentSaturday.setDate(today.getDate() - dayOfWeek + 6); // Go to this week's Saturday
+  
+  // Apply the week offset exactly like backend
+  const targetWeek = new Date(currentSaturday);
+  targetWeek.setDate(currentSaturday.getDate() + offset * 7);
+  
+  console.log('📅 Frontend getWeekStartDate calculation:', {
     today: today.toISOString().split('T')[0],
-    currentWeekStart: currentWeekStart.toISOString().split('T')[0],
+    dayOfWeek,
+    currentSaturday: currentSaturday.toISOString().split('T')[0],
     offset,
-    targetWeek: targetWeek.toISOString().split('T')[0]
+    targetWeek: targetWeek.toISOString().split('T')[0],
+    targetWeekISO: targetWeek.toISOString()
   });
   
   return targetWeek;

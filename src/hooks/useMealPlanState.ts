@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useMemo } from 'react';
 import { useMealPlanData } from '@/hooks/meal-plan/useMealPlanData';
 import { useMealPlanNavigation } from '@/hooks/meal-plan/useMealPlanNavigation';
@@ -137,7 +138,7 @@ export const useMealPlanState = () => {
     setAiPreferences(prev => ({ ...prev, ...newPrefs }));
   }, []);
 
-  // Enhanced generation handler with better week sync and debugging
+  // FIXED: Enhanced generation handler with proper date synchronization and longer wait times
   const handleGenerateAIPlanEnhanced = useCallback(async () => {
     console.log('🚀 Starting enhanced AI generation for week offset:', currentWeekOffset);
     console.log('🗓️ Week start date for generation:', weekStartDate?.toISOString().split('T')[0]);
@@ -154,13 +155,15 @@ export const useMealPlanState = () => {
     const result = await handleGenerateAIPlan();
     
     if (result) {
-      console.log('✅ Generation successful, forcing refresh for week:', currentWeekOffset);
+      console.log('✅ Generation successful, starting enhanced refresh sequence for week:', currentWeekOffset);
       console.log('🗓️ Expected data for week starting:', weekStartDate?.toISOString().split('T')[0]);
       
-      // Wait longer for the database to be updated since there might be a sync issue
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      // Wait longer for the database transaction to fully commit
+      console.log('⏳ Waiting 5 seconds for database transaction to commit...');
+      await new Promise(resolve => setTimeout(resolve, 5000));
       
-      // Force invalidate ALL meal plan queries to ensure fresh data
+      // Force clear ALL caches first
+      console.log('🧹 Clearing all caches...');
       await queryClient.invalidateQueries({
         predicate: (query) => {
           return query.queryKey[0] === 'weekly-meal-plan' || 
@@ -173,12 +176,28 @@ export const useMealPlanState = () => {
       const { OptimizedMealPlanService } = await import('@/features/meal-plan/services/optimizedMealPlanService');
       OptimizedMealPlanService.clearCache();
       
-      // Refetch the current week data
+      // Wait a bit more to ensure cache is cleared
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Force refetch with specific week data
+      console.log('🔄 Force refetching current week data...');
       await refetch();
       
-      // Additional debug: check if data exists now
+      // Additional debug: check if data exists now and verify the week date
       const currentData = queryClient.getQueryData(['weekly-meal-plan', user?.id, currentWeekOffset]);
-      console.log('🔍 Data after refetch:', currentData ? 'Found' : 'Still missing');
+      console.log('🔍 Data after refetch:', {
+        found: currentData ? 'Yes' : 'No',
+        weekOffset: currentWeekOffset,
+        expectedWeekStart: weekStartDate?.toISOString().split('T')[0],
+        dataKeys: currentData ? Object.keys(currentData) : 'none'
+      });
+      
+      // If still no data, try one more direct fetch
+      if (!currentData) {
+        console.log('⚠️ No data found, trying one more direct fetch...');
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        await refetch();
+      }
     }
     
     return result;
