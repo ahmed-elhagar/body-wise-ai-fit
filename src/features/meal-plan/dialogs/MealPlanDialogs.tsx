@@ -1,10 +1,10 @@
 
 import React from 'react';
-import { MealPlanAIDialog } from '@/components/meal-plan/MealPlanAIDialog';
-import { MealPlanRecipeDialog } from '@/components/meal-plan/MealPlanRecipeDialog';
-import { MealPlanExchangeDialog } from '@/components/meal-plan/MealPlanExchangeDialog';
-import { EnhancedAddSnackDialog } from '@/components/meal-plan/EnhancedAddSnackDialog';
-import { ShoppingListDialog } from '@/components/meal-plan/ShoppingListDialog';
+import { AIGenerationDialog } from '@/features/meal-plan/components/dialogs/AIGenerationDialog';
+import { EnhancedRecipeDialog } from '@/components/meal-plan/EnhancedRecipeDialog';
+import MealPlanExchangeDialog from '@/components/meal-plan/MealPlanExchangeDialog';
+import EnhancedAddSnackDialog from '@/components/meal-plan/EnhancedAddSnackDialog';
+import ShoppingListDialog from '@/components/meal-plan/ShoppingListDialog';
 import type { DailyMeal, MealPlanFetchResult } from '../types';
 
 interface MealPlanDialogsProps {
@@ -50,41 +50,54 @@ export const MealPlanDialogs = ({
 }: MealPlanDialogsProps) => {
   return (
     <>
-      <MealPlanAIDialog
+      <AIGenerationDialog
         open={showAIDialog}
-        onOpenChange={closeAIDialog}
+        onClose={closeAIDialog}
         preferences={aiPreferences}
         onPreferencesChange={updateAIPreferences}
         onGenerate={handleGenerateAIPlan}
         isGenerating={isGenerating}
+        userCredits={5}
+        hasExistingPlan={!!currentWeekPlan?.weeklyPlan}
       />
 
-      <MealPlanRecipeDialog
-        open={showRecipeDialog}
-        onOpenChange={closeRecipeDialog}
-        meal={selectedMeal}
-        onRecipeGenerated={refetch}
-      />
+      {selectedMeal && (
+        <EnhancedRecipeDialog
+          isOpen={showRecipeDialog}
+          onClose={closeRecipeDialog}
+          meal={selectedMeal}
+        />
+      )}
 
-      <MealPlanExchangeDialog
-        open={showExchangeDialog}
-        onOpenChange={closeExchangeDialog}
-        meal={selectedMeal}
-        onMealExchanged={refetch}
-      />
+      {selectedMeal && (
+        <MealPlanExchangeDialog
+          open={showExchangeDialog}
+          onOpenChange={closeExchangeDialog}
+          meal={selectedMeal}
+          mealIndex={0}
+        />
+      )}
 
       <EnhancedAddSnackDialog
-        open={showAddSnackDialog}
-        onOpenChange={closeAddSnackDialog}
-        weeklyPlan={currentWeekPlan}
-        selectedDayNumber={selectedDayNumber}
+        isOpen={showAddSnackDialog}
+        onClose={closeAddSnackDialog}
+        selectedDay={selectedDayNumber}
+        weeklyPlanId={currentWeekPlan?.weeklyPlan?.id || null}
         onSnackAdded={refetch}
+        currentDayCalories={0}
+        targetDayCalories={2000}
       />
 
       <ShoppingListDialog
-        open={showShoppingListDialog}
-        onOpenChange={closeShoppingListDialog}
-        weeklyPlan={currentWeekPlan}
+        isOpen={showShoppingListDialog}
+        onClose={closeShoppingListDialog}
+        shoppingItems={{
+          items: [],
+          groupedItems: {}
+        }}
+        onSendEmail={async () => false}
+        weekStartDate={new Date()}
+        isLoading={false}
       />
     </>
   );

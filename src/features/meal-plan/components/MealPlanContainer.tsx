@@ -19,7 +19,7 @@ export const MealPlanContainer = () => {
   });
 
   if (mealPlanState.isLoading) {
-    return <MealPlanLoadingStates />;
+    return <MealPlanLoadingStates isLoading={mealPlanState.isLoading} isGenerating={mealPlanState.isGenerating} />;
   }
 
   return (
