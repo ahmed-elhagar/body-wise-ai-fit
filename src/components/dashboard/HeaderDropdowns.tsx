@@ -15,32 +15,67 @@ import { formatDistanceToNow } from "date-fns";
 const HeaderDropdowns = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const { notifications, unreadCount } = useNotifications();
-  const { weightEntries } = useWeightTracking();
-  const { mealPlans } = useMealPlans();
-  const { programs } = useExercisePrograms();
+  
+  // Use safe destructuring with fallbacks
+  const { 
+    notifications = [], 
+    unreadCount = 0,
+    isLoading: notificationsLoading 
+  } = useNotifications() || {};
+  
+  const { weightEntries = [] } = useWeightTracking() || {};
+  const { mealPlans = [] } = useMealPlans() || {};
+  const { programs = [] } = useExercisePrograms() || {};
 
-  // Recent activities
+  // Recent activities with null safety
   const activities = [
-    ...(weightEntries?.slice(0, 2).map(entry => ({
+    ...(weightEntries?.slice(0, 2)?.map(entry => ({
       type: 'weight',
-      title: `Logged weight: ${entry.weight} kg`,
-      time: entry.recorded_at,
+      title: `Logged weight: ${entry?.weight || 0} kg`,
+      time: entry?.recorded_at || new Date().toISOString(),
       icon: '⚖️'
     })) || []),
-    ...(mealPlans?.slice(0, 2).map(plan => ({
+    ...(mealPlans?.slice(0, 2)?.map(plan => ({
       type: 'meal',
       title: `Created meal plan`,
-      time: plan.created_at,
+      time: plan?.created_at || new Date().toISOString(),
       icon: '🍽️'
     })) || []),
-    ...(programs?.slice(0, 2).map(program => ({
+    ...(programs?.slice(0, 2)?.map(program => ({
       type: 'exercise',
-      title: `Created ${program.program_name}`,
-      time: program.created_at,
+      title: `Created ${program?.program_name || 'exercise program'}`,
+      time: program?.created_at || new Date().toISOString(),
       icon: '💪'
     })) || [])
   ].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 4);
+
+  const handleNotificationClick = (notification: any) => {
+    try {
+      if (notification?.action_url) {
+        navigate(notification.action_url);
+      }
+    } catch (error) {
+      console.error('❌ Error navigating to notification action:', error);
+    }
+  };
+
+  const formatTimeDistance = (timeString: string) => {
+    try {
+      return formatDistanceToNow(new Date(timeString), { addSuffix: true });
+    } catch (error) {
+      console.error('❌ Error formatting time:', error);
+      return 'Recently';
+    }
+  };
+
+  if (notificationsLoading) {
+    return (
+      <div className="flex items-center gap-2">
+        <div className="w-8 h-8 bg-gray-200 rounded animate-pulse"></div>
+        <div className="w-8 h-8 bg-gray-200 rounded animate-pulse"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center gap-2">
@@ -82,7 +117,7 @@ const HeaderDropdowns = () => {
             </div>
           </div>
           <div className="max-h-64 overflow-y-auto">
-            {notifications.slice(0, 5).length === 0 ? (
+            {(!notifications || notifications.length === 0) ? (
               <div className="p-6 text-center text-gray-500">
                 <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />
                 <p className="text-sm">{t('No new notifications')}</p>
@@ -90,25 +125,26 @@ const HeaderDropdowns = () => {
             ) : (
               notifications.slice(0, 5).map((notification) => (
                 <div
-                  key={notification.id}
-                  className={`p-3 border-b border-gray-50 hover:bg-gray-50 transition-colors ${
-                    !notification.is_read ? 'bg-blue-50/50' : ''
+                  key={notification?.id || Math.random()}
+                  className={`p-3 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer ${
+                    !notification?.is_read ? 'bg-blue-50/50' : ''
                   }`}
+                  onClick={() => handleNotificationClick(notification)}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <h4 className="font-medium text-sm text-gray-800 truncate">
-                        {notification.title}
+                        {notification?.title || 'Notification'}
                       </h4>
                       <p className="text-xs text-gray-600 mt-1 line-clamp-2">
-                        {notification.message}
+                        {notification?.message || ''}
                       </p>
                       <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
                         <Clock className="w-2.5 h-2.5" />
-                        <span>{formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}</span>
+                        <span>{formatTimeDistance(notification?.created_at || new Date().toISOString())}</span>
                       </div>
                     </div>
-                    {!notification.is_read && (
+                    {!notification?.is_read && (
                       <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1 ml-2"></div>
                     )}
                   </div>
@@ -154,7 +190,7 @@ const HeaderDropdowns = () => {
             ) : (
               activities.map((activity, index) => (
                 <div
-                  key={index}
+                  key={`${activity.type}-${index}`}
                   className="p-3 border-b border-gray-50 hover:bg-gray-50 transition-colors"
                 >
                   <div className="flex items-start gap-3">
@@ -165,7 +201,7 @@ const HeaderDropdowns = () => {
                       </p>
                       <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
                         <Clock className="w-2.5 h-2.5" />
-                        <span>{formatDistanceToNow(new Date(activity.time), { addSuffix: true })}</span>
+                        <span>{formatTimeDistance(activity.time)}</span>
                       </div>
                     </div>
                   </div>

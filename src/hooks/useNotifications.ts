@@ -28,81 +28,118 @@ export const useNotifications = () => {
       
       console.log('🔔 Fetching notifications for user:', user.id);
       
-      const { data, error } = await supabase
-        .from('user_notifications')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(50);
+      try {
+        const { data, error } = await supabase
+          .from('user_notifications')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(50);
 
-      if (error) {
-        console.error('❌ Error fetching notifications:', error);
-        throw error;
+        if (error) {
+          console.error('❌ Error fetching notifications:', error);
+          throw error;
+        }
+        
+        console.log('✅ Fetched notifications:', data?.length || 0);
+        return data as Notification[];
+      } catch (error) {
+        console.error('❌ Notification fetch failed:', error);
+        return [];
       }
-      
-      console.log('✅ Fetched notifications:', data?.length || 0);
-      return data as Notification[];
     },
     enabled: !!user?.id,
-    refetchInterval: 10000, // Check every 10 seconds
+    refetchInterval: 10000,
     staleTime: 5000,
+    retry: (failureCount, error) => {
+      // Don't retry on auth errors
+      if (error?.message?.includes('JWT')) return false;
+      return failureCount < 3;
+    },
   });
 
-  // Set up real-time subscription for notifications
+  // Set up real-time subscription for notifications with better error handling
   useEffect(() => {
     if (!user?.id) return;
 
     console.log('🔄 Setting up notifications subscription');
 
-    const channel = supabase
-      .channel('notifications')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'user_notifications',
-          filter: `user_id=eq.${user.id}`,
-        },
-        (payload) => {
-          console.log('📨 New notification received:', payload);
-          queryClient.invalidateQueries({ queryKey: ['notifications', user.id] });
-          
-          // Show toast for new notification
-          if (payload.new) {
-            toast.info(payload.new.title);
+    try {
+      const channel = supabase
+        .channel('notifications')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'user_notifications',
+            filter: `user_id=eq.${user.id}`,
+          },
+          (payload) => {
+            try {
+              console.log('📨 New notification received:', payload);
+              queryClient.invalidateQueries({ queryKey: ['notifications', user.id] });
+              
+              // Show toast for new notification with null checks
+              if (payload?.new?.title) {
+                toast.info(payload.new.title);
+              }
+            } catch (error) {
+              console.error('❌ Error processing notification payload:', error);
+            }
           }
-        }
-      )
-      .subscribe();
+        )
+        .subscribe((status) => {
+          console.log('📡 Live notifications subscription status:', status);
+          
+          if (status === 'SUBSCRIBED') {
+            console.log('✅ Successfully subscribed to live notifications');
+          } else if (status === 'CHANNEL_ERROR') {
+            console.error('❌ Channel error for live notifications');
+          }
+        });
 
-    return () => {
-      console.log('🔌 Cleaning up notifications subscription');
-      supabase.removeChannel(channel);
-    };
+      return () => {
+        console.log('🔌 Cleaning up notifications subscription');
+        try {
+          supabase.removeChannel(channel);
+        } catch (error) {
+          console.error('❌ Error cleaning up channel:', error);
+        }
+      };
+    } catch (error) {
+      console.error('❌ Error setting up notifications subscription:', error);
+    }
   }, [user?.id, queryClient]);
 
   const markAsRead = useMutation({
     mutationFn: async (notificationId: string) => {
+      if (!user?.id || !notificationId) return;
+      
       const { error } = await supabase
         .from('user_notifications')
         .update({ is_read: true })
         .eq('id', notificationId)
-        .eq('user_id', user?.id);
+        .eq('user_id', user.id);
 
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications', user?.id] });
     },
+    onError: (error) => {
+      console.error('❌ Error marking notification as read:', error);
+    },
   });
 
   const markAllAsRead = useMutation({
     mutationFn: async () => {
+      if (!user?.id) return;
+      
       const { error } = await supabase
         .from('user_notifications')
         .update({ is_read: true })
-        .eq('user_id', user?.id)
+        .eq('user_id', user.id)
         .eq('is_read', false);
 
       if (error) throw error;
@@ -111,16 +148,21 @@ export const useNotifications = () => {
       queryClient.invalidateQueries({ queryKey: ['notifications', user?.id] });
       toast.success('All notifications marked as read');
     },
+    onError: (error) => {
+      console.error('❌ Error marking all notifications as read:', error);
+    },
   });
 
   const createNotification = useMutation({
     mutationFn: async (notification: Omit<Notification, 'id' | 'user_id' | 'created_at' | 'is_read'>) => {
+      if (!user?.id) return;
+      
       console.log('📝 Creating notification:', notification);
       
       const { error } = await supabase
         .from('user_notifications')
         .insert({
-          user_id: user?.id,
+          user_id: user.id,
           ...notification,
         });
 
@@ -134,9 +176,12 @@ export const useNotifications = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications', user?.id] });
     },
+    onError: (error) => {
+      console.error('❌ Error in createNotification:', error);
+    },
   });
 
-  const unreadCount = notifications?.filter(n => !n.is_read).length || 0;
+  const unreadCount = notifications?.filter(n => !n?.is_read).length || 0;
 
   return {
     notifications: notifications || [],
