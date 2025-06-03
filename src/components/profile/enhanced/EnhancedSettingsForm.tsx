@@ -43,7 +43,7 @@ const EnhancedSettingsForm = () => {
     setIsLanguageLoading(true);
     try {
       setLanguage(newLanguage as Language);
-      if (profile) {
+      if (profile && updateProfile) {
         await updateProfile({ preferred_language: newLanguage });
         toast.success('Language preference saved!');
       }
@@ -57,14 +57,16 @@ const EnhancedSettingsForm = () => {
 
   const handleSavePreferences = async () => {
     try {
-      await updatePreferences({
-        theme_preference: preferences.theme as 'light' | 'dark' | 'auto',
-        push_notifications: preferences.notifications,
-        email_notifications: preferences.emailUpdates,
-        data_sharing_analytics: preferences.dataSharing,
-        measurement_units: preferences.measurementUnits as 'metric' | 'imperial',
-      });
-      toast.success('Preferences saved successfully! Changes will apply to your workout and meal plans.');
+      if (updatePreferences) {
+        await updatePreferences({
+          theme_preference: preferences.theme as 'light' | 'dark' | 'auto',
+          push_notifications: preferences.notifications,
+          email_notifications: preferences.emailUpdates,
+          data_sharing_analytics: preferences.dataSharing,
+          measurement_units: preferences.measurementUnits as 'metric' | 'imperial',
+        });
+        toast.success('Preferences saved successfully! Changes will apply to your workout and meal plans.');
+      }
     } catch (error) {
       console.error('Error saving preferences:', error);
       toast.error('Failed to save preferences');

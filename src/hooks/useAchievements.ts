@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useWeightTracking } from './useWeightTracking';
 import { useGoals } from './useGoals';
-import { useMealPlanData } from './useMealPlanData';
+import { useMealPlanData } from './meal-plan/useMealPlanData';
 import { useExerciseProgramData } from './useExerciseProgramData';
 import { useMemo } from 'react';
 
@@ -36,7 +36,7 @@ export const useAchievements = () => {
   const { weightEntries } = useWeightTracking();
   const { goals } = useGoals();
   const { data: currentMealPlan } = useMealPlanData(0);
-  const { currentProgram: currentExerciseProgram } = useExerciseProgramData(0, "home");
+  const { currentProgram: currentExerciseProgram } = useExerciseProgramData();
 
   const { data: userAchievements, isLoading: achievementsLoading } = useQuery({
     queryKey: ['user-achievements', user?.id],
@@ -122,25 +122,30 @@ export const useAchievements = () => {
       const userAchievement = userAchievements?.find(ua => ua.achievement_id === achievement.id);
       let progress = 0;
 
-      // Calculate progress based on requirement type
+      // Calculate progress based on requirement type with safe data access
       switch (achievement.requirement_type) {
         case 'weight_entries':
-          progress = weightEntries.length;
+          progress = weightEntries?.length || 0;
           break;
         case 'goals_created':
-          progress = goals.length;
+          progress = goals?.length || 0;
           break;
         case 'goals_completed':
-          progress = goals.filter(goal => goal.status === 'completed').length;
+          progress = goals?.filter(goal => goal.status === 'completed').length || 0;
           break;
         case 'meal_plans':
           progress = currentMealPlan ? 1 : 0;
           break;
         case 'exercises_completed':
-          progress = currentExerciseProgram?.daily_workouts?.reduce(
-            (sum, workout) => sum + (workout.exercises?.filter(ex => ex.completed).length || 0), 0
-          ) || 0;
+          progress = 0; // Safe fallback for now
+          if (currentExerciseProgram?.daily_workouts) {
+            progress = currentExerciseProgram.daily_workouts.reduce(
+              (sum, workout) => sum + (workout.exercises?.filter(ex => ex.completed).length || 0), 0
+            );
+          }
           break;
+        default:
+          progress = 0;
       }
 
       return {
@@ -154,27 +159,32 @@ export const useAchievements = () => {
 
   const unlockAchievement = useMutation({
     mutationFn: async (achievementId: string) => {
-      // Use ON CONFLICT to prevent duplicate key errors
-      const { error } = await supabase
+      if (!user?.id) throw new Error('User not authenticated');
+
+      // Use upsert to handle duplicates gracefully
+      const { data, error } = await supabase
         .from('user_achievements')
-        .insert({
-          user_id: user?.id,
+        .upsert({
+          user_id: user.id,
           achievement_id: achievementId,
+          earned_at: new Date().toISOString(),
+        }, {
+          onConflict: 'user_id,achievement_id',
+          ignoreDuplicates: true
         })
         .select()
         .single();
 
-      // If we get a duplicate key error, that's actually OK - the achievement already exists
       if (error && !error.message.includes('duplicate key')) {
         throw error;
       }
 
-      // Create notification for achievement (only if it's a new achievement)
-      if (!error) {
+      // Only create notification if it's a new achievement
+      if (data) {
         await supabase
           .from('user_notifications')
           .insert({
-            user_id: user?.id,
+            user_id: user.id,
             title: 'Achievement Unlocked!',
             message: `You've earned a new achievement!`,
             type: 'achievement',
@@ -186,10 +196,16 @@ export const useAchievements = () => {
       queryClient.invalidateQueries({ queryKey: ['user-achievements', user?.id] });
       queryClient.invalidateQueries({ queryKey: ['notifications', user?.id] });
     },
+    onError: (error) => {
+      console.log('Achievement unlock handled:', error.message);
+      // Don't throw error for duplicates, just log
+    }
   });
 
-  // Check for newly earned achievements with better duplicate handling
+  // Check for newly earned achievements with better error handling
   const checkAchievements = () => {
+    if (!user?.id) return;
+    
     achievements.forEach(achievement => {
       if (!achievement.is_earned && achievement.progress >= achievement.requirement_value) {
         unlockAchievement.mutate(achievement.id);
