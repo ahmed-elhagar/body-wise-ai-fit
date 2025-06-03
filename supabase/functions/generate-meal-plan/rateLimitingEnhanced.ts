@@ -1,4 +1,3 @@
-
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
 export const enhancedRateLimiting = {
@@ -11,7 +10,7 @@ export const enhancedRateLimiting = {
     console.log('🔒 Checking rate limit for user:', userId);
 
     try {
-      // Get user profile with remaining credits
+      // Get user profile with remaining credits and role
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('ai_generations_remaining, role')
@@ -26,29 +25,26 @@ export const enhancedRateLimiting = {
       const remainingCredits = profile?.ai_generations_remaining || 0;
       const userRole = profile?.role;
 
-      // Check if user is pro/admin via profile role (highest priority)
-      const isProByRole = userRole === 'pro' || userRole === 'admin';
+      // Check if user is admin (admins have unlimited access)
+      const isAdmin = userRole === 'admin';
 
-      // Only check subscription if user is not already pro/admin by role
-      let isProBySubscription = false;
-      if (!isProByRole) {
-        const { data: subscription, error: subError } = await supabase
-          .from('subscriptions')
-          .select('status, current_period_end')
-          .eq('user_id', userId)
-          .eq('status', 'active')
-          .gte('current_period_end', new Date().toISOString())
-          .maybeSingle();
+      // Check for active subscription (pro status comes from subscription only)
+      const { data: subscription, error: subError } = await supabase
+        .from('subscriptions')
+        .select('status, current_period_end')
+        .eq('user_id', userId)
+        .eq('status', 'active')
+        .gte('current_period_end', new Date().toISOString())
+        .maybeSingle();
 
-        isProBySubscription = !subError && !!subscription;
-      }
+      const isProBySubscription = !subError && !!subscription;
 
-      // User is pro if they have pro/admin role OR active subscription
-      const isPro = isProByRole || isProBySubscription;
+      // User is pro if they have admin role OR active subscription
+      const isPro = isAdmin || isProBySubscription;
 
       console.log('💳 Enhanced rate limit check result:', {
         userRole,
-        isProByRole,
+        isAdmin,
         isProBySubscription,
         isPro,
         remainingCredits,
@@ -107,11 +103,11 @@ export const enhancedRateLimiting = {
       }
 
       const userRole = profile?.role;
-      const isProByRole = userRole === 'pro' || userRole === 'admin';
+      const isAdmin = userRole === 'admin';
 
-      // Check subscription only if not pro/admin by role
+      // Check subscription only if not admin
       let isProBySubscription = false;
-      if (!isProByRole) {
+      if (!isAdmin) {
         const { data: subscription } = await supabase
           .from('subscriptions')
           .select('status')
@@ -123,11 +119,11 @@ export const enhancedRateLimiting = {
         isProBySubscription = !!subscription;
       }
 
-      const isPro = isProByRole || isProBySubscription;
+      const isPro = isAdmin || isProBySubscription;
 
       console.log('💰 Credit usage check:', {
         userRole,
-        isProByRole,
+        isAdmin,
         isProBySubscription,
         isPro,
         willDecrementCredits: !isPro

@@ -1,61 +1,61 @@
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+
+import { useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   Users, 
+  UserPlus, 
+  Shield, 
   Search, 
-  MoreHorizontal, 
-  UserX, 
-  UserCheck, 
-  Shield,
-  Edit,
-  Trash2,
-  Filter
-} from 'lucide-react';
-import { toast } from 'sonner';
+  Star,
+  Crown,
+  Calendar,
+  X
+} from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
-type UserRole = 'normal' | 'pro' | 'coach' | 'admin';
-
-interface UserProfile {
+interface User {
   id: string;
   email: string;
-  first_name: string;
-  last_name: string;
-  role: UserRole;
+  first_name?: string;
+  last_name?: string;
+  role: string;
   ai_generations_remaining: number;
-  onboarding_completed: boolean;
   created_at: string;
-  last_activity?: string;
+  is_online?: boolean;
+  last_seen?: string;
+  subscription?: {
+    id: string;
+    status: string;
+    plan_type: string;
+    current_period_end: string;
+  };
 }
 
 const EnhancedUsersTable = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [roleFilter, setRoleFilter] = useState<string>('all');
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isCreatingSubscription, setIsCreatingSubscription] = useState(false);
   const queryClient = useQueryClient();
 
-  // Fetch users with enhanced data
-  const { data: users = [], isLoading, error } = useQuery({
-    queryKey: ['admin-users', searchTerm, roleFilter],
-    queryFn: async () => {
-      let query = supabase
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      console.log('Fetching users...');
+      
+      const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select(`
           id,
@@ -64,271 +64,365 @@ const EnhancedUsersTable = () => {
           last_name,
           role,
           ai_generations_remaining,
-          onboarding_completed,
-          created_at
+          created_at,
+          is_online,
+          last_seen
         `)
         .order('created_at', { ascending: false });
 
-      // Apply search filter
-      if (searchTerm) {
-        query = query.or(`email.ilike.%${searchTerm}%,first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%`);
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+        throw profilesError;
       }
 
-      // Apply role filter - only if it's a valid role
-      if (roleFilter !== 'all' && ['normal', 'pro', 'coach', 'admin'].includes(roleFilter)) {
-        query = query.eq('role', roleFilter as UserRole);
+      // Fetch subscriptions for all users
+      const { data: subscriptions, error: subsError } = await supabase
+        .from('subscriptions')
+        .select('user_id, id, status, plan_type, current_period_end')
+        .eq('status', 'active');
+
+      if (subsError) {
+        console.error('Error fetching subscriptions:', subsError);
       }
 
-      const { data, error } = await query;
-      if (error) throw error;
-      return data as UserProfile[];
-    },
-    refetchOnWindowFocus: false,
-  });
+      // Merge subscription data with user data
+      const usersWithSubscriptions = profiles.map(user => ({
+        ...user,
+        subscription: subscriptions?.find(sub => sub.user_id === user.id) || null
+      }));
 
-  // Update user role mutation
-  const updateUserRoleMutation = useMutation({
-    mutationFn: async ({ userId, newRole }: { userId: string; newRole: UserRole }) => {
+      console.log('Fetched users with subscriptions:', usersWithSubscriptions);
+      setUsers(usersWithSubscriptions);
+    } catch (error) {
+      console.error('Error in fetchUsers:', error);
+      toast.error('Failed to fetch users');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const filteredUsers = users.filter(user => 
+    user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const updateUserRole = async (userId: string, newRole: string) => {
+    try {
       const { error } = await supabase
         .from('profiles')
-        .update({ 
-          role: newRole,
-          updated_at: new Date().toISOString()
-        })
+        .update({ role: newRole })
         .eq('id', userId);
-      
+
       if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
-      queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
+
       toast.success('User role updated successfully');
-    },
-    onError: (error) => {
-      console.error('Failed to update user role:', error);
+      await fetchUsers();
+      setIsEditDialogOpen(false);
+      setSelectedUser(null);
+    } catch (error) {
+      console.error('Error updating user role:', error);
       toast.error('Failed to update user role');
     }
-  });
+  };
 
-  // Delete user mutation
-  const deleteUserMutation = useMutation({
-    mutationFn: async (userId: string) => {
-      const { error } = await supabase.auth.admin.deleteUser(userId);
+  const createSubscription = async (userId: string) => {
+    setIsCreatingSubscription(true);
+    try {
+      // Create a 1-month subscription
+      const startDate = new Date();
+      const endDate = new Date();
+      endDate.setMonth(endDate.getMonth() + 1);
+
+      const { error } = await supabase
+        .from('subscriptions')
+        .insert({
+          user_id: userId,
+          stripe_customer_id: `admin_created_${userId}`,
+          stripe_subscription_id: `admin_sub_${userId}_${Date.now()}`,
+          status: 'active',
+          plan_type: 'monthly',
+          current_period_start: startDate.toISOString(),
+          current_period_end: endDate.toISOString(),
+          cancel_at_period_end: false,
+          stripe_price_id: 'admin_created',
+          interval: 'month'
+        });
+
       if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
-      queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
-      toast.success('User deleted successfully');
-    },
-    onError: (error) => {
-      console.error('Failed to delete user:', error);
-      toast.error('Failed to delete user');
-    }
-  });
 
-  const getRoleBadgeColor = (role: UserRole) => {
+      toast.success('1-month subscription created successfully');
+      await fetchUsers();
+    } catch (error) {
+      console.error('Error creating subscription:', error);
+      toast.error('Failed to create subscription');
+    } finally {
+      setIsCreatingSubscription(false);
+    }
+  };
+
+  const cancelSubscription = async (userId: string) => {
+    try {
+      const { error } = await supabase
+        .from('subscriptions')
+        .update({ 
+          status: 'cancelled',
+          cancel_at_period_end: true 
+        })
+        .eq('user_id', userId)
+        .eq('status', 'active');
+
+      if (error) throw error;
+
+      toast.success('Subscription cancelled successfully');
+      await fetchUsers();
+    } catch (error) {
+      console.error('Error cancelling subscription:', error);
+      toast.error('Failed to cancel subscription');
+    }
+  };
+
+  const resetAIGenerations = async (userId: string, newCount: number = 5) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ ai_generations_remaining: newCount })
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      toast.success(`AI generations reset to ${newCount}`);
+      await fetchUsers();
+    } catch (error) {
+      console.error('Error resetting AI generations:', error);
+      toast.error('Failed to reset AI generations');
+    }
+  };
+
+  const getRoleBadgeColor = (role: string) => {
     switch (role) {
-      case 'admin': return 'bg-red-100 text-red-800 border-red-200';
-      case 'coach': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'pro': return 'bg-purple-100 text-purple-800 border-purple-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'admin': return 'bg-red-100 text-red-800';
+      case 'normal': return 'bg-blue-100 text-blue-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const getStatusBadgeColor = (completed: boolean) => {
-    return completed 
-      ? 'bg-green-100 text-green-800 border-green-200'
-      : 'bg-yellow-100 text-yellow-800 border-yellow-200';
-  };
-
-  const handleRoleChange = (userId: string, newRole: UserRole) => {
-    updateUserRoleMutation.mutate({ userId, newRole });
-  };
-
-  const handleDeleteUser = (userId: string) => {
-    if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
-      deleteUserMutation.mutate(userId);
+  const getSubscriptionBadge = (user: User) => {
+    if (user.subscription && user.subscription.status === 'active') {
+      const endDate = new Date(user.subscription.current_period_end);
+      const isActive = endDate > new Date();
+      
+      if (isActive) {
+        return (
+          <Badge className="bg-green-100 text-green-800">
+            <Crown className="h-3 w-3 mr-1" />
+            Pro
+          </Badge>
+        );
+      }
     }
+    return null;
   };
 
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = !searchTerm || 
-      user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.last_name?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesRole = roleFilter === 'all' || user.role === roleFilter;
-    
-    return matchesSearch && matchesRole;
-  });
-
-  if (isLoading) {
+  if (loading) {
     return (
-      <Card className="p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-          <div className="space-y-3">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-12 bg-gray-200 rounded"></div>
-            ))}
-          </div>
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <Users className="h-8 w-8 animate-spin mx-auto mb-2" />
+          <p>Loading users...</p>
         </div>
-      </Card>
-    );
-  }
-
-  if (error) {
-    return (
-      <Card className="p-6 bg-red-50 border-red-200">
-        <p className="text-red-600">Error loading users: {error.message}</p>
-      </Card>
+      </div>
     );
   }
 
   return (
-    <Card className="p-6 bg-white/90 backdrop-blur-sm border-0 shadow-lg">
-      <div className="flex items-center justify-between mb-6">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg">
-            <Users className="w-5 h-5 text-white" />
+          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+            <Users className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">User Management</h2>
-            <p className="text-sm text-gray-600">{filteredUsers.length} users found</p>
+            <h2 className="text-2xl font-bold">Enhanced User Management</h2>
+            <p className="text-gray-600">Manage user roles, subscriptions, and AI generations</p>
           </div>
         </div>
+        
+        <Button onClick={fetchUsers} variant="outline">
+          <UserPlus className="h-4 w-4 mr-2" />
+          Refresh
+        </Button>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-col md:flex-row gap-4 mb-6">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <Input
-            placeholder="Search users by name or email..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="flex items-center gap-2">
-              <Filter className="w-4 h-4" />
-              Role: {roleFilter === 'all' ? 'All' : roleFilter}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem onClick={() => setRoleFilter('all')}>
-              All Roles
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setRoleFilter('admin')}>
-              Admin
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setRoleFilter('coach')}>
-              Coach
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setRoleFilter('pro')}>
-              Pro
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setRoleFilter('normal')}>
-              Normal
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      <Alert>
+        <Shield className="h-4 w-4" />
+        <AlertDescription>
+          <strong>Role System:</strong> Only 'normal' and 'admin' roles available. Pro status comes from active subscriptions.
+          <br />
+          <strong>Subscription Management:</strong> Create 1-month subscriptions or cancel existing ones.
+        </AlertDescription>
+      </Alert>
 
-      {/* Users Table */}
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>User</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>AI Credits</TableHead>
-              <TableHead>Joined</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredUsers.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell>
-                  <div>
-                    <p className="font-medium text-gray-900">
-                      {user.first_name} {user.last_name}
-                    </p>
-                    <p className="text-sm text-gray-500">{user.email}</p>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge className={getRoleBadgeColor(user.role)}>
-                    {user.role}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge className={getStatusBadgeColor(user.onboarding_completed)}>
-                    {user.onboarding_completed ? 'Complete' : 'Pending'}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <span className="font-medium">
-                    {user.ai_generations_remaining}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  <span className="text-sm text-gray-600">
-                    {new Date(user.created_at).toLocaleDateString()}
-                  </span>
-                </TableCell>
-                <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm">
-                        <MoreHorizontal className="w-4 h-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'admin')}>
-                        <Shield className="w-4 h-4 mr-2" />
-                        Make Admin
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'coach')}>
-                        <UserCheck className="w-4 h-4 mr-2" />
-                        Make Coach
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'pro')}>
-                        <Edit className="w-4 h-4 mr-2" />
-                        Make Pro
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'normal')}>
-                        <Users className="w-4 h-4 mr-2" />
-                        Make Normal
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => handleDeleteUser(user.id)}
-                        className="text-red-600 focus:text-red-600"
-                      >
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Delete User
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Users ({filteredUsers.length})
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              <Search className="h-4 w-4" />
+              <Input
+                placeholder="Search users..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-64"
+              />
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>User</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead>Subscription</TableHead>
+                <TableHead>AI Credits</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+            </TableHeader>
+            <TableBody>
+              {filteredUsers.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell>
+                    <div>
+                      <div className="font-medium">
+                        {user.first_name && user.last_name 
+                          ? `${user.first_name} ${user.last_name}` 
+                          : user.email}
+                      </div>
+                      <div className="text-sm text-gray-500">{user.email}</div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge className={getRoleBadgeColor(user.role)}>
+                      {user.role}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col gap-1">
+                      {getSubscriptionBadge(user)}
+                      {user.subscription && (
+                        <div className="text-xs text-gray-500">
+                          Expires: {new Date(user.subscription.current_period_end).toLocaleDateString()}
+                        </div>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <span>{user.ai_generations_remaining}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => resetAIGenerations(user.id)}
+                      >
+                        <Star className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full ${user.is_online ? 'bg-green-500' : 'bg-gray-300'}`} />
+                      {user.is_online ? 'Online' : 'Offline'}
+                    </div>
+                    {user.last_seen && !user.is_online && (
+                      <div className="text-xs text-gray-500">
+                        Last seen: {new Date(user.last_seen).toLocaleDateString()}
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Dialog open={isEditDialogOpen && selectedUser?.id === user.id} onOpenChange={setIsEditDialogOpen}>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSelectedUser(user)}
+                          >
+                            Edit Role
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Edit User Role</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div>
+                              <Label>Email</Label>
+                              <Input value={selectedUser?.email || ''} disabled />
+                            </div>
+                            <div>
+                              <Label>Role</Label>
+                              <Select
+                                value={selectedUser?.role || 'normal'}
+                                onValueChange={(value) => {
+                                  if (selectedUser) {
+                                    updateUserRole(selectedUser.id, value);
+                                  }
+                                }}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="normal">Normal</SelectItem>
+                                  <SelectItem value="admin">Admin</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
 
-      {filteredUsers.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
-          <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-          <p>No users found matching your criteria.</p>
-        </div>
-      )}
-    </Card>
+                      {user.subscription && user.subscription.status === 'active' ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => cancelSubscription(user.id)}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <X className="h-3 w-3 mr-1" />
+                          Cancel Sub
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => createSubscription(user.id)}
+                          disabled={isCreatingSubscription}
+                          className="text-green-600 hover:text-green-700"
+                        >
+                          <Calendar className="h-3 w-3 mr-1" />
+                          Add 1M Sub
+                        </Button>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
