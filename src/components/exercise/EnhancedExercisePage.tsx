@@ -91,7 +91,7 @@ const EnhancedExercisePage = () => {
         />
       </div>
 
-      {/* Main Content - Pass loading state for content-only overlay */}
+      {/* Main Content - Only show loading overlay when changing weeks, not initial load */}
       <ExercisePageContent
         isLoading={isLoading && !!currentProgram}
         currentProgram={currentProgram}
@@ -117,7 +117,7 @@ const EnhancedExercisePage = () => {
       <AIExerciseDialog
         open={showAIDialog}
         onOpenChange={setShowAIDialog}
-        preferences={aiPreferences}
+        preferences={{ ...aiPreferences, workoutType }}
         setPreferences={setAiPreferences}
         onGenerate={handleGenerateAIProgram}
         isGenerating={isGenerating}

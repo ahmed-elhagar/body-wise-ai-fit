@@ -5,7 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Sparkles, Target, Clock, Dumbbell, Heart, Zap, Home, Building2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Sparkles, Target, Clock, Dumbbell, Heart, Zap, Home, Building2, Calendar } from "lucide-react";
 import { useState } from "react";
 
 interface AIExerciseDialogProps {
@@ -26,18 +27,38 @@ export const AIExerciseDialog = ({
   isGenerating
 }: AIExerciseDialogProps) => {
   const [customRequirements, setCustomRequirements] = useState("");
+  const [selectedDays, setSelectedDays] = useState<string[]>(["monday", "wednesday", "friday"]);
 
   const handlePreferenceChange = (key: string, value: any) => {
     setPreferences({ ...preferences, [key]: value });
   };
 
+  const handleDayToggle = (day: string) => {
+    setSelectedDays(prev => 
+      prev.includes(day) 
+        ? prev.filter(d => d !== day)
+        : [...prev, day]
+    );
+  };
+
   const handleGenerate = () => {
     const enhancedPreferences = {
       ...preferences,
-      customRequirements: customRequirements.trim() || undefined
+      customRequirements: customRequirements.trim() || undefined,
+      selectedWorkoutDays: selectedDays
     };
     onGenerate(enhancedPreferences);
   };
+
+  const workoutDays = [
+    { key: 'monday', label: 'Monday' },
+    { key: 'tuesday', label: 'Tuesday' },
+    { key: 'wednesday', label: 'Wednesday' },
+    { key: 'thursday', label: 'Thursday' },
+    { key: 'friday', label: 'Friday' },
+    { key: 'saturday', label: 'Saturday' },
+    { key: 'sunday', label: 'Sunday' }
+  ];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -45,37 +66,14 @@ export const AIExerciseDialog = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             <Sparkles className="h-6 w-6 text-purple-600" />
-            Customize Your Exercise Program
+            Customize Your {preferences.workoutType === 'gym' ? 'Gym' : 'Home'} Exercise Program
           </DialogTitle>
+          <p className="text-sm text-gray-600 mt-2">
+            Create a personalized workout plan tailored to your {preferences.workoutType === 'gym' ? 'gym training' : 'home fitness'} goals and preferences.
+          </p>
         </DialogHeader>
         
         <div className="space-y-6 mt-4">
-          {/* Workout Type */}
-          <div className="space-y-3">
-            <Label className="text-base font-semibold flex items-center gap-2">
-              <Dumbbell className="w-4 h-4" />
-              Workout Environment
-            </Label>
-            <div className="grid grid-cols-2 gap-3">
-              <Button
-                variant={preferences.workoutType === "home" ? "default" : "outline"}
-                onClick={() => handlePreferenceChange('workoutType', 'home')}
-                className="h-16 flex flex-col items-center gap-2"
-              >
-                <Home className="w-5 h-5" />
-                <span>Home Workout</span>
-              </Button>
-              <Button
-                variant={preferences.workoutType === "gym" ? "default" : "outline"}
-                onClick={() => handlePreferenceChange('workoutType', 'gym')}
-                className="h-16 flex flex-col items-center gap-2"
-              >
-                <Building2 className="w-5 h-5" />
-                <span>Gym Workout</span>
-              </Button>
-            </div>
-          </div>
-
           {/* Primary Goal */}
           <div className="space-y-3">
             <Label className="text-base font-semibold flex items-center gap-2">
@@ -145,23 +143,72 @@ export const AIExerciseDialog = ({
             </Select>
           </div>
 
-          {/* Workout Frequency */}
+          {/* Custom Weekly Schedule */}
           <div className="space-y-3">
-            <Label className="text-base font-semibold">Weekly Workout Days</Label>
-            <Select 
-              value={preferences.workoutDays} 
-              onValueChange={(value) => handlePreferenceChange('workoutDays', value)}
-            >
-              <SelectTrigger className="h-12">
-                <SelectValue placeholder="How many days per week?" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="3">3 Days/Week (Beginner friendly)</SelectItem>
-                <SelectItem value="4">4 Days/Week (Balanced approach)</SelectItem>
-                <SelectItem value="5">5 Days/Week (Active lifestyle)</SelectItem>
-                <SelectItem value="6">6 Days/Week (High commitment)</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label className="text-base font-semibold flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              Weekly Workout Schedule
+            </Label>
+            <p className="text-sm text-gray-600 mb-3">
+              Select the days when you want to work out. Choose at least 2 days for effective results.
+            </p>
+            
+            {/* Quick Select Options */}
+            <div className="flex flex-wrap gap-2 mb-4">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedDays(["monday", "wednesday", "friday"])}
+                className="text-xs"
+              >
+                3 Days (M/W/F)
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedDays(["monday", "tuesday", "thursday", "friday"])}
+                className="text-xs"
+              >
+                4 Days (M/T/Th/F)
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedDays(["monday", "tuesday", "wednesday", "thursday", "friday"])}
+                className="text-xs"
+              >
+                5 Days (Weekdays)
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedDays([])}
+                className="text-xs"
+              >
+                Clear All
+              </Button>
+            </div>
+
+            {/* Day Selection Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {workoutDays.map((day) => (
+                <div key={day.key} className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50">
+                  <Checkbox
+                    checked={selectedDays.includes(day.key)}
+                    onCheckedChange={() => handleDayToggle(day.key)}
+                  />
+                  <Label className="text-sm font-medium cursor-pointer">{day.label}</Label>
+                </div>
+              ))}
+            </div>
+            
+            <p className="text-xs text-gray-500">
+              Selected: {selectedDays.length} day{selectedDays.length !== 1 ? 's' : ''} per week
+            </p>
           </div>
 
           {/* Equipment Preferences */}
@@ -238,7 +285,7 @@ export const AIExerciseDialog = ({
           {/* Generate Button */}
           <Button 
             onClick={handleGenerate}
-            disabled={isGenerating || !preferences.goalType || !preferences.fitnessLevel}
+            disabled={isGenerating || !preferences.goalType || !preferences.fitnessLevel || selectedDays.length === 0}
             className="w-full h-12 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold"
           >
             {isGenerating ? (
@@ -253,6 +300,12 @@ export const AIExerciseDialog = ({
               </>
             )}
           </Button>
+          
+          {selectedDays.length === 0 && (
+            <p className="text-xs text-red-500 text-center">
+              Please select at least one workout day to continue.
+            </p>
+          )}
         </div>
       </DialogContent>
     </Dialog>
