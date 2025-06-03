@@ -8,9 +8,30 @@ import ErrorState from '@/components/meal-plan/components/ErrorState';
 import LoadingState from '@/components/meal-plan/components/LoadingState';
 import MealPlanDialogs from '@/components/meal-plan/dialogs/MealPlanDialogs';
 import MealPlanAILoadingDialog from '@/components/meal-plan/MealPlanAILoadingDialog';
+import { useEnhancedMealShuffle } from '@/hooks/useEnhancedMealShuffle';
+import ShoppingListDrawer from '@/components/shopping-list/ShoppingListDrawer';
 
 export const MealPlanContainer = () => {
   const mealPlanState = useMealPlanState();
+  const { shuffleMeals, isShuffling } = useEnhancedMealShuffle();
+
+  // Enhanced shuffle handler
+  const handleShuffle = async () => {
+    if (!mealPlanState.currentWeekPlan?.weeklyPlan?.id) {
+      console.error('❌ No weekly plan ID available for shuffle');
+      return;
+    }
+    
+    console.log('🔄 Starting enhanced shuffle for plan:', mealPlanState.currentWeekPlan.weeklyPlan.id);
+    const success = await shuffleMeals(mealPlanState.currentWeekPlan.weeklyPlan.id);
+    
+    if (success) {
+      // Refetch the meal plan data to show updated distribution
+      setTimeout(() => {
+        mealPlanState.refetch();
+      }, 1000);
+    }
+  };
 
   if (mealPlanState.error) {
     return <ErrorState error={mealPlanState.error} onRetry={mealPlanState.refetch} />;
@@ -25,10 +46,11 @@ export const MealPlanContainer = () => {
       <div className="space-y-6">
         <MealPlanHeader 
           onGenerateAI={() => mealPlanState.openAIDialog()}
-          onShuffle={() => {}} // Add shuffle functionality if needed
+          onShuffle={handleShuffle}
           onShowShoppingList={() => mealPlanState.openShoppingListDialog()}
           onRegeneratePlan={() => mealPlanState.openAIDialog()}
           isGenerating={mealPlanState.isGenerating}
+          isShuffling={isShuffling}
           hasWeeklyPlan={!!mealPlanState.currentWeekPlan?.weeklyPlan}
         />
         
@@ -66,6 +88,17 @@ export const MealPlanContainer = () => {
         onClose={() => {}} // Can't be closed during generation
       />
 
+      {/* Enhanced Shopping List Drawer */}
+      <ShoppingListDrawer
+        isOpen={mealPlanState.showShoppingListDialog}
+        onClose={() => mealPlanState.closeShoppingListDialog()}
+        weeklyPlan={mealPlanState.currentWeekPlan}
+        weekId={mealPlanState.currentWeekPlan?.weeklyPlan?.id}
+        onShoppingListUpdate={() => {
+          console.log('🛒 Shopping list updated');
+        }}
+      />
+
       {/* All other dialogs */}
       <MealPlanDialogs
         showAIDialog={mealPlanState.showAIDialog}
@@ -76,8 +109,8 @@ export const MealPlanContainer = () => {
         setShowExchangeDialog={mealPlanState.closeExchangeDialog}
         showAddSnackDialog={mealPlanState.showAddSnackDialog}
         setShowAddSnackDialog={mealPlanState.closeAddSnackDialog}
-        showShoppingListDialog={mealPlanState.showShoppingListDialog}
-        setShowShoppingListDialog={mealPlanState.closeShoppingListDialog}
+        showShoppingListDialog={false} // Now handled by ShoppingListDrawer
+        setShowShoppingListDialog={() => {}} // Disabled - using drawer instead
         selectedMeal={mealPlanState.selectedMeal}
         selectedMealIndex={mealPlanState.selectedMealIndex}
         aiPreferences={mealPlanState.aiPreferences}
