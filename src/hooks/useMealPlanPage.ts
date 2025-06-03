@@ -34,7 +34,6 @@ export const useMealPlanPage = () => {
     targetDayCalories: mealPlanState.targetDayCalories,
     isLoading: mealPlanState.isLoading,
     isGenerating: mealPlanState.isGenerating,
-    userCredits: mealPlanState.userCredits,
     error: mealPlanState.error?.message
   });
 
