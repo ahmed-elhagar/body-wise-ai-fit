@@ -1,5 +1,5 @@
 
-import { useEffect, startTransition } from "react";
+import { useEffect, startTransition, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Card } from "@/components/ui/card";
@@ -9,10 +9,36 @@ import { Button } from "@/components/ui/button";
 const Index = () => {
   const navigate = useNavigate();
   const { user, loading, error, retryAuth, forceLogout } = useAuth();
+  const [hasNavigated, setHasNavigated] = useState(false);
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
+
+  // Add timeout protection to prevent infinite loading
+  useEffect(() => {
+    if (loading && !hasNavigated) {
+      const timeout = setTimeout(() => {
+        console.warn('⚠️ Index - Loading timeout reached, forcing navigation decision');
+        setLoadingTimeout(true);
+        
+        // Force navigation based on current auth state
+        startTransition(() => {
+          if (user?.id) {
+            console.log('Index - Timeout: Forcing navigation to dashboard');
+            navigate("/dashboard", { replace: true });
+          } else {
+            console.log('Index - Timeout: Forcing navigation to landing');
+            navigate("/landing", { replace: true });
+          }
+          setHasNavigated(true);
+        });
+      }, 8000); // 8 second timeout
+
+      return () => clearTimeout(timeout);
+    }
+  }, [loading, hasNavigated, user?.id, navigate]);
 
   useEffect(() => {
     // Only redirect after loading is complete and we have a definitive auth state
-    if (!loading) {
+    if (!loading && !hasNavigated) {
       console.log("Index - Auth state determined:", { 
         isAuthenticated: !!user,
         userId: user?.id?.substring(0, 8) + '...' || 'none'
@@ -29,9 +55,10 @@ const Index = () => {
           console.log("Index - Redirecting unauthenticated user to landing");
           navigate("/landing", { replace: true });
         }
+        setHasNavigated(true);
       });
     }
-  }, [user?.id, loading, navigate]);
+  }, [user?.id, loading, navigate, hasNavigated]);
 
   // Enhanced error handling for auth errors
   if (error) {
@@ -66,14 +93,48 @@ const Index = () => {
     );
   }
 
+  // Show timeout recovery if loading too long
+  if (loadingTimeout) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+        <Card className="p-6 bg-orange-50 border-orange-200 max-w-md">
+          <div className="flex items-center gap-3 mb-4">
+            <AlertTriangle className="h-6 w-6 text-orange-600" />
+            <h2 className="text-lg font-semibold text-orange-800">Loading Taking Too Long</h2>
+          </div>
+          <p className="text-orange-700 mb-4">
+            The app is taking longer than expected to initialize. This might be due to a connection issue.
+          </p>
+          <div className="space-y-2">
+            <Button 
+              onClick={() => window.location.reload()} 
+              className="w-full bg-orange-600 text-white hover:bg-orange-700"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Refresh Page
+            </Button>
+            <Button 
+              onClick={forceLogout} 
+              variant="outline"
+              className="w-full border-orange-600 text-orange-600 hover:bg-orange-50"
+            >
+              Clear Data & Restart
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
   // Show loading state while determining where to redirect
-  if (loading) {
+  if (loading && !hasNavigated) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">FitFatta</h1>
           <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600">Initializing...</p>
+          <p className="text-sm text-gray-500 mt-2">Checking your authentication status</p>
         </div>
       </div>
     );
