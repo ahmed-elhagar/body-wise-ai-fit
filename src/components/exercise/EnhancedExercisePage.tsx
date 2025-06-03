@@ -1,4 +1,3 @@
-
 import { format, addDays } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useOptimizedExerciseProgramPage } from "@/hooks/useOptimizedExerciseProgramPage";
@@ -142,33 +141,21 @@ const EnhancedExercisePage = () => {
           />
         </div>
 
-        {/* Main Content Grid - Reduced to 2 columns */}
+        {/* Simplified Single Column Layout */}
         <div className="px-6 pb-8">
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-            {/* Progress Sidebar - Smaller */}
-            <div className="xl:col-span-1">
-              <CompactProgressSidebar
-                completedExercises={completedExercises}
-                totalExercises={totalExercises}
-                progressPercentage={progressPercentage}
-                isToday={isToday}
-                isRestDay={isRestDay}
-                currentProgram={currentProgram}
-                selectedDayNumber={selectedDayNumber}
-              />
-            </div>
-
-            {/* Exercise Content - Larger */}
-            <div className="xl:col-span-2">
-              <EnhancedExerciseListContainer
-                exercises={todaysExercises}
-                onExerciseComplete={handleExerciseComplete}
-                onExerciseProgressUpdate={handleExerciseProgressUpdate}
-                isRestDay={isRestDay}
-                isLoading={false}
-              />
-            </div>
-          </div>
+          <EnhancedExerciseListContainer
+            exercises={todaysExercises}
+            onExerciseComplete={handleExerciseComplete}
+            onExerciseProgressUpdate={handleExerciseProgressUpdate}
+            isRestDay={isRestDay}
+            isLoading={false}
+            completedExercises={completedExercises}
+            totalExercises={totalExercises}
+            progressPercentage={progressPercentage}
+            isToday={isToday}
+            currentProgram={currentProgram}
+            selectedDayNumber={selectedDayNumber}
+          />
         </div>
 
         {/* AI Dialog */}
