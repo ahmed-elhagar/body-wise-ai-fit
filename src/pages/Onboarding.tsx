@@ -17,12 +17,13 @@ import ModernOnboardingNavigation from "@/components/onboarding/ModernOnboarding
 
 const Onboarding = () => {
   const navigate = useNavigate();
-  const { updateProfile, isUpdating } = useProfile();
+  const { updateProfile, isUpdating, profile } = useProfile();
   const { user, loading: authLoading } = useAuth();
   const { isEmailConfirmationEnabled } = useEmailConfirmation();
   const [step, setStep] = useState(1);
   const { formData, updateFormData, handleArrayInput } = useOnboardingForm();
   const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
+  const [isCompleting, setIsCompleting] = useState(false);
 
   const totalSteps = 4;
   const progress = (step / totalSteps) * 100;
@@ -37,6 +38,14 @@ const Onboarding = () => {
       }
     }
   }, [user, authLoading, isEmailConfirmationEnabled]);
+
+  // Check if user has already completed onboarding
+  useEffect(() => {
+    if (!authLoading && profile && profile.onboarding_completed && !isCompleting) {
+      console.log('Onboarding - User has completed onboarding, redirecting to dashboard');
+      navigate('/dashboard', { replace: true });
+    }
+  }, [profile, authLoading, navigate, isCompleting]);
 
   const isStepValid = (): boolean => {
     return validateOnboardingStep(step, formData);
@@ -55,6 +64,7 @@ const Onboarding = () => {
       setStep(step + 1);
     } else {
       // Final step - save and complete
+      setIsCompleting(true);
       try {
         console.log('Onboarding - Final step, saving profile data');
         
@@ -84,20 +94,20 @@ const Onboarding = () => {
         if (result.error) {
           console.error('Onboarding - Profile update failed:', result.error);
           toast.error('Failed to save profile. Please try again.');
+          setIsCompleting(false);
           return;
         }
         
         console.log('Onboarding - Profile saved successfully, redirecting to dashboard');
         toast.success('🎉 Welcome to FitFatta! Your profile is complete!');
         
-        // Force navigation to dashboard
-        setTimeout(() => {
-          navigate('/dashboard', { replace: true });
-        }, 1000);
+        // Force immediate navigation
+        window.location.href = '/dashboard';
 
       } catch (error) {
         console.error('Onboarding - Unexpected error:', error);
         toast.error('Something went wrong. Please try again.');
+        setIsCompleting(false);
       }
     }
   };
@@ -219,7 +229,7 @@ const Onboarding = () => {
             step={step}
             totalSteps={totalSteps}
             isStepValid={isStepValid()}
-            isUpdating={isUpdating}
+            isUpdating={isUpdating || isCompleting}
             onBack={handleBack}
             onNext={handleNext}
             onSkip={handleSkip}
