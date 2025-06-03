@@ -1,4 +1,3 @@
-
 import { useState, useEffect, createContext, useContext, useCallback } from 'react';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -51,7 +50,7 @@ export const useAuth = () => {
     const [error, setError] = useState<any>(null);
 
     useEffect(() => {
-      // Simulate auth check
+      // Quick resolution for outside provider usage
       const timer = setTimeout(() => {
         setIsLoading(false);
       }, 100);
@@ -88,7 +87,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<any>(null);
-  const [authInitialized, setAuthInitialized] = useState(false);
 
   const clearError = useCallback(() => {
     setError(null);
@@ -99,13 +97,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setIsLoading(true);
     
     try {
-      // Clear everything
       await handleSignOut(true);
       setUser(null);
       setSession(null);
       setError(null);
-      
-      // Reload the page to ensure clean state
       window.location.href = '/auth?force_logout=true';
     } catch (error) {
       console.error('Force logout error:', error);
@@ -121,14 +116,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       console.log('Retrying auth - refreshing session');
       
-      // Try to refresh session first
       const refreshedSession = await forceRefreshSession();
       
       if (refreshedSession?.user?.id) {
         setSession(refreshedSession);
         await enrichUserWithProfile(refreshedSession);
       } else {
-        // If refresh fails, get current session
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -147,7 +140,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (err) {
       console.error('Retry auth error:', err);
       setError(err);
-      // On retry failure, clear everything
       setUser(null);
       setSession(null);
     } finally {
@@ -159,7 +151,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       console.log('Enriching user with profile for ID:', session.user.id?.substring(0, 8) + '...');
       
-      // CRITICAL: Always create user with ID first
       const baseUser: AuthUser = {
         id: session.user.id,
         email: session.user.email,
@@ -169,17 +160,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         user_metadata: session.user.user_metadata
       };
 
-      // Set the base user immediately
       setUser(baseUser);
       console.log('Base user set with ID:', baseUser.id?.substring(0, 8) + '...');
       
-      // Try to enrich with profile data (but don't block on it)
       try {
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('role, first_name, last_name')
           .eq('id', session.user.id)
-          .maybeSingle(); // Use maybeSingle to avoid errors if no profile exists
+          .maybeSingle();
         
         if (profile && !profileError) {
           console.log('Profile data fetched successfully, updating user');
@@ -195,12 +184,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       } catch (profileErr) {
         console.warn('Profile enrichment failed, keeping base user:', profileErr);
-        // Keep the base user, don't clear it
       }
       
     } catch (err) {
       console.error('User enrichment failed completely:', err);
-      // Even if everything fails, ensure we have a user with ID if session exists
       if (session?.user?.id) {
         setUser({
           id: session.user.id,
@@ -212,76 +199,79 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    console.log("AuthProvider - Initializing");
+    console.log("AuthProvider - Initializing with simplified flow");
     
-    // Initialize cleanup
     initializeAuthCleanup();
     
     let mounted = true;
     let authSubscription: any = null;
     
-    // Set up auth state listener first
     const setupAuth = async () => {
       try {
+        // Set up auth state listener
         authSubscription = supabase.auth.onAuthStateChange(
           async (event, session) => {
             if (!mounted) return;
             
-            console.log('Auth state changed:', event, session?.user?.email, 'User ID:', session?.user?.id?.substring(0, 8) + '...' || 'none');
+            console.log('Auth state changed:', event, session?.user?.email || 'No user');
             
-            try {
-              if (event === 'SIGNED_OUT' || !session?.user?.id) {
-                console.log('User signed out or no session, clearing state');
-                setSession(null);
-                setUser(null);
-                setError(null);
-              } else if (session?.user?.id) {
-                console.log('User signed in, setting session and enriching profile');
-                setSession(session);
-                await enrichUserWithProfile(session);
-                setError(null);
-              }
-            } catch (err) {
-              console.error('Auth state change error:', err);
-              setError(err);
-            } finally {
-              // CRITICAL: Always set loading to false and mark as initialized
-              if (mounted) {
-                console.log('Setting isLoading to false after auth state change');
-                setIsLoading(false);
-                setAuthInitialized(true);
-              }
+            if (event === 'SIGNED_OUT' || !session?.user?.id) {
+              console.log('User signed out or no session');
+              setSession(null);
+              setUser(null);
+              setError(null);
+            } else if (session?.user?.id) {
+              console.log('User signed in');
+              setSession(session);
+              await enrichUserWithProfile(session);
+              setError(null);
+            }
+            
+            // CRITICAL: Always set loading to false after processing auth state
+            if (mounted) {
+              console.log('Setting loading to false after auth state change');
+              setIsLoading(false);
             }
           }
         );
 
-        // Get initial session after setting up listener
+        // Get initial session with timeout protection
         console.log('Getting initial session...');
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Session check timeout')), 3000)
+        );
         
-        if (error) {
-          console.error('Error getting initial session:', error);
-          setError(error);
-        } else {
-          console.log("Got initial session:", !!session, 'User ID:', session?.user?.id?.substring(0, 8) + '...' || 'none');
+        try {
+          const { data: { session }, error } = await Promise.race([sessionPromise, timeoutPromise]) as any;
           
-          if (session?.user?.id) {
-            setSession(session);
-            await enrichUserWithProfile(session);
+          if (error) {
+            console.error('Error getting initial session:', error);
+            setError(error);
           } else {
-            setUser(null);
-            setSession(null);
+            console.log("Got initial session:", !!session);
+            
+            if (session?.user?.id) {
+              setSession(session);
+              await enrichUserWithProfile(session);
+            } else {
+              setUser(null);
+              setSession(null);
+            }
           }
+        } catch (timeoutError) {
+          console.error('Session check timed out:', timeoutError);
+          setError(timeoutError);
         }
+        
       } catch (error) {
         console.error('Error in setupAuth:', error);
         setError(error);
       } finally {
-        // CRITICAL: Always set loading to false and mark as initialized
+        // CRITICAL: Always set loading to false, even on error
         if (mounted) {
-          console.log('Setting isLoading to false after initial session check');
+          console.log('Setting loading to false after setup completion');
           setIsLoading(false);
-          setAuthInitialized(true);
         }
       }
     };
