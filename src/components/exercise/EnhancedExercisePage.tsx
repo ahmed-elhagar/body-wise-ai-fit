@@ -46,16 +46,16 @@ const EnhancedExercisePage = () => {
   const currentSelectedDate = addDays(weekStartDate, selectedDayNumber - 1);
   const isToday = format(currentSelectedDate, 'yyyy-MM-dd') === format(currentDate, 'yyyy-MM-dd');
 
-  // Show full page loading ONLY on initial load when there's no program data at all
-  if (isLoading && !currentProgram) {
+  // Show full page loading ONLY on initial load when there's no program data at all OR during AI generation
+  if ((isLoading && !currentProgram) || isGenerating) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
         <EnhancedPageLoading
           isLoading={true}
           type="exercise"
-          title="Loading Your Exercise Program"
-          description="Preparing your personalized workout plan with progress tracking and exercise details"
-          timeout={12000}
+          title={isGenerating ? "Generating Your Exercise Program" : "Loading Your Exercise Program"}
+          description={isGenerating ? "Creating your personalized workout plan with AI..." : "Preparing your personalized workout plan with progress tracking and exercise details"}
+          timeout={isGenerating ? 30000 : 12000}
         />
       </div>
     );
@@ -119,9 +119,9 @@ const EnhancedExercisePage = () => {
         />
       </div>
 
-      {/* Main Content - Only show loading overlay when changing weeks, not initial load */}
+      {/* Main Content - Show loading overlay only when changing weeks with existing program */}
       <ExercisePageContent
-        isLoading={isLoading && !!currentProgram}
+        isLoading={isLoading && !!currentProgram && !isGenerating}
         currentProgram={currentProgram}
         todaysExercises={todaysExercises}
         completedExercises={completedExercises}

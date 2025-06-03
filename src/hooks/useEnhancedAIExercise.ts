@@ -16,6 +16,8 @@ export const useEnhancedAIExercise = () => {
       return null;
     }
 
+    console.log('🔐 User authenticated:', user.id);
+
     // Check credits before starting
     if (userCredits <= 0) {
       toast.error('No AI credits remaining. Please upgrade your plan or wait for credits to reset.');
@@ -33,6 +35,7 @@ export const useEnhancedAIExercise = () => {
     
     try {
       console.log('🏋️ Starting enhanced exercise program generation with preferences:', preferences);
+      console.log('👤 User ID being sent:', user.id);
       
       // Get user profile data for better personalization
       const { data: profile } = await supabase
@@ -40,6 +43,8 @@ export const useEnhancedAIExercise = () => {
         .select('*')
         .eq('id', user.id)
         .single();
+
+      console.log('📊 User profile loaded:', profile ? 'success' : 'no profile found');
 
       // Get user's health assessment for context
       const { data: healthAssessment } = await supabase
@@ -50,6 +55,8 @@ export const useEnhancedAIExercise = () => {
         .limit(1)
         .maybeSingle();
 
+      console.log('🏥 Health assessment loaded:', healthAssessment ? 'success' : 'none found');
+
       // Enhanced preferences with user context
       const enhancedPreferences = {
         ...preferences,
@@ -59,11 +66,13 @@ export const useEnhancedAIExercise = () => {
         userId: user.id
       };
 
+      console.log('🚀 Calling edge function with userId:', user.id);
+
       const { data, error } = await supabase.functions.invoke('generate-exercise-program', {
         body: {
           userId: user.id,
           preferences: enhancedPreferences,
-          weekStartDate: new Date().toISOString().split('T')[0]
+          weekStartDate: preferences.weekStartDate || new Date().toISOString().split('T')[0]
         }
       });
 
@@ -98,6 +107,8 @@ export const useEnhancedAIExercise = () => {
       return null;
     }
 
+    console.log('🔐 User authenticated for regeneration:', user.id);
+
     // Check and use credit before starting generation
     const hasCredit = await checkAndUseCreditAsync();
     if (!hasCredit) {
@@ -109,6 +120,7 @@ export const useEnhancedAIExercise = () => {
     
     try {
       console.log('🔄 Regenerating exercise program for week:', weekStartDate);
+      console.log('👤 User ID being sent for regeneration:', user.id);
       
       const { data, error } = await supabase.functions.invoke('generate-exercise-program', {
         body: {
