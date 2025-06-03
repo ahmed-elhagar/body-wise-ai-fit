@@ -1,13 +1,15 @@
 
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useState } from 'react';
 import { useExerciseProgramData } from '@/hooks/useExerciseProgramData';
 import { useExerciseActions } from '@/hooks/useExerciseActions';
 import { useDailyWorkouts } from '@/hooks/useDailyWorkouts';
 
 export const useOptimizedExercise = () => {
+  const [selectedDay, setSelectedDay] = useState(1);
+  
   // Core exercise data
   const {
-    weeklyProgram,
+    currentProgram: weeklyProgram,
     isLoading: isProgramLoading,
     error: programError,
     refetch: refetchProgram,
@@ -15,21 +17,22 @@ export const useOptimizedExercise = () => {
 
   // Daily workouts data
   const {
-    dailyWorkouts,
-    selectedDay,
-    setSelectedDay,
-    currentWorkout,
+    workouts: dailyWorkouts,
+    exercises,
     isLoading: isWorkoutsLoading,
-  } = useDailyWorkouts();
+  } = useDailyWorkouts(weeklyProgram?.id, selectedDay);
 
   // Exercise actions
   const {
     completeExercise,
     updateExerciseProgress,
-    generateNewProgram,
-    exchangeExercise,
-    isUpdating,
+    getExerciseRecommendations,
   } = useExerciseActions();
+
+  // Current workout for selected day
+  const currentWorkout = useMemo(() => {
+    return dailyWorkouts?.find(w => w.day_number === selectedDay) || null;
+  }, [dailyWorkouts, selectedDay]);
 
   // Memoized week structure
   const weekStructure = useMemo(() => {
@@ -69,47 +72,42 @@ export const useOptimizedExercise = () => {
 
   // Current day exercises with progress
   const currentDayExercises = useMemo(() => {
-    if (!currentWorkout) return [];
+    if (!exercises) return [];
     
-    return currentWorkout.exercises?.map(exercise => ({
+    return exercises.map(exercise => ({
       ...exercise,
-      progressPercentage: exercise.completed ? 100 : 
-        (exercise.actual_sets || 0) > 0 ? 
-        ((exercise.actual_sets / exercise.sets) * 100) : 0,
-    })) || [];
-  }, [currentWorkout]);
+      progressPercentage: exercise.completed ? 100 : 0,
+    }));
+  }, [exercises]);
 
   // Optimized exercise actions
   const optimizedActions = useMemo(() => ({
-    completeWorkout: useCallback(async (workoutId: string) => {
-      // Mark all exercises in workout as completed
-      if (currentWorkout?.exercises) {
+    completeWorkout: useCallback(async () => {
+      if (exercises) {
         await Promise.all(
-          currentWorkout.exercises.map(exercise => 
-            completeExercise(exercise.id, true)
+          exercises.map(exercise => 
+            completeExercise(exercise.id)
           )
         );
       }
-    }, [currentWorkout, completeExercise]),
+    }, [exercises, completeExercise]),
     
-    startWorkout: useCallback(async (workoutId: string) => {
-      console.log('Starting workout:', workoutId);
-      // Implementation for starting workout timer/session
-    }, []),
+    startWorkout: useCallback(async () => {
+      console.log('Starting workout for day:', selectedDay);
+    }, [selectedDay]),
     
     pauseWorkout: useCallback(async () => {
       console.log('Pausing workout');
-      // Implementation for pausing workout
     }, []),
-  }), [currentWorkout, completeExercise]);
+  }), [exercises, completeExercise, selectedDay]);
 
   // Loading states
   const loadingStates = useMemo(() => ({
     isProgramLoading,
     isWorkoutsLoading,
-    isUpdating,
-    isGenerating: false, // Add when AI generation is being used
-  }), [isProgramLoading, isWorkoutsLoading, isUpdating]);
+    isUpdating: false,
+    isGenerating: false,
+  }), [isProgramLoading, isWorkoutsLoading]);
 
   return {
     // Data
@@ -129,8 +127,7 @@ export const useOptimizedExercise = () => {
     // Actions
     completeExercise,
     updateExerciseProgress,
-    generateNewProgram,
-    exchangeExercise,
+    getExerciseRecommendations,
     optimizedActions,
     
     // Refetch

@@ -1,36 +1,28 @@
 
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useState } from 'react';
 import { useMealPlanData } from '@/hooks/meal-plan/useMealPlanData';
 import { useMealPlanNavigation } from '@/hooks/meal-plan/useMealPlanNavigation';
-import { useMealPlanDialogs } from '@/features/meal-plan/hooks/useMealPlanDialogs';
 import { useMealPlanCalculations } from '@/features/meal-plan/hooks/useMealPlanCalculations';
 
 export const useOptimizedMealPlan = () => {
+  const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
+  
+  // Navigation state
+  const {
+    currentWeekOffset,
+    setCurrentWeekOffset,
+    selectedDayNumber,
+    setSelectedDayNumber,
+    weekStartDate,
+  } = useMealPlanNavigation();
+
   // Core meal plan data
   const {
-    mealPlanData,
+    data: mealPlanData,
     isLoading: isMealPlanLoading,
     error: mealPlanError,
     refetch: refetchMealPlan,
-  } = useMealPlanData();
-
-  // Navigation state
-  const {
-    selectedDayNumber,
-    setSelectedDayNumber,
-    selectedWeekStart,
-    setSelectedWeekStart,
-    viewMode,
-    setViewMode,
-  } = useMealPlanNavigation();
-
-  // Dialog states
-  const {
-    dialogStates,
-    openDialog,
-    closeDialog,
-    selectedMeal,
-  } = useMealPlanDialogs();
+  } = useMealPlanData(currentWeekOffset);
 
   // Calculations
   const {
@@ -39,15 +31,14 @@ export const useOptimizedMealPlan = () => {
     totalCalories,
     totalProtein,
     targetDayCalories,
-    shoppingItems,
   } = useMealPlanCalculations(mealPlanData, selectedDayNumber);
 
   // Memoized week days calculation
   const weekDays = useMemo(() => {
-    if (!selectedWeekStart) return [];
+    if (!weekStartDate) return [];
     
     const days = [];
-    const startDate = new Date(selectedWeekStart);
+    const startDate = new Date(weekStartDate);
     
     for (let i = 0; i < 7; i++) {
       const currentDate = new Date(startDate);
@@ -61,22 +52,19 @@ export const useOptimizedMealPlan = () => {
     }
     
     return days;
-  }, [selectedWeekStart]);
+  }, [weekStartDate]);
 
   // Optimized meal plan actions
   const mealPlanActions = useMemo(() => ({
     generateNewPlan: useCallback(async () => {
-      // Implementation for generating new meal plan
       console.log('Generating new meal plan...');
     }, []),
     
     shuffleMeals: useCallback(async () => {
-      // Implementation for shuffling meals
       console.log('Shuffling meals...');
     }, []),
     
     exportShoppingList: useCallback(async () => {
-      // Implementation for exporting shopping list
       console.log('Exporting shopping list...');
     }, []),
   }), []);
@@ -84,10 +72,10 @@ export const useOptimizedMealPlan = () => {
   // Memoized loading states
   const loadingStates = useMemo(() => ({
     isMealPlanLoading,
-    isGenerating: dialogStates.aiGeneration,
-    isExchanging: dialogStates.exchange,
-    isLoadingRecipe: dialogStates.recipe,
-  }), [isMealPlanLoading, dialogStates]);
+    isGenerating: false,
+    isExchanging: false,
+    isLoadingRecipe: false,
+  }), [isMealPlanLoading]);
 
   // Progress calculations
   const progressMetrics = useMemo(() => {
@@ -101,7 +89,7 @@ export const useOptimizedMealPlan = () => {
       calorieProgress,
       proteinProgress,
       mealsCompleted: dailyMeals.length,
-      totalMealsPlanned: 4, // breakfast, lunch, dinner, snack
+      totalMealsPlanned: 4,
     };
   }, [totalCalories, targetDayCalories, totalProtein, dailyMeals.length]);
 
@@ -111,21 +99,15 @@ export const useOptimizedMealPlan = () => {
     dailyMeals,
     todaysMeals,
     weekDays,
-    shoppingItems,
     
     // Navigation
     selectedDayNumber,
     setSelectedDayNumber,
-    selectedWeekStart,
-    setSelectedWeekStart,
+    currentWeekOffset,
+    setCurrentWeekOffset,
+    weekStartDate,
     viewMode,
     setViewMode,
-    
-    // Dialogs
-    dialogStates,
-    openDialog,
-    closeDialog,
-    selectedMeal,
     
     // Calculations
     totalCalories,

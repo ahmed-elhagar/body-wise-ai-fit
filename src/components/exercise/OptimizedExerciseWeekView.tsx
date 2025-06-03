@@ -3,7 +3,7 @@ import React from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Circle, Coffee } from "lucide-react";
+import { CheckCircle, Circle, Coffee, Calendar } from "lucide-react";
 
 interface WeekDay {
   dayNumber: number;

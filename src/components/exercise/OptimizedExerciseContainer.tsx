@@ -27,7 +27,7 @@ const OptimizedExerciseContainer = React.memo(() => {
       <Card className="p-8">
         <EnhancedLoadingIndicator
           status="loading"
-          type="general"
+          type="exercise"
           message="Loading exercise program..."
           description="Preparing your personalized workouts"
           size="lg"

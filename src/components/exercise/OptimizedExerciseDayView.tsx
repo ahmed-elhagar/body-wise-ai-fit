@@ -22,8 +22,8 @@ interface OptimizedExerciseDayViewProps {
   currentWorkout: any;
   exercises: Exercise[];
   selectedDay: number;
-  onStartWorkout: (workoutId: string) => void;
-  onCompleteWorkout: (workoutId: string) => void;
+  onStartWorkout: () => void;
+  onCompleteWorkout: () => void;
   isLoading: boolean;
 }
 
@@ -50,6 +50,7 @@ const OptimizedExerciseDayView = React.memo<OptimizedExerciseDayViewProps>(({
       <Card className="p-6">
         <EnhancedLoadingIndicator
           status="loading"
+          type="exercise"
           message="Loading workout..."
           size="sm"
           variant="inline"
@@ -82,7 +83,7 @@ const OptimizedExerciseDayView = React.memo<OptimizedExerciseDayViewProps>(({
         <div className="flex gap-2">
           {!currentWorkout.completed && (
             <Button 
-              onClick={() => onStartWorkout(currentWorkout.id)}
+              onClick={onStartWorkout}
               className="bg-green-600 hover:bg-green-700"
             >
               <Play className="w-4 h-4 mr-2" />
@@ -91,7 +92,7 @@ const OptimizedExerciseDayView = React.memo<OptimizedExerciseDayViewProps>(({
           )}
           
           <Button 
-            onClick={() => onCompleteWorkout(currentWorkout.id)}
+            onClick={onCompleteWorkout}
             variant={currentWorkout.completed ? "secondary" : "outline"}
             disabled={currentWorkout.completed}
           >
