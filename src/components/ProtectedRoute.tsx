@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useProfile } from '@/hooks/useProfile';
 import { useRole } from '@/hooks/useRole';
+import EnhancedPageLoading from '@/components/ui/enhanced-page-loading';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -32,16 +33,13 @@ const ProtectedRoute = React.memo<ProtectedRouteProps>(({
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-          {authError && (
-            <p className="text-red-500 text-sm mt-2">Authentication error occurred</p>
-          )}
-          {roleError && (
-            <p className="text-red-500 text-sm mt-2">{roleError}</p>
-          )}
-        </div>
+        <EnhancedPageLoading
+          isLoading={true}
+          type="general"
+          title="Loading"
+          description="Please wait while we verify your access..."
+          timeout={5000}
+        />
       </div>
     );
   }

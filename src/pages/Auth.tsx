@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { AuthHeader } from "@/components/auth/AuthHeader";
 import { AuthForm } from "@/components/auth/AuthForm";
 import { AuthToggle } from "@/components/auth/AuthToggle";
+import EnhancedPageLoading from "@/components/ui/enhanced-page-loading";
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -102,10 +103,13 @@ const Auth = () => {
   if (user && (authLoading || profileLoading)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-fitness-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Setting up your account...</p>
-        </div>
+        <EnhancedPageLoading
+          isLoading={true}
+          type="general"
+          title="Setting Up Your Account"
+          description="Please wait while we prepare your dashboard..."
+          timeout={5000}
+        />
       </div>
     );
   }

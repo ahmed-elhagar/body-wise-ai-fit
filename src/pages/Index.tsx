@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import MotivationalContent from "@/components/loading/MotivationalContent";
+import EnhancedPageLoading from "@/components/ui/enhanced-page-loading";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -98,7 +99,7 @@ const Index = () => {
     );
   }
 
-  // Enhanced loading state with motivational content
+  // Enhanced loading state with enhanced loading component
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-800 flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background decoration */}
@@ -109,24 +110,13 @@ const Index = () => {
       </div>
       
       <div className="text-center relative z-10 max-w-lg mx-auto">
-        {/* App Title */}
-        <div className="mb-8">
-          <h1 className="text-5xl font-bold text-white mb-2 tracking-tight">
-            FitFatta
-          </h1>
-          <p className="text-white/70 text-lg">Your Fitness Journey Starts Here</p>
-        </div>
-        
-        {/* Loading Animation */}
-        <div className="mb-8">
-          <div className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-white/80 text-sm">
-            {loading ? 'Preparing your fitness experience...' : 'Almost ready...'}
-          </p>
-        </div>
-        
-        {/* Motivational Content */}
-        <MotivationalContent />
+        <EnhancedPageLoading
+          isLoading={true}
+          type="general"
+          title="FitFatta"
+          description="Your Fitness Journey Starts Here"
+          timeout={3000}
+        />
         
         {/* Emergency fallback after 5 seconds */}
         {!hasNavigated && (

@@ -5,7 +5,7 @@ import EnhancedPageLoading from "@/components/ui/enhanced-page-loading";
 interface MealPlanLoadingBackdropProps {
   isLoading: boolean;
   message?: string;
-  type?: 'meal-plan' | 'recipe' | 'analysis' | 'general';
+  type?: 'meal-plan' | 'general';
 }
 
 const MealPlanLoadingBackdrop = React.memo<MealPlanLoadingBackdropProps>(({ 
