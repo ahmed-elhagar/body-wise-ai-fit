@@ -235,10 +235,17 @@ const generateAIMealPlanWithRetry = async (
   const basePrompt = generateEnhancedMealPlanPrompt(userProfile, preferences, adjustedDailyCalories, includeSnacks);
   const enhancedPrompt = enhancePromptWithLifePhase(basePrompt, nutritionContext, language);
 
-  // Enhanced JSON format instruction with strict requirements
+  // Enhanced JSON format instruction with STRICT requirements for COMPLETE 7-day plan
   const jsonFormatPrompt = enhancedPrompt + `
 
-CRITICAL: Return ONLY valid JSON in this exact format. NO EXPLANATIONS, NO MARKDOWN:
+CRITICAL REQUIREMENTS - YOU MUST FOLLOW THESE EXACTLY:
+1. Return ONLY valid JSON format - NO MARKDOWN, NO COMMENTS, NO EXPLANATIONS
+2. Generate EXACTLY 7 COMPLETE DAYS (days 1-7) - NO SHORTCUTS OR PLACEHOLDERS
+3. Each day must have ${includeSnacks ? '5 meals' : '3 meals'} - NO EXCEPTIONS
+4. NO comments like "// ... (other days)" - GENERATE ALL DAYS FULLY
+5. Total daily calories must be approximately ${adjustedDailyCalories} per day
+
+REQUIRED JSON STRUCTURE (generate ALL 7 days):
 {
   "days": [
     {
@@ -263,15 +270,18 @@ CRITICAL: Return ONLY valid JSON in this exact format. NO EXPLANATIONS, NO MARKD
   ]
 }
 
-MANDATORY REQUIREMENTS:
-- EXACTLY 7 days (days 1-7)
-- For snacks, use ONLY "snack" (not snack1, snack2)
-- Valid meal types: breakfast, lunch, dinner, snack
-- ${includeSnacks ? '5 meals per day: breakfast, snack, lunch, snack, dinner' : '3 meals per day: breakfast, lunch, dinner'}
-- Total daily calories: approximately ${adjustedDailyCalories}
-- COMPLETE data for all 7 days
-- NO comments, explanations, or markdown
-- NO placeholder text like "// ... (other days)"`;
+MEAL TYPE REQUIREMENTS:
+${includeSnacks ? 
+  '- 5 meals per day: breakfast, snack, lunch, snack, dinner' : 
+  '- 3 meals per day: breakfast, lunch, dinner'
+}
+
+ABSOLUTELY MANDATORY:
+- Generate ALL 7 days completely (day 1 through day 7)
+- NO placeholder text or comments
+- NO "..." or "(other days)" 
+- VALID JSON only - no markdown code blocks
+- Complete ingredient and instruction lists for every meal`;
 
   const maxRetries = 3;
   let lastError = null;
@@ -291,9 +301,23 @@ MANDATORY REQUIREMENTS:
 
         const parsedPlan = await parseAndValidateAIResponse(content, modelConfigs.primary);
         
-        // Validate the plan
+        // Validate the plan has exactly 7 days
+        if (!parsedPlan.days || parsedPlan.days.length !== 7) {
+          throw new Error(`Generated plan has ${parsedPlan.days?.length || 0} days instead of 7`);
+        }
+        
+        // Validate each day has correct number of meals
+        for (let dayIndex = 0; dayIndex < parsedPlan.days.length; dayIndex++) {
+          const day = parsedPlan.days[dayIndex];
+          const expectedMeals = includeSnacks ? 5 : 3;
+          if (!day.meals || day.meals.length !== expectedMeals) {
+            throw new Error(`Day ${dayIndex + 1} has ${day.meals?.length || 0} meals instead of ${expectedMeals}`);
+          }
+        }
+        
+        // Validate the plan structure
         if (validateMealPlan(parsedPlan, includeSnacks)) {
-          console.log(`✅ ${modelConfigs.primary.provider} generated valid meal plan on attempt ${attempt}`);
+          console.log(`✅ ${modelConfigs.primary.provider} generated valid 7-day meal plan on attempt ${attempt}`);
           return parsedPlan;
         } else {
           throw new Error('Generated plan failed validation');
@@ -328,9 +352,23 @@ MANDATORY REQUIREMENTS:
 
         const parsedPlan = await parseAndValidateAIResponse(content, modelConfigs.fallback);
         
-        // Validate the plan
+        // Validate the plan has exactly 7 days
+        if (!parsedPlan.days || parsedPlan.days.length !== 7) {
+          throw new Error(`Generated plan has ${parsedPlan.days?.length || 0} days instead of 7`);
+        }
+        
+        // Validate each day has correct number of meals
+        for (let dayIndex = 0; dayIndex < parsedPlan.days.length; dayIndex++) {
+          const day = parsedPlan.days[dayIndex];
+          const expectedMeals = includeSnacks ? 5 : 3;
+          if (!day.meals || day.meals.length !== expectedMeals) {
+            throw new Error(`Day ${dayIndex + 1} has ${day.meals?.length || 0} meals instead of ${expectedMeals}`);
+          }
+        }
+        
+        // Validate the plan structure
         if (validateMealPlan(parsedPlan, includeSnacks)) {
-          console.log(`✅ ${modelConfigs.fallback.provider} generated valid meal plan on attempt ${attempt}`);
+          console.log(`✅ ${modelConfigs.fallback.provider} generated valid 7-day meal plan on attempt ${attempt}`);
           return parsedPlan;
         } else {
           throw new Error('Generated plan failed validation');
@@ -349,7 +387,7 @@ MANDATORY REQUIREMENTS:
   }
 
   // If all models failed, throw the last error
-  console.error('❌ All AI models failed to generate a valid meal plan');
+  console.error('❌ All AI models failed to generate a valid 7-day meal plan');
   throw new MealPlanError(
     `All AI models failed: ${lastError?.message || 'Unknown error'}`,
     errorCodes.AI_GENERATION_FAILED,
@@ -359,21 +397,26 @@ MANDATORY REQUIREMENTS:
 };
 
 const parseAndValidateAIResponse = async (content: string, modelConfig: any) => {
-  // Clean the response
+  // Enhanced cleaning to handle more edge cases
   const cleanedContent = content
     .replace(/```json\n?/g, '')
     .replace(/```\n?/g, '')
     .replace(/\/\/.*$/gm, '') // Remove comment lines
     .replace(/\/\*[\s\S]*?\*\//g, '') // Remove block comments
+    .replace(/\t+/g, ' ') // Replace tabs with spaces
+    .replace(/\n\s*\n/g, '\n') // Remove empty lines
     .trim();
+  
+  console.log('🔍 Cleaned content length:', cleanedContent.length);
+  console.log('🔍 Content preview:', cleanedContent.substring(0, 200) + '...');
   
   let parsedPlan;
   try {
     parsedPlan = JSON.parse(cleanedContent);
   } catch (parseError) {
-    console.error(`Failed to parse ${modelConfig.provider} response:`, parseError);
-    console.error('Raw response content:', content);
-    console.error('Cleaned content:', cleanedContent);
+    console.error(`❌ Failed to parse ${modelConfig.provider} response:`, parseError);
+    console.error('❌ Raw response content:', content);
+    console.error('❌ Cleaned content:', cleanedContent);
     throw new Error(`Invalid JSON response from ${modelConfig.provider}`);
   }
   
@@ -389,6 +432,7 @@ const parseAndValidateAIResponse = async (content: string, modelConfig: any) => 
     }));
   }
   
+  console.log(`✅ Parsed ${modelConfig.provider} plan with ${parsedPlan.days?.length || 0} days`);
   return parsedPlan;
 };
 
