@@ -55,13 +55,15 @@ const Dashboard = () => {
     return (
       <ProtectedRoute>
         <Layout>
-          <EnhancedPageLoading
-            isLoading={true}
-            type="dashboard"
-            title="Loading Your Dashboard"
-            description="Setting up your personalized fitness dashboard with the latest data and insights"
-            timeout={5000}
-          />
+          <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+            <EnhancedPageLoading
+              isLoading={true}
+              type="dashboard"
+              title="Loading Your Dashboard"
+              description="Setting up your personalized fitness dashboard with the latest data and insights"
+              timeout={5000}
+            />
+          </div>
         </Layout>
       </ProtectedRoute>
     );

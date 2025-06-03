@@ -11,7 +11,7 @@ interface LoadingStep {
 
 interface EnhancedPageLoadingProps {
   isLoading: boolean;
-  type: 'dashboard' | 'exercise' | 'meal-plan' | 'profile';
+  type: 'dashboard' | 'exercise' | 'meal-plan' | 'profile' | 'general';
   title?: string;
   description?: string;
   customSteps?: LoadingStep[];
@@ -56,6 +56,11 @@ const EnhancedPageLoading = ({
       { id: 'data', label: 'Loading your profile data...', duration: 800 },
       { id: 'settings', label: 'Applying your settings...', duration: 600 },
       { id: 'ui', label: 'Preparing profile view...', duration: 400 }
+    ],
+    general: [
+      { id: 'loading', label: 'Loading...', duration: 1000 },
+      { id: 'processing', label: 'Processing...', duration: 800 },
+      { id: 'finalizing', label: 'Finalizing...', duration: 400 }
     ]
   };
 
@@ -65,14 +70,16 @@ const EnhancedPageLoading = ({
     dashboard: 'Loading Dashboard',
     exercise: 'Loading Exercise Program',
     'meal-plan': 'Loading Meal Plan',
-    profile: 'Loading Profile'
+    profile: 'Loading Profile',
+    general: 'Loading'
   };
 
   const defaultDescriptions = {
     dashboard: 'Setting up your personalized dashboard with the latest data',
     exercise: 'Preparing your workout program and progress tracking',
     'meal-plan': 'Loading your personalized meal plan and nutrition data',
-    profile: 'Fetching your profile information and preferences'
+    profile: 'Fetching your profile information and preferences',
+    general: 'Please wait while we process your request'
   };
 
   useEffect(() => {
