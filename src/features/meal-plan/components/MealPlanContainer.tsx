@@ -100,7 +100,7 @@ export const MealPlanContainer = () => {
         }}
       />
 
-      {/* All other dialogs - Disable shopping list in this component */}
+      {/* All other dialogs - Shopping list now handled by EnhancedShoppingListDrawer above */}
       <MealPlanDialogs
         showAIDialog={mealPlanState.showAIDialog}
         setShowAIDialog={mealPlanState.closeAIDialog}
