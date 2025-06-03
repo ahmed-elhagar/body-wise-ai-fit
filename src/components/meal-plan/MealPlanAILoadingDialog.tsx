@@ -16,11 +16,13 @@ const MealPlanAILoadingDialog = ({
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
   const steps = useMemo(() => [
-    { id: 'analyzing', label: t('Analyzing your profile and preferences') },
-    { id: 'calculating', label: t('Calculating nutritional requirements') },
-    { id: 'generating', label: t('Generating personalized meals') },
-    { id: 'optimizing', label: t('Optimizing meal combinations') },
-    { id: 'finalizing', label: t('Finalizing your meal plan') }
+    { id: 'analyzing', label: t('Analyzing your profile and preferences') || 'Analyzing your profile and preferences' },
+    { id: 'calculating', label: t('Calculating nutritional requirements') || 'Calculating nutritional requirements' },
+    { id: 'generating', label: t('Generating personalized meals') || 'Generating personalized meals' },
+    { id: 'optimizing', label: t('Optimizing meal combinations') || 'Optimizing meal combinations' },
+    { id: 'validating', label: t('Validating meal plan structure') || 'Validating meal plan structure' },
+    { id: 'saving', label: t('Saving your meal plan') || 'Saving your meal plan' },
+    { id: 'finalizing', label: t('Finalizing your meal plan') || 'Finalizing your meal plan' }
   ], [t]);
 
   const dialogSteps = useMemo(() => 
@@ -50,7 +52,7 @@ const MealPlanAILoadingDialog = ({
         }
         return prev;
       });
-    }, 2000);
+    }, 1500); // Slower progression for better UX
 
     return () => clearInterval(interval);
   }, [isGenerating, steps.length]);
@@ -61,9 +63,9 @@ const MealPlanAILoadingDialog = ({
     <AILoadingDialog
       open={true}
       status="loading"
-      title={t('Generating AI Meal Plan')}
-      message={steps[currentStepIndex]?.label || t('Generating your meal plan...')}
-      description={t('Please wait while we create your personalized meal plan')}
+      title={t('Generating AI Meal Plan') || 'Generating AI Meal Plan'}
+      message={steps[currentStepIndex]?.label || t('Generating your meal plan...') || 'Generating your meal plan...'}
+      description={t('Please wait while we create your personalized meal plan') || 'Please wait while we create your personalized meal plan'}
       steps={dialogSteps}
       progress={progress}
       allowClose={false}

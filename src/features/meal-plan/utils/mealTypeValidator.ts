@@ -1,6 +1,6 @@
 
 // Meal type validation utilities for database consistency
-export const VALID_MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'snack1', 'snack2'] as const;
+export const VALID_MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
 
 export type ValidMealType = typeof VALID_MEAL_TYPES[number];
 
@@ -15,12 +15,13 @@ export const validateMealType = (mealType: string): ValidMealType => {
   
   // Map common variations to valid types
   const mealTypeMap: Record<string, ValidMealType> = {
-    'snack': 'snack1',
-    'morning_snack': 'snack1',
-    'afternoon_snack': 'snack2',
-    'evening_snack': 'snack2',
-    'mid_morning': 'snack1',
-    'mid_afternoon': 'snack2'
+    'snack1': 'snack',
+    'snack2': 'snack',
+    'morning_snack': 'snack',
+    'afternoon_snack': 'snack',
+    'evening_snack': 'snack',
+    'mid_morning': 'snack',
+    'mid_afternoon': 'snack'
   };
   
   const normalizedType = mealType.toLowerCase().replace(/[^a-z0-9_]/g, '_');
@@ -31,8 +32,8 @@ export const validateMealType = (mealType: string): ValidMealType => {
   }
   
   // Default fallback
-  console.warn(`⚠️ Unknown meal type: ${mealType}, defaulting to snack1`);
-  return 'snack1';
+  console.warn(`⚠️ Unknown meal type: ${mealType}, defaulting to snack`);
+  return 'snack';
 };
 
 export const validateMealData = (meal: any): any => {
@@ -42,7 +43,7 @@ export const validateMealData = (meal: any): any => {
   
   return {
     ...meal,
-    meal_type: validateMealType(meal.meal_type || 'snack1'),
+    meal_type: validateMealType(meal.meal_type || meal.type || 'snack'),
     name: meal.name || 'Unknown Meal',
     calories: Math.max(0, parseInt(meal.calories) || 0),
     protein: Math.max(0, parseFloat(meal.protein) || 0),

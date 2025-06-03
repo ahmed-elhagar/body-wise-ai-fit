@@ -106,7 +106,7 @@ serve(async (req) => {
       includeSnacks,
       mealsPerDay,
       mealTypes: includeSnacks 
-        ? ['breakfast', 'snack1', 'lunch', 'snack2', 'dinner']
+        ? ['breakfast', 'snack', 'lunch', 'snack', 'dinner']
         : ['breakfast', 'lunch', 'dinner']
     });
     
@@ -281,7 +281,7 @@ const generateAIMealPlan = async (
     const basePrompt = generateEnhancedMealPlanPrompt(userProfile, preferences, adjustedDailyCalories, includeSnacks);
     const enhancedPrompt = enhancePromptWithLifePhase(basePrompt, nutritionContext, language);
 
-    // Add explicit JSON format instruction
+    // Add explicit JSON format instruction with correct meal types
     const jsonFormatPrompt = enhancedPrompt + `
 
 CRITICAL: Return ONLY valid JSON in this exact format:
@@ -309,8 +309,11 @@ CRITICAL: Return ONLY valid JSON in this exact format:
   ]
 }
 
-For ${includeSnacks ? '5 meals per day: breakfast, snack1, lunch, snack2, dinner' : '3 meals per day: breakfast, lunch, dinner'}.
-Total daily calories should be approximately ${adjustedDailyCalories}.`;
+IMPORTANT MEAL TYPES:
+- For snacks, use ONLY "snack" (not snack1, snack2, etc.)
+- Valid meal types: breakfast, lunch, dinner, snack
+- For ${includeSnacks ? '5 meals per day: breakfast, snack, lunch, snack, dinner' : '3 meals per day: breakfast, lunch, dinner'}
+- Total daily calories should be approximately ${adjustedDailyCalories}`;
 
     console.log('🤖 Sending enhanced request to OpenAI API...');
     

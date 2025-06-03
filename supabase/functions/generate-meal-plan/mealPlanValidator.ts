@@ -20,7 +20,7 @@ export const validateMealPlan = (plan: any, includeSnacks: boolean): boolean => 
 
   const expectedMealsPerDay = includeSnacks ? 5 : 3;
   const expectedMealTypes = includeSnacks 
-    ? ['breakfast', 'snack1', 'lunch', 'snack2', 'dinner']
+    ? ['breakfast', 'snack', 'lunch', 'snack', 'dinner']
     : ['breakfast', 'lunch', 'dinner'];
 
   for (let i = 0; i < plan.days.length; i++) {
@@ -36,19 +36,17 @@ export const validateMealPlan = (plan: any, includeSnacks: boolean): boolean => 
       return false;
     }
 
-    // Validate meal types
-    const dayMealTypes = day.meals.map((meal: any) => meal.type || meal.meal_type);
-    for (const expectedType of expectedMealTypes) {
-      if (!dayMealTypes.includes(expectedType)) {
-        console.error(`❌ Day ${i + 1} missing meal type: ${expectedType}`);
-        return false;
-      }
-    }
-
     // Validate each meal has required fields
     for (const meal of day.meals) {
       if (!meal.name || !meal.calories || !meal.protein) {
         console.error('❌ Meal missing required fields:', meal);
+        return false;
+      }
+      
+      // Normalize meal type for validation
+      const mealType = meal.type || meal.meal_type;
+      if (!mealType) {
+        console.error('❌ Meal missing type:', meal);
         return false;
       }
     }

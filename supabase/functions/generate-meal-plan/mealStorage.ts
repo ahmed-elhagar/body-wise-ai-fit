@@ -1,6 +1,33 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
+const VALID_MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'snack'];
+
+const validateMealType = (mealType: string): string => {
+  // Map AI-generated meal types to database-valid types
+  const mealTypeMap: Record<string, string> = {
+    'snack1': 'snack',
+    'snack2': 'snack',
+    'morning_snack': 'snack',
+    'afternoon_snack': 'snack',
+    'evening_snack': 'snack'
+  };
+  
+  const normalizedType = mealType.toLowerCase();
+  
+  if (VALID_MEAL_TYPES.includes(normalizedType)) {
+    return normalizedType;
+  }
+  
+  if (mealTypeMap[normalizedType]) {
+    console.log(`🔄 Mapped meal type: ${mealType} -> ${mealTypeMap[normalizedType]}`);
+    return mealTypeMap[normalizedType];
+  }
+  
+  console.warn(`⚠️ Unknown meal type: ${mealType}, defaulting to snack`);
+  return 'snack';
+};
+
 export const saveMealsToDatabase = async (generatedPlan: any, weeklyPlanId: string) => {
   const supabase = createClient(
     Deno.env.get('SUPABASE_URL') ?? '',
@@ -24,11 +51,14 @@ export const saveMealsToDatabase = async (generatedPlan: any, weeklyPlanId: stri
     }
     
     for (const meal of day.meals) {
+      // Validate and normalize meal type
+      const validatedMealType = validateMealType(meal.type || meal.meal_type || 'snack');
+      
       // Properly format arrays and ensure correct data types
       const mealData = {
         weekly_plan_id: weeklyPlanId,
         day_number: day.day,
-        meal_type: meal.type || meal.meal_type || 'breakfast',
+        meal_type: validatedMealType,
         name: meal.name || 'Unnamed Meal',
         calories: parseInt(meal.calories) || 0,
         protein: parseFloat(meal.protein) || 0,

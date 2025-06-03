@@ -49,6 +49,20 @@ export const AIGenerationDialog = ({
 
   const [showConfirmation, setShowConfirmation] = useState(false);
 
+  const handleCuisineChange = (value: string) => {
+    onPreferencesChange({
+      ...preferences,
+      cuisine: value
+    });
+  };
+
+  const handleMaxPrepTimeChange = (value: string) => {
+    onPreferencesChange({
+      ...preferences,
+      maxPrepTime: value
+    });
+  };
+
   const handleIncludeSnacksChange = (checked: boolean) => {
     onPreferencesChange({
       ...preferences,
@@ -86,12 +100,12 @@ export const AIGenerationDialog = ({
 
   const getButtonText = () => {
     if (isGenerating) {
-      return language === 'ar' ? 'جاري الإنشاء...' : 'Generating...';
+      return language === 'ar' ? 'جاري الإنشاء...' : 'Generating Your Plan...';
     }
     if (hasExistingPlan) {
-      return language === 'ar' ? 'إعادة إنشاء الخطة' : 'Regenerate Plan';
+      return language === 'ar' ? 'إعادة إنشاء الخطة' : 'Generate New Plan';
     }
-    return language === 'ar' ? 'إنشاء خطة بالذكاء الاصطناعي' : 'Generate AI Plan';
+    return language === 'ar' ? 'إنشاء خطة بالذكاء الاصطناعي' : 'Generate AI Meal Plan';
   };
 
   const cuisineOptions = [
@@ -227,8 +241,8 @@ export const AIGenerationDialog = ({
                   {cuisine || 'Cuisine Type'}
                 </Label>
                 <Select
-                  value={preferences.cuisine}
-                  onValueChange={(value) => onPreferencesChange({ ...preferences, cuisine: value })}
+                  value={preferences.cuisine || 'mixed'}
+                  onValueChange={handleCuisineChange}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -248,8 +262,8 @@ export const AIGenerationDialog = ({
                   {maxPrepTime || 'Max Prep Time'} ({language === 'ar' ? 'دقيقة' : 'minutes'})
                 </Label>
                 <Select
-                  value={preferences.maxPrepTime}
-                  onValueChange={(value) => onPreferencesChange({ ...preferences, maxPrepTime: value })}
+                  value={preferences.maxPrepTime || '30'}
+                  onValueChange={handleMaxPrepTimeChange}
                 >
                   <SelectTrigger>
                     <SelectValue />
