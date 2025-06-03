@@ -2,12 +2,13 @@
 import { format, addDays } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useOptimizedExerciseProgramPage } from "@/hooks/useOptimizedExerciseProgramPage";
-import { ModernExerciseHeader } from "./ModernExerciseHeader";
+import { EnhancedExerciseHeader } from "./EnhancedExerciseHeader";
 import { EnhancedDayNavigation } from "./EnhancedDayNavigation";
 import { AIExerciseDialog } from "./AIExerciseDialog";
 import { ExercisePageLayout } from "./ExercisePageLayout";
 import { ExercisePageContent } from "./ExercisePageContent";
 import { ExerciseErrorState } from "./ExerciseErrorState";
+import { useEnhancedAIExercise } from "@/hooks/useEnhancedAIExercise";
 import EnhancedPageLoading from "@/components/ui/enhanced-page-loading";
 
 const EnhancedExercisePage = () => {
@@ -26,7 +27,6 @@ const EnhancedExercisePage = () => {
     setAiPreferences,
     currentProgram,
     isLoading,
-    isGenerating,
     todaysWorkouts,
     todaysExercises,
     completedExercises,
@@ -36,12 +36,12 @@ const EnhancedExercisePage = () => {
     error,
     currentDate,
     weekStartDate,
-    handleGenerateAIProgram,
-    handleRegenerateProgram,
     handleExerciseComplete,
     handleExerciseProgressUpdate,
     refetch
   } = useOptimizedExerciseProgramPage();
+
+  const { isGenerating, generateExerciseProgram, regenerateProgram } = useEnhancedAIExercise();
 
   const currentSelectedDate = addDays(weekStartDate, selectedDayNumber - 1);
   const isToday = format(currentSelectedDate, 'yyyy-MM-dd') === format(currentDate, 'yyyy-MM-dd');
@@ -65,15 +65,43 @@ const EnhancedExercisePage = () => {
     return <ExerciseErrorState onRetry={() => refetch()} />;
   }
 
+  const handleGenerateAIProgram = async (preferences: any) => {
+    try {
+      const enhancedPreferences = {
+        ...preferences,
+        workoutType,
+        weekStartDate: format(weekStartDate, 'yyyy-MM-dd'),
+        weekOffset: currentWeekOffset
+      };
+      
+      await generateExerciseProgram(enhancedPreferences);
+      setShowAIDialog(false);
+      refetch();
+    } catch (error) {
+      console.error('Error generating exercise program:', error);
+    }
+  };
+
+  const handleRegenerateProgram = async () => {
+    try {
+      const weekStartDateString = format(weekStartDate, 'yyyy-MM-dd');
+      await regenerateProgram(weekStartDateString);
+      refetch();
+    } catch (error) {
+      console.error('Error regenerating exercise program:', error);
+    }
+  };
+
   return (
     <ExercisePageLayout>
-      {/* Header - Always show */}
+      {/* Enhanced Header - Always show */}
       <div className="px-3 py-3">
-        <ModernExerciseHeader
+        <EnhancedExerciseHeader
           currentProgram={currentProgram}
           onShowAIDialog={() => setShowAIDialog(true)}
           onRegenerateProgram={handleRegenerateProgram}
           isGenerating={isGenerating}
+          workoutType={workoutType}
         />
       </div>
 

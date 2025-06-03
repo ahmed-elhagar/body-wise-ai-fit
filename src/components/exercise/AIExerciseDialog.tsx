@@ -6,8 +6,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Sparkles, Target, Clock, Dumbbell, Heart, Zap, Home, Building2, Calendar } from "lucide-react";
+import { Sparkles, Target, Clock, Calendar, Coins } from "lucide-react";
 import { useState } from "react";
+import { useCreditSystem } from "@/hooks/useCreditSystem";
 
 interface AIExerciseDialogProps {
   open: boolean;
@@ -26,6 +27,7 @@ export const AIExerciseDialog = ({
   onGenerate,
   isGenerating
 }: AIExerciseDialogProps) => {
+  const { userCredits } = useCreditSystem();
   const [customRequirements, setCustomRequirements] = useState("");
   const [selectedDays, setSelectedDays] = useState<string[]>(["monday", "wednesday", "friday"]);
 
@@ -60,18 +62,29 @@ export const AIExerciseDialog = ({
     { key: 'sunday', label: 'Sunday' }
   ];
 
+  const workoutTypeLabel = preferences.workoutType === 'gym' ? 'Gym' : 'Home';
+  const canGenerate = !isGenerating && userCredits > 0 && preferences.goalType && preferences.fitnessLevel && selectedDays.length > 0;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             <Sparkles className="h-6 w-6 text-purple-600" />
-            Customize Your {preferences.workoutType === 'gym' ? 'Gym' : 'Home'} Exercise Program
+            Generate Your {workoutTypeLabel} Exercise Program
           </DialogTitle>
           <p className="text-sm text-gray-600 mt-2">
-            Create a personalized workout plan tailored to your {preferences.workoutType === 'gym' ? 'gym training' : 'home fitness'} goals and preferences.
+            Create a personalized {workoutTypeLabel.toLowerCase()} workout plan tailored to your fitness goals and preferences.
           </p>
         </DialogHeader>
+
+        {/* Credits Info */}
+        <div className="flex items-center gap-2 p-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border border-amber-200">
+          <Coins className="w-4 h-4 text-amber-600" />
+          <span className="text-sm font-medium text-amber-700">
+            {userCredits === -1 ? 'Unlimited generations available' : `${userCredits} generation${userCredits !== 1 ? 's' : ''} remaining`}
+          </span>
+        </div>
         
         <div className="space-y-6 mt-4">
           {/* Primary Goal */}
@@ -101,10 +114,7 @@ export const AIExerciseDialog = ({
 
           {/* Fitness Level */}
           <div className="space-y-3">
-            <Label className="text-base font-semibold flex items-center gap-2">
-              <Zap className="w-4 h-4" />
-              Current Fitness Level
-            </Label>
+            <Label className="text-base font-semibold">Current Fitness Level</Label>
             <Select 
               value={preferences.fitnessLevel} 
               onValueChange={(value) => handlePreferenceChange('fitnessLevel', value)}
@@ -211,7 +221,7 @@ export const AIExerciseDialog = ({
             </p>
           </div>
 
-          {/* Equipment Preferences */}
+          {/* Equipment Preferences for Home Workouts */}
           {preferences.workoutType === "home" && (
             <div className="space-y-3">
               <Label className="text-base font-semibold">Available Home Equipment</Label>
@@ -285,7 +295,7 @@ export const AIExerciseDialog = ({
           {/* Generate Button */}
           <Button 
             onClick={handleGenerate}
-            disabled={isGenerating || !preferences.goalType || !preferences.fitnessLevel || selectedDays.length === 0}
+            disabled={!canGenerate}
             className="w-full h-12 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold"
           >
             {isGenerating ? (
@@ -301,10 +311,22 @@ export const AIExerciseDialog = ({
             )}
           </Button>
           
-          {selectedDays.length === 0 && (
-            <p className="text-xs text-red-500 text-center">
-              Please select at least one workout day to continue.
-            </p>
+          {!canGenerate && (
+            <div className="text-center">
+              {userCredits === 0 ? (
+                <p className="text-xs text-red-500">
+                  No AI generations remaining. Please upgrade your plan.
+                </p>
+              ) : selectedDays.length === 0 ? (
+                <p className="text-xs text-red-500">
+                  Please select at least one workout day to continue.
+                </p>
+              ) : (
+                <p className="text-xs text-red-500">
+                  Please fill in all required fields to continue.
+                </p>
+              )}
+            </div>
           )}
         </div>
       </DialogContent>
