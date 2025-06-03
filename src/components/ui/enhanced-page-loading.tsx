@@ -30,33 +30,32 @@ const EnhancedPageLoading = ({
   const [currentStep, setCurrentStep] = useState(0);
   const [progress, setProgress] = useState(0);
   const [hasTimedOut, setHasTimedOut] = useState(false);
-  const [startTime] = useState(Date.now());
 
   const defaultSteps = {
     dashboard: [
-      { id: 'auth', label: 'Verifying your account...', duration: 1500 },
-      { id: 'profile', label: 'Loading your profile...', duration: 1500 },
-      { id: 'stats', label: 'Calculating your progress...', duration: 1200 },
-      { id: 'data', label: 'Fetching latest data...', duration: 1200 },
-      { id: 'ui', label: 'Preparing your dashboard...', duration: 800 }
+      { id: 'auth', label: 'Verifying your account...', duration: 800 },
+      { id: 'profile', label: 'Loading your profile...', duration: 800 },
+      { id: 'stats', label: 'Calculating your progress...', duration: 600 },
+      { id: 'data', label: 'Fetching latest data...', duration: 600 },
+      { id: 'ui', label: 'Preparing your dashboard...', duration: 400 }
     ],
     exercise: [
-      { id: 'program', label: 'Loading your exercise program...', duration: 1500 },
-      { id: 'progress', label: 'Calculating workout progress...', duration: 1200 },
-      { id: 'schedule', label: 'Preparing workout schedule...', duration: 1000 },
-      { id: 'exercises', label: 'Loading exercise details...', duration: 800 },
-      { id: 'ui', label: 'Setting up your workout view...', duration: 500 }
+      { id: 'program', label: 'Loading your exercise program...', duration: 1000 },
+      { id: 'progress', label: 'Calculating workout progress...', duration: 800 },
+      { id: 'schedule', label: 'Preparing workout schedule...', duration: 600 },
+      { id: 'exercises', label: 'Loading exercise details...', duration: 600 },
+      { id: 'ui', label: 'Setting up your workout view...', duration: 400 }
     ],
     'meal-plan': [
-      { id: 'plan', label: 'Loading your meal plan...', duration: 1200 },
-      { id: 'nutrition', label: 'Calculating nutrition data...', duration: 1500 },
-      { id: 'preferences', label: 'Applying your preferences...', duration: 1000 },
-      { id: 'ui', label: 'Preparing meal view...', duration: 800 }
+      { id: 'plan', label: 'Loading your meal plan...', duration: 800 },
+      { id: 'nutrition', label: 'Calculating nutrition data...', duration: 1000 },
+      { id: 'preferences', label: 'Applying your preferences...', duration: 600 },
+      { id: 'ui', label: 'Preparing meal view...', duration: 400 }
     ],
     profile: [
-      { id: 'data', label: 'Loading your profile data...', duration: 1200 },
-      { id: 'settings', label: 'Applying your settings...', duration: 1000 },
-      { id: 'ui', label: 'Preparing profile view...', duration: 600 }
+      { id: 'data', label: 'Loading your profile data...', duration: 800 },
+      { id: 'settings', label: 'Applying your settings...', duration: 600 },
+      { id: 'ui', label: 'Preparing profile view...', duration: 400 }
     ]
   };
 
@@ -87,6 +86,7 @@ const EnhancedPageLoading = ({
     console.log('🔄 Enhanced loading started:', { type, timeout });
 
     let timeoutTriggered = false;
+    let stepIndex = 0;
     
     // Timeout protection
     const timeoutHandler = setTimeout(() => {
@@ -98,52 +98,34 @@ const EnhancedPageLoading = ({
       }
     }, timeout);
 
-    // Simplified progress simulation
-    const interval = setInterval(() => {
-      if (timeoutTriggered) {
-        clearInterval(interval);
+    // Step progression logic
+    const progressSteps = () => {
+      if (timeoutTriggered || stepIndex >= steps.length) {
         return;
       }
 
-      const elapsed = Date.now() - startTime;
-      const totalDuration = steps.reduce((acc, step) => acc + step.duration, 0);
+      const currentStepData = steps[stepIndex];
+      console.log('📈 Step progress:', stepIndex, currentStepData?.label);
       
-      // Calculate which step we should be on
-      let cumulativeTime = 0;
-      let newStep = 0;
+      setCurrentStep(stepIndex);
+      setProgress(((stepIndex + 1) / steps.length) * 90); // Cap at 90% to show it's still loading
       
-      for (let i = 0; i < steps.length; i++) {
-        cumulativeTime += steps[i].duration;
-        if (elapsed < cumulativeTime) {
-          newStep = i;
-          break;
-        }
-        newStep = Math.min(i + 1, steps.length - 1);
+      stepIndex++;
+      
+      // Schedule next step
+      if (stepIndex < steps.length) {
+        setTimeout(progressSteps, currentStepData.duration);
       }
-      
-      // Update step
-      if (newStep !== currentStep && newStep < steps.length) {
-        setCurrentStep(newStep);
-        console.log('📈 Step progress:', newStep, steps[newStep]?.label);
-      }
+    };
 
-      // Update progress (cap at 90% to show it's still loading)
-      const newProgress = Math.min((elapsed / totalDuration) * 90, 90);
-      setProgress(newProgress);
-
-      // Complete if we've gone through all steps
-      if (elapsed >= totalDuration) {
-        setProgress(90);
-        clearInterval(interval);
-      }
-    }, 200); // More frequent updates for smoother progress
+    // Start step progression
+    progressSteps();
 
     return () => {
-      clearInterval(interval);
       clearTimeout(timeoutHandler);
       console.log('🔄 Loading cleanup for', type);
     };
-  }, [isLoading, type, timeout, startTime, steps, currentStep]);
+  }, [isLoading, type, timeout, steps]);
 
   if (!isLoading) return null;
 

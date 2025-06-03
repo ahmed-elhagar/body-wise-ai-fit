@@ -16,7 +16,6 @@ import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const [activeTimeRange, setActiveTimeRange] = useState<'week' | 'month' | 'year'>('week');
-  const [loadingTimeout, setLoadingTimeout] = useState(false);
   const { profile, isLoading: profileLoading, error: profileError } = useProfile();
   const { user, loading: authLoading, error: authError } = useAuth();
   const navigate = useNavigate();
@@ -33,33 +32,6 @@ const Dashboard = () => {
 
   const userName = profile?.first_name || user?.first_name || 'User';
   const isLoading = authLoading || profileLoading;
-
-  // Reduced timeout for faster recovery
-  useEffect(() => {
-    if (isLoading) {
-      const timeout = setTimeout(() => {
-        console.warn('⚠️ Dashboard loading timeout reached');
-        setLoadingTimeout(true);
-        
-        // If we have critical errors, redirect to auth
-        if (authError && !user?.id) {
-          console.log('🔄 Critical auth error, redirecting to auth...');
-          navigate('/auth?error=dashboard_timeout');
-          return;
-        }
-        
-        // If we have a user but profile issues, continue anyway
-        if (user?.id && profileError) {
-          console.log('🔄 Profile error but user exists, continuing...');
-          setLoadingTimeout(false); // Allow dashboard to render
-        }
-      }, 8000); // Reduced to 8 seconds
-
-      return () => clearTimeout(timeout);
-    } else {
-      setLoadingTimeout(false);
-    }
-  }, [isLoading, authError, profileError, user?.id, navigate]);
 
   // Handle critical auth errors immediately
   useEffect(() => {
@@ -78,8 +50,8 @@ const Dashboard = () => {
     navigate('/exercise');
   };
 
-  // Show enhanced loading only if actually loading and not timed out
-  if (isLoading && !loadingTimeout) {
+  // Show enhanced loading only if actually loading
+  if (isLoading) {
     return (
       <ProtectedRoute>
         <Layout>
@@ -88,15 +60,15 @@ const Dashboard = () => {
             type="dashboard"
             title="Loading Your Dashboard"
             description="Setting up your personalized fitness dashboard with the latest data and insights"
-            timeout={7000} // Shorter timeout
+            timeout={5000}
           />
         </Layout>
       </ProtectedRoute>
     );
   }
 
-  // Handle timeout with better UX
-  if (loadingTimeout && authError) {
+  // Handle auth errors with better UX
+  if (authError) {
     return (
       <ProtectedRoute>
         <Layout>
@@ -134,11 +106,6 @@ const Dashboard = () => {
         </Layout>
       </ProtectedRoute>
     );
-  }
-
-  // Continue with dashboard rendering even if profile loading failed but user exists
-  if (loadingTimeout && user?.id) {
-    console.log('Dashboard - Continuing with basic user data after timeout');
   }
 
   return (
