@@ -71,25 +71,26 @@ export const EnhancedDayNavigation = ({
   };
 
   return (
-    <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-      {/* Week Navigation Header */}
-      <div className="mb-6 space-y-4">
-        <div className="flex items-center justify-between">
+    <Card className="p-4 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+      {/* Compact Header Row - Week Navigation, Title, and Workout Type Toggle */}
+      <div className="flex items-center justify-between mb-4">
+        {/* Left: Week Navigation */}
+        <div className="flex items-center gap-2">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => onWeekChange(currentWeekOffset - 1)}
-            className="h-12 w-12 p-0 rounded-full hover:bg-gray-100"
+            className="h-8 w-8 p-0 rounded-full hover:bg-gray-100"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-4 h-4" />
           </Button>
 
-          <div className="text-center">
-            <div className="bg-white border-2 border-gray-200 rounded-2xl px-6 py-3 shadow-sm min-w-[160px]">
-              <div className="text-lg font-bold text-gray-900">
+          <div className="text-center min-w-[120px]">
+            <div className="bg-white border border-gray-200 rounded-lg px-3 py-1 shadow-sm">
+              <div className="text-sm font-bold text-gray-900">
                 {formatWeekRange(weekStartDate)}
               </div>
-              <div className="text-sm text-gray-600">
+              <div className="text-xs text-gray-600">
                 Week {currentWeekOffset + 1}
               </div>
             </div>
@@ -99,52 +100,47 @@ export const EnhancedDayNavigation = ({
             variant="ghost"
             size="sm"
             onClick={() => onWeekChange(currentWeekOffset + 1)}
-            className="h-12 w-12 p-0 rounded-full hover:bg-gray-100"
+            className="h-8 w-8 p-0 rounded-full hover:bg-gray-100"
           >
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight className="w-4 h-4" />
           </Button>
         </div>
 
-        {/* Workout Type Toggle */}
-        <div className="flex justify-center">
-          <div className="flex items-center bg-gray-100 rounded-2xl p-1 shadow-sm">
-            <Button
-              variant={workoutType === 'home' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => onWorkoutTypeChange('home')}
-              className={`rounded-xl px-8 py-3 font-semibold transition-all duration-300 ${
-                workoutType === 'home' 
-                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md' 
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
-              }`}
-            >
-              <Home className="w-4 h-4 mr-2" />
-              Home
-            </Button>
-            <Button
-              variant={workoutType === 'gym' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => onWorkoutTypeChange('gym')}
-              className={`rounded-xl px-8 py-3 font-semibold transition-all duration-300 ${
-                workoutType === 'gym' 
-                  ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md' 
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
-              }`}
-            >
-              <Building2 className="w-4 h-4 mr-2" />
-              Gym
-            </Button>
-          </div>
+        {/* Center: Weekly Schedule Title */}
+        <div className="flex items-center gap-2">
+          <Calendar className="w-4 h-4 text-blue-600" />
+          <h3 className="text-lg font-semibold text-gray-900">Weekly Schedule</h3>
         </div>
-      </div>
 
-      {/* Weekly Schedule Header */}
-      <div className="mb-6">
-        <h3 className="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
-          <Calendar className="w-5 h-5" />
-          Weekly Schedule
-        </h3>
-        <p className="text-gray-600">Select a day to view your workout plan</p>
+        {/* Right: Workout Type Toggle */}
+        <div className="flex items-center bg-gray-100 rounded-lg p-1 shadow-sm">
+          <Button
+            variant={workoutType === 'home' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => onWorkoutTypeChange('home')}
+            className={`rounded-md px-3 py-1 text-sm font-medium transition-all duration-200 ${
+              workoutType === 'home' 
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm' 
+                : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+            }`}
+          >
+            <Home className="w-3 h-3 mr-1" />
+            Home
+          </Button>
+          <Button
+            variant={workoutType === 'gym' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => onWorkoutTypeChange('gym')}
+            className={`rounded-md px-3 py-1 text-sm font-medium transition-all duration-200 ${
+              workoutType === 'gym' 
+                ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-sm' 
+                : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+            }`}
+          >
+            <Building2 className="w-3 h-3 mr-1" />
+            Gym
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-7 gap-2">
@@ -248,7 +244,7 @@ export const EnhancedDayNavigation = ({
 
       {/* Selected Day Info */}
       {selectedDayNumber && (
-        <div className="mt-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
+        <div className="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
           <div className="flex items-center justify-between">
             <div>
               <h4 className="font-semibold text-gray-900">
