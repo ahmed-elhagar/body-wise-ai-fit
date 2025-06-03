@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import i18n from '../i18n/config';
 
 export type Language = 'en' | 'ar';
 
@@ -19,26 +20,37 @@ interface LanguageProviderProps {
 
 export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
   const [language, setLanguageState] = useState<Language>('en');
-  
-  // Safe translation hook with fallback
-  let t: (key: string, options?: any) => string;
-  let i18nReady = true;
-  
-  try {
-    const { t: translationFn, ready } = useTranslation();
-    t = ready ? translationFn : (key: string) => key;
-    i18nReady = ready;
-  } catch (error) {
-    console.warn('i18next not initialized, using fallback translation');
-    t = (key: string) => key; // Fallback: return the key itself
-    i18nReady = false;
-  }
+  const { t: i18nT, i18n: i18nInstance } = useTranslation(['common', 'mealPlan', 'navigation', 'dashboard', 'profile']);
 
-  const setLanguage = (lang: Language) => {
+  const setLanguage = async (lang: Language) => {
     setLanguageState(lang);
     localStorage.setItem('preferred-language', lang);
     document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
     document.documentElement.lang = lang;
+    
+    // Change i18next language
+    if (i18nInstance && typeof i18nInstance.changeLanguage === 'function') {
+      await i18nInstance.changeLanguage(lang);
+    }
+  };
+
+  const t = (key: string, options?: any): string => {
+    try {
+      // Handle nested keys like 'mealPlan.title'
+      if (key.includes('.')) {
+        const [namespace, ...keyParts] = key.split('.');
+        const finalKey = keyParts.join('.');
+        const result = i18nT(finalKey, { ns: namespace, ...options });
+        return typeof result === 'string' && result !== finalKey ? result : finalKey;
+      }
+      
+      // Try common namespace first, then fallback to the key itself
+      const result = i18nT(key, { ns: 'common', ...options });
+      return typeof result === 'string' && result !== key ? result : key;
+    } catch (error) {
+      console.warn(`Translation error for key: ${key}`, error);
+      return key;
+    }
   };
 
   const isRTL = language === 'ar';
@@ -50,7 +62,13 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
     }
   }, []);
 
-  // Only render content when i18n is ready or provide fallback
+  // Initialize i18next language on mount
+  useEffect(() => {
+    if (i18nInstance && typeof i18nInstance.changeLanguage === 'function') {
+      i18nInstance.changeLanguage(language);
+    }
+  }, [i18nInstance, language]);
+
   const value = {
     language,
     setLanguage,
