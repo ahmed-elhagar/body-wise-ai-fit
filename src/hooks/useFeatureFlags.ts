@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 
 interface FeatureFlags {
+  email_confirmation: boolean;
   life_phase_nutrition: boolean;
   enhanced_analytics: boolean;
   social_features: boolean;
@@ -10,6 +11,7 @@ interface FeatureFlags {
 
 export const useFeatureFlags = () => {
   const [flags, setFlags] = useState<FeatureFlags>({
+    email_confirmation: false, // Default to false for easier testing
     life_phase_nutrition: true,
     enhanced_analytics: true,
     social_features: false,

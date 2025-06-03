@@ -1,4 +1,3 @@
-
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { PageHeader } from "@/components/ui/page-header";
@@ -14,6 +13,7 @@ import EnhancedStatsCards from "@/components/admin/EnhancedStatsCards";
 import SystemHealthMonitor from "@/components/admin/SystemHealthMonitor";
 import UserGenerationManager from "@/components/admin/UserGenerationManager";
 import AIModelsTab from "@/components/admin/AIModelsTab";
+import { FeatureFlagToggle } from "@/components/admin/FeatureFlagToggle";
 import { Card } from "@/components/ui/card";
 import { AlertTriangle } from "lucide-react";
 
@@ -141,7 +141,10 @@ const Admin = () => {
 
             <TabsContent value="system" className="mt-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <SystemHealthMonitor />
+                <div className="space-y-6">
+                  <FeatureFlagToggle />
+                  <SystemHealthMonitor />
+                </div>
                 <UserGenerationManager />
               </div>
             </TabsContent>

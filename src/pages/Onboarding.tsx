@@ -1,9 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
+import { useEmailConfirmation } from "@/hooks/useEmailConfirmation";
 import { toast } from "sonner";
 import { useOnboardingForm } from "@/hooks/useOnboardingForm";
 import { validateOnboardingStep } from "@/utils/onboardingValidation";
@@ -17,6 +17,7 @@ const Onboarding = () => {
   const navigate = useNavigate();
   const { updateProfile, isUpdating } = useProfile();
   const { user, loading: authLoading } = useAuth();
+  const { isEmailConfirmationEnabled } = useEmailConfirmation();
   const [step, setStep] = useState(1);
   const { formData, updateFormData, handleArrayInput } = useOnboardingForm();
   const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
@@ -24,18 +25,18 @@ const Onboarding = () => {
   const totalSteps = 3;
   const progress = (step / totalSteps) * 100;
 
-  // Check if user needs to confirm their email
+  // Check if user needs to confirm their email (only if email confirmation is enabled)
   useEffect(() => {
     if (!authLoading) {
-      if (!user) {
-        // No user means they haven't confirmed email yet
+      if (isEmailConfirmationEnabled && !user) {
+        // Email confirmation is enabled and no user means they haven't confirmed email yet
         setShowEmailConfirmation(true);
       } else {
-        // User is confirmed, proceed with onboarding
+        // Either email confirmation is disabled OR user is confirmed, proceed with onboarding
         setShowEmailConfirmation(false);
       }
     }
-  }, [user, authLoading]);
+  }, [user, authLoading, isEmailConfirmationEnabled]);
 
   const isStepValid = (): boolean => {
     return validateOnboardingStep(step, formData);
@@ -125,7 +126,7 @@ const Onboarding = () => {
     }
   };
 
-  // Show email confirmation message if user hasn't confirmed their email
+  // Show email confirmation message if email confirmation is enabled and user hasn't confirmed their email
   if (showEmailConfirmation) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 py-8">
