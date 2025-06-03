@@ -12,6 +12,7 @@ import ErrorFallback from "@/components/ErrorFallback";
 import { LazyPages } from "@/components/LazyPages";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import MotivationalContent from "@/components/loading/MotivationalContent";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,12 +23,33 @@ const queryClient = new QueryClient({
   },
 });
 
-// Enhanced loading fallback component
+// Enhanced loading fallback component with motivational content
 const PageLoader = () => (
-  <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-    <div className="text-center">
-      <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-      <p className="text-gray-600">Loading...</p>
+  <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-800 flex items-center justify-center p-4 relative overflow-hidden">
+    {/* Background decoration */}
+    <div className="absolute inset-0 opacity-20">
+      <div className="w-full h-full" style={{
+        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+      }}></div>
+    </div>
+    
+    <div className="text-center relative z-10 max-w-lg mx-auto">
+      {/* App Title */}
+      <div className="mb-8">
+        <h1 className="text-5xl font-bold text-white mb-2 tracking-tight">
+          FitFatta
+        </h1>
+        <p className="text-white/70 text-lg">Your Fitness Journey Starts Here</p>
+      </div>
+      
+      {/* Loading Animation */}
+      <div className="mb-8">
+        <div className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+        <p className="text-white/80 text-sm">Preparing your fitness experience...</p>
+      </div>
+      
+      {/* Motivational Content */}
+      <MotivationalContent />
     </div>
   </div>
 );
