@@ -1,4 +1,3 @@
-
 import { format, addDays } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useOptimizedExerciseProgramPage } from "@/hooks/useOptimizedExerciseProgramPage";
@@ -12,6 +11,7 @@ import EnhancedPageLoading from "@/components/ui/enhanced-page-loading";
 
 const EnhancedExercisePage = () => {
   const { t } = useLanguage();
+  
   const {
     selectedDayNumber,
     setSelectedDayNumber,
