@@ -12,18 +12,39 @@ const MealPlanAILoadingDialog = ({
   isGenerating, 
   onClose 
 }: MealPlanAILoadingDialogProps) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
   const steps = useMemo(() => [
-    { id: 'analyzing', label: t('Analyzing your profile and preferences') || 'Analyzing your profile and preferences' },
-    { id: 'calculating', label: t('Calculating nutritional requirements') || 'Calculating nutritional requirements' },
-    { id: 'generating', label: t('Generating personalized meals') || 'Generating personalized meals' },
-    { id: 'optimizing', label: t('Optimizing meal combinations') || 'Optimizing meal combinations' },
-    { id: 'validating', label: t('Validating meal plan structure') || 'Validating meal plan structure' },
-    { id: 'saving', label: t('Saving your meal plan') || 'Saving your meal plan' },
-    { id: 'finalizing', label: t('Finalizing your meal plan') || 'Finalizing your meal plan' }
-  ], [t]);
+    { 
+      id: 'analyzing', 
+      label: language === 'ar' ? 'تحليل ملفك الشخصي وتفضيلاتك' : 'Analyzing your profile and preferences' 
+    },
+    { 
+      id: 'calculating', 
+      label: language === 'ar' ? 'حساب المتطلبات الغذائية' : 'Calculating nutritional requirements' 
+    },
+    { 
+      id: 'generating', 
+      label: language === 'ar' ? 'إنشاء وجبات مخصصة لك' : 'Generating personalized meals' 
+    },
+    { 
+      id: 'optimizing', 
+      label: language === 'ar' ? 'تحسين تركيبات الوجبات' : 'Optimizing meal combinations' 
+    },
+    { 
+      id: 'validating', 
+      label: language === 'ar' ? 'التحقق من هيكل خطة الوجبات' : 'Validating meal plan structure' 
+    },
+    { 
+      id: 'saving', 
+      label: language === 'ar' ? 'حفظ خطة وجباتك' : 'Saving your meal plan' 
+    },
+    { 
+      id: 'finalizing', 
+      label: language === 'ar' ? 'إنهاء خطة وجباتك' : 'Finalizing your meal plan' 
+    }
+  ], [language]);
 
   const dialogSteps = useMemo(() => 
     steps.map((step, index) => ({
@@ -52,7 +73,7 @@ const MealPlanAILoadingDialog = ({
         }
         return prev;
       });
-    }, 1500); // Slower progression for better UX
+    }, 2000); // Slower progression for better UX (2 seconds per step)
 
     return () => clearInterval(interval);
   }, [isGenerating, steps.length]);
@@ -63,9 +84,9 @@ const MealPlanAILoadingDialog = ({
     <AILoadingDialog
       open={true}
       status="loading"
-      title={t('Generating AI Meal Plan') || 'Generating AI Meal Plan'}
-      message={steps[currentStepIndex]?.label || t('Generating your meal plan...') || 'Generating your meal plan...'}
-      description={t('Please wait while we create your personalized meal plan') || 'Please wait while we create your personalized meal plan'}
+      title={language === 'ar' ? 'إنشاء خطة الوجبات بالذكاء الاصطناعي' : 'Generating AI Meal Plan'}
+      message={steps[currentStepIndex]?.label || (language === 'ar' ? 'إنشاء خطة وجباتك...' : 'Generating your meal plan...')}
+      description={language === 'ar' ? 'يرجى الانتظار بينما ننشئ خطة وجباتك الشخصية' : 'Please wait while we create your personalized meal plan'}
       steps={dialogSteps}
       progress={progress}
       allowClose={false}

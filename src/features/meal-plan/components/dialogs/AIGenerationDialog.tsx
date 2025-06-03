@@ -50,6 +50,7 @@ export const AIGenerationDialog = ({
   const [showConfirmation, setShowConfirmation] = useState(false);
 
   const handleCuisineChange = (value: string) => {
+    console.log('🔄 Cuisine changed to:', value);
     onPreferencesChange({
       ...preferences,
       cuisine: value
@@ -57,6 +58,7 @@ export const AIGenerationDialog = ({
   };
 
   const handleMaxPrepTimeChange = (value: string) => {
+    console.log('🔄 Max prep time changed to:', value);
     onPreferencesChange({
       ...preferences,
       maxPrepTime: value
@@ -64,6 +66,7 @@ export const AIGenerationDialog = ({
   };
 
   const handleIncludeSnacksChange = (checked: boolean) => {
+    console.log('🔄 Include snacks changed to:', checked);
     onPreferencesChange({
       ...preferences,
       includeSnacks: checked
@@ -71,6 +74,8 @@ export const AIGenerationDialog = ({
   };
 
   const handleGenerate = async () => {
+    console.log('🚀 Generate button clicked, preferences:', preferences);
+    
     if (hasExistingPlan) {
       setShowConfirmation(true);
       return;
@@ -84,6 +89,7 @@ export const AIGenerationDialog = ({
   };
 
   const handleConfirmedGenerate = async () => {
+    console.log('🚀 Confirmed generate with preferences:', preferences);
     const success = await onGenerate();
     if (success) {
       onClose();
@@ -100,16 +106,16 @@ export const AIGenerationDialog = ({
 
   const getButtonText = () => {
     if (isGenerating) {
-      return language === 'ar' ? 'جاري الإنشاء...' : 'Generating Your Plan...';
+      return language === 'ar' ? 'جاري إنشاء خطتك...' : 'Creating Your Meal Plan...';
     }
     if (hasExistingPlan) {
-      return language === 'ar' ? 'إعادة إنشاء الخطة' : 'Generate New Plan';
+      return language === 'ar' ? 'إنشاء خطة جديدة' : 'Generate New Meal Plan';
     }
-    return language === 'ar' ? 'إنشاء خطة بالذكاء الاصطناعي' : 'Generate AI Meal Plan';
+    return language === 'ar' ? 'إنشاء خطة الوجبات بالذكاء الاصطناعي' : 'Generate AI Meal Plan';
   };
 
   const cuisineOptions = [
-    { value: 'mixed', label: language === 'ar' ? 'مختلط' : 'Mixed' },
+    { value: 'mixed', label: language === 'ar' ? 'مختلط' : 'Mixed Cuisines' },
     { value: 'mediterranean', label: language === 'ar' ? 'متوسطية' : 'Mediterranean' },
     { value: 'asian', label: language === 'ar' ? 'آسيوية' : 'Asian' },
     { value: 'mexican', label: language === 'ar' ? 'مكسيكية' : 'Mexican' },
@@ -181,8 +187,8 @@ export const AIGenerationDialog = ({
           </DialogTitle>
           <DialogDescription>
             {language === 'ar' 
-              ? 'خصص خطة وجباتك باستخدام الذكاء الاصطناعي'
-              : 'Customize your meal plan using AI'
+              ? 'خصص خطة وجباتك باستخدام الذكاء الاصطناعي المتطور'
+              : 'Customize your meal plan using advanced AI technology'
             }
           </DialogDescription>
         </DialogHeader>
@@ -213,7 +219,7 @@ export const AIGenerationDialog = ({
               </Label>
               <div className="flex items-center gap-3">
                 <Switch
-                  checked={preferences.includeSnacks}
+                  checked={preferences.includeSnacks !== false}
                   onCheckedChange={handleIncludeSnacksChange}
                 />
                 <span className="text-sm text-gray-600">
@@ -224,10 +230,10 @@ export const AIGenerationDialog = ({
                 <Info className="w-3 h-3" />
                 <span>
                   {language === 'ar' 
-                    ? preferences.includeSnacks 
+                    ? preferences.includeSnacks !== false
                       ? 'سيتم إنشاء 5 وجبات يومياً (فطار، وجبة خفيفة، غداء، وجبة خفيفة، عشاء)'
                       : 'سيتم إنشاء 3 وجبات يومياً (فطار، غداء، عشاء)'
-                    : preferences.includeSnacks
+                    : preferences.includeSnacks !== false
                       ? 'Will generate 5 meals per day (breakfast, snack, lunch, snack, dinner)'
                       : 'Will generate 3 meals per day (breakfast, lunch, dinner)'
                   }
@@ -285,6 +291,7 @@ export const AIGenerationDialog = ({
               variant="outline" 
               onClick={onClose}
               className="flex-1"
+              disabled={isGenerating}
             >
               {language === 'ar' ? 'إلغاء' : 'Cancel'}
             </Button>

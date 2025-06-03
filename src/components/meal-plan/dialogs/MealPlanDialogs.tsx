@@ -2,7 +2,7 @@
 import { EnhancedRecipeDialog } from "../EnhancedRecipeDialog";
 import MealPlanExchangeDialog from "../MealPlanExchangeDialog";
 import EnhancedAddSnackDialog from "../EnhancedAddSnackDialog";
-import MealPlanAIDialog from "../MealPlanAIDialog";
+import { AIGenerationDialog } from "@/features/meal-plan/components/dialogs/AIGenerationDialog";
 import EnhancedShoppingListDrawer from "@/components/shopping-list/EnhancedShoppingListDrawer";
 import type { DailyMeal, MealPlanPreferences, MealPlanFetchResult } from "@/types/mealPlan";
 
@@ -60,14 +60,16 @@ const MealPlanDialogs = ({
 }: MealPlanDialogsProps) => {
   return (
     <>
-      {/* AI Generation Dialog */}
-      <MealPlanAIDialog
+      {/* AI Generation Dialog - Fixed with working dropdowns and switches */}
+      <AIGenerationDialog
         open={showAIDialog}
-        onOpenChange={setShowAIDialog}
+        onClose={() => setShowAIDialog(false)}
         preferences={aiPreferences}
         onPreferencesChange={setAiPreferences}
         onGenerate={handleGenerateAI}
         isGenerating={false}
+        userCredits={5} // This should come from the actual user credits
+        hasExistingPlan={!!mealPlanData?.weeklyPlan}
       />
 
       {/* Recipe Dialog */}
