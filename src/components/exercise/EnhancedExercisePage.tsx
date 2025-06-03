@@ -1,3 +1,4 @@
+
 import { format, addDays } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useOptimizedExerciseProgramPage } from "@/hooks/useOptimizedExerciseProgramPage";
@@ -95,29 +96,10 @@ const EnhancedExercisePage = () => {
     );
   }
 
-  if (!currentProgram) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
-        <div className="max-w-7xl mx-auto p-6">
-          <EmptyExerciseState
-            onGenerateProgram={() => setShowAIDialog(true)}
-            workoutType={workoutType}
-            setWorkoutType={setWorkoutType}
-            showAIDialog={showAIDialog}
-            setShowAIDialog={setShowAIDialog}
-            aiPreferences={aiPreferences}
-            setAiPreferences={setAiPreferences}
-            isGenerating={isGenerating}
-          />
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
       <div className="max-w-7xl mx-auto">
-        {/* Compact Header */}
+        {/* Header - Always show */}
         <div className="px-3 py-3">
           <ModernExerciseHeader
             currentProgram={currentProgram}
@@ -127,7 +109,7 @@ const EnhancedExercisePage = () => {
           />
         </div>
 
-        {/* Enhanced Day Navigation with Week Controls */}
+        {/* Enhanced Day Navigation - Always show */}
         <div className="px-3 mb-3">
           <EnhancedDayNavigation
             weekStartDate={weekStartDate}
@@ -141,39 +123,52 @@ const EnhancedExercisePage = () => {
           />
         </div>
 
-        {/* Main Content Layout - Two Column on Desktop, Single Column on Mobile */}
+        {/* Main Content - Show empty state or exercise content */}
         <div className="px-3 pb-4">
-          <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
-            {/* Main Exercise Content - Takes up 3/4 on desktop, full width on mobile */}
-            <div className="xl:col-span-3">
-              <EnhancedExerciseListContainer
-                exercises={todaysExercises}
-                onExerciseComplete={handleExerciseComplete}
-                onExerciseProgressUpdate={handleExerciseProgressUpdate}
-                isRestDay={isRestDay}
-                isLoading={false}
-                completedExercises={completedExercises}
-                totalExercises={totalExercises}
-                progressPercentage={progressPercentage}
-                isToday={isToday}
-                currentProgram={currentProgram}
-                selectedDayNumber={selectedDayNumber}
-              />
-            </div>
+          {!currentProgram ? (
+            <EmptyExerciseState
+              onGenerateProgram={() => setShowAIDialog(true)}
+              workoutType={workoutType}
+              setWorkoutType={setWorkoutType}
+              showAIDialog={showAIDialog}
+              setShowAIDialog={setShowAIDialog}
+              aiPreferences={aiPreferences}
+              setAiPreferences={setAiPreferences}
+              isGenerating={isGenerating}
+            />
+          ) : (
+            <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
+              {/* Main Exercise Content - Takes up 3/4 on desktop, full width on mobile */}
+              <div className="xl:col-span-3">
+                <EnhancedExerciseListContainer
+                  exercises={todaysExercises}
+                  onExerciseComplete={handleExerciseComplete}
+                  onExerciseProgressUpdate={handleExerciseProgressUpdate}
+                  isRestDay={isRestDay}
+                  isLoading={false}
+                  completedExercises={completedExercises}
+                  totalExercises={totalExercises}
+                  progressPercentage={progressPercentage}
+                  isToday={isToday}
+                  currentProgram={currentProgram}
+                  selectedDayNumber={selectedDayNumber}
+                />
+              </div>
 
-            {/* Compact Progress Sidebar - Shows on desktop only */}
-            <div className="hidden xl:block xl:col-span-1">
-              <CompactProgressSidebar
-                completedExercises={completedExercises}
-                totalExercises={totalExercises}
-                progressPercentage={progressPercentage}
-                isToday={isToday}
-                isRestDay={isRestDay}
-                currentProgram={currentProgram}
-                selectedDayNumber={selectedDayNumber}
-              />
+              {/* Compact Progress Sidebar - Shows on desktop only */}
+              <div className="hidden xl:block xl:col-span-1">
+                <CompactProgressSidebar
+                  completedExercises={completedExercises}
+                  totalExercises={totalExercises}
+                  progressPercentage={progressPercentage}
+                  isToday={isToday}
+                  isRestDay={isRestDay}
+                  currentProgram={currentProgram}
+                  selectedDayNumber={selectedDayNumber}
+                />
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Enhanced AI Dialog */}
