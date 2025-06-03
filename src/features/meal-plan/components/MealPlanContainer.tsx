@@ -9,7 +9,7 @@ import LoadingState from '@/components/meal-plan/components/LoadingState';
 import MealPlanDialogs from '@/components/meal-plan/dialogs/MealPlanDialogs';
 import MealPlanAILoadingDialog from '@/components/meal-plan/MealPlanAILoadingDialog';
 import { useEnhancedMealShuffle } from '@/hooks/useEnhancedMealShuffle';
-import ShoppingListDrawer from '@/components/shopping-list/ShoppingListDrawer';
+import EnhancedShoppingListDrawer from '@/components/shopping-list/EnhancedShoppingListDrawer';
 
 export const MealPlanContainer = () => {
   const mealPlanState = useMealPlanState();
@@ -89,13 +89,14 @@ export const MealPlanContainer = () => {
       />
 
       {/* Enhanced Shopping List Drawer */}
-      <ShoppingListDrawer
+      <EnhancedShoppingListDrawer
         isOpen={mealPlanState.showShoppingListDialog}
         onClose={() => mealPlanState.closeShoppingListDialog()}
         weeklyPlan={mealPlanState.currentWeekPlan}
         weekId={mealPlanState.currentWeekPlan?.weeklyPlan?.id}
         onShoppingListUpdate={() => {
           console.log('🛒 Shopping list updated');
+          mealPlanState.refetch();
         }}
       />
 
@@ -109,7 +110,7 @@ export const MealPlanContainer = () => {
         setShowExchangeDialog={mealPlanState.closeExchangeDialog}
         showAddSnackDialog={mealPlanState.showAddSnackDialog}
         setShowAddSnackDialog={mealPlanState.closeAddSnackDialog}
-        showShoppingListDialog={false} // Now handled by ShoppingListDrawer
+        showShoppingListDialog={false} // Now handled by EnhancedShoppingListDrawer
         setShowShoppingListDialog={() => {}} // Disabled - using drawer instead
         selectedMeal={mealPlanState.selectedMeal}
         selectedMealIndex={mealPlanState.selectedMealIndex}
