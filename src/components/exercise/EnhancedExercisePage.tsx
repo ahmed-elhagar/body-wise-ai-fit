@@ -6,10 +6,13 @@ import { EnhancedExerciseHeader } from "./EnhancedExerciseHeader";
 import { EnhancedDayNavigation } from "./EnhancedDayNavigation";
 import { AIExerciseDialog } from "./AIExerciseDialog";
 import { ExercisePageLayout } from "./ExercisePageLayout";
-import { ExercisePageContent } from "./ExercisePageContent";
+import { ExerciseListEnhanced } from "./ExerciseListEnhanced";
+import { EmptyExerciseState } from "./EmptyExerciseState";
 import { ExerciseErrorState } from "./ExerciseErrorState";
+import { TodaysWorkoutProgressCard } from "./TodaysWorkoutProgressCard";
 import { useEnhancedAIExercise } from "@/hooks/useEnhancedAIExercise";
 import EnhancedPageLoading from "@/components/ui/enhanced-page-loading";
+import PageLoadingOverlay from "@/components/ui/page-loading-overlay";
 import { useState, useEffect } from "react";
 
 const EnhancedExercisePage = () => {
@@ -105,54 +108,96 @@ const EnhancedExercisePage = () => {
     }
   };
 
+  // Show empty state if no program exists
+  if (!currentProgram) {
+    return (
+      <ExercisePageLayout>
+        <EmptyExerciseState
+          onGenerateProgram={() => setShowAIDialog(true)}
+          workoutType={workoutType}
+          setWorkoutType={setWorkoutType}
+          showAIDialog={showAIDialog}
+          setShowAIDialog={setShowAIDialog}
+          aiPreferences={aiPreferences}
+          setAiPreferences={setAiPreferences}
+          isGenerating={isGenerating}
+        />
+        <AIExerciseDialog
+          open={showAIDialog}
+          onOpenChange={setShowAIDialog}
+          preferences={{ ...aiPreferences, workoutType }}
+          setPreferences={setAiPreferences}
+          onGenerate={handleGenerateAIProgram}
+          isGenerating={isGenerating}
+        />
+      </ExercisePageLayout>
+    );
+  }
+
   return (
     <ExercisePageLayout>
-      {/* Enhanced Header - Always show */}
-      <div className="px-3 py-3">
-        <EnhancedExerciseHeader
-          currentProgram={currentProgram}
-          onShowAIDialog={() => setShowAIDialog(true)}
-          onRegenerateProgram={handleRegenerateProgram}
-          isGenerating={isGenerating}
-          workoutType={workoutType}
+      <div className="relative">
+        {/* Loading overlay for week navigation - same pattern as meals */}
+        <PageLoadingOverlay
+          isLoading={isLoading && hasEverLoadedProgram && !isGenerating}
+          type="exercise"
+          message="Loading Week Data"
+          description="Fetching your exercise program for the selected week..."
+          blur={true}
         />
-      </div>
 
-      {/* Enhanced Day Navigation - Always show */}
-      <div className="px-3 mb-3">
-        <EnhancedDayNavigation
-          weekStartDate={weekStartDate}
-          selectedDayNumber={selectedDayNumber}
-          onDayChange={setSelectedDayNumber}
-          currentProgram={currentProgram}
-          workoutType={workoutType}
-          currentWeekOffset={currentWeekOffset}
-          onWeekChange={setCurrentWeekOffset}
-          onWorkoutTypeChange={setWorkoutType}
-        />
-      </div>
+        <div className="max-w-7xl mx-auto space-y-6">
+          {/* Enhanced Header */}
+          <div className="px-3 py-3">
+            <EnhancedExerciseHeader
+              currentProgram={currentProgram}
+              onShowAIDialog={() => setShowAIDialog(true)}
+              onRegenerateProgram={handleRegenerateProgram}
+              isGenerating={isGenerating}
+              workoutType={workoutType}
+            />
+          </div>
 
-      {/* Main Content - Show loading overlay when changing weeks */}
-      <ExercisePageContent
-        isLoading={isLoading && hasEverLoadedProgram && !isGenerating}
-        currentProgram={currentProgram}
-        todaysExercises={todaysExercises}
-        completedExercises={completedExercises}
-        totalExercises={totalExercises}
-        progressPercentage={progressPercentage}
-        isRestDay={isRestDay}
-        isToday={isToday}
-        selectedDayNumber={selectedDayNumber}
-        workoutType={workoutType}
-        setWorkoutType={setWorkoutType}
-        showAIDialog={showAIDialog}
-        setShowAIDialog={setShowAIDialog}
-        aiPreferences={aiPreferences}
-        setAiPreferences={setAiPreferences}
-        isGenerating={isGenerating}
-        onExerciseComplete={handleExerciseComplete}
-        onExerciseProgressUpdate={handleExerciseProgressUpdate}
-      />
+          {/* Enhanced Day Navigation */}
+          <div className="px-3 mb-3">
+            <EnhancedDayNavigation
+              weekStartDate={weekStartDate}
+              selectedDayNumber={selectedDayNumber}
+              onDayChange={setSelectedDayNumber}
+              currentProgram={currentProgram}
+              workoutType={workoutType}
+              currentWeekOffset={currentWeekOffset}
+              onWeekChange={setCurrentWeekOffset}
+              onWorkoutTypeChange={setWorkoutType}
+            />
+          </div>
+
+          {/* Progress Overview Card */}
+          {!isRestDay && totalExercises > 0 && (
+            <div className="px-3">
+              <TodaysWorkoutProgressCard
+                todaysWorkouts={todaysWorkouts}
+                completedExercises={completedExercises}
+                totalExercises={totalExercises}
+                progressPercentage={progressPercentage}
+                currentSelectedDate={currentSelectedDate}
+                isToday={isToday}
+              />
+            </div>
+          )}
+
+          {/* Exercise List */}
+          <div className="px-3">
+            <ExerciseListEnhanced
+              exercises={todaysExercises}
+              isLoading={false}
+              onExerciseComplete={handleExerciseComplete}
+              onExerciseProgressUpdate={handleExerciseProgressUpdate}
+              isRestDay={isRestDay}
+            />
+          </div>
+        </div>
+      </div>
 
       {/* Enhanced AI Dialog */}
       <AIExerciseDialog

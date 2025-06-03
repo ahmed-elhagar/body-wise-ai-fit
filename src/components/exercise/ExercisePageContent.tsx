@@ -1,15 +1,9 @@
 
 import { useLanguage } from "@/contexts/LanguageContext";
-import { WeeklyExerciseNavigation } from "./WeeklyExerciseNavigation";
-import { ExerciseDaySelector } from "./ExerciseDaySelector";
 import { ExerciseListEnhanced } from "./ExerciseListEnhanced";
 import { EmptyExerciseState } from "./EmptyExerciseState";
 import { AIExerciseDialog } from "./AIExerciseDialog";
-import { ExercisePageHeader } from "./ExercisePageHeader";
-import { WorkoutTypeSelector } from "./WorkoutTypeSelector";
 import { TodaysWorkoutProgressCard } from "./TodaysWorkoutProgressCard";
-import { format, addDays } from "date-fns";
-import { EnhancedWorkoutTypeToggle } from "./EnhancedWorkoutTypeToggle";
 import PageLoadingOverlay from "@/components/ui/page-loading-overlay";
 
 interface ExercisePageContentProps {
@@ -31,6 +25,8 @@ interface ExercisePageContentProps {
   isGenerating: boolean;
   onExerciseComplete: (exerciseId: string) => void;
   onExerciseProgressUpdate: (exerciseId: string, sets: number, reps: string, notes?: string) => void;
+  todaysWorkouts?: any[];
+  currentSelectedDate?: Date;
 }
 
 export const ExercisePageContent = ({
@@ -51,7 +47,9 @@ export const ExercisePageContent = ({
   setAiPreferences,
   isGenerating,
   onExerciseComplete,
-  onExerciseProgressUpdate
+  onExerciseProgressUpdate,
+  todaysWorkouts = [],
+  currentSelectedDate = new Date()
 }: ExercisePageContentProps) => {
   const { t } = useLanguage();
 
@@ -83,44 +81,14 @@ export const ExercisePageContent = ({
       />
 
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <ExercisePageHeader
-          currentProgram={currentProgram}
-          workoutType={workoutType}
-          onShowAIDialog={() => setShowAIDialog(true)}
-          onRegenerateProgram={() => {}} // This will be handled by parent
-          isGenerating={isGenerating}
-        />
-
-        {/* Enhanced Workout Type Toggle */}
-        <EnhancedWorkoutTypeToggle
-          workoutType={workoutType}
-          onWorkoutTypeChange={setWorkoutType}
-        />
-
-        {/* Weekly Navigation */}
-        <WeeklyExerciseNavigation
-          currentWeekOffset={0} // This will be passed from parent
-          setCurrentWeekOffset={() => {}} // This will be handled by parent
-          weekStartDate={new Date()} // This will be passed from parent
-        />
-
-        {/* Day Selector */}
-        <ExerciseDaySelector
-          selectedDayNumber={selectedDayNumber}
-          setSelectedDayNumber={() => {}} // This will be handled by parent
-          currentProgram={currentProgram}
-          workoutType={workoutType}
-        />
-
         {/* Progress Overview Card */}
         {!isRestDay && totalExercises > 0 && (
           <TodaysWorkoutProgressCard
-            todaysWorkouts={[]} // This will be passed from parent
+            todaysWorkouts={todaysWorkouts}
             completedExercises={completedExercises}
             totalExercises={totalExercises}
             progressPercentage={progressPercentage}
-            currentSelectedDate={new Date()} // This will be passed from parent
+            currentSelectedDate={currentSelectedDate}
             isToday={isToday}
           />
         )}
