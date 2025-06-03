@@ -65,35 +65,39 @@ export const MealPlanContainer = () => {
           weekStartDate={mealPlanState.weekStartDate}
         />
         
-        {/* Content Area with Local Loading State */}
-        <div className="relative min-h-[400px]">
+        {/* Content Area with Persistent Container and Loading Overlay */}
+        <div className="relative">
+          {/* Loading Overlay - Only shows when loading with existing data */}
           {mealPlanState.isLoading && mealPlanState.currentWeekPlan && (
-            <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg">
-              <div className="flex flex-col items-center gap-3">
+            <div className="absolute inset-0 bg-white/90 backdrop-blur-sm z-20 flex items-center justify-center rounded-lg min-h-[500px]">
+              <div className="flex flex-col items-center gap-3 bg-white rounded-lg shadow-lg p-6">
                 <Loader2 className="w-8 h-8 animate-spin text-violet-600" />
-                <p className="text-sm text-gray-600 font-medium">Loading week data...</p>
+                <p className="text-sm text-gray-700 font-medium">Loading week data...</p>
               </div>
             </div>
           )}
           
-          <MealPlanContent
-            viewMode="daily"
-            currentWeekPlan={mealPlanState.currentWeekPlan}
-            selectedDayNumber={mealPlanState.selectedDayNumber}
-            dailyMeals={mealPlanState.dailyMeals}
-            totalCalories={mealPlanState.totalCalories}
-            totalProtein={mealPlanState.totalProtein}
-            targetDayCalories={mealPlanState.targetDayCalories}
-            weekStartDate={mealPlanState.weekStartDate}
-            currentWeekOffset={mealPlanState.currentWeekOffset}
-            isGenerating={mealPlanState.isGenerating}
-            onViewMeal={(meal) => mealPlanState.openRecipeDialog(meal)}
-            onExchangeMeal={(meal) => mealPlanState.openExchangeDialog(meal)}
-            onAddSnack={() => mealPlanState.openAddSnackDialog()}
-            onGenerateAI={() => mealPlanState.openAIDialog()}
-            setCurrentWeekOffset={mealPlanState.setCurrentWeekOffset}
-            setSelectedDayNumber={mealPlanState.setSelectedDayNumber}
-          />
+          {/* Main Content - Always rendered */}
+          <div className={`transition-opacity duration-200 ${mealPlanState.isLoading && mealPlanState.currentWeekPlan ? 'opacity-50' : 'opacity-100'}`}>
+            <MealPlanContent
+              viewMode="daily"
+              currentWeekPlan={mealPlanState.currentWeekPlan}
+              selectedDayNumber={mealPlanState.selectedDayNumber}
+              dailyMeals={mealPlanState.dailyMeals}
+              totalCalories={mealPlanState.totalCalories}
+              totalProtein={mealPlanState.totalProtein}
+              targetDayCalories={mealPlanState.targetDayCalories}
+              weekStartDate={mealPlanState.weekStartDate}
+              currentWeekOffset={mealPlanState.currentWeekOffset}
+              isGenerating={mealPlanState.isGenerating}
+              onViewMeal={(meal) => mealPlanState.openRecipeDialog(meal)}
+              onExchangeMeal={(meal) => mealPlanState.openExchangeDialog(meal)}
+              onAddSnack={() => mealPlanState.openAddSnackDialog()}
+              onGenerateAI={() => mealPlanState.openAIDialog()}
+              setCurrentWeekOffset={mealPlanState.setCurrentWeekOffset}
+              setSelectedDayNumber={mealPlanState.setSelectedDayNumber}
+            />
+          </div>
         </div>
       </div>
 
