@@ -12,7 +12,6 @@ import { AuthToggle } from "@/components/auth/AuthToggle";
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [justSignedUp, setJustSignedUp] = useState(false);
   
   const { signIn, signUp, user, loading: authLoading } = useAuth();
   const { profile, isLoading: profileLoading } = useProfile();
@@ -26,8 +25,7 @@ const Auth = () => {
       userId: user.id,
       hasProfile: !!profile,
       profileLoading,
-      onboardingCompleted: profile?.onboarding_completed,
-      justSignedUp
+      onboardingCompleted: profile?.onboarding_completed
     });
     
     if (profileLoading) {
@@ -35,14 +33,7 @@ const Auth = () => {
       return;
     }
 
-    // For new signups, always go to onboarding regardless of profile state
-    if (justSignedUp) {
-      console.log('Auth - New signup detected, redirecting to onboarding');
-      navigate('/onboarding', { replace: true });
-      return;
-    }
-
-    // For existing users logging in, check profile completion
+    // Check if user has completed onboarding
     if (!profile || !profile.onboarding_completed || !profile.first_name || !profile.last_name) {
       console.log('Auth - Redirecting to onboarding (incomplete profile)');
       navigate('/onboarding', { replace: true });
@@ -50,7 +41,7 @@ const Auth = () => {
       console.log('Auth - Redirecting to dashboard (complete profile)');
       navigate('/dashboard', { replace: true });
     }
-  }, [user, profile, profileLoading, authLoading, navigate, justSignedUp]);
+  }, [user, profile, profileLoading, authLoading, navigate]);
 
   const validateForm = (data: { email: string; password: string; firstName?: string; lastName?: string }) => {
     if (!data.email || !data.password) {
@@ -81,18 +72,23 @@ const Auth = () => {
           first_name: data.firstName, 
           last_name: data.lastName 
         });
-        setJustSignedUp(true);
-        console.log('Sign up successful, marking as new signup');
-        toast.success('Account created successfully! Redirecting to setup...');
+        console.log('Sign up successful, redirecting to onboarding');
+        toast.success('Account created successfully! Please check your email to confirm your account.');
+        
+        // Redirect immediately to onboarding for signup
+        // The onboarding page will handle the email confirmation flow
+        setTimeout(() => {
+          navigate('/onboarding', { replace: true });
+        }, 1500);
       } else {
         await signIn(data.email, data.password);
         console.log('Sign in successful');
         toast.success('Welcome back!');
+        // For signin, let the useEffect handle redirection based on auth state
       }
     } catch (error: any) {
       console.error('Auth error:', error);
       toast.error(error.message || `Failed to ${isSignUp ? 'sign up' : 'sign in'}`);
-      setJustSignedUp(false);
     } finally {
       setLoading(false);
     }
@@ -100,7 +96,6 @@ const Auth = () => {
 
   const handleToggle = () => {
     setIsSignUp(!isSignUp);
-    setJustSignedUp(false); // Reset signup state when toggling
   };
 
   // Show loading if user exists and we're determining where to redirect
