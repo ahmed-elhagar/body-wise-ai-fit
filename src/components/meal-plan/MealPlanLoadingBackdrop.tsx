@@ -1,6 +1,6 @@
 
 import React from "react";
-import PageLoadingOverlay from "@/components/ui/page-loading-overlay";
+import EnhancedPageLoading from "@/components/ui/enhanced-page-loading";
 
 interface MealPlanLoadingBackdropProps {
   isLoading: boolean;
@@ -10,19 +10,23 @@ interface MealPlanLoadingBackdropProps {
 
 const MealPlanLoadingBackdrop = React.memo<MealPlanLoadingBackdropProps>(({ 
   isLoading, 
-  message,
+  message = "Processing your meal plan...",
   type = 'meal-plan'
 }) => {
-  // Early return if not loading to avoid unnecessary renders
   if (!isLoading) return null;
 
   return (
-    <PageLoadingOverlay
-      isLoading={isLoading}
-      type={type}
-      message={message}
-      description="Please wait while we process your request..."
-    />
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center">
+      <div className="bg-white/95 backdrop-blur-sm border-0 shadow-2xl rounded-xl p-8 max-w-md mx-4">
+        <EnhancedPageLoading
+          isLoading={isLoading}
+          type={type}
+          title="Creating Your Meal Plan"
+          description={message}
+          timeout={10000}
+        />
+      </div>
+    </div>
   );
 });
 

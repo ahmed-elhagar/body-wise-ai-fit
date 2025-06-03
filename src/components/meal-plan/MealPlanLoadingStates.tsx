@@ -2,7 +2,7 @@
 import React, { useMemo } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import AILoadingDialog from "@/components/ui/ai-loading-dialog";
-import LoadingIndicator from "@/components/ui/loading-indicator";
+import EnhancedPageLoading from "@/components/ui/enhanced-page-loading";
 import { useLoadingProgress } from "./loading/useLoadingProgress";
 import { getGenerationSteps, getShuffleSteps } from "./loading/loadingStepsData";
 
@@ -55,12 +55,12 @@ export const MealPlanLoadingStates = ({
   if (isLoading) {
     return (
       <div className={`min-h-screen flex items-center justify-center ${isRTL ? 'rtl' : 'ltr'}`}>
-        <LoadingIndicator
-          status="loading"
-          message="Loading Meal Plan"
+        <EnhancedPageLoading
+          isLoading={true}
+          type="meal-plan"
+          title="Loading Meal Plan"
           description="Please wait while we fetch your meal plan..."
-          variant="card"
-          size="lg"
+          timeout={5000}
         />
       </div>
     );

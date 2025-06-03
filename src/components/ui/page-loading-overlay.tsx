@@ -1,11 +1,11 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
-import EnhancedLoadingIndicator, { type LoadingType } from "./enhanced-loading-indicator";
+import EnhancedPageLoading from "./enhanced-page-loading";
 
 interface PageLoadingOverlayProps {
   isLoading: boolean;
-  type?: LoadingType;
+  type?: 'general' | 'meal-plan' | 'exercise' | 'dashboard' | 'profile';
   message?: string;
   description?: string;
   className?: string;
@@ -29,14 +29,12 @@ const PageLoadingOverlay: React.FC<PageLoadingOverlayProps> = ({
       className
     )}>
       <div className="bg-white/95 backdrop-blur-sm border-0 shadow-2xl rounded-xl p-8 max-w-md mx-4">
-        <EnhancedLoadingIndicator
-          status="loading"
+        <EnhancedPageLoading
+          isLoading={isLoading}
           type={type}
-          message={message}
-          description={description}
-          size="lg"
-          variant="card"
-          showSteps={true}
+          title={message || "Loading"}
+          description={description || "Please wait while we process your request..."}
+          timeout={8000}
         />
       </div>
     </div>
