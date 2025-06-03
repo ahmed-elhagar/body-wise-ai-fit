@@ -311,7 +311,7 @@ ABSOLUTELY MANDATORY:
 - Complete ingredient and instruction lists for every meal
 - EVERY SINGLE DAY MUST BE FULLY WRITTEN OUT`;
 
-  const maxRetries = 3;
+  const maxRetries = 2; // REDUCED FROM 3 TO 2 AS REQUESTED
   let lastError = null;
   let fallbackUsed = false;
 

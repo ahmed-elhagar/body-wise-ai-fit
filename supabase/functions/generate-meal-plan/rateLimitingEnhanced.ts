@@ -14,7 +14,7 @@ export const enhancedRateLimiting = {
       // Get user profile with remaining credits
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('ai_generations_remaining')
+        .select('ai_generations_remaining, role')
         .eq('id', userId)
         .single();
 
@@ -23,7 +23,7 @@ export const enhancedRateLimiting = {
         throw new Error('Failed to check user credits');
       }
 
-      // Check if user is pro (has subscription)
+      // Enhanced pro status check - check both subscription and profile role
       const { data: subscription, error: subError } = await supabase
         .from('subscriptions')
         .select('status, current_period_end')
@@ -32,11 +32,14 @@ export const enhancedRateLimiting = {
         .gte('current_period_end', new Date().toISOString())
         .maybeSingle();
 
-      const isPro = !subError && subscription;
+      // Check if user is pro via subscription OR profile role
+      const isPro = (!subError && subscription) || profile?.role === 'pro';
       const remainingCredits = profile?.ai_generations_remaining || 0;
 
-      console.log('💳 Rate limit check result:', {
+      console.log('💳 Enhanced rate limit check result:', {
         isPro: !!isPro,
+        hasSubscription: !!subscription,
+        profileRole: profile?.role,
         remainingCredits,
         allowed: isPro || remainingCredits > 0
       });
