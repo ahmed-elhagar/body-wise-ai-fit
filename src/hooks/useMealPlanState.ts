@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useMemo } from 'react';
 import { useMealPlanData } from '@/hooks/meal-plan/useMealPlanData';
 import { useMealPlanNavigation } from '@/hooks/meal-plan/useMealPlanNavigation';
@@ -32,6 +31,7 @@ export const useMealPlanState = () => {
   // Enhanced refetch that invalidates all related queries
   const refetch = useCallback(async () => {
     console.log('🔄 Enhanced refetch - invalidating all meal plan queries for week offset:', currentWeekOffset);
+    console.log('🗓️ Expected week start date from navigation:', weekStartDate?.toISOString().split('T')[0]);
     
     // Invalidate all meal plan related queries
     await queryClient.invalidateQueries({
@@ -42,10 +42,15 @@ export const useMealPlanState = () => {
     await queryClient.invalidateQueries({
       queryKey: ['weekly-meal-plan', user?.id, currentWeekOffset],
     });
+
+    // Also invalidate any optimized queries
+    await queryClient.invalidateQueries({
+      queryKey: ['optimized-meal-plan'],
+    });
     
     // Force refetch the current data
     return await originalRefetch();
-  }, [queryClient, user?.id, currentWeekOffset, originalRefetch]);
+  }, [queryClient, user?.id, currentWeekOffset, originalRefetch, weekStartDate]);
 
   // Calculations
   const {
@@ -128,9 +133,10 @@ export const useMealPlanState = () => {
     setAiPreferences(prev => ({ ...prev, ...newPrefs }));
   }, []);
 
-  // Enhanced generation handler with better week sync
+  // Enhanced generation handler with better week sync and debugging
   const handleGenerateAIPlanEnhanced = useCallback(async () => {
     console.log('🚀 Starting enhanced AI generation for week offset:', currentWeekOffset);
+    console.log('🗓️ Week start date for generation:', weekStartDate?.toISOString().split('T')[0]);
     
     // Include week offset in preferences
     const enhancedPreferences = {
@@ -145,21 +151,30 @@ export const useMealPlanState = () => {
     
     if (result) {
       console.log('✅ Generation successful, forcing refresh for week:', currentWeekOffset);
+      console.log('🗓️ Expected data for week starting:', weekStartDate?.toISOString().split('T')[0]);
       
-      // Wait a moment for the database to be updated
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Wait longer for the database to be updated since there might be a sync issue
+      await new Promise(resolve => setTimeout(resolve, 3000));
       
-      // Force invalidate and refetch the specific week
+      // Force invalidate ALL meal plan queries to ensure fresh data
       await queryClient.invalidateQueries({
-        queryKey: ['weekly-meal-plan', user?.id, currentWeekOffset],
+        predicate: (query) => {
+          return query.queryKey[0] === 'weekly-meal-plan' || 
+                 query.queryKey[0] === 'optimized-meal-plan' ||
+                 query.queryKey[0] === 'meal-plan';
+        }
       });
       
       // Refetch the current week data
       await refetch();
+      
+      // Additional debug: check if data exists now
+      const currentData = queryClient.getQueryData(['weekly-meal-plan', user?.id, currentWeekOffset]);
+      console.log('🔍 Data after refetch:', currentData ? 'Found' : 'Still missing');
     }
     
     return result;
-  }, [aiPreferences, currentWeekOffset, handleGenerateAIPlan, updateAIPreferences, queryClient, user?.id, refetch]);
+  }, [aiPreferences, currentWeekOffset, handleGenerateAIPlan, updateAIPreferences, queryClient, user?.id, refetch, weekStartDate]);
 
   return {
     // Data

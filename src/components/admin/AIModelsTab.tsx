@@ -126,12 +126,12 @@ const AIModelsTab = () => {
       // First set all other models to not default
       models.forEach(m => {
         if (m.is_default && m.id !== modelId) {
-          updateModel(m.id, { is_default: false });
+          updateModel({ id: m.id, is_default: false });
         }
       });
       
       // Then set the selected model as default
-      updateModel(modelId, { is_default: true });
+      updateModel({ id: modelId, is_default: true });
     }
   };
 
