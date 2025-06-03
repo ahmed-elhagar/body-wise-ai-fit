@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useMemo } from 'react';
 import { useMealPlanData } from '@/hooks/meal-plan/useMealPlanData';
 import { useMealPlanNavigation } from '@/hooks/meal-plan/useMealPlanNavigation';
@@ -5,6 +6,7 @@ import { useMealPlanCalculations } from '@/features/meal-plan/hooks/useMealPlanC
 import { useMealPlanActions } from '@/hooks/useMealPlanActions';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from './useAuth';
+import { fetchMealPlanData } from '@/features/meal-plan/services/mealPlanService';
 import type { DailyMeal } from '@/features/meal-plan/types';
 import { formatWeekStartDate } from '@/utils/mealPlanUtils';
 
@@ -232,7 +234,6 @@ export const useMealPlanState = () => {
     
     // Navigation
     currentWeekOffset,
-    setCurrentWeekOffset: handleWeekChange,
     selectedDayNumber,
     setSelectedDayNumber,
     weekStartDate,

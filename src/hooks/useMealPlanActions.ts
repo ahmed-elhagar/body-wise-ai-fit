@@ -135,7 +135,7 @@ export const useMealPlanActions = (
   }, [aiPreferences, currentWeekOffset, generateMealPlan, queryClient, user?.id, refetchMealPlan, nutritionContext, language]);
 
   return {
-    handleGenerateAIPlan: handleGenerateAIPlanEnhanced,
+    handleGenerateAIPlan,
     isGenerating,
     nutritionContext
   };
