@@ -88,7 +88,7 @@ export const MealPlanContainer = () => {
         onClose={() => {}} // Can't be closed during generation
       />
 
-      {/* Enhanced Shopping List Drawer */}
+      {/* Enhanced Shopping List Drawer - Replace the old dialog */}
       <EnhancedShoppingListDrawer
         isOpen={mealPlanState.showShoppingListDialog}
         onClose={() => mealPlanState.closeShoppingListDialog()}
@@ -100,7 +100,7 @@ export const MealPlanContainer = () => {
         }}
       />
 
-      {/* All other dialogs */}
+      {/* All other dialogs - Disable shopping list in this component */}
       <MealPlanDialogs
         showAIDialog={mealPlanState.showAIDialog}
         setShowAIDialog={mealPlanState.closeAIDialog}
@@ -110,8 +110,8 @@ export const MealPlanContainer = () => {
         setShowExchangeDialog={mealPlanState.closeExchangeDialog}
         showAddSnackDialog={mealPlanState.showAddSnackDialog}
         setShowAddSnackDialog={mealPlanState.closeAddSnackDialog}
-        showShoppingListDialog={false} // Now handled by EnhancedShoppingListDrawer
-        setShowShoppingListDialog={() => {}} // Disabled - using drawer instead
+        showShoppingListDialog={false}
+        setShowShoppingListDialog={() => {}}
         selectedMeal={mealPlanState.selectedMeal}
         selectedMealIndex={mealPlanState.selectedMealIndex}
         aiPreferences={mealPlanState.aiPreferences}
