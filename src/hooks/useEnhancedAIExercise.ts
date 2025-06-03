@@ -58,35 +58,40 @@ export const useEnhancedAIExercise = () => {
 
       console.log('🏥 Health assessment loaded:', healthAssessment ? 'success' : 'none found');
 
-      // Create userData object as expected by the edge function
-      const userData = {
-        userId: user.id,
-        email: user.email,
-        ...profile,
-        preferred_language: profile?.preferred_language || 'en'
+      // Structure the request exactly as the edge function expects
+      const requestBody = {
+        userData: {
+          userId: user.id,
+          email: user.email || '',
+          first_name: profile?.first_name || '',
+          last_name: profile?.last_name || '',
+          age: profile?.age || null,
+          gender: profile?.gender || null,
+          height: profile?.height || null,
+          weight: profile?.weight || null,
+          fitness_goal: profile?.fitness_goal || null,
+          activity_level: profile?.activity_level || null,
+          preferred_language: profile?.preferred_language || 'en'
+        },
+        preferences: {
+          ...preferences,
+          userProfile: profile,
+          healthContext: healthAssessment,
+          userLanguage: profile?.preferred_language || 'en'
+        },
+        userLanguage: profile?.preferred_language || 'en',
+        weekStartDate: preferences.weekStartDate || new Date().toISOString().split('T')[0]
       };
 
-      // Enhanced preferences with user context
-      const enhancedPreferences = {
-        ...preferences,
-        userProfile: profile,
-        healthContext: healthAssessment,
-        userLanguage: profile?.preferred_language || 'en'
-      };
-
-      console.log('🚀 Calling edge function with enhanced data:', {
+      console.log('🚀 Calling edge function with structured data:', {
         userId: user.id,
         workoutType: preferences.workoutType,
-        weekStartDate: preferences.weekStartDate
+        weekStartDate: requestBody.weekStartDate,
+        hasProfile: !!profile
       });
 
       const { data, error } = await supabase.functions.invoke('generate-exercise-program', {
-        body: {
-          userData: userData, // Pass as userData object as expected by edge function
-          preferences: enhancedPreferences,
-          userLanguage: profile?.preferred_language || 'en',
-          weekStartDate: preferences.weekStartDate || new Date().toISOString().split('T')[0]
-        }
+        body: requestBody
       });
 
       if (error) {
@@ -143,24 +148,31 @@ export const useEnhancedAIExercise = () => {
         .eq('id', user.id)
         .single();
 
-      // Create userData object as expected by the edge function
-      const userData = {
-        userId: user.id,
-        email: user.email,
-        ...profile,
-        preferred_language: profile?.preferred_language || 'en'
+      // Structure the request exactly as the edge function expects
+      const requestBody = {
+        userData: {
+          userId: user.id,
+          email: user.email || '',
+          first_name: profile?.first_name || '',
+          last_name: profile?.last_name || '',
+          age: profile?.age || null,
+          gender: profile?.gender || null,
+          height: profile?.height || null,
+          weight: profile?.weight || null,
+          fitness_goal: profile?.fitness_goal || null,
+          activity_level: profile?.activity_level || null,
+          preferred_language: profile?.preferred_language || 'en'
+        },
+        preferences: {
+          regenerate: true,
+          userLanguage: profile?.preferred_language || 'en'
+        },
+        userLanguage: profile?.preferred_language || 'en',
+        weekStartDate
       };
       
       const { data, error } = await supabase.functions.invoke('generate-exercise-program', {
-        body: {
-          userData: userData, // Pass as userData object as expected by edge function
-          preferences: {
-            regenerate: true,
-            userLanguage: profile?.preferred_language || 'en'
-          },
-          userLanguage: profile?.preferred_language || 'en',
-          weekStartDate
-        }
+        body: requestBody
       });
 
       if (error) {
