@@ -46,8 +46,11 @@ const EnhancedExercisePage = () => {
   const currentSelectedDate = addDays(weekStartDate, selectedDayNumber - 1);
   const isToday = format(currentSelectedDate, 'yyyy-MM-dd') === format(currentDate, 'yyyy-MM-dd');
 
-  // Show full page loading ONLY on initial load when there's no program data at all OR during AI generation
-  if ((isLoading && !currentProgram) || isGenerating) {
+  // Show full page loading ONLY on initial load when there's no program data AND we're loading
+  // OR during AI generation
+  const showFullPageLoading = (isLoading && !currentProgram) || isGenerating;
+
+  if (showFullPageLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
         <EnhancedPageLoading
@@ -74,21 +77,23 @@ const EnhancedExercisePage = () => {
         weekOffset: currentWeekOffset
       };
       
+      console.log('🎯 Starting AI program generation:', enhancedPreferences);
       await generateExerciseProgram(enhancedPreferences);
       setShowAIDialog(false);
       refetch();
     } catch (error) {
-      console.error('Error generating exercise program:', error);
+      console.error('❌ Error generating exercise program:', error);
     }
   };
 
   const handleRegenerateProgram = async () => {
     try {
       const weekStartDateString = format(weekStartDate, 'yyyy-MM-dd');
+      console.log('🔄 Starting program regeneration for week:', weekStartDateString);
       await regenerateProgram(weekStartDateString);
       refetch();
     } catch (error) {
-      console.error('Error regenerating exercise program:', error);
+      console.error('❌ Error regenerating exercise program:', error);
     }
   };
 

@@ -22,6 +22,7 @@ export const useOptimizedExerciseProgramPage = () => {
   const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
   const [workoutType, setWorkoutType] = useState<"home" | "gym">("home");
   const [showAIDialog, setShowAIDialog] = useState(false);
+  const [isWeekChanging, setIsWeekChanging] = useState(false);
   const [aiPreferences, setAiPreferences] = useState<ExercisePreferences>({
     workoutType: "home",
     goalType: "general_fitness",
@@ -35,10 +36,13 @@ export const useOptimizedExerciseProgramPage = () => {
     difficulty: "beginner"
   });
 
-  const { currentProgram, isLoading, error, refetch, completeExercise, updateExerciseProgress } = 
+  const { currentProgram, isLoading: dataLoading, error, refetch, completeExercise, updateExerciseProgress } = 
     useExerciseProgramData(currentWeekOffset, workoutType);
   
   const { executeAIAction, isLoading: isGenerating } = useRateLimitedAI();
+
+  // Combined loading state for better UX
+  const isLoading = dataLoading || isWeekChanging;
 
   const currentDate = useMemo(() => new Date(), []);
   const weekStartDate = useMemo(() => 
@@ -83,6 +87,8 @@ export const useOptimizedExerciseProgramPage = () => {
       weekOffset: currentWeekOffset
     };
     
+    console.log('🎯 Generating AI program with preferences:', enhancedPreferences);
+    
     await executeAIAction('generate-exercise-program', enhancedPreferences);
     setShowAIDialog(false);
     refetch();
@@ -98,10 +104,13 @@ export const useOptimizedExerciseProgramPage = () => {
       weekOffset: currentWeekOffset
     };
     
+    console.log('🔄 Regenerating program with preferences:', preferences);
+    
     await handleGenerateAIProgram(preferences);
   }, [weekStartDate, aiPreferences, workoutType, currentWeekOffset, handleGenerateAIProgram]);
 
   const handleWorkoutTypeChange = useCallback((type: "home" | "gym") => {
+    console.log('🏋️ Changing workout type to:', type);
     setWorkoutType(type);
     setAiPreferences(prev => ({
       ...prev,
@@ -112,11 +121,23 @@ export const useOptimizedExerciseProgramPage = () => {
     }));
   }, []);
 
+  const handleWeekChange = useCallback(async (newOffset: number) => {
+    console.log('📅 Changing week offset from', currentWeekOffset, 'to', newOffset);
+    setIsWeekChanging(true);
+    setCurrentWeekOffset(newOffset);
+    
+    // Give time for the data to load
+    setTimeout(() => {
+      setIsWeekChanging(false);
+    }, 500);
+  }, [currentWeekOffset]);
+
   const handleExerciseComplete = useCallback(async (exerciseId: string) => {
     try {
+      console.log('✅ Completing exercise:', exerciseId);
       await completeExercise(exerciseId);
     } catch (error) {
-      console.error('Error completing exercise:', error);
+      console.error('❌ Error completing exercise:', error);
     }
   }, [completeExercise]);
 
@@ -127,9 +148,10 @@ export const useOptimizedExerciseProgramPage = () => {
     notes?: string
   ) => {
     try {
+      console.log('📊 Updating exercise progress:', { exerciseId, sets, reps, notes });
       await updateExerciseProgress(exerciseId, sets, reps, notes);
     } catch (error) {
-      console.error('Error updating exercise progress:', error);
+      console.error('❌ Error updating exercise progress:', error);
     }
   }, [updateExerciseProgress]);
 
@@ -137,7 +159,7 @@ export const useOptimizedExerciseProgramPage = () => {
     selectedDayNumber,
     setSelectedDayNumber,
     currentWeekOffset,
-    setCurrentWeekOffset,
+    setCurrentWeekOffset: handleWeekChange,
     workoutType,
     setWorkoutType: handleWorkoutTypeChange,
     showAIDialog,

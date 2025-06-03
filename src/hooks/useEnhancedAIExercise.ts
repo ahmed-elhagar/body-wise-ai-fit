@@ -12,6 +12,7 @@ export const useEnhancedAIExercise = () => {
 
   const generateExerciseProgram = async (preferences: any) => {
     if (!user?.id) {
+      console.error('❌ User not authenticated');
       toast.error('Please log in to generate an exercise program');
       return null;
     }
@@ -63,14 +64,18 @@ export const useEnhancedAIExercise = () => {
         userProfile: profile,
         healthContext: healthAssessment,
         userLanguage: profile?.preferred_language || 'en',
-        userId: user.id
+        userId: user.id // Ensure userId is explicitly included
       };
 
-      console.log('🚀 Calling edge function with userId:', user.id);
+      console.log('🚀 Calling edge function with enhanced data:', {
+        userId: user.id,
+        workoutType: preferences.workoutType,
+        weekStartDate: preferences.weekStartDate
+      });
 
       const { data, error } = await supabase.functions.invoke('generate-exercise-program', {
         body: {
-          userId: user.id,
+          userId: user.id, // Explicitly pass user ID
           preferences: enhancedPreferences,
           weekStartDate: preferences.weekStartDate || new Date().toISOString().split('T')[0]
         }
@@ -78,7 +83,7 @@ export const useEnhancedAIExercise = () => {
 
       if (error) {
         console.error('❌ Exercise generation error:', error);
-        throw error;
+        throw new Error(error.message || 'Generation failed');
       }
 
       if (data?.success) {
@@ -103,6 +108,7 @@ export const useEnhancedAIExercise = () => {
 
   const regenerateProgram = async (weekStartDate: string) => {
     if (!user?.id) {
+      console.error('❌ User not authenticated for regeneration');
       toast.error('Please log in to regenerate an exercise program');
       return null;
     }
@@ -124,7 +130,7 @@ export const useEnhancedAIExercise = () => {
       
       const { data, error } = await supabase.functions.invoke('generate-exercise-program', {
         body: {
-          userId: user.id,
+          userId: user.id, // Explicitly pass user ID
           regenerate: true,
           weekStartDate
         }
@@ -132,7 +138,7 @@ export const useEnhancedAIExercise = () => {
 
       if (error) {
         console.error('❌ Exercise regeneration error:', error);
-        throw error;
+        throw new Error(error.message || 'Regeneration failed');
       }
 
       if (data?.success) {
