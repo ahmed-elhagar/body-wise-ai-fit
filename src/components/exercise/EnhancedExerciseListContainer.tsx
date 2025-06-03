@@ -1,10 +1,9 @@
-
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dumbbell, Clock, Target } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { InteractiveExerciseCard } from "./InteractiveExerciseCard";
-import { EnhancedWorkoutSession } from "./EnhancedWorkoutSession";
+import { AdvancedWorkoutSession } from "./AdvancedWorkoutSession";
 import { RestDayCard } from "./RestDayCard";
 import { useState } from "react";
 
@@ -46,7 +45,7 @@ export const EnhancedExerciseListContainer = ({
     return (
       <div className="space-y-6">
         <RestDayCard />
-        <EnhancedWorkoutSession
+        <AdvancedWorkoutSession
           exercises={[]}
           isRestDay={true}
           onSessionStart={() => {}}
@@ -81,7 +80,7 @@ export const EnhancedExerciseListContainer = ({
   return (
     <div className="space-y-6">
       {/* Enhanced Session Control */}
-      <EnhancedWorkoutSession
+      <AdvancedWorkoutSession
         exercises={exercises}
         isRestDay={false}
         onSessionStart={() => setSessionActive(true)}
