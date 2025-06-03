@@ -1,9 +1,10 @@
+
 import { format, addDays } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useOptimizedExerciseProgramPage } from "@/hooks/useOptimizedExerciseProgramPage";
 import { ModernExerciseHeader } from "./ModernExerciseHeader";
 import { EnhancedDayNavigation } from "./EnhancedDayNavigation";
-import { ModernProgressSidebar } from "./ModernProgressSidebar";
+import { CompactProgressSidebar } from "./CompactProgressSidebar";
 import { EnhancedExerciseListContainer } from "./EnhancedExerciseListContainer";
 import { EmptyExerciseState } from "./EmptyExerciseState";
 import { AIExerciseDialog } from "./AIExerciseDialog";
@@ -141,12 +142,12 @@ const EnhancedExercisePage = () => {
           />
         </div>
 
-        {/* Main Content Grid */}
+        {/* Main Content Grid - Reduced to 2 columns */}
         <div className="px-6 pb-8">
-          <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
-            {/* Progress Sidebar */}
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+            {/* Progress Sidebar - Smaller */}
             <div className="xl:col-span-1">
-              <ModernProgressSidebar
+              <CompactProgressSidebar
                 completedExercises={completedExercises}
                 totalExercises={totalExercises}
                 progressPercentage={progressPercentage}
@@ -157,8 +158,8 @@ const EnhancedExercisePage = () => {
               />
             </div>
 
-            {/* Exercise Content */}
-            <div className="xl:col-span-3">
+            {/* Exercise Content - Larger */}
+            <div className="xl:col-span-2">
               <EnhancedExerciseListContainer
                 exercises={todaysExercises}
                 onExerciseComplete={handleExerciseComplete}

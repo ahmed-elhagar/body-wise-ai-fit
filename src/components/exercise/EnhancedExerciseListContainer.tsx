@@ -1,9 +1,10 @@
+
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dumbbell, Clock, Target } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { InteractiveExerciseCard } from "./InteractiveExerciseCard";
-import { AdvancedWorkoutSession } from "./AdvancedWorkoutSession";
+import { CompactWorkoutControl } from "./CompactWorkoutControl";
 import { RestDayCard } from "./RestDayCard";
 import { useState } from "react";
 
@@ -44,8 +45,7 @@ export const EnhancedExerciseListContainer = ({
   if (isRestDay) {
     return (
       <div className="space-y-6">
-        <RestDayCard />
-        <AdvancedWorkoutSession
+        <CompactWorkoutControl
           exercises={[]}
           isRestDay={true}
           onSessionStart={() => {}}
@@ -74,13 +74,11 @@ export const EnhancedExerciseListContainer = ({
   }
 
   const completedCount = exercises.filter(ex => ex.completed).length;
-  const totalDuration = exercises.reduce((total, ex) => total + (ex.rest_seconds || 60), 0);
-  const estimatedTime = Math.ceil((exercises.length * 3 + totalDuration / 60) / 60); // Rough estimation
 
   return (
     <div className="space-y-6">
-      {/* Enhanced Session Control */}
-      <AdvancedWorkoutSession
+      {/* Compact Session Control */}
+      <CompactWorkoutControl
         exercises={exercises}
         isRestDay={false}
         onSessionStart={() => setSessionActive(true)}
@@ -88,56 +86,6 @@ export const EnhancedExerciseListContainer = ({
         onSessionEnd={() => setSessionActive(false)}
         onSessionReset={() => setSessionActive(false)}
       />
-
-      {/* Workout Overview */}
-      <Card className="p-6 bg-gradient-to-br from-white to-gray-50 shadow-lg border-0">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
-                <Dumbbell className="w-5 h-5 text-white" />
-              </div>
-              Today's Workout
-            </h2>
-            <p className="text-gray-600">
-              Complete exercises in order for optimal results
-            </p>
-          </div>
-          
-          <div className="text-right space-y-2">
-            <div className="flex items-center gap-4">
-              <Badge 
-                variant="outline" 
-                className="bg-blue-50 border-blue-200 text-blue-700 font-semibold px-4 py-2"
-              >
-                <Target className="w-4 h-4 mr-2" />
-                {completedCount}/{exercises.length} Complete
-              </Badge>
-              
-              <Badge 
-                variant="outline" 
-                className="bg-purple-50 border-purple-200 text-purple-700 font-medium px-4 py-2"
-              >
-                <Clock className="w-4 h-4 mr-2" />
-                ~{estimatedTime}h workout
-              </Badge>
-            </div>
-          </div>
-        </div>
-
-        {/* Progress Bar */}
-        <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-          <div 
-            className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-500 ease-out rounded-full"
-            style={{ width: `${exercises.length > 0 ? (completedCount / exercises.length) * 100 : 0}%` }}
-          />
-        </div>
-        
-        <div className="flex justify-between text-sm text-gray-600 mt-2">
-          <span>Progress</span>
-          <span>{Math.round(exercises.length > 0 ? (completedCount / exercises.length) * 100 : 0)}%</span>
-        </div>
-      </Card>
       
       {/* Interactive Exercise List */}
       <div className="space-y-4">
