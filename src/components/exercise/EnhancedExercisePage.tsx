@@ -132,7 +132,7 @@ const EnhancedExercisePage = () => {
         />
       </div>
 
-      {/* Main Content - Show loading overlay only when changing weeks (has loaded before) */}
+      {/* Main Content - Show loading overlay when changing weeks */}
       <ExercisePageContent
         isLoading={isLoading && hasEverLoadedProgram && !isGenerating}
         currentProgram={currentProgram}

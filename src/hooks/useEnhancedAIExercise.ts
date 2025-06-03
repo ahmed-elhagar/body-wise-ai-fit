@@ -12,11 +12,13 @@ export const useEnhancedAIExercise = () => {
 
   const generateExerciseProgram = async (preferences: any) => {
     if (!user?.id) {
+      console.error('❌ No user authenticated for exercise generation');
       toast.error('Please log in to generate an exercise program');
       return null;
     }
 
     console.log('🔐 User authenticated:', user.id);
+    console.log('🏋️ Starting exercise program generation with preferences:', preferences);
 
     // Check credits before starting
     if (userCredits <= 0) {
@@ -34,9 +36,6 @@ export const useEnhancedAIExercise = () => {
     setIsGenerating(true);
     
     try {
-      console.log('🏋️ Starting enhanced exercise program generation with preferences:', preferences);
-      console.log('👤 User ID being sent:', user.id);
-      
       // Get user profile data for better personalization
       const { data: profile } = await supabase
         .from('profiles')
@@ -63,10 +62,15 @@ export const useEnhancedAIExercise = () => {
         userProfile: profile,
         healthContext: healthAssessment,
         userLanguage: profile?.preferred_language || 'en',
-        userId: user.id
+        userId: user.id // Explicitly include userId
       };
 
       console.log('🚀 Calling edge function with userId:', user.id);
+      console.log('📋 Full request body:', {
+        userId: user.id,
+        preferences: enhancedPreferences,
+        weekStartDate: preferences.weekStartDate || new Date().toISOString().split('T')[0]
+      });
 
       const { data, error } = await supabase.functions.invoke('generate-exercise-program', {
         body: {
@@ -103,6 +107,7 @@ export const useEnhancedAIExercise = () => {
 
   const regenerateProgram = async (weekStartDate: string) => {
     if (!user?.id) {
+      console.error('❌ No user authenticated for exercise regeneration');
       toast.error('Please log in to regenerate an exercise program');
       return null;
     }
