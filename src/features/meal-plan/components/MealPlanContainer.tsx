@@ -3,6 +3,7 @@ import React from 'react';
 import { useMealPlanState } from '@/hooks/useMealPlanState';
 import MealPlanHeader from '@/components/meal-plan/components/MealPlanHeader';
 import { MealPlanNavigation } from './MealPlanNavigation';
+import { MealPlanContent } from './MealPlanContent';
 import ErrorState from '@/components/meal-plan/components/ErrorState';
 import LoadingState from '@/components/meal-plan/components/LoadingState';
 import MealPlanDialogs from '@/components/meal-plan/dialogs/MealPlanDialogs';
@@ -41,10 +42,24 @@ export const MealPlanContainer = () => {
           weekStartDate={mealPlanState.weekStartDate}
         />
         
-        {/* TODO: Add back the proper meal plan content component */}
-        <div className="text-center py-8">
-          <p className="text-gray-600">Meal plan content will be restored here</p>
-        </div>
+        <MealPlanContent
+          viewMode="daily"
+          currentWeekPlan={mealPlanState.currentWeekPlan}
+          selectedDayNumber={mealPlanState.selectedDayNumber}
+          dailyMeals={mealPlanState.dailyMeals}
+          totalCalories={mealPlanState.totalCalories}
+          totalProtein={mealPlanState.totalProtein}
+          targetDayCalories={mealPlanState.targetDayCalories}
+          weekStartDate={mealPlanState.weekStartDate}
+          currentWeekOffset={mealPlanState.currentWeekOffset}
+          isGenerating={mealPlanState.isGenerating}
+          onViewMeal={(meal) => mealPlanState.openRecipeDialog(meal)}
+          onExchangeMeal={(meal) => mealPlanState.openExchangeDialog(meal)}
+          onAddSnack={() => mealPlanState.openAddSnackDialog()}
+          onGenerateAI={() => mealPlanState.openAIDialog()}
+          setCurrentWeekOffset={mealPlanState.setCurrentWeekOffset}
+          setSelectedDayNumber={mealPlanState.setSelectedDayNumber}
+        />
       </div>
 
       {/* AI Loading Dialog - Step-by-step loading experience */}
