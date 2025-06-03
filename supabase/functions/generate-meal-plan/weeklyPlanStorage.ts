@@ -19,29 +19,11 @@ export const saveWeeklyPlan = async (
     mealsPerDay: preferences.mealsPerDay || 3
   });
 
-  // CONSISTENT week calculation - Saturday as week start (day 6)
-  const calculateWeekStartDate = (weekOffset: number = 0): string => {
-    const today = new Date();
-    // Get Saturday of current week (day 6 = Saturday)
-    const currentWeekStart = new Date(today);
-    const dayOfWeek = today.getDay(); // 0 = Sunday, 6 = Saturday
-    const daysToSaturday = (6 - dayOfWeek) % 7;
-    currentWeekStart.setDate(today.getDate() - dayOfWeek + 6); // Move to Saturday
-    
-    // Add week offset
-    const targetWeek = new Date(currentWeekStart);
-    targetWeek.setDate(currentWeekStart.getDate() + (weekOffset * 7));
-    
-    return targetWeek.toISOString().split('T')[0];
-  };
-
-  const weekStartDate = calculateWeekStartDate(preferences.weekOffset || 0);
-
-  console.log('📅 CONSISTENT WEEK CALCULATION:', {
-    weekOffset: preferences.weekOffset || 0,
-    calculatedWeekStart: weekStartDate,
-    today: new Date().toISOString().split('T')[0]
-  });
+  // Calculate week start date based on offset
+  const today = new Date();
+  const startOfWeek = new Date(today);
+  startOfWeek.setDate(today.getDate() - today.getDay() + (preferences.weekOffset || 0) * 7);
+  const weekStartDate = startOfWeek.toISOString().split('T')[0];
 
   // Calculate totals from the generated plan
   let totalCalories = 0;
@@ -76,7 +58,7 @@ export const saveWeeklyPlan = async (
     .select('id')
     .eq('user_id', userProfile.id)
     .eq('week_start_date', weekStartDate)
-    .maybeSingle();
+    .single();
 
   if (checkError && checkError.code !== 'PGRST116') {
     console.error('❌ Error checking existing plan:', checkError);
@@ -121,7 +103,7 @@ export const saveWeeklyPlan = async (
 
     weeklyPlan = updatedPlan;
   } else {
-    console.log('➕ Creating new weekly plan for week:', weekStartDate);
+    console.log('➕ Creating new weekly plan');
     
     // Create new weekly plan
     const { data: newPlan, error: insertError } = await supabase
@@ -150,8 +132,7 @@ export const saveWeeklyPlan = async (
   console.log('✅ Weekly plan saved successfully:', {
     id: weeklyPlan.id,
     weekStartDate: weeklyPlan.week_start_date,
-    totalCalories: weeklyPlan.total_calories,
-    action: existingPlan ? 'updated' : 'created'
+    totalCalories: weeklyPlan.total_calories
   });
 
   return weeklyPlan;
