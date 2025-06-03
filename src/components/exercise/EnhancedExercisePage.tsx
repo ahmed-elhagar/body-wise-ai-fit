@@ -1,9 +1,9 @@
+
 import { format, addDays } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useOptimizedExerciseProgramPage } from "@/hooks/useOptimizedExerciseProgramPage";
 import { ModernExerciseHeader } from "./ModernExerciseHeader";
 import { EnhancedDayNavigation } from "./EnhancedDayNavigation";
-import { CompactProgressSidebar } from "./CompactProgressSidebar";
 import { EnhancedExerciseListContainer } from "./EnhancedExerciseListContainer";
 import { EmptyExerciseState } from "./EmptyExerciseState";
 import { AIExerciseDialog } from "./AIExerciseDialog";
@@ -116,22 +116,24 @@ const EnhancedExercisePage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
-      <div className="max-w-7xl mx-auto">
-        {/* Modern Header */}
-        <ModernExerciseHeader
-          currentProgram={currentProgram}
-          weekStartDate={weekStartDate}
-          currentWeekOffset={currentWeekOffset}
-          workoutType={workoutType}
-          onWeekChange={setCurrentWeekOffset}
-          onShowAIDialog={() => setShowAIDialog(true)}
-          onRegenerateProgram={handleRegenerateProgram}
-          onWorkoutTypeChange={setWorkoutType}
-          isGenerating={isGenerating}
-        />
+      <div className="max-w-6xl mx-auto">
+        {/* Compact Header - Reduced padding */}
+        <div className="px-4 py-4">
+          <ModernExerciseHeader
+            currentProgram={currentProgram}
+            weekStartDate={weekStartDate}
+            currentWeekOffset={currentWeekOffset}
+            workoutType={workoutType}
+            onWeekChange={setCurrentWeekOffset}
+            onShowAIDialog={() => setShowAIDialog(true)}
+            onRegenerateProgram={handleRegenerateProgram}
+            onWorkoutTypeChange={setWorkoutType}
+            isGenerating={isGenerating}
+          />
+        </div>
 
-        {/* Enhanced Day Navigation */}
-        <div className="px-6 mb-8">
+        {/* Compact Day Navigation */}
+        <div className="px-4 mb-4">
           <EnhancedDayNavigation
             weekStartDate={weekStartDate}
             selectedDayNumber={selectedDayNumber}
@@ -141,8 +143,8 @@ const EnhancedExercisePage = () => {
           />
         </div>
 
-        {/* Simplified Single Column Layout */}
-        <div className="px-6 pb-8">
+        {/* Main Content - Reduced padding */}
+        <div className="px-4 pb-6">
           <EnhancedExerciseListContainer
             exercises={todaysExercises}
             onExerciseComplete={handleExerciseComplete}

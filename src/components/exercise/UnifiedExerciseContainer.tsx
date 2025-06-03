@@ -130,77 +130,81 @@ export const UnifiedExerciseContainer = ({
   }
 
   return (
-    <div className="space-y-6">
-      {/* Unified Header with Progress and Controls */}
-      <Card className="p-6 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-blue-200 shadow-lg">
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* Progress Ring Section */}
-          <div className="flex-shrink-0">
-            <AnimatedProgressRing
-              completedExercises={completedExercises}
-              totalExercises={totalExercises}
-              progressPercentage={progressPercentage}
-              isToday={isToday}
-              isRestDay={isRestDay}
-            />
+    <div className="space-y-4">
+      {/* Compact Header with Progress and Controls */}
+      <Card className="p-4 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-blue-200 shadow-lg">
+        <div className="flex flex-col lg:flex-row gap-4">
+          {/* Progress Ring Section - Smaller */}
+          <div className="flex-shrink-0 flex justify-center lg:justify-start">
+            <div className="scale-75">
+              <AnimatedProgressRing
+                completedExercises={completedExercises}
+                totalExercises={totalExercises}
+                progressPercentage={progressPercentage}
+                isToday={isToday}
+                isRestDay={isRestDay}
+              />
+            </div>
           </div>
 
-          {/* Timer and Controls Section */}
-          <div className="flex-1 space-y-4">
-            {/* Timer Display */}
+          {/* Timer and Controls Section - More Compact */}
+          <div className="flex-1 space-y-3">
+            {/* Timer Display - Smaller */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
-                  <Timer className="w-6 h-6 text-white" />
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
+                  <Timer className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-gray-900 font-mono">{totalTime}</div>
-                  <div className="text-sm text-gray-500">{isActive ? (isPaused ? 'Paused' : 'Active') : 'Ready'}</div>
+                  <div className="text-xl font-bold text-gray-900 font-mono">{totalTime}</div>
+                  <div className="text-xs text-gray-500">{isActive ? (isPaused ? 'Paused' : 'Active') : 'Ready'}</div>
                 </div>
               </div>
 
-              {/* Quick Stats */}
-              <div className="flex gap-4 text-sm">
+              {/* Quick Stats - Smaller */}
+              <div className="flex gap-3 text-sm">
                 <div className="text-center">
-                  <div className="text-lg font-bold text-green-600">{completedExercises}</div>
-                  <div className="text-gray-600">Done</div>
+                  <div className="text-base font-bold text-green-600">{completedExercises}</div>
+                  <div className="text-xs text-gray-600">Done</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg font-bold text-orange-600">{estimatedCalories}</div>
-                  <div className="text-gray-600">Cal</div>
+                  <div className="text-base font-bold text-orange-600">{estimatedCalories}</div>
+                  <div className="text-xs text-gray-600">Cal</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg font-bold text-purple-600">{workoutIntensity}</div>
-                  <div className="text-gray-600">Level</div>
+                  <div className="text-base font-bold text-purple-600">{workoutIntensity}</div>
+                  <div className="text-xs text-gray-600">Level</div>
                 </div>
               </div>
             </div>
 
-            {/* Progress Bar */}
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm text-gray-600">
-                <span>Workout Progress</span>
-                <span>{Math.round(progressPercentage)}% Complete</span>
+            {/* Progress Bar - Smaller */}
+            <div className="space-y-1">
+              <div className="flex justify-between text-xs text-gray-600">
+                <span>Progress</span>
+                <span>{Math.round(progressPercentage)}%</span>
               </div>
-              <Progress value={progressPercentage} className="h-3 bg-gray-200" />
+              <Progress value={progressPercentage} className="h-2 bg-gray-200" />
             </div>
 
-            {/* Control Buttons */}
+            {/* Control Buttons - Smaller */}
             <div className="flex gap-2">
               {!isActive ? (
                 <Button
-                  onClick={handleStart}
+                  onClick={startSession}
+                  size="sm"
                   className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white flex-1"
                 >
                   <Play className="w-4 h-4 mr-2" />
-                  Start Workout
+                  Start
                 </Button>
               ) : (
                 <>
                   {!isPaused ? (
                     <Button
-                      onClick={handlePause}
+                      onClick={pauseSession}
                       variant="outline"
+                      size="sm"
                       className="border-orange-300 text-orange-700 hover:bg-orange-50 flex-1"
                     >
                       <Pause className="w-4 h-4 mr-2" />
@@ -208,7 +212,8 @@ export const UnifiedExerciseContainer = ({
                     </Button>
                   ) : (
                     <Button
-                      onClick={handleResume}
+                      onClick={resumeSession}
+                      size="sm"
                       className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white flex-1"
                     >
                       <Play className="w-4 h-4 mr-2" />
@@ -216,8 +221,9 @@ export const UnifiedExerciseContainer = ({
                     </Button>
                   )}
                   <Button
-                    onClick={handleStop}
+                    onClick={resetSession}
                     variant="outline"
+                    size="sm"
                     className="border-red-300 text-red-700 hover:bg-red-50"
                   >
                     <Square className="w-4 h-4" />
@@ -226,7 +232,7 @@ export const UnifiedExerciseContainer = ({
               )}
               
               <Button
-                onClick={handleReset}
+                onClick={resetSession}
                 variant="outline"
                 size="sm"
                 className="border-gray-300 text-gray-700 hover:bg-gray-50"
@@ -248,15 +254,15 @@ export const UnifiedExerciseContainer = ({
         </div>
       </Card>
 
-      {/* Tabbed Content */}
+      {/* Tabbed Content - More Compact */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="workout">Exercises</TabsTrigger>
-          <TabsTrigger value="progress">Progress</TabsTrigger>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3 h-9">
+          <TabsTrigger value="workout" className="text-sm">Exercises</TabsTrigger>
+          <TabsTrigger value="progress" className="text-sm">Progress</TabsTrigger>
+          <TabsTrigger value="overview" className="text-sm">Overview</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="workout" className="space-y-4 mt-6">
+        <TabsContent value="workout" className="space-y-3 mt-4">
           {exercises.map((exercise, index) => (
             <InteractiveExerciseCard
               key={exercise.id}
@@ -268,38 +274,38 @@ export const UnifiedExerciseContainer = ({
           ))}
         </TabsContent>
 
-        <TabsContent value="progress" className="mt-6">
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <TrendingUp className="w-5 h-5" />
+        <TabsContent value="progress" className="mt-4">
+          <Card className="p-4">
+            <h3 className="text-base font-semibold mb-3 flex items-center gap-2">
+              <TrendingUp className="w-4 h-4" />
               Workout Analytics
             </h3>
             
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="text-center p-4 bg-green-50 rounded-xl">
-                <div className="text-2xl font-bold text-green-600">{completedExercises}</div>
-                <div className="text-sm text-green-700">Completed</div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="text-center p-3 bg-green-50 rounded-xl">
+                <div className="text-xl font-bold text-green-600">{completedExercises}</div>
+                <div className="text-xs text-green-700">Completed</div>
               </div>
               
-              <div className="text-center p-4 bg-blue-50 rounded-xl">
-                <div className="text-2xl font-bold text-blue-600">{totalExercises}</div>
-                <div className="text-sm text-blue-700">Total</div>
+              <div className="text-center p-3 bg-blue-50 rounded-xl">
+                <div className="text-xl font-bold text-blue-600">{totalExercises}</div>
+                <div className="text-xs text-blue-700">Total</div>
               </div>
               
-              <div className="text-center p-4 bg-orange-50 rounded-xl">
-                <div className="text-2xl font-bold text-orange-600">{estimatedCalories}</div>
-                <div className="text-sm text-orange-700">Calories</div>
+              <div className="text-center p-3 bg-orange-50 rounded-xl">
+                <div className="text-xl font-bold text-orange-600">{estimatedCalories}</div>
+                <div className="text-xs text-orange-700">Calories</div>
               </div>
               
-              <div className="text-center p-4 bg-purple-50 rounded-xl">
-                <div className="text-2xl font-bold text-purple-600">{Math.round(progressPercentage)}%</div>
-                <div className="text-sm text-purple-700">Complete</div>
+              <div className="text-center p-3 bg-purple-50 rounded-xl">
+                <div className="text-xl font-bold text-purple-600">{Math.round(progressPercentage)}%</div>
+                <div className="text-xs text-purple-700">Complete</div>
               </div>
             </div>
 
-            {/* Motivational Message */}
+            {/* Motivational Message - Smaller */}
             {isActive && (
-              <div className={`mt-6 text-center p-4 rounded-xl text-white ${
+              <div className={`mt-4 text-center p-3 rounded-xl text-white text-sm ${
                 progressPercentage === 100 
                   ? 'bg-gradient-to-r from-green-500 to-emerald-500' 
                   : progressPercentage > 75 
@@ -322,17 +328,17 @@ export const UnifiedExerciseContainer = ({
           </Card>
         </TabsContent>
 
-        <TabsContent value="overview" className="mt-6">
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <Calendar className="w-5 h-5" />
+        <TabsContent value="overview" className="mt-4">
+          <Card className="p-4">
+            <h3 className="text-base font-semibold mb-3 flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
               Program Overview
             </h3>
             
-            <div className="space-y-4">
+            <div className="space-y-3 text-sm">
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Week Progress</span>
-                <Badge variant="outline" className="bg-purple-100 border-purple-200 text-purple-700">
+                <Badge variant="outline" className="bg-purple-100 border-purple-200 text-purple-700 text-xs">
                   Day {selectedDayNumber}/{weekProgress}
                 </Badge>
               </div>
@@ -344,7 +350,7 @@ export const UnifiedExerciseContainer = ({
               
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Workout Type</span>
-                <Badge className="bg-purple-500 text-white">
+                <Badge className="bg-purple-500 text-white text-xs">
                   {currentProgram?.workout_type === 'gym' ? '🏋️ Gym' : '🏠 Home'}
                 </Badge>
               </div>
