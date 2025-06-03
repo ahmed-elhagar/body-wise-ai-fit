@@ -17,6 +17,243 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const parseAndValidateRequest = (requestBody: any) => {
+  try {
+    console.log('🔍 Parsing request body:', typeof requestBody, Object.keys(requestBody || {}));
+    
+    if (!requestBody) {
+      throw new MealPlanError(
+        'Request body is required',
+        errorCodes.VALIDATION_ERROR,
+        400,
+        true
+      );
+    }
+    
+    const { userProfile, preferences } = requestBody;
+    
+    console.log('🔍 Extracted data:', {
+      hasUserProfile: !!userProfile,
+      userProfileKeys: userProfile ? Object.keys(userProfile) : [],
+      hasPreferences: !!preferences,
+      preferencesKeys: preferences ? Object.keys(preferences) : []
+    });
+    
+    if (!userProfile || !userProfile.id) {
+      throw new MealPlanError(
+        'User profile with ID is required',
+        errorCodes.INVALID_USER_PROFILE,
+        400,
+        true
+      );
+    }
+    
+    // Validate essential profile fields
+    if (!userProfile.age || !userProfile.weight || !userProfile.height) {
+      throw new MealPlanError(
+        'Complete profile information is required (age, weight, height)',
+        errorCodes.INVALID_USER_PROFILE,
+        400,
+        true
+      );
+    }
+    
+    return { userProfile, preferences: preferences || {} };
+  } catch (error) {
+    if (error instanceof MealPlanError) throw error;
+    
+    console.error('❌ Request parsing error:', error);
+    throw new MealPlanError(
+      'Invalid request format',
+      errorCodes.VALIDATION_ERROR,
+      400,
+      true
+    );
+  }
+};
+
+const generateAIMealPlan = async (
+  userProfile: any,
+  preferences: any,
+  adjustedDailyCalories: number,
+  includeSnacks: boolean,
+  language: string,
+  nutritionContext: any,
+  modelConfig: any,
+  apiKey: string
+) => {
+  try {
+    const systemPrompt = language === 'ar' 
+      ? 'أنت خبير تغذية مُحترف بالذكاء الاصطناعي متخصص في التغذية لمراحل الحياة المختلفة مع الوعي المتقدم بالحالات الصحية.'
+      : 'You are a professional nutritionist AI specialized in life-phase nutrition with advanced health condition awareness.';
+
+    // Use enhanced prompt generator
+    const basePrompt = generateEnhancedMealPlanPrompt(userProfile, preferences, adjustedDailyCalories, includeSnacks);
+    const enhancedPrompt = enhancePromptWithLifePhase(basePrompt, nutritionContext, language);
+
+    // Add explicit JSON format instruction with correct meal types
+    const jsonFormatPrompt = enhancedPrompt + `
+
+CRITICAL: Return ONLY valid JSON in this exact format:
+{
+  "days": [
+    {
+      "day": 1,
+      "meals": [
+        {
+          "type": "breakfast",
+          "name": "Meal Name",
+          "calories": 400,
+          "protein": 25,
+          "carbs": 45,
+          "fat": 15,
+          "prep_time": 15,
+          "cook_time": 10,
+          "servings": 1,
+          "ingredients": ["ingredient1", "ingredient2"],
+          "instructions": ["step1", "step2"],
+          "alternatives": ["alternative1", "alternative2"]
+        }
+      ]
+    }
+  ]
+}
+
+IMPORTANT MEAL TYPES:
+- For snacks, use ONLY "snack" (not snack1, snack2, etc.)
+- Valid meal types: breakfast, lunch, dinner, snack
+- For ${includeSnacks ? '5 meals per day: breakfast, snack, lunch, snack, dinner' : '3 meals per day: breakfast, lunch, dinner'}
+- Total daily calories should be approximately ${adjustedDailyCalories}
+- NEVER include comments, explanations, or markdown formatting in the response
+- NEVER use placeholder text like "// ... (other 6 days of meals)"
+- ALWAYS provide complete data for all 7 days`;
+
+    console.log(`🤖 Sending enhanced request to ${modelConfig.provider} API using model: ${modelConfig.modelId}...`);
+    
+    let response;
+    
+    if (modelConfig.provider === 'openai') {
+      response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: modelConfig.modelId,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: jsonFormatPrompt }
+          ],
+          temperature: 0.1,
+          max_tokens: 8000
+        }),
+      });
+    } else if (modelConfig.provider === 'google') {
+      response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelConfig.modelId}:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                { text: systemPrompt + '\n\n' + jsonFormatPrompt }
+              ]
+            }
+          ],
+          generationConfig: {
+            temperature: 0.1,
+            maxOutputTokens: 8000
+          }
+        }),
+      });
+    } else if (modelConfig.provider === 'anthropic') {
+      response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'x-api-key': apiKey,
+          'Content-Type': 'application/json',
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: modelConfig.modelId,
+          max_tokens: 8000,
+          messages: [
+            { role: 'user', content: systemPrompt + '\n\n' + jsonFormatPrompt }
+          ],
+          temperature: 0.1
+        }),
+      });
+    }
+
+    if (!response || !response.ok) {
+      const errorText = await response?.text();
+      console.error(`❌ ${modelConfig.provider} API error:`, response?.status, errorText);
+      throw new Error(`${modelConfig.provider} API error: ${response?.status} ${errorText}`);
+    }
+
+    const data = await response.json();
+    console.log(`✅ ${modelConfig.provider} API response received successfully`);
+    
+    // Parse response based on provider
+    let content = '';
+    if (modelConfig.provider === 'openai') {
+      content = data.choices[0].message.content.trim();
+    } else if (modelConfig.provider === 'google') {
+      content = data.candidates[0].content.parts[0].text.trim();
+    } else if (modelConfig.provider === 'anthropic') {
+      content = data.content[0].text.trim();
+    }
+    
+    // Parse and clean response with enhanced validation
+    const cleanedContent = content
+      .replace(/```json\n?/g, '')
+      .replace(/```\n?/g, '')
+      .replace(/\/\/.*$/gm, '') // Remove any comment lines
+      .replace(/\/\*[\s\S]*?\*\//g, '') // Remove block comments
+      .trim();
+    
+    let parsedPlan;
+    try {
+      parsedPlan = JSON.parse(cleanedContent);
+    } catch (parseError) {
+      console.error('Failed to parse AI response:', parseError);
+      console.error('Raw response content:', content);
+      console.error('Cleaned content:', cleanedContent);
+      throw new MealPlanError(
+        'Invalid AI response format',
+        errorCodes.AI_GENERATION_FAILED,
+        500,
+        true
+      );
+    }
+    
+    // Validate and sanitize the plan
+    if (parsedPlan.days && Array.isArray(parsedPlan.days)) {
+      parsedPlan.days = parsedPlan.days.map((day: any) => ({
+        ...day,
+        meals: day.meals?.map((meal: any) => 
+          optimizedDatabaseOperations.sanitizeJsonFields(meal)
+        ).filter((meal: any) => 
+          optimizedDatabaseOperations.validateMealData(meal)
+        ) || []
+      }));
+    }
+    
+    return parsedPlan;
+  } catch (error) {
+    console.error(`❌ ${modelConfig.provider} meal plan generation failed:`, error);
+    throw new MealPlanError(
+      `AI generation failed: ${error.message}`,
+      errorCodes.AI_GENERATION_FAILED,
+      500,
+      true
+    );
+  }
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -278,234 +515,3 @@ serve(async (req) => {
     });
   }
 });
-
-const parseAndValidateRequest = (requestBody: any) => {
-  try {
-    console.log('🔍 Parsing request body:', typeof requestBody, Object.keys(requestBody || {}));
-    
-    if (!requestBody) {
-      throw new MealPlanError(
-        'Request body is required',
-        errorCodes.VALIDATION_ERROR,
-        400,
-        true
-      );
-    }
-    
-    const { userProfile, preferences } = requestBody;
-    
-    console.log('🔍 Extracted data:', {
-      hasUserProfile: !!userProfile,
-      userProfileKeys: userProfile ? Object.keys(userProfile) : [],
-      hasPreferences: !!preferences,
-      preferencesKeys: preferences ? Object.keys(preferences) : []
-    });
-    
-    if (!userProfile || !userProfile.id) {
-      throw new MealPlanError(
-        'User profile with ID is required',
-        errorCodes.INVALID_USER_PROFILE,
-        400,
-        true
-      );
-    }
-    
-    // Validate essential profile fields
-    if (!userProfile.age || !userProfile.weight || !userProfile.height) {
-      throw new MealPlanError(
-        'Complete profile information is required (age, weight, height)',
-        errorCodes.INVALID_USER_PROFILE,
-        400,
-        true
-      );
-    }
-    
-    return { userProfile, preferences: preferences || {} };
-  } catch (error) {
-    if (error instanceof MealPlanError) throw error;
-    
-    console.error('❌ Request parsing error:', error);
-    throw new MealPlanError(
-      'Invalid request format',
-      errorCodes.VALIDATION_ERROR,
-      400,
-      true
-    );
-  }
-};
-
-const generateAIMealPlan = async (
-  userProfile: any,
-  preferences: any,
-  adjustedDailyCalories: number,
-  includeSnacks: boolean,
-  language: string,
-  nutritionContext: any,
-  modelConfig: any,
-  apiKey: string
-) => {
-  try {
-    const systemPrompt = language === 'ar' 
-      ? 'أنت خبير تغذية مُحترف بالذكاء الاصطناعي متخصص في التغذية لمراحل الحياة المختلفة مع الوعي المتقدم بالحالات الصحية.'
-      : 'You are a professional nutritionist AI specialized in life-phase nutrition with advanced health condition awareness.';
-
-    // Use enhanced prompt generator
-    const basePrompt = generateEnhancedMealPlanPrompt(userProfile, preferences, adjustedDailyCalories, includeSnacks);
-    const enhancedPrompt = enhancePromptWithLifePhase(basePrompt, nutritionContext, language);
-
-    // Add explicit JSON format instruction with correct meal types
-    const jsonFormatPrompt = enhancedPrompt + `
-
-CRITICAL: Return ONLY valid JSON in this exact format:
-{
-  "days": [
-    {
-      "day": 1,
-      "meals": [
-        {
-          "type": "breakfast",
-          "name": "Meal Name",
-          "calories": 400,
-          "protein": 25,
-          "carbs": 45,
-          "fat": 15,
-          "prep_time": 15,
-          "cook_time": 10,
-          "servings": 1,
-          "ingredients": ["ingredient1", "ingredient2"],
-          "instructions": ["step1", "step2"],
-          "alternatives": ["alternative1", "alternative2"]
-        }
-      ]
-    }
-  ]
-}
-
-IMPORTANT MEAL TYPES:
-- For snacks, use ONLY "snack" (not snack1, snack2, etc.)
-- Valid meal types: breakfast, lunch, dinner, snack
-- For ${includeSnacks ? '5 meals per day: breakfast, snack, lunch, snack, dinner' : '3 meals per day: breakfast, lunch, dinner'}
-- Total daily calories should be approximately ${adjustedDailyCalories}`;
-
-    console.log(`🤖 Sending enhanced request to ${modelConfig.provider} API using model: ${modelConfig.modelId}...`);
-    
-    let response;
-    
-    if (modelConfig.provider === 'openai') {
-      response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: modelConfig.modelId,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: jsonFormatPrompt }
-          ],
-          temperature: 0.1,
-          max_tokens: 8000
-        }),
-      });
-    } else if (modelConfig.provider === 'google') {
-      response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelConfig.modelId}:generateContent?key=${apiKey}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                { text: systemPrompt + '\n\n' + jsonFormatPrompt }
-              ]
-            }
-          ],
-          generationConfig: {
-            temperature: 0.1,
-            maxOutputTokens: 8000
-          }
-        }),
-      });
-    } else if (modelConfig.provider === 'anthropic') {
-      response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'x-api-key': apiKey,
-          'Content-Type': 'application/json',
-          'anthropic-version': '2023-06-01'
-        },
-        body: JSON.stringify({
-          model: modelConfig.modelId,
-          max_tokens: 8000,
-          messages: [
-            { role: 'user', content: systemPrompt + '\n\n' + jsonFormatPrompt }
-          ],
-          temperature: 0.1
-        }),
-      });
-    }
-
-    if (!response || !response.ok) {
-      const errorText = await response?.text();
-      console.error(`❌ ${modelConfig.provider} API error:`, response?.status, errorText);
-      throw new Error(`${modelConfig.provider} API error: ${response?.status} ${errorText}`);
-    }
-
-    const data = await response.json();
-    console.log(`✅ ${modelConfig.provider} API response received successfully`);
-    
-    // Parse response based on provider
-    let content = '';
-    if (modelConfig.provider === 'openai') {
-      content = data.choices[0].message.content.trim();
-    } else if (modelConfig.provider === 'google') {
-      content = data.candidates[0].content.parts[0].text.trim();
-    } else if (modelConfig.provider === 'anthropic') {
-      content = data.content[0].text.trim();
-    }
-    
-    // Parse and clean response with enhanced validation
-    const cleanedContent = content
-      .replace(/```json\n?/g, '')
-      .replace(/```\n?/g, '')
-      .trim();
-    
-    let parsedPlan;
-    try {
-      parsedPlan = JSON.parse(cleanedContent);
-    } catch (parseError) {
-      console.error('Failed to parse AI response:', parseError);
-      console.error('Raw response content:', content);
-      throw new MealPlanError(
-        'Invalid AI response format',
-        errorCodes.AI_GENERATION_FAILED,
-        500,
-        true
-      );
-    }
-    
-    // Validate and sanitize the plan
-    if (parsedPlan.days && Array.isArray(parsedPlan.days)) {
-      parsedPlan.days = parsedPlan.days.map((day: any) => ({
-        ...day,
-        meals: day.meals?.map((meal: any) => 
-          optimizedDatabaseOperations.sanitizeJsonFields(meal)
-        ).filter((meal: any) => 
-          optimizedDatabaseOperations.validateMealData(meal)
-        ) || []
-      }));
-    }
-    
-    return parsedPlan;
-  } catch (error) {
-    console.error(`❌ ${modelConfig.provider} meal plan generation failed:`, error);
-    throw new MealPlanError(
-      `AI generation failed: ${error.message}`,
-      errorCodes.AI_GENERATION_FAILED,
-      500,
-      true
-    );
-  }
-};
