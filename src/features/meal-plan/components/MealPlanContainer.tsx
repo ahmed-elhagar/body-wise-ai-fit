@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useMealPlanState } from '@/hooks/useMealPlanState';
-import EnhancedMealPlanHeader from '@/components/meal-plan/EnhancedMealPlanHeader';
+import MealPlanHeader from '@/components/meal-plan/MealPlanHeader';
 import { MealPlanNavigation } from './MealPlanNavigation';
 import { MealPlanContent } from './MealPlanContent';
 import ErrorState from '@/components/meal-plan/components/ErrorState';
@@ -23,7 +23,7 @@ export const MealPlanContainer = () => {
   return (
     <>
       <div className="space-y-6">
-        <EnhancedMealPlanHeader 
+        <MealPlanHeader 
           onGenerateAI={() => mealPlanState.openAIDialog()}
           onShuffle={() => {}} // Add shuffle functionality if needed
           onShowShoppingList={() => mealPlanState.openShoppingListDialog()}
@@ -82,7 +82,7 @@ export const MealPlanContainer = () => {
         selectedMealIndex={mealPlanState.selectedMealIndex}
         aiPreferences={mealPlanState.aiPreferences}
         setAiPreferences={mealPlanState.updateAIPreferences}
-        handleGenerateAI={mealPlanState.handleGenerateAI}
+        handleGenerateAI={mealPlanState.handleGenerateAIPlan}
         onRefetch={mealPlanState.refetch}
         mealPlanData={mealPlanState.currentWeekPlan}
         selectedDayNumber={mealPlanState.selectedDayNumber}
