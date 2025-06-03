@@ -5,7 +5,7 @@ import { RevampedMealPlanNavigation } from '@/components/meal-plan/RevampedMealP
 import { MealPlanContent } from './MealPlanContent';
 import { MealPlanDialogs } from '../dialogs/MealPlanDialogs';
 import { MealPlanLoadingStates } from '@/components/meal-plan/MealPlanLoadingStates';
-import { EnhancedMealPlanHeader } from './EnhancedMealPlanHeader';
+import MealPlanHeader from '@/components/meal-plan/MealPlanHeader';
 
 export const MealPlanContainer = () => {
   const mealPlanState = useMealPlanState();
@@ -27,15 +27,17 @@ export const MealPlanContainer = () => {
     <div className="min-h-screen bg-gradient-to-br from-fitness-primary-25 via-white to-fitness-accent-25">
       <div className="container mx-auto px-4 py-6 max-w-7xl">
         <div className="space-y-6">
-          {/* Enhanced Header with Actions */}
-          <EnhancedMealPlanHeader
-            onGenerateAI={mealPlanState.openAIDialog}
+          {/* Header with Actions */}
+          <MealPlanHeader
+            onGenerateAI={mealPlanState.handleGenerateAIPlan}
             onShuffle={() => {
               // TODO: Implement shuffle functionality
               console.log('Shuffle meals');
             }}
             onShowShoppingList={mealPlanState.openShoppingListDialog}
+            onRegeneratePlan={mealPlanState.handleGenerateAIPlan}
             isGenerating={mealPlanState.isGenerating}
+            isShuffling={false}
             hasWeeklyPlan={!!mealPlanState.currentWeekPlan?.weeklyPlan}
           />
 
