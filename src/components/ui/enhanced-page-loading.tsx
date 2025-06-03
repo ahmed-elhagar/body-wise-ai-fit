@@ -15,7 +15,7 @@ interface EnhancedPageLoadingProps {
   title?: string;
   description?: string;
   customSteps?: LoadingStep[];
-  timeout?: number; // Add timeout prop
+  timeout?: number;
 }
 
 const EnhancedPageLoading = ({
@@ -24,7 +24,7 @@ const EnhancedPageLoading = ({
   title,
   description,
   customSteps,
-  timeout = 15000 // 15 second default timeout
+  timeout = 15000
 }: EnhancedPageLoadingProps) => {
   const { t } = useLanguage();
   const [currentStep, setCurrentStep] = useState(0);
@@ -121,11 +121,11 @@ const EnhancedPageLoading = ({
 
       // Calculate overall progress (0-95% to leave room for completion)
       let cumulativeDuration = 0;
-      for (let i = 0; i <= currentStepIndex; i++) {
+      for (let i = 0; i < currentStepIndex; i++) {
         cumulativeDuration += steps[i]?.duration || 0;
       }
       const stepProgress = Math.min(elapsed / currentStepDuration, 1);
-      const overallProgress = Math.min(((cumulativeDuration - currentStepDuration + (elapsed * stepProgress)) / totalDuration) * 95, 95);
+      const overallProgress = Math.min(((cumulativeDuration + (elapsed * stepProgress)) / totalDuration) * 95, 95);
       
       setProgress(overallProgress);
 
