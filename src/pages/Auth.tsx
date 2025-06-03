@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
@@ -11,6 +12,7 @@ import { AuthToggle } from "@/components/auth/AuthToggle";
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [justSignedUp, setJustSignedUp] = useState(false);
   
   const { signIn, signUp, user, loading: authLoading } = useAuth();
   const { profile, isLoading: profileLoading } = useProfile();
@@ -24,7 +26,8 @@ const Auth = () => {
       userId: user.id,
       hasProfile: !!profile,
       profileLoading,
-      onboardingCompleted: profile?.onboarding_completed
+      onboardingCompleted: profile?.onboarding_completed,
+      justSignedUp
     });
     
     if (profileLoading) {
@@ -32,7 +35,14 @@ const Auth = () => {
       return;
     }
 
-    // Check if user has completed onboarding
+    // For new signups, always go to onboarding regardless of profile state
+    if (justSignedUp) {
+      console.log('Auth - New signup detected, redirecting to onboarding');
+      navigate('/onboarding', { replace: true });
+      return;
+    }
+
+    // For existing users logging in, check profile completion
     if (!profile || !profile.onboarding_completed || !profile.first_name || !profile.last_name) {
       console.log('Auth - Redirecting to onboarding (incomplete profile)');
       navigate('/onboarding', { replace: true });
@@ -40,7 +50,7 @@ const Auth = () => {
       console.log('Auth - Redirecting to dashboard (complete profile)');
       navigate('/dashboard', { replace: true });
     }
-  }, [user, profile, profileLoading, authLoading, navigate]);
+  }, [user, profile, profileLoading, authLoading, navigate, justSignedUp]);
 
   const validateForm = (data: { email: string; password: string; firstName?: string; lastName?: string }) => {
     if (!data.email || !data.password) {
@@ -71,8 +81,9 @@ const Auth = () => {
           first_name: data.firstName, 
           last_name: data.lastName 
         });
-        console.log('Sign up successful, will redirect after profile check');
-        toast.success('Account created! Please complete your profile.');
+        setJustSignedUp(true);
+        console.log('Sign up successful, marking as new signup');
+        toast.success('Account created successfully! Redirecting to setup...');
       } else {
         await signIn(data.email, data.password);
         console.log('Sign in successful');
@@ -81,6 +92,7 @@ const Auth = () => {
     } catch (error: any) {
       console.error('Auth error:', error);
       toast.error(error.message || `Failed to ${isSignUp ? 'sign up' : 'sign in'}`);
+      setJustSignedUp(false);
     } finally {
       setLoading(false);
     }
@@ -88,6 +100,7 @@ const Auth = () => {
 
   const handleToggle = () => {
     setIsSignUp(!isSignUp);
+    setJustSignedUp(false); // Reset signup state when toggling
   };
 
   // Show loading if user exists and we're determining where to redirect
@@ -96,7 +109,7 @@ const Auth = () => {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-fitness-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Redirecting...</p>
+          <p className="text-gray-600">Setting up your account...</p>
         </div>
       </div>
     );
