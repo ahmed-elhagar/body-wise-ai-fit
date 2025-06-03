@@ -9,7 +9,7 @@ import LoadingState from '@/components/meal-plan/components/LoadingState';
 import MealPlanDialogs from '@/components/meal-plan/dialogs/MealPlanDialogs';
 import MealPlanAILoadingDialog from '@/components/meal-plan/MealPlanAILoadingDialog';
 import { useEnhancedMealShuffle } from '@/hooks/useEnhancedMealShuffle';
-import EnhancedShoppingListDrawer from '@/components/shopping-list/EnhancedShoppingListDrawer';
+import ModernShoppingListDrawer from '@/components/shopping-list/ModernShoppingListDrawer';
 
 export const MealPlanContainer = () => {
   const mealPlanState = useMealPlanState();
@@ -88,8 +88,8 @@ export const MealPlanContainer = () => {
         onClose={() => {}} // Can't be closed during generation
       />
 
-      {/* Enhanced Shopping List Drawer - Replace the old dialog */}
-      <EnhancedShoppingListDrawer
+      {/* Modern Shopping List Drawer - Complete revamped experience */}
+      <ModernShoppingListDrawer
         isOpen={mealPlanState.showShoppingListDialog}
         onClose={() => mealPlanState.closeShoppingListDialog()}
         weeklyPlan={mealPlanState.currentWeekPlan}
@@ -100,7 +100,7 @@ export const MealPlanContainer = () => {
         }}
       />
 
-      {/* All other dialogs - Shopping list now handled by EnhancedShoppingListDrawer above */}
+      {/* All other dialogs - Shopping list now handled by ModernShoppingListDrawer above */}
       <MealPlanDialogs
         showAIDialog={mealPlanState.showAIDialog}
         setShowAIDialog={mealPlanState.closeAIDialog}
