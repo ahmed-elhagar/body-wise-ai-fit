@@ -3,7 +3,6 @@ import React from 'react';
 import { useMealPlanState } from '@/hooks/useMealPlanState';
 import MealPlanHeader from '@/components/meal-plan/components/MealPlanHeader';
 import { MealPlanNavigation } from './MealPlanNavigation';
-import MealPlanDayContent from '@/components/meal-plan/MealPlanDayContent';
 import ErrorState from '@/components/meal-plan/components/ErrorState';
 import LoadingState from '@/components/meal-plan/components/LoadingState';
 import MealPlanDialogs from '@/components/meal-plan/dialogs/MealPlanDialogs';
@@ -42,14 +41,10 @@ export const MealPlanContainer = () => {
           weekStartDate={mealPlanState.weekStartDate}
         />
         
-        <MealPlanDayContent 
-          selectedDay={mealPlanState.selectedDayNumber}
-          todaysMeals={todaysMeals}
-          onMealClick={mealPlanState.openRecipeDialog}
-          onRecipeClick={mealPlanState.openRecipeDialog}
-          onExchangeClick={mealPlanState.openExchangeDialog}
-          weekStartDate={mealPlanState.weekStartDate}
-        />
+        {/* TODO: Add back the proper meal plan content component */}
+        <div className="text-center py-8">
+          <p className="text-gray-600">Meal plan content will be restored here</p>
+        </div>
       </div>
 
       {/* AI Loading Dialog - Step-by-step loading experience */}
