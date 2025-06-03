@@ -4,11 +4,9 @@ import { useTranslation } from 'react-i18next';
 import './translations/en';
 import './translations/ar';
 
-export type Language = 'en' | 'ar';
-
 interface LanguageContextType {
-  language: Language;
-  setLanguage: (lang: Language) => void;
+  language: 'en' | 'ar';
+  setLanguage: (lang: 'en' | 'ar') => void;
   t: (key: string) => string;
   isRTL: boolean;
 }
@@ -16,7 +14,7 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [language, setLanguageState] = useState<Language>('en');
+  const [language, setLanguageState] = useState<'en' | 'ar'>('en');
   
   // Safe translation hook with fallback
   let t: (key: string) => string;
@@ -32,7 +30,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     i18nReady = false;
   }
 
-  const setLanguage = (lang: Language) => {
+  const setLanguage = (lang: 'en' | 'ar') => {
     setLanguageState(lang);
     localStorage.setItem('preferred-language', lang);
     document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
@@ -42,7 +40,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const isRTL = language === 'ar';
 
   useEffect(() => {
-    const savedLanguage = localStorage.getItem('preferred-language') as Language | null;
+    const savedLanguage = localStorage.getItem('preferred-language') as 'en' | 'ar' | null;
     if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'ar')) {
       setLanguage(savedLanguage);
     }
