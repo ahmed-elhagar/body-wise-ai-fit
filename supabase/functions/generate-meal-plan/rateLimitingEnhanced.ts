@@ -23,31 +23,43 @@ export const enhancedRateLimiting = {
         throw new Error('Failed to check user credits');
       }
 
-      // Enhanced pro status check - check both subscription and profile role
-      const { data: subscription, error: subError } = await supabase
-        .from('subscriptions')
-        .select('status, current_period_end')
-        .eq('user_id', userId)
-        .eq('status', 'active')
-        .gte('current_period_end', new Date().toISOString())
-        .maybeSingle();
-
-      // Check if user is pro via subscription OR profile role
-      const isPro = (!subError && subscription) || profile?.role === 'pro';
       const remainingCredits = profile?.ai_generations_remaining || 0;
+      const userRole = profile?.role;
+
+      // Check if user is pro/admin via profile role (highest priority)
+      const isProByRole = userRole === 'pro' || userRole === 'admin';
+
+      // Only check subscription if user is not already pro/admin by role
+      let isProBySubscription = false;
+      if (!isProByRole) {
+        const { data: subscription, error: subError } = await supabase
+          .from('subscriptions')
+          .select('status, current_period_end')
+          .eq('user_id', userId)
+          .eq('status', 'active')
+          .gte('current_period_end', new Date().toISOString())
+          .maybeSingle();
+
+        isProBySubscription = !subError && !!subscription;
+      }
+
+      // User is pro if they have pro/admin role OR active subscription
+      const isPro = isProByRole || isProBySubscription;
 
       console.log('💳 Enhanced rate limit check result:', {
-        isPro: !!isPro,
-        hasSubscription: !!subscription,
-        profileRole: profile?.role,
+        userRole,
+        isProByRole,
+        isProBySubscription,
+        isPro,
         remainingCredits,
         allowed: isPro || remainingCredits > 0
       });
 
+      // Pro/admin users have unlimited access, normal users need credits
       return {
         allowed: isPro || remainingCredits > 0,
-        remaining: remainingCredits,
-        isPro: !!isPro
+        remaining: isPro ? -1 : remainingCredits, // -1 indicates unlimited
+        isPro
       };
     } catch (error) {
       console.error('❌ Rate limit check failed:', error);
@@ -82,32 +94,48 @@ export const enhancedRateLimiting = {
         throw new Error('Failed to create generation log');
       }
 
-      // Check if user is pro to determine if we should decrement credits
-      const { data: subscription } = await supabase
-        .from('subscriptions')
-        .select('status')
-        .eq('user_id', userId)
-        .eq('status', 'active')
-        .gte('current_period_end', new Date().toISOString())
-        .maybeSingle();
+      // Get user role to determine if we should decrement credits
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('ai_generations_remaining, role')
+        .eq('id', userId)
+        .single();
 
-      const isPro = !!subscription;
+      if (profileError) {
+        console.error('❌ Error fetching user profile:', profileError);
+        throw new Error('Failed to fetch user profile');
+      }
+
+      const userRole = profile?.role;
+      const isProByRole = userRole === 'pro' || userRole === 'admin';
+
+      // Check subscription only if not pro/admin by role
+      let isProBySubscription = false;
+      if (!isProByRole) {
+        const { data: subscription } = await supabase
+          .from('subscriptions')
+          .select('status')
+          .eq('user_id', userId)
+          .eq('status', 'active')
+          .gte('current_period_end', new Date().toISOString())
+          .maybeSingle();
+
+        isProBySubscription = !!subscription;
+      }
+
+      const isPro = isProByRole || isProBySubscription;
+
+      console.log('💰 Credit usage check:', {
+        userRole,
+        isProByRole,
+        isProBySubscription,
+        isPro,
+        willDecrementCredits: !isPro
+      });
 
       // Only decrement credits for non-pro users
       if (!isPro) {
-        // Get current credits using proper Supabase method
-        const { data: currentProfile, error: profileError } = await supabase
-          .from('profiles')
-          .select('ai_generations_remaining')
-          .eq('id', userId)
-          .single();
-
-        if (profileError) {
-          console.error('❌ Error fetching current profile:', profileError);
-          throw new Error('Failed to fetch user profile');
-        }
-
-        const currentCredits = currentProfile?.ai_generations_remaining || 0;
+        const currentCredits = profile?.ai_generations_remaining || 0;
         const newCredits = Math.max(currentCredits - 1, 0);
 
         const { error: creditError } = await supabase
@@ -121,6 +149,8 @@ export const enhancedRateLimiting = {
         }
 
         console.log('💰 Credits updated:', { currentCredits, newCredits });
+      } else {
+        console.log('💰 Pro/admin user - no credit deduction needed');
       }
 
       console.log('✅ Credit used successfully, log ID:', logEntry.id);
