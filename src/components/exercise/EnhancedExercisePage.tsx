@@ -9,6 +9,7 @@ import { EmptyExerciseState } from "./EmptyExerciseState";
 import { AIExerciseDialog } from "./AIExerciseDialog";
 import { CompactProgressSidebar } from "./CompactProgressSidebar";
 import EnhancedPageLoading from "@/components/ui/enhanced-page-loading";
+import { Loader2 } from "lucide-react";
 
 const EnhancedExercisePage = () => {
   const { t } = useLanguage();
@@ -46,7 +47,8 @@ const EnhancedExercisePage = () => {
   const currentSelectedDate = addDays(weekStartDate, selectedDayNumber - 1);
   const isToday = format(currentSelectedDate, 'yyyy-MM-dd') === format(currentDate, 'yyyy-MM-dd');
 
-  if (isLoading) {
+  // Show full page loading only on initial load
+  if (isLoading && !currentProgram) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
         <EnhancedPageLoading
@@ -123,8 +125,18 @@ const EnhancedExercisePage = () => {
           />
         </div>
 
-        {/* Main Content */}
-        <div className="px-3 pb-4">
+        {/* Main Content with Loading Overlay */}
+        <div className="px-3 pb-4 relative">
+          {/* Loading overlay for content area only */}
+          {isLoading && (
+            <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 rounded-3xl flex items-center justify-center">
+              <div className="text-center">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
+                <p className="text-gray-600 font-medium">Loading week data...</p>
+              </div>
+            </div>
+          )}
+
           {!currentProgram ? (
             /* Empty State within the layout */
             <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
