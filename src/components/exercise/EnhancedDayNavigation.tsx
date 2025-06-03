@@ -75,8 +75,8 @@ export const EnhancedDayNavigation = ({
       <div className="space-y-3">
         {/* Compact Header Row - Week Navigation and Workout Type Toggle */}
         <div className="flex items-center justify-between">
-          {/* Left: Week Navigation */}
-          <div className="flex items-center gap-1">
+          {/* Left: Week Navigation - Made wider */}
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="sm"
@@ -86,13 +86,12 @@ export const EnhancedDayNavigation = ({
               <ChevronLeft className="w-3 h-3" />
             </Button>
 
-            <div className="text-center min-w-[80px]">
-              <div className="bg-white border border-gray-200 rounded-lg px-2 py-1 shadow-sm">
-                <div className="text-xs font-bold text-gray-900">
-                  {formatWeekRange(weekStartDate)}
-                </div>
-                <div className="text-xs text-gray-600">
-                  Week {currentWeekOffset + 1}
+            <div className="text-center min-w-[120px]">
+              <div className="bg-white border border-gray-200 rounded-lg px-3 py-1.5 shadow-sm">
+                <div className="text-xs font-bold text-gray-900 flex items-center justify-center gap-2">
+                  <span>Week {currentWeekOffset + 1}</span>
+                  <span className="text-gray-500">•</span>
+                  <span>{formatWeekRange(weekStartDate)}</span>
                 </div>
               </div>
             </div>
@@ -138,6 +137,7 @@ export const EnhancedDayNavigation = ({
           </div>
         </div>
 
+        {/* Day navigation grid */}
         <div className="grid grid-cols-7 gap-1">
           {dayNames.map((day, index) => {
             const dayNumber = index + 1;

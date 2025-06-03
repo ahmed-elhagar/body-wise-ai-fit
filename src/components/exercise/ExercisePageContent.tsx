@@ -47,8 +47,8 @@ export const ExercisePageContent = ({
 }: ExercisePageContentProps) => {
   return (
     <div className="px-3 pb-4 relative">
-      {/* Loading overlay for content area only */}
-      {isLoading && (
+      {/* Loading overlay for content area only - only when changing weeks */}
+      {isLoading && currentProgram && (
         <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 rounded-3xl flex items-center justify-center">
           <div className="text-center">
             <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
