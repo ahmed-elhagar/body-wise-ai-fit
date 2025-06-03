@@ -28,25 +28,23 @@ export const useMealPlanState = () => {
     refetch: originalRefetch,
   } = useMealPlanData(currentWeekOffset);
 
-  // Enhanced refetch that invalidates all related queries
+  // Enhanced refetch that invalidates all related queries and clears cache
   const refetch = useCallback(async () => {
     console.log('🔄 Enhanced refetch - invalidating all meal plan queries for week offset:', currentWeekOffset);
     console.log('🗓️ Expected week start date from navigation:', weekStartDate?.toISOString().split('T')[0]);
     
-    // Invalidate all meal plan related queries
+    // Clear all caches first
     await queryClient.invalidateQueries({
-      queryKey: ['weekly-meal-plan'],
+      predicate: (query) => {
+        return query.queryKey[0] === 'weekly-meal-plan' || 
+               query.queryKey[0] === 'optimized-meal-plan' ||
+               query.queryKey[0] === 'meal-plan';
+      }
     });
     
-    // Invalidate the specific week query
-    await queryClient.invalidateQueries({
-      queryKey: ['weekly-meal-plan', user?.id, currentWeekOffset],
-    });
-
-    // Also invalidate any optimized queries
-    await queryClient.invalidateQueries({
-      queryKey: ['optimized-meal-plan'],
-    });
+    // Also clear the OptimizedMealPlanService cache
+    const { OptimizedMealPlanService } = await import('@/features/meal-plan/services/optimizedMealPlanService');
+    OptimizedMealPlanService.clearCache();
     
     // Force refetch the current data
     return await originalRefetch();
@@ -89,12 +87,18 @@ export const useMealPlanState = () => {
     refetch
   );
 
-  // Enhanced week change handler
+  // Enhanced week change handler with better cache management
   const handleWeekChange = useCallback(async (newOffset: number) => {
     console.log('📅 Changing week from', currentWeekOffset, 'to', newOffset);
+    
+    // Clear cache for the new week to ensure fresh data
+    await queryClient.invalidateQueries({
+      queryKey: ['weekly-meal-plan', user?.id, newOffset]
+    });
+    
     setCurrentWeekOffset(newOffset);
     
-    // Preload the new week's data
+    // Preload the new week's data with cache busting
     await queryClient.prefetchQuery({
       queryKey: ['weekly-meal-plan', user?.id, newOffset],
       staleTime: 0 // Force fresh fetch
@@ -164,6 +168,10 @@ export const useMealPlanState = () => {
                  query.queryKey[0] === 'meal-plan';
         }
       });
+      
+      // Clear the service cache too
+      const { OptimizedMealPlanService } = await import('@/features/meal-plan/services/optimizedMealPlanService');
+      OptimizedMealPlanService.clearCache();
       
       // Refetch the current week data
       await refetch();

@@ -19,11 +19,26 @@ export const saveWeeklyPlan = async (
     mealsPerDay: preferences.mealsPerDay || 3
   });
 
-  // Calculate week start date based on offset
+  // FIXED: Calculate week start date to match frontend calculation
   const today = new Date();
-  const startOfWeek = new Date(today);
-  startOfWeek.setDate(today.getDate() - today.getDay() + (preferences.weekOffset || 0) * 7);
-  const weekStartDate = startOfWeek.toISOString().split('T')[0];
+  // Use Saturday as week start to match frontend
+  const dayOfWeek = today.getDay(); // 0 = Sunday, 6 = Saturday
+  const daysToSaturday = dayOfWeek === 6 ? 0 : (6 - dayOfWeek) % 7;
+  const currentSaturday = new Date(today);
+  currentSaturday.setDate(today.getDate() - dayOfWeek + 6); // Go to this week's Saturday
+  
+  // Apply the week offset
+  const targetWeek = new Date(currentSaturday);
+  targetWeek.setDate(currentSaturday.getDate() + (preferences.weekOffset || 0) * 7);
+  
+  const weekStartDate = targetWeek.toISOString().split('T')[0];
+
+  console.log('📅 Backend week calculation:', {
+    today: today.toISOString().split('T')[0],
+    currentSaturday: currentSaturday.toISOString().split('T')[0],
+    weekOffset: preferences.weekOffset || 0,
+    calculatedWeekStart: weekStartDate
+  });
 
   // Calculate totals from the generated plan
   let totalCalories = 0;
