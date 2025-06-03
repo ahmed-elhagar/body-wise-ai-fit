@@ -11,42 +11,54 @@ export const useEnhancedAIExercise = () => {
   const [isGenerating, setIsGenerating] = useState(false);
 
   const generateExerciseProgram = async (preferences: any) => {
+    console.log('🚀 [generateExerciseProgram] Starting with preferences:', preferences);
+    
     if (!user?.id) {
-      console.error('❌ No user authenticated for exercise generation');
+      console.error('❌ [generateExerciseProgram] No user authenticated');
       toast.error('Please log in to generate an exercise program');
       return null;
     }
 
-    console.log('🔐 User authenticated:', user.id);
-    console.log('🏋️ Starting exercise program generation with preferences:', preferences);
+    console.log('🔐 [generateExerciseProgram] User authenticated:', user.id);
 
     // Check credits before starting
+    console.log('💰 [generateExerciseProgram] Checking credits, current:', userCredits);
     if (userCredits <= 0) {
+      console.log('🚫 [generateExerciseProgram] No credits remaining');
       toast.error('No AI credits remaining. Please upgrade your plan or wait for credits to reset.');
       return null;
     }
 
     // Check and use credit before starting generation
+    console.log('💳 [generateExerciseProgram] Using credit...');
     const hasCredit = await checkAndUseCreditAsync();
     if (!hasCredit) {
+      console.log('❌ [generateExerciseProgram] Credit check failed');
       toast.error('No AI credits remaining');
       return null;
     }
 
     setIsGenerating(true);
+    console.log('⏳ [generateExerciseProgram] Generation started, isGenerating set to true');
     
     try {
       // Get user profile data for better personalization
-      const { data: profile } = await supabase
+      console.log('📊 [generateExerciseProgram] Fetching user profile...');
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .single();
 
-      console.log('📊 User profile loaded:', profile ? 'success' : 'no profile found');
+      if (profileError) {
+        console.error('❌ [generateExerciseProgram] Profile fetch error:', profileError);
+      } else {
+        console.log('✅ [generateExerciseProgram] Profile loaded successfully');
+      }
 
       // Get user's health assessment for context
-      const { data: healthAssessment } = await supabase
+      console.log('🏥 [generateExerciseProgram] Fetching health assessment...');
+      const { data: healthAssessment, error: healthError } = await supabase
         .from('health_assessments')
         .select('*')
         .eq('user_id', user.id)
@@ -54,7 +66,11 @@ export const useEnhancedAIExercise = () => {
         .limit(1)
         .maybeSingle();
 
-      console.log('🏥 Health assessment loaded:', healthAssessment ? 'success' : 'none found');
+      if (healthError) {
+        console.error('❌ [generateExerciseProgram] Health assessment fetch error:', healthError);
+      } else {
+        console.log('✅ [generateExerciseProgram] Health assessment loaded:', !!healthAssessment);
+      }
 
       // Enhanced preferences with user context
       const enhancedPreferences = {
@@ -62,86 +78,103 @@ export const useEnhancedAIExercise = () => {
         userProfile: profile,
         healthContext: healthAssessment,
         userLanguage: profile?.preferred_language || 'en',
-        userId: user.id // Explicitly include userId
+        userId: user.id
       };
 
-      console.log('🚀 Calling edge function with userId:', user.id);
-      console.log('📋 Full request body:', {
+      console.log('📋 [generateExerciseProgram] Enhanced preferences prepared:', {
+        workoutType: enhancedPreferences.workoutType,
+        goalType: enhancedPreferences.goalType,
+        fitnessLevel: enhancedPreferences.fitnessLevel,
+        userId: user.id
+      });
+
+      const requestBody = {
         userId: user.id,
         preferences: enhancedPreferences,
         weekStartDate: preferences.weekStartDate || new Date().toISOString().split('T')[0]
-      });
+      };
+
+      console.log('🚀 [generateExerciseProgram] Calling edge function with:', requestBody);
 
       const { data, error } = await supabase.functions.invoke('generate-exercise-program', {
-        body: {
-          userId: user.id,
-          preferences: enhancedPreferences,
-          weekStartDate: preferences.weekStartDate || new Date().toISOString().split('T')[0]
-        }
+        body: requestBody
       });
 
+      console.log('📡 [generateExerciseProgram] Edge function response:', { data, error });
+
       if (error) {
-        console.error('❌ Exercise generation error:', error);
+        console.error('❌ [generateExerciseProgram] Edge function error:', error);
         throw error;
       }
 
       if (data?.success) {
-        console.log('✅ Exercise program generated successfully');
+        console.log('✅ [generateExerciseProgram] Program generated successfully');
         
         // Complete the generation process
+        console.log('🏁 [generateExerciseProgram] Completing generation...');
         await completeGenerationAsync();
         
         toast.success('Exercise program generated successfully!');
         return data;
       } else {
+        console.error('❌ [generateExerciseProgram] Generation failed:', data?.error);
         throw new Error(data?.error || 'Generation failed');
       }
     } catch (error) {
-      console.error('❌ Exercise program generation failed:', error);
+      console.error('❌ [generateExerciseProgram] Critical error:', error);
       toast.error(error.message || 'Failed to generate exercise program');
       throw error;
     } finally {
+      console.log('🏁 [generateExerciseProgram] Setting isGenerating to false');
       setIsGenerating(false);
     }
   };
 
   const regenerateProgram = async (weekStartDate: string) => {
+    console.log('🔄 [regenerateProgram] Starting regeneration for week:', weekStartDate);
+    
     if (!user?.id) {
-      console.error('❌ No user authenticated for exercise regeneration');
+      console.error('❌ [regenerateProgram] No user authenticated');
       toast.error('Please log in to regenerate an exercise program');
       return null;
     }
 
-    console.log('🔐 User authenticated for regeneration:', user.id);
+    console.log('🔐 [regenerateProgram] User authenticated:', user.id);
 
     // Check and use credit before starting generation
+    console.log('💳 [regenerateProgram] Using credit...');
     const hasCredit = await checkAndUseCreditAsync();
     if (!hasCredit) {
+      console.log('❌ [regenerateProgram] No credits remaining');
       toast.error('No AI credits remaining');
       return null;
     }
 
     setIsGenerating(true);
+    console.log('⏳ [regenerateProgram] Regeneration started');
     
     try {
-      console.log('🔄 Regenerating exercise program for week:', weekStartDate);
-      console.log('👤 User ID being sent for regeneration:', user.id);
+      const requestBody = {
+        userId: user.id,
+        regenerate: true,
+        weekStartDate
+      };
+
+      console.log('🚀 [regenerateProgram] Calling edge function with:', requestBody);
       
       const { data, error } = await supabase.functions.invoke('generate-exercise-program', {
-        body: {
-          userId: user.id,
-          regenerate: true,
-          weekStartDate
-        }
+        body: requestBody
       });
 
+      console.log('📡 [regenerateProgram] Edge function response:', { data, error });
+
       if (error) {
-        console.error('❌ Exercise regeneration error:', error);
+        console.error('❌ [regenerateProgram] Edge function error:', error);
         throw error;
       }
 
       if (data?.success) {
-        console.log('✅ Exercise program regenerated successfully');
+        console.log('✅ [regenerateProgram] Program regenerated successfully');
         
         // Complete the generation process
         await completeGenerationAsync();
@@ -149,13 +182,15 @@ export const useEnhancedAIExercise = () => {
         toast.success('Exercise program regenerated successfully!');
         return data;
       } else {
+        console.error('❌ [regenerateProgram] Regeneration failed:', data?.error);
         throw new Error(data?.error || 'Regeneration failed');
       }
     } catch (error) {
-      console.error('❌ Exercise program regeneration failed:', error);
+      console.error('❌ [regenerateProgram] Critical error:', error);
       toast.error('Failed to regenerate exercise program');
       throw error;
     } finally {
+      console.log('🏁 [regenerateProgram] Setting isGenerating to false');
       setIsGenerating(false);
     }
   };
