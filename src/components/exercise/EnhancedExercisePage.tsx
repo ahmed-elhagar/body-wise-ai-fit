@@ -46,7 +46,7 @@ const EnhancedExercisePage = () => {
   const currentSelectedDate = addDays(weekStartDate, selectedDayNumber - 1);
   const isToday = format(currentSelectedDate, 'yyyy-MM-dd') === format(currentDate, 'yyyy-MM-dd');
 
-  // Show full page loading only on initial load
+  // Show full page loading ONLY on initial load when there's no program data at all
   if (isLoading && !currentProgram) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
@@ -91,9 +91,9 @@ const EnhancedExercisePage = () => {
         />
       </div>
 
-      {/* Main Content */}
+      {/* Main Content - Pass loading state for content-only overlay */}
       <ExercisePageContent
-        isLoading={isLoading}
+        isLoading={isLoading && !!currentProgram}
         currentProgram={currentProgram}
         todaysExercises={todaysExercises}
         completedExercises={completedExercises}

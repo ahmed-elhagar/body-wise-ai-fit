@@ -30,7 +30,6 @@ export const EnhancedDayNavigation = ({
   const { t } = useLanguage();
   
   const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const fullDayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   
   const formatWeekRange = (startDate: Date) => {
     const endDate = addWeeks(startDate, 1);
@@ -255,36 +254,6 @@ export const EnhancedDayNavigation = ({
             );
           })}
         </div>
-
-        {/* Selected Day Info */}
-        {selectedDayNumber && (
-          <div className="mt-2 p-2 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="font-semibold text-gray-900 text-sm">
-                  {fullDayNames[selectedDayNumber - 1]}
-                </h4>
-                <p className="text-xs text-gray-600">
-                  {format(addDays(weekStartDate, selectedDayNumber - 1), 'MMMM d, yyyy')}
-                </p>
-              </div>
-              <div className="text-right">
-                {getDayWorkout(selectedDayNumber)?.is_rest_day ? (
-                  <p className="text-xs text-orange-600 font-medium">Rest Day</p>
-                ) : (
-                  <div>
-                    <p className="text-xs font-medium text-gray-900">
-                      {getDayProgress(selectedDayNumber)}% Complete
-                    </p>
-                    <p className="text-xs text-gray-600">
-                      {getDayWorkout(selectedDayNumber)?.exercises?.length || 0} exercises
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </Card>
   );
