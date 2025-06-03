@@ -53,6 +53,11 @@ const MealPlanHeader = ({
     }
   };
 
+  const handleShowShoppingList = () => {
+    console.log('🛒 Shopping list button clicked - using enhanced drawer');
+    onShowShoppingList();
+  };
+
   return (
     <Card className="bg-gradient-to-r from-fitness-primary-600 via-fitness-primary-700 to-fitness-accent-600 border-0 shadow-xl rounded-2xl overflow-hidden">
       <div className="px-5 py-3">
@@ -100,7 +105,7 @@ const MealPlanHeader = ({
                 </Button>
 
                 <Button
-                  onClick={onShowShoppingList}
+                  onClick={handleShowShoppingList}
                   variant="outline"
                   size="sm"
                   className="bg-white/10 border-white/30 text-white hover:bg-white/20 hover:text-white backdrop-blur-sm transition-all duration-200 hover:scale-105 px-2 h-8"
