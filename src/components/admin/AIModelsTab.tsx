@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -127,12 +126,12 @@ const AIModelsTab = () => {
       // First set all other models to not default
       models.forEach(m => {
         if (m.is_default && m.id !== modelId) {
-          updateModel(m.id, { ...m, is_default: false });
+          updateModel(m.id, { is_default: false });
         }
       });
       
       // Then set the selected model as default
-      updateModel(modelId, { ...model, is_default: true });
+      updateModel(modelId, { is_default: true });
     }
   };
 
