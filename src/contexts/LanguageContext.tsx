@@ -11,67 +11,70 @@ interface LanguageContextProps {
   isRTL: boolean;
 }
 
-const LanguageContext = createContext<LanguageContextProps>({
-  language: 'en',
-  setLanguage: () => {},
-  t: (key: string) => key,
-  isRTL: false,
-});
+const LanguageContext = createContext<LanguageContextProps | undefined>(undefined);
 
 interface LanguageProviderProps {
   children: React.ReactNode;
 }
 
 export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
-  const { t: i18nT, i18n } = useTranslation(['common', 'mealPlan', 'navigation', 'dashboard']);
   const [language, setLanguageState] = useState<Language>('en');
+  
+  // Safe translation hook with fallback
+  let t: (key: string, options?: any) => string;
+  let i18nReady = true;
+  
+  try {
+    const { t: translationFn, ready } = useTranslation();
+    t = ready ? translationFn : (key: string) => key;
+    i18nReady = ready;
+  } catch (error) {
+    console.warn('i18next not initialized, using fallback translation');
+    t = (key: string) => key; // Fallback: return the key itself
+    i18nReady = false;
+  }
 
-  useEffect(() => {
-    const storedLanguage = localStorage.getItem('language') || 'en';
-    setLanguageState(storedLanguage as Language);
-    
-    // Only call changeLanguage if i18n is ready and the method exists
-    if (i18n && typeof i18n.changeLanguage === 'function') {
-      i18n.changeLanguage(storedLanguage);
-    }
-  }, [i18n]);
-
-  useEffect(() => {
-    localStorage.setItem('language', language);
-    
-    // Only call changeLanguage if i18n is ready and the method exists
-    if (i18n && typeof i18n.changeLanguage === 'function') {
-      i18n.changeLanguage(language);
-    }
-    
-    // Set document direction
-    document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
-    document.documentElement.lang = language;
-  }, [language, i18n]);
-
-  const setLanguage = (newLanguage: Language) => {
-    setLanguageState(newLanguage);
-  };
-
-  const t = (key: string, options?: any): string => {
-    // Handle nested keys like 'mealPlan.title'
-    if (key.includes('.')) {
-      const [namespace, ...keyParts] = key.split('.');
-      const finalKey = keyParts.join('.');
-      const result = i18nT(finalKey, { ns: namespace, ...options });
-      return typeof result === 'string' ? result : finalKey;
-    }
-    const result = i18nT(key, options);
-    return typeof result === 'string' ? result : key;
+  const setLanguage = (lang: Language) => {
+    setLanguageState(lang);
+    localStorage.setItem('preferred-language', lang);
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.lang = lang;
   };
 
   const isRTL = language === 'ar';
 
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('preferred-language');
+    if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'ar')) {
+      setLanguage(savedLanguage as Language);
+    }
+  }, []);
+
+  // Only render content when i18n is ready or provide fallback
+  const value = {
+    language,
+    setLanguage,
+    t,
+    isRTL,
+  };
+
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t, isRTL }}>
+    <LanguageContext.Provider value={value}>
       {children}
     </LanguageContext.Provider>
   );
 };
 
-export const useLanguage = () => useContext(LanguageContext);
+export const useLanguage = () => {
+  const context = useContext(LanguageContext);
+  if (context === undefined) {
+    // Provide fallback context
+    return {
+      language: 'en' as Language,
+      setLanguage: () => {},
+      t: (key: string) => key,
+      isRTL: false,
+    };
+  }
+  return context;
+};
