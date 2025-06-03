@@ -100,20 +100,21 @@ export const enhancedRateLimiting = {
   // Enhanced credit usage with exercise-specific logging
   async useCredit(userId: string, generationType: string, promptData: any): Promise<string> {
     try {
-      // Create generation log first
+      // Create generation log first - use 'pending' status to match database constraint
       const { data: logEntry, error: logError } = await supabase
         .from('ai_generation_logs')
         .insert({
           user_id: userId,
           generation_type: generationType,
           prompt_data: promptData,
-          status: 'started',
+          status: 'pending', // ✅ Fixed: Use 'pending' instead of 'started'
           credits_used: 1
         })
         .select()
         .single();
 
       if (logError) {
+        console.error('Failed to create generation log:', logError);
         throw new ExerciseProgramError(
           'Failed to create generation log',
           errorCodes.DATABASE_ERROR,
