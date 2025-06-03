@@ -20,14 +20,18 @@ export const MealPlanContainer = () => {
     return <LoadingState />;
   }
 
+  // Extract today's meals for the selected day
+  const todaysMeals = mealPlanState.currentWeekPlan?.dailyMeals?.filter(
+    meal => meal.day_number === mealPlanState.selectedDayNumber
+  ) || [];
+
   return (
     <>
       <div className="space-y-6">
         <MealPlanHeader 
-          currentWeekPlan={mealPlanState.currentWeekPlan}
-          onGenerateAI={() => mealPlanState.openAIDialog()}
-          userCredits={mealPlanState.userCredits}
-          nutritionContext={mealPlanState.nutritionContext}
+          remainingCredits={mealPlanState.userCredits}
+          onShowAIDialog={() => mealPlanState.openAIDialog()}
+          isGenerating={mealPlanState.isGenerating}
         />
         
         <MealPlanNavigation 
@@ -39,12 +43,12 @@ export const MealPlanContainer = () => {
         />
         
         <MealPlanDayContent 
-          mealPlanData={mealPlanState.currentWeekPlan}
-          selectedDayNumber={mealPlanState.selectedDayNumber}
+          selectedDay={mealPlanState.selectedDayNumber}
+          todaysMeals={todaysMeals}
           onMealClick={mealPlanState.openRecipeDialog}
-          onExchangeMeal={mealPlanState.openExchangeDialog}
-          onAddSnack={mealPlanState.handleAddSnack}
-          onOpenShoppingList={mealPlanState.openShoppingListDialog}
+          onRecipeClick={mealPlanState.openRecipeDialog}
+          onExchangeClick={mealPlanState.openExchangeDialog}
+          weekStartDate={mealPlanState.weekStartDate}
         />
       </div>
 
