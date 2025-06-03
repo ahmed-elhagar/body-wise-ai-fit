@@ -28,7 +28,7 @@ interface User {
   email: string;
   first_name?: string;
   last_name?: string;
-  role: string;
+  role: 'normal' | 'coach' | 'admin';
   ai_generations_remaining: number;
   created_at: string;
   is_online?: boolean;
@@ -86,8 +86,9 @@ const EnhancedUsersTable = () => {
       }
 
       // Merge subscription data with user data
-      const usersWithSubscriptions = profiles.map(user => ({
+      const usersWithSubscriptions = (profiles || []).map(user => ({
         ...user,
+        role: user.role as 'normal' | 'coach' | 'admin',
         subscription: subscriptions?.find(sub => sub.user_id === user.id) || null
       }));
 
@@ -111,7 +112,7 @@ const EnhancedUsersTable = () => {
     user.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const updateUserRole = async (userId: string, newRole: string) => {
+  const updateUserRole = async (userId: string, newRole: 'normal' | 'coach' | 'admin') => {
     try {
       const { error } = await supabase
         .from('profiles')
@@ -206,6 +207,7 @@ const EnhancedUsersTable = () => {
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
       case 'admin': return 'bg-red-100 text-red-800';
+      case 'coach': return 'bg-purple-100 text-purple-800';
       case 'normal': return 'bg-blue-100 text-blue-800';
       default: return 'bg-gray-100 text-gray-800';
     }
@@ -247,7 +249,7 @@ const EnhancedUsersTable = () => {
             <Users className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold">Enhanced User Management</h2>
+            <h2 className="text-2xl font-bold">User Management</h2>
             <p className="text-gray-600">Manage user roles, subscriptions, and AI generations</p>
           </div>
         </div>
@@ -261,7 +263,7 @@ const EnhancedUsersTable = () => {
       <Alert>
         <Shield className="h-4 w-4" />
         <AlertDescription>
-          <strong>Role System:</strong> Only 'normal' and 'admin' roles available. Pro status comes from active subscriptions.
+          <strong>Role System:</strong> 'normal', 'coach', and 'admin' roles available. Pro status comes from active subscriptions.
           <br />
           <strong>Subscription Management:</strong> Create 1-month subscriptions or cancel existing ones.
         </AlertDescription>
@@ -286,140 +288,144 @@ const EnhancedUsersTable = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>User</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Subscription</TableHead>
-                <TableHead>AI Credits</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredUsers.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>
-                    <div>
-                      <div className="font-medium">
-                        {user.first_name && user.last_name 
-                          ? `${user.first_name} ${user.last_name}` 
-                          : user.email}
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>User</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Subscription</TableHead>
+                  <TableHead>AI Credits</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredUsers.map((user) => (
+                  <TableRow key={user.id} className="hover:bg-gray-50">
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <div className="font-medium text-gray-900">
+                          {user.first_name && user.last_name 
+                            ? `${user.first_name} ${user.last_name}` 
+                            : user.email}
+                        </div>
+                        <div className="text-sm text-gray-500">{user.email}</div>
                       </div>
-                      <div className="text-sm text-gray-500">{user.email}</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={getRoleBadgeColor(user.role)}>
-                      {user.role}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col gap-1">
-                      {getSubscriptionBadge(user)}
-                      {user.subscription && (
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={getRoleBadgeColor(user.role)}>
+                        {user.role}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        {getSubscriptionBadge(user)}
+                        {user.subscription && (
+                          <div className="text-xs text-gray-500">
+                            Expires: {new Date(user.subscription.current_period_end).toLocaleDateString()}
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{user.ai_generations_remaining}</span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => resetAIGenerations(user.id)}
+                          className="h-6 w-6 p-0"
+                        >
+                          <Star className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <div className={`w-2 h-2 rounded-full ${user.is_online ? 'bg-green-500' : 'bg-gray-300'}`} />
+                        <span className="text-sm">{user.is_online ? 'Online' : 'Offline'}</span>
+                      </div>
+                      {user.last_seen && !user.is_online && (
                         <div className="text-xs text-gray-500">
-                          Expires: {new Date(user.subscription.current_period_end).toLocaleDateString()}
+                          Last seen: {new Date(user.last_seen).toLocaleDateString()}
                         </div>
                       )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <span>{user.ai_generations_remaining}</span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => resetAIGenerations(user.id)}
-                      >
-                        <Star className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${user.is_online ? 'bg-green-500' : 'bg-gray-300'}`} />
-                      {user.is_online ? 'Online' : 'Offline'}
-                    </div>
-                    {user.last_seen && !user.is_online && (
-                      <div className="text-xs text-gray-500">
-                        Last seen: {new Date(user.last_seen).toLocaleDateString()}
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Dialog open={isEditDialogOpen && selectedUser?.id === user.id} onOpenChange={setIsEditDialogOpen}>
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setSelectedUser(user)}
-                          >
-                            Edit Role
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Edit User Role</DialogTitle>
-                          </DialogHeader>
-                          <div className="space-y-4">
-                            <div>
-                              <Label>Email</Label>
-                              <Input value={selectedUser?.email || ''} disabled />
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Dialog open={isEditDialogOpen && selectedUser?.id === user.id} onOpenChange={setIsEditDialogOpen}>
+                          <DialogTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setSelectedUser(user)}
+                            >
+                              Edit Role
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Edit User Role</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <div>
+                                <Label>Email</Label>
+                                <Input value={selectedUser?.email || ''} disabled />
+                              </div>
+                              <div>
+                                <Label>Role</Label>
+                                <Select
+                                  value={selectedUser?.role || 'normal'}
+                                  onValueChange={(value: 'normal' | 'coach' | 'admin') => {
+                                    if (selectedUser) {
+                                      updateUserRole(selectedUser.id, value);
+                                    }
+                                  }}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="normal">Normal</SelectItem>
+                                    <SelectItem value="coach">Coach</SelectItem>
+                                    <SelectItem value="admin">Admin</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
                             </div>
-                            <div>
-                              <Label>Role</Label>
-                              <Select
-                                value={selectedUser?.role || 'normal'}
-                                onValueChange={(value) => {
-                                  if (selectedUser) {
-                                    updateUserRole(selectedUser.id, value);
-                                  }
-                                }}
-                              >
-                                <SelectTrigger>
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="normal">Normal</SelectItem>
-                                  <SelectItem value="admin">Admin</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
+                          </DialogContent>
+                        </Dialog>
 
-                      {user.subscription && user.subscription.status === 'active' ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => cancelSubscription(user.id)}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <X className="h-3 w-3 mr-1" />
-                          Cancel Sub
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => createSubscription(user.id)}
-                          disabled={isCreatingSubscription}
-                          className="text-green-600 hover:text-green-700"
-                        >
-                          <Calendar className="h-3 w-3 mr-1" />
-                          Add 1M Sub
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                        {user.subscription && user.subscription.status === 'active' ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => cancelSubscription(user.id)}
+                            className="text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"
+                          >
+                            <X className="h-3 w-3 mr-1" />
+                            Cancel Sub
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => createSubscription(user.id)}
+                            disabled={isCreatingSubscription}
+                            className="text-green-600 hover:text-green-700 border-green-200 hover:border-green-300"
+                          >
+                            <Calendar className="h-3 w-3 mr-1" />
+                            Add 1M Sub
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

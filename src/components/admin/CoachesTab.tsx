@@ -5,12 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, UserPlus, Search, Crown } from "lucide-react";
+import { Users, UserPlus, Search, Crown, Mail } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-type UserRole = 'normal' | 'pro' | 'coach' | 'admin';
+type UserRole = 'normal' | 'coach' | 'admin';
 
 interface UserProfile {
   id: string;
@@ -31,10 +31,19 @@ interface CoachTrainee {
   };
 }
 
+interface Coach {
+  id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  role: UserRole;
+  trainees: CoachTrainee[];
+}
+
 const CoachesTab = () => {
-  const [searchTerm, setSearchTerm] = useState("");
   const [newTraineeEmail, setNewTraineeEmail] = useState("");
   const [selectedCoach, setSelectedCoach] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const queryClient = useQueryClient();
 
   // Get all users
@@ -54,11 +63,10 @@ const CoachesTab = () => {
     }
   });
 
-  // Get coach-trainee relationships - Fixed query
+  // Get coach-trainee relationships
   const { data: coachTrainees, isLoading: coachTraineesLoading } = useQuery({
     queryKey: ['admin-coach-trainees'],
     queryFn: async () => {
-      // First get the coach-trainee relationships
       const { data: relationships, error: relationshipsError } = await supabase
         .from('coach_trainees')
         .select('*');
@@ -69,7 +77,6 @@ const CoachesTab = () => {
         return [];
       }
 
-      // Then get the trainee profiles separately
       const traineeIds = relationships.map(rel => rel.trainee_id);
       const { data: traineeProfiles, error: profilesError } = await supabase
         .from('profiles')
@@ -78,7 +85,6 @@ const CoachesTab = () => {
 
       if (profilesError) throw profilesError;
 
-      // Combine the data
       return relationships.map(relationship => {
         const traineeProfile = traineeProfiles?.find(profile => profile.id === relationship.trainee_id);
         return {
@@ -89,26 +95,8 @@ const CoachesTab = () => {
     }
   });
 
-  const updateUserRole = useMutation({
-    mutationFn: async ({ userId, newRole }: { userId: string; newRole: UserRole }) => {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ role: newRole })
-        .eq('id', userId);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
-      toast.success('User role updated successfully');
-    },
-    onError: (error) => {
-      toast.error(`Failed to update role: ${error.message}`);
-    }
-  });
-
   const assignTrainee = useMutation({
     mutationFn: async ({ coachId, traineeEmail }: { coachId: string; traineeEmail: string }) => {
-      // Find trainee by email
       const trainee = users?.find(u => u.email === traineeEmail);
       if (!trainee) throw new Error('Trainee not found');
 
@@ -152,29 +140,27 @@ const CoachesTab = () => {
   });
 
   const coaches = users?.filter(u => u.role === 'coach' || u.role === 'admin') || [];
-  const filteredUsers = users?.filter(u =>
-    u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    u.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    u.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
+  
+  // Create coaches with their trainees
+  const coachesWithTrainees: Coach[] = coaches.map(coach => ({
+    ...coach,
+    trainees: coachTrainees?.filter(ct => ct.coach_id === coach.id) || []
+  }));
 
-  const getRoleColor = (role: UserRole) => {
-    switch (role) {
-      case 'admin': return 'bg-red-100 text-red-800';
-      case 'coach': return 'bg-blue-100 text-blue-800';
-      case 'pro': return 'bg-purple-100 text-purple-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
+  const filteredCoaches = coachesWithTrainees.filter(coach =>
+    coach.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    coach.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    coach.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-  const handleAssignTrainee = () => {
-    if (!selectedCoach || !newTraineeEmail.trim()) {
-      toast.error("Please select a coach and enter trainee email");
+  const handleAssignTrainee = (coachId: string) => {
+    if (!newTraineeEmail.trim()) {
+      toast.error("Please enter trainee email");
       return;
     }
     
     assignTrainee.mutate({ 
-      coachId: selectedCoach, 
+      coachId, 
       traineeEmail: newTraineeEmail.trim() 
     });
   };
@@ -192,165 +178,142 @@ const CoachesTab = () => {
 
   return (
     <div className="space-y-6">
-      {/* Assign Trainee */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <UserPlus className="w-5 h-5" />
-            Assign Trainee to Coach
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Select value={selectedCoach} onValueChange={setSelectedCoach}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select coach" />
-              </SelectTrigger>
-              <SelectContent>
-                {coaches.map((coach) => (
-                  <SelectItem key={coach.id} value={coach.id}>
-                    {coach.first_name} {coach.last_name} ({coach.email})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            
-            <Input
-              placeholder="Trainee email"
-              value={newTraineeEmail}
-              onChange={(e) => setNewTraineeEmail(e.target.value)}
-            />
-            
-            <Button 
-              onClick={handleAssignTrainee}
-              disabled={assignTrainee.isPending || !selectedCoach || !newTraineeEmail.trim()}
-            >
-              {assignTrainee.isPending ? 'Assigning...' : 'Assign Trainee'}
-            </Button>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
+            <Crown className="h-5 w-5 text-white" />
           </div>
-        </CardContent>
-      </Card>
+          <div>
+            <h2 className="text-2xl font-bold">Coach Management</h2>
+            <p className="text-gray-600">Assign trainees to coaches and manage relationships</p>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <Search className="h-4 w-4" />
+          <Input
+            placeholder="Search coaches..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-64"
+          />
+        </div>
+      </div>
 
-      {/* Users Management */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="w-5 h-5" />
-            Users & Roles
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-2 mb-4">
-            <Search className="w-4 h-4 text-gray-400" />
-            <Input
-              placeholder="Search users..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="flex-1"
-            />
-          </div>
-          
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">User</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Current Role</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {filteredUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3">
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          {user.first_name} {user.last_name}
-                        </p>
-                        <p className="text-sm text-gray-500">{user.email}</p>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge className={getRoleColor(user.role)}>
-                        {user.role}
+      <div className="grid gap-6">
+        {filteredCoaches.map((coach) => (
+          <Card key={coach.id} className="overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+                    <Crown className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg">
+                      {coach.first_name} {coach.last_name}
+                    </CardTitle>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Mail className="h-4 w-4 text-gray-500" />
+                      <span className="text-sm text-gray-600">{coach.email}</span>
+                      <Badge className="bg-purple-100 text-purple-800">
+                        {coach.role}
                       </Badge>
-                    </td>
-                    <td className="px-4 py-3">
-                      <Select
-                        value={user.role}
-                        onValueChange={(newRole: UserRole) => updateUserRole.mutate({ userId: user.id, newRole })}
-                      >
-                        <SelectTrigger className="w-32">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="normal">Normal</SelectItem>
-                          <SelectItem value="pro">Pro</SelectItem>
-                          <SelectItem value="coach">Coach</SelectItem>
-                          <SelectItem value="admin">Admin</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Coach-Trainee Relationships */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Crown className="w-5 h-5" />
-            Coach-Trainee Relationships
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {coachTrainees && coachTrainees.length > 0 ? (
-            <div className="space-y-4">
-              {coaches.map((coach) => {
-                const coachRelationships = coachTrainees.filter(ct => ct.coach_id === coach.id);
-                
-                if (coachRelationships.length === 0) return null;
-                
-                return (
-                  <div key={coach.id} className="border rounded-lg p-4">
-                    <h4 className="font-semibold text-gray-900 mb-3">
-                      Coach: {coach.first_name} {coach.last_name}
-                    </h4>
-                    <div className="space-y-2">
-                      {coachRelationships.map((relationship) => (
-                        <div key={relationship.id} className="flex items-center justify-between bg-gray-50 p-2 rounded">
-                          <span className="text-sm">
-                            {relationship.trainee_profile.first_name} {relationship.trainee_profile.last_name} 
-                            ({relationship.trainee_profile.email})
-                          </span>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => removeTrainee.mutate(relationship.id)}
-                            disabled={removeTrainee.isPending}
-                            className="text-red-600 hover:text-red-700"
-                          >
-                            Remove
-                          </Button>
-                        </div>
-                      ))}
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-8 text-gray-500">
-              <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-              <p>No coach-trainee relationships found</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-purple-600">
+                    {coach.trainees.length}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {coach.trainees.length === 1 ? 'Trainee' : 'Trainees'}
+                  </div>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-6">
+              {/* Assign new trainee */}
+              <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-2 mb-3">
+                  <UserPlus className="h-4 w-4 text-purple-600" />
+                  <span className="font-medium text-gray-700">Assign New Trainee</span>
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Enter trainee email"
+                    value={newTraineeEmail}
+                    onChange={(e) => setNewTraineeEmail(e.target.value)}
+                    className="flex-1"
+                  />
+                  <Button 
+                    onClick={() => handleAssignTrainee(coach.id)}
+                    disabled={assignTrainee.isPending || !newTraineeEmail.trim()}
+                    className="px-6"
+                  >
+                    {assignTrainee.isPending ? 'Assigning...' : 'Assign'}
+                  </Button>
+                </div>
+              </div>
+
+              {/* Current trainees */}
+              {coach.trainees.length > 0 ? (
+                <div>
+                  <h4 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    Current Trainees ({coach.trainees.length})
+                  </h4>
+                  <div className="space-y-2">
+                    {coach.trainees.map((relationship) => (
+                      <div key={relationship.id} className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                            <Users className="h-4 w-4 text-gray-600" />
+                          </div>
+                          <div>
+                            <div className="font-medium text-gray-900">
+                              {relationship.trainee_profile.first_name} {relationship.trainee_profile.last_name}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {relationship.trainee_profile.email}
+                            </div>
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => removeTrainee.mutate(relationship.id)}
+                          disabled={removeTrainee.isPending}
+                          className="text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                  <p>No trainees assigned to this coach</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {filteredCoaches.length === 0 && (
+        <Card>
+          <CardContent className="text-center py-12">
+            <Crown className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No Coaches Found</h3>
+            <p className="text-gray-500">
+              {searchTerm ? 'No coaches match your search criteria.' : 'No users with coach or admin roles found.'}
+            </p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
