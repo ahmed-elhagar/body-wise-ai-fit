@@ -48,6 +48,7 @@ export const AuthForm = ({ isSignUp, onSubmit, loading }: AuthFormProps) => {
               onChange={(e) => setFirstName(e.target.value)}
               placeholder="John"
               className="h-11"
+              autoComplete="given-name"
               required
             />
           </div>
@@ -62,6 +63,7 @@ export const AuthForm = ({ isSignUp, onSubmit, loading }: AuthFormProps) => {
               onChange={(e) => setLastName(e.target.value)}
               placeholder="Doe"
               className="h-11"
+              autoComplete="family-name"
               required
             />
           </div>
@@ -81,6 +83,7 @@ export const AuthForm = ({ isSignUp, onSubmit, loading }: AuthFormProps) => {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="john@example.com"
             className="h-11 pl-10"
+            autoComplete="email"
             required
           />
         </div>
@@ -99,6 +102,7 @@ export const AuthForm = ({ isSignUp, onSubmit, loading }: AuthFormProps) => {
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
             className="h-11 pl-10 pr-10"
+            autoComplete={isSignUp ? "new-password" : "current-password"}
             required
           />
           <button
