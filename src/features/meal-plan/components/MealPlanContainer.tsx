@@ -1,11 +1,11 @@
 
 import React from 'react';
 import { useMealPlanState } from '@/hooks/useMealPlanState';
-import { MealPlanHeader } from './MealPlanHeader';
+import MealPlanHeader from '@/components/meal-plan/components/MealPlanHeader';
 import { MealPlanNavigation } from './MealPlanNavigation';
-import { MealPlanDayContent } from '../../../components/meal-plan/MealPlanDayContent';
-import { ErrorState } from './ErrorState';
-import { LoadingState } from './LoadingState';
+import MealPlanDayContent from '@/components/meal-plan/MealPlanDayContent';
+import ErrorState from '@/components/meal-plan/components/ErrorState';
+import LoadingState from '@/components/meal-plan/components/LoadingState';
 import MealPlanDialogs from '@/components/meal-plan/dialogs/MealPlanDialogs';
 import MealPlanAILoadingDialog from '@/components/meal-plan/MealPlanAILoadingDialog';
 
@@ -57,19 +57,19 @@ export const MealPlanContainer = () => {
       {/* All other dialogs */}
       <MealPlanDialogs
         showAIDialog={mealPlanState.showAIDialog}
-        setShowAIDialog={mealPlanState.setShowAIDialog}
+        setShowAIDialog={mealPlanState.closeAIDialog}
         showRecipeDialog={mealPlanState.showRecipeDialog}
-        setShowRecipeDialog={mealPlanState.setShowRecipeDialog}
+        setShowRecipeDialog={mealPlanState.closeRecipeDialog}
         showExchangeDialog={mealPlanState.showExchangeDialog}
-        setShowExchangeDialog={mealPlanState.setShowExchangeDialog}
+        setShowExchangeDialog={mealPlanState.closeExchangeDialog}
         showAddSnackDialog={mealPlanState.showAddSnackDialog}
-        setShowAddSnackDialog={mealPlanState.setShowAddSnackDialog}
+        setShowAddSnackDialog={mealPlanState.closeAddSnackDialog}
         showShoppingListDialog={mealPlanState.showShoppingListDialog}
-        setShowShoppingListDialog={mealPlanState.setShowShoppingListDialog}
+        setShowShoppingListDialog={mealPlanState.closeShoppingListDialog}
         selectedMeal={mealPlanState.selectedMeal}
         selectedMealIndex={mealPlanState.selectedMealIndex}
         aiPreferences={mealPlanState.aiPreferences}
-        setAiPreferences={mealPlanState.setAiPreferences}
+        setAiPreferences={mealPlanState.updateAIPreferences}
         handleGenerateAI={mealPlanState.handleGenerateAIPlan}
         onRefetch={mealPlanState.refetch}
         mealPlanData={mealPlanState.currentWeekPlan}

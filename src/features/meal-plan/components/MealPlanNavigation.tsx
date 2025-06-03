@@ -1,58 +1,77 @@
 
-import React from 'react';
-import { MealPlanViewToggle } from './MealPlanViewToggle';
-import { WeekNavigation } from './WeekNavigation';
-import { DaySelector } from './DaySelector';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { formatWeekRange, getDayName } from "@/utils/mealPlanUtils";
 
 interface MealPlanNavigationProps {
-  viewMode: 'daily' | 'weekly';
-  onViewModeChange: (mode: 'daily' | 'weekly') => void;
+  weekStartDate: Date;
   currentWeekOffset: number;
-  onWeekOffsetChange: (offset: number) => void;
+  onWeekChange: (offset: number) => void;
   selectedDayNumber: number;
   onDayChange: (dayNumber: number) => void;
-  weekStartDate: Date;
-  hasWeeklyPlan: boolean;
 }
 
 export const MealPlanNavigation = ({
-  viewMode,
-  onViewModeChange,
-  currentWeekOffset,
-  onWeekOffsetChange,
-  selectedDayNumber,
-  onDayChange,
   weekStartDate,
-  hasWeeklyPlan
+  currentWeekOffset,
+  onWeekChange,
+  selectedDayNumber,
+  onDayChange
 }: MealPlanNavigationProps) => {
-  const { isRTL } = useLanguage();
-
-  if (!hasWeeklyPlan) return null;
+  const days = [1, 2, 3, 4, 5, 6, 7];
 
   return (
-    <div className="bg-white rounded-lg border shadow-sm p-4">
-      {/* Top Row: View Mode Toggle and Week Navigation */}
-      <div className={`flex items-center justify-between mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
-        <MealPlanViewToggle 
-          viewMode={viewMode} 
-          onViewModeChange={onViewModeChange} 
-        />
-        <WeekNavigation 
-          currentWeekOffset={currentWeekOffset}
-          onWeekOffsetChange={onWeekOffsetChange}
-          weekStartDate={weekStartDate}
-        />
+    <Card className="p-4 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+      {/* Week Navigation */}
+      <div className="flex items-center justify-between mb-4">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onWeekChange(currentWeekOffset - 1)}
+          className="h-10 w-10 p-0"
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </Button>
+        
+        <div className="text-center">
+          <h3 className="text-lg font-semibold text-gray-800">
+            {formatWeekRange(weekStartDate)}
+          </h3>
+        </div>
+        
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onWeekChange(currentWeekOffset + 1)}
+          className="h-10 w-10 p-0"
+        >
+          <ChevronRight className="w-4 h-4" />
+        </Button>
       </div>
 
-      {/* Day Selection (Daily View Only) */}
-      {viewMode === 'daily' && (
-        <DaySelector 
-          selectedDayNumber={selectedDayNumber}
-          onDayChange={onDayChange}
-          weekStartDate={weekStartDate}
-        />
-      )}
-    </div>
+      {/* Day Navigation */}
+      <div className="grid grid-cols-7 gap-2">
+        {days.map((dayNumber) => (
+          <Button
+            key={dayNumber}
+            variant={selectedDayNumber === dayNumber ? "default" : "outline"}
+            className={`text-sm py-3 ${
+              selectedDayNumber === dayNumber 
+                ? 'bg-fitness-gradient text-white shadow-lg' 
+                : 'bg-white/80 hover:bg-gray-50'
+            }`}
+            onClick={() => onDayChange(dayNumber)}
+          >
+            <div className="flex flex-col items-center">
+              <span className="font-medium">{getDayName(dayNumber).slice(0, 3)}</span>
+              <span className="text-xs opacity-75 hidden sm:block">
+                {getDayName(dayNumber)}
+              </span>
+            </div>
+          </Button>
+        ))}
+      </div>
+    </Card>
   );
 };
