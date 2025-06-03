@@ -80,29 +80,50 @@ const EnhancedPageLoading = ({
     }
 
     const totalDuration = steps.reduce((acc, step) => acc + step.duration, 0);
-    let elapsed = 0;
+    let stepStartTime = 0;
+    let currentStepIndex = 0;
+    
+    console.log('🔄 Starting loading progress:', { totalSteps: steps.length, totalDuration });
 
     const interval = setInterval(() => {
-      elapsed += 100;
-      const newProgress = Math.min((elapsed / totalDuration) * 100, 95);
-      setProgress(newProgress);
+      const elapsed = Date.now() - stepStartTime;
+      const currentStepDuration = steps[currentStepIndex]?.duration || 1000;
 
+      // Calculate overall progress (0-95% to leave room for completion)
       let cumulativeDuration = 0;
-      for (let i = 0; i < steps.length; i++) {
-        cumulativeDuration += steps[i].duration;
-        if (elapsed <= cumulativeDuration) {
-          setCurrentStep(i);
-          break;
-        }
+      for (let i = 0; i <= currentStepIndex; i++) {
+        cumulativeDuration += steps[i]?.duration || 0;
       }
+      const stepProgress = Math.min(elapsed / currentStepDuration, 1);
+      const overallProgress = Math.min(((cumulativeDuration - currentStepDuration + (elapsed * stepProgress)) / totalDuration) * 95, 95);
+      
+      setProgress(overallProgress);
 
-      if (elapsed >= totalDuration) {
-        setProgress(100);
-        clearInterval(interval);
+      // Check if current step is complete
+      if (elapsed >= currentStepDuration) {
+        if (currentStepIndex < steps.length - 1) {
+          currentStepIndex++;
+          setCurrentStep(currentStepIndex);
+          stepStartTime = Date.now(); // Reset timer for next step
+          console.log('📈 Advanced to step:', currentStepIndex, steps[currentStepIndex]?.label);
+        } else {
+          // All steps completed
+          setProgress(95);
+          clearInterval(interval);
+          console.log('✅ All loading steps completed');
+        }
       }
     }, 100);
 
-    return () => clearInterval(interval);
+    // Initialize
+    setCurrentStep(0);
+    setProgress(0);
+    stepStartTime = Date.now();
+
+    return () => {
+      clearInterval(interval);
+      console.log('🔄 Loading progress cleanup');
+    };
   }, [isLoading, steps]);
 
   if (!isLoading) return null;
