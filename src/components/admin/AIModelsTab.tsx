@@ -21,7 +21,8 @@ import {
   RefreshCw,
   Key,
   AlertCircle,
-  Trash2
+  Trash2,
+  Star
 } from "lucide-react";
 import { useAIModels, AIModel } from "@/hooks/useAIModels";
 
@@ -120,6 +121,13 @@ const AIModelsTab = () => {
     }
   };
 
+  const handleSetDefaultModel = (modelId: string) => {
+    const model = models.find(m => m.id === modelId);
+    if (model) {
+      updateModel(modelId, { ...model, is_default: true });
+    }
+  };
+
   const handleUpdateFeatureModel = (featureName: string, primaryModelId: string, fallbackModelId?: string) => {
     console.log('🔄 Updating feature model assignment:', { featureName, primaryModelId, fallbackModelId });
     updateFeatureModel({
@@ -151,6 +159,8 @@ const AIModelsTab = () => {
     }
     return 'Not assigned';
   };
+
+  const defaultModel = models.find(m => m.is_default);
 
   if (isLoading) {
     return (
@@ -264,6 +274,27 @@ const AIModelsTab = () => {
         </Dialog>
       </div>
 
+      {/* Default Model Alert */}
+      <Alert>
+        <Star className="h-4 w-4" />
+        <AlertDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <strong>Default Fallback Model:</strong> {defaultModel ? `${defaultModel.name} (${defaultModel.provider})` : 'No default model set'}
+              <br />
+              <span className="text-sm text-gray-600">
+                This model is used as the final fallback when all configured models fail
+              </span>
+            </div>
+            {!defaultModel && (
+              <Badge variant="destructive" className="ml-2">
+                No Default Set
+              </Badge>
+            )}
+          </div>
+        </AlertDescription>
+      </Alert>
+
       {/* Enhanced API Keys Alert */}
       <Alert>
         <AlertCircle className="h-4 w-4" />
@@ -358,6 +389,9 @@ const AIModelsTab = () => {
                                     {model.provider.toUpperCase()}
                                   </Badge>
                                   {model.name}
+                                  {model.is_default && (
+                                    <Star className="h-3 w-3 text-yellow-500" />
+                                  )}
                                 </div>
                               </SelectItem>
                             ))}
@@ -397,11 +431,18 @@ const AIModelsTab = () => {
                     <TableRow key={model.id}>
                       <TableCell>
                         <div>
-                          <div className="font-medium">{model.name}</div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{model.name}</span>
+                            {model.is_default && (
+                              <Star className="h-4 w-4 text-yellow-500" />
+                            )}
+                          </div>
                           <div className="text-sm text-gray-500">{model.model_id}</div>
-                          {model.is_default && (
-                            <Badge variant="secondary" className="text-xs mt-1">Default</Badge>
-                          )}
+                          <div className="flex gap-1 mt-1">
+                            {model.is_default && (
+                              <Badge variant="secondary" className="text-xs">Default</Badge>
+                            )}
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -424,6 +465,16 @@ const AIModelsTab = () => {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
+                          {!model.is_default && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleSetDefaultModel(model.id)}
+                              title="Set as default model"
+                            >
+                              <Star className="h-4 w-4" />
+                            </Button>
+                          )}
                           <Button
                             variant="ghost"
                             size="sm"

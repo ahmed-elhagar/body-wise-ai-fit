@@ -93,13 +93,23 @@ const getModelConfiguration = async (supabase: any, featureName: string) => {
       .eq('is_active', true)
       .single();
 
+    // Get default model as final fallback
+    const { data: defaultModelData } = await supabase
+      .from('ai_models')
+      .select('model_id, provider, is_active')
+      .eq('is_default', true)
+      .eq('is_active', true)
+      .single();
+
     if (!modelError && modelData?.primary_model) {
       const primaryModel = modelData.primary_model as any;
       const fallbackModel = modelData.fallback_model as any;
+      const defaultModel = defaultModelData as any;
       
       console.log('✅ Retrieved model configuration:', {
         primary: primaryModel,
-        fallback: fallbackModel
+        fallback: fallbackModel,
+        default: defaultModel
       });
 
       return {
@@ -112,20 +122,36 @@ const getModelConfiguration = async (supabase: any, featureName: string) => {
           modelId: fallbackModel.model_id,
           provider: fallbackModel.provider,
           isActive: fallbackModel.is_active
-        } : null
+        } : null,
+        default: defaultModel ? {
+          modelId: defaultModel.model_id,
+          provider: defaultModel.provider,
+          isActive: defaultModel.is_active
+        } : {
+          modelId: 'gpt-4o-mini',
+          provider: 'openai',
+          isActive: true
+        }
       };
     } else {
-      console.log('⚠️ No model configuration found, using fallback:', modelError?.message);
+      console.log('⚠️ No model configuration found, using defaults:', modelError?.message);
+      const defaultModel = defaultModelData as any;
       return {
-        primary: { modelId: 'gpt-4o-mini', provider: 'openai', isActive: true },
-        fallback: { modelId: 'gemini-1.5-flash-8b', provider: 'google', isActive: true }
+        primary: defaultModel ? {
+          modelId: defaultModel.model_id,
+          provider: defaultModel.provider,
+          isActive: defaultModel.is_active
+        } : { modelId: 'gpt-4o-mini', provider: 'openai', isActive: true },
+        fallback: { modelId: 'gemini-1.5-flash-8b', provider: 'google', isActive: true },
+        default: { modelId: 'gpt-4o-mini', provider: 'openai', isActive: true }
       };
     }
   } catch (error) {
     console.log('❌ Error fetching AI model configuration, using fallback:', error);
     return {
       primary: { modelId: 'gpt-4o-mini', provider: 'openai', isActive: true },
-      fallback: { modelId: 'gemini-1.5-flash-8b', provider: 'google', isActive: true }
+      fallback: { modelId: 'gemini-1.5-flash-8b', provider: 'google', isActive: true },
+      default: { modelId: 'gpt-4o-mini', provider: 'openai', isActive: true }
     };
   }
 };
@@ -244,6 +270,7 @@ CRITICAL REQUIREMENTS - YOU MUST FOLLOW THESE EXACTLY:
 3. Each day must have ${includeSnacks ? '5 meals' : '3 meals'} - NO EXCEPTIONS
 4. NO comments like "// ... (other days)" - GENERATE ALL DAYS FULLY
 5. Total daily calories must be approximately ${adjustedDailyCalories} per day
+6. NO "..." or "(continue pattern)" - WRITE OUT EVERY SINGLE DAY AND MEAL
 
 REQUIRED JSON STRUCTURE (generate ALL 7 days):
 {
@@ -281,76 +308,41 @@ ABSOLUTELY MANDATORY:
 - NO placeholder text or comments
 - NO "..." or "(other days)" 
 - VALID JSON only - no markdown code blocks
-- Complete ingredient and instruction lists for every meal`;
+- Complete ingredient and instruction lists for every meal
+- EVERY SINGLE DAY MUST BE FULLY WRITTEN OUT`;
 
   const maxRetries = 3;
   let lastError = null;
+  let fallbackUsed = false;
 
-  // Try primary model first
-  if (modelConfigs.primary.isActive && apiKeys[modelConfigs.primary.provider]) {
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        console.log(`🔄 Attempt ${attempt}/${maxRetries} with ${modelConfigs.primary.provider} ${modelConfigs.primary.modelId}`);
-        
-        const content = await callAIProvider(
-          modelConfigs.primary,
-          systemPrompt,
-          jsonFormatPrompt,
-          apiKeys[modelConfigs.primary.provider]
-        );
+  // Array of models to try in order: primary -> fallback -> default
+  const modelsToTry = [
+    { config: modelConfigs.primary, name: 'primary' },
+    ...(modelConfigs.fallback ? [{ config: modelConfigs.fallback, name: 'fallback' }] : []),
+    { config: modelConfigs.default, name: 'default' }
+  ].filter(model => model.config.isActive && apiKeys[model.config.provider]);
 
-        const parsedPlan = await parseAndValidateAIResponse(content, modelConfigs.primary);
-        
-        // Validate the plan has exactly 7 days
-        if (!parsedPlan.days || parsedPlan.days.length !== 7) {
-          throw new Error(`Generated plan has ${parsedPlan.days?.length || 0} days instead of 7`);
-        }
-        
-        // Validate each day has correct number of meals
-        for (let dayIndex = 0; dayIndex < parsedPlan.days.length; dayIndex++) {
-          const day = parsedPlan.days[dayIndex];
-          const expectedMeals = includeSnacks ? 5 : 3;
-          if (!day.meals || day.meals.length !== expectedMeals) {
-            throw new Error(`Day ${dayIndex + 1} has ${day.meals?.length || 0} meals instead of ${expectedMeals}`);
-          }
-        }
-        
-        // Validate the plan structure
-        if (validateMealPlan(parsedPlan, includeSnacks)) {
-          console.log(`✅ ${modelConfigs.primary.provider} generated valid 7-day meal plan on attempt ${attempt}`);
-          return parsedPlan;
-        } else {
-          throw new Error('Generated plan failed validation');
-        }
-        
-      } catch (error) {
-        lastError = error;
-        console.error(`❌ ${modelConfigs.primary.provider} attempt ${attempt} failed:`, error.message);
-        
-        if (attempt < maxRetries) {
-          console.log(`⏳ Waiting before retry...`);
-          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
-        }
-      }
-    }
-  }
+  console.log(`🎯 Models to try in order:`, modelsToTry.map(m => `${m.name}: ${m.config.provider}/${m.config.modelId}`));
 
-  // Try fallback model if primary failed
-  if (modelConfigs.fallback && modelConfigs.fallback.isActive && apiKeys[modelConfigs.fallback.provider]) {
-    console.log(`🔄 Switching to fallback model: ${modelConfigs.fallback.provider} ${modelConfigs.fallback.modelId}`);
+  for (const modelToTry of modelsToTry) {
+    const { config: modelConfig, name: modelName } = modelToTry;
     
+    if (modelName !== 'primary') {
+      fallbackUsed = true;
+    }
+
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        console.log(`🔄 Fallback attempt ${attempt}/${maxRetries} with ${modelConfigs.fallback.provider}`);
+        console.log(`🔄 ${modelName} model attempt ${attempt}/${maxRetries} with ${modelConfig.provider} ${modelConfig.modelId}`);
         
         const content = await callAIProvider(
-          modelConfigs.fallback,
+          modelConfig,
           systemPrompt,
           jsonFormatPrompt,
-          apiKeys[modelConfigs.fallback.provider]
+          apiKeys[modelConfig.provider]
         );
 
-        const parsedPlan = await parseAndValidateAIResponse(content, modelConfigs.fallback);
+        const parsedPlan = await parseAndValidateAIResponse(content, modelConfig);
         
         // Validate the plan has exactly 7 days
         if (!parsedPlan.days || parsedPlan.days.length !== 7) {
@@ -368,15 +360,15 @@ ABSOLUTELY MANDATORY:
         
         // Validate the plan structure
         if (validateMealPlan(parsedPlan, includeSnacks)) {
-          console.log(`✅ ${modelConfigs.fallback.provider} generated valid 7-day meal plan on attempt ${attempt}`);
-          return parsedPlan;
+          console.log(`✅ ${modelName} model (${modelConfig.provider}) generated valid 7-day meal plan on attempt ${attempt}`);
+          return { plan: parsedPlan, usedModel: modelConfig, fallbackUsed };
         } else {
           throw new Error('Generated plan failed validation');
         }
         
       } catch (error) {
         lastError = error;
-        console.error(`❌ ${modelConfigs.fallback.provider} attempt ${attempt} failed:`, error.message);
+        console.error(`❌ ${modelName} model (${modelConfig.provider}) attempt ${attempt} failed:`, error.message);
         
         if (attempt < maxRetries) {
           console.log(`⏳ Waiting before retry...`);
@@ -384,10 +376,12 @@ ABSOLUTELY MANDATORY:
         }
       }
     }
+
+    console.log(`❌ ${modelName} model (${modelConfig.provider}) failed all ${maxRetries} attempts, trying next model...`);
   }
 
   // If all models failed, throw the last error
-  console.error('❌ All AI models failed to generate a valid 7-day meal plan');
+  console.error('❌ All AI models (primary, fallback, and default) failed to generate a valid 7-day meal plan');
   throw new MealPlanError(
     `All AI models failed: ${lastError?.message || 'Unknown error'}`,
     errorCodes.AI_GENERATION_FAILED,
@@ -397,7 +391,7 @@ ABSOLUTELY MANDATORY:
 };
 
 const parseAndValidateAIResponse = async (content: string, modelConfig: any) => {
-  // Enhanced cleaning to handle more edge cases
+  // Enhanced cleaning to handle more edge cases and comments
   const cleanedContent = content
     .replace(/```json\n?/g, '')
     .replace(/```\n?/g, '')
@@ -405,6 +399,8 @@ const parseAndValidateAIResponse = async (content: string, modelConfig: any) => 
     .replace(/\/\*[\s\S]*?\*\//g, '') // Remove block comments
     .replace(/\t+/g, ' ') // Replace tabs with spaces
     .replace(/\n\s*\n/g, '\n') // Remove empty lines
+    .replace(/,\s*}/g, '}') // Remove trailing commas before closing braces
+    .replace(/,\s*]/g, ']') // Remove trailing commas before closing brackets
     .trim();
   
   console.log('🔍 Cleaned content length:', cleanedContent.length);
@@ -445,7 +441,7 @@ serve(async (req) => {
   let language = 'en';
 
   try {
-    console.log('=== ENHANCED MEAL PLAN GENERATION WITH RETRY START ===');
+    console.log('=== ENHANCED MEAL PLAN GENERATION WITH FALLBACK CHAIN START ===');
     
     // Parse and validate request
     const requestBody = await req.json();
@@ -473,7 +469,7 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get AI model configurations with fallback
+    // Get AI model configurations with fallback chain
     const modelConfigs = await getModelConfiguration(supabase, 'meal_plan');
 
     // Prepare API keys for all providers
@@ -485,7 +481,8 @@ serve(async (req) => {
 
     // Check if we have at least one working API key
     const hasWorkingApiKey = (modelConfigs.primary.isActive && apiKeys[modelConfigs.primary.provider]) ||
-                           (modelConfigs.fallback?.isActive && apiKeys[modelConfigs.fallback.provider]);
+                           (modelConfigs.fallback?.isActive && apiKeys[modelConfigs.fallback.provider]) ||
+                           (modelConfigs.default.isActive && apiKeys[modelConfigs.default.provider]);
 
     if (!hasWorkingApiKey) {
       throw new MealPlanError(
@@ -500,7 +497,8 @@ serve(async (req) => {
       includeSnacks: preferences?.includeSnacks,
       mealsPerDay: preferences?.includeSnacks ? 5 : 3,
       primaryModel: modelConfigs.primary,
-      fallbackModel: modelConfigs.fallback
+      fallbackModel: modelConfigs.fallback,
+      defaultModel: modelConfigs.default
     });
 
     // Enhanced rate limiting check
@@ -549,8 +547,8 @@ serve(async (req) => {
       weekOffset: preferences?.weekOffset || 0
     });
     
-    // Generate AI meal plan with retry and fallback
-    const generatedPlan = await generateAIMealPlanWithRetry(
+    // Generate AI meal plan with retry and fallback chain
+    const { plan: generatedPlan, usedModel, fallbackUsed } = await generateAIMealPlanWithRetry(
       userProfile,
       preferences,
       adjustedDailyCalories,
@@ -589,20 +587,21 @@ serve(async (req) => {
         nutritionContext,
         mealsPerDay,
         includeSnacks,
-        modelUsed: modelConfigs.primary,
-        fallbackUsed: false,
+        modelUsed: usedModel,
+        fallbackUsed,
         weekOffset: preferences?.weekOffset || 0
       });
     }
 
-    console.log('✅ ENHANCED GENERATION WITH RETRY COMPLETE:', {
+    console.log('✅ ENHANCED GENERATION WITH FALLBACK CHAIN COMPLETE:', {
       totalMealsSaved,
       remainingCredits: rateLimitResult.remaining - (rateLimitResult.isPro ? 0 : 1),
       language,
       nutritionContext,
       mealsPerDay,
       includeSnacks,
-      modelUsed: modelConfigs.primary,
+      modelUsed: usedModel,
+      fallbackUsed,
       weekStartDate: weeklyPlan.week_start_date,
       weekOffset: preferences?.weekOffset || 0
     });
@@ -619,14 +618,15 @@ serve(async (req) => {
       language,
       nutritionContext,
       isPro: rateLimitResult.isPro,
-      modelUsed: modelConfigs.primary,
-      message: `✨ Enhanced meal plan generated with ${totalMealsSaved} meals (${mealsPerDay} per day)${lifePhaseAdjustments > 0 ? ` (+${lifePhaseAdjustments} kcal)` : ''} using ${modelConfigs.primary.provider} ${modelConfigs.primary.modelId} with retry & fallback`
+      modelUsed: usedModel,
+      fallbackUsed,
+      message: `✨ Enhanced meal plan generated with ${totalMealsSaved} meals (${mealsPerDay} per day)${lifePhaseAdjustments > 0 ? ` (+${lifePhaseAdjustments} kcal)` : ''} using ${usedModel.provider} ${usedModel.modelId}${fallbackUsed ? ' (fallback used)' : ''} with intelligent model chain`
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
     
   } catch (error) {
-    console.error('=== ENHANCED MEAL PLAN GENERATION WITH RETRY FAILED ===', error);
+    console.error('=== ENHANCED MEAL PLAN GENERATION WITH FALLBACK CHAIN FAILED ===', error);
     
     // Complete generation log as failed
     if (logId) {
