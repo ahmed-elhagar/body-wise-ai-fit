@@ -1,170 +1,280 @@
 
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
-import { Clock, Users, ChefHat, TrendingUp } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { AIFoodAnalysisResult } from "@/types/aiAnalysis";
+import { 
+  Utensils, 
+  Zap, 
+  Target, 
+  Scale,
+  Clock,
+  AlertCircle,
+  CheckCircle,
+  TrendingUp,
+  Plus
+} from "lucide-react";
+
+interface NutritionInfo {
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  fiber?: number;
+  sugar?: number;
+  sodium?: number;
+}
+
+interface FoodItem {
+  name: string;
+  confidence: number;
+  nutrition: NutritionInfo;
+  portion_size?: string;
+  category?: string;
+}
 
 interface FoodAnalysisResultsProps {
-  result: AIFoodAnalysisResult;
-  onAddToLog?: (food: any) => void;
+  results: {
+    foods: FoodItem[];
+    total_nutrition: NutritionInfo;
+    analysis_confidence: number;
+    suggestions?: string[];
+  };
+  onAddToMealPlan?: (food: FoodItem) => void;
+  onRetakePhoto?: () => void;
   className?: string;
 }
 
-const FoodAnalysisResults = ({ result, onAddToLog, className = "" }: FoodAnalysisResultsProps) => {
-  const { t } = useLanguage();
+const FoodAnalysisResults: React.FC<FoodAnalysisResultsProps> = ({
+  results,
+  onAddToMealPlan,
+  onRetakePhoto,
+  className = ""
+}) => {
+  const { foods, total_nutrition, analysis_confidence, suggestions } = results;
 
-  const confidenceColor = result.overallConfidence > 0.8 ? "text-green-600" : 
-                         result.overallConfidence > 0.6 ? "text-yellow-600" : "text-red-600";
+  const getNutritionColor = (value: number, max: number) => {
+    const percentage = (value / max) * 100;
+    if (percentage < 30) return "text-green-600";
+    if (percentage < 70) return "text-yellow-600";
+    return "text-red-600";
+  };
 
-  const confidenceLabel = result.overallConfidence > 0.8 ? t('High Confidence') : 
-                         result.overallConfidence > 0.6 ? t('Medium Confidence') : t('Low Confidence');
+  const getConfidenceColor = (confidence: number) => {
+    if (confidence >= 0.8) return "text-green-600";
+    if (confidence >= 0.6) return "text-yellow-600";
+    return "text-red-600";
+  };
+
+  const getConfidenceIcon = (confidence: number) => {
+    if (confidence >= 0.8) return <CheckCircle className="w-4 h-4" />;
+    if (confidence >= 0.6) return <AlertCircle className="w-4 h-4" />;
+    return <AlertCircle className="w-4 h-4" />;
+  };
 
   return (
-    <Card className={`p-6 bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 ${className}`}>
-      <div className="space-y-4">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
-              <ChefHat className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-gray-800">{t('Analysis Complete')}</h3>
-              <p className="text-sm text-gray-600">
-                {result.foodItems?.length || 0} {t('items detected')}
-              </p>
+    <div className={`space-y-6 ${className}`}>
+      {/* Analysis Confidence Header */}
+      <Card className="border-l-4 border-l-blue-500">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Utensils className="w-5 h-5 text-blue-600" />
+              Food Analysis Results
+            </CardTitle>
+            <div className={`flex items-center gap-2 ${getConfidenceColor(analysis_confidence)}`}>
+              {getConfidenceIcon(analysis_confidence)}
+              <span className="font-semibold">
+                {Math.round(analysis_confidence * 100)}% Confidence
+              </span>
             </div>
           </div>
-          
-          <div className="text-right">
-            <div className={`text-sm font-semibold ${confidenceColor}`}>
-              {confidenceLabel}
-            </div>
-            <Progress 
-              value={(result.overallConfidence || 0) * 100} 
-              className="w-20 h-2 mt-1"
-            />
-          </div>
-        </div>
+        </CardHeader>
+      </Card>
 
-        {/* Meal Overview */}
-        {(result.mealType || result.cuisineType) && (
-          <div className="flex items-center gap-4 p-3 bg-white rounded-lg border border-green-200">
-            {result.mealType && (
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-green-600" />
-                <span className="text-sm font-medium text-gray-700 capitalize">
-                  {result.mealType}
-                </span>
-              </div>
-            )}
-            {result.cuisineType && (
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-green-600" />
-                <span className="text-sm text-gray-600 capitalize">
-                  {result.cuisineType} {t('cuisine')}
-                </span>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Total Nutrition Summary */}
-        {result.totalNutrition && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {[
-              { key: 'calories', label: t('Calories'), value: result.totalNutrition.calories, unit: '', color: 'orange' },
-              { key: 'protein', label: t('Protein'), value: result.totalNutrition.protein, unit: 'g', color: 'green' },
-              { key: 'carbs', label: t('Carbs'), value: result.totalNutrition.carbs, unit: 'g', color: 'blue' },
-              { key: 'fat', label: t('Fat'), value: result.totalNutrition.fat, unit: 'g', color: 'purple' }
-            ].map(({ key, label, value, unit, color }) => (
-              <div key={key} className="text-center p-3 bg-white rounded-lg border border-gray-200">
-                <div className={`text-lg font-bold text-${color}-600`}>
-                  {Math.round(value || 0)}{unit}
-                </div>
-                <div className="text-xs text-gray-600">{label}</div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Individual Food Items */}
-        {result.foodItems && result.foodItems.length > 0 && (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-green-600" />
-              <h4 className="text-sm font-semibold text-gray-800">{t('Detected Foods')}</h4>
-            </div>
-            
-            <div className="space-y-2">
-              {result.foodItems.map((food: any, index: number) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow"
-                >
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h5 className="text-sm font-medium text-gray-900">{food.name}</h5>
-                      <Badge variant="outline" className="text-xs">
-                        {food.category}
-                      </Badge>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
-                      <span>{food.calories || 0} cal</span>
-                      <span>{food.protein || 0}g protein</span>
-                      <span>{food.carbs || 0}g carbs</span>
-                      <span>{food.fat || 0}g fat</span>
-                    </div>
-                    
-                    {food.quantity && (
-                      <p className="text-xs text-green-600 mt-1">
-                        {t('Portion')}: {food.quantity}
-                      </p>
-                    )}
-                  </div>
-
-                  {onAddToLog && (
-                    <Button
-                      size="sm"
-                      onClick={() => onAddToLog(food)}
-                      className="ml-3 bg-green-600 hover:bg-green-700 text-xs px-3 py-1"
+      {/* Individual Food Items */}
+      <div className="grid gap-4">
+        <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+          <Scale className="w-5 h-5" />
+          Detected Foods ({foods.length})
+        </h3>
+        
+        {foods.map((food, index) => (
+          <Card key={index} className="hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h4 className="font-semibold text-gray-900 capitalize">
+                      {food.name}
+                    </h4>
+                    <Badge 
+                      variant={food.confidence >= 0.8 ? "default" : "secondary"}
+                      className="text-xs"
                     >
-                      {t('Add to Log')}
-                    </Button>
+                      {Math.round(food.confidence * 100)}%
+                    </Badge>
+                  </div>
+                  
+                  {food.portion_size && (
+                    <p className="text-sm text-gray-600 mb-2">
+                      Portion: {food.portion_size}
+                    </p>
+                  )}
+                  
+                  {food.category && (
+                    <Badge variant="outline" className="text-xs mb-2">
+                      {food.category}
+                    </Badge>
                   )}
                 </div>
-              ))}
+                
+                {onAddToMealPlan && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => onAddToMealPlan(food)}
+                    className="ml-2"
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    Add
+                  </Button>
+                )}
+              </div>
+
+              {/* Nutrition Info for Individual Food */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+                <div className="text-center p-2 bg-gray-50 rounded">
+                  <div className="font-semibold text-gray-900">{food.nutrition.calories}</div>
+                  <div className="text-gray-600">Calories</div>
+                </div>
+                <div className="text-center p-2 bg-gray-50 rounded">
+                  <div className="font-semibold text-blue-600">{food.nutrition.protein}g</div>
+                  <div className="text-gray-600">Protein</div>
+                </div>
+                <div className="text-center p-2 bg-gray-50 rounded">
+                  <div className="font-semibold text-green-600">{food.nutrition.carbs}g</div>
+                  <div className="text-gray-600">Carbs</div>
+                </div>
+                <div className="text-center p-2 bg-gray-50 rounded">
+                  <div className="font-semibold text-yellow-600">{food.nutrition.fat}g</div>
+                  <div className="text-gray-600">Fat</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Total Nutrition Summary */}
+      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-blue-600" />
+            Total Nutrition Summary
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+            <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+              <div className="text-2xl font-bold text-gray-900 mb-1">
+                {total_nutrition.calories}
+              </div>
+              <div className="text-sm text-gray-600 flex items-center justify-center gap-1">
+                <Zap className="w-4 h-4" />
+                Calories
+              </div>
+            </div>
+            
+            <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+              <div className="text-2xl font-bold text-blue-600 mb-1">
+                {total_nutrition.protein}g
+              </div>
+              <div className="text-sm text-gray-600">Protein</div>
+            </div>
+            
+            <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+              <div className="text-2xl font-bold text-green-600 mb-1">
+                {total_nutrition.carbs}g
+              </div>
+              <div className="text-sm text-gray-600">Carbs</div>
+            </div>
+            
+            <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+              <div className="text-2xl font-bold text-yellow-600 mb-1">
+                {total_nutrition.fat}g
+              </div>
+              <div className="text-sm text-gray-600">Fat</div>
             </div>
           </div>
-        )}
 
-        {/* Recommendations */}
-        {result.recommendations && (
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h4 className="text-sm font-semibold text-blue-800 mb-2">
-              {t('Nutritionist Recommendations')}
-            </h4>
-            <p className="text-sm text-blue-700">{result.recommendations}</p>
-          </div>
-        )}
+          {/* Additional Nutrition Info */}
+          {(total_nutrition.fiber || total_nutrition.sugar || total_nutrition.sodium) && (
+            <>
+              <Separator className="my-4" />
+              <div className="grid grid-cols-3 gap-4 text-sm">
+                {total_nutrition.fiber && (
+                  <div className="text-center">
+                    <div className="font-semibold text-gray-900">{total_nutrition.fiber}g</div>
+                    <div className="text-gray-600">Fiber</div>
+                  </div>
+                )}
+                {total_nutrition.sugar && (
+                  <div className="text-center">
+                    <div className="font-semibold text-gray-900">{total_nutrition.sugar}g</div>
+                    <div className="text-gray-600">Sugar</div>
+                  </div>
+                )}
+                {total_nutrition.sodium && (
+                  <div className="text-center">
+                    <div className="font-semibold text-gray-900">{total_nutrition.sodium}mg</div>
+                    <div className="text-gray-600">Sodium</div>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
 
-        {/* AI Credits Info */}
-        {result.remainingCredits !== undefined && (
-          <div className="text-center">
-            <p className="text-xs text-gray-500">
-              {result.remainingCredits === -1 
-                ? t('Unlimited AI credits remaining') 
-                : t('{{count}} AI credits remaining', { count: result.remainingCredits })
-              }
-            </p>
-          </div>
+      {/* AI Suggestions */}
+      {suggestions && suggestions.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Target className="w-5 h-5 text-green-600" />
+              AI Suggestions
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2">
+              {suggestions.map((suggestion, index) => (
+                <li key={index} className="flex items-start gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700">{suggestion}</span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Action Buttons */}
+      <div className="flex gap-3 pt-4">
+        {onRetakePhoto && (
+          <Button variant="outline" onClick={onRetakePhoto} className="flex-1">
+            <Clock className="w-4 h-4 mr-2" />
+            Retake Photo
+          </Button>
         )}
+        <Button className="flex-1 bg-blue-600 hover:bg-blue-700">
+          <Plus className="w-4 h-4 mr-2" />
+          Save to Food Log
+        </Button>
       </div>
-    </Card>
+    </div>
   );
 };
 
