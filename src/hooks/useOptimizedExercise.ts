@@ -27,7 +27,7 @@ export const useOptimizedExercise = () => {
     completeExercise,
     updateExerciseProgress,
     getExerciseRecommendations,
-  } = useExerciseActions();
+  } = useExerciseActions(refetchProgram);
 
   // Current workout for selected day
   const currentWorkout = useMemo(() => {
