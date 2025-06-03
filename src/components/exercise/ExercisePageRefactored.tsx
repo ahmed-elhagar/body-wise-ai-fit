@@ -8,7 +8,7 @@ import ProgressRing from "./ProgressRing";
 import ExerciseList from "./ExerciseList";
 import { EmptyExerciseState } from "./EmptyExerciseState";
 import { AIExerciseDialog } from "./AIExerciseDialog";
-import EnhancedLoadingIndicator from "@/components/ui/enhanced-loading-indicator";
+import ExercisePageSkeleton from "./ExercisePageSkeleton";
 
 const ExercisePageRefactored = () => {
   const { t } = useLanguage();
@@ -63,29 +63,9 @@ const ExercisePageRefactored = () => {
     })
   ];
 
-  // Loading state with enhanced design
+  // Loading state with skeleton instead of full-page spinner
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-        <div className="flex items-center justify-center min-h-screen">
-          <EnhancedLoadingIndicator
-            status="loading"
-            type="general"
-            message={t('exercise.loadingProgram') || 'Loading Exercise Program'}
-            description="Preparing your personalized workout plan..."
-            size="lg"
-            variant="card"
-            showSteps={true}
-            customSteps={[
-              'Fetching your program...',
-              'Loading exercises...',
-              'Calculating progress...',
-              'Finalizing data...'
-            ]}
-          />
-        </div>
-      </div>
-    );
+    return <ExercisePageSkeleton />;
   }
 
   // Error state with enhanced design
