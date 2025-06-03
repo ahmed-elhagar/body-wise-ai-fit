@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useMealPlanState } from '@/hooks/useMealPlanState';
-import MealPlanHeader from '@/components/meal-plan/components/MealPlanHeader';
+import EnhancedMealPlanHeader from '@/components/meal-plan/EnhancedMealPlanHeader';
 import { MealPlanNavigation } from './MealPlanNavigation';
 import { MealPlanContent } from './MealPlanContent';
 import ErrorState from '@/components/meal-plan/components/ErrorState';
@@ -20,18 +20,16 @@ export const MealPlanContainer = () => {
     return <LoadingState />;
   }
 
-  // Extract today's meals for the selected day
-  const todaysMeals = mealPlanState.currentWeekPlan?.dailyMeals?.filter(
-    meal => meal.day_number === mealPlanState.selectedDayNumber
-  ) || [];
-
   return (
     <>
       <div className="space-y-6">
-        <MealPlanHeader 
-          remainingCredits={mealPlanState.userCredits}
-          onShowAIDialog={() => mealPlanState.openAIDialog()}
+        <EnhancedMealPlanHeader 
+          onGenerateAI={() => mealPlanState.openAIDialog()}
+          onShuffle={() => {}} // Add shuffle functionality if needed
+          onShowShoppingList={() => mealPlanState.openShoppingListDialog()}
+          onRegeneratePlan={() => mealPlanState.openAIDialog()}
           isGenerating={mealPlanState.isGenerating}
+          hasWeeklyPlan={!!mealPlanState.currentWeekPlan?.weeklyPlan}
         />
         
         <MealPlanNavigation 
@@ -84,7 +82,7 @@ export const MealPlanContainer = () => {
         selectedMealIndex={mealPlanState.selectedMealIndex}
         aiPreferences={mealPlanState.aiPreferences}
         setAiPreferences={mealPlanState.updateAIPreferences}
-        handleGenerateAI={mealPlanState.handleGenerateAIPlan}
+        handleGenerateAI={mealPlanState.handleGenerateAI}
         onRefetch={mealPlanState.refetch}
         mealPlanData={mealPlanState.currentWeekPlan}
         selectedDayNumber={mealPlanState.selectedDayNumber}
