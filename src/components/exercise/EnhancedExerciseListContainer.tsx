@@ -73,8 +73,6 @@ export const EnhancedExerciseListContainer = ({
     );
   }
 
-  const completedCount = exercises.filter(ex => ex.completed).length;
-
   return (
     <div className="space-y-6">
       {/* Compact Session Control */}
@@ -99,31 +97,6 @@ export const EnhancedExerciseListContainer = ({
           />
         ))}
       </div>
-
-      {/* Completion Celebration */}
-      {completedCount === exercises.length && exercises.length > 0 && (
-        <Card className="p-8 bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 text-center shadow-lg">
-          <div className="space-y-4">
-            <div className="text-6xl">🎉</div>
-            <div>
-              <h3 className="text-2xl font-bold text-green-800 mb-2">
-                Workout Complete!
-              </h3>
-              <p className="text-green-600 text-lg">
-                Amazing job! You've completed all {exercises.length} exercises.
-              </p>
-            </div>
-            <div className="flex justify-center gap-4 pt-4">
-              <Badge className="bg-green-500 text-white text-lg px-6 py-2">
-                💪 Strength +1
-              </Badge>
-              <Badge className="bg-blue-500 text-white text-lg px-6 py-2">
-                🏆 Consistency +1
-              </Badge>
-            </div>
-          </div>
-        </Card>
-      )}
     </div>
   );
 };
