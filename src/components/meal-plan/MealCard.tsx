@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Clock, Users, ChefHat, ArrowLeftRight } from "lucide-react";
-import type { DailyMeal } from "@/hooks/useMealPlanData";
+import type { DailyMeal } from "@/features/meal-plan/types";
 
 interface MealCardProps {
   meal: DailyMeal;
@@ -18,6 +18,7 @@ const MealCard = ({ meal, onShowRecipe, onExchangeMeal }: MealCardProps) => {
   };
 
   const handleExchangeMeal = () => {
+    console.log('🔄 Exchanging meal from MealCard:', meal.name);
     onExchangeMeal(meal);
   };
 
