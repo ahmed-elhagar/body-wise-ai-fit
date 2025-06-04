@@ -1,10 +1,11 @@
 
 import React from 'react';
 import { useMealPlanCore } from '@/hooks/useMealPlanCore';
-import { useMealPlanDialogs } from '@/hooks/meal-plan/useMealPlanDialogs';
+import { useMealPlanDialogs } from '@/features/meal-plan/hooks/useMealPlanDialogs';
 import { useMealPlanHandlers } from '@/hooks/useMealPlanHandlers';
 import { MealPlanContent } from './MealPlanContent';
 import { MealExchangeDialog } from '@/components/meal-plan/MealExchangeDialog';
+import MealRecipeDialog from '@/components/MealRecipeDialog';
 import { LoadingState } from './LoadingState';
 import ErrorState from '../../../components/meal-plan/components/ErrorState';
 
@@ -32,16 +33,17 @@ export const MealPlanContainer = () => {
     showExchangeDialog,
     selectedMeal,
     openExchangeDialog,
+    closeExchangeDialog,
     showAIDialog,
     setShowAIDialog,
     showRecipeDialog,
     setShowRecipeDialog,
+    openRecipeDialog,
     showAddSnackDialog,
     setShowAddSnackDialog,
     showShoppingListDialog,
     setShowShoppingListDialog,
     aiPreferences,
-    openRecipeDialog,
     closeAllDialogs
   } = useMealPlanDialogs();
 
@@ -52,11 +54,6 @@ export const MealPlanContainer = () => {
     },
     openExchangeDialog
   );
-
-  const closeExchangeDialog = () => {
-    console.log('❌ Closing exchange dialog');
-    closeAllDialogs();
-  };
 
   const handleMealExchanged = () => {
     refetch();
@@ -103,6 +100,16 @@ export const MealPlanContainer = () => {
         meal={selectedMeal}
         onExchangeComplete={handleMealExchanged}
       />
+
+      {/* Recipe Dialog */}
+      {selectedMeal && (
+        <MealRecipeDialog
+          isOpen={showRecipeDialog}
+          onClose={() => setShowRecipeDialog(false)}
+          meal={selectedMeal}
+          onRecipeGenerated={refetch}
+        />
+      )}
     </div>
   );
 };
