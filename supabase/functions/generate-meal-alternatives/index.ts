@@ -12,6 +12,24 @@ const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
+// Helper function to clean and parse JSON from OpenAI response
+function cleanAndParseJSON(content: string): any {
+  try {
+    // Remove markdown code blocks if present
+    let cleanedContent = content.trim();
+    if (cleanedContent.startsWith('```json')) {
+      cleanedContent = cleanedContent.replace(/```json\s*/g, '').replace(/\s*```$/g, '');
+    } else if (cleanedContent.startsWith('```')) {
+      cleanedContent = cleanedContent.replace(/```\s*/g, '').replace(/\s*```$/g, '');
+    }
+    
+    return JSON.parse(cleanedContent);
+  } catch (error) {
+    console.error('❌ Failed to parse JSON content:', content);
+    throw new Error('Invalid JSON response from AI');
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -42,7 +60,7 @@ serve(async (req) => {
         return await exchangeMealWithAlternative(supabase, mealId, alternative);
       
       case 'quick_exchange':
-        return await quickExchangeMeal(currentMeal, reason);
+        return await quickExchangeMeal(supabase, currentMeal, reason);
       
       default:
         throw new Error('Invalid action');
@@ -64,8 +82,8 @@ serve(async (req) => {
 });
 
 async function generateAlternatives(currentMeal: any, reason: string, preferences: any = {}) {
-  const prompt = `Generate 3-5 alternative meals for this current meal:
-  
+  const prompt = `Generate 3-5 alternative meals for this current meal. Return ONLY a valid JSON array, no markdown formatting.
+
 Current Meal: ${currentMeal.name}
 Calories: ${currentMeal.calories}
 Protein: ${currentMeal.protein}g
@@ -84,21 +102,23 @@ Requirements:
 - Respect prep time preferences
 - Provide variety and appeal
 
-For each alternative, provide:
-- name: descriptive meal name
-- calories: estimated calories
-- protein: protein in grams  
-- carbs: carbs in grams
-- fat: fat in grams
-- prep_time: prep time in minutes
-- cook_time: cook time in minutes
-- servings: number of servings
-- similarity_score: how similar to original (0-1)
-- reason: why this is a good alternative
-- ingredients: array of ingredient objects with name, quantity, unit
-- instructions: array of cooking instructions
+For each alternative, provide exactly this structure:
+{
+  "name": "descriptive meal name",
+  "calories": number,
+  "protein": number,
+  "carbs": number,
+  "fat": number,
+  "prep_time": number,
+  "cook_time": number,
+  "servings": number,
+  "similarity_score": number between 0-1,
+  "reason": "why this is a good alternative",
+  "ingredients": [{"name": "ingredient", "quantity": "amount", "unit": "unit"}],
+  "instructions": ["step 1", "step 2", "step 3"]
+}
 
-Return as JSON array of alternatives.`;
+Return as a JSON array of 3-5 alternatives. Do not include any markdown formatting or explanatory text.`;
 
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -109,7 +129,7 @@ Return as JSON array of alternatives.`;
     body: JSON.stringify({
       model: 'gpt-4o-mini',
       messages: [
-        { role: 'system', content: 'You are a nutrition expert and meal planning assistant. Always respond with valid JSON only.' },
+        { role: 'system', content: 'You are a nutrition expert and meal planning assistant. Always respond with valid JSON only, no markdown formatting.' },
         { role: 'user', content: prompt }
       ],
       temperature: 0.7,
@@ -118,17 +138,21 @@ Return as JSON array of alternatives.`;
   });
 
   const data = await response.json();
-  let alternatives;
+  
+  if (!response.ok) {
+    throw new Error(`OpenAI API error: ${data.error?.message || 'Unknown error'}`);
+  }
 
+  let alternatives;
   try {
-    alternatives = JSON.parse(data.choices[0].message.content);
+    alternatives = cleanAndParseJSON(data.choices[0].message.content);
   } catch (parseError) {
-    console.error('❌ Failed to parse alternatives JSON:', parseError);
+    console.error('❌ Raw OpenAI response:', data.choices[0].message.content);
     throw new Error('Failed to generate valid alternatives');
   }
 
   if (!Array.isArray(alternatives)) {
-    throw new Error('Invalid alternatives format');
+    throw new Error('Invalid alternatives format - expected array');
   }
 
   console.log(`✅ Generated ${alternatives.length} alternatives`);
@@ -175,9 +199,9 @@ async function exchangeMealWithAlternative(supabase: any, mealId: string, altern
   );
 }
 
-async function quickExchangeMeal(currentMeal: any, reason: string) {
-  const prompt = `Generate 1 alternative meal to replace this current meal:
-  
+async function quickExchangeMeal(supabase: any, currentMeal: any, reason: string) {
+  const prompt = `Generate 1 alternative meal to replace this current meal. Return ONLY a valid JSON object, no markdown formatting.
+
 Current Meal: ${currentMeal.name}
 Calories: ${currentMeal.calories}
 Protein: ${currentMeal.protein}g
@@ -192,12 +216,21 @@ Requirements:
 - Same meal type
 - Address the exchange reason effectively
 
-Provide a single meal object with:
-- name, calories, protein, carbs, fat
-- prep_time, cook_time, servings
-- ingredients (array), instructions (array)
+Provide exactly this structure:
+{
+  "name": "meal name",
+  "calories": number,
+  "protein": number,
+  "carbs": number,
+  "fat": number,
+  "prep_time": number,
+  "cook_time": number,
+  "servings": number,
+  "ingredients": [{"name": "ingredient", "quantity": "amount", "unit": "unit"}],
+  "instructions": ["step 1", "step 2", "step 3"]
+}
 
-Return as JSON object (not array).`;
+Return as JSON object (not array). Do not include any markdown formatting.`;
 
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -208,7 +241,7 @@ Return as JSON object (not array).`;
     body: JSON.stringify({
       model: 'gpt-4o-mini',
       messages: [
-        { role: 'system', content: 'You are a nutrition expert. Always respond with valid JSON only.' },
+        { role: 'system', content: 'You are a nutrition expert. Always respond with valid JSON only, no markdown formatting.' },
         { role: 'user', content: prompt }
       ],
       temperature: 0.7,
@@ -217,16 +250,43 @@ Return as JSON object (not array).`;
   });
 
   const data = await response.json();
-  let newMeal;
+  
+  if (!response.ok) {
+    throw new Error(`OpenAI API error: ${data.error?.message || 'Unknown error'}`);
+  }
 
+  let newMeal;
   try {
-    newMeal = JSON.parse(data.choices[0].message.content);
+    newMeal = cleanAndParseJSON(data.choices[0].message.content);
   } catch (parseError) {
-    console.error('❌ Failed to parse new meal JSON:', parseError);
+    console.error('❌ Raw OpenAI response:', data.choices[0].message.content);
     throw new Error('Failed to generate valid meal');
   }
 
-  console.log('✅ Generated quick exchange meal:', newMeal.name);
+  // Update the meal in the database
+  const updateData = {
+    name: newMeal.name,
+    calories: newMeal.calories,
+    protein: newMeal.protein,
+    carbs: newMeal.carbs,
+    fat: newMeal.fat,
+    prep_time: newMeal.prep_time,
+    cook_time: newMeal.cook_time,
+    servings: newMeal.servings,
+    ingredients: newMeal.ingredients,
+    instructions: newMeal.instructions,
+  };
+
+  const { error } = await supabase
+    .from('daily_meals')
+    .update(updateData)
+    .eq('id', currentMeal.id);
+
+  if (error) {
+    throw new Error('Failed to update meal in database');
+  }
+
+  console.log('✅ Generated and saved quick exchange meal:', newMeal.name);
 
   return new Response(
     JSON.stringify({ 
