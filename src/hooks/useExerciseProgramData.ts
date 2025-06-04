@@ -16,7 +16,7 @@ export interface ExerciseProgram {
   week_start_date: string;
   created_at: string;
   daily_workouts: any[];
-  daily_workouts_count: number;
+  daily_workouts_count?: number; // Make this optional
 }
 
 export const useExerciseProgramData = (weekStartDate: string, workoutType: string) => {
@@ -72,7 +72,14 @@ export const useExerciseProgramData = (weekStartDate: string, workoutType: strin
         }
 
         console.log('✅ Program fetched successfully:', program.program_name);
-        return program as ExerciseProgram;
+        
+        // Add daily_workouts_count if not present
+        const programWithCount = {
+          ...program,
+          daily_workouts_count: program.daily_workouts?.length || 0
+        } as ExerciseProgram;
+        
+        return programWithCount;
 
       } catch (error: any) {
         console.error('❌ Error in exercise program fetch:', error);

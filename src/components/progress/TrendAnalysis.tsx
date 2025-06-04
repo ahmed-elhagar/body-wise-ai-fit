@@ -6,7 +6,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 export const TrendAnalysis = () => {
   const { currentProgram } = useOptimizedExerciseProgramPage();
   
-  const data = currentProgram?.daily_workouts?.map((workout, index) => ({
+  const data = currentProgram?.daily_workouts?.map((workout: any, index: number) => ({
     day: `Day ${workout.day_number || index + 1}`,
     exercises: workout.exercises?.length || 0,
     completed: workout.exercises?.filter((ex: any) => ex.completed).length || 0,
@@ -28,3 +28,6 @@ export const TrendAnalysis = () => {
     </Card>
   );
 };
+
+// Export as default for backward compatibility
+export default TrendAnalysis;

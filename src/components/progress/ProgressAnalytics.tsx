@@ -6,10 +6,10 @@ import { TrendingUp, Target, Calendar } from 'lucide-react';
 export const ProgressAnalytics = () => {
   const { currentProgram } = useOptimizedExerciseProgramPage();
   
-  const totalExercises = currentProgram?.daily_workouts?.reduce((sum, workout) => 
+  const totalExercises = currentProgram?.daily_workouts?.reduce((sum: number, workout: any) => 
     sum + (workout.exercises?.length || 0), 0) || 0;
   
-  const completedExercises = currentProgram?.daily_workouts?.reduce((sum, workout) => 
+  const completedExercises = currentProgram?.daily_workouts?.reduce((sum: number, workout: any) => 
     sum + (workout.exercises?.filter((ex: any) => ex.completed).length || 0), 0) || 0;
   
   const completionRate = totalExercises > 0 ? (completedExercises / totalExercises) * 100 : 0;
@@ -48,3 +48,6 @@ export const ProgressAnalytics = () => {
     </div>
   );
 };
+
+// Export as default for backward compatibility
+export default ProgressAnalytics;
