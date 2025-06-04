@@ -91,6 +91,16 @@ export const ExerciseListEnhanced = ({
   const completedCount = exercises.filter(ex => ex.completed).length;
   const totalCount = exercises.length;
 
+  const handleExerciseComplete = (exerciseId: string) => {
+    console.log('🎯 ExerciseListEnhanced - Exercise completed:', exerciseId);
+    onExerciseComplete(exerciseId);
+  };
+
+  const handleExerciseProgressUpdate = (exerciseId: string, sets: number, reps: string, notes?: string, weight?: number) => {
+    console.log('📊 ExerciseListEnhanced - Progress updated:', { exerciseId, sets, reps, notes, weight });
+    onExerciseProgressUpdate(exerciseId, sets, reps, notes, weight);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header with controls */}
@@ -146,8 +156,8 @@ export const ExerciseListEnhanced = ({
           {/* Workout Session Manager */}
           <WorkoutSessionManager
             exercises={exercises}
-            onExerciseComplete={onExerciseComplete}
-            onExerciseProgressUpdate={onExerciseProgressUpdate}
+            onExerciseComplete={handleExerciseComplete}
+            onExerciseProgressUpdate={handleExerciseProgressUpdate}
             onSessionComplete={handleSessionComplete}
           />
           
@@ -157,8 +167,8 @@ export const ExerciseListEnhanced = ({
               <ExerciseProgressCard
                 key={exercise.id}
                 exercise={exercise}
-                onComplete={onExerciseComplete}
-                onProgressUpdate={onExerciseProgressUpdate}
+                onComplete={handleExerciseComplete}
+                onProgressUpdate={handleExerciseProgressUpdate}
                 isActive={activeExerciseId === exercise.id}
                 onSetActive={() => setActiveExerciseId(
                   activeExerciseId === exercise.id ? null : exercise.id
@@ -194,7 +204,7 @@ export const ExerciseListEnhanced = ({
                 <Button
                   variant={exercise.completed ? "default" : "outline"}
                   size="sm"
-                  onClick={() => onExerciseComplete(exercise.id)}
+                  onClick={() => handleExerciseComplete(exercise.id)}
                   className={exercise.completed ? "bg-green-600 hover:bg-green-700" : ""}
                 >
                   {exercise.completed ? t('Completed') : t('Mark Complete')}

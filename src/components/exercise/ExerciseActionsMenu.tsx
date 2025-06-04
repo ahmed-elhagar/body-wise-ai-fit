@@ -1,21 +1,20 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuTrigger,
-  DropdownMenuSeparator 
+  DropdownMenuItem,
+  DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
 import { 
   MoreVertical, 
-  Play, 
-  Edit, 
-  Trash2, 
-  Video,
-  ExternalLink,
-  Copy
+  Youtube, 
+  RefreshCw, 
+  BookOpen,
+  Share,
+  Edit
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Exercise } from '@/types/exercise';
@@ -23,71 +22,68 @@ import { Exercise } from '@/types/exercise';
 interface ExerciseActionsMenuProps {
   exercise: Exercise;
   onShowVideo: () => void;
-  onEdit?: () => void;
-  onDelete?: () => void;
-  onDuplicate?: () => void;
+  onShowExchange?: () => void;
+  onShowInstructions?: () => void;
 }
 
 export const ExerciseActionsMenu = ({ 
   exercise, 
   onShowVideo, 
-  onEdit, 
-  onDelete,
-  onDuplicate 
+  onShowExchange,
+  onShowInstructions 
 }: ExerciseActionsMenuProps) => {
   const { t } = useLanguage();
 
-  const handleOpenYouTube = () => {
-    const searchTerm = exercise.youtube_search_term || exercise.name;
-    const youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(searchTerm + ' exercise tutorial')}`;
-    window.open(youtubeUrl, '_blank');
+  const handleShare = async () => {
+    const shareText = `💪 ${exercise.name} - ${exercise.sets} sets × ${exercise.reps} reps`;
+    
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: exercise.name,
+          text: shareText,
+        });
+      } else {
+        await navigator.clipboard.writeText(shareText);
+      }
+    } catch (error) {
+      console.log('Share failed:', error);
+    }
   };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-          <MoreVertical className="h-4 w-4" />
+          <MoreVertical className="w-4 h-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuItem onClick={onShowVideo} className="flex items-center gap-2">
-          <Video className="w-4 h-4" />
-          {t('Video Tutorial')}
+        <DropdownMenuItem onClick={onShowVideo}>
+          <Youtube className="w-4 h-4 mr-2 text-red-600" />
+          {t('Watch Video')}
         </DropdownMenuItem>
         
-        <DropdownMenuItem onClick={handleOpenYouTube} className="flex items-center gap-2">
-          <ExternalLink className="w-4 h-4" />
-          {t('Search YouTube')}
-        </DropdownMenuItem>
-        
-        <DropdownMenuSeparator />
-        
-        {onEdit && (
-          <DropdownMenuItem onClick={onEdit} className="flex items-center gap-2">
-            <Edit className="w-4 h-4" />
-            {t('Edit Exercise')}
+        {onShowExchange && (
+          <DropdownMenuItem onClick={onShowExchange}>
+            <RefreshCw className="w-4 h-4 mr-2 text-orange-600" />
+            {t('Exchange Exercise')}
           </DropdownMenuItem>
         )}
         
-        {onDuplicate && (
-          <DropdownMenuItem onClick={onDuplicate} className="flex items-center gap-2">
-            <Copy className="w-4 h-4" />
-            {t('Duplicate')}
+        {exercise.instructions && onShowInstructions && (
+          <DropdownMenuItem onClick={onShowInstructions}>
+            <BookOpen className="w-4 h-4 mr-2 text-blue-600" />
+            {t('View Instructions')}
           </DropdownMenuItem>
         )}
         
         <DropdownMenuSeparator />
         
-        {onDelete && (
-          <DropdownMenuItem 
-            onClick={onDelete} 
-            className="flex items-center gap-2 text-red-600 hover:text-red-700"
-          >
-            <Trash2 className="w-4 h-4" />
-            {t('Delete')}
-          </DropdownMenuItem>
-        )}
+        <DropdownMenuItem onClick={handleShare}>
+          <Share className="w-4 h-4 mr-2 text-gray-600" />
+          {t('Share Exercise')}
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

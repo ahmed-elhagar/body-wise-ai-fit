@@ -20,6 +20,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Exercise } from '@/types/exercise';
 import { ExerciseActionsMenu } from './ExerciseActionsMenu';
 import { ExerciseVideoDialog } from './ExerciseVideoDialog';
+import { ExerciseExchangeDialog } from './ExerciseExchangeDialog';
 
 interface ExerciseProgressCardProps {
   exercise: Exercise;
@@ -56,6 +57,7 @@ export const ExerciseProgressCard = ({
   const [notes, setNotes] = useState(exercise.notes || '');
   const [showWeightInput, setShowWeightInput] = useState(false);
   const [showVideoDialog, setShowVideoDialog] = useState(false);
+  const [showExchangeDialog, setShowExchangeDialog] = useState(false);
 
   const completedSets = setsProgress.filter(set => set.completed).length;
   const totalSets = exercise.sets || 3;
@@ -89,7 +91,17 @@ export const ExerciseProgressCard = ({
 
     // Mark exercise as complete if all sets are done
     if (completedCount === totalSets) {
+      console.log('🏆 All sets completed, marking exercise as complete');
+      handleExerciseComplete();
+    }
+  };
+
+  const handleExerciseComplete = () => {
+    try {
+      console.log('✅ Marking exercise complete:', exercise.id);
       onComplete(exercise.id);
+    } catch (error) {
+      console.error('❌ Error completing exercise:', error);
     }
   };
 
@@ -158,6 +170,7 @@ export const ExerciseProgressCard = ({
             <ExerciseActionsMenu
               exercise={exercise}
               onShowVideo={() => setShowVideoDialog(true)}
+              onShowExchange={() => setShowExchangeDialog(true)}
             />
             <Button
               variant={isActive ? "default" : "outline"}
@@ -189,7 +202,20 @@ export const ExerciseProgressCard = ({
           <Progress value={progressPercentage} className="h-2" />
         </div>
 
-        {/* Sets Tracking */}
+        {/* Quick Complete Button for non-active exercises */}
+        {!isActive && !exercise.completed && (
+          <div className="mb-4">
+            <Button
+              onClick={handleExerciseComplete}
+              className="w-full bg-green-600 hover:bg-green-700 text-white"
+            >
+              <CheckCircle className="w-4 h-4 mr-2" />
+              {t('Mark as Complete')}
+            </Button>
+          </div>
+        )}
+
+        {/* Sets Tracking - Only show when active */}
         {isActive && (
           <div className="space-y-3 mb-4">
             <div className="flex items-center justify-between">
@@ -318,6 +344,13 @@ export const ExerciseProgressCard = ({
         exercise={exercise}
         open={showVideoDialog}
         onOpenChange={setShowVideoDialog}
+      />
+
+      {/* Exchange Dialog */}
+      <ExerciseExchangeDialog
+        exercise={exercise}
+        open={showExchangeDialog}
+        onOpenChange={setShowExchangeDialog}
       />
     </>
   );
