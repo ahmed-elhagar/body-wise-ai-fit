@@ -4,11 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Users, UserPlus, Search, Crown, Mail } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { UserSearchDropdown } from "../coach/UserSearchDropdown";
 
 type UserRole = 'normal' | 'coach' | 'admin';
 
@@ -41,8 +41,7 @@ interface Coach {
 }
 
 const CoachesTab = () => {
-  const [newTraineeEmail, setNewTraineeEmail] = useState("");
-  const [selectedCoach, setSelectedCoach] = useState("");
+  const [selectedTraineeId, setSelectedTraineeId] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const queryClient = useQueryClient();
 
@@ -96,15 +95,12 @@ const CoachesTab = () => {
   });
 
   const assignTrainee = useMutation({
-    mutationFn: async ({ coachId, traineeEmail }: { coachId: string; traineeEmail: string }) => {
-      const trainee = users?.find(u => u.email === traineeEmail);
-      if (!trainee) throw new Error('Trainee not found');
-
+    mutationFn: async ({ coachId, traineeId }: { coachId: string; traineeId: string }) => {
       const { data, error } = await supabase
         .from('coach_trainees')
         .insert({
           coach_id: coachId,
-          trainee_id: trainee.id
+          trainee_id: traineeId
         });
 
       if (error) throw error;
@@ -112,8 +108,7 @@ const CoachesTab = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-coach-trainees'] });
-      setNewTraineeEmail("");
-      setSelectedCoach("");
+      setSelectedTraineeId("");
       toast.success('Trainee assigned successfully');
     },
     onError: (error) => {
@@ -154,14 +149,14 @@ const CoachesTab = () => {
   );
 
   const handleAssignTrainee = (coachId: string) => {
-    if (!newTraineeEmail.trim()) {
-      toast.error("Please enter trainee email");
+    if (!selectedTraineeId) {
+      toast.error("Please select a trainee");
       return;
     }
     
     assignTrainee.mutate({ 
       coachId, 
-      traineeEmail: newTraineeEmail.trim() 
+      traineeId: selectedTraineeId
     });
   };
 
@@ -240,15 +235,17 @@ const CoachesTab = () => {
                   <span className="font-medium text-gray-700">Assign New Trainee</span>
                 </div>
                 <div className="flex gap-2">
-                  <Input
-                    placeholder="Enter trainee email"
-                    value={newTraineeEmail}
-                    onChange={(e) => setNewTraineeEmail(e.target.value)}
-                    className="flex-1"
-                  />
+                  <div className="flex-1">
+                    <UserSearchDropdown
+                      value={selectedTraineeId}
+                      onValueChange={setSelectedTraineeId}
+                      placeholder="Search and select a trainee..."
+                      excludeRoles={['admin', 'coach']}
+                    />
+                  </div>
                   <Button 
                     onClick={() => handleAssignTrainee(coach.id)}
-                    disabled={assignTrainee.isPending || !newTraineeEmail.trim()}
+                    disabled={assignTrainee.isPending || !selectedTraineeId}
                     className="px-6"
                   >
                     {assignTrainee.isPending ? 'Assigning...' : 'Assign'}
