@@ -164,12 +164,13 @@ export const TraineeAutoComplete = ({
       {showDropdown && filteredUsers.length > 0 && (
         <div 
           ref={dropdownRef}
-          className="absolute z-[100] w-full mt-1 bg-white border border-gray-200 rounded-md shadow-xl max-h-60 overflow-hidden"
+          className="fixed bg-white border border-gray-200 rounded-md shadow-xl max-h-60 overflow-hidden"
           style={{ 
-            position: 'absolute',
-            top: '100%',
-            left: 0,
-            right: 0
+            zIndex: 9999,
+            top: inputRef.current ? inputRef.current.getBoundingClientRect().bottom + 4 : 0,
+            left: inputRef.current ? inputRef.current.getBoundingClientRect().left : 0,
+            width: inputRef.current ? inputRef.current.offsetWidth : 'auto',
+            minWidth: '280px'
           }}
         >
           <ScrollArea className="h-full max-h-60">
