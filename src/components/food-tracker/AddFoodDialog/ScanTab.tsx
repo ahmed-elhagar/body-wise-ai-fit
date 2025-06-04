@@ -25,18 +25,21 @@ const ScanTab = ({ onFoodAdded, onClose }: ScanTabProps) => {
   const { userCredits } = useCreditSystem();
   const { 
     logAnalyzedFood, 
-    isLoggingFood 
+    isLoggingFood,
+    convertToFoodItem 
   } = useFoodPhotoIntegration();
 
   const handleSelectFood = (food: any) => {
-    setSelectedFood(food);
+    console.log('🎯 Food selected from scan:', food);
+    const standardizedFood = convertToFoodItem(food);
+    setSelectedFood(standardizedFood);
   };
 
-  const handleAddFood = () => {
+  const handleAddFood = async () => {
     if (!selectedFood) return;
 
     try {
-      logAnalyzedFood(
+      await logAnalyzedFood(
         selectedFood,
         quantity,
         mealType,

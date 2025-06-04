@@ -19,6 +19,7 @@ const FoodPhotoAnalyzer = ({ onSelectFood }: FoodPhotoAnalyzerProps) => {
     if (onSelectFood) {
       // Convert AI analysis to standardized food item format
       const standardizedFood = convertToFoodItem(food);
+      console.log('🍕 Converting AI food analysis:', food, 'to standardized format:', standardizedFood);
       onSelectFood(standardizedFood);
     }
   };

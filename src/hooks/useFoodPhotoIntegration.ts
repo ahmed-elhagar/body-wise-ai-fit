@@ -50,7 +50,7 @@ export const useFoodPhotoIntegration = () => {
       }
 
       if (data?.success) {
-        console.log('✅ Food photo analysis completed successfully');
+        console.log('✅ Food photo analysis completed successfully:', data);
         setAnalysisResult(data);
         await completeGenerationAsync();
         toast.success('Food photo analyzed successfully!');
@@ -69,14 +69,24 @@ export const useFoodPhotoIntegration = () => {
   };
 
   const convertToFoodItem = (food: any) => {
-    return {
-      name: food.name || 'Unknown Food',
-      calories: food.calories || 0,
-      protein: food.protein || 0,
-      carbs: food.carbs || 0,
-      fat: food.fat || 0,
-      quantity: food.quantity || '1 serving'
+    console.log('🔄 Converting food item:', food);
+    
+    // Handle both direct food objects and nested analysis results
+    const foodData = food.foodItems ? food.foodItems[0] : food;
+    
+    const converted = {
+      name: foodData?.name || food?.name || 'Unknown Food',
+      calories: foodData?.calories || food?.calories || 0,
+      protein: foodData?.protein || food?.protein || 0,
+      carbs: foodData?.carbs || food?.carbs || 0,
+      fat: foodData?.fat || food?.fat || 0,
+      quantity: foodData?.quantity || food?.quantity || '1 serving',
+      category: foodData?.category || food?.category || 'general',
+      confidence: food?.overallConfidence || foodData?.confidence || 0.8
     };
+    
+    console.log('✅ Converted food item:', converted);
+    return converted;
   };
 
   const logAnalyzedFood = async (food: any, quantity: number, mealType: string, notes: string) => {
@@ -88,7 +98,7 @@ export const useFoodPhotoIntegration = () => {
     setIsLoggingFood(true);
     
     try {
-      console.log('📝 Logging analyzed food');
+      console.log('📝 Logging analyzed food:', food);
       
       const { error } = await supabase
         .from('food_consumption_log')
