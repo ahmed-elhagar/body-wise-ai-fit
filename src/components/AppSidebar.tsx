@@ -31,6 +31,8 @@ const AppSidebar = () => {
     >
       <SidebarHeader className="p-0 border-b border-gray-200">
         <SidebarBranding />
+        {/* Move account section to top, right after branding */}
+        {(!isCollapsed || isMobile) && <SidebarAccountSection />}
       </SidebarHeader>
       
       <SidebarContent className={cn(
@@ -39,7 +41,6 @@ const AppSidebar = () => {
       )}>
         <SidebarMainNavigation />
         <SidebarManagementPanel />
-        {(!isCollapsed || isMobile) && <SidebarAccountSection />}
       </SidebarContent>
 
       <SidebarFooter className={cn(

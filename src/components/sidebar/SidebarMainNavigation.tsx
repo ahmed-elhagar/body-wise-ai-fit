@@ -65,9 +65,9 @@ export const SidebarMainNavigation = () => {
     { href: "/analytics", icon: BarChart3, label: "Analytics" },
   ];
 
-  // Communication & Settings Items
+  // Communication & Settings Items - Fixed broken routes
   const communicationNavigationItems: NavigationItem[] = [
-    { href: "/ai-chat", icon: MessageSquare, label: "AI Chat" },
+    { href: "/chat", icon: MessageSquare, label: "AI Chat" }, // Fixed: was /ai-chat
     { href: "/notifications", icon: Bell, label: "Notifications" },
     { href: "/coach", icon: Users, label: "Coach Dashboard", requiresCoach: true },
     { href: "/profile", icon: User, label: "Profile" },
