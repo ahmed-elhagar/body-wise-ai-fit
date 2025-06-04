@@ -17,7 +17,7 @@ serve(async (req) => {
   try {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     );
 
     const { exerciseId, reason, preferences, userLanguage = 'en', userId } = await req.json();
@@ -28,28 +28,28 @@ serve(async (req) => {
       throw new Error('Exercise ID is required');
     }
 
-    // Get original exercise details - use array query first to check existence
-    const { data: exerciseArray, error: exerciseError } = await supabaseClient
+    // Optimized query with timeout handling - use single query with timeout
+    console.log('🔍 Fetching exercise with ID:', exerciseId);
+    
+    const { data: originalExercise, error: exerciseError } = await supabaseClient
       .from('exercises')
       .select('*')
-      .eq('id', exerciseId);
+      .eq('id', exerciseId)
+      .single();
 
     if (exerciseError) {
-      console.error('Exercise query error:', exerciseError);
-      throw new Error(`Failed to query exercise: ${exerciseError.message}`);
+      console.error('❌ Exercise query error:', exerciseError);
+      if (exerciseError.code === '57014') {
+        throw new Error('Database query timed out. Please try again.');
+      }
+      throw new Error(`Failed to find exercise: ${exerciseError.message}`);
     }
 
-    if (!exerciseArray || exerciseArray.length === 0) {
-      console.error('Exercise not found for ID:', exerciseId);
+    if (!originalExercise) {
+      console.error('❌ Exercise not found for ID:', exerciseId);
       throw new Error('Exercise not found');
     }
 
-    if (exerciseArray.length > 1) {
-      console.error('Multiple exercises found for ID:', exerciseId);
-      throw new Error('Multiple exercises found with same ID');
-    }
-
-    const originalExercise = exerciseArray[0];
     console.log('✅ Found original exercise:', originalExercise.name);
 
     // Generate exchange prompt with comprehensive instructions
@@ -99,24 +99,36 @@ IMPORTANT: Respond with ONLY valid JSON, no additional text or markdown formatti
       throw new Error('OpenAI API key not configured');
     }
 
-    console.log('🤖 Using multi-provider AI service for exercise exchange...');
+    console.log('🤖 Using AI service for exercise exchange...');
 
-    // Use the enhanced AI service with multiple providers
+    // Use the AI service with timeout handling
     const aiService = new AIService(openAIApiKey, anthropicApiKey, googleApiKey);
-    const response = await aiService.generate('exercise_exchange', {
-      messages: [
-        {
-          role: 'system',
-          content: 'You are a professional fitness trainer AI that provides exercise alternatives. Always respond with valid JSON only, no markdown or additional formatting.'
-        },
-        {
-          role: 'user',
-          content: exchangePrompt
-        }
-      ],
-      temperature: 0.7,
-      maxTokens: 1000,
-    });
+    
+    let response;
+    try {
+      response = await Promise.race([
+        aiService.generate('exercise_exchange', {
+          messages: [
+            {
+              role: 'system',
+              content: 'You are a professional fitness trainer AI that provides exercise alternatives. Always respond with valid JSON only, no markdown or additional formatting.'
+            },
+            {
+              role: 'user',
+              content: exchangePrompt
+            }
+          ],
+          temperature: 0.7,
+          maxTokens: 1000,
+        }),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('AI request timeout')), 25000)
+        )
+      ]);
+    } catch (aiError) {
+      console.error('❌ AI service error:', aiError);
+      throw new Error(`AI service failed: ${aiError.message}`);
+    }
 
     const aiContent = response.content;
 
@@ -124,7 +136,7 @@ IMPORTANT: Respond with ONLY valid JSON, no additional text or markdown formatti
       throw new Error('No response from AI');
     }
 
-    console.log('🤖 AI Response received:', aiContent);
+    console.log('✅ AI Response received:', aiContent.substring(0, 200) + '...');
 
     // Parse the AI response with better error handling
     let newExerciseData;
@@ -133,9 +145,8 @@ IMPORTANT: Respond with ONLY valid JSON, no additional text or markdown formatti
       const cleanedContent = aiContent.trim().replace(/```json\n?|\n?```/g, '');
       newExerciseData = JSON.parse(cleanedContent);
     } catch (parseError) {
-      console.error('Failed to parse AI response:', aiContent);
-      console.error('Parse error:', parseError);
-      throw new Error(`Invalid AI response format: ${parseError.message}`);
+      console.error('❌ Failed to parse AI response:', parseError);
+      throw new Error('Invalid AI response format. Please try again.');
     }
 
     // Validate required fields
@@ -143,29 +154,39 @@ IMPORTANT: Respond with ONLY valid JSON, no additional text or markdown formatti
       throw new Error('AI response missing exercise name');
     }
 
-    console.log('✅ Parsed new exercise data:', newExerciseData);
+    console.log('✅ Parsed new exercise data:', newExerciseData.name);
 
-    // Update the exercise in the database with the new AI-generated data
-    const { data: updatedExercise, error: updateError } = await supabaseClient
-      .from('exercises')
-      .update({
-        name: newExerciseData.name,
-        sets: newExerciseData.sets || originalExercise.sets || 3,
-        reps: newExerciseData.reps || originalExercise.reps || '12',
-        rest_seconds: newExerciseData.rest_seconds || originalExercise.rest_seconds || 60,
-        muscle_groups: newExerciseData.muscle_groups || originalExercise.muscle_groups || ['full_body'],
-        equipment: newExerciseData.equipment || originalExercise.equipment || 'bodyweight',
-        difficulty: newExerciseData.difficulty || originalExercise.difficulty || 'intermediate',
-        instructions: newExerciseData.instructions || 'No instructions provided',
-        youtube_search_term: newExerciseData.youtube_search_term || newExerciseData.name,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', exerciseId)
-      .select()
-      .single();
+    // Update the exercise in the database with optimized query
+    console.log('🔄 Updating exercise in database...');
+    
+    const { data: updatedExercise, error: updateError } = await Promise.race([
+      supabaseClient
+        .from('exercises')
+        .update({
+          name: newExerciseData.name,
+          sets: newExerciseData.sets || originalExercise.sets || 3,
+          reps: newExerciseData.reps || originalExercise.reps || '12',
+          rest_seconds: newExerciseData.rest_seconds || originalExercise.rest_seconds || 60,
+          muscle_groups: newExerciseData.muscle_groups || originalExercise.muscle_groups || ['full_body'],
+          equipment: newExerciseData.equipment || originalExercise.equipment || 'bodyweight',
+          difficulty: newExerciseData.difficulty || originalExercise.difficulty || 'intermediate',
+          instructions: newExerciseData.instructions || 'No instructions provided',
+          youtube_search_term: newExerciseData.youtube_search_term || newExerciseData.name,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', exerciseId)
+        .select()
+        .single(),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Database update timeout')), 10000)
+      )
+    ]);
 
     if (updateError) {
-      console.error('Update error:', updateError);
+      console.error('❌ Update error:', updateError);
+      if (updateError.code === '57014') {
+        throw new Error('Database update timed out. Please try again.');
+      }
       throw new Error(`Failed to update exercise: ${updateError.message}`);
     }
 
