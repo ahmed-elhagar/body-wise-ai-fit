@@ -10,6 +10,13 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+interface UserProfile {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+}
+
 interface Subscription {
   id: string;
   user_id: string;
@@ -24,11 +31,7 @@ interface Subscription {
   interval: string;
   created_at: string;
   updated_at: string;
-  user_profile: {
-    first_name: string;
-    last_name: string;
-    email: string;
-  };
+  user_profile: UserProfile | null;
 }
 
 const SubscriptionsTab = () => {
@@ -40,16 +43,10 @@ const SubscriptionsTab = () => {
     queryFn: async () => {
       console.log('Fetching subscriptions...');
       
+      // First get subscriptions
       const { data: subscriptionsData, error: subscriptionsError } = await supabase
         .from('subscriptions')
-        .select(`
-          *,
-          user_profile:profiles!subscriptions_user_id_fkey(
-            first_name,
-            last_name,
-            email
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (subscriptionsError) {
@@ -57,8 +54,33 @@ const SubscriptionsTab = () => {
         throw subscriptionsError;
       }
 
-      console.log('Fetched subscriptions:', subscriptionsData);
-      return subscriptionsData as Subscription[];
+      if (!subscriptionsData || subscriptionsData.length === 0) {
+        console.log('No subscriptions found');
+        return [];
+      }
+
+      // Get unique user IDs
+      const userIds = [...new Set(subscriptionsData.map(sub => sub.user_id))];
+      
+      // Fetch user profiles separately
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, email')
+        .in('id', userIds);
+
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+        // Continue without profiles if there's an error
+      }
+
+      // Combine the data
+      const subscriptionsWithProfiles = subscriptionsData.map(subscription => ({
+        ...subscription,
+        user_profile: profilesData?.find(profile => profile.id === subscription.user_id) || null
+      })) as Subscription[];
+
+      console.log('Fetched subscriptions with profiles:', subscriptionsWithProfiles);
+      return subscriptionsWithProfiles;
     }
   });
 
@@ -272,7 +294,7 @@ const SubscriptionsTab = () => {
                             ? `${subscription.user_profile.first_name} ${subscription.user_profile.last_name}`
                             : subscription.user_profile?.email || 'Unknown User'}
                         </div>
-                        <div className="text-sm text-gray-500">{subscription.user_profile?.email}</div>
+                        <div className="text-sm text-gray-500">{subscription.user_profile?.email || 'No email available'}</div>
                       </div>
                     </div>
                     
