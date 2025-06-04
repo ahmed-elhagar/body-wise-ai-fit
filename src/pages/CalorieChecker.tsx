@@ -2,50 +2,63 @@
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { PageHeader } from "@/components/ui/page-header";
-import { Camera, Utensils } from "lucide-react";
+import { Camera } from "lucide-react";
 import FoodPhotoAnalyzer from "@/components/calorie/FoodPhotoAnalyzer";
-import FoodConsumptionTracker from "@/components/calorie/FoodConsumptionTracker";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const CalorieChecker = () => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
   
+  const handleFoodAnalyzed = (food: any) => {
+    // Navigate to food tracker with the analyzed food data
+    toast.success(t('Food analyzed! Redirecting to Food Tracker to log it.'));
+    setTimeout(() => {
+      navigate('/food-tracker', { 
+        state: { 
+          analyzedFood: food,
+          openAddDialog: true 
+        } 
+      });
+    }, 1500);
+  };
+
   return (
     <ProtectedRoute>
       <Layout>
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50">
           <PageHeader
-            title={t('Calorie Checker')}
-            description={t('Analyze food photos and track your calorie intake with AI-powered recognition')}
-            icon={<Camera className="h-6 w-6 text-blue-600" />}
+            title={t('AI Food Scanner')}
+            description={t('Analyze food photos with AI-powered recognition and get instant nutrition information')}
+            icon={<Camera className="h-6 w-6 text-purple-600" />}
           />
 
-          <div className="max-w-7xl mx-auto p-4 md:p-6">
-            <Tabs defaultValue="photo-analysis" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 max-w-md bg-white/80 backdrop-blur-sm">
-                <TabsTrigger value="photo-analysis" className="flex items-center gap-2">
-                  <Camera className="h-4 w-4" />
-                  <span className="hidden sm:inline">{t('Photo Analysis')}</span>
-                </TabsTrigger>
-                <TabsTrigger value="food-tracker" className="flex items-center gap-2">
-                  <Utensils className="h-4 w-4" />
-                  <span className="hidden sm:inline">{t('Food Tracker')}</span>
-                </TabsTrigger>
-              </TabsList>
+          <div className="max-w-4xl mx-auto p-4 md:p-6">
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border-0 p-6">
+              <FoodPhotoAnalyzer onSelectFood={handleFoodAnalyzed} />
+            </div>
 
-              <TabsContent value="photo-analysis" className="mt-6">
-                <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border-0 p-6">
-                  <FoodPhotoAnalyzer />
+            {/* Info Card */}
+            <div className="mt-6 bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl p-6 border border-purple-200">
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Camera className="w-5 h-5 text-white" />
                 </div>
-              </TabsContent>
-
-              <TabsContent value="food-tracker" className="mt-6">
-                <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border-0 p-6">
-                  <FoodConsumptionTracker />
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                    {t('How it works')}
+                  </h3>
+                  <ul className="text-sm text-gray-600 space-y-1">
+                    <li>• {t('Take a photo of your food or upload an existing image')}</li>
+                    <li>• {t('Our AI analyzes the image and identifies food items')}</li>
+                    <li>• {t('Get instant nutrition information and calorie estimates')}</li>
+                    <li>• {t('Add analyzed foods directly to your food tracker')}</li>
+                  </ul>
                 </div>
-              </TabsContent>
-            </Tabs>
+              </div>
+            </div>
           </div>
         </div>
       </Layout>

@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Camera, Edit3 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useEffect, useState } from "react";
 import SearchTab from "./SearchTab";
 import ScanTab from "./ScanTab";
 import ManualTab from "./ManualTab";
@@ -11,21 +12,30 @@ interface AddFoodDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onFoodAdded: () => void;
+  preSelectedFood?: any;
 }
 
-const AddFoodDialog = ({ isOpen, onClose, onFoodAdded }: AddFoodDialogProps) => {
-  const { t, isRTL } = useLanguage();
+const AddFoodDialog = ({ isOpen, onClose, onFoodAdded, preSelectedFood }: AddFoodDialogProps) => {
+  const { t } = useLanguage();
+  const [activeTab, setActiveTab] = useState("search");
+
+  useEffect(() => {
+    if (preSelectedFood && isOpen) {
+      // If we have pre-selected food from AI analysis, switch to manual tab
+      setActiveTab("manual");
+    }
+  }, [preSelectedFood, isOpen]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-gray-900">
-            {t('Add Food')}
+            {preSelectedFood ? t('Add Analyzed Food') : t('Add Food')}
           </DialogTitle>
         </DialogHeader>
 
-        <Tabs defaultValue="search" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3 bg-gray-100">
             <TabsTrigger 
               value="search" 
@@ -60,7 +70,11 @@ const AddFoodDialog = ({ isOpen, onClose, onFoodAdded }: AddFoodDialogProps) => 
             </TabsContent>
 
             <TabsContent value="manual">
-              <ManualTab onFoodAdded={onFoodAdded} onClose={onClose} />
+              <ManualTab 
+                onFoodAdded={onFoodAdded} 
+                onClose={onClose} 
+                preSelectedFood={preSelectedFood}
+              />
             </TabsContent>
           </div>
         </Tabs>

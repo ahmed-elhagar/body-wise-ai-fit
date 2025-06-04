@@ -3,18 +3,30 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Plus, Utensils } from "lucide-react";
-import { useState } from "react";
+import { Plus, Utensils, Camera } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useFoodConsumption } from "@/hooks/useFoodConsumption";
+import { useLocation, useNavigate } from "react-router-dom";
 import TodayTab from "@/components/food-tracker/TodayTab";
 import HistoryTab from "@/components/food-tracker/HistoryTab";
 import AddFoodDialog from "@/components/food-tracker/AddFoodDialog/AddFoodDialog";
 
 const FoodTracker = () => {
   const { t } = useLanguage();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [isAddFoodOpen, setIsAddFoodOpen] = useState(false);
   const { refetch } = useFoodConsumption();
+
+  // Handle analyzed food from Calorie Checker
+  useEffect(() => {
+    if (location.state?.analyzedFood && location.state?.openAddDialog) {
+      setIsAddFoodOpen(true);
+      // Clear the state to prevent reopening on future navigations
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, navigate, location.pathname]);
 
   const handleFoodAdded = () => {
     refetch();
@@ -39,13 +51,24 @@ const FoodTracker = () => {
                 </div>
               </div>
               
-              <Button
-                onClick={() => setIsAddFoodOpen(true)}
-                className="bg-green-600 hover:bg-green-700 text-white"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                {t('Add Food')}
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => navigate('/calorie-checker')}
+                  variant="outline"
+                  className="border-purple-200 text-purple-700 hover:bg-purple-50"
+                >
+                  <Camera className="w-4 h-4 mr-2" />
+                  {t('Scan Food')}
+                </Button>
+                
+                <Button
+                  onClick={() => setIsAddFoodOpen(true)}
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  {t('Add Food')}
+                </Button>
+              </div>
             </div>
 
             {/* Main Content */}
@@ -79,6 +102,7 @@ const FoodTracker = () => {
               isOpen={isAddFoodOpen}
               onClose={() => setIsAddFoodOpen(false)}
               onFoodAdded={handleFoodAdded}
+              preSelectedFood={location.state?.analyzedFood}
             />
           </div>
         </div>

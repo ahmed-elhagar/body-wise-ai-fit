@@ -12,8 +12,7 @@ const FoodPhotoAnalyzer = ({ onSelectFood }: FoodPhotoAnalyzerProps) => {
   const { t } = useLanguage();
   const { 
     analysisResult, 
-    convertToFoodItem,
-    logAnalyzedFood 
+    convertToFoodItem 
   } = useFoodPhotoIntegration();
 
   const handleFoodSelected = (food: any) => {
@@ -24,12 +23,17 @@ const FoodPhotoAnalyzer = ({ onSelectFood }: FoodPhotoAnalyzerProps) => {
     }
   };
 
-  const handleAddToLog = async (food: any) => {
-    logAnalyzedFood(food, 100, 'snack', `Added from AI analysis`);
-  };
-
   return (
     <div className="space-y-6">
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">
+          {t('AI Food Analysis')}
+        </h2>
+        <p className="text-gray-600">
+          {t('Upload a photo of your food and get instant nutrition analysis. Analyzed foods can be added to your food tracker.')}
+        </p>
+      </div>
+
       {/* Photo Analysis Card */}
       <FoodPhotoAnalysisCard 
         onFoodSelected={handleFoodSelected}
@@ -40,7 +44,7 @@ const FoodPhotoAnalyzer = ({ onSelectFood }: FoodPhotoAnalyzerProps) => {
       {analysisResult && (
         <FoodAnalysisResults
           result={analysisResult}
-          onAddToLog={handleAddToLog}
+          onAddToLog={handleFoodSelected}
           className="w-full"
         />
       )}
