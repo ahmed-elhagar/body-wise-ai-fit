@@ -65,38 +65,6 @@ export const useMealPlanDialogs = () => {
     setShowAddSnackDialog(true);
   }, []);
 
-  // Optimized bulk dialog state setter
-  const setDialogs = useCallback((updater: any) => {
-    if (typeof updater === 'function') {
-      try {
-        const currentState = {
-          showAIDialog,
-          showRecipeDialog,
-          showExchangeDialog,
-          showAddSnackDialog,
-          showShoppingListDialog,
-          selectedMeal,
-          selectedMealIndex,
-          aiPreferences
-        };
-        
-        const newState = updater(currentState);
-        
-        // Batch state updates for better performance
-        if (newState.showAIDialog !== undefined) setShowAIDialog(newState.showAIDialog);
-        if (newState.showRecipeDialog !== undefined) setShowRecipeDialog(newState.showRecipeDialog);
-        if (newState.showExchangeDialog !== undefined) setShowExchangeDialog(newState.showExchangeDialog);
-        if (newState.showAddSnackDialog !== undefined) setShowAddSnackDialog(newState.showAddSnackDialog);
-        if (newState.showShoppingListDialog !== undefined) setShowShoppingListDialog(newState.showShoppingListDialog);
-        if (newState.selectedMeal !== undefined) setSelectedMeal(newState.selectedMeal);
-        if (newState.selectedMealIndex !== undefined) setSelectedMealIndex(newState.selectedMealIndex);
-        if (newState.aiPreferences !== undefined) setAiPreferences(newState.aiPreferences);
-      } catch (error) {
-        console.error('Error updating dialog state:', error);
-      }
-    }
-  }, [showAIDialog, showRecipeDialog, showExchangeDialog, showAddSnackDialog, showShoppingListDialog, selectedMeal, selectedMealIndex, aiPreferences]);
-
   // Close all dialogs helper
   const closeAllDialogs = useCallback(() => {
     setShowAIDialog(false);
@@ -143,9 +111,6 @@ export const useMealPlanDialogs = () => {
     closeShoppingListDialog,
     updateAIPreferences,
     handleAddSnack,
-    closeAllDialogs,
-    
-    // Backward compatibility
-    setDialogs
+    closeAllDialogs
   };
 };
