@@ -34,7 +34,7 @@ export const useFoodConsumption = (date?: Date) => {
   const queryClient = useQueryClient();
   const targetDate = date || new Date();
 
-  // Get today's consumption with simplified and more reliable query
+  // Get today's consumption with enhanced reliability
   const { data: todayConsumption, isLoading, refetch } = useQuery({
     queryKey: ['food-consumption-today', user?.id, format(targetDate, 'yyyy-MM-dd')],
     queryFn: async () => {
@@ -43,7 +43,6 @@ export const useFoodConsumption = (date?: Date) => {
         return [];
       }
 
-      // Simplified date range - just use the target date
       const dayStart = startOfDay(targetDate);
       const dayEnd = endOfDay(targetDate);
 
@@ -54,40 +53,52 @@ export const useFoodConsumption = (date?: Date) => {
         dayEnd: dayEnd.toISOString()
       });
 
-      const { data, error } = await supabase
-        .from('food_consumption_log')
-        .select(`
-          *,
-          food_item:food_items(
-            id,
-            name,
-            brand,
-            category,
-            serving_description
-          )
-        `)
-        .eq('user_id', user.id)
-        .gte('consumed_at', dayStart.toISOString())
-        .lte('consumed_at', dayEnd.toISOString())
-        .order('consumed_at', { ascending: false });
+      try {
+        const { data, error } = await supabase
+          .from('food_consumption_log')
+          .select(`
+            *,
+            food_item:food_items(
+              id,
+              name,
+              brand,
+              category,
+              serving_description
+            )
+          `)
+          .eq('user_id', user.id)
+          .gte('consumed_at', dayStart.toISOString())
+          .lte('consumed_at', dayEnd.toISOString())
+          .order('consumed_at', { ascending: false });
 
-      if (error) {
-        console.error('❌ Error fetching food consumption:', error);
+        if (error) {
+          console.error('❌ Error fetching food consumption:', error);
+          throw error;
+        }
+
+        console.log('✅ Food consumption data fetched:', {
+          count: data?.length || 0,
+          hasData: !!data,
+          firstItemDetails: data?.[0] ? {
+            id: data[0].id,
+            foodName: data[0].food_item?.name,
+            consumedAt: data[0].consumed_at,
+            hasFoodItem: !!data[0].food_item
+          } : null
+        });
+
+        return data as FoodConsumptionLog[];
+      } catch (error) {
+        console.error('❌ Food consumption query failed:', error);
         throw error;
       }
-
-      console.log('✅ Food consumption data fetched:', {
-        count: data?.length || 0,
-        data: data?.slice(0, 2) // Log first 2 entries for debugging
-      });
-
-      return data as FoodConsumptionLog[];
     },
     enabled: !!user?.id,
-    staleTime: 30000, // Consider data fresh for 30 seconds
+    staleTime: 10000, // Consider data fresh for 10 seconds
     gcTime: 300000, // Keep in cache for 5 minutes
     refetchOnMount: true,
     refetchOnWindowFocus: false,
+    retry: 2,
   });
 
   // Get consumption history for a date range
@@ -183,17 +194,32 @@ export const useFoodConsumption = (date?: Date) => {
     },
   });
 
-  // Force refresh function for external calls
+  // Enhanced force refresh function
   const forceRefresh = async () => {
     console.log('🔄 Force refreshing food consumption data...');
     
-    // Clear specific queries
-    await queryClient.invalidateQueries({ 
-      queryKey: ['food-consumption-today', user?.id] 
-    });
-    
-    // Force refetch
-    await refetch();
+    try {
+      // Clear specific queries with broader pattern matching
+      await queryClient.invalidateQueries({ 
+        predicate: (query) => {
+          const queryKey = query.queryKey;
+          return queryKey.includes('food-consumption');
+        }
+      });
+      
+      // Force refetch the current query
+      const result = await refetch();
+      
+      console.log('✅ Force refresh completed:', {
+        success: !!result.data,
+        dataCount: result.data?.length || 0
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error during force refresh:', error);
+      throw error;
+    }
   };
 
   return {

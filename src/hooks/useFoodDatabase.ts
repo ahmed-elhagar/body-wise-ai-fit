@@ -35,7 +35,7 @@ export const useFoodDatabase = () => {
         console.log('🔍 Searching food items with term:', searchTerm, 'category:', category);
 
         try {
-          // Use the search_food_items function
+          // Use the search_food_items function first
           const { data, error } = await supabase
             .rpc('search_food_items', { 
               search_term: searchTerm,
@@ -46,12 +46,14 @@ export const useFoodDatabase = () => {
           if (error) {
             console.error('❌ Error searching food items via RPC:', error);
             
-            // Fallback to direct table query
+            // Fallback to direct table query with better search
             console.log('🔄 Falling back to direct table query');
             const { data: fallbackData, error: fallbackError } = await supabase
               .from('food_items')
               .select('*')
               .or(`name.ilike.%${searchTerm}%,brand.ilike.%${searchTerm}%`)
+              .order('verified', { ascending: false })
+              .order('confidence_score', { ascending: false })
               .limit(20);
 
             if (fallbackError) {
@@ -72,6 +74,7 @@ export const useFoodDatabase = () => {
       },
       enabled: !!searchTerm && searchTerm.length >= 2,
       staleTime: 30000, // Cache for 30 seconds
+      retry: 1, // Only retry once on failure
     });
   };
 
@@ -166,27 +169,23 @@ export const useFoodDatabase = () => {
       return data;
     },
     onSuccess: async (data) => {
-      console.log('🔄 Food logged successfully, invalidating all food consumption queries...');
+      console.log('🔄 Food logged successfully, invalidating queries...');
       
-      // Clear all food consumption related queries with more specific invalidation
-      const today = new Date();
-      const todayKey = today.toISOString().split('T')[0]; // YYYY-MM-DD format
-      
-      // Invalidate today's consumption specifically
+      // Immediately clear all food consumption related queries
       await queryClient.invalidateQueries({ 
-        queryKey: ['food-consumption-today', user?.id, todayKey],
-        exact: false 
+        predicate: (query) => {
+          const queryKey = query.queryKey;
+          return queryKey.includes('food-consumption') || 
+                 queryKey.includes('food-consumption-today');
+        }
       });
       
-      // Also invalidate any general food consumption queries
-      await queryClient.invalidateQueries({ 
-        queryKey: ['food-consumption'],
-        exact: false 
-      });
-      
-      // Force immediate refetch of today's data
+      // Force immediate refetch of active queries
       await queryClient.refetchQueries({ 
-        queryKey: ['food-consumption-today', user?.id, todayKey],
+        predicate: (query) => {
+          const queryKey = query.queryKey;
+          return queryKey.includes('food-consumption-today');
+        },
         type: 'active'
       });
       
