@@ -20,13 +20,28 @@ interface EnhancedExerciseListContainerProps {
   onExerciseComplete: (exerciseId: string) => void;
   onExerciseProgressUpdate: (exerciseId: string, sets: number, reps: string, notes?: string, weight?: number) => void;
   isRestDay?: boolean;
+  // Optional props that might be passed from parent
+  isLoading?: boolean;
+  completedExercises?: number;
+  totalExercises?: number;
+  progressPercentage?: number;
+  isToday?: boolean;
+  currentProgram?: any;
+  selectedDayNumber?: number;
 }
 
 export const EnhancedExerciseListContainer = ({ 
   exercises, 
   onExerciseComplete, 
   onExerciseProgressUpdate,
-  isRestDay = false 
+  isRestDay = false,
+  isLoading = false,
+  completedExercises = 0,
+  totalExercises = 0,
+  progressPercentage = 0,
+  isToday = false,
+  currentProgram,
+  selectedDayNumber = 1
 }: EnhancedExerciseListContainerProps) => {
   const { t } = useLanguage();
   const [viewMode, setViewMode] = useState<'session' | 'list'>('session');
@@ -83,8 +98,8 @@ export const EnhancedExerciseListContainer = ({
     // You can add additional logic here like tracking workout completion
   };
 
-  const completedCount = exercises.filter(ex => ex.completed).length;
-  const totalCount = exercises.length;
+  const actualCompletedCount = exercises.filter(ex => ex.completed).length;
+  const actualTotalCount = exercises.length;
 
   return (
     <div className="space-y-4">
@@ -95,7 +110,7 @@ export const EnhancedExerciseListContainer = ({
             {t('Today\'s Workout')}
           </h2>
           <Badge variant="outline" className="text-sm">
-            {completedCount}/{totalCount} {t('completed')}
+            {actualCompletedCount}/{actualTotalCount} {t('completed')}
           </Badge>
         </div>
         
