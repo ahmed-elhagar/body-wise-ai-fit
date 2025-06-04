@@ -37,6 +37,7 @@ export const TraineeAutoComplete = ({
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [loading, setLoading] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState<{top: number, left: number, width: number} | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -69,6 +70,17 @@ export const TraineeAutoComplete = ({
     }
   };
 
+  const updateDropdownPosition = () => {
+    if (inputRef.current && showDropdown) {
+      const rect = inputRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY + 4,
+        left: rect.left + window.scrollX,
+        width: rect.width
+      });
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -91,7 +103,28 @@ export const TraineeAutoComplete = ({
     setFilteredUsers(filtered);
     setShowDropdown(filtered.length > 0);
     setSelectedIndex(-1);
-  }, [value, users]);
+    
+    // Update position when showing dropdown
+    if (filtered.length > 0) {
+      setTimeout(updateDropdownPosition, 0);
+    }
+  }, [value, users, showDropdown]);
+
+  // Update position on scroll or resize
+  useEffect(() => {
+    if (showDropdown) {
+      const handleScroll = () => updateDropdownPosition();
+      const handleResize = () => updateDropdownPosition();
+      
+      window.addEventListener('scroll', handleScroll, true);
+      window.addEventListener('resize', handleResize);
+      
+      return () => {
+        window.removeEventListener('scroll', handleScroll, true);
+        window.removeEventListener('resize', handleResize);
+      };
+    }
+  }, [showDropdown]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onValueChange(e.target.value);
@@ -102,6 +135,7 @@ export const TraineeAutoComplete = ({
     onUserSelect(user.id);
     setShowDropdown(false);
     setSelectedIndex(-1);
+    setDropdownPosition(null);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -127,6 +161,7 @@ export const TraineeAutoComplete = ({
       case 'Escape':
         setShowDropdown(false);
         setSelectedIndex(-1);
+        setDropdownPosition(null);
         break;
     }
   };
@@ -134,6 +169,7 @@ export const TraineeAutoComplete = ({
   const handleInputFocus = () => {
     if (filteredUsers.length > 0) {
       setShowDropdown(true);
+      setTimeout(updateDropdownPosition, 0);
     }
   };
 
@@ -143,6 +179,7 @@ export const TraineeAutoComplete = ({
       if (!dropdownRef.current?.contains(e.relatedTarget as Node)) {
         setShowDropdown(false);
         setSelectedIndex(-1);
+        setDropdownPosition(null);
       }
     }, 150);
   };
@@ -161,15 +198,15 @@ export const TraineeAutoComplete = ({
         autoComplete="off"
       />
       
-      {showDropdown && filteredUsers.length > 0 && (
+      {showDropdown && filteredUsers.length > 0 && dropdownPosition && (
         <div 
           ref={dropdownRef}
           className="fixed bg-white border border-gray-200 rounded-md shadow-xl max-h-60 overflow-hidden"
           style={{ 
             zIndex: 9999,
-            top: inputRef.current ? inputRef.current.getBoundingClientRect().bottom + 4 : 0,
-            left: inputRef.current ? inputRef.current.getBoundingClientRect().left : 0,
-            width: inputRef.current ? inputRef.current.offsetWidth : 'auto',
+            top: dropdownPosition.top,
+            left: dropdownPosition.left,
+            width: Math.max(dropdownPosition.width, 280),
             minWidth: '280px'
           }}
         >

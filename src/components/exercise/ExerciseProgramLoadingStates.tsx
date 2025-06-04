@@ -18,6 +18,12 @@ export const ExerciseProgramLoadingStates = ({
   const [currentStep, setCurrentStep] = useState(0);
   const [progress, setProgress] = useState(0);
 
+  // Don't show loading states on admin pages
+  const currentPath = window.location.pathname;
+  if (currentPath.includes('/admin')) {
+    return null;
+  }
+
   const generationSteps = [
     {
       id: "analyzing",
@@ -106,6 +112,7 @@ export const ExerciseProgramLoadingStates = ({
         type="exercise"
         message="Loading Exercise Program"
         description="Fetching your workout data..."
+        context="page-load"
       />
     );
   }

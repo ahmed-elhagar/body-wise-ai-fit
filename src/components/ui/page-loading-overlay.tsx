@@ -25,8 +25,9 @@ const PageLoadingOverlay: React.FC<PageLoadingOverlayProps> = ({
 }) => {
   if (!isLoading) return null;
 
-  // Don't show page loading overlay for admin actions
-  if (context === 'admin') return null;
+  // Don't show page loading overlay for admin actions or on admin pages
+  const currentPath = window.location.pathname;
+  if (context === 'admin' || currentPath.includes('/admin')) return null;
 
   return (
     <div className={cn(
