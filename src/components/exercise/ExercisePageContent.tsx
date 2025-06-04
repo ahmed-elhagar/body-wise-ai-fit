@@ -89,6 +89,8 @@ export const ExercisePageContent = ({
             onExerciseComplete={onExerciseComplete}
             onExerciseProgressUpdate={onExerciseProgressUpdate}
             isRestDay={isRestDay}
+            currentProgram={currentProgram}
+            selectedDayNumber={selectedDayNumber}
           />
         </div>
       </div>
@@ -103,6 +105,8 @@ export const ExercisePageContent = ({
         onExerciseComplete={onExerciseComplete}
         onExerciseProgressUpdate={onExerciseProgressUpdate}
         isRestDay={isRestDay}
+        currentProgram={currentProgram}
+        selectedDayNumber={selectedDayNumber}
       />
     </div>
   );

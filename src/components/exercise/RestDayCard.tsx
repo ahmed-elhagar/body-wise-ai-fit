@@ -1,61 +1,40 @@
 
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Calendar, Youtube, BookOpen, Smile } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { Card } from '@/components/ui/card';
+import { Timer, Heart, Apple } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export const RestDayCard = () => {
   const { t } = useLanguage();
 
   return (
-    <Card className="p-6 bg-gradient-to-br from-orange-50 to-yellow-50 border-orange-200 text-center">
-      <div className="space-y-4">
-        <div className="w-16 h-16 bg-orange-200 rounded-full flex items-center justify-center mx-auto">
-          <Calendar className="w-8 h-8 text-orange-600" />
+    <Card className="p-8 text-center bg-gradient-to-br from-green-50 to-blue-50 border-green-200">
+      <div className="max-w-md mx-auto">
+        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Timer className="w-8 h-8 text-green-600" />
         </div>
+        <h3 className="text-xl font-bold text-gray-900 mb-2">
+          {t('Rest Day')}
+        </h3>
+        <p className="text-gray-600 mb-6">
+          {t('Today is your rest day. Take time to recover and prepare for tomorrow\'s workout!')}
+        </p>
         
-        <div>
-          <h3 className="text-xl font-bold text-orange-800 mb-2">
-            Rest Day 🛌
-          </h3>
-          <p className="text-orange-700 mb-4">
-            Your body needs time to recover and grow stronger!
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <Button 
-            variant="outline" 
-            className="h-12 text-orange-700 border-orange-300 hover:bg-orange-100"
-            onClick={() => window.open('https://www.youtube.com/results?search_query=gentle+stretching+routine', '_blank')}
-          >
-            <Youtube className="w-4 h-4 mr-2" />
-            Stretching
-          </Button>
-          
-          <Button 
-            variant="outline"
-            className="h-12 text-purple-700 border-purple-300 hover:bg-purple-100"
-            onClick={() => window.open('https://www.youtube.com/results?search_query=meditation+relaxation', '_blank')}
-          >
-            <BookOpen className="w-4 h-4 mr-2" />
-            Meditation
-          </Button>
-
-          <Button 
-            variant="outline"
-            className="h-12 text-green-700 border-green-300 hover:bg-green-100"
-            onClick={() => window.open('https://www.youtube.com/results?search_query=light+walk+recovery', '_blank')}
-          >
-            <Smile className="w-4 h-4 mr-2" />
-            Light Walk
-          </Button>
-        </div>
-
-        <div className="pt-3 border-t border-orange-200">
-          <p className="text-xs text-orange-600">
-            💡 Tip: Use this time for meal prep or planning your next workout!
-          </p>
+        <div className="grid grid-cols-3 gap-4 text-center">
+          <div className="p-3 bg-white rounded-lg">
+            <div className="text-2xl mb-1">💤</div>
+            <div className="text-sm font-medium text-gray-900">{t('Rest')}</div>
+            <div className="text-xs text-gray-600">{t('Sleep well')}</div>
+          </div>
+          <div className="p-3 bg-white rounded-lg">
+            <div className="text-2xl mb-1">🥗</div>
+            <div className="text-sm font-medium text-gray-900">{t('Nutrition')}</div>
+            <div className="text-xs text-gray-600">{t('Eat healthy')}</div>
+          </div>
+          <div className="p-3 bg-white rounded-lg">
+            <div className="text-2xl mb-1">🧘</div>
+            <div className="text-sm font-medium text-gray-900">{t('Recovery')}</div>
+            <div className="text-xs text-gray-600">{t('Stretch & relax')}</div>
+          </div>
         </div>
       </div>
     </Card>
