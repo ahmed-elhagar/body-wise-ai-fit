@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Camera, Upload, Loader2, Utensils, AlertCircle, Zap } from "lucide-react";
-import { useAIFoodAnalysis } from "@/hooks/useAIFoodAnalysis";
+import { useFoodPhotoIntegration } from "@/hooks/useFoodPhotoIntegration";
 import { useCreditSystem } from "@/hooks/useCreditSystem";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
@@ -19,7 +19,7 @@ const FoodPhotoAnalysisCard = ({ onFoodSelected, className = "" }: FoodPhotoAnal
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  const { analyzeFood, isAnalyzing, analysisResult, error } = useAIFoodAnalysis();
+  const { analyzePhotoFood, isAnalyzing, analysisResult, error } = useFoodPhotoIntegration();
   const { userCredits } = useCreditSystem();
   const { t } = useLanguage();
 
@@ -52,10 +52,14 @@ const FoodPhotoAnalysisCard = ({ onFoodSelected, className = "" }: FoodPhotoAnal
     }
   };
 
-  const handleAnalyze = () => {
-    if (selectedImage && userCredits > 0) {
-      analyzeFood(selectedImage);
-    } else if (userCredits <= 0) {
+  const handleAnalyze = async () => {
+    if (selectedImage && canAnalyze) {
+      try {
+        await analyzePhotoFood(selectedImage);
+      } catch (error) {
+        console.error('Analysis failed:', error);
+      }
+    } else if (!canAnalyze) {
       toast.error(t('No AI credits remaining. Please upgrade to continue.'));
     }
   };
@@ -169,25 +173,25 @@ const FoodPhotoAnalysisCard = ({ onFoodSelected, className = "" }: FoodPhotoAnal
             <div className="flex items-center gap-2">
               <AlertCircle className="w-4 h-4 text-red-500" />
               <p className="text-sm text-red-700">
-                {error.message || t('Failed to analyze food image. Please try again.')}
+                {error || t('Failed to analyze food image. Please try again.')}
               </p>
             </div>
           </div>
         )}
 
         {/* Analysis Results */}
-        {analysisResult && (
+        {analysisResult?.analysis && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h4 className="text-sm font-semibold text-gray-800">{t('Analysis Results')}</h4>
               <Badge variant="outline" className="text-xs">
-                {Math.round((analysisResult.overallConfidence || 0.8) * 100)}% {t('confidence')}
+                {Math.round((analysisResult.analysis.overallConfidence || 0.8) * 100)}% {t('confidence')}
               </Badge>
             </div>
 
-            {analysisResult.foodItems && analysisResult.foodItems.length > 0 ? (
+            {analysisResult.analysis.foodItems && analysisResult.analysis.foodItems.length > 0 ? (
               <div className="space-y-2">
-                {analysisResult.foodItems.map((food: any, index: number) => (
+                {analysisResult.analysis.foodItems.map((food: any, index: number) => (
                   <div
                     key={index}
                     className="flex items-center justify-between p-3 bg-purple-50 rounded-lg border border-purple-200 hover:shadow-sm transition-shadow"
@@ -228,10 +232,10 @@ const FoodPhotoAnalysisCard = ({ onFoodSelected, className = "" }: FoodPhotoAnal
               </div>
             )}
 
-            {analysisResult.suggestions && (
+            {analysisResult.analysis.suggestions && (
               <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-xs text-blue-800">
-                  <strong>{t('AI Suggestion')}:</strong> {analysisResult.suggestions}
+                  <strong>{t('AI Suggestion')}:</strong> {analysisResult.analysis.suggestions}
                 </p>
               </div>
             )}
