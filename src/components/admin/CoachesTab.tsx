@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +7,7 @@ import { Users, UserPlus, Search, Crown, Mail } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { UserSearchDropdown } from "../coach/UserSearchDropdown";
+import { TraineeAutoComplete } from "./TraineeAutoComplete";
 
 type UserRole = 'normal' | 'coach' | 'admin';
 
@@ -42,6 +41,7 @@ interface Coach {
 
 const CoachesTab = () => {
   const [selectedTraineeId, setSelectedTraineeId] = useState("");
+  const [traineeInputValue, setTraineeInputValue] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const queryClient = useQueryClient();
 
@@ -109,6 +109,7 @@ const CoachesTab = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-coach-trainees'] });
       setSelectedTraineeId("");
+      setTraineeInputValue("");
       toast.success('Trainee assigned successfully');
     },
     onError: (error) => {
@@ -158,6 +159,10 @@ const CoachesTab = () => {
       coachId, 
       traineeId: selectedTraineeId
     });
+  };
+
+  const handleTraineeSelect = (userId: string) => {
+    setSelectedTraineeId(userId);
   };
 
   if (usersLoading || coachTraineesLoading) {
@@ -236,11 +241,11 @@ const CoachesTab = () => {
                 </div>
                 <div className="flex gap-2">
                   <div className="flex-1">
-                    <UserSearchDropdown
-                      value={selectedTraineeId}
-                      onValueChange={setSelectedTraineeId}
-                      placeholder="Search and select a trainee..."
-                      excludeRoles={['admin', 'coach']}
+                    <TraineeAutoComplete
+                      value={traineeInputValue}
+                      onValueChange={setTraineeInputValue}
+                      onUserSelect={handleTraineeSelect}
+                      placeholder="Enter trainee email or name..."
                     />
                   </div>
                   <Button 
