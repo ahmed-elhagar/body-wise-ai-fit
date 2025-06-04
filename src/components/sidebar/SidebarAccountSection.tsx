@@ -14,7 +14,8 @@ import {
   SidebarMenuItem, 
   SidebarMenuButton, 
   SidebarGroup,
-  SidebarGroupContent
+  SidebarGroupContent,
+  useSidebar
 } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,7 +32,9 @@ export const SidebarAccountSection = () => {
   const { role, isAdmin, isCoach } = useRole();
   const { subscription } = useSubscription();
   const { isRTL } = useI18n();
-
+  const { state } = useSidebar();
+  
+  const isCollapsed = state === "collapsed";
   const isPro = subscription?.status === 'active';
   
   const getDisplayName = () => {
@@ -88,6 +91,11 @@ export const SidebarAccountSection = () => {
   };
 
   if (!user) return null;
+
+  // If collapsed, don't show the account section
+  if (isCollapsed) {
+    return null;
+  }
 
   return (
     <SidebarGroup>
@@ -156,6 +164,7 @@ export const SidebarAccountSection = () => {
               <SidebarMenuButton
                 asChild
                 className="w-full text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-colors rounded-lg"
+                tooltip="Settings"
               >
                 <Button 
                   variant="ghost" 
@@ -174,6 +183,7 @@ export const SidebarAccountSection = () => {
               <SidebarMenuButton
                 asChild
                 className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors rounded-lg"
+                tooltip="Sign Out"
               >
                 <Button 
                   variant="ghost" 

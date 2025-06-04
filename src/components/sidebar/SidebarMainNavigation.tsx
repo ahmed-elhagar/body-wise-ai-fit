@@ -43,30 +43,30 @@ export const SidebarMainNavigation = () => {
 
   // Main Navigation Items
   const mainNavigationItems: NavigationItem[] = [
-    { href: "/dashboard", icon: Home, label: String(tNav("dashboard")) },
+    { href: "/dashboard", icon: Home, label: "Dashboard" },
   ];
 
   // Fitness & Nutrition Items
   const fitnessNavigationItems: NavigationItem[] = [
-    { href: "/meal-plan", icon: Calendar, label: String(tNav("mealPlan")) },
-    { href: "/food-tracker", icon: ShoppingCart, label: String(tNav("foodTracker")) },
-    { href: "/calorie-checker", icon: Camera, label: String(tNav("calorieChecker")) },
-    { href: "/exercise", icon: Dumbbell, label: String(tNav("exercise")) },
+    { href: "/meal-plan", icon: Calendar, label: "Meal Plan" },
+    { href: "/food-tracker", icon: ShoppingCart, label: "Food Tracker" },
+    { href: "/calorie-checker", icon: Camera, label: "Calorie Checker" },
+    { href: "/exercise", icon: Dumbbell, label: "Exercise" },
     { href: "/weight-tracking", icon: Scale, label: "Weight Tracking" },
   ];
 
   // Progress & Goals Items
   const progressNavigationItems: NavigationItem[] = [
-    { href: "/goals", icon: Target, label: String(tNav("goals")) },
-    { href: "/progress", icon: TrendingUp, label: String(tNav("progress")) },
+    { href: "/goals", icon: Target, label: "Goals" },
+    { href: "/progress", icon: TrendingUp, label: "Progress" },
   ];
 
   // Communication & Settings Items
   const communicationNavigationItems: NavigationItem[] = [
     { href: "/chat", icon: MessageSquare, label: "Chat" },
     { href: "/notifications", icon: Bell, label: "Notifications" },
-    { href: "/coach", icon: Users, label: String(tNav("coach")), requiresCoach: true },
-    { href: "/profile", icon: User, label: String(tNav("profile")) },
+    { href: "/coach", icon: Users, label: "Coach", requiresCoach: true },
+    { href: "/profile", icon: User, label: "Profile" },
   ];
 
   const renderNavigationSection = (items: NavigationItem[], title: string) => {
@@ -94,6 +94,7 @@ export const SidebarMainNavigation = () => {
                   <SidebarMenuButton
                     asChild
                     isActive={isActive}
+                    tooltip={item.label}
                     className={cn(
                       "w-full text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-colors rounded-lg",
                       isActive && "bg-blue-50 text-blue-700 border-r-2 border-blue-600 shadow-sm",
@@ -128,7 +129,7 @@ export const SidebarMainNavigation = () => {
 
   return (
     <div className="space-y-4">
-      {renderNavigationSection(mainNavigationItems, String(tNav("dashboard")))}
+      {renderNavigationSection(mainNavigationItems, "Dashboard")}
       {renderNavigationSection(fitnessNavigationItems, "Fitness & Nutrition")}
       {renderNavigationSection(progressNavigationItems, "Progress & Goals")}
       {renderNavigationSection(communicationNavigationItems, "Communication")}
