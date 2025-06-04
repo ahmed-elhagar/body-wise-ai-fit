@@ -3,10 +3,12 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { LucideIcon } from "lucide-react";
 
 interface Step {
-  icon: LucideIcon;
-  title: string;
-  description: string;
+  icon?: LucideIcon;
+  title?: string;
+  text?: string;
+  description?: string;
   duration: number;
+  id?: string;
 }
 
 export const useLoadingProgress = (steps: Step[], isActive: boolean) => {
@@ -14,7 +16,7 @@ export const useLoadingProgress = (steps: Step[], isActive: boolean) => {
   const [progress, setProgress] = useState(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<number>(0);
-  const stepsRef = useRef<Step[]>([]);
+  const isActiveRef = useRef<boolean>(false);
 
   const clearExistingInterval = useCallback(() => {
     if (intervalRef.current) {
@@ -23,12 +25,11 @@ export const useLoadingProgress = (steps: Step[], isActive: boolean) => {
     }
   }, []);
 
-  // Update steps ref when steps change
   useEffect(() => {
-    stepsRef.current = steps;
-  }, [steps]);
+    // Prevent multiple instances
+    if (isActiveRef.current === isActive) return;
+    isActiveRef.current = isActive;
 
-  useEffect(() => {
     if (!isActive || steps.length === 0) {
       clearExistingInterval();
       setCurrentStep(0);
@@ -46,17 +47,16 @@ export const useLoadingProgress = (steps: Step[], isActive: boolean) => {
     
     const totalDuration = steps.reduce((acc, step) => acc + step.duration, 0);
     
-    console.log('🔄 Loading progress started with stable steps:', {
+    console.log('🔄 Loading progress started:', {
       totalSteps: steps.length,
       totalDuration,
-      stepTitles: steps.map(s => s.title)
+      stepTitles: steps.map(s => s.title || s.text || s.id)
     });
 
     intervalRef.current = setInterval(() => {
       const elapsed = Date.now() - startTimeRef.current;
-      const currentSteps = stepsRef.current;
       
-      if (currentSteps.length === 0) return;
+      if (steps.length === 0) return;
       
       // Calculate overall progress (0-95% to leave room for completion)
       const progressValue = Math.min((elapsed / totalDuration) * 95, 95);
@@ -66,8 +66,8 @@ export const useLoadingProgress = (steps: Step[], isActive: boolean) => {
       let cumulativeDuration = 0;
       let newCurrentStep = 0;
       
-      for (let i = 0; i < currentSteps.length; i++) {
-        cumulativeDuration += currentSteps[i].duration;
+      for (let i = 0; i < steps.length; i++) {
+        cumulativeDuration += steps[i].duration;
         if (elapsed <= cumulativeDuration) {
           newCurrentStep = i;
           break;
@@ -76,29 +76,21 @@ export const useLoadingProgress = (steps: Step[], isActive: boolean) => {
       
       // If we've exceeded all step durations, stay on the last step
       if (elapsed > totalDuration) {
-        newCurrentStep = currentSteps.length - 1;
+        newCurrentStep = steps.length - 1;
         setProgress(95); // Cap at 95%
         clearExistingInterval();
-        console.log('🔄 Loading progress completed - interval cleared');
+        console.log('🔄 Loading progress completed');
         return;
       }
       
       setCurrentStep(newCurrentStep);
-      
-      console.log('🔄 Loading progress update:', {
-        elapsed,
-        progress: progressValue,
-        currentStep: newCurrentStep,
-        stepTitle: currentSteps[newCurrentStep]?.title
-      });
 
-    }, 150); // Stable interval
+    }, 500); // Slower interval to reduce console spam
 
     return () => {
-      console.log('🔄 Loading progress cleanup');
       clearExistingInterval();
     };
-  }, [isActive, clearExistingInterval]); // Removed steps from dependencies
+  }, [isActive, steps.length, clearExistingInterval]);
 
   return { currentStep, progress };
 };

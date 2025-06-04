@@ -10,7 +10,6 @@ interface PageLoadingOverlayProps {
   description?: string;
   className?: string;
   blur?: boolean;
-  // Add a context prop to prevent conflicts
   context?: 'admin' | 'ai-generation' | 'page-load';
 }
 
@@ -35,15 +34,13 @@ const PageLoadingOverlay: React.FC<PageLoadingOverlayProps> = ({
       blur ? "bg-black/60 backdrop-blur-sm" : "bg-black/40",
       className
     )}>
-      <div className="bg-white/95 backdrop-blur-sm border-0 shadow-2xl rounded-xl p-8 max-w-md mx-4">
-        <EnhancedPageLoading
-          isLoading={isLoading}
-          type={type}
-          title={message || "Loading"}
-          description={description || "Please wait while we process your request..."}
-          timeout={8000}
-        />
-      </div>
+      <EnhancedPageLoading
+        isLoading={isLoading}
+        type={type}
+        title={message || "Loading"}
+        description={description || "Please wait while we process your request..."}
+        timeout={8000}
+      />
     </div>
   );
 };

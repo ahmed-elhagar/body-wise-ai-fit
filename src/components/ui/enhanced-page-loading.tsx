@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import AILoadingDialog from './ai-loading-dialog';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -30,37 +30,36 @@ const EnhancedPageLoading = ({
   const [currentStep, setCurrentStep] = useState(0);
   const [progress, setProgress] = useState(0);
   const [hasTimedOut, setHasTimedOut] = useState(false);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const startTimeRef = useRef<number>(0);
 
   const defaultSteps = {
     dashboard: [
-      { id: 'auth', label: 'Verifying your account...', duration: 800 },
-      { id: 'profile', label: 'Loading your profile...', duration: 800 },
-      { id: 'stats', label: 'Calculating your progress...', duration: 600 },
-      { id: 'data', label: 'Fetching latest data...', duration: 600 },
-      { id: 'ui', label: 'Preparing your dashboard...', duration: 400 }
+      { id: 'auth', label: 'Verifying your account...', duration: 1000 },
+      { id: 'profile', label: 'Loading your profile...', duration: 1000 },
+      { id: 'stats', label: 'Calculating your progress...', duration: 800 },
+      { id: 'ui', label: 'Preparing your dashboard...', duration: 600 }
     ],
     exercise: [
-      { id: 'program', label: 'Loading your exercise program...', duration: 1000 },
-      { id: 'progress', label: 'Calculating workout progress...', duration: 800 },
-      { id: 'schedule', label: 'Preparing workout schedule...', duration: 600 },
-      { id: 'exercises', label: 'Loading exercise details...', duration: 600 },
-      { id: 'ui', label: 'Setting up your workout view...', duration: 400 }
+      { id: 'program', label: 'Loading your exercise program...', duration: 1200 },
+      { id: 'progress', label: 'Calculating workout progress...', duration: 1000 },
+      { id: 'ui', label: 'Setting up your workout view...', duration: 800 }
     ],
     'meal-plan': [
-      { id: 'plan', label: 'Loading your meal plan...', duration: 800 },
-      { id: 'nutrition', label: 'Calculating nutrition data...', duration: 1000 },
-      { id: 'preferences', label: 'Applying your preferences...', duration: 600 },
-      { id: 'ui', label: 'Preparing meal view...', duration: 400 }
+      { id: 'plan', label: 'Loading your meal plan...', duration: 1000 },
+      { id: 'nutrition', label: 'Calculating nutrition data...', duration: 1200 },
+      { id: 'ui', label: 'Preparing meal view...', duration: 800 }
     ],
     profile: [
-      { id: 'data', label: 'Loading your profile data...', duration: 800 },
-      { id: 'settings', label: 'Applying your settings...', duration: 600 },
-      { id: 'ui', label: 'Preparing profile view...', duration: 400 }
+      { id: 'data', label: 'Loading your profile data...', duration: 1000 },
+      { id: 'settings', label: 'Applying your settings...', duration: 800 },
+      { id: 'ui', label: 'Preparing profile view...', duration: 600 }
     ],
     general: [
       { id: 'loading', label: 'Loading...', duration: 1000 },
-      { id: 'processing', label: 'Processing...', duration: 800 },
-      { id: 'finalizing', label: 'Finalizing...', duration: 400 }
+      { id: 'processing', label: 'Processing...', duration: 1000 },
+      { id: 'finalizing', label: 'Finalizing...', duration: 800 }
     ]
   };
 
@@ -82,8 +81,20 @@ const EnhancedPageLoading = ({
     general: 'Please wait while we process your request'
   };
 
+  const clearTimers = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  };
+
   useEffect(() => {
     if (!isLoading) {
+      clearTimers();
       setCurrentStep(0);
       setProgress(0);
       setHasTimedOut(false);
@@ -92,22 +103,32 @@ const EnhancedPageLoading = ({
 
     console.log('🔄 Enhanced loading started:', { type, timeout });
 
-    let timeoutTriggered = false;
-    let stepIndex = 0;
+    // Clear any existing timers
+    clearTimers();
     
+    // Reset state
+    setCurrentStep(0);
+    setProgress(0);
+    setHasTimedOut(false);
+    startTimeRef.current = Date.now();
+
+    const totalDuration = steps.reduce((acc, step) => acc + step.duration, 0);
+
     // Timeout protection
-    const timeoutHandler = setTimeout(() => {
-      if (!timeoutTriggered) {
-        timeoutTriggered = true;
-        console.error('⏰ Loading timeout reached for', type);
-        setHasTimedOut(true);
-        setProgress(100);
-      }
+    timeoutRef.current = setTimeout(() => {
+      console.error('⏰ Loading timeout reached for', type);
+      setHasTimedOut(true);
+      setProgress(100);
+      clearTimers();
     }, timeout);
 
-    // Step progression logic
-    const progressSteps = () => {
-      if (timeoutTriggered || stepIndex >= steps.length) {
+    // Step progression
+    let elapsed = 0;
+    let stepIndex = 0;
+
+    const progressStep = () => {
+      if (stepIndex >= steps.length) {
+        clearTimers();
         return;
       }
 
@@ -115,24 +136,26 @@ const EnhancedPageLoading = ({
       console.log('📈 Step progress:', stepIndex, currentStepData?.label);
       
       setCurrentStep(stepIndex);
-      setProgress(((stepIndex + 1) / steps.length) * 90); // Cap at 90% to show it's still loading
+      
+      elapsed += currentStepData.duration;
+      const progressValue = Math.min((elapsed / totalDuration) * 90, 90);
+      setProgress(progressValue);
       
       stepIndex++;
       
-      // Schedule next step
       if (stepIndex < steps.length) {
-        setTimeout(progressSteps, currentStepData.duration);
+        intervalRef.current = setTimeout(progressStep, currentStepData.duration);
       }
     };
 
-    // Start step progression
-    progressSteps();
+    // Start progression
+    progressStep();
 
     return () => {
-      clearTimeout(timeoutHandler);
       console.log('🔄 Loading cleanup for', type);
+      clearTimers();
     };
-  }, [isLoading, type, timeout, steps]);
+  }, [isLoading, type, timeout]);
 
   if (!isLoading) return null;
 

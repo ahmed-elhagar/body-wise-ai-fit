@@ -37,13 +37,13 @@ const AILoadingDialog: React.FC<AILoadingDialogProps> = ({
       onOpenChange={allowClose ? onOpenChange : undefined}
     >
       <DialogContent 
-        className="sm:max-w-md bg-white border-0 shadow-2xl"
+        className="sm:max-w-lg bg-white border-0 shadow-2xl"
         hideClose={!allowClose}
       >
         <div className="space-y-6 p-2">
           {/* Header */}
           <div className="text-center">
-            <h2 className="text-h4 font-bold text-fitness-neutral-800 mb-2">
+            <h2 className="text-xl font-bold text-fitness-neutral-800 mb-2">
               {title}
             </h2>
           </div>
@@ -80,7 +80,7 @@ const AILoadingDialog: React.FC<AILoadingDialogProps> = ({
               <h3 className="text-sm font-semibold text-fitness-neutral-700">
                 Processing Steps
               </h3>
-              <div className="space-y-2">
+              <div className="space-y-2 max-h-32 overflow-y-auto">
                 {steps.map((step, index) => (
                   <div 
                     key={step.id}
@@ -93,7 +93,7 @@ const AILoadingDialog: React.FC<AILoadingDialogProps> = ({
                     )}
                   >
                     <div className={cn(
-                      "w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold",
+                      "w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0",
                       step.status === 'pending' && "bg-fitness-neutral-200 text-fitness-neutral-500",
                       step.status === 'active' && "bg-fitness-primary-500 text-white",
                       step.status === 'completed' && "bg-success-500 text-white",
@@ -105,7 +105,7 @@ const AILoadingDialog: React.FC<AILoadingDialogProps> = ({
                        index + 1}
                     </div>
                     <span className={cn(
-                      "text-sm font-medium",
+                      "text-sm font-medium truncate",
                       step.status === 'active' && "text-fitness-primary-700",
                       step.status === 'completed' && "text-success-700",
                       step.status === 'error' && "text-error-700",
