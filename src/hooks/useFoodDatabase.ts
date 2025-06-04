@@ -25,7 +25,7 @@ export const useFoodDatabase = () => {
 
   const searchFoodItems = (searchTerm: string, category?: string) => {
     return useQuery({
-      queryKey: ['food-search', searchTerm, category],
+      queryKey: ['food-search', searchTerm, category, user?.id],
       queryFn: async () => {
         if (!searchTerm || searchTerm.length < 2) {
           console.log('🔍 Search term too short or empty');
@@ -35,46 +35,88 @@ export const useFoodDatabase = () => {
         console.log('🔍 Searching food items with term:', searchTerm, 'category:', category);
 
         try {
-          // Use the search_food_items function first
-          const { data, error } = await supabase
+          // Search in food_items table first
+          const { data: foodItems, error: foodError } = await supabase
             .rpc('search_food_items', { 
               search_term: searchTerm,
               category_filter: category || null,
-              limit_count: 20 
+              limit_count: 15 
             });
 
-          if (error) {
-            console.error('❌ Error searching food items via RPC:', error);
+          let allResults = [];
+
+          if (foodError) {
+            console.error('❌ Error searching food items via RPC:', foodError);
             
-            // Fallback to direct table query with better search
-            console.log('🔄 Falling back to direct table query');
+            // Fallback to direct table query
             const { data: fallbackData, error: fallbackError } = await supabase
               .from('food_items')
               .select('*')
               .or(`name.ilike.%${searchTerm}%,brand.ilike.%${searchTerm}%`)
               .order('verified', { ascending: false })
               .order('confidence_score', { ascending: false })
-              .limit(20);
+              .limit(15);
 
             if (fallbackError) {
               console.error('❌ Fallback query also failed:', fallbackError);
               throw fallbackError;
             }
 
-            console.log('✅ Fallback query successful, found:', fallbackData?.length || 0, 'items');
-            return fallbackData as FoodItem[];
+            allResults = fallbackData || [];
+          } else {
+            allResults = foodItems || [];
           }
 
-          console.log('✅ RPC search successful, found:', data?.length || 0, 'items');
-          return data as FoodItem[];
+          // Also search in daily_meals (meal plan data) if user is authenticated
+          if (user?.id) {
+            const { data: mealPlanItems, error: mealError } = await supabase
+              .from('daily_meals')
+              .select(`
+                *,
+                weekly_meal_plans!inner(
+                  user_id,
+                  week_start_date
+                )
+              `)
+              .eq('weekly_meal_plans.user_id', user.id)
+              .ilike('name', `%${searchTerm}%`)
+              .limit(5);
+
+            if (!mealError && mealPlanItems && mealPlanItems.length > 0) {
+              // Convert meal plan items to food item format
+              const convertedMealPlanItems = mealPlanItems.map(meal => ({
+                id: `meal-plan-${meal.id}`,
+                name: `${meal.name} (Meal Plan)`,
+                brand: 'Your Meal Plan',
+                category: 'meal_plan',
+                calories_per_100g: meal.calories || 0,
+                protein_per_100g: meal.protein || 0,
+                carbs_per_100g: meal.carbs || 0,
+                fat_per_100g: meal.fat || 0,
+                fiber_per_100g: 0,
+                sugar_per_100g: 0,
+                serving_description: '1 serving',
+                verified: true,
+                confidence_score: 1.0,
+                source: 'meal_plan',
+                meal_plan_data: meal
+              }));
+
+              // Add meal plan items to results
+              allResults = [...allResults, ...convertedMealPlanItems];
+            }
+          }
+
+          console.log('✅ Combined search successful, found:', allResults.length, 'items');
+          return allResults;
         } catch (error) {
           console.error('❌ Search error:', error);
           throw error;
         }
       },
       enabled: !!searchTerm && searchTerm.length >= 2,
-      staleTime: 30000, // Cache for 30 seconds
-      retry: 1, // Only retry once on failure
+      staleTime: 30000,
+      retry: 1,
     });
   };
 
@@ -142,6 +184,71 @@ export const useFoodDatabase = () => {
       const consumedAt = new Date().toISOString();
       console.log('📅 Using consumed_at timestamp:', consumedAt);
 
+      // Handle meal plan items differently
+      if (consumption.source === 'meal_plan' || consumption.foodItemId.startsWith('meal-plan-') || consumption.foodItemId.startsWith('temp-')) {
+        console.log('🍽️ Logging meal plan item');
+        
+        // For meal plan items, we need to create or find a suitable food item
+        // For now, create a generic food item or use a placeholder
+        let actualFoodItemId = consumption.foodItemId;
+        
+        if (consumption.foodItemId.startsWith('temp-') || consumption.foodItemId.startsWith('meal-plan-')) {
+          // Create a generic food item for meal plan entries
+          const { data: genericFoodItem, error: createError } = await supabase
+            .from('food_items')
+            .upsert({
+              name: consumption.notes?.replace('From meal plan: ', '') || 'Meal Plan Item',
+              category: 'meal_plan',
+              calories_per_100g: consumption.calories,
+              protein_per_100g: consumption.protein,
+              carbs_per_100g: consumption.carbs,
+              fat_per_100g: consumption.fat,
+              verified: true,
+              source: 'meal_plan'
+            }, {
+              onConflict: 'name,category',
+              ignoreDuplicates: false
+            })
+            .select()
+            .single();
+
+          if (createError) {
+            console.warn('⚠️ Could not create food item, using placeholder');
+            // Use a known food item ID or create a minimal entry
+            actualFoodItemId = 'placeholder-meal-plan';
+          } else {
+            actualFoodItemId = genericFoodItem.id;
+          }
+        }
+
+        const { data, error } = await supabase
+          .from('food_consumption_log')
+          .insert({
+            user_id: user?.id,
+            food_item_id: actualFoodItemId,
+            quantity_g: 100, // Standard serving for meal plan items
+            meal_type: consumption.mealType,
+            notes: consumption.notes,
+            calories_consumed: consumption.calories,
+            protein_consumed: consumption.protein,
+            carbs_consumed: consumption.carbs,
+            fat_consumed: consumption.fat,
+            source: 'meal_plan',
+            consumed_at: consumedAt
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error('❌ Error logging meal plan consumption:', error);
+          throw error;
+        }
+
+        console.log('✅ Meal plan consumption logged successfully:', data);
+        return data;
+      }
+
+      // Handle regular food items
       const { data, error } = await supabase
         .from('food_consumption_log')
         .insert({
@@ -176,7 +283,8 @@ export const useFoodDatabase = () => {
         predicate: (query) => {
           const queryKey = query.queryKey;
           return queryKey.includes('food-consumption') || 
-                 queryKey.includes('food-consumption-today');
+                 queryKey.includes('food-consumption-today') ||
+                 queryKey.includes('today-meal-plan');
         }
       });
       
@@ -184,7 +292,8 @@ export const useFoodDatabase = () => {
       await queryClient.refetchQueries({ 
         predicate: (query) => {
           const queryKey = query.queryKey;
-          return queryKey.includes('food-consumption-today');
+          return queryKey.includes('food-consumption-today') || 
+                 queryKey.includes('today-meal-plan');
         },
         type: 'active'
       });

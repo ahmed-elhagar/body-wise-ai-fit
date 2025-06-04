@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
-import { format, startOfDay, endOfDay } from 'date-fns';
+import { format, startOfDay, endOfDay, startOfWeek } from 'date-fns';
 
 export interface FoodConsumptionLog {
   id: string;
@@ -27,6 +27,20 @@ export interface FoodConsumptionLog {
     category: string;
     serving_description?: string;
   };
+}
+
+export interface MealPlanItem {
+  id: string;
+  name: string;
+  meal_type: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  day_number: number;
+  source: 'meal_plan';
+  ingredients?: any[];
+  instructions?: any[];
 }
 
 export const useFoodConsumption = (date?: Date) => {
@@ -94,11 +108,81 @@ export const useFoodConsumption = (date?: Date) => {
       }
     },
     enabled: !!user?.id,
-    staleTime: 10000, // Consider data fresh for 10 seconds
-    gcTime: 300000, // Keep in cache for 5 minutes
+    staleTime: 10000,
+    gcTime: 300000,
     refetchOnMount: true,
     refetchOnWindowFocus: false,
     retry: 2,
+  });
+
+  // Get today's meal plan data
+  const { data: todayMealPlan, isLoading: isMealPlanLoading } = useQuery({
+    queryKey: ['today-meal-plan', user?.id, format(targetDate, 'yyyy-MM-dd')],
+    queryFn: async () => {
+      if (!user?.id) return [];
+
+      // Calculate current week start (Saturday)
+      const currentWeekStart = startOfWeek(targetDate, { weekStartsOn: 6 });
+      const weekStartDateStr = format(currentWeekStart, 'yyyy-MM-dd');
+      
+      // Calculate day number (Saturday = 1, Sunday = 2, etc.)
+      const dayOfWeek = targetDate.getDay();
+      const dayNumber = dayOfWeek === 6 ? 1 : dayOfWeek + 2;
+
+      console.log('🍽️ Fetching meal plan for:', {
+        weekStartDate: weekStartDateStr,
+        dayNumber,
+        targetDate: format(targetDate, 'yyyy-MM-dd')
+      });
+
+      try {
+        // First get the weekly plan
+        const { data: weeklyPlan, error: weeklyError } = await supabase
+          .from('weekly_meal_plans')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('week_start_date', weekStartDateStr)
+          .maybeSingle();
+
+        if (weeklyError) {
+          console.error('❌ Error fetching weekly plan:', weeklyError);
+          return [];
+        }
+
+        if (!weeklyPlan) {
+          console.log('ℹ️ No meal plan found for this week');
+          return [];
+        }
+
+        // Get today's meals from the plan
+        const { data: dailyMeals, error: mealsError } = await supabase
+          .from('daily_meals')
+          .select('*')
+          .eq('weekly_plan_id', weeklyPlan.id)
+          .eq('day_number', dayNumber);
+
+        if (mealsError) {
+          console.error('❌ Error fetching daily meals:', mealsError);
+          return [];
+        }
+
+        console.log('✅ Meal plan data fetched:', {
+          mealsCount: dailyMeals?.length || 0,
+          weeklyPlanId: weeklyPlan.id
+        });
+
+        return (dailyMeals || []).map(meal => ({
+          ...meal,
+          source: 'meal_plan'
+        })) as MealPlanItem[];
+      } catch (error) {
+        console.error('❌ Meal plan query failed:', error);
+        return [];
+      }
+    },
+    enabled: !!user?.id,
+    staleTime: 30000,
+    refetchOnMount: true,
   });
 
   // Get consumption history for a date range
@@ -196,14 +280,14 @@ export const useFoodConsumption = (date?: Date) => {
 
   // Enhanced force refresh function
   const forceRefresh = async () => {
-    console.log('🔄 Force refreshing food consumption data...');
+    console.log('🔄 Force refreshing food consumption and meal plan data...');
     
     try {
       // Clear specific queries with broader pattern matching
       await queryClient.invalidateQueries({ 
         predicate: (query) => {
           const queryKey = query.queryKey;
-          return queryKey.includes('food-consumption');
+          return queryKey.includes('food-consumption') || queryKey.includes('today-meal-plan');
         }
       });
       
@@ -224,7 +308,8 @@ export const useFoodConsumption = (date?: Date) => {
 
   return {
     todayConsumption,
-    isLoading,
+    todayMealPlan,
+    isLoading: isLoading || isMealPlanLoading,
     refetch,
     forceRefresh,
     getConsumptionHistory,

@@ -27,7 +27,7 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const { searchFoodItems, logConsumption, isLoggingConsumption } = useFoodDatabase();
-  const { todayConsumption, forceRefresh, isLoading: isLoadingConsumption } = useFoodConsumption();
+  const { todayConsumption, todayMealPlan, forceRefresh, isLoading: isLoadingConsumption } = useFoodConsumption();
   
   // Execute search query when searchTerm changes
   const searchQuery = searchFoodItems(searchTerm);
@@ -41,15 +41,17 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
 
   // Debug today's consumption data
   useEffect(() => {
-    console.log('🍎 Today consumption in SearchTab:', {
-      count: todayConsumption?.length || 0,
+    console.log('🍎 Today data in SearchTab:', {
+      consumptionCount: todayConsumption?.length || 0,
+      mealPlanCount: todayMealPlan?.length || 0,
       isLoading: isLoadingConsumption,
-      data: todayConsumption?.slice(0, 3) // Log first 3 for debugging
+      consumptionData: todayConsumption?.slice(0, 2),
+      mealPlanData: todayMealPlan?.slice(0, 2)
     });
-  }, [todayConsumption, isLoadingConsumption]);
+  }, [todayConsumption, todayMealPlan, isLoadingConsumption]);
 
   // Get unique food items from today's consumption for quick add
-  const todaysFoodItems = todayConsumption?.reduce((unique: any[], log) => {
+  const todaysFoodItemsFromConsumption = todayConsumption?.reduce((unique: any[], log) => {
     if (!log.food_item) {
       console.log('⚠️ Food log missing food_item:', log);
       return unique;
@@ -69,26 +71,51 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
         brand: log.food_item.brand,
         category: log.food_item.category || 'general',
         calories_per_100g: Math.round(per100gCalories),
-        protein_per_100g: Math.round(per100gProtein * 10) / 10, // 1 decimal place
+        protein_per_100g: Math.round(per100gProtein * 10) / 10,
         carbs_per_100g: Math.round(per100gCarbs * 10) / 10,
         fat_per_100g: Math.round(per100gFat * 10) / 10,
         verified: true,
         lastConsumed: log.consumed_at,
         originalQuantity: log.quantity_g,
-        originalMealType: log.meal_type
+        originalMealType: log.meal_type,
+        source: 'consumption'
       });
     }
     return unique;
   }, []) || [];
+
+  // Convert meal plan items to food items for quick add
+  const todaysFoodItemsFromMealPlan = todayMealPlan?.map(meal => ({
+    id: `meal-plan-${meal.id}`,
+    name: meal.name,
+    brand: 'Meal Plan',
+    category: 'meal_plan',
+    calories_per_100g: Math.round((meal.calories || 0) / 1), // Assuming 1 serving = 100g for simplicity
+    protein_per_100g: Math.round((meal.protein || 0) * 10) / 10,
+    carbs_per_100g: Math.round((meal.carbs || 0) * 10) / 10,
+    fat_per_100g: Math.round((meal.fat || 0) * 10) / 10,
+    verified: true,
+    lastConsumed: new Date().toISOString(),
+    originalQuantity: 100,
+    originalMealType: meal.meal_type,
+    source: 'meal_plan',
+    mealPlanData: meal
+  })) || [];
+
+  // Combine both sources
+  const todaysFoodItems = [
+    ...todaysFoodItemsFromConsumption,
+    ...todaysFoodItemsFromMealPlan
+  ];
 
   console.log('🔍 SearchTab Debug:', {
     searchTerm,
     searchResultsCount: searchResults?.length || 0,
     isSearchLoading,
     todaysFoodItemsCount: todaysFoodItems.length,
-    todayConsumptionCount: todayConsumption?.length || 0,
+    consumptionItemsCount: todaysFoodItemsFromConsumption.length,
+    mealPlanItemsCount: todaysFoodItemsFromMealPlan.length,
     isLoadingConsumption,
-    todaysFoodItems: todaysFoodItems.slice(0, 2) // Log first 2 items
   });
 
   const handleSelectFood = (food: any) => {
@@ -109,6 +136,57 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
   const handleAddFood = async () => {
     if (!selectedFood) return;
 
+    // Handle meal plan items differently
+    if (selectedFood.source === 'meal_plan' && selectedFood.mealPlanData) {
+      const mealData = selectedFood.mealPlanData;
+      const calories = mealData.calories || 0;
+      const protein = mealData.protein || 0;
+      const carbs = mealData.carbs || 0;
+      const fat = mealData.fat || 0;
+
+      try {
+        console.log('📝 Adding meal plan item to log:', {
+          mealName: mealData.name,
+          calories,
+          protein,
+          carbs,
+          fat
+        });
+
+        // For meal plan items, we need to create a food item first or use a generic one
+        // For now, we'll create a temporary food item ID
+        const tempFoodItemId = `temp-${Date.now()}`;
+
+        await logConsumption({
+          foodItemId: tempFoodItemId,
+          quantity: 100, // Standard serving
+          mealType,
+          notes: `From meal plan: ${mealData.name}`,
+          calories,
+          protein,
+          carbs,
+          fat,
+          source: 'meal_plan'
+        });
+        
+        console.log('✅ Meal plan item logged successfully');
+        
+        // Reset form
+        setSelectedFood(null);
+        setQuantity(100);
+        setMealType("snack");
+        setNotes("");
+        
+        // Call parent handlers
+        onFoodAdded();
+      } catch (error) {
+        console.error('❌ Error logging meal plan item:', error);
+        toast.error(t('Failed to log meal'));
+      }
+      return;
+    }
+
+    // Handle regular food items
     const multiplier = quantity / 100;
     const calories = (selectedFood.calories_per_100g || 0) * multiplier;
     const protein = (selectedFood.protein_per_100g || 0) * multiplier;
@@ -136,7 +214,7 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
         protein,
         carbs,
         fat,
-        source: 'search'
+        source: selectedFood.source || 'search'
       });
       
       console.log('✅ Food logged successfully, resetting form...');
@@ -184,18 +262,25 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
           <div className="flex items-center gap-2 mb-1">
             <h4 className="font-medium text-gray-900">{food.name}</h4>
             {isQuickAdd && (
-              <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+              <Badge variant="outline" className={`text-xs ${
+                food.source === 'meal_plan' 
+                  ? 'bg-purple-50 text-purple-700 border-purple-200'
+                  : 'bg-blue-50 text-blue-700 border-blue-200'
+              }`}>
                 <Clock className="w-3 h-3 mr-1" />
-                {t('Recent')}
+                {food.source === 'meal_plan' ? t('Meal Plan') : t('Recent')}
               </Badge>
             )}
           </div>
-          {food.brand && (
+          {food.brand && food.brand !== 'Meal Plan' && (
             <p className="text-sm text-gray-500">{food.brand}</p>
           )}
           {isQuickAdd && food.lastConsumed && (
             <p className="text-xs text-gray-400 mt-1">
-              {t('Last eaten')}: {format(new Date(food.lastConsumed), 'MMM d, HH:mm')}
+              {food.source === 'meal_plan' 
+                ? t('From today\'s meal plan')
+                : `${t('Last eaten')}: ${format(new Date(food.lastConsumed), 'MMM d, HH:mm')}`
+              }
             </p>
           )}
           <div className="flex items-center gap-2 mt-2">
@@ -271,12 +356,12 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
             </div>
           ) : todaysFoodItems.length > 0 ? (
             <div className="space-y-2 max-h-48 overflow-y-auto">
-              {todaysFoodItems.slice(0, 5).map((food) => (
+              {todaysFoodItems.slice(0, 8).map((food) => (
                 <FoodCard key={`today-${food.id}`} food={food} isQuickAdd={true} />
               ))}
-              {todaysFoodItems.length > 5 && (
+              {todaysFoodItems.length > 8 && (
                 <p className="text-xs text-gray-500 text-center py-2">
-                  {t('Showing first 5 items')} ({todaysFoodItems.length} total)
+                  {t('Showing first 8 items')} ({todaysFoodItems.length} total)
                 </p>
               )}
             </div>
@@ -284,7 +369,7 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
             <div className="text-center py-6 bg-gray-50 rounded-lg">
               <Utensils className="w-8 h-8 text-gray-300 mx-auto mb-2" />
               <p className="text-sm text-gray-500">{t('No foods logged today yet')}</p>
-              <p className="text-xs text-gray-400 mt-1">{t('Add some food to see quick options here')}</p>
+              <p className="text-xs text-gray-400 mt-1">{t('Add some food or check your meal plan to see quick options here')}</p>
             </div>
           )}
         </div>
@@ -322,7 +407,7 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
           <Search className="w-12 h-12 text-gray-300 mx-auto mb-3" />
           <p className="text-gray-500">{t('Search for food items to add to your log')}</p>
           <p className="text-sm text-gray-400 mt-1">{t('Start typing to see results')}</p>
-          <p className="text-xs text-gray-400 mt-2">{t('Once you log some food today, they\'ll appear here for quick re-adding')}</p>
+          <p className="text-xs text-gray-400 mt-2">{t('Once you log some food today or have a meal plan, they\'ll appear here for quick re-adding')}</p>
         </div>
       )}
 
@@ -332,47 +417,100 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
           <h3 className="font-medium text-gray-900">{t('Add to Log')}</h3>
           
           <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-            <h4 className="font-medium text-green-800">{selectedFood.name}</h4>
-            {selectedFood.brand && (
+            <div className="flex items-center gap-2 mb-2">
+              <h4 className="font-medium text-green-800">{selectedFood.name}</h4>
+              {selectedFood.source === 'meal_plan' && (
+                <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
+                  {t('Meal Plan')}
+                </Badge>
+              )}
+            </div>
+            {selectedFood.brand && selectedFood.brand !== 'Meal Plan' && (
               <p className="text-sm text-green-600">{selectedFood.brand}</p>
             )}
             
             <div className="grid grid-cols-4 gap-2 mt-3 text-sm">
               <div className="text-center">
                 <div className="font-semibold text-green-800">
-                  {Math.round((selectedFood.calories_per_100g || 0) * (quantity / 100))}
+                  {selectedFood.source === 'meal_plan' && selectedFood.mealPlanData
+                    ? Math.round(selectedFood.mealPlanData.calories || 0)
+                    : Math.round((selectedFood.calories_per_100g || 0) * (quantity / 100))
+                  }
                 </div>
                 <div className="text-green-600">cal</div>
               </div>
               <div className="text-center">
                 <div className="font-semibold text-green-800">
-                  {Math.round((selectedFood.protein_per_100g || 0) * (quantity / 100) * 10) / 10}g
+                  {selectedFood.source === 'meal_plan' && selectedFood.mealPlanData
+                    ? Math.round((selectedFood.mealPlanData.protein || 0) * 10) / 10
+                    : Math.round((selectedFood.protein_per_100g || 0) * (quantity / 100) * 10) / 10
+                  }g
                 </div>
                 <div className="text-green-600">protein</div>
               </div>
               <div className="text-center">
                 <div className="font-semibold text-green-800">
-                  {Math.round((selectedFood.carbs_per_100g || 0) * (quantity / 100) * 10) / 10}g
+                  {selectedFood.source === 'meal_plan' && selectedFood.mealPlanData
+                    ? Math.round((selectedFood.mealPlanData.carbs || 0) * 10) / 10
+                    : Math.round((selectedFood.carbs_per_100g || 0) * (quantity / 100) * 10) / 10
+                  }g
                 </div>
                 <div className="text-green-600">carbs</div>
               </div>
               <div className="text-center">
                 <div className="font-semibold text-green-800">
-                  {Math.round((selectedFood.fat_per_100g || 0) * (quantity / 100) * 10) / 10}g
+                  {selectedFood.source === 'meal_plan' && selectedFood.mealPlanData
+                    ? Math.round((selectedFood.mealPlanData.fat || 0) * 10) / 10
+                    : Math.round((selectedFood.fat_per_100g || 0) * (quantity / 100) * 10) / 10
+                  }g
                 </div>
                 <div className="text-green-600">fat</div>
               </div>
             </div>
           </div>
 
-          <QuantitySelector
-            quantity={quantity}
-            onQuantityChange={setQuantity}
-            mealType={mealType}
-            onMealTypeChange={setMealType}
-            notes={notes}
-            onNotesChange={setNotes}
-          />
+          {selectedFood.source !== 'meal_plan' && (
+            <QuantitySelector
+              quantity={quantity}
+              onQuantityChange={setQuantity}
+              mealType={mealType}
+              onMealTypeChange={setMealType}
+              notes={notes}
+              onNotesChange={setNotes}
+            />
+          )}
+
+          {selectedFood.source === 'meal_plan' && (
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t('Meal Type')}
+                </label>
+                <select
+                  value={mealType}
+                  onChange={(e) => setMealType(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                >
+                  <option value="breakfast">{t('Breakfast')}</option>
+                  <option value="lunch">{t('Lunch')}</option>
+                  <option value="dinner">{t('Dinner')}</option>
+                  <option value="snack">{t('Snack')}</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t('Notes')} ({t('Optional')})
+                </label>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder={t('Add any notes about this meal...')}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  rows={2}
+                />
+              </div>
+            </div>
+          )}
 
           <Button
             onClick={handleAddFood}
