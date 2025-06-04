@@ -35,8 +35,10 @@ const TodayTab = ({ key: forceRefreshKey }: { key?: number }) => {
   const handleFoodAdded = async () => {
     console.log('🍎 Food added, closing dialog and refreshing data...');
     setShowAddDialog(false);
-    // Force refresh of data
-    await refetch();
+    // Force refresh of data with a small delay to ensure DB write is complete
+    setTimeout(async () => {
+      await refetch();
+    }, 500);
   };
 
   if (isLoading) {

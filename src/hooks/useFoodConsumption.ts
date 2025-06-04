@@ -38,7 +38,10 @@ export const useFoodConsumption = (date?: Date) => {
   const { data: todayConsumption, isLoading, refetch } = useQuery({
     queryKey: ['food-consumption-today', user?.id, format(targetDate, 'yyyy-MM-dd')],
     queryFn: async () => {
-      if (!user?.id) return [];
+      if (!user?.id) {
+        console.log('❌ No user ID for food consumption query');
+        return [];
+      }
 
       const dayStart = startOfDay(targetDate);
       const dayEnd = endOfDay(targetDate);
@@ -80,7 +83,9 @@ export const useFoodConsumption = (date?: Date) => {
     },
     enabled: !!user?.id,
     staleTime: 0, // Always fetch fresh data
-    gcTime: 30000, // 30 seconds cache time
+    gcTime: 0, // Don't cache
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 
   // Get consumption history for a date range

@@ -26,11 +26,17 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
   const [notes, setNotes] = useState("");
 
   const { searchFoodItems, logConsumption, isLoggingConsumption } = useFoodDatabase();
-  const { todayConsumption } = useFoodConsumption();
+  const { todayConsumption, refetch: refetchConsumption } = useFoodConsumption();
   
   // Execute search query when searchTerm changes
   const searchQuery = searchFoodItems(searchTerm);
   const { data: searchResults, isLoading } = searchQuery;
+
+  // Refresh today's consumption when component mounts
+  useEffect(() => {
+    console.log('🔄 SearchTab mounted, refreshing today consumption...');
+    refetchConsumption();
+  }, [refetchConsumption]);
 
   // Get unique food items from today's consumption for quick add
   const todaysFoodItems = todayConsumption?.reduce((unique: any[], log) => {
@@ -56,7 +62,8 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
     searchTerm,
     searchResultsCount: searchResults?.length || 0,
     todaysFoodItemsCount: todaysFoodItems.length,
-    todayConsumptionCount: todayConsumption?.length || 0
+    todayConsumptionCount: todayConsumption?.length || 0,
+    todayConsumption: todayConsumption?.slice(0, 2) // Log first 2 items
   });
 
   const handleSelectFood = (food: any) => {

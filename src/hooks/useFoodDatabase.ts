@@ -160,9 +160,14 @@ export const useFoodDatabase = () => {
       console.log('✅ Food consumption logged successfully');
     },
     onSuccess: () => {
-      // Invalidate food consumption queries to refresh the data
+      console.log('🔄 Invalidating food consumption queries after successful log');
+      // Invalidate all relevant food consumption queries
       queryClient.invalidateQueries({ queryKey: ['food-consumption'] });
       queryClient.invalidateQueries({ queryKey: ['food-consumption-today'] });
+      
+      // Force refetch immediately
+      queryClient.refetchQueries({ queryKey: ['food-consumption-today'] });
+      
       toast.success('Food logged successfully!');
     },
     onError: (error) => {
