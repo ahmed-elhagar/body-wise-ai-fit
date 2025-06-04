@@ -1,82 +1,122 @@
 
-import { useEnhancedAIMealPlan } from "./meal-plan/useEnhancedAIMealPlan";
-import { useLifePhaseNutrition } from "./useLifePhaseNutrition";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { useEnhancedErrorSystem } from "./useEnhancedErrorSystem";
-import { toast } from "sonner";
+import { useState } from 'react';
+import { useAuth } from './useAuth';
+import { useCentralizedCredits } from './useCentralizedCredits';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export const useEnhancedMealPlan = () => {
-  const { generateMealPlan, isGenerating } = useEnhancedAIMealPlan();
-  const { getMealPlanContext } = useLifePhaseNutrition();
-  const { language } = useLanguage();
-  const { withErrorBoundary } = useEnhancedErrorSystem();
+  const { user } = useAuth();
+  const { remaining: userCredits, isPro, hasCredits, checkAndUseCredit, completeGeneration } = useCentralizedCredits();
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  const generateMealPlanWithLifePhase = withErrorBoundary(
-    async (preferences: any, options?: { weekOffset?: number }) => {
-      const mealPlanContext = getMealPlanContext();
+  const generateMealPlan = async (preferences: any, options?: { weekOffset?: number }): Promise<boolean> => {
+    if (!user?.id) {
+      console.error('❌ User not authenticated');
+      toast.error('Please log in to generate a meal plan');
+      return false;
+    }
+
+    console.log('🔐 User authenticated:', user.id);
+
+    // Check credits before starting
+    if (!hasCredits) {
+      toast.error('No AI credits remaining. Please upgrade your plan or wait for credits to reset.');
+      return false;
+    }
+
+    setIsGenerating(true);
+    let logId: string | undefined;
+    
+    try {
+      console.log('🍽️ Starting meal plan generation with preferences:', preferences);
       
-      // Enhanced preferences with life phase context
-      const enhancedPreferences = {
-        ...preferences,
-        ...mealPlanContext,
-        weekOffset: options?.weekOffset || 0,
-        includeSnacks: preferences.includeSnacks !== false
+      // Check and use credit before starting generation
+      const creditResult = await checkAndUseCredit('meal_plan');
+      if (!creditResult.success) {
+        return false;
+      }
+      logId = creditResult.logId;
+
+      // Get user profile data for better personalization
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      console.log('📊 User profile loaded:', profile ? 'success' : 'no profile found');
+
+      // Structure the request for meal plan generation
+      const requestBody = {
+        userData: {
+          userId: user.id,
+          email: user.email || '',
+          first_name: profile?.first_name || '',
+          last_name: profile?.last_name || '',
+          age: profile?.age || null,
+          gender: profile?.gender || null,
+          height: profile?.height || null,
+          weight: profile?.weight || null,
+          fitness_goal: profile?.fitness_goal || null,
+          activity_level: profile?.activity_level || null,
+          preferred_language: profile?.preferred_language || 'en',
+          dietary_restrictions: profile?.dietary_restrictions || [],
+          allergies: profile?.allergies || [],
+          special_conditions: profile?.special_conditions || {}
+        },
+        preferences: {
+          ...preferences,
+          userProfile: profile,
+          userLanguage: profile?.preferred_language || 'en'
+        },
+        userLanguage: profile?.preferred_language || 'en',
+        weekOffset: options?.weekOffset || 0
       };
 
-      console.log('🍽️ Generating life-phase aware meal plan:', {
-        nutritionContext: mealPlanContext.nutritionContext,
-        adjustedCalories: mealPlanContext.adjustedCalories,
-        specialInstructions: mealPlanContext.specialInstructions,
-        includeSnacks: enhancedPreferences.includeSnacks
+      console.log('🚀 Calling meal plan edge function:', {
+        userId: user.id,
+        weekOffset: options?.weekOffset,
+        hasProfile: !!profile
       });
 
-      // Show special notifications for life phase
-      if (mealPlanContext.nutritionContext.isMuslimFasting) {
-        toast.info(
-          language === 'ar' 
-            ? 'سيتم إنشاء خطة وجبات مخصصة للصيام الإسلامي مع توقيت الإفطار والسحور'
-            : 'Generating Islamic fasting-compatible meal plan with Iftar and Suhoor timing'
-        );
+      const { data, error } = await supabase.functions.invoke('generate-meal-plan', {
+        body: requestBody
+      });
+
+      if (error) {
+        console.error('❌ Meal plan generation error:', error);
+        if (logId) await completeGeneration(logId, false);
+        throw new Error(error.message || 'Generation failed');
       }
 
-      if (mealPlanContext.nutritionContext.isPregnant) {
-        toast.info(
-          language === 'ar'
-            ? `جاري إنشاء خطة وجبات للحمل مع ${mealPlanContext.adjustedCalories} سعرة إضافية`
-            : `Generating pregnancy meal plan with ${mealPlanContext.adjustedCalories} extra calories`
-        );
+      if (data?.success) {
+        console.log('✅ Meal plan generated successfully');
+        
+        // Complete the generation process
+        if (logId) await completeGeneration(logId, true, data);
+        
+        toast.success('Meal plan generated successfully!');
+        return true;
+      } else {
+        if (logId) await completeGeneration(logId, false);
+        throw new Error(data?.error || 'Generation failed');
       }
-
-      if (mealPlanContext.nutritionContext.isBreastfeeding) {
-        toast.info(
-          language === 'ar'
-            ? `جاري إنشاء خطة وجبات للرضاعة مع ${mealPlanContext.adjustedCalories} سعرة إضافية`
-            : `Generating breastfeeding meal plan with ${mealPlanContext.adjustedCalories} extra calories`
-        );
-      }
-
-      const result = await generateMealPlan(enhancedPreferences, options);
-      
-      if (result) {
-        toast.success(
-          language === 'ar'
-            ? 'تم إنشاء خطة الوجبات مع مراعاة احتياجاتك الخاصة!'
-            : 'Meal plan generated with your special nutritional needs!'
-        );
-      }
-
-      return result;
-    },
-    {
-      operation: 'enhanced_meal_plan_generation',
-      retryable: true,
-      severity: 'high'
+    } catch (error) {
+      console.error('❌ Meal plan generation failed:', error);
+      if (logId) await completeGeneration(logId, false);
+      toast.error(error.message || 'Failed to generate meal plan');
+      return false;
+    } finally {
+      setIsGenerating(false);
     }
-  );
+  };
 
   return {
-    generateMealPlan: generateMealPlanWithLifePhase,
     isGenerating,
-    nutritionContext: getMealPlanContext().nutritionContext
+    userCredits,
+    isPro,
+    hasCredits,
+    generateMealPlan
   };
 };

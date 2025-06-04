@@ -5,7 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
 
 export const useMealPlanAIActions = (coreState: any, dialogsState: any) => {
-  const { generateMealPlan, isGenerating } = useEnhancedMealPlan();
+  const { generateMealPlan, isGenerating, userCredits, isPro, hasCredits } = useEnhancedMealPlan();
   const { language } = useLanguage();
 
   const handleGenerateAIPlan = useCallback(async (): Promise<boolean> => {
@@ -13,8 +13,18 @@ export const useMealPlanAIActions = (coreState: any, dialogsState: any) => {
       console.log('🤖 Starting AI meal plan generation with preferences:', {
         preferences: dialogsState.aiPreferences,
         weekOffset: coreState.currentWeekOffset,
-        language
+        language,
+        hasCredits
       });
+
+      if (!hasCredits) {
+        toast.error(
+          language === 'ar'
+            ? 'لا توجد رصيد كافٍ لتوليد الخطة'
+            : 'No AI credits remaining'
+        );
+        return false;
+      }
 
       const success = await generateMealPlan(dialogsState.aiPreferences, {
         weekOffset: coreState.currentWeekOffset
@@ -44,10 +54,13 @@ export const useMealPlanAIActions = (coreState: any, dialogsState: any) => {
       );
       return false;
     }
-  }, [generateMealPlan, dialogsState, coreState, language]);
+  }, [generateMealPlan, dialogsState, coreState, language, hasCredits]);
 
   return {
     handleGenerateAIPlan,
-    isGenerating
+    isGenerating,
+    userCredits,
+    isPro,
+    hasCredits
   };
 };

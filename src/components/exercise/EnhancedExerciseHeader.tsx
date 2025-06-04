@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, RotateCcw, Home, Building2, Coins } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useCreditSystem } from "@/hooks/useCreditSystem";
+import { useCentralizedCredits } from "@/hooks/useCentralizedCredits";
 
 interface EnhancedExerciseHeaderProps {
   currentProgram: any;
@@ -22,7 +22,9 @@ export const EnhancedExerciseHeader = ({
   workoutType
 }: EnhancedExerciseHeaderProps) => {
   const { t } = useLanguage();
-  const { userCredits } = useCreditSystem();
+  const { remaining: userCredits, isPro, hasCredits } = useCentralizedCredits();
+
+  const displayCredits = isPro ? 'Unlimited' : `${userCredits} credits`;
 
   return (
     <Card className="p-4 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
@@ -60,7 +62,7 @@ export const EnhancedExerciseHeader = ({
           <div className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border border-amber-200">
             <Coins className="w-4 h-4 text-amber-600" />
             <span className="text-sm font-medium text-amber-700">
-              {userCredits === -1 ? 'Unlimited' : `${userCredits} credits`}
+              {displayCredits}
             </span>
           </div>
 
@@ -68,7 +70,7 @@ export const EnhancedExerciseHeader = ({
           {currentProgram ? (
             <Button
               onClick={onRegenerateProgram}
-              disabled={isGenerating || userCredits === 0}
+              disabled={isGenerating || !hasCredits}
               variant="outline"
               size="sm"
               className="border-blue-200 text-blue-700 hover:bg-blue-50"
@@ -88,7 +90,7 @@ export const EnhancedExerciseHeader = ({
           ) : (
             <Button
               onClick={onShowAIDialog}
-              disabled={isGenerating || userCredits === 0}
+              disabled={isGenerating || !hasCredits}
               className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
             >
               <Sparkles className="w-4 h-4 mr-2" />
@@ -98,7 +100,7 @@ export const EnhancedExerciseHeader = ({
         </div>
       </div>
 
-      {userCredits === 0 && (
+      {!hasCredits && (
         <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
           <p className="text-sm text-amber-700">
             You've reached your AI generation limit. Upgrade your plan for unlimited access.
