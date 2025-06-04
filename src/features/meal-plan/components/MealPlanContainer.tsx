@@ -7,7 +7,7 @@ import { MealPlanContent } from './MealPlanContent';
 import { MealPlanDialogs } from './dialogs/MealPlanDialogs';
 import { MealExchangeDialog } from '@/components/meal-plan/MealExchangeDialog';
 import { LoadingState } from './LoadingState';
-import { ErrorState } from '../../../components/meal-plan/components/ErrorState';
+import ErrorState from '../../../components/meal-plan/components/ErrorState';
 
 export const MealPlanContainer = () => {
   const {
@@ -33,7 +33,6 @@ export const MealPlanContainer = () => {
     showExchangeDialog,
     selectedMeal,
     openExchangeDialog,
-    closeExchangeDialog,
     showAIDialog,
     setShowAIDialog,
     showRecipeDialog,
@@ -54,6 +53,11 @@ export const MealPlanContainer = () => {
     },
     openExchangeDialog
   );
+
+  const closeExchangeDialog = () => {
+    console.log('❌ Closing exchange dialog');
+    closeAllDialogs();
+  };
 
   const handleMealExchanged = () => {
     refetch();
