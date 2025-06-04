@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,7 +9,6 @@ import {
   Database, 
   Server, 
   Shield, 
-  Bell,
   Users,
   Trash2,
   RotateCcw,
@@ -26,15 +26,6 @@ import { toast } from 'sonner';
 import SystemHealthMonitor from './SystemHealthMonitor';
 import UserGenerationManager from './UserGenerationManager';
 import { FeatureFlagToggle } from './FeatureFlagToggle';
-
-interface SystemSettings {
-  maintenance_mode: boolean;
-  user_registration: boolean;
-  email_notifications: boolean;
-  push_notifications: boolean;
-  ai_features: boolean;
-  subscription_required: boolean;
-}
 
 const EnhancedSystemTab = () => {
   const [maintenanceMode, setMaintenanceMode] = useState(false);
@@ -94,9 +85,7 @@ const EnhancedSystemTab = () => {
   // Clear cache mutation
   const clearCacheMutation = useMutation({
     mutationFn: async () => {
-      // Clear React Query cache
       queryClient.clear();
-      // Could also clear other caches here
       return { success: true };
     },
     onSuccess: () => {
@@ -307,7 +296,6 @@ const EnhancedSystemTab = () => {
                         if (feature.id === 'maintenance_mode') {
                           setMaintenanceMode(checked);
                         }
-                        // Handle other feature toggles here
                         toast.info(`${feature.label} ${checked ? 'enabled' : 'disabled'}`);
                       }}
                     />
@@ -345,14 +333,13 @@ const EnhancedSystemTab = () => {
         </CardContent>
       </Card>
 
-      {/* Existing components */}
+      {/* Additional System Components */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="space-y-6">
-          <FeatureFlagToggle />
-          <SystemHealthMonitor />
-        </div>
-        <UserGenerationManager />
+        <FeatureFlagToggle />
+        <SystemHealthMonitor />
       </div>
+      
+      <UserGenerationManager />
     </div>
   );
 };

@@ -37,7 +37,6 @@ export const TraineeAutoComplete = ({
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [loading, setLoading] = useState(false);
-  const [dropdownPosition, setDropdownPosition] = useState<{top: number, left: number, width: number} | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -78,17 +77,6 @@ export const TraineeAutoComplete = ({
     }
   };
 
-  const updateDropdownPosition = () => {
-    if (inputRef.current && showDropdown) {
-      const rect = inputRef.current.getBoundingClientRect();
-      setDropdownPosition({
-        top: rect.bottom + window.scrollY + 4,
-        left: rect.left + window.scrollX,
-        width: rect.width
-      });
-    }
-  };
-
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -119,28 +107,7 @@ export const TraineeAutoComplete = ({
     setFilteredUsers(filtered);
     setShowDropdown(filtered.length > 0);
     setSelectedIndex(-1);
-    
-    // Update position when showing dropdown
-    if (filtered.length > 0) {
-      setTimeout(updateDropdownPosition, 0);
-    }
   }, [value, users]);
-
-  // Update position on scroll or resize
-  useEffect(() => {
-    if (showDropdown) {
-      const handleScroll = () => updateDropdownPosition();
-      const handleResize = () => updateDropdownPosition();
-      
-      window.addEventListener('scroll', handleScroll, true);
-      window.addEventListener('resize', handleResize);
-      
-      return () => {
-        window.removeEventListener('scroll', handleScroll, true);
-        window.removeEventListener('resize', handleResize);
-      };
-    }
-  }, [showDropdown]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
@@ -154,7 +121,6 @@ export const TraineeAutoComplete = ({
     onUserSelect(user.id);
     setShowDropdown(false);
     setSelectedIndex(-1);
-    setDropdownPosition(null);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -180,7 +146,6 @@ export const TraineeAutoComplete = ({
       case 'Escape':
         setShowDropdown(false);
         setSelectedIndex(-1);
-        setDropdownPosition(null);
         break;
     }
   };
@@ -189,7 +154,6 @@ export const TraineeAutoComplete = ({
     console.log('Input focused, filtered users:', filteredUsers.length);
     if (filteredUsers.length > 0) {
       setShowDropdown(true);
-      setTimeout(updateDropdownPosition, 0);
     }
   };
 
@@ -199,7 +163,6 @@ export const TraineeAutoComplete = ({
       if (!dropdownRef.current?.contains(e.relatedTarget as Node)) {
         setShowDropdown(false);
         setSelectedIndex(-1);
-        setDropdownPosition(null);
       }
     }, 150);
   };
@@ -218,17 +181,10 @@ export const TraineeAutoComplete = ({
         autoComplete="off"
       />
       
-      {showDropdown && filteredUsers.length > 0 && dropdownPosition && (
+      {showDropdown && filteredUsers.length > 0 && (
         <div 
           ref={dropdownRef}
-          className="fixed bg-white border border-gray-200 rounded-md shadow-xl max-h-60 overflow-hidden"
-          style={{ 
-            zIndex: 9999,
-            top: dropdownPosition.top,
-            left: dropdownPosition.left,
-            width: Math.max(dropdownPosition.width, 280),
-            minWidth: '280px'
-          }}
+          className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-hidden z-50"
         >
           <ScrollArea className="h-full max-h-60">
             {filteredUsers.map((user, index) => (

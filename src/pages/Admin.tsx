@@ -3,7 +3,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { PageHeader } from "@/components/ui/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, Users, TrendingUp, CreditCard, Settings, Brain, Activity } from "lucide-react";
+import { Shield, Users, TrendingUp, CreditCard, Settings, Brain } from "lucide-react";
 import { useRole } from "@/hooks/useRole";
 import { Navigate } from "react-router-dom";
 import UsersTable from "@/components/admin/UsersTable";
