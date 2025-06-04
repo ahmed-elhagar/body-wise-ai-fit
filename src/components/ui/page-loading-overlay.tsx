@@ -10,6 +10,8 @@ interface PageLoadingOverlayProps {
   description?: string;
   className?: string;
   blur?: boolean;
+  // Add a context prop to prevent conflicts
+  context?: 'admin' | 'ai-generation' | 'page-load';
 }
 
 const PageLoadingOverlay: React.FC<PageLoadingOverlayProps> = ({
@@ -18,9 +20,13 @@ const PageLoadingOverlay: React.FC<PageLoadingOverlayProps> = ({
   message,
   description,
   className,
-  blur = true
+  blur = true,
+  context = 'page-load'
 }) => {
   if (!isLoading) return null;
+
+  // Don't show page loading overlay for admin actions
+  if (context === 'admin') return null;
 
   return (
     <div className={cn(

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -44,10 +43,10 @@ interface User {
 const EnhancedUsersTable = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isCreatingSubscription, setIsCreatingSubscription] = useState(false);
   const queryClient = useQueryClient();
 
   const fetchUsers = async () => {
@@ -113,6 +112,7 @@ const EnhancedUsersTable = () => {
   );
 
   const updateUserRole = async (userId: string, newRole: 'normal' | 'coach' | 'admin') => {
+    setActionLoading(`role-${userId}`);
     try {
       const { error } = await supabase
         .from('profiles')
@@ -122,17 +122,20 @@ const EnhancedUsersTable = () => {
       if (error) throw error;
 
       toast.success('User role updated successfully');
+      // Refresh the data immediately after update
       await fetchUsers();
       setIsEditDialogOpen(false);
       setSelectedUser(null);
     } catch (error) {
       console.error('Error updating user role:', error);
       toast.error('Failed to update user role');
+    } finally {
+      setActionLoading(null);
     }
   };
 
   const createSubscription = async (userId: string) => {
-    setIsCreatingSubscription(true);
+    setActionLoading(`sub-${userId}`);
     try {
       // Create a 1-month subscription
       const startDate = new Date();
@@ -157,16 +160,18 @@ const EnhancedUsersTable = () => {
       if (error) throw error;
 
       toast.success('1-month subscription created successfully');
+      // Refresh the data immediately after update
       await fetchUsers();
     } catch (error) {
       console.error('Error creating subscription:', error);
       toast.error('Failed to create subscription');
     } finally {
-      setIsCreatingSubscription(false);
+      setActionLoading(null);
     }
   };
 
   const cancelSubscription = async (userId: string) => {
+    setActionLoading(`cancel-${userId}`);
     try {
       const { error } = await supabase
         .from('subscriptions')
@@ -180,14 +185,18 @@ const EnhancedUsersTable = () => {
       if (error) throw error;
 
       toast.success('Subscription cancelled successfully');
+      // Refresh the data immediately after update
       await fetchUsers();
     } catch (error) {
       console.error('Error cancelling subscription:', error);
       toast.error('Failed to cancel subscription');
+    } finally {
+      setActionLoading(null);
     }
   };
 
   const resetAIGenerations = async (userId: string, newCount: number = 5) => {
+    setActionLoading(`ai-${userId}`);
     try {
       const { error } = await supabase
         .from('profiles')
@@ -197,10 +206,13 @@ const EnhancedUsersTable = () => {
       if (error) throw error;
 
       toast.success(`AI generations reset to ${newCount}`);
+      // Refresh the data immediately after update
       await fetchUsers();
     } catch (error) {
       console.error('Error resetting AI generations:', error);
       toast.error('Failed to reset AI generations');
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -254,7 +266,7 @@ const EnhancedUsersTable = () => {
           </div>
         </div>
         
-        <Button onClick={fetchUsers} variant="outline">
+        <Button onClick={fetchUsers} variant="outline" disabled={loading}>
           <UserPlus className="h-4 w-4 mr-2" />
           Refresh
         </Button>
@@ -335,6 +347,7 @@ const EnhancedUsersTable = () => {
                           variant="ghost"
                           size="sm"
                           onClick={() => resetAIGenerations(user.id)}
+                          disabled={actionLoading === `ai-${user.id}`}
                           className="h-6 w-6 p-0"
                         >
                           <Star className="h-3 w-3" />
@@ -360,6 +373,7 @@ const EnhancedUsersTable = () => {
                               variant="outline"
                               size="sm"
                               onClick={() => setSelectedUser(user)}
+                              disabled={actionLoading === `role-${user.id}`}
                             >
                               Edit Role
                             </Button>
@@ -382,6 +396,7 @@ const EnhancedUsersTable = () => {
                                       updateUserRole(selectedUser.id, value);
                                     }
                                   }}
+                                  disabled={actionLoading === `role-${selectedUser?.id}`}
                                 >
                                   <SelectTrigger>
                                     <SelectValue />
@@ -402,6 +417,7 @@ const EnhancedUsersTable = () => {
                             variant="outline"
                             size="sm"
                             onClick={() => cancelSubscription(user.id)}
+                            disabled={actionLoading === `cancel-${user.id}`}
                             className="text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"
                           >
                             <X className="h-3 w-3 mr-1" />
@@ -412,7 +428,7 @@ const EnhancedUsersTable = () => {
                             variant="outline"
                             size="sm"
                             onClick={() => createSubscription(user.id)}
-                            disabled={isCreatingSubscription}
+                            disabled={actionLoading === `sub-${user.id}`}
                             className="text-green-600 hover:text-green-700 border-green-200 hover:border-green-300"
                           >
                             <Calendar className="h-3 w-3 mr-1" />

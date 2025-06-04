@@ -6,14 +6,23 @@ interface MealPlanLoadingBackdropProps {
   isLoading: boolean;
   message?: string;
   type?: 'meal-plan' | 'general';
+  // Add context to prevent showing during admin actions
+  allowedContexts?: string[];
 }
 
 const MealPlanLoadingBackdrop = React.memo<MealPlanLoadingBackdropProps>(({ 
   isLoading, 
   message = "Processing your meal plan...",
-  type = 'meal-plan'
+  type = 'meal-plan',
+  allowedContexts = ['meal-plan', 'ai-generation']
 }) => {
   if (!isLoading) return null;
+
+  // Check if we're in an admin context and should not show this loader
+  const currentPath = window.location.pathname;
+  if (currentPath.includes('/admin')) {
+    return null;
+  }
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center">
