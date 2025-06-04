@@ -4,6 +4,7 @@ import { useMealPlanData } from '@/hooks/meal-plan/useMealPlanData';
 import { useMealPlanNavigation } from '@/hooks/meal-plan/useMealPlanNavigation';
 import { useMealPlanCalculations } from '@/features/meal-plan/hooks/useMealPlanCalculations';
 import { useMealPlanActions } from '@/hooks/useMealPlanActions';
+import { useCentralizedCredits } from '@/hooks/useCentralizedCredits';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from './useAuth';
 import type { DailyMeal } from '@/features/meal-plan/types';
@@ -11,6 +12,7 @@ import type { DailyMeal } from '@/features/meal-plan/types';
 export const useMealPlanState = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { remaining: userCredits, isPro, hasCredits } = useCentralizedCredits();
   
   // Navigation state
   const {
@@ -223,6 +225,11 @@ export const useMealPlanState = () => {
     isLoading,
     error,
     isGenerating,
+    
+    // Centralized credits
+    userCredits,
+    isPro,
+    hasCredits,
     
     // Dialog states
     showAIDialog,

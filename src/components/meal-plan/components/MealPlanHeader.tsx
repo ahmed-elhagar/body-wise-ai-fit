@@ -4,19 +4,19 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { UtensilsCrossed, Sparkles, Zap } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCentralizedCredits } from "@/hooks/useCentralizedCredits";
 
 interface MealPlanHeaderProps {
-  remainingCredits: number;
   onShowAIDialog: () => void;
   isGenerating: boolean;
 }
 
 const MealPlanHeader = ({ 
-  remainingCredits, 
   onShowAIDialog, 
   isGenerating 
 }: MealPlanHeaderProps) => {
   const { t, isRTL } = useLanguage();
+  const { remaining: remainingCredits, isPro, hasCredits } = useCentralizedCredits();
 
   console.log('🌐 MealPlanHeader translation check:', {
     language: isRTL ? 'ar' : 'en',
@@ -26,6 +26,8 @@ const MealPlanHeader = ({
     creditsTranslation: t('mealPlan.aiCredits'),
     generateButtonTranslation: t('mealPlan.generateAIMealPlan')
   });
+
+  const displayCredits = isPro ? 'Unlimited' : `${remainingCredits} credits`;
 
   return (
     <Card className="relative p-6 border-0 shadow-xl bg-white rounded-2xl overflow-hidden">
@@ -55,7 +57,7 @@ const MealPlanHeader = ({
             <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <Badge className="bg-gradient-to-r from-fitness-primary-500 to-fitness-accent-500 text-white border-0 px-4 py-2 font-semibold shadow-md hover:shadow-lg transition-shadow">
                 <Zap className={`w-4 h-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
-                {remainingCredits} {t('mealPlan.aiCredits') || 'AI Credits'}
+                {displayCredits}
               </Badge>
               <span className="text-sm text-fitness-primary-500 font-medium">
                 {t('mealPlan.unlimitedGeneration') || 'Generate unlimited meal plans'}
@@ -67,7 +69,7 @@ const MealPlanHeader = ({
           <div className="flex-shrink-0">
             <Button
               onClick={onShowAIDialog}
-              disabled={isGenerating || remainingCredits <= 0}
+              disabled={isGenerating || !hasCredits}
               className="bg-gradient-to-r from-fitness-primary-500 to-fitness-accent-500 hover:from-fitness-primary-600 hover:to-fitness-accent-600 text-white border-0 shadow-lg px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               size="lg"
             >
@@ -78,7 +80,7 @@ const MealPlanHeader = ({
               }
             </Button>
             
-            {remainingCredits <= 0 && (
+            {!hasCredits && (
               <p className="text-sm text-red-600 mt-3 text-center font-medium">
                 {t('mealPlan.noCreditsRemaining') || 'No AI credits remaining. Upgrade to continue.'}
               </p>
