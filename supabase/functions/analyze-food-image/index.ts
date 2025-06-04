@@ -13,6 +13,20 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+// Helper function to convert ArrayBuffer to base64 without stack overflow
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  const chunkSize = 1024;
+  
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    const chunk = bytes.slice(i, i + chunkSize);
+    binary += String.fromCharCode.apply(null, Array.from(chunk));
+  }
+  
+  return btoa(binary);
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -34,9 +48,10 @@ serve(async (req) => {
     console.log('User ID:', userId);
     console.log('Image file:', imageFile.name, 'Size:', imageFile.size);
 
-    // Convert image file to base64
+    // Convert image file to base64 using safe method
     const imageArrayBuffer = await imageFile.arrayBuffer();
-    const imageBase64 = `data:${imageFile.type};base64,` + btoa(String.fromCharCode(...new Uint8Array(imageArrayBuffer)));
+    const base64Data = arrayBufferToBase64(imageArrayBuffer);
+    const imageBase64 = `data:${imageFile.type};base64,${base64Data}`;
 
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
