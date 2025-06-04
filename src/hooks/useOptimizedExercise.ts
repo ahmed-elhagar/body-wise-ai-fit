@@ -1,140 +1,53 @@
 
-import { useMemo, useCallback, useState } from 'react';
-import { useExerciseProgramData } from '@/hooks/useExerciseProgramData';
-import { useExerciseActions } from '@/hooks/useExerciseActions';
-import { useDailyWorkouts } from '@/hooks/useDailyWorkouts';
+import { useOptimizedExerciseProgramPage } from './useOptimizedExerciseProgramPage';
+import { useExerciseActions } from './useExerciseActions';
 
 export const useOptimizedExercise = () => {
-  const [selectedDay, setSelectedDay] = useState(1);
-  
-  // Core exercise data
   const {
-    currentProgram: weeklyProgram,
-    isLoading: isProgramLoading,
-    error: programError,
-    refetch: refetchProgram,
-  } = useExerciseProgramData();
+    currentProgram,
+    todaysExercises,
+    completedExercises,
+    totalExercises,
+    progressPercentage,
+    handleExerciseComplete,
+    handleExerciseProgressUpdate,
+  } = useOptimizedExerciseProgramPage();
 
-  // Daily workouts data
-  const {
-    workouts: dailyWorkouts,
-    exercises,
-    isLoading: isWorkoutsLoading,
-  } = useDailyWorkouts(weeklyProgram?.id, selectedDay);
+  const { completeExercise, updateExerciseProgress } = useExerciseActions();
 
-  // Exercise actions
-  const {
-    completeExercise,
-    updateExerciseProgress,
-    getExerciseRecommendations,
-  } = useExerciseActions(refetchProgram);
-
-  // Current workout for selected day
-  const currentWorkout = useMemo(() => {
-    return dailyWorkouts?.find(w => w.day_number === selectedDay) || null;
-  }, [dailyWorkouts, selectedDay]);
-
-  // Memoized week structure
-  const weekStructure = useMemo(() => {
-    if (!weeklyProgram || !dailyWorkouts) return [];
-    
-    return Array.from({ length: 7 }, (_, index) => {
-      const dayNumber = index + 1;
-      const workout = dailyWorkouts.find(w => w.day_number === dayNumber);
-      const isRestDay = !workout;
-      const isCompleted = workout?.completed || false;
-      
-      return {
-        dayNumber,
-        dayName: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][index],
-        workout,
-        isRestDay,
-        isCompleted,
-        isToday: dayNumber === new Date().getDay() || (new Date().getDay() === 0 && dayNumber === 7),
-      };
-    });
-  }, [weeklyProgram, dailyWorkouts]);
-
-  // Progress calculations
-  const progressMetrics = useMemo(() => {
-    if (!dailyWorkouts) return { completedWorkouts: 0, totalWorkouts: 0, progressPercentage: 0 };
-    
-    const completedWorkouts = dailyWorkouts.filter(w => w.completed).length;
-    const totalWorkouts = dailyWorkouts.length;
-    const progressPercentage = totalWorkouts > 0 ? (completedWorkouts / totalWorkouts) * 100 : 0;
-    
+  const getExerciseStats = () => {
     return {
-      completedWorkouts,
-      totalWorkouts,
-      progressPercentage: Math.round(progressPercentage),
+      total: totalExercises,
+      completed: completedExercises,
+      remaining: totalExercises - completedExercises,
+      completionRate: progressPercentage,
     };
-  }, [dailyWorkouts]);
+  };
 
-  // Current day exercises with progress
-  const currentDayExercises = useMemo(() => {
-    if (!exercises) return [];
-    
-    return exercises.map(exercise => ({
-      ...exercise,
-      progressPercentage: exercise.completed ? 100 : 0,
-    }));
-  }, [exercises]);
+  const getWeeklyStats = () => {
+    if (!currentProgram?.daily_workouts) {
+      return { totalWeeklyExercises: 0, completedWeeklyExercises: 0 };
+    }
 
-  // Optimized exercise actions
-  const optimizedActions = useMemo(() => ({
-    completeWorkout: useCallback(async () => {
-      if (exercises) {
-        await Promise.all(
-          exercises.map(exercise => 
-            completeExercise(exercise.id)
-          )
-        );
-      }
-    }, [exercises, completeExercise]),
+    const totalWeeklyExercises = currentProgram.daily_workouts.reduce(
+      (sum, workout) => sum + (workout.exercises?.length || 0), 0
+    );
     
-    startWorkout: useCallback(async () => {
-      console.log('Starting workout for day:', selectedDay);
-    }, [selectedDay]),
-    
-    pauseWorkout: useCallback(async () => {
-      console.log('Pausing workout');
-    }, []),
-  }), [exercises, completeExercise, selectedDay]);
+    const completedWeeklyExercises = currentProgram.daily_workouts.reduce(
+      (sum, workout) => sum + (workout.exercises?.filter((ex: any) => ex.completed).length || 0), 0
+    );
 
-  // Loading states
-  const loadingStates = useMemo(() => ({
-    isProgramLoading,
-    isWorkoutsLoading,
-    isUpdating: false,
-    isGenerating: false,
-  }), [isProgramLoading, isWorkoutsLoading]);
+    return { totalWeeklyExercises, completedWeeklyExercises };
+  };
 
   return {
-    // Data
-    weeklyProgram,
-    dailyWorkouts,
-    currentWorkout,
-    weekStructure,
-    currentDayExercises,
-    
-    // Navigation
-    selectedDay,
-    setSelectedDay,
-    
-    // Progress
-    progressMetrics,
-    
-    // Actions
+    currentProgram,
+    todaysExercises,
+    getExerciseStats,
+    getWeeklyStats,
+    handleExerciseComplete,
+    handleExerciseProgressUpdate,
     completeExercise,
     updateExerciseProgress,
-    getExerciseRecommendations,
-    optimizedActions,
-    
-    // Refetch
-    refetchProgram,
-    
-    // Loading states
-    loadingStates,
-    programError,
   };
 };

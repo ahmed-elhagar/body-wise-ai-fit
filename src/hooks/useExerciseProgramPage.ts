@@ -1,6 +1,6 @@
 
 import { useState, useMemo } from 'react';
-import { useExerciseProgramData } from './useExerciseProgramData';
+import { useExerciseProgramData, type ExerciseProgram } from './useExerciseProgramData';
 import { useAIExercise } from './useAIExercise';
 import { addDays, format, startOfWeek } from 'date-fns';
 
@@ -37,13 +37,13 @@ export const useExerciseProgramPage = () => {
     difficulty: "beginner"
   });
 
-  // Use the updated hook with proper week and workout type filtering
-  const { currentProgram, isLoading, error, refetch, completeExercise, updateExerciseProgress } = 
-    useExerciseProgramData(currentWeekOffset, workoutType);
-  const { generateExerciseProgram, isGenerating } = useAIExercise();
-
   const currentDate = new Date();
   const weekStartDate = addDays(startOfWeek(currentDate), currentWeekOffset * 7);
+  const weekStartDateString = format(weekStartDate, 'yyyy-MM-dd');
+
+  const { currentProgram, isLoading, error, refetch, handleExerciseComplete, handleExerciseProgressUpdate } = 
+    useExerciseProgramData(weekStartDateString, workoutType);
+  const { generateExerciseProgram, isGenerating } = useAIExercise();
 
   // Get today's workouts based on selected day
   const todaysWorkouts = useMemo(() => {
@@ -80,15 +80,12 @@ export const useExerciseProgramPage = () => {
   }, [todaysExercises]);
 
   const handleGenerateAIProgram = (preferences: ExercisePreferences) => {
-    const weekStartDateString = format(weekStartDate, 'yyyy-MM-dd');
-    
     console.log('🤖 Generating AI exercise program with preferences:', {
       ...preferences,
       weekOffset: currentWeekOffset,
       weekStartDate: weekStartDateString
     });
     
-    // Pass week information to AI generation with exact week date
     const enhancedPreferences = {
       ...preferences,
       weekStartDate: weekStartDateString,
@@ -100,8 +97,6 @@ export const useExerciseProgramPage = () => {
   };
 
   const handleRegenerateProgram = () => {
-    const weekStartDateString = format(weekStartDate, 'yyyy-MM-dd');
-    
     const preferences = {
       ...aiPreferences,
       workoutType: workoutType,
@@ -128,22 +123,6 @@ export const useExerciseProgramPage = () => {
         ? ["barbells", "dumbbells", "machines", "cables"]
         : ["bodyweight", "resistance_bands", "light_dumbbells"]
     }));
-  };
-
-  const handleExerciseComplete = async (exerciseId: string) => {
-    try {
-      await completeExercise(exerciseId);
-    } catch (error) {
-      console.error('Error completing exercise:', error);
-    }
-  };
-
-  const handleExerciseProgressUpdate = async (exerciseId: string, sets: number, reps: string, notes?: string) => {
-    try {
-      await updateExerciseProgress(exerciseId, sets, reps, notes);
-    } catch (error) {
-      console.error('Error updating exercise progress:', error);
-    }
   };
 
   return {

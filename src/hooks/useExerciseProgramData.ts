@@ -7,6 +7,18 @@ import { useEnhancedErrorSystem } from './useEnhancedErrorSystem';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 
+export interface ExerciseProgram {
+  id: string;
+  program_name: string;
+  difficulty_level: string;
+  workout_type: string;
+  current_week: number;
+  week_start_date: string;
+  created_at: string;
+  daily_workouts: any[];
+  daily_workouts_count: number;
+}
+
 export const useExerciseProgramData = (weekStartDate: string, workoutType: string) => {
   const { user } = useAuth();
   const { completeExercise, updateExerciseProgress } = useExerciseActions();
@@ -60,12 +72,11 @@ export const useExerciseProgramData = (weekStartDate: string, workoutType: strin
         }
 
         console.log('✅ Program fetched successfully:', program.program_name);
-        return program;
+        return program as ExerciseProgram;
 
       } catch (error: any) {
         console.error('❌ Error in exercise program fetch:', error);
         
-        // Handle specific error types with user-friendly messages
         const errorContext = {
           operation: 'fetch_exercise_program',
           userId: user.id,
@@ -89,21 +100,18 @@ export const useExerciseProgramData = (weekStartDate: string, workoutType: strin
     },
     enabled: !!user?.id,
     retry: (failureCount, error: any) => {
-      // Don't retry authentication errors
       if (error?.message === 'USER_NOT_AUTHENTICATED') return false;
-      // Retry up to 2 times for other errors
       return failureCount < 2;
     },
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 
   const handleExerciseComplete = async (exerciseId: string) => {
     try {
       await completeExercise(exerciseId);
       
-      // Invalidate and refetch the query
       await queryClient.invalidateQueries({
         queryKey: ['exercise-program', user?.id, weekStartDate, workoutType]
       });
@@ -111,7 +119,6 @@ export const useExerciseProgramData = (weekStartDate: string, workoutType: strin
     } catch (error: any) {
       console.error('❌ Error in handleExerciseComplete:', error);
       
-      // Show user-friendly error message
       const errorMessage = language === 'ar'
         ? 'فشل في إكمال التمرين. يرجى المحاولة مرة أخرى.'
         : 'Failed to complete exercise. Please try again.';
@@ -130,7 +137,6 @@ export const useExerciseProgramData = (weekStartDate: string, workoutType: strin
     try {
       await updateExerciseProgress(exerciseId, sets, reps, notes, weight);
       
-      // Invalidate and refetch the query
       await queryClient.invalidateQueries({
         queryKey: ['exercise-program', user?.id, weekStartDate, workoutType]
       });
@@ -138,7 +144,6 @@ export const useExerciseProgramData = (weekStartDate: string, workoutType: strin
     } catch (error: any) {
       console.error('❌ Error in handleExerciseProgressUpdate:', error);
       
-      // Show user-friendly error message
       const errorMessage = language === 'ar'
         ? 'فشل في تحديث تقدم التمرين. يرجى المحاولة مرة أخرى.'
         : 'Failed to update exercise progress. Please try again.';
@@ -148,7 +153,12 @@ export const useExerciseProgramData = (weekStartDate: string, workoutType: strin
   };
 
   return {
-    ...query,
+    currentProgram: query.data,
+    isLoading: query.isLoading,
+    error: query.error,
+    refetch: query.refetch,
+    completeExercise,
+    updateExerciseProgress,
     handleExerciseComplete,
     handleExerciseProgressUpdate
   };
