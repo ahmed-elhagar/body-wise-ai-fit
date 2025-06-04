@@ -43,6 +43,12 @@ export const useFoodConsumption = (date?: Date) => {
       const dayStart = startOfDay(targetDate);
       const dayEnd = endOfDay(targetDate);
 
+      console.log('🔍 Fetching food consumption for:', {
+        userId: user.id.substring(0, 8) + '...',
+        dayStart: dayStart.toISOString(),
+        dayEnd: dayEnd.toISOString()
+      });
+
       const { data, error } = await supabase
         .from('food_consumption_log')
         .select(`
@@ -61,13 +67,20 @@ export const useFoodConsumption = (date?: Date) => {
         .order('consumed_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching food consumption:', error);
+        console.error('❌ Error fetching food consumption:', error);
         throw error;
       }
+
+      console.log('✅ Food consumption data fetched:', {
+        count: data?.length || 0,
+        data: data?.slice(0, 2) // Log first 2 entries for debugging
+      });
 
       return data as FoodConsumptionLog[];
     },
     enabled: !!user?.id,
+    staleTime: 0, // Always fetch fresh data
+    gcTime: 30000, // 30 seconds cache time
   });
 
   // Get consumption history for a date range

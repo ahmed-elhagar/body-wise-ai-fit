@@ -12,13 +12,16 @@ import TodayTab from "@/components/food-tracker/TodayTab";
 import HistoryTab from "@/components/food-tracker/HistoryTab";
 import AddFoodDialog from "@/components/food-tracker/AddFoodDialog/AddFoodDialog";
 import { toast } from "sonner";
+import { useQueryClient } from '@tanstack/react-query';
 
 const FoodTracker = () => {
   const { t } = useLanguage();
   const location = useLocation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [isAddFoodOpen, setIsAddFoodOpen] = useState(false);
   const [preSelectedFood, setPreSelectedFood] = useState<any>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
   const { refetch } = useFoodConsumption();
 
   // Handle analyzed food from Calorie Checker or AI Scanner
@@ -43,11 +46,24 @@ const FoodTracker = () => {
     setIsAddFoodOpen(false);
     setPreSelectedFood(null);
     
-    // Force refetch of food consumption data
-    await refetch();
-    
-    // Show success message with proper text
-    toast.success('Food added successfully!');
+    try {
+      // Invalidate all food consumption queries
+      await queryClient.invalidateQueries({ queryKey: ['food-consumption'] });
+      
+      // Force refetch of food consumption data
+      await refetch();
+      
+      // Force component re-render with new key
+      setRefreshKey(prev => prev + 1);
+      
+      // Show success message with proper text
+      toast.success('Food added successfully!');
+      
+      console.log('✅ Data refresh completed');
+    } catch (error) {
+      console.error('❌ Error refreshing data:', error);
+      toast.error('Food added but failed to refresh data');
+    }
   };
 
   const handleOpenAddDialog = () => {
@@ -112,7 +128,7 @@ const FoodTracker = () => {
               </TabsList>
 
               <TabsContent value="today" className="mt-6">
-                <TodayTab key={Date.now()} />
+                <TodayTab key={refreshKey} />
               </TabsContent>
 
               <TabsContent value="history" className="mt-6">

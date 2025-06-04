@@ -92,37 +92,70 @@ export const useFoodPhotoIntegration = () => {
   const logAnalyzedFood = async (food: any, quantity: number, mealType: string, notes: string) => {
     if (!user?.id) {
       console.error('No user ID available for food logging');
-      return;
+      throw new Error('User not authenticated');
     }
 
     setIsLoggingFood(true);
     
     try {
-      console.log('📝 Logging analyzed food:', food);
+      console.log('📝 Logging analyzed food:', { food, quantity, mealType, notes });
       
-      const { error } = await supabase
+      // First, create or get the food item
+      const foodItemId = crypto.randomUUID();
+      
+      // Insert into food_items table
+      const { error: foodItemError } = await supabase
+        .from('food_items')
+        .insert({
+          id: foodItemId,
+          name: food.name || 'Unknown Food',
+          category: food.category || 'general',
+          calories_per_100g: food.calories || 0,
+          protein_per_100g: food.protein || 0,
+          carbs_per_100g: food.carbs || 0,
+          fat_per_100g: food.fat || 0,
+          source: 'ai_analysis',
+          confidence_score: food.confidence || 0.8
+        });
+
+      if (foodItemError) {
+        console.error('❌ Food item creation error:', foodItemError);
+      }
+
+      // Calculate consumption values based on quantity
+      const multiplier = quantity / 100;
+      const caloriesConsumed = (food.calories || 0) * multiplier;
+      const proteinConsumed = (food.protein || 0) * multiplier;
+      const carbsConsumed = (food.carbs || 0) * multiplier;
+      const fatConsumed = (food.fat || 0) * multiplier;
+
+      // Insert into food_consumption_log table
+      const { data: logData, error: logError } = await supabase
         .from('food_consumption_log')
         .insert({
           user_id: user.id,
-          food_item_id: food.id || crypto.randomUUID(),
+          food_item_id: foodItemId,
           quantity_g: quantity,
-          calories_consumed: (food.calories || 0) * (quantity / 100),
-          protein_consumed: (food.protein || 0) * (quantity / 100),
-          carbs_consumed: (food.carbs || 0) * (quantity / 100),
-          fat_consumed: (food.fat || 0) * (quantity / 100),
+          calories_consumed: caloriesConsumed,
+          protein_consumed: proteinConsumed,
+          carbs_consumed: carbsConsumed,
+          fat_consumed: fatConsumed,
           meal_type: mealType,
           notes: notes,
           source: 'ai_analysis',
-          ai_analysis_data: food
-        });
+          ai_analysis_data: food,
+          consumed_at: new Date().toISOString()
+        })
+        .select();
 
-      if (error) {
-        console.error('❌ Food logging error:', error);
-        throw error;
+      if (logError) {
+        console.error('❌ Food consumption logging error:', logError);
+        throw logError;
       }
 
-      console.log('✅ Food logged successfully');
+      console.log('✅ Food logged successfully:', logData);
       toast.success('Food added to log!');
+      return logData;
     } catch (error: any) {
       console.error('❌ Food logging failed:', error);
       toast.error('Failed to log food');
