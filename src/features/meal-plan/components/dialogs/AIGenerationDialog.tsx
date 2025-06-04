@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Sparkles, Zap, AlertTriangle, Info } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useMealPlanTranslations } from '@/utils/mealPlanTranslations';
+import { useCentralizedCredits } from '@/hooks/useCentralizedCredits';
 import type { MealPlanPreferences } from '@/types/mealPlan';
 
 interface AIGenerationDialogProps {
@@ -19,7 +20,6 @@ interface AIGenerationDialogProps {
   onPreferencesChange: (preferences: MealPlanPreferences) => void;
   onGenerate: () => Promise<boolean>;
   isGenerating: boolean;
-  userCredits: number;
   hasExistingPlan: boolean;
 }
 
@@ -30,7 +30,6 @@ export const AIGenerationDialog = ({
   onPreferencesChange,
   onGenerate,
   isGenerating,
-  userCredits,
   hasExistingPlan
 }: AIGenerationDialogProps) => {
   const { language } = useLanguage();
@@ -46,6 +45,9 @@ export const AIGenerationDialog = ({
     mealsPerDay,
     isRTL 
   } = useMealPlanTranslations();
+
+  // Use centralized credits instead of passed props
+  const { remaining: userCredits, isPro, hasCredits } = useCentralizedCredits();
 
   const [showConfirmation, setShowConfirmation] = useState(false);
 
@@ -124,6 +126,8 @@ export const AIGenerationDialog = ({
     { value: 'american', label: language === 'ar' ? 'أمريكية' : 'American' }
   ];
 
+  const displayCredits = isPro ? 'Unlimited' : `${userCredits}`;
+
   if (showConfirmation) {
     return (
       <Dialog open={open} onOpenChange={onClose}>
@@ -149,7 +153,7 @@ export const AIGenerationDialog = ({
                 </span>
                 <Badge variant="outline" className="bg-white">
                   <Zap className="w-3 h-3 mr-1" />
-                  {userCredits}
+                  {displayCredits}
                 </Badge>
               </div>
             </CardContent>
@@ -165,7 +169,7 @@ export const AIGenerationDialog = ({
             </Button>
             <Button 
               onClick={handleConfirmedGenerate}
-              disabled={isGenerating || userCredits <= 0}
+              disabled={isGenerating || !hasCredits}
               className="flex-1"
             >
               <Sparkles className="w-4 h-4 mr-2" />
@@ -194,18 +198,18 @@ export const AIGenerationDialog = ({
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Credits Display */}
+          {/* Credits Display - Now using centralized credits */}
           <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Zap className="w-4 h-4 text-yellow-500" />
                   <span className="font-medium">
-                    {aiCredits || 'AI Credits'}: {creditsRemaining || 'Remaining'}
+                    {language === 'ar' ? 'أرصدة الذكاء الاصطناعي: الأرصدة المتبقية' : 'AI Credits: Credits Remaining'}
                   </span>
                 </div>
                 <Badge variant="secondary" className="bg-white">
-                  {userCredits}
+                  {displayCredits}
                 </Badge>
               </div>
             </CardContent>
@@ -297,7 +301,7 @@ export const AIGenerationDialog = ({
             </Button>
             <Button 
               onClick={handleGenerate}
-              disabled={isGenerating || userCredits <= 0}
+              disabled={isGenerating || !hasCredits}
               className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
             >
               <Sparkles className="w-4 h-4 mr-2" />
@@ -305,7 +309,7 @@ export const AIGenerationDialog = ({
             </Button>
           </div>
 
-          {userCredits <= 0 && (
+          {!hasCredits && (
             <div className="text-center text-red-600 text-sm">
               {language === 'ar' 
                 ? 'لا توجد أرصدة ذكاء اصطناعي متبقية'

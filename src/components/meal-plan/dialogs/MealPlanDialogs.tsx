@@ -60,7 +60,7 @@ const MealPlanDialogs = ({
 }: MealPlanDialogsProps) => {
   return (
     <>
-      {/* AI Generation Dialog - Fixed with working dropdowns and switches */}
+      {/* AI Generation Dialog - Now uses centralized credits internally */}
       <AIGenerationDialog
         open={showAIDialog}
         onClose={() => setShowAIDialog(false)}
@@ -68,7 +68,6 @@ const MealPlanDialogs = ({
         onPreferencesChange={setAiPreferences}
         onGenerate={handleGenerateAI}
         isGenerating={false}
-        userCredits={5} // This should come from the actual user credits
         hasExistingPlan={!!mealPlanData?.weeklyPlan}
       />
 
