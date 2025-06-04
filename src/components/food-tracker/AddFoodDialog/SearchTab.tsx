@@ -26,7 +26,7 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
   const [notes, setNotes] = useState("");
 
   const { searchFoodItems, logConsumption, isLoggingConsumption } = useFoodDatabase();
-  const { todayConsumption, refetch: refetchConsumption } = useFoodConsumption();
+  const { todayConsumption, forceRefresh } = useFoodConsumption();
   
   // Execute search query when searchTerm changes
   const searchQuery = searchFoodItems(searchTerm);
@@ -35,22 +35,27 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
   // Refresh today's consumption when component mounts
   useEffect(() => {
     console.log('🔄 SearchTab mounted, refreshing today consumption...');
-    refetchConsumption();
-  }, [refetchConsumption]);
+    forceRefresh();
+  }, [forceRefresh]);
 
   // Get unique food items from today's consumption for quick add
   const todaysFoodItems = todayConsumption?.reduce((unique: any[], log) => {
     const existing = unique.find(item => item.id === log.food_item?.id);
     if (!existing && log.food_item) {
+      const calculatedCalories = log.quantity_g > 0 ? Math.round((log.calories_consumed || 0) / (log.quantity_g / 100)) : 0;
+      const calculatedProtein = log.quantity_g > 0 ? Math.round((log.protein_consumed || 0) / (log.quantity_g / 100)) : 0;
+      const calculatedCarbs = log.quantity_g > 0 ? Math.round((log.carbs_consumed || 0) / (log.quantity_g / 100)) : 0;
+      const calculatedFat = log.quantity_g > 0 ? Math.round((log.fat_consumed || 0) / (log.quantity_g / 100)) : 0;
+      
       unique.push({
         id: log.food_item.id,
         name: log.food_item.name,
         brand: log.food_item.brand,
         category: log.food_item.category || 'general',
-        calories_per_100g: Math.round((log.calories_consumed || 0) / (log.quantity_g / 100)),
-        protein_per_100g: Math.round((log.protein_consumed || 0) / (log.quantity_g / 100)),
-        carbs_per_100g: Math.round((log.carbs_consumed || 0) / (log.quantity_g / 100)),
-        fat_per_100g: Math.round((log.fat_consumed || 0) / (log.quantity_g / 100)),
+        calories_per_100g: calculatedCalories,
+        protein_per_100g: calculatedProtein,
+        carbs_per_100g: calculatedCarbs,
+        fat_per_100g: calculatedFat,
         verified: true,
         lastConsumed: log.consumed_at
       });
@@ -104,8 +109,9 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
         source: 'search'
       });
       
-      onFoodAdded();
+      // Close immediately and let parent handle refresh
       onClose();
+      onFoodAdded();
     } catch (error) {
       console.error('❌ Error logging food:', error);
       toast.error(t('Failed to log food'));

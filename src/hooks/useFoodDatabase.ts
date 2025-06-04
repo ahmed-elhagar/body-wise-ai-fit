@@ -136,7 +136,10 @@ export const useFoodDatabase = () => {
     }) => {
       console.log('📝 Logging food consumption:', consumption);
 
-      const { error } = await supabase
+      const consumedAt = new Date().toISOString();
+      console.log('📅 Using consumed_at timestamp:', consumedAt);
+
+      const { data, error } = await supabase
         .from('food_consumption_log')
         .insert({
           user_id: user?.id,
@@ -149,24 +152,31 @@ export const useFoodDatabase = () => {
           carbs_consumed: consumption.carbs,
           fat_consumed: consumption.fat,
           source: consumption.source,
-          consumed_at: new Date().toISOString()
-        });
+          consumed_at: consumedAt
+        })
+        .select()
+        .single();
 
       if (error) {
         console.error('❌ Error logging food consumption:', error);
         throw error;
       }
 
-      console.log('✅ Food consumption logged successfully');
+      console.log('✅ Food consumption logged successfully:', data);
+      return data;
     },
-    onSuccess: () => {
-      console.log('🔄 Invalidating food consumption queries after successful log');
-      // Invalidate all relevant food consumption queries
-      queryClient.invalidateQueries({ queryKey: ['food-consumption'] });
-      queryClient.invalidateQueries({ queryKey: ['food-consumption-today'] });
+    onSuccess: async (data) => {
+      console.log('🔄 Food logged successfully, invalidating queries...');
       
-      // Force refetch immediately
-      queryClient.refetchQueries({ queryKey: ['food-consumption-today'] });
+      // Clear all food consumption related queries
+      await queryClient.invalidateQueries({ queryKey: ['food-consumption'] });
+      await queryClient.invalidateQueries({ queryKey: ['food-consumption-today'] });
+      
+      // Force immediate refetch of today's consumption
+      await queryClient.refetchQueries({ 
+        queryKey: ['food-consumption-today'],
+        type: 'active'
+      });
       
       toast.success('Food logged successfully!');
     },

@@ -34,7 +34,7 @@ export const useFoodConsumption = (date?: Date) => {
   const queryClient = useQueryClient();
   const targetDate = date || new Date();
 
-  // Get today's consumption
+  // Get today's consumption with improved query
   const { data: todayConsumption, isLoading, refetch } = useQuery({
     queryKey: ['food-consumption-today', user?.id, format(targetDate, 'yyyy-MM-dd')],
     queryFn: async () => {
@@ -43,13 +43,22 @@ export const useFoodConsumption = (date?: Date) => {
         return [];
       }
 
+      // Use more lenient date range to account for timezone issues
       const dayStart = startOfDay(targetDate);
       const dayEnd = endOfDay(targetDate);
+      
+      // Also check for today's date in user's timezone
+      const today = new Date();
+      const todayStart = startOfDay(today);
+      const todayEnd = endOfDay(today);
 
       console.log('🔍 Fetching food consumption for:', {
         userId: user.id.substring(0, 8) + '...',
+        targetDate: format(targetDate, 'yyyy-MM-dd'),
         dayStart: dayStart.toISOString(),
-        dayEnd: dayEnd.toISOString()
+        dayEnd: dayEnd.toISOString(),
+        todayStart: todayStart.toISOString(),
+        todayEnd: todayEnd.toISOString()
       });
 
       const { data, error } = await supabase
@@ -65,8 +74,7 @@ export const useFoodConsumption = (date?: Date) => {
           )
         `)
         .eq('user_id', user.id)
-        .gte('consumed_at', dayStart.toISOString())
-        .lte('consumed_at', dayEnd.toISOString())
+        .or(`and(consumed_at.gte.${dayStart.toISOString()},consumed_at.lte.${dayEnd.toISOString()}),and(consumed_at.gte.${todayStart.toISOString()},consumed_at.lte.${todayEnd.toISOString()})`)
         .order('consumed_at', { ascending: false });
 
       if (error) {
@@ -76,7 +84,7 @@ export const useFoodConsumption = (date?: Date) => {
 
       console.log('✅ Food consumption data fetched:', {
         count: data?.length || 0,
-        data: data?.slice(0, 2) // Log first 2 entries for debugging
+        data: data?.slice(0, 3) // Log first 3 entries for debugging
       });
 
       return data as FoodConsumptionLog[];
@@ -86,6 +94,7 @@ export const useFoodConsumption = (date?: Date) => {
     gcTime: 0, // Don't cache
     refetchOnMount: true,
     refetchOnWindowFocus: true,
+    refetchInterval: 5000, // Refetch every 5 seconds to ensure data consistency
   });
 
   // Get consumption history for a date range
@@ -181,10 +190,18 @@ export const useFoodConsumption = (date?: Date) => {
     },
   });
 
+  // Force refresh function for external calls
+  const forceRefresh = async () => {
+    console.log('🔄 Force refreshing food consumption data...');
+    await queryClient.invalidateQueries({ queryKey: ['food-consumption'] });
+    await refetch();
+  };
+
   return {
     todayConsumption,
     isLoading,
     refetch,
+    forceRefresh,
     getConsumptionHistory,
     useHistoryData,
     deleteConsumption: deleteConsumptionMutation.mutate,

@@ -13,13 +13,13 @@ import { format } from "date-fns";
 const TodayTab = ({ key: forceRefreshKey }: { key?: number }) => {
   const { t } = useLanguage();
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const { todayConsumption, isLoading, refetch } = useFoodConsumption();
+  const { todayConsumption, isLoading, forceRefresh } = useFoodConsumption();
 
   // Force a refresh when component mounts or key changes
   useEffect(() => {
     console.log('🔄 TodayTab mounted/refreshed, fetching data...');
-    refetch();
-  }, [refetch, forceRefreshKey]);
+    forceRefresh();
+  }, [forceRefresh, forceRefreshKey]);
 
   // Calculate daily totals
   const dailyTotals = todayConsumption?.reduce(
@@ -35,10 +35,12 @@ const TodayTab = ({ key: forceRefreshKey }: { key?: number }) => {
   const handleFoodAdded = async () => {
     console.log('🍎 Food added, closing dialog and refreshing data...');
     setShowAddDialog(false);
-    // Force refresh of data with a small delay to ensure DB write is complete
+    
+    // Force immediate refresh with longer delay to ensure DB consistency
     setTimeout(async () => {
-      await refetch();
-    }, 500);
+      console.log('🔄 Executing delayed refresh...');
+      await forceRefresh();
+    }, 1000);
   };
 
   if (isLoading) {
@@ -120,7 +122,7 @@ const TodayTab = ({ key: forceRefreshKey }: { key?: number }) => {
           <CardContent>
             <FoodLogTimeline 
               foodLogs={todayConsumption || []}
-              onRefetch={refetch}
+              onRefetch={forceRefresh}
             />
           </CardContent>
         </Card>

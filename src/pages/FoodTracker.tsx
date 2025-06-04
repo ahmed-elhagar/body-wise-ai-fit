@@ -22,7 +22,7 @@ const FoodTracker = () => {
   const [isAddFoodOpen, setIsAddFoodOpen] = useState(false);
   const [preSelectedFood, setPreSelectedFood] = useState<any>(null);
   const [refreshKey, setRefreshKey] = useState(0);
-  const { refetch } = useFoodConsumption();
+  const { forceRefresh } = useFoodConsumption();
 
   // Handle analyzed food from Calorie Checker or AI Scanner
   useEffect(() => {
@@ -47,16 +47,16 @@ const FoodTracker = () => {
     setPreSelectedFood(null);
     
     try {
-      // Invalidate all food consumption queries
-      await queryClient.invalidateQueries({ queryKey: ['food-consumption'] });
+      // Clear all food consumption queries
+      await queryClient.clear();
       
-      // Force refetch of food consumption data
-      await refetch();
+      // Force refresh of food consumption data
+      await forceRefresh();
       
       // Force component re-render with new key
       setRefreshKey(prev => prev + 1);
       
-      // Show success message with proper text
+      // Show success message
       toast.success('Food added successfully!');
       
       console.log('✅ Data refresh completed');
