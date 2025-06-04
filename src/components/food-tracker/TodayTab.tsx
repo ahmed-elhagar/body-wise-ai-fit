@@ -15,6 +15,11 @@ const TodayTab = () => {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const { todayConsumption, isLoading, refetch } = useFoodConsumption();
 
+  // Force a refresh when component mounts
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
   // Calculate daily totals
   const dailyTotals = todayConsumption?.reduce(
     (acc, item) => ({
@@ -26,9 +31,10 @@ const TodayTab = () => {
     { calories: 0, protein: 0, carbs: 0, fat: 0 }
   ) || { calories: 0, protein: 0, carbs: 0, fat: 0 };
 
-  const handleFoodAdded = () => {
+  const handleFoodAdded = async () => {
     setShowAddDialog(false);
-    refetch();
+    // Force refresh of data
+    await refetch();
   };
 
   if (isLoading) {

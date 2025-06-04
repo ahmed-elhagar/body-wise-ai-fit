@@ -46,8 +46,8 @@ const FoodTracker = () => {
     // Force refetch of food consumption data
     await refetch();
     
-    // Show success message
-    toast.success(t('Food added successfully!'));
+    // Show success message with proper text
+    toast.success('Food added successfully!');
   };
 
   const handleOpenAddDialog = () => {
@@ -112,7 +112,7 @@ const FoodTracker = () => {
               </TabsList>
 
               <TabsContent value="today" className="mt-6">
-                <TodayTab />
+                <TodayTab key={Date.now()} />
               </TabsContent>
 
               <TabsContent value="history" className="mt-6">
