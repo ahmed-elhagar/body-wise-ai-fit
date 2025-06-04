@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useMealPlanCore } from '@/hooks/useMealPlanCore';
 import { useMealPlanDialogs } from '@/hooks/meal-plan/useMealPlanDialogs';
@@ -6,7 +7,7 @@ import { MealPlanContent } from './MealPlanContent';
 import { MealPlanDialogs } from './dialogs/MealPlanDialogs';
 import { MealExchangeDialog } from '@/components/meal-plan/MealExchangeDialog';
 import { LoadingState } from './LoadingState';
-import { ErrorState } from './ErrorState';
+import { ErrorState } from '../../../components/meal-plan/components/ErrorState';
 
 export const MealPlanContainer = () => {
   const {
@@ -59,6 +60,10 @@ export const MealPlanContainer = () => {
     closeExchangeDialog();
   };
 
+  const handleGenerateAI = () => {
+    return generateMealPlan(aiPreferences);
+  };
+
   if (isLoading) {
     return <LoadingState />;
   }
@@ -83,7 +88,7 @@ export const MealPlanContainer = () => {
         onViewMeal={handleViewMeal}
         onExchangeMeal={handleExchangeMeal}
         onAddSnack={() => {}}
-        onGenerateAI={generateMealPlan}
+        onGenerateAI={handleGenerateAI}
         setCurrentWeekOffset={setCurrentWeekOffset}
         setSelectedDayNumber={setSelectedDayNumber}
       />
