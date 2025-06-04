@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -178,83 +177,67 @@ export const useFoodDatabase = () => {
       carbs: number;
       fat: number;
       source: string;
+      mealPlanData?: any;
     }) => {
       console.log('📝 Logging food consumption:', consumption);
 
       const consumedAt = new Date().toISOString();
       console.log('📅 Using consumed_at timestamp:', consumedAt);
 
-      // Handle meal plan items differently
+      let actualFoodItemId = consumption.foodItemId;
+      
+      // Handle meal plan items - create a proper food item first
       if (consumption.source === 'meal_plan' || consumption.foodItemId.startsWith('meal-plan-') || consumption.foodItemId.startsWith('temp-')) {
-        console.log('🍽️ Logging meal plan item');
+        console.log('🍽️ Creating food item for meal plan item');
         
-        // For meal plan items, we need to create or find a suitable food item
-        // For now, create a generic food item or use a placeholder
-        let actualFoodItemId = consumption.foodItemId;
+        const mealName = consumption.mealPlanData?.name || consumption.notes?.replace('From meal plan: ', '') || 'Meal Plan Item';
         
-        if (consumption.foodItemId.startsWith('temp-') || consumption.foodItemId.startsWith('meal-plan-')) {
-          // Create a generic food item for meal plan entries
-          const { data: genericFoodItem, error: createError } = await supabase
+        // Create or find existing food item for this meal plan item
+        const { data: existingFoodItem, error: findError } = await supabase
+          .from('food_items')
+          .select('id')
+          .eq('name', mealName)
+          .eq('category', 'meal_plan')
+          .maybeSingle();
+
+        if (!findError && existingFoodItem) {
+          actualFoodItemId = existingFoodItem.id;
+          console.log('✅ Using existing food item:', actualFoodItemId);
+        } else {
+          // Create new food item
+          const { data: newFoodItem, error: createError } = await supabase
             .from('food_items')
-            .upsert({
-              name: consumption.notes?.replace('From meal plan: ', '') || 'Meal Plan Item',
+            .insert({
+              name: mealName,
               category: 'meal_plan',
               calories_per_100g: consumption.calories,
               protein_per_100g: consumption.protein,
               carbs_per_100g: consumption.carbs,
               fat_per_100g: consumption.fat,
               verified: true,
-              source: 'meal_plan'
-            }, {
-              onConflict: 'name,category',
-              ignoreDuplicates: false
+              source: 'meal_plan',
+              brand: 'Meal Plan'
             })
-            .select()
+            .select('id')
             .single();
 
           if (createError) {
-            console.warn('⚠️ Could not create food item, using placeholder');
-            // Use a known food item ID or create a minimal entry
-            actualFoodItemId = 'placeholder-meal-plan';
-          } else {
-            actualFoodItemId = genericFoodItem.id;
+            console.error('❌ Error creating food item:', createError);
+            throw new Error(`Failed to create food item: ${createError.message}`);
           }
+          
+          actualFoodItemId = newFoodItem.id;
+          console.log('✅ Created new food item:', actualFoodItemId);
         }
-
-        const { data, error } = await supabase
-          .from('food_consumption_log')
-          .insert({
-            user_id: user?.id,
-            food_item_id: actualFoodItemId,
-            quantity_g: 100, // Standard serving for meal plan items
-            meal_type: consumption.mealType,
-            notes: consumption.notes,
-            calories_consumed: consumption.calories,
-            protein_consumed: consumption.protein,
-            carbs_consumed: consumption.carbs,
-            fat_consumed: consumption.fat,
-            source: 'meal_plan',
-            consumed_at: consumedAt
-          })
-          .select()
-          .single();
-
-        if (error) {
-          console.error('❌ Error logging meal plan consumption:', error);
-          throw error;
-        }
-
-        console.log('✅ Meal plan consumption logged successfully:', data);
-        return data;
       }
 
-      // Handle regular food items
+      // Log the consumption
       const { data, error } = await supabase
         .from('food_consumption_log')
         .insert({
           user_id: user?.id,
-          food_item_id: consumption.foodItemId,
-          quantity_g: consumption.quantity,
+          food_item_id: actualFoodItemId,
+          quantity_g: consumption.source === 'meal_plan' ? 100 : consumption.quantity,
           meal_type: consumption.mealType,
           notes: consumption.notes,
           calories_consumed: consumption.calories,
@@ -269,7 +252,7 @@ export const useFoodDatabase = () => {
 
       if (error) {
         console.error('❌ Error logging food consumption:', error);
-        throw error;
+        throw new Error(`Failed to log consumption: ${error.message}`);
       }
 
       console.log('✅ Food consumption logged successfully:', data);
@@ -302,8 +285,8 @@ export const useFoodDatabase = () => {
       toast.success('Food logged successfully!');
     },
     onError: (error) => {
-      console.error('Error logging food consumption:', error);
-      toast.error('Failed to log food consumption');
+      console.error('❌ Error logging food consumption:', error);
+      toast.error(`Failed to log food: ${error.message}`);
     },
   });
 

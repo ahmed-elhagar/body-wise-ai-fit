@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useFoodDatabase } from "@/hooks/useFoodDatabase";
 import { useFoodConsumption } from "@/hooks/useFoodConsumption";
 import QuantitySelector from "./components/QuantitySelector";
+import QuickAddSection from "./components/QuickAddSection";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -136,69 +136,54 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
   const handleAddFood = async () => {
     if (!selectedFood) return;
 
-    // Handle meal plan items differently
-    if (selectedFood.source === 'meal_plan' && selectedFood.mealPlanData) {
-      const mealData = selectedFood.mealPlanData;
-      const calories = mealData.calories || 0;
-      const protein = mealData.protein || 0;
-      const carbs = mealData.carbs || 0;
-      const fat = mealData.fat || 0;
-
-      try {
+    try {
+      // Handle meal plan items differently
+      if (selectedFood.source === 'meal_plan' && selectedFood.mealPlanData) {
+        const mealData = selectedFood.mealPlanData;
+        
         console.log('📝 Adding meal plan item to log:', {
           mealName: mealData.name,
-          calories,
-          protein,
-          carbs,
-          fat
+          calories: mealData.calories || 0,
+          protein: mealData.protein || 0,
+          carbs: mealData.carbs || 0,
+          fat: mealData.fat || 0
         });
 
-        // For meal plan items, we need to create a food item first or use a generic one
-        // For now, we'll create a temporary food item ID
-        const tempFoodItemId = `temp-${Date.now()}`;
-
         await logConsumption({
-          foodItemId: tempFoodItemId,
-          quantity: 100, // Standard serving
+          foodItemId: selectedFood.id,
+          quantity: 100,
           mealType,
           notes: `From meal plan: ${mealData.name}`,
-          calories,
-          protein,
-          carbs,
-          fat,
-          source: 'meal_plan'
+          calories: mealData.calories || 0,
+          protein: mealData.protein || 0,
+          carbs: mealData.carbs || 0,
+          fat: mealData.fat || 0,
+          source: 'meal_plan',
+          mealPlanData: mealData
         });
         
         console.log('✅ Meal plan item logged successfully');
         
-        // Reset form
+        // Reset form and call handlers
         setSelectedFood(null);
         setQuantity(100);
         setMealType("snack");
         setNotes("");
-        
-        // Call parent handlers
         onFoodAdded();
-      } catch (error) {
-        console.error('❌ Error logging meal plan item:', error);
-        toast.error(t('Failed to log meal'));
+        return;
       }
-      return;
-    }
 
-    // Handle regular food items
-    const multiplier = quantity / 100;
-    const calories = (selectedFood.calories_per_100g || 0) * multiplier;
-    const protein = (selectedFood.protein_per_100g || 0) * multiplier;
-    const carbs = (selectedFood.carbs_per_100g || 0) * multiplier;
-    const fat = (selectedFood.fat_per_100g || 0) * multiplier;
+      // Handle regular food items
+      const multiplier = quantity / 100;
+      const calories = (selectedFood.calories_per_100g || 0) * multiplier;
+      const protein = (selectedFood.protein_per_100g || 0) * multiplier;
+      const carbs = (selectedFood.carbs_per_100g || 0) * multiplier;
+      const fat = (selectedFood.fat_per_100g || 0) * multiplier;
 
-    try {
-      console.log('📝 Adding food to log:', {
+      console.log('📝 Adding regular food to log:', {
         foodItemId: selectedFood.id,
         quantity,
         mealType,
-        notes,
         calories,
         protein,
         carbs,
@@ -219,13 +204,11 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
       
       console.log('✅ Food logged successfully, resetting form...');
       
-      // Reset form
+      // Reset form and call handlers
       setSelectedFood(null);
       setQuantity(100);
       setMealType("snack");
       setNotes("");
-      
-      // Call parent handlers
       onFoodAdded();
     } catch (error) {
       console.error('❌ Error logging food:', error);
@@ -303,7 +286,7 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header with refresh button */}
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-medium text-gray-900">{t('Search & Add Food')}</h3>
@@ -318,6 +301,16 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
           {t('Refresh')}
         </Button>
       </div>
+
+      {/* Quick Add Section - Always visible but collapsible */}
+      <QuickAddSection
+        todaysFoodItems={todaysFoodItems}
+        isLoading={isLoadingConsumption}
+        onSelectFood={handleSelectFood}
+        selectedFood={selectedFood}
+        onRefresh={handleRefreshData}
+        isRefreshing={isRefreshing}
+      />
 
       {/* Search Input */}
       <div className="relative">
@@ -334,46 +327,6 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
           </div>
         )}
       </div>
-
-      {/* Today's Foods - Quick Add Section */}
-      {!searchTerm && (
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Utensils className="w-4 h-4 text-blue-600" />
-            <h3 className="font-medium text-gray-900">{t('Today\'s Foods - Quick Add')}</h3>
-            {isLoadingConsumption ? (
-              <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            ) : (
-              <Badge variant="outline" className="text-xs">
-                {todaysFoodItems.length} items
-              </Badge>
-            )}
-          </div>
-          
-          {isLoadingConsumption ? (
-            <div className="flex items-center justify-center h-20">
-              <div className="w-6 h-6 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-          ) : todaysFoodItems.length > 0 ? (
-            <div className="space-y-2 max-h-48 overflow-y-auto">
-              {todaysFoodItems.slice(0, 8).map((food) => (
-                <FoodCard key={`today-${food.id}`} food={food} isQuickAdd={true} />
-              ))}
-              {todaysFoodItems.length > 8 && (
-                <p className="text-xs text-gray-500 text-center py-2">
-                  {t('Showing first 8 items')} ({todaysFoodItems.length} total)
-                </p>
-              )}
-            </div>
-          ) : (
-            <div className="text-center py-6 bg-gray-50 rounded-lg">
-              <Utensils className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-              <p className="text-sm text-gray-500">{t('No foods logged today yet')}</p>
-              <p className="text-xs text-gray-400 mt-1">{t('Add some food or check your meal plan to see quick options here')}</p>
-            </div>
-          )}
-        </div>
-      )}
 
       {/* Search Results */}
       {searchTerm.length >= 2 && (
@@ -401,13 +354,12 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
         </div>
       )}
 
-      {/* Default state when no search and no today's foods */}
-      {!searchTerm && todaysFoodItems.length === 0 && !isLoadingConsumption && (
-        <div className="text-center py-8">
-          <Search className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+      {/* Default state when no search */}
+      {!searchTerm && (
+        <div className="text-center py-6">
+          <Search className="w-8 h-8 text-gray-300 mx-auto mb-3" />
           <p className="text-gray-500">{t('Search for food items to add to your log')}</p>
           <p className="text-sm text-gray-400 mt-1">{t('Start typing to see results')}</p>
-          <p className="text-xs text-gray-400 mt-2">{t('Once you log some food today or have a meal plan, they\'ll appear here for quick re-adding')}</p>
         </div>
       )}
 
