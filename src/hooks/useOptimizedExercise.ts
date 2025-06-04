@@ -46,16 +46,20 @@ export const useOptimizedExercise = () => {
     return { totalWeeklyExercises, completedWeeklyExercises };
   };
 
-  // Create week structure for the container component
+  // Create week structure for the container component with proper WeekDay interface
   const weekStructure = useMemo(() => {
     if (!currentProgram?.daily_workouts) return [];
     
+    const today = new Date().getDay() || 7; // Convert Sunday (0) to 7
+    const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    
     return currentProgram.daily_workouts.map((workout: any) => ({
-      day: workout.day_number,
-      workout_name: workout.workout_name,
-      exercises: workout.exercises || [],
-      completed: workout.completed || false,
-      is_rest_day: workout.is_rest_day || false,
+      dayNumber: workout.day_number,
+      dayName: dayNames[workout.day_number - 1] || `Day ${workout.day_number}`,
+      workout: workout,
+      isRestDay: workout.is_rest_day || false,
+      isCompleted: workout.completed || false,
+      isToday: workout.day_number === today,
     }));
   }, [currentProgram]);
 

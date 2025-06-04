@@ -48,6 +48,3 @@ export const ProgressAnalytics = () => {
     </div>
   );
 };
-
-// Export as default for backward compatibility
-export default ProgressAnalytics;
