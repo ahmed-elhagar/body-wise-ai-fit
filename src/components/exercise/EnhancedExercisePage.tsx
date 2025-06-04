@@ -2,7 +2,6 @@
 import { format, addDays } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useOptimizedExerciseProgramPage } from "@/hooks/useOptimizedExerciseProgramPage";
-import { EnhancedExerciseHeader } from "./EnhancedExerciseHeader";
 import { EnhancedDayNavigation } from "./EnhancedDayNavigation";
 import { AIExerciseDialog } from "./AIExerciseDialog";
 import { ExercisePageLayout } from "./ExercisePageLayout";
@@ -10,9 +9,13 @@ import { ExercisePageContent } from "./ExercisePageContent";
 import { ExerciseErrorState } from "./ExerciseErrorState";
 import { useEnhancedAIExercise } from "@/hooks/useEnhancedAIExercise";
 import EnhancedPageLoading from "@/components/ui/enhanced-page-loading";
+import { EnhancedExerciseHeaderWithAnalytics } from "./EnhancedExerciseHeaderWithAnalytics";
+import { ExerciseAnalyticsContainer } from "./ExerciseAnalyticsContainer";
+import { useState } from "react";
 
 const EnhancedExercisePage = () => {
   const { t } = useLanguage();
+  const [showAnalytics, setShowAnalytics] = useState(false);
   
   const {
     selectedDayNumber,
@@ -45,6 +48,16 @@ const EnhancedExercisePage = () => {
 
   const currentSelectedDate = addDays(weekStartDate, selectedDayNumber - 1);
   const isToday = format(currentSelectedDate, 'yyyy-MM-dd') === format(currentDate, 'yyyy-MM-dd');
+
+  // Show analytics view if enabled
+  if (showAnalytics) {
+    return (
+      <ExerciseAnalyticsContainer
+        exercises={todaysExercises}
+        onClose={() => setShowAnalytics(false)}
+      />
+    );
+  }
 
   // Show full page loading ONLY on initial load when there's no program data AND we're loading
   // OR during AI generation
@@ -99,10 +112,11 @@ const EnhancedExercisePage = () => {
 
   return (
     <ExercisePageLayout>
-      {/* Enhanced Header - Always show */}
+      {/* Enhanced Header with Analytics - Always show */}
       <div className="px-3 py-3">
-        <EnhancedExerciseHeader
+        <EnhancedExerciseHeaderWithAnalytics
           currentProgram={currentProgram}
+          onShowAnalytics={() => setShowAnalytics(true)}
           onShowAIDialog={() => setShowAIDialog(true)}
           onRegenerateProgram={handleRegenerateProgram}
           isGenerating={isGenerating}
