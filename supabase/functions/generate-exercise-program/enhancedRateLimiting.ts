@@ -132,20 +132,25 @@ export const enhancedRateLimiting = {
         .maybeSingle();
 
       if (!subscription) {
-        // Deduct credit for non-Pro users
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({
-            ai_generations_remaining: supabase.rpc('decrement', { x: 1 }),
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', userId);
+        // Use the correct database function to decrement credits
+        const { data: decrementResult, error: updateError } = await supabase
+          .rpc('decrement_ai_generations', { user_id: userId });
 
         if (updateError) {
+          console.error('Failed to decrement user credits:', updateError);
           throw new ExerciseProgramError(
             'Failed to update user credits',
             errorCodes.DATABASE_ERROR,
             500
+          );
+        }
+
+        // Check if decrement was successful
+        if (!decrementResult) {
+          throw new ExerciseProgramError(
+            'No credits remaining',
+            errorCodes.INSUFFICIENT_CREDITS,
+            400
           );
         }
       }
