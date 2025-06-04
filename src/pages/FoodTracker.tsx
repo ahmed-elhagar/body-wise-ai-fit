@@ -1,3 +1,4 @@
+
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,7 +11,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import TodayTab from "@/components/food-tracker/TodayTab";
 import HistoryTab from "@/components/food-tracker/HistoryTab";
 import AddFoodDialog from "@/components/food-tracker/AddFoodDialog/AddFoodDialog";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 const FoodTracker = () => {
   const { t } = useLanguage();
