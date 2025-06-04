@@ -2,12 +2,12 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { UserPlus, Mail } from "lucide-react";
+import { UserPlus } from "lucide-react";
 import { useCoachSystem } from "@/hooks/useCoachSystem";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { UserSearchDropdown } from "./UserSearchDropdown";
 
 interface AssignTraineeDialogProps {
   open: boolean;
@@ -17,20 +17,18 @@ interface AssignTraineeDialogProps {
 export const AssignTraineeDialog = ({ open, onOpenChange }: AssignTraineeDialogProps) => {
   const { assignTrainee, isAssigning } = useCoachSystem();
   const { language } = useLanguage();
-  const [traineeEmail, setTraineeEmail] = useState("");
+  const [selectedTraineeId, setSelectedTraineeId] = useState("");
   const [notes, setNotes] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!traineeEmail.trim()) return;
+    if (!selectedTraineeId) return;
 
-    // Note: This would need to be implemented to find user by email first
-    // For now, we'll pass the email as traineeId (this needs backend support)
     assignTrainee(
-      { traineeId: traineeEmail.trim(), notes: notes.trim() || undefined },
+      { traineeId: selectedTraineeId, notes: notes.trim() || undefined },
       {
         onSuccess: () => {
-          setTraineeEmail("");
+          setSelectedTraineeId("");
           setNotes("");
           onOpenChange(false);
         },
@@ -50,24 +48,18 @@ export const AssignTraineeDialog = ({ open, onOpenChange }: AssignTraineeDialogP
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="trainee-email">
-              {language === 'ar' ? 'البريد الإلكتروني للمتدرب' : 'Trainee Email'}
+            <Label htmlFor="trainee-select">
+              {language === 'ar' ? 'اختر المتدرب' : 'Select Trainee'}
             </Label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <Input
-                id="trainee-email"
-                type="email"
-                placeholder={language === 'ar' ? 
-                  'أدخل البريد الإلكتروني للمتدرب' : 
-                  'Enter trainee email address'
-                }
-                value={traineeEmail}
-                onChange={(e) => setTraineeEmail(e.target.value)}
-                className="pl-10"
-                required
-              />
-            </div>
+            <UserSearchDropdown
+              value={selectedTraineeId}
+              onValueChange={setSelectedTraineeId}
+              placeholder={language === 'ar' ? 
+                'ابحث واختر متدرب...' : 
+                'Search and select a trainee...'
+              }
+              excludeRoles={['admin', 'coach']}
+            />
             <p className="text-xs text-gray-500">
               {language === 'ar' ? 
                 'يجب أن يكون للمتدرب حساب مُسجل في التطبيق.' :
@@ -101,7 +93,7 @@ export const AssignTraineeDialog = ({ open, onOpenChange }: AssignTraineeDialogP
             >
               {language === 'ar' ? 'إلغاء' : 'Cancel'}
             </Button>
-            <Button type="submit" disabled={isAssigning || !traineeEmail.trim()}>
+            <Button type="submit" disabled={isAssigning || !selectedTraineeId}>
               {isAssigning ? (language === 'ar' ? 'جارٍ الإضافة...' : 'Adding...') : 
                             (language === 'ar' ? 'إضافة متدرب' : 'Add Trainee')}
             </Button>

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -142,25 +143,49 @@ const EnhancedUsersTable = () => {
       const endDate = new Date();
       endDate.setMonth(endDate.getMonth() + 1);
 
-      const { error } = await supabase
+      // First check if user has an existing subscription
+      const { data: existingSub } = await supabase
         .from('subscriptions')
-        .insert({
-          user_id: userId,
-          stripe_customer_id: `admin_created_${userId}`,
-          stripe_subscription_id: `admin_sub_${userId}_${Date.now()}`,
-          status: 'active',
-          plan_type: 'monthly',
-          current_period_start: startDate.toISOString(),
-          current_period_end: endDate.toISOString(),
-          cancel_at_period_end: false,
-          stripe_price_id: 'admin_created',
-          interval: 'month'
-        });
+        .select('*')
+        .eq('user_id', userId)
+        .single();
 
-      if (error) throw error;
+      if (existingSub) {
+        // Update existing subscription
+        const { error } = await supabase
+          .from('subscriptions')
+          .update({
+            status: 'active',
+            plan_type: 'monthly',
+            current_period_start: startDate.toISOString(),
+            current_period_end: endDate.toISOString(),
+            cancel_at_period_end: false,
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', userId);
+
+        if (error) throw error;
+      } else {
+        // Create new subscription
+        const { error } = await supabase
+          .from('subscriptions')
+          .insert({
+            user_id: userId,
+            stripe_customer_id: `admin_created_${userId}`,
+            stripe_subscription_id: `admin_sub_${userId}_${Date.now()}`,
+            status: 'active',
+            plan_type: 'monthly',
+            current_period_start: startDate.toISOString(),
+            current_period_end: endDate.toISOString(),
+            cancel_at_period_end: false,
+            stripe_price_id: 'admin_created',
+            interval: 'month'
+          });
+
+        if (error) throw error;
+      }
 
       toast.success('1-month subscription created successfully');
-      // Refresh the data immediately after update
       await fetchUsers();
     } catch (error) {
       console.error('Error creating subscription:', error);
