@@ -1,102 +1,168 @@
-import React from 'react';
-import { useMealPlanCore } from '@/hooks/useMealPlanCore';
-import { useMealPlanDialogs } from '@/hooks/meal-plan/useMealPlanDialogs';
-import { useMealPlanHandlers } from '@/hooks/useMealPlanHandlers';
+import React, { useState, useRef } from 'react';
+import { useMealPlanState } from '@/hooks/useMealPlanState';
+import MealPlanHeader from '@/components/meal-plan/MealPlanHeader';
+import { MealPlanNavigation } from './MealPlanNavigation';
 import { MealPlanContent } from './MealPlanContent';
-import { MealPlanDialogs } from './dialogs/MealPlanDialogs';
-import { MealExchangeDialog } from '@/components/meal-plan/MealExchangeDialog';
-import { LoadingState } from './LoadingState';
-import { ErrorState } from './ErrorState';
+import ErrorState from '@/components/meal-plan/components/ErrorState';
+import LoadingState from '@/components/meal-plan/components/LoadingState';
+import MealPlanDialogs from '@/components/meal-plan/dialogs/MealPlanDialogs';
+import MealPlanAILoadingDialog from '@/components/meal-plan/MealPlanAILoadingDialog';
+import { useEnhancedMealShuffle } from '@/hooks/useEnhancedMealShuffle';
+import ModernShoppingListDrawer from '@/components/shopping-list/ModernShoppingListDrawer';
+import { Loader2 } from 'lucide-react';
 
 export const MealPlanContainer = () => {
-  const {
-    currentWeekPlan,
-    selectedDayNumber,
-    setSelectedDayNumber,
-    currentWeekOffset,
-    setCurrentWeekOffset,
-    weekStartDate,
-    dailyMeals,
-    totalCalories,
-    totalProtein,
-    targetDayCalories,
-    isLoading,
-    isGenerating,
-    error,
-    generateMealPlan,
-    refetch,
-    hasCredits
-  } = useMealPlanCore();
+  const mealPlanState = useMealPlanState();
+  const { shuffleMeals, isShuffling } = useEnhancedMealShuffle();
+  
+  // Keep track of the last successfully loaded data to show during transitions
+  const lastLoadedDataRef = useRef(mealPlanState.currentWeekPlan);
+  const [isWeekTransition, setIsWeekTransition] = useState(false);
 
-  const {
-    showExchangeDialog,
-    selectedMeal,
-    openExchangeDialog,
-    closeExchangeDialog,
-    showAIDialog,
-    setShowAIDialog,
-    showRecipeDialog,
-    setShowRecipeDialog,
-    showAddSnackDialog,
-    setShowAddSnackDialog,
-    showShoppingListDialog,
-    setShowShoppingListDialog,
-    aiPreferences,
-    openRecipeDialog,
-    closeAllDialogs
-  } = useMealPlanDialogs();
+  // Update the ref when we have new data and not loading
+  if (mealPlanState.currentWeekPlan && !mealPlanState.isLoading) {
+    lastLoadedDataRef.current = mealPlanState.currentWeekPlan;
+    if (isWeekTransition) {
+      setIsWeekTransition(false);
+    }
+  }
 
-  const { handleExchangeMeal, handleViewMeal } = useMealPlanHandlers(
-    (meal) => {
-      // Handle view meal
-      console.log('View meal:', meal);
-    },
-    openExchangeDialog
-  );
-
-  const handleMealExchanged = () => {
-    refetch();
-    closeExchangeDialog();
+  // Enhanced shuffle handler
+  const handleShuffle = async () => {
+    if (!mealPlanState.currentWeekPlan?.weeklyPlan?.id) {
+      console.error('❌ No weekly plan ID available for shuffle');
+      return;
+    }
+    
+    console.log('🔄 Starting enhanced shuffle for plan:', mealPlanState.currentWeekPlan.weeklyPlan.id);
+    const success = await shuffleMeals(mealPlanState.currentWeekPlan.weeklyPlan.id);
+    
+    if (success) {
+      // Refetch the meal plan data to show updated distribution
+      setTimeout(() => {
+        mealPlanState.refetch();
+      }, 1000);
+    }
   };
 
-  if (isLoading) {
+  // Enhanced week change handler that manages loading states
+  const handleWeekChange = async (offset: number) => {
+    console.log('📅 Week change initiated, setting transition state');
+    setIsWeekTransition(true);
+    await mealPlanState.setCurrentWeekOffset(offset);
+  };
+
+  // Determine what data to display
+  const displayData = mealPlanState.currentWeekPlan || lastLoadedDataRef.current;
+  const showLoadingOverlay = mealPlanState.isLoading && displayData;
+
+  // Only show full error state if there's an error and no existing data
+  if (mealPlanState.error && !displayData) {
+    return <ErrorState error={mealPlanState.error} onRetry={mealPlanState.refetch} />;
+  }
+
+  // Only show full loading state on initial load (no existing data)
+  if (mealPlanState.isLoading && !displayData) {
     return <LoadingState />;
   }
 
-  if (error) {
-    return <ErrorState error={error} onRetry={refetch} />;
-  }
-
   return (
-    <div className="space-y-6">
-      <MealPlanContent
-        viewMode="daily"
-        currentWeekPlan={currentWeekPlan}
-        selectedDayNumber={selectedDayNumber}
-        dailyMeals={dailyMeals}
-        totalCalories={totalCalories}
-        totalProtein={totalProtein}
-        targetDayCalories={targetDayCalories}
-        weekStartDate={weekStartDate}
-        currentWeekOffset={currentWeekOffset}
-        isGenerating={isGenerating}
-        onViewMeal={handleViewMeal}
-        onExchangeMeal={handleExchangeMeal}
-        onAddSnack={() => {}}
-        onGenerateAI={generateMealPlan}
-        setCurrentWeekOffset={setCurrentWeekOffset}
-        setSelectedDayNumber={setSelectedDayNumber}
+    <>
+      <div className="space-y-6">
+        <MealPlanHeader 
+          onGenerateAI={() => mealPlanState.openAIDialog()}
+          onShuffle={handleShuffle}
+          onShowShoppingList={() => mealPlanState.openShoppingListDialog()}
+          onRegeneratePlan={() => mealPlanState.openAIDialog()}
+          isGenerating={mealPlanState.isGenerating}
+          isShuffling={isShuffling}
+          hasWeeklyPlan={!!displayData?.weeklyPlan}
+        />
+        
+        <MealPlanNavigation 
+          currentWeekOffset={mealPlanState.currentWeekOffset}
+          onWeekChange={handleWeekChange}
+          selectedDayNumber={mealPlanState.selectedDayNumber}
+          onDayChange={mealPlanState.setSelectedDayNumber}
+          weekStartDate={mealPlanState.weekStartDate}
+        />
+        
+        {/* Content Area with Smart Loading Overlay */}
+        <div className="relative">
+          {/* Loading Overlay - Shows during week transitions */}
+          {showLoadingOverlay && (
+            <div className="absolute inset-0 bg-white/90 backdrop-blur-sm z-20 flex items-center justify-center rounded-lg min-h-[500px]">
+              <div className="flex flex-col items-center gap-3 bg-white rounded-lg shadow-lg p-6">
+                <Loader2 className="w-8 h-8 animate-spin text-violet-600" />
+                <p className="text-sm text-gray-700 font-medium">Loading week data...</p>
+              </div>
+            </div>
+          )}
+          
+          {/* Main Content - Always rendered with last known data */}
+          <div className={`transition-opacity duration-200 ${showLoadingOverlay ? 'opacity-30' : 'opacity-100'}`}>
+            <MealPlanContent
+              viewMode="daily"
+              currentWeekPlan={displayData}
+              selectedDayNumber={mealPlanState.selectedDayNumber}
+              dailyMeals={mealPlanState.dailyMeals}
+              totalCalories={mealPlanState.totalCalories}
+              totalProtein={mealPlanState.totalProtein}
+              targetDayCalories={mealPlanState.targetDayCalories}
+              weekStartDate={mealPlanState.weekStartDate}
+              currentWeekOffset={mealPlanState.currentWeekOffset}
+              isGenerating={mealPlanState.isGenerating}
+              onViewMeal={(meal) => mealPlanState.openRecipeDialog(meal)}
+              onExchangeMeal={(meal) => mealPlanState.openExchangeDialog(meal)}
+              onAddSnack={() => mealPlanState.openAddSnackDialog()}
+              onGenerateAI={() => mealPlanState.openAIDialog()}
+              setCurrentWeekOffset={handleWeekChange}
+              setSelectedDayNumber={mealPlanState.setSelectedDayNumber}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* AI Loading Dialog - Step-by-step loading experience */}
+      <MealPlanAILoadingDialog 
+        isGenerating={mealPlanState.isGenerating}
+        onClose={() => {}} // Can't be closed during generation
       />
 
-      {/* New Enhanced Meal Exchange Dialog */}
-      <MealExchangeDialog
-        isOpen={showExchangeDialog}
-        onClose={closeExchangeDialog}
-        meal={selectedMeal}
-        onExchangeComplete={handleMealExchanged}
+      {/* Modern Shopping List Drawer - Complete revamped experience */}
+      <ModernShoppingListDrawer
+        isOpen={mealPlanState.showShoppingListDialog}
+        onClose={() => mealPlanState.closeShoppingListDialog()}
+        weeklyPlan={mealPlanState.currentWeekPlan}
+        weekId={mealPlanState.currentWeekPlan?.weeklyPlan?.id}
+        onShoppingListUpdate={() => {
+          console.log('🛒 Shopping list updated');
+          mealPlanState.refetch();
+        }}
       />
 
-      {/* Other dialogs... */}
-    </div>
+      {/* All other dialogs - Shopping list now handled by ModernShoppingListDrawer above */}
+      <MealPlanDialogs
+        showAIDialog={mealPlanState.showAIDialog}
+        setShowAIDialog={mealPlanState.closeAIDialog}
+        showRecipeDialog={mealPlanState.showRecipeDialog}
+        setShowRecipeDialog={mealPlanState.closeRecipeDialog}
+        showExchangeDialog={mealPlanState.showExchangeDialog}
+        setShowExchangeDialog={mealPlanState.closeExchangeDialog}
+        showAddSnackDialog={mealPlanState.showAddSnackDialog}
+        setShowAddSnackDialog={mealPlanState.closeAddSnackDialog}
+        showShoppingListDialog={false}
+        setShowShoppingListDialog={() => {}}
+        selectedMeal={mealPlanState.selectedMeal}
+        selectedMealIndex={mealPlanState.selectedMealIndex}
+        aiPreferences={mealPlanState.aiPreferences}
+        setAiPreferences={mealPlanState.updateAIPreferences}
+        handleGenerateAI={mealPlanState.handleGenerateAIPlan}
+        onRefetch={mealPlanState.refetch}
+        mealPlanData={mealPlanState.currentWeekPlan}
+        selectedDayNumber={mealPlanState.selectedDayNumber}
+        weekStartDate={mealPlanState.weekStartDate}
+      />
+    </>
   );
 };
