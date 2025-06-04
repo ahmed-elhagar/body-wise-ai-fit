@@ -18,7 +18,8 @@ import {
   Star,
   Crown,
   Calendar,
-  X
+  X,
+  Settings
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -48,6 +49,8 @@ const EnhancedUsersTable = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isGenerationDialogOpen, setIsGenerationDialogOpen] = useState(false);
+  const [newGenerationLimit, setNewGenerationLimit] = useState("");
   const queryClient = useQueryClient();
 
   const fetchUsers = async () => {
@@ -123,7 +126,6 @@ const EnhancedUsersTable = () => {
       if (error) throw error;
 
       toast.success('User role updated successfully');
-      // Refresh the data immediately after update
       await fetchUsers();
       setIsEditDialogOpen(false);
       setSelectedUser(null);
@@ -135,15 +137,39 @@ const EnhancedUsersTable = () => {
     }
   };
 
+  const updateGenerationLimit = async (userId: string, newLimit: number) => {
+    setActionLoading(`generation-${userId}`);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ 
+          ai_generations_remaining: newLimit,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      toast.success(`AI generation limit updated to ${newLimit}`);
+      await fetchUsers();
+      setIsGenerationDialogOpen(false);
+      setSelectedUser(null);
+      setNewGenerationLimit("");
+    } catch (error) {
+      console.error('Error updating generation limit:', error);
+      toast.error('Failed to update generation limit');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   const createSubscription = async (userId: string) => {
     setActionLoading(`sub-${userId}`);
     try {
-      // Create a 1-month subscription
       const startDate = new Date();
       const endDate = new Date();
       endDate.setMonth(endDate.getMonth() + 1);
 
-      // First check if user has an existing subscription
       const { data: existingSub } = await supabase
         .from('subscriptions')
         .select('*')
@@ -151,7 +177,6 @@ const EnhancedUsersTable = () => {
         .single();
 
       if (existingSub) {
-        // Update existing subscription
         const { error } = await supabase
           .from('subscriptions')
           .update({
@@ -166,7 +191,6 @@ const EnhancedUsersTable = () => {
 
         if (error) throw error;
       } else {
-        // Create new subscription
         const { error } = await supabase
           .from('subscriptions')
           .insert({
@@ -210,7 +234,6 @@ const EnhancedUsersTable = () => {
       if (error) throw error;
 
       toast.success('Subscription cancelled successfully');
-      // Refresh the data immediately after update
       await fetchUsers();
     } catch (error) {
       console.error('Error cancelling subscription:', error);
@@ -231,7 +254,6 @@ const EnhancedUsersTable = () => {
       if (error) throw error;
 
       toast.success(`AI generations reset to ${newCount}`);
-      // Refresh the data immediately after update
       await fetchUsers();
     } catch (error) {
       console.error('Error resetting AI generations:', error);
@@ -267,6 +289,17 @@ const EnhancedUsersTable = () => {
     return null;
   };
 
+  const handleGenerationLimitSubmit = () => {
+    if (selectedUser && newGenerationLimit) {
+      const limit = parseInt(newGenerationLimit);
+      if (isNaN(limit) || limit < 0) {
+        toast.error('Please enter a valid number (0 or greater)');
+        return;
+      }
+      updateGenerationLimit(selectedUser.id, limit);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -300,9 +333,9 @@ const EnhancedUsersTable = () => {
       <Alert>
         <Shield className="h-4 w-4" />
         <AlertDescription>
-          <strong>Role System:</strong> 'normal', 'coach', and 'admin' roles available. Pro status comes from active subscriptions.
+          <strong>User Management:</strong> Update roles, manage subscriptions, and control AI generation limits directly from the table.
           <br />
-          <strong>Subscription Management:</strong> Create 1-month subscriptions or cancel existing ones.
+          <strong>AI Generation Limits:</strong> Click the settings icon next to AI credits to modify individual user limits.
         </AlertDescription>
       </Alert>
 
@@ -374,8 +407,23 @@ const EnhancedUsersTable = () => {
                           onClick={() => resetAIGenerations(user.id)}
                           disabled={actionLoading === `ai-${user.id}`}
                           className="h-6 w-6 p-0"
+                          title="Reset to 5"
                         >
                           <Star className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setNewGenerationLimit(user.ai_generations_remaining.toString());
+                            setIsGenerationDialogOpen(true);
+                          }}
+                          disabled={actionLoading === `generation-${user.id}`}
+                          className="h-6 w-6 p-0"
+                          title="Set custom limit"
+                        >
+                          <Settings className="h-3 w-3" />
                         </Button>
                       </div>
                     </TableCell>
@@ -469,6 +517,57 @@ const EnhancedUsersTable = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* AI Generation Limit Dialog */}
+      <Dialog open={isGenerationDialogOpen} onOpenChange={setIsGenerationDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Update AI Generation Limit</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>User</Label>
+              <Input 
+                value={selectedUser ? `${selectedUser.first_name} ${selectedUser.last_name} (${selectedUser.email})` : ''} 
+                disabled 
+              />
+            </div>
+            <div>
+              <Label>Current Limit</Label>
+              <Input value={selectedUser?.ai_generations_remaining || 0} disabled />
+            </div>
+            <div>
+              <Label>New Limit</Label>
+              <Input
+                type="number"
+                min="0"
+                value={newGenerationLimit}
+                onChange={(e) => setNewGenerationLimit(e.target.value)}
+                placeholder="Enter new generation limit"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button
+                onClick={handleGenerationLimitSubmit}
+                disabled={actionLoading === `generation-${selectedUser?.id}` || !newGenerationLimit}
+                className="flex-1"
+              >
+                {actionLoading === `generation-${selectedUser?.id}` ? 'Updating...' : 'Update Limit'}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsGenerationDialogOpen(false);
+                  setSelectedUser(null);
+                  setNewGenerationLimit("");
+                }}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

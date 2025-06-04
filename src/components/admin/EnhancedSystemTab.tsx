@@ -12,7 +12,6 @@ import {
   Users,
   Trash2,
   RotateCcw,
-  AlertTriangle,
   CheckCircle,
   Activity,
   Globe,
@@ -24,7 +23,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import SystemHealthMonitor from './SystemHealthMonitor';
-import UserGenerationManager from './UserGenerationManager';
 import { FeatureFlagToggle } from './FeatureFlagToggle';
 
 const EnhancedSystemTab = () => {
@@ -338,8 +336,6 @@ const EnhancedSystemTab = () => {
         <FeatureFlagToggle />
         <SystemHealthMonitor />
       </div>
-      
-      <UserGenerationManager />
     </div>
   );
 };
