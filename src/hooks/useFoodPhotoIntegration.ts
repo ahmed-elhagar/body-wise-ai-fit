@@ -39,7 +39,7 @@ export const useFoodPhotoIntegration = () => {
       formData.append('image', imageFile);
       formData.append('userId', user.id);
 
-      const { data, error } = await supabase.functions.invoke('analyze-food-photo', {
+      const { data, error } = await supabase.functions.invoke('analyze-food-image', {
         body: formData
       });
 
