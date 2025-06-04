@@ -19,7 +19,25 @@ serve(async (req) => {
   }
 
   try {
-    const { imageBase64, userId } = await req.json();
+    console.log('=== FOOD IMAGE ANALYSIS START ===');
+    
+    // Parse FormData from request
+    const formData = await req.formData();
+    const imageFile = formData.get('image') as File;
+    const userId = formData.get('userId') as string;
+
+    if (!imageFile || !userId) {
+      console.error('Missing image file or userId');
+      throw new Error('Missing image file or userId');
+    }
+
+    console.log('User ID:', userId);
+    console.log('Image file:', imageFile.name, 'Size:', imageFile.size);
+
+    // Convert image file to base64
+    const imageArrayBuffer = await imageFile.arrayBuffer();
+    const imageBase64 = `data:${imageFile.type};base64,` + btoa(String.fromCharCode(...new Uint8Array(imageArrayBuffer)));
+
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
     const googleApiKey = Deno.env.get('GOOGLE_API_KEY');
@@ -27,10 +45,6 @@ serve(async (req) => {
     if (!openAIApiKey) {
       throw new Error('OpenAI API key not configured');
     }
-
-    console.log('=== FOOD IMAGE ANALYSIS START ===');
-    console.log('User ID:', userId);
-    console.log('Image size:', imageBase64?.length || 0);
 
     // Enhanced prompt to match our unified database structure
     const prompt = `Analyze this food image and return ONLY a JSON object with this exact structure:
