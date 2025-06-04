@@ -17,19 +17,35 @@ const FoodTracker = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isAddFoodOpen, setIsAddFoodOpen] = useState(false);
+  const [preSelectedFood, setPreSelectedFood] = useState<any>(null);
   const { refetch } = useFoodConsumption();
 
-  // Handle analyzed food from Calorie Checker
+  // Handle analyzed food from Calorie Checker or AI Scanner
   useEffect(() => {
-    if (location.state?.analyzedFood && location.state?.openAddDialog) {
-      setIsAddFoodOpen(true);
+    console.log('📍 FoodTracker location state:', location.state);
+    
+    if (location.state?.analyzedFood) {
+      console.log('🍕 Received analyzed food:', location.state.analyzedFood);
+      setPreSelectedFood(location.state.analyzedFood);
+      
+      if (location.state?.openAddDialog) {
+        setIsAddFoodOpen(true);
+      }
+      
       // Clear the state to prevent reopening on future navigations
       navigate(location.pathname, { replace: true, state: {} });
     }
   }, [location.state, navigate, location.pathname]);
 
   const handleFoodAdded = () => {
+    setIsAddFoodOpen(false);
+    setPreSelectedFood(null);
     refetch();
+  };
+
+  const handleOpenAddDialog = () => {
+    setPreSelectedFood(null);
+    setIsAddFoodOpen(true);
   };
 
   return (
@@ -62,7 +78,7 @@ const FoodTracker = () => {
                 </Button>
                 
                 <Button
-                  onClick={() => setIsAddFoodOpen(true)}
+                  onClick={handleOpenAddDialog}
                   className="bg-green-600 hover:bg-green-700 text-white"
                 >
                   <Plus className="w-4 h-4 mr-2" />
@@ -100,9 +116,12 @@ const FoodTracker = () => {
             {/* Add Food Dialog */}
             <AddFoodDialog
               isOpen={isAddFoodOpen}
-              onClose={() => setIsAddFoodOpen(false)}
+              onClose={() => {
+                setIsAddFoodOpen(false);
+                setPreSelectedFood(null);
+              }}
               onFoodAdded={handleFoodAdded}
-              preSelectedFood={location.state?.analyzedFood}
+              preSelectedFood={preSelectedFood}
             />
           </div>
         </div>

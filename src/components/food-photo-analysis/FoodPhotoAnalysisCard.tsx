@@ -7,6 +7,7 @@ import { Camera, Upload, Loader2, Utensils, AlertCircle, Zap } from "lucide-reac
 import { useFoodPhotoIntegration } from "@/hooks/useFoodPhotoIntegration";
 import { useCreditSystem } from "@/hooks/useCreditSystem";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 interface FoodPhotoAnalysisCardProps {
@@ -18,8 +19,9 @@ const FoodPhotoAnalysisCard = ({ onFoodSelected, className = "" }: FoodPhotoAnal
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
   
-  const { analyzePhotoFood, isAnalyzing, analysisResult, error } = useFoodPhotoIntegration();
+  const { analyzePhotoFood, isAnalyzing, analysisResult, error, convertToFoodItem } = useFoodPhotoIntegration();
   const { userCredits } = useCreditSystem();
   const { t } = useLanguage();
 
@@ -65,8 +67,25 @@ const FoodPhotoAnalysisCard = ({ onFoodSelected, className = "" }: FoodPhotoAnal
   };
 
   const handleSelectFood = (food: any) => {
+    console.log('🎯 Food selected:', food);
+    
     if (onFoodSelected) {
-      onFoodSelected(food);
+      // Convert and pass to parent component
+      const standardizedFood = convertToFoodItem(food);
+      onFoodSelected(standardizedFood);
+    } else {
+      // Navigate to food tracker with the analyzed food
+      const standardizedFood = convertToFoodItem(food);
+      console.log('🔄 Navigating to food tracker with food:', standardizedFood);
+      
+      toast.success(t('Food analyzed! Adding to tracker...'));
+      
+      navigate('/food-tracker', { 
+        state: { 
+          analyzedFood: standardizedFood,
+          openAddDialog: true 
+        } 
+      });
     }
   };
 
