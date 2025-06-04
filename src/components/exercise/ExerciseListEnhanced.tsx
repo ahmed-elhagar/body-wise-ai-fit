@@ -8,7 +8,7 @@ import { RestDayCard } from "./RestDayCard";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, Timer, List } from "lucide-react";
-import { useState, useCallback, useMemo } from "react";
+import { useState } from "react";
 import { CustomExerciseDialog } from "./CustomExerciseDialog";
 
 interface ExerciseListEnhancedProps {
@@ -39,43 +39,6 @@ export const ExerciseListEnhanced = ({
   const dailyWorkoutId = currentProgram?.daily_workouts?.find(
     (workout: any) => workout.day_number === selectedDayNumber
   )?.id;
-
-  // Memoize completed/total counts to prevent unnecessary re-renders
-  const { completedCount, totalCount } = useMemo(() => {
-    const completed = exercises.filter(ex => ex.completed).length;
-    const total = exercises.length;
-    return { completedCount: completed, totalCount: total };
-  }, [exercises]);
-
-  // Debounced handlers to prevent rapid multiple calls
-  const handleExerciseComplete = useCallback(async (exerciseId: string) => {
-    console.log('🎯 ExerciseListEnhanced - Exercise completed:', exerciseId);
-    try {
-      await onExerciseComplete(exerciseId);
-    } catch (error) {
-      console.error('❌ Error in exercise completion:', error);
-    }
-  }, [onExerciseComplete]);
-
-  const handleExerciseProgressUpdate = useCallback(async (
-    exerciseId: string, 
-    sets: number, 
-    reps: string, 
-    notes?: string, 
-    weight?: number
-  ) => {
-    console.log('📊 ExerciseListEnhanced - Progress updated:', { exerciseId, sets, reps, notes, weight });
-    try {
-      await onExerciseProgressUpdate(exerciseId, sets, reps, notes, weight);
-    } catch (error) {
-      console.error('❌ Error in progress update:', error);
-    }
-  }, [onExerciseProgressUpdate]);
-
-  const handleSessionComplete = useCallback(() => {
-    console.log('🏆 Workout session completed!');
-    // Additional session completion logic can be added here
-  }, []);
 
   if (isLoading) {
     return (
@@ -119,6 +82,24 @@ export const ExerciseListEnhanced = ({
       </Card>
     );
   }
+
+  const handleSessionComplete = () => {
+    console.log('🏆 Workout session completed!');
+    // Additional session completion logic can be added here
+  };
+
+  const completedCount = exercises.filter(ex => ex.completed).length;
+  const totalCount = exercises.length;
+
+  const handleExerciseComplete = (exerciseId: string) => {
+    console.log('🎯 ExerciseListEnhanced - Exercise completed:', exerciseId);
+    onExerciseComplete(exerciseId);
+  };
+
+  const handleExerciseProgressUpdate = (exerciseId: string, sets: number, reps: string, notes?: string, weight?: number) => {
+    console.log('📊 ExerciseListEnhanced - Progress updated:', { exerciseId, sets, reps, notes, weight });
+    onExerciseProgressUpdate(exerciseId, sets, reps, notes, weight);
+  };
 
   return (
     <div className="space-y-6">
@@ -172,11 +153,11 @@ export const ExerciseListEnhanced = ({
       {/* Session Mode - Enhanced workout experience */}
       {viewMode === 'session' && (
         <div className="space-y-4">
-          {/* Workout Session Manager - Only for session tracking, not exercise handling */}
+          {/* Workout Session Manager */}
           <WorkoutSessionManager
             exercises={exercises}
-            onExerciseComplete={() => {}} // Empty - let ExerciseProgressCard handle this
-            onExerciseProgressUpdate={() => {}} // Empty - let ExerciseProgressCard handle this
+            onExerciseComplete={handleExerciseComplete}
+            onExerciseProgressUpdate={handleExerciseProgressUpdate}
             onSessionComplete={handleSessionComplete}
           />
           
