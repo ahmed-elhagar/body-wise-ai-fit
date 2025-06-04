@@ -18,6 +18,8 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Exercise } from '@/types/exercise';
+import { ExerciseActionsMenu } from './ExerciseActionsMenu';
+import { ExerciseVideoDialog } from './ExerciseVideoDialog';
 
 interface ExerciseProgressCardProps {
   exercise: Exercise;
@@ -53,6 +55,7 @@ export const ExerciseProgressCard = ({
   const [currentTimer, setCurrentTimer] = useState(exercise.rest_seconds || 60);
   const [notes, setNotes] = useState(exercise.notes || '');
   const [showWeightInput, setShowWeightInput] = useState(false);
+  const [showVideoDialog, setShowVideoDialog] = useState(false);
 
   const completedSets = setsProgress.filter(set => set.completed).length;
   const totalSets = exercise.sets || 3;
@@ -123,184 +126,199 @@ export const ExerciseProgressCard = ({
   };
 
   return (
-    <Card className={`p-4 transition-all duration-200 ${
-      isActive ? 'ring-2 ring-blue-500 bg-blue-50' : ''
-    } ${exercise.completed ? 'bg-green-50 border-green-200' : ''}`}>
-      {/* Exercise Header */}
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="font-semibold text-gray-900">{exercise.name}</h3>
-            {exercise.completed && (
-              <Badge variant="default" className="bg-green-600">
-                <CheckCircle className="w-3 h-3 mr-1" />
-                {t('Completed')}
-              </Badge>
-            )}
-          </div>
-          <div className="flex items-center gap-4 text-sm text-gray-600">
-            <span className="flex items-center gap-1">
-              <Target className="w-4 h-4" />
-              {totalSets} {t('sets')} × {exercise.reps} {t('reps')}
-            </span>
-            {exercise.equipment && (
-              <span className="text-blue-600">
-                {exercise.equipment}
+    <>
+      <Card className={`p-4 transition-all duration-200 ${
+        isActive ? 'ring-2 ring-blue-500 bg-blue-50' : ''
+      } ${exercise.completed ? 'bg-green-50 border-green-200' : ''}`}>
+        {/* Exercise Header */}
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="font-semibold text-gray-900">{exercise.name}</h3>
+              {exercise.completed && (
+                <Badge variant="default" className="bg-green-600">
+                  <CheckCircle className="w-3 h-3 mr-1" />
+                  {t('Completed')}
+                </Badge>
+              )}
+            </div>
+            <div className="flex items-center gap-4 text-sm text-gray-600">
+              <span className="flex items-center gap-1">
+                <Target className="w-4 h-4" />
+                {totalSets} {t('sets')} × {exercise.reps} {t('reps')}
               </span>
-            )}
+              {exercise.equipment && (
+                <span className="text-blue-600">
+                  {exercise.equipment}
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-1">
+            <ExerciseActionsMenu
+              exercise={exercise}
+              onShowVideo={() => setShowVideoDialog(true)}
+            />
+            <Button
+              variant={isActive ? "default" : "outline"}
+              size="sm"
+              onClick={onSetActive}
+              className="shrink-0"
+            >
+              {isActive ? (
+                <>
+                  <Pause className="w-4 h-4 mr-1" />
+                  {t('Active')}
+                </>
+              ) : (
+                <>
+                  <Play className="w-4 h-4 mr-1" />
+                  {t('Start')}
+                </>
+              )}
+            </Button>
           </div>
         </div>
-        <Button
-          variant={isActive ? "default" : "outline"}
-          size="sm"
-          onClick={onSetActive}
-          className="shrink-0"
-        >
-          {isActive ? (
-            <>
-              <Pause className="w-4 h-4 mr-1" />
-              {t('Active')}
-            </>
-          ) : (
-            <>
-              <Play className="w-4 h-4 mr-1" />
-              {t('Start')}
-            </>
-          )}
-        </Button>
-      </div>
 
-      {/* Progress Bar */}
-      <div className="mb-4">
-        <div className="flex items-center justify-between text-sm mb-1">
-          <span className="text-gray-600">{t('Progress')}</span>
-          <span className="font-medium">{completedSets}/{totalSets} {t('sets')}</span>
+        {/* Progress Bar */}
+        <div className="mb-4">
+          <div className="flex items-center justify-between text-sm mb-1">
+            <span className="text-gray-600">{t('Progress')}</span>
+            <span className="font-medium">{completedSets}/{totalSets} {t('sets')}</span>
+          </div>
+          <Progress value={progressPercentage} className="h-2" />
         </div>
-        <Progress value={progressPercentage} className="h-2" />
-      </div>
 
-      {/* Sets Tracking */}
-      {isActive && (
-        <div className="space-y-3 mb-4">
-          <div className="flex items-center justify-between">
-            <h4 className="font-medium text-gray-900">{t('Sets')}</h4>
+        {/* Sets Tracking */}
+        {isActive && (
+          <div className="space-y-3 mb-4">
+            <div className="flex items-center justify-between">
+              <h4 className="font-medium text-gray-900">{t('Sets')}</h4>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowWeightInput(!showWeightInput)}
+                className="text-xs"
+              >
+                <TrendingUp className="w-3 h-3 mr-1" />
+                {showWeightInput ? t('Hide Weight') : t('Add Weight')}
+              </Button>
+            </div>
+            
+            <div className="grid gap-2">
+              {setsProgress.map((set, index) => (
+                <div 
+                  key={index}
+                  className={`flex items-center gap-2 p-2 rounded-lg border ${
+                    set.completed ? 'bg-green-50 border-green-200' : 'bg-gray-50'
+                  }`}
+                >
+                  <Button
+                    variant={set.completed ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleSetComplete(index)}
+                    className="w-8 h-8 p-0"
+                  >
+                    {set.completed ? (
+                      <CheckCircle className="w-4 h-4" />
+                    ) : (
+                      <span className="text-xs">{index + 1}</span>
+                    )}
+                  </Button>
+                  
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-6 h-6 p-0"
+                      onClick={() => updateSetReps(index, -1)}
+                    >
+                      <Minus className="w-3 h-3" />
+                    </Button>
+                    <span className="w-8 text-center text-sm font-medium">
+                      {set.reps}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-6 h-6 p-0"
+                      onClick={() => updateSetReps(index, 1)}
+                    >
+                      <Plus className="w-3 h-3" />
+                    </Button>
+                    <span className="text-xs text-gray-500">{t('reps')}</span>
+                  </div>
+
+                  {showWeightInput && (
+                    <div className="flex items-center gap-1 ml-2">
+                      <Input
+                        type="number"
+                        placeholder="kg"
+                        value={set.weight || ''}
+                        onChange={(e) => updateSetWeight(index, parseFloat(e.target.value) || 0)}
+                        className="w-16 h-6 text-xs"
+                      />
+                      <span className="text-xs text-gray-500">kg</span>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Rest Timer */}
+        {isActive && isTimerRunning && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Timer className="w-4 h-4 text-blue-600" />
+                <span className="text-sm font-medium text-blue-800">{t('Rest Time')}</span>
+              </div>
+              <div className="text-lg font-bold text-blue-800">
+                {formatTime(currentTimer)}
+              </div>
+            </div>
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setShowWeightInput(!showWeightInput)}
-              className="text-xs"
+              onClick={() => {
+                setIsTimerRunning(false);
+                setCurrentTimer(exercise.rest_seconds || 60);
+              }}
+              className="w-full mt-2 text-blue-600"
             >
-              <TrendingUp className="w-3 h-3 mr-1" />
-              {showWeightInput ? t('Hide Weight') : t('Add Weight')}
+              {t('Skip Rest')}
             </Button>
           </div>
-          
-          <div className="grid gap-2">
-            {setsProgress.map((set, index) => (
-              <div 
-                key={index}
-                className={`flex items-center gap-2 p-2 rounded-lg border ${
-                  set.completed ? 'bg-green-50 border-green-200' : 'bg-gray-50'
-                }`}
-              >
-                <Button
-                  variant={set.completed ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => handleSetComplete(index)}
-                  className="w-8 h-8 p-0"
-                >
-                  {set.completed ? (
-                    <CheckCircle className="w-4 h-4" />
-                  ) : (
-                    <span className="text-xs">{index + 1}</span>
-                  )}
-                </Button>
-                
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-6 h-6 p-0"
-                    onClick={() => updateSetReps(index, -1)}
-                  >
-                    <Minus className="w-3 h-3" />
-                  </Button>
-                  <span className="w-8 text-center text-sm font-medium">
-                    {set.reps}
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-6 h-6 p-0"
-                    onClick={() => updateSetReps(index, 1)}
-                  >
-                    <Plus className="w-3 h-3" />
-                  </Button>
-                  <span className="text-xs text-gray-500">{t('reps')}</span>
-                </div>
+        )}
 
-                {showWeightInput && (
-                  <div className="flex items-center gap-1 ml-2">
-                    <Input
-                      type="number"
-                      placeholder="kg"
-                      value={set.weight || ''}
-                      onChange={(e) => updateSetWeight(index, parseFloat(e.target.value) || 0)}
-                      className="w-16 h-6 text-xs"
-                    />
-                    <span className="text-xs text-gray-500">kg</span>
-                  </div>
-                )}
-              </div>
-            ))}
+        {/* Exercise Instructions */}
+        {exercise.instructions && (
+          <div className="text-sm text-gray-600 mb-3 p-2 bg-gray-50 rounded">
+            <strong>{t('Instructions')}:</strong> {exercise.instructions}
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Rest Timer */}
-      {isActive && isTimerRunning && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Timer className="w-4 h-4 text-blue-600" />
-              <span className="text-sm font-medium text-blue-800">{t('Rest Time')}</span>
-            </div>
-            <div className="text-lg font-bold text-blue-800">
-              {formatTime(currentTimer)}
-            </div>
+        {/* Notes */}
+        {isActive && (
+          <div className="mt-3">
+            <Input
+              placeholder={t('Add notes about this exercise...')}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="text-sm"
+            />
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setIsTimerRunning(false);
-              setCurrentTimer(exercise.rest_seconds || 60);
-            }}
-            className="w-full mt-2 text-blue-600"
-          >
-            {t('Skip Rest')}
-          </Button>
-        </div>
-      )}
+        )}
+      </Card>
 
-      {/* Exercise Instructions */}
-      {exercise.instructions && (
-        <div className="text-sm text-gray-600 mb-3 p-2 bg-gray-50 rounded">
-          <strong>{t('Instructions')}:</strong> {exercise.instructions}
-        </div>
-      )}
-
-      {/* Notes */}
-      {isActive && (
-        <div className="mt-3">
-          <Input
-            placeholder={t('Add notes about this exercise...')}
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            className="text-sm"
-          />
-        </div>
-      )}
-    </Card>
+      {/* Video Dialog */}
+      <ExerciseVideoDialog
+        exercise={exercise}
+        open={showVideoDialog}
+        onOpenChange={setShowVideoDialog}
+      />
+    </>
   );
 };

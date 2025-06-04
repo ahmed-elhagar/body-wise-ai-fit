@@ -4,6 +4,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Exercise } from '@/types/exercise';
 import { ExerciseProgressCard } from './ExerciseProgressCard';
 import { WorkoutSessionManager } from './WorkoutSessionManager';
+import { CustomExerciseDialog } from './CustomExerciseDialog';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -12,7 +13,8 @@ import {
   List, 
   Timer,
   Target,
-  TrendingUp 
+  TrendingUp,
+  Plus
 } from 'lucide-react';
 
 interface EnhancedExerciseListContainerProps {
@@ -46,6 +48,12 @@ export const EnhancedExerciseListContainer = ({
   const { t } = useLanguage();
   const [viewMode, setViewMode] = useState<'session' | 'list'>('session');
   const [activeExerciseId, setActiveExerciseId] = useState<string | null>(null);
+  const [showCustomExerciseDialog, setShowCustomExerciseDialog] = useState(false);
+
+  // Get the daily workout ID for the selected day
+  const dailyWorkoutId = currentProgram?.daily_workouts?.find(
+    (workout: any) => workout.day_number === selectedDayNumber
+  )?.id;
 
   if (isRestDay) {
     return (
@@ -86,9 +94,20 @@ export const EnhancedExerciseListContainer = ({
         <h3 className="text-lg font-medium text-gray-900 mb-2">
           {t('No exercises for today')}
         </h3>
-        <p className="text-gray-600">
+        <p className="text-gray-600 mb-4">
           {t('Check back later or generate a new workout program')}
         </p>
+        
+        {/* Add Custom Exercise Button */}
+        {dailyWorkoutId && (
+          <Button
+            onClick={() => setShowCustomExerciseDialog(true)}
+            className="flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            {t('Add Custom Exercise')}
+          </Button>
+        )}
       </Card>
     );
   }
@@ -102,94 +121,122 @@ export const EnhancedExerciseListContainer = ({
   const actualTotalCount = exercises.length;
 
   return (
-    <div className="space-y-4">
-      {/* View Mode Toggle */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <h2 className="text-xl font-bold text-gray-900">
-            {t('Today\'s Workout')}
-          </h2>
-          <Badge variant="outline" className="text-sm">
-            {actualCompletedCount}/{actualTotalCount} {t('completed')}
-          </Badge>
-        </div>
-        
-        <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
-          <Button
-            variant={viewMode === 'session' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => setViewMode('session')}
-            className="text-xs"
-          >
-            <Timer className="w-3 h-3 mr-1" />
-            {t('Session')}
-          </Button>
-          <Button
-            variant={viewMode === 'list' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => setViewMode('list')}
-            className="text-xs"
-          >
-            <List className="w-3 h-3 mr-1" />
-            {t('List')}
-          </Button>
-        </div>
-      </div>
-
-      {/* Session Mode */}
-      {viewMode === 'session' && (
-        <>
-          <WorkoutSessionManager
-            exercises={exercises}
-            onExerciseComplete={onExerciseComplete}
-            onExerciseProgressUpdate={onExerciseProgressUpdate}
-            onSessionComplete={handleSessionComplete}
-          />
+    <>
+      <div className="space-y-4">
+        {/* View Mode Toggle */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <h2 className="text-xl font-bold text-gray-900">
+              {t('Today\'s Workout')}
+            </h2>
+            <Badge variant="outline" className="text-sm">
+              {actualCompletedCount}/{actualTotalCount} {t('completed')}
+            </Badge>
+          </div>
           
+          <div className="flex items-center gap-2">
+            {/* Add Custom Exercise Button */}
+            {dailyWorkoutId && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowCustomExerciseDialog(true)}
+                className="flex items-center gap-2 text-xs"
+              >
+                <Plus className="w-3 h-3" />
+                {t('Add Exercise')}
+              </Button>
+            )}
+            
+            <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
+              <Button
+                variant={viewMode === 'session' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('session')}
+                className="text-xs"
+              >
+                <Timer className="w-3 h-3 mr-1" />
+                {t('Session')}
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+                className="text-xs"
+              >
+                <List className="w-3 h-3 mr-1" />
+                {t('List')}
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Session Mode */}
+        {viewMode === 'session' && (
+          <>
+            <WorkoutSessionManager
+              exercises={exercises}
+              onExerciseComplete={onExerciseComplete}
+              onExerciseProgressUpdate={onExerciseProgressUpdate}
+              onSessionComplete={handleSessionComplete}
+            />
+            
+            <div className="space-y-3">
+              {exercises.map((exercise) => (
+                <ExerciseProgressCard
+                  key={exercise.id}
+                  exercise={exercise}
+                  onComplete={onExerciseComplete}
+                  onProgressUpdate={onExerciseProgressUpdate}
+                  isActive={activeExerciseId === exercise.id}
+                  onSetActive={() => setActiveExerciseId(
+                    activeExerciseId === exercise.id ? null : exercise.id
+                  )}
+                />
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* List Mode - Simple view */}
+        {viewMode === 'list' && (
           <div className="space-y-3">
             {exercises.map((exercise) => (
-              <ExerciseProgressCard
-                key={exercise.id}
-                exercise={exercise}
-                onComplete={onExerciseComplete}
-                onProgressUpdate={onExerciseProgressUpdate}
-                isActive={activeExerciseId === exercise.id}
-                onSetActive={() => setActiveExerciseId(
-                  activeExerciseId === exercise.id ? null : exercise.id
-                )}
-              />
+              <Card key={exercise.id} className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium text-gray-900">{exercise.name}</h3>
+                    <div className="text-sm text-gray-600 mt-1">
+                      {exercise.sets} {t('sets')} × {exercise.reps} {t('reps')}
+                      {exercise.equipment && (
+                        <span className="ml-2 text-blue-600">• {exercise.equipment}</span>
+                      )}
+                    </div>
+                  </div>
+                  <Button
+                    variant={exercise.completed ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => onExerciseComplete(exercise.id)}
+                  >
+                    {exercise.completed ? t('Completed') : t('Mark Complete')}
+                  </Button>
+                </div>
+              </Card>
             ))}
           </div>
-        </>
-      )}
+        )}
+      </div>
 
-      {/* List Mode - Simple view */}
-      {viewMode === 'list' && (
-        <div className="space-y-3">
-          {exercises.map((exercise) => (
-            <Card key={exercise.id} className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-medium text-gray-900">{exercise.name}</h3>
-                  <div className="text-sm text-gray-600 mt-1">
-                    {exercise.sets} {t('sets')} × {exercise.reps} {t('reps')}
-                    {exercise.equipment && (
-                      <span className="ml-2 text-blue-600">• {exercise.equipment}</span>
-                    )}
-                  </div>
-                </div>
-                <Button
-                  variant={exercise.completed ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => onExerciseComplete(exercise.id)}
-                >
-                  {exercise.completed ? t('Completed') : t('Mark Complete')}
-                </Button>
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
-    </div>
+      {/* Custom Exercise Dialog */}
+      <CustomExerciseDialog
+        open={showCustomExerciseDialog}
+        onOpenChange={setShowCustomExerciseDialog}
+        dailyWorkoutId={dailyWorkoutId}
+        onExerciseCreated={() => {
+          // Refresh the exercises list
+          window.location.reload();
+        }}
+      />
+    </>
   );
 };
