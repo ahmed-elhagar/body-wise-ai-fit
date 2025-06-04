@@ -2,15 +2,15 @@
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import EnhancedExercisePage from "@/components/exercise/EnhancedExercisePage";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { ExerciseErrorBoundary } from "@/components/exercise/ExerciseErrorBoundary";
 
 const Exercise = () => {
   return (
     <ProtectedRoute>
       <Layout>
-        <ErrorBoundary>
+        <ExerciseErrorBoundary>
           <EnhancedExercisePage />
-        </ErrorBoundary>
+        </ExerciseErrorBoundary>
       </Layout>
     </ProtectedRoute>
   );

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,13 +13,14 @@ import {
   Timer, 
   TrendingUp,
   Target,
-  Clock
+  AlertCircle
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Exercise } from '@/types/exercise';
 import { ExerciseActionsMenu } from './ExerciseActionsMenu';
 import { ExerciseVideoDialog } from './ExerciseVideoDialog';
 import { ExerciseExchangeDialog } from './ExerciseExchangeDialog';
+import { toast } from 'sonner';
 
 interface ExerciseProgressCardProps {
   exercise: Exercise;
@@ -44,7 +44,7 @@ export const ExerciseProgressCard = ({
   isActive = false,
   onSetActive 
 }: ExerciseProgressCardProps) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [setsProgress, setSetsProgress] = useState<SetProgress[]>(
     Array(exercise.sets || 3).fill(null).map(() => ({
       completed: false,
@@ -58,50 +58,124 @@ export const ExerciseProgressCard = ({
   const [showWeightInput, setShowWeightInput] = useState(false);
   const [showVideoDialog, setShowVideoDialog] = useState(false);
   const [showExchangeDialog, setShowExchangeDialog] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [hasError, setHasError] = useState(false);
 
   const completedSets = setsProgress.filter(set => set.completed).length;
   const totalSets = exercise.sets || 3;
   const progressPercentage = (completedSets / totalSets) * 100;
 
-  const handleSetComplete = (setIndex: number) => {
-    const newProgress = [...setsProgress];
-    newProgress[setIndex].completed = !newProgress[setIndex].completed;
-    setSetsProgress(newProgress);
-
-    // Auto-start rest timer if set is completed
-    if (newProgress[setIndex].completed && setIndex < totalSets - 1) {
-      setIsTimerRunning(true);
-      startRestTimer();
+  const handleSetComplete = async (setIndex: number) => {
+    if (isUpdating) {
+      console.log('⚠️ Already updating, skipping duplicate call');
+      return;
     }
+    
+    try {
+      setIsUpdating(true);
+      setHasError(false);
+      
+      const newProgress = [...setsProgress];
+      const wasCompleted = newProgress[setIndex].completed;
+      newProgress[setIndex].completed = !wasCompleted;
+      setSetsProgress(newProgress);
 
-    // Update exercise progress
-    const completedCount = newProgress.filter(set => set.completed).length;
-    const avgWeight = newProgress
-      .filter(set => set.weight)
-      .reduce((sum, set) => sum + (set.weight || 0), 0) / 
-      (newProgress.filter(set => set.weight).length || 1);
+      // Auto-start rest timer if set is completed and not the last set
+      if (!wasCompleted && setIndex < totalSets - 1) {
+        setIsTimerRunning(true);
+        startRestTimer();
+      }
 
-    onProgressUpdate(
-      exercise.id, 
-      completedCount, 
-      newProgress.map(set => set.reps).join('-'),
-      notes,
-      avgWeight || undefined
-    );
+      // Update exercise progress
+      const completedCount = newProgress.filter(set => set.completed).length;
+      const avgWeight = newProgress
+        .filter(set => set.weight)
+        .reduce((sum, set) => sum + (set.weight || 0), 0) / 
+        (newProgress.filter(set => set.weight).length || 1);
 
-    // Mark exercise as complete if all sets are done
-    if (completedCount === totalSets) {
-      console.log('🏆 All sets completed, marking exercise as complete');
-      handleExerciseComplete();
+      await onProgressUpdate(
+        exercise.id, 
+        completedCount, 
+        newProgress.map(set => set.reps).join('-'),
+        notes,
+        avgWeight || undefined
+      );
+
+      // Mark exercise as complete if all sets are done
+      if (completedCount === totalSets) {
+        console.log('🏆 All sets completed, marking exercise as complete');
+        await handleExerciseComplete();
+      }
+
+      // Show success feedback
+      const successMessage = language === 'ar'
+        ? `تم إكمال المجموعة ${setIndex + 1}`
+        : `Set ${setIndex + 1} completed`;
+      
+      toast.success(successMessage, { duration: 2000 });
+
+    } catch (error: any) {
+      console.error('❌ Error updating set progress:', error);
+      setHasError(true);
+      
+      // Revert the local state on error
+      setSetsProgress(prev => {
+        const reverted = [...prev];
+        reverted[setIndex].completed = !reverted[setIndex].completed;
+        return reverted;
+      });
+
+      // Show error message
+      const errorMessage = language === 'ar'
+        ? 'فشل في تحديث المجموعة. يرجى المحاولة مرة أخرى.'
+        : 'Failed to update set. Please try again.';
+      
+      toast.error(errorMessage);
+      
+    } finally {
+      setIsUpdating(false);
     }
   };
 
-  const handleExerciseComplete = () => {
+  const handleExerciseComplete = async () => {
+    if (isUpdating) {
+      console.log('⚠️ Already updating, skipping duplicate call');
+      return;
+    }
+    
     try {
+      setIsUpdating(true);
+      setHasError(false);
+      
       console.log('✅ Marking exercise complete:', exercise.id);
-      onComplete(exercise.id);
-    } catch (error) {
+      await onComplete(exercise.id);
+      
+      // Show success message
+      const successMessage = language === 'ar'
+        ? 'تم إكمال التمرين بنجاح!'
+        : 'Exercise completed successfully!';
+      
+      toast.success(successMessage, { duration: 3000 });
+      
+    } catch (error: any) {
       console.error('❌ Error completing exercise:', error);
+      setHasError(true);
+      
+      // Show error message based on error type
+      let errorMessage = language === 'ar'
+        ? 'فشل في إكمال التمرين. يرجى المحاولة مرة أخرى.'
+        : 'Failed to complete exercise. Please try again.';
+
+      if (error.message?.includes('timeout') || error.code === '57014') {
+        errorMessage = language === 'ar'
+          ? 'انتهت مهلة الطلب. يرجى التحقق من الاتصال والمحاولة مرة أخرى.'
+          : 'Request timed out. Please check your connection and try again.';
+      }
+      
+      toast.error(errorMessage);
+      
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -112,6 +186,11 @@ export const ExerciseProgressCard = ({
           clearInterval(timer);
           setIsTimerRunning(false);
           setCurrentTimer(exercise.rest_seconds || 60);
+          
+          // Show timer completion notification
+          const message = language === 'ar' ? 'انتهى وقت الراحة!' : 'Rest time is over!';
+          toast.info(message, { duration: 3000 });
+          
           return 0;
         }
         return prev - 1;
@@ -141,7 +220,9 @@ export const ExerciseProgressCard = ({
     <>
       <Card className={`p-4 transition-all duration-200 ${
         isActive ? 'ring-2 ring-blue-500 bg-blue-50' : ''
-      } ${exercise.completed ? 'bg-green-50 border-green-200' : ''}`}>
+      } ${exercise.completed ? 'bg-green-50 border-green-200' : ''} ${
+        hasError ? 'border-red-200 bg-red-50' : ''
+      }`}>
         {/* Exercise Header */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1">
@@ -151,6 +232,12 @@ export const ExerciseProgressCard = ({
                 <Badge variant="default" className="bg-green-600">
                   <CheckCircle className="w-3 h-3 mr-1" />
                   {t('Completed')}
+                </Badge>
+              )}
+              {hasError && (
+                <Badge variant="destructive" className="bg-red-600">
+                  <AlertCircle className="w-3 h-3 mr-1" />
+                  {language === 'ar' ? 'خطأ' : 'Error'}
                 </Badge>
               )}
             </div>
@@ -177,6 +264,7 @@ export const ExerciseProgressCard = ({
               size="sm"
               onClick={onSetActive}
               className="shrink-0"
+              disabled={isUpdating}
             >
               {isActive ? (
                 <>
@@ -207,10 +295,20 @@ export const ExerciseProgressCard = ({
           <div className="mb-4">
             <Button
               onClick={handleExerciseComplete}
-              className="w-full bg-green-600 hover:bg-green-700 text-white"
+              disabled={isUpdating}
+              className="w-full bg-green-600 hover:bg-green-700 text-white disabled:opacity-50"
             >
-              <CheckCircle className="w-4 h-4 mr-2" />
-              {t('Mark as Complete')}
+              {isUpdating ? (
+                <>
+                  <Timer className="w-4 h-4 mr-2 animate-spin" />
+                  {language === 'ar' ? 'جاري التحديث...' : 'Updating...'}
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  {t('Mark as Complete')}
+                </>
+              )}
             </Button>
           </div>
         )}
@@ -243,6 +341,7 @@ export const ExerciseProgressCard = ({
                     variant={set.completed ? "default" : "outline"}
                     size="sm"
                     onClick={() => handleSetComplete(index)}
+                    disabled={isUpdating}
                     className="w-8 h-8 p-0"
                   >
                     {set.completed ? (
