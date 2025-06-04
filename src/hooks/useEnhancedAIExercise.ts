@@ -1,13 +1,11 @@
 
 import { useState } from 'react';
 import { useAuth } from './useAuth';
-import { useCentralizedCredits } from './useCentralizedCredits';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export const useEnhancedAIExercise = () => {
   const { user } = useAuth();
-  const { remaining: userCredits, isPro, hasCredits, checkAndUseCredit, completeGeneration } = useCentralizedCredits();
   const [isGenerating, setIsGenerating] = useState(false);
 
   const generateExerciseProgram = async (preferences: any) => {
@@ -19,25 +17,11 @@ export const useEnhancedAIExercise = () => {
 
     console.log('🔐 User authenticated:', user.id);
 
-    // Check credits before starting
-    if (!hasCredits) {
-      toast.error('No AI credits remaining. Please upgrade your plan or wait for credits to reset.');
-      return null;
-    }
-
     setIsGenerating(true);
-    let logId: string | undefined;
     
     try {
-      console.log('🏋️ Starting enhanced exercise program generation with preferences:', preferences);
+      console.log('🏋️ Starting exercise program generation with preferences:', preferences);
       
-      // Check and use credit before starting generation
-      const creditResult = await checkAndUseCredit('exercise_program');
-      if (!creditResult.success) {
-        return null;
-      }
-      logId = creditResult.logId;
-
       // Get user profile data for better personalization
       const { data: profile } = await supabase
         .from('profiles')
@@ -96,25 +80,18 @@ export const useEnhancedAIExercise = () => {
 
       if (error) {
         console.error('❌ Exercise generation error:', error);
-        if (logId) await completeGeneration(logId, false);
         throw new Error(error.message || 'Generation failed');
       }
 
       if (data?.success) {
         console.log('✅ Exercise program generated successfully');
-        
-        // Complete the generation process
-        if (logId) await completeGeneration(logId, true, data);
-        
         toast.success('Exercise program generated successfully!');
         return data;
       } else {
-        if (logId) await completeGeneration(logId, false);
         throw new Error(data?.error || 'Generation failed');
       }
     } catch (error) {
       console.error('❌ Exercise program generation failed:', error);
-      if (logId) await completeGeneration(logId, false);
       toast.error(error.message || 'Failed to generate exercise program');
       throw error;
     } finally {
@@ -131,24 +108,10 @@ export const useEnhancedAIExercise = () => {
 
     console.log('🔐 User authenticated for regeneration:', user.id);
 
-    // Check credits before starting
-    if (!hasCredits) {
-      toast.error('No AI credits remaining. Please upgrade your plan or wait for credits to reset.');
-      return null;
-    }
-
     setIsGenerating(true);
-    let logId: string | undefined;
     
     try {
       console.log('🔄 Regenerating exercise program for week:', weekStartDate);
-      
-      // Check and use credit before starting generation
-      const creditResult = await checkAndUseCredit('exercise_program_regenerate');
-      if (!creditResult.success) {
-        return null;
-      }
-      logId = creditResult.logId;
       
       // Get user profile for regeneration
       const { data: profile } = await supabase
@@ -186,25 +149,18 @@ export const useEnhancedAIExercise = () => {
 
       if (error) {
         console.error('❌ Exercise regeneration error:', error);
-        if (logId) await completeGeneration(logId, false);
         throw new Error(error.message || 'Regeneration failed');
       }
 
       if (data?.success) {
         console.log('✅ Exercise program regenerated successfully');
-        
-        // Complete the generation process
-        if (logId) await completeGeneration(logId, true, data);
-        
         toast.success('Exercise program regenerated successfully!');
         return data;
       } else {
-        if (logId) await completeGeneration(logId, false);
         throw new Error(data?.error || 'Regeneration failed');
       }
     } catch (error) {
       console.error('❌ Exercise program regeneration failed:', error);
-      if (logId) await completeGeneration(logId, false);
       toast.error('Failed to regenerate exercise program');
       throw error;
     } finally {
@@ -214,9 +170,6 @@ export const useEnhancedAIExercise = () => {
 
   return {
     isGenerating,
-    userCredits,
-    isPro,
-    hasCredits,
     generateExerciseProgram,
     regenerateProgram
   };

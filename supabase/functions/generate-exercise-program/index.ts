@@ -23,7 +23,6 @@ import {
   errorCodes, 
   ExerciseProgramError 
 } from './enhancedErrorHandling.ts';
-import { enhancedRateLimiting } from './enhancedRateLimiting.ts';
 import { workoutCaching } from './workoutCaching.ts';
 import { enhancedValidation } from './enhancedValidation.ts';
 import { progressAnalytics } from './progressAnalytics.ts';
@@ -33,16 +32,70 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Simple credit checking function
+const checkAndUseCredit = async (supabase: any, userId: string) => {
+  try {
+    // Check if user is Pro (unlimited generations)
+    const { data: subscription } = await supabase
+      .from('subscriptions')
+      .select('status, current_period_end')
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .gt('current_period_end', new Date().toISOString())
+      .maybeSingle();
+
+    const isPro = !!subscription;
+
+    if (isPro) {
+      return { allowed: true, remaining: -1 };
+    }
+
+    // Check user's remaining credits
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('ai_generations_remaining')
+      .eq('id', userId)
+      .single();
+
+    if (profileError) {
+      throw new Error('Failed to check user credits');
+    }
+
+    const remaining = profile.ai_generations_remaining || 0;
+
+    if (remaining <= 0) {
+      return { allowed: false, remaining: 0 };
+    }
+
+    // Decrement credits
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({ 
+        ai_generations_remaining: remaining - 1,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', userId);
+
+    if (updateError) {
+      throw new Error('Failed to update credits');
+    }
+
+    return { allowed: true, remaining: remaining - 1 };
+  } catch (error) {
+    console.error('Credit check failed:', error);
+    throw error;
+  }
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
-  let logId: string | null = null;
   let language = 'en';
 
   try {
-    console.log('=== ENHANCED EXERCISE PROGRAM GENERATION START ===');
+    console.log('=== EXERCISE PROGRAM GENERATION START ===');
     
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -74,16 +127,15 @@ serve(async (req) => {
     enhancedValidation.validateUserProfile(userData);
     enhancedValidation.validateExercisePreferences(preferences);
 
-    // Enhanced rate limiting check
-    const rateLimitResult = await enhancedRateLimiting.checkRateLimit(userData.userId);
+    // Check credits
+    const creditResult = await checkAndUseCredit(supabase, userData.userId);
     
-    if (!rateLimitResult.allowed) {
-      throw createUserFriendlyError(errorCodes.RATE_LIMIT_EXCEEDED, language);
+    if (!creditResult.allowed) {
+      throw createUserFriendlyError(errorCodes.INSUFFICIENT_CREDITS, language);
     }
 
-    console.log('✅ Rate limit check passed:', {
-      remaining: rateLimitResult.remaining,
-      isPro: rateLimitResult.isPro
+    console.log('✅ Credit check passed:', {
+      remaining: creditResult.remaining
     });
 
     // Check for existing similar program (intelligent caching)
@@ -114,17 +166,10 @@ serve(async (req) => {
         adaptedProgram,
         workoutType,
         language,
-        rateLimitResult.remaining,
+        creditResult.remaining,
         true // Indicate this was cached/adapted
       );
     }
-
-    // Use credit and create log entry
-    logId = await enhancedRateLimiting.useCredit(
-      userData.userId,
-      'exercise_program',
-      { userData, preferences, language, workoutType }
-    );
 
     validateWorkoutType(workoutType);
 
@@ -148,7 +193,7 @@ serve(async (req) => {
     const systemMessage = createSystemMessage(workoutType, finalUserLanguage);
     
     try {
-      console.log('🤖 Sending enhanced request to OpenAI...');
+      console.log('🤖 Sending request to OpenAI...');
       const aiResponse = await callOpenAI(openAIApiKey, selectedPrompt, systemMessage);
       const generatedProgram = parseAIResponse(aiResponse);
       
@@ -162,19 +207,7 @@ serve(async (req) => {
 
       const weeklyProgram = await storeWorkoutProgram(supabase, generatedProgram, enhancedUserData, enhancedPreferences);
 
-      // Complete generation log as successful
-      if (logId) {
-        await enhancedRateLimiting.completeGeneration(logId, true, {
-          programId: weeklyProgram.id,
-          programName: weeklyProgram.program_name,
-          workoutType,
-          workoutsCreated: weeklyProgram.workoutsCreated,
-          exercisesCreated: weeklyProgram.exercisesCreated,
-          progressContext: progressData
-        });
-      }
-
-      console.log('🎉 Enhanced exercise program generated and stored successfully:', {
+      console.log('🎉 Exercise program generated and stored successfully:', {
         programId: weeklyProgram.id,
         workoutType,
         programName: weeklyProgram.program_name,
@@ -182,7 +215,7 @@ serve(async (req) => {
         workoutsCreated: weeklyProgram.workoutsCreated,
         exercisesCreated: weeklyProgram.exercisesCreated,
         userLanguage: finalUserLanguage,
-        generationsRemaining: rateLimitResult.remaining - (rateLimitResult.isPro ? 0 : 1),
+        generationsRemaining: creditResult.remaining,
         hadProgressContext: !!progressData
       });
 
@@ -191,34 +224,15 @@ serve(async (req) => {
         weeklyProgram, 
         workoutType, 
         finalUserLanguage, 
-        rateLimitResult.isPro ? -1 : rateLimitResult.remaining - 1
+        creditResult.remaining
       );
 
     } catch (aiError) {
-      // Complete generation log as failed
-      if (logId) {
-        await enhancedRateLimiting.completeGeneration(
-          logId, 
-          false, 
-          undefined, 
-          aiError.message
-        );
-      }
       throw aiError;
     }
 
   } catch (error) {
-    console.error('=== ENHANCED EXERCISE PROGRAM GENERATION FAILED ===', error);
-    
-    // Complete generation log as failed
-    if (logId) {
-      await enhancedRateLimiting.completeGeneration(
-        logId, 
-        false, 
-        undefined, 
-        error.message
-      );
-    }
+    console.error('=== EXERCISE PROGRAM GENERATION FAILED ===', error);
     
     const errorResponse = handleExerciseProgramError(error, language);
     return new Response(JSON.stringify(errorResponse), {
