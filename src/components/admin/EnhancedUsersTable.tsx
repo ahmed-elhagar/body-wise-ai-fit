@@ -15,7 +15,6 @@ import {
   UserPlus, 
   Shield, 
   Search, 
-  Star,
   Crown,
   Calendar,
   X,
@@ -243,26 +242,6 @@ const EnhancedUsersTable = () => {
     }
   };
 
-  const resetAIGenerations = async (userId: string, newCount: number = 5) => {
-    setActionLoading(`ai-${userId}`);
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ ai_generations_remaining: newCount })
-        .eq('id', userId);
-
-      if (error) throw error;
-
-      toast.success(`AI generations reset to ${newCount}`);
-      await fetchUsers();
-    } catch (error) {
-      console.error('Error resetting AI generations:', error);
-      toast.error('Failed to reset AI generations');
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
       case 'admin': return 'bg-red-100 text-red-800';
@@ -363,8 +342,6 @@ const EnhancedUsersTable = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>User</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Subscription</TableHead>
                   <TableHead>AI Credits</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Actions</TableHead>
@@ -374,23 +351,21 @@ const EnhancedUsersTable = () => {
                 {filteredUsers.map((user) => (
                   <TableRow key={user.id} className="hover:bg-gray-50">
                     <TableCell>
-                      <div className="flex flex-col">
-                        <div className="font-medium text-gray-900">
-                          {user.first_name && user.last_name 
-                            ? `${user.first_name} ${user.last_name}` 
-                            : user.email}
+                      <div className="flex flex-col space-y-2">
+                        <div className="flex flex-col">
+                          <div className="font-medium text-gray-900">
+                            {user.first_name && user.last_name 
+                              ? `${user.first_name} ${user.last_name}` 
+                              : user.email}
+                          </div>
+                          <div className="text-sm text-gray-500">{user.email}</div>
                         </div>
-                        <div className="text-sm text-gray-500">{user.email}</div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={getRoleBadgeColor(user.role)}>
-                        {user.role}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-1">
-                        {getSubscriptionBadge(user)}
+                        <div className="flex flex-wrap gap-2">
+                          <Badge className={getRoleBadgeColor(user.role)}>
+                            {user.role}
+                          </Badge>
+                          {getSubscriptionBadge(user)}
+                        </div>
                         {user.subscription && (
                           <div className="text-xs text-gray-500">
                             Expires: {new Date(user.subscription.current_period_end).toLocaleDateString()}
@@ -400,17 +375,10 @@ const EnhancedUsersTable = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <span className="font-medium">{user.ai_generations_remaining}</span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => resetAIGenerations(user.id)}
-                          disabled={actionLoading === `ai-${user.id}`}
-                          className="h-6 w-6 p-0"
-                          title="Reset to 5"
-                        >
-                          <Star className="h-3 w-3" />
-                        </Button>
+                        <div className="flex flex-col">
+                          <span className="font-medium text-lg">{user.ai_generations_remaining}</span>
+                          <span className="text-xs text-gray-500">remaining</span>
+                        </div>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -420,10 +388,10 @@ const EnhancedUsersTable = () => {
                             setIsGenerationDialogOpen(true);
                           }}
                           disabled={actionLoading === `generation-${user.id}`}
-                          className="h-6 w-6 p-0"
+                          className="h-8 w-8 p-0"
                           title="Set custom limit"
                         >
-                          <Settings className="h-3 w-3" />
+                          <Settings className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>
