@@ -13,6 +13,19 @@ import EnhancedPageLoading from "@/components/ui/enhanced-page-loading";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { 
+  TrendingUp, 
+  Calendar, 
+  Target, 
+  Activity,
+  Clock,
+  Zap,
+  Award,
+  ChevronRight
+} from "lucide-react";
 
 const Dashboard = () => {
   const [activeTimeRange, setActiveTimeRange] = useState<'week' | 'month' | 'year'>('week');
@@ -134,8 +147,51 @@ const Dashboard = () => {
               </div>
             </div>
             
-            {/* Compact Stats Grid */}
+            {/* Enhanced Stats Grid */}
             <EnhancedStatsGrid />
+
+            {/* Quick Action Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group" onClick={() => navigate('/meal-plan')}>
+                <CardContent className="p-4 text-center">
+                  <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                    <Calendar className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900 mb-1">Meal Plan</h3>
+                  <p className="text-xs text-gray-600">View today's meals</p>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group" onClick={() => navigate('/exercise')}>
+                <CardContent className="p-4 text-center">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                    <Activity className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900 mb-1">Workouts</h3>
+                  <p className="text-xs text-gray-600">Start exercising</p>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group" onClick={() => navigate('/goals')}>
+                <CardContent className="p-4 text-center">
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-violet-600 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                    <Target className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900 mb-1">Goals</h3>
+                  <p className="text-xs text-gray-600">Track progress</p>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group" onClick={() => navigate('/progress')}>
+                <CardContent className="p-4 text-center">
+                  <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                    <TrendingUp className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900 mb-1">Progress</h3>
+                  <p className="text-xs text-gray-600">View analytics</p>
+                </CardContent>
+              </Card>
+            </div>
             
             {/* Progress Chart Section */}
             <InteractiveProgressChart />
@@ -151,6 +207,56 @@ const Dashboard = () => {
               {/* Right Column */}
               <div className="space-y-4 md:space-y-6">
                 <CoachChatWidget />
+                
+                {/* Recent Activity Card */}
+                <Card className="shadow-lg">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
+                      <Badge variant="secondary" className="text-xs">
+                        <Clock className="w-3 h-3 mr-1" />
+                        Today
+                      </Badge>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                        <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                          <Zap className="w-4 h-4 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-gray-900">Workout Completed</p>
+                          <p className="text-xs text-gray-600">Upper body strength training</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+                        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                          <Calendar className="w-4 h-4 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-gray-900">Meal Plan Updated</p>
+                          <p className="text-xs text-gray-600">New recipes for this week</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg">
+                        <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
+                          <Award className="w-4 h-4 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-gray-900">Goal Achievement</p>
+                          <p className="text-xs text-gray-600">Weekly target reached!</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <Button variant="ghost" className="w-full mt-4 text-sm" onClick={() => navigate('/progress')}>
+                      View All Activity
+                      <ChevronRight className="w-4 h-4 ml-1" />
+                    </Button>
+                  </CardContent>
+                </Card>
               </div>
             </div>
           </div>

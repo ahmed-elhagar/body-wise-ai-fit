@@ -25,7 +25,7 @@ const AppSidebar = () => {
         "border-r border-gray-200 bg-white transition-all duration-300 ease-in-out",
         isRTL ? 'border-l border-r-0' : '',
         isCollapsed && !isMobile ? 'w-16' : 'w-64',
-        isMobile && 'w-80 shadow-lg'
+        isMobile && 'w-80 shadow-lg z-50'
       )}
       collapsible="icon"
     >

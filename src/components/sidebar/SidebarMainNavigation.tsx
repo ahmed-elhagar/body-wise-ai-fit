@@ -38,8 +38,7 @@ interface NavigationItem {
 }
 
 export const SidebarMainNavigation = () => {
-  const { tFrom, isRTL } = useI18n();
-  const tNav = tFrom('navigation');
+  const { isRTL } = useI18n();
   const location = useLocation();
   const { isCoach, isAdmin } = useRole();
   const { state, isMobile } = useSidebar();
@@ -68,7 +67,7 @@ export const SidebarMainNavigation = () => {
 
   // Communication & Settings Items
   const communicationNavigationItems: NavigationItem[] = [
-    { href: "/chat", icon: MessageSquare, label: "Chat" },
+    { href: "/ai-chat", icon: MessageSquare, label: "AI Chat" },
     { href: "/notifications", icon: Bell, label: "Notifications" },
     { href: "/coach", icon: Users, label: "Coach Dashboard", requiresCoach: true },
     { href: "/profile", icon: User, label: "Profile" },
