@@ -27,24 +27,48 @@ export const useFoodDatabase = () => {
     return useQuery({
       queryKey: ['food-search', searchTerm, category],
       queryFn: async () => {
-        if (!searchTerm || searchTerm.length < 2) return [];
-
-        console.log('🔍 Searching food items with term:', searchTerm);
-
-        const { data, error } = await supabase
-          .rpc('search_food_items', { 
-            search_term: searchTerm,
-            category_filter: category,
-            limit_count: 20 
-          });
-
-        if (error) {
-          console.error('❌ Error searching food items:', error);
-          throw error;
+        if (!searchTerm || searchTerm.length < 2) {
+          console.log('🔍 Search term too short or empty');
+          return [];
         }
 
-        console.log('✅ Found food items:', data?.length || 0);
-        return data as FoodItem[];
+        console.log('🔍 Searching food items with term:', searchTerm, 'category:', category);
+
+        try {
+          // Use the search_food_items function
+          const { data, error } = await supabase
+            .rpc('search_food_items', { 
+              search_term: searchTerm,
+              category_filter: category || null,
+              limit_count: 20 
+            });
+
+          if (error) {
+            console.error('❌ Error searching food items via RPC:', error);
+            
+            // Fallback to direct table query
+            console.log('🔄 Falling back to direct table query');
+            const { data: fallbackData, error: fallbackError } = await supabase
+              .from('food_items')
+              .select('*')
+              .or(`name.ilike.%${searchTerm}%,brand.ilike.%${searchTerm}%`)
+              .limit(20);
+
+            if (fallbackError) {
+              console.error('❌ Fallback query also failed:', fallbackError);
+              throw fallbackError;
+            }
+
+            console.log('✅ Fallback query successful, found:', fallbackData?.length || 0, 'items');
+            return fallbackData as FoodItem[];
+          }
+
+          console.log('✅ RPC search successful, found:', data?.length || 0, 'items');
+          return data as FoodItem[];
+        } catch (error) {
+          console.error('❌ Search error:', error);
+          throw error;
+        }
       },
       enabled: !!searchTerm && searchTerm.length >= 2,
       staleTime: 30000, // Cache for 30 seconds

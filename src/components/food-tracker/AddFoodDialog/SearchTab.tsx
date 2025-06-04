@@ -27,10 +27,13 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
 
   const { searchFoodItems, logConsumption, isLoggingConsumption } = useFoodDatabase();
   const { todayConsumption } = useFoodConsumption();
-  const { data: searchResults, isLoading } = searchFoodItems(searchTerm);
+  
+  // Execute search query when searchTerm changes
+  const searchQuery = searchFoodItems(searchTerm);
+  const { data: searchResults, isLoading } = searchQuery;
 
   // Get unique food items from today's consumption for quick add
-  const todaysFoodItems = todayConsumption?.reduce((unique, log) => {
+  const todaysFoodItems = todayConsumption?.reduce((unique: any[], log) => {
     const existing = unique.find(item => item.id === log.food_item?.id);
     if (!existing && log.food_item) {
       unique.push({
@@ -38,18 +41,26 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
         name: log.food_item.name,
         brand: log.food_item.brand,
         category: log.food_item.category || 'general',
-        calories_per_100g: log.calories_consumed / (log.quantity_g / 100),
-        protein_per_100g: log.protein_consumed / (log.quantity_g / 100),
-        carbs_per_100g: log.carbs_consumed / (log.quantity_g / 100),
-        fat_per_100g: log.fat_consumed / (log.quantity_g / 100),
+        calories_per_100g: Math.round((log.calories_consumed || 0) / (log.quantity_g / 100)),
+        protein_per_100g: Math.round((log.protein_consumed || 0) / (log.quantity_g / 100)),
+        carbs_per_100g: Math.round((log.carbs_consumed || 0) / (log.quantity_g / 100)),
+        fat_per_100g: Math.round((log.fat_consumed || 0) / (log.quantity_g / 100)),
         verified: true,
         lastConsumed: log.consumed_at
       });
     }
     return unique;
-  }, [] as any[]) || [];
+  }, []) || [];
+
+  console.log('🔍 SearchTab Debug:', {
+    searchTerm,
+    searchResultsCount: searchResults?.length || 0,
+    todaysFoodItemsCount: todaysFoodItems.length,
+    todayConsumptionCount: todayConsumption?.length || 0
+  });
 
   const handleSelectFood = (food: any) => {
+    console.log('🎯 Selected food:', food);
     setSelectedFood(food);
   };
 
@@ -63,6 +74,17 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
     const fat = (selectedFood.fat_per_100g || 0) * multiplier;
 
     try {
+      console.log('📝 Adding food to log:', {
+        foodItemId: selectedFood.id,
+        quantity,
+        mealType,
+        notes,
+        calories,
+        protein,
+        carbs,
+        fat
+      });
+
       logConsumption({
         foodItemId: selectedFood.id,
         quantity,
@@ -78,7 +100,7 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
       onFoodAdded();
       onClose();
     } catch (error) {
-      console.error('Error logging food:', error);
+      console.error('❌ Error logging food:', error);
       toast.error(t('Failed to log food'));
     }
   };
