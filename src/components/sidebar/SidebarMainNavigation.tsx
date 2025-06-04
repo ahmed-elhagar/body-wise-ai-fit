@@ -1,83 +1,137 @@
 
-import { Calendar, Home, Utensils, Dumbbell, TrendingUp, MessageCircle } from "lucide-react"
-import { Link, useLocation } from "react-router-dom"
-import {
+import React from "react";
+import { 
+  Home, 
+  Calendar, 
+  Dumbbell, 
+  Target, 
+  ShoppingCart,
+  Camera,
+  MessageSquare,
+  Bell,
+  TrendingUp,
+  Scale,
+  Users,
+  User
+} from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { 
+  SidebarMenu, 
+  SidebarMenuItem, 
+  SidebarMenuButton, 
   SidebarGroup,
-  SidebarGroupContent,
   SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import { Badge } from "@/components/ui/badge"
-import { useI18n } from "@/hooks/useI18n"
-import { useUnreadMessages } from "@/hooks/useUnreadMessages"
+  SidebarGroupContent
+} from "@/components/ui/sidebar";
+import { useI18n } from "@/hooks/useI18n";
+import { useRole } from "@/hooks/useRole";
+import { cn } from "@/lib/utils";
 
-const SidebarMainNavigation = () => {
-  const { t, isRTL } = useI18n()
-  const location = useLocation()
-  const { data: unreadCount = 0 } = useUnreadMessages()
-
-  const isActive = (path: string) => location.pathname === path
-
-  const mainItems = [
-    {
-      title: t("Dashboard"),
-      url: "/dashboard",
-      icon: Home,
-    },
-    {
-      title: t("Meal Plan"),
-      url: "/meal-plan", 
-      icon: Utensils,
-    },
-    {
-      title: t("Exercise"),
-      url: "/exercise",
-      icon: Dumbbell,
-    },
-    {
-      title: t("Progress"),
-      url: "/progress",
-      icon: TrendingUp,
-    },
-    {
-      title: t("Chat"),
-      url: "/chat",
-      icon: MessageCircle,
-      badge: unreadCount > 0 ? unreadCount : undefined,
-    },
-  ]
-
-  return (
-    <SidebarGroup>
-      <SidebarGroupLabel className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-3 py-2">
-        {t("Main")}
-      </SidebarGroupLabel>
-      <SidebarGroupContent>
-        <SidebarMenu>
-          {mainItems.map((item) => (
-            <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton 
-                asChild 
-                className={`${isActive(item.url) ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-600' : 'text-gray-700 hover:bg-gray-50'} transition-colors`}
-              >
-                <Link to={item.url} className="flex items-center gap-3 px-3 py-2 rounded-lg">
-                  <item.icon className="h-5 w-5" />
-                  <span className="font-medium">{item.title}</span>
-                  {item.badge && (
-                    <Badge variant="destructive" className="ml-auto text-xs">
-                      {item.badge > 9 ? '9+' : item.badge}
-                    </Badge>
-                  )}
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
-      </SidebarGroupContent>
-    </SidebarGroup>
-  )
+interface NavigationItem {
+  href: string;
+  icon: React.ComponentType<any>;
+  label: string;
+  badge?: string;
+  requiresCoach?: boolean;
 }
 
-export default SidebarMainNavigation
+export const SidebarMainNavigation = () => {
+  const { tFrom, isRTL } = useI18n();
+  const tNav = tFrom('navigation');
+  const location = useLocation();
+  const { isCoach } = useRole();
+
+  // Main Navigation Items
+  const mainNavigationItems: NavigationItem[] = [
+    { href: "/dashboard", icon: Home, label: String(tNav("dashboard")) },
+  ];
+
+  // Fitness & Nutrition Items
+  const fitnessNavigationItems: NavigationItem[] = [
+    { href: "/meal-plan", icon: Calendar, label: String(tNav("mealPlan")) },
+    { href: "/food-tracker", icon: ShoppingCart, label: String(tNav("foodTracker")) },
+    { href: "/calorie-checker", icon: Camera, label: String(tNav("calorieChecker")) },
+    { href: "/exercise", icon: Dumbbell, label: String(tNav("exercise")) },
+    { href: "/weight-tracking", icon: Scale, label: "Weight Tracking" },
+  ];
+
+  // Progress & Goals Items
+  const progressNavigationItems: NavigationItem[] = [
+    { href: "/goals", icon: Target, label: String(tNav("goals")) },
+    { href: "/progress", icon: TrendingUp, label: String(tNav("progress")) },
+  ];
+
+  // Communication & Settings Items
+  const communicationNavigationItems: NavigationItem[] = [
+    { href: "/chat", icon: MessageSquare, label: "Chat" },
+    { href: "/notifications", icon: Bell, label: "Notifications" },
+    { href: "/coach", icon: Users, label: String(tNav("coach")), requiresCoach: true },
+    { href: "/profile", icon: User, label: String(tNav("profile")) },
+  ];
+
+  const renderNavigationSection = (items: NavigationItem[], title: string) => {
+    const filteredItems = items.filter(item => 
+      !item.requiresCoach || isCoach
+    );
+
+    if (filteredItems.length === 0) return null;
+
+    return (
+      <SidebarGroup>
+        <SidebarGroupLabel className={cn(
+          "text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-3",
+          isRTL && "text-right"
+        )}>
+          {title}
+        </SidebarGroupLabel>
+        
+        <SidebarGroupContent>
+          <SidebarMenu className="space-y-1 px-2">
+            {filteredItems.map((item) => {
+              const isActive = location.pathname === item.href;
+              return (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive}
+                    className={cn(
+                      "w-full text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-colors rounded-lg",
+                      isActive && "bg-blue-50 text-blue-700 border-r-2 border-blue-600 shadow-sm",
+                      isRTL && "text-right",
+                      isRTL && isActive && "border-r-0 border-l-2 border-blue-600"
+                    )}
+                  >
+                    <Link 
+                      to={item.href} 
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 w-full",
+                        isRTL && "flex-row-reverse"
+                      )}
+                    >
+                      <item.icon className="h-5 w-5 flex-shrink-0" />
+                      <span className="font-medium truncate">{item.label}</span>
+                      {item.badge && (
+                        <span className="ml-auto text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full">
+                          {item.badge}
+                        </span>
+                      )}
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            })}
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
+    );
+  };
+
+  return (
+    <div className="space-y-4">
+      {renderNavigationSection(mainNavigationItems, String(tNav("dashboard")))}
+      {renderNavigationSection(fitnessNavigationItems, "Fitness & Nutrition")}
+      {renderNavigationSection(progressNavigationItems, "Progress & Goals")}
+      {renderNavigationSection(communicationNavigationItems, "Communication")}
+    </div>
+  );
+};

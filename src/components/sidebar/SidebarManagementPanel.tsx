@@ -1,65 +1,91 @@
 
-import { Shield, Users } from "lucide-react"
-import { Link, useLocation } from "react-router-dom"
-import {
+import React from "react";
+import { Link, useLocation } from "react-router-dom";
+import { 
+  Settings, 
+  Shield, 
+  Users,
+  BarChart3,
+  Database
+} from "lucide-react";
+import { 
+  SidebarMenu, 
+  SidebarMenuItem, 
+  SidebarMenuButton, 
   SidebarGroup,
-  SidebarGroupContent,
   SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import { useI18n } from "@/hooks/useI18n"
-import { useRole } from "@/hooks/useRole"
+  SidebarGroupContent
+} from "@/components/ui/sidebar";
+import { useRole } from "@/hooks/useRole";
+import { useI18n } from "@/hooks/useI18n";
+import { cn } from "@/lib/utils";
 
-const SidebarManagementPanel = () => {
-  const { t, isRTL } = useI18n()
-  const location = useLocation()
-  const { isCoach, isAdmin } = useRole()
+export const SidebarManagementPanel = () => {
+  const { isAdmin, isCoach } = useRole();
+  const { isRTL } = useI18n();
+  const location = useLocation();
 
-  const isActive = (path: string) => location.pathname === path
+  // Don't show management panel for regular users
+  if (!isAdmin && !isCoach) return null;
 
-  const adminItems = [
-    ...(isCoach ? [{
-      title: t("Coach Panel"),
-      url: "/coach",
-      icon: Users,
-    }] : []),
-    ...(isAdmin ? [{
-      title: t("Admin Panel"),
-      url: "/admin",
-      icon: Shield,
-    }] : []),
-  ]
+  const managementItems = [
+    ...(isAdmin ? [
+      { href: "/admin", icon: Shield, label: "Admin Panel" },
+      { href: "/admin/users", icon: Users, label: "User Management" },
+      { href: "/admin/analytics", icon: BarChart3, label: "Analytics" },
+      { href: "/admin/system", icon: Database, label: "System" },
+    ] : []),
+    ...(isCoach ? [
+      { href: "/coach", icon: Users, label: "Trainees" },
+      { href: "/coach/analytics", icon: BarChart3, label: "Coach Analytics" },
+    ] : []),
+  ];
 
-  if (adminItems.length === 0) {
-    return null
-  }
+  if (managementItems.length === 0) return null;
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-3 py-2">
-        {t("Management")}
+      <SidebarGroupLabel className={cn(
+        "text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-3",
+        isRTL && "text-right"
+      )}>
+        {isAdmin ? "Administration" : "Coaching"}
       </SidebarGroupLabel>
+      
       <SidebarGroupContent>
-        <SidebarMenu>
-          {adminItems.map((item) => (
-            <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton 
-                asChild 
-                className={`${isActive(item.url) ? 'bg-green-50 text-green-700 border-r-2 border-green-600' : 'text-gray-700 hover:bg-gray-50'} transition-colors`}
-              >
-                <Link to={item.url} className="flex items-center gap-3 px-3 py-2 rounded-lg">
-                  <item.icon className="h-5 w-5" />
-                  <span className="font-medium">{item.title}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
+        <SidebarMenu className="space-y-1 px-2">
+          {managementItems.map((item) => {
+            const isActive = location.pathname === item.href;
+            return (
+              <SidebarMenuItem key={item.href}>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive}
+                  className={cn(
+                    "w-full text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-colors rounded-lg",
+                    isActive && "bg-purple-50 text-purple-700 border-r-2 border-purple-600 shadow-sm",
+                    isRTL && "text-right",
+                    isRTL && isActive && "border-r-0 border-l-2 border-purple-600"
+                  )}
+                >
+                  <Link 
+                    to={item.href} 
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 w-full",
+                      isRTL && "flex-row-reverse"
+                    )}
+                  >
+                    <item.icon className="h-5 w-5 flex-shrink-0" />
+                    <span className="font-medium truncate">{item.label}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>
-  )
-}
+  );
+};
 
-export default SidebarManagementPanel
+export default SidebarManagementPanel;
