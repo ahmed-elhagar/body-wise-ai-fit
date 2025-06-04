@@ -37,7 +37,8 @@ export const useExerciseExchange = () => {
         userId: user.id
       });
       
-      const { data, error } = await Promise.race([
+      // Fixed Promise.race destructuring issue
+      const result = await Promise.race([
         supabase.functions.invoke('exchange-exercise', {
           body: {
             exerciseId: exerciseData.exerciseId,
@@ -51,6 +52,9 @@ export const useExerciseExchange = () => {
           setTimeout(() => reject(new Error('Request timeout')), 30000)
         )
       ]);
+
+      // Now safely destructure from the result
+      const { data, error } = result as any;
 
       if (error) {
         console.error('❌ Exercise exchange error:', error);
