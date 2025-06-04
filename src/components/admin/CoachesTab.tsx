@@ -40,8 +40,8 @@ interface Coach {
 }
 
 const CoachesTab = () => {
-  const [selectedTraineeId, setSelectedTraineeId] = useState("");
-  const [traineeInputValue, setTraineeInputValue] = useState("");
+  const [selectedTraineeIds, setSelectedTraineeIds] = useState<Record<string, string>>({});
+  const [traineeInputValues, setTraineeInputValues] = useState<Record<string, string>>({});
   const [searchTerm, setSearchTerm] = useState("");
   const queryClient = useQueryClient();
 
@@ -106,10 +106,10 @@ const CoachesTab = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['admin-coach-trainees'] });
-      setSelectedTraineeId("");
-      setTraineeInputValue("");
+      setSelectedTraineeIds(prev => ({ ...prev, [variables.coachId]: "" }));
+      setTraineeInputValues(prev => ({ ...prev, [variables.coachId]: "" }));
       toast.success('Trainee assigned successfully');
     },
     onError: (error) => {
@@ -150,6 +150,7 @@ const CoachesTab = () => {
   );
 
   const handleAssignTrainee = (coachId: string) => {
+    const selectedTraineeId = selectedTraineeIds[coachId];
     if (!selectedTraineeId) {
       toast.error("Please select a trainee");
       return;
@@ -161,8 +162,12 @@ const CoachesTab = () => {
     });
   };
 
-  const handleTraineeSelect = (userId: string) => {
-    setSelectedTraineeId(userId);
+  const handleTraineeSelect = (coachId: string, userId: string) => {
+    setSelectedTraineeIds(prev => ({ ...prev, [coachId]: userId }));
+  };
+
+  const handleTraineeInputChange = (coachId: string, value: string) => {
+    setTraineeInputValues(prev => ({ ...prev, [coachId]: value }));
   };
 
   if (usersLoading || coachTraineesLoading) {
@@ -202,7 +207,7 @@ const CoachesTab = () => {
 
       <div className="grid gap-6">
         {filteredCoaches.map((coach) => (
-          <Card key={coach.id} className="overflow-hidden">
+          <Card key={coach.id} className="overflow-visible">
             <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -234,7 +239,7 @@ const CoachesTab = () => {
             </CardHeader>
             <CardContent className="pt-6">
               {/* Assign new trainee */}
-              <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+              <div className="mb-6 p-4 bg-gray-50 rounded-lg relative">
                 <div className="flex items-center gap-2 mb-3">
                   <UserPlus className="h-4 w-4 text-purple-600" />
                   <span className="font-medium text-gray-700">Assign New Trainee</span>
@@ -242,15 +247,16 @@ const CoachesTab = () => {
                 <div className="flex gap-2">
                   <div className="flex-1">
                     <TraineeAutoComplete
-                      value={traineeInputValue}
-                      onValueChange={setTraineeInputValue}
-                      onUserSelect={handleTraineeSelect}
+                      value={traineeInputValues[coach.id] || ""}
+                      onValueChange={(value) => handleTraineeInputChange(coach.id, value)}
+                      onUserSelect={(userId) => handleTraineeSelect(coach.id, userId)}
                       placeholder="Enter trainee email or name..."
+                      instanceId={coach.id}
                     />
                   </div>
                   <Button 
                     onClick={() => handleAssignTrainee(coach.id)}
-                    disabled={assignTrainee.isPending || !selectedTraineeId}
+                    disabled={assignTrainee.isPending || !selectedTraineeIds[coach.id]}
                     className="px-6"
                   >
                     {assignTrainee.isPending ? 'Assigning...' : 'Assign'}

@@ -20,6 +20,8 @@ interface TraineeAutoCompleteProps {
   onUserSelect: (userId: string) => void;
   placeholder?: string;
   className?: string;
+  // Add unique identifier to prevent shared state
+  instanceId?: string;
 }
 
 export const TraineeAutoComplete = ({ 
@@ -27,7 +29,8 @@ export const TraineeAutoComplete = ({
   onValueChange, 
   onUserSelect,
   placeholder = "Enter trainee email or name...",
-  className
+  className,
+  instanceId = "default"
 }: TraineeAutoCompleteProps) => {
   const [users, setUsers] = useState<UserOption[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<UserOption[]>([]);
@@ -161,9 +164,15 @@ export const TraineeAutoComplete = ({
       {showDropdown && filteredUsers.length > 0 && (
         <div 
           ref={dropdownRef}
-          className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-hidden"
+          className="absolute z-[100] w-full mt-1 bg-white border border-gray-200 rounded-md shadow-xl max-h-60 overflow-hidden"
+          style={{ 
+            position: 'absolute',
+            top: '100%',
+            left: 0,
+            right: 0
+          }}
         >
-          <ScrollArea className="h-full">
+          <ScrollArea className="h-full max-h-60">
             {filteredUsers.map((user, index) => (
               <div
                 key={user.id}
