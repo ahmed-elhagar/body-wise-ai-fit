@@ -2,8 +2,10 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { UtensilsCrossed, Sparkles, Shuffle, ShoppingCart, MoreVertical, RefreshCcw } from "lucide-react";
+import { UtensilsCrossed, Sparkles, Shuffle, ShoppingCart, MoreVertical, RefreshCcw, Zap } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCentralizedCredits } from "@/hooks/useCentralizedCredits";
+import { Badge } from "@/components/ui/badge";
 
 interface EnhancedMealPlanHeaderProps {
   onGenerateAI: () => void;
@@ -23,12 +25,15 @@ const EnhancedMealPlanHeader = ({
   hasWeeklyPlan
 }: EnhancedMealPlanHeaderProps) => {
   const { t } = useLanguage();
+  const { remaining: userCredits, isPro, hasCredits } = useCentralizedCredits();
+
+  const displayCredits = isPro ? 'Unlimited' : `${userCredits} credits`;
 
   return (
     <Card className="bg-white border-fitness-primary-100 shadow-sm">
       <div className="px-6 py-4">
         <div className="flex items-center justify-between">
-          {/* Left: Title */}
+          {/* Left: Title and Credits */}
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-fitness-primary-500 to-fitness-primary-600 rounded-xl flex items-center justify-center">
               <UtensilsCrossed className="w-5 h-5 text-white" />
@@ -37,9 +42,15 @@ const EnhancedMealPlanHeader = ({
               <h1 className="text-2xl font-bold text-fitness-primary-800">
                 Meal Plan
               </h1>
-              <p className="text-sm text-fitness-primary-600">
-                Smart nutrition planning for your healthy lifestyle
-              </p>
+              <div className="flex items-center gap-3">
+                <p className="text-sm text-fitness-primary-600">
+                  Smart nutrition planning for your healthy lifestyle
+                </p>
+                <Badge className="bg-gradient-to-r from-fitness-primary-500 to-fitness-accent-500 text-white border-0">
+                  <Zap className="w-3 h-3 mr-1" />
+                  {displayCredits}
+                </Badge>
+              </div>
             </div>
           </div>
 
@@ -57,7 +68,7 @@ const EnhancedMealPlanHeader = ({
             <DropdownMenuContent align="end" className="w-56 bg-white border-fitness-primary-200 shadow-lg z-[110]">
               <DropdownMenuItem
                 onClick={onGenerateAI}
-                disabled={isGenerating}
+                disabled={isGenerating || !hasCredits}
                 className="flex items-center gap-2 text-fitness-primary-700 hover:bg-fitness-primary-50 cursor-pointer"
               >
                 <Sparkles className="w-4 h-4" />
@@ -66,7 +77,7 @@ const EnhancedMealPlanHeader = ({
               {hasWeeklyPlan && (
                 <DropdownMenuItem
                   onClick={onRegeneratePlan}
-                  disabled={isGenerating}
+                  disabled={isGenerating || !hasCredits}
                   className="flex items-center gap-2 text-fitness-primary-700 hover:bg-fitness-primary-50 cursor-pointer"
                 >
                   <RefreshCcw className="w-4 h-4" />
@@ -93,6 +104,15 @@ const EnhancedMealPlanHeader = ({
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+        
+        {/* No credits warning */}
+        {!hasCredits && (
+          <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <p className="text-sm text-amber-700">
+              You've reached your AI generation limit. Upgrade your plan for unlimited access.
+            </p>
+          </div>
+        )}
       </div>
     </Card>
   );

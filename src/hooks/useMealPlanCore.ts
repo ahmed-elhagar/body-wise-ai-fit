@@ -5,7 +5,7 @@ import { useMealPlanNavigation } from "./useMealPlanNavigation";
 import { useMealPlanCalculations } from "./useMealPlanCalculations";
 import { useMealPlanData } from "./useMealPlanData";
 import { useEnhancedMealPlan } from "./useEnhancedMealPlan";
-import { useCreditSystem } from './useCreditSystem';
+import { useCentralizedCredits } from './useCentralizedCredits';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
@@ -14,7 +14,7 @@ export const useMealPlanCore = () => {
   const { t, language } = useLanguage();
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const { userCredits } = useCreditSystem();
+  const { remaining: userCredits, isPro, hasCredits } = useCentralizedCredits();
   
   // Core navigation and UI state
   const navigation = useMealPlanNavigation();
@@ -34,7 +34,7 @@ export const useMealPlanCore = () => {
     refetch: refetchMealPlan 
   } = useMealPlanData(navigation.currentWeekOffset);
   
-  // Enhanced meal plan generation
+  // Enhanced meal plan generation with centralized credits
   const { 
     generateMealPlan, 
     isGenerating, 
@@ -73,7 +73,11 @@ export const useMealPlanCore = () => {
     
     // Enhanced context
     nutritionContext,
+    
+    // Centralized credit system
     userCredits,
+    isPro,
+    hasCredits,
     generateMealPlan,
     
     // Actions

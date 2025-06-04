@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, Shuffle, ShoppingCart, RefreshCw, UtensilsCrossed, Zap } from "lucide-react";
 import { useMealPlanTranslations } from "@/utils/mealPlanTranslations";
+import { useCentralizedCredits } from "@/hooks/useCentralizedCredits";
 
 interface MealPlanHeaderProps {
   onGenerateAI: () => void;
@@ -32,6 +33,11 @@ const MealPlanHeader = ({
     generating,
     isRTL 
   } = useMealPlanTranslations();
+
+  // Use centralized credits instead of any mocked data
+  const { remaining: userCredits, isPro, hasCredits } = useCentralizedCredits();
+
+  const displayCredits = isPro ? 'Unlimited' : `${userCredits} credits`;
 
   const handleShuffleMeals = async () => {
     console.log('🔄 Shuffle button clicked');
@@ -75,11 +81,11 @@ const MealPlanHeader = ({
                 {personalizedNutrition || 'AI-powered personalized nutrition'}
               </p>
               
-              {/* AI Credits Badge */}
+              {/* AI Credits Badge - Using centralized credits */}
               <div className="mt-1">
                 <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm font-medium text-xs hover:bg-white/30">
                   <Zap className="w-3 h-3 mr-1" />
-                  Unlimited AI
+                  {displayCredits}
                 </Badge>
               </div>
             </div>
@@ -118,8 +124,8 @@ const MealPlanHeader = ({
 
             <Button
               onClick={handleGenerateAI}
-              disabled={isGenerating || isShuffling}
-              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold px-3 py-2 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 h-8 border-0"
+              disabled={isGenerating || isShuffling || !hasCredits}
+              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold px-3 py-2 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 h-8 border-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
               {isGenerating ? (
                 <RefreshCw className="w-4 h-4 animate-spin" />
@@ -130,6 +136,15 @@ const MealPlanHeader = ({
             </Button>
           </div>
         </div>
+        
+        {/* No credits warning */}
+        {!hasCredits && (
+          <div className="mt-3 px-4 py-2 bg-red-500/20 border border-red-500/30 rounded-lg backdrop-blur-sm">
+            <p className="text-sm text-white font-medium text-center">
+              No AI credits remaining. Upgrade to continue generating plans.
+            </p>
+          </div>
+        )}
       </div>
     </Card>
   );
