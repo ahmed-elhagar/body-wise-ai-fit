@@ -11,9 +11,9 @@ import WeightStatsCards from "@/components/weight/WeightStatsCards";
 import WeightProgressChart from "@/components/weight/WeightProgressChart";
 import WeightEntryForm from "@/components/weight/WeightEntryForm";
 import ProgressBadges from "@/components/goals/ProgressBadges";
-import ProgressAnalytics from "@/components/progress/ProgressAnalytics";
+import { ProgressAnalytics } from "@/components/progress/ProgressAnalytics";
 import AchievementBadges from "@/components/progress/AchievementBadges";
-import TrendAnalysis from "@/components/progress/TrendAnalysis";
+import { TrendAnalysis } from "@/components/progress/TrendAnalysis";
 import { useWeightTracking } from "@/hooks/useWeightTracking";
 import { useGoals } from "@/hooks/useGoals";
 import { useProfile } from "@/hooks/useProfile";
@@ -91,7 +91,7 @@ const Progress = () => {
           </TabsList>
 
           <TabsContent value="analytics" className="space-y-6 mt-6">
-            <ProgressAnalytics weightEntries={weightEntries} macroGoals={macroGoals} />
+            <ProgressAnalytics />
           </TabsContent>
 
           <TabsContent value="weight" className="space-y-6 mt-6">
