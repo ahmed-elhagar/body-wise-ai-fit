@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -58,50 +57,73 @@ export const ExerciseProgressCard = ({
   const [showWeightInput, setShowWeightInput] = useState(false);
   const [showVideoDialog, setShowVideoDialog] = useState(false);
   const [showExchangeDialog, setShowExchangeDialog] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const completedSets = setsProgress.filter(set => set.completed).length;
   const totalSets = exercise.sets || 3;
   const progressPercentage = (completedSets / totalSets) * 100;
 
-  const handleSetComplete = (setIndex: number) => {
+  const handleSetComplete = async (setIndex: number) => {
+    if (isUpdating) return; // Prevent multiple rapid calls
+    
     const newProgress = [...setsProgress];
-    newProgress[setIndex].completed = !newProgress[setIndex].completed;
+    const wasCompleted = newProgress[setIndex].completed;
+    newProgress[setIndex].completed = !wasCompleted;
     setSetsProgress(newProgress);
 
-    // Auto-start rest timer if set is completed
-    if (newProgress[setIndex].completed && setIndex < totalSets - 1) {
+    // Auto-start rest timer if set is completed and not the last set
+    if (!wasCompleted && setIndex < totalSets - 1) {
       setIsTimerRunning(true);
       startRestTimer();
     }
 
-    // Update exercise progress
-    const completedCount = newProgress.filter(set => set.completed).length;
-    const avgWeight = newProgress
-      .filter(set => set.weight)
-      .reduce((sum, set) => sum + (set.weight || 0), 0) / 
-      (newProgress.filter(set => set.weight).length || 1);
+    try {
+      setIsUpdating(true);
+      
+      // Update exercise progress
+      const completedCount = newProgress.filter(set => set.completed).length;
+      const avgWeight = newProgress
+        .filter(set => set.weight)
+        .reduce((sum, set) => sum + (set.weight || 0), 0) / 
+        (newProgress.filter(set => set.weight).length || 1);
 
-    onProgressUpdate(
-      exercise.id, 
-      completedCount, 
-      newProgress.map(set => set.reps).join('-'),
-      notes,
-      avgWeight || undefined
-    );
+      await onProgressUpdate(
+        exercise.id, 
+        completedCount, 
+        newProgress.map(set => set.reps).join('-'),
+        notes,
+        avgWeight || undefined
+      );
 
-    // Mark exercise as complete if all sets are done
-    if (completedCount === totalSets) {
-      console.log('🏆 All sets completed, marking exercise as complete');
-      handleExerciseComplete();
+      // Mark exercise as complete if all sets are done
+      if (completedCount === totalSets) {
+        console.log('🏆 All sets completed, marking exercise as complete');
+        await handleExerciseComplete();
+      }
+    } catch (error) {
+      console.error('❌ Error updating set progress:', error);
+      // Revert the local state on error
+      setSetsProgress(prev => {
+        const reverted = [...prev];
+        reverted[setIndex].completed = wasCompleted;
+        return reverted;
+      });
+    } finally {
+      setIsUpdating(false);
     }
   };
 
-  const handleExerciseComplete = () => {
+  const handleExerciseComplete = async () => {
+    if (isUpdating) return; // Prevent multiple calls
+    
     try {
+      setIsUpdating(true);
       console.log('✅ Marking exercise complete:', exercise.id);
-      onComplete(exercise.id);
+      await onComplete(exercise.id);
     } catch (error) {
       console.error('❌ Error completing exercise:', error);
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -177,6 +199,7 @@ export const ExerciseProgressCard = ({
               size="sm"
               onClick={onSetActive}
               className="shrink-0"
+              disabled={isUpdating}
             >
               {isActive ? (
                 <>
@@ -207,10 +230,11 @@ export const ExerciseProgressCard = ({
           <div className="mb-4">
             <Button
               onClick={handleExerciseComplete}
-              className="w-full bg-green-600 hover:bg-green-700 text-white"
+              disabled={isUpdating}
+              className="w-full bg-green-600 hover:bg-green-700 text-white disabled:opacity-50"
             >
               <CheckCircle className="w-4 h-4 mr-2" />
-              {t('Mark as Complete')}
+              {isUpdating ? t('Updating...') : t('Mark as Complete')}
             </Button>
           </div>
         )}
@@ -243,6 +267,7 @@ export const ExerciseProgressCard = ({
                     variant={set.completed ? "default" : "outline"}
                     size="sm"
                     onClick={() => handleSetComplete(index)}
+                    disabled={isUpdating}
                     className="w-8 h-8 p-0"
                   >
                     {set.completed ? (
