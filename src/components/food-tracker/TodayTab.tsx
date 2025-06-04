@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2, Edit3 } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useFoodConsumption } from "@/hooks/useFoodConsumption";
 import MacroWheel from "./components/MacroWheel";
@@ -10,15 +10,16 @@ import FoodLogTimeline from "./components/FoodLogTimeline";
 import AddFoodDialog from "./AddFoodDialog/AddFoodDialog";
 import { format } from "date-fns";
 
-const TodayTab = () => {
-  const { t, isRTL } = useLanguage();
+const TodayTab = ({ key: forceRefreshKey }: { key?: number }) => {
+  const { t } = useLanguage();
   const [showAddDialog, setShowAddDialog] = useState(false);
   const { todayConsumption, isLoading, refetch } = useFoodConsumption();
 
-  // Force a refresh when component mounts
+  // Force a refresh when component mounts or key changes
   useEffect(() => {
+    console.log('🔄 TodayTab mounted/refreshed, fetching data...');
     refetch();
-  }, [refetch]);
+  }, [refetch, forceRefreshKey]);
 
   // Calculate daily totals
   const dailyTotals = todayConsumption?.reduce(
@@ -32,6 +33,7 @@ const TodayTab = () => {
   ) || { calories: 0, protein: 0, carbs: 0, fat: 0 };
 
   const handleFoodAdded = async () => {
+    console.log('🍎 Food added, closing dialog and refreshing data...');
     setShowAddDialog(false);
     // Force refresh of data
     await refetch();
@@ -44,6 +46,8 @@ const TodayTab = () => {
       </div>
     );
   }
+
+  console.log('📊 TodayTab rendering with consumption:', todayConsumption?.length || 0, 'items');
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

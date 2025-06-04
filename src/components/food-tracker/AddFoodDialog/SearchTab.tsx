@@ -4,11 +4,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, Plus } from "lucide-react";
+import { Search, Plus, Clock, Utensils } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useFoodDatabase } from "@/hooks/useFoodDatabase";
+import { useFoodConsumption } from "@/hooks/useFoodConsumption";
 import QuantitySelector from "./components/QuantitySelector";
 import { toast } from "sonner";
+import { format } from "date-fns";
 
 interface SearchTabProps {
   onFoodAdded: () => void;
@@ -16,7 +18,7 @@ interface SearchTabProps {
 }
 
 const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
-  const { t, isRTL } = useLanguage();
+  const { t } = useLanguage();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedFood, setSelectedFood] = useState<any>(null);
   const [quantity, setQuantity] = useState(100);
@@ -24,7 +26,28 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
   const [notes, setNotes] = useState("");
 
   const { searchFoodItems, logConsumption, isLoggingConsumption } = useFoodDatabase();
+  const { todayConsumption } = useFoodConsumption();
   const { data: searchResults, isLoading } = searchFoodItems(searchTerm);
+
+  // Get unique food items from today's consumption for quick add
+  const todaysFoodItems = todayConsumption?.reduce((unique, log) => {
+    const existing = unique.find(item => item.id === log.food_item?.id);
+    if (!existing && log.food_item) {
+      unique.push({
+        id: log.food_item.id,
+        name: log.food_item.name,
+        brand: log.food_item.brand,
+        category: log.food_item.category || 'general',
+        calories_per_100g: log.calories_consumed / (log.quantity_g / 100),
+        protein_per_100g: log.protein_consumed / (log.quantity_g / 100),
+        carbs_per_100g: log.carbs_consumed / (log.quantity_g / 100),
+        fat_per_100g: log.fat_consumed / (log.quantity_g / 100),
+        verified: true,
+        lastConsumed: log.consumed_at
+      });
+    }
+    return unique;
+  }, [] as any[]) || [];
 
   const handleSelectFood = (food: any) => {
     setSelectedFood(food);
@@ -33,7 +56,7 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
   const handleAddFood = async () => {
     if (!selectedFood) return;
 
-    const multiplier = quantity / 100; // Convert to per 100g basis
+    const multiplier = quantity / 100;
     const calories = (selectedFood.calories_per_100g || 0) * multiplier;
     const protein = (selectedFood.protein_per_100g || 0) * multiplier;
     const carbs = (selectedFood.carbs_per_100g || 0) * multiplier;
@@ -56,9 +79,55 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
       onClose();
     } catch (error) {
       console.error('Error logging food:', error);
-      toast.error('Failed to log food');
+      toast.error(t('Failed to log food'));
     }
   };
+
+  const FoodCard = ({ food, isQuickAdd = false }: { food: any; isQuickAdd?: boolean }) => (
+    <Card 
+      key={food.id} 
+      className={`p-3 cursor-pointer transition-all hover:shadow-md ${
+        selectedFood?.id === food.id ? 'ring-2 ring-green-600 bg-green-50' : ''
+      }`}
+      onClick={() => handleSelectFood(food)}
+    >
+      <div className="flex justify-between items-start">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-1">
+            <h4 className="font-medium text-gray-900">{food.name}</h4>
+            {isQuickAdd && (
+              <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                <Clock className="w-3 h-3 mr-1" />
+                {t('Recent')}
+              </Badge>
+            )}
+          </div>
+          {food.brand && (
+            <p className="text-sm text-gray-500">{food.brand}</p>
+          )}
+          {isQuickAdd && food.lastConsumed && (
+            <p className="text-xs text-gray-400 mt-1">
+              {t('Last eaten')}: {format(new Date(food.lastConsumed), 'MMM d, HH:mm')}
+            </p>
+          )}
+          <div className="flex items-center gap-2 mt-2">
+            <Badge variant="secondary" className="text-xs">
+              {food.category}
+            </Badge>
+            {food.verified && (
+              <Badge variant="default" className="text-xs bg-green-600">
+                {t('Verified')}
+              </Badge>
+            )}
+          </div>
+        </div>
+        <div className="text-right text-sm text-gray-600">
+          <div>{Math.round(food.calories_per_100g || 0)} cal</div>
+          <div className="text-xs">per 100g</div>
+        </div>
+      </div>
+    </Card>
+  );
 
   return (
     <div className="space-y-6">
@@ -73,6 +142,21 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
         />
       </div>
 
+      {/* Today's Foods - Quick Add Section */}
+      {!searchTerm && todaysFoodItems.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Utensils className="w-4 h-4 text-blue-600" />
+            <h3 className="font-medium text-gray-900">{t('Today\'s Foods - Quick Add')}</h3>
+          </div>
+          <div className="space-y-2 max-h-48 overflow-y-auto">
+            {todaysFoodItems.slice(0, 5).map((food) => (
+              <FoodCard key={`today-${food.id}`} food={food} isQuickAdd={true} />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Search Results */}
       {searchTerm.length >= 2 && (
         <div className="space-y-2">
@@ -84,36 +168,7 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
           ) : searchResults && searchResults.length > 0 ? (
             <div className="space-y-2 max-h-60 overflow-y-auto">
               {searchResults.map((food: any) => (
-                <Card 
-                  key={food.id} 
-                  className={`p-3 cursor-pointer transition-all hover:shadow-md ${
-                    selectedFood?.id === food.id ? 'ring-2 ring-green-600 bg-green-50' : ''
-                  }`}
-                  onClick={() => handleSelectFood(food)}
-                >
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <h4 className="font-medium text-gray-900">{food.name}</h4>
-                      {food.brand && (
-                        <p className="text-sm text-gray-500">{food.brand}</p>
-                      )}
-                      <div className="flex items-center gap-2 mt-2">
-                        <Badge variant="secondary" className="text-xs">
-                          {food.category}
-                        </Badge>
-                        {food.verified && (
-                          <Badge variant="default" className="text-xs bg-green-600">
-                            {t('Verified')}
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                    <div className="text-right text-sm text-gray-600">
-                      <div>{Math.round(food.calories_per_100g || 0)} cal</div>
-                      <div className="text-xs">per 100g</div>
-                    </div>
-                  </div>
-                </Card>
+                <FoodCard key={`search-${food.id}`} food={food} />
               ))}
             </div>
           ) : (
@@ -121,6 +176,15 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
               {t('No food items found')}
             </p>
           )}
+        </div>
+      )}
+
+      {/* Default state when no search and no today's foods */}
+      {!searchTerm && todaysFoodItems.length === 0 && (
+        <div className="text-center py-8">
+          <Search className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+          <p className="text-gray-500">{t('Search for food items to add to your log')}</p>
+          <p className="text-sm text-gray-400 mt-1">{t('Start typing to see results')}</p>
         </div>
       )}
 

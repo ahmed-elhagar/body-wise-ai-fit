@@ -1,11 +1,10 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Camera, Edit3 } from "lucide-react";
+import { Search, Edit3 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useEffect, useState } from "react";
 import SearchTab from "./SearchTab";
-import ScanTab from "./ScanTab";
 import ManualTab from "./ManualTab";
 
 interface AddFoodDialogProps {
@@ -62,20 +61,13 @@ const AddFoodDialog = ({ isOpen, onClose, onFoodAdded, preSelectedFood }: AddFoo
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-gray-100">
+          <TabsList className="grid w-full grid-cols-2 bg-gray-100">
             <TabsTrigger 
               value="search" 
               className="data-[state=active]:bg-white data-[state=active]:text-gray-900 flex items-center gap-2"
             >
               <Search className="w-4 h-4" />
               {t('Search')}
-            </TabsTrigger>
-            <TabsTrigger 
-              value="scan" 
-              className="data-[state=active]:bg-white data-[state=active]:text-gray-900 flex items-center gap-2"
-            >
-              <Camera className="w-4 h-4" />
-              {t('Scan')}
             </TabsTrigger>
             <TabsTrigger 
               value="manual" 
@@ -89,10 +81,6 @@ const AddFoodDialog = ({ isOpen, onClose, onFoodAdded, preSelectedFood }: AddFoo
           <div className="mt-4 max-h-[70vh] overflow-y-auto">
             <TabsContent value="search">
               <SearchTab onFoodAdded={onFoodAdded} onClose={onClose} />
-            </TabsContent>
-
-            <TabsContent value="scan">
-              <ScanTab onFoodAdded={onFoodAdded} onClose={onClose} />
             </TabsContent>
 
             <TabsContent value="manual">

@@ -29,6 +29,8 @@ export const useFoodDatabase = () => {
       queryFn: async () => {
         if (!searchTerm || searchTerm.length < 2) return [];
 
+        console.log('🔍 Searching food items with term:', searchTerm);
+
         const { data, error } = await supabase
           .rpc('search_food_items', { 
             search_term: searchTerm,
@@ -37,13 +39,15 @@ export const useFoodDatabase = () => {
           });
 
         if (error) {
-          console.error('Error searching food items:', error);
+          console.error('❌ Error searching food items:', error);
           throw error;
         }
 
+        console.log('✅ Found food items:', data?.length || 0);
         return data as FoodItem[];
       },
       enabled: !!searchTerm && searchTerm.length >= 2,
+      staleTime: 30000, // Cache for 30 seconds
     });
   };
 
@@ -106,6 +110,8 @@ export const useFoodDatabase = () => {
       fat: number;
       source: string;
     }) => {
+      console.log('📝 Logging food consumption:', consumption);
+
       const { error } = await supabase
         .from('food_consumption_log')
         .insert({
@@ -119,11 +125,19 @@ export const useFoodDatabase = () => {
           carbs_consumed: consumption.carbs,
           fat_consumed: consumption.fat,
           source: consumption.source,
+          consumed_at: new Date().toISOString()
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Error logging food consumption:', error);
+        throw error;
+      }
+
+      console.log('✅ Food consumption logged successfully');
     },
     onSuccess: () => {
+      // Invalidate food consumption queries to refresh the data
+      queryClient.invalidateQueries({ queryKey: ['food-consumption'] });
       queryClient.invalidateQueries({ queryKey: ['food-consumption-today'] });
       toast.success('Food logged successfully!');
     },
