@@ -14,6 +14,13 @@ export const useMealPlanState = () => {
   const queryClient = useQueryClient();
   const { remaining: userCredits, isPro, hasCredits } = useCentralizedCredits();
   
+  console.log('🔄 useMealPlanState - Centralized Credits:', {
+    userCredits,
+    isPro,
+    hasCredits,
+    userId: user?.id
+  });
+  
   // Navigation state
   const {
     currentWeekOffset,
@@ -140,7 +147,7 @@ export const useMealPlanState = () => {
     setAiPreferences(prev => ({ ...prev, ...newPrefs }));
   }, []);
 
-  // FIXED: Enhanced generation handler with proper date synchronization and longer wait times
+  // Enhanced generation handler with proper date synchronization and longer wait times
   const handleGenerateAIPlanEnhanced = useCallback(async () => {
     console.log('🚀 Starting enhanced AI generation for week offset:', currentWeekOffset);
     console.log('🗓️ Week start date for generation:', weekStartDate?.toISOString().split('T')[0]);
@@ -226,7 +233,7 @@ export const useMealPlanState = () => {
     error,
     isGenerating,
     
-    // Centralized credits
+    // Centralized credits - exposed for components
     userCredits,
     isPro,
     hasCredits,

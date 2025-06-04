@@ -18,13 +18,11 @@ const MealPlanHeader = ({
   const { t, isRTL } = useLanguage();
   const { remaining: remainingCredits, isPro, hasCredits } = useCentralizedCredits();
 
-  console.log('🌐 MealPlanHeader translation check:', {
-    language: isRTL ? 'ar' : 'en',
-    isRTL,
-    titleTranslation: t('mealPlan.smartMealPlanning'),
-    subtitleTranslation: t('mealPlan.personalizedNutrition'),
-    creditsTranslation: t('mealPlan.aiCredits'),
-    generateButtonTranslation: t('mealPlan.generateAIMealPlan')
+  console.log('🌐 MealPlanHeader centralized credits:', {
+    remainingCredits,
+    isPro,
+    hasCredits,
+    displayValue: isPro ? 'Unlimited' : `${remainingCredits} credits`
   });
 
   const displayCredits = isPro ? 'Unlimited' : `${remainingCredits} credits`;
