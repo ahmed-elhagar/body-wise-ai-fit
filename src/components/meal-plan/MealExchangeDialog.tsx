@@ -1,159 +1,293 @@
 
-import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ArrowLeftRight, Sparkles, Clock, Users } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
-import { useProfile } from "@/hooks/useProfile";
-import { toast } from "sonner";
-import type { DailyMeal } from "@/hooks/useMealPlanData";
+import React, { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { ArrowLeftRight, Sparkles, Clock, Users, ChefHat, X } from 'lucide-react';
+import { useMealExchange } from '@/hooks/useMealExchange';
+import type { DailyMeal } from '@/features/meal-plan/types';
 
 interface MealExchangeDialogProps {
   isOpen: boolean;
-  onClose: (open: boolean) => void;
-  currentMeal: DailyMeal | null;
-  onExchange?: () => void;
+  onClose: () => void;
+  meal: DailyMeal | null;
+  onExchangeComplete?: () => void;
 }
 
-const MealExchangeDialog = ({ isOpen, onClose, currentMeal, onExchange }: MealExchangeDialogProps) => {
-  const { user } = useAuth();
-  const { profile } = useProfile();
-  const [isExchanging, setIsExchanging] = useState(false);
+const EXCHANGE_REASONS = [
+  { value: 'dietary_restrictions', label: 'Dietary restrictions' },
+  { value: 'ingredient_availability', label: 'Missing ingredients' },
+  { value: 'time_constraints', label: 'Too time consuming' },
+  { value: 'personal_preference', label: 'Personal preference' },
+  { value: 'variety_seeking', label: 'Want more variety' },
+  { value: 'cooking_difficulty', label: 'Too difficult to cook' },
+  { value: 'nutritional_adjustment', label: 'Nutritional adjustment' },
+];
 
-  const handleExchangeMeal = async () => {
-    if (!currentMeal || !user) return;
+export const MealExchangeDialog = ({ isOpen, onClose, meal, onExchangeComplete }: MealExchangeDialogProps) => {
+  const [selectedReason, setSelectedReason] = useState('');
+  const [exchangeMode, setExchangeMode] = useState<'quick' | 'alternatives'>('alternatives');
+  
+  const {
+    isLoading,
+    alternatives,
+    generateAlternatives,
+    exchangeMeal,
+    quickExchange,
+    clearAlternatives,
+    hasAlternatives,
+  } = useMealExchange();
 
-    setIsExchanging(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('exchange-meal', {
-        body: {
-          mealId: currentMeal.id,
-          mealType: currentMeal.meal_type,
-          dayNumber: currentMeal.day_number,
-          weeklyPlanId: currentMeal.weekly_plan_id,
-          userProfile: profile,
-          targetCalories: currentMeal.calories,
-          dietaryRestrictions: profile?.dietary_restrictions || [],
-          allergies: profile?.allergies || []
-        }
-      });
-
-      if (error) throw error;
-
-      toast.success('Meal exchanged successfully!');
-      onExchange?.();
-      onClose(false);
-    } catch (error) {
-      console.error('Error exchanging meal:', error);
-      toast.error('Failed to exchange meal');
-    } finally {
-      setIsExchanging(false);
-    }
+  const handleClose = () => {
+    clearAlternatives();
+    setSelectedReason('');
+    setExchangeMode('alternatives');
+    onClose();
   };
 
-  if (!currentMeal) return null;
+  const handleGenerateAlternatives = async () => {
+    if (!meal || !selectedReason) return;
+    
+    const reasonLabel = EXCHANGE_REASONS.find(r => r.value === selectedReason)?.label || selectedReason;
+    await generateAlternatives(meal, reasonLabel);
+  };
+
+  const handleQuickExchange = async () => {
+    if (!meal || !selectedReason) return;
+    
+    const reasonLabel = EXCHANGE_REASONS.find(r => r.value === selectedReason)?.label || selectedReason;
+    const newMeal = await quickExchange(meal, reasonLabel, () => {
+      onExchangeComplete?.();
+      handleClose();
+    });
+  };
+
+  const handleSelectAlternative = async (alternative: any) => {
+    await exchangeMeal(alternative, () => {
+      onExchangeComplete?.();
+      handleClose();
+    });
+  };
+
+  if (!meal) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md bg-gradient-to-br from-fitness-primary-50 to-fitness-accent-50 border-fitness-primary-200">
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="max-w-4xl max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle className="text-fitness-primary-700 flex items-center gap-2">
-            <ArrowLeftRight className="w-5 h-5 text-fitness-accent-600" />
+          <DialogTitle className="flex items-center gap-2">
+            <ArrowLeftRight className="w-5 h-5" />
             Exchange Meal
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-6">
           {/* Current Meal Info */}
-          <Card className="bg-white border-fitness-primary-200 shadow-md">
+          <Card>
             <CardContent className="p-4">
-              <h3 className="font-semibold text-fitness-primary-700 mb-2">Current Meal</h3>
-              <p className="text-fitness-primary-600 mb-3">{currentMeal.name}</p>
-              
-              <div className="flex flex-wrap gap-2 mb-3">
-                <Badge className="bg-fitness-accent-500 text-white">
-                  <Clock className="w-3 h-3 mr-1" />
-                  {(currentMeal.prep_time || 0) + (currentMeal.cook_time || 0)} min
-                </Badge>
-                <Badge className="bg-fitness-primary-500 text-white">
-                  <Users className="w-3 h-3 mr-1" />
-                  {currentMeal.servings} serving{currentMeal.servings !== 1 ? 's' : ''}
-                </Badge>
-                <Badge className="bg-green-600 text-white">
-                  {currentMeal.calories} cal
-                </Badge>
-              </div>
+              <div className="flex items-start justify-between">
+                <div>
+                  <h3 className="font-semibold text-lg mb-2">Current Meal</h3>
+                  <p className="text-lg font-medium mb-3">{meal.name}</p>
+                  
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    <Badge variant="outline">
+                      <Clock className="w-3 h-3 mr-1" />
+                      {(meal.prep_time || 0) + (meal.cook_time || 0)} min
+                    </Badge>
+                    <Badge variant="outline">
+                      <Users className="w-3 h-3 mr-1" />
+                      {meal.servings || 1} serving{(meal.servings || 1) !== 1 ? 's' : ''}
+                    </Badge>
+                    <Badge variant="outline">
+                      {meal.calories || 0} cal
+                    </Badge>
+                  </div>
 
-              <div className="grid grid-cols-3 gap-2 text-xs">
-                <div className="bg-fitness-primary-50 p-2 rounded text-center border border-fitness-primary-200">
-                  <span className="font-medium text-green-600">{currentMeal.protein}g</span>
-                  <div className="text-fitness-primary-600">protein</div>
-                </div>
-                <div className="bg-fitness-primary-50 p-2 rounded text-center border border-fitness-primary-200">
-                  <span className="font-medium text-blue-600">{currentMeal.carbs}g</span>
-                  <div className="text-fitness-primary-600">carbs</div>
-                </div>
-                <div className="bg-fitness-primary-50 p-2 rounded text-center border border-fitness-primary-200">
-                  <span className="font-medium text-yellow-600">{currentMeal.fat}g</span>
-                  <div className="text-fitness-primary-600">fat</div>
+                  <div className="grid grid-cols-3 gap-3 text-sm">
+                    <div className="text-center p-2 bg-green-50 rounded">
+                      <span className="font-semibold text-green-700">{meal.protein || 0}g</span>
+                      <div className="text-green-600">Protein</div>
+                    </div>
+                    <div className="text-center p-2 bg-blue-50 rounded">
+                      <span className="font-semibold text-blue-700">{meal.carbs || 0}g</span>
+                      <div className="text-blue-600">Carbs</div>
+                    </div>
+                    <div className="text-center p-2 bg-yellow-50 rounded">
+                      <span className="font-semibold text-yellow-700">{meal.fat || 0}g</span>
+                      <div className="text-yellow-600">Fat</div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Exchange Info */}
-          <Card className="bg-white border-fitness-primary-200 shadow-md">
-            <CardContent className="p-4">
-              <h3 className="font-semibold text-fitness-primary-700 mb-2 flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-fitness-accent-600" />
-                AI Exchange
-              </h3>
-              <p className="text-fitness-primary-600 text-sm mb-4">
-                AI will find a similar meal with comparable nutrition that matches your dietary preferences and restrictions.
-              </p>
-              
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-fitness-primary-600">Target Calories:</span>
-                  <span className="text-fitness-primary-700 font-medium">{currentMeal.calories} kcal</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-fitness-primary-600">Meal Type:</span>
-                  <span className="text-fitness-primary-700 font-medium capitalize">{currentMeal.meal_type}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-fitness-primary-600">Day:</span>
-                  <span className="text-fitness-primary-700 font-medium">Day {currentMeal.day_number}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Exchange Reason Selection */}
+          {!hasAlternatives && (
+            <Card>
+              <CardContent className="p-4">
+                <h3 className="font-semibold mb-4">Why do you want to exchange this meal?</h3>
+                
+                <Select value={selectedReason} onValueChange={setSelectedReason}>
+                  <SelectTrigger className="mb-4">
+                    <SelectValue placeholder="Select a reason for exchange" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {EXCHANGE_REASONS.map((reason) => (
+                      <SelectItem key={reason.value} value={reason.value}>
+                        {reason.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-          {/* Actions */}
-          <div className="flex gap-3">
-            <Button
-              onClick={() => onClose(false)}
-              variant="outline"
-              className="flex-1 border-fitness-primary-300 text-fitness-primary-600 hover:bg-fitness-primary-50"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleExchangeMeal}
-              disabled={isExchanging}
-              className="flex-1 bg-gradient-to-r from-fitness-accent-500 to-fitness-accent-600 hover:from-fitness-accent-600 hover:to-fitness-accent-700 text-white"
-            >
-              <ArrowLeftRight className="w-4 h-4 mr-2" />
-              {isExchanging ? 'Exchanging...' : 'Exchange Meal'}
-            </Button>
-          </div>
+                {/* Exchange Mode Toggle */}
+                <div className="flex gap-3 mb-4">
+                  <Button
+                    variant={exchangeMode === 'alternatives' ? 'default' : 'outline'}
+                    onClick={() => setExchangeMode('alternatives')}
+                    className="flex-1"
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Browse Alternatives
+                  </Button>
+                  <Button
+                    variant={exchangeMode === 'quick' ? 'default' : 'outline'}
+                    onClick={() => setExchangeMode('quick')}
+                    className="flex-1"
+                  >
+                    <ArrowLeftRight className="w-4 h-4 mr-2" />
+                    Quick Exchange
+                  </Button>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3">
+                  <Button onClick={handleClose} variant="outline" className="flex-1">
+                    Cancel
+                  </Button>
+                  {exchangeMode === 'alternatives' ? (
+                    <Button
+                      onClick={handleGenerateAlternatives}
+                      disabled={!selectedReason || isLoading}
+                      className="flex-1"
+                    >
+                      {isLoading ? (
+                        <>
+                          <Sparkles className="w-4 h-4 mr-2 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-4 h-4 mr-2" />
+                          Generate Alternatives
+                        </>
+                      )}
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={handleQuickExchange}
+                      disabled={!selectedReason || isLoading}
+                      className="flex-1"
+                    >
+                      {isLoading ? (
+                        <>
+                          <ArrowLeftRight className="w-4 h-4 mr-2 animate-spin" />
+                          Exchanging...
+                        </>
+                      ) : (
+                        <>
+                          <ArrowLeftRight className="w-4 h-4 mr-2" />
+                          Quick Exchange
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Alternatives List */}
+          {hasAlternatives && (
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold">Alternative Meals ({alternatives.length})</h3>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearAlternatives}
+                  >
+                    <X className="w-4 h-4 mr-1" />
+                    Clear
+                  </Button>
+                </div>
+                
+                <ScrollArea className="max-h-96">
+                  <div className="space-y-3">
+                    {alternatives.map((alternative, index) => (
+                      <Card key={index} className="border hover:shadow-md transition-shadow">
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <h4 className="font-medium mb-2">{alternative.name}</h4>
+                              <p className="text-sm text-gray-600 mb-3">{alternative.reason}</p>
+                              
+                              <div className="flex gap-4 text-sm mb-3">
+                                <span className="flex items-center gap-1">
+                                  <Clock className="w-3 h-3" />
+                                  {alternative.prep_time + alternative.cook_time} min
+                                </span>
+                                <span>{alternative.calories} cal</span>
+                                <span className="text-green-600">{alternative.protein}g protein</span>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                <Badge variant="secondary" className="text-xs">
+                                  {Math.round(alternative.similarity_score * 100)}% similar
+                                </Badge>
+                              </div>
+                            </div>
+                            
+                            <Button
+                              onClick={() => handleSelectAlternative(alternative)}
+                              disabled={isLoading}
+                              size="sm"
+                              className="ml-4"
+                            >
+                              {isLoading ? 'Exchanging...' : 'Select'}
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </ScrollArea>
+                
+                <div className="flex gap-3 mt-4">
+                  <Button onClick={handleClose} variant="outline" className="flex-1">
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleGenerateAlternatives}
+                    disabled={isLoading}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Generate More
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </DialogContent>
     </Dialog>
   );
 };
-
-export default MealExchangeDialog;
