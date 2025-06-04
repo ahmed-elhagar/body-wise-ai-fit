@@ -377,7 +377,6 @@ const EnhancedUsersTable = () => {
                       <div className="flex items-center gap-2">
                         <div className="flex flex-col">
                           <span className="font-medium text-lg">{user.ai_generations_remaining}</span>
-                          <span className="text-xs text-gray-500">remaining</span>
                         </div>
                         <Button
                           variant="ghost"

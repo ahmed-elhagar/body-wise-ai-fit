@@ -2,13 +2,13 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, DollarSign, Calendar, User, TrendingUp, AlertTriangle, CheckCircle } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { CreditCard, Search, Calendar, User, DollarSign, TrendingUp } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useSubscription } from "@/hooks/useSubscription";
 
 interface Subscription {
   id: string;
@@ -20,8 +20,11 @@ interface Subscription {
   current_period_start: string;
   current_period_end: string;
   cancel_at_period_end: boolean;
+  stripe_price_id: string;
+  interval: string;
   created_at: string;
-  profiles: {
+  updated_at: string;
+  user_profile: {
     first_name: string;
     last_name: string;
     email: string;
@@ -31,267 +34,300 @@ interface Subscription {
 const SubscriptionsTab = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const queryClient = useQueryClient();
-  const { adminCancelSubscription, isAdminCancelling } = useSubscription();
 
-  const { data: subscriptions, isLoading } = useQuery({
+  const { data: subscriptions, isLoading, error } = useQuery({
     queryKey: ['admin-subscriptions'],
     queryFn: async () => {
       console.log('Fetching subscriptions...');
-      const { data, error } = await supabase
+      
+      const { data: subscriptionsData, error: subscriptionsError } = await supabase
         .from('subscriptions')
         .select(`
           *,
-          profiles!subscriptions_user_id_fkey(first_name, last_name, email)
+          user_profile:profiles!subscriptions_user_id_fkey(
+            first_name,
+            last_name,
+            email
+          )
         `)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching subscriptions:', error);
-        throw error;
+      if (subscriptionsError) {
+        console.error('Error fetching subscriptions:', subscriptionsError);
+        throw subscriptionsError;
       }
-      
-      console.log('Raw subscriptions data:', data);
-      
-      // Transform the data to match our interface
-      return (data || []).map(item => ({
-        ...item,
-        profiles: item.profiles || { first_name: '', last_name: '', email: '' }
-      })) as Subscription[];
-    },
-    refetchInterval: 30000, // Refresh every 30 seconds
+
+      console.log('Fetched subscriptions:', subscriptionsData);
+      return subscriptionsData as Subscription[];
+    }
   });
 
-  // Get revenue analytics
-  const { data: analytics } = useQuery({
-    queryKey: ['subscription-analytics'],
+  const { data: stats } = useQuery({
+    queryKey: ['subscription-stats'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('subscriptions')
-        .select('plan_type, status, created_at, current_period_end')
-        .eq('status', 'active');
+      const [
+        { count: totalSubscriptions },
+        { count: activeSubscriptions },
+        { count: cancelledSubscriptions }
+      ] = await Promise.all([
+        supabase.from('subscriptions').select('*', { count: 'exact', head: true }),
+        supabase.from('subscriptions').select('*', { count: 'exact', head: true }).eq('status', 'active'),
+        supabase.from('subscriptions').select('*', { count: 'exact', head: true }).eq('status', 'cancelled')
+      ]);
 
-      if (error) throw error;
-
-      const monthlyRevenue = (data || [])
-        .filter(sub => sub.plan_type === 'monthly')
-        .length * 9.99;
-      
-      const yearlyRevenue = (data || [])
-        .filter(sub => sub.plan_type === 'yearly')
-        .length * 99.99;
-
-      const totalMRR = monthlyRevenue + (yearlyRevenue / 12);
-      
       return {
-        totalMRR,
-        monthlyRevenue,
-        yearlyRevenue,
-        activeSubscriptions: data?.length || 0
+        total: totalSubscriptions || 0,
+        active: activeSubscriptions || 0,
+        cancelled: cancelledSubscriptions || 0
       };
     }
   });
 
-  const handleCancelSubscription = async (targetUserId: string) => {
-    try {
-      await adminCancelSubscription({ targetUserId });
+  const cancelSubscription = useMutation({
+    mutationFn: async (subscriptionId: string) => {
+      const { error } = await supabase
+        .from('subscriptions')
+        .update({ 
+          status: 'cancelled',
+          cancel_at_period_end: true,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', subscriptionId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-subscriptions'] });
-    } catch (error) {
-      console.error('Failed to cancel subscription:', error);
+      queryClient.invalidateQueries({ queryKey: ['subscription-stats'] });
+      toast.success('Subscription cancelled successfully');
+    },
+    onError: (error) => {
+      toast.error(`Failed to cancel subscription: ${error.message}`);
     }
-  };
+  });
+
+  const reactivateSubscription = useMutation({
+    mutationFn: async (subscriptionId: string) => {
+      const { error } = await supabase
+        .from('subscriptions')
+        .update({ 
+          status: 'active',
+          cancel_at_period_end: false,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', subscriptionId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-subscriptions'] });
+      queryClient.invalidateQueries({ queryKey: ['subscription-stats'] });
+      toast.success('Subscription reactivated successfully');
+    },
+    onError: (error) => {
+      toast.error(`Failed to reactivate subscription: ${error.message}`);
+    }
+  });
 
   const filteredSubscriptions = subscriptions?.filter(sub =>
-    sub.profiles.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    sub.profiles.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    sub.profiles.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    sub.user_profile?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    sub.user_profile?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    sub.user_profile?.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     sub.plan_type?.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'bg-green-100 text-green-800 border-green-200';
-      case 'canceled': return 'bg-red-100 text-red-800 border-red-200';
-      case 'past_due': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'trialing': return 'bg-blue-100 text-blue-800 border-blue-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+  const getStatusBadge = (status: string, cancelAtPeriodEnd: boolean) => {
+    if (status === 'active' && !cancelAtPeriodEnd) {
+      return <Badge className="bg-green-100 text-green-800">Active</Badge>;
+    } else if (status === 'active' && cancelAtPeriodEnd) {
+      return <Badge className="bg-yellow-100 text-yellow-800">Cancelling</Badge>;
+    } else if (status === 'cancelled') {
+      return <Badge className="bg-red-100 text-red-800">Cancelled</Badge>;
+    } else {
+      return <Badge variant="secondary">{status}</Badge>;
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'active': return CheckCircle;
-      case 'canceled': return AlertTriangle;
-      case 'past_due': return AlertTriangle;
-      default: return CheckCircle;
-    }
+  const getPlanBadge = (planType: string) => {
+    const colors = {
+      monthly: 'bg-blue-100 text-blue-800',
+      yearly: 'bg-purple-100 text-purple-800',
+      lifetime: 'bg-gold-100 text-gold-800'
+    };
+    return <Badge className={colors[planType as keyof typeof colors] || 'bg-gray-100 text-gray-800'}>{planType}</Badge>;
   };
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <CreditCard className="w-8 h-8 animate-spin mx-auto mb-4" />
           <p className="text-gray-600">Loading subscriptions...</p>
         </div>
       </div>
     );
   }
 
-  return (
-    <div className="space-y-6">
-      {/* Enhanced Header with Revenue Analytics */}
-      <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-0 shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-blue-500 rounded-lg flex items-center justify-center">
-              <DollarSign className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold">Subscription Management</h2>
-              <p className="text-gray-600">Monitor revenue and manage user subscriptions</p>
-            </div>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div className="bg-white/60 backdrop-blur-sm p-4 rounded-lg border border-white/40">
-              <div className="flex items-center gap-2 mb-2">
-                <TrendingUp className="w-4 h-4 text-green-600" />
-                <span className="text-sm font-medium text-gray-600">Monthly Recurring Revenue</span>
-              </div>
-              <p className="text-2xl font-bold text-green-600">${analytics?.totalMRR?.toFixed(2) || '0.00'}</p>
-            </div>
-            <div className="bg-white/60 backdrop-blur-sm p-4 rounded-lg border border-white/40">
-              <div className="flex items-center gap-2 mb-2">
-                <CheckCircle className="w-4 h-4 text-blue-600" />
-                <span className="text-sm font-medium text-gray-600">Active Subscriptions</span>
-              </div>
-              <p className="text-2xl font-bold text-blue-600">{subscriptions?.filter(s => s.status === 'active').length || 0}</p>
-            </div>
-            <div className="bg-white/60 backdrop-blur-sm p-4 rounded-lg border border-white/40">
-              <div className="flex items-center gap-2 mb-2">
-                <AlertTriangle className="w-4 h-4 text-red-600" />
-                <span className="text-sm font-medium text-gray-600">Cancelled</span>
-              </div>
-              <p className="text-2xl font-bold text-red-600">{subscriptions?.filter(s => s.status === 'canceled').length || 0}</p>
-            </div>
-            <div className="bg-white/60 backdrop-blur-sm p-4 rounded-lg border border-white/40">
-              <div className="flex items-center gap-2 mb-2">
-                <DollarSign className="w-4 h-4 text-purple-600" />
-                <span className="text-sm font-medium text-gray-600">Total Subscriptions</span>
-              </div>
-              <p className="text-2xl font-bold text-purple-600">{subscriptions?.length || 0}</p>
-            </div>
-          </div>
-
-          {/* Search */}
-          <div className="flex items-center gap-2">
-            <Search className="w-4 h-4 text-gray-400" />
-            <Input
-              placeholder="Search by email, name, or plan type..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="flex-1"
-            />
-          </div>
+  if (error) {
+    return (
+      <Card>
+        <CardContent className="text-center py-12">
+          <div className="text-red-600 mb-4">Error loading subscriptions</div>
+          <p className="text-gray-500">{error.message}</p>
         </CardContent>
       </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-blue-500 rounded-lg flex items-center justify-center">
+            <CreditCard className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold">Subscription Management</h2>
+            <p className="text-gray-600">Monitor and manage user subscriptions</p>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <Search className="h-4 w-4" />
+          <Input
+            placeholder="Search subscriptions..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-64"
+          />
+        </div>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Subscriptions</p>
+                <p className="text-2xl font-bold text-gray-900">{stats?.total || 0}</p>
+              </div>
+              <CreditCard className="h-8 w-8 text-gray-400" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Active Subscriptions</p>
+                <p className="text-2xl font-bold text-green-600">{stats?.active || 0}</p>
+              </div>
+              <TrendingUp className="h-8 w-8 text-green-400" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Cancelled</p>
+                <p className="text-2xl font-bold text-red-600">{stats?.cancelled || 0}</p>
+              </div>
+              <Calendar className="h-8 w-8 text-red-400" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Subscriptions List */}
       <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">User</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Plan</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Status</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Period</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Revenue</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {filteredSubscriptions.map((subscription) => {
-                  const StatusIcon = getStatusIcon(subscription.status);
-                  const revenue = subscription.plan_type === 'monthly' ? 9.99 : 
-                                 subscription.plan_type === 'yearly' ? 99.99 : 0;
-                  
-                  return (
-                    <tr key={subscription.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                            <User className="w-5 h-5 text-white" />
-                          </div>
-                          <div>
-                            <p className="font-medium text-gray-900">
-                              {subscription.profiles.first_name} {subscription.profiles.last_name}
-                            </p>
-                            <p className="text-sm text-gray-500">{subscription.profiles.email}</p>
-                          </div>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <CreditCard className="h-5 w-5" />
+            Subscriptions ({filteredSubscriptions.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {filteredSubscriptions.length === 0 ? (
+            <div className="text-center py-12">
+              <CreditCard className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No Subscriptions Found</h3>
+              <p className="text-gray-500">
+                {searchTerm ? 'No subscriptions match your search criteria.' : 'No subscriptions exist yet.'}
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {filteredSubscriptions.map((subscription) => (
+                <div key={subscription.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                        <User className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <div className="font-medium text-gray-900">
+                          {subscription.user_profile?.first_name && subscription.user_profile?.last_name
+                            ? `${subscription.user_profile.first_name} ${subscription.user_profile.last_name}`
+                            : subscription.user_profile?.email || 'Unknown User'}
                         </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <Badge variant="outline" className="capitalize font-medium">
-                          {subscription.plan_type || 'Unknown'}
-                        </Badge>
-                      </td>
-                      <td className="px-6 py-4">
-                        <Badge className={`${getStatusColor(subscription.status)} flex items-center gap-1 w-fit`}>
-                          <StatusIcon className="w-3 h-3" />
-                          {subscription.status}
-                        </Badge>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm">
-                          <p className="text-gray-900">
-                            {subscription.current_period_end ? 
-                              new Date(subscription.current_period_end).toLocaleDateString() : 
-                              'N/A'
-                            }
-                          </p>
-                          <p className="text-gray-500">
-                            {subscription.cancel_at_period_end ? 'Cancels at end' : 'Auto-renew'}
-                          </p>
+                        <div className="text-sm text-gray-500">{subscription.user_profile?.email}</div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <div className="flex items-center gap-2 mb-1">
+                          {getStatusBadge(subscription.status, subscription.cancel_at_period_end)}
+                          {getPlanBadge(subscription.plan_type)}
                         </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <p className="font-medium text-green-600">${revenue}</p>
-                      </td>
-                      <td className="px-6 py-4">
-                        {subscription.status === 'active' && (
+                        <div className="text-sm text-gray-500">
+                          {subscription.current_period_end && (
+                            <>Expires: {new Date(subscription.current_period_end).toLocaleDateString()}</>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        {subscription.status === 'active' && !subscription.cancel_at_period_end ? (
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleCancelSubscription(subscription.user_id)}
-                            disabled={isAdminCancelling}
+                            onClick={() => cancelSubscription.mutate(subscription.id)}
+                            disabled={cancelSubscription.isPending}
                             className="text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"
                           >
-                            {isAdminCancelling ? 'Cancelling...' : 'Cancel'}
+                            Cancel
                           </Button>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-          
-          {filteredSubscriptions.length === 0 && (
-            <div className="text-center py-12 text-gray-500">
-              <DollarSign className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No Subscriptions Found</h3>
-              <p>
-                {searchTerm ? 'No subscriptions match your search criteria.' : 'No subscription records found in the database.'}
-              </p>
-              {!searchTerm && subscriptions?.length === 0 && (
-                <p className="text-sm text-gray-400 mt-2">
-                  Subscriptions will appear here once users purchase plans.
-                </p>
-              )}
+                        ) : subscription.status === 'cancelled' ? (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => reactivateSubscription.mutate(subscription.id)}
+                            disabled={reactivateSubscription.isPending}
+                            className="text-green-600 hover:text-green-700 border-green-200 hover:border-green-300"
+                          >
+                            Reactivate
+                          </Button>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
+                    <div>
+                      <span className="font-medium">Created:</span> {new Date(subscription.created_at).toLocaleDateString()}
+                    </div>
+                    <div>
+                      <span className="font-medium">Interval:</span> {subscription.interval}
+                    </div>
+                    <div>
+                      <span className="font-medium">Stripe ID:</span> {subscription.stripe_subscription_id?.substring(0, 20)}...
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </CardContent>

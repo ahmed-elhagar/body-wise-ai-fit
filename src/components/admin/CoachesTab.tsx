@@ -1,9 +1,12 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Users, UserPlus, Search, Crown, Mail } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Users, UserPlus, Search, Crown, Mail, ChevronDown, ChevronRight } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -43,6 +46,9 @@ const CoachesTab = () => {
   const [selectedTraineeIds, setSelectedTraineeIds] = useState<Record<string, string>>({});
   const [traineeInputValues, setTraineeInputValues] = useState<Record<string, string>>({});
   const [searchTerm, setSearchTerm] = useState("");
+  const [expandedCoaches, setExpandedCoaches] = useState<Record<string, boolean>>({});
+  const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
+  const [selectedCoachForAssign, setSelectedCoachForAssign] = useState<Coach | null>(null);
   const queryClient = useQueryClient();
 
   // Get all users
@@ -110,6 +116,8 @@ const CoachesTab = () => {
       queryClient.invalidateQueries({ queryKey: ['admin-coach-trainees'] });
       setSelectedTraineeIds(prev => ({ ...prev, [variables.coachId]: "" }));
       setTraineeInputValues(prev => ({ ...prev, [variables.coachId]: "" }));
+      setIsAssignDialogOpen(false);
+      setSelectedCoachForAssign(null);
       toast.success('Trainee assigned successfully');
     },
     onError: (error) => {
@@ -149,16 +157,15 @@ const CoachesTab = () => {
     coach.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleAssignTrainee = (coachId: string) => {
-    const selectedTraineeId = selectedTraineeIds[coachId];
-    if (!selectedTraineeId) {
+  const handleAssignTrainee = () => {
+    if (!selectedCoachForAssign || !selectedTraineeIds[selectedCoachForAssign.id]) {
       toast.error("Please select a trainee");
       return;
     }
     
     assignTrainee.mutate({ 
-      coachId, 
-      traineeId: selectedTraineeId
+      coachId: selectedCoachForAssign.id, 
+      traineeId: selectedTraineeIds[selectedCoachForAssign.id]
     });
   };
 
@@ -168,6 +175,15 @@ const CoachesTab = () => {
 
   const handleTraineeInputChange = (coachId: string, value: string) => {
     setTraineeInputValues(prev => ({ ...prev, [coachId]: value }));
+  };
+
+  const toggleCoachExpansion = (coachId: string) => {
+    setExpandedCoaches(prev => ({ ...prev, [coachId]: !prev[coachId] }));
+  };
+
+  const openAssignDialog = (coach: Coach) => {
+    setSelectedCoachForAssign(coach);
+    setIsAssignDialogOpen(true);
   };
 
   if (usersLoading || coachTraineesLoading) {
@@ -205,108 +221,100 @@ const CoachesTab = () => {
         </div>
       </div>
 
-      <div className="grid gap-6">
+      <div className="grid gap-4">
         {filteredCoaches.map((coach) => (
           <Card key={coach.id} className="overflow-visible">
-            <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50">
+            <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50 pb-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
-                    <Crown className="h-6 w-6 text-white" />
+                  <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+                    <Crown className="h-5 w-5 text-white" />
                   </div>
                   <div>
                     <CardTitle className="text-lg">
                       {coach.first_name} {coach.last_name}
                     </CardTitle>
                     <div className="flex items-center gap-2 mt-1">
-                      <Mail className="h-4 w-4 text-gray-500" />
+                      <Mail className="h-3 w-3 text-gray-500" />
                       <span className="text-sm text-gray-600">{coach.email}</span>
-                      <Badge className="bg-purple-100 text-purple-800">
+                      <Badge className="bg-purple-100 text-purple-800 text-xs">
                         {coach.role}
                       </Badge>
                     </div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-purple-600">
-                    {coach.trainees.length}
+                <div className="flex items-center gap-2">
+                  <div className="text-right mr-2">
+                    <div className="text-lg font-bold text-purple-600">
+                      {coach.trainees.length}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {coach.trainees.length === 1 ? 'Trainee' : 'Trainees'}
+                    </div>
                   </div>
-                  <div className="text-sm text-gray-500">
-                    {coach.trainees.length === 1 ? 'Trainee' : 'Trainees'}
-                  </div>
+                  <Button
+                    size="sm"
+                    onClick={() => openAssignDialog(coach)}
+                    className="text-purple-600 hover:text-purple-700 border-purple-200 hover:border-purple-300"
+                    variant="outline"
+                  >
+                    <UserPlus className="h-3 w-3 mr-1" />
+                    Assign
+                  </Button>
+                  {coach.trainees.length > 0 && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => toggleCoachExpansion(coach.id)}
+                      className="p-1"
+                    >
+                      {expandedCoaches[coach.id] ? (
+                        <ChevronDown className="h-4 w-4" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4" />
+                      )}
+                    </Button>
+                  )}
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="pt-6">
-              {/* Assign new trainee */}
-              <div className="mb-6 p-4 bg-gray-50 rounded-lg relative">
-                <div className="flex items-center gap-2 mb-3">
-                  <UserPlus className="h-4 w-4 text-purple-600" />
-                  <span className="font-medium text-gray-700">Assign New Trainee</span>
-                </div>
-                <div className="flex gap-2">
-                  <div className="flex-1">
-                    <TraineeAutoComplete
-                      value={traineeInputValues[coach.id] || ""}
-                      onValueChange={(value) => handleTraineeInputChange(coach.id, value)}
-                      onUserSelect={(userId) => handleTraineeSelect(coach.id, userId)}
-                      placeholder="Enter trainee email or name..."
-                      instanceId={coach.id}
-                    />
-                  </div>
-                  <Button 
-                    onClick={() => handleAssignTrainee(coach.id)}
-                    disabled={assignTrainee.isPending || !selectedTraineeIds[coach.id]}
-                    className="px-6"
-                  >
-                    {assignTrainee.isPending ? 'Assigning...' : 'Assign'}
-                  </Button>
-                </div>
-              </div>
-
-              {/* Current trainees */}
-              {coach.trainees.length > 0 ? (
-                <div>
-                  <h4 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
-                    <Users className="h-4 w-4" />
-                    Current Trainees ({coach.trainees.length})
-                  </h4>
-                  <div className="space-y-2">
-                    {coach.trainees.map((relationship) => (
-                      <div key={relationship.id} className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                            <Users className="h-4 w-4 text-gray-600" />
-                          </div>
-                          <div>
-                            <div className="font-medium text-gray-900">
-                              {relationship.trainee_profile.first_name} {relationship.trainee_profile.last_name}
+            
+            {coach.trainees.length > 0 && (
+              <Collapsible open={expandedCoaches[coach.id]} onOpenChange={() => toggleCoachExpansion(coach.id)}>
+                <CollapsibleContent>
+                  <CardContent className="pt-4">
+                    <div className="space-y-2">
+                      {coach.trainees.map((relationship) => (
+                        <div key={relationship.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center">
+                              <Users className="h-3 w-3 text-gray-600" />
                             </div>
-                            <div className="text-sm text-gray-500">
-                              {relationship.trainee_profile.email}
+                            <div>
+                              <div className="font-medium text-sm text-gray-900">
+                                {relationship.trainee_profile.first_name} {relationship.trainee_profile.last_name}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                {relationship.trainee_profile.email}
+                              </div>
                             </div>
                           </div>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => removeTrainee.mutate(relationship.id)}
+                            disabled={removeTrainee.isPending}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50 text-xs px-2 py-1 h-6"
+                          >
+                            Remove
+                          </Button>
                         </div>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => removeTrainee.mutate(relationship.id)}
-                          disabled={removeTrainee.isPending}
-                          className="text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"
-                        >
-                          Remove
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-8 text-gray-500">
-                  <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                  <p>No trainees assigned to this coach</p>
-                </div>
-              )}
-            </CardContent>
+                      ))}
+                    </div>
+                  </CardContent>
+                </CollapsibleContent>
+              </Collapsible>
+            )}
           </Card>
         ))}
       </div>
@@ -322,6 +330,44 @@ const CoachesTab = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Assign Trainee Dialog */}
+      <Dialog open={isAssignDialogOpen} onOpenChange={setIsAssignDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Assign Trainee to {selectedCoachForAssign?.first_name} {selectedCoachForAssign?.last_name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <TraineeAutoComplete
+                value={traineeInputValues[selectedCoachForAssign?.id || ""] || ""}
+                onValueChange={(value) => selectedCoachForAssign && handleTraineeInputChange(selectedCoachForAssign.id, value)}
+                onUserSelect={(userId) => selectedCoachForAssign && handleTraineeSelect(selectedCoachForAssign.id, userId)}
+                placeholder="Enter trainee email or name..."
+                instanceId={selectedCoachForAssign?.id || "assign-dialog"}
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button
+                onClick={handleAssignTrainee}
+                disabled={assignTrainee.isPending || !selectedCoachForAssign || !selectedTraineeIds[selectedCoachForAssign?.id || ""]}
+                className="flex-1"
+              >
+                {assignTrainee.isPending ? 'Assigning...' : 'Assign Trainee'}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsAssignDialogOpen(false);
+                  setSelectedCoachForAssign(null);
+                }}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
