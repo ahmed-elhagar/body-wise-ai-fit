@@ -21,7 +21,8 @@ import {
   SidebarMenuButton, 
   SidebarGroup,
   SidebarGroupLabel,
-  SidebarGroupContent
+  SidebarGroupContent,
+  useSidebar
 } from "@/components/ui/sidebar";
 import { useI18n } from "@/hooks/useI18n";
 import { useRole } from "@/hooks/useRole";
@@ -39,7 +40,9 @@ export const SidebarMainNavigation = () => {
   const { tFrom, isRTL } = useI18n();
   const tNav = tFrom('navigation');
   const location = useLocation();
-  const { isCoach } = useRole();
+  const { isCoach, isAdmin } = useRole();
+  const { state, isMobile } = useSidebar();
+  const isCollapsed = state === "collapsed" && !isMobile;
 
   // Main Navigation Items
   const mainNavigationItems: NavigationItem[] = [
@@ -71,22 +74,24 @@ export const SidebarMainNavigation = () => {
 
   const renderNavigationSection = (items: NavigationItem[], title: string) => {
     const filteredItems = items.filter(item => 
-      !item.requiresCoach || isCoach
+      !item.requiresCoach || isCoach || isAdmin
     );
 
     if (filteredItems.length === 0) return null;
 
     return (
       <SidebarGroup>
-        <SidebarGroupLabel className={cn(
-          "text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-3",
-          isRTL && "text-right"
-        )}>
-          {title}
-        </SidebarGroupLabel>
+        {!isCollapsed && (
+          <SidebarGroupLabel className={cn(
+            "text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-3",
+            isRTL && "text-right"
+          )}>
+            {title}
+          </SidebarGroupLabel>
+        )}
         
         <SidebarGroupContent>
-          <SidebarMenu className="space-y-1 px-2">
+          <SidebarMenu className={cn("space-y-1", isCollapsed ? "px-1" : "px-2")}>
             {filteredItems.map((item) => {
               const isActive = location.pathname === item.href;
               return (
@@ -94,27 +99,36 @@ export const SidebarMainNavigation = () => {
                   <SidebarMenuButton
                     asChild
                     isActive={isActive}
-                    tooltip={item.label}
+                    tooltip={isCollapsed ? item.label : undefined}
                     className={cn(
                       "w-full text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-colors rounded-lg",
                       isActive && "bg-blue-50 text-blue-700 border-r-2 border-blue-600 shadow-sm",
                       isRTL && "text-right",
-                      isRTL && isActive && "border-r-0 border-l-2 border-blue-600"
+                      isRTL && isActive && "border-r-0 border-l-2 border-blue-600",
+                      isCollapsed && "justify-center p-2"
                     )}
                   >
                     <Link 
                       to={item.href} 
                       className={cn(
-                        "flex items-center gap-3 px-3 py-2 w-full",
-                        isRTL && "flex-row-reverse"
+                        "flex items-center w-full",
+                        isCollapsed ? "justify-center" : "gap-3 px-3 py-2",
+                        isRTL && !isCollapsed && "flex-row-reverse"
                       )}
                     >
-                      <item.icon className="h-5 w-5 flex-shrink-0" />
-                      <span className="font-medium truncate">{item.label}</span>
-                      {item.badge && (
-                        <span className="ml-auto text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full">
-                          {item.badge}
-                        </span>
+                      <item.icon className={cn(
+                        "flex-shrink-0",
+                        isCollapsed ? "h-5 w-5" : "h-5 w-5"
+                      )} />
+                      {!isCollapsed && (
+                        <>
+                          <span className="font-medium truncate">{item.label}</span>
+                          {item.badge && (
+                            <span className="ml-auto text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full">
+                              {item.badge}
+                            </span>
+                          )}
+                        </>
                       )}
                     </Link>
                   </SidebarMenuButton>

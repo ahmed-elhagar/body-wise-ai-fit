@@ -33,14 +33,20 @@ const AppSidebar = () => {
         <SidebarBranding />
       </SidebarHeader>
       
-      <SidebarContent className="px-2 py-4 space-y-4 overflow-y-auto">
+      <SidebarContent className={cn(
+        "py-4 space-y-4 overflow-y-auto",
+        isCollapsed && !isMobile ? "px-1" : "px-2"
+      )}>
         <SidebarMainNavigation />
         <SidebarManagementPanel />
-        {!isCollapsed && <SidebarAccountSection />}
+        {(!isCollapsed || isMobile) && <SidebarAccountSection />}
       </SidebarContent>
 
-      <SidebarFooter className="p-4 border-t border-gray-200">
-        {!isCollapsed && <SidebarFooterActions />}
+      <SidebarFooter className={cn(
+        "border-t border-gray-200",
+        isCollapsed && !isMobile ? "p-1" : "p-4"
+      )}>
+        {(!isCollapsed || isMobile) && <SidebarFooterActions />}
       </SidebarFooter>
     </Sidebar>
   )

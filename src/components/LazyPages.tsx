@@ -15,6 +15,7 @@ const CalorieChecker = lazy(() => import('@/pages/CalorieChecker'));
 const WeightTracking = lazy(() => import('@/pages/WeightTracking'));
 const Goals = lazy(() => import('@/pages/Goals'));
 const Progress = lazy(() => import('@/pages/Progress'));
+const Analytics = lazy(() => import('@/pages/Analytics'));
 const Settings = lazy(() => import('@/pages/Settings'));
 const Notifications = lazy(() => import('@/pages/Notifications'));
 const Chat = lazy(() => import('@/pages/Chat'));
@@ -38,6 +39,7 @@ export const LazyPages = {
   WeightTracking,
   Goals,
   Progress,
+  Analytics,
   Settings,
   Notifications,
   Chat,
@@ -53,6 +55,7 @@ export {
   MealPlan,
   Exercise,
   Progress,
+  Analytics,
   Settings,
   Coach,
   Admin,

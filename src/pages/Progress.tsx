@@ -3,7 +3,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TrendingUp, Target, Scale, Goal, Trophy, Brain } from "lucide-react";
+import { TrendingUp, Scale, Trophy, Brain } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
@@ -11,8 +11,6 @@ import WeightStatsCards from "@/components/weight/WeightStatsCards";
 import WeightProgressChart from "@/components/weight/WeightProgressChart";
 import WeightEntryForm from "@/components/weight/WeightEntryForm";
 import ProgressBadges from "@/components/goals/ProgressBadges";
-import GoalHistoryTimeline from "@/components/goals/GoalHistoryTimeline";
-import EnhancedGoalsForm from "@/components/profile/enhanced/EnhancedGoalsForm";
 import ProgressAnalytics from "@/components/progress/ProgressAnalytics";
 import AchievementBadges from "@/components/progress/AchievementBadges";
 import TrendAnalysis from "@/components/progress/TrendAnalysis";
@@ -73,7 +71,7 @@ const Progress = () => {
         </PageHeader>
 
         <Tabs value={activeTab} onValueChange={(value) => navigate(`/progress/${value}`)} className="w-full">
-          <TabsList className="grid w-full grid-cols-5 max-w-2xl bg-white/80 backdrop-blur-sm">
+          <TabsList className="grid w-full grid-cols-4 max-w-2xl bg-white/80 backdrop-blur-sm">
             <TabsTrigger value="analytics" className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
               <span className="hidden sm:inline">{t('Analytics')}</span>
@@ -81,10 +79,6 @@ const Progress = () => {
             <TabsTrigger value="weight" className="flex items-center gap-2">
               <Scale className="h-4 w-4" />
               <span className="hidden sm:inline">{t('Weight')}</span>
-            </TabsTrigger>
-            <TabsTrigger value="goals" className="flex items-center gap-2">
-              <Goal className="h-4 w-4" />
-              <span className="hidden sm:inline">{t('Goals')}</span>
             </TabsTrigger>
             <TabsTrigger value="achievements" className="flex items-center gap-2">
               <Trophy className="h-4 w-4" />
@@ -114,27 +108,6 @@ const Progress = () => {
                 </Card>
               </div>
             </div>
-          </TabsContent>
-
-          <TabsContent value="goals" className="space-y-6 mt-6">
-            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Goal className="h-5 w-5 text-blue-600" />
-                  {t('Fitness Goals Management')}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <EnhancedGoalsForm
-                  formData={{}}
-                  updateFormData={() => {}}
-                  handleArrayInput={() => {}}
-                  onSave={() => Promise.resolve(true)}
-                  isUpdating={false}
-                  validationErrors={{}}
-                />
-              </CardContent>
-            </Card>
           </TabsContent>
 
           <TabsContent value="achievements" className="space-y-6 mt-6">
