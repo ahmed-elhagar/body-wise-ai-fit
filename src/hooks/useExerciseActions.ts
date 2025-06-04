@@ -1,110 +1,144 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { useEnhancedErrorSystem } from './useEnhancedErrorSystem';
-import { toast } from 'sonner';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from './useAuth';
+import { useToast } from '@/hooks/use-toast';
 
-export const useExerciseActions = () => {
-  const { handleError, withErrorBoundary } = useEnhancedErrorSystem();
-  const { language } = useLanguage();
+export const useExerciseActions = (refetch: () => void) => {
+  const { user } = useAuth();
+  const { toast } = useToast();
 
-  const completeExercise = withErrorBoundary(
-    async (exerciseId: string) => {
-      console.log('✅ Starting exercise completion:', exerciseId);
+  const completeExercise = async (exerciseId: string) => {
+    if (!user?.id) return;
+
+    try {
+      console.log('✅ Completing exercise:', exerciseId);
       
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('exercises')
         .update({ 
           completed: true,
-          completed_at: new Date().toISOString()
+          updated_at: new Date().toISOString()
         })
-        .eq('id', exerciseId)
-        .select()
-        .single();
+        .eq('id', exerciseId);
 
       if (error) {
-        console.error('❌ Database error completing exercise:', error);
-        
-        // Handle specific error types
-        if (error.code === '57014') {
-          throw new Error('TIMEOUT_ERROR');
-        } else if (error.code === '23503') {
-          throw new Error('EXERCISE_NOT_FOUND');
-        } else {
-          throw new Error('DATABASE_ERROR');
-        }
+        console.error('Error completing exercise:', error);
+        throw error;
       }
 
-      console.log('✅ Exercise completed successfully:', data);
-      
-      // Show success message
-      toast.success(
-        language === 'ar' 
-          ? 'تم إكمال التمرين بنجاح!' 
-          : 'Exercise completed successfully!'
-      );
-      
-      return data;
-    },
-    {
-      operation: 'complete_exercise',
-      retryable: true,
-      severity: 'medium',
-      component: 'ExerciseActions'
+      // Track performance analytics
+      await supabase.functions.invoke('track-exercise-performance', {
+        body: {
+          exerciseId,
+          userId: user.id,
+          action: 'completed',
+          timestamp: new Date().toISOString()
+        }
+      });
+
+      toast({
+        title: "Exercise Completed! 🎉",
+        description: "Great job! Keep up the momentum.",
+        duration: 3000,
+      });
+
+      refetch();
+      console.log('✅ Exercise completed successfully');
+    } catch (error) {
+      console.error('Error completing exercise:', error);
+      toast({
+        title: "Error",
+        description: "Failed to complete exercise. Please try again.",
+        variant: "destructive",
+      });
+      throw error;
     }
-  );
+  };
 
-  const updateExerciseProgress = withErrorBoundary(
-    async (
-      exerciseId: string, 
-      sets: number, 
-      reps: string, 
-      notes?: string, 
-      weight?: number
-    ) => {
-      console.log('📊 Starting progress update:', { exerciseId, sets, reps, notes, weight });
+  const updateExerciseProgress = async (exerciseId: string, sets: number, reps: string, notes?: string) => {
+    if (!user?.id) return;
+
+    try {
+      // Validate input
+      if (!exerciseId || sets < 0 || !reps) {
+        throw new Error('Invalid exercise progress data');
+      }
       
-      const updateData: any = {
-        sets_completed: sets,
-        reps_completed: reps,
-        updated_at: new Date().toISOString()
-      };
-
-      if (notes) updateData.notes = notes;
-      if (weight !== undefined) updateData.weight_used = weight;
-
-      const { data, error } = await supabase
+      console.log('📊 Updating exercise progress:', { exerciseId, sets, reps, notes });
+      
+      const { error } = await supabase
         .from('exercises')
-        .update(updateData)
-        .eq('id', exerciseId)
-        .select()
-        .single();
+        .update({ 
+          actual_sets: sets,
+          actual_reps: reps,
+          notes: notes,
+          completed: true,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', exerciseId);
 
       if (error) {
-        console.error('❌ Database error updating progress:', error);
-        
-        if (error.code === '57014') {
-          throw new Error('TIMEOUT_ERROR');
-        } else if (error.code === '23503') {
-          throw new Error('EXERCISE_NOT_FOUND');
-        } else {
-          throw new Error('DATABASE_ERROR');
-        }
+        console.error('Error updating exercise progress:', error);
+        throw error;
       }
 
-      console.log('✅ Progress updated successfully:', data);
-      return data;
-    },
-    {
-      operation: 'update_exercise_progress',
-      retryable: true,
-      severity: 'low',
-      component: 'ExerciseActions'
+      // Track detailed performance analytics
+      await supabase.functions.invoke('track-exercise-performance', {
+        body: {
+          exerciseId,
+          userId: user.id,
+          action: 'progress_updated',
+          progressData: {
+            sets_completed: sets,
+            reps_completed: reps,
+            notes
+          },
+          timestamp: new Date().toISOString()
+        }
+      });
+
+      toast({
+        title: "Progress Updated! 💪",
+        description: `Logged ${sets} sets of ${reps} reps`,
+        duration: 3000,
+      });
+
+      refetch();
+      console.log('✅ Exercise progress updated successfully');
+    } catch (error) {
+      console.error('Error updating exercise progress:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update progress. Please try again.",
+        variant: "destructive",
+      });
+      throw error;
     }
-  );
+  };
+
+  const getExerciseRecommendations = async () => {
+    if (!user?.id) return null;
+
+    try {
+      const { data, error } = await supabase.functions.invoke('get-exercise-recommendations', {
+        body: { userId: user.id }
+      });
+
+      if (error) {
+        console.error('Error getting recommendations:', error);
+        return null;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error fetching exercise recommendations:', error);
+      return null;
+    }
+  };
 
   return {
     completeExercise,
-    updateExerciseProgress
+    updateExerciseProgress,
+    getExerciseRecommendations,
   };
 };
