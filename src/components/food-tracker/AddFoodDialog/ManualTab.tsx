@@ -68,7 +68,7 @@ const ManualTab = ({ onFoodAdded, onClose, preSelectedFood }: ManualTabProps) =>
       meal_type: mealType as 'breakfast' | 'lunch' | 'dinner' | 'snack',
       consumed_at: new Date().toISOString(),
       notes: notes || undefined,
-      source: preSelectedFood ? 'ai_analysis' : 'manual',
+      source: (preSelectedFood ? 'ai_analysis' : 'manual') as 'manual' | 'ai_analysis' | 'barcode',
       food_item: {
         name: foodName,
         calories_per_100g: caloriesNum,
