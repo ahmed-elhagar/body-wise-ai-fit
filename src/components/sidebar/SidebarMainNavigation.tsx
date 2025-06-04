@@ -135,3 +135,5 @@ export const SidebarMainNavigation = () => {
     </div>
   );
 };
+
+export default SidebarMainNavigation;

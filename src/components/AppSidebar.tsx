@@ -6,11 +6,11 @@ import {
   SidebarFooter,
   SidebarHeader,
 } from "@/components/ui/sidebar"
-import SidebarBranding from "./sidebar/SidebarBranding"
-import SidebarMainNavigation from "./sidebar/SidebarMainNavigation"
-import SidebarManagementPanel from "./sidebar/SidebarManagementPanel"
-import SidebarAccountSection from "./sidebar/SidebarAccountSection"
-import SidebarFooterActions from "./sidebar/SidebarFooterActions"
+import { SidebarBranding } from "./sidebar/SidebarBranding"
+import { SidebarMainNavigation } from "./sidebar/SidebarMainNavigation"
+import { SidebarManagementPanel } from "./sidebar/SidebarManagementPanel"
+import { SidebarAccountSection } from "./sidebar/SidebarAccountSection"
+import { SidebarFooterActions } from "./sidebar/SidebarFooterActions"
 
 const AppSidebar = () => {
   const { isRTL } = useI18n()

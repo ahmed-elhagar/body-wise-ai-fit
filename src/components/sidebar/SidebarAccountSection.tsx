@@ -194,3 +194,5 @@ export const SidebarAccountSection = () => {
     </SidebarGroup>
   );
 };
+
+export default SidebarAccountSection;
