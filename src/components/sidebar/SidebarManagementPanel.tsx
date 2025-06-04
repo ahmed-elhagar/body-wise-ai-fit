@@ -34,11 +34,9 @@ export const SidebarManagementPanel = () => {
   const managementItems = [
     ...(isAdmin ? [
       { href: "/admin", icon: Shield, label: "Admin Panel" },
-      { href: "/admin/users", icon: Users, label: "User Management" },
-      { href: "/admin/system", icon: Database, label: "System" },
     ] : []),
     ...(isCoach ? [
-      { href: "/coach", icon: Users, label: "Trainees" },
+      { href: "/coach", icon: Users, label: "Coach Dashboard" },
     ] : []),
   ];
 

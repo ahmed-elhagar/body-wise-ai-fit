@@ -12,7 +12,8 @@ import {
   TrendingUp,
   Scale,
   Users,
-  User
+  User,
+  BarChart3
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { 
@@ -62,13 +63,14 @@ export const SidebarMainNavigation = () => {
   const progressNavigationItems: NavigationItem[] = [
     { href: "/goals", icon: Target, label: "Goals" },
     { href: "/progress", icon: TrendingUp, label: "Progress" },
+    { href: "/analytics", icon: BarChart3, label: "Analytics" },
   ];
 
   // Communication & Settings Items
   const communicationNavigationItems: NavigationItem[] = [
     { href: "/chat", icon: MessageSquare, label: "Chat" },
     { href: "/notifications", icon: Bell, label: "Notifications" },
-    { href: "/coach", icon: Users, label: "Coach", requiresCoach: true },
+    { href: "/coach", icon: Users, label: "Coach Dashboard", requiresCoach: true },
     { href: "/profile", icon: User, label: "Profile" },
   ];
 
