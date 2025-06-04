@@ -21,6 +21,14 @@ const TodayTab = ({ key: forceRefreshKey }: { key?: number }) => {
     forceRefresh();
   }, [forceRefresh, forceRefreshKey]);
 
+  // Debug consumption data changes
+  useEffect(() => {
+    console.log('📊 TodayTab consumption data updated:', {
+      count: todayConsumption?.length || 0,
+      items: todayConsumption?.slice(0, 2) // Log first 2 items
+    });
+  }, [todayConsumption]);
+
   // Calculate daily totals
   const dailyTotals = todayConsumption?.reduce(
     (acc, item) => ({

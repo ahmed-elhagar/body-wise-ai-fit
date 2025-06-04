@@ -166,18 +166,31 @@ export const useFoodDatabase = () => {
       return data;
     },
     onSuccess: async (data) => {
-      console.log('🔄 Food logged successfully, invalidating queries...');
+      console.log('🔄 Food logged successfully, invalidating all food consumption queries...');
       
-      // Clear all food consumption related queries
-      await queryClient.invalidateQueries({ queryKey: ['food-consumption'] });
-      await queryClient.invalidateQueries({ queryKey: ['food-consumption-today'] });
+      // Clear all food consumption related queries with more specific invalidation
+      const today = new Date();
+      const todayKey = today.toISOString().split('T')[0]; // YYYY-MM-DD format
       
-      // Force immediate refetch of today's consumption
+      // Invalidate today's consumption specifically
+      await queryClient.invalidateQueries({ 
+        queryKey: ['food-consumption-today', user?.id, todayKey],
+        exact: false 
+      });
+      
+      // Also invalidate any general food consumption queries
+      await queryClient.invalidateQueries({ 
+        queryKey: ['food-consumption'],
+        exact: false 
+      });
+      
+      // Force immediate refetch of today's data
       await queryClient.refetchQueries({ 
-        queryKey: ['food-consumption-today'],
+        queryKey: ['food-consumption-today', user?.id, todayKey],
         type: 'active'
       });
       
+      console.log('✅ All queries invalidated and refetched');
       toast.success('Food logged successfully!');
     },
     onError: (error) => {

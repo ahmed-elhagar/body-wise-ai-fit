@@ -47,14 +47,22 @@ const FoodTracker = () => {
     setPreSelectedFood(null);
     
     try {
-      // Clear all food consumption queries
-      await queryClient.clear();
+      // Clear all food consumption queries with specific user-based invalidation
+      console.log('🧹 Clearing query cache...');
+      await queryClient.invalidateQueries({ 
+        queryKey: ['food-consumption'],
+        exact: false 
+      });
       
       // Force refresh of food consumption data
+      console.log('🔄 Force refreshing consumption data...');
       await forceRefresh();
       
       // Force component re-render with new key
-      setRefreshKey(prev => prev + 1);
+      setRefreshKey(prev => {
+        console.log('🔑 Updating refresh key from', prev, 'to', prev + 1);
+        return prev + 1;
+      });
       
       // Show success message
       toast.success('Food added successfully!');

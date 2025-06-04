@@ -38,26 +38,42 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
     forceRefresh();
   }, [forceRefresh]);
 
+  // Debug today's consumption data
+  useEffect(() => {
+    console.log('🍎 Today consumption in SearchTab:', {
+      count: todayConsumption?.length || 0,
+      data: todayConsumption?.slice(0, 3) // Log first 3 for debugging
+    });
+  }, [todayConsumption]);
+
   // Get unique food items from today's consumption for quick add
   const todaysFoodItems = todayConsumption?.reduce((unique: any[], log) => {
+    if (!log.food_item) {
+      console.log('⚠️ Food log missing food_item:', log);
+      return unique;
+    }
+
     const existing = unique.find(item => item.id === log.food_item?.id);
-    if (!existing && log.food_item) {
-      const calculatedCalories = log.quantity_g > 0 ? Math.round((log.calories_consumed || 0) / (log.quantity_g / 100)) : 0;
-      const calculatedProtein = log.quantity_g > 0 ? Math.round((log.protein_consumed || 0) / (log.quantity_g / 100)) : 0;
-      const calculatedCarbs = log.quantity_g > 0 ? Math.round((log.carbs_consumed || 0) / (log.quantity_g / 100)) : 0;
-      const calculatedFat = log.quantity_g > 0 ? Math.round((log.fat_consumed || 0) / (log.quantity_g / 100)) : 0;
+    if (!existing) {
+      // Calculate per-100g values from the consumption data
+      const per100gCalories = log.quantity_g > 0 ? (log.calories_consumed * 100) / log.quantity_g : 0;
+      const per100gProtein = log.quantity_g > 0 ? (log.protein_consumed * 100) / log.quantity_g : 0;
+      const per100gCarbs = log.quantity_g > 0 ? (log.carbs_consumed * 100) / log.quantity_g : 0;
+      const per100gFat = log.quantity_g > 0 ? (log.fat_consumed * 100) / log.quantity_g : 0;
       
       unique.push({
         id: log.food_item.id,
         name: log.food_item.name,
         brand: log.food_item.brand,
         category: log.food_item.category || 'general',
-        calories_per_100g: calculatedCalories,
-        protein_per_100g: calculatedProtein,
-        carbs_per_100g: calculatedCarbs,
-        fat_per_100g: calculatedFat,
+        calories_per_100g: Math.round(per100gCalories),
+        protein_per_100g: Math.round(per100gProtein * 10) / 10, // 1 decimal place
+        carbs_per_100g: Math.round(per100gCarbs * 10) / 10,
+        fat_per_100g: Math.round(per100gFat * 10) / 10,
         verified: true,
-        lastConsumed: log.consumed_at
+        lastConsumed: log.consumed_at,
+        originalQuantity: log.quantity_g,
+        originalMealType: log.meal_type
       });
     }
     return unique;
@@ -68,12 +84,18 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
     searchResultsCount: searchResults?.length || 0,
     todaysFoodItemsCount: todaysFoodItems.length,
     todayConsumptionCount: todayConsumption?.length || 0,
-    todayConsumption: todayConsumption?.slice(0, 2) // Log first 2 items
+    todaysFoodItems: todaysFoodItems.slice(0, 2) // Log first 2 items
   });
 
   const handleSelectFood = (food: any) => {
     console.log('🎯 Selected food:', food);
     setSelectedFood(food);
+    
+    // If it's from today's foods, pre-fill with original quantity and meal type
+    if (food.originalQuantity) {
+      setQuantity(food.originalQuantity);
+      setMealType(food.originalMealType || 'snack');
+    }
   };
 
   const handleAddFood = async () => {
@@ -97,7 +119,7 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
         fat
       });
 
-      logConsumption({
+      await logConsumption({
         foodItemId: selectedFood.id,
         quantity,
         mealType,
@@ -109,9 +131,15 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
         source: 'search'
       });
       
-      // Close immediately and let parent handle refresh
-      onClose();
+      // Reset form
+      setSelectedFood(null);
+      setQuantity(100);
+      setMealType("snack");
+      setNotes("");
+      
+      // Call parent handlers
       onFoodAdded();
+      onClose();
     } catch (error) {
       console.error('❌ Error logging food:', error);
       toast.error(t('Failed to log food'));
@@ -120,7 +148,7 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
 
   const FoodCard = ({ food, isQuickAdd = false }: { food: any; isQuickAdd?: boolean }) => (
     <Card 
-      key={food.id} 
+      key={`${isQuickAdd ? 'today' : 'search'}-${food.id}`}
       className={`p-3 cursor-pointer transition-all hover:shadow-md ${
         selectedFood?.id === food.id ? 'ring-2 ring-green-600 bg-green-50' : ''
       }`}
@@ -183,6 +211,9 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
           <div className="flex items-center gap-2">
             <Utensils className="w-4 h-4 text-blue-600" />
             <h3 className="font-medium text-gray-900">{t('Today\'s Foods - Quick Add')}</h3>
+            <Badge variant="outline" className="text-xs">
+              {todaysFoodItems.length} items
+            </Badge>
           </div>
           <div className="space-y-2 max-h-48 overflow-y-auto">
             {todaysFoodItems.slice(0, 5).map((food) => (
@@ -220,6 +251,7 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
           <Search className="w-12 h-12 text-gray-300 mx-auto mb-3" />
           <p className="text-gray-500">{t('Search for food items to add to your log')}</p>
           <p className="text-sm text-gray-400 mt-1">{t('Start typing to see results')}</p>
+          <p className="text-xs text-gray-400 mt-2">{t('Once you log some food today, they\'ll appear here for quick re-adding')}</p>
         </div>
       )}
 
@@ -243,19 +275,19 @@ const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
               </div>
               <div className="text-center">
                 <div className="font-semibold text-green-800">
-                  {Math.round((selectedFood.protein_per_100g || 0) * (quantity / 100))}g
+                  {Math.round((selectedFood.protein_per_100g || 0) * (quantity / 100) * 10) / 10}g
                 </div>
                 <div className="text-green-600">protein</div>
               </div>
               <div className="text-center">
                 <div className="font-semibold text-green-800">
-                  {Math.round((selectedFood.carbs_per_100g || 0) * (quantity / 100))}g
+                  {Math.round((selectedFood.carbs_per_100g || 0) * (quantity / 100) * 10) / 10}g
                 </div>
                 <div className="text-green-600">carbs</div>
               </div>
               <div className="text-center">
                 <div className="font-semibold text-green-800">
-                  {Math.round((selectedFood.fat_per_100g || 0) * (quantity / 100))}g
+                  {Math.round((selectedFood.fat_per_100g || 0) * (quantity / 100) * 10) / 10}g
                 </div>
                 <div className="text-green-600">fat</div>
               </div>
