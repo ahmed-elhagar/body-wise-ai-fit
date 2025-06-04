@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { User, Check } from "lucide-react";
+import { User, Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -12,6 +12,7 @@ interface UserOption {
   first_name?: string;
   last_name?: string;
   displayName: string;
+  role?: string;
 }
 
 interface TraineeAutoCompleteProps {
@@ -20,7 +21,6 @@ interface TraineeAutoCompleteProps {
   onUserSelect: (userId: string) => void;
   placeholder?: string;
   className?: string;
-  // Add unique identifier to prevent shared state
   instanceId?: string;
 }
 
@@ -44,25 +44,33 @@ export const TraineeAutoComplete = ({
   const fetchUsers = async () => {
     setLoading(true);
     try {
+      console.log('Fetching users for trainee autocomplete...');
       const { data, error } = await supabase
         .from('profiles')
         .select('id, email, first_name, last_name, role')
         .not('role', 'in', '("admin","coach")')
         .order('first_name', { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching users:', error);
+        throw error;
+      }
+
+      console.log('Fetched users:', data);
 
       const userOptions = (data || []).map(user => ({
         id: user.id,
         email: user.email,
         first_name: user.first_name,
         last_name: user.last_name,
+        role: user.role,
         displayName: user.first_name && user.last_name 
           ? `${user.first_name} ${user.last_name} (${user.email})`
           : user.email
       }));
 
       setUsers(userOptions);
+      console.log('Processed user options:', userOptions);
     } catch (error) {
       console.error('Error fetching users:', error);
     } finally {
@@ -86,6 +94,9 @@ export const TraineeAutoComplete = ({
   }, []);
 
   useEffect(() => {
+    console.log('Value changed:', value);
+    console.log('Available users:', users.length);
+    
     if (value.trim() === '') {
       setFilteredUsers([]);
       setShowDropdown(false);
@@ -93,13 +104,18 @@ export const TraineeAutoComplete = ({
     }
 
     const searchTerm = value.toLowerCase();
-    const filtered = users.filter(user => 
-      user.email.toLowerCase().includes(searchTerm) ||
-      user.first_name?.toLowerCase().includes(searchTerm) ||
-      user.last_name?.toLowerCase().includes(searchTerm) ||
-      user.displayName.toLowerCase().includes(searchTerm)
-    );
+    console.log('Searching for:', searchTerm);
+    
+    const filtered = users.filter(user => {
+      const emailMatch = user.email.toLowerCase().includes(searchTerm);
+      const firstNameMatch = user.first_name?.toLowerCase().includes(searchTerm);
+      const lastNameMatch = user.last_name?.toLowerCase().includes(searchTerm);
+      const displayNameMatch = user.displayName.toLowerCase().includes(searchTerm);
+      
+      return emailMatch || firstNameMatch || lastNameMatch || displayNameMatch;
+    });
 
+    console.log('Filtered users:', filtered);
     setFilteredUsers(filtered);
     setShowDropdown(filtered.length > 0);
     setSelectedIndex(-1);
@@ -108,7 +124,7 @@ export const TraineeAutoComplete = ({
     if (filtered.length > 0) {
       setTimeout(updateDropdownPosition, 0);
     }
-  }, [value, users, showDropdown]);
+  }, [value, users]);
 
   // Update position on scroll or resize
   useEffect(() => {
@@ -127,10 +143,13 @@ export const TraineeAutoComplete = ({
   }, [showDropdown]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onValueChange(e.target.value);
+    const newValue = e.target.value;
+    console.log('Input changed to:', newValue);
+    onValueChange(newValue);
   };
 
   const handleUserSelect = (user: UserOption) => {
+    console.log('User selected:', user);
     onValueChange(user.displayName);
     onUserSelect(user.id);
     setShowDropdown(false);
@@ -167,6 +186,7 @@ export const TraineeAutoComplete = ({
   };
 
   const handleInputFocus = () => {
+    console.log('Input focused, filtered users:', filteredUsers.length);
     if (filteredUsers.length > 0) {
       setShowDropdown(true);
       setTimeout(updateDropdownPosition, 0);
@@ -213,7 +233,7 @@ export const TraineeAutoComplete = ({
           <ScrollArea className="h-full max-h-60">
             {filteredUsers.map((user, index) => (
               <div
-                key={user.id}
+                key={`${instanceId}-${user.id}`}
                 className={cn(
                   "flex items-center gap-2 p-3 cursor-pointer hover:bg-gray-50 border-b border-gray-100 last:border-b-0",
                   index === selectedIndex && "bg-gray-100"
@@ -231,6 +251,11 @@ export const TraineeAutoComplete = ({
                   <span className="text-sm text-gray-500 truncate">
                     {user.email}
                   </span>
+                  {user.role && (
+                    <span className="text-xs text-blue-600 font-medium">
+                      {user.role}
+                    </span>
+                  )}
                 </div>
                 {index === selectedIndex && (
                   <Check className="h-4 w-4 text-blue-600" />
@@ -243,7 +268,14 @@ export const TraineeAutoComplete = ({
       
       {loading && (
         <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-          <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
+          <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+        </div>
+      )}
+      
+      {/* Debug info (remove in production) */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="text-xs text-gray-400 mt-1">
+          Users: {users.length}, Filtered: {filteredUsers.length}, Show: {showDropdown.toString()}
         </div>
       )}
     </div>
