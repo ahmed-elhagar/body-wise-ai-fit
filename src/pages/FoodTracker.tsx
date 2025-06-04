@@ -1,4 +1,3 @@
-
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,6 +10,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import TodayTab from "@/components/food-tracker/TodayTab";
 import HistoryTab from "@/components/food-tracker/HistoryTab";
 import AddFoodDialog from "@/components/food-tracker/AddFoodDialog/AddFoodDialog";
+import { toast } from "react-toastify";
 
 const FoodTracker = () => {
   const { t } = useLanguage();
@@ -37,10 +37,16 @@ const FoodTracker = () => {
     }
   }, [location.state, navigate, location.pathname]);
 
-  const handleFoodAdded = () => {
+  const handleFoodAdded = async () => {
+    console.log('🔄 Food added, refreshing data...');
     setIsAddFoodOpen(false);
     setPreSelectedFood(null);
-    refetch();
+    
+    // Force refetch of food consumption data
+    await refetch();
+    
+    // Show success message
+    toast.success(t('Food added successfully!'));
   };
 
   const handleOpenAddDialog = () => {

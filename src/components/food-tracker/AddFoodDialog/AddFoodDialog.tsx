@@ -23,15 +23,41 @@ const AddFoodDialog = ({ isOpen, onClose, onFoodAdded, preSelectedFood }: AddFoo
     if (preSelectedFood && isOpen) {
       // If we have pre-selected food from AI analysis, switch to manual tab
       setActiveTab("manual");
+    } else {
+      // Reset to search tab for normal usage
+      setActiveTab("search");
     }
   }, [preSelectedFood, isOpen]);
+
+  // If we have pre-selected food, show only the manual tab content
+  if (preSelectedFood) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-gray-900">
+              {t('Add Analyzed Food')}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="mt-4 max-h-[70vh] overflow-y-auto">
+            <ManualTab 
+              onFoodAdded={onFoodAdded} 
+              onClose={onClose} 
+              preSelectedFood={preSelectedFood}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-gray-900">
-            {preSelectedFood ? t('Add Analyzed Food') : t('Add Food')}
+            {t('Add Food')}
           </DialogTitle>
         </DialogHeader>
 
