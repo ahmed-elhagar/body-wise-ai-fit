@@ -4,7 +4,6 @@ import { useMealPlanCore } from '@/hooks/useMealPlanCore';
 import { useMealPlanDialogs } from '@/hooks/meal-plan/useMealPlanDialogs';
 import { useMealPlanHandlers } from '@/hooks/useMealPlanHandlers';
 import { MealPlanContent } from './MealPlanContent';
-import { MealPlanDialogs } from './dialogs/MealPlanDialogs';
 import { MealExchangeDialog } from '@/components/meal-plan/MealExchangeDialog';
 import { LoadingState } from './LoadingState';
 import ErrorState from '../../../components/meal-plan/components/ErrorState';
@@ -48,8 +47,8 @@ export const MealPlanContainer = () => {
 
   const { handleExchangeMeal, handleViewMeal } = useMealPlanHandlers(
     (meal) => {
-      // Handle view meal
-      console.log('View meal:', meal);
+      console.log('👁️ Viewing meal details:', meal.name);
+      openRecipeDialog(meal);
     },
     openExchangeDialog
   );
@@ -97,15 +96,13 @@ export const MealPlanContainer = () => {
         setSelectedDayNumber={setSelectedDayNumber}
       />
 
-      {/* New Enhanced Meal Exchange Dialog */}
+      {/* Enhanced Meal Exchange Dialog */}
       <MealExchangeDialog
         isOpen={showExchangeDialog}
         onClose={closeExchangeDialog}
         meal={selectedMeal}
         onExchangeComplete={handleMealExchanged}
       />
-
-      {/* Other dialogs... */}
     </div>
   );
 };
