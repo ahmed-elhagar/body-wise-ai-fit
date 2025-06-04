@@ -1,13 +1,12 @@
-
 import React from 'react';
 import { useMealPlanCore } from '@/hooks/useMealPlanCore';
-import { useMealPlanDialogs } from '@/features/meal-plan/hooks/useMealPlanDialogs';
+import { useMealPlanDialogs } from '@/hooks/meal-plan/useMealPlanDialogs';
 import { useMealPlanHandlers } from '@/hooks/useMealPlanHandlers';
 import { MealPlanContent } from './MealPlanContent';
+import { MealPlanDialogs } from './dialogs/MealPlanDialogs';
 import { MealExchangeDialog } from '@/components/meal-plan/MealExchangeDialog';
-import MealRecipeDialog from '@/components/MealRecipeDialog';
 import { LoadingState } from './LoadingState';
-import ErrorState from '../../../components/meal-plan/components/ErrorState';
+import { ErrorState } from './ErrorState';
 
 export const MealPlanContainer = () => {
   const {
@@ -38,19 +37,19 @@ export const MealPlanContainer = () => {
     setShowAIDialog,
     showRecipeDialog,
     setShowRecipeDialog,
-    openRecipeDialog,
     showAddSnackDialog,
     setShowAddSnackDialog,
     showShoppingListDialog,
     setShowShoppingListDialog,
     aiPreferences,
+    openRecipeDialog,
     closeAllDialogs
   } = useMealPlanDialogs();
 
   const { handleExchangeMeal, handleViewMeal } = useMealPlanHandlers(
     (meal) => {
-      console.log('👁️ Viewing meal details:', meal.name);
-      openRecipeDialog(meal);
+      // Handle view meal
+      console.log('View meal:', meal);
     },
     openExchangeDialog
   );
@@ -58,10 +57,6 @@ export const MealPlanContainer = () => {
   const handleMealExchanged = () => {
     refetch();
     closeExchangeDialog();
-  };
-
-  const handleGenerateAI = () => {
-    return generateMealPlan(aiPreferences);
   };
 
   if (isLoading) {
@@ -88,12 +83,12 @@ export const MealPlanContainer = () => {
         onViewMeal={handleViewMeal}
         onExchangeMeal={handleExchangeMeal}
         onAddSnack={() => {}}
-        onGenerateAI={handleGenerateAI}
+        onGenerateAI={generateMealPlan}
         setCurrentWeekOffset={setCurrentWeekOffset}
         setSelectedDayNumber={setSelectedDayNumber}
       />
 
-      {/* Enhanced Meal Exchange Dialog */}
+      {/* New Enhanced Meal Exchange Dialog */}
       <MealExchangeDialog
         isOpen={showExchangeDialog}
         onClose={closeExchangeDialog}
@@ -101,15 +96,7 @@ export const MealPlanContainer = () => {
         onExchangeComplete={handleMealExchanged}
       />
 
-      {/* Recipe Dialog */}
-      {selectedMeal && (
-        <MealRecipeDialog
-          isOpen={showRecipeDialog}
-          onClose={() => setShowRecipeDialog(false)}
-          meal={selectedMeal}
-          onRecipeGenerated={refetch}
-        />
-      )}
+      {/* Other dialogs... */}
     </div>
   );
 };
