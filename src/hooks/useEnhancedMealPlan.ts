@@ -9,6 +9,7 @@ export const useEnhancedMealPlan = () => {
   const { user } = useAuth();
   const { remaining: userCredits, isPro, hasCredits, checkAndUseCredit, completeGeneration } = useCentralizedCredits();
   const [isGenerating, setIsGenerating] = useState(false);
+  const [nutritionContext, setNutritionContext] = useState(null);
 
   const generateMealPlan = async (preferences: any, options?: { weekOffset?: number }): Promise<boolean> => {
     if (!user?.id) {
@@ -96,6 +97,11 @@ export const useEnhancedMealPlan = () => {
         // Complete the generation process
         if (logId) await completeGeneration(logId, true, data);
         
+        // Set nutrition context if available
+        if (data.nutritionContext) {
+          setNutritionContext(data.nutritionContext);
+        }
+        
         toast.success('Meal plan generated successfully!');
         return true;
       } else {
@@ -117,6 +123,7 @@ export const useEnhancedMealPlan = () => {
     userCredits,
     isPro,
     hasCredits,
-    generateMealPlan
+    generateMealPlan,
+    nutritionContext
   };
 };
