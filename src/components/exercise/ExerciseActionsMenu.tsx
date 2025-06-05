@@ -1,20 +1,10 @@
 
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-  DropdownMenuItem,
-  DropdownMenuSeparator
-} from '@/components/ui/dropdown-menu';
 import { 
-  MoreVertical, 
   Youtube, 
   RefreshCw, 
   BookOpen,
-  Share,
-  Edit
+  Share
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Exercise } from '@/types/exercise';
@@ -52,39 +42,54 @@ export const ExerciseActionsMenu = ({
   };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-          <MoreVertical className="w-4 h-4" />
+    <div className="flex items-center gap-1">
+      {/* YouTube Button */}
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={onShowVideo}
+        className="h-8 px-2"
+        title={t('Watch Video')}
+      >
+        <Youtube className="w-4 h-4 text-red-600" />
+      </Button>
+      
+      {/* Exchange Button */}
+      {onShowExchange && !exercise.completed && (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onShowExchange}
+          className="h-8 px-2"
+          title={t('Exchange Exercise')}
+        >
+          <RefreshCw className="w-4 h-4 text-orange-600" />
         </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuItem onClick={onShowVideo}>
-          <Youtube className="w-4 h-4 mr-2 text-red-600" />
-          {t('Watch Video')}
-        </DropdownMenuItem>
-        
-        {onShowExchange && (
-          <DropdownMenuItem onClick={onShowExchange}>
-            <RefreshCw className="w-4 h-4 mr-2 text-orange-600" />
-            {t('Exchange Exercise')}
-          </DropdownMenuItem>
-        )}
-        
-        {exercise.instructions && onShowInstructions && (
-          <DropdownMenuItem onClick={onShowInstructions}>
-            <BookOpen className="w-4 h-4 mr-2 text-blue-600" />
-            {t('View Instructions')}
-          </DropdownMenuItem>
-        )}
-        
-        <DropdownMenuSeparator />
-        
-        <DropdownMenuItem onClick={handleShare}>
-          <Share className="w-4 h-4 mr-2 text-gray-600" />
-          {t('Share Exercise')}
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+      )}
+      
+      {/* Instructions Button */}
+      {exercise.instructions && onShowInstructions && (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onShowInstructions}
+          className="h-8 px-2"
+          title={t('View Instructions')}
+        >
+          <BookOpen className="w-4 h-4 text-blue-600" />
+        </Button>
+      )}
+      
+      {/* Share Button */}
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleShare}
+        className="h-8 px-2"
+        title={t('Share Exercise')}
+      >
+        <Share className="w-4 h-4 text-gray-600" />
+      </Button>
+    </div>
   );
 };

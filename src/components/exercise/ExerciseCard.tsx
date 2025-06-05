@@ -9,10 +9,7 @@ import {
   Pause, 
   Target,
   CheckCircle,
-  Timer,
-  Youtube,
-  RefreshCw,
-  MoreVertical
+  Timer
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Exercise } from '@/types/exercise';
@@ -49,6 +46,8 @@ export const ExerciseCard = ({
     
     try {
       setIsUpdating(true);
+      
+      console.log('🎯 Quick completing exercise:', exercise.name);
       
       // First update progress to full completion
       await onProgressUpdate(
@@ -108,32 +107,8 @@ export const ExerciseCard = ({
             </div>
           </div>
           
-          <div className="flex items-center gap-1">
-            {/* YouTube Button */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleVideoClick}
-              className="h-8 px-2"
-              title={t('Watch Video')}
-            >
-              <Youtube className="w-4 h-4 text-red-600" />
-            </Button>
-            
-            {/* Exchange Button */}
-            {!exercise.completed && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleExchangeClick}
-                className="h-8 px-2"
-                title={t('Exchange Exercise')}
-              >
-                <RefreshCw className="w-4 h-4 text-orange-600" />
-              </Button>
-            )}
-            
-            {/* More Actions Menu */}
+          <div className="flex items-center gap-2">
+            {/* Action Icons */}
             <ExerciseActionsMenu
               exercise={exercise}
               onShowVideo={handleVideoClick}
@@ -173,7 +148,7 @@ export const ExerciseCard = ({
               {completedSets}/{totalSets} {t('sets')}
               {exercise.actual_reps && (
                 <span className="text-gray-500 ml-1">
-                  ({exercise.actual_reps} {t('reps')})
+                  ({exercise.actual_reps.split('-').slice(0, completedSets).join(', ')} {t('reps')})
                 </span>
               )}
             </span>

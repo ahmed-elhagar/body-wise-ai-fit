@@ -93,6 +93,13 @@ export const ActiveExerciseTracker = ({
     const completedCount = newSets.filter(set => set.completed).length;
     const repsString = newSets.map(set => set.reps).join('-');
 
+    console.log('🔄 Updating set progress:', { 
+      setIndex: setIndex + 1, 
+      completedCount, 
+      repsString,
+      exerciseName: exercise.name 
+    });
+
     try {
       setIsUpdating(true);
       await onProgressUpdate(exercise.id, completedCount, repsString, notes);
@@ -109,6 +116,7 @@ export const ActiveExerciseTracker = ({
 
   const updateSetReps = async (setIndex: number, change: number) => {
     const newSets = [...sets];
+    const oldReps = newSets[setIndex].reps;
     newSets[setIndex].reps = Math.max(1, newSets[setIndex].reps + change);
     setSets(newSets);
 
@@ -116,10 +124,20 @@ export const ActiveExerciseTracker = ({
     const completedCount = newSets.filter(set => set.completed).length;
     const repsString = newSets.map(set => set.reps).join('-');
 
+    console.log('🔢 Updating reps:', { 
+      setIndex: setIndex + 1, 
+      oldReps, 
+      newReps: newSets[setIndex].reps,
+      repsString 
+    });
+
     try {
       await onProgressUpdate(exercise.id, completedCount, repsString, notes);
     } catch (error) {
       console.error('❌ Failed to update reps:', error);
+      // Revert on error
+      newSets[setIndex].reps = oldReps;
+      setSets(newSets);
     }
   };
 
@@ -128,6 +146,8 @@ export const ActiveExerciseTracker = ({
     
     try {
       setIsUpdating(true);
+      
+      console.log('🏁 Completing entire exercise:', exercise.name);
       
       // First ensure all sets are marked complete
       const allSetsCompleted = sets.map(set => ({ ...set, completed: true }));
