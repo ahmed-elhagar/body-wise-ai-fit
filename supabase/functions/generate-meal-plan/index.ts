@@ -158,140 +158,119 @@ function calculateDailyCalories(userProfile: any, preferences: any) {
   return Math.round(tdee);
 }
 
-// SIMPLIFIED meal plan prompt for better JSON generation
+// IMPROVED AI prompt for reliable JSON generation
 function generateMealPlanPrompt(userProfile: any, preferences: any, dailyCalories: number, includeSnacks: boolean) {
   const language = preferences?.language || userProfile?.preferred_language || 'en';
   const mealsPerDay = includeSnacks ? 5 : 3;
-  const totalMeals = mealsPerDay * 7;
   
   const mealTypes = includeSnacks 
     ? ['breakfast', 'snack', 'lunch', 'snack', 'dinner']
     : ['breakfast', 'lunch', 'dinner'];
 
-  const culturalContext = buildCulturalContext(userProfile.nationality, language);
-  const dietaryRestrictions = buildDietaryRestrictions(userProfile, language);
-  const healthConditions = buildHealthConditions(userProfile, language);
-  const specialConditions = buildSpecialConditions(userProfile, language);
+  // Build comprehensive user context
+  const userContext = buildUserContext(userProfile, preferences, language);
+  
+  return `You are a professional nutritionist AI. Generate a complete 7-day meal plan in STRICT JSON format.
 
-  // Simplified user profile data
-  const userDetails = `
-User: ${userProfile.age}yr ${userProfile.gender}, ${userProfile.weight}kg, ${userProfile.height}cm
-Activity: ${userProfile.activity_level}, Goal: ${userProfile.fitness_goal}
-Nationality: ${userProfile.nationality || 'International'}
-Daily Calories: ${dailyCalories}
-Meals: ${mealsPerDay} per day (${mealTypes.join(', ')})
-Preferences: ${preferences.cuisine || 'Mixed'}, Max prep: ${preferences.maxPrepTime || 30}min
-`;
+USER PROFILE:
+${userContext}
 
-  return `You are a professional nutritionist. Generate a 7-day meal plan in VALID JSON format.
+REQUIREMENTS:
+- Total meals needed: ${mealsPerDay * 7} meals (${mealsPerDay} per day × 7 days)
+- Daily calorie target: ~${dailyCalories} calories
+- Meal types per day: ${mealTypes.join(', ')}
+- Language: ${language}
 
-${userDetails}
-${healthConditions}
-${specialConditions}
-${dietaryRestrictions}
-${culturalContext}
-
-CRITICAL REQUIREMENTS:
-- Generate exactly ${totalMeals} meals (${mealsPerDay} meals × 7 days)
-- Each day has meals: ${mealTypes.join(', ')}
-- Daily calories ~${dailyCalories}
-- Return ONLY valid JSON, no markdown, no explanations
-
-JSON STRUCTURE:
+CRITICAL JSON STRUCTURE - RETURN EXACTLY THIS FORMAT:
 {
   "meals": [
     {
       "day_number": 1,
       "meal_type": "breakfast",
-      "name": "Meal Name",
+      "name": "Scrambled Eggs with Toast",
       "calories": 400,
       "protein": 25,
-      "carbs": 45,
-      "fat": 15,
+      "carbs": 35,
+      "fat": 18,
       "ingredients": [
-        {"name": "ingredient", "amount": "1 cup", "calories": 100}
+        {"name": "eggs", "amount": "2 large", "calories": 140},
+        {"name": "bread", "amount": "2 slices", "calories": 160},
+        {"name": "butter", "amount": "1 tbsp", "calories": 100}
       ],
       "instructions": [
-        "Step 1: instruction",
-        "Step 2: instruction"
+        "Heat butter in pan",
+        "Scramble eggs until fluffy",
+        "Toast bread until golden",
+        "Serve eggs on toast"
       ],
-      "prep_time": 10,
-      "cook_time": 15,
+      "prep_time": 5,
+      "cook_time": 10,
       "servings": 1
     }
   ]
 }
 
-Generate complete meal plan with ALL ${totalMeals} meals. Return ONLY the JSON.`;
+STRICT RULES:
+1. Return ONLY valid JSON - no markdown, no explanations
+2. Generate exactly ${mealsPerDay * 7} meals
+3. Each day must have meals: ${mealTypes.join(', ')}
+4. All ingredients must have: name, amount, calories
+5. All instructions must be clear steps
+6. All numeric values must be numbers (not strings)
+7. Ensure balanced nutrition across all meals
+8. Include cultural preferences and dietary restrictions
+
+Generate the complete meal plan now:`;
 }
 
-function buildCulturalContext(nationality: string, language: string): string {
+function buildUserContext(userProfile: any, preferences: any, language: string): string {
   const isArabic = language === 'ar';
   
-  if (nationality?.includes('Saudi') || nationality?.includes('Arab') || nationality?.includes('Middle East')) {
-    return isArabic 
-      ? 'السياق الثقافي: ركز على الأطعمة العربية والشرق أوسطية، التمر، المكسرات، الأرز، اللحوم المشوية، والخضروات الطازجة.'
-      : 'Cultural Context: Focus on Arabic and Middle Eastern foods including dates, nuts, rice, grilled meats, and fresh vegetables.';
+  let context = `
+Age: ${userProfile.age}, Gender: ${userProfile.gender}
+Weight: ${userProfile.weight}kg, Height: ${userProfile.height}cm
+Activity: ${userProfile.activity_level}, Goal: ${userProfile.fitness_goal}
+Nationality: ${userProfile.nationality || 'International'}
+`;
+
+  // Dietary restrictions
+  if (userProfile.dietary_restrictions?.length > 0) {
+    context += `\nDietary Restrictions: ${userProfile.dietary_restrictions.join(', ')}`;
   }
   
-  return isArabic 
-    ? 'السياق الثقافي: مزج من الأطعمة العالمية مع التركيز على التوازن الغذائي.'
-    : 'Cultural Context: International mix of foods focusing on nutritional balance.';
-}
-
-function buildDietaryRestrictions(userProfile: any, language: string): string {
-  const isArabic = language === 'ar';
-  const restrictions = userProfile.dietary_restrictions || [];
-  const allergies = userProfile.allergies || [];
+  // Allergies
+  if (userProfile.allergies?.length > 0) {
+    context += `\nAllergies: ${userProfile.allergies.join(', ')}`;
+  }
   
-  if (restrictions.length === 0 && allergies.length === 0) return '';
+  // Health conditions
+  if (userProfile.health_conditions?.length > 0) {
+    context += `\nHealth Conditions: ${userProfile.health_conditions.join(', ')}`;
+  }
   
-  const title = isArabic ? 'القيود الغذائية:' : 'Dietary Restrictions:';
-  const restrictionText = restrictions.length > 0 
-    ? `${isArabic ? 'قيود:' : 'Restrictions:'} ${restrictions.join(', ')}`
-    : '';
-  const allergyText = allergies.length > 0 
-    ? `${isArabic ? 'حساسية:' : 'Allergies:'} ${allergies.join(', ')}`
-    : '';
-    
-  return `${title}\n${restrictionText}\n${allergyText}`;
-}
-
-function buildHealthConditions(userProfile: any, language: string): string {
-  const isArabic = language === 'ar';
-  const conditions = userProfile.health_conditions || [];
-  
-  if (conditions.length === 0) return '';
-  
-  const title = isArabic ? 'الحالات الصحية:' : 'Health Conditions:';
-  return `${title}\n- Conditions: ${conditions.join(', ')}\n- Require specialized nutrition considerations`;
-}
-
-function buildSpecialConditions(userProfile: any, language: string): string {
-  const isArabic = language === 'ar';
-  let sections = [];
-  
-  // Pregnancy
+  // Special conditions
   if (userProfile.pregnancy_trimester) {
-    const title = isArabic ? 'الحمل:' : 'Pregnancy:';
-    const trimesterText = isArabic ? `الثلث ${userProfile.pregnancy_trimester}` : `Trimester ${userProfile.pregnancy_trimester}`;
-    sections.push(`${title} ${trimesterText} - Additional nutrition requirements (+${userProfile.pregnancy_trimester === 2 ? 340 : 450} calories)`);
+    context += `\nPregnancy: Trimester ${userProfile.pregnancy_trimester}`;
   }
   
-  // Breastfeeding
   if (userProfile.breastfeeding_level) {
-    const title = isArabic ? 'الرضاعة الطبيعية:' : 'Breastfeeding:';
-    const extraCalories = userProfile.breastfeeding_level === 'exclusive' ? 400 : 250;
-    sections.push(`${title} ${userProfile.breastfeeding_level} - Increased caloric needs (+${extraCalories} calories)`);
+    context += `\nBreastfeeding: ${userProfile.breastfeeding_level}`;
   }
   
-  // Fasting
   if (userProfile.fasting_type) {
-    const title = isArabic ? 'الصيام:' : 'Fasting:';
-    sections.push(`${title} ${userProfile.fasting_type} - Meal timing considerations`);
+    context += `\nFasting: ${userProfile.fasting_type}`;
   }
   
-  return sections.length > 0 ? `Special Conditions:\n${sections.join('\n')}` : '';
+  // Preferences
+  if (preferences.cuisine) {
+    context += `\nPreferred Cuisine: ${preferences.cuisine}`;
+  }
+  
+  if (preferences.maxPrepTime) {
+    context += `\nMax Prep Time: ${preferences.maxPrepTime} minutes`;
+  }
+  
+  return context;
 }
 
 // ENHANCED AI API call with better error handling
@@ -330,12 +309,12 @@ async function callAIAPI(prompt: string, modelConfig: any, retryCount: number = 
         messages: [
           { 
             role: 'system', 
-            content: 'You are a professional nutritionist AI. Return ONLY valid JSON format without any markdown formatting, explanations, or additional text. Ensure the JSON is complete and properly formatted with all required fields.' 
+            content: 'You are a professional nutritionist AI. Return ONLY valid JSON format without any markdown formatting, explanations, or additional text. The JSON must be complete and properly formatted with all required fields.' 
           },
           { role: 'user', content: prompt }
         ],
-        temperature: 0.3, // Lower temperature for more consistent JSON
-        max_tokens: 6000, // Increased for complete responses
+        temperature: 0.1, // Very low temperature for consistent JSON
+        max_tokens: 8000, // Increased for complete responses
         response_format: { type: "json_object" } // Force JSON response
       }),
       signal: controller.signal
@@ -378,7 +357,6 @@ async function callAIAPI(prompt: string, modelConfig: any, retryCount: number = 
 
     console.log('✅ AI API response received successfully');
     console.log('📏 Response length:', content.length);
-    console.log('🔍 Response preview:', content.substring(0, 200) + '...');
     
     return content;
     
@@ -573,7 +551,7 @@ Deno.serve(async (req) => {
 
     // Generate AI meal plan prompt with complete user data
     const prompt = generateMealPlanPrompt(userProfile, preferences, dailyCalories, preferences.includeSnacks);
-    console.log('📝 Generated simplified prompt for robust JSON generation');
+    console.log('📝 Generated enhanced prompt for robust JSON generation');
 
     // ENHANCED: Call AI API with configured models and proper admin default fallback
     let aiResponse;
@@ -603,43 +581,18 @@ Deno.serve(async (req) => {
       }
     }
 
-    // ENHANCED AI response parsing with better error handling
+    // ENHANCED AI response parsing with strict validation
     let mealPlanData;
     try {
       console.log('🔍 Processing AI response...');
-      console.log('📏 Raw response length:', aiResponse?.length || 0);
+      console.log('📄 Raw AI response sample:', aiResponse.substring(0, 500) + '...');
       
-      // Clean the response
-      let cleanedResponse = aiResponse.trim();
-      
-      // Remove any markdown formatting
-      cleanedResponse = cleanedResponse.replace(/```json\n?/g, '').replace(/```\n?/g, '');
-      cleanedResponse = cleanedResponse.replace(/^\s*```[\s\S]*?```\s*$/g, '');
-      
-      // Find JSON boundaries more carefully
-      const firstBraceIndex = cleanedResponse.indexOf('{');
-      const lastBraceIndex = cleanedResponse.lastIndexOf('}');
-      
-      if (firstBraceIndex === -1 || lastBraceIndex === -1) {
-        console.error('❌ No valid JSON structure found in response');
-        console.error('📄 Response sample:', cleanedResponse.substring(0, 500));
-        throw new Error('No valid JSON structure found in response');
-      }
-      
-      cleanedResponse = cleanedResponse.substring(firstBraceIndex, lastBraceIndex + 1);
-      
-      console.log('🧹 Cleaned response ready for parsing');
-      console.log('📄 Sample of cleaned response:', cleanedResponse.substring(0, 300) + '...');
-      
-      // Validate JSON structure before parsing
-      if (!cleanedResponse.includes('"meals"') || !cleanedResponse.includes('[')) {
-        throw new Error('Response does not contain expected meals array structure');
-      }
-      
-      mealPlanData = JSON.parse(cleanedResponse);
+      // Parse JSON directly (should be clean with response_format: json_object)
+      mealPlanData = JSON.parse(aiResponse);
       
       // Validate response structure
       if (!mealPlanData.meals || !Array.isArray(mealPlanData.meals) || mealPlanData.meals.length === 0) {
+        console.error('❌ Invalid meal plan structure:', Object.keys(mealPlanData));
         throw new Error('Invalid meal plan structure: no meals array found');
       }
       
@@ -768,6 +721,30 @@ Deno.serve(async (req) => {
           dietary_restrictions: userProfile.dietary_restrictions,
           allergies: userProfile.allergies,
           health_conditions: userProfile.health_conditions
+        },
+        sampleRequestJson: {
+          userProfile: {
+            id: "user-uuid",
+            age: 30,
+            gender: "male",
+            weight: 75,
+            height: 180,
+            activity_level: "moderately_active",
+            fitness_goal: "maintenance",
+            nationality: "American",
+            dietary_restrictions: ["vegetarian"],
+            allergies: ["nuts"],
+            health_conditions: [],
+            preferred_language: "en"
+          },
+          preferences: {
+            includeSnacks: true,
+            cuisine: "mediterranean",
+            maxPrepTime: 30,
+            language: "en"
+          },
+          userLanguage: "en",
+          weekOffset: 0
         }
       }),
       { 

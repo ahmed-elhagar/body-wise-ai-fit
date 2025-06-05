@@ -8,11 +8,13 @@ import { getGenerationSteps } from "./loadingStepsData";
 interface MealPlanGenerationLoadingProps {
   isGenerating: boolean;
   generationType?: 'initial' | 'regenerate' | 'ai';
+  inline?: boolean; // New prop for inline display
 }
 
 const MealPlanGenerationLoading = ({ 
   isGenerating, 
-  generationType = 'initial' 
+  generationType = 'initial',
+  inline = false
 }: MealPlanGenerationLoadingProps) => {
   const { t, isRTL } = useLanguage();
   
@@ -42,6 +44,8 @@ const MealPlanGenerationLoading = ({
       steps={dialogSteps}
       progress={progress}
       allowClose={false}
+      inline={inline}
+      className={inline ? "w-full" : undefined}
     />
   );
 };
