@@ -16,12 +16,14 @@ function parseAndValidateRequest(body: any) {
   let preferences = null;
   let userLanguage = 'en';
 
-  // Extract userProfile from multiple possible locations
-  if (body.userProfile) {
+  // Extract userProfile from multiple possible locations with better logic
+  if (body.userProfile && body.userProfile.id) {
     userProfile = body.userProfile;
-  } else if (body.preferences?.userProfile) {
+    console.log('✅ Found userProfile at top level');
+  } else if (body.preferences?.userProfile && body.preferences.userProfile.id) {
     userProfile = body.preferences.userProfile;
-  } else if (body.userData) {
+    console.log('✅ Found userProfile nested in preferences');
+  } else if (body.userData && body.userData.userId) {
     // Transform userData to userProfile format
     userProfile = {
       id: body.userData.userId,
@@ -39,35 +41,50 @@ function parseAndValidateRequest(body: any) {
       allergies: body.userData.allergies,
       special_conditions: body.userData.special_conditions
     };
+    console.log('✅ Transformed userData to userProfile');
   }
 
-  // Extract preferences
+  // Extract preferences - should always exist
   if (body.preferences) {
     preferences = body.preferences;
+    console.log('✅ Found preferences');
   }
 
-  // Extract language
+  // Extract language with fallback chain
   if (body.userLanguage) {
     userLanguage = body.userLanguage;
   } else if (body.preferences?.language) {
     userLanguage = body.preferences.language;
+  } else if (body.preferences?.userLanguage) {
+    userLanguage = body.preferences.userLanguage;
   } else if (userProfile?.preferred_language) {
     userLanguage = userProfile.preferred_language;
   }
 
   console.log('🔍 Extracted data:', {
     hasUserProfile: !!userProfile,
-    userProfileKeys: userProfile ? Object.keys(userProfile) : [],
     userProfileId: userProfile?.id,
+    userProfileKeys: userProfile ? Object.keys(userProfile) : [],
     hasPreferences: !!preferences,
     preferencesKeys: preferences ? Object.keys(preferences) : [],
     userLanguage
   });
 
-  // Validate required data
-  if (!userProfile || !userProfile.id) {
+  // Validate required data with better error messages
+  if (!userProfile) {
+    console.error('❌ No userProfile found in request body');
     throw new MealPlanError(
-      'User profile with ID is required',
+      'User profile is required for meal plan generation',
+      errorCodes.INVALID_USER_PROFILE,
+      400,
+      false
+    );
+  }
+
+  if (!userProfile.id) {
+    console.error('❌ userProfile missing ID:', userProfile);
+    throw new MealPlanError(
+      'User profile must include user ID',
       errorCodes.INVALID_USER_PROFILE,
       400,
       false
@@ -75,6 +92,7 @@ function parseAndValidateRequest(body: any) {
   }
 
   if (!preferences) {
+    console.error('❌ No preferences found in request body');
     throw new MealPlanError(
       'Meal plan preferences are required',
       errorCodes.VALIDATION_ERROR,
@@ -82,6 +100,8 @@ function parseAndValidateRequest(body: any) {
       false
     );
   }
+
+  console.log('✅ Validation passed for user:', userProfile.id);
 
   return {
     userProfile,
@@ -117,7 +137,7 @@ Deno.serve(async (req) => {
     });
 
     // Enhanced meal plan generation logic would go here
-    // For now, return a success response to fix the immediate error
+    // For now, return a success response to test the parsing fix
     
     return new Response(
       JSON.stringify({
@@ -127,7 +147,8 @@ Deno.serve(async (req) => {
         totalMeals: preferences.includeSnacks ? 35 : 21,
         mealsPerDay: preferences.includeSnacks ? 5 : 3,
         includeSnacks: preferences.includeSnacks,
-        weekOffset: weekOffset
+        weekOffset: weekOffset,
+        userId: userProfile.id
       }),
       { 
         status: 200,
