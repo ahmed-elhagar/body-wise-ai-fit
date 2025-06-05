@@ -1,3 +1,4 @@
+
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 import { MealPlanError, createUserFriendlyError, handleMealPlanError, errorCodes } from './enhancedErrorHandling.ts';
 
@@ -31,11 +32,29 @@ async function getAIModelConfig(supabase: any) {
       .eq('is_active', true)
       .single();
 
+    // Get the default model from admin panel (marked with star icon)
+    const { data: defaultModel, error: defaultError } = await supabase
+      .from('ai_models')
+      .select('model_id, provider, name')
+      .eq('is_default', true)
+      .eq('is_active', true)
+      .single();
+
+    const systemDefault = defaultModel ? {
+      modelId: defaultModel.model_id,
+      provider: defaultModel.provider,
+      name: `${defaultModel.name} (Admin Default)`
+    } : {
+      modelId: 'gpt-4o-mini',
+      provider: 'openai',
+      name: 'GPT-4o Mini (System Fallback)'
+    };
+
     if (error || !data?.primary_model) {
-      console.warn('⚠️ No AI model configured for meal_plan, using system defaults');
+      console.warn('⚠️ No AI model configured for meal_plan, using admin default');
       return {
-        primary: { modelId: 'gpt-4o-mini', provider: 'openai', name: 'GPT-4o Mini (Default)' },
-        fallback: { modelId: 'gpt-3.5-turbo', provider: 'openai', name: 'GPT-3.5 Turbo (Fallback)' }
+        primary: systemDefault,
+        fallback: systemDefault
       };
     }
 
@@ -49,7 +68,7 @@ async function getAIModelConfig(supabase: any) {
         modelId: data.fallback_model.model_id,
         provider: data.fallback_model.provider,
         name: data.fallback_model.name
-      } : { modelId: 'gpt-3.5-turbo', provider: 'openai', name: 'GPT-3.5 Turbo (System Fallback)' }
+      } : systemDefault
     };
 
     console.log('✅ AI model configuration loaded:', {
@@ -60,10 +79,36 @@ async function getAIModelConfig(supabase: any) {
     return config;
   } catch (error) {
     console.error('❌ Error fetching AI model config:', error);
-    return {
-      primary: { modelId: 'gpt-4o-mini', provider: 'openai', name: 'GPT-4o Mini (Error Fallback)' },
-      fallback: { modelId: 'gpt-3.5-turbo', provider: 'openai', name: 'GPT-3.5 Turbo (Error Fallback)' }
-    };
+    
+    // Get admin default as final fallback
+    try {
+      const { data: defaultModel } = await supabase
+        .from('ai_models')
+        .select('model_id, provider, name')
+        .eq('is_default', true)
+        .eq('is_active', true)
+        .single();
+
+      const adminDefault = defaultModel ? {
+        modelId: defaultModel.model_id,
+        provider: defaultModel.provider,
+        name: `${defaultModel.name} (Admin Default)`
+      } : {
+        modelId: 'gpt-4o-mini',
+        provider: 'openai',
+        name: 'GPT-4o Mini (Final Fallback)'
+      };
+
+      return {
+        primary: adminDefault,
+        fallback: adminDefault
+      };
+    } catch (fallbackError) {
+      return {
+        primary: { modelId: 'gpt-4o-mini', provider: 'openai', name: 'GPT-4o Mini (Error Fallback)' },
+        fallback: { modelId: 'gpt-4o-mini', provider: 'openai', name: 'GPT-4o Mini (Error Fallback)' }
+      };
+    }
   }
 }
 
@@ -113,7 +158,7 @@ function calculateDailyCalories(userProfile: any, preferences: any) {
   return Math.round(tdee);
 }
 
-// Generate AI meal plan prompt - SIMPLIFIED for better JSON generation
+// ENHANCED meal plan prompt with complete user data and proper JSON structure
 function generateMealPlanPrompt(userProfile: any, preferences: any, dailyCalories: number, includeSnacks: boolean) {
   const language = preferences?.language || userProfile?.preferred_language || 'en';
   const isArabic = language === 'ar';
@@ -125,31 +170,66 @@ function generateMealPlanPrompt(userProfile: any, preferences: any, dailyCalorie
 
   const culturalContext = buildCulturalContext(userProfile.nationality, language);
   const dietaryRestrictions = buildDietaryRestrictions(userProfile, language);
+  const healthConditions = buildHealthConditions(userProfile, language);
+  const specialConditions = buildSpecialConditions(userProfile, language);
+
+  // COMPREHENSIVE user profile data
+  const userDetails = `
+User Profile Details:
+- Basic Info: ${userProfile.age}yr ${userProfile.gender}, ${userProfile.weight}kg, ${userProfile.height}cm
+- Activity Level: ${userProfile.activity_level}
+- Fitness Goal: ${userProfile.fitness_goal}
+- Body Shape: ${userProfile.body_shape || 'Not specified'}
+- Nationality: ${userProfile.nationality || 'International'}
+- Preferred Language: ${language}
+
+Daily Nutrition Target:
+- Total Calories: ${dailyCalories}
+- Meals per day: ${mealsPerDay}
+- Meal types: ${mealTypes.join(', ')}
+
+Preferences from UI:
+- Cuisine Type: ${preferences.cuisine || 'Mixed International'}
+- Max Prep Time: ${preferences.maxPrepTime || 30} minutes
+- Include Snacks: ${includeSnacks ? 'Yes' : 'No'}
+- Cooking Skills: ${preferences.cookingSkills || 'Intermediate'}
+- Budget Level: ${preferences.budgetLevel || 'Medium'}
+`;
 
   // SIMPLIFIED PROMPT for better JSON generation
-  return `Generate a 7-day meal plan in valid JSON format.
+  return `You are a professional nutritionist AI. Generate a complete 7-day meal plan in VALID JSON format.
 
-User: ${userProfile.age}yr ${userProfile.gender}, ${userProfile.weight}kg, ${userProfile.height}cm
-Daily calories: ${dailyCalories}
-Meals per day: ${mealsPerDay}
-Types: ${mealTypes.join(', ')}
+${userDetails}
 
+${healthConditions}
+${specialConditions}
 ${dietaryRestrictions}
 ${culturalContext}
 
-Return ONLY this JSON structure with exactly ${7 * mealsPerDay} meals:
+CRITICAL REQUIREMENTS:
+1. Generate exactly ${mealsPerDay * 7} meals total (${mealsPerDay} meals × 7 days)
+2. Each day must have these meal types: ${mealTypes.join(', ')}
+3. Daily calories should average around ${Math.round(dailyCalories)} calories
+4. All meals must include complete nutrition and ingredient data
+
+JSON STRUCTURE (return ONLY this JSON, no explanations):
 {
   "meals": [
     {
       "day_number": 1,
       "meal_type": "breakfast",
-      "name": "Simple Meal Name",
+      "name": "Nutritious Meal Name",
       "calories": 400,
       "protein": 25,
       "carbs": 45,
       "fat": 15,
-      "ingredients": [{"name": "ingredient", "amount": "1 cup", "calories": 100}],
-      "instructions": ["Step 1", "Step 2"],
+      "ingredients": [
+        {"name": "ingredient name", "amount": "1 cup", "calories": 100}
+      ],
+      "instructions": [
+        "Step 1: Detailed instruction",
+        "Step 2: Another step"
+      ],
       "prep_time": 10,
       "cook_time": 15,
       "servings": 1
@@ -157,7 +237,12 @@ Return ONLY this JSON structure with exactly ${7 * mealsPerDay} meals:
   ]
 }
 
-IMPORTANT: Return ONLY valid JSON. No explanations. Ensure all JSON is properly closed.`;
+IMPORTANT: 
+- Return ONLY valid JSON
+- No markdown formatting or explanations
+- Ensure all ${mealsPerDay * 7} meals are included
+- Each meal must have ALL required fields
+- Numbers must be actual numbers, not strings`;
 }
 
 function buildCulturalContext(nationality: string, language: string): string {
@@ -192,17 +277,44 @@ function buildDietaryRestrictions(userProfile: any, language: string): string {
   return `${title}\n${restrictionText}\n${allergyText}`;
 }
 
-function buildEnglishPrompt(): string {
-  return `You are a professional nutritionist AI specializing in personalized meal planning.
-Create a comprehensive 7-day meal plan that is culturally appropriate and nutritionally balanced.`;
+function buildHealthConditions(userProfile: any, language: string): string {
+  const isArabic = language === 'ar';
+  const conditions = userProfile.health_conditions || [];
+  
+  if (conditions.length === 0) return '';
+  
+  const title = isArabic ? 'الحالات الصحية:' : 'Health Conditions:';
+  return `${title}\n- Conditions: ${conditions.join(', ')}\n- Require specialized nutrition considerations`;
 }
 
-function buildArabicPrompt(): string {
-  return `أنت خبير تغذية بالذكاء الاصطناعي متخصص في التخطيط المخصص للوجبات.
-أنشئ خطة وجبات شاملة لمدة 7 أيام تكون مناسبة ثقافياً ومتوازنة غذائياً.`;
+function buildSpecialConditions(userProfile: any, language: string): string {
+  const isArabic = language === 'ar';
+  let sections = [];
+  
+  // Pregnancy
+  if (userProfile.pregnancy_trimester) {
+    const title = isArabic ? 'الحمل:' : 'Pregnancy:';
+    const trimesterText = isArabic ? `الثلث ${userProfile.pregnancy_trimester}` : `Trimester ${userProfile.pregnancy_trimester}`;
+    sections.push(`${title} ${trimesterText} - Additional nutrition requirements (+${userProfile.pregnancy_trimester === 2 ? 340 : 450} calories)`);
+  }
+  
+  // Breastfeeding
+  if (userProfile.breastfeeding_level) {
+    const title = isArabic ? 'الرضاعة الطبيعية:' : 'Breastfeeding:';
+    const extraCalories = userProfile.breastfeeding_level === 'exclusive' ? 400 : 250;
+    sections.push(`${title} ${userProfile.breastfeeding_level} - Increased caloric needs (+${extraCalories} calories)`);
+  }
+  
+  // Fasting
+  if (userProfile.fasting_type) {
+    const title = isArabic ? 'الصيام:' : 'Fasting:';
+    sections.push(`${title} ${userProfile.fasting_type} - Meal timing considerations`);
+  }
+  
+  return sections.length > 0 ? `Special Conditions:\n${sections.join('\n')}` : '';
 }
 
-// ENHANCED AI API call with better error handling and timeout management
+// FIXED AI API call without invalid timeout parameter
 async function callAIAPI(prompt: string, modelConfig: any, retryCount: number = 0) {
   const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
   
@@ -217,8 +329,8 @@ async function callAIAPI(prompt: string, modelConfig: any, retryCount: number = 
 
   console.log(`🤖 Calling AI API with ${modelConfig.name || modelConfig.modelId} (attempt ${retryCount + 1})`);
 
-  // Robust timeout with proper cleanup
-  const timeoutMs = 45000; // 45 seconds - balanced timeout
+  // Client-side timeout with proper cleanup
+  const timeoutMs = 90000; // 90 seconds for complex meal planning
   
   const controller = new AbortController();
   const timeoutId = setTimeout(() => {
@@ -243,8 +355,8 @@ async function callAIAPI(prompt: string, modelConfig: any, retryCount: number = 
           { role: 'user', content: prompt }
         ],
         temperature: 0.7,
-        max_tokens: 4000,
-        timeout: 40000 // Internal timeout
+        max_tokens: 4000
+        // REMOVED: timeout parameter (not supported by OpenAI API)
       }),
       signal: controller.signal
     });
@@ -285,6 +397,7 @@ async function callAIAPI(prompt: string, modelConfig: any, retryCount: number = 
     }
 
     console.log('✅ AI API response received successfully');
+    console.log('📏 Response length:', content.length);
     return content;
     
   } catch (error) {
@@ -336,7 +449,13 @@ function parseAndValidateRequest(body: any) {
       preferred_language: body.userData.preferred_language,
       dietary_restrictions: body.userData.dietary_restrictions,
       allergies: body.userData.allergies,
-      special_conditions: body.userData.special_conditions
+      health_conditions: body.userData.health_conditions,
+      special_conditions: body.userData.special_conditions,
+      nationality: body.userData.nationality,
+      body_shape: body.userData.body_shape,
+      pregnancy_trimester: body.userData.pregnancy_trimester,
+      breastfeeding_level: body.userData.breastfeeding_level,
+      fasting_type: body.userData.fasting_type
     };
     console.log('✅ Transformed userData to userProfile');
   }
@@ -355,6 +474,23 @@ function parseAndValidateRequest(body: any) {
   } else if (userProfile?.preferred_language) {
     userLanguage = userProfile.preferred_language;
   }
+
+  // Log complete user profile for debugging
+  console.log('📊 Complete user profile data:', {
+    id: userProfile?.id,
+    age: userProfile?.age,
+    gender: userProfile?.gender,
+    weight: userProfile?.weight,
+    height: userProfile?.height,
+    activity_level: userProfile?.activity_level,
+    fitness_goal: userProfile?.fitness_goal,
+    nationality: userProfile?.nationality,
+    dietary_restrictions: userProfile?.dietary_restrictions,
+    allergies: userProfile?.allergies,
+    health_conditions: userProfile?.health_conditions,
+    special_conditions: userProfile?.special_conditions,
+    language: userLanguage
+  });
 
   // Validate required data
   if (!userProfile || !userProfile.id) {
@@ -391,7 +527,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    console.log('=== AI MEAL PLAN GENERATION - ENHANCED WITH MODEL CONFIGURATION ===');
+    console.log('=== AI MEAL PLAN GENERATION - ENHANCED WITH ADMIN DEFAULT MODEL ===');
     
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -410,7 +546,7 @@ Deno.serve(async (req) => {
       includeSnacks: preferences.includeSnacks
     });
 
-    // ENHANCED: Get AI model configuration from database
+    // ENHANCED: Get AI model configuration with admin default fallback
     const modelConfig = await getAIModelConfig(supabase);
     console.log('🤖 Using configured AI models:', {
       primary: `${modelConfig.primary.name} (${modelConfig.primary.modelId})`,
@@ -453,11 +589,11 @@ Deno.serve(async (req) => {
         .eq('weekly_plan_id', existingPlan.id);
     }
 
-    // Generate AI meal plan prompt
+    // Generate AI meal plan prompt with complete user data
     const prompt = generateMealPlanPrompt(userProfile, preferences, dailyCalories, preferences.includeSnacks);
-    console.log('📝 Generated prompt for AI');
+    console.log('📝 Generated comprehensive prompt for AI');
 
-    // ENHANCED: Call AI API with configured models and robust fallback
+    // ENHANCED: Call AI API with configured models and proper admin default fallback
     let aiResponse;
     let usedModel;
     
@@ -475,24 +611,13 @@ Deno.serve(async (req) => {
         usedModel = modelConfig.fallback;
         console.log('✅ AI generation successful with fallback model');
       } catch (fallbackError) {
-        console.error('❌ Fallback model also failed:', fallbackError.message);
-        
-        // Final system fallback
-        const systemFallback = { modelId: 'gpt-3.5-turbo', provider: 'openai', name: 'GPT-3.5 Turbo (Final Fallback)' };
-        try {
-          console.log('🆘 Trying final system fallback model');
-          aiResponse = await callAIAPI(prompt, systemFallback);
-          usedModel = systemFallback;
-          console.log('✅ AI generation successful with system fallback');
-        } catch (finalError) {
-          console.error('❌ All models failed:', finalError.message);
-          throw new MealPlanError(
-            'AI meal plan generation failed with all available models',
-            errorCodes.AI_GENERATION_FAILED,
-            500,
-            true
-          );
-        }
+        console.error('❌ Both configured models failed:', fallbackError.message);
+        throw new MealPlanError(
+          'AI meal plan generation failed with all configured models',
+          errorCodes.AI_GENERATION_FAILED,
+          500,
+          true
+        );
       }
     }
 
@@ -519,6 +644,7 @@ Deno.serve(async (req) => {
       cleanedResponse = cleanedResponse.substring(firstBraceIndex, lastBraceIndex + 1);
       
       console.log('🧹 Cleaned response ready for parsing');
+      console.log('📄 Sample of cleaned response:', cleanedResponse.substring(0, 500) + '...');
       
       mealPlanData = JSON.parse(cleanedResponse);
       
@@ -532,13 +658,13 @@ Deno.serve(async (req) => {
       
       // Validate meal count
       const expectedMealCount = (preferences.includeSnacks ? 5 : 3) * 7;
-      if (mealPlanData.meals.length < expectedMealCount * 0.7) { // Allow 30% tolerance
+      if (mealPlanData.meals.length < expectedMealCount * 0.8) { // Allow 20% tolerance
         console.warn(`⚠️ Expected ~${expectedMealCount} meals, got ${mealPlanData.meals.length}`);
       }
       
     } catch (parseError) {
       console.error('❌ Failed to parse AI response:', parseError.message);
-      console.error('❌ Response sample:', cleanedResponse?.substring(0, 1000));
+      console.error('❌ Response sample:', aiResponse?.substring(0, 1000));
       throw new MealPlanError(
         'Invalid AI response format - JSON parsing failed',
         errorCodes.AI_RESPONSE_INVALID,
@@ -583,7 +709,7 @@ Deno.serve(async (req) => {
 
     console.log('✅ Weekly plan created/updated:', weeklyPlan.id);
 
-    // Insert AI-generated meals into database with better validation
+    // Insert AI-generated meals into database with enhanced validation
     const mealsToInsert = mealPlanData.meals.map((meal: any) => {
       // Validate and normalize meal_type
       let validMealType = meal.meal_type;
@@ -639,7 +765,20 @@ Deno.serve(async (req) => {
         aiModel: usedModel.name || usedModel.modelId,
         modelProvider: usedModel.provider,
         dailyCalories: dailyCalories,
-        nutritionalTotals
+        nutritionalTotals,
+        userProfileData: {
+          complete: true,
+          age: userProfile.age,
+          gender: userProfile.gender,
+          weight: userProfile.weight,
+          height: userProfile.height,
+          activity_level: userProfile.activity_level,
+          fitness_goal: userProfile.fitness_goal,
+          nationality: userProfile.nationality,
+          dietary_restrictions: userProfile.dietary_restrictions,
+          allergies: userProfile.allergies,
+          health_conditions: userProfile.health_conditions
+        }
       }),
       { 
         status: 200,
