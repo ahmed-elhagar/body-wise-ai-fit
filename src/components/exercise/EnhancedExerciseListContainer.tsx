@@ -2,7 +2,8 @@
 import { useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Exercise } from '@/types/exercise';
-import { ExerciseProgressCard } from './ExerciseProgressCard';
+import { ExerciseCard } from './ExerciseCard';
+import { ActiveExerciseTracker } from './ActiveExerciseTracker';
 import { WorkoutSessionManager } from './WorkoutSessionManager';
 import { CustomExerciseDialog } from './CustomExerciseDialog';
 import { Button } from '@/components/ui/button';
@@ -22,7 +23,6 @@ interface EnhancedExerciseListContainerProps {
   onExerciseComplete: (exerciseId: string) => Promise<void>;
   onExerciseProgressUpdate: (exerciseId: string, sets: number, reps: string, notes?: string, weight?: number) => Promise<void>;
   isRestDay?: boolean;
-  // Optional props that might be passed from parent
   isLoading?: boolean;
   completedExercises?: number;
   totalExercises?: number;
@@ -50,7 +50,6 @@ export const EnhancedExerciseListContainer = ({
   const [activeExerciseId, setActiveExerciseId] = useState<string | null>(null);
   const [showCustomExerciseDialog, setShowCustomExerciseDialog] = useState(false);
 
-  // Get the daily workout ID for the selected day
   const dailyWorkoutId = currentProgram?.daily_workouts?.find(
     (workout: any) => workout.day_number === selectedDayNumber
   )?.id;
@@ -98,7 +97,6 @@ export const EnhancedExerciseListContainer = ({
           {t('Check back later or generate a new workout program')}
         </p>
         
-        {/* Add Custom Exercise Button */}
         {dailyWorkoutId && (
           <Button
             onClick={() => setShowCustomExerciseDialog(true)}
@@ -114,7 +112,10 @@ export const EnhancedExerciseListContainer = ({
 
   const handleSessionComplete = () => {
     console.log('🏆 Workout session completed!');
-    // You can add additional logic here like tracking workout completion
+  };
+
+  const handleSetActive = (exerciseId: string) => {
+    setActiveExerciseId(current => current === exerciseId ? null : exerciseId);
   };
 
   const actualCompletedCount = exercises.filter(ex => ex.completed).length;
@@ -135,7 +136,6 @@ export const EnhancedExerciseListContainer = ({
           </div>
           
           <div className="flex items-center gap-2">
-            {/* Add Custom Exercise Button */}
             {dailyWorkoutId && (
               <Button
                 variant="outline"
@@ -181,19 +181,29 @@ export const EnhancedExerciseListContainer = ({
               onSessionComplete={handleSessionComplete}
             />
             
+            {/* Active Exercise Tracker */}
+            {activeExerciseId && (
+              <ActiveExerciseTracker
+                exercise={exercises.find(ex => ex.id === activeExerciseId)!}
+                onComplete={onExerciseComplete}
+                onProgressUpdate={onExerciseProgressUpdate}
+                onDeactivate={() => setActiveExerciseId(null)}
+              />
+            )}
+            
             <div className="space-y-3">
-              {exercises.map((exercise) => (
-                <ExerciseProgressCard
-                  key={exercise.id}
-                  exercise={exercise}
-                  onComplete={onExerciseComplete}
-                  onProgressUpdate={onExerciseProgressUpdate}
-                  isActive={activeExerciseId === exercise.id}
-                  onSetActive={() => setActiveExerciseId(
-                    activeExerciseId === exercise.id ? null : exercise.id
-                  )}
-                />
-              ))}
+              {exercises
+                .filter(exercise => exercise.id !== activeExerciseId)
+                .map((exercise) => (
+                  <ExerciseCard
+                    key={exercise.id}
+                    exercise={exercise}
+                    onComplete={onExerciseComplete}
+                    onProgressUpdate={onExerciseProgressUpdate}
+                    isActive={false}
+                    onSetActive={() => handleSetActive(exercise.id)}
+                  />
+                ))}
             </div>
           </>
         )}
@@ -202,38 +212,24 @@ export const EnhancedExerciseListContainer = ({
         {viewMode === 'list' && (
           <div className="space-y-3">
             {exercises.map((exercise) => (
-              <Card key={exercise.id} className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium text-gray-900">{exercise.name}</h3>
-                    <div className="text-sm text-gray-600 mt-1">
-                      {exercise.sets} {t('sets')} × {exercise.reps} {t('reps')}
-                      {exercise.equipment && (
-                        <span className="ml-2 text-blue-600">• {exercise.equipment}</span>
-                      )}
-                    </div>
-                  </div>
-                  <Button
-                    variant={exercise.completed ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => onExerciseComplete(exercise.id)}
-                  >
-                    {exercise.completed ? t('Completed') : t('Mark Complete')}
-                  </Button>
-                </div>
-              </Card>
+              <ExerciseCard
+                key={exercise.id}
+                exercise={exercise}
+                onComplete={onExerciseComplete}
+                onProgressUpdate={onExerciseProgressUpdate}
+                isActive={false}
+                onSetActive={() => handleSetActive(exercise.id)}
+              />
             ))}
           </div>
         )}
       </div>
 
-      {/* Custom Exercise Dialog */}
       <CustomExerciseDialog
         open={showCustomExerciseDialog}
         onOpenChange={setShowCustomExerciseDialog}
         dailyWorkoutId={dailyWorkoutId}
         onExerciseCreated={() => {
-          // Refresh the exercises list
           window.location.reload();
         }}
       />

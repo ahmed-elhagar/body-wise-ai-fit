@@ -9,11 +9,16 @@ import {
   Pause, 
   Target,
   CheckCircle,
-  Timer
+  Timer,
+  Youtube,
+  RefreshCw,
+  MoreVertical
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Exercise } from '@/types/exercise';
 import { ExerciseActionsMenu } from './ExerciseActionsMenu';
+import { ExerciseVideoDialog } from './ExerciseVideoDialog';
+import { ExerciseExchangeDialog } from './ExerciseExchangeDialog';
 
 interface ExerciseCardProps {
   exercise: Exercise;
@@ -32,17 +37,31 @@ export const ExerciseCard = ({
 }: ExerciseCardProps) => {
   const { t } = useLanguage();
   const [isUpdating, setIsUpdating] = useState(false);
+  const [showVideoDialog, setShowVideoDialog] = useState(false);
+  const [showExchangeDialog, setShowExchangeDialog] = useState(false);
 
   const totalSets = exercise.sets || 3;
   const completedSets = exercise.actual_sets || 0;
-  const progressPercentage = (completedSets / totalSets) * 100;
+  const progressPercentage = Math.min((completedSets / totalSets) * 100, 100);
 
   const handleQuickComplete = async () => {
     if (isUpdating || exercise.completed) return;
     
     try {
       setIsUpdating(true);
+      
+      // First update progress to full completion
+      await onProgressUpdate(
+        exercise.id, 
+        totalSets, 
+        Array(totalSets).fill(exercise.reps || '12').join('-'),
+        exercise.notes
+      );
+      
+      // Then mark as completed
       await onComplete(exercise.id);
+      
+      console.log('✅ Exercise completed:', exercise.name);
     } catch (error) {
       console.error('❌ Error completing exercise:', error);
     } finally {
@@ -50,102 +69,159 @@ export const ExerciseCard = ({
     }
   };
 
+  const handleVideoClick = () => {
+    setShowVideoDialog(true);
+  };
+
+  const handleExchangeClick = () => {
+    setShowExchangeDialog(true);
+  };
+
   return (
-    <Card className={`p-4 transition-all duration-200 ${
-      isActive ? 'ring-2 ring-blue-500 bg-blue-50' : ''
-    } ${exercise.completed ? 'bg-green-50 border-green-200' : ''}`}>
-      
-      {/* Exercise Header */}
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="font-semibold text-gray-900">{exercise.name}</h3>
-            {exercise.completed && (
-              <Badge className="bg-green-600">
-                <CheckCircle className="w-3 h-3 mr-1" />
-                {t('Completed')}
-              </Badge>
-            )}
-          </div>
-          <div className="flex items-center gap-4 text-sm text-gray-600">
-            <span className="flex items-center gap-1">
-              <Target className="w-4 h-4" />
-              {totalSets} {t('sets')} × {exercise.reps} {t('reps')}
-            </span>
-            {exercise.equipment && (
-              <span className="text-blue-600">
-                {exercise.equipment}
-              </span>
-            )}
-          </div>
-        </div>
+    <>
+      <Card className={`p-4 transition-all duration-200 ${
+        isActive ? 'ring-2 ring-blue-500 bg-blue-50' : ''
+      } ${exercise.completed ? 'bg-green-50 border-green-200' : ''}`}>
         
-        <div className="flex items-center gap-2">
-          <ExerciseActionsMenu
-            exercise={exercise}
-            onShowVideo={() => {}}
-            onShowExchange={() => {}}
-          />
-          
-          {!exercise.completed && (
-            <Button
-              variant={isActive ? "default" : "outline"}
-              size="sm"
-              onClick={onSetActive}
-              disabled={isUpdating}
-            >
-              {isActive ? (
-                <>
-                  <Pause className="w-4 h-4 mr-1" />
-                  {t('Active')}
-                </>
-              ) : (
-                <>
-                  <Play className="w-4 h-4 mr-1" />
-                  {t('Start')}
-                </>
+        {/* Exercise Header */}
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="font-semibold text-gray-900">{exercise.name}</h3>
+              {exercise.completed && (
+                <Badge className="bg-green-600">
+                  <CheckCircle className="w-3 h-3 mr-1" />
+                  {t('Completed')}
+                </Badge>
               )}
+            </div>
+            <div className="flex items-center gap-4 text-sm text-gray-600">
+              <span className="flex items-center gap-1">
+                <Target className="w-4 h-4" />
+                {totalSets} {t('sets')} × {exercise.reps} {t('reps')}
+              </span>
+              {exercise.equipment && (
+                <span className="text-blue-600">
+                  {exercise.equipment}
+                </span>
+              )}
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-1">
+            {/* YouTube Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleVideoClick}
+              className="h-8 px-2"
+              title={t('Watch Video')}
+            >
+              <Youtube className="w-4 h-4 text-red-600" />
             </Button>
-          )}
+            
+            {/* Exchange Button */}
+            {!exercise.completed && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExchangeClick}
+                className="h-8 px-2"
+                title={t('Exchange Exercise')}
+              >
+                <RefreshCw className="w-4 h-4 text-orange-600" />
+              </Button>
+            )}
+            
+            {/* More Actions Menu */}
+            <ExerciseActionsMenu
+              exercise={exercise}
+              onShowVideo={handleVideoClick}
+              onShowExchange={handleExchangeClick}
+            />
+            
+            {/* Start/Active Button */}
+            {!exercise.completed && onSetActive && (
+              <Button
+                variant={isActive ? "default" : "outline"}
+                size="sm"
+                onClick={onSetActive}
+                disabled={isUpdating}
+                className="h-8"
+              >
+                {isActive ? (
+                  <>
+                    <Pause className="w-4 h-4 mr-1" />
+                    {t('Active')}
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-4 h-4 mr-1" />
+                    {t('Start')}
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* Progress Bar */}
-      <div className="mb-4">
-        <div className="flex items-center justify-between text-sm mb-1">
-          <span className="text-gray-600">{t('Progress')}</span>
-          <span className="font-medium">{completedSets}/{totalSets} {t('sets')}</span>
+        {/* Progress Bar */}
+        <div className="mb-4">
+          <div className="flex items-center justify-between text-sm mb-1">
+            <span className="text-gray-600">{t('Progress')}</span>
+            <span className="font-medium">
+              {completedSets}/{totalSets} {t('sets')}
+              {exercise.actual_reps && (
+                <span className="text-gray-500 ml-1">
+                  ({exercise.actual_reps} {t('reps')})
+                </span>
+              )}
+            </span>
+          </div>
+          <Progress value={progressPercentage} className="h-2" />
         </div>
-        <Progress value={progressPercentage} className="h-2" />
-      </div>
 
-      {/* Quick Complete Button - Only show for non-active, non-completed exercises */}
-      {!isActive && !exercise.completed && (
-        <Button
-          onClick={handleQuickComplete}
-          disabled={isUpdating}
-          className="w-full bg-green-600 hover:bg-green-700 text-white"
-        >
-          {isUpdating ? (
-            <>
-              <Timer className="w-4 h-4 mr-2 animate-spin" />
-              {t('Updating...')}
-            </>
-          ) : (
-            <>
-              <CheckCircle className="w-4 h-4 mr-2" />
-              {t('Mark as Complete')}
-            </>
-          )}
-        </Button>
-      )}
+        {/* Quick Complete Button - Only show for non-active, non-completed exercises */}
+        {!isActive && !exercise.completed && (
+          <Button
+            onClick={handleQuickComplete}
+            disabled={isUpdating}
+            className="w-full bg-green-600 hover:bg-green-700 text-white"
+          >
+            {isUpdating ? (
+              <>
+                <Timer className="w-4 h-4 mr-2 animate-spin" />
+                {t('Updating...')}
+              </>
+            ) : (
+              <>
+                <CheckCircle className="w-4 h-4 mr-2" />
+                {t('Mark as Complete')}
+              </>
+            )}
+          </Button>
+        )}
 
-      {/* Exercise Instructions */}
-      {exercise.instructions && (
-        <div className="text-sm text-gray-600 mt-3 p-2 bg-gray-50 rounded">
-          <strong>{t('Instructions')}:</strong> {exercise.instructions}
-        </div>
-      )}
-    </Card>
+        {/* Exercise Instructions */}
+        {exercise.instructions && (
+          <div className="text-sm text-gray-600 mt-3 p-2 bg-gray-50 rounded">
+            <strong>{t('Instructions')}:</strong> {exercise.instructions}
+          </div>
+        )}
+      </Card>
+
+      {/* Dialogs */}
+      <ExerciseVideoDialog
+        exercise={exercise}
+        open={showVideoDialog}
+        onOpenChange={setShowVideoDialog}
+      />
+
+      <ExerciseExchangeDialog
+        exercise={exercise}
+        open={showExchangeDialog}
+        onOpenChange={setShowExchangeDialog}
+      />
+    </>
   );
 };

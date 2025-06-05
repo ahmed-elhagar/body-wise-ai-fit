@@ -89,15 +89,16 @@ export const ActiveExerciseTracker = ({
       setIsResting(true);
     }
 
-    // Update progress
+    // Update progress immediately
     const completedCount = newSets.filter(set => set.completed).length;
     const repsString = newSets.map(set => set.reps).join('-');
 
     try {
       setIsUpdating(true);
       await onProgressUpdate(exercise.id, completedCount, repsString, notes);
+      console.log('✅ Set progress updated:', { completedCount, repsString });
     } catch (error) {
-      console.error('Failed to update progress:', error);
+      console.error('❌ Failed to update set progress:', error);
       // Revert on error
       newSets[setIndex].completed = wasCompleted;
       setSets(newSets);
@@ -106,10 +107,20 @@ export const ActiveExerciseTracker = ({
     }
   };
 
-  const updateSetReps = (setIndex: number, change: number) => {
+  const updateSetReps = async (setIndex: number, change: number) => {
     const newSets = [...sets];
     newSets[setIndex].reps = Math.max(1, newSets[setIndex].reps + change);
     setSets(newSets);
+
+    // Update reps string immediately
+    const completedCount = newSets.filter(set => set.completed).length;
+    const repsString = newSets.map(set => set.reps).join('-');
+
+    try {
+      await onProgressUpdate(exercise.id, completedCount, repsString, notes);
+    } catch (error) {
+      console.error('❌ Failed to update reps:', error);
+    }
   };
 
   const handleCompleteExercise = async () => {
@@ -117,7 +128,15 @@ export const ActiveExerciseTracker = ({
     
     try {
       setIsUpdating(true);
+      
+      // First ensure all sets are marked complete
+      const allSetsCompleted = sets.map(set => ({ ...set, completed: true }));
+      const repsString = allSetsCompleted.map(set => set.reps).join('-');
+      
+      await onProgressUpdate(exercise.id, totalSets, repsString, notes);
       await onComplete(exercise.id);
+      
+      console.log('✅ Exercise fully completed:', exercise.name);
     } catch (error) {
       console.error('❌ Error completing exercise:', error);
     } finally {
