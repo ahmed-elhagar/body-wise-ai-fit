@@ -6,7 +6,7 @@ import { ChefHat, Clock, Users, Utensils, Youtube, ExternalLink, Sparkles, Image
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEnhancedMealRecipe } from '@/hooks/useEnhancedMealRecipe';
 import { toast } from 'sonner';
-import EnhancedLoadingIndicator from '@/components/ui/enhanced-loading-indicator';
+import SimpleLoadingIndicator from '@/components/ui/simple-loading-indicator';
 import type { DailyMeal } from '@/features/meal-plan/types';
 
 interface EnhancedRecipeDialogProps {
@@ -159,7 +159,7 @@ export const EnhancedRecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }:
               className="absolute top-2 right-2 bg-blue-600 hover:bg-blue-700"
             >
               {isGeneratingImage ? (
-                <EnhancedLoadingIndicator status="loading" type="general" size="sm" />
+                <SimpleLoadingIndicator message="Generating..." size="sm" />
               ) : (
                 <>
                   <Sparkles className="w-3 h-3 mr-1" />
@@ -218,7 +218,7 @@ export const EnhancedRecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }:
                 className="bg-purple-600 hover:bg-purple-700"
               >
                 {isGeneratingRecipe ? (
-                  <EnhancedLoadingIndicator status="loading" type="general" size="sm" />
+                  <SimpleLoadingIndicator message="Generating..." size="sm" />
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4 mr-2" />

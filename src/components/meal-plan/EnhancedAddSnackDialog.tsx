@@ -12,7 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useCalorieCalculations } from "./add-snack/useCalorieCalculations";
-import EnhancedLoadingIndicator from "@/components/ui/enhanced-loading-indicator";
+import SimpleLoadingIndicator from "@/components/ui/simple-loading-indicator";
 
 interface EnhancedAddSnackDialogProps {
   isOpen: boolean;
@@ -248,20 +248,10 @@ const EnhancedAddSnackDialog = ({
                   </p>
                   
                   {isGeneratingAI ? (
-                    <EnhancedLoadingIndicator
-                      status="loading"
-                      type="generation"
+                    <SimpleLoadingIndicator
                       message="Generating AI Snack"
                       description="Creating the perfect snack for your remaining calories"
-                      variant="card"
                       size="md"
-                      showSteps={true}
-                      customSteps={[
-                        'Analyzing your dietary preferences...',
-                        'Calculating optimal nutrition...',
-                        'Creating personalized snack...',
-                        'Finalizing recipe details...'
-                      ]}
                     />
                   ) : (
                     <Button

@@ -1,9 +1,8 @@
-
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Sparkles, Plus, Flame } from "lucide-react";
-import EnhancedLoadingIndicator from "@/components/ui/enhanced-loading-indicator";
+import SimpleLoadingIndicator from "@/components/ui/simple-loading-indicator";
 
 interface SnackGenerationSectionProps {
   remainingCalories: number;
@@ -44,20 +43,10 @@ const SnackGenerationSection = ({
       </div>
 
       {isGenerating ? (
-        <EnhancedLoadingIndicator
-          status="loading"
-          type="generation"
+        <SimpleLoadingIndicator
           message={t('mealPlan.addSnack.generatingAISnack') || "Generating AI Snack"}
           description="Creating the perfect snack for your remaining calories"
-          variant="card"
           size="md"
-          showSteps={true}
-          customSteps={[
-            'Analyzing calorie requirements...',
-            'Selecting healthy ingredients...',
-            'Creating balanced nutrition...',
-            'Finalizing snack recipe...'
-          ]}
         />
       ) : (
         <div className={`flex gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
