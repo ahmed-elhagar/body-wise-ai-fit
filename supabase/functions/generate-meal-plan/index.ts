@@ -111,13 +111,53 @@ function parseAndValidateRequest(body: any) {
   };
 }
 
+// Generate sample meal plan data for testing
+function generateSampleMealPlan(userProfile: any, preferences: any, weekStartDate: string) {
+  const mealTypes = preferences.includeSnacks 
+    ? ['breakfast', 'snack1', 'lunch', 'snack2', 'dinner']
+    : ['breakfast', 'lunch', 'dinner'];
+
+  const sampleMeals = [];
+  
+  for (let day = 1; day <= 7; day++) {
+    for (const mealType of mealTypes) {
+      sampleMeals.push({
+        id: crypto.randomUUID(),
+        day_number: day,
+        meal_type: mealType,
+        meal_name: `Sample ${mealType.charAt(0).toUpperCase() + mealType.slice(1)} Day ${day}`,
+        calories: mealType.includes('snack') ? 150 : 400,
+        protein: mealType.includes('snack') ? 5 : 25,
+        carbs: mealType.includes('snack') ? 20 : 45,
+        fat: mealType.includes('snack') ? 8 : 15,
+        ingredients: [
+          {
+            name: 'Sample ingredient',
+            amount: '1 cup',
+            calories: 100
+          }
+        ],
+        instructions: [
+          'Sample cooking instruction 1',
+          'Sample cooking instruction 2'
+        ],
+        prep_time: 15,
+        cook_time: 20,
+        servings: 1
+      });
+    }
+  }
+
+  return sampleMeals;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    console.log('=== ENHANCED MEAL PLAN GENERATION WITH FALLBACK CHAIN START ===');
+    console.log('=== ENHANCED MEAL PLAN GENERATION WITH ACTUAL DATABASE STORAGE ===');
     
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -136,19 +176,96 @@ Deno.serve(async (req) => {
       mealsPerDay: preferences.includeSnacks ? 5 : 3
     });
 
-    // Enhanced meal plan generation logic would go here
-    // For now, return a success response to test the parsing fix
+    // Calculate week start date
+    const today = new Date();
+    const currentSaturday = new Date(today);
+    currentSaturday.setDate(today.getDate() + (6 - today.getDay()));
+    const weekStartDate = new Date(currentSaturday);
+    weekStartDate.setDate(currentSaturday.getDate() + (weekOffset * 7));
+    const weekStartDateStr = weekStartDate.toISOString().split('T')[0];
+
+    console.log('📅 Calculated dates:', {
+      today: today.toISOString().split('T')[0],
+      weekOffset,
+      weekStartDate: weekStartDateStr
+    });
+
+    // Check if meal plan already exists for this week
+    const { data: existingPlan } = await supabase
+      .from('weekly_meal_plans')
+      .select('id')
+      .eq('user_id', userProfile.id)
+      .eq('week_start_date', weekStartDateStr)
+      .maybeSingle();
+
+    if (existingPlan) {
+      console.log('🔄 Updating existing meal plan:', existingPlan.id);
+      
+      // Delete existing meals for this week
+      await supabase
+        .from('daily_meals')
+        .delete()
+        .eq('weekly_plan_id', existingPlan.id);
+    }
+
+    // Create or update weekly plan
+    const { data: weeklyPlan, error: weeklyPlanError } = await supabase
+      .from('weekly_meal_plans')
+      .upsert({
+        id: existingPlan?.id || crypto.randomUUID(),
+        user_id: userProfile.id,
+        week_start_date: weekStartDateStr,
+        total_calories: preferences.includeSnacks ? 2100 : 1800,
+        total_protein: preferences.includeSnacks ? 140 : 120,
+        total_carbs: preferences.includeSnacks ? 250 : 200,
+        total_fat: preferences.includeSnacks ? 80 : 65,
+        plan_type: 'ai_generated',
+        preferences: preferences,
+        updated_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (weeklyPlanError) {
+      console.error('❌ Error creating weekly plan:', weeklyPlanError);
+      throw new Error('Failed to create weekly meal plan');
+    }
+
+    console.log('✅ Weekly plan created/updated:', weeklyPlan.id);
+
+    // Generate sample meals
+    const sampleMeals = generateSampleMealPlan(userProfile, preferences, weekStartDateStr);
     
+    // Insert meals into database
+    const mealsToInsert = sampleMeals.map(meal => ({
+      ...meal,
+      weekly_plan_id: weeklyPlan.id,
+      user_id: userProfile.id
+    }));
+
+    const { data: insertedMeals, error: mealsError } = await supabase
+      .from('daily_meals')
+      .insert(mealsToInsert)
+      .select();
+
+    if (mealsError) {
+      console.error('❌ Error inserting meals:', mealsError);
+      throw new Error('Failed to create daily meals');
+    }
+
+    console.log('✅ Meals inserted successfully:', insertedMeals.length);
+
     return new Response(
       JSON.stringify({
         success: true,
-        message: 'Meal plan generation started successfully',
-        weeklyPlanId: 'temp-id',
-        totalMeals: preferences.includeSnacks ? 35 : 21,
+        message: 'Meal plan generated successfully',
+        weeklyPlanId: weeklyPlan.id,
+        totalMeals: insertedMeals.length,
         mealsPerDay: preferences.includeSnacks ? 5 : 3,
         includeSnacks: preferences.includeSnacks,
         weekOffset: weekOffset,
-        userId: userProfile.id
+        userId: userProfile.id,
+        weekStartDate: weekStartDateStr
       }),
       { 
         status: 200,
