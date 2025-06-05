@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { calculateDailyCalories, calculateLifePhaseAdjustments } from './nutritionCalculator.ts';
@@ -30,7 +29,23 @@ const parseAndValidateRequest = (requestBody: any) => {
       );
     }
     
-    const { userProfile, preferences } = requestBody;
+    // Handle both old and new request formats
+    let userProfile;
+    let preferences;
+    
+    if (requestBody.userData) {
+      // New format: userData and preferences separate
+      userProfile = requestBody.userData;
+      preferences = requestBody.preferences || {};
+    } else if (requestBody.preferences?.userProfile) {
+      // Handle nested userProfile in preferences
+      userProfile = requestBody.preferences.userProfile;
+      preferences = requestBody.preferences;
+    } else {
+      // Legacy format: userProfile and preferences at root level
+      userProfile = requestBody.userProfile;
+      preferences = requestBody.preferences || {};
+    }
     
     console.log('🔍 Extracted data:', {
       hasUserProfile: !!userProfile,
