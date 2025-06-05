@@ -1,4 +1,3 @@
-
 import { useMemo, useState, useCallback } from "react";
 import { format, eachDayOfInterval, startOfMonth, endOfMonth, isValid, isSameDay } from "date-fns";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -55,7 +54,7 @@ interface DayData {
   avgCaloriesPerMeal: number;
 }
 
-// Enhanced Day Card Component - Larger size
+// Enhanced Day Card Component - Smaller for compact layout
 const DayCard = ({ 
   day, 
   selectedDay, 
@@ -82,7 +81,7 @@ const DayCard = ({
   return (
     <div
       className={`
-        w-10 h-10 rounded-lg flex items-center justify-center text-sm font-medium border transition-all duration-200
+        w-8 h-8 rounded-lg flex items-center justify-center text-xs font-medium border transition-all duration-200
         ${getIntensityColor(day.intensity)}
         ${hasEntries ? 'cursor-pointer hover:scale-105 hover:shadow-md' : ''}
         ${isSelected ? 'ring-2 ring-blue-500 shadow-lg scale-105' : ''}
@@ -259,22 +258,22 @@ const OptimizedNutritionHeatMap = ({ data, currentMonth }: OptimizedNutritionHea
 
   return (
     <div className="space-y-6">
-      {/* Top Row - Calendar and Stats */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Enhanced Calendar - Takes more space */}
+      {/* Top Row - Compact Calendar and Enhanced Stats */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        {/* Compact Calendar - Takes 2/5 of the width */}
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-lg border p-6 shadow-sm">
+          <div className="bg-white rounded-lg border p-4 shadow-sm">
             {/* Calendar Header */}
-            <div className="grid grid-cols-7 gap-2 text-center mb-4">
-              {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((day, index) => (
-                <div key={index} className="text-sm font-medium text-gray-500 py-2">
-                  {day.slice(0, 3)}
+            <div className="grid grid-cols-7 gap-1 text-center mb-3">
+              {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
+                <div key={index} className="text-xs font-medium text-gray-500 py-1">
+                  {day}
                 </div>
               ))}
             </div>
             
-            {/* Calendar Grid - Larger */}
-            <div className="grid grid-cols-7 gap-2">
+            {/* Calendar Grid - Compact */}
+            <div className="grid grid-cols-7 gap-1">
               {heatMapData.map((day) => (
                 <DayCard
                   key={day.dateStr}
@@ -286,13 +285,13 @@ const OptimizedNutritionHeatMap = ({ data, currentMonth }: OptimizedNutritionHea
             </div>
 
             {/* Legend */}
-            <div className="flex items-center justify-center gap-2 mt-6">
-              <span className="text-sm text-gray-500">Less</span>
+            <div className="flex items-center justify-center gap-2 mt-4">
+              <span className="text-xs text-gray-500">Less</span>
               <div className="flex gap-1">
                 {[0, 1, 2, 3, 4].map(intensity => (
                   <div
                     key={intensity}
-                    className={`w-3 h-3 rounded border ${
+                    className={`w-2 h-2 rounded border ${
                       intensity === 0 ? 'bg-gray-100 border-gray-200' :
                       intensity === 1 ? 'bg-green-100 border-green-300' :
                       intensity === 2 ? 'bg-green-200 border-green-400' :
@@ -302,47 +301,51 @@ const OptimizedNutritionHeatMap = ({ data, currentMonth }: OptimizedNutritionHea
                   />
                 ))}
               </div>
-              <span className="text-sm text-gray-500">More</span>
+              <span className="text-xs text-gray-500">More</span>
             </div>
           </div>
         </div>
 
-        {/* Monthly Stats - 2x2 Grid */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-            <div className="flex items-center gap-2 mb-3">
-              <Target className="w-5 h-5 text-green-600" />
-              <span className="text-sm font-medium text-green-700">Active Days</span>
+        {/* Enhanced Monthly Stats - Takes 3/5 of the width, 2x2 Grid */}
+        <div className="lg:col-span-3">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-lg border border-green-200">
+              <div className="flex items-center gap-3 mb-4">
+                <Target className="w-8 h-8 text-green-600" />
+                <span className="text-lg font-semibold text-green-700">Active Days</span>
+              </div>
+              <div className="text-4xl font-bold text-green-900 mb-2">{monthlyStats.activeDays}</div>
+              <div className="text-sm text-green-600">days with food logs</div>
             </div>
-            <div className="text-2xl font-bold text-green-900">{monthlyStats.activeDays}</div>
-            <div className="text-xs text-green-600">days logged</div>
-          </div>
-          
-          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-            <div className="flex items-center gap-2 mb-3">
-              <TrendingUp className="w-5 h-5 text-blue-600" />
-              <span className="text-sm font-medium text-blue-700">Avg Calories</span>
+            
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg border border-blue-200">
+              <div className="flex items-center gap-3 mb-4">
+                <TrendingUp className="w-8 h-8 text-blue-600" />
+                <span className="text-lg font-semibold text-blue-700">Avg Calories</span>
+              </div>
+              <div className="text-4xl font-bold text-blue-900 mb-2">{monthlyStats.avgDailyCalories}</div>
+              <div className="text-sm text-blue-600">calories per day</div>
             </div>
-            <div className="text-2xl font-bold text-blue-900">{monthlyStats.avgDailyCalories}</div>
-            <div className="text-xs text-blue-600">per day</div>
-          </div>
-          
-          <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-            <div className="flex items-center gap-2 mb-3">
-              <Activity className="w-5 h-5 text-purple-600" />
-              <span className="text-sm font-medium text-purple-700">Avg Protein</span>
+            
+            <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-lg border border-purple-200">
+              <div className="flex items-center gap-3 mb-4">
+                <Activity className="w-8 h-8 text-purple-600" />
+                <span className="text-lg font-semibold text-purple-700">Avg Protein</span>
+              </div>
+              <div className="text-4xl font-bold text-purple-900 mb-2">{monthlyStats.avgDailyProtein}g</div>
+              <div className="text-sm text-purple-600">protein per day</div>
             </div>
-            <div className="text-2xl font-bold text-purple-900">{monthlyStats.avgDailyProtein}g</div>
-            <div className="text-xs text-purple-600">per day</div>
-          </div>
-          
-          <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-5 h-5 bg-orange-600 rounded-full" />
-              <span className="text-sm font-medium text-orange-700">Streak</span>
+            
+            <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-lg border border-orange-200">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">🔥</span>
+                </div>
+                <span className="text-lg font-semibold text-orange-700">Streak</span>
+              </div>
+              <div className="text-4xl font-bold text-orange-900 mb-2">{monthlyStats.streak}</div>
+              <div className="text-sm text-orange-600">consecutive days</div>
             </div>
-            <div className="text-2xl font-bold text-orange-900">{monthlyStats.streak}</div>
-            <div className="text-xs text-orange-600">days in a row</div>
           </div>
         </div>
       </div>
