@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Calendar, ChevronLeft, ChevronRight, AlertCircle, Search, Filter } from "lucide-react";
@@ -9,7 +8,8 @@ import { useFoodConsumption } from "@/hooks/useFoodConsumption";
 import { format, startOfMonth, endOfMonth, addMonths, subMonths, parseISO, isSameDay } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import NutritionHeatMap from "./components/NutritionHeatMap";
+import OptimizedNutritionHeatMap from "./components/OptimizedNutritionHeatMap";
+import VirtualizedMealHistory from "./components/VirtualizedMealHistory";
 
 const HistoryTab = () => {
   const { t, isRTL } = useLanguage();
@@ -91,26 +91,6 @@ const HistoryTab = () => {
     setSelectedDate(null);
   };
 
-  const getMealTypeIcon = (mealType: string) => {
-    switch (mealType) {
-      case 'breakfast': return '🌅';
-      case 'lunch': return '🍽️';
-      case 'dinner': return '🌙';
-      case 'snack': return '🍎';
-      default: return '🍴';
-    }
-  };
-
-  const getMealTypeColor = (mealType: string) => {
-    switch (mealType) {
-      case 'breakfast': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'lunch': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'dinner': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'snack': return 'bg-green-100 text-green-800 border-green-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
-
   if (error) {
     return (
       <div className="space-y-4">
@@ -178,7 +158,7 @@ const HistoryTab = () => {
           </div>
         </div>
         
-        <NutritionHeatMap data={historyData} currentMonth={currentMonth} />
+        <OptimizedNutritionHeatMap data={historyData} currentMonth={currentMonth} />
       </Card>
 
       {/* Search and Filters */}
@@ -225,7 +205,7 @@ const HistoryTab = () => {
         </div>
       </Card>
 
-      {/* Meal History */}
+      {/* Optimized Meal History */}
       <Card className="p-6">
         <h3 className="text-lg font-semibold mb-4">
           Meal History {filteredHistory.length !== historyData.length && (
@@ -235,109 +215,7 @@ const HistoryTab = () => {
           )}
         </h3>
 
-        {groupedHistory.length > 0 ? (
-          <div className="space-y-6">
-            {groupedHistory.map(({ date, entries }) => (
-              <div key={date} className="border-l-4 border-green-200 pl-4">
-                <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                  {format(parseISO(date), 'EEEE, MMMM d, yyyy')}
-                  <Badge variant="outline" className="text-xs">
-                    {entries.length} meals
-                  </Badge>
-                </h4>
-                
-                <div className="grid gap-3">
-                  {entries.map((entry) => (
-                    <Card key={entry.id} className="p-4 hover:shadow-md transition-shadow">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Badge className={getMealTypeColor(entry.meal_type)}>
-                              {getMealTypeIcon(entry.meal_type)} {entry.meal_type}
-                            </Badge>
-                            <span className="text-sm text-gray-500">
-                              {format(parseISO(entry.consumed_at), 'h:mm a')}
-                            </span>
-                          </div>
-                          
-                          <h5 className="font-medium text-gray-900 mb-1">
-                            {entry.food_item?.name || 'Unknown Food'}
-                          </h5>
-                          
-                          {entry.food_item?.brand && (
-                            <p className="text-sm text-gray-600 mb-2">
-                              {entry.food_item.brand}
-                            </p>
-                          )}
-                          
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                            <div>
-                              <span className="text-gray-500">Calories:</span>
-                              <span className="font-medium ml-1">{Math.round(entry.calories_consumed)}</span>
-                            </div>
-                            <div>
-                              <span className="text-gray-500">Protein:</span>
-                              <span className="font-medium ml-1">{Math.round(entry.protein_consumed)}g</span>
-                            </div>
-                            <div>
-                              <span className="text-gray-500">Carbs:</span>
-                              <span className="font-medium ml-1">{Math.round(entry.carbs_consumed)}g</span>
-                            </div>
-                            <div>
-                              <span className="text-gray-500">Fat:</span>
-                              <span className="font-medium ml-1">{Math.round(entry.fat_consumed)}g</span>
-                            </div>
-                          </div>
-                          
-                          {entry.notes && (
-                            <p className="text-sm text-gray-600 mt-2 italic">
-                              "{entry.notes}"
-                            </p>
-                          )}
-                        </div>
-                        
-                        <div className="text-right">
-                          <div className="text-sm text-gray-500">Quantity</div>
-                          <div className="font-medium">{entry.quantity_g}g</div>
-                          {entry.source && (
-                            <Badge variant="outline" className="text-xs mt-1">
-                              {entry.source}
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <Calendar className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              {searchTerm || mealTypeFilter !== "all" ? "No matching meals found" : "No meals logged"}
-            </h3>
-            <p className="text-gray-500 mb-4">
-              {searchTerm || mealTypeFilter !== "all" 
-                ? "Try adjusting your search or filters" 
-                : "Start logging your meals to see your food history here"
-              }
-            </p>
-            {(searchTerm || mealTypeFilter !== "all") && (
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setSearchTerm("");
-                  setMealTypeFilter("all");
-                }}
-              >
-                Clear Filters
-              </Button>
-            )}
-          </div>
-        )}
+        <VirtualizedMealHistory groupedHistory={groupedHistory} />
       </Card>
     </div>
   );
