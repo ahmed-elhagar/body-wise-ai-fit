@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import ChatHeader from "./chat/ChatHeader";
 import MessagesList from "./chat/MessagesList";
 import ChatInput from "./chat/ChatInput";
+import type { CoachChatMessage } from "./types/chatTypes";
 
 interface CoachTraineeChatProps {
   traineeId: string;
@@ -21,19 +22,12 @@ interface CoachTraineeChatProps {
   onBack: () => void;
 }
 
-interface ChatMessage {
-  id: string;
-  message: string;
-  sender_type: 'coach' | 'trainee';
-  sender_id: string;
-  created_at: string;
-  is_read: boolean;
-}
-
 export const CoachTraineeChat = ({ traineeId, traineeName, onBack }: CoachTraineeChatProps) => {
   const { t } = useLanguage();
   const { user } = useAuth();
   const [newMessage, setNewMessage] = useState("");
+  const [replyingTo, setReplyingTo] = useState<CoachChatMessage | null>(null);
+  const [editingMessage, setEditingMessage] = useState<CoachChatMessage | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const queryClient = useQueryClient();
@@ -48,16 +42,6 @@ export const CoachTraineeChat = ({ traineeId, traineeName, onBack }: CoachTraine
     sendTypingIndicator, 
     stopTypingIndicator 
   } = useTypingIndicator(coachId, traineeId);
-  
-  const {
-    replyingTo,
-    setReplyingTo,
-    editingMessage,
-    setEditingMessage,
-    editMessage,
-    deleteMessage,
-    isEditing
-  } = useMessageActions(coachId, traineeId);
 
   // Fetch messages
   const { data: messages = [], isLoading, error } = useQuery({
@@ -77,7 +61,7 @@ export const CoachTraineeChat = ({ traineeId, traineeName, onBack }: CoachTraine
         throw error;
       }
 
-      return data as ChatMessage[];
+      return data as CoachChatMessage[];
     },
     enabled: !!coachId && !!traineeId,
   });
@@ -117,6 +101,53 @@ export const CoachTraineeChat = ({ traineeId, traineeName, onBack }: CoachTraine
     },
   });
 
+  // Edit message mutation
+  const editMessageMutation = useMutation({
+    mutationFn: async ({ messageId, newContent }: { messageId: string; newContent: string }) => {
+      const { data, error } = await supabase
+        .from('coach_trainee_messages')
+        .update({ message: newContent, updated_at: new Date().toISOString() })
+        .eq('id', messageId)
+        .eq('sender_id', coachId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['coach-trainee-messages'] });
+      setEditingMessage(null);
+      setNewMessage('');
+      toast.success('Message updated');
+    },
+    onError: (error) => {
+      console.error('Error editing message:', error);
+      toast.error('Failed to edit message');
+    },
+  });
+
+  // Delete message mutation
+  const deleteMessageMutation = useMutation({
+    mutationFn: async (messageId: string) => {
+      const { error } = await supabase
+        .from('coach_trainee_messages')
+        .delete()
+        .eq('id', messageId)
+        .eq('sender_id', coachId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['coach-trainee-messages'] });
+      toast.success('Message deleted');
+    },
+    onError: (error) => {
+      console.error('Error deleting message:', error);
+      toast.error('Failed to delete message');
+    },
+  });
+
   const handleSendMessage = () => {
     if (!newMessage.trim() || sendMessageMutation.isPending) return;
     sendMessageMutation.mutate(newMessage.trim());
@@ -144,7 +175,7 @@ export const CoachTraineeChat = ({ traineeId, traineeName, onBack }: CoachTraine
     }
   };
 
-  const handleEditMessage = (msg: ChatMessage) => {
+  const handleEditMessage = (msg: CoachChatMessage) => {
     setEditingMessage(msg);
     setNewMessage(msg.message);
     inputRef.current?.focus();
@@ -158,15 +189,14 @@ export const CoachTraineeChat = ({ traineeId, traineeName, onBack }: CoachTraine
   const handleSaveEdit = async () => {
     if (!editingMessage || !newMessage.trim()) return;
     
-    try {
-      await editMessage({
-        messageId: editingMessage.id,
-        newContent: newMessage.trim()
-      });
-      setNewMessage('');
-    } catch (error) {
-      console.error('Failed to edit message:', error);
-    }
+    editMessageMutation.mutate({
+      messageId: editingMessage.id,
+      newContent: newMessage.trim()
+    });
+  };
+
+  const handleDeleteMessage = (messageId: string) => {
+    deleteMessageMutation.mutate(messageId);
   };
 
   // Mark messages as read
@@ -230,7 +260,7 @@ export const CoachTraineeChat = ({ traineeId, traineeName, onBack }: CoachTraine
           replyingTo={replyingTo}
           onReply={setReplyingTo}
           onEdit={handleEditMessage}
-          onDelete={deleteMessage}
+          onDelete={handleDeleteMessage}
           messagesEndRef={messagesEndRef}
         />
         
@@ -238,7 +268,7 @@ export const CoachTraineeChat = ({ traineeId, traineeName, onBack }: CoachTraine
           message={newMessage}
           setMessage={setNewMessage}
           isSending={sendMessageMutation.isPending}
-          isEditing={isEditing}
+          isEditing={editMessageMutation.isPending}
           editingMessage={editingMessage}
           replyingTo={replyingTo}
           onSend={handleSendMessage}

@@ -6,24 +6,16 @@ import { Clock, CheckCircle2, MoreVertical, Reply, Edit, Trash } from "lucide-re
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useLanguage } from "@/contexts/LanguageContext";
-
-interface Message {
-  id: string;
-  message: string;
-  sender_type: 'coach' | 'trainee';
-  sender_id: string;
-  created_at: string;
-  is_read: boolean;
-}
+import type { CoachChatMessage } from "../types/chatTypes";
 
 interface MessagesListProps {
-  messages: Message[];
+  messages: CoachChatMessage[];
   currentUserId?: string;
   coachName: string;
   typingUsers: string[];
-  replyingTo?: Message | null;
-  onReply: (message: Message) => void;
-  onEdit: (message: Message) => void;
+  replyingTo?: CoachChatMessage | null;
+  onReply: (message: CoachChatMessage) => void;
+  onEdit: (message: CoachChatMessage) => void;
   onDelete: (messageId: string) => void;
   messagesEndRef: React.RefObject<HTMLDivElement>;
 }
@@ -147,6 +139,9 @@ const MessagesList = ({
                 }`}>
                   <Clock className="w-3 h-3" />
                   <span>{formatTime(message.created_at)}</span>
+                  {message.updated_at && message.updated_at !== message.created_at && (
+                    <span className="ml-1 opacity-75">(edited)</span>
+                  )}
                   {isOwn && (
                     <CheckCircle2 className={`w-3 h-3 ml-1 ${
                       message.is_read ? 'text-green-300' : 'text-blue-200'

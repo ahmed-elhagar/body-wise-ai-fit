@@ -1,18 +1,17 @@
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { Send, X, Edit3, Loader2 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import type { CoachChatMessage } from "../types/chatTypes";
 
 interface ChatInputProps {
   message: string;
   setMessage: (message: string) => void;
   isSending: boolean;
   isEditing: boolean;
-  editingMessage?: any;
-  replyingTo?: any;
+  editingMessage?: CoachChatMessage | null;
+  replyingTo?: CoachChatMessage | null;
   onSend: () => void;
   onSaveEdit: () => void;
   onCancelEdit: () => void;
