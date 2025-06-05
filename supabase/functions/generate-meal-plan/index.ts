@@ -453,7 +453,7 @@ Deno.serve(async (req) => {
       fat: totals.fat + (meal.fat || 0)
     }), { calories: 0, protein: 0, carbs: 0, fat: 0 });
 
-    // Create or update weekly plan
+    // Create or update weekly plan - REMOVED updated_at field
     const weeklyPlanData = {
       id: existingPlan?.id || crypto.randomUUID(),
       user_id: userProfile.id,
