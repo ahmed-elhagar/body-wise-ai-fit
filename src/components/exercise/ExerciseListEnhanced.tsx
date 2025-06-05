@@ -5,6 +5,7 @@ import { Exercise } from "@/types/exercise";
 import { ExerciseProgressCard } from "./ExerciseProgressCard";
 import { WorkoutSessionManager } from "./WorkoutSessionManager";
 import { RestDayCard } from "./RestDayCard";
+import { ExerciseErrorHandler } from "./ExerciseErrorHandler";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, Timer, List } from "lucide-react";
@@ -14,11 +15,13 @@ import { CustomExerciseDialog } from "./CustomExerciseDialog";
 interface ExerciseListEnhancedProps {
   exercises: Exercise[];
   isLoading: boolean;
-  onExerciseComplete: (exerciseId: string) => void;
-  onExerciseProgressUpdate: (exerciseId: string, sets: number, reps: string, notes?: string, weight?: number) => void;
+  onExerciseComplete: (exerciseId: string) => Promise<void>;
+  onExerciseProgressUpdate: (exerciseId: string, sets: number, reps: string, notes?: string, weight?: number) => Promise<void>;
   isRestDay?: boolean;
   currentProgram?: any;
   selectedDayNumber?: number;
+  error?: Error | null;
+  onRetry?: () => void;
 }
 
 export const ExerciseListEnhanced = ({
@@ -28,33 +31,28 @@ export const ExerciseListEnhanced = ({
   onExerciseProgressUpdate,
   isRestDay = false,
   currentProgram,
-  selectedDayNumber = 1
+  selectedDayNumber = 1,
+  error,
+  onRetry
 }: ExerciseListEnhancedProps) => {
   const { t } = useLanguage();
   const [viewMode, setViewMode] = useState<'session' | 'list'>('session');
   const [showCustomExerciseDialog, setShowCustomExerciseDialog] = useState(false);
   const [activeExerciseId, setActiveExerciseId] = useState<string | null>(null);
 
-  // Get the daily workout ID for the selected day
   const dailyWorkoutId = currentProgram?.daily_workouts?.find(
     (workout: any) => workout.day_number === selectedDayNumber
   )?.id;
 
-  // Memoize completed/total counts to prevent unnecessary re-renders
   const { completedCount, totalCount } = useMemo(() => {
     const completed = exercises.filter(ex => ex.completed).length;
     const total = exercises.length;
     return { completedCount: completed, totalCount: total };
   }, [exercises]);
 
-  // Debounced handlers to prevent rapid multiple calls
   const handleExerciseComplete = useCallback(async (exerciseId: string) => {
     console.log('🎯 ExerciseListEnhanced - Exercise completed:', exerciseId);
-    try {
-      await onExerciseComplete(exerciseId);
-    } catch (error) {
-      console.error('❌ Error in exercise completion:', error);
-    }
+    await onExerciseComplete(exerciseId);
   }, [onExerciseComplete]);
 
   const handleExerciseProgressUpdate = useCallback(async (
@@ -65,17 +63,28 @@ export const ExerciseListEnhanced = ({
     weight?: number
   ) => {
     console.log('📊 ExerciseListEnhanced - Progress updated:', { exerciseId, sets, reps, notes, weight });
-    try {
-      await onExerciseProgressUpdate(exerciseId, sets, reps, notes, weight);
-    } catch (error) {
-      console.error('❌ Error in progress update:', error);
-    }
+    await onExerciseProgressUpdate(exerciseId, sets, reps, notes, weight);
   }, [onExerciseProgressUpdate]);
 
   const handleSessionComplete = useCallback(() => {
     console.log('🏆 Workout session completed!');
-    // Additional session completion logic can be added here
   }, []);
+
+  const handleRetry = useCallback(() => {
+    if (onRetry) {
+      onRetry();
+    }
+  }, [onRetry]);
+
+  if (error) {
+    return (
+      <ExerciseErrorHandler
+        error={error}
+        onRetry={handleRetry}
+        context="exercise list"
+      />
+    );
+  }
 
   if (isLoading) {
     return (
@@ -132,7 +141,6 @@ export const ExerciseListEnhanced = ({
         </div>
         
         <div className="flex items-center gap-2">
-          {/* Add Custom Exercise Button */}
           {dailyWorkoutId && (
             <Button
               variant="outline"
@@ -145,7 +153,6 @@ export const ExerciseListEnhanced = ({
             </Button>
           )}
           
-          {/* View Mode Toggle */}
           <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
             <Button
               variant={viewMode === 'session' ? 'default' : 'ghost'}
@@ -169,18 +176,15 @@ export const ExerciseListEnhanced = ({
         </div>
       </div>
 
-      {/* Session Mode - Enhanced workout experience */}
       {viewMode === 'session' && (
         <div className="space-y-4">
-          {/* Workout Session Manager - Only for session tracking, not exercise handling */}
           <WorkoutSessionManager
             exercises={exercises}
-            onExerciseComplete={() => {}} // Empty - let ExerciseProgressCard handle this
-            onExerciseProgressUpdate={() => {}} // Empty - let ExerciseProgressCard handle this
+            onExerciseComplete={() => {}}
+            onExerciseProgressUpdate={() => {}}
             onSessionComplete={handleSessionComplete}
           />
           
-          {/* Enhanced Exercise Cards with full functionality */}
           <div className="space-y-4">
             {exercises.map((exercise) => (
               <ExerciseProgressCard
@@ -198,7 +202,6 @@ export const ExerciseListEnhanced = ({
         </div>
       )}
 
-      {/* List Mode - Simple view for quick overview */}
       {viewMode === 'list' && (
         <div className="space-y-3">
           {exercises.map((exercise, index) => (
@@ -234,13 +237,11 @@ export const ExerciseListEnhanced = ({
         </div>
       )}
 
-      {/* Custom Exercise Dialog */}
       <CustomExerciseDialog
         open={showCustomExerciseDialog}
         onOpenChange={setShowCustomExerciseDialog}
         dailyWorkoutId={dailyWorkoutId}
         onExerciseCreated={() => {
-          // Refresh the exercises list
           window.location.reload();
         }}
       />

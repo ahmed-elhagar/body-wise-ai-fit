@@ -1,40 +1,28 @@
+
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { 
   Play, 
   Pause, 
-  CheckCircle, 
-  Plus, 
-  Minus, 
-  Timer, 
-  TrendingUp,
-  Target,
-  AlertCircle
+  Target
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Exercise } from '@/types/exercise';
 import { ExerciseActionsMenu } from './ExerciseActionsMenu';
 import { ExerciseVideoDialog } from './ExerciseVideoDialog';
 import { ExerciseExchangeDialog } from './ExerciseExchangeDialog';
-import { toast } from 'sonner';
+import { ExerciseSetTracker } from './ExerciseSetTracker';
+import { ExerciseCompletionHandler } from './ExerciseCompletionHandler';
 
 interface ExerciseProgressCardProps {
   exercise: Exercise;
-  onComplete: (exerciseId: string) => void;
-  onProgressUpdate: (exerciseId: string, sets: number, reps: string, notes?: string, weight?: number) => void;
+  onComplete: (exerciseId: string) => Promise<void>;
+  onProgressUpdate: (exerciseId: string, sets: number, reps: string, notes?: string, weight?: number) => Promise<void>;
   isActive?: boolean;
   onSetActive?: () => void;
-}
-
-interface SetProgress {
-  completed: boolean;
-  reps: number;
-  weight?: number;
-  restTimer?: number;
 }
 
 export const ExerciseProgressCard = ({ 
@@ -44,202 +32,64 @@ export const ExerciseProgressCard = ({
   isActive = false,
   onSetActive 
 }: ExerciseProgressCardProps) => {
-  const { t, language } = useLanguage();
-  const [setsProgress, setSetsProgress] = useState<SetProgress[]>(
-    Array(exercise.sets || 3).fill(null).map(() => ({
-      completed: false,
-      reps: parseInt(exercise.reps || '12'),
-      weight: undefined
-    }))
-  );
-  const [isTimerRunning, setIsTimerRunning] = useState(false);
-  const [currentTimer, setCurrentTimer] = useState(exercise.rest_seconds || 60);
+  const { t } = useLanguage();
   const [notes, setNotes] = useState(exercise.notes || '');
-  const [showWeightInput, setShowWeightInput] = useState(false);
   const [showVideoDialog, setShowVideoDialog] = useState(false);
   const [showExchangeDialog, setShowExchangeDialog] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [hasError, setHasError] = useState(false);
 
-  const completedSets = setsProgress.filter(set => set.completed).length;
   const totalSets = exercise.sets || 3;
+  const completedSets = exercise.actual_sets || 0;
   const progressPercentage = (completedSets / totalSets) * 100;
 
   const handleSetComplete = async (setIndex: number) => {
-    if (isUpdating) {
-      console.log('⚠️ Already updating, skipping duplicate call');
-      return;
-    }
+    // This will be handled by ExerciseSetTracker
+    console.log('Set completed:', setIndex);
+  };
+
+  const handleProgressUpdate = async (sets: number, reps: string, weight?: number) => {
+    if (isUpdating) return;
     
     try {
       setIsUpdating(true);
-      setHasError(false);
-      
-      const newProgress = [...setsProgress];
-      const wasCompleted = newProgress[setIndex].completed;
-      newProgress[setIndex].completed = !wasCompleted;
-      setSetsProgress(newProgress);
-
-      // Auto-start rest timer if set is completed and not the last set
-      if (!wasCompleted && setIndex < totalSets - 1) {
-        setIsTimerRunning(true);
-        startRestTimer();
-      }
-
-      // Update exercise progress
-      const completedCount = newProgress.filter(set => set.completed).length;
-      const avgWeight = newProgress
-        .filter(set => set.weight)
-        .reduce((sum, set) => sum + (set.weight || 0), 0) / 
-        (newProgress.filter(set => set.weight).length || 1);
-
-      await onProgressUpdate(
-        exercise.id, 
-        completedCount, 
-        newProgress.map(set => set.reps).join('-'),
-        notes,
-        avgWeight || undefined
-      );
-
-      // Mark exercise as complete if all sets are done
-      if (completedCount === totalSets) {
-        console.log('🏆 All sets completed, marking exercise as complete');
-        await handleExerciseComplete();
-      }
-
-      // Show success feedback
-      const successMessage = language === 'ar'
-        ? `تم إكمال المجموعة ${setIndex + 1}`
-        : `Set ${setIndex + 1} completed`;
-      
-      toast.success(successMessage, { duration: 2000 });
-
-    } catch (error: any) {
-      console.error('❌ Error updating set progress:', error);
-      setHasError(true);
-      
-      // Revert the local state on error
-      setSetsProgress(prev => {
-        const reverted = [...prev];
-        reverted[setIndex].completed = !reverted[setIndex].completed;
-        return reverted;
-      });
-
-      // Show error message
-      const errorMessage = language === 'ar'
-        ? 'فشل في تحديث المجموعة. يرجى المحاولة مرة أخرى.'
-        : 'Failed to update set. Please try again.';
-      
-      toast.error(errorMessage);
-      
+      await onProgressUpdate(exercise.id, sets, reps, notes, weight);
+    } catch (error) {
+      console.error('❌ Error updating progress:', error);
     } finally {
       setIsUpdating(false);
     }
   };
 
-  const handleExerciseComplete = async () => {
-    if (isUpdating) {
-      console.log('⚠️ Already updating, skipping duplicate call');
-      return;
-    }
+  const handleExerciseComplete = async (exerciseId: string) => {
+    if (isUpdating) return;
     
     try {
       setIsUpdating(true);
-      setHasError(false);
-      
-      console.log('✅ Marking exercise complete:', exercise.id);
-      await onComplete(exercise.id);
-      
-      // Show success message
-      const successMessage = language === 'ar'
-        ? 'تم إكمال التمرين بنجاح!'
-        : 'Exercise completed successfully!';
-      
-      toast.success(successMessage, { duration: 3000 });
-      
-    } catch (error: any) {
+      await onComplete(exerciseId);
+    } catch (error) {
       console.error('❌ Error completing exercise:', error);
-      setHasError(true);
-      
-      // Show error message based on error type
-      let errorMessage = language === 'ar'
-        ? 'فشل في إكمال التمرين. يرجى المحاولة مرة أخرى.'
-        : 'Failed to complete exercise. Please try again.';
-
-      if (error.message?.includes('timeout') || error.code === '57014') {
-        errorMessage = language === 'ar'
-          ? 'انتهت مهلة الطلب. يرجى التحقق من الاتصال والمحاولة مرة أخرى.'
-          : 'Request timed out. Please check your connection and try again.';
-      }
-      
-      toast.error(errorMessage);
-      
     } finally {
       setIsUpdating(false);
     }
-  };
-
-  const startRestTimer = () => {
-    const timer = setInterval(() => {
-      setCurrentTimer(prev => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          setIsTimerRunning(false);
-          setCurrentTimer(exercise.rest_seconds || 60);
-          
-          // Show timer completion notification
-          const message = language === 'ar' ? 'انتهى وقت الراحة!' : 'Rest time is over!';
-          toast.info(message, { duration: 3000 });
-          
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  };
-
-  const updateSetReps = (setIndex: number, change: number) => {
-    const newProgress = [...setsProgress];
-    newProgress[setIndex].reps = Math.max(1, newProgress[setIndex].reps + change);
-    setSetsProgress(newProgress);
-  };
-
-  const updateSetWeight = (setIndex: number, weight: number) => {
-    const newProgress = [...setsProgress];
-    newProgress[setIndex].weight = weight;
-    setSetsProgress(newProgress);
-  };
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   return (
     <>
       <Card className={`p-4 transition-all duration-200 ${
         isActive ? 'ring-2 ring-blue-500 bg-blue-50' : ''
-      } ${exercise.completed ? 'bg-green-50 border-green-200' : ''} ${
-        hasError ? 'border-red-200 bg-red-50' : ''
-      }`}>
+      } ${exercise.completed ? 'bg-green-50 border-green-200' : ''}`}>
+        
         {/* Exercise Header */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
               <h3 className="font-semibold text-gray-900">{exercise.name}</h3>
-              {exercise.completed && (
-                <Badge variant="default" className="bg-green-600">
-                  <CheckCircle className="w-3 h-3 mr-1" />
-                  {t('Completed')}
-                </Badge>
-              )}
-              {hasError && (
-                <Badge variant="destructive" className="bg-red-600">
-                  <AlertCircle className="w-3 h-3 mr-1" />
-                  {language === 'ar' ? 'خطأ' : 'Error'}
-                </Badge>
-              )}
+              <ExerciseCompletionHandler
+                exercise={exercise}
+                onComplete={handleExerciseComplete}
+                isActive={isActive}
+                isUpdating={isUpdating}
+              />
             </div>
             <div className="flex items-center gap-4 text-sm text-gray-600">
               <span className="flex items-center gap-1">
@@ -290,133 +140,27 @@ export const ExerciseProgressCard = ({
           <Progress value={progressPercentage} className="h-2" />
         </div>
 
-        {/* Quick Complete Button for non-active exercises */}
-        {!isActive && !exercise.completed && (
-          <div className="mb-4">
-            <Button
-              onClick={handleExerciseComplete}
-              disabled={isUpdating}
-              className="w-full bg-green-600 hover:bg-green-700 text-white disabled:opacity-50"
-            >
-              {isUpdating ? (
-                <>
-                  <Timer className="w-4 h-4 mr-2 animate-spin" />
-                  {language === 'ar' ? 'جاري التحديث...' : 'Updating...'}
-                </>
-              ) : (
-                <>
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  {t('Mark as Complete')}
-                </>
-              )}
-            </Button>
-          </div>
-        )}
+        {/* Exercise Completion Handler */}
+        <div className="mb-4">
+          <ExerciseCompletionHandler
+            exercise={exercise}
+            onComplete={handleExerciseComplete}
+            isActive={isActive}
+            isUpdating={isUpdating}
+          />
+        </div>
 
         {/* Sets Tracking - Only show when active */}
-        {isActive && (
-          <div className="space-y-3 mb-4">
-            <div className="flex items-center justify-between">
-              <h4 className="font-medium text-gray-900">{t('Sets')}</h4>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowWeightInput(!showWeightInput)}
-                className="text-xs"
-              >
-                <TrendingUp className="w-3 h-3 mr-1" />
-                {showWeightInput ? t('Hide Weight') : t('Add Weight')}
-              </Button>
-            </div>
-            
-            <div className="grid gap-2">
-              {setsProgress.map((set, index) => (
-                <div 
-                  key={index}
-                  className={`flex items-center gap-2 p-2 rounded-lg border ${
-                    set.completed ? 'bg-green-50 border-green-200' : 'bg-gray-50'
-                  }`}
-                >
-                  <Button
-                    variant={set.completed ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => handleSetComplete(index)}
-                    disabled={isUpdating}
-                    className="w-8 h-8 p-0"
-                  >
-                    {set.completed ? (
-                      <CheckCircle className="w-4 h-4" />
-                    ) : (
-                      <span className="text-xs">{index + 1}</span>
-                    )}
-                  </Button>
-                  
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-6 h-6 p-0"
-                      onClick={() => updateSetReps(index, -1)}
-                    >
-                      <Minus className="w-3 h-3" />
-                    </Button>
-                    <span className="w-8 text-center text-sm font-medium">
-                      {set.reps}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-6 h-6 p-0"
-                      onClick={() => updateSetReps(index, 1)}
-                    >
-                      <Plus className="w-3 h-3" />
-                    </Button>
-                    <span className="text-xs text-gray-500">{t('reps')}</span>
-                  </div>
-
-                  {showWeightInput && (
-                    <div className="flex items-center gap-1 ml-2">
-                      <Input
-                        type="number"
-                        placeholder="kg"
-                        value={set.weight || ''}
-                        onChange={(e) => updateSetWeight(index, parseFloat(e.target.value) || 0)}
-                        className="w-16 h-6 text-xs"
-                      />
-                      <span className="text-xs text-gray-500">kg</span>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Rest Timer */}
-        {isActive && isTimerRunning && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Timer className="w-4 h-4 text-blue-600" />
-                <span className="text-sm font-medium text-blue-800">{t('Rest Time')}</span>
-              </div>
-              <div className="text-lg font-bold text-blue-800">
-                {formatTime(currentTimer)}
-              </div>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setIsTimerRunning(false);
-                setCurrentTimer(exercise.rest_seconds || 60);
-              }}
-              className="w-full mt-2 text-blue-600"
-            >
-              {t('Skip Rest')}
-            </Button>
-          </div>
-        )}
+        <ExerciseSetTracker
+          exerciseId={exercise.id}
+          totalSets={totalSets}
+          defaultReps={parseInt(exercise.reps || '12')}
+          restSeconds={exercise.rest_seconds || 60}
+          onSetComplete={handleSetComplete}
+          onProgressUpdate={handleProgressUpdate}
+          isActive={isActive}
+          isUpdating={isUpdating}
+        />
 
         {/* Exercise Instructions */}
         {exercise.instructions && (
