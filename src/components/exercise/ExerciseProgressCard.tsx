@@ -43,7 +43,6 @@ export const ExerciseProgressCard = ({
   const progressPercentage = (completedSets / totalSets) * 100;
 
   const handleSetComplete = async (setIndex: number) => {
-    // This will be handled by ExerciseSetTracker
     console.log('Set completed:', setIndex);
   };
 
@@ -84,12 +83,14 @@ export const ExerciseProgressCard = ({
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
               <h3 className="font-semibold text-gray-900">{exercise.name}</h3>
-              <ExerciseCompletionHandler
-                exercise={exercise}
-                onComplete={handleExerciseComplete}
-                isActive={isActive}
-                isUpdating={isUpdating}
-              />
+              {exercise.completed && (
+                <ExerciseCompletionHandler
+                  exercise={exercise}
+                  onComplete={handleExerciseComplete}
+                  isActive={isActive}
+                  isUpdating={isUpdating}
+                />
+              )}
             </div>
             <div className="flex items-center gap-4 text-sm text-gray-600">
               <span className="flex items-center gap-1">
@@ -140,15 +141,17 @@ export const ExerciseProgressCard = ({
           <Progress value={progressPercentage} className="h-2" />
         </div>
 
-        {/* Exercise Completion Handler */}
-        <div className="mb-4">
-          <ExerciseCompletionHandler
-            exercise={exercise}
-            onComplete={handleExerciseComplete}
-            isActive={isActive}
-            isUpdating={isUpdating}
-          />
-        </div>
+        {/* Exercise Completion Handler - Only show for non-active exercises */}
+        {!isActive && !exercise.completed && (
+          <div className="mb-4">
+            <ExerciseCompletionHandler
+              exercise={exercise}
+              onComplete={handleExerciseComplete}
+              isActive={isActive}
+              isUpdating={isUpdating}
+            />
+          </div>
+        )}
 
         {/* Sets Tracking - Only show when active */}
         <ExerciseSetTracker
@@ -160,6 +163,8 @@ export const ExerciseProgressCard = ({
           onProgressUpdate={handleProgressUpdate}
           isActive={isActive}
           isUpdating={isUpdating}
+          initialActualSets={exercise.actual_sets}
+          initialActualReps={exercise.actual_reps}
         />
 
         {/* Exercise Instructions */}
@@ -177,6 +182,7 @@ export const ExerciseProgressCard = ({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="text-sm"
+              disabled={isUpdating}
             />
           </div>
         )}

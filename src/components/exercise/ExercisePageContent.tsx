@@ -22,8 +22,8 @@ interface ExercisePageContentProps {
   aiPreferences: any;
   setAiPreferences: (prefs: any) => void;
   isGenerating: boolean;
-  onExerciseComplete: (exerciseId: string) => void;
-  onExerciseProgressUpdate: (exerciseId: string, sets: number, reps: string, notes?: string, weight?: number) => void;
+  onExerciseComplete: (exerciseId: string) => Promise<void>;
+  onExerciseProgressUpdate: (exerciseId: string, sets: number, reps: string, notes?: string, weight?: number) => Promise<void>;
 }
 
 export const ExercisePageContent = ({

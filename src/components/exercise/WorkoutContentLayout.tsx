@@ -14,8 +14,8 @@ interface WorkoutContentLayoutProps {
   currentProgram: any;
   selectedDayNumber: number;
   currentWeekOffset: number;
-  onExerciseComplete: (exerciseId: string) => void;
-  onExerciseProgressUpdate: (exerciseId: string, sets: number, reps: string, notes?: string) => void;
+  onExerciseComplete: (exerciseId: string) => Promise<void>;
+  onExerciseProgressUpdate: (exerciseId: string, sets: number, reps: string, notes?: string, weight?: number) => Promise<void>;
   isRestDay?: boolean;
 }
 
@@ -38,9 +38,9 @@ export const WorkoutContentLayout = ({
     workoutSession.startSession();
   };
 
-  const handleCompleteExercise = (exerciseId: string) => {
+  const handleCompleteExercise = async (exerciseId: string) => {
     workoutSession.completeExercise(exerciseId);
-    onExerciseComplete(exerciseId);
+    await onExerciseComplete(exerciseId);
   };
 
   return (

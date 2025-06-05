@@ -1,3 +1,4 @@
+
 import { useLanguage } from "@/contexts/LanguageContext";
 import { WeeklyExerciseNavigation } from "./WeeklyExerciseNavigation";
 import { ExerciseDaySelector } from "./ExerciseDaySelector";
@@ -31,8 +32,8 @@ interface ExerciseProgramPageContentProps {
   setAiPreferences: (prefs: any) => void;
   handleGenerateAIProgram: (prefs: any) => void;
   handleRegenerateProgram: () => void;
-  handleExerciseComplete: (exerciseId: string) => void;
-  handleExerciseProgressUpdate: (exerciseId: string, sets: number, reps: string, notes?: string) => void;
+  handleExerciseComplete: (exerciseId: string) => Promise<void>;
+  handleExerciseProgressUpdate: (exerciseId: string, sets: number, reps: string, notes?: string, weight?: number) => Promise<void>;
   isGenerating: boolean;
   refetch: () => void;
   isRestDay: boolean;

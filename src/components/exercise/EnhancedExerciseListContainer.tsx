@@ -19,8 +19,8 @@ import {
 
 interface EnhancedExerciseListContainerProps {
   exercises: Exercise[];
-  onExerciseComplete: (exerciseId: string) => void;
-  onExerciseProgressUpdate: (exerciseId: string, sets: number, reps: string, notes?: string, weight?: number) => void;
+  onExerciseComplete: (exerciseId: string) => Promise<void>;
+  onExerciseProgressUpdate: (exerciseId: string, sets: number, reps: string, notes?: string, weight?: number) => Promise<void>;
   isRestDay?: boolean;
   // Optional props that might be passed from parent
   isLoading?: boolean;
