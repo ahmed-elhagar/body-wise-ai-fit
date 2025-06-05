@@ -1,4 +1,3 @@
-
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 import { MealPlanError, createUserFriendlyError, handleMealPlanError, errorCodes } from './enhancedErrorHandling.ts';
 
@@ -170,7 +169,7 @@ function generateMealPlanPrompt(userProfile: any, preferences: any, dailyCalorie
   // Build comprehensive user context
   const userContext = buildUserContext(userProfile, preferences, language);
   
-  return `You are a professional nutritionist AI. Generate a complete 7-day meal plan in STRICT JSON format.
+  const finalPrompt = `You are a professional nutritionist AI. Generate a complete 7-day meal plan in STRICT JSON format.
 
 USER PROFILE:
 ${userContext}
@@ -221,6 +220,11 @@ STRICT RULES:
 8. Include cultural preferences and dietary restrictions
 
 Generate the complete meal plan now:`;
+
+  // Log the complete prompt for debugging
+  console.log('📝 COMPLETE AI PROMPT BEING SENT:', finalPrompt);
+  
+  return finalPrompt;
 }
 
 function buildUserContext(userProfile: any, preferences: any, language: string): string {

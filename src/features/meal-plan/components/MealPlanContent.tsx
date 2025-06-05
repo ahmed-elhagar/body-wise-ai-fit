@@ -1,85 +1,86 @@
 
 import React from 'react';
-import { DayOverview } from './DayOverview';
-import { WeeklyMealPlanView } from './WeeklyMealPlanView';
-import { EmptyWeekState } from './EmptyWeekState';
-import type { DailyMeal, MealPlanFetchResult } from '../types';
+import { MealPlanHeader } from '@/components/meal-plan/MealPlanHeader';
+import { MealPlanDayView } from '@/components/meal-plan/MealPlanDayView';
+import { MealPlanWeekView } from '@/components/meal-plan/MealPlanWeekView';
+import { EnhancedMealPlanHeader } from '@/components/meal-plan/EnhancedMealPlanHeader';
 
 interface MealPlanContentProps {
   viewMode: 'daily' | 'weekly';
-  currentWeekPlan: MealPlanFetchResult | null;
+  setViewMode: (mode: 'daily' | 'weekly') => void;
   selectedDayNumber: number;
-  dailyMeals: DailyMeal[] | null;
-  totalCalories: number | null;
-  totalProtein: number | null;
-  targetDayCalories: number | null;
-  weekStartDate: Date;
-  currentWeekOffset: number;
-  isGenerating: boolean;
-  onViewMeal: (meal: DailyMeal) => void;
-  onExchangeMeal: (meal: DailyMeal) => void;
-  onAddSnack: () => void;
-  onGenerateAI: () => void;
-  setCurrentWeekOffset: (offset: number) => void;
   setSelectedDayNumber: (day: number) => void;
+  currentWeekOffset: number;
+  setCurrentWeekOffset: (offset: number) => void;
+  weekDays: any[];
+  currentWeekPlan: any;
+  todaysMeals: any[];
+  dailyMeals: any[];
+  totalCalories: number;
+  totalProtein: number;
+  targetDayCalories: number;
+  isLoading: boolean;
+  currentDate: string;
+  currentDay: string;
+  handleRecipeGenerated: () => void;
 }
 
-export const MealPlanContent = ({
+export const MealPlanContent: React.FC<MealPlanContentProps> = ({
   viewMode,
-  currentWeekPlan,
+  setViewMode,
   selectedDayNumber,
+  setSelectedDayNumber,
+  currentWeekOffset,
+  setCurrentWeekOffset,
+  weekDays,
+  currentWeekPlan,
+  todaysMeals,
   dailyMeals,
   totalCalories,
   totalProtein,
   targetDayCalories,
-  weekStartDate,
-  currentWeekOffset,
-  isGenerating,
-  onViewMeal,
-  onExchangeMeal,
-  onAddSnack,
-  onGenerateAI,
-  setCurrentWeekOffset,
-  setSelectedDayNumber
-}: MealPlanContentProps) => {
-  if (!currentWeekPlan?.weeklyPlan) {
-    return (
-      <EmptyWeekState
-        onGenerateAI={onGenerateAI}
-        isGenerating={isGenerating}
-      />
-    );
-  }
-
-  if (viewMode === 'daily') {
-    return (
-      <DayOverview
+  isLoading,
+  currentDate,
+  currentDay,
+  handleRecipeGenerated
+}) => {
+  return (
+    <div className="min-h-screen">
+      <EnhancedMealPlanHeader 
+        viewMode={viewMode}
+        setViewMode={setViewMode}
         selectedDayNumber={selectedDayNumber}
-        dailyMeals={dailyMeals || []}
-        totalCalories={totalCalories || 0}
-        totalProtein={totalProtein || 0}
-        targetDayCalories={targetDayCalories || 2000}
-        onViewMeal={onViewMeal}
-        onExchangeMeal={onExchangeMeal}
-        onAddSnack={onAddSnack}
-        weekStartDate={weekStartDate}
-        weeklyPlan={currentWeekPlan}
-        showAddSnackButton={true}
+        setSelectedDayNumber={setSelectedDayNumber}
         currentWeekOffset={currentWeekOffset}
         setCurrentWeekOffset={setCurrentWeekOffset}
-        setSelectedDayNumber={setSelectedDayNumber}
-        onGenerateAI={onGenerateAI}
-        isGenerating={isGenerating}
+        weekDays={weekDays}
+        currentWeekPlan={currentWeekPlan}
+        totalCalories={totalCalories}
+        totalProtein={totalProtein}
+        targetDayCalories={targetDayCalories}
+        currentDate={currentDate}
+        currentDay={currentDay}
       />
-    );
-  }
-
-  return (
-    <WeeklyMealPlanView
-      weeklyPlan={currentWeekPlan}
-      onViewMeal={onViewMeal}
-      onExchangeMeal={onExchangeMeal}
-      weekStartDate={weekStartDate}
-    />
+      
+      <div className="p-6">
+        <div className="max-w-7xl mx-auto">
+          {viewMode === 'daily' ? (
+            <MealPlanDayView
+              selectedDayNumber={selectedDayNumber}
+              dailyMeals={dailyMeals}
+              isLoading={isLoading}
+              onRecipeGenerated={handleRecipeGenerated}
+            />
+          ) : (
+            <MealPlanWeekView
+              currentWeekPlan={currentWeekPlan}
+              weekDays={weekDays}
+              isLoading={isLoading}
+              onRecipeGenerated={handleRecipeGenerated}
+            />
+          )}
+        </div>
+      </div>
+    </div>
   );
 };
