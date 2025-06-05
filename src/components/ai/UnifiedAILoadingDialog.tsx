@@ -51,6 +51,16 @@ export const UnifiedAILoadingDialog: React.FC<UnifiedAILoadingDialogProps> = ({
     }
   }, [isOpen, isComplete]);
 
+  // Auto-close after completion (give user time to see success message)
+  useEffect(() => {
+    if (isComplete && allowClose) {
+      const timer = setTimeout(() => {
+        onClose?.();
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [isComplete, allowClose, onClose]);
+
   const calculateProgress = () => {
     if (progress !== undefined) return progress;
     if (steps.length === 0) return 0;
@@ -148,6 +158,9 @@ export const UnifiedAILoadingDialog: React.FC<UnifiedAILoadingDialogProps> = ({
             <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
               <p className="text-sm font-medium text-green-800">
                 ✨ AI operation completed successfully!
+              </p>
+              <p className="text-xs text-green-600 mt-1">
+                Your content will be updated shortly...
               </p>
             </div>
           )}

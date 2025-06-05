@@ -9,7 +9,14 @@ export const useEnhancedMealPlan = () => {
   const { user } = useAuth();
   const { remaining: userCredits, isPro, hasCredits, checkAndUseCredit, completeGeneration } = useCentralizedCredits();
   const [isGenerating, setIsGenerating] = useState(false);
-  const [nutritionContext, setNutritionContext] = useState(null);
+  const [nutritionContext, setNutritionContext] = useState({
+    isPregnant: false,
+    isBreastfeeding: false,
+    isMuslimFasting: false,
+    hasHealthConditions: false,
+    hasSpecialConditions: false,
+    extraCalories: 0
+  });
 
   const generateMealPlan = async (preferences: any, options?: { weekOffset?: number }): Promise<boolean> => {
     if (!user?.id) {
@@ -97,9 +104,16 @@ export const useEnhancedMealPlan = () => {
         // Complete the generation process
         if (logId) await completeGeneration(logId, true, data);
         
-        // Set nutrition context if available
+        // Set nutrition context if available, with safe defaults
         if (data.nutritionContext) {
-          setNutritionContext(data.nutritionContext);
+          setNutritionContext({
+            isPregnant: data.nutritionContext.isPregnant || false,
+            isBreastfeeding: data.nutritionContext.isBreastfeeding || false,
+            isMuslimFasting: data.nutritionContext.isMuslimFasting || false,
+            hasHealthConditions: data.nutritionContext.hasHealthConditions || false,
+            hasSpecialConditions: data.nutritionContext.hasSpecialConditions || false,
+            extraCalories: data.nutritionContext.extraCalories || 0
+          });
         }
         
         toast.success('Meal plan generated successfully!');
