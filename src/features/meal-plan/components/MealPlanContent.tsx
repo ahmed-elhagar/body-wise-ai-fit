@@ -64,6 +64,19 @@ export const MealPlanContent: React.FC<MealPlanContentProps> = ({
 
   const hasWeeklyPlan = !!currentWeekPlan?.weeklyPlan;
 
+  // Mock handlers for meal actions
+  const handleShowRecipe = (meal: any) => {
+    console.log('Show recipe for:', meal.name);
+  };
+
+  const handleExchangeMeal = (meal: any, index: number) => {
+    console.log('Exchange meal:', meal.name, 'at index:', index);
+  };
+
+  const handleAddSnack = (dayNumber?: number) => {
+    console.log('Add snack for day:', dayNumber || selectedDayNumber);
+  };
+
   return (
     <div className="min-h-screen">
       <EnhancedMealPlanHeader 
@@ -79,15 +92,19 @@ export const MealPlanContent: React.FC<MealPlanContentProps> = ({
         <div className="max-w-7xl mx-auto">
           {viewMode === 'daily' ? (
             <MealPlanDayView
-              dailyMeals={dailyMeals}
-              isLoading={isLoading}
-              onRecipeGenerated={handleRecipeGenerated}
+              dayNumber={selectedDayNumber}
+              weeklyPlan={currentWeekPlan}
+              onShowRecipe={handleShowRecipe}
+              onExchangeMeal={handleExchangeMeal}
+              onAddSnack={() => handleAddSnack()}
             />
           ) : (
             <MealPlanWeekView
               weeklyPlan={currentWeekPlan}
-              isLoading={isLoading}
-              onRecipeGenerated={handleRecipeGenerated}
+              weekDays={weekDays}
+              onShowRecipe={handleShowRecipe}
+              onExchangeMeal={handleExchangeMeal}
+              onAddSnack={handleAddSnack}
             />
           )}
         </div>

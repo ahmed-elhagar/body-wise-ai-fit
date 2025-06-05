@@ -1,8 +1,10 @@
 
+import { useState } from "react";
 import { useMealPlanState } from "./useMealPlanState";
 
 export const useMealPlanPage = () => {
   const mealPlanState = useMealPlanState();
+  const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
 
   // Enhanced current date formatting
   const currentDate = new Date().toLocaleDateString('en-US', {
@@ -58,9 +60,8 @@ export const useMealPlanPage = () => {
     currentDate,
     currentDay,
     handleRecipeGenerated,
-    // Ensure we have all required props with defaults
-    viewMode: 'daily' as 'daily' | 'weekly',
-    setViewMode: () => {}, // Mock function for now
+    viewMode,
+    setViewMode,
     weekDays,
     isShuffling: false // Add missing isShuffling property
   };

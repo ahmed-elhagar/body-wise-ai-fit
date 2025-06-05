@@ -16,7 +16,7 @@ export const MealPlanContainer = () => {
           <MealPlanLoadingStates
             isGenerating={mealPlanState.isGenerating}
             isLoading={false}
-            isShuffling={false}
+            isShuffling={mealPlanState.isShuffling || false}
             inline={true}
           />
         </div>
