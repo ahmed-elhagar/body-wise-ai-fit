@@ -2,18 +2,17 @@
 import { useState, useRef, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle, Loader2 } from "lucide-react";
-import { useCoachChat } from "@/hooks/useCoachChat";
-import { useRealtimeChat } from "@/hooks/useRealtimeChat";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useMessageSearch } from "@/hooks/useMessageSearch";
+import { useRealtimeChat } from "@/hooks/useRealtimeChat";
 import { useTypingIndicator } from "@/hooks/useTypingIndicator";
-import { useMessageActions } from "@/hooks/useMessageActions";
 import { useUserOnlineStatus } from "@/hooks/useUserOnlineStatus";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useLiveNotifications } from "@/hooks/useLiveNotifications";
+import { toast } from "sonner";
 import MobileChatInterface from "@/components/chat/MobileChatInterface";
-import ChatSearchBar from "@/components/chat/ChatSearchBar";
 import ChatHeader from "./chat/ChatHeader";
 import MessagesList from "./chat/MessagesList";
 import ChatInput from "./chat/ChatInput";
@@ -33,6 +32,7 @@ const TraineeCoachChat = ({ coachId, coachName, onBack }: TraineeCoachChatProps)
   const [editingMessage, setEditingMessage] = useState<CoachChatMessage | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const queryClient = useQueryClient();
   
   const traineeId = user?.id || '';
   
@@ -40,13 +40,38 @@ const TraineeCoachChat = ({ coachId, coachName, onBack }: TraineeCoachChatProps)
   useOnlineStatus(); // Track current user's online status
   useLiveNotifications(); // Listen for live notifications
   
-  const { 
-    messages, 
-    isLoading, 
-    sendMessage, 
-    isSending,
-    error 
-  } = useCoachChat(coachId, traineeId);
+  // Fetch messages with correct typing
+  const { data: messages = [], isLoading, error } = useQuery({
+    queryKey: ['coach-trainee-messages', coachId, traineeId],
+    queryFn: async (): Promise<CoachChatMessage[]> => {
+      if (!coachId || !traineeId) return [];
+
+      const { data, error } = await supabase
+        .from('coach_trainee_messages')
+        .select('*')
+        .eq('coach_id', coachId)
+        .eq('trainee_id', traineeId)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching messages:', error);
+        throw error;
+      }
+
+      // Transform the data to match CoachChatMessage type
+      return (data || []).map(msg => ({
+        id: msg.id,
+        message: msg.message,
+        sender_type: msg.sender_type as 'coach' | 'trainee',
+        sender_id: msg.sender_id,
+        created_at: msg.created_at,
+        updated_at: msg.updated_at,
+        is_read: msg.is_read,
+        sender_name: msg.sender_type === 'coach' ? coachName : 'You'
+      }));
+    },
+    enabled: !!coachId && !!traineeId,
+  });
   
   const { isConnected } = useRealtimeChat(coachId, traineeId);
   
@@ -55,28 +80,91 @@ const TraineeCoachChat = ({ coachId, coachName, onBack }: TraineeCoachChatProps)
   const isCoachOnline = isUserOnline(coachId);
   const coachLastSeen = getUserLastSeen(coachId);
   
-  // Phase 2 features
-  const { 
-    searchQuery, 
-    setSearchQuery, 
-    isSearchActive, 
-    setIsSearchActive, 
-    filteredMessages, 
-    searchStats,
-    clearSearch 
-  } = useMessageSearch(messages);
-  
   const { 
     typingUsers, 
     sendTypingIndicator, 
     stopTypingIndicator 
   } = useTypingIndicator(coachId, traineeId);
   
-  const {
-    editMessage,
-    deleteMessage,
-    isEditing
-  } = useMessageActions(coachId, traineeId);
+  // Send message mutation
+  const sendMessageMutation = useMutation({
+    mutationFn: async (messageText: string) => {
+      if (!traineeId || !coachId) throw new Error('Missing required data');
+
+      const { data, error } = await supabase
+        .from('coach_trainee_messages')
+        .insert({
+          coach_id: coachId,
+          trainee_id: traineeId,
+          sender_id: traineeId,
+          sender_type: 'trainee',
+          message: messageText,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['coach-trainee-messages'] });
+      setMessage("");
+      setReplyingTo(null);
+      stopTypingIndicator();
+      toast.success('Message sent successfully');
+    },
+    onError: (error) => {
+      console.error('Error sending message:', error);
+      toast.error('Failed to send message');
+    },
+  });
+
+  // Edit message mutation
+  const editMessageMutation = useMutation({
+    mutationFn: async ({ messageId, newContent }: { messageId: string; newContent: string }) => {
+      const { data, error } = await supabase
+        .from('coach_trainee_messages')
+        .update({ message: newContent, updated_at: new Date().toISOString() })
+        .eq('id', messageId)
+        .eq('sender_id', traineeId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['coach-trainee-messages'] });
+      setEditingMessage(null);
+      setMessage('');
+      toast.success('Message updated');
+    },
+    onError: (error) => {
+      console.error('Error editing message:', error);
+      toast.error('Failed to edit message');
+    },
+  });
+
+  // Delete message mutation
+  const deleteMessageMutation = useMutation({
+    mutationFn: async (messageId: string) => {
+      const { error } = await supabase
+        .from('coach_trainee_messages')
+        .delete()
+        .eq('id', messageId)
+        .eq('sender_id', traineeId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['coach-trainee-messages'] });
+      toast.success('Message deleted');
+    },
+    onError: (error) => {
+      console.error('Error deleting message:', error);
+      toast.error('Failed to delete message');
+    },
+  });
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -84,22 +172,13 @@ const TraineeCoachChat = ({ coachId, coachName, onBack }: TraineeCoachChatProps)
 
   useEffect(() => {
     scrollToBottom();
-  }, [filteredMessages]);
+  }, [messages]);
 
   const handleSendMessage = async () => {
-    if (!message.trim() || isSending) return;
+    if (!message.trim() || sendMessageMutation.isPending) return;
     
     const messageText = message.trim();
-    setMessage('');
-    setReplyingTo(null);
-    stopTypingIndicator();
-    
-    try {
-      await sendMessage({ message: messageText });
-      inputRef.current?.focus();
-    } catch (error) {
-      console.error('Failed to send message:', error);
-    }
+    sendMessageMutation.mutate(messageText);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -139,7 +218,7 @@ const TraineeCoachChat = ({ coachId, coachName, onBack }: TraineeCoachChatProps)
     if (!editingMessage || !message.trim()) return;
     
     try {
-      await editMessage({
+      await editMessageMutation.mutateAsync({
         messageId: editingMessage.id,
         newContent: message.trim()
       });
@@ -152,7 +231,7 @@ const TraineeCoachChat = ({ coachId, coachName, onBack }: TraineeCoachChatProps)
 
   const handleDeleteMessage = async (messageId: string) => {
     try {
-      await deleteMessage(messageId);
+      await deleteMessageMutation.mutateAsync(messageId);
     } catch (error) {
       console.error('Failed to delete message:', error);
     }
@@ -192,8 +271,6 @@ const TraineeCoachChat = ({ coachId, coachName, onBack }: TraineeCoachChatProps)
     );
   }
 
-  const displayMessages = searchStats.isFiltered ? filteredMessages : messages;
-
   // Desktop interface with enhanced real-time features
   return (
     <Card className="h-[600px] flex flex-col bg-white shadow-lg rounded-xl">
@@ -206,18 +283,8 @@ const TraineeCoachChat = ({ coachId, coachName, onBack }: TraineeCoachChatProps)
       />
       
       <CardContent className="flex-1 flex flex-col p-0">
-        {/* Search Bar */}
-        <ChatSearchBar
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          isActive={isSearchActive}
-          onToggleSearch={() => setIsSearchActive(!isSearchActive)}
-          searchStats={searchStats}
-          onClearSearch={clearSearch}
-        />
-
         <MessagesList
-          messages={displayMessages}
+          messages={messages}
           currentUserId={user?.id}
           coachName={coachName}
           typingUsers={typingUsers}
@@ -231,8 +298,8 @@ const TraineeCoachChat = ({ coachId, coachName, onBack }: TraineeCoachChatProps)
         <ChatInput
           message={message}
           setMessage={setMessage}
-          isSending={isSending}
-          isEditing={isEditing}
+          isSending={sendMessageMutation.isPending}
+          isEditing={editMessageMutation.isPending}
           editingMessage={editingMessage}
           replyingTo={replyingTo}
           onSend={handleSendMessage}
