@@ -16,8 +16,8 @@ interface WorkoutTypeTabsProps {
   progressPercentage: number;
   selectedDayNumber: number;
   currentWeekOffset: number;
-  onExerciseComplete: (exerciseId: string) => void;
-  onExerciseProgressUpdate: (exerciseId: string, sets: number, reps: string, notes?: string) => void;
+  onExerciseComplete: (exerciseId: string) => Promise<void>;
+  onExerciseProgressUpdate: (exerciseId: string, sets: number, reps: string, notes?: string, weight?: number) => Promise<void>;
   onGenerateAIProgram: (preferences: ExercisePreferences) => void;
   isGenerating: boolean;
   isRestDay?: boolean;
