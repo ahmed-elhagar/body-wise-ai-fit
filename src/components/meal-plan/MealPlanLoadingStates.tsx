@@ -10,14 +10,12 @@ interface MealPlanLoadingStatesProps {
   isGenerating: boolean;
   isLoading: boolean;
   isShuffling?: boolean;
-  inline?: boolean; // New prop to control inline vs modal display
 }
 
 export const MealPlanLoadingStates = ({ 
   isGenerating, 
   isLoading,
-  isShuffling = false,
-  inline = false
+  isShuffling = false
 }: MealPlanLoadingStatesProps) => {
   const { t, isRTL } = useLanguage();
   
@@ -50,13 +48,11 @@ export const MealPlanLoadingStates = ({
         steps={dialogSteps}
         progress={progress}
         allowClose={false}
-        inline={inline}
-        className={inline ? "w-full" : undefined}
       />
     );
   }
 
-  if (isLoading && !inline) {
+  if (isLoading) {
     return (
       <div className={`min-h-screen flex items-center justify-center ${isRTL ? 'rtl' : 'ltr'}`}>
         <EnhancedPageLoading

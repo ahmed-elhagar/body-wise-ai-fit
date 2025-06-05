@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 
 export const useEnhancedMealPlan = () => {
   const { user } = useAuth();
-  const { hasCredits, checkAndUseCredit, completeGeneration } = useCentralizedCredits();
+  const { remaining: userCredits, isPro, hasCredits, checkAndUseCredit, completeGeneration } = useCentralizedCredits();
   const [isGenerating, setIsGenerating] = useState(false);
   const [nutritionContext, setNutritionContext] = useState(null);
 
@@ -120,6 +120,8 @@ export const useEnhancedMealPlan = () => {
 
   return {
     isGenerating,
+    userCredits,
+    isPro,
     hasCredits,
     generateMealPlan,
     nutritionContext

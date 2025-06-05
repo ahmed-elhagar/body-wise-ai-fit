@@ -24,7 +24,7 @@ export const useMealPlanActions = (
         weekOffset: currentWeekOffset,
         preferences: aiPreferences,
         userId: user?.id,
-        nutritionContext: nutritionContext || {}
+        nutritionContext
       });
       
       const enhancedPreferences = {
@@ -32,7 +32,7 @@ export const useMealPlanActions = (
         language: language,
         locale: language === 'ar' ? 'ar-SA' : 'en-US',
         weekOffset: currentWeekOffset,
-        specialConditions: nutritionContext || {}
+        specialConditions: nutritionContext
       };
       
       const result = await generateMealPlan(enhancedPreferences, { weekOffset: currentWeekOffset });
@@ -40,7 +40,7 @@ export const useMealPlanActions = (
       if (result) {
         console.log('✅ Generation successful with special conditions:', {
           weekOffset: currentWeekOffset,
-          isMuslimFasting: nutritionContext?.isMuslimFasting || false
+          isMuslimFasting: nutritionContext.isMuslimFasting
         });
         
         // Invalidate all meal plan queries to ensure fresh data
@@ -57,17 +57,11 @@ export const useMealPlanActions = (
           console.log('✅ Refetch completed successfully');
           
           // Show success message with special condition info
-          if (nutritionContext?.isMuslimFasting) {
+          if (nutritionContext.isMuslimFasting) {
             toast.success(
               language === 'ar'
                 ? 'تم إنشاء خطة وجبات متوافقة مع الصيام الإسلامي بنجاح!'
                 : 'Muslim fasting-compatible meal plan generated successfully!'
-            );
-          } else {
-            toast.success(
-              language === 'ar'
-                ? 'تم إنشاء خطة الوجبات بنجاح!'
-                : 'Meal plan generated successfully!'
             );
           }
           
@@ -100,6 +94,6 @@ export const useMealPlanActions = (
     handleRegeneratePlan,
     isGenerating,
     isShuffling: false,
-    nutritionContext: nutritionContext || {}
+    nutritionContext
   };
 };

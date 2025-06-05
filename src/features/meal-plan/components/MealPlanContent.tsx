@@ -1,114 +1,85 @@
 
 import React from 'react';
-import MealPlanDayView from '@/components/meal-plan/MealPlanDayView';
-import MealPlanWeekView from '@/components/meal-plan/MealPlanWeekView';
-import EnhancedMealPlanHeader from '@/components/meal-plan/EnhancedMealPlanHeader';
+import { DayOverview } from './DayOverview';
+import { WeeklyMealPlanView } from './WeeklyMealPlanView';
+import { EmptyWeekState } from './EmptyWeekState';
+import type { DailyMeal, MealPlanFetchResult } from '../types';
 
 interface MealPlanContentProps {
   viewMode: 'daily' | 'weekly';
-  setViewMode: (mode: 'daily' | 'weekly') => void;
+  currentWeekPlan: MealPlanFetchResult | null;
   selectedDayNumber: number;
-  setSelectedDayNumber: (day: number) => void;
+  dailyMeals: DailyMeal[] | null;
+  totalCalories: number | null;
+  totalProtein: number | null;
+  targetDayCalories: number | null;
+  weekStartDate: Date;
   currentWeekOffset: number;
-  setCurrentWeekOffset: (offset: number) => void;
-  weekDays: any[];
-  currentWeekPlan: any;
-  todaysMeals: any[];
-  dailyMeals: any[];
-  totalCalories: number;
-  totalProtein: number;
-  targetDayCalories: number;
-  isLoading: boolean;
   isGenerating: boolean;
-  currentDate: string;
-  currentDay: string;
-  handleRecipeGenerated: () => void;
+  onViewMeal: (meal: DailyMeal) => void;
+  onExchangeMeal: (meal: DailyMeal) => void;
+  onAddSnack: () => void;
+  onGenerateAI: () => void;
+  setCurrentWeekOffset: (offset: number) => void;
+  setSelectedDayNumber: (day: number) => void;
 }
 
-export const MealPlanContent: React.FC<MealPlanContentProps> = ({
+export const MealPlanContent = ({
   viewMode,
-  setViewMode,
-  selectedDayNumber,
-  setSelectedDayNumber,
-  currentWeekOffset,
-  setCurrentWeekOffset,
-  weekDays,
   currentWeekPlan,
-  todaysMeals,
+  selectedDayNumber,
   dailyMeals,
   totalCalories,
   totalProtein,
   targetDayCalories,
-  isLoading,
+  weekStartDate,
+  currentWeekOffset,
   isGenerating,
-  currentDate,
-  currentDay,
-  handleRecipeGenerated
-}) => {
-  // Mock handlers for the header - these should be properly implemented
-  const handleGenerateAI = () => {
-    console.log('Generate AI clicked');
-  };
+  onViewMeal,
+  onExchangeMeal,
+  onAddSnack,
+  onGenerateAI,
+  setCurrentWeekOffset,
+  setSelectedDayNumber
+}: MealPlanContentProps) => {
+  if (!currentWeekPlan?.weeklyPlan) {
+    return (
+      <EmptyWeekState
+        onGenerateAI={onGenerateAI}
+        isGenerating={isGenerating}
+      />
+    );
+  }
 
-  const handleShuffle = () => {
-    console.log('Shuffle clicked');
-  };
-
-  const handleShowShoppingList = () => {
-    console.log('Shopping list clicked');
-  };
-
-  const handleRegeneratePlan = () => {
-    console.log('Regenerate plan clicked');
-  };
-
-  const hasWeeklyPlan = !!currentWeekPlan?.weeklyPlan;
-
-  // Mock handlers for meal actions
-  const handleShowRecipe = (meal: any) => {
-    console.log('Show recipe for:', meal.name);
-  };
-
-  const handleExchangeMeal = (meal: any, index: number) => {
-    console.log('Exchange meal:', meal.name, 'at index:', index);
-  };
-
-  const handleAddSnack = (dayNumber?: number) => {
-    console.log('Add snack for day:', dayNumber || selectedDayNumber);
-  };
+  if (viewMode === 'daily') {
+    return (
+      <DayOverview
+        selectedDayNumber={selectedDayNumber}
+        dailyMeals={dailyMeals || []}
+        totalCalories={totalCalories || 0}
+        totalProtein={totalProtein || 0}
+        targetDayCalories={targetDayCalories || 2000}
+        onViewMeal={onViewMeal}
+        onExchangeMeal={onExchangeMeal}
+        onAddSnack={onAddSnack}
+        weekStartDate={weekStartDate}
+        weeklyPlan={currentWeekPlan}
+        showAddSnackButton={true}
+        currentWeekOffset={currentWeekOffset}
+        setCurrentWeekOffset={setCurrentWeekOffset}
+        setSelectedDayNumber={setSelectedDayNumber}
+        onGenerateAI={onGenerateAI}
+        isGenerating={isGenerating}
+      />
+    );
+  }
 
   return (
-    <div className="min-h-screen">
-      <EnhancedMealPlanHeader 
-        onGenerateAI={handleGenerateAI}
-        onShuffle={handleShuffle}
-        onShowShoppingList={handleShowShoppingList}
-        onRegeneratePlan={handleRegeneratePlan}
-        isGenerating={isGenerating}
-        hasWeeklyPlan={hasWeeklyPlan}
-      />
-      
-      <div className="p-6">
-        <div className="max-w-7xl mx-auto">
-          {viewMode === 'daily' ? (
-            <MealPlanDayView
-              dayNumber={selectedDayNumber}
-              weeklyPlan={currentWeekPlan}
-              onShowRecipe={handleShowRecipe}
-              onExchangeMeal={handleExchangeMeal}
-              onAddSnack={() => handleAddSnack()}
-            />
-          ) : (
-            <MealPlanWeekView
-              weeklyPlan={currentWeekPlan}
-              weekDays={weekDays}
-              onShowRecipe={handleShowRecipe}
-              onExchangeMeal={handleExchangeMeal}
-              onAddSnack={handleAddSnack}
-            />
-          )}
-        </div>
-      </div>
-    </div>
+    <WeeklyMealPlanView
+      weeklyPlan={currentWeekPlan}
+      onViewMeal={onViewMeal}
+      onExchangeMeal={onExchangeMeal}
+      weekStartDate={weekStartDate}
+    />
   );
 };

@@ -1,10 +1,8 @@
 
-import { useState } from "react";
 import { useMealPlanState } from "./useMealPlanState";
 
 export const useMealPlanPage = () => {
   const mealPlanState = useMealPlanState();
-  const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
 
   // Enhanced current date formatting
   const currentDate = new Date().toLocaleDateString('en-US', {
@@ -21,26 +19,10 @@ export const useMealPlanPage = () => {
     mealPlanState.refetch();
   };
 
-  // Create weekDays from weekStartDate if it exists
-  const weekDays = [];
-  if (mealPlanState.weekStartDate) {
-    const startDate = new Date(mealPlanState.weekStartDate);
-    for (let i = 0; i < 7; i++) {
-      const currentDate = new Date(startDate);
-      currentDate.setDate(startDate.getDate() + i);
-      weekDays.push({
-        number: i + 1,
-        date: currentDate,
-        name: currentDate.toLocaleDateString('en-US', { weekday: 'short' }),
-        isToday: currentDate.toDateString() === new Date().toDateString(),
-      });
-    }
-  }
-
   // Enhanced debugging output for week-specific data
   console.log('🚀 MEAL PLAN PAGE - UNIFIED DEBUG:', {
     currentWeekOffset: mealPlanState.currentWeekOffset,
-    weekStartDate: mealPlanState.weekStartDate?.toDateString(),
+    weekStartDate: mealPlanState.weekStartDate.toDateString(),
     hasWeeklyPlan: !!mealPlanState.currentWeekPlan?.weeklyPlan,
     weeklyPlanId: mealPlanState.currentWeekPlan?.weeklyPlan?.id,
     weeklyPlanDate: mealPlanState.currentWeekPlan?.weeklyPlan?.week_start_date,
@@ -59,10 +41,6 @@ export const useMealPlanPage = () => {
     ...mealPlanState,
     currentDate,
     currentDay,
-    handleRecipeGenerated,
-    viewMode,
-    setViewMode,
-    weekDays,
-    isShuffling: false // Add missing isShuffling property
+    handleRecipeGenerated
   };
 };
