@@ -119,21 +119,6 @@ const FoodTracker = () => {
               </div>
             </div>
 
-            {/* Mobile Header - shown only on mobile */}
-            <div className="lg:hidden bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-4">
-              <div className="flex items-center gap-3 mb-4">
-                <Utensils className="h-6 w-6 text-green-600" />
-                <div>
-                  <h1 className="text-xl font-bold text-gray-900">
-                    {t('Food Tracker')}
-                  </h1>
-                  <p className="text-sm text-gray-600">
-                    {t('Track your nutrition')}
-                  </p>
-                </div>
-              </div>
-            </div>
-
             {/* Enhanced Mobile-First Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-2 bg-gray-100 h-12">
@@ -156,7 +141,7 @@ const FoodTracker = () => {
               </TabsList>
 
               <TabsContent value="today" className="mt-4 sm:mt-6">
-                <TodayTab key={refreshKey} />
+                <TodayTab key={refreshKey} onAddFood={handleOpenAddDialog} />
               </TabsContent>
 
               <TabsContent value="history" className="mt-4 sm:mt-6">

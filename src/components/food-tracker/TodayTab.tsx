@@ -13,7 +13,12 @@ import MobileOptimizedHeader from "./components/MobileOptimizedHeader";
 import AddFoodDialog from "./AddFoodDialog/AddFoodDialog";
 import { format } from "date-fns";
 
-const TodayTab = ({ key: forceRefreshKey }: { key?: number }) => {
+interface TodayTabProps {
+  key?: number;
+  onAddFood: () => void;
+}
+
+const TodayTab = ({ key: forceRefreshKey, onAddFood }: TodayTabProps) => {
   const { t } = useLanguage();
   const [showAddDialog, setShowAddDialog] = useState(false);
   const { todayConsumption, todayMealPlan, isLoading, forceRefresh } = useFoodConsumption();
@@ -109,11 +114,13 @@ const TodayTab = ({ key: forceRefreshKey }: { key?: number }) => {
 
   return (
     <div className="space-y-6">
-      {/* Mobile optimized header */}
-      <MobileOptimizedHeader 
-        todayStats={todayStats}
-        onAddFood={() => setShowAddDialog(true)}
-      />
+      {/* Mobile optimized header - only show on mobile */}
+      <div className="lg:hidden">
+        <MobileOptimizedHeader 
+          todayStats={todayStats}
+          onAddFood={onAddFood}
+        />
+      </div>
 
       {/* Main content grid - responsive layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -233,7 +240,7 @@ const TodayTab = ({ key: forceRefreshKey }: { key?: number }) => {
                   </Badge>
                 </CardTitle>
                 <Button
-                  onClick={() => setShowAddDialog(true)}
+                  onClick={onAddFood}
                   className="hidden lg:flex bg-green-600 hover:bg-green-700 text-white"
                   size="sm"
                 >
@@ -284,7 +291,7 @@ const TodayTab = ({ key: forceRefreshKey }: { key?: number }) => {
       {/* Floating Add Button for Mobile */}
       <div className="fixed bottom-6 right-6 lg:hidden z-50">
         <Button
-          onClick={() => setShowAddDialog(true)}
+          onClick={onAddFood}
           className="w-14 h-14 rounded-full bg-green-600 hover:bg-green-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
           size="icon"
         >
@@ -292,7 +299,7 @@ const TodayTab = ({ key: forceRefreshKey }: { key?: number }) => {
         </Button>
       </div>
 
-      {/* Add Food Dialog */}
+      {/* Add Food Dialog - only show if internal dialog is used */}
       <AddFoodDialog
         isOpen={showAddDialog}
         onClose={() => setShowAddDialog(false)}
