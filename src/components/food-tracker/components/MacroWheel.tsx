@@ -1,5 +1,6 @@
 
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
+import { Utensils, Target } from "lucide-react";
 
 interface MacroWheelProps {
   calories: number;
@@ -18,57 +19,122 @@ const MacroWheel = ({ calories, protein, carbs, fat }: MacroWheelProps) => {
     {
       name: 'Protein',
       value: proteinCals,
+      grams: protein,
       percentage: calories > 0 ? Math.round((proteinCals / calories) * 100) : 0,
       color: '#ef4444', // red
     },
     {
       name: 'Carbs',
       value: carbsCals,
+      grams: carbs,
       percentage: calories > 0 ? Math.round((carbsCals / calories) * 100) : 0,
       color: '#3b82f6', // blue
     },
     {
       name: 'Fat',
       value: fatCals,
+      grams: fat,
       percentage: calories > 0 ? Math.round((fatCals / calories) * 100) : 0,
       color: '#f59e0b', // amber
     },
   ];
 
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-white p-3 rounded-lg shadow-lg border border-gray-200">
+          <p className="font-medium text-gray-900">{data.name}</p>
+          <p className="text-sm text-gray-600">{data.grams}g ({data.percentage}%)</p>
+          <p className="text-sm text-gray-500">{Math.round(data.value)} calories</p>
+        </div>
+      );
+    }
+    return null;
+  };
+
   if (calories === 0) {
     return (
-      <div className="w-full h-48 flex items-center justify-center bg-gray-50 rounded-lg">
-        <p className="text-gray-500 text-sm">No food logged yet today</p>
+      <div className="w-full h-64 flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border-2 border-dashed border-gray-300">
+        <div className="text-center space-y-4">
+          <div className="relative">
+            <div className="w-16 h-16 mx-auto bg-gray-200 rounded-full flex items-center justify-center">
+              <Utensils className="w-8 h-8 text-gray-400" />
+            </div>
+            <div className="absolute -top-1 -right-1 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+              <Target className="w-3 h-3 text-white" />
+            </div>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-700 mb-1">Start Your Food Journey</h3>
+            <p className="text-sm text-gray-500 max-w-xs">
+              Log your first meal to see your nutrition breakdown and macro distribution
+            </p>
+          </div>
+          <div className="flex items-center justify-center space-x-4 pt-2">
+            <div className="flex items-center space-x-2">
+              <div className="w-3 h-3 bg-red-400 rounded-full"></div>
+              <span className="text-xs text-gray-500">Protein</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-3 h-3 bg-blue-400 rounded-full"></div>
+              <span className="text-xs text-gray-500">Carbs</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-3 h-3 bg-amber-400 rounded-full"></div>
+              <span className="text-xs text-gray-500">Fat</span>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full h-48">
+    <div className="w-full h-64 relative">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
             data={data}
             cx="50%"
             cy="50%"
-            innerRadius={40}
-            outerRadius={80}
-            paddingAngle={2}
+            innerRadius={50}
+            outerRadius={90}
+            paddingAngle={3}
             dataKey="value"
+            animationBegin={0}
+            animationDuration={800}
           >
             {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.color} />
+              <Cell 
+                key={`cell-${index}`} 
+                fill={entry.color}
+                stroke="white"
+                strokeWidth={2}
+              />
             ))}
           </Pie>
+          <Tooltip content={<CustomTooltip />} />
           <Legend 
             verticalAlign="bottom" 
             height={36}
-            formatter={(value, entry: any) => 
-              `${value}: ${entry.payload.percentage}%`
-            }
+            formatter={(value, entry: any) => (
+              <span className="text-sm font-medium">
+                {value}: {entry.payload.grams}g ({entry.payload.percentage}%)
+              </span>
+            )}
+            iconType="circle"
           />
         </PieChart>
       </ResponsiveContainer>
+      
+      {/* Center calories display */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className="text-center">
+          <div className="text-2xl font-bold text-gray-900">{Math.round(calories)}</div>
+          <div className="text-xs text-gray-500 uppercase tracking-wide">calories</div>
+        </div>
+      </div>
     </div>
   );
 };
