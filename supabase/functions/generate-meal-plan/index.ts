@@ -54,7 +54,9 @@ const parseAndValidateRequest = (requestBody: any) => {
       preferencesKeys: preferences ? Object.keys(preferences) : []
     });
     
-    if (!userProfile || !userProfile.id) {
+    // Check for user ID in different possible field names
+    const userId = userProfile?.id || userProfile?.userId;
+    if (!userProfile || !userId) {
       throw new MealPlanError(
         'User profile with ID is required',
         errorCodes.INVALID_USER_PROFILE,
@@ -63,8 +65,14 @@ const parseAndValidateRequest = (requestBody: any) => {
       );
     }
     
+    // Normalize the userProfile to have consistent field names
+    const normalizedUserProfile = {
+      ...userProfile,
+      id: userId // Ensure we always have an 'id' field
+    };
+    
     // Validate essential profile fields
-    if (!userProfile.age || !userProfile.weight || !userProfile.height) {
+    if (!normalizedUserProfile.age || !normalizedUserProfile.weight || !normalizedUserProfile.height) {
       throw new MealPlanError(
         'Complete profile information is required (age, weight, height)',
         errorCodes.INVALID_USER_PROFILE,
@@ -73,7 +81,7 @@ const parseAndValidateRequest = (requestBody: any) => {
       );
     }
     
-    return { userProfile, preferences: preferences || {} };
+    return { userProfile: normalizedUserProfile, preferences: preferences || {} };
   } catch (error) {
     if (error instanceof MealPlanError) throw error;
     
