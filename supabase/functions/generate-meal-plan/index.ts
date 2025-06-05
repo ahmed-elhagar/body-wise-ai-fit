@@ -1,4 +1,3 @@
-
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 import { MealPlanError, createUserFriendlyError, handleMealPlanError, errorCodes } from './enhancedErrorHandling.ts';
 
@@ -32,7 +31,7 @@ async function getAIModelConfig(supabase: any) {
       console.warn('No AI model configured for meal_plan, using default');
       return {
         primary: { modelId: 'gpt-4o-mini', provider: 'openai' },
-        fallback: null
+        fallback: { modelId: 'gpt-3.5-turbo', provider: 'openai' } // Add fallback
       };
     }
 
@@ -44,13 +43,13 @@ async function getAIModelConfig(supabase: any) {
       fallback: data.fallback_model ? {
         modelId: data.fallback_model.model_id,
         provider: data.fallback_model.provider
-      } : null
+      } : { modelId: 'gpt-3.5-turbo', provider: 'openai' } // Always have a fallback
     };
   } catch (error) {
     console.error('Error fetching AI model config:', error);
     return {
       primary: { modelId: 'gpt-4o-mini', provider: 'openai' },
-      fallback: null
+      fallback: { modelId: 'gpt-3.5-turbo', provider: 'openai' }
     };
   }
 }
@@ -211,46 +210,46 @@ function buildArabicPrompt(): string {
 أنشئ خطة وجبات شاملة لمدة 7 أيام تكون مناسبة ثقافياً ومتوازنة غذائياً.`;
 }
 
-// Enhanced AI API call with proper timeout and error handling
-async function callAIAPI(prompt: string, modelConfig: any) {
+// Enhanced AI API call with proper timeout and retry logic
+async function callAIAPI(prompt: string, modelConfig: any, retryCount: number = 0) {
   const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
   
   if (!openaiApiKey) {
     throw new Error('OpenAI API key not configured');
   }
 
-  console.log('🤖 Calling AI API with model:', modelConfig.modelId);
+  console.log(`🤖 Calling AI API with model: ${modelConfig.modelId} (attempt ${retryCount + 1})`);
 
-  // Create a timeout promise
-  const timeoutPromise = new Promise((_, reject) => {
-    setTimeout(() => reject(new Error('AI API timeout after 45 seconds')), 45000);
-  });
-
-  // Create the API call promise
-  const apiPromise = fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${openaiApiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: modelConfig.modelId,
-      messages: [
-        { role: 'system', content: 'You are a professional nutritionist. Return only valid JSON.' },
-        { role: 'user', content: prompt }
-      ],
-      temperature: 0.7,
-      max_tokens: 4000,
-    }),
-  });
+  // Shorter timeout for faster failure and retry
+  const timeoutMs = 30000; // 30 seconds instead of 45
+  
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    // Race between API call and timeout
-    const response = await Promise.race([apiPromise, timeoutPromise]) as Response;
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openaiApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: modelConfig.modelId,
+        messages: [
+          { role: 'system', content: 'You are a professional nutritionist. Return only valid JSON.' },
+          { role: 'user', content: prompt }
+        ],
+        temperature: 0.7,
+        max_tokens: 3000, // Reduced from 4000
+      }),
+      signal: controller.signal
+    });
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('❌ AI API error response:', errorText);
+      console.error('❌ AI API error response:', response.status, errorText);
       throw new Error(`AI API error: ${response.status} - ${errorText}`);
     }
 
@@ -258,7 +257,16 @@ async function callAIAPI(prompt: string, modelConfig: any) {
     console.log('✅ AI API response received successfully');
     return data.choices[0].message.content;
   } catch (error) {
-    console.error('❌ AI API call failed:', error);
+    clearTimeout(timeoutId);
+    console.error(`❌ AI API call failed (attempt ${retryCount + 1}):`, error.message);
+    
+    // Retry logic for network errors
+    if (retryCount < 1 && (error.name === 'AbortError' || error.message.includes('network'))) {
+      console.log('🔄 Retrying AI API call...');
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
+      return await callAIAPI(prompt, modelConfig, retryCount + 1);
+    }
+    
     throw error;
   }
 }
@@ -370,7 +378,7 @@ Deno.serve(async (req) => {
 
     // Get AI model configuration
     const modelConfig = await getAIModelConfig(supabase);
-    console.log('🤖 Using AI model:', modelConfig.primary);
+    console.log('🤖 Using AI model:', modelConfig.primary, 'with fallback:', modelConfig.fallback);
 
     // Calculate daily calories based on user profile
     const dailyCalories = calculateDailyCalories(userProfile, preferences);
@@ -418,7 +426,7 @@ Deno.serve(async (req) => {
       aiResponse = await callAIAPI(prompt, modelConfig.primary);
       console.log('✅ AI generation successful with primary model');
     } catch (error) {
-      console.error('❌ Primary model failed:', error);
+      console.error('❌ Primary model failed:', error.message);
       
       if (modelConfig.fallback) {
         console.log('🔄 Trying fallback model:', modelConfig.fallback);
@@ -426,7 +434,7 @@ Deno.serve(async (req) => {
           aiResponse = await callAIAPI(prompt, modelConfig.fallback);
           console.log('✅ AI generation successful with fallback model');
         } catch (fallbackError) {
-          console.error('❌ Fallback model also failed:', fallbackError);
+          console.error('❌ Fallback model also failed:', fallbackError.message);
           throw new MealPlanError(
             'AI meal plan generation failed with both primary and fallback models',
             errorCodes.AI_GENERATION_FAILED,
@@ -460,7 +468,7 @@ Deno.serve(async (req) => {
       console.log('📊 Generated meals count:', mealPlanData.meals.length);
     } catch (parseError) {
       console.error('❌ Failed to parse AI response:', parseError);
-      console.error('❌ Raw AI response:', aiResponse?.substring(0, 500));
+      console.error('❌ Raw AI response sample:', aiResponse?.substring(0, 500));
       throw new MealPlanError(
         'Invalid AI response format',
         errorCodes.AI_RESPONSE_INVALID,
@@ -477,7 +485,7 @@ Deno.serve(async (req) => {
       fat: totals.fat + (meal.fat || 0)
     }), { calories: 0, protein: 0, carbs: 0, fat: 0 });
 
-    // Create or update weekly plan - REMOVED updated_at field
+    // Create or update weekly plan
     const weeklyPlanData = {
       id: existingPlan?.id || crypto.randomUUID(),
       user_id: userProfile.id,
