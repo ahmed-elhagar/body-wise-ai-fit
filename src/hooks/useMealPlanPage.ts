@@ -22,7 +22,7 @@ export const useMealPlanPage = () => {
   // Enhanced debugging output for week-specific data
   console.log('🚀 MEAL PLAN PAGE - UNIFIED DEBUG:', {
     currentWeekOffset: mealPlanState.currentWeekOffset,
-    weekStartDate: mealPlanState.weekStartDate.toDateString(),
+    weekStartDate: mealPlanState.weekStartDate?.toDateString(),
     hasWeeklyPlan: !!mealPlanState.currentWeekPlan?.weeklyPlan,
     weeklyPlanId: mealPlanState.currentWeekPlan?.weeklyPlan?.id,
     weeklyPlanDate: mealPlanState.currentWeekPlan?.weeklyPlan?.week_start_date,
@@ -41,6 +41,11 @@ export const useMealPlanPage = () => {
     ...mealPlanState,
     currentDate,
     currentDay,
-    handleRecipeGenerated
+    handleRecipeGenerated,
+    // Ensure we have all required props with defaults
+    viewMode: mealPlanState.viewMode || 'daily',
+    setViewMode: mealPlanState.setViewMode || (() => {}),
+    weekDays: mealPlanState.weekDays || [],
+    isShuffling: false // Add missing isShuffling property
   };
 };

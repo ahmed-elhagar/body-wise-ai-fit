@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { MealPlanHeader } from '@/components/meal-plan/MealPlanHeader';
-import { MealPlanDayView } from '@/components/meal-plan/MealPlanDayView';
-import { MealPlanWeekView } from '@/components/meal-plan/MealPlanWeekView';
-import { EnhancedMealPlanHeader } from '@/components/meal-plan/EnhancedMealPlanHeader';
+import MealPlanHeader from '@/components/meal-plan/MealPlanHeader';
+import MealPlanDayView from '@/components/meal-plan/MealPlanDayView';
+import MealPlanWeekView from '@/components/meal-plan/MealPlanWeekView';
+import EnhancedMealPlanHeader from '@/components/meal-plan/EnhancedMealPlanHeader';
 
 interface MealPlanContentProps {
   viewMode: 'daily' | 'weekly';
@@ -20,6 +20,7 @@ interface MealPlanContentProps {
   totalProtein: number;
   targetDayCalories: number;
   isLoading: boolean;
+  isGenerating: boolean;
   currentDate: string;
   currentDay: string;
   handleRecipeGenerated: () => void;
@@ -40,6 +41,7 @@ export const MealPlanContent: React.FC<MealPlanContentProps> = ({
   totalProtein,
   targetDayCalories,
   isLoading,
+  isGenerating,
   currentDate,
   currentDay,
   handleRecipeGenerated
