@@ -1,5 +1,5 @@
 
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { Utensils, Target } from "lucide-react";
 
 interface MacroWheelProps {
@@ -39,20 +39,6 @@ const MacroWheel = ({ calories, protein, carbs, fat }: MacroWheelProps) => {
     },
   ];
 
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      return (
-        <div className="bg-white p-3 rounded-lg shadow-lg border border-gray-200">
-          <p className="font-medium text-gray-900">{data.name}</p>
-          <p className="text-sm text-gray-600">{data.grams}g ({data.percentage}%)</p>
-          <p className="text-sm text-gray-500">{Math.round(data.value)} calories</p>
-        </div>
-      );
-    }
-    return null;
-  };
-
   if (calories === 0) {
     return (
       <div className="w-full h-64 flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border-2 border-dashed border-gray-300">
@@ -91,49 +77,59 @@ const MacroWheel = ({ calories, protein, carbs, fat }: MacroWheelProps) => {
   }
 
   return (
-    <div className="w-full h-64 relative">
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
-          <Pie
-            data={data}
-            cx="50%"
-            cy="50%"
-            innerRadius={50}
-            outerRadius={90}
-            paddingAngle={3}
-            dataKey="value"
-            animationBegin={0}
-            animationDuration={800}
-          >
-            {data.map((entry, index) => (
-              <Cell 
-                key={`cell-${index}`} 
-                fill={entry.color}
-                stroke="white"
-                strokeWidth={2}
-              />
-            ))}
-          </Pie>
-          <Tooltip content={<CustomTooltip />} />
-          <Legend 
-            verticalAlign="bottom" 
-            height={36}
-            formatter={(value, entry: any) => (
-              <span className="text-sm font-medium">
-                {value}: {entry.payload.grams}g ({entry.payload.percentage}%)
-              </span>
-            )}
-            iconType="circle"
-          />
-        </PieChart>
-      </ResponsiveContainer>
-      
-      {/* Center calories display */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="text-center">
-          <div className="text-2xl font-bold text-gray-900">{Math.round(calories)}</div>
-          <div className="text-xs text-gray-500 uppercase tracking-wide">calories</div>
+    <div className="w-full space-y-6">
+      {/* Pie Chart */}
+      <div className="relative h-64">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={data}
+              cx="50%"
+              cy="50%"
+              innerRadius={60}
+              outerRadius={110}
+              paddingAngle={2}
+              dataKey="value"
+              animationBegin={0}
+              animationDuration={800}
+            >
+              {data.map((entry, index) => (
+                <Cell 
+                  key={`cell-${index}`} 
+                  fill={entry.color}
+                  stroke="white"
+                  strokeWidth={3}
+                />
+              ))}
+            </Pie>
+          </PieChart>
+        </ResponsiveContainer>
+        
+        {/* Center calories display */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="text-center">
+            <div className="text-3xl font-bold text-gray-900">{Math.round(calories)}</div>
+            <div className="text-sm text-gray-500 uppercase tracking-wide font-medium">calories</div>
+          </div>
         </div>
+      </div>
+
+      {/* Legend */}
+      <div className="space-y-3">
+        {data.map((entry) => (
+          <div key={entry.name} className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div 
+                className="w-4 h-4 rounded-full" 
+                style={{ backgroundColor: entry.color }}
+              />
+              <span className="text-sm font-medium text-gray-700">{entry.name}:</span>
+            </div>
+            <div className="text-sm font-semibold text-gray-900">
+              {Math.round(entry.grams)}g ({entry.percentage}%)
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

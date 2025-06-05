@@ -25,11 +25,16 @@ const HistoryTab = () => {
   const { useHistoryData } = useFoodConsumption();
   const { data: historyData = [], isLoading, error } = useHistoryData(monthStart, monthEnd);
 
-  // Filter and search functionality
+  // Filter and search functionality with deduplication
   const filteredHistory = useMemo(() => {
     if (!historyData) return [];
     
-    return historyData.filter(entry => {
+    // Remove duplicates based on unique identifier
+    const uniqueEntries = historyData.filter((entry, index, self) => 
+      index === self.findIndex((e) => e.id === entry.id)
+    );
+    
+    return uniqueEntries.filter(entry => {
       // Search filter
       if (searchTerm) {
         const searchLower = searchTerm.toLowerCase();
@@ -86,16 +91,18 @@ const HistoryTab = () => {
         totalCalories: 0,
         avgCalories: 0,
         totalProtein: 0,
-        totalCarbs: 0,
-        totalFat: 0,
         daysLogged: 0,
         totalEntries: 0,
-        validEntries: 0,
         mostLoggedMealType: 'N/A'
       };
     }
 
-    const validEntries = historyData.filter(entry => 
+    // Remove duplicates for stats calculation
+    const uniqueEntries = historyData.filter((entry, index, self) => 
+      index === self.findIndex((e) => e.id === entry.id)
+    );
+
+    const validEntries = uniqueEntries.filter(entry => 
       entry && 
       entry.consumed_at && 
       isValid(new Date(entry.consumed_at)) &&
@@ -105,8 +112,6 @@ const HistoryTab = () => {
 
     const totalCalories = validEntries.reduce((sum, entry) => sum + (entry.calories_consumed || 0), 0);
     const totalProtein = validEntries.reduce((sum, entry) => sum + (entry.protein_consumed || 0), 0);
-    const totalCarbs = validEntries.reduce((sum, entry) => sum + (entry.carbs_consumed || 0), 0);
-    const totalFat = validEntries.reduce((sum, entry) => sum + (entry.fat_consumed || 0), 0);
     
     const uniqueDays = new Set(validEntries.map(entry => {
       try {
@@ -130,11 +135,8 @@ const HistoryTab = () => {
       totalCalories: Math.round(totalCalories),
       avgCalories: uniqueDays > 0 ? Math.round(totalCalories / uniqueDays) : 0,
       totalProtein: Math.round(totalProtein),
-      totalCarbs: Math.round(totalCarbs),
-      totalFat: Math.round(totalFat),
       daysLogged: uniqueDays,
       totalEntries: validEntries.length,
-      validEntries: validEntries.length,
       mostLoggedMealType
     };
   }, [historyData]);
@@ -143,7 +145,7 @@ const HistoryTab = () => {
     setCurrentMonth(prev => 
       direction === 'prev' ? subMonths(prev, 1) : addMonths(prev, 1)
     );
-    setSelectedDate(null); // Clear date filter when changing months
+    setSelectedDate(null);
   };
 
   const getMealTypeIcon = (mealType: string) => {
@@ -240,7 +242,7 @@ const HistoryTab = () => {
       </Card>
 
       {/* Monthly Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="p-4 text-center hover:shadow-md transition-shadow">
           <div className="flex items-center justify-center mb-2">
             <Activity className="w-5 h-5 text-green-600 mr-2" />
@@ -262,11 +264,6 @@ const HistoryTab = () => {
           <div className="text-sm text-gray-600">Total Protein</div>
         </Card>
         
-        <Card className="p-4 text-center hover:shadow-md transition-shadow">
-          <div className="text-2xl font-bold text-orange-600">{monthlyStats.totalEntries}</div>
-          <div className="text-sm text-gray-600">Total Meals</div>
-        </Card>
-
         <Card className="p-4 text-center hover:shadow-md transition-shadow">
           <div className="text-lg font-bold text-indigo-600 capitalize">
             {getMealTypeIcon(monthlyStats.mostLoggedMealType)} {monthlyStats.mostLoggedMealType}
@@ -442,17 +439,6 @@ const HistoryTab = () => {
           </div>
         )}
       </Card>
-
-      {/* Data Quality Alert */}
-      {historyData.length > 0 && monthlyStats.validEntries < historyData.length && (
-        <Alert>
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            Some entries have incomplete data and were excluded from calculations. 
-            ({monthlyStats.validEntries} of {historyData.length} entries processed)
-          </AlertDescription>
-        </Alert>
-      )}
     </div>
   );
 };
