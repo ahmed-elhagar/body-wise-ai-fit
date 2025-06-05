@@ -158,12 +158,12 @@ function calculateDailyCalories(userProfile: any, preferences: any) {
   return Math.round(tdee);
 }
 
-// ENHANCED meal plan prompt with complete user data and proper JSON structure
+// SIMPLIFIED meal plan prompt for better JSON generation
 function generateMealPlanPrompt(userProfile: any, preferences: any, dailyCalories: number, includeSnacks: boolean) {
   const language = preferences?.language || userProfile?.preferred_language || 'en';
-  const isArabic = language === 'ar';
-  
   const mealsPerDay = includeSnacks ? 5 : 3;
+  const totalMeals = mealsPerDay * 7;
+  
   const mealTypes = includeSnacks 
     ? ['breakfast', 'snack', 'lunch', 'snack', 'dinner']
     : ['breakfast', 'lunch', 'dinner'];
@@ -173,62 +173,47 @@ function generateMealPlanPrompt(userProfile: any, preferences: any, dailyCalorie
   const healthConditions = buildHealthConditions(userProfile, language);
   const specialConditions = buildSpecialConditions(userProfile, language);
 
-  // COMPREHENSIVE user profile data
+  // Simplified user profile data
   const userDetails = `
-User Profile Details:
-- Basic Info: ${userProfile.age}yr ${userProfile.gender}, ${userProfile.weight}kg, ${userProfile.height}cm
-- Activity Level: ${userProfile.activity_level}
-- Fitness Goal: ${userProfile.fitness_goal}
-- Body Shape: ${userProfile.body_shape || 'Not specified'}
-- Nationality: ${userProfile.nationality || 'International'}
-- Preferred Language: ${language}
-
-Daily Nutrition Target:
-- Total Calories: ${dailyCalories}
-- Meals per day: ${mealsPerDay}
-- Meal types: ${mealTypes.join(', ')}
-
-Preferences from UI:
-- Cuisine Type: ${preferences.cuisine || 'Mixed International'}
-- Max Prep Time: ${preferences.maxPrepTime || 30} minutes
-- Include Snacks: ${includeSnacks ? 'Yes' : 'No'}
-- Cooking Skills: ${preferences.cookingSkills || 'Intermediate'}
-- Budget Level: ${preferences.budgetLevel || 'Medium'}
+User: ${userProfile.age}yr ${userProfile.gender}, ${userProfile.weight}kg, ${userProfile.height}cm
+Activity: ${userProfile.activity_level}, Goal: ${userProfile.fitness_goal}
+Nationality: ${userProfile.nationality || 'International'}
+Daily Calories: ${dailyCalories}
+Meals: ${mealsPerDay} per day (${mealTypes.join(', ')})
+Preferences: ${preferences.cuisine || 'Mixed'}, Max prep: ${preferences.maxPrepTime || 30}min
 `;
 
-  // SIMPLIFIED PROMPT for better JSON generation
-  return `You are a professional nutritionist AI. Generate a complete 7-day meal plan in VALID JSON format.
+  return `You are a professional nutritionist. Generate a 7-day meal plan in VALID JSON format.
 
 ${userDetails}
-
 ${healthConditions}
 ${specialConditions}
 ${dietaryRestrictions}
 ${culturalContext}
 
 CRITICAL REQUIREMENTS:
-1. Generate exactly ${mealsPerDay * 7} meals total (${mealsPerDay} meals × 7 days)
-2. Each day must have these meal types: ${mealTypes.join(', ')}
-3. Daily calories should average around ${Math.round(dailyCalories)} calories
-4. All meals must include complete nutrition and ingredient data
+- Generate exactly ${totalMeals} meals (${mealsPerDay} meals × 7 days)
+- Each day has meals: ${mealTypes.join(', ')}
+- Daily calories ~${dailyCalories}
+- Return ONLY valid JSON, no markdown, no explanations
 
-JSON STRUCTURE (return ONLY this JSON, no explanations):
+JSON STRUCTURE:
 {
   "meals": [
     {
       "day_number": 1,
       "meal_type": "breakfast",
-      "name": "Nutritious Meal Name",
+      "name": "Meal Name",
       "calories": 400,
       "protein": 25,
       "carbs": 45,
       "fat": 15,
       "ingredients": [
-        {"name": "ingredient name", "amount": "1 cup", "calories": 100}
+        {"name": "ingredient", "amount": "1 cup", "calories": 100}
       ],
       "instructions": [
-        "Step 1: Detailed instruction",
-        "Step 2: Another step"
+        "Step 1: instruction",
+        "Step 2: instruction"
       ],
       "prep_time": 10,
       "cook_time": 15,
@@ -237,12 +222,7 @@ JSON STRUCTURE (return ONLY this JSON, no explanations):
   ]
 }
 
-IMPORTANT: 
-- Return ONLY valid JSON
-- No markdown formatting or explanations
-- Ensure all ${mealsPerDay * 7} meals are included
-- Each meal must have ALL required fields
-- Numbers must be actual numbers, not strings`;
+Generate complete meal plan with ALL ${totalMeals} meals. Return ONLY the JSON.`;
 }
 
 function buildCulturalContext(nationality: string, language: string): string {
@@ -314,7 +294,7 @@ function buildSpecialConditions(userProfile: any, language: string): string {
   return sections.length > 0 ? `Special Conditions:\n${sections.join('\n')}` : '';
 }
 
-// FIXED AI API call without invalid timeout parameter
+// ENHANCED AI API call with better error handling
 async function callAIAPI(prompt: string, modelConfig: any, retryCount: number = 0) {
   const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
   
@@ -330,7 +310,7 @@ async function callAIAPI(prompt: string, modelConfig: any, retryCount: number = 
   console.log(`🤖 Calling AI API with ${modelConfig.name || modelConfig.modelId} (attempt ${retryCount + 1})`);
 
   // Client-side timeout with proper cleanup
-  const timeoutMs = 90000; // 90 seconds for complex meal planning
+  const timeoutMs = 120000; // 2 minutes for complex meal planning
   
   const controller = new AbortController();
   const timeoutId = setTimeout(() => {
@@ -350,13 +330,13 @@ async function callAIAPI(prompt: string, modelConfig: any, retryCount: number = 
         messages: [
           { 
             role: 'system', 
-            content: 'You are a professional nutritionist AI. Return ONLY valid JSON format without any markdown formatting, explanations, or additional text. Ensure the JSON is complete and properly formatted.' 
+            content: 'You are a professional nutritionist AI. Return ONLY valid JSON format without any markdown formatting, explanations, or additional text. Ensure the JSON is complete and properly formatted with all required fields.' 
           },
           { role: 'user', content: prompt }
         ],
-        temperature: 0.7,
-        max_tokens: 4000
-        // REMOVED: timeout parameter (not supported by OpenAI API)
+        temperature: 0.3, // Lower temperature for more consistent JSON
+        max_tokens: 6000, // Increased for complete responses
+        response_format: { type: "json_object" } // Force JSON response
       }),
       signal: controller.signal
     });
@@ -398,6 +378,8 @@ async function callAIAPI(prompt: string, modelConfig: any, retryCount: number = 
 
     console.log('✅ AI API response received successfully');
     console.log('📏 Response length:', content.length);
+    console.log('🔍 Response preview:', content.substring(0, 200) + '...');
+    
     return content;
     
   } catch (error) {
@@ -527,7 +509,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    console.log('=== AI MEAL PLAN GENERATION - ENHANCED WITH ADMIN DEFAULT MODEL ===');
+    console.log('=== AI MEAL PLAN GENERATION - ENHANCED WITH ROBUST JSON PARSING ===');
     
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -591,7 +573,7 @@ Deno.serve(async (req) => {
 
     // Generate AI meal plan prompt with complete user data
     const prompt = generateMealPlanPrompt(userProfile, preferences, dailyCalories, preferences.includeSnacks);
-    console.log('📝 Generated comprehensive prompt for AI');
+    console.log('📝 Generated simplified prompt for robust JSON generation');
 
     // ENHANCED: Call AI API with configured models and proper admin default fallback
     let aiResponse;
@@ -627,24 +609,32 @@ Deno.serve(async (req) => {
       console.log('🔍 Processing AI response...');
       console.log('📏 Raw response length:', aiResponse?.length || 0);
       
-      // Aggressive cleaning for better JSON parsing
+      // Clean the response
       let cleanedResponse = aiResponse.trim();
       
-      // Remove markdown code blocks
+      // Remove any markdown formatting
       cleanedResponse = cleanedResponse.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+      cleanedResponse = cleanedResponse.replace(/^\s*```[\s\S]*?```\s*$/g, '');
       
-      // Find JSON boundaries
+      // Find JSON boundaries more carefully
       const firstBraceIndex = cleanedResponse.indexOf('{');
       const lastBraceIndex = cleanedResponse.lastIndexOf('}');
       
       if (firstBraceIndex === -1 || lastBraceIndex === -1) {
+        console.error('❌ No valid JSON structure found in response');
+        console.error('📄 Response sample:', cleanedResponse.substring(0, 500));
         throw new Error('No valid JSON structure found in response');
       }
       
       cleanedResponse = cleanedResponse.substring(firstBraceIndex, lastBraceIndex + 1);
       
       console.log('🧹 Cleaned response ready for parsing');
-      console.log('📄 Sample of cleaned response:', cleanedResponse.substring(0, 500) + '...');
+      console.log('📄 Sample of cleaned response:', cleanedResponse.substring(0, 300) + '...');
+      
+      // Validate JSON structure before parsing
+      if (!cleanedResponse.includes('"meals"') || !cleanedResponse.includes('[')) {
+        throw new Error('Response does not contain expected meals array structure');
+      }
       
       mealPlanData = JSON.parse(cleanedResponse);
       
@@ -658,13 +648,13 @@ Deno.serve(async (req) => {
       
       // Validate meal count
       const expectedMealCount = (preferences.includeSnacks ? 5 : 3) * 7;
-      if (mealPlanData.meals.length < expectedMealCount * 0.8) { // Allow 20% tolerance
+      if (mealPlanData.meals.length < expectedMealCount * 0.7) { // Allow 30% tolerance
         console.warn(`⚠️ Expected ~${expectedMealCount} meals, got ${mealPlanData.meals.length}`);
       }
       
     } catch (parseError) {
       console.error('❌ Failed to parse AI response:', parseError.message);
-      console.error('❌ Response sample:', aiResponse?.substring(0, 1000));
+      console.error('❌ Response sample:', aiResponse?.substring(0, 2000));
       throw new MealPlanError(
         'Invalid AI response format - JSON parsing failed',
         errorCodes.AI_RESPONSE_INVALID,
