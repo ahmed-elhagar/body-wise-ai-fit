@@ -1,16 +1,18 @@
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Edit, Loader2, Send, X } from "lucide-react";
-import type { ChatMessage } from "@/hooks/useCoachChat";
+import { Badge } from "@/components/ui/badge";
+import { Send, X, Edit3, Loader2 } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ChatInputProps {
   message: string;
   setMessage: (message: string) => void;
   isSending: boolean;
   isEditing: boolean;
-  editingMessage?: ChatMessage | null;
-  replyingTo?: ChatMessage | null;
+  editingMessage?: any;
+  replyingTo?: any;
   onSend: () => void;
   onSaveEdit: () => void;
   onCancelEdit: () => void;
@@ -35,84 +37,121 @@ const ChatInput = ({
   onChange,
   inputRef
 }: ChatInputProps) => {
+  const { t } = useLanguage();
+
   return (
-    <div className="border-t p-4 bg-gray-50 rounded-b-xl">
-      {/* Reply indicator */}
-      {replyingTo && (
-        <div className="mb-3 p-2 bg-blue-50 rounded-lg border border-blue-200">
-          <div className="flex items-center justify-between">
-            <div className="text-sm">
-              <span className="text-blue-600 font-medium">Replying to:</span>
-              <p className="text-gray-600 truncate mt-1">{replyingTo.message}</p>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onCancelReply}
-              className="p-1"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      )}
-      
-      {/* Edit indicator */}
-      {editingMessage && (
-        <div className="mb-3 p-2 bg-orange-50 rounded-lg border border-orange-200">
-          <div className="flex items-center justify-between">
-            <div className="text-sm">
-              <span className="text-orange-600 font-medium flex items-center gap-1">
-                <Edit className="h-3 w-3" />
-                Editing message
-              </span>
-            </div>
-            <div className="flex gap-1">
+    <div className="border-t bg-white p-4">
+      {/* Reply/Edit Context */}
+      {(replyingTo || editingMessage) && (
+        <div className="mb-3">
+          {replyingTo && (
+            <div className="bg-blue-50 border-l-4 border-blue-500 p-3 rounded-r-lg flex items-center justify-between">
+              <div>
+                <div className="text-sm text-blue-600 font-medium">
+                  {t('Replying to')} {replyingTo.sender_type === 'coach' ? 'Coach' : 'You'}
+                </div>
+                <div className="text-sm text-gray-700 truncate max-w-md">
+                  {replyingTo.message}
+                </div>
+              </div>
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={onSaveEdit}
-                disabled={isEditing}
-                className="p-1 text-green-600 hover:bg-green-100"
+                onClick={onCancelReply}
+                className="text-gray-400 hover:text-gray-600"
               >
-                Save
+                <X className="w-4 h-4" />
               </Button>
+            </div>
+          )}
+
+          {editingMessage && (
+            <div className="bg-yellow-50 border-l-4 border-yellow-500 p-3 rounded-r-lg flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Edit3 className="w-4 h-4 text-yellow-600" />
+                <span className="text-sm text-yellow-600 font-medium">
+                  {t('Editing message')}
+                </span>
+              </div>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={onCancelEdit}
-                className="p-1"
+                className="text-gray-400 hover:text-gray-600"
               >
-                <X className="h-4 w-4" />
+                <X className="w-4 h-4" />
               </Button>
             </div>
-          </div>
+          )}
         </div>
       )}
-      
+
+      {/* Input Area */}
       <div className="flex gap-3">
         <Textarea
           ref={inputRef}
           value={message}
           onChange={onChange}
           onKeyPress={onKeyPress}
-          placeholder={editingMessage ? "Edit your message..." : "Type your message..."}
-          className="flex-1 min-h-[60px] resize-none"
+          placeholder={
+            editingMessage 
+              ? t('Edit your message...')
+              : replyingTo 
+                ? t('Reply to message...')
+                : t('Type your message...')
+          }
           disabled={isSending || isEditing}
+          className="flex-1 min-h-[60px] max-h-32 resize-none"
+          rows={2}
         />
-        <Button
-          onClick={editingMessage ? onSaveEdit : onSend}
-          disabled={!message.trim() || isSending || isEditing}
-          className="self-end bg-green-600 hover:bg-green-700"
-        >
-          {isSending || isEditing ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : editingMessage ? (
-            <Edit className="h-4 w-4" />
+        
+        <div className="flex flex-col gap-2">
+          {editingMessage ? (
+            <>
+              <Button
+                onClick={onSaveEdit}
+                disabled={!message.trim() || isEditing}
+                size="sm"
+                className="bg-green-500 hover:bg-green-600"
+              >
+                {isEditing ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Edit3 className="w-4 h-4" />
+                )}
+              </Button>
+              <Button
+                onClick={onCancelEdit}
+                variant="outline"
+                size="sm"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </>
           ) : (
-            <Send className="h-4 w-4" />
+            <Button
+              onClick={onSend}
+              disabled={!message.trim() || isSending}
+              size="sm"
+              className="bg-blue-500 hover:bg-blue-600 h-[60px]"
+            >
+              {isSending ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Send className="w-4 h-4" />
+              )}
+            </Button>
           )}
-        </Button>
+        </div>
+      </div>
+      
+      <div className="flex justify-between items-center mt-2 text-xs text-gray-500">
+        <span>
+          {t('Press Enter + Shift for new line, Enter to send')}
+        </span>
+        <span>
+          {message.length}/1000
+        </span>
       </div>
     </div>
   );
