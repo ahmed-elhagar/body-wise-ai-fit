@@ -116,13 +116,13 @@ const TodayTab = ({ key: forceRefreshKey }: { key?: number }) => {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Enhanced Daily Nutrition Panel */}
+      {/* Streamlined Daily Nutrition Panel */}
       <div className="lg:col-span-1">
         <Card className="sticky top-6">
           <CardHeader>
             <CardTitle className="text-green-700 flex items-center gap-2">
               <Target className="w-5 h-5" />
-              Daily Nutrition Overview
+              Daily Nutrition
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -134,15 +134,15 @@ const TodayTab = ({ key: forceRefreshKey }: { key?: number }) => {
               fat={combinedTotals.fat}
             />
             
-            {/* Progress Tracking */}
-            <div className="space-y-4">
+            {/* Progress Bars - Simplified */}
+            <div className="space-y-3">
               <h4 className="font-medium text-gray-700 flex items-center gap-2">
                 <TrendingUp className="w-4 h-4" />
-                Daily Goals Progress
+                Goal Progress
               </h4>
               
               {/* Calories Progress */}
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-gray-600">Calories</span>
                   <span className="text-sm text-gray-500">
@@ -150,13 +150,10 @@ const TodayTab = ({ key: forceRefreshKey }: { key?: number }) => {
                   </span>
                 </div>
                 <Progress value={progress.calories} className="h-2" />
-                <div className="text-xs text-gray-500 text-center">
-                  {Math.round(progress.calories)}% of daily goal
-                </div>
               </div>
 
               {/* Protein Progress */}
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-gray-600">Protein</span>
                   <span className="text-sm text-gray-500">
@@ -165,91 +162,21 @@ const TodayTab = ({ key: forceRefreshKey }: { key?: number }) => {
                 </div>
                 <Progress value={progress.protein} className="h-2" />
               </div>
-
-              {/* Carbs Progress */}
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Carbs</span>
-                  <span className="text-sm text-gray-500">
-                    {Math.round(combinedTotals.carbs)}g / {dailyGoals.carbs}g
-                  </span>
-                </div>
-                <Progress value={progress.carbs} className="h-2" />
-              </div>
-
-              {/* Fat Progress */}
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Fat</span>
-                  <span className="text-sm text-gray-500">
-                    {Math.round(combinedTotals.fat)}g / {dailyGoals.fat}g
-                  </span>
-                </div>
-                <Progress value={progress.fat} className="h-2" />
-              </div>
             </div>
 
-            {/* Meal Distribution */}
-            {totalMeals > 0 && (
-              <div className="space-y-3">
-                <h4 className="font-medium text-gray-700 flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  Today's Meal Distribution
-                </h4>
-                <div className="grid grid-cols-2 gap-2">
-                  {Object.entries(mealDistribution).map(([mealType, count]) => (
-                    <div key={mealType} className="text-center p-2 bg-gray-50 rounded-lg">
-                      <div className="text-lg font-bold text-gray-900">{count}</div>
-                      <div className="text-xs text-gray-600 capitalize">{mealType}</div>
-                    </div>
-                  ))}
-                </div>
+            {/* Quick Stats */}
+            <div className="space-y-2 pt-4 border-t border-gray-200">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Meals Logged</span>
+                <span className="font-medium text-gray-900">{totalMeals}</span>
               </div>
-            )}
-
-            {/* Achievements */}
-            <div className="space-y-3">
-              <h4 className="font-medium text-gray-700 flex items-center gap-2">
-                <Award className="w-4 h-4" />
-                Daily Achievements
-              </h4>
-              <div className="space-y-2">
-                {progress.calories >= 80 && (
-                  <Badge className="w-full justify-center bg-green-100 text-green-800">
-                    🎯 Great calorie progress!
-                  </Badge>
-                )}
-                {progress.protein >= 100 && (
-                  <Badge className="w-full justify-center bg-blue-100 text-blue-800">
-                    💪 Protein goal achieved!
-                  </Badge>
-                )}
-                {totalMeals >= 3 && (
-                  <Badge className="w-full justify-center bg-purple-100 text-purple-800">
-                    🍽️ Regular meal pattern!
-                  </Badge>
-                )}
-                {Object.keys(mealDistribution).length >= 3 && (
-                  <Badge className="w-full justify-center bg-orange-100 text-orange-800">
-                    🌟 Balanced meal types!
-                  </Badge>
-                )}
-              </div>
-            </div>
-
-            {/* Quick Stats Summary */}
-            <div className="pt-4 border-t border-gray-200 space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Remaining Calories</span>
                 <span className="font-medium text-gray-900">
                   {Math.max(0, dailyGoals.calories - combinedTotals.calories)}
                 </span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Meals Logged</span>
-                <span className="font-medium text-gray-900">{totalMeals}</span>
-              </div>
-              {combinedTotals.calories > 0 && (
+              {combinedTotals.calories > 0 && totalMeals > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Avg Cal/Meal</span>
                   <span className="font-medium text-gray-900">
@@ -259,8 +186,35 @@ const TodayTab = ({ key: forceRefreshKey }: { key?: number }) => {
               )}
             </div>
 
-            {/* Show meal plan summary if available */}
-            {todayMealPlan && todayMealPlan.length > 0 && (
+            {/* Achievement Badges - Only show relevant ones */}
+            {(progress.calories >= 80 || progress.protein >= 100 || totalMeals >= 3) && (
+              <div className="space-y-3">
+                <h4 className="font-medium text-gray-700 flex items-center gap-2">
+                  <Award className="w-4 h-4" />
+                  Achievements
+                </h4>
+                <div className="space-y-2">
+                  {progress.calories >= 80 && (
+                    <Badge className="w-full justify-center bg-green-100 text-green-800">
+                      🎯 Great calorie progress!
+                    </Badge>
+                  )}
+                  {progress.protein >= 100 && (
+                    <Badge className="w-full justify-center bg-blue-100 text-blue-800">
+                      💪 Protein goal achieved!
+                    </Badge>
+                  )}
+                  {totalMeals >= 3 && (
+                    <Badge className="w-full justify-center bg-purple-100 text-purple-800">
+                      🍽️ Regular meal pattern!
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Show meal plan summary if available and no consumption */}
+            {(!todayConsumption || todayConsumption.length === 0) && todayMealPlan && todayMealPlan.length > 0 && (
               <div className="pt-4 border-t border-gray-200">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-2 h-2 bg-purple-500 rounded-full"></div>

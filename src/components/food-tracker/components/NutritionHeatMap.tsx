@@ -55,11 +55,41 @@ interface DayData {
   avgCaloriesPerMeal: number;
 }
 
+// Helper function to calculate streak - moved outside component
+const calculateStreak = (days: DayData[]) => {
+  let streak = 0;
+  const today = new Date();
+  
+  // Start from today and go backwards
+  for (let i = days.length - 1; i >= 0; i--) {
+    const day = days[i];
+    if (day.date > today) continue; // Skip future dates
+    
+    if (day.totalEntries > 0) {
+      streak++;
+    } else {
+      break;
+    }
+  }
+  return streak;
+};
+
 const NutritionHeatMap = ({ data, currentMonth }: NutritionHeatMapProps) => {
   const [selectedDay, setSelectedDay] = useState<DayData | null>(null);
 
   const { heatMapData, hasErrors, monthlyStats } = useMemo(() => {
     try {
+      console.log('🗓️ Processing heat map data for:', format(currentMonth, 'yyyy-MM'), 'with entries:', data?.length || 0);
+      
+      if (!data || data.length === 0) {
+        console.log('ℹ️ No data provided for heat map');
+        return {
+          heatMapData: [],
+          hasErrors: false,
+          monthlyStats: { totalCaloriesMonth: 0, avgDailyCalories: 0, avgDailyProtein: 0, activeDays: 0, streak: 0 }
+        };
+      }
+
       const monthStart = startOfMonth(currentMonth);
       const monthEnd = endOfMonth(currentMonth);
       const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
@@ -72,17 +102,22 @@ const NutritionHeatMap = ({ data, currentMonth }: NutritionHeatMapProps) => {
         // Filter and validate data for this day
         const dayData = data.filter(entry => {
           try {
-            if (!entry || !entry.consumed_at) return false;
+            if (!entry || !entry.consumed_at) {
+              console.warn('⚠️ Entry missing consumed_at:', entry?.id);
+              return false;
+            }
             
             const entryDate = new Date(entry.consumed_at);
             if (!isValid(entryDate)) {
+              console.warn('⚠️ Invalid date for entry:', entry.id, entry.consumed_at);
               errorCount++;
               return false;
             }
             
             const entryDayStr = format(entryDate, 'yyyy-MM-dd');
             return entryDayStr === dayStr;
-          } catch {
+          } catch (error) {
+            console.error('❌ Error processing entry:', entry?.id, error);
             errorCount++;
             return false;
           }
@@ -140,6 +175,14 @@ const NutritionHeatMap = ({ data, currentMonth }: NutritionHeatMapProps) => {
       const avgDailyProtein = validDays.length > 0 ? Math.round(totalProteinMonth / validDays.length) : 0;
       const streak = calculateStreak(processedData);
 
+      console.log('✅ Heat map data processed:', {
+        totalDays: processedData.length,
+        activeDays: validDays.length,
+        errors: errorCount,
+        avgDailyCalories,
+        streak
+      });
+
       return {
         heatMapData: processedData,
         hasErrors: errorCount > 0,
@@ -152,7 +195,7 @@ const NutritionHeatMap = ({ data, currentMonth }: NutritionHeatMapProps) => {
         }
       };
     } catch (error) {
-      console.error('Error processing heat map data:', error);
+      console.error('❌ Error processing heat map data:', error);
       return {
         heatMapData: [],
         hasErrors: true,
@@ -160,24 +203,6 @@ const NutritionHeatMap = ({ data, currentMonth }: NutritionHeatMapProps) => {
       };
     }
   }, [data, currentMonth]);
-
-  const calculateStreak = (days: DayData[]) => {
-    let streak = 0;
-    const today = new Date();
-    
-    // Start from today and go backwards
-    for (let i = days.length - 1; i >= 0; i--) {
-      const day = days[i];
-      if (day.date > today) continue; // Skip future dates
-      
-      if (day.totalEntries > 0) {
-        streak++;
-      } else {
-        break;
-      }
-    }
-    return streak;
-  };
 
   const getIntensityColor = (intensity: number) => {
     switch (intensity) {
@@ -213,7 +238,7 @@ const NutritionHeatMap = ({ data, currentMonth }: NutritionHeatMapProps) => {
     return (
       <div className="text-center py-8">
         <Calendar className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-        <p className="text-gray-500">Unable to load calendar data for this month.</p>
+        <p className="text-gray-500">No data available for this month.</p>
       </div>
     );
   }
