@@ -208,27 +208,31 @@ Deno.serve(async (req) => {
         .eq('weekly_plan_id', existingPlan.id);
     }
 
-    // Create or update weekly plan
+    // Create or update weekly plan - FIXED: Removed plan_type column
+    const weeklyPlanData = {
+      id: existingPlan?.id || crypto.randomUUID(),
+      user_id: userProfile.id,
+      week_start_date: weekStartDateStr,
+      total_calories: preferences.includeSnacks ? 2100 : 1800,
+      total_protein: preferences.includeSnacks ? 140 : 120,
+      total_carbs: preferences.includeSnacks ? 250 : 200,
+      total_fat: preferences.includeSnacks ? 80 : 65,
+      generation_prompt: preferences,
+      life_phase_context: preferences.nutritionContext || {},
+      updated_at: new Date().toISOString()
+    };
+
+    console.log('💾 Creating/updating weekly plan with data:', weeklyPlanData);
+
     const { data: weeklyPlan, error: weeklyPlanError } = await supabase
       .from('weekly_meal_plans')
-      .upsert({
-        id: existingPlan?.id || crypto.randomUUID(),
-        user_id: userProfile.id,
-        week_start_date: weekStartDateStr,
-        total_calories: preferences.includeSnacks ? 2100 : 1800,
-        total_protein: preferences.includeSnacks ? 140 : 120,
-        total_carbs: preferences.includeSnacks ? 250 : 200,
-        total_fat: preferences.includeSnacks ? 80 : 65,
-        plan_type: 'ai_generated',
-        preferences: preferences,
-        updated_at: new Date().toISOString()
-      })
+      .upsert(weeklyPlanData)
       .select()
       .single();
 
     if (weeklyPlanError) {
       console.error('❌ Error creating weekly plan:', weeklyPlanError);
-      throw new Error('Failed to create weekly meal plan');
+      throw new Error(`Failed to create weekly meal plan: ${weeklyPlanError.message}`);
     }
 
     console.log('✅ Weekly plan created/updated:', weeklyPlan.id);
@@ -236,12 +240,23 @@ Deno.serve(async (req) => {
     // Generate sample meals
     const sampleMeals = generateSampleMealPlan(userProfile, preferences, weekStartDateStr);
     
-    // Insert meals into database
-    const mealsToInsert = sampleMeals.map(meal => ({
-      ...meal,
-      weekly_plan_id: weeklyPlan.id,
-      user_id: userProfile.id
-    }));
+    // Insert meals into database with proper meal_type validation
+    const mealsToInsert = sampleMeals.map(meal => {
+      // Validate and normalize meal_type
+      let validMealType = meal.meal_type;
+      if (meal.meal_type.includes('snack')) {
+        validMealType = 'snack';
+      }
+      
+      return {
+        ...meal,
+        meal_type: validMealType,
+        weekly_plan_id: weeklyPlan.id,
+        name: meal.meal_name // Map meal_name to name
+      };
+    });
+
+    console.log('🍽️ Inserting meals:', mealsToInsert.length);
 
     const { data: insertedMeals, error: mealsError } = await supabase
       .from('daily_meals')
@@ -250,7 +265,7 @@ Deno.serve(async (req) => {
 
     if (mealsError) {
       console.error('❌ Error inserting meals:', mealsError);
-      throw new Error('Failed to create daily meals');
+      throw new Error(`Failed to create daily meals: ${mealsError.message}`);
     }
 
     console.log('✅ Meals inserted successfully:', insertedMeals.length);
