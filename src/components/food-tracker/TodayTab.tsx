@@ -2,7 +2,9 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { Plus, Target, TrendingUp, Award, Clock } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useFoodConsumption } from "@/hooks/useFoodConsumption";
 import MacroWheel from "./components/MacroWheel";
@@ -64,6 +66,29 @@ const TodayTab = ({ key: forceRefreshKey }: { key?: number }) => {
     fat: dailyTotals.consumption.fat,
   };
 
+  // Calculate daily goals and progress (example targets - could be user-specific)
+  const dailyGoals = {
+    calories: 2000,
+    protein: 150,
+    carbs: 250,
+    fat: 65
+  };
+
+  const progress = {
+    calories: Math.min((combinedTotals.calories / dailyGoals.calories) * 100, 100),
+    protein: Math.min((combinedTotals.protein / dailyGoals.protein) * 100, 100),
+    carbs: Math.min((combinedTotals.carbs / dailyGoals.carbs) * 100, 100),
+    fat: Math.min((combinedTotals.fat / dailyGoals.fat) * 100, 100)
+  };
+
+  // Calculate meal distribution
+  const mealDistribution = todayConsumption?.reduce((acc, item) => {
+    acc[item.meal_type] = (acc[item.meal_type] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>) || {};
+
+  const totalMeals = Object.values(mealDistribution).reduce((sum, count) => sum + count, 0);
+
   const handleFoodAdded = async () => {
     console.log('🍎 Food added, closing dialog and refreshing data...');
     setShowAddDialog(false);
@@ -91,15 +116,17 @@ const TodayTab = ({ key: forceRefreshKey }: { key?: number }) => {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Macros Overview */}
+      {/* Enhanced Daily Nutrition Panel */}
       <div className="lg:col-span-1">
         <Card className="sticky top-6">
           <CardHeader>
             <CardTitle className="text-green-700 flex items-center gap-2">
-              {t('Daily Nutrition')}
+              <Target className="w-5 h-5" />
+              Daily Nutrition Overview
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-6">
+            {/* Macro Wheel */}
             <MacroWheel 
               calories={combinedTotals.calories}
               protein={combinedTotals.protein}
@@ -107,39 +134,137 @@ const TodayTab = ({ key: forceRefreshKey }: { key?: number }) => {
               fat={combinedTotals.fat}
             />
             
-            <div className="mt-6 space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600">{t('Calories')}</span>
-                <span className="font-semibold text-gray-900">
-                  {Math.round(combinedTotals.calories)}
+            {/* Progress Tracking */}
+            <div className="space-y-4">
+              <h4 className="font-medium text-gray-700 flex items-center gap-2">
+                <TrendingUp className="w-4 h-4" />
+                Daily Goals Progress
+              </h4>
+              
+              {/* Calories Progress */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-600">Calories</span>
+                  <span className="text-sm text-gray-500">
+                    {Math.round(combinedTotals.calories)} / {dailyGoals.calories}
+                  </span>
+                </div>
+                <Progress value={progress.calories} className="h-2" />
+                <div className="text-xs text-gray-500 text-center">
+                  {Math.round(progress.calories)}% of daily goal
+                </div>
+              </div>
+
+              {/* Protein Progress */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-600">Protein</span>
+                  <span className="text-sm text-gray-500">
+                    {Math.round(combinedTotals.protein)}g / {dailyGoals.protein}g
+                  </span>
+                </div>
+                <Progress value={progress.protein} className="h-2" />
+              </div>
+
+              {/* Carbs Progress */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-600">Carbs</span>
+                  <span className="text-sm text-gray-500">
+                    {Math.round(combinedTotals.carbs)}g / {dailyGoals.carbs}g
+                  </span>
+                </div>
+                <Progress value={progress.carbs} className="h-2" />
+              </div>
+
+              {/* Fat Progress */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-600">Fat</span>
+                  <span className="text-sm text-gray-500">
+                    {Math.round(combinedTotals.fat)}g / {dailyGoals.fat}g
+                  </span>
+                </div>
+                <Progress value={progress.fat} className="h-2" />
+              </div>
+            </div>
+
+            {/* Meal Distribution */}
+            {totalMeals > 0 && (
+              <div className="space-y-3">
+                <h4 className="font-medium text-gray-700 flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  Today's Meal Distribution
+                </h4>
+                <div className="grid grid-cols-2 gap-2">
+                  {Object.entries(mealDistribution).map(([mealType, count]) => (
+                    <div key={mealType} className="text-center p-2 bg-gray-50 rounded-lg">
+                      <div className="text-lg font-bold text-gray-900">{count}</div>
+                      <div className="text-xs text-gray-600 capitalize">{mealType}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Achievements */}
+            <div className="space-y-3">
+              <h4 className="font-medium text-gray-700 flex items-center gap-2">
+                <Award className="w-4 h-4" />
+                Daily Achievements
+              </h4>
+              <div className="space-y-2">
+                {progress.calories >= 80 && (
+                  <Badge className="w-full justify-center bg-green-100 text-green-800">
+                    🎯 Great calorie progress!
+                  </Badge>
+                )}
+                {progress.protein >= 100 && (
+                  <Badge className="w-full justify-center bg-blue-100 text-blue-800">
+                    💪 Protein goal achieved!
+                  </Badge>
+                )}
+                {totalMeals >= 3 && (
+                  <Badge className="w-full justify-center bg-purple-100 text-purple-800">
+                    🍽️ Regular meal pattern!
+                  </Badge>
+                )}
+                {Object.keys(mealDistribution).length >= 3 && (
+                  <Badge className="w-full justify-center bg-orange-100 text-orange-800">
+                    🌟 Balanced meal types!
+                  </Badge>
+                )}
+              </div>
+            </div>
+
+            {/* Quick Stats Summary */}
+            <div className="pt-4 border-t border-gray-200 space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Remaining Calories</span>
+                <span className="font-medium text-gray-900">
+                  {Math.max(0, dailyGoals.calories - combinedTotals.calories)}
                 </span>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600">{t('Protein')}</span>
-                <span className="font-semibold text-gray-900">
-                  {Math.round(combinedTotals.protein)}g
-                </span>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Meals Logged</span>
+                <span className="font-medium text-gray-900">{totalMeals}</span>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600">{t('Carbs')}</span>
-                <span className="font-semibold text-gray-900">
-                  {Math.round(combinedTotals.carbs)}g
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600">{t('Fat')}</span>
-                <span className="font-semibold text-gray-900">
-                  {Math.round(combinedTotals.fat)}g
-                </span>
-              </div>
+              {combinedTotals.calories > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Avg Cal/Meal</span>
+                  <span className="font-medium text-gray-900">
+                    {Math.round(combinedTotals.calories / totalMeals)}
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Show meal plan summary if available */}
             {todayMealPlan && todayMealPlan.length > 0 && (
-              <div className="mt-4 pt-4 border-t border-gray-200">
+              <div className="pt-4 border-t border-gray-200">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                  <span className="text-sm font-medium text-gray-700">{t('Meal Plan Available')}</span>
+                  <span className="text-sm font-medium text-gray-700">Meal Plan Available</span>
                 </div>
                 <p className="text-xs text-gray-500">
                   {todayMealPlan.length} planned meals ({Math.round(dailyTotals.mealPlan.calories)} cal)
@@ -156,7 +281,7 @@ const TodayTab = ({ key: forceRefreshKey }: { key?: number }) => {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-gray-900">
-                {t('Today\'s Food Log')} - {format(new Date(), 'MMM d, yyyy')}
+                Today's Food Log - {format(new Date(), 'MMM d, yyyy')}
               </CardTitle>
               <Button
                 onClick={() => setShowAddDialog(true)}
@@ -164,7 +289,7 @@ const TodayTab = ({ key: forceRefreshKey }: { key?: number }) => {
                 size="sm"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                {t('Add Food')}
+                Add Food
               </Button>
             </div>
           </CardHeader>
@@ -179,7 +304,7 @@ const TodayTab = ({ key: forceRefreshKey }: { key?: number }) => {
               <div className="mt-6 pt-6 border-t border-gray-200">
                 <div className="flex items-center gap-2 mb-4">
                   <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
-                  <h3 className="font-medium text-gray-900">{t('Today\'s Meal Plan')}</h3>
+                  <h3 className="font-medium text-gray-900">Today's Meal Plan</h3>
                 </div>
                 <div className="space-y-3">
                   {todayMealPlan.map((meal) => (
@@ -198,7 +323,7 @@ const TodayTab = ({ key: forceRefreshKey }: { key?: number }) => {
                   ))}
                 </div>
                 <p className="text-xs text-gray-500 mt-3 text-center">
-                  {t('Use the search tab to quickly add these planned meals to your food log')}
+                  Use the add button to quickly log these planned meals
                 </p>
               </div>
             )}
