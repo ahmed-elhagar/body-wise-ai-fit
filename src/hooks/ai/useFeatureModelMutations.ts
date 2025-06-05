@@ -7,7 +7,7 @@ import type { AIFeatureModel } from '@/types/aiModels';
 export const useFeatureModelMutations = () => {
   const queryClient = useQueryClient();
 
-  // Update feature model assignment with better error handling and immediate UI feedback
+  // Update feature model assignment with immediate UI feedback and proper cache invalidation
   const updateFeatureModelMutation = useMutation({
     mutationFn: async ({ 
       feature_name, 
@@ -78,14 +78,15 @@ export const useFeatureModelMutations = () => {
       return result;
     },
     onSuccess: (data) => {
-      // Immediately update the cache to reflect the change
+      // Immediately update the cache with the new assignment
       queryClient.setQueryData(['ai-feature-models'], (oldData: AIFeatureModel[] = []) => {
         const newData = oldData.filter(item => item.feature_name !== data.feature_name);
         return [...newData, data];
       });
       
-      // Also invalidate to ensure fresh data
+      // Force a complete refetch to ensure UI consistency
       queryClient.invalidateQueries({ queryKey: ['ai-feature-models'] });
+      queryClient.invalidateQueries({ queryKey: ['ai-models'] });
       
       const modelName = data.primary_model?.name || 'Unknown Model';
       toast.success(`Feature "${data.feature_name}" assigned to ${modelName}`);

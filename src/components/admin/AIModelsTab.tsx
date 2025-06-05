@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +30,7 @@ const AIModelsTab = () => {
   const { models, featureModels, isLoading, createModel, updateModel, deleteModel, updateFeatureModel, isUpdating } = useAIModels();
   const [selectedModel, setSelectedModel] = useState<AIModel | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0); // Force re-render when assignments change
   const [newModel, setNewModel] = useState({
     name: '',
     provider: 'openai',
@@ -41,6 +43,11 @@ const AIModelsTab = () => {
     is_active: true,
     is_default: false,
   });
+
+  // Force refresh when feature models change
+  useEffect(() => {
+    setRefreshKey(prev => prev + 1);
+  }, [featureModels]);
 
   // All AI features in the system - CLARIFIED CHAT FEATURES
   const allFeatures = [
@@ -181,7 +188,7 @@ const AIModelsTab = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" key={refreshKey}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -351,7 +358,7 @@ const AIModelsTab = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => window.location.reload()}
+                  onClick={() => setRefreshKey(prev => prev + 1)}
                   className="ml-auto"
                 >
                   <RefreshCw className="h-4 w-4 mr-1" />

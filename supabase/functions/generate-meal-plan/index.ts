@@ -6,21 +6,25 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Get AI model configuration for meal planning
+// ENHANCED AI model configuration with proper fallback chain
 async function getAIModelConfig(supabase: any) {
   try {
+    console.log('🔍 Fetching AI model configuration for meal_plan feature...');
+    
     const { data, error } = await supabase
       .from('ai_feature_models')
       .select(`
         primary_model:ai_models!primary_model_id(
           model_id,
           provider,
-          is_active
+          is_active,
+          name
         ),
         fallback_model:ai_models!fallback_model_id(
           model_id,
           provider,
-          is_active
+          is_active,
+          name
         )
       `)
       .eq('feature_name', 'meal_plan')
@@ -28,28 +32,37 @@ async function getAIModelConfig(supabase: any) {
       .single();
 
     if (error || !data?.primary_model) {
-      console.warn('No AI model configured for meal_plan, using default');
+      console.warn('⚠️ No AI model configured for meal_plan, using system defaults');
       return {
-        primary: { modelId: 'gpt-4o-mini', provider: 'openai' },
-        fallback: { modelId: 'gpt-3.5-turbo', provider: 'openai' } // Add fallback
+        primary: { modelId: 'gpt-4o-mini', provider: 'openai', name: 'GPT-4o Mini (Default)' },
+        fallback: { modelId: 'gpt-3.5-turbo', provider: 'openai', name: 'GPT-3.5 Turbo (Fallback)' }
       };
     }
 
-    return {
+    const config = {
       primary: {
         modelId: data.primary_model.model_id,
-        provider: data.primary_model.provider
+        provider: data.primary_model.provider,
+        name: data.primary_model.name
       },
       fallback: data.fallback_model ? {
         modelId: data.fallback_model.model_id,
-        provider: data.fallback_model.provider
-      } : { modelId: 'gpt-3.5-turbo', provider: 'openai' } // Always have a fallback
+        provider: data.fallback_model.provider,
+        name: data.fallback_model.name
+      } : { modelId: 'gpt-3.5-turbo', provider: 'openai', name: 'GPT-3.5 Turbo (System Fallback)' }
     };
+
+    console.log('✅ AI model configuration loaded:', {
+      primary: `${config.primary.name} (${config.primary.modelId})`,
+      fallback: `${config.fallback.name} (${config.fallback.modelId})`
+    });
+
+    return config;
   } catch (error) {
-    console.error('Error fetching AI model config:', error);
+    console.error('❌ Error fetching AI model config:', error);
     return {
-      primary: { modelId: 'gpt-4o-mini', provider: 'openai' },
-      fallback: { modelId: 'gpt-3.5-turbo', provider: 'openai' }
+      primary: { modelId: 'gpt-4o-mini', provider: 'openai', name: 'GPT-4o Mini (Error Fallback)' },
+      fallback: { modelId: 'gpt-3.5-turbo', provider: 'openai', name: 'GPT-3.5 Turbo (Error Fallback)' }
     };
   }
 }
@@ -189,21 +202,29 @@ function buildArabicPrompt(): string {
 أنشئ خطة وجبات شاملة لمدة 7 أيام تكون مناسبة ثقافياً ومتوازنة غذائياً.`;
 }
 
-// ENHANCED AI API call with longer timeout and better error handling
+// ENHANCED AI API call with better error handling and timeout management
 async function callAIAPI(prompt: string, modelConfig: any, retryCount: number = 0) {
   const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
   
   if (!openaiApiKey) {
-    throw new Error('OpenAI API key not configured');
+    throw new MealPlanError(
+      'OpenAI API key not configured in edge function secrets',
+      errorCodes.API_KEY_MISSING,
+      500,
+      false
+    );
   }
 
-  console.log(`🤖 Calling AI API with model: ${modelConfig.modelId} (attempt ${retryCount + 1})`);
+  console.log(`🤖 Calling AI API with ${modelConfig.name || modelConfig.modelId} (attempt ${retryCount + 1})`);
 
-  // Longer timeout for complex meal plan generation
-  const timeoutMs = 60000; // 60 seconds
+  // Robust timeout with proper cleanup
+  const timeoutMs = 45000; // 45 seconds - balanced timeout
   
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  const timeoutId = setTimeout(() => {
+    console.log('⏰ AI API call timeout reached');
+    controller.abort();
+  }, timeoutMs);
 
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -217,12 +238,13 @@ async function callAIAPI(prompt: string, modelConfig: any, retryCount: number = 
         messages: [
           { 
             role: 'system', 
-            content: 'You are a nutritionist. Return ONLY valid JSON. No markdown, no explanations, just pure JSON.' 
+            content: 'You are a professional nutritionist AI. Return ONLY valid JSON format without any markdown formatting, explanations, or additional text. Ensure the JSON is complete and properly formatted.' 
           },
           { role: 'user', content: prompt }
         ],
         temperature: 0.7,
-        max_tokens: 4000, // Increased for complete responses
+        max_tokens: 4000,
+        timeout: 40000 // Internal timeout
       }),
       signal: controller.signal
     });
@@ -231,24 +253,54 @@ async function callAIAPI(prompt: string, modelConfig: any, retryCount: number = 
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('❌ AI API error response:', response.status, errorText);
-      throw new Error(`AI API error: ${response.status} - ${errorText}`);
+      console.error(`❌ AI API error response (${response.status}):`, errorText);
+      
+      if (response.status === 429) {
+        throw new MealPlanError(
+          'AI service rate limit exceeded',
+          errorCodes.RATE_LIMIT_EXCEEDED,
+          429,
+          true
+        );
+      }
+      
+      throw new MealPlanError(
+        `AI API error: ${response.status} - ${errorText}`,
+        errorCodes.AI_API_ERROR,
+        500,
+        true
+      );
     }
 
     const data = await response.json();
+    const content = data.choices?.[0]?.message?.content;
+    
+    if (!content) {
+      throw new MealPlanError(
+        'Empty response from AI API',
+        errorCodes.AI_RESPONSE_INVALID,
+        500,
+        true
+      );
+    }
+
     console.log('✅ AI API response received successfully');
-    return data.choices[0].message.content;
+    return content;
+    
   } catch (error) {
     clearTimeout(timeoutId);
-    console.error(`❌ AI API call failed (attempt ${retryCount + 1}):`, error.message);
     
-    // Only retry once on timeout/network errors
-    if (retryCount < 1 && (error.name === 'AbortError' || error.message.includes('network'))) {
-      console.log('🔄 Retrying AI API call...');
-      await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 seconds
-      return await callAIAPI(prompt, modelConfig, retryCount + 1);
+    if (error.name === 'AbortError') {
+      console.error(`⏰ AI API call timed out (attempt ${retryCount + 1})`);
+      throw new MealPlanError(
+        `AI API timeout after ${timeoutMs/1000} seconds`,
+        errorCodes.AI_API_TIMEOUT,
+        408,
+        true
+      );
     }
     
+    console.error(`❌ AI API call failed (attempt ${retryCount + 1}):`, error.message);
     throw error;
   }
 }
@@ -339,7 +391,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    console.log('=== AI MEAL PLAN GENERATION - ENHANCED DEBUGGING ===');
+    console.log('=== AI MEAL PLAN GENERATION - ENHANCED WITH MODEL CONFIGURATION ===');
     
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -358,9 +410,12 @@ Deno.serve(async (req) => {
       includeSnacks: preferences.includeSnacks
     });
 
-    // Get AI model configuration
+    // ENHANCED: Get AI model configuration from database
     const modelConfig = await getAIModelConfig(supabase);
-    console.log('🤖 Using AI model:', modelConfig.primary, 'with fallback:', modelConfig.fallback);
+    console.log('🤖 Using configured AI models:', {
+      primary: `${modelConfig.primary.name} (${modelConfig.primary.modelId})`,
+      fallback: `${modelConfig.fallback.name} (${modelConfig.fallback.modelId})`
+    });
 
     // Calculate daily calories based on user profile
     const dailyCalories = calculateDailyCalories(userProfile, preferences);
@@ -398,88 +453,92 @@ Deno.serve(async (req) => {
         .eq('weekly_plan_id', existingPlan.id);
     }
 
-    // Generate SIMPLIFIED AI meal plan prompt
+    // Generate AI meal plan prompt
     const prompt = generateMealPlanPrompt(userProfile, preferences, dailyCalories, preferences.includeSnacks);
-    console.log('📝 Generated simplified prompt for AI');
+    console.log('📝 Generated prompt for AI');
 
-    // Call AI API with primary model and enhanced error handling
+    // ENHANCED: Call AI API with configured models and robust fallback
     let aiResponse;
+    let usedModel;
+    
     try {
+      console.log(`🚀 Attempting primary model: ${modelConfig.primary.name}`);
       aiResponse = await callAIAPI(prompt, modelConfig.primary);
+      usedModel = modelConfig.primary;
       console.log('✅ AI generation successful with primary model');
-    } catch (error) {
-      console.error('❌ Primary model failed:', error.message);
+    } catch (primaryError) {
+      console.error('❌ Primary model failed:', primaryError.message);
       
-      if (modelConfig.fallback) {
-        console.log('🔄 Trying fallback model:', modelConfig.fallback);
+      try {
+        console.log(`🔄 Trying fallback model: ${modelConfig.fallback.name}`);
+        aiResponse = await callAIAPI(prompt, modelConfig.fallback);
+        usedModel = modelConfig.fallback;
+        console.log('✅ AI generation successful with fallback model');
+      } catch (fallbackError) {
+        console.error('❌ Fallback model also failed:', fallbackError.message);
+        
+        // Final system fallback
+        const systemFallback = { modelId: 'gpt-3.5-turbo', provider: 'openai', name: 'GPT-3.5 Turbo (Final Fallback)' };
         try {
-          aiResponse = await callAIAPI(prompt, modelConfig.fallback);
-          console.log('✅ AI generation successful with fallback model');
-        } catch (fallbackError) {
-          console.error('❌ Fallback model also failed:', fallbackError.message);
+          console.log('🆘 Trying final system fallback model');
+          aiResponse = await callAIAPI(prompt, systemFallback);
+          usedModel = systemFallback;
+          console.log('✅ AI generation successful with system fallback');
+        } catch (finalError) {
+          console.error('❌ All models failed:', finalError.message);
           throw new MealPlanError(
-            'AI meal plan generation failed with both primary and fallback models',
+            'AI meal plan generation failed with all available models',
             errorCodes.AI_GENERATION_FAILED,
             500,
             true
           );
         }
-      } else {
-        throw new MealPlanError(
-          'AI meal plan generation failed and no fallback model configured',
-          errorCodes.AI_GENERATION_FAILED,
-          500,
-          true
-        );
       }
     }
 
     // ENHANCED AI response parsing with better error handling
     let mealPlanData;
     try {
-      console.log('🔍 Raw AI response length:', aiResponse?.length || 0);
-      console.log('🔍 First 200 chars:', aiResponse?.substring(0, 200));
-      console.log('🔍 Last 200 chars:', aiResponse?.substring(aiResponse.length - 200));
+      console.log('🔍 Processing AI response...');
+      console.log('📏 Raw response length:', aiResponse?.length || 0);
       
-      // Clean the response more aggressively
+      // Aggressive cleaning for better JSON parsing
       let cleanedResponse = aiResponse.trim();
       
-      // Remove any markdown code blocks
+      // Remove markdown code blocks
       cleanedResponse = cleanedResponse.replace(/```json\n?/g, '').replace(/```\n?/g, '');
       
-      // Remove any text before the first {
+      // Find JSON boundaries
       const firstBraceIndex = cleanedResponse.indexOf('{');
-      if (firstBraceIndex > 0) {
-        cleanedResponse = cleanedResponse.substring(firstBraceIndex);
-      }
-      
-      // Remove any text after the last }
       const lastBraceIndex = cleanedResponse.lastIndexOf('}');
-      if (lastBraceIndex > 0 && lastBraceIndex < cleanedResponse.length - 1) {
-        cleanedResponse = cleanedResponse.substring(0, lastBraceIndex + 1);
+      
+      if (firstBraceIndex === -1 || lastBraceIndex === -1) {
+        throw new Error('No valid JSON structure found in response');
       }
       
-      console.log('🧹 Cleaned response length:', cleanedResponse.length);
+      cleanedResponse = cleanedResponse.substring(firstBraceIndex, lastBraceIndex + 1);
+      
+      console.log('🧹 Cleaned response ready for parsing');
       
       mealPlanData = JSON.parse(cleanedResponse);
-      console.log('✅ AI response parsed successfully');
       
-      // Validate that we have meals
+      // Validate response structure
       if (!mealPlanData.meals || !Array.isArray(mealPlanData.meals) || mealPlanData.meals.length === 0) {
-        throw new Error('No meals found in AI response');
+        throw new Error('Invalid meal plan structure: no meals array found');
       }
       
+      console.log('✅ AI response parsed successfully');
       console.log('📊 Generated meals count:', mealPlanData.meals.length);
       
-      // Validate meal structure
+      // Validate meal count
       const expectedMealCount = (preferences.includeSnacks ? 5 : 3) * 7;
-      if (mealPlanData.meals.length < expectedMealCount * 0.8) { // Allow 20% tolerance
+      if (mealPlanData.meals.length < expectedMealCount * 0.7) { // Allow 30% tolerance
         console.warn(`⚠️ Expected ~${expectedMealCount} meals, got ${mealPlanData.meals.length}`);
       }
       
     } catch (parseError) {
-      console.error('❌ Failed to parse AI response:', parseError);
-      console.error('❌ Cleaned response sample:', cleanedResponse?.substring(0, 1000));
+      console.error('❌ Failed to parse AI response:', parseError.message);
+      console.error('❌ Response sample:', cleanedResponse?.substring(0, 1000));
       throw new MealPlanError(
         'Invalid AI response format - JSON parsing failed',
         errorCodes.AI_RESPONSE_INVALID,
@@ -577,7 +636,8 @@ Deno.serve(async (req) => {
         weekOffset: weekOffset,
         userId: userProfile.id,
         weekStartDate: weekStartDateStr,
-        aiModel: modelConfig.primary.modelId,
+        aiModel: usedModel.name || usedModel.modelId,
+        modelProvider: usedModel.provider,
         dailyCalories: dailyCalories,
         nutritionalTotals
       }),
