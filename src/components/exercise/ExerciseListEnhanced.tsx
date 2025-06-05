@@ -2,7 +2,8 @@
 import { Loader2 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Exercise } from "@/types/exercise";
-import { ExerciseProgressCard } from "./ExerciseProgressCard";
+import { ExerciseCard } from "./ExerciseCard";
+import { ActiveExerciseTracker } from "./ActiveExerciseTracker";
 import { WorkoutSessionManager } from "./WorkoutSessionManager";
 import { RestDayCard } from "./RestDayCard";
 import { ExerciseErrorHandler } from "./ExerciseErrorHandler";
@@ -50,10 +51,19 @@ export const ExerciseListEnhanced = ({
     return { completedCount: completed, totalCount: total };
   }, [exercises]);
 
+  const activeExercise = useMemo(() => {
+    return exercises.find(ex => ex.id === activeExerciseId);
+  }, [exercises, activeExerciseId]);
+
   const handleExerciseComplete = useCallback(async (exerciseId: string) => {
     console.log('🎯 ExerciseListEnhanced - Exercise completed:', exerciseId);
     await onExerciseComplete(exerciseId);
-  }, [onExerciseComplete]);
+    
+    // If this was the active exercise, deactivate it
+    if (activeExerciseId === exerciseId) {
+      setActiveExerciseId(null);
+    }
+  }, [onExerciseComplete, activeExerciseId]);
 
   const handleExerciseProgressUpdate = useCallback(async (
     exerciseId: string, 
@@ -66,8 +76,13 @@ export const ExerciseListEnhanced = ({
     await onExerciseProgressUpdate(exerciseId, sets, reps, notes, weight);
   }, [onExerciseProgressUpdate]);
 
+  const handleSetActive = useCallback((exerciseId: string) => {
+    setActiveExerciseId(current => current === exerciseId ? null : exerciseId);
+  }, []);
+
   const handleSessionComplete = useCallback(() => {
     console.log('🏆 Workout session completed!');
+    setActiveExerciseId(null);
   }, []);
 
   const handleRetry = useCallback(() => {
@@ -180,24 +195,35 @@ export const ExerciseListEnhanced = ({
         <div className="space-y-4">
           <WorkoutSessionManager
             exercises={exercises}
-            onExerciseComplete={() => {}}
-            onExerciseProgressUpdate={() => {}}
+            onExerciseComplete={handleExerciseComplete}
+            onExerciseProgressUpdate={handleExerciseProgressUpdate}
             onSessionComplete={handleSessionComplete}
           />
           
+          {/* Active Exercise Tracker - Show at top when active */}
+          {activeExercise && (
+            <ActiveExerciseTracker
+              exercise={activeExercise}
+              onComplete={handleExerciseComplete}
+              onProgressUpdate={handleExerciseProgressUpdate}
+              onDeactivate={() => setActiveExerciseId(null)}
+            />
+          )}
+          
+          {/* Exercise Cards */}
           <div className="space-y-4">
-            {exercises.map((exercise) => (
-              <ExerciseProgressCard
-                key={exercise.id}
-                exercise={exercise}
-                onComplete={handleExerciseComplete}
-                onProgressUpdate={handleExerciseProgressUpdate}
-                isActive={activeExerciseId === exercise.id}
-                onSetActive={() => setActiveExerciseId(
-                  activeExerciseId === exercise.id ? null : exercise.id
-                )}
-              />
-            ))}
+            {exercises
+              .filter(exercise => exercise.id !== activeExerciseId) // Don't show active exercise in list
+              .map((exercise) => (
+                <ExerciseCard
+                  key={exercise.id}
+                  exercise={exercise}
+                  onComplete={handleExerciseComplete}
+                  onProgressUpdate={handleExerciseProgressUpdate}
+                  isActive={false}
+                  onSetActive={() => handleSetActive(exercise.id)}
+                />
+              ))}
           </div>
         </div>
       )}

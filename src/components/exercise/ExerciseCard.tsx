@@ -1,100 +1,151 @@
 
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Clock, Target, Youtube, Play, CheckCircle, Check } from "lucide-react";
+import { useState } from 'react';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { 
+  Play, 
+  Pause, 
+  Target,
+  CheckCircle,
+  Timer
+} from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { Exercise } from '@/types/exercise';
+import { ExerciseActionsMenu } from './ExerciseActionsMenu';
 
 interface ExerciseCardProps {
-  exercise: any;
-  index: number;
-  onComplete: () => void;
+  exercise: Exercise;
+  onComplete: (exerciseId: string) => Promise<void>;
+  onProgressUpdate: (exerciseId: string, sets: number, reps: string, notes?: string, weight?: number) => Promise<void>;
+  isActive?: boolean;
+  onSetActive?: () => void;
 }
 
-export const ExerciseCard = ({ exercise, index, onComplete }: ExerciseCardProps) => {
+export const ExerciseCard = ({ 
+  exercise, 
+  onComplete, 
+  onProgressUpdate, 
+  isActive = false,
+  onSetActive 
+}: ExerciseCardProps) => {
+  const { t } = useLanguage();
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const totalSets = exercise.sets || 3;
+  const completedSets = exercise.actual_sets || 0;
+  const progressPercentage = (completedSets / totalSets) * 100;
+
+  const handleQuickComplete = async () => {
+    if (isUpdating || exercise.completed) return;
+    
+    try {
+      setIsUpdating(true);
+      await onComplete(exercise.id);
+    } catch (error) {
+      console.error('❌ Error completing exercise:', error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   return (
-    <Card 
-      className={`p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 ${
-        exercise.completed ? 'bg-green-50/80 border-green-200' : ''
-      }`}
-    >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4 flex-1">
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-            exercise.completed 
-              ? 'bg-green-500 text-white' 
-              : 'bg-gray-200 text-gray-600'
-          }`}>
-            {exercise.completed ? <CheckCircle className="w-5 h-5" /> : exercise.order_number || index + 1}
+    <Card className={`p-4 transition-all duration-200 ${
+      isActive ? 'ring-2 ring-blue-500 bg-blue-50' : ''
+    } ${exercise.completed ? 'bg-green-50 border-green-200' : ''}`}>
+      
+      {/* Exercise Header */}
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="font-semibold text-gray-900">{exercise.name}</h3>
+            {exercise.completed && (
+              <Badge className="bg-green-600">
+                <CheckCircle className="w-3 h-3 mr-1" />
+                {t('Completed')}
+              </Badge>
+            )}
           </div>
-          
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-800 mb-1">
-              {exercise.name}
-            </h3>
-            
-            <div className="flex items-center space-x-4 text-sm text-gray-600 mb-2">
-              <span className="font-medium">{exercise.sets} sets × {exercise.reps} reps</span>
-              {exercise.rest_seconds && (
-                <span className="flex items-center">
-                  <Clock className="w-3 h-3 mr-1" />
-                  {exercise.rest_seconds}s rest
-                </span>
-              )}
-              <span className="flex items-center">
-                <Target className="w-3 h-3 mr-1" />
-                {exercise.muscle_groups?.join(', ') || 'Full Body'}
+          <div className="flex items-center gap-4 text-sm text-gray-600">
+            <span className="flex items-center gap-1">
+              <Target className="w-4 h-4" />
+              {totalSets} {t('sets')} × {exercise.reps} {t('reps')}
+            </span>
+            {exercise.equipment && (
+              <span className="text-blue-600">
+                {exercise.equipment}
               </span>
-            </div>
-            
-            <div className="flex items-center space-x-2 mb-2">
-              <Badge variant="outline" className="text-xs">
-                {exercise.equipment || 'Bodyweight'}
-              </Badge>
-              <Badge variant="outline" className="text-xs">
-                {exercise.difficulty || 'Beginner'}
-              </Badge>
-            </div>
-            
-            {exercise.instructions && (
-              <p className="text-sm text-gray-600 mt-2 line-clamp-2">{exercise.instructions}</p>
             )}
           </div>
         </div>
         
-        <div className="flex flex-col space-y-2 ml-4">
-          {exercise.youtube_search_term && (
-            <Button
-              size="sm"
-              variant="outline"
-              className="bg-white/80 whitespace-nowrap"
-              onClick={() => window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(exercise.youtube_search_term)}`, '_blank')}
-            >
-              <Youtube className="w-4 h-4 mr-1" />
-              Tutorial
-            </Button>
-          )}
+        <div className="flex items-center gap-2">
+          <ExerciseActionsMenu
+            exercise={exercise}
+            onShowVideo={() => {}}
+            onShowExchange={() => {}}
+          />
           
-          {exercise.completed ? (
+          {!exercise.completed && (
             <Button
+              variant={isActive ? "default" : "outline"}
               size="sm"
-              className="bg-green-500 hover:bg-green-600 text-white whitespace-nowrap"
-              disabled
+              onClick={onSetActive}
+              disabled={isUpdating}
             >
-              <Check className="w-4 h-4 mr-1" />
-              Completed
-            </Button>
-          ) : (
-            <Button
-              size="sm"
-              className="bg-fitness-gradient hover:opacity-90 text-white whitespace-nowrap"
-              onClick={onComplete}
-            >
-              <Play className="w-4 h-4 mr-1" />
-              Complete
+              {isActive ? (
+                <>
+                  <Pause className="w-4 h-4 mr-1" />
+                  {t('Active')}
+                </>
+              ) : (
+                <>
+                  <Play className="w-4 h-4 mr-1" />
+                  {t('Start')}
+                </>
+              )}
             </Button>
           )}
         </div>
       </div>
+
+      {/* Progress Bar */}
+      <div className="mb-4">
+        <div className="flex items-center justify-between text-sm mb-1">
+          <span className="text-gray-600">{t('Progress')}</span>
+          <span className="font-medium">{completedSets}/{totalSets} {t('sets')}</span>
+        </div>
+        <Progress value={progressPercentage} className="h-2" />
+      </div>
+
+      {/* Quick Complete Button - Only show for non-active, non-completed exercises */}
+      {!isActive && !exercise.completed && (
+        <Button
+          onClick={handleQuickComplete}
+          disabled={isUpdating}
+          className="w-full bg-green-600 hover:bg-green-700 text-white"
+        >
+          {isUpdating ? (
+            <>
+              <Timer className="w-4 h-4 mr-2 animate-spin" />
+              {t('Updating...')}
+            </>
+          ) : (
+            <>
+              <CheckCircle className="w-4 h-4 mr-2" />
+              {t('Mark as Complete')}
+            </>
+          )}
+        </Button>
+      )}
+
+      {/* Exercise Instructions */}
+      {exercise.instructions && (
+        <div className="text-sm text-gray-600 mt-3 p-2 bg-gray-50 rounded">
+          <strong>{t('Instructions')}:</strong> {exercise.instructions}
+        </div>
+      )}
     </Card>
   );
 };
