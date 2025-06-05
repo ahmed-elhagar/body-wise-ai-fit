@@ -17,6 +17,7 @@ import ChatSearchBar from "@/components/chat/ChatSearchBar";
 import ChatHeader from "./chat/ChatHeader";
 import MessagesList from "./chat/MessagesList";
 import ChatInput from "./chat/ChatInput";
+import type { CoachChatMessage } from "./types/chatTypes";
 
 interface TraineeCoachChatProps {
   coachId: string;
@@ -28,6 +29,8 @@ const TraineeCoachChat = ({ coachId, coachName, onBack }: TraineeCoachChatProps)
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const [message, setMessage] = useState('');
+  const [replyingTo, setReplyingTo] = useState<CoachChatMessage | null>(null);
+  const [editingMessage, setEditingMessage] = useState<CoachChatMessage | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   
@@ -70,10 +73,6 @@ const TraineeCoachChat = ({ coachId, coachName, onBack }: TraineeCoachChatProps)
   } = useTypingIndicator(coachId, traineeId);
   
   const {
-    replyingTo,
-    setReplyingTo,
-    editingMessage,
-    setEditingMessage,
     editMessage,
     deleteMessage,
     isEditing
@@ -106,7 +105,11 @@ const TraineeCoachChat = ({ coachId, coachName, onBack }: TraineeCoachChatProps)
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSendMessage();
+      if (editingMessage) {
+        handleSaveEdit();
+      } else {
+        handleSendMessage();
+      }
     }
   };
 
@@ -121,7 +124,7 @@ const TraineeCoachChat = ({ coachId, coachName, onBack }: TraineeCoachChatProps)
     }
   };
 
-  const handleEditMessage = (msg: any) => {
+  const handleEditMessage = (msg: CoachChatMessage) => {
     setEditingMessage(msg);
     setMessage(msg.message);
     inputRef.current?.focus();
@@ -140,9 +143,18 @@ const TraineeCoachChat = ({ coachId, coachName, onBack }: TraineeCoachChatProps)
         messageId: editingMessage.id,
         newContent: message.trim()
       });
+      setEditingMessage(null);
       setMessage('');
     } catch (error) {
       console.error('Failed to edit message:', error);
+    }
+  };
+
+  const handleDeleteMessage = async (messageId: string) => {
+    try {
+      await deleteMessage(messageId);
+    } catch (error) {
+      console.error('Failed to delete message:', error);
     }
   };
 
@@ -212,7 +224,7 @@ const TraineeCoachChat = ({ coachId, coachName, onBack }: TraineeCoachChatProps)
           replyingTo={replyingTo}
           onReply={setReplyingTo}
           onEdit={handleEditMessage}
-          onDelete={deleteMessage}
+          onDelete={handleDeleteMessage}
           messagesEndRef={messagesEndRef}
         />
         
