@@ -26,7 +26,23 @@ export const useCentralizedCredits = () => {
     }
 
     try {
-      // Check if user is Pro
+      // Get user profile with role and credits
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('ai_generations_remaining, role')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError) {
+        console.error('Error fetching profile:', profileError);
+        setCreditInfo({ remaining: 0, isPro: false, isLoading: false });
+        return;
+      }
+
+      const userRole = profile?.role;
+      const isAdmin = userRole === 'admin';
+
+      // Check for active subscription
       const { data: subscription } = await supabase
         .from('subscriptions')
         .select('status, current_period_end')
@@ -35,20 +51,8 @@ export const useCentralizedCredits = () => {
         .gt('current_period_end', new Date().toISOString())
         .maybeSingle();
 
-      const isPro = !!subscription;
-
-      // Get current remaining credits
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('ai_generations_remaining')
-        .eq('id', user.id)
-        .single();
-
-      if (error) {
-        console.error('Error fetching credits:', error);
-        setCreditInfo({ remaining: 0, isPro: false, isLoading: false });
-        return;
-      }
+      const isProBySubscription = !!subscription;
+      const isPro = isAdmin || isProBySubscription;
 
       const remaining = isPro ? -1 : (profile?.ai_generations_remaining || 0);
 
@@ -58,14 +62,20 @@ export const useCentralizedCredits = () => {
         isLoading: false
       });
 
-      console.log('📊 Credits fetched:', { remaining, isPro, userId: user.id });
+      console.log('📊 Credits fetched:', { 
+        remaining, 
+        isPro, 
+        isAdmin,
+        isProBySubscription,
+        userId: user.id 
+      });
     } catch (error) {
       console.error('Error in fetchCredits:', error);
       setCreditInfo({ remaining: 0, isPro: false, isLoading: false });
     }
   }, [user?.id]);
 
-  // Check and use credit - this will be called before any AI generation
+  // Check and use credit - unified approach
   const checkAndUseCredit = useCallback(async (generationType: string): Promise<{ success: boolean; logId?: string }> => {
     if (!user?.id) {
       console.error('❌ No user ID for credit check');
@@ -75,7 +85,6 @@ export const useCentralizedCredits = () => {
     try {
       console.log(`🔍 Checking credits for ${generationType}...`);
       
-      // Call the centralized edge function for credit checking and usage
       const { data, error } = await supabase.functions.invoke('check_and_use_ai_generation', {
         body: {
           user_id: user.id,
@@ -86,14 +95,14 @@ export const useCentralizedCredits = () => {
 
       if (error) {
         console.error('❌ Credit check failed:', error);
-        toast.error('Failed to check AI credits');
+        toast.error('Failed to check AI credits. Please try again.');
         return { success: false };
       }
 
       if (!data?.success) {
-        console.log('🚫 No credits remaining');
-        toast.error('No AI credits remaining. Please upgrade your plan or wait for credits to reset.');
-        await fetchCredits(); // Refresh credits
+        console.log('🚫 Credit check denied:', data?.error);
+        toast.error(data?.error || 'No AI credits remaining. Please upgrade your plan.');
+        await fetchCredits(); // Refresh credits display
         return { success: false };
       }
 
@@ -102,7 +111,7 @@ export const useCentralizedCredits = () => {
       // Update local credit state immediately
       setCreditInfo(prev => ({
         ...prev,
-        remaining: prev.isPro ? -1 : Math.max(0, prev.remaining - 1)
+        remaining: data.isPro ? -1 : Math.max(0, (data.remaining || 0))
       }));
 
       return { success: true, logId: data.log_id };
@@ -113,7 +122,7 @@ export const useCentralizedCredits = () => {
     }
   }, [user?.id, fetchCredits]);
 
-  // Complete generation - to be called after successful AI generation
+  // Complete generation
   const completeGeneration = useCallback(async (logId: string, success: boolean, responseData?: any) => {
     if (!logId) return;
 
