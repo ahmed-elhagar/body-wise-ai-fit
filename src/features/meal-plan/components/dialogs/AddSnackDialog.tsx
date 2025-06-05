@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -12,7 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
-import EnhancedLoadingIndicator from '@/components/ui/enhanced-loading-indicator';
+import SimpleLoadingIndicator from '@/components/ui/simple-loading-indicator';
 import type { AddSnackDialogProps } from '../../types';
 
 export const AddSnackDialog = ({
@@ -177,12 +176,10 @@ export const AddSnackDialog = ({
           </Card>
 
           {isGenerating ? (
-            <EnhancedLoadingIndicator
-              status="loading"
-              type="recipe"
+            <SimpleLoadingIndicator
               message="Generating AI Snack"
-              variant="card"
-              size="sm"
+              description="Creating the perfect snack for your remaining calories"
+              size="md"
             />
           ) : (
             <Tabs defaultValue="ai" className="w-full">

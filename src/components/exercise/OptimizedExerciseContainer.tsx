@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card } from "@/components/ui/card";
 import { useOptimizedExercise } from "@/hooks/useOptimizedExercise";
@@ -7,6 +6,7 @@ import OptimizedExerciseWeekView from "./OptimizedExerciseWeekView";
 import OptimizedExerciseDayView from "./OptimizedExerciseDayView";
 import OptimizedExerciseProgress from "./OptimizedExerciseProgress";
 import EnhancedLoadingIndicator from "@/components/ui/enhanced-loading-indicator";
+import SimpleLoadingIndicator from "@/components/ui/simple-loading-indicator";
 
 const OptimizedExerciseContainer = React.memo(() => {
   const {
@@ -25,13 +25,10 @@ const OptimizedExerciseContainer = React.memo(() => {
   if (loadingStates.isProgramLoading) {
     return (
       <Card className="p-8">
-        <EnhancedLoadingIndicator
-          status="loading"
-          type="exercise"
+        <SimpleLoadingIndicator
           message="Loading exercise program..."
           description="Preparing your personalized workouts"
           size="lg"
-          variant="card"
         />
       </Card>
     );
