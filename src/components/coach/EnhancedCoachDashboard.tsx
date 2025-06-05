@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -22,10 +21,17 @@ import { TraineesTab } from "./TraineesTab";
 import CoachTasksPanel from "./CoachTasksPanel";
 import { CoachMessagesTab } from "./CoachMessagesTab";
 import { CoachAnalyticsTab } from "./CoachAnalyticsTab";
+import { TraineeProgressOverview } from "./overview/TraineeProgressOverview";
+import { QuickActions } from "./overview/QuickActions";
+import { CompactTasksPanel } from "./overview/CompactTasksPanel";
+import { AssignTraineeDialog } from "./AssignTraineeDialog";
+import { CreateTaskDialog } from "./CreateTaskDialog";
 
 const EnhancedCoachDashboard = () => {
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState("overview");
+  const [showAssignDialog, setShowAssignDialog] = useState(false);
+  const [showCreateTaskDialog, setShowCreateTaskDialog] = useState(false);
   
   const { 
     trainees, 
@@ -193,79 +199,27 @@ const EnhancedCoachDashboard = () => {
 
         <TabsContent value="overview" className="mt-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Quick Overview Cards */}
-            <div className="lg:col-span-2 space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Target className="w-5 h-5" />
-                    {t('Trainee Progress Overview')}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {totalTrainees === 0 ? (
-                    <div className="text-center py-8">
-                      <Users className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                      <p className="text-gray-500">{t('No trainees assigned yet')}</p>
-                      <p className="text-sm text-gray-400 mt-2">
-                        {t('Start by adding your first trainee to begin coaching')}
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-3 gap-4 text-center">
-                        <div className="p-4 bg-green-50 rounded-lg">
-                          <div className="text-2xl font-bold text-green-600">
-                            {Math.round((completedProfiles / totalTrainees) * 100)}%
-                          </div>
-                          <div className="text-sm text-gray-600">Profile Completion</div>
-                        </div>
-                        <div className="p-4 bg-blue-50 rounded-lg">
-                          <div className="text-2xl font-bold text-blue-600">
-                            {Math.round((activeTrainees / totalTrainees) * 100)}%
-                          </div>
-                          <div className="text-sm text-gray-600">Active Users</div>
-                        </div>
-                        <div className="p-4 bg-purple-50 rounded-lg">
-                          <div className="text-2xl font-bold text-purple-600">
-                            {totalTrainees}
-                          </div>
-                          <div className="text-sm text-gray-600">Total Trainees</div>
-                        </div>
-                      </div>
-                      
-                      {/* Recent Trainee Activity */}
-                      <div className="space-y-2">
-                        <h4 className="font-medium text-gray-900">{t('Recent Activity')}</h4>
-                        {trainees?.slice(0, 3).map((trainee) => (
-                          <div key={trainee.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <div>
-                              <div className="font-medium text-gray-900">
-                                {trainee.trainee_profile?.first_name} {trainee.trainee_profile?.last_name}
-                              </div>
-                              <div className="text-sm text-gray-500">
-                                Profile: {trainee.trainee_profile?.profile_completion_score || 0}% complete
-                              </div>
-                            </div>
-                            <Badge 
-                              variant={(trainee.trainee_profile?.ai_generations_remaining || 0) > 0 ? "default" : "secondary"}
-                            >
-                              {(trainee.trainee_profile?.ai_generations_remaining || 0) > 0 ? 'Active' : 'Inactive'}
-                            </Badge>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+            {/* Main Content - Trainee Progress */}
+            <div className="lg:col-span-2">
+              <TraineeProgressOverview 
+                trainees={trainees || []}
+                onViewAllTrainees={() => setActiveTab('trainees')}
+              />
             </div>
 
-            {/* Tasks Summary */}
+            {/* Sidebar - Quick Actions & Tasks */}
             <div className="space-y-6">
-              <CoachTasksPanel 
-                trainees={trainees || []} 
-                className="h-fit"
+              <QuickActions 
+                pendingTasks={pendingTasks}
+                unreadMessages={totalUnreadMessages}
+                onAddTrainee={() => setShowAssignDialog(true)}
+                onViewTasks={() => setActiveTab('tasks')}
+                onViewMessages={() => setActiveTab('messages')}
+              />
+              
+              <CompactTasksPanel 
+                onViewAllTasks={() => setActiveTab('tasks')}
+                onCreateTask={() => setShowCreateTaskDialog(true)}
               />
             </div>
           </div>
@@ -289,6 +243,18 @@ const EnhancedCoachDashboard = () => {
           <CoachMessagesTab trainees={trainees || []} />
         </TabsContent>
       </Tabs>
+
+      {/* Dialogs */}
+      <AssignTraineeDialog 
+        open={showAssignDialog}
+        onOpenChange={setShowAssignDialog}
+      />
+      
+      <CreateTaskDialog 
+        open={showCreateTaskDialog}
+        onOpenChange={setShowCreateTaskDialog}
+        trainees={trainees || []}
+      />
     </div>
   );
 };
