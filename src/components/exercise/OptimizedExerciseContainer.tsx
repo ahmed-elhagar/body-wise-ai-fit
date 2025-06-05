@@ -6,7 +6,7 @@ import OptimizedExerciseHeader from "./OptimizedExerciseHeader";
 import OptimizedExerciseWeekView from "./OptimizedExerciseWeekView";
 import OptimizedExerciseDayView from "./OptimizedExerciseDayView";
 import OptimizedExerciseProgress from "./OptimizedExerciseProgress";
-import SimpleLoadingIndicator from "@/components/ui/simple-loading-indicator";
+import ExerciseAILoadingDialog from "./ExerciseAILoadingDialog";
 
 const OptimizedExerciseContainer = React.memo(() => {
   const {
@@ -24,13 +24,18 @@ const OptimizedExerciseContainer = React.memo(() => {
 
   if (loadingStates.isProgramLoading) {
     return (
-      <Card className="p-8">
-        <SimpleLoadingIndicator
-          message="Loading exercise program..."
-          description="Preparing your personalized workouts"
-          size="lg"
+      <>
+        <Card className="p-8">
+          <div className="text-center">
+            <h3 className="text-lg font-semibold mb-2">Loading Exercise Program</h3>
+            <p className="text-sm text-gray-600">Preparing your personalized workouts...</p>
+          </div>
+        </Card>
+        <ExerciseAILoadingDialog 
+          isGenerating={loadingStates.isProgramLoading}
+          type="program"
         />
-      </Card>
+      </>
     );
   }
 
@@ -57,39 +62,47 @@ const OptimizedExerciseContainer = React.memo(() => {
   }
 
   return (
-    <div className="space-y-6">
-      <OptimizedExerciseHeader 
-        program={weeklyProgram}
-        progressMetrics={progressMetrics}
-        onGenerateNew={optimizedActions.startWorkout}
-      />
-      
-      <OptimizedExerciseProgress 
-        progressMetrics={progressMetrics}
-        weekStructure={weekStructure}
-      />
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-1">
-          <OptimizedExerciseWeekView
-            weekStructure={weekStructure}
-            selectedDay={selectedDay}
-            onDaySelect={setSelectedDay}
-          />
-        </div>
+    <>
+      <div className="space-y-6">
+        <OptimizedExerciseHeader 
+          program={weeklyProgram}
+          progressMetrics={progressMetrics}
+          onGenerateNew={optimizedActions.startWorkout}
+        />
         
-        <div className="lg:col-span-2">
-          <OptimizedExerciseDayView
-            currentWorkout={currentWorkout}
-            exercises={currentDayExercises}
-            selectedDay={selectedDay}
-            onStartWorkout={optimizedActions.startWorkout}
-            onCompleteWorkout={optimizedActions.completeWorkout}
-            isLoading={loadingStates.isUpdating}
-          />
+        <OptimizedExerciseProgress 
+          progressMetrics={progressMetrics}
+          weekStructure={weekStructure}
+        />
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-1">
+            <OptimizedExerciseWeekView
+              weekStructure={weekStructure}
+              selectedDay={selectedDay}
+              onDaySelect={setSelectedDay}
+            />
+          </div>
+          
+          <div className="lg:col-span-2">
+            <OptimizedExerciseDayView
+              currentWorkout={currentWorkout}
+              exercises={currentDayExercises}
+              selectedDay={selectedDay}
+              onStartWorkout={optimizedActions.startWorkout}
+              onCompleteWorkout={optimizedActions.completeWorkout}
+              isLoading={loadingStates.isUpdating}
+            />
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* AI Loading Dialog for exercise exchanges */}
+      <ExerciseAILoadingDialog 
+        isGenerating={loadingStates.isUpdating}
+        type="exchange"
+      />
+    </>
   );
 });
 
