@@ -1,13 +1,12 @@
-
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Calendar, ChevronLeft, ChevronRight, AlertCircle, TrendingUp, Activity, Search, Filter } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, AlertCircle, Search, Filter } from "lucide-react";
 import { useFoodConsumption } from "@/hooks/useFoodConsumption";
-import { format, startOfMonth, endOfMonth, addMonths, subMonths, isValid, parseISO, isSameDay } from "date-fns";
+import { format, startOfMonth, endOfMonth, addMonths, subMonths, parseISO, isSameDay } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import NutritionHeatMap from "./components/NutritionHeatMap";
@@ -144,48 +143,41 @@ const HistoryTab = () => {
 
   return (
     <div className="space-y-6">
-      {/* Enhanced Month Navigation */}
-      <Card className="p-4">
-        <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigateMonth('prev')}
-            className={`hover:bg-gray-50 ${isRTL ? 'rotate-180' : ''}`}
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </Button>
-          
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <Calendar className="w-5 h-5 text-green-600" />
-            </div>
-            <div className="text-center">
-              <h2 className="text-lg font-semibold text-gray-900">
-                {format(currentMonth, 'MMMM yyyy')}
-              </h2>
-              <p className="text-sm text-gray-500">Food History</p>
-            </div>
-          </div>
-          
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigateMonth('next')}
-            className={`hover:bg-gray-50 ${isRTL ? 'rotate-180' : ''}`}
-            disabled={currentMonth >= new Date()}
-          >
-            <ChevronRight className="w-4 h-4" />
-          </Button>
-        </div>
-      </Card>
-
-      {/* Nutrition Calendar Heat Map - Remove duplicate stats */}
+      {/* Nutrition Calendar with Inline Month Navigation */}
       <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-green-600" />
-          Nutrition Calendar
-        </h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-green-600" />
+            Nutrition Calendar
+          </h3>
+          
+          {/* Compact Month Navigation */}
+          <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigateMonth('prev')}
+              className={`h-8 w-8 p-0 hover:bg-gray-50 ${isRTL ? 'rotate-180' : ''}`}
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+            
+            <div className="text-sm font-medium text-gray-900 min-w-[120px] text-center">
+              {format(currentMonth, 'MMM yyyy')}
+            </div>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigateMonth('next')}
+              className={`h-8 w-8 p-0 hover:bg-gray-50 ${isRTL ? 'rotate-180' : ''}`}
+              disabled={currentMonth >= new Date()}
+            >
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+        
         <NutritionHeatMap data={historyData} currentMonth={currentMonth} />
       </Card>
 
