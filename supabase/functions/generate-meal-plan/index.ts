@@ -211,7 +211,7 @@ function buildArabicPrompt(): string {
 أنشئ خطة وجبات شاملة لمدة 7 أيام تكون مناسبة ثقافياً ومتوازنة غذائياً.`;
 }
 
-// Call AI API with model configuration
+// Enhanced AI API call with proper timeout and error handling
 async function callAIAPI(prompt: string, modelConfig: any) {
   const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
   
@@ -221,7 +221,13 @@ async function callAIAPI(prompt: string, modelConfig: any) {
 
   console.log('🤖 Calling AI API with model:', modelConfig.modelId);
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  // Create a timeout promise
+  const timeoutPromise = new Promise((_, reject) => {
+    setTimeout(() => reject(new Error('AI API timeout after 45 seconds')), 45000);
+  });
+
+  // Create the API call promise
+  const apiPromise = fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${openaiApiKey}`,
@@ -238,13 +244,23 @@ async function callAIAPI(prompt: string, modelConfig: any) {
     }),
   });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`AI API error: ${response.status} - ${errorText}`);
-  }
+  try {
+    // Race between API call and timeout
+    const response = await Promise.race([apiPromise, timeoutPromise]) as Response;
 
-  const data = await response.json();
-  return data.choices[0].message.content;
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ AI API error response:', errorText);
+      throw new Error(`AI API error: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    console.log('✅ AI API response received successfully');
+    return data.choices[0].message.content;
+  } catch (error) {
+    console.error('❌ AI API call failed:', error);
+    throw error;
+  }
 }
 
 // Enhanced request parsing with proper nested data extraction
@@ -333,7 +349,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    console.log('=== AI MEAL PLAN GENERATION WITH CENTRALIZED MODEL CONFIG ===');
+    console.log('=== AI MEAL PLAN GENERATION WITH ENHANCED ERROR HANDLING ===');
     
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -396,7 +412,7 @@ Deno.serve(async (req) => {
     const prompt = generateMealPlanPrompt(userProfile, preferences, dailyCalories, preferences.includeSnacks);
     console.log('📝 Generated prompt for AI');
 
-    // Call AI API with primary model
+    // Call AI API with primary model and enhanced error handling
     let aiResponse;
     try {
       aiResponse = await callAIAPI(prompt, modelConfig.primary);
@@ -428,15 +444,23 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Parse AI response
+    // Parse AI response with enhanced error handling
     let mealPlanData;
     try {
       // Clean the response to extract JSON
       const cleanedResponse = aiResponse.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       mealPlanData = JSON.parse(cleanedResponse);
       console.log('✅ AI response parsed successfully');
+      
+      // Validate that we have meals
+      if (!mealPlanData.meals || !Array.isArray(mealPlanData.meals) || mealPlanData.meals.length === 0) {
+        throw new Error('No meals found in AI response');
+      }
+      
+      console.log('📊 Generated meals count:', mealPlanData.meals.length);
     } catch (parseError) {
       console.error('❌ Failed to parse AI response:', parseError);
+      console.error('❌ Raw AI response:', aiResponse?.substring(0, 500));
       throw new MealPlanError(
         'Invalid AI response format',
         errorCodes.AI_RESPONSE_INVALID,
