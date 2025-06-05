@@ -100,7 +100,7 @@ function calculateDailyCalories(userProfile: any, preferences: any) {
   return Math.round(tdee);
 }
 
-// Generate AI meal plan prompt
+// Generate AI meal plan prompt - SIMPLIFIED for better JSON generation
 function generateMealPlanPrompt(userProfile: any, preferences: any, dailyCalories: number, includeSnacks: boolean) {
   const language = preferences?.language || userProfile?.preferred_language || 'en';
   const isArabic = language === 'ar';
@@ -113,47 +113,24 @@ function generateMealPlanPrompt(userProfile: any, preferences: any, dailyCalorie
   const culturalContext = buildCulturalContext(userProfile.nationality, language);
   const dietaryRestrictions = buildDietaryRestrictions(userProfile, language);
 
-  const basePrompt = isArabic ? buildArabicPrompt() : buildEnglishPrompt();
-  
-  return `${basePrompt}
+  // SIMPLIFIED PROMPT for better JSON generation
+  return `Generate a 7-day meal plan in valid JSON format.
 
-User Profile:
-- Age: ${userProfile.age}, Gender: ${userProfile.gender}
-- Weight: ${userProfile.weight}kg, Height: ${userProfile.height}cm
-- Activity Level: ${userProfile.activity_level}
-- Daily Calorie Target: ${dailyCalories} calories
-- Nationality: ${userProfile.nationality || 'International'}
-- Fitness Goal: ${userProfile.fitness_goal}
-
-Preferences:
-- Cuisine: ${preferences.cuisine || 'mixed'}
-- Max Prep Time: ${preferences.maxPrepTime || '30'} minutes
-- Meal Types: ${mealTypes.join(', ')}
-- Include Snacks: ${includeSnacks}
+User: ${userProfile.age}yr ${userProfile.gender}, ${userProfile.weight}kg, ${userProfile.height}cm
+Daily calories: ${dailyCalories}
+Meals per day: ${mealsPerDay}
+Types: ${mealTypes.join(', ')}
 
 ${dietaryRestrictions}
 ${culturalContext}
 
-Generate a complete 7-day meal plan with exactly ${mealsPerDay} meals per day.
-Each meal must include:
-- name (string)
-- calories (number)
-- protein (number in grams)
-- carbs (number in grams) 
-- fat (number in grams)
-- ingredients (array of objects with name, amount, calories)
-- instructions (array of cooking steps)
-- prep_time (number in minutes)
-- cook_time (number in minutes)
-- servings (number, default 1)
-
-Return ONLY valid JSON in this exact format:
+Return ONLY this JSON structure with exactly ${7 * mealsPerDay} meals:
 {
   "meals": [
     {
       "day_number": 1,
       "meal_type": "breakfast",
-      "name": "Meal Name",
+      "name": "Simple Meal Name",
       "calories": 400,
       "protein": 25,
       "carbs": 45,
@@ -165,7 +142,9 @@ Return ONLY valid JSON in this exact format:
       "servings": 1
     }
   ]
-}`;
+}
+
+IMPORTANT: Return ONLY valid JSON. No explanations. Ensure all JSON is properly closed.`;
 }
 
 function buildCulturalContext(nationality: string, language: string): string {
@@ -210,7 +189,7 @@ function buildArabicPrompt(): string {
 أنشئ خطة وجبات شاملة لمدة 7 أيام تكون مناسبة ثقافياً ومتوازنة غذائياً.`;
 }
 
-// Enhanced AI API call with proper timeout and retry logic
+// ENHANCED AI API call with longer timeout and better error handling
 async function callAIAPI(prompt: string, modelConfig: any, retryCount: number = 0) {
   const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
   
@@ -220,8 +199,8 @@ async function callAIAPI(prompt: string, modelConfig: any, retryCount: number = 
 
   console.log(`🤖 Calling AI API with model: ${modelConfig.modelId} (attempt ${retryCount + 1})`);
 
-  // Shorter timeout for faster failure and retry
-  const timeoutMs = 30000; // 30 seconds instead of 45
+  // Longer timeout for complex meal plan generation
+  const timeoutMs = 60000; // 60 seconds
   
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
@@ -236,11 +215,14 @@ async function callAIAPI(prompt: string, modelConfig: any, retryCount: number = 
       body: JSON.stringify({
         model: modelConfig.modelId,
         messages: [
-          { role: 'system', content: 'You are a professional nutritionist. Return only valid JSON.' },
+          { 
+            role: 'system', 
+            content: 'You are a nutritionist. Return ONLY valid JSON. No markdown, no explanations, just pure JSON.' 
+          },
           { role: 'user', content: prompt }
         ],
         temperature: 0.7,
-        max_tokens: 3000, // Reduced from 4000
+        max_tokens: 4000, // Increased for complete responses
       }),
       signal: controller.signal
     });
@@ -260,10 +242,10 @@ async function callAIAPI(prompt: string, modelConfig: any, retryCount: number = 
     clearTimeout(timeoutId);
     console.error(`❌ AI API call failed (attempt ${retryCount + 1}):`, error.message);
     
-    // Retry logic for network errors
+    // Only retry once on timeout/network errors
     if (retryCount < 1 && (error.name === 'AbortError' || error.message.includes('network'))) {
       console.log('🔄 Retrying AI API call...');
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
+      await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 seconds
       return await callAIAPI(prompt, modelConfig, retryCount + 1);
     }
     
@@ -357,7 +339,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    console.log('=== AI MEAL PLAN GENERATION WITH ENHANCED ERROR HANDLING ===');
+    console.log('=== AI MEAL PLAN GENERATION - ENHANCED DEBUGGING ===');
     
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -416,9 +398,9 @@ Deno.serve(async (req) => {
         .eq('weekly_plan_id', existingPlan.id);
     }
 
-    // Generate AI meal plan prompt
+    // Generate SIMPLIFIED AI meal plan prompt
     const prompt = generateMealPlanPrompt(userProfile, preferences, dailyCalories, preferences.includeSnacks);
-    console.log('📝 Generated prompt for AI');
+    console.log('📝 Generated simplified prompt for AI');
 
     // Call AI API with primary model and enhanced error handling
     let aiResponse;
@@ -452,11 +434,33 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Parse AI response with enhanced error handling
+    // ENHANCED AI response parsing with better error handling
     let mealPlanData;
     try {
-      // Clean the response to extract JSON
-      const cleanedResponse = aiResponse.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      console.log('🔍 Raw AI response length:', aiResponse?.length || 0);
+      console.log('🔍 First 200 chars:', aiResponse?.substring(0, 200));
+      console.log('🔍 Last 200 chars:', aiResponse?.substring(aiResponse.length - 200));
+      
+      // Clean the response more aggressively
+      let cleanedResponse = aiResponse.trim();
+      
+      // Remove any markdown code blocks
+      cleanedResponse = cleanedResponse.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+      
+      // Remove any text before the first {
+      const firstBraceIndex = cleanedResponse.indexOf('{');
+      if (firstBraceIndex > 0) {
+        cleanedResponse = cleanedResponse.substring(firstBraceIndex);
+      }
+      
+      // Remove any text after the last }
+      const lastBraceIndex = cleanedResponse.lastIndexOf('}');
+      if (lastBraceIndex > 0 && lastBraceIndex < cleanedResponse.length - 1) {
+        cleanedResponse = cleanedResponse.substring(0, lastBraceIndex + 1);
+      }
+      
+      console.log('🧹 Cleaned response length:', cleanedResponse.length);
+      
       mealPlanData = JSON.parse(cleanedResponse);
       console.log('✅ AI response parsed successfully');
       
@@ -466,11 +470,18 @@ Deno.serve(async (req) => {
       }
       
       console.log('📊 Generated meals count:', mealPlanData.meals.length);
+      
+      // Validate meal structure
+      const expectedMealCount = (preferences.includeSnacks ? 5 : 3) * 7;
+      if (mealPlanData.meals.length < expectedMealCount * 0.8) { // Allow 20% tolerance
+        console.warn(`⚠️ Expected ~${expectedMealCount} meals, got ${mealPlanData.meals.length}`);
+      }
+      
     } catch (parseError) {
       console.error('❌ Failed to parse AI response:', parseError);
-      console.error('❌ Raw AI response sample:', aiResponse?.substring(0, 500));
+      console.error('❌ Cleaned response sample:', cleanedResponse?.substring(0, 1000));
       throw new MealPlanError(
-        'Invalid AI response format',
+        'Invalid AI response format - JSON parsing failed',
         errorCodes.AI_RESPONSE_INVALID,
         500,
         true
@@ -513,26 +524,27 @@ Deno.serve(async (req) => {
 
     console.log('✅ Weekly plan created/updated:', weeklyPlan.id);
 
-    // Insert AI-generated meals into database
+    // Insert AI-generated meals into database with better validation
     const mealsToInsert = mealPlanData.meals.map((meal: any) => {
       // Validate and normalize meal_type
       let validMealType = meal.meal_type;
-      if (meal.meal_type.includes('snack')) {
+      if (meal.meal_type && meal.meal_type.includes('snack')) {
         validMealType = 'snack';
       }
       
+      // Ensure required fields have defaults
       return {
         id: crypto.randomUUID(),
         weekly_plan_id: weeklyPlan.id,
-        day_number: meal.day_number,
-        meal_type: validMealType,
-        name: meal.name,
-        calories: meal.calories || 0,
-        protein: meal.protein || 0,
-        carbs: meal.carbs || 0,
-        fat: meal.fat || 0,
-        ingredients: meal.ingredients || [],
-        instructions: meal.instructions || [],
+        day_number: meal.day_number || 1,
+        meal_type: validMealType || 'breakfast',
+        name: meal.name || 'Unnamed Meal',
+        calories: Math.max(0, meal.calories || 0),
+        protein: Math.max(0, meal.protein || 0),
+        carbs: Math.max(0, meal.carbs || 0),
+        fat: Math.max(0, meal.fat || 0),
+        ingredients: Array.isArray(meal.ingredients) ? meal.ingredients : [],
+        instructions: Array.isArray(meal.instructions) ? meal.instructions : [],
         prep_time: meal.prep_time || 15,
         cook_time: meal.cook_time || 20,
         servings: meal.servings || 1,
@@ -540,7 +552,7 @@ Deno.serve(async (req) => {
       };
     });
 
-    console.log('🍽️ Inserting AI-generated meals:', mealsToInsert.length);
+    console.log('🍽️ Inserting validated meals:', mealsToInsert.length);
 
     const { data: insertedMeals, error: mealsError } = await supabase
       .from('daily_meals')
