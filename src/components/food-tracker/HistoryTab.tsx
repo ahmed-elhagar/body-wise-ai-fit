@@ -85,62 +85,6 @@ const HistoryTab = () => {
     }));
   }, [filteredHistory]);
 
-  const monthlyStats = useMemo(() => {
-    if (!historyData || historyData.length === 0) {
-      return {
-        totalCalories: 0,
-        avgCalories: 0,
-        totalProtein: 0,
-        daysLogged: 0,
-        totalEntries: 0,
-        mostLoggedMealType: 'N/A'
-      };
-    }
-
-    // Remove duplicates for stats calculation
-    const uniqueEntries = historyData.filter((entry, index, self) => 
-      index === self.findIndex((e) => e.id === entry.id)
-    );
-
-    const validEntries = uniqueEntries.filter(entry => 
-      entry && 
-      entry.consumed_at && 
-      isValid(new Date(entry.consumed_at)) &&
-      typeof entry.calories_consumed === 'number' &&
-      !isNaN(entry.calories_consumed)
-    );
-
-    const totalCalories = validEntries.reduce((sum, entry) => sum + (entry.calories_consumed || 0), 0);
-    const totalProtein = validEntries.reduce((sum, entry) => sum + (entry.protein_consumed || 0), 0);
-    
-    const uniqueDays = new Set(validEntries.map(entry => {
-      try {
-        return format(new Date(entry.consumed_at), 'yyyy-MM-dd');
-      } catch {
-        return null;
-      }
-    }).filter(Boolean)).size;
-
-    // Calculate most logged meal type
-    const mealTypeCounts = validEntries.reduce((acc, entry) => {
-      acc[entry.meal_type] = (acc[entry.meal_type] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-    
-    const mostLoggedMealType = Object.entries(mealTypeCounts).reduce((a, b) => 
-      mealTypeCounts[a[0]] > mealTypeCounts[b[0]] ? a : b
-    )?.[0] || 'N/A';
-
-    return {
-      totalCalories: Math.round(totalCalories),
-      avgCalories: uniqueDays > 0 ? Math.round(totalCalories / uniqueDays) : 0,
-      totalProtein: Math.round(totalProtein),
-      daysLogged: uniqueDays,
-      totalEntries: validEntries.length,
-      mostLoggedMealType
-    };
-  }, [historyData]);
-
   const navigateMonth = (direction: 'prev' | 'next') => {
     setCurrentMonth(prev => 
       direction === 'prev' ? subMonths(prev, 1) : addMonths(prev, 1)
@@ -191,16 +135,6 @@ const HistoryTab = () => {
             <div className="w-8 h-8 bg-gray-200 rounded animate-pulse"></div>
           </div>
         </Card>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i} className="p-4">
-              <div className="space-y-2">
-                <div className="w-12 h-8 bg-gray-200 rounded animate-pulse"></div>
-                <div className="w-20 h-4 bg-gray-200 rounded animate-pulse"></div>
-              </div>
-            </Card>
-          ))}
-        </div>
         <Card className="p-6">
           <div className="w-full h-64 bg-gray-200 rounded animate-pulse"></div>
         </Card>
@@ -210,30 +144,35 @@ const HistoryTab = () => {
 
   return (
     <div className="space-y-6">
-      {/* Month Navigation */}
+      {/* Enhanced Month Navigation */}
       <Card className="p-4">
         <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
           <Button
             variant="outline"
             size="sm"
             onClick={() => navigateMonth('prev')}
-            className={isRTL ? 'rotate-180' : ''}
+            className={`hover:bg-gray-50 ${isRTL ? 'rotate-180' : ''}`}
           >
             <ChevronLeft className="w-4 h-4" />
           </Button>
           
-          <div className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-green-600" />
-            <h2 className="text-lg font-semibold">
-              {format(currentMonth, 'MMMM yyyy')}
-            </h2>
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-green-100 rounded-lg">
+              <Calendar className="w-5 h-5 text-green-600" />
+            </div>
+            <div className="text-center">
+              <h2 className="text-lg font-semibold text-gray-900">
+                {format(currentMonth, 'MMMM yyyy')}
+              </h2>
+              <p className="text-sm text-gray-500">Food History</p>
+            </div>
           </div>
           
           <Button
             variant="outline"
             size="sm"
             onClick={() => navigateMonth('next')}
-            className={isRTL ? 'rotate-180' : ''}
+            className={`hover:bg-gray-50 ${isRTL ? 'rotate-180' : ''}`}
             disabled={currentMonth >= new Date()}
           >
             <ChevronRight className="w-4 h-4" />
@@ -241,38 +180,7 @@ const HistoryTab = () => {
         </div>
       </Card>
 
-      {/* Monthly Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-4 text-center hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-center mb-2">
-            <Activity className="w-5 h-5 text-green-600 mr-2" />
-            <div className="text-2xl font-bold text-green-600">{monthlyStats.daysLogged}</div>
-          </div>
-          <div className="text-sm text-gray-600">Active Days</div>
-        </Card>
-        
-        <Card className="p-4 text-center hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-center mb-2">
-            <TrendingUp className="w-5 h-5 text-blue-600 mr-2" />
-            <div className="text-2xl font-bold text-blue-600">{monthlyStats.avgCalories}</div>
-          </div>
-          <div className="text-sm text-gray-600">Avg Calories/Day</div>
-        </Card>
-        
-        <Card className="p-4 text-center hover:shadow-md transition-shadow">
-          <div className="text-2xl font-bold text-purple-600">{monthlyStats.totalProtein}g</div>
-          <div className="text-sm text-gray-600">Total Protein</div>
-        </Card>
-        
-        <Card className="p-4 text-center hover:shadow-md transition-shadow">
-          <div className="text-lg font-bold text-indigo-600 capitalize">
-            {getMealTypeIcon(monthlyStats.mostLoggedMealType)} {monthlyStats.mostLoggedMealType}
-          </div>
-          <div className="text-sm text-gray-600">Most Logged</div>
-        </Card>
-      </div>
-
-      {/* Nutrition Calendar Heat Map */}
+      {/* Nutrition Calendar Heat Map - Remove duplicate stats */}
       <Card className="p-6">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Calendar className="w-5 h-5 text-green-600" />

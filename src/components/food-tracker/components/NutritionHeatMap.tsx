@@ -55,27 +55,27 @@ interface DayData {
   avgCaloriesPerMeal: number;
 }
 
-// Helper function to calculate streak - moved outside component
-const calculateStreak = (days: DayData[]) => {
-  let streak = 0;
-  const today = new Date();
-  
-  // Start from today and go backwards
-  for (let i = days.length - 1; i >= 0; i--) {
-    const day = days[i];
-    if (day.date > today) continue; // Skip future dates
-    
-    if (day.totalEntries > 0) {
-      streak++;
-    } else {
-      break;
-    }
-  }
-  return streak;
-};
-
 const NutritionHeatMap = ({ data, currentMonth }: NutritionHeatMapProps) => {
   const [selectedDay, setSelectedDay] = useState<DayData | null>(null);
+
+  // Helper function to calculate streak
+  const calculateStreak = (days: DayData[]) => {
+    let streak = 0;
+    const today = new Date();
+    
+    // Start from today and go backwards
+    for (let i = days.length - 1; i >= 0; i--) {
+      const day = days[i];
+      if (day.date > today) continue; // Skip future dates
+      
+      if (day.totalEntries > 0) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+    return streak;
+  };
 
   const { heatMapData, hasErrors, monthlyStats } = useMemo(() => {
     try {
@@ -245,38 +245,6 @@ const NutritionHeatMap = ({ data, currentMonth }: NutritionHeatMapProps) => {
 
   return (
     <div className="space-y-6">
-      {/* Monthly Statistics */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-4 text-center">
-          <div className="flex items-center justify-center mb-2">
-            <Activity className="w-4 h-4 text-green-600 mr-2" />
-            <span className="text-2xl font-bold text-green-600">{monthlyStats.activeDays}</span>
-          </div>
-          <p className="text-sm text-gray-600">Active Days</p>
-        </Card>
-        
-        <Card className="p-4 text-center">
-          <div className="flex items-center justify-center mb-2">
-            <Target className="w-4 h-4 text-blue-600 mr-2" />
-            <span className="text-2xl font-bold text-blue-600">{monthlyStats.avgDailyCalories}</span>
-          </div>
-          <p className="text-sm text-gray-600">Avg Daily Calories</p>
-        </Card>
-        
-        <Card className="p-4 text-center">
-          <div className="text-2xl font-bold text-purple-600">{monthlyStats.avgDailyProtein}g</div>
-          <p className="text-sm text-gray-600">Avg Daily Protein</p>
-        </Card>
-        
-        <Card className="p-4 text-center">
-          <div className="flex items-center justify-center mb-2">
-            <TrendingUp className="w-4 h-4 text-orange-600 mr-2" />
-            <span className="text-2xl font-bold text-orange-600">{monthlyStats.streak}</span>
-          </div>
-          <p className="text-sm text-gray-600">Current Streak</p>
-        </Card>
-      </div>
-
       {/* Calendar Header */}
       <div className="grid grid-cols-7 gap-1 text-center">
         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
