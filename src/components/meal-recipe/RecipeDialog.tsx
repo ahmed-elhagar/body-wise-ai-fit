@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Clock, Users, ChefHat, Sparkles, Youtube } from "lucide-react";
 import { useEnhancedMealRecipe } from "@/hooks/useEnhancedMealRecipe";
+import SimpleLoadingIndicator from "@/components/ui/simple-loading-indicator";
 import type { Meal, Ingredient } from "@/types/meal";
 import type { DailyMeal } from "@/features/meal-plan/types";
 
@@ -172,7 +173,11 @@ const RecipeDialog = ({ isOpen, onClose, meal, onRecipeGenerated }: RecipeDialog
                     className="bg-primary hover:bg-primary/90"
                   >
                     <Sparkles className="w-4 h-4 mr-2" />
-                    {isGeneratingRecipe ? 'Generating Recipe...' : 'Generate Detailed Recipe'}
+                    {isGeneratingRecipe ? (
+                      <SimpleLoadingIndicator message="Generating..." size="sm" />
+                    ) : (
+                      'Generate Detailed Recipe'
+                    )}
                   </Button>
                 </CardContent>
               </Card>
@@ -241,7 +246,11 @@ const RecipeDialog = ({ isOpen, onClose, meal, onRecipeGenerated }: RecipeDialog
                   className="flex-1"
                 >
                   <Sparkles className="w-4 h-4 mr-2" />
-                  {isGeneratingRecipe ? 'Generating...' : 'Generate Detailed Recipe'}
+                  {isGeneratingRecipe ? (
+                    <SimpleLoadingIndicator message="Generating..." size="sm" />
+                  ) : (
+                    'Generate Detailed Recipe'
+                  )}
                 </Button>
               ) : (
                 <Button

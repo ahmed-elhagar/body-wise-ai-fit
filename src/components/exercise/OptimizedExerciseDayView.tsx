@@ -1,8 +1,9 @@
+
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Play, CheckCircle, Clock, Target } from "lucide-react";
+import { Play, CheckCircle, Clock, Target, Coffee } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import SimpleLoadingIndicator from "@/components/ui/simple-loading-indicator";
 

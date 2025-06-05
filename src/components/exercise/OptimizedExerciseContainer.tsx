@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card } from "@/components/ui/card";
 import { useOptimizedExercise } from "@/hooks/useOptimizedExercise";
@@ -5,7 +6,6 @@ import OptimizedExerciseHeader from "./OptimizedExerciseHeader";
 import OptimizedExerciseWeekView from "./OptimizedExerciseWeekView";
 import OptimizedExerciseDayView from "./OptimizedExerciseDayView";
 import OptimizedExerciseProgress from "./OptimizedExerciseProgress";
-import EnhancedLoadingIndicator from "@/components/ui/enhanced-loading-indicator";
 import SimpleLoadingIndicator from "@/components/ui/simple-loading-indicator";
 
 const OptimizedExerciseContainer = React.memo(() => {

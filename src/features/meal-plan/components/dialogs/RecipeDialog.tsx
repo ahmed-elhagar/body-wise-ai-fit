@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -6,7 +7,6 @@ import { ChefHat, Clock, Users, Utensils, Youtube, ExternalLink, Sparkles, Image
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEnhancedMealRecipe } from '@/hooks/useEnhancedMealRecipe';
 import { toast } from 'sonner';
-import EnhancedLoadingIndicator from '@/components/ui/enhanced-loading-indicator';
 import SimpleLoadingIndicator from '@/components/ui/simple-loading-indicator';
 import type { DailyMeal } from '../../types';
 
