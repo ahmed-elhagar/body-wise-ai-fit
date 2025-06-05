@@ -19,6 +19,22 @@ export const useMealPlanPage = () => {
     mealPlanState.refetch();
   };
 
+  // Create weekDays from weekStartDate if it exists
+  const weekDays = [];
+  if (mealPlanState.weekStartDate) {
+    const startDate = new Date(mealPlanState.weekStartDate);
+    for (let i = 0; i < 7; i++) {
+      const currentDate = new Date(startDate);
+      currentDate.setDate(startDate.getDate() + i);
+      weekDays.push({
+        number: i + 1,
+        date: currentDate,
+        name: currentDate.toLocaleDateString('en-US', { weekday: 'short' }),
+        isToday: currentDate.toDateString() === new Date().toDateString(),
+      });
+    }
+  }
+
   // Enhanced debugging output for week-specific data
   console.log('🚀 MEAL PLAN PAGE - UNIFIED DEBUG:', {
     currentWeekOffset: mealPlanState.currentWeekOffset,
@@ -43,9 +59,9 @@ export const useMealPlanPage = () => {
     currentDay,
     handleRecipeGenerated,
     // Ensure we have all required props with defaults
-    viewMode: mealPlanState.viewMode || 'daily',
-    setViewMode: mealPlanState.setViewMode || (() => {}),
-    weekDays: mealPlanState.weekDays || [],
+    viewMode: 'daily' as 'daily' | 'weekly',
+    setViewMode: () => {}, // Mock function for now
+    weekDays,
     isShuffling: false // Add missing isShuffling property
   };
 };
