@@ -3,7 +3,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Plus, Utensils, Camera } from "lucide-react";
+import { Plus, Utensils, Camera, History } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useFoodConsumption } from "@/hooks/useFoodConsumption";
@@ -22,6 +22,7 @@ const FoodTracker = () => {
   const [isAddFoodOpen, setIsAddFoodOpen] = useState(false);
   const [preSelectedFood, setPreSelectedFood] = useState<any>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [activeTab, setActiveTab] = useState("today");
   const { forceRefresh } = useFoodConsumption();
 
   // Handle analyzed food from Calorie Checker or AI Scanner
@@ -82,10 +83,10 @@ const FoodTracker = () => {
   return (
     <ProtectedRoute>
       <Layout>
-        <div className="p-4 md:p-6">
-          <div className="max-w-6xl mx-auto space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
+        <div className="p-3 sm:p-4 md:p-6">
+          <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
+            {/* Desktop Header - hidden on mobile */}
+            <div className="hidden lg:flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Utensils className="h-8 w-8 text-green-600" />
                 <div>
@@ -118,28 +119,47 @@ const FoodTracker = () => {
               </div>
             </div>
 
-            {/* Main Content */}
-            <Tabs defaultValue="today" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 bg-gray-100">
+            {/* Mobile Header - shown only on mobile */}
+            <div className="lg:hidden bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-4">
+              <div className="flex items-center gap-3 mb-4">
+                <Utensils className="h-6 w-6 text-green-600" />
+                <div>
+                  <h1 className="text-xl font-bold text-gray-900">
+                    {t('Food Tracker')}
+                  </h1>
+                  <p className="text-sm text-gray-600">
+                    {t('Track your nutrition')}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Enhanced Mobile-First Tabs */}
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-2 bg-gray-100 h-12">
                 <TabsTrigger 
                   value="today" 
-                  className="data-[state=active]:bg-white data-[state=active]:text-gray-900"
+                  className="data-[state=active]:bg-white data-[state=active]:text-gray-900 text-sm sm:text-base font-medium flex items-center gap-2"
                 >
-                  {t('Today')}
+                  <Utensils className="w-4 h-4" />
+                  <span className="hidden sm:inline">{t('Today')}</span>
+                  <span className="sm:hidden">{t('Today')}</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="history" 
-                  className="data-[state=active]:bg-white data-[state=active]:text-gray-900"
+                  className="data-[state=active]:bg-white data-[state=active]:text-gray-900 text-sm sm:text-base font-medium flex items-center gap-2"
                 >
-                  {t('History')}
+                  <History className="w-4 h-4" />
+                  <span className="hidden sm:inline">{t('History')}</span>
+                  <span className="sm:hidden">{t('History')}</span>
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="today" className="mt-6">
+              <TabsContent value="today" className="mt-4 sm:mt-6">
                 <TodayTab key={refreshKey} />
               </TabsContent>
 
-              <TabsContent value="history" className="mt-6">
+              <TabsContent value="history" className="mt-4 sm:mt-6">
                 <HistoryTab />
               </TabsContent>
             </Tabs>
