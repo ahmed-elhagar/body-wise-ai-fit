@@ -1,15 +1,19 @@
+
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Calendar, ChevronLeft, ChevronRight, AlertCircle, Search, Filter } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, AlertCircle, Search, Filter, Download } from "lucide-react";
 import { useFoodConsumption } from "@/hooks/useFoodConsumption";
 import { format, startOfMonth, endOfMonth, addMonths, subMonths, parseISO, isSameDay } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import OptimizedNutritionHeatMap from "./components/OptimizedNutritionHeatMap";
 import VirtualizedMealHistory from "./components/VirtualizedMealHistory";
+import ExportFeatures from "./components/ExportFeatures";
+import { toast } from "sonner";
 
 const HistoryTab = () => {
   const { t, isRTL } = useLanguage();
@@ -91,6 +95,28 @@ const HistoryTab = () => {
     setSelectedDate(null);
   };
 
+  const handleExport = async (config: any) => {
+    try {
+      toast.success(`Preparing ${config.format.toUpperCase()} export...`);
+      
+      // Here you would integrate with your export service
+      console.log('Export configuration:', config);
+      
+      // Simulate export process
+      setTimeout(() => {
+        if (config.emailDelivery) {
+          toast.success(`Export sent to ${config.email}`);
+        } else {
+          toast.success('Export downloaded successfully');
+        }
+      }, 2000);
+      
+    } catch (error) {
+      toast.error('Failed to export data');
+      console.error('Export error:', error);
+    }
+  };
+
   if (error) {
     return (
       <div className="space-y-4">
@@ -123,100 +149,134 @@ const HistoryTab = () => {
 
   return (
     <div className="space-y-6">
-      {/* Nutrition Calendar with Inline Month Navigation */}
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-green-600" />
-            Nutrition Calendar
-          </h3>
-          
-          {/* Compact Month Navigation */}
-          <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigateMonth('prev')}
-              className={`h-8 w-8 p-0 hover:bg-gray-50 ${isRTL ? 'rotate-180' : ''}`}
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-            
-            <div className="text-sm font-medium text-gray-900 min-w-[120px] text-center">
-              {format(currentMonth, 'MMM yyyy')}
+      {/* Enhanced Tabs with Export */}
+      <Tabs defaultValue="calendar" className="w-full">
+        <TabsList className="grid w-full grid-cols-3 bg-gray-100">
+          <TabsTrigger 
+            value="calendar" 
+            className="data-[state=active]:bg-white data-[state=active]:text-gray-900"
+          >
+            <Calendar className="w-4 h-4 mr-2" />
+            Calendar
+          </TabsTrigger>
+          <TabsTrigger 
+            value="history" 
+            className="data-[state=active]:bg-white data-[state=active]:text-gray-900"
+          >
+            History
+          </TabsTrigger>
+          <TabsTrigger 
+            value="export" 
+            className="data-[state=active]:bg-white data-[state=active]:text-gray-900"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Export
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="calendar" className="mt-6">
+          {/* Nutrition Calendar with Inline Month Navigation */}
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-semibold flex items-center gap-2">
+                <Calendar className="w-6 h-6 text-green-600" />
+                Nutrition Calendar
+              </h3>
+              
+              {/* Month Navigation */}
+              <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigateMonth('prev')}
+                  className={`h-9 w-9 p-0 hover:bg-gray-50 ${isRTL ? 'rotate-180' : ''}`}
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </Button>
+                
+                <div className="text-lg font-medium text-gray-900 min-w-[140px] text-center">
+                  {format(currentMonth, 'MMMM yyyy')}
+                </div>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigateMonth('next')}
+                  className={`h-9 w-9 p-0 hover:bg-gray-50 ${isRTL ? 'rotate-180' : ''}`}
+                  disabled={currentMonth >= new Date()}
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
             
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigateMonth('next')}
-              className={`h-8 w-8 p-0 hover:bg-gray-50 ${isRTL ? 'rotate-180' : ''}`}
-              disabled={currentMonth >= new Date()}
-            >
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-        
-        <OptimizedNutritionHeatMap data={historyData} currentMonth={currentMonth} />
-      </Card>
+            <OptimizedNutritionHeatMap data={historyData} currentMonth={currentMonth} />
+          </Card>
+        </TabsContent>
 
-      {/* Search and Filters */}
-      <Card className="p-4">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input
-                placeholder="Search by food name or notes..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+        <TabsContent value="history" className="mt-6 space-y-6">
+          {/* Search and Filters */}
+          <Card className="p-4">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Input
+                    placeholder="Search by food name or notes..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+              
+              <Select value={mealTypeFilter} onValueChange={setMealTypeFilter}>
+                <SelectTrigger className="w-full md:w-48">
+                  <Filter className="w-4 h-4 mr-2" />
+                  <SelectValue placeholder="Filter by meal type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Meals</SelectItem>
+                  <SelectItem value="breakfast">🌅 Breakfast</SelectItem>
+                  <SelectItem value="lunch">🍽️ Lunch</SelectItem>
+                  <SelectItem value="dinner">🌙 Dinner</SelectItem>
+                  <SelectItem value="snack">🍎 Snacks</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {(searchTerm || mealTypeFilter !== "all" || selectedDate) && (
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setSearchTerm("");
+                    setMealTypeFilter("all");
+                    setSelectedDate(null);
+                  }}
+                >
+                  Clear Filters
+                </Button>
+              )}
             </div>
-          </div>
-          
-          <Select value={mealTypeFilter} onValueChange={setMealTypeFilter}>
-            <SelectTrigger className="w-full md:w-48">
-              <Filter className="w-4 h-4 mr-2" />
-              <SelectValue placeholder="Filter by meal type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Meals</SelectItem>
-              <SelectItem value="breakfast">🌅 Breakfast</SelectItem>
-              <SelectItem value="lunch">🍽️ Lunch</SelectItem>
-              <SelectItem value="dinner">🌙 Dinner</SelectItem>
-              <SelectItem value="snack">🍎 Snacks</SelectItem>
-            </SelectContent>
-          </Select>
+          </Card>
 
-          {(searchTerm || mealTypeFilter !== "all" || selectedDate) && (
-            <Button 
-              variant="outline" 
-              onClick={() => {
-                setSearchTerm("");
-                setMealTypeFilter("all");
-                setSelectedDate(null);
-              }}
-            >
-              Clear Filters
-            </Button>
-          )}
-        </div>
-      </Card>
+          {/* Meal History */}
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold mb-4">
+              Meal History {filteredHistory.length !== historyData.length && (
+                <span className="text-sm font-normal text-gray-500">
+                  ({filteredHistory.length} of {historyData.length} entries)
+                </span>
+              )}
+            </h3>
 
-      {/* Optimized Meal History */}
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">
-          Meal History {filteredHistory.length !== historyData.length && (
-            <span className="text-sm font-normal text-gray-500">
-              ({filteredHistory.length} of {historyData.length} entries)
-            </span>
-          )}
-        </h3>
+            <VirtualizedMealHistory groupedHistory={groupedHistory} />
+          </Card>
+        </TabsContent>
 
-        <VirtualizedMealHistory groupedHistory={groupedHistory} />
-      </Card>
+        <TabsContent value="export" className="mt-6">
+          <ExportFeatures data={historyData} onExport={handleExport} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

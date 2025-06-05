@@ -55,7 +55,7 @@ interface DayData {
   avgCaloriesPerMeal: number;
 }
 
-// Memoized Day Card Component - Ultra compact for left side
+// Enhanced Day Card Component - Larger size
 const DayCard = ({ 
   day, 
   selectedDay, 
@@ -82,10 +82,10 @@ const DayCard = ({
   return (
     <div
       className={`
-        w-5 h-5 rounded flex items-center justify-center text-[10px] font-medium border transition-all duration-200
+        w-10 h-10 rounded-lg flex items-center justify-center text-sm font-medium border transition-all duration-200
         ${getIntensityColor(day.intensity)}
-        ${hasEntries ? 'cursor-pointer hover:scale-110 hover:shadow-sm' : ''}
-        ${isSelected ? 'ring-1 ring-blue-500 shadow-md scale-110' : ''}
+        ${hasEntries ? 'cursor-pointer hover:scale-105 hover:shadow-md' : ''}
+        ${isSelected ? 'ring-2 ring-blue-500 shadow-lg scale-105' : ''}
       `}
       title={`${day.dateStr}: ${day.totalCalories} cal, ${day.totalEntries} entries`}
       onClick={() => hasEntries && onDayClick(day)}
@@ -258,162 +258,162 @@ const OptimizedNutritionHeatMap = ({ data, currentMonth }: OptimizedNutritionHea
   }
 
   return (
-    <div className="flex gap-6">
-      {/* Left Side - Compact Calendar */}
-      <div className="flex-shrink-0">
-        <div className="bg-white rounded-lg border p-3 shadow-sm">
-          {/* Compact Calendar Header */}
-          <div className="grid grid-cols-7 gap-0.5 text-center mb-2">
-            {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
-              <div key={index} className="text-[9px] font-medium text-gray-500 py-1 w-5">
-                {day}
-              </div>
-            ))}
-          </div>
-          
-          {/* Compact Calendar Grid */}
-          <div className="grid grid-cols-7 gap-0.5">
-            {heatMapData.map((day) => (
-              <DayCard
-                key={day.dateStr}
-                day={day}
-                selectedDay={selectedDay}
-                onDayClick={handleDayClick}
-              />
-            ))}
-          </div>
-
-          {/* Mini Legend */}
-          <div className="flex items-center justify-center gap-1 mt-3">
-            <span className="text-[9px] text-gray-500">Less</span>
-            <div className="flex gap-0.5">
-              {[0, 1, 2, 3, 4].map(intensity => (
-                <div
-                  key={intensity}
-                  className={`w-1.5 h-1.5 rounded-sm border ${
-                    intensity === 0 ? 'bg-gray-100 border-gray-200' :
-                    intensity === 1 ? 'bg-green-100 border-green-300' :
-                    intensity === 2 ? 'bg-green-200 border-green-400' :
-                    intensity === 3 ? 'bg-green-300 border-green-500' :
-                    'bg-green-400 border-green-600'
-                  }`}
+    <div className="space-y-6">
+      {/* Top Row - Calendar and Stats */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Enhanced Calendar - Takes more space */}
+        <div className="lg:col-span-2">
+          <div className="bg-white rounded-lg border p-6 shadow-sm">
+            {/* Calendar Header */}
+            <div className="grid grid-cols-7 gap-2 text-center mb-4">
+              {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((day, index) => (
+                <div key={index} className="text-sm font-medium text-gray-500 py-2">
+                  {day.slice(0, 3)}
+                </div>
+              ))}
+            </div>
+            
+            {/* Calendar Grid - Larger */}
+            <div className="grid grid-cols-7 gap-2">
+              {heatMapData.map((day) => (
+                <DayCard
+                  key={day.dateStr}
+                  day={day}
+                  selectedDay={selectedDay}
+                  onDayClick={handleDayClick}
                 />
               ))}
             </div>
-            <span className="text-[9px] text-gray-500">More</span>
+
+            {/* Legend */}
+            <div className="flex items-center justify-center gap-2 mt-6">
+              <span className="text-sm text-gray-500">Less</span>
+              <div className="flex gap-1">
+                {[0, 1, 2, 3, 4].map(intensity => (
+                  <div
+                    key={intensity}
+                    className={`w-3 h-3 rounded border ${
+                      intensity === 0 ? 'bg-gray-100 border-gray-200' :
+                      intensity === 1 ? 'bg-green-100 border-green-300' :
+                      intensity === 2 ? 'bg-green-200 border-green-400' :
+                      intensity === 3 ? 'bg-green-300 border-green-500' :
+                      'bg-green-400 border-green-600'
+                    }`}
+                  />
+                ))}
+              </div>
+              <span className="text-sm text-gray-500">More</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Right Side - Data Display */}
-      <div className="flex-1 space-y-4">
-        {/* Monthly Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="bg-green-50 p-3 rounded-lg border border-green-200">
-            <div className="flex items-center gap-2 mb-2">
-              <Target className="w-4 h-4 text-green-600" />
+        {/* Monthly Stats - 2x2 Grid */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+            <div className="flex items-center gap-2 mb-3">
+              <Target className="w-5 h-5 text-green-600" />
               <span className="text-sm font-medium text-green-700">Active Days</span>
             </div>
-            <div className="text-xl font-bold text-green-900">{monthlyStats.activeDays}</div>
+            <div className="text-2xl font-bold text-green-900">{monthlyStats.activeDays}</div>
             <div className="text-xs text-green-600">days logged</div>
           </div>
           
-          <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
-            <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="w-4 h-4 text-blue-600" />
+          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+            <div className="flex items-center gap-2 mb-3">
+              <TrendingUp className="w-5 h-5 text-blue-600" />
               <span className="text-sm font-medium text-blue-700">Avg Calories</span>
             </div>
-            <div className="text-xl font-bold text-blue-900">{monthlyStats.avgDailyCalories}</div>
+            <div className="text-2xl font-bold text-blue-900">{monthlyStats.avgDailyCalories}</div>
             <div className="text-xs text-blue-600">per day</div>
           </div>
           
-          <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
-            <div className="flex items-center gap-2 mb-2">
-              <Activity className="w-4 h-4 text-purple-600" />
+          <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+            <div className="flex items-center gap-2 mb-3">
+              <Activity className="w-5 h-5 text-purple-600" />
               <span className="text-sm font-medium text-purple-700">Avg Protein</span>
             </div>
-            <div className="text-xl font-bold text-purple-900">{monthlyStats.avgDailyProtein}g</div>
+            <div className="text-2xl font-bold text-purple-900">{monthlyStats.avgDailyProtein}g</div>
             <div className="text-xs text-purple-600">per day</div>
           </div>
           
-          <div className="bg-orange-50 p-3 rounded-lg border border-orange-200">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-4 h-4 bg-orange-600 rounded-full" />
+          <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-5 h-5 bg-orange-600 rounded-full" />
               <span className="text-sm font-medium text-orange-700">Streak</span>
             </div>
-            <div className="text-xl font-bold text-orange-900">{monthlyStats.streak}</div>
+            <div className="text-2xl font-bold text-orange-900">{monthlyStats.streak}</div>
             <div className="text-xs text-orange-600">days in a row</div>
           </div>
         </div>
-
-        {/* Selected Day Details */}
-        {selectedDay ? (
-          <Card className="border-blue-200 bg-blue-50">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-blue-600" />
-                {format(selectedDay.date, 'EEEE, MMMM d, yyyy')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">{selectedDay.totalCalories}</div>
-                  <div className="text-sm text-gray-600">Calories</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">{selectedDay.totalProtein}g</div>
-                  <div className="text-sm text-gray-600">Protein</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-orange-600">{selectedDay.totalCarbs}g</div>
-                  <div className="text-sm text-gray-600">Carbs</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-purple-600">{selectedDay.totalFat}g</div>
-                  <div className="text-sm text-gray-600">Fat</div>
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <h4 className="text-sm font-medium text-gray-700">Meals:</h4>
-                <div className="flex flex-wrap gap-2">
-                  {selectedDay.meals.breakfast > 0 && (
-                    <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
-                      🌅 {selectedDay.meals.breakfast}
-                    </Badge>
-                  )}
-                  {selectedDay.meals.lunch > 0 && (
-                    <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
-                      🍽️ {selectedDay.meals.lunch}
-                    </Badge>
-                  )}
-                  {selectedDay.meals.dinner > 0 && (
-                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                      🌙 {selectedDay.meals.dinner}
-                    </Badge>
-                  )}
-                  {selectedDay.meals.snack > 0 && (
-                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                      🍎 {selectedDay.meals.snack}
-                    </Badge>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card className="border-dashed border-gray-300">
-            <CardContent className="py-8">
-              <div className="text-center">
-                <Utensils className="w-12 h-12 mx-auto text-gray-400 mb-3" />
-                <h3 className="text-lg font-medium text-gray-700 mb-2">Select a Day</h3>
-                <p className="text-gray-500">Click on any day with food logs to see detailed nutrition information</p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
+
+      {/* Selected Day Details - Full Width Below */}
+      {selectedDay ? (
+        <Card className="border-blue-200 bg-blue-50">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xl flex items-center gap-3">
+              <Calendar className="w-6 h-6 text-blue-600" />
+              {format(selectedDay.date, 'EEEE, MMMM d, yyyy')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-green-600 mb-1">{selectedDay.totalCalories}</div>
+                <div className="text-sm text-gray-600">Calories</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-blue-600 mb-1">{selectedDay.totalProtein}g</div>
+                <div className="text-sm text-gray-600">Protein</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-orange-600 mb-1">{selectedDay.totalCarbs}g</div>
+                <div className="text-sm text-gray-600">Carbs</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-purple-600 mb-1">{selectedDay.totalFat}g</div>
+                <div className="text-sm text-gray-600">Fat</div>
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              <h4 className="text-lg font-medium text-gray-700">Meals:</h4>
+              <div className="flex flex-wrap gap-3">
+                {selectedDay.meals.breakfast > 0 && (
+                  <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 text-sm py-2 px-3">
+                    🌅 Breakfast ({selectedDay.meals.breakfast})
+                  </Badge>
+                )}
+                {selectedDay.meals.lunch > 0 && (
+                  <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200 text-sm py-2 px-3">
+                    🍽️ Lunch ({selectedDay.meals.lunch})
+                  </Badge>
+                )}
+                {selectedDay.meals.dinner > 0 && (
+                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-sm py-2 px-3">
+                    🌙 Dinner ({selectedDay.meals.dinner})
+                  </Badge>
+                )}
+                {selectedDay.meals.snack > 0 && (
+                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-sm py-2 px-3">
+                    🍎 Snacks ({selectedDay.meals.snack})
+                  </Badge>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="border-dashed border-gray-300">
+          <CardContent className="py-12">
+            <div className="text-center">
+              <Utensils className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+              <h3 className="text-xl font-medium text-gray-700 mb-3">Select a Day</h3>
+              <p className="text-gray-500">Click on any day with food logs to see detailed nutrition information</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
