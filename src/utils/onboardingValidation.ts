@@ -4,46 +4,77 @@ import { OnboardingFormData } from "@/hooks/useOnboardingForm";
 export const validateOnboardingStep = (step: number, formData: OnboardingFormData): boolean => {
   switch (step) {
     case 1:
-      // Basic Personal Info - Name and Age required
       return !!(
         formData.first_name?.trim() &&
         formData.last_name?.trim() &&
-        formData.age
+        formData.age &&
+        parseInt(formData.age) >= 13 &&
+        parseInt(formData.age) <= 100
       );
     
     case 2:
-      // Physical Stats - Gender, Height, Weight required
       return !!(
         formData.gender &&
         formData.height &&
-        formData.weight
+        parseFloat(formData.height) >= 100 &&
+        parseFloat(formData.height) <= 250 &&
+        formData.weight &&
+        parseFloat(formData.weight) >= 30 &&
+        parseFloat(formData.weight) <= 300
       );
     
     case 3:
-      // Body Composition - body fat percentage is set by the slider
-      return !!(formData.body_fat_percentage);
+      return !!(
+        formData.body_fat_percentage &&
+        parseFloat(formData.body_fat_percentage.toString()) >= 5 &&
+        parseFloat(formData.body_fat_percentage.toString()) <= 50
+      );
     
     case 4:
-      // Fitness Goals - required
       return !!(formData.fitness_goal);
     
     case 5:
-      // Activity Level - required
       return !!(formData.activity_level);
     
     case 6:
-      // Health Conditions - always valid (optional)
-      return true;
-    
     case 7:
-      // Special Conditions - always valid (optional, only for females)
-      return true;
-    
     case 8:
-      // Dietary Preferences - always valid (optional)
+      // These steps are optional
       return true;
     
     default:
       return false;
   }
+};
+
+export const getStepRequiredFields = (step: number): string[] => {
+  switch (step) {
+    case 1:
+      return ['first_name', 'last_name', 'age'];
+    case 2:
+      return ['gender', 'height', 'weight'];
+    case 3:
+      return ['body_fat_percentage'];
+    case 4:
+      return ['fitness_goal'];
+    case 5:
+      return ['activity_level'];
+    default:
+      return [];
+  }
+};
+
+export const validateAllSteps = (formData: OnboardingFormData): { isValid: boolean; invalidSteps: number[] } => {
+  const invalidSteps: number[] = [];
+  
+  for (let step = 1; step <= 5; step++) {
+    if (!validateOnboardingStep(step, formData)) {
+      invalidSteps.push(step);
+    }
+  }
+  
+  return {
+    isValid: invalidSteps.length === 0,
+    invalidSteps
+  };
 };
