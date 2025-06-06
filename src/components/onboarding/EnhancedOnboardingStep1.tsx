@@ -14,15 +14,16 @@ interface EnhancedOnboardingStep1Props {
 const EnhancedOnboardingStep1 = ({ formData, updateFormData }: EnhancedOnboardingStep1Props) => {
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="text-center mb-8">
+      <div className="text-center mb-6 px-4">
         <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl mb-4 shadow-lg">
           <User className="w-8 h-8 text-white" />
         </div>
         <h2 className="text-2xl font-bold text-gray-800 mb-2">Tell us about yourself</h2>
-        <p className="text-gray-600">Basic information to personalize your experience</p>
+        <p className="text-gray-600 text-sm sm:text-base">Basic information to personalize your experience</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Name Fields - Stack on mobile */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 px-4">
         <div className="space-y-2">
           <Label htmlFor="first_name" className="text-sm font-medium text-gray-700">
             First Name *
@@ -33,7 +34,7 @@ const EnhancedOnboardingStep1 = ({ formData, updateFormData }: EnhancedOnboardin
             value={formData.first_name}
             onChange={(e) => updateFormData("first_name", e.target.value)}
             placeholder="Enter your first name"
-            className="h-12 border-2 border-gray-200 focus:border-blue-500 transition-colors rounded-xl"
+            className="h-11 sm:h-12 border-2 border-gray-200 focus:border-blue-500 transition-colors rounded-xl text-base"
             data-testid="first-name"
           />
         </div>
@@ -48,13 +49,14 @@ const EnhancedOnboardingStep1 = ({ formData, updateFormData }: EnhancedOnboardin
             value={formData.last_name}
             onChange={(e) => updateFormData("last_name", e.target.value)}
             placeholder="Enter your last name"
-            className="h-12 border-2 border-gray-200 focus:border-blue-500 transition-colors rounded-xl"
+            className="h-11 sm:h-12 border-2 border-gray-200 focus:border-blue-500 transition-colors rounded-xl text-base"
             data-testid="last-name"
           />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Physical Stats - Responsive grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 px-4">
         <div className="space-y-2">
           <Label htmlFor="age" className="text-sm font-medium text-gray-700">
             Age *
@@ -67,7 +69,7 @@ const EnhancedOnboardingStep1 = ({ formData, updateFormData }: EnhancedOnboardin
             placeholder="25"
             min="13"
             max="100"
-            className="h-12 border-2 border-gray-200 focus:border-blue-500 transition-colors rounded-xl"
+            className="h-11 sm:h-12 border-2 border-gray-200 focus:border-blue-500 transition-colors rounded-xl text-base"
             data-testid="age"
           />
         </div>
@@ -84,7 +86,7 @@ const EnhancedOnboardingStep1 = ({ formData, updateFormData }: EnhancedOnboardin
             placeholder="170"
             min="100"
             max="250"
-            className="h-12 border-2 border-gray-200 focus:border-blue-500 transition-colors rounded-xl"
+            className="h-11 sm:h-12 border-2 border-gray-200 focus:border-blue-500 transition-colors rounded-xl text-base"
             data-testid="height"
           />
         </div>
@@ -101,21 +103,27 @@ const EnhancedOnboardingStep1 = ({ formData, updateFormData }: EnhancedOnboardin
             placeholder="70"
             min="30"
             max="300"
-            className="h-12 border-2 border-gray-200 focus:border-blue-500 transition-colors rounded-xl"
+            className="h-11 sm:h-12 border-2 border-gray-200 focus:border-blue-500 transition-colors rounded-xl text-base"
             data-testid="weight"
           />
         </div>
       </div>
 
-      <GenderSelector
-        value={formData.gender}
-        onChange={(value) => updateFormData("gender", value)}
-      />
+      {/* Gender Selector - Mobile optimized */}
+      <div className="px-4">
+        <GenderSelector
+          value={formData.gender}
+          onChange={(value) => updateFormData("gender", value)}
+        />
+      </div>
 
-      <NationalitySelector
-        value={formData.nationality}
-        onChange={(value) => updateFormData("nationality", value)}
-      />
+      {/* Nationality Selector - Mobile optimized */}
+      <div className="px-4">
+        <NationalitySelector
+          value={formData.nationality}
+          onChange={(value) => updateFormData("nationality", value)}
+        />
+      </div>
     </div>
   );
 };

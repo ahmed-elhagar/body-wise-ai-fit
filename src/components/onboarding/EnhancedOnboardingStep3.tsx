@@ -14,20 +14,20 @@ interface EnhancedOnboardingStep3Props {
 
 const EnhancedOnboardingStep3 = ({ formData, updateFormData }: EnhancedOnboardingStep3Props) => {
   return (
-    <div className="space-y-8 animate-fade-in">
-      <div className="text-center mb-8">
+    <div className="space-y-6 sm:space-y-8 animate-fade-in">
+      <div className="text-center mb-6 px-4">
         <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl mb-4 shadow-lg">
           <Activity className="w-8 h-8 text-white" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Goals & Health Profile</h2>
-        <p className="text-gray-600">Define your targets and comprehensive health status</p>
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Goals & Health Profile</h2>
+        <p className="text-gray-600 text-sm sm:text-base">Define your targets and comprehensive health status</p>
       </div>
 
-      {/* Fitness Goals Section */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+      {/* Fitness Goals Section - Mobile responsive */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 sm:p-6 border border-blue-200 mx-4">
         <div className="flex items-center gap-2 mb-4">
           <Activity className="w-5 h-5 text-blue-600" />
-          <h3 className="text-lg font-semibold text-gray-800">Fitness Goals</h3>
+          <h3 className="text-base sm:text-lg font-semibold text-gray-800">Fitness Goals</h3>
         </div>
         <GoalBodyTypeSelector
           value={formData.fitness_goal}
@@ -35,11 +35,11 @@ const EnhancedOnboardingStep3 = ({ formData, updateFormData }: EnhancedOnboardin
         />
       </div>
 
-      {/* Activity Level Section */}
-      <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+      {/* Activity Level Section - Mobile responsive */}
+      <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 sm:p-6 border border-green-200 mx-4">
         <div className="flex items-center gap-2 mb-4">
           <Heart className="w-5 h-5 text-green-600" />
-          <h3 className="text-lg font-semibold text-gray-800">Activity Level</h3>
+          <h3 className="text-base sm:text-lg font-semibold text-gray-800">Activity Level</h3>
         </div>
         <ActivityLevelSelector
           value={formData.activity_level}
@@ -47,11 +47,11 @@ const EnhancedOnboardingStep3 = ({ formData, updateFormData }: EnhancedOnboardin
         />
       </div>
 
-      {/* Health Information Section */}
-      <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-xl p-6 border border-orange-200">
+      {/* Health Information Section - Mobile responsive */}
+      <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-xl p-4 sm:p-6 border border-orange-200 mx-4">
         <div className="flex items-center gap-2 mb-6">
           <AlertTriangle className="w-5 h-5 text-orange-600" />
-          <h3 className="text-lg font-semibold text-gray-800">Health Information</h3>
+          <h3 className="text-base sm:text-lg font-semibold text-gray-800">Health Information</h3>
         </div>
         
         <div className="space-y-6">
@@ -67,11 +67,11 @@ const EnhancedOnboardingStep3 = ({ formData, updateFormData }: EnhancedOnboardin
         </div>
       </div>
 
-      {/* Special Conditions Section */}
-      <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-200">
+      {/* Special Conditions Section - Mobile responsive */}
+      <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 sm:p-6 border border-purple-200 mx-4">
         <div className="flex items-center gap-2 mb-4">
           <Shield className="w-5 h-5 text-purple-600" />
-          <h3 className="text-lg font-semibold text-gray-800">Special Conditions</h3>
+          <h3 className="text-base sm:text-lg font-semibold text-gray-800">Special Conditions</h3>
           <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">Optional</span>
         </div>
         <SpecialConditionsSelector

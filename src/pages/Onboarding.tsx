@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -94,25 +95,25 @@ const Onboarding = () => {
             parseFloat(formData.body_fat_percentage) : 
             formData.body_fat_percentage) : null;
 
-        // Map special conditions
-        const pregnancyTrimester = formData.pregnancy_trimester && formData.pregnancy_trimester !== 'none' ? 
+        // Map special conditions with proper null handling
+        const pregnancyTrimester = formData.pregnancy_trimester && formData.pregnancy_trimester !== 'none' && formData.pregnancy_trimester !== '' ? 
           parseInt(formData.pregnancy_trimester) : null;
         
-        const breastfeedingLevel = formData.breastfeeding_level && formData.breastfeeding_level !== 'none' ? 
+        const breastfeedingLevel = formData.breastfeeding_level && formData.breastfeeding_level !== 'none' && formData.breastfeeding_level !== '' ? 
           formData.breastfeeding_level : null;
         
-        const fastingType = formData.fasting_type && formData.fasting_type !== 'none' ? 
+        const fastingType = formData.fasting_type && formData.fasting_type !== 'none' && formData.fasting_type !== '' ? 
           formData.fasting_type : null;
 
         const profileData = {
           // Basic Personal Information
-          first_name: formData.first_name?.trim(),
-          last_name: formData.last_name?.trim(),
+          first_name: formData.first_name?.trim() || null,
+          last_name: formData.last_name?.trim() || null,
           age: formData.age ? parseInt(formData.age) : null,
           gender: formData.gender || null,
           height: formData.height ? parseFloat(formData.height) : null,
           weight: formData.weight ? parseFloat(formData.weight) : null,
-          nationality: formData.nationality === "prefer_not_to_say" ? null : formData.nationality?.trim(),
+          nationality: formData.nationality === "prefer_not_to_say" ? null : formData.nationality?.trim() || null,
           
           // Body Composition
           body_shape: formData.body_shape || null,
@@ -123,18 +124,19 @@ const Onboarding = () => {
           activity_level: mappedActivityLevel,
           
           // Health Information
-          health_conditions: formData.health_conditions || [],
-          allergies: formData.allergies || [],
+          health_conditions: formData.health_conditions && formData.health_conditions.length > 0 ? formData.health_conditions : [],
+          health_notes: formData.health_notes?.trim() || null,
+          allergies: formData.allergies && formData.allergies.length > 0 ? formData.allergies : [],
           
           // Dietary Preferences
-          preferred_foods: formData.preferred_foods || [],
-          dietary_restrictions: formData.dietary_restrictions || [],
+          preferred_foods: formData.preferred_foods && formData.preferred_foods.length > 0 ? formData.preferred_foods : [],
+          dietary_restrictions: formData.dietary_restrictions && formData.dietary_restrictions.length > 0 ? formData.dietary_restrictions : [],
           
           // Special Conditions
           pregnancy_trimester: pregnancyTrimester,
           breastfeeding_level: breastfeedingLevel,
           fasting_type: fastingType,
-          special_conditions: formData.special_conditions || [],
+          special_conditions: formData.special_conditions && formData.special_conditions.length > 0 ? formData.special_conditions : [],
           
           // Completion Status
           onboarding_completed: true,
@@ -214,31 +216,31 @@ const Onboarding = () => {
   // Show email confirmation message if email confirmation is enabled and user hasn't confirmed their email
   if (showEmailConfirmation) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-8">
-        <div className="container mx-auto px-4 max-w-md">
-          <Card className="p-8 bg-white/90 backdrop-blur-sm border-0 shadow-xl text-center">
-            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-4 sm:py-8 px-4">
+        <div className="container mx-auto max-w-md">
+          <Card className="p-6 sm:p-8 bg-white/90 backdrop-blur-sm border-0 shadow-xl text-center">
+            <div className="w-16 sm:w-20 h-16 sm:h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg className="w-8 sm:w-10 h-8 sm:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
             </div>
             
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
               Check Your Email
             </h2>
             
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 mb-6 text-sm sm:text-base">
               We've sent you a confirmation email. Please click the link in the email to verify your account and continue with setup.
             </p>
             
             <div className="space-y-4">
-              <p className="text-sm text-gray-500">
+              <p className="text-xs sm:text-sm text-gray-500">
                 Didn't receive the email? Check your spam folder or try signing up again.
               </p>
               
               <button
                 onClick={() => navigate('/auth')}
-                className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 transform hover:scale-105"
+                className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 transform hover:scale-105 text-sm sm:text-base"
               >
                 Back to Sign In
               </button>
@@ -252,7 +254,7 @@ const Onboarding = () => {
   // Show loading while checking auth state
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center px-4">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600">Loading...</p>
@@ -262,16 +264,16 @@ const Onboarding = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-8">
-      <div className="container mx-auto px-4 max-w-2xl">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-4 sm:py-8 px-4">
+      <div className="container mx-auto max-w-2xl">
         <ModernOnboardingHeader 
           step={step} 
           totalSteps={totalSteps} 
           progress={progress} 
         />
 
-        <Card className="p-8 bg-white/90 backdrop-blur-sm border-0 shadow-xl">
-          <div className="min-h-[500px]">
+        <Card className="p-4 sm:p-8 bg-white/90 backdrop-blur-sm border-0 shadow-xl">
+          <div className="min-h-[400px] sm:min-h-[500px]">
             {renderStepContent()}
           </div>
 

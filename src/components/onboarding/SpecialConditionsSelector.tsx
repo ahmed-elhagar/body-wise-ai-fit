@@ -12,9 +12,9 @@ interface SpecialConditionsSelectorProps {
 
 const SpecialConditionsSelector = ({ formData, updateFormData }: SpecialConditionsSelectorProps) => {
   return (
-    <div className="space-y-6">
-      {/* Pregnancy Section */}
-      <Card className="p-4 border-2 border-pink-200 bg-pink-50/50">
+    <div className="space-y-4 sm:space-y-6">
+      {/* Pregnancy Section - Mobile responsive */}
+      <Card className="p-3 sm:p-4 border-2 border-pink-200 bg-pink-50/50">
         <div className="flex items-center gap-2 mb-3">
           <Baby className="w-4 h-4 text-pink-600" />
           <Label className="text-sm font-medium text-gray-700">Pregnancy Status</Label>
@@ -23,7 +23,7 @@ const SpecialConditionsSelector = ({ formData, updateFormData }: SpecialConditio
           value={formData.pregnancy_trimester}
           onValueChange={(value) => updateFormData("pregnancy_trimester", value)}
         >
-          <SelectTrigger className="border-pink-300 focus:border-pink-500">
+          <SelectTrigger className="border-pink-300 focus:border-pink-500 h-11 text-base">
             <SelectValue placeholder="Select if pregnant" />
           </SelectTrigger>
           <SelectContent>
@@ -35,8 +35,8 @@ const SpecialConditionsSelector = ({ formData, updateFormData }: SpecialConditio
         </Select>
       </Card>
 
-      {/* Breastfeeding Section */}
-      <Card className="p-4 border-2 border-blue-200 bg-blue-50/50">
+      {/* Breastfeeding Section - Mobile responsive */}
+      <Card className="p-3 sm:p-4 border-2 border-blue-200 bg-blue-50/50">
         <div className="flex items-center gap-2 mb-3">
           <Heart className="w-4 h-4 text-blue-600" />
           <Label className="text-sm font-medium text-gray-700">Breastfeeding Status</Label>
@@ -45,7 +45,7 @@ const SpecialConditionsSelector = ({ formData, updateFormData }: SpecialConditio
           value={formData.breastfeeding_level}
           onValueChange={(value) => updateFormData("breastfeeding_level", value)}
         >
-          <SelectTrigger className="border-blue-300 focus:border-blue-500">
+          <SelectTrigger className="border-blue-300 focus:border-blue-500 h-11 text-base">
             <SelectValue placeholder="Select breastfeeding status" />
           </SelectTrigger>
           <SelectContent>
@@ -56,8 +56,8 @@ const SpecialConditionsSelector = ({ formData, updateFormData }: SpecialConditio
         </Select>
       </Card>
 
-      {/* Fasting Section */}
-      <Card className="p-4 border-2 border-green-200 bg-green-50/50">
+      {/* Fasting Section - Mobile responsive */}
+      <Card className="p-3 sm:p-4 border-2 border-green-200 bg-green-50/50">
         <div className="flex items-center gap-2 mb-3">
           <Utensils className="w-4 h-4 text-green-600" />
           <Label className="text-sm font-medium text-gray-700">Intermittent Fasting</Label>
@@ -66,7 +66,7 @@ const SpecialConditionsSelector = ({ formData, updateFormData }: SpecialConditio
           value={formData.fasting_type}
           onValueChange={(value) => updateFormData("fasting_type", value)}
         >
-          <SelectTrigger className="border-green-300 focus:border-green-500">
+          <SelectTrigger className="border-green-300 focus:border-green-500 h-11 text-base">
             <SelectValue placeholder="Select fasting type" />
           </SelectTrigger>
           <SelectContent>

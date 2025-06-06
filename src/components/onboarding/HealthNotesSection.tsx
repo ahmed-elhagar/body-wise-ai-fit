@@ -22,8 +22,8 @@ const HealthNotesSection = ({ value, onChange }: HealthNotesSectionProps) => {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder="Any additional health information, medications, recent injuries, or concerns you'd like us to know about..."
-        className="min-h-[120px] border-2 border-gray-200 focus:border-purple-500 transition-colors rounded-xl resize-none"
-        rows={5}
+        className="min-h-[100px] sm:min-h-[120px] border-2 border-gray-200 focus:border-purple-500 transition-colors rounded-xl resize-none text-base"
+        rows={4}
       />
       
       <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-3">

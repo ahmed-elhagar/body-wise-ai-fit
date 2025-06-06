@@ -94,7 +94,9 @@ export const useOnboardingForm = () => {
       
       // Body Composition
       if (profile.body_shape) newFormData.body_shape = profile.body_shape;
-      if (profile.body_fat_percentage) newFormData.body_fat_percentage = profile.body_fat_percentage.toString();
+      if (profile.body_fat_percentage !== undefined && profile.body_fat_percentage !== null) {
+        newFormData.body_fat_percentage = profile.body_fat_percentage.toString();
+      }
       
       // Fitness Goals & Preferences
       if (profile.fitness_goal) newFormData.fitness_goal = profile.fitness_goal;
@@ -102,6 +104,7 @@ export const useOnboardingForm = () => {
       
       // Health Information
       if (profile.health_conditions) newFormData.health_conditions = profile.health_conditions;
+      if (profile.health_notes) newFormData.health_notes = profile.health_notes;
       if (profile.allergies) newFormData.allergies = profile.allergies;
       
       // Dietary Preferences

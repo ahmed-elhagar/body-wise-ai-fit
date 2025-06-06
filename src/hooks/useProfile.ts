@@ -31,6 +31,7 @@ export interface Profile {
   profile_completion_score?: number;
   nationality?: string;
   body_shape?: string;
+  body_fat_percentage?: number;
   pregnancy_trimester?: number;
   breastfeeding_level?: string;
   fasting_type?: string;
@@ -38,6 +39,7 @@ export interface Profile {
   special_conditions?: any;
   preferred_language?: string;
   last_health_assessment_date?: string;
+  health_notes?: string;
 }
 
 export const useProfile = () => {
