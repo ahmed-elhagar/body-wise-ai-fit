@@ -26,7 +26,7 @@ const UnifiedBodyFatSelector = ({ value, onChange, gender }: UnifiedBodyFatSelec
       setCurrentValue(defaultValue);
       onChange(defaultValue);
     }
-  }, [gender]);
+  }, [gender, onChange]);
 
   const handleValueChange = (newValue: number[]) => {
     const val = newValue[0];
@@ -55,6 +55,22 @@ const UnifiedBodyFatSelector = ({ value, onChange, gender }: UnifiedBodyFatSelec
     }
   };
 
+  const getBodyFatDescription = (percentage: number, gender: string) => {
+    if (gender === 'male') {
+      if (percentage < 10) return 'Essential Fat';
+      if (percentage < 15) return 'Athletic';
+      if (percentage < 20) return 'Fitness';
+      if (percentage < 25) return 'Average';
+      return 'Above Average';
+    } else {
+      if (percentage < 16) return 'Essential Fat';
+      if (percentage < 21) return 'Athletic';
+      if (percentage < 25) return 'Fitness';
+      if (percentage < 32) return 'Average';
+      return 'Above Average';
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="text-center">
@@ -66,28 +82,43 @@ const UnifiedBodyFatSelector = ({ value, onChange, gender }: UnifiedBodyFatSelec
         </p>
       </div>
       
-      {/* Main body visualization - matching reference design */}
-      <div className="relative bg-black rounded-2xl p-8 min-h-[600px] flex flex-col items-center justify-center">
+      {/* Main body visualization - using app's gradient colors */}
+      <div className="relative bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-800 rounded-2xl p-8 min-h-[600px] flex flex-col items-center justify-center">
+        {/* Decorative background pattern */}
+        <div className="absolute inset-0 opacity-10 rounded-2xl">
+          <div className="w-full h-full" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+          }}></div>
+        </div>
+
         {/* Body visualization */}
-        <div className="flex-1 flex items-center justify-center mb-6">
+        <div className="flex-1 flex items-center justify-center mb-6 relative z-10">
           <div className="relative">
             <img 
               src={getBodyShapeImage(currentValue, gender)}
               alt={`Body shape visualization for ${currentValue}% body fat`}
-              className="h-96 w-auto object-contain transition-all duration-500 ease-in-out"
+              className="h-96 w-auto object-contain transition-all duration-500 ease-in-out drop-shadow-2xl"
             />
+            
+            {/* Overlay percentage indicator */}
+            <div className="absolute top-2 right-2 bg-white/20 backdrop-blur-sm rounded-full px-3 py-1 border border-white/30">
+              <span className="text-sm font-semibold text-white">{currentValue}%</span>
+            </div>
           </div>
         </div>
 
-        {/* Percentage indicator bubble */}
-        <div className="mb-6">
-          <div className="bg-gray-700 text-white px-4 py-2 rounded-full text-lg font-semibold">
-            {currentValue}%
+        {/* Percentage display and description */}
+        <div className="mb-6 text-center relative z-10">
+          <div className="bg-white/20 backdrop-blur-sm text-white px-8 py-4 rounded-full shadow-lg border border-white/30 mb-3">
+            <span className="text-3xl font-bold">{currentValue}%</span>
           </div>
+          <p className="text-lg font-medium text-white/90">
+            {getBodyFatDescription(currentValue, gender)}
+          </p>
         </div>
 
         {/* Slider with + and - buttons */}
-        <div className="w-full max-w-md space-y-4">
+        <div className="w-full max-w-md space-y-4 relative z-10">
           <div className="flex items-center gap-4">
             <button
               onClick={() => {
@@ -95,7 +126,7 @@ const UnifiedBodyFatSelector = ({ value, onChange, gender }: UnifiedBodyFatSelec
                 setCurrentValue(newVal);
                 onChange(newVal);
               }}
-              className="w-12 h-12 bg-teal-500 hover:bg-teal-600 rounded-lg flex items-center justify-center text-white text-xl font-bold transition-colors"
+              className="w-12 h-12 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg flex items-center justify-center text-white text-xl font-bold transition-all duration-300 border border-white/30 hover:border-white/50"
             >
               −
             </button>
@@ -118,16 +149,62 @@ const UnifiedBodyFatSelector = ({ value, onChange, gender }: UnifiedBodyFatSelec
                 setCurrentValue(newVal);
                 onChange(newVal);
               }}
-              className="w-12 h-12 bg-teal-500 hover:bg-teal-600 rounded-lg flex items-center justify-center text-white text-xl font-bold transition-colors"
+              className="w-12 h-12 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg flex items-center justify-center text-white text-xl font-bold transition-all duration-300 border border-white/30 hover:border-white/50"
             >
               +
             </button>
           </div>
           
-          <div className="flex justify-between text-xs text-gray-400">
+          <div className="flex justify-between text-xs text-white/70">
             <span>Very Lean</span>
             <span>Average</span>
             <span>High</span>
+          </div>
+        </div>
+
+        {/* Body fat ranges guide */}
+        <div className="mt-6 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4 w-full max-w-md relative z-10">
+          <h4 className="text-sm font-medium text-white mb-3">Body Fat Percentage Guide</h4>
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            {gender === 'male' ? (
+              <>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+                  <span className="text-white/80">8-14% Athletic</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-blue-400 rounded-full"></div>
+                  <span className="text-white/80">15-18% Fitness</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                  <span className="text-white/80">19-24% Average</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-red-400 rounded-full"></div>
+                  <span className="text-white/80">25%+ Above Average</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+                  <span className="text-white/80">16-20% Athletic</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-blue-400 rounded-full"></div>
+                  <span className="text-white/80">21-25% Fitness</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                  <span className="text-white/80">26-31% Average</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-red-400 rounded-full"></div>
+                  <span className="text-white/80">32%+ Above Average</span>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>

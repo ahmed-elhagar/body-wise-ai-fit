@@ -22,7 +22,6 @@ export interface OnboardingFormData {
 }
 
 export const useOnboardingForm = () => {
-  // Initialize all hooks at the top level - never conditionally
   const { user } = useAuth();
   const { profile } = useProfile();
   
@@ -44,9 +43,8 @@ export const useOnboardingForm = () => {
     dietary_restrictions: [],
   });
 
-  // Single effect to populate form data - avoid multiple effects
+  // Populate form data from user and profile
   useEffect(() => {
-    // Only update if we have either user or profile data
     if (!user && !profile) return;
 
     const newFormData: Partial<OnboardingFormData> = {};
@@ -83,9 +81,10 @@ export const useOnboardingForm = () => {
     if (Object.keys(newFormData).length > 0) {
       setFormData(prev => ({ ...prev, ...newFormData }));
     }
-  }, [user, profile]); // Dependencies are stable
+  }, [user, profile]);
 
   const updateFormData = (field: string, value: string | string[]) => {
+    console.log('Updating form data:', field, value);
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 

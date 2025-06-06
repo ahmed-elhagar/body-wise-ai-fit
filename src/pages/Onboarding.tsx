@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -77,22 +78,28 @@ const Onboarding = () => {
       try {
         console.log('Onboarding - Final step, saving profile data');
         
+        // Ensure activity_level has valid values
+        const validActivityLevels = ['sedentary', 'light', 'moderate', 'active', 'very_active'];
+        const activityLevel = validActivityLevels.includes(formData.activity_level) 
+          ? formData.activity_level 
+          : 'moderate'; // Default fallback
+
         const profileData = {
-          first_name: formData.first_name,
-          last_name: formData.last_name,
+          first_name: formData.first_name?.trim(),
+          last_name: formData.last_name?.trim(),
           age: formData.age ? parseInt(formData.age) : undefined,
-          gender: formData.gender as any,
+          gender: formData.gender,
           height: formData.height ? parseFloat(formData.height) : undefined,
           weight: formData.weight ? parseFloat(formData.weight) : undefined,
-          nationality: formData.nationality === "prefer_not_to_say" ? null : formData.nationality,
-          body_shape: formData.body_shape as any,
+          nationality: formData.nationality === "prefer_not_to_say" ? null : formData.nationality?.trim(),
+          body_shape: formData.body_shape || null,
           body_fat_percentage: formData.body_fat_percentage ? parseFloat(formData.body_fat_percentage) : undefined,
-          health_conditions: formData.health_conditions,
-          fitness_goal: formData.fitness_goal as any,
-          activity_level: formData.activity_level as any,
-          allergies: formData.allergies,
-          preferred_foods: formData.preferred_foods,
-          dietary_restrictions: formData.dietary_restrictions,
+          health_conditions: formData.health_conditions || [],
+          fitness_goal: formData.fitness_goal,
+          activity_level: activityLevel,
+          allergies: formData.allergies || [],
+          preferred_foods: formData.preferred_foods || [],
+          dietary_restrictions: formData.dietary_restrictions || [],
           onboarding_completed: true,
           ai_generations_remaining: 5
         };
@@ -110,10 +117,8 @@ const Onboarding = () => {
         
         console.log('Onboarding - Profile saved successfully, redirecting to success page');
         
-        // Small delay to ensure the profile update is processed
-        setTimeout(() => {
-          navigate('/onboarding-success', { replace: true });
-        }, 500);
+        // Navigate directly to success page
+        navigate('/onboarding-success', { replace: true });
 
       } catch (error) {
         console.error('Onboarding - Unexpected error:', error);

@@ -2,7 +2,7 @@
 import { Target } from "lucide-react";
 import { OnboardingFormData } from "@/hooks/useOnboardingForm";
 import UnifiedBodyFatSelector from "./UnifiedBodyFatSelector";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface EnhancedOnboardingStep2Props {
   formData: OnboardingFormData;
@@ -10,13 +10,26 @@ interface EnhancedOnboardingStep2Props {
 }
 
 const EnhancedOnboardingStep2 = ({ formData, updateFormData }: EnhancedOnboardingStep2Props) => {
-  const [bodyFatPercentage, setBodyFatPercentage] = useState(
-    formData.gender === 'male' ? 20 : 25
-  );
+  const [bodyFatPercentage, setBodyFatPercentage] = useState(() => {
+    const existingValue = formData.body_fat_percentage;
+    if (existingValue && !isNaN(parseFloat(existingValue))) {
+      return parseFloat(existingValue);
+    }
+    return formData.gender === 'male' ? 20 : 25;
+  });
+
+  // Update body fat percentage when gender changes
+  useEffect(() => {
+    if (!formData.body_fat_percentage || formData.body_fat_percentage === '') {
+      const defaultValue = formData.gender === 'male' ? 20 : 25;
+      setBodyFatPercentage(defaultValue);
+      updateFormData("body_fat_percentage", defaultValue.toString());
+    }
+  }, [formData.gender]);
 
   const handleBodyFatChange = (value: number) => {
+    console.log('Body fat percentage changed to:', value);
     setBodyFatPercentage(value);
-    // Store body fat percentage in form data for later use
     updateFormData("body_fat_percentage", value.toString());
   };
 
