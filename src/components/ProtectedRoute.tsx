@@ -56,6 +56,21 @@ const ProtectedRoute = React.memo<ProtectedRouteProps>(({
     return <Navigate to={redirectTo} state={{ from: location.pathname }} replace />;
   }
 
+  // Special handling for onboarding route
+  if (location.pathname === '/onboarding') {
+    if (!user) {
+      // Unauthenticated users can access onboarding (it includes signup)
+      return <>{children}</>;
+    } else if (user && profile && profile.onboarding_completed) {
+      // Authenticated users who completed onboarding should go to dashboard
+      console.log("ProtectedRoute - Authenticated user with completed onboarding, redirecting to dashboard");
+      return <Navigate to="/dashboard" replace />;
+    } else if (user && (!profile || !profile.onboarding_completed)) {
+      // Authenticated users who haven't completed onboarding can continue
+      return <>{children}</>;
+    }
+  }
+
   // If user is authenticated but trying to access auth pages
   if (!requireAuth && user) {
     // If user has completed onboarding, go to dashboard
