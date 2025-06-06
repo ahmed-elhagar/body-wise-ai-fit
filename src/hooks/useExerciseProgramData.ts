@@ -7,13 +7,17 @@ import { useAuth } from '@/hooks/useAuth';
 interface ExerciseProgram {
   id: string;
   created_at: string;
-  name: string;
-  description: string;
+  updated_at: string;
+  program_name: string;
+  difficulty_level: string;
+  workout_type: "home" | "gym";
+  current_week: number;
+  week_start_date: string;
   user_id: string;
-  difficulty: string;
-  duration: number;
-  focus: string;
-  is_public: boolean;
+  status: string;
+  total_estimated_calories: number;
+  generation_prompt: any;
+  daily_workouts?: any[];
 }
 
 const fetchExercisePrograms = async (userId: string | undefined): Promise<ExerciseProgram[]> => {

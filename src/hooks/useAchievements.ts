@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { useOptimizedExerciseProgramPage } from './useOptimizedExerciseProgramPage';
+import { useExerciseProgramPage } from './useExerciseProgramPage';
 
 interface Achievement {
   id: string;
@@ -17,7 +17,7 @@ interface Achievement {
 }
 
 export const useAchievements = () => {
-  const { currentProgram } = useOptimizedExerciseProgramPage();
+  const { currentProgram } = useExerciseProgramPage();
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 

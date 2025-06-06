@@ -1,10 +1,10 @@
 
 import { Card } from '@/components/ui/card';
-import { useOptimizedExerciseProgramPage } from '@/hooks/useOptimizedExerciseProgramPage';
+import { useExerciseProgramPage } from '@/hooks/useExerciseProgramPage';
 import { TrendingUp, Target, Calendar } from 'lucide-react';
 
 export const ProgressAnalytics = () => {
-  const { currentProgram } = useOptimizedExerciseProgramPage();
+  const { currentProgram } = useExerciseProgramPage();
   
   const totalExercises = currentProgram?.daily_workouts?.reduce((sum: number, workout: any) => 
     sum + (workout.exercises?.length || 0), 0) || 0;
