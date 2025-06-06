@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useProfile } from './useProfile';
 
@@ -30,7 +29,7 @@ const initialFormData: OnboardingFormData = {
   gender: "",
   height: "",
   weight: "",
-  nationality: "",
+  nationality: "prefer_not_to_say",
   // Health & Goals
   body_shape: "",
   health_conditions: [],
@@ -58,7 +57,7 @@ export const useOnboardingForm = () => {
         gender: profile.gender || "",
         height: profile.height ? profile.height.toString() : "",
         weight: profile.weight ? profile.weight.toString() : "",
-        nationality: profile.nationality || "",
+        nationality: profile.nationality || "prefer_not_to_say",
         body_shape: profile.body_shape || "",
         health_conditions: profile.health_conditions || [],
         fitness_goal: profile.fitness_goal || "",

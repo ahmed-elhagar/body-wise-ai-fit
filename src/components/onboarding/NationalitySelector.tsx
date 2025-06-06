@@ -9,7 +9,7 @@ interface NationalitySelectorProps {
 
 const NationalitySelector = ({ value, onChange }: NationalitySelectorProps) => {
   const nationalities = [
-    { value: "", label: "Prefer not to say" },
+    { value: "prefer_not_to_say", label: "Prefer not to say" },
     { value: "saudi", label: "Saudi Arabian" },
     { value: "emirati", label: "Emirati" },
     { value: "qatari", label: "Qatari" },
@@ -41,7 +41,7 @@ const NationalitySelector = ({ value, onChange }: NationalitySelectorProps) => {
       <Label htmlFor="nationality" className="text-sm font-medium text-gray-700">
         Nationality (Optional)
       </Label>
-      <Select value={value} onValueChange={onChange}>
+      <Select value={value || "prefer_not_to_say"} onValueChange={onChange}>
         <SelectTrigger className="h-12 border-2 border-gray-200 focus:border-blue-500 transition-colors rounded-xl" data-testid="nationality">
           <SelectValue placeholder="Select your nationality (optional)" />
         </SelectTrigger>

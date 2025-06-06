@@ -75,7 +75,7 @@ const Onboarding = () => {
           gender: formData.gender as any,
           height: formData.height ? parseFloat(formData.height) : undefined,
           weight: formData.weight ? parseFloat(formData.weight) : undefined,
-          nationality: formData.nationality || null, // Allow empty nationality
+          nationality: formData.nationality === "prefer_not_to_say" ? null : formData.nationality,
           body_shape: formData.body_shape as any,
           health_conditions: formData.health_conditions,
           fitness_goal: formData.fitness_goal as any,
