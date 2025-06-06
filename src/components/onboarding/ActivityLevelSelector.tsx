@@ -1,7 +1,6 @@
 
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Bed, User, Bike, Zap } from "lucide-react";
+import { Card } from "@/components/ui/card";
 
 interface ActivityLevelSelectorProps {
   value: string;
@@ -10,65 +9,73 @@ interface ActivityLevelSelectorProps {
 
 const ActivityLevelSelector = ({ value, onChange }: ActivityLevelSelectorProps) => {
   const activityLevels = [
-    { 
-      id: 'sedentary', 
-      label: 'Sedentary', 
-      icon: Bed, 
-      color: 'text-gray-500',
-      description: 'Little to no exercise, desk job'
+    {
+      value: 'sedentary',
+      title: 'Sedentary',
+      description: 'Little to no exercise, desk job',
+      icon: '🪑'
     },
-    { 
-      id: 'light', 
-      label: 'Lightly Active', 
-      icon: User, 
-      color: 'text-blue-500',
-      description: 'Light exercise 1-3 days/week'
+    {
+      value: 'light',
+      title: 'Lightly Active',
+      description: 'Light exercise 1-3 times per week',
+      icon: '🚶'
     },
-    { 
-      id: 'moderate', 
-      label: 'Moderately Active', 
-      icon: Bike, 
-      color: 'text-green-500',
-      description: 'Moderate exercise 3-5 days/week'
+    {
+      value: 'moderate',
+      title: 'Moderately Active', 
+      description: 'Moderate exercise 3-5 times per week',
+      icon: '🏃'
     },
-    { 
-      id: 'very_active', 
-      label: 'Very Active', 
-      icon: Zap, 
-      color: 'text-orange-500',
-      description: 'Hard exercise 6-7 days/week'
+    {
+      value: 'active',
+      title: 'Very Active',
+      description: 'Hard exercise 6-7 times per week',
+      icon: '🏋️'
     },
+    {
+      value: 'very_active',
+      title: 'Extremely Active',
+      description: 'Very hard exercise, physical job',
+      icon: '🤸'
+    }
   ];
 
   return (
     <div className="space-y-4">
       <Label className="text-sm font-medium text-gray-700">
-        How active are you? *
+        How active are you currently?
       </Label>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {activityLevels.map((level) => {
-          const Icon = level.icon;
-          const isSelected = value === level.id;
-          
-          return (
-            <Button
-              key={level.id}
-              type="button"
-              variant={isSelected ? "default" : "outline"}
-              className={`h-auto p-4 flex flex-col items-start gap-3 text-left ${
-                isSelected ? 'ring-2 ring-blue-500' : ''
-              }`}
-              onClick={() => onChange(level.id)}
-            >
-              <div className="flex items-center gap-3 w-full">
-                <Icon className={`w-6 h-6 ${level.color}`} />
-                <span className="font-medium">{level.label}</span>
+      <div className="grid gap-3">
+        {activityLevels.map((level) => (
+          <Card
+            key={level.value}
+            className={`p-4 cursor-pointer transition-all duration-300 border-2 hover:shadow-md ${
+              value === level.value
+                ? 'border-purple-500 bg-gradient-to-r from-purple-50 to-pink-50 shadow-md'
+                : 'border-gray-200 hover:border-purple-300'
+            }`}
+            onClick={() => onChange(level.value)}
+          >
+            <div className="flex items-center gap-3">
+              <div className="text-2xl">{level.icon}</div>
+              <div className="flex-1">
+                <h4 className="font-semibold text-gray-800">{level.title}</h4>
+                <p className="text-sm text-gray-600">{level.description}</p>
               </div>
-              <p className="text-sm text-gray-500">{level.description}</p>
-            </Button>
-          );
-        })}
+              <div className={`w-5 h-5 rounded-full border-2 transition-colors ${
+                value === level.value
+                  ? 'border-purple-500 bg-purple-500'
+                  : 'border-gray-300'
+              }`}>
+                {value === level.value && (
+                  <div className="w-full h-full rounded-full bg-white scale-50"></div>
+                )}
+              </div>
+            </div>
+          </Card>
+        ))}
       </div>
     </div>
   );

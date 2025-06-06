@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -78,14 +77,22 @@ const Onboarding = () => {
       try {
         console.log('Onboarding - Final step, saving profile data');
         
-        // Ensure activity_level has valid values
-        const validActivityLevels = ['sedentary', 'light', 'moderate', 'active', 'very_active'];
-        const activityLevel = validActivityLevels.includes(formData.activity_level) 
-          ? formData.activity_level 
-          : 'moderate'; // Default fallback
+        // Map activity level to valid database values
+        const activityLevelMapping = {
+          'sedentary': 'sedentary',
+          'light': 'lightly_active',
+          'moderate': 'moderately_active', 
+          'active': 'very_active',
+          'very_active': 'extremely_active'
+        };
 
-        // Parse body fat percentage as a number
-        const bodyFatValue = formData.body_fat_percentage ? parseFloat(formData.body_fat_percentage) : null;
+        const mappedActivityLevel = activityLevelMapping[formData.activity_level as keyof typeof activityLevelMapping] || 'moderately_active';
+
+        // Ensure body fat percentage is properly converted
+        const bodyFatValue = formData.body_fat_percentage ? 
+          (typeof formData.body_fat_percentage === 'string' ? 
+            parseFloat(formData.body_fat_percentage) : 
+            formData.body_fat_percentage) : null;
 
         const profileData = {
           first_name: formData.first_name?.trim(),
@@ -99,7 +106,7 @@ const Onboarding = () => {
           body_fat_percentage: bodyFatValue,
           health_conditions: formData.health_conditions || [],
           fitness_goal: formData.fitness_goal || null,
-          activity_level: activityLevel,
+          activity_level: mappedActivityLevel,
           allergies: formData.allergies || [],
           preferred_foods: formData.preferred_foods || [],
           dietary_restrictions: formData.dietary_restrictions || [],
@@ -119,8 +126,6 @@ const Onboarding = () => {
         }
         
         console.log('Onboarding - Profile saved successfully, redirecting to success page');
-        
-        // Navigate directly to success page
         navigate('/onboarding-success', { replace: true });
 
       } catch (error) {

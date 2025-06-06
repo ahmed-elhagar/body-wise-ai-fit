@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "./useAuth";
 import { useProfile } from "./useProfile";
@@ -12,10 +11,11 @@ export interface OnboardingFormData {
   weight: string;
   nationality: string;
   body_shape: string;
-  body_fat_percentage: string;
+  body_fat_percentage: string | number;
   fitness_goal: string;
   activity_level: string;
   health_conditions: string[];
+  health_notes: string;
   allergies: string[];
   preferred_foods: string[];
   dietary_restrictions: string[];
@@ -38,6 +38,7 @@ export const useOnboardingForm = () => {
     fitness_goal: '',
     activity_level: '',
     health_conditions: [],
+    health_notes: '',
     allergies: [],
     preferred_foods: [],
     dietary_restrictions: [],
@@ -83,7 +84,7 @@ export const useOnboardingForm = () => {
     }
   }, [user, profile]);
 
-  const updateFormData = (field: string, value: string | string[]) => {
+  const updateFormData = (field: string, value: string | string[] | number) => {
     console.log('Updating form data:', field, value);
     setFormData(prev => ({ ...prev, [field]: value }));
   };
