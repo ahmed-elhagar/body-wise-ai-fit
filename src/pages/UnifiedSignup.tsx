@@ -15,6 +15,7 @@ import UnifiedStep4 from "@/components/unified/UnifiedStep4";
 import UnifiedStep5 from "@/components/unified/UnifiedStep5";
 import UnifiedStep6 from "@/components/unified/UnifiedStep6";
 import { useUnifiedForm } from "@/hooks/useUnifiedForm";
+import EnhancedPageLoading from "@/components/ui/enhanced-page-loading";
 
 const UnifiedSignup = () => {
   const navigate = useNavigate();
@@ -36,12 +37,14 @@ const UnifiedSignup = () => {
   const totalSteps = getTotalSteps();
   const progress = (step / totalSteps) * 100;
 
-  // Redirect authenticated users
+  // Redirect authenticated users with completed profiles
   useEffect(() => {
     if (!authLoading && user) {
-      navigate('/dashboard', { replace: true });
+      // Allow authenticated users with incomplete profiles to stay on signup
+      // They will be redirected after completing the profile
+      console.log('UnifiedSignup - User is authenticated, allowing profile completion');
     }
-  }, [user, authLoading, navigate]);
+  }, [user, authLoading]);
 
   const isStepValid = (): boolean => {
     return validateUnifiedStep(step, formData);
@@ -118,6 +121,11 @@ const UnifiedSignup = () => {
   };
 
   const completeSetup = async () => {
+    if (!user) {
+      toast.error('Please create an account first');
+      return;
+    }
+
     setIsCompleting(true);
     try {
       // Map activity level to valid database values
@@ -239,10 +247,13 @@ const UnifiedSignup = () => {
   if (authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center px-4">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
+        <EnhancedPageLoading
+          isLoading={true}
+          type="general"
+          title="Loading"
+          description="Please wait..."
+          timeout={3000}
+        />
       </div>
     );
   }

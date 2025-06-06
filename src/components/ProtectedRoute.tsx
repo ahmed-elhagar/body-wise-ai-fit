@@ -1,4 +1,5 @@
-import React, { ReactNode, startTransition } from 'react';
+
+import React, { ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useProfile } from '@/hooks/useProfile';

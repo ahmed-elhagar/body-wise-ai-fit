@@ -15,7 +15,7 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   
   const { signIn, signUp, user, loading: authLoading } = useAuth();
-  const { profile, isLoading: profileLoading, updateProfile } = useProfile();
+  const { profile, isLoading: profileLoading } = useProfile();
   const navigate = useNavigate();
 
   // Redirect authenticated users
@@ -35,7 +35,7 @@ const Auth = () => {
     }
 
     // Check if user has completed onboarding
-    if (!profile || !profile.onboarding_completed || !profile.first_name || !profile.last_name) {
+    if (!profile || !profile.onboarding_completed) {
       console.log('Auth - Redirecting to signup (incomplete profile)');
       navigate('/signup', { replace: true });
     } else {
@@ -69,33 +69,13 @@ const Auth = () => {
     setLoading(true);
     try {
       if (isSignUp) {
-        await signUp(data.email, data.password, { 
-          first_name: data.firstName, 
-          last_name: data.lastName 
-        });
-        console.log('Sign up successful, user will be redirected after profile creation');
-        toast.success('Account created successfully!');
-        
-        // Create initial profile with signup data
-        if (data.firstName && data.lastName) {
-          try {
-            await updateProfile({
-              first_name: data.firstName,
-              last_name: data.lastName,
-              onboarding_completed: false
-            });
-            console.log('Initial profile created with signup data');
-          } catch (error) {
-            console.error('Failed to create initial profile:', error);
-          }
-        }
-        
-        // Let useEffect handle redirection based on auth state
+        // For signup, redirect to unified signup page
+        navigate('/signup');
+        return;
       } else {
         await signIn(data.email, data.password);
         console.log('Sign in successful');
         toast.success('Welcome back!');
-        // For signin, let the useEffect handle redirection based on auth state
       }
     } catch (error: any) {
       console.error('Auth error:', error);

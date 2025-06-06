@@ -1,13 +1,49 @@
 
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import { Navigate } from "react-router-dom";
+import EnhancedPageLoading from "@/components/ui/enhanced-page-loading";
 
 const Landing = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const { profile, isLoading: profileLoading } = useProfile();
 
-  // Redirect to dashboard if user is already logged in
+  // Show loading while checking authentication
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <EnhancedPageLoading
+          isLoading={true}
+          type="general"
+          title="Loading"
+          description="Please wait..."
+          timeout={3000}
+        />
+      </div>
+    );
+  }
+
+  // If user is authenticated, redirect based on profile completion
   if (user) {
-    return <Navigate to="/dashboard" replace />;
+    if (profileLoading) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+          <EnhancedPageLoading
+            isLoading={true}
+            type="general"
+            title="Loading Profile"
+            description="Setting up your account..."
+            timeout={3000}
+          />
+        </div>
+      );
+    }
+
+    if (profile?.onboarding_completed) {
+      return <Navigate to="/dashboard" replace />;
+    } else {
+      return <Navigate to="/signup" replace />;
+    }
   }
 
   return (

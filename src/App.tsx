@@ -32,7 +32,7 @@ function App() {
               {/* Public routes */}
               <Route path="/" element={<Landing />} />
               
-              {/* Auth route for login */}
+              {/* Auth route for login only */}
               <Route 
                 path="/auth" 
                 element={
@@ -45,14 +45,10 @@ function App() {
               {/* Unified signup flow */}
               <Route 
                 path="/signup" 
-                element={
-                  <ProtectedRoute requireAuth={false}>
-                    <UnifiedSignup />
-                  </ProtectedRoute>
-                } 
+                element={<UnifiedSignup />}
               />
               
-              {/* Remove old onboarding route - redirect to signup */}
+              {/* Redirect old onboarding route to signup */}
               <Route path="/onboarding" element={<Navigate to="/signup" replace />} />
               
               {/* Success page */}
