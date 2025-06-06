@@ -8,17 +8,13 @@ import { toast } from "sonner";
 import { useOnboardingForm } from "@/hooks/useOnboardingForm";
 import { validateOnboardingStep } from "@/utils/onboardingValidation";
 import ModernOnboardingHeader from "@/components/onboarding/ModernOnboardingHeader";
-import ModernOnboardingStep1 from "@/components/onboarding/ModernOnboardingStep1";
-import ModernOnboardingStep2 from "@/components/onboarding/ModernOnboardingStep2";
-import ModernOnboardingStep3 from "@/components/onboarding/ModernOnboardingStep3";
-import ModernOnboardingStep4 from "@/components/onboarding/ModernOnboardingStep4";
-import ModernOnboardingNavigation from "@/components/onboarding/ModernOnboardingNavigation";
 import EnhancedOnboardingStep1 from "@/components/onboarding/EnhancedOnboardingStep1";
 import EnhancedOnboardingStep2 from "@/components/onboarding/EnhancedOnboardingStep2";
 import EnhancedOnboardingStep3 from "@/components/onboarding/EnhancedOnboardingStep3";
 import EnhancedOnboardingStep4 from "@/components/onboarding/EnhancedOnboardingStep4";
+import ModernOnboardingNavigation from "@/components/onboarding/ModernOnboardingNavigation";
 
-const Onboarding = () => {
+const EnhancedOnboarding = () => {
   const navigate = useNavigate();
   const { updateProfile, isUpdating, profile } = useProfile();
   const { user, loading: authLoading, signOut } = useAuth();
@@ -241,4 +237,4 @@ const Onboarding = () => {
   );
 };
 
-export default Onboarding;
+export default EnhancedOnboarding;
