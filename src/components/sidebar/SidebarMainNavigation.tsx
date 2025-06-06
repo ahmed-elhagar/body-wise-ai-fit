@@ -30,21 +30,19 @@ interface NavigationItem {
 }
 
 export const SidebarMainNavigation = () => {
-  const { tFrom, isRTL } = useI18n();
-  const tNav = tFrom('navigation');
+  const { t, isRTL } = useI18n();
   const location = useLocation();
   const { state, isMobile } = useSidebar();
   const isCollapsed = state === "collapsed" && !isMobile;
 
   const mainItems: NavigationItem[] = [
-    { href: "/", icon: Home, label: String(tNav("dashboard")) },
-    { href: "/meal-plan", icon: Utensils, label: String(tNav("mealPlan")) },
-    { href: "/exercise", icon: Dumbbell, label: String(tNav("exercise")) },
-    { href: "/progress", icon: BarChart3, label: String(tNav("progress")) },
-    { href: "/goals", icon: Target, label: String(tNav("goals")) },
-    { href: "/food-tracker", icon: Calendar, label: String(tNav("foodTracker")) },
-    { href: "/chat", icon: MessageSquare, label: String(tNav("aiChat")) },
-    { href: "/profile", icon: User, label: String(tNav("profile")) },
+    { href: "/", icon: Home, label: "Dashboard" },
+    { href: "/meal-plan", icon: Utensils, label: "Meal Plan" },
+    { href: "/exercise", icon: Dumbbell, label: "Exercise" },
+    { href: "/progress", icon: BarChart3, label: "Progress" },
+    { href: "/goals", icon: Target, label: "Goals" },
+    { href: "/food-tracker", icon: Calendar, label: "Food Tracker" },
+    { href: "/chat", icon: MessageSquare, label: "AI Chat" },
   ];
 
   return (
@@ -54,7 +52,7 @@ export const SidebarMainNavigation = () => {
           "text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-3",
           isRTL && "text-right"
         )}>
-          {String(tNav("menu"))}
+          Menu
         </SidebarGroupLabel>
       )}
       

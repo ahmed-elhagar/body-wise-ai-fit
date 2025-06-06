@@ -51,9 +51,12 @@ export const SidebarFooter = () => {
 
   return (
     <div className="p-3 border-t bg-gradient-to-r from-gray-50 to-gray-100">
-      {/* User Info Section */}
+      {/* Clickable User Info Section */}
       {state === "expanded" && !isCollapsing && (
-        <div className="mb-4 p-3 bg-white rounded-lg shadow-sm border">
+        <div 
+          className="mb-4 p-3 bg-white rounded-lg shadow-sm border cursor-pointer hover:bg-gray-50 transition-colors"
+          onClick={() => navigate('/profile')}
+        >
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
               <User className="w-4 h-4 text-white" />
@@ -82,11 +85,11 @@ export const SidebarFooter = () => {
                   "w-full justify-start text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors",
                   "border border-purple-200 hover:border-purple-300"
                 )}
-                aria-label={t("Admin")}
+                aria-label="Admin"
               >
                 <Shield className="w-4 h-4 mr-2" />
                 {state === "expanded" && !isCollapsing && (
-                  <span className="font-medium">{t("Admin")}</span>
+                  <span className="font-medium">Admin</span>
                 )}
               </SidebarMenuButton>
             )}
@@ -98,11 +101,11 @@ export const SidebarFooter = () => {
                 "w-full justify-start text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors",
                 "border border-green-200 hover:border-green-300"
               )}
-              aria-label={t("Coach Dashboard")}
+              aria-label="Coach Dashboard"
             >
               <Users className="w-4 h-4 mr-2" />
               {state === "expanded" && !isCollapsing && (
-                <span className="font-medium">{t("Coach Dashboard")}</span>
+                <span className="font-medium">Coach Dashboard</span>
               )}
             </SidebarMenuButton>
 
@@ -116,11 +119,11 @@ export const SidebarFooter = () => {
         <SidebarMenuButton
           onClick={() => navigate('/settings')}
           className="w-full justify-start text-gray-600 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
-          aria-label={t("Settings")}
+          aria-label="Settings"
         >
           <Settings className="w-4 h-4 mr-2" />
           {state === "expanded" && !isCollapsing && (
-            <span>{t("Settings")}</span>
+            <span>Settings</span>
           )}
         </SidebarMenuButton>
 
@@ -131,11 +134,11 @@ export const SidebarFooter = () => {
             "w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors",
             "border border-red-200 hover:border-red-300 font-medium"
           )}
-          aria-label={t("Logout")}
+          aria-label="Logout"
         >
           <LogOut className="w-4 h-4 mr-2" />
           {state === "expanded" && !isCollapsing && (
-            <span>{t("Logout")}</span>
+            <span>Logout</span>
           )}
         </SidebarMenuButton>
       </div>
