@@ -22,7 +22,7 @@ const MealPlanNavigation = ({
   const days = [1, 2, 3, 4, 5, 6, 7];
 
   return (
-    <Card className="p-4 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+    <Card className="p-4 bg-white/80 backdrop-blur-sm border-0 shadow-lg w-full md:max-w-xl">
       {/* Week Navigation */}
       <div className="flex items-center justify-between mb-4">
         <Button

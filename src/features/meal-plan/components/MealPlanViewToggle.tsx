@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Calendar, Grid3X3 } from 'lucide-react';
+import { CalendarDays, LayoutGrid } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface MealPlanViewToggleProps {
@@ -24,8 +24,8 @@ export const MealPlanViewToggle = ({ viewMode, onViewModeChange }: MealPlanViewT
             : 'text-gray-600 hover:bg-gray-50'
         }`}
       >
-        <Calendar className="w-4 h-4" />
-        {t('mealPlan.dailyView') || 'Daily'}
+        <CalendarDays className="w-4 h-4" />
+        <span className="hidden md:inline">{t('mealPlan.dailyView') || 'Daily'}</span>
       </Button>
       <Button
         variant="ghost"
@@ -37,8 +37,8 @@ export const MealPlanViewToggle = ({ viewMode, onViewModeChange }: MealPlanViewT
             : 'text-gray-600 hover:bg-gray-50'
         }`}
       >
-        <Grid3X3 className="w-4 h-4" />
-        {t('mealPlan.weeklyView') || 'Weekly'}
+        <LayoutGrid className="w-4 h-4" />
+        <span className="hidden md:inline">{t('mealPlan.weeklyView') || 'Weekly'}</span>
       </Button>
     </div>
   );

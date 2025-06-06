@@ -117,6 +117,9 @@ export const useEnhancedMealPlan = () => {
         }
         
         toast.success('Meal plan generated successfully!');
+        
+        // Explicitly set isGenerating to false immediately instead of waiting
+        setIsGenerating(false);
         return true;
       } else {
         if (logId) await completeGeneration(logId, false);
@@ -126,13 +129,9 @@ export const useEnhancedMealPlan = () => {
       console.error('❌ Meal plan generation failed:', error);
       if (logId) await completeGeneration(logId, false);
       toast.error(error.message || 'Failed to generate meal plan');
+      // Explicitly set isGenerating to false on error
+      setIsGenerating(false);
       return false;
-    } finally {
-      // Add a small delay before setting isGenerating to false
-      // This ensures the loading dialog shows completion state before closing
-      setTimeout(() => {
-        setIsGenerating(false);
-      }, 800);
     }
   };
 

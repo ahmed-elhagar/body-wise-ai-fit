@@ -10,6 +10,7 @@ import MealPlanAILoadingDialog from '@/components/meal-plan/MealPlanAILoadingDia
 import { useEnhancedMealShuffle } from '@/hooks/useEnhancedMealShuffle';
 import ModernShoppingListDrawer from '@/components/shopping-list/ModernShoppingListDrawer';
 import { Loader2 } from 'lucide-react';
+import { MealPlanViewToggle } from '../components/MealPlanViewToggle';
 
 // Import the correct meal exchange dialog
 import { MealExchangeDialog } from '@/components/meal-plan/MealExchangeDialog';
@@ -20,6 +21,7 @@ import { EnhancedRecipeDialog } from '@/components/meal-plan/EnhancedRecipeDialo
 export const MealPlanContainer = () => {
   const mealPlanState = useMealPlanState();
   const { shuffleMeals, isShuffling } = useEnhancedMealShuffle();
+  const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
   
   // Keep track of the last successfully loaded data to show during transitions
   const lastLoadedDataRef = useRef(mealPlanState.currentWeekPlan);
@@ -85,13 +87,20 @@ export const MealPlanContainer = () => {
           hasWeeklyPlan={!!displayData?.weeklyPlan}
         />
         
-        <MealPlanNavigation 
-          currentWeekOffset={mealPlanState.currentWeekOffset}
-          onWeekChange={handleWeekChange}
-          selectedDayNumber={mealPlanState.selectedDayNumber}
-          onDayChange={mealPlanState.setSelectedDayNumber}
-          weekStartDate={mealPlanState.weekStartDate}
-        />
+        <div className="flex flex-col md:flex-row items-center gap-4 md:justify-between">
+          <MealPlanNavigation 
+            currentWeekOffset={mealPlanState.currentWeekOffset}
+            onWeekChange={handleWeekChange}
+            selectedDayNumber={mealPlanState.selectedDayNumber}
+            onDayChange={mealPlanState.setSelectedDayNumber}
+            weekStartDate={mealPlanState.weekStartDate}
+          />
+          
+          <MealPlanViewToggle 
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+          />
+        </div>
         
         {/* Content Area with Smart Loading Overlay */}
         <div className="relative">
@@ -108,7 +117,7 @@ export const MealPlanContainer = () => {
           {/* Main Content - Always rendered with last known data */}
           <div className={`transition-opacity duration-200 ${showLoadingOverlay ? 'opacity-30' : 'opacity-100'}`}>
             <MealPlanContent
-              viewMode="daily"
+              viewMode={viewMode}
               currentWeekPlan={displayData}
               selectedDayNumber={mealPlanState.selectedDayNumber}
               dailyMeals={mealPlanState.dailyMeals}
