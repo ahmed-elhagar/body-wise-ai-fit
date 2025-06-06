@@ -10,7 +10,7 @@ interface BodyFatSliderProps {
 }
 
 const BodyFatSlider = ({ value, onChange, gender }: BodyFatSliderProps) => {
-  const [currentValue, setCurrentValue] = useState(value || 25);
+  const [currentValue, setCurrentValue] = useState(value || (gender === 'male' ? 20 : 25));
 
   const handleValueChange = (newValue: number[]) => {
     const val = newValue[0];
@@ -18,94 +18,24 @@ const BodyFatSlider = ({ value, onChange, gender }: BodyFatSliderProps) => {
     onChange(val);
   };
 
-  const getBodyVisualization = (percentage: number, gender: string) => {
-    // Color coding based on body fat percentage
-    const getBodyColor = (percentage: number) => {
-      if (percentage < 15) return '#3B82F6'; // Blue - Very lean
-      if (percentage < 20) return '#10B981'; // Green - Athletic
-      if (percentage < 25) return '#F59E0B'; // Yellow - Average
-      if (percentage < 30) return '#F97316'; // Orange - Above average
-      return '#EF4444'; // Red - High
-    };
-
-    // Scale factor based on body fat percentage
-    const getScale = (percentage: number) => {
-      return Math.max(0.7, Math.min(1.4, 0.8 + (percentage - 15) * 0.02));
-    };
-
-    const color = getBodyColor(percentage);
-    const scale = getScale(percentage);
-
+  // Define body shape images based on body fat percentage and gender
+  const getBodyShapeImage = (percentage: number, gender: string) => {
     if (gender === 'female') {
-      return (
-        <div className="relative">
-          {/* Placeholder for real female body fat visualization image */}
-          <div className="w-32 h-48 bg-gradient-to-b from-gray-100 to-gray-200 rounded-lg flex items-center justify-center border-2 border-gray-300 relative overflow-hidden mx-auto">
-            <img 
-              src="https://images.unsplash.com/photo-1594381898411-846e7d193883?w=150&h=250&fit=crop&crop=center"
-              alt="Female body visualization"
-              className="w-full h-full object-cover"
-              style={{ 
-                filter: `hue-rotate(${percentage * 3}deg) saturate(${0.5 + percentage * 0.01})`,
-                transform: `scale(${scale})`
-              }}
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-              }}
-            />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <svg viewBox="0 0 120 200" className="w-24 h-40 opacity-60">
-                <g fill={color} transform={`scale(${scale}) translate(${60 - 60 * scale}, ${100 - 100 * scale})`}>
-                  {/* Female silhouette */}
-                  <ellipse cx="60" cy="25" rx="12" ry="15" />
-                  <ellipse cx="60" cy="55" rx={8 + percentage * 0.2} ry="20" />
-                  <ellipse cx="60" cy="80" rx={6 + percentage * 0.15} ry="10" />
-                  <ellipse cx="60" cy="105" rx={12 + percentage * 0.3} ry="18" />
-                  <ellipse cx="45" cy="60" rx={3 + percentage * 0.1} ry="25" />
-                  <ellipse cx="75" cy="60" rx={3 + percentage * 0.1} ry="25" />
-                  <ellipse cx="54" cy="145" rx={5 + percentage * 0.15} ry="35" />
-                  <ellipse cx="66" cy="145" rx={5 + percentage * 0.15} ry="35" />
-                </g>
-              </svg>
-            </div>
-          </div>
-        </div>
-      );
+      if (percentage < 18) {
+        return '/lovable-uploads/18f030f2-25e9-489f-870f-7d210f07c56c.png'; // Athletic female
+      } else if (percentage < 28) {
+        return '/lovable-uploads/977077ac-e5b9-46f0-94ff-dc5ec3e8afb6.png'; // Average female
+      } else {
+        return '/lovable-uploads/274c1566-79f5-45bb-9ef9-0dd9bb44f476.png'; // Higher body fat female
+      }
     } else {
-      return (
-        <div className="relative">
-          {/* Placeholder for real male body fat visualization image */}
-          <div className="w-32 h-48 bg-gradient-to-b from-gray-100 to-gray-200 rounded-lg flex items-center justify-center border-2 border-gray-300 relative overflow-hidden mx-auto">
-            <img 
-              src="https://images.unsplash.com/photo-1583468982228-19f19164aee2?w=150&h=250&fit=crop&crop=center"
-              alt="Male body visualization"
-              className="w-full h-full object-cover"
-              style={{ 
-                filter: `hue-rotate(${percentage * 3}deg) saturate(${0.5 + percentage * 0.01})`,
-                transform: `scale(${scale})`
-              }}
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-              }}
-            />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <svg viewBox="0 0 120 200" className="w-24 h-40 opacity-60">
-                <g fill={color} transform={`scale(${scale}) translate(${60 - 60 * scale}, ${100 - 100 * scale})`}>
-                  {/* Male silhouette */}
-                  <ellipse cx="60" cy="25" rx="12" ry="15" />
-                  <ellipse cx="60" cy="50" rx={15 + percentage * 0.2} ry="12" />
-                  <ellipse cx="60" cy="80" rx={10 + percentage * 0.25} ry="25" />
-                  <ellipse cx="60" cy="110" rx={8 + percentage * 0.2} ry="15" />
-                  <ellipse cx="42" cy="65" rx={4 + percentage * 0.1} ry="28" />
-                  <ellipse cx="78" cy="65" rx={4 + percentage * 0.1} ry="28" />
-                  <ellipse cx="54" cy="155" rx={6 + percentage * 0.15} ry="40" />
-                  <ellipse cx="66" cy="155" rx={6 + percentage * 0.15} ry="40" />
-                </g>
-              </svg>
-            </div>
-          </div>
-        </div>
-      );
+      if (percentage < 15) {
+        return '/lovable-uploads/08f61d04-b775-4704-9437-05a994afa09a.png'; // Athletic male
+      } else if (percentage < 22) {
+        return '/lovable-uploads/3b2668b9-5ab6-4bb4-80a0-f994b13e9e92.png'; // Average male
+      } else {
+        return '/lovable-uploads/2a1df9fc-703a-4f55-a427-e5dc54d63b2a.png'; // Higher body fat male
+      }
     }
   };
 
@@ -125,6 +55,20 @@ const BodyFatSlider = ({ value, onChange, gender }: BodyFatSliderProps) => {
     }
   };
 
+  const getBodyFatColor = (percentage: number, gender: string) => {
+    if (gender === 'male') {
+      if (percentage < 14) return 'from-green-500 to-emerald-600';
+      if (percentage < 18) return 'from-blue-500 to-indigo-600';
+      if (percentage < 25) return 'from-yellow-500 to-orange-500';
+      return 'from-red-500 to-rose-600';
+    } else {
+      if (percentage < 20) return 'from-green-500 to-emerald-600';
+      if (percentage < 25) return 'from-blue-500 to-indigo-600';
+      if (percentage < 32) return 'from-yellow-500 to-orange-500';
+      return 'from-red-500 to-rose-600';
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="text-center">
@@ -136,14 +80,30 @@ const BodyFatSlider = ({ value, onChange, gender }: BodyFatSliderProps) => {
         </p>
       </div>
       
-      {/* Body visualization with placeholder for real images */}
+      {/* Body visualization with actual uploaded images */}
       <div className="flex justify-center py-8 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border-2 border-gray-200">
-        {getBodyVisualization(currentValue, gender)}
+        <div className="relative">
+          <div className="w-48 h-64 flex items-center justify-center mx-auto">
+            <img 
+              src={getBodyShapeImage(currentValue, gender)}
+              alt={`Body shape visualization for ${currentValue}% body fat`}
+              className="w-full h-full object-contain transition-all duration-500 ease-in-out"
+              style={{ 
+                filter: `brightness(${1 + (currentValue - 20) * 0.005})`,
+              }}
+            />
+            
+            {/* Overlay percentage indicator */}
+            <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 shadow-lg">
+              <span className="text-sm font-semibold text-gray-700">{currentValue}%</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Body fat percentage display */}
       <div className="text-center space-y-2">
-        <div className="inline-block bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-full shadow-lg">
+        <div className={`inline-block bg-gradient-to-r ${getBodyFatColor(currentValue, gender)} text-white px-8 py-4 rounded-full shadow-lg`}>
           <span className="text-3xl font-bold">{currentValue}%</span>
         </div>
         <p className="text-base font-medium text-gray-700">
@@ -156,30 +116,61 @@ const BodyFatSlider = ({ value, onChange, gender }: BodyFatSliderProps) => {
         <Slider
           value={[currentValue]}
           onValueChange={handleValueChange}
-          max={45}
-          min={8}
+          max={gender === 'male' ? 35 : 45}
+          min={gender === 'male' ? 8 : 15}
           step={1}
           className="w-full"
           data-testid="body-fat-slider"
         />
         <div className="flex justify-between text-sm text-gray-500 mt-2">
-          <span>8% (Very lean)</span>
-          <span>45% (High)</span>
+          <span>{gender === 'male' ? '8%' : '15%'} (Very lean)</span>
+          <span>{gender === 'male' ? '35%' : '45%'} (High)</span>
         </div>
       </div>
 
-      {/* Info card */}
+      {/* Body fat ranges guide */}
       <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-        <div className="flex items-start gap-3">
-          <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-            </svg>
-          </div>
-          <div>
-            <h4 className="text-sm font-medium text-blue-800 mb-1">Body Composition Tip</h4>
-            <p className="text-sm text-blue-700">This helps us create more accurate meal plans and exercise recommendations. Replace these placeholder images with your own licensed body visualization images.</p>
-          </div>
+        <h4 className="text-sm font-medium text-blue-800 mb-3">Body Fat Percentage Guide</h4>
+        <div className="grid grid-cols-2 gap-2 text-xs">
+          {gender === 'male' ? (
+            <>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                <span>8-14% Athletic</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                <span>15-18% Fitness</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                <span>19-24% Average</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                <span>25%+ Above Average</span>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                <span>16-20% Athletic</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                <span>21-25% Fitness</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                <span>26-31% Average</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                <span>32%+ Above Average</span>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

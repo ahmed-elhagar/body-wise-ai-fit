@@ -15,8 +15,8 @@ const BodyShapeSelector = ({ value, onChange, gender, error }: BodyShapeSelector
       id: 'ectomorph',
       name: 'Ectomorph',
       description: 'Naturally thin, fast metabolism',
-      maleIcon: '🕺',
-      femaleIcon: '💃',
+      maleImage: '/lovable-uploads/08f61d04-b775-4704-9437-05a994afa09a.png',
+      femaleImage: '/lovable-uploads/18f030f2-25e9-489f-870f-7d210f07c56c.png',
       characteristics: ['Lean build', 'Fast metabolism', 'Difficulty gaining weight'],
       color: 'blue'
     },
@@ -24,8 +24,8 @@ const BodyShapeSelector = ({ value, onChange, gender, error }: BodyShapeSelector
       id: 'mesomorph',
       name: 'Mesomorph',
       description: 'Athletic build, gains muscle easily',
-      maleIcon: '🏋️‍♂️',
-      femaleIcon: '🏋️‍♀️',
+      maleImage: '/lovable-uploads/08f61d04-b775-4704-9437-05a994afa09a.png',
+      femaleImage: '/lovable-uploads/18f030f2-25e9-489f-870f-7d210f07c56c.png',
       characteristics: ['Muscular build', 'Gains muscle easily', 'Moderate metabolism'],
       color: 'green'
     },
@@ -33,8 +33,8 @@ const BodyShapeSelector = ({ value, onChange, gender, error }: BodyShapeSelector
       id: 'endomorph',
       name: 'Endomorph',
       description: 'Larger frame, slower metabolism',
-      maleIcon: '🤵',
-      femaleIcon: '👸',
+      maleImage: '/lovable-uploads/2a1df9fc-703a-4f55-a427-e5dc54d63b2a.png',
+      femaleImage: '/lovable-uploads/274c1566-79f5-45bb-9ef9-0dd9bb44f476.png',
       characteristics: ['Larger frame', 'Slower metabolism', 'Gains weight easily'],
       color: 'purple'
     },
@@ -42,8 +42,8 @@ const BodyShapeSelector = ({ value, onChange, gender, error }: BodyShapeSelector
       id: 'apple',
       name: 'Apple Shape',
       description: 'Weight around midsection',
-      maleIcon: '🍎',
-      femaleIcon: '🍎',
+      maleImage: '/lovable-uploads/3b2668b9-5ab6-4bb4-80a0-f994b13e9e92.png',
+      femaleImage: '/lovable-uploads/977077ac-e5b9-46f0-94ff-dc5ec3e8afb6.png',
       characteristics: ['Broader shoulders', 'Fuller midsection', 'Slimmer hips'],
       color: 'red'
     },
@@ -51,8 +51,8 @@ const BodyShapeSelector = ({ value, onChange, gender, error }: BodyShapeSelector
       id: 'pear',
       name: 'Pear Shape',
       description: 'Weight in hips and thighs',
-      maleIcon: '🍐',
-      femaleIcon: '🍐',
+      maleImage: '/lovable-uploads/3b2668b9-5ab6-4bb4-80a0-f994b13e9e92.png',
+      femaleImage: '/lovable-uploads/977077ac-e5b9-46f0-94ff-dc5ec3e8afb6.png',
       characteristics: ['Narrower shoulders', 'Smaller waist', 'Fuller hips'],
       color: 'yellow'
     },
@@ -60,8 +60,8 @@ const BodyShapeSelector = ({ value, onChange, gender, error }: BodyShapeSelector
       id: 'hourglass',
       name: 'Hourglass',
       description: 'Balanced proportions',
-      maleIcon: '⏳',
-      femaleIcon: '⏳',
+      maleImage: '/lovable-uploads/08f61d04-b775-4704-9437-05a994afa09a.png',
+      femaleImage: '/lovable-uploads/18f030f2-25e9-489f-870f-7d210f07c56c.png',
       characteristics: ['Balanced shoulders/hips', 'Defined waist', 'Proportionate build'],
       color: 'indigo'
     }
@@ -93,6 +93,8 @@ const BodyShapeSelector = ({ value, onChange, gender, error }: BodyShapeSelector
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         {bodyShapes.map((shape) => {
           const isSelected = value === shape.id;
+          const imageSrc = gender === 'female' ? shape.femaleImage : shape.maleImage;
+          
           return (
             <Card
               key={shape.id}
@@ -104,8 +106,12 @@ const BodyShapeSelector = ({ value, onChange, gender, error }: BodyShapeSelector
               onClick={() => onChange(shape.id)}
             >
               <div className="text-center">
-                <div className="text-4xl mb-3">
-                  {gender === 'female' ? shape.femaleIcon : shape.maleIcon}
+                <div className="w-16 h-20 mx-auto mb-3 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
+                  <img 
+                    src={imageSrc}
+                    alt={`${shape.name} body shape`}
+                    className="w-full h-full object-contain"
+                  />
                 </div>
                 <h3 className="font-semibold text-base mb-2 text-gray-800">{shape.name}</h3>
                 <p className="text-xs text-gray-600 mb-3">{shape.description}</p>
