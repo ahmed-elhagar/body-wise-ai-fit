@@ -10,7 +10,7 @@ interface ExerciseProgram {
   updated_at: string;
   program_name: string;
   difficulty_level: string;
-  workout_type: "home" | "gym";
+  workout_type: string; // Changed from "home" | "gym" to string to match database
   current_week: number;
   week_start_date: string;
   user_id: string;
