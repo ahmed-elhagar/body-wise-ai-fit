@@ -29,7 +29,7 @@ const SignupFlow = () => {
 
   // Calculate total steps based on gender
   const getTotalSteps = () => {
-    if (!formData.gender) return 5;
+    if (!formData.gender) return 4;
     return formData.gender === 'female' ? 5 : 4;
   };
 
@@ -48,8 +48,8 @@ const SignupFlow = () => {
   };
 
   const getStepSkippable = (): boolean => {
-    // Steps 4 and 5 are optional/skippable
-    return step >= 4;
+    // Steps 3 and 4 are optional/skippable
+    return step >= 3;
   };
 
   const handleNext = async () => {
@@ -59,7 +59,7 @@ const SignupFlow = () => {
     }
 
     // Skip step 5 for non-females
-    if (step === 4 && formData.gender !== 'female') {
+    if (step === 3 && formData.gender !== 'female') {
       await completeSetup();
       return;
     }
@@ -75,7 +75,7 @@ const SignupFlow = () => {
     if (step > 1) {
       // Skip step 5 for non-females when going back
       if (step === 5 && formData.gender !== 'female') {
-        setStep(4);
+        setStep(3);
       } else {
         setStep(step - 1);
       }
@@ -100,17 +100,16 @@ const SignupFlow = () => {
 
       // Create user account and profile in one transaction
       try {
-        const { user: newUser } = await signUp(formData.email, formData.password, {
+        await signUp(formData.email, formData.password, {
           first_name: formData.firstName,
           last_name: formData.lastName
         });
 
-        if (!newUser) {
-          throw new Error('User creation failed - no user returned');
-        }
-
-        console.log('User created successfully:', newUser.id);
+        console.log('User creation process initiated');
         
+        // Wait a moment for user creation to complete
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
         // Prepare profile data
         const activityLevelMapping = {
           'sedentary': 'sedentary',
@@ -167,9 +166,6 @@ const SignupFlow = () => {
 
         console.log('Updating profile with data:', profileData);
 
-        // Wait a moment for user creation to complete
-        await new Promise(resolve => setTimeout(resolve, 1500));
-
         const result = await updateProfile(profileData);
         
         if (result.error) {
@@ -220,26 +216,19 @@ const SignupFlow = () => {
         );
       case 3:
         return (
-          <BodyCompositionStep 
+          <FitnessGoalsStep 
             formData={formData}
             updateField={updateField}
           />
         );
       case 4:
         return (
-          <FitnessGoalsStep 
-            formData={formData}
-            updateField={updateField}
-          />
-        );
-      case 5:
-        return (
           <HealthPreferencesStep 
             formData={formData}
             updateField={updateField}
           />
         );
-      case 6:
+      case 5:
         return (
           <LifePhaseStep 
             formData={formData}

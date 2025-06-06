@@ -49,7 +49,7 @@ function App() {
               {/* Public routes */}
               <Route path="/" element={<Landing />} />
               
-              {/* Auth route for login only */}
+              {/* Auth routes - redirect authenticated users */}
               <Route 
                 path="/auth" 
                 element={
@@ -59,16 +59,20 @@ function App() {
                 } 
               />
               
-              {/* Unified signup flow */}
+              {/* Signup flow - redirect authenticated users */}
               <Route 
                 path="/signup" 
-                element={<SignupFlow />}
+                element={
+                  <ProtectedRoute requireAuth={false}>
+                    <SignupFlow />
+                  </ProtectedRoute>
+                } 
               />
               
               {/* Redirect old onboarding route to signup */}
               <Route path="/onboarding" element={<Navigate to="/signup" replace />} />
               
-              {/* Success page */}
+              {/* Success page - requires auth */}
               <Route 
                 path="/onboarding-success" 
                 element={
@@ -78,7 +82,7 @@ function App() {
                 } 
               />
               
-              {/* Protected routes */}
+              {/* Protected routes - require auth and profile */}
               <Route 
                 path="/dashboard" 
                 element={
@@ -125,7 +129,7 @@ function App() {
                 } 
               />
               
-              {/* Meal Plan */}
+              {/* App feature routes - require auth */}
               <Route 
                 path="/meal-plan" 
                 element={
@@ -135,7 +139,6 @@ function App() {
                 } 
               />
               
-              {/* Exercise */}
               <Route 
                 path="/exercise" 
                 element={
@@ -145,7 +148,6 @@ function App() {
                 } 
               />
               
-              {/* Food Tracker */}
               <Route 
                 path="/food-tracker" 
                 element={
@@ -155,7 +157,6 @@ function App() {
                 } 
               />
               
-              {/* Calorie Checker */}
               <Route 
                 path="/calorie-checker" 
                 element={
@@ -165,7 +166,6 @@ function App() {
                 } 
               />
               
-              {/* Goals */}
               <Route 
                 path="/goals" 
                 element={
@@ -175,7 +175,6 @@ function App() {
                 } 
               />
               
-              {/* Progress */}
               <Route 
                 path="/progress" 
                 element={
@@ -185,7 +184,6 @@ function App() {
                 } 
               />
               
-              {/* Weight Tracking */}
               <Route 
                 path="/weight-tracking" 
                 element={
@@ -195,7 +193,6 @@ function App() {
                 } 
               />
               
-              {/* Profile */}
               <Route 
                 path="/profile" 
                 element={
@@ -205,7 +202,6 @@ function App() {
                 } 
               />
               
-              {/* Optimized Profile */}
               <Route 
                 path="/optimized-profile" 
                 element={
@@ -215,7 +211,6 @@ function App() {
                 } 
               />
               
-              {/* Settings */}
               <Route 
                 path="/settings" 
                 element={
@@ -225,7 +220,6 @@ function App() {
                 } 
               />
               
-              {/* Chat */}
               <Route 
                 path="/chat" 
                 element={
@@ -235,7 +229,6 @@ function App() {
                 } 
               />
               
-              {/* Notifications */}
               <Route 
                 path="/notifications" 
                 element={
@@ -245,7 +238,7 @@ function App() {
                 } 
               />
               
-              {/* Catch all route */}
+              {/* Catch all route - redirect to home */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </div>

@@ -30,22 +30,18 @@ export const validateStep = (step: number, formData: SignupFormData): boolean =>
       );
     
     case 3:
-      // Body Composition (auto-valid with slider)
-      return true;
-    
-    case 4:
       // Fitness Goals
       return !!(
         formData.fitnessGoal &&
         formData.activityLevel
       );
     
-    case 5:
+    case 4:
       // Health & Dietary (optional)
       return true;
     
-    case 6:
-      // Life Phase (optional)
+    case 5:
+      // Life Phase (optional for females)
       return true;
     
     default:
@@ -57,10 +53,9 @@ export const getStepTitle = (step: number): string => {
   switch (step) {
     case 1: return "Create Account";
     case 2: return "About You";
-    case 3: return "Body Composition";
-    case 4: return "Fitness Goals";
-    case 5: return "Health & Preferences";
-    case 6: return "Life Phase";
+    case 3: return "Fitness Goals";
+    case 4: return "Health & Preferences";
+    case 5: return "Life Phase";
     default: return "Setup";
   }
 };
@@ -69,10 +64,9 @@ export const getStepDescription = (step: number): string => {
   switch (step) {
     case 1: return "Set up your FitGenius account";
     case 2: return "Tell us about yourself and your measurements";
-    case 3: return "Body composition and type";
-    case 4: return "What are your goals?";
-    case 5: return "Health conditions and preferences";
-    case 6: return "Special considerations";
+    case 3: return "What are your fitness goals?";
+    case 4: return "Health conditions and preferences";
+    case 5: return "Special considerations";
     default: return "Complete your setup";
   }
 };
