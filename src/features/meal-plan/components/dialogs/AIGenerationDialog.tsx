@@ -7,10 +7,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, Zap, AlertTriangle, Info } from 'lucide-react';
+import { Sparkles, Zap, AlertTriangle, Info, Heart, Shield } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useMealPlanTranslations } from '@/utils/mealPlanTranslations';
 import { useCentralizedCredits } from '@/hooks/useCentralizedCredits';
+import { useProfile } from '@/hooks/useProfile';
 import type { MealPlanPreferences } from '@/types/mealPlan';
 
 interface AIGenerationDialogProps {
@@ -33,6 +34,7 @@ export const AIGenerationDialog = ({
   hasExistingPlan
 }: AIGenerationDialogProps) => {
   const { language } = useLanguage();
+  const { profile } = useProfile();
   const { 
     generateAIMealPlan,
     mealPlanSettings,
@@ -146,6 +148,11 @@ export const AIGenerationDialog = ({
 
   const displayCredits = isPro ? 'Unlimited' : `${userCredits}`;
 
+  // Get health conditions from profile
+  const healthConditions = profile?.health_conditions || [];
+  const allergies = profile?.allergies || [];
+  const dietaryRestrictions = profile?.dietary_restrictions || [];
+
   if (showConfirmation) {
     return (
       <Dialog open={open} onOpenChange={onClose}>
@@ -216,7 +223,7 @@ export const AIGenerationDialog = ({
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Credits Display - Now using centralized credits */}
+          {/* Credits Display */}
           <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -232,6 +239,79 @@ export const AIGenerationDialog = ({
               </div>
             </CardContent>
           </Card>
+
+          {/* Health Conditions Display */}
+          {(healthConditions.length > 0 || allergies.length > 0 || dietaryRestrictions.length > 0) && (
+            <Card className="bg-gradient-to-r from-red-50 to-pink-50 border-red-200">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Heart className="w-4 h-4 text-red-500" />
+                  <span className="font-medium text-red-800">
+                    {language === 'ar' ? 'الحالات الصحية والقيود الغذائية' : 'Health Conditions & Dietary Requirements'}
+                  </span>
+                </div>
+                
+                <div className="space-y-2">
+                  {healthConditions.length > 0 && (
+                    <div>
+                      <span className="text-xs font-medium text-red-700 mb-1 block">
+                        {language === 'ar' ? 'الحالات الصحية:' : 'Health Conditions:'}
+                      </span>
+                      <div className="flex flex-wrap gap-1">
+                        {healthConditions.map((condition, index) => (
+                          <Badge key={index} variant="outline" className="bg-red-100 text-red-800 border-red-300 text-xs">
+                            <Shield className="w-3 h-3 mr-1" />
+                            {condition}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {allergies.length > 0 && (
+                    <div>
+                      <span className="text-xs font-medium text-red-700 mb-1 block">
+                        {language === 'ar' ? 'الحساسية:' : 'Allergies:'}
+                      </span>
+                      <div className="flex flex-wrap gap-1">
+                        {allergies.map((allergy, index) => (
+                          <Badge key={index} variant="outline" className="bg-orange-100 text-orange-800 border-orange-300 text-xs">
+                            <AlertTriangle className="w-3 h-3 mr-1" />
+                            {allergy}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {dietaryRestrictions.length > 0 && (
+                    <div>
+                      <span className="text-xs font-medium text-red-700 mb-1 block">
+                        {language === 'ar' ? 'القيود الغذائية:' : 'Dietary Restrictions:'}
+                      </span>
+                      <div className="flex flex-wrap gap-1">
+                        {dietaryRestrictions.map((restriction, index) => (
+                          <Badge key={index} variant="outline" className="bg-blue-100 text-blue-800 border-blue-300 text-xs">
+                            <Info className="w-3 h-3 mr-1" />
+                            {restriction}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="mt-3 p-2 bg-white/60 rounded-md">
+                  <p className="text-xs text-red-600">
+                    {language === 'ar' 
+                      ? 'سيتم مراعاة هذه المعلومات عند إنشاء خطة الوجبات الخاصة بك'
+                      : 'These will be considered when generating your personalized meal plan'
+                    }
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Meal Configuration */}
           <div className="space-y-4">
