@@ -94,9 +94,9 @@ const ProtectedRoute = React.memo<ProtectedRouteProps>(({
   // Only redirect to onboarding if we're not already there and not on the enhanced onboarding page
   if (requireProfile && user && !profileLoading && profile && !profile.onboarding_completed) {
     const currentPath = location.pathname;
-    if (currentPath !== '/onboarding' && currentPath !== '/enhanced-onboarding') {
+    if (currentPath !== '/onboarding' && !currentPath.includes('onboarding')) {
       console.log("ProtectedRoute - Redirecting to onboarding (incomplete profile)");
-      return <Navigate to="/onboarding" state={{ from: location.pathname }} replace />;
+      return <Navigate to="/enhanced-onboarding" state={{ from: location.pathname }} replace />;
     }
   }
 
