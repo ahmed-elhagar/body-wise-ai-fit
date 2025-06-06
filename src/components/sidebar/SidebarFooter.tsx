@@ -5,14 +5,17 @@ import { useI18n } from "@/hooks/useI18n";
 import { useSidebar } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
-import { Settings, LogOut } from "lucide-react";
+import { Settings, LogOut, Shield, Users } from "lucide-react";
 import { SidebarMenuButton } from "@/components/ui/sidebar";
+import { useRole } from "@/hooks/useRole";
+import { toast } from "sonner";
 
 export const SidebarFooter = () => {
   const { user, signOut } = useAuth();
   const { t, isRTL } = useI18n();
   const navigate = useNavigate();
   const { state } = useSidebar();
+  const { isAdmin, isCoach } = useRole();
   const [isCollapsing, setIsCollapsing] = useState(false);
 
   useEffect(() => {
@@ -25,6 +28,7 @@ export const SidebarFooter = () => {
 
   const handleSignOut = async () => {
     try {
+      toast.info("Signing out...");
       await signOut();
       navigate('/auth');
     } catch (error) {
@@ -39,6 +43,35 @@ export const SidebarFooter = () => {
   return (
     <div className="p-4 border-t">
       <div className="space-y-1">
+        {/* Admin Panel Access */}
+        {isAdmin && (
+          <SidebarMenuButton
+            onClick={() => navigate('/admin')}
+            className={cn("nav-link-rtl w-full justify-start", isAdmin ? "text-purple-600 hover:text-purple-700 hover:bg-purple-50" : "")}
+            aria-label={t("Admin")}
+          >
+            <Shield className="w-4 h-4 icon-start" />
+            {state === "expanded" && !isCollapsing && (
+              <span>{t("Admin")}</span>
+            )}
+          </SidebarMenuButton>
+        )}
+        
+        {/* Coach Dashboard Access */}
+        {(isCoach || isAdmin) && (
+          <SidebarMenuButton
+            onClick={() => navigate('/coach')}
+            className={cn("nav-link-rtl w-full justify-start", "text-green-600 hover:text-green-700 hover:bg-green-50")}
+            aria-label={t("Coach Dashboard")}
+          >
+            <Users className="w-4 h-4 icon-start" />
+            {state === "expanded" && !isCollapsing && (
+              <span>{t("Coach Dashboard")}</span>
+            )}
+          </SidebarMenuButton>
+        )}
+        
+        {/* Settings */}
         <SidebarMenuButton
           onClick={() => navigate('/profile')}
           className="nav-link-rtl w-full justify-start"
@@ -50,6 +83,7 @@ export const SidebarFooter = () => {
           )}
         </SidebarMenuButton>
 
+        {/* Logout */}
         <SidebarMenuButton
           onClick={handleSignOut}
           className="nav-link-rtl w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"

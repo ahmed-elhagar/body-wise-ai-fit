@@ -128,7 +128,11 @@ export const useEnhancedMealPlan = () => {
       toast.error(error.message || 'Failed to generate meal plan');
       return false;
     } finally {
-      setIsGenerating(false);
+      // Add a small delay before setting isGenerating to false
+      // This ensures the loading dialog shows completion state before closing
+      setTimeout(() => {
+        setIsGenerating(false);
+      }, 800);
     }
   };
 

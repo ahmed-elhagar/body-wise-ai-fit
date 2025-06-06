@@ -68,7 +68,13 @@ const ProtectedRoute = React.memo<ProtectedRouteProps>(({
     let hasRequiredRole = false;
     
     try {
-      if (Array.isArray(requireRole)) {
+      // Special case: Admin users can access all role-protected routes
+      if (role === 'admin') {
+        console.log('Admin user granted access to role-protected route');
+        hasRequiredRole = true;
+      }
+      // Standard role check for non-admin users
+      else if (Array.isArray(requireRole)) {
         hasRequiredRole = hasAnyRole(requireRole);
       } else {
         hasRequiredRole = hasRole(requireRole);

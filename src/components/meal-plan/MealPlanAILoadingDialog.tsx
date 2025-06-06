@@ -8,11 +8,13 @@ import type { AIStep } from "@/components/ai/AILoadingSteps";
 interface MealPlanAILoadingDialogProps {
   isGenerating: boolean;
   onClose?: () => void;
+  position?: 'center' | 'top-right'; // Added position prop
 }
 
 const MealPlanAILoadingDialog = ({ 
   isGenerating, 
-  onClose 
+  onClose,
+  position = 'center' // Default to center, but can be changed to 'top-right'
 }: MealPlanAILoadingDialogProps) => {
   const { t, language } = useLanguage();
 
@@ -80,6 +82,8 @@ const MealPlanAILoadingDialog = ({
       progress={progress}
       estimatedTotalTime={27}
       allowClose={false}
+      onClose={onClose}
+      position={position}
     />
   );
 };

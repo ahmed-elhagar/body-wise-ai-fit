@@ -5,6 +5,7 @@ import type { AIStep } from '@/components/ai/AILoadingSteps';
 export interface UseAILoadingStepsOptions {
   autoProgress?: boolean;
   stepDuration?: number;
+  completionDelay?: number; // Added delay for completion state
 }
 
 export const useAILoadingSteps = (
@@ -12,7 +13,12 @@ export const useAILoadingSteps = (
   isActive: boolean,
   options: UseAILoadingStepsOptions = {}
 ) => {
-  const { autoProgress = true, stepDuration = 2000 } = options;
+  const { 
+    autoProgress = true, 
+    stepDuration = 2000,
+    completionDelay = 1000 // Default delay after reaching last step
+  } = options;
+  
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
 
@@ -24,22 +30,35 @@ export const useAILoadingSteps = (
     }
   }, [isActive]);
 
-  // Auto progress through steps
+  // Auto progress through steps with smarter timing
   useEffect(() => {
     if (!isActive || !autoProgress || isComplete) return;
 
-    const timer = setInterval(() => {
+    // Calculate dynamic step duration based on estimated time if available
+    const calcStepDuration = () => {
+      const currentStep = steps[currentStepIndex];
+      if (currentStep?.estimatedDuration) {
+        // Convert estimated seconds to milliseconds, with a minimum
+        return Math.max(currentStep.estimatedDuration * 800, 1200);
+      }
+      return stepDuration;
+    };
+
+    const timer = setTimeout(() => {
       setCurrentStepIndex(prev => {
         if (prev >= steps.length - 1) {
-          setIsComplete(true);
+          // Last step - add delay before completion
+          setTimeout(() => {
+            setIsComplete(true);
+          }, completionDelay);
           return prev;
         }
         return prev + 1;
       });
-    }, stepDuration);
+    }, calcStepDuration());
 
-    return () => clearInterval(timer);
-  }, [isActive, autoProgress, stepDuration, steps.length, isComplete]);
+    return () => clearTimeout(timer);
+  }, [isActive, autoProgress, currentStepIndex, steps, stepDuration, isComplete, completionDelay]);
 
   const goToStep = useCallback((stepIndex: number) => {
     if (stepIndex >= 0 && stepIndex < steps.length) {

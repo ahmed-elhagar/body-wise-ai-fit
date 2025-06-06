@@ -18,6 +18,7 @@ export interface UnifiedAILoadingDialogProps {
   onClose?: () => void;
   allowClose?: boolean;
   className?: string;
+  position?: 'center' | 'top-right'; // Added position prop for more flexible placement
 }
 
 export const UnifiedAILoadingDialog: React.FC<UnifiedAILoadingDialogProps> = ({
@@ -31,7 +32,8 @@ export const UnifiedAILoadingDialog: React.FC<UnifiedAILoadingDialogProps> = ({
   estimatedTotalTime,
   onClose,
   allowClose = false,
-  className
+  className,
+  position = 'center' // Default to center
 }) => {
   const [elapsedTime, setElapsedTime] = useState(0);
 
@@ -52,14 +54,15 @@ export const UnifiedAILoadingDialog: React.FC<UnifiedAILoadingDialogProps> = ({
   }, [isOpen, isComplete]);
 
   // Auto-close after completion (give user time to see success message)
+  // Reduced from 2000ms to 1500ms for faster auto-close
   useEffect(() => {
-    if (isComplete && allowClose) {
+    if (isComplete && onClose) {
       const timer = setTimeout(() => {
-        onClose?.();
-      }, 2000);
+        onClose();
+      }, 1500);
       return () => clearTimeout(timer);
     }
-  }, [isComplete, allowClose, onClose]);
+  }, [isComplete, onClose]);
 
   const calculateProgress = () => {
     if (progress !== undefined) return progress;
@@ -73,9 +76,47 @@ export const UnifiedAILoadingDialog: React.FC<UnifiedAILoadingDialogProps> = ({
     const remainingSeconds = seconds % 60;
     return `${minutes}m ${remainingSeconds}s`;
   };
+  
+  // If position is top-right, render a different style of dialog (as an overlay)
+  if (position === 'top-right') {
+    if (!isOpen) return null;
+    
+    return (
+      <div className={cn(
+        "fixed top-20 right-4 z-50 w-80 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden",
+        className
+      )}>
+        <div className="p-4">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <Brain className="w-5 h-5 text-blue-600" />
+              <h3 className="font-semibold text-gray-800">{title}</h3>
+            </div>
+            {isComplete && <Zap className="w-4 h-4 text-green-600" />}
+          </div>
+          
+          <Progress value={calculateProgress()} className="h-1 mb-2" />
+          
+          {!isComplete ? (
+            <p className="text-xs text-gray-600">
+              {steps[currentStepIndex]?.label}...
+            </p>
+          ) : (
+            <p className="text-xs text-green-600 font-medium">
+              Operation completed successfully!
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
 
+  // Standard centered dialog
   return (
-    <Dialog open={isOpen} onOpenChange={allowClose ? onClose : undefined}>
+    <Dialog 
+      open={isOpen} 
+      onOpenChange={allowClose && onClose ? () => onClose() : undefined}
+    >
       <DialogContent 
         className={cn("max-w-lg", className)}
         hideClose={!allowClose}

@@ -129,10 +129,11 @@ export const MealPlanContainer = () => {
         </div>
       </div>
 
-      {/* AI Loading Dialog - Step-by-step loading experience */}
+      {/* AI Loading Dialog - Step-by-step loading experience - Now using top-right position */}
       <MealPlanAILoadingDialog 
         isGenerating={mealPlanState.isGenerating}
-        onClose={() => {}} // Can't be closed during generation
+        onClose={() => mealPlanState.refetch()}
+        position="top-right" // Now using top-right for less intrusive loading
       />
 
       {/* Modern Shopping List Drawer - Complete revamped experience */}
