@@ -1,8 +1,9 @@
 
 import { Target } from "lucide-react";
 import { OnboardingFormData } from "@/hooks/useOnboardingForm";
-import BodyShapeVisualSelector from "./BodyShapeVisualSelector";
+import ScrollableBodyShapeSelector from "./ScrollableBodyShapeSelector";
 import MotivationSelector from "./MotivationSelector";
+import { useState } from "react";
 
 interface EnhancedOnboardingStep2Props {
   formData: OnboardingFormData;
@@ -10,6 +11,10 @@ interface EnhancedOnboardingStep2Props {
 }
 
 const EnhancedOnboardingStep2 = ({ formData, updateFormData }: EnhancedOnboardingStep2Props) => {
+  const [bodyFatPercentage, setBodyFatPercentage] = useState(
+    formData.gender === 'male' ? 20 : 25
+  );
+
   return (
     <div className="space-y-8 animate-fade-in">
       <div className="text-center mb-8">
@@ -20,9 +25,11 @@ const EnhancedOnboardingStep2 = ({ formData, updateFormData }: EnhancedOnboardin
         <p className="text-gray-600">Help us understand your current state and goals</p>
       </div>
 
-      <BodyShapeVisualSelector
+      <ScrollableBodyShapeSelector
         value={formData.body_shape}
         onChange={(value) => updateFormData("body_shape", value)}
+        bodyFatValue={bodyFatPercentage}
+        onBodyFatChange={setBodyFatPercentage}
         gender={formData.gender}
       />
 
