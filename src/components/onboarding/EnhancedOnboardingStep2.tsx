@@ -12,8 +12,8 @@ interface EnhancedOnboardingStep2Props {
 const EnhancedOnboardingStep2 = ({ formData, updateFormData }: EnhancedOnboardingStep2Props) => {
   const [bodyFatPercentage, setBodyFatPercentage] = useState(() => {
     const existingValue = formData.body_fat_percentage;
-    if (existingValue && !isNaN(parseFloat(existingValue))) {
-      return parseFloat(existingValue);
+    if (existingValue && !isNaN(parseFloat(existingValue.toString()))) {
+      return parseFloat(existingValue.toString());
     }
     return formData.gender === 'male' ? 20 : 25;
   });

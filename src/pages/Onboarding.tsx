@@ -75,7 +75,7 @@ const Onboarding = () => {
       // Final step - save and complete
       setIsCompleting(true);
       try {
-        console.log('Onboarding - Final step, saving profile data');
+        console.log('Onboarding - Final step, saving enhanced profile data');
         
         // Map activity level to valid database values
         const activityLevelMapping = {
@@ -94,7 +94,18 @@ const Onboarding = () => {
             parseFloat(formData.body_fat_percentage) : 
             formData.body_fat_percentage) : null;
 
+        // Map special conditions
+        const pregnancyTrimester = formData.pregnancy_trimester && formData.pregnancy_trimester !== 'none' ? 
+          parseInt(formData.pregnancy_trimester) : null;
+        
+        const breastfeedingLevel = formData.breastfeeding_level && formData.breastfeeding_level !== 'none' ? 
+          formData.breastfeeding_level : null;
+        
+        const fastingType = formData.fasting_type && formData.fasting_type !== 'none' ? 
+          formData.fasting_type : null;
+
         const profileData = {
+          // Basic Personal Information
           first_name: formData.first_name?.trim(),
           last_name: formData.last_name?.trim(),
           age: formData.age ? parseInt(formData.age) : null,
@@ -102,19 +113,35 @@ const Onboarding = () => {
           height: formData.height ? parseFloat(formData.height) : null,
           weight: formData.weight ? parseFloat(formData.weight) : null,
           nationality: formData.nationality === "prefer_not_to_say" ? null : formData.nationality?.trim(),
+          
+          // Body Composition
           body_shape: formData.body_shape || null,
           body_fat_percentage: bodyFatValue,
-          health_conditions: formData.health_conditions || [],
+          
+          // Fitness Goals & Preferences
           fitness_goal: formData.fitness_goal || null,
           activity_level: mappedActivityLevel,
+          
+          // Health Information
+          health_conditions: formData.health_conditions || [],
           allergies: formData.allergies || [],
+          
+          // Dietary Preferences
           preferred_foods: formData.preferred_foods || [],
           dietary_restrictions: formData.dietary_restrictions || [],
+          
+          // Special Conditions
+          pregnancy_trimester: pregnancyTrimester,
+          breastfeeding_level: breastfeedingLevel,
+          fasting_type: fastingType,
+          special_conditions: formData.special_conditions || [],
+          
+          // Completion Status
           onboarding_completed: true,
           ai_generations_remaining: 5
         };
 
-        console.log("Onboarding - Saving complete profile data:", profileData);
+        console.log("Onboarding - Saving enhanced profile data:", profileData);
         
         const result = await updateProfile(profileData);
         

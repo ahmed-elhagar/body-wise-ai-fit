@@ -15,15 +15,15 @@ export const validateOnboardingStep = (step: number, formData: OnboardingFormDat
       );
     
     case 2:
-      // Body shape and motivation - body shape is optional
-      return true; // This step is optional
+      // Body composition - body fat percentage is set by the slider
+      return !!(formData.body_fat_percentage);
     
     case 3:
-      // Goals and activity - fitness goal and activity level required
+      // Goals and health - fitness goal and activity level required
       return !!(formData.fitness_goal && formData.activity_level);
     
     case 4:
-      // Summary - always valid as it's a review step
+      // Dietary preferences - always valid as it's optional
       return true;
     
     default:
