@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -68,6 +67,21 @@ const Onboarding = () => {
       try {
         console.log('Onboarding - Final step, saving profile data');
         
+        // Convert body fat percentage to body shape
+        const bodyFatPercentage = parseFloat(formData.body_fat_percentage) || 0;
+        const gender = formData.gender;
+        let bodyShape = '';
+        
+        if (gender === 'male') {
+          if (bodyFatPercentage < 15) bodyShape = 'lean';
+          else if (bodyFatPercentage < 25) bodyShape = 'athletic';
+          else bodyShape = 'strong';
+        } else {
+          if (bodyFatPercentage < 20) bodyShape = 'lean';
+          else if (bodyFatPercentage < 30) bodyShape = 'healthy';
+          else bodyShape = 'curvy';
+        }
+        
         const profileData = {
           first_name: formData.first_name,
           last_name: formData.last_name,
@@ -76,8 +90,8 @@ const Onboarding = () => {
           height: formData.height ? parseFloat(formData.height) : undefined,
           weight: formData.weight ? parseFloat(formData.weight) : undefined,
           nationality: formData.nationality === "prefer_not_to_say" ? null : formData.nationality,
-          body_shape: formData.body_shape as any,
-          body_fat_percentage: formData.body_fat_percentage ? parseFloat(formData.body_fat_percentage) : undefined,
+          body_shape: bodyShape as any,
+          body_fat_percentage: bodyFatPercentage || undefined,
           health_conditions: formData.health_conditions,
           fitness_goal: formData.fitness_goal as any,
           activity_level: formData.activity_level as any,

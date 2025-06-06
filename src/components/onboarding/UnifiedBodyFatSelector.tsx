@@ -40,7 +40,7 @@ const UnifiedBodyFatSelector = ({ value, onChange, gender }: UnifiedBodyFatSelec
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="text-center">
         <Label className="text-xl font-bold text-gray-800 mb-2 block">
           Estimate your current body fat percentage
@@ -50,22 +50,22 @@ const UnifiedBodyFatSelector = ({ value, onChange, gender }: UnifiedBodyFatSelec
         </p>
       </div>
       
-      {/* Main body visualization - matching reference design */}
-      <div className="relative bg-black rounded-2xl p-8 min-h-[600px] flex flex-col items-center justify-center">
+      {/* Improved body visualization with light background */}
+      <div className="relative bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-8 border-2 border-gray-200 shadow-lg min-h-[600px] flex flex-col items-center justify-center">
         {/* Body visualization */}
         <div className="flex-1 flex items-center justify-center mb-6">
           <div className="relative">
             <img 
               src={getBodyShapeImage(currentValue, gender)}
               alt={`Body shape visualization for ${currentValue}% body fat`}
-              className="h-96 w-auto object-contain transition-all duration-500 ease-in-out"
+              className="h-96 w-auto object-contain transition-all duration-500 ease-in-out drop-shadow-lg"
             />
           </div>
         </div>
 
         {/* Percentage indicator bubble */}
         <div className="mb-6">
-          <div className="bg-gray-700 text-white px-4 py-2 rounded-full text-lg font-semibold">
+          <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-3 rounded-full text-lg font-semibold shadow-lg">
             {currentValue}%
           </div>
         </div>
@@ -79,7 +79,7 @@ const UnifiedBodyFatSelector = ({ value, onChange, gender }: UnifiedBodyFatSelec
                 setCurrentValue(newVal);
                 onChange(newVal);
               }}
-              className="w-12 h-12 bg-teal-500 hover:bg-teal-600 rounded-lg flex items-center justify-center text-white text-xl font-bold transition-colors"
+              className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 rounded-xl flex items-center justify-center text-white text-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
             >
               −
             </button>
@@ -102,13 +102,13 @@ const UnifiedBodyFatSelector = ({ value, onChange, gender }: UnifiedBodyFatSelec
                 setCurrentValue(newVal);
                 onChange(newVal);
               }}
-              className="w-12 h-12 bg-teal-500 hover:bg-teal-600 rounded-lg flex items-center justify-center text-white text-xl font-bold transition-colors"
+              className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 rounded-xl flex items-center justify-center text-white text-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
             >
               +
             </button>
           </div>
           
-          <div className="flex justify-between text-xs text-gray-400">
+          <div className="flex justify-between text-xs text-gray-500 font-medium">
             <span>Very Lean</span>
             <span>Average</span>
             <span>High</span>
