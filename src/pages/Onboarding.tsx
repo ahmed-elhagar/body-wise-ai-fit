@@ -104,12 +104,21 @@ const Onboarding = () => {
 
         console.log("Onboarding - Saving complete profile data:", profileData);
         
-        await updateProfile(profileData);
+        const result = await updateProfile(profileData);
+        
+        if (result.error) {
+          console.error('Onboarding - Profile update failed:', result.error);
+          toast.error('Failed to save profile. Please try again.');
+          setIsCompleting(false);
+          return;
+        }
         
         console.log('Onboarding - Profile saved successfully, redirecting to success page');
         
-        // Redirect to success page instead of dashboard
-        navigate('/onboarding-success', { replace: true });
+        // Small delay to ensure the profile update is processed
+        setTimeout(() => {
+          navigate('/onboarding-success', { replace: true });
+        }, 500);
 
       } catch (error) {
         console.error('Onboarding - Unexpected error:', error);

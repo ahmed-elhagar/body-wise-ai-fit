@@ -29,6 +29,16 @@ const ProtectedRoute = React.memo<ProtectedRouteProps>(({
   // Enhanced loading state handling with better performance
   const isLoading = authLoading || (requireProfile && profileLoading) || (requireRole && roleLoading);
 
+  console.log('ProtectedRoute - Current state:', {
+    pathname: location.pathname,
+    hasUser: !!user,
+    hasProfile: !!profile,
+    onboardingCompleted: profile?.onboarding_completed,
+    authLoading,
+    profileLoading,
+    userId: user?.id?.substring(0, 8) + '...' || 'none'
+  });
+
   // Early return for loading state
   if (isLoading) {
     return (
@@ -56,30 +66,30 @@ const ProtectedRoute = React.memo<ProtectedRouteProps>(({
     return <Navigate to={redirectTo} state={{ from: location.pathname }} replace />;
   }
 
-  // Special handling for onboarding route
+  // Special handling for onboarding route - allow access if user exists
   if (location.pathname === '/onboarding') {
     if (!user) {
-      // Unauthenticated users can access onboarding (it includes signup)
+      // Unauthenticated users can access onboarding (includes signup)
+      console.log("ProtectedRoute - Allowing unauthenticated access to onboarding");
       return <>{children}</>;
     } else if (user && profile && profile.onboarding_completed) {
       // Authenticated users who completed onboarding should go to dashboard
-      console.log("ProtectedRoute - Authenticated user with completed onboarding, redirecting to dashboard");
+      console.log("ProtectedRoute - User completed onboarding, redirecting to dashboard");
       return <Navigate to="/dashboard" replace />;
-    } else if (user && (!profile || !profile.onboarding_completed)) {
+    } else {
       // Authenticated users who haven't completed onboarding can continue
+      console.log("ProtectedRoute - User authenticated but onboarding not completed, allowing access");
       return <>{children}</>;
     }
   }
 
-  // If user is authenticated but trying to access auth pages
+  // If user is authenticated but trying to access auth pages, redirect appropriately
   if (!requireAuth && user) {
-    // If user has completed onboarding, go to dashboard
-    // If user hasn't completed onboarding, go to onboarding
     if (profile?.onboarding_completed) {
-      console.log("ProtectedRoute - Redirecting authenticated user to dashboard");
+      console.log("ProtectedRoute - Redirecting authenticated user with completed onboarding to dashboard");
       return <Navigate to="/dashboard" replace />;
-    } else {
-      console.log("ProtectedRoute - Redirecting authenticated user to onboarding");
+    } else if (!profile?.onboarding_completed) {
+      console.log("ProtectedRoute - Redirecting authenticated user with incomplete onboarding to onboarding");
       return <Navigate to="/onboarding" replace />;
     }
   }
@@ -111,13 +121,14 @@ const ProtectedRoute = React.memo<ProtectedRouteProps>(({
     }
   }
 
-  // If profile is required but user profile is not complete
-  if (requireProfile && user && !profileLoading && profile && !profile.onboarding_completed) {
-    console.log("ProtectedRoute - Redirecting to onboarding (incomplete profile)");
+  // Critical fix: Check onboarding completion for protected routes
+  if (requireAuth && user && profile && !profile.onboarding_completed && location.pathname !== '/onboarding') {
+    console.log("ProtectedRoute - User authenticated but onboarding not completed, redirecting to onboarding");
     return <Navigate to="/onboarding" state={{ from: location.pathname }} replace />;
   }
 
   // All conditions passed, render the children
+  console.log("ProtectedRoute - All conditions passed, rendering children");
   return <>{children}</>;
 });
 
