@@ -31,6 +31,7 @@ const ModernOnboardingNavigation = ({
         onClick={onBack}
         disabled={step === 1}
         className="flex items-center gap-2 h-12 px-6 border-2 border-gray-200 hover:border-gray-300 transition-colors rounded-xl disabled:opacity-50"
+        data-testid="previous-step"
       >
         <ArrowLeft className="w-4 h-4" />
         <span>Back</span>
@@ -58,6 +59,7 @@ const ModernOnboardingNavigation = ({
               ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700' 
               : 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700'
           }`}
+          data-testid={step === totalSteps ? "finish-onboarding" : "next-step"}
         >
           {isUpdating ? (
             <>

@@ -1,9 +1,10 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { User, Sparkles } from "lucide-react";
 import { OnboardingFormData } from "@/hooks/useOnboardingForm";
+import GenderSelector from "./GenderSelector";
+import NationalitySelector from "./NationalitySelector";
 
 interface ModernOnboardingStep1Props {
   formData: OnboardingFormData;
@@ -29,6 +30,7 @@ const ModernOnboardingStep1 = ({ formData, updateFormData }: ModernOnboardingSte
           </Label>
           <Input
             id="first_name"
+            data-testid="first-name"
             value={formData.first_name}
             onChange={(e) => updateFormData("first_name", e.target.value)}
             placeholder="Enter your first name"
@@ -43,6 +45,7 @@ const ModernOnboardingStep1 = ({ formData, updateFormData }: ModernOnboardingSte
           </Label>
           <Input
             id="last_name"
+            data-testid="last-name"
             value={formData.last_name}
             onChange={(e) => updateFormData("last_name", e.target.value)}
             placeholder="Enter your last name"
@@ -57,6 +60,7 @@ const ModernOnboardingStep1 = ({ formData, updateFormData }: ModernOnboardingSte
           </Label>
           <Input
             id="age"
+            data-testid="age"
             type="number"
             value={formData.age}
             onChange={(e) => updateFormData("age", e.target.value)}
@@ -68,37 +72,17 @@ const ModernOnboardingStep1 = ({ formData, updateFormData }: ModernOnboardingSte
           />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="gender" className="text-sm font-medium text-gray-700">
-            Gender *
-          </Label>
-          <Select 
-            value={formData.gender} 
-            onValueChange={(value) => updateFormData("gender", value)} 
-            required
-          >
-            <SelectTrigger className="h-12 border-2 border-gray-200 focus:border-blue-500 transition-colors rounded-xl">
-              <SelectValue placeholder="Select your gender" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="male">Male</SelectItem>
-              <SelectItem value="female">Female</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
-            </SelectContent>
-          </Select>
+        <div className="md:col-span-2">
+          <GenderSelector
+            value={formData.gender}
+            onChange={(value) => updateFormData("gender", value)}
+          />
         </div>
 
-        <div className="md:col-span-2 space-y-2">
-          <Label htmlFor="nationality" className="text-sm font-medium text-gray-700">
-            Nationality *
-          </Label>
-          <Input
-            id="nationality"
+        <div className="md:col-span-2">
+          <NationalitySelector
             value={formData.nationality}
-            onChange={(e) => updateFormData("nationality", e.target.value)}
-            placeholder="Your nationality"
-            className="h-12 border-2 border-gray-200 focus:border-blue-500 transition-colors rounded-xl"
-            required
+            onChange={(value) => updateFormData("nationality", value)}
           />
         </div>
       </div>

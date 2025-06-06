@@ -18,7 +18,7 @@ import ModernOnboardingNavigation from "@/components/onboarding/ModernOnboarding
 const Onboarding = () => {
   const navigate = useNavigate();
   const { updateProfile, isUpdating, profile } = useProfile();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, signOut } = useAuth();
   const { isEmailConfirmationEnabled } = useEmailConfirmation();
   const [step, setStep] = useState(1);
   const { formData, updateFormData, handleArrayInput } = useOnboardingForm();
@@ -75,7 +75,7 @@ const Onboarding = () => {
           gender: formData.gender as any,
           height: formData.height ? parseFloat(formData.height) : undefined,
           weight: formData.weight ? parseFloat(formData.weight) : undefined,
-          nationality: formData.nationality,
+          nationality: formData.nationality || null, // Allow empty nationality
           body_shape: formData.body_shape as any,
           health_conditions: formData.health_conditions,
           fitness_goal: formData.fitness_goal as any,
@@ -91,12 +91,15 @@ const Onboarding = () => {
         
         await updateProfile(profileData);
         
-        console.log('Onboarding - Profile saved successfully, redirecting to dashboard');
-        toast.success('🎉 Welcome to FitFatta! Your profile is complete!');
+        console.log('Onboarding - Profile saved successfully, signing out and redirecting to login');
+        toast.success('🎉 Profile setup complete! Please sign in to continue.');
         
-        // Use a timeout to ensure the profile update is processed
+        // Sign out the user and redirect to login
+        await signOut();
+        
+        // Use setTimeout to ensure signOut completes before navigation
         setTimeout(() => {
-          navigate('/dashboard', { replace: true });
+          navigate('/auth', { replace: true });
         }, 500);
 
       } catch (error) {

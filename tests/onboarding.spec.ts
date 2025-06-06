@@ -9,7 +9,14 @@ test.describe('User Onboarding Flow', () => {
     await page.fill('[data-testid="first-name"]', 'John');
     await page.fill('[data-testid="last-name"]', 'Doe');
     await page.fill('[data-testid="age"]', '30');
-    await page.selectOption('[data-testid="gender"]', 'male');
+    
+    // Select gender using the new visual selector
+    await page.click('[data-testid="gender-male"]');
+    
+    // Select nationality (optional)
+    await page.click('[data-testid="nationality"]');
+    await page.selectOption('[data-testid="nationality"]', 'american');
+    
     await page.click('[data-testid="next-step"]');
 
     // Step 2: Physical Information
@@ -19,14 +26,14 @@ test.describe('User Onboarding Flow', () => {
     await page.selectOption('[data-testid="fitness-goal"]', 'maintain');
     await page.click('[data-testid="next-step"]');
 
-    // Step 3: Preferences
-    await page.selectOption('[data-testid="nationality"]', 'international');
-    await page.click('[data-testid="dietary-restriction-vegetarian"]');
+    // Step 3: Goals and Activity
+    await page.click('[data-testid="next-step"]');
+
+    // Step 4: Preferences
     await page.click('[data-testid="finish-onboarding"]');
 
-    // Should redirect to dashboard
-    await expect(page).toHaveURL('/dashboard');
-    await expect(page.locator('[data-testid="welcome-message"]')).toBeVisible();
+    // Should redirect to auth page after completing onboarding
+    await expect(page).toHaveURL('/auth');
   });
 
   test('should validate required fields', async ({ page }) => {
@@ -35,9 +42,8 @@ test.describe('User Onboarding Flow', () => {
     // Try to proceed without filling required fields
     await page.click('[data-testid="next-step"]');
     
-    // Should show validation errors
-    await expect(page.locator('[data-testid="error-first-name"]')).toBeVisible();
-    await expect(page.locator('[data-testid="error-age"]')).toBeVisible();
+    // Should show validation error (toast message)
+    await expect(page.locator('text=Please fill in all required fields')).toBeVisible();
   });
 
   test('should save progress between steps', async ({ page }) => {
@@ -46,7 +52,7 @@ test.describe('User Onboarding Flow', () => {
     // Fill step 1
     await page.fill('[data-testid="first-name"]', 'Jane');
     await page.fill('[data-testid="age"]', '25');
-    await page.selectOption('[data-testid="gender"]', 'female');
+    await page.click('[data-testid="gender-female"]');
     await page.click('[data-testid="next-step"]');
     
     // Go back to step 1
@@ -55,5 +61,24 @@ test.describe('User Onboarding Flow', () => {
     // Values should be preserved
     await expect(page.locator('[data-testid="first-name"]')).toHaveValue('Jane');
     await expect(page.locator('[data-testid="age"]')).toHaveValue('25');
+    
+    // Gender should still be selected
+    await expect(page.locator('[data-testid="gender-female"]')).toHaveClass(/ring-2 ring-blue-500/);
+  });
+
+  test('should allow skipping optional nationality', async ({ page }) => {
+    await page.goto('/onboarding');
+    
+    // Fill required fields only
+    await page.fill('[data-testid="first-name"]', 'Test');
+    await page.fill('[data-testid="last-name"]', 'User');
+    await page.fill('[data-testid="age"]', '30');
+    await page.click('[data-testid="gender-male"]');
+    
+    // Don't select nationality (it's optional)
+    await page.click('[data-testid="next-step"]');
+    
+    // Should proceed to next step
+    await expect(page.locator('text=Your physical profile')).toBeVisible();
   });
 });
