@@ -20,10 +20,14 @@ const Onboarding = () => {
   const { updateProfile, isUpdating, profile } = useProfile();
   const { user, loading: authLoading } = useAuth();
   const { isEmailConfirmationEnabled } = useEmailConfirmation();
+  
+  // Initialize all state at the top level
   const [step, setStep] = useState(1);
-  const { formData, updateFormData, handleArrayInput } = useOnboardingForm();
   const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
+  
+  // Call custom hook consistently
+  const { formData, updateFormData, handleArrayInput } = useOnboardingForm();
 
   const totalSteps = 4;
   const progress = (step / totalSteps) * 100;

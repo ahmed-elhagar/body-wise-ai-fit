@@ -1,7 +1,7 @@
 
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface UnifiedBodyFatSelectorProps {
   value: number;
@@ -11,6 +11,22 @@ interface UnifiedBodyFatSelectorProps {
 
 const UnifiedBodyFatSelector = ({ value, onChange, gender }: UnifiedBodyFatSelectorProps) => {
   const [currentValue, setCurrentValue] = useState(value || (gender === 'male' ? 20 : 25));
+
+  // Update local state when prop changes
+  useEffect(() => {
+    if (value !== currentValue) {
+      setCurrentValue(value || (gender === 'male' ? 20 : 25));
+    }
+  }, [value]);
+
+  // Update local state when gender changes
+  useEffect(() => {
+    const defaultValue = gender === 'male' ? 20 : 25;
+    if (!value) {
+      setCurrentValue(defaultValue);
+      onChange(defaultValue);
+    }
+  }, [gender]);
 
   const handleValueChange = (newValue: number[]) => {
     const val = newValue[0];
