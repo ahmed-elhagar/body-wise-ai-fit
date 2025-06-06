@@ -13,7 +13,7 @@ test.describe('User Onboarding Flow', () => {
     // Select gender using the new visual selector
     await page.click('[data-testid="gender-male"]');
     
-    // Select nationality (optional) - now it has a default value
+    // Select nationality (optional)
     await page.click('[data-testid="nationality"]');
     await page.selectOption('[data-testid="nationality"]', 'american');
     
@@ -66,7 +66,7 @@ test.describe('User Onboarding Flow', () => {
     await expect(page.locator('[data-testid="gender-female"]')).toHaveClass(/ring-2 ring-blue-500/);
   });
 
-  test('should allow keeping default nationality', async ({ page }) => {
+  test('should allow skipping optional nationality', async ({ page }) => {
     await page.goto('/onboarding');
     
     // Fill required fields only
@@ -75,7 +75,7 @@ test.describe('User Onboarding Flow', () => {
     await page.fill('[data-testid="age"]', '30');
     await page.click('[data-testid="gender-male"]');
     
-    // Don't change nationality (it has default value now)
+    // Don't select nationality (it's optional)
     await page.click('[data-testid="next-step"]');
     
     // Should proceed to next step

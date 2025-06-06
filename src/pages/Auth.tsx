@@ -18,7 +18,7 @@ const Auth = () => {
   const { profile, isLoading: profileLoading } = useProfile();
   const navigate = useNavigate();
 
-  // Redirect authenticated users
+  // Redirect logic for authenticated users
   useEffect(() => {
     if (authLoading || !user) return;
 
@@ -35,9 +35,9 @@ const Auth = () => {
     }
 
     // Check if user has completed onboarding
-    if (!profile || !profile.onboarding_completed) {
-      console.log('Auth - Redirecting to signup (incomplete profile)');
-      navigate('/signup', { replace: true });
+    if (!profile || !profile.onboarding_completed || !profile.first_name || !profile.last_name) {
+      console.log('Auth - Redirecting to onboarding (incomplete profile)');
+      navigate('/onboarding', { replace: true });
     } else {
       console.log('Auth - Redirecting to dashboard (complete profile)');
       navigate('/dashboard', { replace: true });
@@ -69,13 +69,23 @@ const Auth = () => {
     setLoading(true);
     try {
       if (isSignUp) {
-        // For signup, redirect to unified signup page
-        navigate('/signup');
-        return;
+        await signUp(data.email, data.password, { 
+          first_name: data.firstName, 
+          last_name: data.lastName 
+        });
+        console.log('Sign up successful, redirecting to onboarding');
+        toast.success('Account created successfully! Please check your email to confirm your account.');
+        
+        // Redirect immediately to onboarding for signup
+        // The onboarding page will handle the email confirmation flow
+        setTimeout(() => {
+          navigate('/onboarding', { replace: true });
+        }, 1500);
       } else {
         await signIn(data.email, data.password);
         console.log('Sign in successful');
         toast.success('Welcome back!');
+        // For signin, let the useEffect handle redirection based on auth state
       }
     } catch (error: any) {
       console.error('Auth error:', error);

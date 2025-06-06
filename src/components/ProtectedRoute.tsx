@@ -1,5 +1,5 @@
 
-import React, { ReactNode } from 'react';
+import React, { ReactNode, startTransition } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useProfile } from '@/hooks/useProfile';
@@ -26,8 +26,10 @@ const ProtectedRoute = React.memo<ProtectedRouteProps>(({
   const { role, isLoading: roleLoading, error: roleError, hasRole, hasAnyRole } = useRole();
   const location = useLocation();
 
+  // Enhanced loading state handling with better performance
   const isLoading = authLoading || (requireProfile && profileLoading) || (requireRole && roleLoading);
 
+  // Early return for loading state
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
@@ -42,11 +44,13 @@ const ProtectedRoute = React.memo<ProtectedRouteProps>(({
     );
   }
 
+  // Enhanced error handling for auth errors
   if (authError && requireAuth) {
     console.error("ProtectedRoute - Auth error:", authError);
     return <Navigate to={redirectTo} state={{ from: location.pathname, error: 'Authentication failed' }} replace />;
   }
 
+  // If authentication is required but user is not authenticated
   if (requireAuth && !user) {
     console.log("ProtectedRoute - Redirecting unauthenticated user to:", redirectTo);
     return <Navigate to={redirectTo} state={{ from: location.pathname }} replace />;
@@ -54,24 +58,22 @@ const ProtectedRoute = React.memo<ProtectedRouteProps>(({
 
   // If user is authenticated but trying to access auth pages
   if (!requireAuth && user) {
-    if (profile?.onboarding_completed) {
-      console.log("ProtectedRoute - Redirecting authenticated user to dashboard");
-      return <Navigate to="/dashboard" replace />;
-    } else {
-      console.log("ProtectedRoute - Redirecting authenticated user to signup");
-      return <Navigate to="/signup" replace />;
-    }
+    const from = location.state?.from || '/dashboard';
+    console.log("ProtectedRoute - Redirecting authenticated user to:", from);
+    return <Navigate to={from} replace />;
   }
 
-  // Enhanced role-based access control
+  // Enhanced role-based access control with better error handling
   if (requireRole && user) {
     let hasRequiredRole = false;
     
     try {
+      // Special case: Admin users can access all role-protected routes
       if (role === 'admin') {
         console.log('Admin user granted access to role-protected route');
         hasRequiredRole = true;
       }
+      // Standard role check for non-admin users
       else if (Array.isArray(requireRole)) {
         hasRequiredRole = hasAnyRole(requireRole);
       } else {
@@ -88,14 +90,13 @@ const ProtectedRoute = React.memo<ProtectedRouteProps>(({
     }
   }
 
-  // Profile completion check - redirect to signup if onboarding not completed
-  if (requireProfile && user && !profileLoading && profile) {
-    if (profile.onboarding_completed === false) {
-      console.log("ProtectedRoute - Redirecting to signup (incomplete profile)");
-      return <Navigate to="/signup" state={{ from: location.pathname }} replace />;
-    }
+  // If profile is required but user profile is not complete
+  if (requireProfile && user && !profileLoading && profile && !profile.onboarding_completed) {
+    console.log("ProtectedRoute - Redirecting to onboarding (incomplete profile)");
+    return <Navigate to="/onboarding" state={{ from: location.pathname }} replace />;
   }
 
+  // All conditions passed, render the children
   return <>{children}</>;
 });
 

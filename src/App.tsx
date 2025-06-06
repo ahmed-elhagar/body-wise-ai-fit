@@ -1,35 +1,19 @@
 
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Toaster } from 'sonner';
-import { AuthProvider } from '@/hooks/useAuth';
-import ProtectedRoute from '@/components/ProtectedRoute';
+import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/hooks/useAuth";
+import { LanguageProvider } from "@/contexts/LanguageContext";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import DebugPanel from "@/components/DebugPanel";
+import AuthDebugPanel from "@/components/auth/AuthDebugPanel";
+import ErrorFallback from "@/components/ErrorFallback";
+import { LazyPages } from "@/components/LazyPages";
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
+import MotivationalContent from "@/components/loading/MotivationalContent";
 
-// Pages
-import Landing from '@/pages/Landing';
-import Auth from '@/pages/Auth';
-import SignupFlow from '@/pages/SignupFlow';
-import Dashboard from '@/pages/Dashboard';
-import OnboardingSuccess from '@/pages/OnboardingSuccess';
-import MealPlan from '@/pages/MealPlan';
-import Exercise from '@/pages/Exercise';
-import FoodTracker from '@/pages/FoodTracker';
-import CalorieChecker from '@/pages/CalorieChecker';
-import Goals from '@/pages/Goals';
-import Progress from '@/pages/Progress';
-import WeightTracking from '@/pages/WeightTracking';
-import Profile from '@/pages/Profile';
-import OptimizedProfile from '@/pages/OptimizedProfile';
-import Settings from '@/pages/Settings';
-import Chat from '@/pages/Chat';
-import Notifications from '@/pages/Notifications';
-import Admin from '@/pages/Admin';
-import Coach from '@/pages/Coach';
-import Analytics from '@/pages/Analytics';
-import Pro from '@/pages/Pro';
-import NotFound from '@/pages/NotFound';
-
-// Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -39,214 +23,265 @@ const queryClient = new QueryClient({
   },
 });
 
-function App() {
-  return (
+// Enhanced loading fallback component with motivational content
+const PageLoader = () => (
+  <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-800 flex items-center justify-center p-4 relative overflow-hidden">
+    {/* Background decoration */}
+    <div className="absolute inset-0 opacity-20">
+      <div className="w-full h-full" style={{
+        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+      }}></div>
+    </div>
+    
+    <div className="text-center relative z-10 max-w-lg mx-auto">
+      {/* App Title */}
+      <div className="mb-8">
+        <h1 className="text-5xl font-bold text-white mb-2 tracking-tight">
+          FitFatta
+        </h1>
+        <p className="text-white/70 text-lg">Your Fitness Journey Starts Here</p>
+      </div>
+      
+      {/* Loading Animation */}
+      <div className="mb-8">
+        <div className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+        <p className="text-white/80 text-sm">Preparing your fitness experience...</p>
+      </div>
+      
+      {/* Motivational Content */}
+      <MotivationalContent />
+    </div>
+  </div>
+);
+
+const App = () => (
+  <ErrorBoundary FallbackComponent={ErrorFallback}>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Router>
-          <div className="min-h-screen bg-background text-foreground">
-            <Routes>
-              {/* Public routes */}
-              <Route path="/" element={<Landing />} />
+        <LanguageProvider>
+          <TooltipProvider>
+            <Toaster />
+            <BrowserRouter>
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
+                  <Route path="/" element={<LazyPages.Index />} />
+                  
+                  {/* Public routes */}
+                  <Route 
+                    path="/landing" 
+                    element={
+                      <ProtectedRoute requireAuth={false} redirectTo="/dashboard">
+                        <Suspense fallback={<PageLoader />}>
+                          <LazyPages.Landing />
+                        </Suspense>
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/auth" 
+                    element={
+                      <ProtectedRoute requireAuth={false} redirectTo="/dashboard">
+                        <Suspense fallback={<PageLoader />}>
+                          <LazyPages.Auth />
+                        </Suspense>
+                      </ProtectedRoute>
+                    } 
+                  />
+                  
+                  {/* Protected routes */}
+                  <Route 
+                    path="/onboarding" 
+                    element={
+                      <ProtectedRoute requireAuth={true}>
+                        <Suspense fallback={<PageLoader />}>
+                          <LazyPages.Onboarding />
+                        </Suspense>
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/dashboard" 
+                    element={
+                      <ProtectedRoute requireAuth={true} requireProfile={true}>
+                        <Suspense fallback={<PageLoader />}>
+                          <LazyPages.Dashboard />
+                        </Suspense>
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/profile" 
+                    element={
+                      <ProtectedRoute requireAuth={true}>
+                        <Suspense fallback={<PageLoader />}>
+                          <LazyPages.Profile />
+                        </Suspense>
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/meal-plan" 
+                    element={
+                      <ProtectedRoute requireAuth={true} requireProfile={true}>
+                        <Suspense fallback={<PageLoader />}>
+                          <LazyPages.MealPlan />
+                        </Suspense>
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/exercise" 
+                    element={
+                      <ProtectedRoute requireAuth={true} requireProfile={true}>
+                        <Suspense fallback={<PageLoader />}>
+                          <LazyPages.Exercise />
+                        </Suspense>
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/food-tracker" 
+                    element={
+                      <ProtectedRoute requireAuth={true} requireProfile={true}>
+                        <Suspense fallback={<PageLoader />}>
+                          <LazyPages.FoodTracker />
+                        </Suspense>
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/calorie-checker" 
+                    element={
+                      <ProtectedRoute requireAuth={true} requireProfile={true}>
+                        <Suspense fallback={<PageLoader />}>
+                          <LazyPages.CalorieChecker />
+                        </Suspense>
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/weight-tracking" 
+                    element={
+                      <ProtectedRoute requireAuth={true} requireProfile={true}>
+                        <Suspense fallback={<PageLoader />}>
+                          <LazyPages.WeightTracking />
+                        </Suspense>
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/goals" 
+                    element={
+                      <ProtectedRoute requireAuth={true} requireProfile={true}>
+                        <Suspense fallback={<PageLoader />}>
+                          <LazyPages.Goals />
+                        </Suspense>
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/progress" 
+                    element={
+                      <ProtectedRoute requireAuth={true} requireProfile={true}>
+                        <Suspense fallback={<PageLoader />}>
+                          <LazyPages.Progress />
+                        </Suspense>
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/progress/:tab" 
+                    element={
+                      <ProtectedRoute requireAuth={true} requireProfile={true}>
+                        <Suspense fallback={<PageLoader />}>
+                          <LazyPages.Progress />
+                        </Suspense>
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/settings" 
+                    element={
+                      <ProtectedRoute requireAuth={true}>
+                        <Suspense fallback={<PageLoader />}>
+                          <LazyPages.Settings />
+                        </Suspense>
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/notifications" 
+                    element={
+                      <ProtectedRoute requireAuth={true}>
+                        <Suspense fallback={<PageLoader />}>
+                          <LazyPages.Notifications />
+                        </Suspense>
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/chat" 
+                    element={
+                      <ProtectedRoute requireAuth={true} requireProfile={true}>
+                        <Suspense fallback={<PageLoader />}>
+                          <LazyPages.Chat />
+                        </Suspense>
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/pro" 
+                    element={
+                      <ProtectedRoute requireAuth={true}>
+                        <Suspense fallback={<PageLoader />}>
+                          <LazyPages.Pro />
+                        </Suspense>
+                      </ProtectedRoute>
+                    } 
+                  />
+                  
+                  {/* Admin routes */}
+                  <Route 
+                    path="/admin" 
+                    element={
+                      <ProtectedRoute requireAuth={true} requireRole="admin">
+                        <Suspense fallback={<PageLoader />}>
+                          <LazyPages.Admin />
+                        </Suspense>
+                      </ProtectedRoute>
+                    } 
+                  />
+                  
+                  {/* Coach routes */}
+                  <Route 
+                    path="/coach" 
+                    element={
+                      <ProtectedRoute requireAuth={true} requireRole={["coach", "admin"]}>
+                        <Suspense fallback={<PageLoader />}>
+                          <LazyPages.Coach />
+                        </Suspense>
+                      </ProtectedRoute>
+                    } 
+                  />
+                  
+                  {/* 404 route */}
+                  <Route path="*" element={
+                    <Suspense fallback={<PageLoader />}>
+                      <LazyPages.NotFound />
+                    </Suspense>
+                  } />
+                </Routes>
+              </Suspense>
               
-              {/* Auth routes - redirect authenticated users */}
-              <Route 
-                path="/auth" 
-                element={
-                  <ProtectedRoute requireAuth={false}>
-                    <Auth />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              {/* Signup flow - redirect authenticated users */}
-              <Route 
-                path="/signup" 
-                element={
-                  <ProtectedRoute requireAuth={false}>
-                    <SignupFlow />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              {/* Redirect old onboarding route to signup */}
-              <Route path="/onboarding" element={<Navigate to="/signup" replace />} />
-              
-              {/* Success page - requires auth */}
-              <Route 
-                path="/onboarding-success" 
-                element={
-                  <ProtectedRoute requireAuth={true}>
-                    <OnboardingSuccess />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              {/* Protected routes - require auth and profile */}
-              <Route 
-                path="/dashboard" 
-                element={
-                  <ProtectedRoute requireAuth={true} requireProfile={true}>
-                    <Dashboard />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              {/* Admin routes */}
-              <Route 
-                path="/admin" 
-                element={
-                  <ProtectedRoute requireRole="admin">
-                    <Admin />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              <Route 
-                path="/coach" 
-                element={
-                  <ProtectedRoute requireRole="coach">
-                    <Coach />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              <Route 
-                path="/analytics" 
-                element={
-                  <ProtectedRoute requireRole="admin">
-                    <Analytics />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              <Route 
-                path="/pro" 
-                element={
-                  <ProtectedRoute>
-                    <Pro />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              {/* App feature routes - require auth */}
-              <Route 
-                path="/meal-plan" 
-                element={
-                  <ProtectedRoute>
-                    <MealPlan />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              <Route 
-                path="/exercise" 
-                element={
-                  <ProtectedRoute>
-                    <Exercise />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              <Route 
-                path="/food-tracker" 
-                element={
-                  <ProtectedRoute>
-                    <FoodTracker />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              <Route 
-                path="/calorie-checker" 
-                element={
-                  <ProtectedRoute>
-                    <CalorieChecker />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              <Route 
-                path="/goals" 
-                element={
-                  <ProtectedRoute>
-                    <Goals />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              <Route 
-                path="/progress" 
-                element={
-                  <ProtectedRoute>
-                    <Progress />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              <Route 
-                path="/weight-tracking" 
-                element={
-                  <ProtectedRoute>
-                    <WeightTracking />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              <Route 
-                path="/profile" 
-                element={
-                  <ProtectedRoute>
-                    <Profile />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              <Route 
-                path="/optimized-profile" 
-                element={
-                  <ProtectedRoute>
-                    <OptimizedProfile />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              <Route 
-                path="/settings" 
-                element={
-                  <ProtectedRoute>
-                    <Settings />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              <Route 
-                path="/chat" 
-                element={
-                  <ProtectedRoute>
-                    <Chat />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              <Route 
-                path="/notifications" 
-                element={
-                  <ProtectedRoute>
-                    <Notifications />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              {/* Catch all route - redirect to home */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </div>
-          <Toaster richColors position="top-right" />
-        </Router>
+              {/* Debug panels */}
+              <DebugPanel />
+              <AuthDebugPanel />
+            </BrowserRouter>
+          </TooltipProvider>
+        </LanguageProvider>
       </AuthProvider>
     </QueryClientProvider>
-  );
-}
+  </ErrorBoundary>
+);
 
 export default App;
