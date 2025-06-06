@@ -38,73 +38,84 @@ const ScrollableBodyShapeSelector = ({
   };
 
   const getBodyVisualization = (percentage: number, gender: string) => {
-    // Calculate scale based on body fat percentage
+    // Calculate scale and opacity based on body fat percentage
     const getScale = (percentage: number) => {
-      return Math.max(0.8, Math.min(1.2, 0.9 + (percentage - 20) * 0.01));
+      return Math.max(0.7, Math.min(1.3, 0.8 + (percentage - 15) * 0.015));
     };
 
     const scale = getScale(percentage);
-    
-    // Determine image path based on gender and body fat percentage
-    const getImagePath = (percentage: number, gender: string) => {
-      let category = 'average';
-      if (gender === 'male') {
-        if (percentage < 15) category = 'lean';
-        else if (percentage > 25) category = 'heavy';
-      } else {
-        if (percentage < 20) category = 'lean';
-        else if (percentage > 30) category = 'heavy';
-      }
-      
-      // Return the path where you should place your licensed images
-      return `/images/body-shapes/${gender}-${category}.jpg`;
-    };
-
-    const imagePath = getImagePath(percentage, gender);
+    const bodyColor = percentage < 15 ? '#3B82F6' : percentage < 25 ? '#10B981' : '#F59E0B';
 
     return (
-      <div className="relative w-full h-96 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl border-2 border-gray-200 overflow-hidden">
+      <div className="relative w-full h-80 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl border-2 border-gray-200 overflow-hidden">
+        {/* Placeholder for real body shape images */}
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="relative">
-            {/* Main body image container */}
-            <div className="w-40 h-80 bg-white rounded-lg flex items-center justify-center relative overflow-hidden shadow-lg">
+            {/* Background placeholder image */}
+            <div className="w-32 h-72 bg-gray-200 rounded-lg flex items-center justify-center relative overflow-hidden">
               <img 
-                src={imagePath}
-                alt={`${gender} body visualization at ${percentage}% body fat`}
-                className="w-full h-full object-cover transition-transform duration-300"
+                src={gender === 'female' 
+                  ? `https://images.unsplash.com/photo-1594381898411-846e7d193883?w=150&h=300&fit=crop&crop=center&auto=format`
+                  : `https://images.unsplash.com/photo-1583468982228-19f19164aee2?w=150&h=300&fit=crop&crop=center&auto=format`
+                }
+                alt={`${gender} body visualization`}
+                className="w-full h-full object-cover opacity-30"
                 style={{ 
                   transform: `scale(${scale})`,
-                  filter: `brightness(${1.1 - percentage * 0.005}) contrast(${1.05 + percentage * 0.002})`
+                  filter: `brightness(${1.2 - percentage * 0.01}) contrast(${1.1 + percentage * 0.005})`
                 }}
                 onError={(e) => {
-                  // Fallback to placeholder when image not found
-                  e.currentTarget.src = `https://images.unsplash.com/photo-${gender === 'female' ? '1594381898411-846e7d193883' : '1583468982228-19f19164aee2'}?w=200&h=400&fit=crop&crop=center&auto=format`;
+                  e.currentTarget.style.display = 'none';
                 }}
               />
               
-              {/* Overlay indicator for image replacement */}
-              <div className="absolute top-2 left-2 bg-blue-500 text-white text-xs px-2 py-1 rounded">
-                Replace with licensed image
+              {/* Dynamic SVG overlay */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <svg viewBox="0 0 120 250" className="w-28 h-64 opacity-70">
+                  <g fill={bodyColor} transform={`scale(${scale}) translate(${60 - 60 * scale}, ${125 - 125 * scale})`}>
+                    {gender === 'female' ? (
+                      <>
+                        {/* Female silhouette */}
+                        <ellipse cx="60" cy="30" rx="15" ry="18" />
+                        <ellipse cx="60" cy="65" rx={10 + percentage * 0.2} ry="22" />
+                        <ellipse cx="60" cy="95" rx={8 + percentage * 0.15} ry="12" />
+                        <ellipse cx="60" cy="125" rx={14 + percentage * 0.3} ry="20" />
+                        <ellipse cx="42" cy="75" rx={4 + percentage * 0.1} ry="28" />
+                        <ellipse cx="78" cy="75" rx={4 + percentage * 0.1} ry="28" />
+                        <ellipse cx="52" cy="180" rx={6 + percentage * 0.15} ry="40" />
+                        <ellipse cx="68" cy="180" rx={6 + percentage * 0.15} ry="40" />
+                      </>
+                    ) : (
+                      <>
+                        {/* Male silhouette */}
+                        <ellipse cx="60" cy="30" rx="15" ry="18" />
+                        <ellipse cx="60" cy="60" rx={18 + percentage * 0.2} ry="15" />
+                        <ellipse cx="60" cy="95" rx={12 + percentage * 0.25} ry="28" />
+                        <ellipse cx="60" cy="130" rx={10 + percentage * 0.2} ry="18" />
+                        <ellipse cx="40" cy="80" rx={5 + percentage * 0.1} ry="32" />
+                        <ellipse cx="80" cy="80" rx={5 + percentage * 0.1} ry="32" />
+                        <ellipse cx="52" cy="190" rx={7 + percentage * 0.15} ry="45" />
+                        <ellipse cx="68" cy="190" rx={7 + percentage * 0.15} ry="45" />
+                      </>
+                    )}
+                  </g>
+                </svg>
               </div>
             </div>
             
             {/* Body fat percentage indicator */}
-            <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2">
-              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-full shadow-lg">
-                <span className="text-xl font-bold">{currentValue}%</span>
+            <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2">
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-full shadow-lg">
+                <span className="text-lg font-bold">{currentValue}%</span>
               </div>
             </div>
           </div>
         </div>
         
-        {/* Instructions for image placement */}
-        <div className="absolute top-4 right-4 bg-amber-100 border border-amber-300 rounded-lg p-3 max-w-48">
-          <p className="text-xs text-amber-800 font-medium">
-            📁 Place your licensed {gender} body images in:
-            <br />
-            <code className="text-xs bg-amber-200 px-1 rounded">
-              /public/images/body-shapes/
-            </code>
+        {/* Replace with your licensed body shape images */}
+        <div className="absolute top-4 left-4 bg-blue-100 border border-blue-300 rounded-lg p-2">
+          <p className="text-xs text-blue-700 font-medium">
+            Replace with licensed {gender} body images
           </p>
         </div>
       </div>
@@ -128,30 +139,30 @@ const ScrollableBodyShapeSelector = ({
   };
 
   return (
-    <div className="space-y-6 px-2 sm:px-0">
+    <div className="space-y-8">
       <div className="text-center">
-        <Label className="text-xl sm:text-2xl font-bold text-gray-800 mb-2 block">
+        <Label className="text-2xl font-bold text-gray-800 mb-2 block">
           Choose your body composition
         </Label>
-        <p className="text-sm sm:text-base text-gray-600">
+        <p className="text-gray-600">
           Scroll to adjust your current body fat percentage
         </p>
       </div>
       
       {/* Body visualization */}
-      <div className="flex justify-center px-4">
+      <div className="flex justify-center">
         {getBodyVisualization(currentValue, gender)}
       </div>
 
       {/* Body description */}
       <div className="text-center space-y-2">
-        <p className="text-base sm:text-lg font-medium text-gray-700">
+        <p className="text-lg font-medium text-gray-700">
           {getBodyDescription(currentValue, gender)}
         </p>
       </div>
 
       {/* Slider */}
-      <div className="px-4 sm:px-6">
+      <div className="px-6">
         <Slider
           value={[currentValue]}
           onValueChange={handleValueChange}
@@ -161,14 +172,14 @@ const ScrollableBodyShapeSelector = ({
           className="w-full"
           data-testid="body-composition-slider"
         />
-        <div className="flex justify-between text-xs sm:text-sm text-gray-500 mt-2">
+        <div className="flex justify-between text-sm text-gray-500 mt-2">
           <span>{gender === 'male' ? '8%' : '12%'} (Very lean)</span>
           <span>{gender === 'male' ? '35%' : '40%'} (High)</span>
         </div>
       </div>
 
       {/* Info card */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mx-2 sm:mx-0">
+      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
         <div className="flex items-start gap-3">
           <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
             <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">

@@ -1,7 +1,10 @@
 
-export const validateOnboardingStep = (step: number, formData: any): boolean => {
+import { OnboardingFormData } from "@/hooks/useOnboardingForm";
+
+export const validateOnboardingStep = (step: number, formData: OnboardingFormData): boolean => {
   switch (step) {
     case 1:
+      // Basic Information - all fields required except nationality
       return !!(
         formData.first_name?.trim() &&
         formData.last_name?.trim() &&
@@ -12,17 +15,16 @@ export const validateOnboardingStep = (step: number, formData: any): boolean => 
       );
     
     case 2:
+      // Body shape and motivation - body shape required
       return !!(formData.body_shape);
     
     case 3:
-      return !!(
-        formData.fitness_goal &&
-        formData.activity_level &&
-        formData.health_conditions?.length > 0
-      );
+      // Goals and activity - fitness goal and activity level required
+      return !!(formData.fitness_goal && formData.activity_level);
     
     case 4:
-      return true; // This step is optional, preferences can be empty
+      // Summary - always valid as it's a review step
+      return true;
     
     default:
       return false;

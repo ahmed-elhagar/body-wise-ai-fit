@@ -28,41 +28,47 @@ const ModernOnboardingHeader = ({ step, totalSteps, progress }: ModernOnboarding
 
       {/* Progress Bar */}
       <div className="mb-6">
-        <Progress value={progress} className="h-3 bg-gray-200">
+        <Progress value={progress} className="h-2 bg-gray-200">
           <div 
             className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-500 ease-out rounded-full"
             style={{ width: `${progress}%` }}
           />
         </Progress>
-        <div className="flex justify-between mt-2 text-sm text-gray-500">
-          <span>Step {step} of {totalSteps}</span>
-          <span>{Math.round(progress)}% Complete</span>
-        </div>
       </div>
 
-      {/* Enhanced Step Indicators */}
-      <div className="grid grid-cols-4 gap-2 mb-6">
+      {/* Step Indicators */}
+      <div className="flex justify-between items-center mb-6">
         {steps.map((stepItem, index) => (
-          <div key={stepItem.number} className="flex flex-col items-center">
-            {/* Step Circle */}
-            <div className={`
-              w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300 mb-2
-              ${step > stepItem.number 
-                ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg scale-110' 
-                : step === stepItem.number
-                ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg scale-110 ring-4 ring-blue-200'
-                : 'bg-gray-200 text-gray-500'
-              }
-            `}>
-              {step > stepItem.number ? (
-                <Check className="w-5 h-5" />
-              ) : (
-                stepItem.number
+          <div key={stepItem.number} className="flex flex-col items-center flex-1">
+            <div className="flex items-center w-full">
+              {/* Step Circle */}
+              <div className={`
+                w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300
+                ${step > stepItem.number 
+                  ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white' 
+                  : step === stepItem.number
+                  ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white'
+                  : 'bg-gray-200 text-gray-500'
+                }
+              `}>
+                {step > stepItem.number ? (
+                  <Check className="w-5 h-5" />
+                ) : (
+                  stepItem.number
+                )}
+              </div>
+              
+              {/* Connector Line */}
+              {index < steps.length - 1 && (
+                <div className={`
+                  flex-1 h-0.5 mx-2 transition-all duration-300
+                  ${step > stepItem.number ? 'bg-green-500' : 'bg-gray-200'}
+                `} />
               )}
             </div>
             
             {/* Step Labels */}
-            <div className="text-center">
+            <div className="text-center mt-2">
               <div className={`
                 text-xs font-medium transition-colors duration-300
                 ${step === stepItem.number ? 'text-blue-600' : step > stepItem.number ? 'text-green-600' : 'text-gray-500'}
