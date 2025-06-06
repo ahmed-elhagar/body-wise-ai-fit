@@ -1,7 +1,7 @@
 
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { TrendingDown, Zap, TrendingUp, Target } from "lucide-react";
+import { TrendingDown, TrendingUp, Heart, Activity } from "lucide-react";
 
 interface GoalBodyTypeSelectorProps {
   value: string;
@@ -15,27 +15,27 @@ const GoalBodyTypeSelector = ({ value, onChange }: GoalBodyTypeSelectorProps) =>
       label: 'Lose Weight', 
       icon: TrendingDown, 
       color: 'text-red-500',
-      description: 'Reduce body fat and get lean'
+      description: 'Reduce body fat and get leaner'
     },
     { 
       id: 'gain_muscle', 
       label: 'Build Muscle', 
       icon: TrendingUp, 
-      color: 'text-green-500',
+      color: 'text-blue-500',
       description: 'Increase muscle mass and strength'
     },
     { 
       id: 'maintain', 
       label: 'Stay Healthy', 
-      icon: Target, 
-      color: 'text-blue-500',
+      icon: Heart, 
+      color: 'text-green-500',
       description: 'Maintain current fitness level'
     },
     { 
       id: 'endurance', 
       label: 'Build Endurance', 
-      icon: Zap, 
-      color: 'text-yellow-500',
+      icon: Activity, 
+      color: 'text-purple-500',
       description: 'Improve cardiovascular fitness'
     },
   ];

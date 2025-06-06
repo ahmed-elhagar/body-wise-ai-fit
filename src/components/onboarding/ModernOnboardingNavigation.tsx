@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ArrowLeft, SkipForward, Sparkles } from "lucide-react";
+import { ArrowRight, ArrowLeft, Loader2 } from "lucide-react";
 
 interface ModernOnboardingNavigationProps {
   step: number;
@@ -9,8 +9,8 @@ interface ModernOnboardingNavigationProps {
   isUpdating: boolean;
   onBack: () => void;
   onNext: () => void;
-  onSkip: () => void;
-  canSkip: boolean;
+  onSkip?: () => void;
+  canSkip?: boolean;
 }
 
 const ModernOnboardingNavigation = ({ 
@@ -21,59 +21,48 @@ const ModernOnboardingNavigation = ({
   onBack, 
   onNext,
   onSkip,
-  canSkip
+  canSkip = false
 }: ModernOnboardingNavigationProps) => {
   return (
     <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
-      {/* Back Button */}
       <Button
         variant="outline"
         onClick={onBack}
-        disabled={step === 1}
-        className="flex items-center gap-2 h-12 px-6 border-2 border-gray-200 hover:border-gray-300 transition-colors rounded-xl disabled:opacity-50"
+        disabled={step === 1 || isUpdating}
+        className="flex items-center space-x-2"
         data-testid="previous-step"
       >
         <ArrowLeft className="w-4 h-4" />
         <span>Back</span>
       </Button>
 
-      {/* Skip Button */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center space-x-3">
         {canSkip && (
           <Button
             variant="ghost"
             onClick={onSkip}
-            className="flex items-center gap-2 h-12 px-4 text-gray-600 hover:text-gray-800 hover:bg-gray-100 transition-colors rounded-xl"
+            disabled={isUpdating}
+            className="text-gray-500 hover:text-gray-700"
           >
-            <SkipForward className="w-4 h-4" />
-            <span>Skip</span>
+            Skip for now
           </Button>
         )}
 
-        {/* Next/Complete Button */}
         <Button
           onClick={onNext}
           disabled={isUpdating || !isStepValid}
-          className={`flex items-center gap-2 h-12 px-6 text-white font-semibold transition-all duration-300 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:transform-none ${
-            step === totalSteps 
-              ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700' 
-              : 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700'
-          }`}
+          className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white flex items-center space-x-2 min-w-[120px]"
           data-testid={step === totalSteps ? "finish-onboarding" : "next-step"}
         >
           {isUpdating ? (
             <>
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              <span>Saving...</span>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Processing...</span>
             </>
           ) : (
             <>
-              <span>{step === totalSteps ? 'Complete Setup' : 'Continue'}</span>
-              {step === totalSteps ? (
-                <Sparkles className="w-4 h-4" />
-              ) : (
-                <ArrowRight className="w-4 h-4" />
-              )}
+              <span>{step === totalSteps ? 'Complete Setup' : 'Next'}</span>
+              <ArrowRight className="w-4 h-4" />
             </>
           )}
         </Button>

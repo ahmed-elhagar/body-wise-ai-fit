@@ -15,6 +15,7 @@ const DashboardContent = () => {
   const handleViewWeight = () => navigate('/weight-tracking');
   const handleViewProgress = () => navigate('/progress');
   const handleViewGoals = () => navigate('/goals');
+  const handleViewProfile = () => navigate('/profile');
 
   return (
     <div className="space-y-6">
@@ -33,6 +34,7 @@ const DashboardContent = () => {
         handleViewWeight={handleViewWeight}
         handleViewProgress={handleViewProgress}
         handleViewGoals={handleViewGoals}
+        handleViewProfile={handleViewProfile}
       />
       
       <DashboardStats />

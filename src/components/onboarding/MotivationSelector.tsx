@@ -1,7 +1,7 @@
 
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Heart, Zap, Target, Award } from "lucide-react";
+import { Heart, Trophy, Zap, Target } from "lucide-react";
 
 interface MotivationSelectorProps {
   value: string[];
@@ -11,18 +11,16 @@ interface MotivationSelectorProps {
 const MotivationSelector = ({ value, onChange }: MotivationSelectorProps) => {
   const motivations = [
     { id: 'health', label: 'Better Health', icon: Heart, color: 'text-red-500' },
-    { id: 'energy', label: 'More Energy', icon: Zap, color: 'text-yellow-500' },
-    { id: 'strength', label: 'Get Stronger', icon: Target, color: 'text-blue-500' },
-    { id: 'confidence', label: 'Build Confidence', icon: Award, color: 'text-purple-500' },
+    { id: 'confidence', label: 'More Confidence', icon: Trophy, color: 'text-yellow-500' },
+    { id: 'energy', label: 'More Energy', icon: Zap, color: 'text-orange-500' },
+    { id: 'goals', label: 'Achieve Goals', icon: Target, color: 'text-green-500' },
   ];
 
   const toggleMotivation = (motivationId: string) => {
-    const currentValues = Array.isArray(value) ? value : [];
-    if (currentValues.includes(motivationId)) {
-      onChange(currentValues.filter(v => v !== motivationId));
-    } else {
-      onChange([...currentValues, motivationId]);
-    }
+    const newValue = value.includes(motivationId)
+      ? value.filter(id => id !== motivationId)
+      : [...value, motivationId];
+    onChange(newValue);
   };
 
   return (
@@ -34,7 +32,7 @@ const MotivationSelector = ({ value, onChange }: MotivationSelectorProps) => {
       <div className="grid grid-cols-2 gap-3">
         {motivations.map((motivation) => {
           const Icon = motivation.icon;
-          const isSelected = Array.isArray(value) && value.includes(motivation.id);
+          const isSelected = value.includes(motivation.id);
           
           return (
             <Button
@@ -47,7 +45,7 @@ const MotivationSelector = ({ value, onChange }: MotivationSelectorProps) => {
               onClick={() => toggleMotivation(motivation.id)}
             >
               <Icon className={`w-6 h-6 ${motivation.color}`} />
-              <span className="text-sm font-medium">{motivation.label}</span>
+              <span className="font-medium text-sm">{motivation.label}</span>
             </Button>
           );
         })}
