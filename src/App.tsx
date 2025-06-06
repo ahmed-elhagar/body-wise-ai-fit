@@ -7,6 +7,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 
 // Pages
 import Landing from '@/pages/Landing';
+import Auth from '@/pages/Auth';
 import UnifiedSignup from '@/pages/UnifiedSignup';
 import Dashboard from '@/pages/Dashboard';
 import OnboardingSuccess from '@/pages/OnboardingSuccess';
@@ -31,6 +32,16 @@ function App() {
               {/* Public routes */}
               <Route path="/" element={<Landing />} />
               
+              {/* Auth route for login */}
+              <Route 
+                path="/auth" 
+                element={
+                  <ProtectedRoute requireAuth={false}>
+                    <Auth />
+                  </ProtectedRoute>
+                } 
+              />
+              
               {/* Unified signup flow */}
               <Route 
                 path="/signup" 
@@ -41,10 +52,7 @@ function App() {
                 } 
               />
               
-              {/* Legacy auth route - redirect to unified signup */}
-              <Route path="/auth" element={<Navigate to="/signup" replace />} />
-              
-              {/* Legacy onboarding route - redirect to unified signup */}
+              {/* Remove old onboarding route - redirect to signup */}
               <Route path="/onboarding" element={<Navigate to="/signup" replace />} />
               
               {/* Success page */}

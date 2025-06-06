@@ -1,4 +1,3 @@
-
 import React, { ReactNode, startTransition } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useLocation } from 'react-router-dom';
@@ -52,26 +51,14 @@ const ProtectedRoute = React.memo<ProtectedRouteProps>(({
     return <Navigate to={redirectTo} state={{ from: location.pathname }} replace />;
   }
 
-  // Special handling for onboarding route
-  if (location.pathname === '/onboarding') {
-    if (!user) {
-      return <>{children}</>;
-    } else if (user && profile && profile.onboarding_completed) {
-      console.log("ProtectedRoute - Authenticated user with completed onboarding, redirecting to dashboard");
-      return <Navigate to="/dashboard" replace />;
-    } else if (user && (!profile || !profile.onboarding_completed)) {
-      return <>{children}</>;
-    }
-  }
-
   // If user is authenticated but trying to access auth pages
   if (!requireAuth && user) {
     if (profile?.onboarding_completed) {
       console.log("ProtectedRoute - Redirecting authenticated user to dashboard");
       return <Navigate to="/dashboard" replace />;
     } else {
-      console.log("ProtectedRoute - Redirecting authenticated user to onboarding");
-      return <Navigate to="/onboarding" replace />;
+      console.log("ProtectedRoute - Redirecting authenticated user to signup");
+      return <Navigate to="/signup" replace />;
     }
   }
 
@@ -100,13 +87,11 @@ const ProtectedRoute = React.memo<ProtectedRouteProps>(({
     }
   }
 
-  // FIXED: More lenient profile completion check
+  // Profile completion check - redirect to signup if onboarding not completed
   if (requireProfile && user && !profileLoading && profile) {
-    // Only redirect to onboarding if profile explicitly shows onboarding is NOT completed
-    // This prevents redirect loops for users who may have completed onboarding but have missing data
     if (profile.onboarding_completed === false) {
-      console.log("ProtectedRoute - Redirecting to onboarding (incomplete profile)");
-      return <Navigate to="/onboarding" state={{ from: location.pathname }} replace />;
+      console.log("ProtectedRoute - Redirecting to signup (incomplete profile)");
+      return <Navigate to="/signup" state={{ from: location.pathname }} replace />;
     }
   }
 

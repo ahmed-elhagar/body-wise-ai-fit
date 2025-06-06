@@ -18,7 +18,7 @@ const Auth = () => {
   const { profile, isLoading: profileLoading, updateProfile } = useProfile();
   const navigate = useNavigate();
 
-  // Redirect logic for authenticated users
+  // Redirect authenticated users
   useEffect(() => {
     if (authLoading || !user) return;
 
@@ -36,8 +36,8 @@ const Auth = () => {
 
     // Check if user has completed onboarding
     if (!profile || !profile.onboarding_completed || !profile.first_name || !profile.last_name) {
-      console.log('Auth - Redirecting to onboarding (incomplete profile)');
-      navigate('/onboarding', { replace: true });
+      console.log('Auth - Redirecting to signup (incomplete profile)');
+      navigate('/signup', { replace: true });
     } else {
       console.log('Auth - Redirecting to dashboard (complete profile)');
       navigate('/dashboard', { replace: true });
