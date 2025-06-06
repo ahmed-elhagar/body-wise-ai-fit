@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,7 +5,6 @@ import { Loader2 } from "lucide-react";
 import { useHealthAssessment } from "@/hooks/useHealthAssessment";
 import { useOnboardingProgress } from "@/hooks/useOnboardingProgress";
 import { toast } from "sonner";
-import HealthConditionsSection from "./health/HealthConditionsSection";
 import WellnessMetricsSection from "./health/WellnessMetricsSection";
 import LifestyleSection from "./health/LifestyleSection";
 import GoalsMotivationSection from "./health/GoalsMotivationSection";
@@ -152,7 +150,6 @@ const HealthAssessmentForm = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <HealthConditionsSection formData={formData} setFormData={setFormData} />
         <WellnessMetricsSection formData={formData} setFormData={setFormData} />
         <LifestyleSection formData={formData} setFormData={setFormData} />
         <GoalsMotivationSection formData={formData} setFormData={setFormData} />
