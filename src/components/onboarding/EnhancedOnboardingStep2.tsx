@@ -1,7 +1,7 @@
 
 import { Target, User } from "lucide-react";
 import { OnboardingFormData } from "@/hooks/useOnboardingForm";
-import EnhancedBodyShapeSelector from "./EnhancedBodyShapeSelector";
+import BodyFatSlider from "./BodyFatSlider";
 import EnhancedMotivationSelector from "./EnhancedMotivationSelector";
 
 interface EnhancedOnboardingStep2Props {
@@ -20,17 +20,17 @@ const EnhancedOnboardingStep2 = ({ formData, updateFormData }: EnhancedOnboardin
         <p className="text-gray-600 text-sm md:text-base">Help us understand your current state and what drives you</p>
       </div>
 
-      {/* Body Shape Section */}
+      {/* Body Fat Section */}
       <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-4 md:p-6 border border-green-200">
         <div className="flex items-center gap-3 mb-6">
           <div className="p-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg">
             <User className="w-5 h-5 text-white" />
           </div>
-          <h3 className="text-lg md:text-xl font-semibold text-gray-800">Current Body Shape *</h3>
+          <h3 className="text-lg md:text-xl font-semibold text-gray-800">Current Body Composition *</h3>
         </div>
-        <EnhancedBodyShapeSelector
-          value={formData.body_shape}
-          onChange={(value) => updateFormData("body_shape", value)}
+        <BodyFatSlider
+          value={formData.body_fat_percentage ? parseInt(formData.body_fat_percentage) : 25}
+          onChange={(value) => updateFormData("body_fat_percentage", value.toString())}
           gender={formData.gender}
         />
       </div>

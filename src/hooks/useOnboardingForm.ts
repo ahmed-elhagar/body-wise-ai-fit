@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useProfile } from './useProfile';
 
@@ -12,6 +13,7 @@ export interface OnboardingFormData {
   nationality: string;
   // Health & Goals
   body_shape: string;
+  body_fat_percentage: string;
   health_conditions: string[];
   fitness_goal: string;
   activity_level: string;
@@ -32,6 +34,7 @@ const initialFormData: OnboardingFormData = {
   nationality: "prefer_not_to_say",
   // Health & Goals
   body_shape: "",
+  body_fat_percentage: "25",
   health_conditions: [],
   fitness_goal: "",
   activity_level: "",
@@ -59,6 +62,7 @@ export const useOnboardingForm = () => {
         weight: profile.weight ? profile.weight.toString() : "",
         nationality: profile.nationality || "prefer_not_to_say",
         body_shape: profile.body_shape || "",
+        body_fat_percentage: profile.body_fat_percentage ? profile.body_fat_percentage.toString() : "25",
         health_conditions: profile.health_conditions || [],
         fitness_goal: profile.fitness_goal || "",
         activity_level: profile.activity_level || "",

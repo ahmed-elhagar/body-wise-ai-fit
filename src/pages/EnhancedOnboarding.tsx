@@ -43,11 +43,11 @@ const EnhancedOnboarding = () => {
 
   // Check if user has already completed onboarding
   useEffect(() => {
-    if (!authLoading && profile && profile.onboarding_completed && !isCompleting) {
+    if (!authLoading && profile && profile.onboarding_completed && !isCompleting && !showSuccess) {
       console.log('Onboarding - User has completed onboarding, redirecting to dashboard');
       navigate('/dashboard', { replace: true });
     }
-  }, [profile, authLoading, navigate, isCompleting]);
+  }, [profile, authLoading, navigate, isCompleting, showSuccess]);
 
   const isStepValid = (): boolean => {
     return validateOnboardingStep(step, formData);
@@ -70,6 +70,28 @@ const EnhancedOnboarding = () => {
       try {
         console.log('Onboarding - Final step, saving profile data');
         
+        // Map body fat percentage to body shape for backward compatibility
+        let bodyShape = formData.body_shape;
+        const bodyFatPercent = parseInt(formData.body_fat_percentage) || 25;
+        
+        if (!bodyShape) {
+          if (formData.gender === 'male') {
+            if (bodyFatPercent <= 10) bodyShape = 'very_slim';
+            else if (bodyFatPercent <= 15) bodyShape = 'slim';
+            else if (bodyFatPercent <= 18) bodyShape = 'athletic';
+            else if (bodyFatPercent <= 25) bodyShape = 'average';
+            else if (bodyFatPercent <= 30) bodyShape = 'curvy';
+            else bodyShape = 'heavy';
+          } else {
+            if (bodyFatPercent <= 15) bodyShape = 'very_slim';
+            else if (bodyFatPercent <= 20) bodyShape = 'slim';
+            else if (bodyFatPercent <= 25) bodyShape = 'athletic';
+            else if (bodyFatPercent <= 30) bodyShape = 'average';
+            else if (bodyFatPercent <= 35) bodyShape = 'curvy';
+            else bodyShape = 'heavy';
+          }
+        }
+        
         const profileData = {
           first_name: formData.first_name,
           last_name: formData.last_name,
@@ -78,7 +100,8 @@ const EnhancedOnboarding = () => {
           height: formData.height ? parseFloat(formData.height) : undefined,
           weight: formData.weight ? parseFloat(formData.weight) : undefined,
           nationality: formData.nationality === "prefer_not_to_say" ? null : formData.nationality,
-          body_shape: formData.body_shape as any,
+          body_shape: bodyShape as any,
+          body_fat_percentage: bodyFatPercent,
           health_conditions: formData.health_conditions,
           fitness_goal: formData.fitness_goal as any,
           activity_level: formData.activity_level as any,
@@ -94,7 +117,7 @@ const EnhancedOnboarding = () => {
         await updateProfile(profileData);
         
         console.log('Onboarding - Profile saved successfully, showing success page');
-        toast.success('🎉 Welcome to FitGenius! Your profile has been created successfully.');
+        setIsCompleting(false);
         setShowSuccess(true);
 
       } catch (error) {
