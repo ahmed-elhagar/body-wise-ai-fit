@@ -92,13 +92,13 @@ const SignupFlow = () => {
     setIsProcessing(true);
     try {
       // First create the user account
-      const signupResult = await signUp(formData.email, formData.password, {
-        first_name: formData.firstName,
-        last_name: formData.lastName
-      });
-
-      if (signupResult.error) {
-        toast.error(signupResult.error.message || 'Failed to create account');
+      try {
+        await signUp(formData.email, formData.password, {
+          first_name: formData.firstName,
+          last_name: formData.lastName
+        });
+      } catch (signupError: any) {
+        toast.error(signupError.message || 'Failed to create account');
         return;
       }
 

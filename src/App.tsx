@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
@@ -91,7 +92,7 @@ function App() {
               <Route 
                 path="/admin" 
                 element={
-                  <ProtectedRoute requiredRole="admin">
+                  <ProtectedRoute requireRole="admin">
                     <Admin />
                   </ProtectedRoute>
                 } 
@@ -100,7 +101,7 @@ function App() {
               <Route 
                 path="/coach" 
                 element={
-                  <ProtectedRoute requiredRole="coach">
+                  <ProtectedRoute requireRole="coach">
                     <Coach />
                   </ProtectedRoute>
                 } 
@@ -109,7 +110,7 @@ function App() {
               <Route 
                 path="/analytics" 
                 element={
-                  <ProtectedRoute requiredRole="admin">
+                  <ProtectedRoute requireRole="admin">
                     <Analytics />
                   </ProtectedRoute>
                 } 
