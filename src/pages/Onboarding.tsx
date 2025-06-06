@@ -9,13 +9,11 @@ import { toast } from "sonner";
 import { useOnboardingForm } from "@/hooks/useOnboardingForm";
 import { validateOnboardingStep } from "@/utils/onboardingValidation";
 import ModernOnboardingHeader from "@/components/onboarding/ModernOnboardingHeader";
-import ModernOnboardingStep3 from "@/components/onboarding/ModernOnboardingStep3";
-import ModernOnboardingStep4 from "@/components/onboarding/ModernOnboardingStep4";
-import ModernOnboardingNavigation from "@/components/onboarding/ModernOnboardingNavigation";
 import EnhancedOnboardingStep1 from "@/components/onboarding/EnhancedOnboardingStep1";
 import EnhancedOnboardingStep2 from "@/components/onboarding/EnhancedOnboardingStep2";
 import EnhancedOnboardingStep3 from "@/components/onboarding/EnhancedOnboardingStep3";
 import EnhancedOnboardingStep4 from "@/components/onboarding/EnhancedOnboardingStep4";
+import ModernOnboardingNavigation from "@/components/onboarding/ModernOnboardingNavigation";
 
 const Onboarding = () => {
   const navigate = useNavigate();
@@ -211,15 +209,15 @@ const Onboarding = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-8">
-      <div className="container mx-auto px-4 max-w-2xl">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-4 md:py-8">
+      <div className="container mx-auto px-4 max-w-4xl">
         <ModernOnboardingHeader 
           step={step} 
           totalSteps={totalSteps} 
           progress={progress} 
         />
 
-        <Card className="p-8 bg-white/90 backdrop-blur-sm border-0 shadow-xl">
+        <Card className="p-4 md:p-8 bg-white/90 backdrop-blur-sm border-0 shadow-xl">
           <div className="min-h-[500px]">
             {renderStepContent()}
           </div>
