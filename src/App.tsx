@@ -44,42 +44,42 @@ const App = () => (
             
             {/* Protected Routes */}
             <Route path="/dashboard" element={
-              <ProtectedRoute>
+              <ProtectedRoute requireAuth={true} requireProfile={true}>
                 <Dashboard />
               </ProtectedRoute>
             } />
             <Route path="/settings" element={
-              <ProtectedRoute>
+              <ProtectedRoute requireAuth={true}>
                 <Settings />
               </ProtectedRoute>
             } />
             <Route path="/profile" element={
-              <ProtectedRoute>
+              <ProtectedRoute requireAuth={true}>
                 <Profile />
               </ProtectedRoute>
             } />
             <Route path="/exercise" element={
-              <ProtectedRoute>
+              <ProtectedRoute requireAuth={true} requireProfile={true}>
                 <Exercise />
               </ProtectedRoute>
             } />
             <Route path="/food-tracker" element={
-              <ProtectedRoute>
+              <ProtectedRoute requireAuth={true} requireProfile={true}>
                 <FoodTracker />
               </ProtectedRoute>
             } />
             <Route path="/chat" element={
-              <ProtectedRoute>
+              <ProtectedRoute requireAuth={true} requireProfile={true}>
                 <Chat />
               </ProtectedRoute>
             } />
             <Route path="/admin" element={
-              <ProtectedRoute>
+              <ProtectedRoute requireAuth={true} requireRole="admin">
                 <Admin />
               </ProtectedRoute>
             } />
             <Route path="/coach" element={
-              <ProtectedRoute>
+              <ProtectedRoute requireAuth={true} requireRole={["coach", "admin"]}>
                 <Coach />
               </ProtectedRoute>
             } />

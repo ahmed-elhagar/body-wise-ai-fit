@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Card } from "@/components/ui/card";
-import { useExerciseProgramPage } from "@/hooks/useExerciseProgramPage";
+import { useOptimizedExercise } from "@/hooks/useOptimizedExercise";
 import OptimizedExerciseHeader from "./OptimizedExerciseHeader";
 import OptimizedExerciseWeekView from "./OptimizedExerciseWeekView";
 import OptimizedExerciseDayView from "./OptimizedExerciseDayView";
@@ -22,7 +22,7 @@ const OptimizedExerciseContainer = React.memo(() => {
     error,
     handleExerciseComplete,
     handleExerciseProgressUpdate,
-  } = useExerciseProgramPage();
+  } = useOptimizedExercise();
 
   if (isLoading) {
     return (
