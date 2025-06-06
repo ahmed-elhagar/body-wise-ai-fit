@@ -10,10 +10,14 @@ import { useOnboardingForm } from "@/hooks/useOnboardingForm";
 import { validateOnboardingStep } from "@/utils/onboardingValidation";
 import ModernOnboardingHeader from "@/components/onboarding/ModernOnboardingHeader";
 import ModernOnboardingNavigation from "@/components/onboarding/ModernOnboardingNavigation";
-import EnhancedOnboardingStep1 from "@/components/onboarding/EnhancedOnboardingStep1";
-import EnhancedOnboardingStep2 from "@/components/onboarding/EnhancedOnboardingStep2";
-import EnhancedOnboardingStep3 from "@/components/onboarding/EnhancedOnboardingStep3";
-import EnhancedOnboardingStep4 from "@/components/onboarding/EnhancedOnboardingStep4";
+import OnboardingStep1 from "@/components/onboarding/OnboardingStep1";
+import OnboardingStep2 from "@/components/onboarding/OnboardingStep2";
+import OnboardingStep3 from "@/components/onboarding/OnboardingStep3";
+import OnboardingStep4 from "@/components/onboarding/OnboardingStep4";
+import OnboardingStep5 from "@/components/onboarding/OnboardingStep5";
+import OnboardingStep6 from "@/components/onboarding/OnboardingStep6";
+import OnboardingStep7 from "@/components/onboarding/OnboardingStep7";
+import OnboardingStep8 from "@/components/onboarding/OnboardingStep8";
 
 const Onboarding = () => {
   const navigate = useNavigate();
@@ -27,20 +31,14 @@ const Onboarding = () => {
   
   const { formData, updateFormData, handleArrayInput } = useOnboardingForm();
 
-  const totalSteps = 4;
+  // Calculate total steps based on gender
+  const totalSteps = formData.gender === 'female' ? 8 : 7;
   const progress = (step / totalSteps) * 100;
 
   // Protect onboarding from logged-in users who have completed onboarding
   useEffect(() => {
     if (!authLoading && user && profile) {
-      console.log('Onboarding - Profile check:', { 
-        hasProfile: !!profile, 
-        onboardingCompleted: profile.onboarding_completed,
-        isCompleting 
-      });
-      
       if (profile.onboarding_completed && !isCompleting) {
-        console.log('Onboarding - User has completed onboarding, redirecting to dashboard');
         navigate('/dashboard', { replace: true });
       }
     }
@@ -61,119 +59,130 @@ const Onboarding = () => {
     return validateOnboardingStep(step, formData);
   };
 
+  const getStepSkippable = (): boolean => {
+    // Steps 6, 7, 8 are optional/skippable
+    return step >= 6;
+  };
+
   const handleNext = async () => {
-    console.log('Onboarding - handleNext called, step:', step, 'isStepValid:', isStepValid());
-    
-    if (!isStepValid()) {
+    if (!isStepValid() && !getStepSkippable()) {
       toast.error('Please fill in all required fields');
       return;
     }
 
+    // Skip step 7 for non-females
+    if (step === 6 && formData.gender !== 'female') {
+      setStep(8);
+      return;
+    }
+
     if (step < totalSteps) {
-      console.log('Onboarding - Moving to next step:', step + 1);
       setStep(step + 1);
     } else {
-      // Final step - save and complete
-      setIsCompleting(true);
-      try {
-        console.log('Onboarding - Final step, saving enhanced profile data');
-        
-        // Map activity level to valid database values
-        const activityLevelMapping = {
-          'sedentary': 'sedentary',
-          'light': 'lightly_active',
-          'moderate': 'moderately_active', 
-          'active': 'very_active',
-          'very_active': 'extremely_active'
-        };
-
-        const mappedActivityLevel = activityLevelMapping[formData.activity_level as keyof typeof activityLevelMapping] || 'moderately_active';
-
-        // Ensure body fat percentage is properly converted
-        const bodyFatValue = formData.body_fat_percentage ? 
-          (typeof formData.body_fat_percentage === 'string' ? 
-            parseFloat(formData.body_fat_percentage) : 
-            formData.body_fat_percentage) : null;
-
-        // Map special conditions with proper null handling
-        const pregnancyTrimester = formData.pregnancy_trimester && formData.pregnancy_trimester !== 'none' && formData.pregnancy_trimester !== '' ? 
-          parseInt(formData.pregnancy_trimester) : null;
-        
-        const breastfeedingLevel = formData.breastfeeding_level && formData.breastfeeding_level !== 'none' && formData.breastfeeding_level !== '' ? 
-          formData.breastfeeding_level : null;
-        
-        const fastingType = formData.fasting_type && formData.fasting_type !== 'none' && formData.fasting_type !== '' ? 
-          formData.fasting_type : null;
-
-        const profileData = {
-          // Basic Personal Information
-          first_name: formData.first_name?.trim() || null,
-          last_name: formData.last_name?.trim() || null,
-          age: formData.age ? parseInt(formData.age) : null,
-          gender: formData.gender || null,
-          height: formData.height ? parseFloat(formData.height) : null,
-          weight: formData.weight ? parseFloat(formData.weight) : null,
-          nationality: formData.nationality === "prefer_not_to_say" ? null : formData.nationality?.trim() || null,
-          
-          // Body Composition
-          body_shape: formData.body_shape || null,
-          body_fat_percentage: bodyFatValue,
-          
-          // Fitness Goals & Preferences
-          fitness_goal: formData.fitness_goal || null,
-          activity_level: mappedActivityLevel,
-          
-          // Health Information
-          health_conditions: formData.health_conditions && formData.health_conditions.length > 0 ? formData.health_conditions : [],
-          health_notes: formData.health_notes?.trim() || null,
-          allergies: formData.allergies && formData.allergies.length > 0 ? formData.allergies : [],
-          
-          // Dietary Preferences
-          preferred_foods: formData.preferred_foods && formData.preferred_foods.length > 0 ? formData.preferred_foods : [],
-          dietary_restrictions: formData.dietary_restrictions && formData.dietary_restrictions.length > 0 ? formData.dietary_restrictions : [],
-          
-          // Special Conditions
-          pregnancy_trimester: pregnancyTrimester,
-          breastfeeding_level: breastfeedingLevel,
-          fasting_type: fastingType,
-          special_conditions: formData.special_conditions && formData.special_conditions.length > 0 ? formData.special_conditions : [],
-          
-          // Completion Status
-          onboarding_completed: true,
-          ai_generations_remaining: 5
-        };
-
-        console.log("Onboarding - Saving enhanced profile data:", profileData);
-        
-        const result = await updateProfile(profileData);
-        
-        if (result.error) {
-          console.error('Onboarding - Profile update failed:', result.error);
-          toast.error('Failed to save your profile. Please try again.');
-          setIsCompleting(false);
-          return;
-        }
-        
-        console.log('Onboarding - Profile saved successfully, redirecting to success page');
-        navigate('/onboarding-success', { replace: true });
-
-      } catch (error) {
-        console.error('Onboarding - Unexpected error:', error);
-        toast.error('Something went wrong. Please try again.');
-        setIsCompleting(false);
-      }
+      await completeOnboarding();
     }
   };
 
   const handleBack = () => {
     if (step > 1) {
-      setStep(step - 1);
+      // Skip step 7 for non-females when going back
+      if (step === 8 && formData.gender !== 'female') {
+        setStep(6);
+      } else {
+        setStep(step - 1);
+      }
     }
   };
 
   const handleSkip = () => {
-    if (step < totalSteps) {
-      setStep(step + 1);
+    if (getStepSkippable()) {
+      handleNext();
+    }
+  };
+
+  const completeOnboarding = async () => {
+    setIsCompleting(true);
+    try {
+      // Map activity level to valid database values
+      const activityLevelMapping = {
+        'sedentary': 'sedentary',
+        'light': 'lightly_active',
+        'moderate': 'moderately_active', 
+        'active': 'very_active',
+        'very_active': 'extremely_active'
+      };
+
+      const mappedActivityLevel = activityLevelMapping[formData.activity_level as keyof typeof activityLevelMapping] || 'moderately_active';
+
+      // Ensure body fat percentage is properly converted
+      const bodyFatValue = formData.body_fat_percentage ? 
+        (typeof formData.body_fat_percentage === 'string' ? 
+          parseFloat(formData.body_fat_percentage) : 
+          formData.body_fat_percentage) : null;
+
+      // Map special conditions with proper null handling
+      const pregnancyTrimester = formData.pregnancy_trimester && formData.pregnancy_trimester !== 'none' && formData.pregnancy_trimester !== '' ? 
+        parseInt(formData.pregnancy_trimester) : null;
+      
+      const breastfeedingLevel = formData.breastfeeding_level && formData.breastfeeding_level !== 'none' && formData.breastfeeding_level !== '' ? 
+        formData.breastfeeding_level : null;
+      
+      const fastingType = formData.fasting_type && formData.fasting_type !== 'none' && formData.fasting_type !== '' ? 
+        formData.fasting_type : null;
+
+      const profileData = {
+        // Basic Personal Information
+        first_name: formData.first_name?.trim() || null,
+        last_name: formData.last_name?.trim() || null,
+        age: formData.age ? parseInt(formData.age) : null,
+        gender: formData.gender || null,
+        height: formData.height ? parseFloat(formData.height) : null,
+        weight: formData.weight ? parseFloat(formData.weight) : null,
+        nationality: formData.nationality === "prefer_not_to_say" ? null : formData.nationality?.trim() || null,
+        
+        // Body Composition
+        body_shape: formData.body_shape || null,
+        body_fat_percentage: bodyFatValue,
+        
+        // Fitness Goals & Preferences
+        fitness_goal: formData.fitness_goal || null,
+        activity_level: mappedActivityLevel,
+        
+        // Health Information
+        health_conditions: formData.health_conditions && formData.health_conditions.length > 0 ? formData.health_conditions : [],
+        health_notes: formData.health_notes?.trim() || null,
+        allergies: formData.allergies && formData.allergies.length > 0 ? formData.allergies : [],
+        
+        // Dietary Preferences
+        preferred_foods: formData.preferred_foods && formData.preferred_foods.length > 0 ? formData.preferred_foods : [],
+        dietary_restrictions: formData.dietary_restrictions && formData.dietary_restrictions.length > 0 ? formData.dietary_restrictions : [],
+        
+        // Special Conditions
+        pregnancy_trimester: pregnancyTrimester,
+        breastfeeding_level: breastfeedingLevel,
+        fasting_type: fastingType,
+        special_conditions: formData.special_conditions && formData.special_conditions.length > 0 ? formData.special_conditions : [],
+        
+        // Completion Status
+        onboarding_completed: true,
+        ai_generations_remaining: 5
+      };
+
+      const result = await updateProfile(profileData);
+      
+      if (result.error) {
+        console.error('Profile update failed:', result.error);
+        toast.error('Failed to save your profile. Please try again.');
+        setIsCompleting(false);
+        return;
+      }
+      
+      navigate('/onboarding-success', { replace: true });
+
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      toast.error('Something went wrong. Please try again.');
+      setIsCompleting(false);
     }
   };
 
@@ -181,31 +190,58 @@ const Onboarding = () => {
     switch (step) {
       case 1:
         return (
-          <EnhancedOnboardingStep1 
+          <OnboardingStep1 
             formData={formData} 
             updateFormData={updateFormData} 
           />
         );
       case 2:
         return (
-          <EnhancedOnboardingStep2 
+          <OnboardingStep2 
             formData={formData} 
             updateFormData={updateFormData}
           />
         );
       case 3:
         return (
-          <EnhancedOnboardingStep3 
+          <OnboardingStep3 
             formData={formData}
             updateFormData={updateFormData}
           />
         );
       case 4:
         return (
-          <EnhancedOnboardingStep4 
+          <OnboardingStep4 
             formData={formData}
             updateFormData={updateFormData}
-            handleArrayInput={handleArrayInput}
+          />
+        );
+      case 5:
+        return (
+          <OnboardingStep5 
+            formData={formData}
+            updateFormData={updateFormData}
+          />
+        );
+      case 6:
+        return (
+          <OnboardingStep6 
+            formData={formData}
+            updateFormData={updateFormData}
+          />
+        );
+      case 7:
+        return (
+          <OnboardingStep7 
+            formData={formData}
+            updateFormData={updateFormData}
+          />
+        );
+      case 8:
+        return (
+          <OnboardingStep8 
+            formData={formData}
+            updateFormData={updateFormData}
           />
         );
       default:
@@ -282,10 +318,10 @@ const Onboarding = () => {
             totalSteps={totalSteps}
             isStepValid={isStepValid()}
             isUpdating={isUpdating || isCompleting}
+            canSkip={getStepSkippable()}
             onBack={handleBack}
             onNext={handleNext}
             onSkip={handleSkip}
-            canSkip={step === 2}
           />
         </Card>
       </div>

@@ -70,9 +70,9 @@ export const useOnboardingForm = () => {
     
     // Special Conditions
     special_conditions: [],
-    pregnancy_trimester: '',
-    breastfeeding_level: '',
-    fasting_type: '',
+    pregnancy_trimester: 'none',
+    breastfeeding_level: 'none',
+    fasting_type: 'none',
   });
 
   // Populate form data from user and profile
