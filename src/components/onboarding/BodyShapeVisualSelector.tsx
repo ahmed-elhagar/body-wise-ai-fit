@@ -18,103 +18,42 @@ const BodyShapeVisualSelector = ({ value, onChange, gender }: BodyShapeVisualSel
       id: 'slender',
       name: 'Ectomorph',
       description: 'Naturally thin, fast metabolism',
-      maleIcon: (
-        <svg viewBox="0 0 100 200" className="w-16 h-32 mx-auto">
-          {/* Male Ectomorph - Thin build */}
-          <ellipse cx="50" cy="25" rx="12" ry="15" fill="currentColor" />
-          <rect x="46" y="40" width="8" height="45" rx="4" fill="currentColor" />
-          <rect x="42" y="50" width="4" height="25" rx="2" fill="currentColor" />
-          <rect x="54" y="50" width="4" height="25" rx="2" fill="currentColor" />
-          <rect x="46" y="85" width="8" height="35" rx="4" fill="currentColor" />
-          <rect x="44" y="120" width="5" height="50" rx="2.5" fill="currentColor" />
-          <rect x="51" y="120" width="5" height="50" rx="2.5" fill="currentColor" />
-        </svg>
-      ),
-      femaleIcon: (
-        <svg viewBox="0 0 100 200" className="w-16 h-32 mx-auto">
-          {/* Female Ectomorph - Thin build */}
-          <ellipse cx="50" cy="25" rx="12" ry="15" fill="currentColor" />
-          <rect x="46" y="40" width="8" height="25" rx="4" fill="currentColor" />
-          <rect x="44" y="65" width="12" height="30" rx="6" fill="currentColor" />
-          <rect x="42" y="50" width="4" height="20" rx="2" fill="currentColor" />
-          <rect x="54" y="50" width="4" height="20" rx="2" fill="currentColor" />
-          <rect x="45" y="95" width="10" height="25" rx="5" fill="currentColor" />
-          <rect x="44" y="120" width="5" height="50" rx="2.5" fill="currentColor" />
-          <rect x="51" y="120" width="5" height="50" rx="2.5" fill="currentColor" />
-        </svg>
-      ),
+      malePlaceholder: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=200&h=300&fit=crop&crop=center',
+      femalePlaceholder: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&h=300&fit=crop&crop=center'
     },
     {
       id: 'average',
-      name: 'Mesomorph',
+      name: 'Mesomorph', 
       description: 'Athletic build, balanced metabolism',
-      maleIcon: (
-        <svg viewBox="0 0 100 200" className="w-16 h-32 mx-auto">
-          {/* Male Mesomorph - Athletic build */}
-          <ellipse cx="50" cy="25" rx="14" ry="16" fill="currentColor" />
-          <rect x="42" y="40" width="16" height="50" rx="8" fill="currentColor" />
-          <rect x="38" y="50" width="6" height="30" rx="3" fill="currentColor" />
-          <rect x="56" y="50" width="6" height="30" rx="3" fill="currentColor" />
-          <rect x="44" y="90" width="12" height="30" rx="6" fill="currentColor" />
-          <rect x="42" y="120" width="7" height="50" rx="3.5" fill="currentColor" />
-          <rect x="51" y="120" width="7" height="50" rx="3.5" fill="currentColor" />
-        </svg>
-      ),
-      femaleIcon: (
-        <svg viewBox="0 0 100 200" className="w-16 h-32 mx-auto">
-          {/* Female Mesomorph - Athletic build */}
-          <ellipse cx="50" cy="25" rx="14" ry="16" fill="currentColor" />
-          <rect x="44" y="40" width="12" height="30" rx="6" fill="currentColor" />
-          <rect x="40" y="70" width="20" height="35" rx="10" fill="currentColor" />
-          <rect x="38" y="50" width="6" height="25" rx="3" fill="currentColor" />
-          <rect x="56" y="50" width="6" height="25" rx="3" fill="currentColor" />
-          <rect x="43" y="105" width="14" height="15" rx="7" fill="currentColor" />
-          <rect x="42" y="120" width="7" height="50" rx="3.5" fill="currentColor" />
-          <rect x="51" y="120" width="7" height="50" rx="3.5" fill="currentColor" />
-        </svg>
-      ),
+      malePlaceholder: 'https://images.unsplash.com/photo-1583468982228-19f19164aee2?w=200&h=300&fit=crop&crop=center',
+      femalePlaceholder: 'https://images.unsplash.com/photo-1594381898411-846e7d193883?w=200&h=300&fit=crop&crop=center'
     },
     {
       id: 'heavy',
       name: 'Endomorph',
       description: 'Broader build, slower metabolism',
-      maleIcon: (
-        <svg viewBox="0 0 100 200" className="w-16 h-32 mx-auto">
-          {/* Male Endomorph - Broader build */}
-          <ellipse cx="50" cy="25" rx="16" ry="17" fill="currentColor" />
-          <rect x="38" y="40" width="24" height="55" rx="12" fill="currentColor" />
-          <rect x="32" y="55" width="8" height="35" rx="4" fill="currentColor" />
-          <rect x="60" y="55" width="8" height="35" rx="4" fill="currentColor" />
-          <rect x="40" y="95" width="20" height="25" rx="10" fill="currentColor" />
-          <rect x="40" y="120" width="8" height="50" rx="4" fill="currentColor" />
-          <rect x="52" y="120" width="8" height="50" rx="4" fill="currentColor" />
-        </svg>
-      ),
-      femaleIcon: (
-        <svg viewBox="0 0 100 200" className="w-16 h-32 mx-auto">
-          {/* Female Endomorph - Broader build */}
-          <ellipse cx="50" cy="25" rx="16" ry="17" fill="currentColor" />
-          <rect x="40" y="40" width="20" height="35" rx="10" fill="currentColor" />
-          <rect x="35" y="75" width="30" height="40" rx="15" fill="currentColor" />
-          <rect x="32" y="55" width="8" height="30" rx="4" fill="currentColor" />
-          <rect x="60" y="55" width="8" height="30" rx="4" fill="currentColor" />
-          <rect x="38" y="115" width="24" height="5" rx="2.5" fill="currentColor" />
-          <rect x="40" y="120" width="8" height="50" rx="4" fill="currentColor" />
-          <rect x="52" y="120" width="8" height="50" rx="4" fill="currentColor" />
-        </svg>
-      ),
+      malePlaceholder: 'https://images.unsplash.com/photo-1566753323558-f4e0952af115?w=200&h=300&fit=crop&crop=center',
+      femalePlaceholder: 'https://images.unsplash.com/photo-1548690312-e3b507d8c110?w=200&h=300&fit=crop&crop=center'
     }
   ];
 
   return (
     <div className="space-y-8">
-      <div className="space-y-4">
-        <Label className="text-base font-semibold">
-          Choose your current body type
-        </Label>
-        <div className="grid grid-cols-1 gap-4">
+      <div className="space-y-6">
+        <div className="text-center">
+          <Label className="text-2xl font-bold text-gray-800 mb-2 block">
+            Choose your current body type
+          </Label>
+          <p className="text-gray-600">
+            Select the body type that best matches your current physique
+          </p>
+        </div>
+        
+        <div className="grid grid-cols-1 gap-6">
           {bodyShapes.map((shape) => {
             const isSelected = value === shape.id;
+            const imageSrc = gender === 'female' ? shape.femalePlaceholder : shape.malePlaceholder;
+            
             return (
               <Card
                 key={shape.id}
@@ -127,13 +66,67 @@ const BodyShapeVisualSelector = ({ value, onChange, gender }: BodyShapeVisualSel
                 data-testid={`body-shape-${shape.id}`}
               >
                 <div className="flex items-center gap-6">
-                  <div className="text-gray-600 flex-shrink-0">
-                    {gender === 'female' ? shape.femaleIcon : shape.maleIcon}
+                  {/* Placeholder for real body shape image */}
+                  <div className="flex-shrink-0">
+                    <div className="w-20 h-32 bg-gradient-to-b from-gray-100 to-gray-200 rounded-lg flex items-center justify-center border-2 border-gray-300 relative overflow-hidden">
+                      <img 
+                        src={imageSrc}
+                        alt={`${shape.name} body type`}
+                        className="w-full h-full object-cover opacity-50"
+                        onError={(e) => {
+                          // Fallback to a simple silhouette if image fails to load
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="text-xs text-gray-500 text-center px-2">
+                          <div className="font-medium">{shape.name}</div>
+                          <div className="text-xs opacity-75">Image</div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
+                  
                   <div className="flex-1">
-                    <h3 className="font-semibold text-lg text-gray-800">{shape.name}</h3>
-                    <p className="text-sm text-gray-600">{shape.description}</p>
+                    <h3 className="font-semibold text-xl text-gray-800 mb-2">{shape.name}</h3>
+                    <p className="text-gray-600 mb-3">{shape.description}</p>
+                    
+                    {/* Body type characteristics */}
+                    <div className="text-sm text-gray-500">
+                      {shape.id === 'slender' && (
+                        <ul className="space-y-1">
+                          <li>• Narrow shoulders and hips</li>
+                          <li>• Fast metabolism</li>
+                          <li>• Difficulty gaining weight</li>
+                        </ul>
+                      )}
+                      {shape.id === 'average' && (
+                        <ul className="space-y-1">
+                          <li>• Well-proportioned build</li>
+                          <li>• Moderate metabolism</li>
+                          <li>• Responds well to exercise</li>
+                        </ul>
+                      )}
+                      {shape.id === 'heavy' && (
+                        <ul className="space-y-1">
+                          <li>• Wider bone structure</li>
+                          <li>• Slower metabolism</li>
+                          <li>• Gains weight easily</li>
+                        </ul>
+                      )}
+                    </div>
                   </div>
+                  
+                  {/* Selection indicator */}
+                  {isSelected && (
+                    <div className="flex-shrink-0">
+                      <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </Card>
             );

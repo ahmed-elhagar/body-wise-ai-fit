@@ -19,13 +19,7 @@ const BodyFatSlider = ({ value, onChange, gender }: BodyFatSliderProps) => {
   };
 
   const getBodyVisualization = (percentage: number, gender: string) => {
-    const getBodySize = (percentage: number) => {
-      // Map percentage to visual size adjustments
-      const baseScale = 1;
-      const scaleMultiplier = percentage / 25; // 25% as baseline
-      return Math.max(0.7, Math.min(1.5, baseScale * scaleMultiplier));
-    };
-
+    // Color coding based on body fat percentage
     const getBodyColor = (percentage: number) => {
       if (percentage < 15) return '#3B82F6'; // Blue - Very lean
       if (percentage < 20) return '#10B981'; // Green - Athletic
@@ -34,62 +28,83 @@ const BodyFatSlider = ({ value, onChange, gender }: BodyFatSliderProps) => {
       return '#EF4444'; // Red - High
     };
 
-    const scale = getBodySize(percentage);
+    // Scale factor based on body fat percentage
+    const getScale = (percentage: number) => {
+      return Math.max(0.7, Math.min(1.4, 0.8 + (percentage - 15) * 0.02));
+    };
+
     const color = getBodyColor(percentage);
+    const scale = getScale(percentage);
 
     if (gender === 'female') {
       return (
-        <svg viewBox="0 0 120 200" className="w-24 h-40 mx-auto">
-          {/* Female body silhouette */}
-          <g transform={`scale(${scale}) translate(${60 - 60 * scale}, ${100 - 100 * scale})`} fill={color}>
-            {/* Head */}
-            <ellipse cx="60" cy="25" rx="12" ry="15" />
-            
-            {/* Torso */}
-            <ellipse cx="60" cy="55" rx={8 + percentage * 0.2} ry="20" />
-            
-            {/* Waist */}
-            <ellipse cx="60" cy="80" rx={6 + percentage * 0.15} ry="10" />
-            
-            {/* Hips */}
-            <ellipse cx="60" cy="105" rx={12 + percentage * 0.3} ry="18" />
-            
-            {/* Arms */}
-            <ellipse cx="45" cy="60" rx={3 + percentage * 0.1} ry="25" />
-            <ellipse cx="75" cy="60" rx={3 + percentage * 0.1} ry="25" />
-            
-            {/* Legs */}
-            <ellipse cx="54" cy="145" rx={5 + percentage * 0.15} ry="35" />
-            <ellipse cx="66" cy="145" rx={5 + percentage * 0.15} ry="35" />
-          </g>
-        </svg>
+        <div className="relative">
+          {/* Placeholder for real female body fat visualization image */}
+          <div className="w-32 h-48 bg-gradient-to-b from-gray-100 to-gray-200 rounded-lg flex items-center justify-center border-2 border-gray-300 relative overflow-hidden mx-auto">
+            <img 
+              src="https://images.unsplash.com/photo-1594381898411-846e7d193883?w=150&h=250&fit=crop&crop=center"
+              alt="Female body visualization"
+              className="w-full h-full object-cover"
+              style={{ 
+                filter: `hue-rotate(${percentage * 3}deg) saturate(${0.5 + percentage * 0.01})`,
+                transform: `scale(${scale})`
+              }}
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <svg viewBox="0 0 120 200" className="w-24 h-40 opacity-60">
+                <g fill={color} transform={`scale(${scale}) translate(${60 - 60 * scale}, ${100 - 100 * scale})`}>
+                  {/* Female silhouette */}
+                  <ellipse cx="60" cy="25" rx="12" ry="15" />
+                  <ellipse cx="60" cy="55" rx={8 + percentage * 0.2} ry="20" />
+                  <ellipse cx="60" cy="80" rx={6 + percentage * 0.15} ry="10" />
+                  <ellipse cx="60" cy="105" rx={12 + percentage * 0.3} ry="18" />
+                  <ellipse cx="45" cy="60" rx={3 + percentage * 0.1} ry="25" />
+                  <ellipse cx="75" cy="60" rx={3 + percentage * 0.1} ry="25" />
+                  <ellipse cx="54" cy="145" rx={5 + percentage * 0.15} ry="35" />
+                  <ellipse cx="66" cy="145" rx={5 + percentage * 0.15} ry="35" />
+                </g>
+              </svg>
+            </div>
+          </div>
+        </div>
       );
     } else {
       return (
-        <svg viewBox="0 0 120 200" className="w-24 h-40 mx-auto">
-          {/* Male body silhouette */}
-          <g transform={`scale(${scale}) translate(${60 - 60 * scale}, ${100 - 100 * scale})`} fill={color}>
-            {/* Head */}
-            <ellipse cx="60" cy="25" rx="12" ry="15" />
-            
-            {/* Shoulders */}
-            <ellipse cx="60" cy="50" rx={15 + percentage * 0.2} ry="12" />
-            
-            {/* Torso */}
-            <ellipse cx="60" cy="80" rx={10 + percentage * 0.25} ry="25" />
-            
-            {/* Waist */}
-            <ellipse cx="60" cy="110" rx={8 + percentage * 0.2} ry="15" />
-            
-            {/* Arms */}
-            <ellipse cx="42" cy="65" rx={4 + percentage * 0.1} ry="28" />
-            <ellipse cx="78" cy="65" rx={4 + percentage * 0.1} ry="28" />
-            
-            {/* Legs */}
-            <ellipse cx="54" cy="155" rx={6 + percentage * 0.15} ry="40" />
-            <ellipse cx="66" cy="155" rx={6 + percentage * 0.15} ry="40" />
-          </g>
-        </svg>
+        <div className="relative">
+          {/* Placeholder for real male body fat visualization image */}
+          <div className="w-32 h-48 bg-gradient-to-b from-gray-100 to-gray-200 rounded-lg flex items-center justify-center border-2 border-gray-300 relative overflow-hidden mx-auto">
+            <img 
+              src="https://images.unsplash.com/photo-1583468982228-19f19164aee2?w=150&h=250&fit=crop&crop=center"
+              alt="Male body visualization"
+              className="w-full h-full object-cover"
+              style={{ 
+                filter: `hue-rotate(${percentage * 3}deg) saturate(${0.5 + percentage * 0.01})`,
+                transform: `scale(${scale})`
+              }}
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <svg viewBox="0 0 120 200" className="w-24 h-40 opacity-60">
+                <g fill={color} transform={`scale(${scale}) translate(${60 - 60 * scale}, ${100 - 100 * scale})`}>
+                  {/* Male silhouette */}
+                  <ellipse cx="60" cy="25" rx="12" ry="15" />
+                  <ellipse cx="60" cy="50" rx={15 + percentage * 0.2} ry="12" />
+                  <ellipse cx="60" cy="80" rx={10 + percentage * 0.25} ry="25" />
+                  <ellipse cx="60" cy="110" rx={8 + percentage * 0.2} ry="15" />
+                  <ellipse cx="42" cy="65" rx={4 + percentage * 0.1} ry="28" />
+                  <ellipse cx="78" cy="65" rx={4 + percentage * 0.1} ry="28" />
+                  <ellipse cx="54" cy="155" rx={6 + percentage * 0.15} ry="40" />
+                  <ellipse cx="66" cy="155" rx={6 + percentage * 0.15} ry="40" />
+                </g>
+              </svg>
+            </div>
+          </div>
+        </div>
       );
     }
   };
@@ -112,16 +127,16 @@ const BodyFatSlider = ({ value, onChange, gender }: BodyFatSliderProps) => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <Label className="text-xl font-bold text-gray-800">
+      <div className="text-center">
+        <Label className="text-xl font-bold text-gray-800 mb-2 block">
           Fine-tune your body composition
         </Label>
-        <p className="text-sm text-gray-600 mt-1">
+        <p className="text-sm text-gray-600">
           Adjust the slider to match your current body fat percentage
         </p>
       </div>
       
-      {/* Body visualization */}
+      {/* Body visualization with placeholder for real images */}
       <div className="flex justify-center py-8 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border-2 border-gray-200">
         {getBodyVisualization(currentValue, gender)}
       </div>
@@ -163,7 +178,7 @@ const BodyFatSlider = ({ value, onChange, gender }: BodyFatSliderProps) => {
           </div>
           <div>
             <h4 className="text-sm font-medium text-blue-800 mb-1">Body Composition Tip</h4>
-            <p className="text-sm text-blue-700">This helps us create more accurate meal plans and exercise recommendations. You can always adjust this later in your profile settings.</p>
+            <p className="text-sm text-blue-700">This helps us create more accurate meal plans and exercise recommendations. Replace these placeholder images with your own licensed body visualization images.</p>
           </div>
         </div>
       </div>
