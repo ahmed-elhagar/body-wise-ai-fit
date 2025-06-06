@@ -82,51 +82,44 @@ const UnifiedBodyFatSelector = ({ value, onChange, gender }: UnifiedBodyFatSelec
         </p>
       </div>
       
-      {/* Main body visualization - using app's gradient colors */}
-      <div className="relative bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-800 rounded-2xl p-8 min-h-[600px] flex flex-col items-center justify-center">
-        {/* Decorative background pattern */}
-        <div className="absolute inset-0 opacity-10 rounded-2xl">
-          <div className="w-full h-full" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-          }}></div>
-        </div>
-
+      {/* Main body visualization */}
+      <div className="relative rounded-2xl p-4 sm:p-8 min-h-[500px] sm:min-h-[600px] flex flex-col items-center justify-center border border-gray-200 bg-white shadow-lg">
         {/* Body visualization */}
-        <div className="flex-1 flex items-center justify-center mb-6 relative z-10">
+        <div className="flex-1 flex items-center justify-center mb-4 sm:mb-6 relative">
           <div className="relative">
             <img 
               src={getBodyShapeImage(currentValue, gender)}
               alt={`Body shape visualization for ${currentValue}% body fat`}
-              className="h-96 w-auto object-contain transition-all duration-500 ease-in-out drop-shadow-2xl"
+              className="h-64 sm:h-80 md:h-96 w-auto object-contain transition-all duration-500 ease-in-out"
             />
             
             {/* Overlay percentage indicator */}
-            <div className="absolute top-2 right-2 bg-white/20 backdrop-blur-sm rounded-full px-3 py-1 border border-white/30">
-              <span className="text-sm font-semibold text-white">{currentValue}%</span>
+            <div className="absolute top-2 right-2 bg-gray-800 text-white rounded-full px-2 py-1 text-xs sm:text-sm font-semibold">
+              {currentValue}%
             </div>
           </div>
         </div>
 
         {/* Percentage display and description */}
-        <div className="mb-6 text-center relative z-10">
-          <div className="bg-white/20 backdrop-blur-sm text-white px-8 py-4 rounded-full shadow-lg border border-white/30 mb-3">
-            <span className="text-3xl font-bold">{currentValue}%</span>
+        <div className="mb-4 sm:mb-6 text-center">
+          <div className="bg-gray-100 text-gray-800 px-4 sm:px-8 py-2 sm:py-4 rounded-full shadow-sm mb-3">
+            <span className="text-2xl sm:text-3xl font-bold">{currentValue}%</span>
           </div>
-          <p className="text-lg font-medium text-white/90">
+          <p className="text-sm sm:text-lg font-medium text-gray-700">
             {getBodyFatDescription(currentValue, gender)}
           </p>
         </div>
 
         {/* Slider with + and - buttons */}
-        <div className="w-full max-w-md space-y-4 relative z-10">
-          <div className="flex items-center gap-4">
+        <div className="w-full max-w-xs sm:max-w-md space-y-4">
+          <div className="flex items-center gap-3 sm:gap-4">
             <button
               onClick={() => {
                 const newVal = Math.max(currentValue - 1, gender === 'male' ? 8 : 15);
                 setCurrentValue(newVal);
                 onChange(newVal);
               }}
-              className="w-12 h-12 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg flex items-center justify-center text-white text-xl font-bold transition-all duration-300 border border-white/30 hover:border-white/50"
+              className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-200 hover:bg-gray-300 rounded-lg flex items-center justify-center text-gray-700 text-lg sm:text-xl font-bold transition-all duration-300 border border-gray-300"
             >
               −
             </button>
@@ -149,13 +142,13 @@ const UnifiedBodyFatSelector = ({ value, onChange, gender }: UnifiedBodyFatSelec
                 setCurrentValue(newVal);
                 onChange(newVal);
               }}
-              className="w-12 h-12 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg flex items-center justify-center text-white text-xl font-bold transition-all duration-300 border border-white/30 hover:border-white/50"
+              className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-200 hover:bg-gray-300 rounded-lg flex items-center justify-center text-gray-700 text-lg sm:text-xl font-bold transition-all duration-300 border border-gray-300"
             >
               +
             </button>
           </div>
           
-          <div className="flex justify-between text-xs text-white/70">
+          <div className="flex justify-between text-xs sm:text-sm text-gray-500 px-1">
             <span>Very Lean</span>
             <span>Average</span>
             <span>High</span>
@@ -163,45 +156,45 @@ const UnifiedBodyFatSelector = ({ value, onChange, gender }: UnifiedBodyFatSelec
         </div>
 
         {/* Body fat ranges guide */}
-        <div className="mt-6 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4 w-full max-w-md relative z-10">
-          <h4 className="text-sm font-medium text-white mb-3">Body Fat Percentage Guide</h4>
-          <div className="grid grid-cols-2 gap-2 text-xs">
+        <div className="mt-4 sm:mt-6 bg-gray-50 border border-gray-200 rounded-xl p-3 sm:p-4 w-full max-w-xs sm:max-w-md">
+          <h4 className="text-xs sm:text-sm font-medium text-gray-800 mb-2 sm:mb-3">Body Fat Percentage Guide</h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
             {gender === 'male' ? (
               <>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-green-400 rounded-full"></div>
-                  <span className="text-white/80">8-14% Athletic</span>
+                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  <span className="text-gray-700">8-14% Athletic</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-blue-400 rounded-full"></div>
-                  <span className="text-white/80">15-18% Fitness</span>
+                  <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                  <span className="text-gray-700">15-18% Fitness</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
-                  <span className="text-white/80">19-24% Average</span>
+                  <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                  <span className="text-gray-700">19-24% Average</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-red-400 rounded-full"></div>
-                  <span className="text-white/80">25%+ Above Average</span>
+                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                  <span className="text-gray-700">25%+ Above Average</span>
                 </div>
               </>
             ) : (
               <>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-green-400 rounded-full"></div>
-                  <span className="text-white/80">16-20% Athletic</span>
+                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  <span className="text-gray-700">16-20% Athletic</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-blue-400 rounded-full"></div>
-                  <span className="text-white/80">21-25% Fitness</span>
+                  <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                  <span className="text-gray-700">21-25% Fitness</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
-                  <span className="text-white/80">26-31% Average</span>
+                  <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                  <span className="text-gray-700">26-31% Average</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-red-400 rounded-full"></div>
-                  <span className="text-white/80">32%+ Above Average</span>
+                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                  <span className="text-gray-700">32%+ Above Average</span>
                 </div>
               </>
             )}

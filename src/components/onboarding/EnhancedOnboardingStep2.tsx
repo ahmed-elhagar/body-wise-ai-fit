@@ -25,7 +25,7 @@ const EnhancedOnboardingStep2 = ({ formData, updateFormData }: EnhancedOnboardin
       setBodyFatPercentage(defaultValue);
       updateFormData("body_fat_percentage", defaultValue.toString());
     }
-  }, [formData.gender]);
+  }, [formData.gender, formData.body_fat_percentage, updateFormData]);
 
   const handleBodyFatChange = (value: number) => {
     console.log('Body fat percentage changed to:', value);

@@ -84,18 +84,21 @@ const Onboarding = () => {
           ? formData.activity_level 
           : 'moderate'; // Default fallback
 
+        // Parse body fat percentage as a number
+        const bodyFatValue = formData.body_fat_percentage ? parseFloat(formData.body_fat_percentage) : null;
+
         const profileData = {
           first_name: formData.first_name?.trim(),
           last_name: formData.last_name?.trim(),
-          age: formData.age ? parseInt(formData.age) : undefined,
-          gender: formData.gender,
-          height: formData.height ? parseFloat(formData.height) : undefined,
-          weight: formData.weight ? parseFloat(formData.weight) : undefined,
+          age: formData.age ? parseInt(formData.age) : null,
+          gender: formData.gender || null,
+          height: formData.height ? parseFloat(formData.height) : null,
+          weight: formData.weight ? parseFloat(formData.weight) : null,
           nationality: formData.nationality === "prefer_not_to_say" ? null : formData.nationality?.trim(),
           body_shape: formData.body_shape || null,
-          body_fat_percentage: formData.body_fat_percentage ? parseFloat(formData.body_fat_percentage) : undefined,
+          body_fat_percentage: bodyFatValue,
           health_conditions: formData.health_conditions || [],
-          fitness_goal: formData.fitness_goal,
+          fitness_goal: formData.fitness_goal || null,
           activity_level: activityLevel,
           allergies: formData.allergies || [],
           preferred_foods: formData.preferred_foods || [],
