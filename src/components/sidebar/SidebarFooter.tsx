@@ -36,9 +36,15 @@ export const SidebarFooter = () => {
       navigate('/auth');
     } catch (error) {
       console.error('Error signing out:', error);
-      // Even if there's an error, still navigate to auth page
       navigate('/auth');
     }
+  };
+
+  const getDisplayName = () => {
+    if (user?.user_metadata?.first_name || user?.user_metadata?.last_name) {
+      return `${user.user_metadata.first_name || ''} ${user.user_metadata.last_name || ''}`.trim();
+    }
+    return user?.email?.split('@')[0] || 'User';
   };
 
   if (!user) return null;
@@ -54,7 +60,7 @@ export const SidebarFooter = () => {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-900 truncate">
-                {user.email}
+                {getDisplayName()}
               </p>
               <p className="text-xs text-gray-500">
                 {isAdmin ? "Admin" : isCoach ? "Coach" : "User"}
@@ -108,7 +114,7 @@ export const SidebarFooter = () => {
         
         {/* Settings */}
         <SidebarMenuButton
-          onClick={() => navigate('/profile')}
+          onClick={() => navigate('/settings')}
           className="w-full justify-start text-gray-600 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
           aria-label={t("Settings")}
         >

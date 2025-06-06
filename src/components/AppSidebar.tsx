@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/sidebar"
 import { SidebarHeader as CustomSidebarHeader } from "./sidebar/SidebarHeader"
 import { SidebarMainNavigation } from "./sidebar/SidebarMainNavigation"
-import { SidebarManagementPanel } from "./sidebar/SidebarManagementPanel"
 import { SidebarFooter as CustomSidebarFooter } from "./sidebar/SidebarFooter"
 import { cn } from "@/lib/utils"
 
@@ -37,7 +36,6 @@ const AppSidebar = () => {
         isCollapsed && !isMobile ? "px-1" : "px-2"
       )}>
         <SidebarMainNavigation />
-        <SidebarManagementPanel />
       </SidebarContent>
 
       <SidebarFooter className={cn(

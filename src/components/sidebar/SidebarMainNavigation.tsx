@@ -8,7 +8,8 @@ import {
   BarChart3, 
   Target,
   MessageSquare,
-  Calendar
+  Calendar,
+  Settings
 } from "lucide-react";
 import { 
   SidebarMenu, 
@@ -43,6 +44,7 @@ export const SidebarMainNavigation = () => {
     { href: "/goals", icon: Target, label: String(tNav("goals")) },
     { href: "/food-tracker", icon: Calendar, label: String(tNav("foodTracker")) },
     { href: "/chat", icon: MessageSquare, label: String(tNav("aiChat")) },
+    { href: "/settings", icon: Settings, label: "Settings" },
   ];
 
   return (
