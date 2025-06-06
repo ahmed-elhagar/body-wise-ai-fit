@@ -1,3 +1,4 @@
+
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -22,7 +23,7 @@ const fetchExercisePrograms = async (userId: string | undefined): Promise<Exerci
   }
 
   const { data, error } = await supabase
-    .from('exercise_programs')
+    .from('weekly_exercise_programs')
     .select('*')
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
@@ -48,11 +49,11 @@ export const useExerciseProgramData = () => {
   } = useQuery({
     queryKey: ['exercisePrograms', user?.id],
     queryFn: () => fetchExercisePrograms(user?.id),
-    enabled: !!user?.id, // Only fetch if user is logged in
+    enabled: !!user?.id,
   });
 
   const invalidateQuery = () => {
-    queryClient.invalidateQueries(['exercisePrograms', user?.id]);
+    queryClient.invalidateQueries({ queryKey: ['exercisePrograms', user?.id] });
   };
 
   return {
@@ -63,3 +64,5 @@ export const useExerciseProgramData = () => {
     invalidateQuery,
   };
 };
+
+export type { ExerciseProgram };
