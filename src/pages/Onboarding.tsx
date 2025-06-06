@@ -225,7 +225,7 @@ const Onboarding = () => {
             onBack={handleBack}
             onNext={handleNext}
             onSkip={handleSkip}
-            canSkip={step === 2 || step === 3}
+            canSkip={step === 2}
           />
         </Card>
       </div>

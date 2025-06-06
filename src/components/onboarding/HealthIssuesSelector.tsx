@@ -1,6 +1,9 @@
 
-import { Card } from "@/components/ui/card";
+import { useState } from "react";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { AlertTriangle, Plus, X } from "lucide-react";
 
 interface HealthIssuesSelectorProps {
   value: string[];
@@ -8,61 +11,119 @@ interface HealthIssuesSelectorProps {
 }
 
 const HealthIssuesSelector = ({ value, onChange }: HealthIssuesSelectorProps) => {
-  const healthIssues = [
-    { id: 'no_issues', label: 'No issues', icon: '❌', color: 'red' },
-    { id: 'sensitive_back', label: 'Sensitive back', icon: '🔴', color: 'blue' },
-    { id: 'sensitive_knees', label: 'Sensitive knees', icon: '🔴', color: 'gray' },
-    { id: 'sensitive_shoulders', label: 'Sensitive shoulders', icon: '🔴', color: 'gray' },
-    { id: 'sensitive_elbows', label: 'Sensitive elbows', icon: '🔴', color: 'gray' }
+  const [customCondition, setCustomCondition] = useState("");
+
+  const commonConditions = [
+    'Diabetes',
+    'High Blood Pressure',
+    'Heart Conditions',
+    'Arthritis',
+    'Back Problems',
+    'Knee Problems',
+    'Asthma',
+    'None'
   ];
 
-  const handleToggle = (issueId: string) => {
-    if (issueId === 'no_issues') {
-      // If "No issues" is selected, clear all others
-      onChange(value.includes('no_issues') ? [] : ['no_issues']);
-    } else {
-      // Remove "No issues" if selecting a specific issue
-      const newValue = value.filter(id => id !== 'no_issues');
-      const updatedValue = newValue.includes(issueId)
-        ? newValue.filter(id => id !== issueId)
-        : [...newValue, issueId];
-      onChange(updatedValue);
+  const toggleCondition = (condition: string) => {
+    const currentValues = Array.isArray(value) ? value : [];
+    
+    if (condition === 'None') {
+      onChange(['None']);
+      return;
     }
+    
+    const filteredValues = currentValues.filter(v => v !== 'None');
+    
+    if (filteredValues.includes(condition)) {
+      onChange(filteredValues.filter(v => v !== condition));
+    } else {
+      onChange([...filteredValues, condition]);
+    }
+  };
+
+  const addCustomCondition = () => {
+    if (customCondition.trim() && !value.includes(customCondition.trim())) {
+      const currentValues = Array.isArray(value) ? value.filter(v => v !== 'None') : [];
+      onChange([...currentValues, customCondition.trim()]);
+      setCustomCondition("");
+    }
+  };
+
+  const removeCondition = (condition: string) => {
+    onChange((Array.isArray(value) ? value : []).filter(v => v !== condition));
   };
 
   return (
     <div className="space-y-4">
-      <div>
-        <Label className="text-xl font-bold text-gray-800">
-          Do you have issues with one of the following areas?
-        </Label>
-        <p className="text-sm text-gray-600 mt-1">Choose all that apply</p>
-      </div>
-      <div className="space-y-3">
-        {healthIssues.map((issue) => {
-          const isSelected = value.includes(issue.id);
-          const isNoIssues = issue.id === 'no_issues';
+      <Label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+        <AlertTriangle className="w-4 h-4 text-yellow-500" />
+        Health Conditions (Optional)
+      </Label>
+      
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+        {commonConditions.map((condition) => {
+          const isSelected = Array.isArray(value) && value.includes(condition);
+          
           return (
-            <Card
-              key={issue.id}
-              className={`p-4 cursor-pointer transition-all duration-300 hover:shadow-lg border-2 ${
-                isSelected
-                  ? isNoIssues 
-                    ? 'ring-2 ring-red-500 bg-red-50 border-red-200'
-                    : 'ring-2 ring-blue-500 bg-blue-50 border-blue-200'
-                  : 'hover:bg-gray-50 border-gray-200'
-              }`}
-              onClick={() => handleToggle(issue.id)}
-              data-testid={`health-issue-${issue.id}`}
+            <Button
+              key={condition}
+              type="button"
+              variant={isSelected ? "default" : "outline"}
+              size="sm"
+              className={`text-xs ${isSelected ? 'ring-2 ring-blue-500' : ''}`}
+              onClick={() => toggleCondition(condition)}
             >
-              <div className="flex items-center gap-3">
-                <span className="text-xl">{issue.icon}</span>
-                <span className="font-medium text-gray-800">{issue.label}</span>
-              </div>
-            </Card>
+              {condition}
+            </Button>
           );
         })}
       </div>
+
+      <div className="space-y-2">
+        <Label className="text-xs text-gray-600">Add custom condition:</Label>
+        <div className="flex gap-2">
+          <Textarea
+            value={customCondition}
+            onChange={(e) => setCustomCondition(e.target.value)}
+            placeholder="Type any other health condition..."
+            className="text-sm"
+            rows={2}
+          />
+          <Button
+            type="button"
+            size="sm"
+            onClick={addCustomCondition}
+            disabled={!customCondition.trim()}
+          >
+            <Plus className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
+
+      {Array.isArray(value) && value.length > 0 && value[0] !== 'None' && (
+        <div className="space-y-2">
+          <Label className="text-xs text-gray-600">Selected conditions:</Label>
+          <div className="flex flex-wrap gap-2">
+            {value.map((condition) => (
+              <div
+                key={condition}
+                className="flex items-center gap-1 bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs"
+              >
+                <span>{condition}</span>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  className="h-4 w-4 p-0 hover:bg-blue-200"
+                  onClick={() => removeCondition(condition)}
+                >
+                  <X className="w-3 h-3" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

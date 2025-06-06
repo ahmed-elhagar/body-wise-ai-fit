@@ -1,6 +1,7 @@
 
-import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Bed, Walk, Bike, Zap } from "lucide-react";
 
 interface ActivityLevelSelectorProps {
   value: string;
@@ -9,53 +10,63 @@ interface ActivityLevelSelectorProps {
 
 const ActivityLevelSelector = ({ value, onChange }: ActivityLevelSelectorProps) => {
   const activityLevels = [
-    {
-      id: 'sedentary',
-      label: 'I spend most of the day sitting',
-      emoji: '🧑‍💻',
-      description: 'Desk job, minimal physical activity'
+    { 
+      id: 'sedentary', 
+      label: 'Sedentary', 
+      icon: Bed, 
+      color: 'text-gray-500',
+      description: 'Little to no exercise, desk job'
     },
-    {
-      id: 'lightly_active',
-      label: 'I am active during my breaks',
-      emoji: '🚶',
-      description: 'Light exercise 1-3 days per week'
+    { 
+      id: 'light', 
+      label: 'Lightly Active', 
+      icon: Walk, 
+      color: 'text-blue-500',
+      description: 'Light exercise 1-3 days/week'
     },
-    {
-      id: 'very_active',
-      label: 'I am on my feet all day',
-      emoji: '🏃',
-      description: 'Physical job or active lifestyle'
-    }
+    { 
+      id: 'moderate', 
+      label: 'Moderately Active', 
+      icon: Bike, 
+      color: 'text-green-500',
+      description: 'Moderate exercise 3-5 days/week'
+    },
+    { 
+      id: 'very_active', 
+      label: 'Very Active', 
+      icon: Zap, 
+      color: 'text-orange-500',
+      description: 'Hard exercise 6-7 days/week'
+    },
   ];
 
   return (
     <div className="space-y-4">
-      <Label className="text-xl font-bold text-gray-800">
-        How would you describe your typical day?
+      <Label className="text-sm font-medium text-gray-700">
+        How active are you? *
       </Label>
-      <div className="space-y-3">
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {activityLevels.map((level) => {
+          const Icon = level.icon;
           const isSelected = value === level.id;
+          
           return (
-            <Card
+            <Button
               key={level.id}
-              className={`p-4 cursor-pointer transition-all duration-300 hover:shadow-lg border-2 ${
-                isSelected
-                  ? 'ring-2 ring-blue-500 bg-blue-50 border-blue-200'
-                  : 'hover:bg-gray-50 border-gray-200'
+              type="button"
+              variant={isSelected ? "default" : "outline"}
+              className={`h-auto p-4 flex flex-col items-start gap-3 text-left ${
+                isSelected ? 'ring-2 ring-blue-500' : ''
               }`}
               onClick={() => onChange(level.id)}
-              data-testid={`activity-level-${level.id}`}
             >
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">{level.emoji}</span>
-                <div>
-                  <span className="font-medium text-gray-800 block">{level.label}</span>
-                  <span className="text-sm text-gray-600">{level.description}</span>
-                </div>
+              <div className="flex items-center gap-3 w-full">
+                <Icon className={`w-6 h-6 ${level.color}`} />
+                <span className="font-medium">{level.label}</span>
               </div>
-            </Card>
+              <p className="text-sm text-gray-500">{level.description}</p>
+            </Button>
           );
         })}
       </div>

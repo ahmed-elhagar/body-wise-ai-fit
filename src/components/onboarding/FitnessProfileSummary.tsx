@@ -1,6 +1,6 @@
 
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { User, Target, Activity, Heart } from "lucide-react";
 import { OnboardingFormData } from "@/hooks/useOnboardingForm";
 
 interface FitnessProfileSummaryProps {
@@ -8,148 +8,81 @@ interface FitnessProfileSummaryProps {
 }
 
 const FitnessProfileSummary = ({ formData }: FitnessProfileSummaryProps) => {
-  const calculateBMI = (height: string, weight: string) => {
-    const h = parseFloat(height);
-    const w = parseFloat(weight);
-    if (h > 0 && w > 0) {
-      const bmi = w / ((h / 100) ** 2);
-      return bmi.toFixed(1);
-    }
-    return "N/A";
-  };
-
-  const getBMICategory = (bmi: string) => {
-    if (bmi === "N/A") return "Unknown";
-    const bmiValue = parseFloat(bmi);
-    if (bmiValue < 18.5) return "Underweight";
-    if (bmiValue < 25) return "Normal";
-    if (bmiValue < 30) return "Overweight";
-    return "Obese";
-  };
-
-  const formatGender = (gender: string) => {
-    return gender === 'male' ? 'Male' : gender === 'female' ? 'Female' : gender || 'Not specified';
-  };
-
-  const formatBodyShape = (shape: string) => {
-    const shapes: { [key: string]: string } = {
-      'slender': 'Slender',
-      'average': 'Average',
-      'heavy': 'Heavy'
-    };
-    return shapes[shape] || shape || 'Not specified';
-  };
-
-  const formatGoal = (goal: string) => {
-    const goals: { [key: string]: string } = {
-      'slim': 'Slim & Toned',
-      'fit': 'Fit & Athletic',
-      'muscular': 'Muscular',
-      'bodybuilding': 'Bodybuilding'
-    };
-    return goals[goal] || goal || 'Not specified';
-  };
-
-  const formatActivity = (activity: string) => {
-    const activities: { [key: string]: string } = {
-      'sedentary': 'Mostly Sitting',
-      'lightly_active': 'Active During Breaks',
-      'very_active': 'On Feet All Day'
-    };
-    return activities[activity] || activity || 'Not specified';
-  };
-
-  const bmi = calculateBMI(formData.height || '0', formData.weight || '0');
-  const bmiCategory = getBMICategory(bmi);
+  const bmi = formData.height && formData.weight 
+    ? (parseFloat(formData.weight) / Math.pow(parseFloat(formData.height) / 100, 2)).toFixed(1)
+    : null;
 
   return (
-    <div className="space-y-6">
-      <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Personal Information</h3>
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <span className="text-gray-600">Name:</span>
-            <p className="font-medium">{formData.first_name} {formData.last_name}</p>
+    <div className="space-y-4">
+      <h3 className="text-lg font-semibold text-gray-800 mb-4">Profile Summary</h3>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card className="p-4">
+          <div className="flex items-center gap-3 mb-3">
+            <User className="w-5 h-5 text-blue-500" />
+            <h4 className="font-medium text-gray-800">Personal Info</h4>
           </div>
-          <div>
-            <span className="text-gray-600">Age:</span>
-            <p className="font-medium">{formData.age || 'Not specified'}</p>
+          <div className="space-y-2 text-sm">
+            <div><span className="text-gray-600">Name:</span> {formData.first_name} {formData.last_name}</div>
+            <div><span className="text-gray-600">Age:</span> {formData.age} years</div>
+            <div><span className="text-gray-600">Gender:</span> {formData.gender}</div>
+            {formData.nationality && formData.nationality !== 'prefer_not_to_say' && (
+              <div><span className="text-gray-600">Nationality:</span> {formData.nationality}</div>
+            )}
           </div>
-          <div>
-            <span className="text-gray-600">Gender:</span>
-            <p className="font-medium">{formatGender(formData.gender)}</p>
-          </div>
-          <div>
-            <span className="text-gray-600">Nationality:</span>
-            <p className="font-medium">{formData.nationality === 'prefer_not_to_say' ? 'Prefer not to say' : formData.nationality || 'Not specified'}</p>
-          </div>
-        </div>
-      </Card>
+        </Card>
 
-      <Card className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Physical Profile</h3>
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <span className="text-gray-600">Height:</span>
-            <p className="font-medium">{formData.height || 'Not specified'} cm</p>
+        <Card className="p-4">
+          <div className="flex items-center gap-3 mb-3">
+            <Activity className="w-5 h-5 text-green-500" />
+            <h4 className="font-medium text-gray-800">Physical Stats</h4>
           </div>
-          <div>
-            <span className="text-gray-600">Weight:</span>
-            <p className="font-medium">{formData.weight || 'Not specified'} kg</p>
+          <div className="space-y-2 text-sm">
+            <div><span className="text-gray-600">Height:</span> {formData.height} cm</div>
+            <div><span className="text-gray-600">Weight:</span> {formData.weight} kg</div>
+            {bmi && <div><span className="text-gray-600">BMI:</span> {bmi}</div>}
+            {formData.body_shape && (
+              <div><span className="text-gray-600">Body Shape:</span> {formData.body_shape}</div>
+            )}
           </div>
-          <div>
-            <span className="text-gray-600">BMI:</span>
-            <div className="flex items-center gap-2">
-              <p className="font-medium">{bmi}</p>
-              <Badge variant={bmiCategory === 'Normal' ? 'default' : 'secondary'} className="text-xs">
-                {bmiCategory}
-              </Badge>
-            </div>
-          </div>
-          <div>
-            <span className="text-gray-600">Body Shape:</span>
-            <p className="font-medium">{formatBodyShape(formData.body_shape)}</p>
-          </div>
-        </div>
-      </Card>
+        </Card>
 
-      <Card className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Goals & Activity</h3>
-        <div className="grid grid-cols-1 gap-4 text-sm">
-          <div>
-            <span className="text-gray-600">Fitness Goal:</span>
-            <p className="font-medium">{formatGoal(formData.fitness_goal)}</p>
+        <Card className="p-4">
+          <div className="flex items-center gap-3 mb-3">
+            <Target className="w-5 h-5 text-purple-500" />
+            <h4 className="font-medium text-gray-800">Fitness Goals</h4>
           </div>
-          <div>
-            <span className="text-gray-600">Activity Level:</span>
-            <p className="font-medium">{formatActivity(formData.activity_level)}</p>
+          <div className="space-y-2 text-sm">
+            {formData.fitness_goal && (
+              <div><span className="text-gray-600">Goal:</span> {formData.fitness_goal}</div>
+            )}
+            {formData.activity_level && (
+              <div><span className="text-gray-600">Activity Level:</span> {formData.activity_level}</div>
+            )}
           </div>
-          {formData.health_conditions && formData.health_conditions.length > 0 && formData.health_conditions[0] !== 'no_issues' && (
-            <div>
-              <span className="text-gray-600">Health Considerations:</span>
-              <div className="flex flex-wrap gap-1 mt-1">
-                {formData.health_conditions.map((condition, index) => (
-                  <Badge key={index} variant="outline" className="text-xs">
-                    {condition.replace(/_/g, ' ')}
-                  </Badge>
-                ))}
+        </Card>
+
+        <Card className="p-4">
+          <div className="flex items-center gap-3 mb-3">
+            <Heart className="w-5 h-5 text-red-500" />
+            <h4 className="font-medium text-gray-800">Health & Preferences</h4>
+          </div>
+          <div className="space-y-2 text-sm">
+            {formData.health_conditions && formData.health_conditions.length > 0 && (
+              <div>
+                <span className="text-gray-600">Health Conditions:</span> 
+                {formData.health_conditions.join(', ')}
               </div>
-            </div>
-          )}
-          {formData.preferred_foods && formData.preferred_foods.length > 0 && (
-            <div>
-              <span className="text-gray-600">Motivations:</span>
-              <div className="flex flex-wrap gap-1 mt-1">
-                {formData.preferred_foods.map((motivation, index) => (
-                  <Badge key={index} variant="outline" className="text-xs">
-                    {motivation.replace(/_/g, ' ')}
-                  </Badge>
-                ))}
+            )}
+            {formData.preferred_foods && formData.preferred_foods.length > 0 && (
+              <div>
+                <span className="text-gray-600">Motivations:</span> 
+                {formData.preferred_foods.join(', ')}
               </div>
-            </div>
-          )}
-        </div>
-      </Card>
+            )}
+          </div>
+        </Card>
+      </div>
     </div>
   );
 };

@@ -13,7 +13,7 @@ const ModernOnboardingHeader = ({ step, totalSteps, progress }: ModernOnboarding
     { number: 1, title: "Basic Info", description: "Tell us about yourself" },
     { number: 2, title: "Physical", description: "Your measurements" },
     { number: 3, title: "Goals", description: "What you want to achieve" },
-    { number: 4, title: "Preferences", description: "Your food preferences" }
+    { number: 4, title: "Summary", description: "Review your profile" }
   ];
 
   return (
@@ -21,7 +21,7 @@ const ModernOnboardingHeader = ({ step, totalSteps, progress }: ModernOnboarding
       {/* App Title */}
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
-          Welcome to FitFatta
+          Welcome to FitGenius
         </h1>
         <p className="text-gray-600">Let's set up your personalized fitness journey</p>
       </div>

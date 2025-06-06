@@ -1,6 +1,7 @@
 
 import { Label } from "@/components/ui/label";
-import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { User } from "lucide-react";
 
 interface GenderSelectorProps {
   value: string;
@@ -8,25 +9,11 @@ interface GenderSelectorProps {
 }
 
 const GenderSelector = ({ value, onChange }: GenderSelectorProps) => {
-  const genderOptions = [
-    {
-      value: "male",
-      label: "Male",
-      icon: "👨",
-      description: "Male"
-    },
-    {
-      value: "female",
-      label: "Female", 
-      icon: "👩",
-      description: "Female"
-    },
-    {
-      value: "other",
-      label: "Other",
-      icon: "🧑",
-      description: "Other/Non-binary"
-    }
+  const genders = [
+    { id: 'male', label: 'Male' },
+    { id: 'female', label: 'Female' },
+    { id: 'other', label: 'Other' },
+    { id: 'prefer_not_to_say', label: 'Prefer not to say' },
   ];
 
   return (
@@ -34,22 +21,22 @@ const GenderSelector = ({ value, onChange }: GenderSelectorProps) => {
       <Label className="text-sm font-medium text-gray-700">
         Gender *
       </Label>
-      <div className="grid grid-cols-3 gap-3" data-testid="gender">
-        {genderOptions.map((option) => (
-          <Card
-            key={option.value}
-            className={`p-4 cursor-pointer transition-all duration-300 hover:shadow-lg text-center ${
-              value === option.value
-                ? 'ring-2 ring-blue-500 bg-blue-50 border-blue-200'
-                : 'hover:bg-gray-50 border-gray-200'
+      
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {genders.map((gender) => (
+          <Button
+            key={gender.id}
+            type="button"
+            variant={value === gender.id ? "default" : "outline"}
+            className={`h-auto p-4 flex flex-col items-center gap-2 ${
+              value === gender.id ? 'ring-2 ring-blue-500' : ''
             }`}
-            onClick={() => onChange(option.value)}
-            data-testid={`gender-${option.value}`}
+            onClick={() => onChange(gender.id)}
+            data-testid={`gender-${gender.id}`}
           >
-            <div className="text-3xl mb-2">{option.icon}</div>
-            <div className="text-sm font-medium text-gray-800">{option.label}</div>
-            <div className="text-xs text-gray-500 mt-1">{option.description}</div>
-          </Card>
+            <User className="w-5 h-5" />
+            <span className="text-sm font-medium">{gender.label}</span>
+          </Button>
         ))}
       </div>
     </div>
