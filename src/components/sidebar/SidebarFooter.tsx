@@ -23,6 +23,8 @@ export const SidebarFooter = () => {
       setIsCollapsing(true);
       const timer = setTimeout(() => setIsCollapsing(false), 300);
       return () => clearTimeout(timer);
+    } else {
+      setIsCollapsing(false);
     }
   }, [state]);
 
@@ -42,15 +44,15 @@ export const SidebarFooter = () => {
 
   return (
     <div className="p-4 border-t">
-      <div className="space-y-1">
+      <div className="space-y-2">
         {/* Admin Panel Access */}
         {isAdmin && (
           <SidebarMenuButton
             onClick={() => navigate('/admin')}
-            className={cn("nav-link-rtl w-full justify-start", isAdmin ? "text-purple-600 hover:text-purple-700 hover:bg-purple-50" : "")}
+            className={cn("w-full justify-start", isAdmin ? "text-purple-600 hover:text-purple-700 hover:bg-purple-50" : "")}
             aria-label={t("Admin")}
           >
-            <Shield className="w-4 h-4 icon-start" />
+            <Shield className="w-4 h-4 mr-2" />
             {state === "expanded" && !isCollapsing && (
               <span>{t("Admin")}</span>
             )}
@@ -61,10 +63,10 @@ export const SidebarFooter = () => {
         {(isCoach || isAdmin) && (
           <SidebarMenuButton
             onClick={() => navigate('/coach')}
-            className={cn("nav-link-rtl w-full justify-start", "text-green-600 hover:text-green-700 hover:bg-green-50")}
+            className={cn("w-full justify-start", "text-green-600 hover:text-green-700 hover:bg-green-50")}
             aria-label={t("Coach Dashboard")}
           >
-            <Users className="w-4 h-4 icon-start" />
+            <Users className="w-4 h-4 mr-2" />
             {state === "expanded" && !isCollapsing && (
               <span>{t("Coach Dashboard")}</span>
             )}
@@ -74,10 +76,10 @@ export const SidebarFooter = () => {
         {/* Settings */}
         <SidebarMenuButton
           onClick={() => navigate('/profile')}
-          className="nav-link-rtl w-full justify-start"
+          className="w-full justify-start"
           aria-label={t("Settings")}
         >
-          <Settings className="w-4 h-4 icon-start" />
+          <Settings className="w-4 h-4 mr-2" />
           {state === "expanded" && !isCollapsing && (
             <span>{t("Settings")}</span>
           )}
@@ -86,10 +88,10 @@ export const SidebarFooter = () => {
         {/* Logout */}
         <SidebarMenuButton
           onClick={handleSignOut}
-          className="nav-link-rtl w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
+          className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
           aria-label={t("Logout")}
         >
-          <LogOut className="w-4 h-4 icon-start" />
+          <LogOut className="w-4 h-4 mr-2" />
           {state === "expanded" && !isCollapsing && (
             <span>{t("Logout")}</span>
           )}

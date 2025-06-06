@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { useMealPlanState } from '@/hooks/useMealPlanState';
 import MealPlanHeader from '@/components/meal-plan/MealPlanHeader';
@@ -87,7 +86,7 @@ export const MealPlanContainer = () => {
           hasWeeklyPlan={!!displayData?.weeklyPlan}
         />
         
-        <div className="flex flex-col md:flex-row items-center gap-4 md:justify-between">
+        <div className="flex flex-col md:flex-row items-start gap-4 md:justify-between">
           <MealPlanNavigation 
             currentWeekOffset={mealPlanState.currentWeekOffset}
             onWeekChange={handleWeekChange}

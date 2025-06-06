@@ -13,32 +13,32 @@ export const MealPlanViewToggle = ({ viewMode, onViewModeChange }: MealPlanViewT
   const { t, isRTL } = useLanguage();
 
   return (
-    <div className={`flex gap-1 bg-gray-100 p-1 rounded-lg ${isRTL ? 'flex-row-reverse' : ''}`}>
+    <div className={`flex gap-1 bg-white/80 border border-gray-200/50 shadow-sm rounded-lg p-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
       <Button
         variant="ghost"
         size="sm"
         onClick={() => onViewModeChange('daily')}
-        className={`flex items-center gap-2 px-4 py-2 h-9 text-sm font-medium transition-all ${
+        className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
           viewMode === 'daily' 
-            ? 'bg-white text-blue-600 shadow-sm' 
+            ? 'bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-sm' 
             : 'text-gray-600 hover:bg-gray-50'
         }`}
       >
         <CalendarDays className="w-4 h-4" />
-        <span className="hidden md:inline">{t('mealPlan.dailyView') || 'Daily'}</span>
+        <span>{t('mealPlan.dailyView') || 'Daily'}</span>
       </Button>
       <Button
         variant="ghost"
         size="sm"
         onClick={() => onViewModeChange('weekly')}
-        className={`flex items-center gap-2 px-4 py-2 h-9 text-sm font-medium transition-all ${
+        className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
           viewMode === 'weekly' 
-            ? 'bg-white text-blue-600 shadow-sm' 
+            ? 'bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-sm' 
             : 'text-gray-600 hover:bg-gray-50'
         }`}
       >
         <LayoutGrid className="w-4 h-4" />
-        <span className="hidden md:inline">{t('mealPlan.weeklyView') || 'Weekly'}</span>
+        <span>{t('mealPlan.weeklyView') || 'Weekly'}</span>
       </Button>
     </div>
   );
