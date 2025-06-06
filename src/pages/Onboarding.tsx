@@ -28,6 +28,14 @@ const Onboarding = () => {
   const totalSteps = 4;
   const progress = (step / totalSteps) * 100;
 
+  // Protect onboarding from logged-in users who have completed onboarding
+  useEffect(() => {
+    if (!authLoading && user && profile && profile.onboarding_completed && !isCompleting) {
+      console.log('Onboarding - User has completed onboarding, redirecting to dashboard');
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, profile, authLoading, navigate, isCompleting]);
+
   // Check if user needs to confirm their email (only if email confirmation is enabled)
   useEffect(() => {
     if (!authLoading) {
@@ -38,14 +46,6 @@ const Onboarding = () => {
       }
     }
   }, [user, authLoading, isEmailConfirmationEnabled]);
-
-  // Check if user has already completed onboarding
-  useEffect(() => {
-    if (!authLoading && profile && profile.onboarding_completed && !isCompleting) {
-      console.log('Onboarding - User has completed onboarding, redirecting to dashboard');
-      navigate('/dashboard', { replace: true });
-    }
-  }, [profile, authLoading, navigate, isCompleting]);
 
   const isStepValid = (): boolean => {
     return validateOnboardingStep(step, formData);

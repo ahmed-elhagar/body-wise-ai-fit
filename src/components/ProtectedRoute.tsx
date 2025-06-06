@@ -58,9 +58,15 @@ const ProtectedRoute = React.memo<ProtectedRouteProps>(({
 
   // If user is authenticated but trying to access auth pages
   if (!requireAuth && user) {
-    const from = location.state?.from || '/dashboard';
-    console.log("ProtectedRoute - Redirecting authenticated user to:", from);
-    return <Navigate to={from} replace />;
+    // If user has completed onboarding, go to dashboard
+    // If user hasn't completed onboarding, go to onboarding
+    if (profile?.onboarding_completed) {
+      console.log("ProtectedRoute - Redirecting authenticated user to dashboard");
+      return <Navigate to="/dashboard" replace />;
+    } else {
+      console.log("ProtectedRoute - Redirecting authenticated user to onboarding");
+      return <Navigate to="/onboarding" replace />;
+    }
   }
 
   // Enhanced role-based access control with better error handling

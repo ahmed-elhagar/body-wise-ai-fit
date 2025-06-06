@@ -12,7 +12,7 @@ export interface OnboardingFormData {
   body_shape: string;
   fitness_goal: string;
   activity_level: string;
-  health_conditions: string;
+  health_conditions: string[];
   allergies: string[];
   preferred_foods: string[];
   dietary_restrictions: string[];
@@ -30,7 +30,7 @@ export const useOnboardingForm = () => {
     body_shape: '',
     fitness_goal: '',
     activity_level: '',
-    health_conditions: '',
+    health_conditions: [],
     allergies: [],
     preferred_foods: [],
     dietary_restrictions: [],

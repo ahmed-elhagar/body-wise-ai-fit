@@ -3,11 +3,16 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
 interface HealthIssuesSelectorProps {
-  value: string;
-  onChange: (value: string) => void;
+  value: string[];
+  onChange: (value: string[]) => void;
 }
 
 const HealthIssuesSelector = ({ value, onChange }: HealthIssuesSelectorProps) => {
+  const handleChange = (inputValue: string) => {
+    const arrayValue = inputValue.split(',').map(item => item.trim()).filter(Boolean);
+    onChange(arrayValue);
+  };
+
   return (
     <div className="space-y-4">
       <Label className="text-sm font-medium text-gray-700">
@@ -15,8 +20,8 @@ const HealthIssuesSelector = ({ value, onChange }: HealthIssuesSelectorProps) =>
       </Label>
       
       <Textarea
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
+        value={Array.isArray(value) ? value.join(', ') : ''}
+        onChange={(e) => handleChange(e.target.value)}
         placeholder="e.g., diabetes, high blood pressure, knee injury, etc."
         className="min-h-[100px] border-2 border-gray-200 focus:border-blue-500 transition-colors rounded-xl"
       />
