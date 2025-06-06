@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
-import { Sparkles, Brain, Zap } from 'lucide-react';
+import { Sparkles, Brain, Zap, Clock } from 'lucide-react';
 import { AILoadingSteps, type AIStep } from './AILoadingSteps';
 import { cn } from '@/lib/utils';
 
@@ -18,7 +18,7 @@ export interface UnifiedAILoadingDialogProps {
   onClose?: () => void;
   allowClose?: boolean;
   className?: string;
-  position?: 'center' | 'top-right'; // Added position prop for more flexible placement
+  position?: 'center' | 'top-right';
 }
 
 export const UnifiedAILoadingDialog: React.FC<UnifiedAILoadingDialogProps> = ({
@@ -33,9 +33,10 @@ export const UnifiedAILoadingDialog: React.FC<UnifiedAILoadingDialogProps> = ({
   onClose,
   allowClose = false,
   className,
-  position = 'center' // Default to center
+  position = 'center'
 }) => {
   const [elapsedTime, setElapsedTime] = useState(0);
+  const [showFinalProcessing, setShowFinalProcessing] = useState(false);
 
   useEffect(() => {
     if (!isOpen || isComplete) return;
@@ -50,16 +51,18 @@ export const UnifiedAILoadingDialog: React.FC<UnifiedAILoadingDialogProps> = ({
   useEffect(() => {
     if (isOpen && !isComplete) {
       setElapsedTime(0);
+      setShowFinalProcessing(false);
     }
   }, [isOpen, isComplete]);
 
-  // Auto-close after completion (give user time to see success message)
-  // Reduced from 2000ms to 1500ms for faster auto-close
+  // Show final processing message when complete
   useEffect(() => {
-    if (isComplete && onClose) {
+    if (isComplete) {
+      setShowFinalProcessing(true);
+      // Auto-close after showing final processing message
       const timer = setTimeout(() => {
-        onClose();
-      }, 1500);
+        onClose?.();
+      }, 2500); // Extended time to show final processing message
       return () => clearTimeout(timer);
     }
   }, [isComplete, onClose]);
@@ -101,6 +104,13 @@ export const UnifiedAILoadingDialog: React.FC<UnifiedAILoadingDialogProps> = ({
             <p className="text-xs text-gray-600">
               {steps[currentStepIndex]?.label}...
             </p>
+          ) : showFinalProcessing ? (
+            <div className="flex items-center gap-2">
+              <Clock className="w-3 h-3 text-blue-600" />
+              <p className="text-xs text-blue-600 font-medium">
+                Finalizing meal plan data...
+              </p>
+            </div>
           ) : (
             <p className="text-xs text-green-600 font-medium">
               Operation completed successfully!
@@ -162,10 +172,10 @@ export const UnifiedAILoadingDialog: React.FC<UnifiedAILoadingDialogProps> = ({
             {estimatedTotalTime && !isComplete && (
               <span>Est. Total: {formatTime(estimatedTotalTime)}</span>
             )}
-            {isComplete && (
-              <span className="text-green-600 font-medium flex items-center gap-1">
-                <Zap className="w-3 h-3" />
-                Completed!
+            {isComplete && showFinalProcessing && (
+              <span className="text-blue-600 font-medium flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                Finalizing...
               </span>
             )}
           </div>
@@ -194,14 +204,18 @@ export const UnifiedAILoadingDialog: React.FC<UnifiedAILoadingDialogProps> = ({
             </div>
           )}
 
-          {/* Completion Message */}
-          {isComplete && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
-              <p className="text-sm font-medium text-green-800">
-                ✨ AI operation completed successfully!
-              </p>
-              <p className="text-xs text-green-600 mt-1">
-                Your content will be updated shortly...
+          {/* Final Processing Message */}
+          {isComplete && showFinalProcessing && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Clock className="w-4 h-4 text-blue-600" />
+                <p className="text-sm font-medium text-blue-800">
+                  Finalizing your meal plan...
+                </p>
+              </div>
+              <p className="text-xs text-blue-600">
+                We're adding meals to your plan and preparing everything for you. 
+                You'll receive a notification when it's ready!
               </p>
             </div>
           )}

@@ -2,12 +2,14 @@
 import { useState } from 'react';
 import { useAuth } from './useAuth';
 import { useCentralizedCredits } from './useCentralizedCredits';
+import { useNotifications } from './useNotifications';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export const useEnhancedMealPlan = () => {
   const { user } = useAuth();
   const { remaining: userCredits, isPro, hasCredits, checkAndUseCredit, completeGeneration } = useCentralizedCredits();
+  const { createNotification } = useNotifications();
   const [isGenerating, setIsGenerating] = useState(false);
   const [nutritionContext, setNutritionContext] = useState({
     isPregnant: false,
@@ -116,9 +118,20 @@ export const useEnhancedMealPlan = () => {
           });
         }
         
+        // Create notification for successful meal plan generation
+        const language = profile?.preferred_language || 'en';
+        createNotification({
+          title: language === 'ar' ? 'تم إنشاء خطة الوجبات!' : 'Meal Plan Generated!',
+          message: language === 'ar' 
+            ? 'تم إنشاء خطة وجباتك الشخصية بنجاح باستخدام الذكاء الاصطناعي. يمكنك الآن عرض وجباتك المخصصة.'
+            : 'Your personalized meal plan has been successfully generated using AI. You can now view your customized meals.',
+          type: 'success',
+          action_url: '/meal-plan'
+        });
+        
         toast.success('Meal plan generated successfully!');
         
-        // Explicitly set isGenerating to false immediately instead of waiting
+        // Set isGenerating to false immediately
         setIsGenerating(false);
         return true;
       } else {
@@ -129,7 +142,6 @@ export const useEnhancedMealPlan = () => {
       console.error('❌ Meal plan generation failed:', error);
       if (logId) await completeGeneration(logId, false);
       toast.error(error.message || 'Failed to generate meal plan');
-      // Explicitly set isGenerating to false on error
       setIsGenerating(false);
       return false;
     }

@@ -1,6 +1,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from './useAuth';
+import { useRole } from './useRole';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -12,6 +13,7 @@ interface CreditInfo {
 
 export const useCentralizedCredits = () => {
   const { user } = useAuth();
+  const { isAdmin, isLoading: roleLoading } = useRole();
   const [creditInfo, setCreditInfo] = useState<CreditInfo>({
     remaining: 0,
     isPro: false,
@@ -20,12 +22,23 @@ export const useCentralizedCredits = () => {
 
   // Fetch current credit status from database
   const fetchCredits = useCallback(async () => {
-    if (!user?.id) {
-      setCreditInfo({ remaining: 0, isPro: false, isLoading: false });
+    if (!user?.id || roleLoading) {
+      setCreditInfo({ remaining: 0, isPro: false, isLoading: roleLoading });
       return;
     }
 
     try {
+      // Admin users have unlimited credits
+      if (isAdmin) {
+        setCreditInfo({
+          remaining: -1, // -1 indicates unlimited
+          isPro: true, // Treat admin as pro
+          isLoading: false
+        });
+        console.log('📊 Admin user detected - unlimited credits');
+        return;
+      }
+
       // Check if user is Pro
       const { data: subscription } = await supabase
         .from('subscriptions')
@@ -58,18 +71,46 @@ export const useCentralizedCredits = () => {
         isLoading: false
       });
 
-      console.log('📊 Credits fetched:', { remaining, isPro, userId: user.id });
+      console.log('📊 Credits fetched:', { remaining, isPro, isAdmin, userId: user.id });
     } catch (error) {
       console.error('Error in fetchCredits:', error);
       setCreditInfo({ remaining: 0, isPro: false, isLoading: false });
     }
-  }, [user?.id]);
+  }, [user?.id, isAdmin, roleLoading]);
 
   // Check and use credit - this will be called before any AI generation
   const checkAndUseCredit = useCallback(async (generationType: string): Promise<{ success: boolean; logId?: string }> => {
     if (!user?.id) {
       console.error('❌ No user ID for credit check');
       return { success: false };
+    }
+
+    // Admin users always have unlimited credits
+    if (isAdmin) {
+      console.log('✅ Admin user - bypassing credit check');
+      try {
+        // Still log the generation for admin users for tracking purposes
+        const { data, error } = await supabase.functions.invoke('check_and_use_ai_generation', {
+          body: {
+            user_id: user.id,
+            generation_type: generationType,
+            prompt_data: { type: generationType },
+            is_admin: true // Flag to indicate admin user
+          }
+        });
+
+        if (error) {
+          console.error('❌ Admin credit logging failed:', error);
+          // Don't block admin users even if logging fails
+          return { success: true };
+        }
+
+        return { success: true, logId: data?.log_id };
+      } catch (error) {
+        console.error('❌ Admin credit logging error:', error);
+        // Don't block admin users even if logging fails
+        return { success: true };
+      }
     }
 
     try {
@@ -111,7 +152,7 @@ export const useCentralizedCredits = () => {
       toast.error('Failed to process AI credit');
       return { success: false };
     }
-  }, [user?.id, fetchCredits]);
+  }, [user?.id, isAdmin, fetchCredits]);
 
   // Complete generation - to be called after successful AI generation
   const completeGeneration = useCallback(async (logId: string, success: boolean, responseData?: any) => {
@@ -128,12 +169,14 @@ export const useCentralizedCredits = () => {
         }
       });
 
-      // Refresh credits to ensure accuracy
-      await fetchCredits();
+      // Refresh credits to ensure accuracy (but not for admin users)
+      if (!isAdmin) {
+        await fetchCredits();
+      }
     } catch (error) {
       console.error('❌ Error completing generation:', error);
     }
-  }, [fetchCredits]);
+  }, [fetchCredits, isAdmin]);
 
   // Initialize credits on mount and user change
   useEffect(() => {
@@ -145,6 +188,6 @@ export const useCentralizedCredits = () => {
     fetchCredits,
     checkAndUseCredit,
     completeGeneration,
-    hasCredits: creditInfo.isPro || creditInfo.remaining > 0
+    hasCredits: isAdmin || creditInfo.isPro || creditInfo.remaining > 0
   };
 };

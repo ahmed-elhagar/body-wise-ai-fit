@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Bell, CheckCircle, AlertTriangle, Trophy, Calendar, MessageSquare, ArrowRight } from "lucide-react";
+import { Bell, CheckCircle, AlertTriangle, Trophy, Calendar, MessageSquare, ArrowRight, ChefHat } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { formatDistanceToNow } from "date-fns";
@@ -21,7 +21,12 @@ const NotificationCenter = () => {
     isMarkingAllAsRead 
   } = useNotifications();
 
-  const getNotificationIcon = (type: string) => {
+  const getNotificationIcon = (type: string, message?: string) => {
+    // Special case for meal plan notifications
+    if (message?.includes('meal plan') || message?.includes('خطة الوجبات')) {
+      return ChefHat;
+    }
+    
     switch (type) {
       case 'achievement': return Trophy;
       case 'warning': return AlertTriangle;
@@ -31,7 +36,12 @@ const NotificationCenter = () => {
     }
   };
 
-  const getNotificationColor = (type: string) => {
+  const getNotificationColor = (type: string, message?: string) => {
+    // Special styling for meal plan notifications
+    if (message?.includes('meal plan') || message?.includes('خطة الوجبات')) {
+      return 'bg-green-100 text-green-800 border-green-300';
+    }
+    
     switch (type) {
       case 'achievement': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
       case 'warning': return 'bg-red-100 text-red-800 border-red-300';
@@ -110,22 +120,25 @@ const NotificationCenter = () => {
             </div>
           ) : (
             notifications.map((notification) => {
-              const IconComponent = getNotificationIcon(notification.type);
+              const IconComponent = getNotificationIcon(notification.type, notification.message);
               const isUnread = !notification.is_read;
               const isChatNotification = notification.metadata?.chat_type === 'coach_trainee';
+              const isMealPlanNotification = notification.message?.includes('meal plan') || notification.message?.includes('خطة الوجبات');
               
               return (
                 <div
                   key={notification.id}
                   className={`p-4 rounded-lg border transition-all cursor-pointer hover:shadow-md ${
                     isUnread 
-                      ? 'bg-blue-50 border-blue-200 shadow-sm' 
+                      ? isMealPlanNotification 
+                        ? 'bg-green-50 border-green-200 shadow-sm'
+                        : 'bg-blue-50 border-blue-200 shadow-sm'
                       : 'bg-gray-50 border-gray-200'
                   }`}
                   onClick={() => handleNotificationClick(notification)}
                 >
                   <div className="flex items-start gap-3">
-                    <div className={`p-2 rounded-full ${getNotificationColor(notification.type)}`}>
+                    <div className={`p-2 rounded-full ${getNotificationColor(notification.type, notification.message)}`}>
                       <IconComponent className="w-4 h-4" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -135,9 +148,11 @@ const NotificationCenter = () => {
                         </h4>
                         <div className="flex items-center gap-2">
                           {isUnread && (
-                            <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
+                            <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                              isMealPlanNotification ? 'bg-green-500' : 'bg-blue-500'
+                            }`}></div>
                           )}
-                          {isChatNotification && (
+                          {(isChatNotification || isMealPlanNotification) && (
                             <ArrowRight className="w-3 h-3 text-gray-400" />
                           )}
                         </div>
@@ -152,6 +167,13 @@ const NotificationCenter = () => {
                         <div className="mt-2">
                           <Badge variant="outline" className="text-xs">
                             Chat Message
+                          </Badge>
+                        </div>
+                      )}
+                      {isMealPlanNotification && (
+                        <div className="mt-2">
+                          <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-300">
+                            Meal Plan Ready
                           </Badge>
                         </div>
                       )}
