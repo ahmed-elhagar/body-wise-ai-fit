@@ -70,7 +70,8 @@ const OptimizedExerciseContainer = React.memo(() => {
     dayName: dayNames[index],
     isCompleted: index + 1 === selectedDayNumber ? progressPercentage === 100 : false,
     isRestDay: index + 1 === selectedDayNumber ? todaysExercises.length === 0 : false,
-    isToday: index + 1 === selectedDayNumber
+    isToday: index + 1 === selectedDayNumber,
+    workout: index + 1 === selectedDayNumber ? todaysWorkouts[0] || null : null
   }));
 
   // Create progress metrics that match ProgressMetrics interface
