@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -8,8 +9,6 @@ import { toast } from "sonner";
 import { useOnboardingForm } from "@/hooks/useOnboardingForm";
 import { validateOnboardingStep } from "@/utils/onboardingValidation";
 import ModernOnboardingHeader from "@/components/onboarding/ModernOnboardingHeader";
-import ModernOnboardingStep1 from "@/components/onboarding/ModernOnboardingStep1";
-import ModernOnboardingStep2 from "@/components/onboarding/ModernOnboardingStep2";
 import ModernOnboardingStep3 from "@/components/onboarding/ModernOnboardingStep3";
 import ModernOnboardingStep4 from "@/components/onboarding/ModernOnboardingStep4";
 import ModernOnboardingNavigation from "@/components/onboarding/ModernOnboardingNavigation";
