@@ -49,7 +49,7 @@ export const SidebarFooter = () => {
         {isAdmin && (
           <SidebarMenuButton
             onClick={() => navigate('/admin')}
-            className={cn("w-full justify-start", isAdmin ? "text-purple-600 hover:text-purple-700 hover:bg-purple-50" : "")}
+            className={cn("w-full justify-start", "text-purple-600 hover:text-purple-700 hover:bg-purple-50")}
             aria-label={t("Admin")}
           >
             <Shield className="w-4 h-4 mr-2" />
@@ -85,7 +85,7 @@ export const SidebarFooter = () => {
           )}
         </SidebarMenuButton>
 
-        {/* Logout */}
+        {/* Logout - Force display regardless of role */}
         <SidebarMenuButton
           onClick={handleSignOut}
           className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"

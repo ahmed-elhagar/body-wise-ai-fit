@@ -22,14 +22,15 @@ export const MealPlanNavigation = ({
   const days = [1, 2, 3, 4, 5, 6, 7];
 
   return (
-    <Card className="p-4 bg-white/90 backdrop-blur-sm border border-gray-200/50 shadow-sm">
+    <Card className="p-4 bg-white/90 backdrop-blur-sm border border-gray-200/50 shadow-sm w-full">
       {/* Week Navigation */}
       <div className="flex items-center justify-between mb-4">
         <Button
           variant="outline"
           size="sm"
           onClick={() => onWeekChange(currentWeekOffset - 1)}
-          className="h-9 w-9 p-0 border-gray-300 hover:bg-gray-50"
+          className="h-10 w-10 p-0 border-gray-300"
+          aria-label="Previous week"
         >
           <ChevronLeft className="w-4 h-4" />
         </Button>
@@ -44,7 +45,8 @@ export const MealPlanNavigation = ({
           variant="outline"
           size="sm"
           onClick={() => onWeekChange(currentWeekOffset + 1)}
-          className="h-9 w-9 p-0 border-gray-300 hover:bg-gray-50"
+          className="h-10 w-10 p-0 border-gray-300"
+          aria-label="Next week"
         >
           <ChevronRight className="w-4 h-4" />
         </Button>
