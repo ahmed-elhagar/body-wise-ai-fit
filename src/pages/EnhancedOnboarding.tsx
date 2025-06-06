@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -40,7 +41,7 @@ const EnhancedOnboarding = () => {
     }
   }, [user, authLoading, isEmailConfirmationEnabled]);
 
-  // Check if user has already completed onboarding
+  // Check if user has already completed onboarding - only redirect if not in success state
   useEffect(() => {
     if (!authLoading && profile && profile.onboarding_completed && !isCompleting && !showSuccess) {
       console.log('Onboarding - User has completed onboarding, redirecting to dashboard');
@@ -90,8 +91,15 @@ const EnhancedOnboarding = () => {
 
         console.log("Onboarding - Saving complete profile data:", profileData);
         
-        await updateProfile(profileData);
+        const result = await updateProfile(profileData);
         
+        if (result.error) {
+          console.error('Onboarding - Error saving profile:', result.error);
+          toast.error('Failed to save profile. Please try again.');
+          setIsCompleting(false);
+          return;
+        }
+
         console.log('Onboarding - Profile saved successfully, showing success page');
         setIsCompleting(false);
         setShowSuccess(true);
@@ -108,10 +116,8 @@ const EnhancedOnboarding = () => {
     console.log('Onboarding - Getting started, redirecting to dashboard');
     toast.success('🚀 Let\'s start your fitness journey!');
     
-    // Force a small delay to ensure profile is saved
-    setTimeout(() => {
-      navigate('/dashboard', { replace: true });
-    }, 500);
+    // Navigate to dashboard immediately
+    navigate('/dashboard', { replace: true });
   };
 
   const handleBack = () => {

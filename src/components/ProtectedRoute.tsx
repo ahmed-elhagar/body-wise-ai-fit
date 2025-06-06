@@ -90,13 +90,21 @@ const ProtectedRoute = React.memo<ProtectedRouteProps>(({
     }
   }
 
-  // If profile is required but user profile is not complete
-  // Only redirect to onboarding if we're not already there and not on the enhanced onboarding page
-  if (requireProfile && user && !profileLoading && profile && !profile.onboarding_completed) {
+  // Enhanced profile completion check - only redirect if onboarding is truly incomplete
+  if (requireProfile && user && !profileLoading && profile) {
     const currentPath = location.pathname;
-    if (currentPath !== '/onboarding' && !currentPath.includes('onboarding')) {
+    const isOnboardingPath = currentPath === '/enhanced-onboarding' || currentPath.includes('onboarding');
+    
+    // Only redirect to onboarding if profile is incomplete AND we're not already on onboarding
+    if (!profile.onboarding_completed && !isOnboardingPath) {
       console.log("ProtectedRoute - Redirecting to onboarding (incomplete profile)");
       return <Navigate to="/enhanced-onboarding" state={{ from: location.pathname }} replace />;
+    }
+    
+    // If profile is complete and user is on onboarding page, redirect to dashboard
+    if (profile.onboarding_completed && isOnboardingPath) {
+      console.log("ProtectedRoute - Profile complete, redirecting from onboarding to dashboard");
+      return <Navigate to="/dashboard" replace />;
     }
   }
 

@@ -15,7 +15,7 @@ export const validateOnboardingStep = (step: number, formData: OnboardingFormDat
     
     case 2:
       return !!(
-        formData.body_shape?.trim() &&
+        formData.body_fat_percentage?.trim() &&
         formData.preferred_foods?.length > 0
       );
     

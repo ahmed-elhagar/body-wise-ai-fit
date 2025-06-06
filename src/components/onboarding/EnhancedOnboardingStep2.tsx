@@ -1,7 +1,7 @@
 
 import { Target, User } from "lucide-react";
 import { OnboardingFormData } from "@/hooks/useOnboardingForm";
-import EnhancedBodyShapeSelector from "./EnhancedBodyShapeSelector";
+import BodyFatSlider from "./BodyFatSlider";
 import EnhancedMotivationSelector from "./EnhancedMotivationSelector";
 
 interface EnhancedOnboardingStep2Props {
@@ -16,24 +16,44 @@ const EnhancedOnboardingStep2 = ({ formData, updateFormData }: EnhancedOnboardin
         <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl mb-4 shadow-lg">
           <User className="w-8 h-8 text-white" />
         </div>
-        <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">Your Body & Motivation</h2>
-        <p className="text-gray-600 text-sm md:text-base">Help us understand your current state and what drives you</p>
+        <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">Your Body Composition</h2>
+        <p className="text-gray-600 text-sm md:text-base">Help us understand your current body composition and motivation</p>
       </div>
 
-      {/* Body Shape Section */}
-      <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-4 md:p-6 border border-green-200 shadow-sm">
+      {/* Body Composition Section */}
+      <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-4 md:p-6 border border-blue-200 shadow-sm">
         <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl shadow-lg">
+          <div className="p-3 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl shadow-lg">
             <User className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h3 className="text-lg md:text-xl font-semibold text-gray-800">Your Body Shape *</h3>
-            <p className="text-sm text-gray-600">Choose the body type that best represents you</p>
+            <h3 className="text-lg md:text-xl font-semibold text-gray-800">Body Composition *</h3>
+            <p className="text-sm text-gray-600">Select your current body fat percentage and body type</p>
           </div>
         </div>
-        <EnhancedBodyShapeSelector
-          value={formData.body_shape}
-          onChange={(value) => updateFormData("body_shape", value)}
+        <BodyFatSlider
+          value={parseInt(formData.body_fat_percentage) || 25}
+          onChange={(value) => {
+            updateFormData("body_fat_percentage", value.toString());
+            // Auto-set body shape based on body fat percentage
+            let bodyShape = "average";
+            if (formData.gender === "male") {
+              if (value <= 10) bodyShape = "very_slim";
+              else if (value <= 15) bodyShape = "slim";
+              else if (value <= 18) bodyShape = "athletic";
+              else if (value <= 25) bodyShape = "average";
+              else if (value <= 30) bodyShape = "curvy";
+              else bodyShape = "heavy";
+            } else {
+              if (value <= 15) bodyShape = "very_slim";
+              else if (value <= 20) bodyShape = "slim";
+              else if (value <= 25) bodyShape = "athletic";
+              else if (value <= 30) bodyShape = "average";
+              else if (value <= 35) bodyShape = "curvy";
+              else bodyShape = "heavy";
+            }
+            updateFormData("body_shape", bodyShape);
+          }}
           gender={formData.gender}
         />
       </div>
@@ -65,7 +85,7 @@ const EnhancedOnboardingStep2 = ({ formData, updateFormData }: EnhancedOnboardin
           </div>
           <div>
             <h4 className="text-sm font-semibold text-indigo-800 mb-1">Personalized Plans</h4>
-            <p className="text-sm text-indigo-700">Your body shape and motivations help us create the perfect nutrition and workout plans for you.</p>
+            <p className="text-sm text-indigo-700">Your body composition and motivations help us create the perfect nutrition and workout plans for you.</p>
           </div>
         </div>
       </div>
