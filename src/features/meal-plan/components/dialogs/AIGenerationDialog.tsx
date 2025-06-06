@@ -85,6 +85,7 @@ export const AIGenerationDialog = ({
     
     const success = await onGenerate();
     if (success) {
+      console.log('✅ Generation successful, closing dialog');
       onClose();
       setShowConfirmation(false);
     }
@@ -92,12 +93,29 @@ export const AIGenerationDialog = ({
 
   const handleConfirmedGenerate = async () => {
     console.log('🚀 Confirmed generate with preferences:', preferences);
+    setShowConfirmation(false); // Close confirmation first
+    
     const success = await onGenerate();
     if (success) {
-      onClose();
-      setShowConfirmation(false);
+      console.log('✅ Confirmed generation successful, closing main dialog');
+      // Small delay to ensure generation process has started
+      setTimeout(() => {
+        onClose();
+      }, 100);
     }
   };
+
+  // Close dialog when generation starts (not when it completes)
+  React.useEffect(() => {
+    if (isGenerating && open) {
+      console.log('🔄 Generation started, closing dialog');
+      // Close dialog immediately when generation starts
+      setTimeout(() => {
+        onClose();
+        setShowConfirmation(false);
+      }, 500);
+    }
+  }, [isGenerating, open, onClose]);
 
   const getMealsPerDayText = () => {
     const count = preferences.includeSnacks ? 5 : 3;
