@@ -5,29 +5,28 @@ import { useNavigate } from "react-router-dom";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { validateNewSignupStep, getStepTitle, getStepDescription } from "@/utils/newSignupValidation";
-import SignupHeader from "@/components/signup/SignupHeader";
-import SignupNavigation from "@/components/signup/SignupNavigation";
-import Step1Account from "@/components/signup/steps/Step1Account";
-import Step2BasicInfo from "@/components/signup/steps/Step2BasicInfo";
-import Step3PhysicalStats from "@/components/signup/steps/Step3PhysicalStats";
-import Step4BodyComposition from "@/components/signup/steps/Step4BodyComposition";
-import Step5FitnessGoals from "@/components/signup/steps/Step5FitnessGoals";
-import Step6HealthPreferences from "@/components/signup/steps/Step6HealthPreferences";
-import Step7LifePhase from "@/components/signup/steps/Step7LifePhase";
-import { useNewSignupForm } from "@/hooks/useNewSignupForm";
+import { validateStep, getStepTitle, getStepDescription } from "@/utils/signupValidation";
+import FlowHeader from "@/components/onboarding/FlowHeader";
+import FlowNavigation from "@/components/onboarding/FlowNavigation";
+import AccountStep from "@/components/onboarding/steps/AccountStep";
+import BasicInfoStep from "@/components/onboarding/steps/BasicInfoStep";
+import PhysicalStatsStep from "@/components/onboarding/steps/PhysicalStatsStep";
+import BodyCompositionStep from "@/components/onboarding/steps/BodyCompositionStep";
+import FitnessGoalsStep from "@/components/onboarding/steps/FitnessGoalsStep";
+import HealthPreferencesStep from "@/components/onboarding/steps/HealthPreferencesStep";
+import LifePhaseStep from "@/components/onboarding/steps/LifePhaseStep";
+import { useSignupFlow } from "@/hooks/useSignupFlow";
 import EnhancedPageLoading from "@/components/ui/enhanced-page-loading";
 
-const UnifiedSignup = () => {
+const SignupFlow = () => {
   const navigate = useNavigate();
   const { updateProfile, isUpdating } = useProfile();
   const { signUp, user, loading: authLoading } = useAuth();
   
   const [step, setStep] = useState(1);
-  const [isSigningUp, setIsSigningUp] = useState(false);
-  const [isCompleting, setIsCompleting] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   
-  const { formData, updateFormData, resetForm } = useNewSignupForm();
+  const { formData, updateField, resetForm } = useSignupFlow();
 
   // Calculate total steps based on gender
   const getTotalSteps = () => {
@@ -40,12 +39,12 @@ const UnifiedSignup = () => {
   // Redirect authenticated users with completed profiles
   useEffect(() => {
     if (!authLoading && user) {
-      console.log('UnifiedSignup - User is authenticated, allowing profile completion');
+      console.log('SignupFlow - User is authenticated');
     }
   }, [user, authLoading]);
 
   const isStepValid = (): boolean => {
-    return validateNewSignupStep(step, formData);
+    return validateStep(step, formData);
   };
 
   const getStepSkippable = (): boolean => {
@@ -56,12 +55,6 @@ const UnifiedSignup = () => {
   const handleNext = async () => {
     if (!isStepValid() && !getStepSkippable()) {
       toast.error('Please fill in all required fields');
-      return;
-    }
-
-    // Handle account creation after step 1
-    if (step === 1) {
-      await handleSignUp();
       return;
     }
 
@@ -95,42 +88,20 @@ const UnifiedSignup = () => {
     }
   };
 
-  const handleSignUp = async () => {
-    if (!formData.email || !formData.password || !formData.first_name || !formData.last_name) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
-
-    if (formData.password.length < 6) {
-      toast.error('Password must be at least 6 characters');
-      return;
-    }
-
-    setIsSigningUp(true);
-    try {
-      await signUp(formData.email, formData.password, {
-        first_name: formData.first_name,
-        last_name: formData.last_name
-      });
-      
-      toast.success('Account created! Let\'s complete your profile.');
-      setStep(2);
-    } catch (error: any) {
-      console.error('Signup error:', error);
-      toast.error(error.message || 'Failed to create account');
-    } finally {
-      setIsSigningUp(false);
-    }
-  };
-
   const completeSetup = async () => {
-    if (!user) {
-      toast.error('Please create an account first');
-      return;
-    }
-
-    setIsCompleting(true);
+    setIsProcessing(true);
     try {
+      // First create the user account
+      const signupResult = await signUp(formData.email, formData.password, {
+        first_name: formData.firstName,
+        last_name: formData.lastName
+      });
+
+      if (signupResult.error) {
+        toast.error(signupResult.error.message || 'Failed to create account');
+        return;
+      }
+
       // Map activity level to valid database values
       const activityLevelMapping = {
         'sedentary': 'sedentary',
@@ -140,37 +111,53 @@ const UnifiedSignup = () => {
         'very_active': 'extremely_active'
       };
 
-      const mappedActivityLevel = activityLevelMapping[formData.activity_level as keyof typeof activityLevelMapping] || 'moderately_active';
+      const mappedActivityLevel = activityLevelMapping[formData.activityLevel as keyof typeof activityLevelMapping] || 'moderately_active';
 
-      const pregnancyTrimester = formData.pregnancy_trimester && formData.pregnancy_trimester !== 'none' ? 
-        parseInt(formData.pregnancy_trimester) : null;
+      const pregnancyTrimester = formData.pregnancyTrimester && formData.pregnancyTrimester !== 'none' ? 
+        parseInt(formData.pregnancyTrimester) : null;
       
-      const breastfeedingLevel = formData.breastfeeding_level && formData.breastfeeding_level !== 'none' ? 
-        formData.breastfeeding_level : null;
+      const breastfeedingLevel = formData.breastfeedingLevel && formData.breastfeedingLevel !== 'none' ? 
+        formData.breastfeedingLevel : null;
       
-      const fastingType = formData.fasting_type && formData.fasting_type !== 'none' ? 
-        formData.fasting_type : null;
+      const fastingType = formData.fastingType && formData.fastingType !== 'none' ? 
+        formData.fastingType : null;
+
+      // Map body fat to body shape
+      const getBodyShape = (percentage: number, gender: string) => {
+        if (gender === 'male') {
+          if (percentage < 15) return 'lean';
+          if (percentage < 22) return 'average';
+          return 'fuller';
+        } else {
+          if (percentage < 22) return 'lean';
+          if (percentage < 30) return 'average';
+          return 'fuller';
+        }
+      };
 
       const profileData = {
-        first_name: formData.first_name?.trim(),
-        last_name: formData.last_name?.trim(),
+        first_name: formData.firstName?.trim(),
+        last_name: formData.lastName?.trim(),
         age: formData.age ? parseInt(formData.age) : null,
         gender: formData.gender,
         height: formData.height ? parseFloat(formData.height) : null,
         weight: formData.weight ? parseFloat(formData.weight) : null,
-        body_shape: formData.body_shape,
-        body_fat_percentage: formData.body_fat_percentage,
-        fitness_goal: formData.fitness_goal,
+        body_shape: getBodyShape(formData.bodyFatPercentage, formData.gender),
+        body_fat_percentage: formData.bodyFatPercentage,
+        fitness_goal: formData.fitnessGoal,
         activity_level: mappedActivityLevel,
-        health_conditions: formData.health_conditions || [],
+        health_conditions: formData.healthConditions || [],
         allergies: formData.allergies || [],
-        dietary_restrictions: formData.dietary_restrictions || [],
+        dietary_restrictions: formData.dietaryRestrictions || [],
         pregnancy_trimester: pregnancyTrimester,
         breastfeeding_level: breastfeedingLevel,
         fasting_type: fastingType,
         onboarding_completed: true,
         ai_generations_remaining: 5
       };
+
+      // Add a small delay to ensure user is created
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       const result = await updateProfile(profileData);
       
@@ -180,14 +167,14 @@ const UnifiedSignup = () => {
         return;
       }
       
-      toast.success('Welcome to FitFatta! Your profile is ready.');
-      navigate('/dashboard', { replace: true });
+      toast.success('Welcome to FitGenius! Your account is ready.');
+      navigate('/onboarding-success', { replace: true });
 
     } catch (error) {
       console.error('Setup completion error:', error);
       toast.error('Something went wrong. Please try again.');
     } finally {
-      setIsCompleting(false);
+      setIsProcessing(false);
     }
   };
 
@@ -195,51 +182,51 @@ const UnifiedSignup = () => {
     switch (step) {
       case 1:
         return (
-          <Step1Account 
+          <AccountStep 
             formData={formData} 
-            updateFormData={updateFormData} 
+            updateField={updateField} 
           />
         );
       case 2:
         return (
-          <Step2BasicInfo 
+          <BasicInfoStep 
             formData={formData} 
-            updateFormData={updateFormData}
+            updateField={updateField}
           />
         );
       case 3:
         return (
-          <Step3PhysicalStats 
+          <PhysicalStatsStep 
             formData={formData}
-            updateFormData={updateFormData}
+            updateField={updateField}
           />
         );
       case 4:
         return (
-          <Step4BodyComposition 
+          <BodyCompositionStep 
             formData={formData}
-            updateFormData={updateFormData}
+            updateField={updateField}
           />
         );
       case 5:
         return (
-          <Step5FitnessGoals 
+          <FitnessGoalsStep 
             formData={formData}
-            updateFormData={updateFormData}
+            updateField={updateField}
           />
         );
       case 6:
         return (
-          <Step6HealthPreferences 
+          <HealthPreferencesStep 
             formData={formData}
-            updateFormData={updateFormData}
+            updateField={updateField}
           />
         );
       case 7:
         return (
-          <Step7LifePhase 
+          <LifePhaseStep 
             formData={formData}
-            updateFormData={updateFormData}
+            updateField={updateField}
           />
         );
       default:
@@ -264,23 +251,23 @@ const UnifiedSignup = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-4 sm:py-8 px-4">
       <div className="container mx-auto max-w-2xl">
-        <SignupHeader 
+        <FlowHeader 
           step={step} 
           totalSteps={totalSteps} 
           title={getStepTitle(step)}
           description={getStepDescription(step)}
         />
 
-        <Card className="p-4 sm:p-8 bg-white/90 backdrop-blur-sm border-0 shadow-xl">
-          <div className="min-h-[500px] sm:min-h-[600px]">
+        <Card className="p-4 sm:p-6 lg:p-8 bg-white/90 backdrop-blur-sm border-0 shadow-xl">
+          <div className="min-h-[400px] sm:min-h-[500px] lg:min-h-[600px]">
             {renderStepContent()}
           </div>
 
-          <SignupNavigation
+          <FlowNavigation
             step={step}
             totalSteps={totalSteps}
             isStepValid={isStepValid()}
-            isUpdating={isSigningUp || isUpdating || isCompleting}
+            isProcessing={isProcessing || isUpdating}
             canSkip={getStepSkippable()}
             onBack={handleBack}
             onNext={handleNext}
@@ -292,4 +279,4 @@ const UnifiedSignup = () => {
   );
 };
 
-export default UnifiedSignup;
+export default SignupFlow;

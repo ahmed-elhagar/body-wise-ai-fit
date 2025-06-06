@@ -3,14 +3,14 @@ import { Info } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { NewSignupFormData } from "@/hooks/useNewSignupForm";
+import { SignupFormData } from "@/hooks/useSignupFlow";
 
-interface Step2BasicInfoProps {
-  formData: NewSignupFormData;
-  updateFormData: (field: string, value: string) => void;
+interface BasicInfoStepProps {
+  formData: SignupFormData;
+  updateField: (field: string, value: string) => void;
 }
 
-const Step2BasicInfo = ({ formData, updateFormData }: Step2BasicInfoProps) => {
+const BasicInfoStep = ({ formData, updateField }: BasicInfoStepProps) => {
   const genderOptions = [
     { id: 'male', label: 'Male', emoji: '👨' },
     { id: 'female', label: 'Female', emoji: '👩' },
@@ -18,10 +18,11 @@ const Step2BasicInfo = ({ formData, updateFormData }: Step2BasicInfoProps) => {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl mb-4 shadow-lg">
-          <Info className="w-8 h-8 text-white" />
+      <div className="text-center mb-6 sm:mb-8">
+        <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Info className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
         </div>
+        <p className="text-sm text-gray-600">Help us understand your profile</p>
       </div>
 
       <div className="space-y-6">
@@ -33,13 +34,13 @@ const Step2BasicInfo = ({ formData, updateFormData }: Step2BasicInfoProps) => {
                 key={option.id}
                 type="button"
                 variant={formData.gender === option.id ? "default" : "outline"}
-                className={`h-16 flex flex-col items-center justify-center space-y-1 ${
-                  formData.gender === option.id ? 'ring-2 ring-blue-500' : ''
+                className={`h-14 sm:h-16 flex flex-col items-center justify-center space-y-1 ${
+                  formData.gender === option.id ? 'ring-2 ring-blue-500 bg-gradient-to-r from-blue-500 to-purple-600' : ''
                 }`}
-                onClick={() => updateFormData("gender", option.id)}
+                onClick={() => updateField("gender", option.id)}
               >
-                <span className="text-2xl">{option.emoji}</span>
-                <span className="text-sm font-medium">{option.label}</span>
+                <span className="text-xl sm:text-2xl">{option.emoji}</span>
+                <span className="text-xs sm:text-sm font-medium">{option.label}</span>
               </Button>
             ))}
           </div>
@@ -53,7 +54,7 @@ const Step2BasicInfo = ({ formData, updateFormData }: Step2BasicInfoProps) => {
             id="age"
             type="number"
             value={formData.age}
-            onChange={(e) => updateFormData("age", e.target.value)}
+            onChange={(e) => updateField("age", e.target.value)}
             placeholder="25"
             min="13"
             max="120"
@@ -66,4 +67,4 @@ const Step2BasicInfo = ({ formData, updateFormData }: Step2BasicInfoProps) => {
   );
 };
 
-export default Step2BasicInfo;
+export default BasicInfoStep;

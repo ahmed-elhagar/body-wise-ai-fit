@@ -1,14 +1,14 @@
 
 import { Heart } from "lucide-react";
-import { NewSignupFormData } from "@/hooks/useNewSignupForm";
-import AutocompleteInput from "../autocomplete/AutocompleteInput";
+import { SignupFormData } from "@/hooks/useSignupFlow";
+import AutocompleteField from "../AutocompleteField";
 
-interface Step6HealthPreferencesProps {
-  formData: NewSignupFormData;
-  updateFormData: (field: string, value: string[]) => void;
+interface HealthPreferencesStepProps {
+  formData: SignupFormData;
+  updateField: (field: string, value: string[]) => void;
 }
 
-const Step6HealthPreferences = ({ formData, updateFormData }: Step6HealthPreferencesProps) => {
+const HealthPreferencesStep = ({ formData, updateField }: HealthPreferencesStepProps) => {
   const healthConditionsSuggestions = [
     "Diabetes", "High Blood Pressure", "Heart Disease", "Asthma", "Arthritis",
     "Thyroid Issues", "PCOS", "Depression", "Anxiety", "Sleep Apnea",
@@ -29,41 +29,42 @@ const Step6HealthPreferences = ({ formData, updateFormData }: Step6HealthPrefere
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-red-500 to-pink-600 rounded-2xl mb-4 shadow-lg">
-          <Heart className="w-8 h-8 text-white" />
+      <div className="text-center mb-6 sm:mb-8">
+        <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-red-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Heart className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
         </div>
+        <p className="text-sm text-gray-600">Help us create safer, personalized plans</p>
       </div>
 
-      <div className="space-y-8">
-        <AutocompleteInput
+      <div className="space-y-6 sm:space-y-8">
+        <AutocompleteField
           label="Health Conditions"
           placeholder="Type to search health conditions..."
           suggestions={healthConditionsSuggestions}
-          selectedItems={formData.health_conditions}
-          onSelectionChange={(items) => updateFormData("health_conditions", items)}
+          selectedItems={formData.healthConditions}
+          onSelectionChange={(items) => updateField("healthConditions", items)}
           maxSelections={5}
         />
 
-        <AutocompleteInput
+        <AutocompleteField
           label="Food Allergies"
           placeholder="Type to search allergies..."
           suggestions={allergiesSuggestions}
           selectedItems={formData.allergies}
-          onSelectionChange={(items) => updateFormData("allergies", items)}
+          onSelectionChange={(items) => updateField("allergies", items)}
           maxSelections={8}
         />
 
-        <AutocompleteInput
+        <AutocompleteField
           label="Dietary Restrictions"
           placeholder="Type to search dietary preferences..."
           suggestions={dietaryRestrictionsSuggestions}
-          selectedItems={formData.dietary_restrictions}
-          onSelectionChange={(items) => updateFormData("dietary_restrictions", items)}
+          selectedItems={formData.dietaryRestrictions}
+          onSelectionChange={(items) => updateField("dietaryRestrictions", items)}
           maxSelections={5}
         />
 
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
           <p className="text-sm text-blue-700">
             <strong>Optional Step:</strong> This information helps us create safer, more personalized meal plans. You can skip this step and add details later.
           </p>
@@ -73,4 +74,4 @@ const Step6HealthPreferences = ({ formData, updateFormData }: Step6HealthPrefere
   );
 };
 
-export default Step6HealthPreferences;
+export default HealthPreferencesStep;

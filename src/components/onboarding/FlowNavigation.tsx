@@ -2,52 +2,51 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ArrowLeft } from "lucide-react";
 
-interface SignupNavigationProps {
+interface FlowNavigationProps {
   step: number;
   totalSteps: number;
   isStepValid: boolean;
-  isUpdating: boolean;
+  isProcessing: boolean;
   canSkip: boolean;
   onBack: () => void;
   onNext: () => void;
   onSkip: () => void;
 }
 
-const SignupNavigation = ({ 
+const FlowNavigation = ({ 
   step, 
   totalSteps, 
   isStepValid, 
-  isUpdating, 
+  isProcessing, 
   canSkip,
   onBack, 
   onNext,
   onSkip
-}: SignupNavigationProps) => {
+}: FlowNavigationProps) => {
   const getNextButtonText = () => {
-    if (step === 1) return 'Create Account';
     if (step === totalSteps) return 'Complete Setup';
     return 'Continue';
   };
 
   return (
-    <div className="flex justify-between items-center mt-8 pt-6 border-t">
+    <div className="flex flex-col sm:flex-row justify-between items-center mt-6 sm:mt-8 pt-4 sm:pt-6 border-t gap-4 sm:gap-0">
       <Button
         variant="outline"
         onClick={onBack}
-        disabled={step === 1 || isUpdating}
-        className="flex items-center space-x-2"
+        disabled={step === 1 || isProcessing}
+        className="flex items-center space-x-2 w-full sm:w-auto order-2 sm:order-1"
       >
         <ArrowLeft className="w-4 h-4" />
         <span>Back</span>
       </Button>
 
-      <div className="flex items-center space-x-3">
+      <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-3 w-full sm:w-auto order-1 sm:order-2">
         {canSkip && (
           <Button
             variant="ghost"
             onClick={onSkip}
-            disabled={isUpdating}
-            className="text-gray-500 hover:text-gray-700"
+            disabled={isProcessing}
+            className="text-gray-500 hover:text-gray-700 w-full sm:w-auto"
           >
             Skip
           </Button>
@@ -55,8 +54,8 @@ const SignupNavigation = ({
 
         <Button
           onClick={onNext}
-          disabled={isUpdating || (!isStepValid && !canSkip)}
-          className="bg-fitness-gradient hover:opacity-90 text-white flex items-center space-x-2"
+          disabled={isProcessing || (!isStepValid && !canSkip)}
+          className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white flex items-center space-x-2 w-full sm:w-auto"
         >
           <span>{getNextButtonText()}</span>
           <ArrowRight className="w-4 h-4" />
@@ -66,4 +65,4 @@ const SignupNavigation = ({
   );
 };
 
-export default SignupNavigation;
+export default FlowNavigation;

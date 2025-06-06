@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
@@ -8,9 +7,26 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 // Pages
 import Landing from '@/pages/Landing';
 import Auth from '@/pages/Auth';
-import UnifiedSignup from '@/pages/UnifiedSignup';
+import SignupFlow from '@/pages/SignupFlow';
 import Dashboard from '@/pages/Dashboard';
 import OnboardingSuccess from '@/pages/OnboardingSuccess';
+import MealPlan from '@/pages/MealPlan';
+import Exercise from '@/pages/Exercise';
+import FoodTracker from '@/pages/FoodTracker';
+import CalorieChecker from '@/pages/CalorieChecker';
+import Goals from '@/pages/Goals';
+import Progress from '@/pages/Progress';
+import WeightTracking from '@/pages/WeightTracking';
+import Profile from '@/pages/Profile';
+import OptimizedProfile from '@/pages/OptimizedProfile';
+import Settings from '@/pages/Settings';
+import Chat from '@/pages/Chat';
+import Notifications from '@/pages/Notifications';
+import Admin from '@/pages/Admin';
+import Coach from '@/pages/Coach';
+import Analytics from '@/pages/Analytics';
+import Pro from '@/pages/Pro';
+import NotFound from '@/pages/NotFound';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -45,7 +61,7 @@ function App() {
               {/* Unified signup flow */}
               <Route 
                 path="/signup" 
-                element={<UnifiedSignup />}
+                element={<SignupFlow />}
               />
               
               {/* Redirect old onboarding route to signup */}
@@ -67,6 +83,163 @@ function App() {
                 element={
                   <ProtectedRoute requireAuth={true} requireProfile={true}>
                     <Dashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Admin routes */}
+              <Route 
+                path="/admin" 
+                element={
+                  <ProtectedRoute requiredRole="admin">
+                    <Admin />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/coach" 
+                element={
+                  <ProtectedRoute requiredRole="coach">
+                    <Coach />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/analytics" 
+                element={
+                  <ProtectedRoute requiredRole="admin">
+                    <Analytics />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/pro" 
+                element={
+                  <ProtectedRoute>
+                    <Pro />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Meal Plan */}
+              <Route 
+                path="/meal-plan" 
+                element={
+                  <ProtectedRoute>
+                    <MealPlan />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Exercise */}
+              <Route 
+                path="/exercise" 
+                element={
+                  <ProtectedRoute>
+                    <Exercise />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Food Tracker */}
+              <Route 
+                path="/food-tracker" 
+                element={
+                  <ProtectedRoute>
+                    <FoodTracker />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Calorie Checker */}
+              <Route 
+                path="/calorie-checker" 
+                element={
+                  <ProtectedRoute>
+                    <CalorieChecker />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Goals */}
+              <Route 
+                path="/goals" 
+                element={
+                  <ProtectedRoute>
+                    <Goals />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Progress */}
+              <Route 
+                path="/progress" 
+                element={
+                  <ProtectedRoute>
+                    <Progress />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Weight Tracking */}
+              <Route 
+                path="/weight-tracking" 
+                element={
+                  <ProtectedRoute>
+                    <WeightTracking />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Profile */}
+              <Route 
+                path="/profile" 
+                element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Optimized Profile */}
+              <Route 
+                path="/optimized-profile" 
+                element={
+                  <ProtectedRoute>
+                    <OptimizedProfile />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Settings */}
+              <Route 
+                path="/settings" 
+                element={
+                  <ProtectedRoute>
+                    <Settings />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Chat */}
+              <Route 
+                path="/chat" 
+                element={
+                  <ProtectedRoute>
+                    <Chat />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Notifications */}
+              <Route 
+                path="/notifications" 
+                element={
+                  <ProtectedRoute>
+                    <Notifications />
                   </ProtectedRoute>
                 } 
               />

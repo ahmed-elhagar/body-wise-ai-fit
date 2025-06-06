@@ -1,20 +1,21 @@
 
-import { NewSignupFormData } from "@/hooks/useNewSignupForm";
+import { SignupFormData } from "@/hooks/useSignupFlow";
 
-export const validateNewSignupStep = (step: number, formData: NewSignupFormData): boolean => {
+export const validateStep = (step: number, formData: SignupFormData): boolean => {
   switch (step) {
     case 1:
-      // Account Creation - All fields required
+      // Account Creation
       return !!(
         formData.email?.trim() &&
         formData.password?.trim() &&
-        formData.first_name?.trim() &&
-        formData.last_name?.trim() &&
-        formData.password.length >= 6
+        formData.firstName?.trim() &&
+        formData.lastName?.trim() &&
+        formData.password.length >= 6 &&
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)
       );
     
     case 2:
-      // Basic Info - Age and Gender required
+      // Basic Info
       return !!(
         formData.age &&
         formData.gender &&
@@ -23,7 +24,7 @@ export const validateNewSignupStep = (step: number, formData: NewSignupFormData)
       );
     
     case 3:
-      // Physical Stats - Height and Weight required
+      // Physical Stats
       return !!(
         formData.height &&
         formData.weight &&
@@ -34,26 +35,22 @@ export const validateNewSignupStep = (step: number, formData: NewSignupFormData)
       );
     
     case 4:
-      // Body Composition - Shape and body fat required
-      return !!(
-        formData.body_shape &&
-        formData.body_fat_percentage >= 5 &&
-        formData.body_fat_percentage <= 50
-      );
+      // Body Composition (auto-valid with slider)
+      return true;
     
     case 5:
-      // Fitness Goals - Both required
+      // Fitness Goals
       return !!(
-        formData.fitness_goal &&
-        formData.activity_level
+        formData.fitnessGoal &&
+        formData.activityLevel
       );
     
     case 6:
-      // Health & Dietary - All optional
+      // Health & Dietary (optional)
       return true;
     
     case 7:
-      // Life Phase - Optional (females only)
+      // Life Phase (optional)
       return true;
     
     default:
@@ -76,13 +73,13 @@ export const getStepTitle = (step: number): string => {
 
 export const getStepDescription = (step: number): string => {
   switch (step) {
-    case 1: return "Let's start your fitness journey";
+    case 1: return "Set up your FitGenius account";
     case 2: return "Tell us about yourself";
     case 3: return "Your current measurements";
-    case 4: return "Body type and composition";
+    case 4: return "Body composition and type";
     case 5: return "What are your goals?";
     case 6: return "Health conditions and preferences";
-    case 7: return "Special life phase considerations";
+    case 7: return "Special considerations";
     default: return "Complete your setup";
   }
 };

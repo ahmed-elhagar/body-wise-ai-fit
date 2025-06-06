@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 
-interface AutocompleteInputProps {
+interface AutocompleteFieldProps {
   label: string;
   placeholder: string;
   suggestions: string[];
@@ -13,19 +13,18 @@ interface AutocompleteInputProps {
   maxSelections?: number;
 }
 
-const AutocompleteInput = ({
+const AutocompleteField = ({
   label,
   placeholder,
   suggestions,
   selectedItems,
   onSelectionChange,
   maxSelections = 10
-}: AutocompleteInputProps) => {
+}: AutocompleteFieldProps) => {
   const [inputValue, setInputValue] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (inputValue.trim()) {
@@ -74,7 +73,7 @@ const AutocompleteInput = ({
       {selectedItems.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {selectedItems.map((item) => (
-            <Badge key={item} variant="secondary" className="flex items-center gap-1">
+            <Badge key={item} variant="secondary" className="flex items-center gap-1 text-xs">
               {item}
               <button
                 type="button"
@@ -98,15 +97,12 @@ const AutocompleteInput = ({
           onKeyDown={handleKeyDown}
           placeholder={selectedItems.length >= maxSelections ? "Maximum reached" : placeholder}
           disabled={selectedItems.length >= maxSelections}
-          className="w-full"
+          className="w-full h-11"
         />
 
         {/* Dropdown */}
         {isOpen && filteredSuggestions.length > 0 && (
-          <div
-            ref={dropdownRef}
-            className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto"
-          >
+          <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
             {filteredSuggestions.map((suggestion, index) => (
               <button
                 key={index}
@@ -128,4 +124,4 @@ const AutocompleteInput = ({
   );
 };
 
-export default AutocompleteInput;
+export default AutocompleteField;

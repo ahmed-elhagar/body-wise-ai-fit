@@ -1,55 +1,38 @@
 
 import { lazy } from 'react';
 
-// Authentication & Public pages
-export const Index = lazy(() => import('@/pages/Index'));
+// Main Pages
 export const Landing = lazy(() => import('@/pages/Landing'));
 export const Auth = lazy(() => import('@/pages/Auth'));
-export const UnifiedSignup = lazy(() => import('@/pages/UnifiedSignup'));
+export const SignupFlow = lazy(() => import('@/pages/SignupFlow'));
 export const OnboardingSuccess = lazy(() => import('@/pages/OnboardingSuccess'));
 
-// Protected pages
+// Dashboard & Core Features
 export const Dashboard = lazy(() => import('@/pages/Dashboard'));
-export const Profile = lazy(() => import('@/pages/Profile'));
 export const MealPlan = lazy(() => import('@/pages/MealPlan'));
 export const Exercise = lazy(() => import('@/pages/Exercise'));
 export const FoodTracker = lazy(() => import('@/pages/FoodTracker'));
 export const CalorieChecker = lazy(() => import('@/pages/CalorieChecker'));
-export const WeightTracking = lazy(() => import('@/pages/WeightTracking'));
+
+// Goals & Progress
 export const Goals = lazy(() => import('@/pages/Goals'));
 export const Progress = lazy(() => import('@/pages/Progress'));
-export const Settings = lazy(() => import('@/pages/Settings'));
-export const Notifications = lazy(() => import('@/pages/Notifications'));
-export const Chat = lazy(() => import('@/pages/Chat'));
-export const Pro = lazy(() => import('@/pages/Pro'));
+export const WeightTracking = lazy(() => import('@/pages/WeightTracking'));
 
-// Admin & Coach pages
+// User Management
+export const Profile = lazy(() => import('@/pages/Profile'));
+export const OptimizedProfile = lazy(() => import('@/pages/OptimizedProfile'));
+export const Settings = lazy(() => import('@/pages/Settings'));
+
+// Communication
+export const Chat = lazy(() => import('@/pages/Chat'));
+export const Notifications = lazy(() => import('@/pages/Notifications'));
+
+// Admin & Management
 export const Admin = lazy(() => import('@/pages/Admin'));
 export const Coach = lazy(() => import('@/pages/Coach'));
+export const Analytics = lazy(() => import('@/pages/Analytics'));
+export const Pro = lazy(() => import('@/pages/Pro'));
 
-// 404 page
+// Utility
 export const NotFound = lazy(() => import('@/pages/NotFound'));
-
-export const LazyPages = {
-  Index,
-  Landing,
-  Auth,
-  UnifiedSignup,
-  OnboardingSuccess,
-  Dashboard,
-  Profile,
-  MealPlan,
-  Exercise,
-  FoodTracker,
-  CalorieChecker,
-  WeightTracking,
-  Goals,
-  Progress,
-  Settings,
-  Notifications,
-  Chat,
-  Pro,
-  Admin,
-  Coach,
-  NotFound,
-};
