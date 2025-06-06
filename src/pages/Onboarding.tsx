@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -91,13 +90,10 @@ const Onboarding = () => {
         
         await updateProfile(profileData);
         
-        console.log('Onboarding - Profile saved successfully, redirecting to dashboard');
-        toast.success('🎉 Welcome to FitFatta! Your personalized fitness journey starts now.');
+        console.log('Onboarding - Profile saved successfully, redirecting to success page');
         
-        // Force navigation to dashboard
-        setTimeout(() => {
-          navigate('/dashboard', { replace: true });
-        }, 1000);
+        // Redirect to success page instead of showing toast
+        navigate('/onboarding-success', { replace: true });
 
       } catch (error) {
         console.error('Onboarding - Unexpected error:', error);

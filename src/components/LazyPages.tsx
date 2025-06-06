@@ -1,4 +1,3 @@
-
 import { lazy } from 'react';
 
 // Import all the page components lazily
@@ -63,3 +62,6 @@ export {
   Notifications,
   Chat,
 };
+
+export const OnboardingSuccess = lazy(() => import("@/pages/OnboardingSuccess"));
+export const EnhancedOnboardingWithRegistration = lazy(() => import("@/pages/EnhancedOnboardingWithRegistration"));
