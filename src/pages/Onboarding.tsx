@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -21,7 +22,7 @@ import EnhancedOnboardingStep4 from "@/components/onboarding/EnhancedOnboardingS
 const Onboarding = () => {
   const navigate = useNavigate();
   const { updateProfile, isUpdating, profile } = useProfile();
-  const { user, loading: authLoading, signOut } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { isEmailConfirmationEnabled } = useEmailConfirmation();
   const [step, setStep] = useState(1);
   const { formData, updateFormData, handleArrayInput } = useOnboardingForm();
@@ -94,16 +95,12 @@ const Onboarding = () => {
         
         await updateProfile(profileData);
         
-        console.log('Onboarding - Profile saved successfully, signing out and redirecting to login');
-        toast.success('🎉 Profile setup complete! Please sign in to continue.');
+        console.log('Onboarding - Profile saved successfully, redirecting to dashboard');
+        toast.success('🎉 Welcome to FitGenius! Your personalized fitness journey starts now.');
         
-        // Sign out the user and redirect to login
-        await signOut();
-        
-        // Use setTimeout to ensure signOut completes before navigation
-        setTimeout(() => {
-          navigate('/auth', { replace: true });
-        }, 500);
+        // Auto-login user is already handled by the auth system
+        // Redirect directly to dashboard after successful profile completion
+        navigate('/dashboard', { replace: true });
 
       } catch (error) {
         console.error('Onboarding - Unexpected error:', error);

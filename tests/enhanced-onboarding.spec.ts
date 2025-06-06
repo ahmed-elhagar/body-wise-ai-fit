@@ -1,7 +1,8 @@
+
 import { test, expect } from '@playwright/test';
 
 test.describe('Enhanced Onboarding Flow', () => {
-  test('should complete enhanced onboarding process', async ({ page }) => {
+  test('should complete enhanced onboarding process and redirect to dashboard', async ({ page }) => {
     await page.goto('/onboarding');
 
     // Step 1: Basic Information
@@ -16,8 +17,14 @@ test.describe('Enhanced Onboarding Flow', () => {
     
     await page.click('[data-testid="next-step"]');
 
-    // Step 2: Body Shape and Motivation
+    // Step 2: Body Shape and Motivation with Body Fat Slider
     await page.click('[data-testid="body-shape-average"]');
+    
+    // Test body fat slider
+    const slider = page.locator('[data-testid="body-fat-slider"]');
+    await expect(slider).toBeVisible();
+    
+    // Select motivations
     await page.click('[data-testid="motivation-look_better"]');
     await page.click('[data-testid="next-step"]');
 
@@ -30,8 +37,8 @@ test.describe('Enhanced Onboarding Flow', () => {
     // Step 4: Summary and Complete
     await page.click('[data-testid="finish-onboarding"]');
 
-    // Should redirect to auth page after completing onboarding
-    await expect(page).toHaveURL('/auth');
+    // Should redirect to dashboard after completing onboarding
+    await expect(page).toHaveURL('/dashboard');
   });
 
   test('should validate required fields in each step', async ({ page }) => {
@@ -42,6 +49,33 @@ test.describe('Enhanced Onboarding Flow', () => {
     
     // Should show validation error
     await expect(page.locator('text=Please fill in all required fields')).toBeVisible();
+  });
+
+  test('should allow body fat slider interaction', async ({ page }) => {
+    await page.goto('/onboarding');
+    
+    // Fill step 1 first
+    await page.fill('[data-testid="first-name"]', 'Jane');
+    await page.fill('[data-testid="last-name"]', 'Doe');
+    await page.fill('[data-testid="age"]', '25');
+    await page.fill('[data-testid="height"]', '160');
+    await page.fill('[data-testid="weight"]', '60');
+    await page.click('[data-testid="gender-female"]');
+    await page.click('[data-testid="next-step"]');
+    
+    // Select body shape
+    await page.click('[data-testid="body-shape-slender"]');
+    
+    // Interact with body fat slider
+    const slider = page.locator('[data-testid="body-fat-slider"]');
+    await expect(slider).toBeVisible();
+    
+    // The visual body representation should be visible
+    await expect(page.locator('text=Estimate your current body fat percentage')).toBeVisible();
+    
+    // Should be able to proceed
+    await page.click('[data-testid="next-step"]');
+    await expect(page.locator('text=Goals & Health')).toBeVisible();
   });
 
   test('should allow multiple motivation selections', async ({ page }) => {
