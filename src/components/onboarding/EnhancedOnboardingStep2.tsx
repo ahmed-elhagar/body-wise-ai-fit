@@ -28,7 +28,7 @@ const EnhancedOnboardingStep2 = ({ formData, updateFormData }: EnhancedOnboardin
 
       <div className="border-t pt-8">
         <EnhancedMotivationSelector
-          value={formData.preferred_foods} // Using this field temporarily for motivations
+          value={Array.isArray(formData.preferred_foods) ? formData.preferred_foods : []}
           onChange={(value) => updateFormData("preferred_foods", value)}
         />
       </div>

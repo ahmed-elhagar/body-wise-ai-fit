@@ -19,7 +19,7 @@ import ModernOnboardingNavigation from "@/components/onboarding/ModernOnboarding
 const EnhancedOnboarding = () => {
   const navigate = useNavigate();
   const { updateProfile, isUpdating, profile } = useProfile();
-  const { user, loading: authLoading, signOut } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { isEmailConfirmationEnabled } = useEmailConfirmation();
   const [step, setStep] = useState(1);
   const { formData, updateFormData, handleArrayInput } = useOnboardingForm();
@@ -94,6 +94,7 @@ const EnhancedOnboarding = () => {
         await updateProfile(profileData);
         
         console.log('Onboarding - Profile saved successfully, showing success page');
+        toast.success('🎉 Welcome to FitGenius! Your profile has been created successfully.');
         setShowSuccess(true);
 
       } catch (error) {
@@ -105,16 +106,11 @@ const EnhancedOnboarding = () => {
   };
 
   const handleGetStarted = async () => {
-    console.log('Onboarding - Getting started, signing out and redirecting to login');
-    toast.success('🎉 Welcome to FitGenius! Please sign in to continue.');
+    console.log('Onboarding - Getting started, redirecting to dashboard');
+    toast.success('🚀 Let\'s start your fitness journey!');
     
-    // Sign out the user and redirect to login
-    await signOut();
-    
-    // Use setTimeout to ensure signOut completes before navigation
-    setTimeout(() => {
-      navigate('/auth', { replace: true });
-    }, 500);
+    // Redirect directly to dashboard since user is already authenticated
+    navigate('/dashboard', { replace: true });
   };
 
   const handleBack = () => {
@@ -226,7 +222,7 @@ const EnhancedOnboarding = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-4 md:py-8">
       <div className="container mx-auto px-4 max-w-2xl">
         <ModernOnboardingHeader 
           step={step} 
@@ -234,7 +230,7 @@ const EnhancedOnboarding = () => {
           progress={progress} 
         />
 
-        <Card className="p-8 bg-white/90 backdrop-blur-sm border-0 shadow-xl">
+        <Card className="p-4 md:p-8 bg-white/90 backdrop-blur-sm border-0 shadow-xl">
           <div className="min-h-[500px]">
             {renderStepContent()}
           </div>

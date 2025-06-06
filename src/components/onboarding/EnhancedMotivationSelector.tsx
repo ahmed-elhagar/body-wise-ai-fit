@@ -14,35 +14,35 @@ const EnhancedMotivationSelector = ({ value, onChange }: EnhancedMotivationSelec
       label: 'Look better', 
       emoji: '💪',
       description: 'Improve your physical appearance',
-      color: 'bg-gradient-to-r from-purple-500 to-pink-500'
+      gradient: 'from-purple-400 to-pink-400'
     },
     { 
       id: 'feel_good', 
       label: 'Feel good in your body', 
       emoji: '😌',
       description: 'Boost confidence and self-esteem',
-      color: 'bg-gradient-to-r from-green-500 to-teal-500'
+      gradient: 'from-green-400 to-emerald-400'
     },
     { 
       id: 'be_fitter', 
       label: 'Be fitter', 
       emoji: '🏃‍♂️',
       description: 'Increase strength and endurance',
-      color: 'bg-gradient-to-r from-blue-500 to-cyan-500'
+      gradient: 'from-blue-400 to-cyan-400'
     },
     { 
       id: 'improve_health', 
       label: 'Improve health', 
       emoji: '🫁',
       description: 'Better overall wellness and energy',
-      color: 'bg-gradient-to-r from-red-500 to-orange-500'
+      gradient: 'from-orange-400 to-red-400'
     },
     { 
       id: 'reduce_stress', 
       label: 'Reduce stress', 
       emoji: '🧘‍♀️',
       description: 'Mental wellness and relaxation',
-      color: 'bg-gradient-to-r from-indigo-500 to-purple-500'
+      gradient: 'from-indigo-400 to-purple-400'
     }
   ];
 
@@ -62,30 +62,26 @@ const EnhancedMotivationSelector = ({ value, onChange }: EnhancedMotivationSelec
         <p className="text-sm text-gray-600">Choose all that apply to personalize your experience</p>
       </div>
       
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {motivations.map((motivation) => {
           const isSelected = value.includes(motivation.id);
           return (
             <Card
               key={motivation.id}
-              className={`p-5 cursor-pointer transition-all duration-300 hover:shadow-lg border-2 relative overflow-hidden ${
+              className={`p-5 cursor-pointer transition-all duration-300 hover:shadow-xl border-2 relative overflow-hidden group ${
                 isSelected
-                  ? 'ring-4 ring-blue-500/30 bg-white border-blue-500 shadow-lg transform scale-[1.02]'
+                  ? 'ring-4 ring-green-500/30 bg-gradient-to-br from-green-50 to-emerald-50 border-green-500 shadow-lg transform scale-[1.02]'
                   : 'hover:bg-gray-50 border-gray-200 hover:border-gray-300 hover:transform hover:scale-[1.01]'
               }`}
               onClick={() => handleToggle(motivation.id)}
               data-testid={`motivation-${motivation.id}`}
             >
-              {isSelected && (
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-50 to-indigo-50 opacity-50" />
-              )}
-              
-              <div className="relative flex items-center justify-between">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className={`p-3 rounded-full ${motivation.color} shadow-lg`}>
+                  <div className={`p-3 rounded-full bg-gradient-to-r ${motivation.gradient} shadow-lg group-hover:scale-110 transition-transform`}>
                     <span className="text-2xl">{motivation.emoji}</span>
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <h3 className="font-semibold text-lg text-gray-800 mb-1">
                       {motivation.label}
                     </h3>
@@ -95,7 +91,7 @@ const EnhancedMotivationSelector = ({ value, onChange }: EnhancedMotivationSelec
                 
                 <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
                   isSelected 
-                    ? 'bg-blue-500 border-blue-500' 
+                    ? 'bg-green-500 border-green-500' 
                     : 'border-gray-300 hover:border-gray-400'
                 }`}>
                   {isSelected && (
@@ -111,10 +107,10 @@ const EnhancedMotivationSelector = ({ value, onChange }: EnhancedMotivationSelec
       </div>
       
       {value.length > 0 && (
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4">
           <div className="flex items-center gap-2">
-            <span className="text-blue-600">✨</span>
-            <p className="text-sm text-blue-800">
+            <span className="text-green-600 text-lg">✨</span>
+            <p className="text-sm text-green-800 font-medium">
               Great! You've selected {value.length} motivation{value.length > 1 ? 's' : ''}. 
               We'll use this to create a personalized fitness plan just for you.
             </p>

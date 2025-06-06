@@ -79,7 +79,7 @@ const EnhancedBodyShapeSelector = ({ value, onChange, gender }: EnhancedBodyShap
                 key={shape.id}
                 className={`p-4 cursor-pointer transition-all duration-300 hover:shadow-lg border-2 ${
                   isSelected
-                    ? 'ring-4 ring-blue-500/30 bg-blue-50 border-blue-500 shadow-md'
+                    ? 'ring-4 ring-green-500/30 bg-green-50 border-green-500 shadow-md'
                     : 'hover:bg-gray-50 border-gray-200 hover:border-gray-300'
                 }`}
                 onClick={() => onChange(shape.id)}
@@ -100,7 +100,7 @@ const EnhancedBodyShapeSelector = ({ value, onChange, gender }: EnhancedBodyShap
                   </div>
                   {isSelected && (
                     <div className="flex-shrink-0">
-                      <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                      <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
                         <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
