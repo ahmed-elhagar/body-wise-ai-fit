@@ -1,5 +1,5 @@
 
-import { useExerciseProgramPage } from '@/hooks/useExerciseProgramPage';
+import { useOptimizedExerciseProgramPage } from '@/hooks/useOptimizedExerciseProgramPage';
 
 // Mock data for different chart types
 const generateWeightData = () => {
@@ -59,7 +59,7 @@ export const calorieData = generateCalorieData();
 export const workoutData = generateWorkoutData();
 
 export const useChartData = () => {
-  const { currentProgram } = useExerciseProgramPage();
+  const { currentProgram } = useOptimizedExerciseProgramPage();
   
   const exerciseData = currentProgram?.daily_workouts?.map((workout: any, index: number) => ({
     day: `Day ${workout.day_number || index + 1}`,

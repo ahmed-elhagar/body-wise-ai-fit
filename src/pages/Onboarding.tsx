@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -28,7 +29,7 @@ const Onboarding = () => {
   const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
   
-  const { formData, updateFormData } = useOnboardingForm();
+  const { formData, updateFormData, handleArrayInput } = useOnboardingForm();
 
   // Calculate total steps based on gender
   const totalSteps = formData.gender === 'female' ? 8 : 7;
@@ -147,8 +148,9 @@ const Onboarding = () => {
         fitness_goal: formData.fitness_goal || null,
         activity_level: mappedActivityLevel,
         
-        // Health Information - remove health_notes as it doesn't exist in the database
+        // Health Information
         health_conditions: formData.health_conditions && formData.health_conditions.length > 0 ? formData.health_conditions : [],
+        health_notes: formData.health_notes?.trim() || null,
         allergies: formData.allergies && formData.allergies.length > 0 ? formData.allergies : [],
         
         // Dietary Preferences
@@ -165,8 +167,6 @@ const Onboarding = () => {
         onboarding_completed: true,
         ai_generations_remaining: 5
       };
-
-      console.log('Saving profile data:', profileData);
 
       const result = await updateProfile(profileData);
       
@@ -189,21 +189,61 @@ const Onboarding = () => {
   const renderStepContent = () => {
     switch (step) {
       case 1:
-        return <OnboardingStep1 formData={formData} updateFormData={updateFormData} />;
+        return (
+          <OnboardingStep1 
+            formData={formData} 
+            updateFormData={updateFormData} 
+          />
+        );
       case 2:
-        return <OnboardingStep2 formData={formData} updateFormData={updateFormData} />;
+        return (
+          <OnboardingStep2 
+            formData={formData} 
+            updateFormData={updateFormData}
+          />
+        );
       case 3:
-        return <OnboardingStep3 formData={formData} updateFormData={updateFormData} />;
+        return (
+          <OnboardingStep3 
+            formData={formData}
+            updateFormData={updateFormData}
+          />
+        );
       case 4:
-        return <OnboardingStep4 formData={formData} updateFormData={updateFormData} />;
+        return (
+          <OnboardingStep4 
+            formData={formData}
+            updateFormData={updateFormData}
+          />
+        );
       case 5:
-        return <OnboardingStep5 formData={formData} updateFormData={updateFormData} />;
+        return (
+          <OnboardingStep5 
+            formData={formData}
+            updateFormData={updateFormData}
+          />
+        );
       case 6:
-        return <OnboardingStep6 formData={formData} updateFormData={updateFormData} />;
+        return (
+          <OnboardingStep6 
+            formData={formData}
+            updateFormData={updateFormData}
+          />
+        );
       case 7:
-        return <OnboardingStep7 formData={formData} updateFormData={updateFormData} />;
+        return (
+          <OnboardingStep7 
+            formData={formData}
+            updateFormData={updateFormData}
+          />
+        );
       case 8:
-        return <OnboardingStep8 formData={formData} updateFormData={updateFormData} />;
+        return (
+          <OnboardingStep8 
+            formData={formData}
+            updateFormData={updateFormData}
+          />
+        );
       default:
         return null;
     }

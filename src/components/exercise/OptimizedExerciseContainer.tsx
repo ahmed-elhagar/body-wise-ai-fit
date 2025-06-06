@@ -10,21 +10,19 @@ import ExerciseAILoadingDialog from "./ExerciseAILoadingDialog";
 
 const OptimizedExerciseContainer = React.memo(() => {
   const {
-    currentProgram,
-    todaysWorkouts,
-    todaysExercises,
-    selectedDayNumber,
-    setSelectedDayNumber,
-    completedExercises,
-    totalExercises,
-    progressPercentage,
-    isLoading,
-    error,
-    handleExerciseComplete,
-    handleExerciseProgressUpdate,
+    weeklyProgram,
+    weekStructure,
+    currentWorkout,
+    currentDayExercises,
+    selectedDay,
+    setSelectedDay,
+    progressMetrics,
+    loadingStates,
+    programError,
+    optimizedActions,
   } = useOptimizedExercise();
 
-  if (isLoading) {
+  if (loadingStates.isProgramLoading) {
     return (
       <>
         <Card className="p-8">
@@ -34,25 +32,25 @@ const OptimizedExerciseContainer = React.memo(() => {
           </div>
         </Card>
         <ExerciseAILoadingDialog 
-          isGenerating={isLoading}
+          isGenerating={loadingStates.isProgramLoading}
           type="program"
         />
       </>
     );
   }
 
-  if (error) {
+  if (programError) {
     return (
       <Card className="p-8 text-center">
         <div className="text-red-600 mb-4">
           <h3 className="text-lg font-semibold mb-2">Error Loading Exercise Program</h3>
-          <p className="text-sm">{error.message}</p>
+          <p className="text-sm">{programError.message}</p>
         </div>
       </Card>
     );
   }
 
-  if (!currentProgram) {
+  if (!weeklyProgram) {
     return (
       <Card className="p-8 text-center">
         <div className="text-gray-600 mb-4">
@@ -63,31 +61,13 @@ const OptimizedExerciseContainer = React.memo(() => {
     );
   }
 
-  // Create week structure that matches WeekDay interface
-  const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const weekStructure = Array.from({ length: 7 }, (_, index) => ({
-    dayNumber: index + 1,
-    dayName: dayNames[index],
-    isCompleted: index + 1 === selectedDayNumber ? progressPercentage === 100 : false,
-    isRestDay: index + 1 === selectedDayNumber ? todaysExercises.length === 0 : false,
-    isToday: index + 1 === selectedDayNumber,
-    workout: index + 1 === selectedDayNumber ? todaysWorkouts[0] || null : null
-  }));
-
-  // Create progress metrics that match ProgressMetrics interface
-  const progressMetrics = {
-    completedWorkouts: completedExercises > 0 ? 1 : 0,
-    totalWorkouts: totalExercises > 0 ? 1 : 0,
-    progressPercentage: progressPercentage
-  };
-
   return (
     <>
       <div className="space-y-6">
         <OptimizedExerciseHeader 
-          program={currentProgram}
+          program={weeklyProgram}
           progressMetrics={progressMetrics}
-          onGenerateNew={() => console.log('Generate new program')}
+          onGenerateNew={optimizedActions.startWorkout}
         />
         
         <OptimizedExerciseProgress 
@@ -99,19 +79,19 @@ const OptimizedExerciseContainer = React.memo(() => {
           <div className="lg:col-span-1">
             <OptimizedExerciseWeekView
               weekStructure={weekStructure}
-              selectedDay={selectedDayNumber}
-              onDaySelect={setSelectedDayNumber}
+              selectedDay={selectedDay}
+              onDaySelect={setSelectedDay}
             />
           </div>
           
           <div className="lg:col-span-2">
             <OptimizedExerciseDayView
-              currentWorkout={todaysWorkouts[0] || null}
-              exercises={todaysExercises}
-              selectedDay={selectedDayNumber}
-              onStartWorkout={() => console.log('Start workout')}
-              onCompleteWorkout={() => console.log('Complete workout')}
-              isLoading={isLoading}
+              currentWorkout={currentWorkout}
+              exercises={currentDayExercises}
+              selectedDay={selectedDay}
+              onStartWorkout={optimizedActions.startWorkout}
+              onCompleteWorkout={optimizedActions.completeWorkout}
+              isLoading={loadingStates.isUpdating}
             />
           </div>
         </div>
@@ -119,7 +99,7 @@ const OptimizedExerciseContainer = React.memo(() => {
 
       {/* AI Loading Dialog for exercise exchanges */}
       <ExerciseAILoadingDialog 
-        isGenerating={isLoading}
+        isGenerating={loadingStates.isUpdating}
         type="exchange"
       />
     </>

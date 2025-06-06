@@ -1,10 +1,10 @@
 
 import { Card } from '@/components/ui/card';
-import { useExerciseProgramPage } from '@/hooks/useExerciseProgramPage';
+import { useOptimizedExerciseProgramPage } from '@/hooks/useOptimizedExerciseProgramPage';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export const TrendAnalysis = () => {
-  const { currentProgram } = useExerciseProgramPage();
+  const { currentProgram } = useOptimizedExerciseProgramPage();
   
   const data = currentProgram?.daily_workouts?.map((workout: any, index: number) => ({
     day: `Day ${workout.day_number || index + 1}`,

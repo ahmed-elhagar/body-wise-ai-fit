@@ -1,8 +1,8 @@
 
-import { Utensils } from "lucide-react";
+import { Shield } from "lucide-react";
 import { OnboardingFormData } from "@/hooks/useOnboardingForm";
-import DietaryRestrictionsSelector from "./DietaryRestrictionsSelector";
-import NationalitySelector from "./NationalitySelector";
+import HealthIssuesSelector from "./HealthIssuesSelector";
+import HealthNotesSection from "./HealthNotesSection";
 
 interface OnboardingStep6Props {
   formData: OnboardingFormData;
@@ -13,22 +13,25 @@ const OnboardingStep6 = ({ formData, updateFormData }: OnboardingStep6Props) => 
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="text-center mb-6 px-4">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl mb-4 shadow-lg">
-          <Utensils className="w-8 h-8 text-white" />
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-red-500 to-pink-600 rounded-2xl mb-4 shadow-lg">
+          <Shield className="w-8 h-8 text-white" />
         </div>
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Dietary Preferences</h2>
-        <p className="text-gray-600 text-sm sm:text-base">Tell us about your food preferences and restrictions</p>
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Health Information</h2>
+        <p className="text-gray-600 text-sm sm:text-base">Help us create safer recommendations</p>
+        <div className="inline-flex items-center gap-2 mt-2">
+          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">Optional</span>
+        </div>
       </div>
 
       <div className="space-y-6 px-4">
-        <DietaryRestrictionsSelector
-          value={formData.dietary_restrictions}
-          onChange={(value) => updateFormData("dietary_restrictions", value)}
+        <HealthIssuesSelector
+          value={formData.health_conditions}
+          onChange={(value) => updateFormData("health_conditions", value)}
         />
         
-        <NationalitySelector
-          value={formData.nationality}
-          onChange={(value) => updateFormData("nationality", value)}
+        <HealthNotesSection
+          value={formData.health_notes || ''}
+          onChange={(value) => updateFormData("health_notes", value)}
         />
       </div>
     </div>

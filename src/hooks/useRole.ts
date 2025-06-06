@@ -42,7 +42,7 @@ export const useRole = () => {
       }
       
       // Priority 3: Direct user role
-      const directRole = (user as any).role;
+      const directRole = user.role;
       if (directRole) {
         console.log('Role from user object:', directRole);
         return directRole;

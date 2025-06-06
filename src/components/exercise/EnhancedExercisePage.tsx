@@ -1,7 +1,7 @@
 
 import { format, addDays } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useExerciseProgramPage } from "@/hooks/useExerciseProgramPage";
+import { useOptimizedExerciseProgramPage } from "@/hooks/useOptimizedExerciseProgramPage";
 import { EnhancedDayNavigation } from "./EnhancedDayNavigation";
 import { AIExerciseDialog } from "./AIExerciseDialog";
 import { ExercisePageLayout } from "./ExercisePageLayout";
@@ -42,7 +42,7 @@ const EnhancedExercisePage = () => {
     handleExerciseComplete,
     handleExerciseProgressUpdate,
     refetch
-  } = useExerciseProgramPage();
+  } = useOptimizedExerciseProgramPage();
 
   const { isGenerating, generateExerciseProgram, regenerateProgram } = useEnhancedAIExercise();
 
