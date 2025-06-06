@@ -1,8 +1,8 @@
 
 import { Target } from "lucide-react";
 import { OnboardingFormData } from "@/hooks/useOnboardingForm";
-import BodyShapeVisualSelector from "./BodyShapeVisualSelector";
-import MotivationSelector from "./MotivationSelector";
+import EnhancedBodyShapeSelector from "./EnhancedBodyShapeSelector";
+import EnhancedMotivationSelector from "./EnhancedMotivationSelector";
 
 interface EnhancedOnboardingStep2Props {
   formData: OnboardingFormData;
@@ -17,17 +17,17 @@ const EnhancedOnboardingStep2 = ({ formData, updateFormData }: EnhancedOnboardin
           <Target className="w-8 h-8 text-white" />
         </div>
         <h2 className="text-2xl font-bold text-gray-800 mb-2">Your body & motivation</h2>
-        <p className="text-gray-600">Help us understand your current state and goals</p>
+        <p className="text-gray-600">Help us understand your current state and what drives you</p>
       </div>
 
-      <BodyShapeVisualSelector
+      <EnhancedBodyShapeSelector
         value={formData.body_shape}
         onChange={(value) => updateFormData("body_shape", value)}
         gender={formData.gender}
       />
 
       <div className="border-t pt-8">
-        <MotivationSelector
+        <EnhancedMotivationSelector
           value={formData.preferred_foods} // Using this field temporarily for motivations
           onChange={(value) => updateFormData("preferred_foods", value)}
         />

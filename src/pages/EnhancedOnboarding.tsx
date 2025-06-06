@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -12,6 +13,7 @@ import EnhancedOnboardingStep1 from "@/components/onboarding/EnhancedOnboardingS
 import EnhancedOnboardingStep2 from "@/components/onboarding/EnhancedOnboardingStep2";
 import EnhancedOnboardingStep3 from "@/components/onboarding/EnhancedOnboardingStep3";
 import EnhancedOnboardingStep4 from "@/components/onboarding/EnhancedOnboardingStep4";
+import WelcomeSuccessPage from "@/components/onboarding/WelcomeSuccessPage";
 import ModernOnboardingNavigation from "@/components/onboarding/ModernOnboardingNavigation";
 
 const EnhancedOnboarding = () => {
@@ -23,6 +25,7 @@ const EnhancedOnboarding = () => {
   const { formData, updateFormData, handleArrayInput } = useOnboardingForm();
   const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const totalSteps = 4;
   const progress = (step / totalSteps) * 100;
@@ -90,16 +93,8 @@ const EnhancedOnboarding = () => {
         
         await updateProfile(profileData);
         
-        console.log('Onboarding - Profile saved successfully, signing out and redirecting to login');
-        toast.success('🎉 Profile setup complete! Please sign in to continue.');
-        
-        // Sign out the user and redirect to login
-        await signOut();
-        
-        // Use setTimeout to ensure signOut completes before navigation
-        setTimeout(() => {
-          navigate('/auth', { replace: true });
-        }, 500);
+        console.log('Onboarding - Profile saved successfully, showing success page');
+        setShowSuccess(true);
 
       } catch (error) {
         console.error('Onboarding - Unexpected error:', error);
@@ -107,6 +102,19 @@ const EnhancedOnboarding = () => {
         setIsCompleting(false);
       }
     }
+  };
+
+  const handleGetStarted = async () => {
+    console.log('Onboarding - Getting started, signing out and redirecting to login');
+    toast.success('🎉 Welcome to FitGenius! Please sign in to continue.');
+    
+    // Sign out the user and redirect to login
+    await signOut();
+    
+    // Use setTimeout to ensure signOut completes before navigation
+    setTimeout(() => {
+      navigate('/auth', { replace: true });
+    }, 500);
   };
 
   const handleBack = () => {
@@ -156,6 +164,16 @@ const EnhancedOnboarding = () => {
         return null;
     }
   };
+
+  // Show success page after completion
+  if (showSuccess) {
+    return (
+      <WelcomeSuccessPage
+        userName={formData.first_name || 'there'}
+        onGetStarted={handleGetStarted}
+      />
+    );
+  }
 
   // Show email confirmation message if email confirmation is enabled and user hasn't confirmed their email
   if (showEmailConfirmation) {

@@ -10,17 +10,18 @@ const FitnessProfileSummary = ({ formData }: FitnessProfileSummaryProps) => {
   // Calculate BMI
   const height = parseFloat(formData.height) / 100; // Convert cm to m
   const weight = parseFloat(formData.weight);
-  const bmi = weight && height ? (weight / (height * height)).toFixed(1) : 0;
+  const bmi = weight && height ? (weight / (height * height)).toFixed(1) : "0";
 
   // Determine BMI category
-  const getBMICategory = (bmiValue: number) => {
-    if (bmiValue < 18.5) return { category: 'Underweight', color: 'blue' };
-    if (bmiValue < 25) return { category: 'Normal', color: 'green' };
-    if (bmiValue < 30) return { category: 'Overweight', color: 'yellow' };
+  const getBMICategory = (bmiValue: string) => {
+    const numericBMI = parseFloat(bmiValue);
+    if (numericBMI < 18.5) return { category: 'Underweight', color: 'blue' };
+    if (numericBMI < 25) return { category: 'Normal', color: 'green' };
+    if (numericBMI < 30) return { category: 'Overweight', color: 'yellow' };
     return { category: 'Obese', color: 'red' };
   };
 
-  const bmiInfo = getBMICategory(parseFloat(bmi));
+  const bmiInfo = getBMICategory(bmi);
 
   return (
     <div className="space-y-6">
