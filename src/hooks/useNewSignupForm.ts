@@ -1,77 +1,77 @@
 
 import { useState } from "react";
 
-export interface UnifiedFormData {
+export interface NewSignupFormData {
   // Step 1: Account Creation
   email: string;
   password: string;
   first_name: string;
   last_name: string;
   
-  // Step 2: Basic Physical Info
+  // Step 2: Basic Info
   age: string;
   gender: string;
+  
+  // Step 3: Physical Stats
   height: string;
   weight: string;
   
-  // Step 3: Body Composition
+  // Step 4: Body Composition (integrated shape + slider)
   body_shape: string;
-  body_fat_percentage: string | number;
+  body_fat_percentage: number;
   
-  // Step 4: Goals & Activity
+  // Step 5: Fitness Goals
   fitness_goal: string;
   activity_level: string;
   
-  // Step 5: Health & Dietary (optional)
+  // Step 6: Health & Dietary (with autocomplete)
   health_conditions: string[];
   allergies: string[];
-  preferred_foods: string[];
   dietary_restrictions: string[];
   
-  // Step 6: Special Conditions (females only, optional)
-  special_conditions: string[];
+  // Step 7: Life Phase (for females only)
   pregnancy_trimester: string;
   breastfeeding_level: string;
   fasting_type: string;
 }
 
-export const useUnifiedForm = () => {
-  const [formData, setFormData] = useState<UnifiedFormData>({
-    // Step 1: Account Creation
+export const useNewSignupForm = () => {
+  const [formData, setFormData] = useState<NewSignupFormData>({
+    // Step 1
     email: '',
     password: '',
     first_name: '',
     last_name: '',
     
-    // Step 2: Basic Physical Info
+    // Step 2
     age: '',
     gender: '',
+    
+    // Step 3
     height: '',
     weight: '',
     
-    // Step 3: Body Composition
+    // Step 4
     body_shape: '',
-    body_fat_percentage: '',
+    body_fat_percentage: 20,
     
-    // Step 4: Goals & Activity
+    // Step 5
     fitness_goal: '',
     activity_level: '',
     
-    // Step 5: Health & Dietary
+    // Step 6
     health_conditions: [],
     allergies: [],
-    preferred_foods: [],
     dietary_restrictions: [],
     
-    // Step 6: Special Conditions
-    special_conditions: [],
+    // Step 7
     pregnancy_trimester: 'none',
     breastfeeding_level: 'none',
     fasting_type: 'none',
   });
 
   const updateFormData = (field: string, value: string | string[] | number) => {
-    console.log('Updating unified form data:', field, value);
+    console.log('Updating signup form data:', field, value);
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -86,14 +86,12 @@ export const useUnifiedForm = () => {
       height: '',
       weight: '',
       body_shape: '',
-      body_fat_percentage: '',
+      body_fat_percentage: 20,
       fitness_goal: '',
       activity_level: '',
       health_conditions: [],
       allergies: [],
-      preferred_foods: [],
       dietary_restrictions: [],
-      special_conditions: [],
       pregnancy_trimester: 'none',
       breastfeeding_level: 'none',
       fasting_type: 'none',

@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ArrowLeft } from "lucide-react";
 
-interface UnifiedNavigationProps {
+interface SignupNavigationProps {
   step: number;
   totalSteps: number;
   isStepValid: boolean;
@@ -13,7 +13,7 @@ interface UnifiedNavigationProps {
   onSkip: () => void;
 }
 
-const UnifiedNavigation = ({ 
+const SignupNavigation = ({ 
   step, 
   totalSteps, 
   isStepValid, 
@@ -22,15 +22,15 @@ const UnifiedNavigation = ({
   onBack, 
   onNext,
   onSkip
-}: UnifiedNavigationProps) => {
+}: SignupNavigationProps) => {
   const getNextButtonText = () => {
     if (step === 1) return 'Create Account';
     if (step === totalSteps) return 'Complete Setup';
-    return 'Next';
+    return 'Continue';
   };
 
   return (
-    <div className="flex justify-between items-center mt-8">
+    <div className="flex justify-between items-center mt-8 pt-6 border-t">
       <Button
         variant="outline"
         onClick={onBack}
@@ -66,4 +66,4 @@ const UnifiedNavigation = ({
   );
 };
 
-export default UnifiedNavigation;
+export default SignupNavigation;
