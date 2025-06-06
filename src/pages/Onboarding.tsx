@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -21,12 +20,10 @@ const Onboarding = () => {
   const { user, loading: authLoading } = useAuth();
   const { isEmailConfirmationEnabled } = useEmailConfirmation();
   
-  // Initialize all state at the top level
   const [step, setStep] = useState(1);
   const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
   
-  // Call custom hook consistently
   const { formData, updateFormData, handleArrayInput } = useOnboardingForm();
 
   const totalSteps = 4;
@@ -34,13 +31,21 @@ const Onboarding = () => {
 
   // Protect onboarding from logged-in users who have completed onboarding
   useEffect(() => {
-    if (!authLoading && user && profile && profile.onboarding_completed && !isCompleting) {
-      console.log('Onboarding - User has completed onboarding, redirecting to dashboard');
-      navigate('/dashboard', { replace: true });
+    if (!authLoading && user && profile) {
+      console.log('Onboarding - Profile check:', { 
+        hasProfile: !!profile, 
+        onboardingCompleted: profile.onboarding_completed,
+        isCompleting 
+      });
+      
+      if (profile.onboarding_completed && !isCompleting) {
+        console.log('Onboarding - User has completed onboarding, redirecting to dashboard');
+        navigate('/dashboard', { replace: true });
+      }
     }
   }, [user, profile, authLoading, navigate, isCompleting]);
 
-  // Check if user needs to confirm their email (only if email confirmation is enabled)
+  // Check if user needs to confirm their email
   useEffect(() => {
     if (!authLoading) {
       if (isEmailConfirmationEnabled && !user) {
@@ -94,12 +99,21 @@ const Onboarding = () => {
 
         console.log("Onboarding - Saving complete profile data:", profileData);
         
-        await updateProfile(profileData);
+        const result = await updateProfile(profileData);
+        
+        if (result.error) {
+          console.error('Onboarding - Profile update failed:', result.error);
+          toast.error('Failed to save your profile. Please try again.');
+          setIsCompleting(false);
+          return;
+        }
         
         console.log('Onboarding - Profile saved successfully, redirecting to success page');
         
-        // Redirect to success page instead of dashboard
-        navigate('/onboarding-success', { replace: true });
+        // Small delay to ensure the profile update is processed
+        setTimeout(() => {
+          navigate('/onboarding-success', { replace: true });
+        }, 500);
 
       } catch (error) {
         console.error('Onboarding - Unexpected error:', error);

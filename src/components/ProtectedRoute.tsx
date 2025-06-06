@@ -26,10 +26,8 @@ const ProtectedRoute = React.memo<ProtectedRouteProps>(({
   const { role, isLoading: roleLoading, error: roleError, hasRole, hasAnyRole } = useRole();
   const location = useLocation();
 
-  // Enhanced loading state handling with better performance
   const isLoading = authLoading || (requireProfile && profileLoading) || (requireRole && roleLoading);
 
-  // Early return for loading state
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
@@ -44,13 +42,11 @@ const ProtectedRoute = React.memo<ProtectedRouteProps>(({
     );
   }
 
-  // Enhanced error handling for auth errors
   if (authError && requireAuth) {
     console.error("ProtectedRoute - Auth error:", authError);
     return <Navigate to={redirectTo} state={{ from: location.pathname, error: 'Authentication failed' }} replace />;
   }
 
-  // If authentication is required but user is not authenticated
   if (requireAuth && !user) {
     console.log("ProtectedRoute - Redirecting unauthenticated user to:", redirectTo);
     return <Navigate to={redirectTo} state={{ from: location.pathname }} replace />;
@@ -59,22 +55,17 @@ const ProtectedRoute = React.memo<ProtectedRouteProps>(({
   // Special handling for onboarding route
   if (location.pathname === '/onboarding') {
     if (!user) {
-      // Unauthenticated users can access onboarding (it includes signup)
       return <>{children}</>;
     } else if (user && profile && profile.onboarding_completed) {
-      // Authenticated users who completed onboarding should go to dashboard
       console.log("ProtectedRoute - Authenticated user with completed onboarding, redirecting to dashboard");
       return <Navigate to="/dashboard" replace />;
     } else if (user && (!profile || !profile.onboarding_completed)) {
-      // Authenticated users who haven't completed onboarding can continue
       return <>{children}</>;
     }
   }
 
   // If user is authenticated but trying to access auth pages
   if (!requireAuth && user) {
-    // If user has completed onboarding, go to dashboard
-    // If user hasn't completed onboarding, go to onboarding
     if (profile?.onboarding_completed) {
       console.log("ProtectedRoute - Redirecting authenticated user to dashboard");
       return <Navigate to="/dashboard" replace />;
@@ -84,17 +75,15 @@ const ProtectedRoute = React.memo<ProtectedRouteProps>(({
     }
   }
 
-  // Enhanced role-based access control with better error handling
+  // Enhanced role-based access control
   if (requireRole && user) {
     let hasRequiredRole = false;
     
     try {
-      // Special case: Admin users can access all role-protected routes
       if (role === 'admin') {
         console.log('Admin user granted access to role-protected route');
         hasRequiredRole = true;
       }
-      // Standard role check for non-admin users
       else if (Array.isArray(requireRole)) {
         hasRequiredRole = hasAnyRole(requireRole);
       } else {
@@ -111,13 +100,16 @@ const ProtectedRoute = React.memo<ProtectedRouteProps>(({
     }
   }
 
-  // If profile is required but user profile is not complete
-  if (requireProfile && user && !profileLoading && profile && !profile.onboarding_completed) {
-    console.log("ProtectedRoute - Redirecting to onboarding (incomplete profile)");
-    return <Navigate to="/onboarding" state={{ from: location.pathname }} replace />;
+  // FIXED: More lenient profile completion check
+  if (requireProfile && user && !profileLoading && profile) {
+    // Only redirect to onboarding if profile explicitly shows onboarding is NOT completed
+    // This prevents redirect loops for users who may have completed onboarding but have missing data
+    if (profile.onboarding_completed === false) {
+      console.log("ProtectedRoute - Redirecting to onboarding (incomplete profile)");
+      return <Navigate to="/onboarding" state={{ from: location.pathname }} replace />;
+    }
   }
 
-  // All conditions passed, render the children
   return <>{children}</>;
 });
 
