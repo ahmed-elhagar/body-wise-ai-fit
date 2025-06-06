@@ -1,79 +1,61 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import i18n from '../i18n/config';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-export type Language = 'en' | 'ar';
-
-interface LanguageContextProps {
-  language: Language;
-  setLanguage: (language: Language) => void;
-  t: (key: string, options?: any) => string;
+interface LanguageContextType {
+  language: 'en' | 'ar';
   isRTL: boolean;
+  t: (key: string) => string;
+  changeLanguage: (lang: 'en' | 'ar') => void;
 }
 
-const LanguageContext = createContext<LanguageContextProps | undefined>(undefined);
+export const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 interface LanguageProviderProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
+// Simple translation fallback
+const translations: Record<string, Record<string, string>> = {
+  en: {
+    'exercise.homeWorkout': 'Home Workout',
+    'exercise.gymWorkout': 'Gym Workout',
+    'exercise.home': 'Home',
+    'exercise.gym': 'Gym',
+    'profile.overview': 'Overview',
+    'profile.basic': 'Basic Info',
+    'profile.health': 'Health',
+    'profile.goals': 'Goals',
+    'profile.settings': 'Settings',
+  },
+  ar: {
+    'exercise.homeWorkout': 'تمرين منزلي',
+    'exercise.gymWorkout': 'تمرين في الجيم',
+    'exercise.home': 'المنزل',
+    'exercise.gym': 'الجيم',
+    'profile.overview': 'نظرة عامة',
+    'profile.basic': 'المعلومات الأساسية',
+    'profile.health': 'الصحة',
+    'profile.goals': 'الأهداف',
+    'profile.settings': 'الإعدادات',
+  }
+};
+
 export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
-  const [language, setLanguageState] = useState<Language>('en');
-  const { t: i18nT, i18n: i18nInstance } = useTranslation(['common', 'mealPlan', 'navigation', 'dashboard', 'profile']);
+  const [language, setLanguage] = useState<'en' | 'ar'>('en');
 
-  const setLanguage = async (lang: Language) => {
-    setLanguageState(lang);
-    localStorage.setItem('preferred-language', lang);
-    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-    document.documentElement.lang = lang;
-    
-    // Change i18next language
-    if (i18nInstance && typeof i18nInstance.changeLanguage === 'function') {
-      await i18nInstance.changeLanguage(lang);
-    }
+  const t = (key: string): string => {
+    return translations[language]?.[key] || key;
   };
 
-  const t = (key: string, options?: any): string => {
-    try {
-      // Handle nested keys like 'mealPlan.title'
-      if (key.includes('.')) {
-        const [namespace, ...keyParts] = key.split('.');
-        const finalKey = keyParts.join('.');
-        const result = i18nT(finalKey, { ns: namespace, ...options });
-        return typeof result === 'string' && result !== finalKey ? result : finalKey;
-      }
-      
-      // Try common namespace first, then fallback to the key itself
-      const result = i18nT(key, { ns: 'common', ...options });
-      return typeof result === 'string' && result !== key ? result : key;
-    } catch (error) {
-      console.warn(`Translation error for key: ${key}`, error);
-      return key;
-    }
+  const changeLanguage = (lang: 'en' | 'ar') => {
+    setLanguage(lang);
   };
 
-  const isRTL = language === 'ar';
-
-  useEffect(() => {
-    const savedLanguage = localStorage.getItem('preferred-language');
-    if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'ar')) {
-      setLanguage(savedLanguage as Language);
-    }
-  }, []);
-
-  // Initialize i18next language on mount
-  useEffect(() => {
-    if (i18nInstance && typeof i18nInstance.changeLanguage === 'function') {
-      i18nInstance.changeLanguage(language);
-    }
-  }, [i18nInstance, language]);
-
-  const value = {
+  const value: LanguageContextType = {
     language,
-    setLanguage,
+    isRTL: language === 'ar',
     t,
-    isRTL,
+    changeLanguage,
   };
 
   return (
@@ -81,18 +63,4 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
       {children}
     </LanguageContext.Provider>
   );
-};
-
-export const useLanguage = () => {
-  const context = useContext(LanguageContext);
-  if (context === undefined) {
-    // Provide fallback context
-    return {
-      language: 'en' as Language,
-      setLanguage: () => {},
-      t: (key: string) => key,
-      isRTL: false,
-    };
-  }
-  return context;
 };
