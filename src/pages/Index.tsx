@@ -113,7 +113,7 @@ const Index = () => {
         <EnhancedPageLoading
           isLoading={true}
           type="general"
-          title="FitFatta"
+          title="FitGenius"
           description="Your Fitness Journey Starts Here"
           timeout={3000}
         />
@@ -122,7 +122,7 @@ const Index = () => {
         {!hasNavigated && (
           <div className="mt-8">
             <Button 
-              onClick={() => navigate('/auth')}
+              onClick={() => navigate('/landing')}
               variant="outline"
               className="text-white border-white/30 hover:bg-white/10 hover:border-white/50 backdrop-blur-sm"
             >
