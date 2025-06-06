@@ -7,11 +7,11 @@ import {
   SidebarHeader,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { SidebarBranding } from "./sidebar/SidebarBranding"
+import { SidebarHeader as CustomSidebarHeader } from "./sidebar/SidebarHeader"
 import { SidebarMainNavigation } from "./sidebar/SidebarMainNavigation"
 import { SidebarManagementPanel } from "./sidebar/SidebarManagementPanel"
 import { SidebarAccountSection } from "./sidebar/SidebarAccountSection"
-import { SidebarFooterActions } from "./sidebar/SidebarFooterActions"
+import { SidebarFooter as CustomSidebarFooter } from "./sidebar/SidebarFooter"
 import { cn } from "@/lib/utils"
 
 const AppSidebar = () => {
@@ -30,8 +30,8 @@ const AppSidebar = () => {
       collapsible="icon"
     >
       <SidebarHeader className="p-0 border-b border-gray-200">
-        <SidebarBranding />
-        {/* Move account section to top, right after branding */}
+        <CustomSidebarHeader />
+        {/* Account section moved to header area for better organization */}
         {(!isCollapsed || isMobile) && <SidebarAccountSection />}
       </SidebarHeader>
       
@@ -44,10 +44,10 @@ const AppSidebar = () => {
       </SidebarContent>
 
       <SidebarFooter className={cn(
-        "border-t border-gray-200 bg-white",
-        isCollapsed && !isMobile ? "p-2" : "p-4"
+        "border-t border-gray-200 bg-white p-0",
+        isCollapsed && !isMobile ? "p-1" : ""
       )}>
-        {(!isCollapsed || isMobile) && <SidebarFooterActions />}
+        <CustomSidebarFooter />
       </SidebarFooter>
     </Sidebar>
   )
