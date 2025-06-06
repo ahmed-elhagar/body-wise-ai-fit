@@ -1,7 +1,7 @@
 
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Bed, Walk, Bike, Zap } from "lucide-react";
+import { Bed, User, Bike, Zap } from "lucide-react";
 
 interface ActivityLevelSelectorProps {
   value: string;
@@ -20,7 +20,7 @@ const ActivityLevelSelector = ({ value, onChange }: ActivityLevelSelectorProps) 
     { 
       id: 'light', 
       label: 'Lightly Active', 
-      icon: Walk, 
+      icon: User, 
       color: 'text-blue-500',
       description: 'Light exercise 1-3 days/week'
     },
