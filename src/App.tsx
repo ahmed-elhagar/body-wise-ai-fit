@@ -20,7 +20,14 @@ const Chat = lazy(() => import("@/pages/Chat"));
 const OnboardingSuccess = lazy(() => import("@/pages/OnboardingSuccess"));
 const EnhancedOnboardingWithRegistration = lazy(() => import("@/pages/EnhancedOnboardingWithRegistration"));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 function App() {
   return (
@@ -28,19 +35,49 @@ function App() {
       <AuthProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/landing" element={<LandingPage />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/onboarding" element={<Onboarding />} />
-            <Route path="/enhanced-onboarding" element={<EnhancedOnboarding />} />
-            <Route path="/onboarding-with-registration" element={<EnhancedOnboardingWithRegistration />} />
-            <Route path="/onboarding-success" element={<OnboardingSuccess />} />
+            <Route path="/" element={
+              <Suspense fallback={<div>Loading...</div>}>
+                <Index />
+              </Suspense>
+            } />
+            <Route path="/landing" element={
+              <Suspense fallback={<div>Loading...</div>}>
+                <LandingPage />
+              </Suspense>
+            } />
+            <Route path="/auth" element={
+              <Suspense fallback={<div>Loading...</div>}>
+                <Auth />
+              </Suspense>
+            } />
+            <Route path="/onboarding" element={
+              <Suspense fallback={<div>Loading...</div>}>
+                <Onboarding />
+              </Suspense>
+            } />
+            <Route path="/enhanced-onboarding" element={
+              <Suspense fallback={<div>Loading...</div>}>
+                <EnhancedOnboarding />
+              </Suspense>
+            } />
+            <Route path="/onboarding-with-registration" element={
+              <Suspense fallback={<div>Loading...</div>}>
+                <EnhancedOnboardingWithRegistration />
+              </Suspense>
+            } />
+            <Route path="/onboarding-success" element={
+              <Suspense fallback={<div>Loading...</div>}>
+                <OnboardingSuccess />
+              </Suspense>
+            } />
             <Route
               path="/dashboard"
               element={
                 <ProtectedRoute>
                   <Layout>
-                    <Dashboard />
+                    <Suspense fallback={<div>Loading...</div>}>
+                      <Dashboard />
+                    </Suspense>
                   </Layout>
                 </ProtectedRoute>
               }
