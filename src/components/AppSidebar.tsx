@@ -10,7 +10,6 @@ import {
 import { SidebarHeader as CustomSidebarHeader } from "./sidebar/SidebarHeader"
 import { SidebarMainNavigation } from "./sidebar/SidebarMainNavigation"
 import { SidebarManagementPanel } from "./sidebar/SidebarManagementPanel"
-import { SidebarAccountSection } from "./sidebar/SidebarAccountSection"
 import { SidebarFooter as CustomSidebarFooter } from "./sidebar/SidebarFooter"
 import { cn } from "@/lib/utils"
 
@@ -31,8 +30,6 @@ const AppSidebar = () => {
     >
       <SidebarHeader className="p-0 border-b border-gray-200">
         <CustomSidebarHeader />
-        {/* Account section moved to header area for better organization */}
-        {(!isCollapsed || isMobile) && <SidebarAccountSection />}
       </SidebarHeader>
       
       <SidebarContent className={cn(

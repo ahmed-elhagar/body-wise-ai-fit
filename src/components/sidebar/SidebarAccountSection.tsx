@@ -16,10 +16,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { useRole } from "@/hooks/useRole";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useI18n } from "@/hooks/useI18n";
+import { useProfile } from "@/hooks/useProfile";
 import { cn } from "@/lib/utils";
 
 export const SidebarAccountSection = () => {
   const { user } = useAuth();
+  const { profile } = useProfile();
   const { role, isAdmin, isCoach } = useRole();
   const { subscription } = useSubscription();
   const { isRTL } = useI18n();
@@ -29,6 +31,9 @@ export const SidebarAccountSection = () => {
   const isPro = subscription?.status === 'active';
   
   const getDisplayName = () => {
+    if (profile?.first_name || profile?.last_name) {
+      return `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
+    }
     if (user?.user_metadata?.first_name || user?.user_metadata?.last_name) {
       return `${user.user_metadata.first_name || ''} ${user.user_metadata.last_name || ''}`.trim();
     }
@@ -51,6 +56,13 @@ export const SidebarAccountSection = () => {
       return <Crown className="w-3 h-3 text-yellow-600" />;
     }
     return null;
+  };
+
+  const getRoleText = () => {
+    if (isAdmin) return "Admin";
+    if (isCoach) return "Coach";
+    if (isPro) return "Pro";
+    return "User";
   };
 
   if (!user || isCollapsed) return null;
@@ -90,7 +102,7 @@ export const SidebarAccountSection = () => {
                 {getRoleIcon()}
               </div>
               <div className="text-xs text-gray-500 truncate">
-                {user.email}
+                {getRoleText()}
               </div>
             </div>
           </div>

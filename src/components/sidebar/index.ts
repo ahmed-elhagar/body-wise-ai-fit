@@ -4,4 +4,4 @@ export { SidebarFooter } from './SidebarFooter';
 export { SidebarMainNavigation } from './SidebarMainNavigation';
 export { SidebarManagementPanel } from './SidebarManagementPanel';
 export { SidebarAccountSection } from './SidebarAccountSection';
-export { SidebarAdminPanel } from './SidebarAdminPanel';
+export { default as SidebarAdminPanel } from './SidebarAdminPanel';
