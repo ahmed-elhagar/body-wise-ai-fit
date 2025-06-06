@@ -957,7 +957,6 @@ export type Database = {
           ai_generations_remaining: number | null
           allergies: string[] | null
           bio: string | null
-          body_fat_percentage: number | null
           body_shape: string | null
           breastfeeding_level: string | null
           condition_start_date: string | null
@@ -995,7 +994,6 @@ export type Database = {
           ai_generations_remaining?: number | null
           allergies?: string[] | null
           bio?: string | null
-          body_fat_percentage?: number | null
           body_shape?: string | null
           breastfeeding_level?: string | null
           condition_start_date?: string | null
@@ -1033,7 +1031,6 @@ export type Database = {
           ai_generations_remaining?: number | null
           allergies?: string[] | null
           bio?: string | null
-          body_fat_percentage?: number | null
           body_shape?: string | null
           breastfeeding_level?: string | null
           condition_start_date?: string | null

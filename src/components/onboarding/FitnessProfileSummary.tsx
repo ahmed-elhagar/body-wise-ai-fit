@@ -1,110 +1,130 @@
 
 import { Card } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { User, Target, Activity, Heart } from "lucide-react";
+import { OnboardingFormData } from "@/hooks/useOnboardingForm";
 
 interface FitnessProfileSummaryProps {
-  formData: any;
+  formData: OnboardingFormData;
 }
 
 const FitnessProfileSummary = ({ formData }: FitnessProfileSummaryProps) => {
-  // Calculate BMI
-  const height = parseFloat(formData.height) / 100; // Convert cm to m
-  const weight = parseFloat(formData.weight);
-  const bmi = weight && height ? (weight / (height * height)).toFixed(1) : "0";
-
-  // Determine BMI category
-  const getBMICategory = (bmiValue: string) => {
-    const numericBMI = parseFloat(bmiValue);
-    if (numericBMI < 18.5) return { category: 'Underweight', color: 'blue' };
-    if (numericBMI < 25) return { category: 'Normal', color: 'green' };
-    if (numericBMI < 30) return { category: 'Overweight', color: 'yellow' };
-    return { category: 'Obese', color: 'red' };
+  const getActivityLevelLabel = (level: string) => {
+    const levels = {
+      sedentary: 'Sedentary',
+      light: 'Lightly Active',
+      moderate: 'Moderately Active',
+      very_active: 'Very Active'
+    };
+    return levels[level as keyof typeof levels] || level;
   };
 
-  const bmiInfo = getBMICategory(bmi);
+  const getFitnessGoalLabel = (goal: string) => {
+    const goals = {
+      lose_weight: 'Lose Weight',
+      gain_muscle: 'Build Muscle',
+      maintain: 'Stay Healthy',
+      endurance: 'Build Endurance'
+    };
+    return goals[goal as keyof typeof goals] || goal;
+  };
+
+  const getGenderLabel = (gender: string) => {
+    const genders = {
+      male: 'Male',
+      female: 'Female',
+      other: 'Other',
+      prefer_not_to_say: 'Prefer not to say'
+    };
+    return genders[gender as keyof typeof genders] || gender;
+  };
+
+  const getBodyShapeLabel = (shape: string) => {
+    const shapes = {
+      lean: 'Lean',
+      athletic: 'Athletic',
+      average: 'Average',
+      curvy: 'Curvy',
+      heavy: 'Heavy'
+    };
+    return shapes[shape as keyof typeof shapes] || shape;
+  };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <Label className="text-xl font-bold text-gray-800">
-          Your Fitness Profile
-        </Label>
-      </div>
-
-      <Card className="p-6 bg-gray-900 text-white">
-        <div className="space-y-6">
-          {/* BMI Section */}
-          <div>
-            <h3 className="text-lg font-semibold mb-3">Body Mass Index (BMI)</h3>
-            <div className="relative">
-              <div className="bg-gray-700 h-2 rounded-full mb-2">
-                <div 
-                  className={`h-full rounded-full bg-${bmiInfo.color}-500`}
-                  style={{ width: `${Math.min((parseFloat(bmi) / 40) * 100, 100)}%` }}
-                />
+    <div className="space-y-4">
+      <Card className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Basic Information */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 mb-3">
+              <User className="w-5 h-5 text-blue-600" />
+              <h3 className="font-semibold text-gray-800">Basic Information</h3>
+            </div>
+            
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-600">Name:</span>
+                <span className="font-medium">{formData.first_name} {formData.last_name}</span>
               </div>
-              <div className="flex justify-between text-xs text-gray-400">
-                <span>Underweight</span>
-                <span>Normal</span>
-                <span>Overweight</span>
-                <span>Obese</span>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Age:</span>
+                <span className="font-medium">{formData.age} years</span>
               </div>
-              <div className="text-center mt-2">
-                <span className="bg-gray-600 px-3 py-1 rounded-full text-sm">
-                  You - {bmi}
-                </span>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Gender:</span>
+                <span className="font-medium">{getGenderLabel(formData.gender)}</span>
               </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Height:</span>
+                <span className="font-medium">{formData.height} cm</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Weight:</span>
+                <span className="font-medium">{formData.weight} kg</span>
+              </div>
+              {formData.body_shape && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Body Shape:</span>
+                  <span className="font-medium">{getBodyShapeLabel(formData.body_shape)}</span>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Health Insights */}
-          {parseFloat(bmi) > 25 && (
-            <div className="bg-yellow-600 p-4 rounded-lg">
-              <div className="flex items-start gap-2">
-                <span className="text-yellow-200">⚠️</span>
+          {/* Goals & Activity */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Target className="w-5 h-5 text-green-600" />
+              <h3 className="font-semibold text-gray-800">Goals & Activity</h3>
+            </div>
+            
+            <div className="space-y-3">
+              {formData.fitness_goal && (
                 <div>
-                  <h4 className="font-semibold text-yellow-100">Risks of unhealthy BMI</h4>
-                  <p className="text-sm text-yellow-200 mt-1">
-                    High blood pressure, heart disease, stroke, type 2 diabetes, 
-                    some cancers, chronic back & joint pain, increased mortality.
+                  <span className="text-gray-600 text-sm">Fitness Goal:</span>
+                  <Badge variant="secondary" className="ml-2 bg-green-100 text-green-800">
+                    {getFitnessGoalLabel(formData.fitness_goal)}
+                  </Badge>
+                </div>
+              )}
+              
+              {formData.activity_level && (
+                <div>
+                  <span className="text-gray-600 text-sm">Activity Level:</span>
+                  <Badge variant="secondary" className="ml-2 bg-blue-100 text-blue-800">
+                    {getActivityLevelLabel(formData.activity_level)}
+                  </Badge>
+                </div>
+              )}
+
+              {formData.health_conditions && (
+                <div>
+                  <span className="text-gray-600 text-sm">Health Notes:</span>
+                  <p className="text-sm text-gray-700 mt-1 p-2 bg-yellow-50 rounded">
+                    {formData.health_conditions}
                   </p>
                 </div>
-              </div>
-            </div>
-          )}
-
-          {/* Profile Details */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">🧑‍💻</span>
-              <div>
-                <span className="block text-gray-300">Lifestyle</span>
-                <span className="font-semibold">
-                  {formData.activity_level === 'sedentary' ? 'Sedentary' : 
-                   formData.activity_level === 'lightly_active' ? 'Lightly Active' : 'Very Active'}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">🔥</span>
-              <div>
-                <span className="block text-gray-300">Metabolism</span>
-                <span className="font-semibold">
-                  {parseFloat(bmi) < 25 ? 'Fast, burns calories easily' : 'Slow, easy to gain weight'}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">⚠️</span>
-              <div>
-                <span className="block text-gray-300">Previous Problems</span>
-                <span className="font-semibold">
-                  {formData.health_conditions?.length > 0 ? 
-                    formData.health_conditions.join(', ') : 'None reported'}
-                </span>
-              </div>
+              )}
             </div>
           </div>
         </div>

@@ -1,6 +1,7 @@
 
-import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { TrendingDown, TrendingUp, Heart, Activity } from "lucide-react";
 
 interface GoalBodyTypeSelectorProps {
   value: string;
@@ -8,58 +9,64 @@ interface GoalBodyTypeSelectorProps {
 }
 
 const GoalBodyTypeSelector = ({ value, onChange }: GoalBodyTypeSelectorProps) => {
-  const goalTypes = [
-    {
-      id: 'slim',
-      name: 'Slim',
-      description: 'Lean and toned',
-      icon: '🏃‍♀️'
+  const goals = [
+    { 
+      id: 'lose_weight', 
+      label: 'Lose Weight', 
+      icon: TrendingDown, 
+      color: 'text-red-500',
+      description: 'Reduce body fat and get leaner'
     },
-    {
-      id: 'fit', 
-      name: 'Fit',
-      description: 'Athletic and strong',
-      icon: '💪'
+    { 
+      id: 'gain_muscle', 
+      label: 'Build Muscle', 
+      icon: TrendingUp, 
+      color: 'text-blue-500',
+      description: 'Increase muscle mass and strength'
     },
-    {
-      id: 'muscular',
-      name: 'Muscular', 
-      description: 'Well-defined muscles',
-      icon: '🏋️‍♂️'
+    { 
+      id: 'maintain', 
+      label: 'Stay Healthy', 
+      icon: Heart, 
+      color: 'text-green-500',
+      description: 'Maintain current fitness level'
     },
-    {
-      id: 'bodybuilding',
-      name: 'Bodybuilding',
-      description: 'Maximum muscle mass',
-      icon: '🥇'
-    }
+    { 
+      id: 'endurance', 
+      label: 'Build Endurance', 
+      icon: Activity, 
+      color: 'text-purple-500',
+      description: 'Improve cardiovascular fitness'
+    },
   ];
 
   return (
     <div className="space-y-4">
-      <Label className="text-xl font-bold text-gray-800">
-        Choose the body you want
+      <Label className="text-sm font-medium text-gray-700">
+        What's your main fitness goal? *
       </Label>
-      <div className="grid grid-cols-2 gap-4">
-        {goalTypes.map((type) => {
-          const isSelected = value === type.id;
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {goals.map((goal) => {
+          const Icon = goal.icon;
+          const isSelected = value === goal.id;
+          
           return (
-            <Card
-              key={type.id}
-              className={`p-6 cursor-pointer transition-all duration-300 hover:shadow-lg border-2 aspect-square ${
-                isSelected
-                  ? 'ring-2 ring-blue-500 bg-blue-50 border-blue-200'
-                  : 'hover:bg-gray-50 border-gray-200'
+            <Button
+              key={goal.id}
+              type="button"
+              variant={isSelected ? "default" : "outline"}
+              className={`h-auto p-4 flex flex-col items-start gap-3 text-left ${
+                isSelected ? 'ring-2 ring-blue-500' : ''
               }`}
-              onClick={() => onChange(type.id)}
-              data-testid={`goal-body-${type.id}`}
+              onClick={() => onChange(goal.id)}
             >
-              <div className="flex flex-col items-center justify-center h-full text-center space-y-2">
-                <div className="text-4xl mb-2">{type.icon}</div>
-                <h3 className="font-semibold text-lg text-gray-800">{type.name}</h3>
-                <p className="text-sm text-gray-600">{type.description}</p>
+              <div className="flex items-center gap-3 w-full">
+                <Icon className={`w-6 h-6 ${goal.color}`} />
+                <span className="font-medium">{goal.label}</span>
               </div>
-            </Card>
+              <p className="text-sm text-gray-500">{goal.description}</p>
+            </Button>
           );
         })}
       </div>

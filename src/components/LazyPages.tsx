@@ -6,7 +6,7 @@ const Index = lazy(() => import('@/pages/Index'));
 const Landing = lazy(() => import('@/pages/Landing'));
 const Auth = lazy(() => import('@/pages/Auth'));
 const Dashboard = lazy(() => import('@/pages/Dashboard'));
-const Onboarding = lazy(() => import('@/pages/EnhancedOnboarding'));
+const Onboarding = lazy(() => import('@/pages/Onboarding'));
 const Profile = lazy(() => import('@/pages/Profile'));
 const MealPlan = lazy(() => import('@/pages/MealPlan'));
 const Exercise = lazy(() => import('@/pages/Exercise'));

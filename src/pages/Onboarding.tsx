@@ -9,16 +9,16 @@ import { toast } from "sonner";
 import { useOnboardingForm } from "@/hooks/useOnboardingForm";
 import { validateOnboardingStep } from "@/utils/onboardingValidation";
 import ModernOnboardingHeader from "@/components/onboarding/ModernOnboardingHeader";
+import ModernOnboardingNavigation from "@/components/onboarding/ModernOnboardingNavigation";
 import EnhancedOnboardingStep1 from "@/components/onboarding/EnhancedOnboardingStep1";
 import EnhancedOnboardingStep2 from "@/components/onboarding/EnhancedOnboardingStep2";
 import EnhancedOnboardingStep3 from "@/components/onboarding/EnhancedOnboardingStep3";
 import EnhancedOnboardingStep4 from "@/components/onboarding/EnhancedOnboardingStep4";
-import ModernOnboardingNavigation from "@/components/onboarding/ModernOnboardingNavigation";
 
 const Onboarding = () => {
   const navigate = useNavigate();
   const { updateProfile, isUpdating, profile } = useProfile();
-  const { user, loading: authLoading, signOut } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { isEmailConfirmationEnabled } = useEmailConfirmation();
   const [step, setStep] = useState(1);
   const { formData, updateFormData, handleArrayInput } = useOnboardingForm();
@@ -27,6 +27,14 @@ const Onboarding = () => {
 
   const totalSteps = 4;
   const progress = (step / totalSteps) * 100;
+
+  // Protect onboarding from logged-in users who have completed onboarding
+  useEffect(() => {
+    if (!authLoading && user && profile && profile.onboarding_completed && !isCompleting) {
+      console.log('Onboarding - User has completed onboarding, redirecting to dashboard');
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, profile, authLoading, navigate, isCompleting]);
 
   // Check if user needs to confirm their email (only if email confirmation is enabled)
   useEffect(() => {
@@ -38,14 +46,6 @@ const Onboarding = () => {
       }
     }
   }, [user, authLoading, isEmailConfirmationEnabled]);
-
-  // Check if user has already completed onboarding
-  useEffect(() => {
-    if (!authLoading && profile && profile.onboarding_completed && !isCompleting) {
-      console.log('Onboarding - User has completed onboarding, redirecting to dashboard');
-      navigate('/dashboard', { replace: true });
-    }
-  }, [profile, authLoading, navigate, isCompleting]);
 
   const isStepValid = (): boolean => {
     return validateOnboardingStep(step, formData);
@@ -91,16 +91,11 @@ const Onboarding = () => {
         
         await updateProfile(profileData);
         
-        console.log('Onboarding - Profile saved successfully, signing out and redirecting to login');
-        toast.success('🎉 Profile setup complete! Please sign in to continue.');
+        console.log('Onboarding - Profile saved successfully, redirecting to dashboard');
+        toast.success('🎉 Welcome to FitGenius! Your personalized fitness journey starts now.');
         
-        // Sign out the user and redirect to login
-        await signOut();
-        
-        // Use setTimeout to ensure signOut completes before navigation
-        setTimeout(() => {
-          navigate('/auth', { replace: true });
-        }, 500);
+        // Direct redirect to dashboard after successful completion
+        navigate('/dashboard', { replace: true });
 
       } catch (error) {
         console.error('Onboarding - Unexpected error:', error);
@@ -209,15 +204,15 @@ const Onboarding = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-4 md:py-8">
-      <div className="container mx-auto px-4 max-w-4xl">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-8">
+      <div className="container mx-auto px-4 max-w-2xl">
         <ModernOnboardingHeader 
           step={step} 
           totalSteps={totalSteps} 
           progress={progress} 
         />
 
-        <Card className="p-4 md:p-8 bg-white/90 backdrop-blur-sm border-0 shadow-xl">
+        <Card className="p-8 bg-white/90 backdrop-blur-sm border-0 shadow-xl">
           <div className="min-h-[500px]">
             {renderStepContent()}
           </div>
@@ -230,7 +225,7 @@ const Onboarding = () => {
             onBack={handleBack}
             onNext={handleNext}
             onSkip={handleSkip}
-            canSkip={step === 2 || step === 3} // Allow skipping on optional steps
+            canSkip={step === 2}
           />
         </Card>
       </div>

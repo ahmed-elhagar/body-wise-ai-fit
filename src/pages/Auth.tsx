@@ -15,7 +15,7 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   
   const { signIn, signUp, user, loading: authLoading } = useAuth();
-  const { profile, isLoading: profileLoading } = useProfile();
+  const { profile, isLoading: profileLoading, updateProfile } = useProfile();
   const navigate = useNavigate();
 
   // Redirect logic for authenticated users
@@ -73,14 +73,24 @@ const Auth = () => {
           first_name: data.firstName, 
           last_name: data.lastName 
         });
-        console.log('Sign up successful, redirecting to onboarding');
-        toast.success('Account created successfully! Please check your email to confirm your account.');
+        console.log('Sign up successful, user will be redirected after profile creation');
+        toast.success('Account created successfully!');
         
-        // Redirect immediately to onboarding for signup
-        // The onboarding page will handle the email confirmation flow
-        setTimeout(() => {
-          navigate('/onboarding', { replace: true });
-        }, 1500);
+        // Create initial profile with signup data
+        if (data.firstName && data.lastName) {
+          try {
+            await updateProfile({
+              first_name: data.firstName,
+              last_name: data.lastName,
+              onboarding_completed: false
+            });
+            console.log('Initial profile created with signup data');
+          } catch (error) {
+            console.error('Failed to create initial profile:', error);
+          }
+        }
+        
+        // Let useEffect handle redirection based on auth state
       } else {
         await signIn(data.email, data.password);
         console.log('Sign in successful');
