@@ -88,7 +88,7 @@ const ProtectedRoute = React.memo<ProtectedRouteProps>(({
     if (profile?.onboarding_completed) {
       console.log("ProtectedRoute - Redirecting authenticated user with completed onboarding to dashboard");
       return <Navigate to="/dashboard" replace />;
-    } else if (!profile?.onboarding_completed) {
+    } else if (profile && !profile.onboarding_completed) {
       console.log("ProtectedRoute - Redirecting authenticated user with incomplete onboarding to onboarding");
       return <Navigate to="/onboarding" replace />;
     }

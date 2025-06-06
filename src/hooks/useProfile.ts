@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from './useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -46,12 +46,15 @@ export const useProfile = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<any>(null);
+  const fetchingRef = useRef(false);
+  const lastUserIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     console.log('useProfile: Auth state changed', { 
       hasUser: !!user,
       userId: user?.id?.substring(0, 8) + '...' || 'none',
-      authLoading
+      authLoading,
+      isSameUser: lastUserIdRef.current === user?.id
     });
 
     // If auth is still loading, wait
@@ -66,13 +69,27 @@ export const useProfile = () => {
       setProfile(null);
       setIsLoading(false);
       setError(null);
+      lastUserIdRef.current = null;
+      return;
+    }
+
+    // If same user and already fetching or has profile, skip
+    if (lastUserIdRef.current === user.id && (fetchingRef.current || profile)) {
+      console.log('useProfile: Same user, skipping fetch');
+      setIsLoading(false);
       return;
     }
 
     // User exists and auth is done loading, fetch profile
     const fetchProfile = async () => {
+      if (fetchingRef.current) {
+        console.log('useProfile: Already fetching, skipping...');
+        return;
+      }
+
       try {
         console.log('useProfile: Fetching profile for user:', user.id.substring(0, 8) + '...');
+        fetchingRef.current = true;
         setIsLoading(true);
         setError(null);
 
@@ -93,6 +110,7 @@ export const useProfile = () => {
             onboardingCompleted: data?.onboarding_completed
           });
           setProfile(data);
+          lastUserIdRef.current = user.id;
         }
       } catch (err) {
         console.error('useProfile: Unexpected error:', err);
@@ -100,6 +118,7 @@ export const useProfile = () => {
         setProfile(null);
       } finally {
         setIsLoading(false);
+        fetchingRef.current = false;
       }
     };
 
@@ -150,6 +169,7 @@ export const useProfile = () => {
     if (!user?.id) return;
     
     try {
+      fetchingRef.current = false; // Reset fetch flag
       setIsLoading(true);
       const { data, error } = await supabase
         .from('profiles')

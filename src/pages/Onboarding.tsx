@@ -67,7 +67,7 @@ const Onboarding = () => {
       try {
         console.log('Onboarding - Final step, saving profile data');
         
-        // Convert body fat percentage to body shape
+        // Convert body fat percentage to body shape using valid database values
         const bodyFatPercentage = parseFloat(formData.body_fat_percentage) || 0;
         const gender = formData.gender;
         let bodyShape = '';
@@ -75,10 +75,10 @@ const Onboarding = () => {
         if (gender === 'male') {
           if (bodyFatPercentage < 15) bodyShape = 'lean';
           else if (bodyFatPercentage < 25) bodyShape = 'athletic';
-          else bodyShape = 'strong';
+          else bodyShape = 'bulky';
         } else {
           if (bodyFatPercentage < 20) bodyShape = 'lean';
-          else if (bodyFatPercentage < 30) bodyShape = 'healthy';
+          else if (bodyFatPercentage < 30) bodyShape = 'athletic';
           else bodyShape = 'curvy';
         }
         
@@ -113,12 +113,12 @@ const Onboarding = () => {
           return;
         }
         
-        console.log('Onboarding - Profile saved successfully, redirecting to success page');
+        console.log('Onboarding - Profile saved successfully, redirecting to dashboard');
         
-        // Small delay to ensure the profile update is processed
+        // Navigate directly to dashboard after successful completion
         setTimeout(() => {
-          navigate('/onboarding-success', { replace: true });
-        }, 500);
+          navigate('/dashboard', { replace: true });
+        }, 1000);
 
       } catch (error) {
         console.error('Onboarding - Unexpected error:', error);
