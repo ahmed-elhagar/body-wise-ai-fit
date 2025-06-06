@@ -77,6 +77,7 @@ const Onboarding = () => {
           weight: formData.weight ? parseFloat(formData.weight) : undefined,
           nationality: formData.nationality === "prefer_not_to_say" ? null : formData.nationality,
           body_shape: formData.body_shape as any,
+          body_fat_percentage: formData.body_fat_percentage ? parseFloat(formData.body_fat_percentage) : undefined,
           health_conditions: formData.health_conditions,
           fitness_goal: formData.fitness_goal as any,
           activity_level: formData.activity_level as any,
@@ -91,11 +92,10 @@ const Onboarding = () => {
         
         await updateProfile(profileData);
         
-        console.log('Onboarding - Profile saved successfully, redirecting to dashboard');
-        toast.success('🎉 Welcome to FitGenius! Your personalized fitness journey starts now.');
+        console.log('Onboarding - Profile saved successfully, redirecting to success page');
         
-        // Direct redirect to dashboard after successful completion
-        navigate('/dashboard', { replace: true });
+        // Redirect to success page instead of dashboard
+        navigate('/onboarding-success', { replace: true });
 
       } catch (error) {
         console.error('Onboarding - Unexpected error:', error);

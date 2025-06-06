@@ -87,13 +87,23 @@ const App = () => (
                     } 
                   />
                   
-                  {/* Onboarding route - Special handling: accessible to both new and existing users */}
+                  {/* Onboarding routes */}
                   <Route 
                     path="/onboarding" 
                     element={
                       <Suspense fallback={<PageLoader />}>
                         <LazyPages.Onboarding />
                       </Suspense>
+                    } 
+                  />
+                  <Route 
+                    path="/onboarding-success" 
+                    element={
+                      <ProtectedRoute requireAuth={true}>
+                        <Suspense fallback={<PageLoader />}>
+                          <LazyPages.OnboardingSuccess />
+                        </Suspense>
+                      </ProtectedRoute>
                     } 
                   />
                   
