@@ -15,41 +15,36 @@ export const validateStep = (step: number, formData: SignupFormData): boolean =>
       );
     
     case 2:
-      // Basic Info
+      // Combined Basic Info + Physical Stats
       return !!(
         formData.age &&
         formData.gender &&
-        parseInt(formData.age) >= 13 &&
-        parseInt(formData.age) <= 120
-      );
-    
-    case 3:
-      // Physical Stats
-      return !!(
         formData.height &&
         formData.weight &&
+        parseInt(formData.age) >= 13 &&
+        parseInt(formData.age) <= 120 &&
         parseFloat(formData.height) >= 100 &&
         parseFloat(formData.height) <= 250 &&
         parseFloat(formData.weight) >= 30 &&
         parseFloat(formData.weight) <= 300
       );
     
-    case 4:
+    case 3:
       // Body Composition (auto-valid with slider)
       return true;
     
-    case 5:
+    case 4:
       // Fitness Goals
       return !!(
         formData.fitnessGoal &&
         formData.activityLevel
       );
     
-    case 6:
+    case 5:
       // Health & Dietary (optional)
       return true;
     
-    case 7:
+    case 6:
       // Life Phase (optional)
       return true;
     
@@ -61,12 +56,11 @@ export const validateStep = (step: number, formData: SignupFormData): boolean =>
 export const getStepTitle = (step: number): string => {
   switch (step) {
     case 1: return "Create Account";
-    case 2: return "Basic Information";
-    case 3: return "Physical Stats";
-    case 4: return "Body Composition";
-    case 5: return "Fitness Goals";
-    case 6: return "Health & Preferences";
-    case 7: return "Life Phase";
+    case 2: return "About You";
+    case 3: return "Body Composition";
+    case 4: return "Fitness Goals";
+    case 5: return "Health & Preferences";
+    case 6: return "Life Phase";
     default: return "Setup";
   }
 };
@@ -74,12 +68,11 @@ export const getStepTitle = (step: number): string => {
 export const getStepDescription = (step: number): string => {
   switch (step) {
     case 1: return "Set up your FitGenius account";
-    case 2: return "Tell us about yourself";
-    case 3: return "Your current measurements";
-    case 4: return "Body composition and type";
-    case 5: return "What are your goals?";
-    case 6: return "Health conditions and preferences";
-    case 7: return "Special considerations";
+    case 2: return "Tell us about yourself and your measurements";
+    case 3: return "Body composition and type";
+    case 4: return "What are your goals?";
+    case 5: return "Health conditions and preferences";
+    case 6: return "Special considerations";
     default: return "Complete your setup";
   }
 };

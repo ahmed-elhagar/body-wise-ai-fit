@@ -9,8 +9,7 @@ import { validateStep, getStepTitle, getStepDescription } from "@/utils/signupVa
 import FlowHeader from "@/components/onboarding/FlowHeader";
 import FlowNavigation from "@/components/onboarding/FlowNavigation";
 import AccountStep from "@/components/onboarding/steps/AccountStep";
-import BasicInfoStep from "@/components/onboarding/steps/BasicInfoStep";
-import PhysicalStatsStep from "@/components/onboarding/steps/PhysicalStatsStep";
+import CombinedInfoStep from "@/components/onboarding/steps/CombinedInfoStep";
 import BodyCompositionStep from "@/components/onboarding/steps/BodyCompositionStep";
 import FitnessGoalsStep from "@/components/onboarding/steps/FitnessGoalsStep";
 import HealthPreferencesStep from "@/components/onboarding/steps/HealthPreferencesStep";
@@ -30,8 +29,8 @@ const SignupFlow = () => {
 
   // Calculate total steps based on gender
   const getTotalSteps = () => {
-    if (!formData.gender) return 7;
-    return formData.gender === 'female' ? 7 : 6;
+    if (!formData.gender) return 5;
+    return formData.gender === 'female' ? 5 : 4;
   };
 
   const totalSteps = getTotalSteps();
@@ -39,17 +38,18 @@ const SignupFlow = () => {
   // Redirect authenticated users with completed profiles
   useEffect(() => {
     if (!authLoading && user) {
-      console.log('SignupFlow - User is authenticated');
+      console.log('SignupFlow - User is authenticated, redirecting to dashboard');
+      navigate('/dashboard', { replace: true });
     }
-  }, [user, authLoading]);
+  }, [user, authLoading, navigate]);
 
   const isStepValid = (): boolean => {
     return validateStep(step, formData);
   };
 
   const getStepSkippable = (): boolean => {
-    // Steps 6 and 7 are optional/skippable
-    return step >= 6;
+    // Steps 4 and 5 are optional/skippable
+    return step >= 4;
   };
 
   const handleNext = async () => {
@@ -58,8 +58,8 @@ const SignupFlow = () => {
       return;
     }
 
-    // Skip step 7 for non-females
-    if (step === 6 && formData.gender !== 'female') {
+    // Skip step 5 for non-females
+    if (step === 4 && formData.gender !== 'female') {
       await completeSetup();
       return;
     }
@@ -73,9 +73,9 @@ const SignupFlow = () => {
 
   const handleBack = () => {
     if (step > 1) {
-      // Skip step 7 for non-females when going back
-      if (step === 7 && formData.gender !== 'female') {
-        setStep(6);
+      // Skip step 5 for non-females when going back
+      if (step === 5 && formData.gender !== 'female') {
+        setStep(4);
       } else {
         setStep(step - 1);
       }
@@ -91,84 +91,108 @@ const SignupFlow = () => {
   const completeSetup = async () => {
     setIsProcessing(true);
     try {
-      // First create the user account
+      console.log('Starting signup process with data:', {
+        email: formData.email,
+        hasPassword: !!formData.password,
+        firstName: formData.firstName,
+        lastName: formData.lastName
+      });
+
+      // Create user account and profile in one transaction
       try {
-        await signUp(formData.email, formData.password, {
+        const { user: newUser } = await signUp(formData.email, formData.password, {
           first_name: formData.firstName,
           last_name: formData.lastName
         });
-      } catch (signupError: any) {
-        toast.error(signupError.message || 'Failed to create account');
-        return;
-      }
 
-      // Map activity level to valid database values
-      const activityLevelMapping = {
-        'sedentary': 'sedentary',
-        'light': 'lightly_active',
-        'moderate': 'moderately_active', 
-        'active': 'very_active',
-        'very_active': 'extremely_active'
-      };
-
-      const mappedActivityLevel = activityLevelMapping[formData.activityLevel as keyof typeof activityLevelMapping] || 'moderately_active';
-
-      const pregnancyTrimester = formData.pregnancyTrimester && formData.pregnancyTrimester !== 'none' ? 
-        parseInt(formData.pregnancyTrimester) : null;
-      
-      const breastfeedingLevel = formData.breastfeedingLevel && formData.breastfeedingLevel !== 'none' ? 
-        formData.breastfeedingLevel : null;
-      
-      const fastingType = formData.fastingType && formData.fastingType !== 'none' ? 
-        formData.fastingType : null;
-
-      // Map body fat to body shape
-      const getBodyShape = (percentage: number, gender: string) => {
-        if (gender === 'male') {
-          if (percentage < 15) return 'lean';
-          if (percentage < 22) return 'average';
-          return 'fuller';
-        } else {
-          if (percentage < 22) return 'lean';
-          if (percentage < 30) return 'average';
-          return 'fuller';
+        if (!newUser) {
+          throw new Error('User creation failed - no user returned');
         }
-      };
 
-      const profileData = {
-        first_name: formData.firstName?.trim(),
-        last_name: formData.lastName?.trim(),
-        age: formData.age ? parseInt(formData.age) : null,
-        gender: formData.gender,
-        height: formData.height ? parseFloat(formData.height) : null,
-        weight: formData.weight ? parseFloat(formData.weight) : null,
-        body_shape: getBodyShape(formData.bodyFatPercentage, formData.gender),
-        body_fat_percentage: formData.bodyFatPercentage,
-        fitness_goal: formData.fitnessGoal,
-        activity_level: mappedActivityLevel,
-        health_conditions: formData.healthConditions || [],
-        allergies: formData.allergies || [],
-        dietary_restrictions: formData.dietaryRestrictions || [],
-        pregnancy_trimester: pregnancyTrimester,
-        breastfeeding_level: breastfeedingLevel,
-        fasting_type: fastingType,
-        onboarding_completed: true,
-        ai_generations_remaining: 5
-      };
+        console.log('User created successfully:', newUser.id);
+        
+        // Prepare profile data
+        const activityLevelMapping = {
+          'sedentary': 'sedentary',
+          'light': 'lightly_active',
+          'moderate': 'moderately_active', 
+          'active': 'very_active',
+          'very_active': 'extremely_active'
+        };
 
-      // Add a small delay to ensure user is created
-      await new Promise(resolve => setTimeout(resolve, 1000));
+        const mappedActivityLevel = activityLevelMapping[formData.activityLevel as keyof typeof activityLevelMapping] || 'moderately_active';
 
-      const result = await updateProfile(profileData);
-      
-      if (result.error) {
-        console.error('Profile update failed:', result.error);
-        toast.error('Failed to save your profile. Please try again.');
+        const pregnancyTrimester = formData.pregnancyTrimester && formData.pregnancyTrimester !== 'none' ? 
+          parseInt(formData.pregnancyTrimester) : null;
+        
+        const breastfeedingLevel = formData.breastfeedingLevel && formData.breastfeedingLevel !== 'none' ? 
+          formData.breastfeedingLevel : null;
+        
+        const fastingType = formData.fastingType && formData.fastingType !== 'none' ? 
+          formData.fastingType : null;
+
+        // Map body fat to body shape
+        const getBodyShape = (percentage: number, gender: string) => {
+          if (gender === 'male') {
+            if (percentage < 15) return 'lean';
+            if (percentage < 22) return 'average';
+            return 'fuller';
+          } else {
+            if (percentage < 22) return 'lean';
+            if (percentage < 30) return 'average';
+            return 'fuller';
+          }
+        };
+
+        const profileData = {
+          first_name: formData.firstName?.trim(),
+          last_name: formData.lastName?.trim(),
+          age: formData.age ? parseInt(formData.age) : null,
+          gender: formData.gender,
+          height: formData.height ? parseFloat(formData.height) : null,
+          weight: formData.weight ? parseFloat(formData.weight) : null,
+          body_shape: getBodyShape(formData.bodyFatPercentage, formData.gender),
+          body_fat_percentage: formData.bodyFatPercentage,
+          fitness_goal: formData.fitnessGoal,
+          activity_level: mappedActivityLevel,
+          health_conditions: formData.healthConditions || [],
+          allergies: formData.allergies || [],
+          dietary_restrictions: formData.dietaryRestrictions || [],
+          pregnancy_trimester: pregnancyTrimester,
+          breastfeeding_level: breastfeedingLevel,
+          fasting_type: fastingType,
+          onboarding_completed: true,
+          ai_generations_remaining: 5
+        };
+
+        console.log('Updating profile with data:', profileData);
+
+        // Wait a moment for user creation to complete
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        const result = await updateProfile(profileData);
+        
+        if (result.error) {
+          console.error('Profile update failed:', result.error);
+          toast.error('Failed to complete profile setup. Please try logging in and completing your profile.');
+          return;
+        }
+        
+        console.log('Profile updated successfully');
+        toast.success('Welcome to FitGenius! Your account is ready.');
+        navigate('/onboarding-success', { replace: true });
+
+      } catch (signupError: any) {
+        console.error('Signup/Profile creation error:', signupError);
+        
+        if (signupError.message?.includes('User already registered')) {
+          toast.error('An account with this email already exists. Please try logging in instead.');
+          navigate('/auth', { replace: true });
+        } else {
+          toast.error(signupError.message || 'Failed to create account. Please try again.');
+        }
         return;
       }
-      
-      toast.success('Welcome to FitGenius! Your account is ready.');
-      navigate('/onboarding-success', { replace: true });
 
     } catch (error) {
       console.error('Setup completion error:', error);
@@ -189,40 +213,33 @@ const SignupFlow = () => {
         );
       case 2:
         return (
-          <BasicInfoStep 
+          <CombinedInfoStep 
             formData={formData} 
             updateField={updateField}
           />
         );
       case 3:
         return (
-          <PhysicalStatsStep 
+          <BodyCompositionStep 
             formData={formData}
             updateField={updateField}
           />
         );
       case 4:
         return (
-          <BodyCompositionStep 
+          <FitnessGoalsStep 
             formData={formData}
             updateField={updateField}
           />
         );
       case 5:
         return (
-          <FitnessGoalsStep 
-            formData={formData}
-            updateField={updateField}
-          />
-        );
-      case 6:
-        return (
           <HealthPreferencesStep 
             formData={formData}
             updateField={updateField}
           />
         );
-      case 7:
+      case 6:
         return (
           <LifePhaseStep 
             formData={formData}
