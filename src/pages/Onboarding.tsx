@@ -92,10 +92,12 @@ const Onboarding = () => {
         await updateProfile(profileData);
         
         console.log('Onboarding - Profile saved successfully, redirecting to dashboard');
-        toast.success('🎉 Welcome to FitGenius! Your personalized fitness journey starts now.');
+        toast.success('🎉 Welcome to FitFatta! Your personalized fitness journey starts now.');
         
-        // Direct redirect to dashboard after successful completion
-        navigate('/dashboard', { replace: true });
+        // Force navigation to dashboard
+        setTimeout(() => {
+          navigate('/dashboard', { replace: true });
+        }, 1000);
 
       } catch (error) {
         console.error('Onboarding - Unexpected error:', error);
@@ -156,25 +158,25 @@ const Onboarding = () => {
   // Show email confirmation message if email confirmation is enabled and user hasn't confirmed their email
   if (showEmailConfirmation) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-8">
-        <div className="container mx-auto px-4 max-w-md">
-          <Card className="p-8 bg-white/90 backdrop-blur-sm border-0 shadow-xl text-center">
-            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-8 px-4">
+        <div className="container mx-auto max-w-md">
+          <Card className="p-6 sm:p-8 bg-white/90 backdrop-blur-sm border-0 shadow-xl text-center">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
             </div>
             
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
               Check Your Email
             </h2>
             
-            <p className="text-gray-600 mb-6">
+            <p className="text-sm sm:text-base text-gray-600 mb-6">
               We've sent you a confirmation email. Please click the link in the email to verify your account and continue with setup.
             </p>
             
             <div className="space-y-4">
-              <p className="text-sm text-gray-500">
+              <p className="text-xs sm:text-sm text-gray-500">
                 Didn't receive the email? Check your spam folder or try signing up again.
               </p>
               
@@ -194,7 +196,7 @@ const Onboarding = () => {
   // Show loading while checking auth state
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center px-4">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600">Loading...</p>
@@ -204,16 +206,16 @@ const Onboarding = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-8">
-      <div className="container mx-auto px-4 max-w-2xl">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-4 sm:py-8 px-4">
+      <div className="container mx-auto max-w-2xl">
         <ModernOnboardingHeader 
           step={step} 
           totalSteps={totalSteps} 
           progress={progress} 
         />
 
-        <Card className="p-8 bg-white/90 backdrop-blur-sm border-0 shadow-xl">
-          <div className="min-h-[500px]">
+        <Card className="p-4 sm:p-8 bg-white/90 backdrop-blur-sm border-0 shadow-xl">
+          <div className="min-h-[400px] sm:min-h-[500px]">
             {renderStepContent()}
           </div>
 
