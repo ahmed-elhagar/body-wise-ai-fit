@@ -9,10 +9,6 @@ import { toast } from "sonner";
 import { useOnboardingForm } from "@/hooks/useOnboardingForm";
 import { validateOnboardingStep } from "@/utils/onboardingValidation";
 import ModernOnboardingHeader from "@/components/onboarding/ModernOnboardingHeader";
-import ModernOnboardingStep1 from "@/components/onboarding/ModernOnboardingStep1";
-import ModernOnboardingStep2 from "@/components/onboarding/ModernOnboardingStep2";
-import ModernOnboardingStep3 from "@/components/onboarding/ModernOnboardingStep3";
-import ModernOnboardingStep4 from "@/components/onboarding/ModernOnboardingStep4";
 import ModernOnboardingNavigation from "@/components/onboarding/ModernOnboardingNavigation";
 import EnhancedOnboardingStep1 from "@/components/onboarding/EnhancedOnboardingStep1";
 import EnhancedOnboardingStep2 from "@/components/onboarding/EnhancedOnboardingStep2";
@@ -98,8 +94,7 @@ const Onboarding = () => {
         console.log('Onboarding - Profile saved successfully, redirecting to dashboard');
         toast.success('🎉 Welcome to FitGenius! Your personalized fitness journey starts now.');
         
-        // Auto-login user is already handled by the auth system
-        // Redirect directly to dashboard after successful profile completion
+        // Direct redirect to dashboard after successful completion
         navigate('/dashboard', { replace: true });
 
       } catch (error) {
@@ -230,7 +225,7 @@ const Onboarding = () => {
             onBack={handleBack}
             onNext={handleNext}
             onSkip={handleSkip}
-            canSkip={step === 2 || step === 3} // Allow skipping on optional steps
+            canSkip={step === 2 || step === 3}
           />
         </Card>
       </div>

@@ -19,61 +19,79 @@ const BodyFatSlider = ({ value, onChange, gender }: BodyFatSliderProps) => {
   };
 
   const getBodyVisualization = (percentage: number, gender: string) => {
-    // Create visual representation based on body fat percentage
-    const getBodyWidth = (percentage: number) => {
-      // Map percentage to visual width (40-80px range)
-      const minWidth = 40;
-      const maxWidth = 80;
-      return minWidth + ((percentage - 10) / 40) * (maxWidth - minWidth);
+    const getBodySize = (percentage: number) => {
+      // Map percentage to visual size adjustments
+      const baseScale = 1;
+      const scaleMultiplier = percentage / 25; // 25% as baseline
+      return Math.max(0.7, Math.min(1.5, baseScale * scaleMultiplier));
     };
 
     const getBodyColor = (percentage: number) => {
-      if (percentage < 15) return 'from-blue-300 to-blue-400'; // Very lean
-      if (percentage < 20) return 'from-green-300 to-green-400'; // Athletic
-      if (percentage < 25) return 'from-yellow-300 to-yellow-400'; // Average
-      if (percentage < 30) return 'from-orange-300 to-orange-400'; // Above average
-      return 'from-red-300 to-red-400'; // High
+      if (percentage < 15) return '#3B82F6'; // Blue - Very lean
+      if (percentage < 20) return '#10B981'; // Green - Athletic
+      if (percentage < 25) return '#F59E0B'; // Yellow - Average
+      if (percentage < 30) return '#F97316'; // Orange - Above average
+      return '#EF4444'; // Red - High
     };
 
-    const bodyWidth = getBodyWidth(percentage);
-    const colorClass = getBodyColor(percentage);
-    const height = gender === 'female' ? 180 : 200;
+    const scale = getBodySize(percentage);
+    const color = getBodyColor(percentage);
 
-    return (
-      <div className="flex flex-col items-center">
-        {/* Head */}
-        <div 
-          className={`w-8 h-8 bg-gradient-to-br ${colorClass} rounded-full mb-2 border-2 border-gray-300`}
-        />
-        
-        {/* Body */}
-        <div 
-          className={`bg-gradient-to-br ${colorClass} rounded-2xl border-2 border-gray-300 transition-all duration-300`}
-          style={{ 
-            width: `${bodyWidth}px`, 
-            height: `${height}px`
-          }}
-        />
-        
-        {/* Legs */}
-        <div className="flex gap-1 mt-1">
-          <div 
-            className={`bg-gradient-to-br ${colorClass} rounded-full border-2 border-gray-300`}
-            style={{ 
-              width: `${bodyWidth * 0.3}px`, 
-              height: `${height * 0.4}px`
-            }}
-          />
-          <div 
-            className={`bg-gradient-to-br ${colorClass} rounded-full border-2 border-gray-300`}
-            style={{ 
-              width: `${bodyWidth * 0.3}px`, 
-              height: `${height * 0.4}px`
-            }}
-          />
-        </div>
-      </div>
-    );
+    if (gender === 'female') {
+      return (
+        <svg viewBox="0 0 120 200" className="w-24 h-40 mx-auto">
+          {/* Female body silhouette */}
+          <g transform={`scale(${scale}) translate(${60 - 60 * scale}, ${100 - 100 * scale})`} fill={color}>
+            {/* Head */}
+            <ellipse cx="60" cy="25" rx="12" ry="15" />
+            
+            {/* Torso */}
+            <ellipse cx="60" cy="55" rx={8 + percentage * 0.2} ry="20" />
+            
+            {/* Waist */}
+            <ellipse cx="60" cy="80" rx={6 + percentage * 0.15} ry="10" />
+            
+            {/* Hips */}
+            <ellipse cx="60" cy="105" rx={12 + percentage * 0.3} ry="18" />
+            
+            {/* Arms */}
+            <ellipse cx="45" cy="60" rx={3 + percentage * 0.1} ry="25" />
+            <ellipse cx="75" cy="60" rx={3 + percentage * 0.1} ry="25" />
+            
+            {/* Legs */}
+            <ellipse cx="54" cy="145" rx={5 + percentage * 0.15} ry="35" />
+            <ellipse cx="66" cy="145" rx={5 + percentage * 0.15} ry="35" />
+          </g>
+        </svg>
+      );
+    } else {
+      return (
+        <svg viewBox="0 0 120 200" className="w-24 h-40 mx-auto">
+          {/* Male body silhouette */}
+          <g transform={`scale(${scale}) translate(${60 - 60 * scale}, ${100 - 100 * scale})`} fill={color}>
+            {/* Head */}
+            <ellipse cx="60" cy="25" rx="12" ry="15" />
+            
+            {/* Shoulders */}
+            <ellipse cx="60" cy="50" rx={15 + percentage * 0.2} ry="12" />
+            
+            {/* Torso */}
+            <ellipse cx="60" cy="80" rx={10 + percentage * 0.25} ry="25" />
+            
+            {/* Waist */}
+            <ellipse cx="60" cy="110" rx={8 + percentage * 0.2} ry="15" />
+            
+            {/* Arms */}
+            <ellipse cx="42" cy="65" rx={4 + percentage * 0.1} ry="28" />
+            <ellipse cx="78" cy="65" rx={4 + percentage * 0.1} ry="28" />
+            
+            {/* Legs */}
+            <ellipse cx="54" cy="155" rx={6 + percentage * 0.15} ry="40" />
+            <ellipse cx="66" cy="155" rx={6 + percentage * 0.15} ry="40" />
+          </g>
+        </svg>
+      );
+    }
   };
 
   const getBodyFatDescription = (percentage: number, gender: string) => {
@@ -96,24 +114,24 @@ const BodyFatSlider = ({ value, onChange, gender }: BodyFatSliderProps) => {
     <div className="space-y-6">
       <div>
         <Label className="text-xl font-bold text-gray-800">
-          Estimate your current body fat percentage
+          Fine-tune your body composition
         </Label>
         <p className="text-sm text-gray-600 mt-1">
-          Adjust the slider to match your body composition
+          Adjust the slider to match your current body fat percentage
         </p>
       </div>
       
       {/* Body visualization */}
-      <div className="flex justify-center py-8 bg-gray-50 rounded-xl">
+      <div className="flex justify-center py-8 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border-2 border-gray-200">
         {getBodyVisualization(currentValue, gender)}
       </div>
 
       {/* Body fat percentage display */}
       <div className="text-center space-y-2">
-        <div className="inline-block bg-gray-700 text-white px-6 py-3 rounded-full">
-          <span className="text-2xl font-bold">{currentValue}%</span>
+        <div className="inline-block bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-full shadow-lg">
+          <span className="text-3xl font-bold">{currentValue}%</span>
         </div>
-        <p className="text-sm font-medium text-gray-600">
+        <p className="text-base font-medium text-gray-700">
           {getBodyFatDescription(currentValue, gender)}
         </p>
       </div>
@@ -144,8 +162,8 @@ const BodyFatSlider = ({ value, onChange, gender }: BodyFatSliderProps) => {
             </svg>
           </div>
           <div>
-            <h4 className="text-sm font-medium text-blue-800 mb-1">Body Fat Estimation Tip</h4>
-            <p className="text-sm text-blue-700">This is an estimate to help personalize your fitness plan. You can always adjust this later in your profile settings.</p>
+            <h4 className="text-sm font-medium text-blue-800 mb-1">Body Composition Tip</h4>
+            <p className="text-sm text-blue-700">This helps us create more accurate meal plans and exercise recommendations. You can always adjust this later in your profile settings.</p>
           </div>
         </div>
       </div>
