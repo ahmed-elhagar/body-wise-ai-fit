@@ -2,7 +2,6 @@
 import { Shield } from "lucide-react";
 import { OnboardingFormData } from "@/hooks/useOnboardingForm";
 import HealthIssuesSelector from "./HealthIssuesSelector";
-import HealthNotesSection from "./HealthNotesSection";
 
 interface OnboardingStep6Props {
   formData: OnboardingFormData;
@@ -23,15 +22,10 @@ const OnboardingStep6 = ({ formData, updateFormData }: OnboardingStep6Props) => 
         </div>
       </div>
 
-      <div className="space-y-6 px-4">
+      <div className="px-4">
         <HealthIssuesSelector
           value={formData.health_conditions}
           onChange={(value) => updateFormData("health_conditions", value)}
-        />
-        
-        <HealthNotesSection
-          value={formData.health_notes || ''}
-          onChange={(value) => updateFormData("health_notes", value)}
         />
       </div>
     </div>

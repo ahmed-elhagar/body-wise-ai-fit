@@ -9,7 +9,7 @@ interface OnboardingStep7Props {
 }
 
 const OnboardingStep7 = ({ formData, updateFormData }: OnboardingStep7Props) => {
-  // Only show this step for females
+  // Only show this step for females - it contains pregnancy and breastfeeding
   if (formData.gender !== 'female') {
     return null;
   }

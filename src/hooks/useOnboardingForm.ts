@@ -23,7 +23,6 @@ export interface OnboardingFormData {
   
   // Health Information
   health_conditions: string[];
-  health_notes: string;
   allergies: string[];
   
   // Dietary Preferences
@@ -61,7 +60,6 @@ export const useOnboardingForm = () => {
     
     // Health Information
     health_conditions: [],
-    health_notes: '',
     allergies: [],
     
     // Dietary Preferences
@@ -104,7 +102,6 @@ export const useOnboardingForm = () => {
       
       // Health Information
       if (profile.health_conditions) newFormData.health_conditions = profile.health_conditions;
-      if (profile.health_notes) newFormData.health_notes = profile.health_notes;
       if (profile.allergies) newFormData.allergies = profile.allergies;
       
       // Dietary Preferences
@@ -141,14 +138,8 @@ export const useOnboardingForm = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleArrayInput = (field: string, value: string) => {
-    const arrayValue = value.split(',').map(item => item.trim()).filter(Boolean);
-    setFormData(prev => ({ ...prev, [field]: arrayValue }));
-  };
-
   return {
     formData,
     updateFormData,
-    handleArrayInput,
   };
 };
