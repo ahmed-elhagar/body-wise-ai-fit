@@ -63,18 +63,21 @@ const OptimizedExerciseContainer = React.memo(() => {
     );
   }
 
-  // Mock week structure based on current program
+  // Create week structure that matches WeekDay interface
+  const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const weekStructure = Array.from({ length: 7 }, (_, index) => ({
-    day: index + 1,
-    workout: todaysWorkouts[0] || null,
-    exercises: index + 1 === selectedDayNumber ? todaysExercises : []
+    dayNumber: index + 1,
+    dayName: dayNames[index],
+    isCompleted: index + 1 === selectedDayNumber ? progressPercentage === 100 : false,
+    isRestDay: index + 1 === selectedDayNumber ? todaysExercises.length === 0 : false,
+    isToday: index + 1 === selectedDayNumber
   }));
 
+  // Create progress metrics that match ProgressMetrics interface
   const progressMetrics = {
-    completedExercises,
-    totalExercises,
-    progressPercentage,
-    currentWeek: currentProgram.current_week || 1
+    completedWorkouts: completedExercises > 0 ? 1 : 0,
+    totalWorkouts: totalExercises > 0 ? 1 : 0,
+    progressPercentage: progressPercentage
   };
 
   return (
