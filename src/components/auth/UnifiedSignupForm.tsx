@@ -111,13 +111,21 @@ const UnifiedSignupForm = () => {
 
     setLoading(true);
     try {
-      console.log('UnifiedSignupForm - Starting signup process with data:', {
+      console.log('UnifiedSignupForm - Starting signup process with complete data:', {
         firstName: formData.firstName,
         lastName: formData.lastName,
+        email: formData.email,
         age: formData.age,
+        gender: formData.gender,
+        height: formData.height,
+        weight: formData.weight,
         bodyFatPercentage: formData.bodyFatPercentage,
         fitnessGoal: formData.fitnessGoal,
-        activityLevel: formData.activityLevel
+        activityLevel: formData.activityLevel,
+        nationality: formData.nationality,
+        healthConditions: formData.healthConditions,
+        allergies: formData.allergies,
+        dietaryRestrictions: formData.dietaryRestrictions
       });
       
       // Sign up user
@@ -133,31 +141,46 @@ const UnifiedSignupForm = () => {
         throw new Error("Invalid body shape calculation");
       }
 
-      // Create complete profile with all signup data
+      // Create complete profile with ALL signup data and correct field mapping
       const profileData = {
+        // Basic Info - ensure exact field mapping
         first_name: formData.firstName,
         last_name: formData.lastName,
         age: parseInt(formData.age),
         gender: formData.gender,
         height: parseFloat(formData.height),
         weight: parseFloat(formData.weight),
+        nationality: formData.nationality || null,
+        
+        // Body composition
         body_fat_percentage: formData.bodyFatPercentage,
         body_shape: bodyShape,
+        
+        // Goals & Activity
         fitness_goal: formData.fitnessGoal,
         activity_level: formData.activityLevel,
-        nationality: formData.nationality || null,
-        health_conditions: formData.healthConditions,
-        allergies: formData.allergies,
-        dietary_restrictions: formData.dietaryRestrictions,
+        
+        // Health & Preferences arrays
+        health_conditions: formData.healthConditions || [],
+        allergies: formData.allergies || [],
+        dietary_restrictions: formData.dietaryRestrictions || [],
+        preferred_foods: [], // Initialize as empty array
+        special_conditions: [], // Initialize as empty array
+        
+        // System fields
         ai_generations_remaining: 5,
         profile_completion_score: 95 // Higher score since all data is filled
       };
 
-      console.log('UnifiedSignupForm - Creating profile with data:', profileData);
+      console.log('UnifiedSignupForm - Creating profile with complete mapped data:', profileData);
       
-      await updateProfile(profileData);
+      const result = await updateProfile(profileData);
+      
+      if (result.error) {
+        throw new Error(result.error.message || 'Failed to create profile');
+      }
 
-      console.log('UnifiedSignupForm - Signup and profile creation successful, redirecting to welcome');
+      console.log('UnifiedSignupForm - Profile created successfully, redirecting to welcome');
       toast.success("Account created successfully!");
       navigate('/welcome', { replace: true });
     } catch (error: any) {

@@ -64,6 +64,24 @@ const ProfileSummaryView = ({
 
   const bmi = getBMI();
 
+  // Debug log to check what data we're displaying
+  console.log('ProfileSummaryView - Current form data:', {
+    firstName: formData.first_name,
+    lastName: formData.last_name,
+    age: formData.age,
+    gender: formData.gender,
+    height: formData.height,
+    weight: formData.weight,
+    nationality: formData.nationality,
+    bodyShape: formData.body_shape,
+    fitnessGoal: formData.fitness_goal,
+    activityLevel: formData.activity_level,
+    healthConditions: formData.health_conditions,
+    allergies: formData.allergies,
+    preferredFoods: formData.preferred_foods,
+    dietaryRestrictions: formData.dietary_restrictions
+  });
+
   return (
     <div className="space-y-6">
       {/* Personal Information Section */}
