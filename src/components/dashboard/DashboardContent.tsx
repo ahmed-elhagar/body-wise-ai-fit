@@ -7,6 +7,7 @@ import ProfileCompletionBanner from "../profile/ProfileCompletionBanner";
 import { useNavigate } from "react-router-dom";
 import DashboardHeader from "./DashboardHeader";
 import QuickActionsGrid from "./QuickActionsGrid";
+import HeaderDropdowns from "./HeaderDropdowns";
 
 const DashboardContent = () => {
   const { profile } = useProfile();
@@ -25,8 +26,13 @@ const DashboardContent = () => {
         {/* Profile completion banner for existing users */}
         <ProfileCompletionBanner />
         
-        {/* Enhanced Dashboard Header */}
-        <DashboardHeader />
+        {/* Header with notifications and activity dropdowns */}
+        <div className="flex items-center justify-between">
+          <div className="flex-1">
+            <DashboardHeader />
+          </div>
+          <HeaderDropdowns />
+        </div>
         
         {/* Quick Actions Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
