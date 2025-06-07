@@ -1,13 +1,11 @@
 
 import { useProfile } from "../useProfile";
 import { useHealthAssessment } from "../useHealthAssessment";
-import { useOnboardingProgress } from "../useOnboardingProgress";
 import type { ProfileFormData } from "./types";
 
 export const useProfileCompletion = (formData: ProfileFormData) => {
   const { profile } = useProfile();
   const { assessment } = useHealthAssessment();
-  const { progress } = useOnboardingProgress();
 
   const getCompletionPercentage = () => {
     let completed = 0;
@@ -42,20 +40,11 @@ export const useProfileCompletion = (formData: ProfileFormData) => {
       total += 4;
     }
 
-    // Onboarding progress
-    if (progress) {
-      total += 1;
-      if (progress.preferences_completed) completed++;
-    } else {
-      total += 1;
-    }
-
     return Math.round((completed / total) * 100);
   };
 
   return {
     completionPercentage: getCompletionPercentage(),
-    progress,
     assessment,
   };
 };

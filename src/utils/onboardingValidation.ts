@@ -1,21 +1,28 @@
 
-import { OnboardingFormData } from "@/hooks/useOnboardingForm";
-import { VALID_ACTIVITY_LEVELS } from "@/hooks/profile/types";
-
 // Valid body shape values that match database constraint
 // Based on database analysis, these are the ONLY allowed values
 const VALID_BODY_SHAPES = ['lean', 'athletic', 'average', 'heavy'] as const;
 export type BodyShape = typeof VALID_BODY_SHAPES[number];
 
-export const validateOnboardingStep = (step: number, formData: OnboardingFormData): boolean => {
+export const validateSignupStep = (step: number, formData: any): boolean => {
   console.log(`Validating step ${step} with form data:`, formData);
   
   switch (step) {
     case 1:
-      // Basic Information - all fields required except nationality
+      // Basic Information - all fields required
       const step1Valid = !!(
-        formData.first_name?.trim() &&
-        formData.last_name?.trim() &&
+        formData.firstName?.trim() &&
+        formData.lastName?.trim() &&
+        formData.email?.trim() &&
+        formData.password?.trim() &&
+        formData.password.length >= 6
+      );
+      console.log(`Step 1 validation result: ${step1Valid}`);
+      return step1Valid;
+    
+    case 2:
+      // Physical info - age, gender, height, weight required
+      const step2Valid = !!(
         formData.age &&
         parseFloat(formData.age) >= 13 &&
         parseFloat(formData.age) <= 100 &&
@@ -27,42 +34,33 @@ export const validateOnboardingStep = (step: number, formData: OnboardingFormDat
         parseFloat(formData.weight) >= 30 &&
         parseFloat(formData.weight) <= 300
       );
-      console.log(`Step 1 validation result: ${step1Valid}`);
-      return step1Valid;
+      console.log(`Step 2 validation result: ${step2Valid}`);
+      return step2Valid;
     
-    case 2:
+    case 3:
       // Body composition - body fat percentage required and valid
-      const bodyFatValue = parseFloat(formData.body_fat_percentage);
+      const bodyFatValue = parseFloat(formData.bodyFatPercentage);
       const isValidRange = formData.gender === 'male' 
         ? (bodyFatValue >= 8 && bodyFatValue <= 35)
         : (bodyFatValue >= 15 && bodyFatValue <= 45);
       
-      const step2Valid = !!(formData.body_fat_percentage && bodyFatValue > 0 && isValidRange);
-      console.log(`Step 2 validation result: ${step2Valid}, body fat: ${bodyFatValue}`);
-      return step2Valid;
-    
-    case 3:
-      // Goals and activity - fitness goal and activity level required
-      const validFitnessGoals = ['weight_loss', 'muscle_gain', 'endurance', 'strength', 'general_fitness', 'lose_weight', 'gain_muscle', 'maintain'];
-      
-      const step3Valid = !!(
-        formData.fitness_goal && 
-        validFitnessGoals.includes(formData.fitness_goal) &&
-        formData.activity_level && 
-        VALID_ACTIVITY_LEVELS.includes(formData.activity_level as any)
-      );
-      console.log(`Step 3 validation result: ${step3Valid}`);
-      console.log(`- fitness goal: ${formData.fitness_goal} (valid: ${validFitnessGoals.includes(formData.fitness_goal)})`);
-      console.log(`- activity level: ${formData.activity_level} (valid: ${VALID_ACTIVITY_LEVELS.includes(formData.activity_level as any)})`);
+      const step3Valid = !!(formData.bodyFatPercentage && bodyFatValue > 0 && isValidRange);
+      console.log(`Step 3 validation result: ${step3Valid}, body fat: ${bodyFatValue}`);
       return step3Valid;
     
     case 4:
-      // Summary - validate all previous steps are complete
-      const allStepsValid = validateOnboardingStep(1, formData) && 
-                           validateOnboardingStep(2, formData) && 
-                           validateOnboardingStep(3, formData);
-      console.log(`Step 4 (summary) validation result: ${allStepsValid}`);
-      return allStepsValid;
+      // Goals and activity - fitness goal and activity level required
+      const validFitnessGoals = ['weight_loss', 'muscle_gain', 'endurance', 'strength', 'general_fitness'];
+      const validActivityLevels = ['sedentary', 'lightly_active', 'moderately_active', 'very_active'];
+      
+      const step4Valid = !!(
+        formData.fitnessGoal && 
+        validFitnessGoals.includes(formData.fitnessGoal) &&
+        formData.activityLevel && 
+        validActivityLevels.includes(formData.activityLevel)
+      );
+      console.log(`Step 4 validation result: ${step4Valid}`);
+      return step4Valid;
     
     default:
       return false;

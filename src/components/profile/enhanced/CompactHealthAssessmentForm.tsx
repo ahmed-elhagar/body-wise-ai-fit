@@ -1,397 +1,126 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Heart, AlertCircle, CheckCircle } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useHealthAssessment, type HealthAssessmentInput } from "@/hooks/useHealthAssessment";
-import { useOnboardingProgress } from "@/hooks/useOnboardingProgress";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Heart, Brain, Zap, Clock } from "lucide-react";
+import { useHealthAssessment } from "@/hooks/useHealthAssessment";
 import { toast } from "sonner";
 
-const CompactHealthAssessmentForm = () => {
-  const { assessment, saveAssessment, isSaving, isAssessmentComplete } = useHealthAssessment();
-  const { markStepComplete } = useOnboardingProgress();
-  
-  const [formData, setFormData] = useState<HealthAssessmentInput>({
-    chronic_conditions: [],
-    medications: [],
-    injuries: [],
-    physical_limitations: [],
-    stress_level: 5,
-    sleep_quality: 7,
-    energy_level: 7,
-    work_schedule: '',
-    exercise_history: '',
-    nutrition_knowledge: '',
-    cooking_skills: '',
-    time_availability: '',
-    primary_motivation: [],
-    specific_goals: [],
-    timeline_expectation: '',
-    commitment_level: 7,
+interface CompactHealthAssessmentFormProps {
+  onComplete?: () => void;
+}
+
+const CompactHealthAssessmentForm = ({ onComplete }: CompactHealthAssessmentFormProps) => {
+  const { assessment, updateAssessment, isUpdating } = useHealthAssessment();
+  const [formData, setFormData] = useState({
+    stress_level: assessment?.stress_level || 5,
+    sleep_quality: assessment?.sleep_quality || 7,
+    energy_level: assessment?.energy_level || 6,
+    work_schedule: assessment?.work_schedule || "regular",
+    health_notes: assessment?.health_notes || ""
   });
 
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-
-  // Load existing assessment data
-  useEffect(() => {
-    if (assessment) {
-      console.log('CompactHealthAssessmentForm - Loading assessment:', assessment);
-      setFormData({
-        chronic_conditions: assessment.chronic_conditions || [],
-        medications: assessment.medications || [],
-        injuries: assessment.injuries || [],
-        physical_limitations: assessment.physical_limitations || [],
-        stress_level: assessment.stress_level || 5,
-        sleep_quality: assessment.sleep_quality || 7,
-        energy_level: assessment.energy_level || 7,
-        work_schedule: assessment.work_schedule || '',
-        exercise_history: assessment.exercise_history || '',
-        nutrition_knowledge: assessment.nutrition_knowledge || '',
-        cooking_skills: assessment.cooking_skills || '',
-        time_availability: assessment.time_availability || '',
-        primary_motivation: assessment.primary_motivation || [],
-        specific_goals: assessment.specific_goals || [],
-        timeline_expectation: assessment.timeline_expectation || '',
-        commitment_level: assessment.commitment_level || 7,
-      });
-      setHasUnsavedChanges(false);
-    }
-  }, [assessment]);
-
-  // Track changes
-  useEffect(() => {
-    if (assessment) {
-      const hasChanges = JSON.stringify(formData) !== JSON.stringify({
-        chronic_conditions: assessment.chronic_conditions || [],
-        medications: assessment.medications || [],
-        injuries: assessment.injuries || [],
-        physical_limitations: assessment.physical_limitations || [],
-        stress_level: assessment.stress_level || 5,
-        sleep_quality: assessment.sleep_quality || 7,
-        energy_level: assessment.energy_level || 7,
-        work_schedule: assessment.work_schedule || '',
-        exercise_history: assessment.exercise_history || '',
-        nutrition_knowledge: assessment.nutrition_knowledge || '',
-        cooking_skills: assessment.cooking_skills || '',
-        time_availability: assessment.time_availability || '',
-        primary_motivation: assessment.primary_motivation || [],
-        specific_goals: assessment.specific_goals || [],
-        timeline_expectation: assessment.timeline_expectation || '',
-        commitment_level: assessment.commitment_level || 7,
-      });
-      setHasUnsavedChanges(hasChanges);
-    }
-  }, [formData, assessment]);
-
-  const calculateScores = () => {
-    let healthScore = 50;
-    healthScore += (formData.sleep_quality! - 5) * 5;
-    healthScore += (formData.energy_level! - 5) * 3;
-    healthScore -= (formData.stress_level! - 5) * 4;
-    healthScore -= (formData.chronic_conditions?.length || 0) * 5;
-    healthScore -= (formData.medications?.length || 0) * 3;
-    healthScore -= (formData.injuries?.length || 0) * 4;
-
-    let readinessScore = 50;
-    readinessScore += formData.commitment_level! * 5;
-    readinessScore += formData.energy_level! * 3;
-    if (formData.exercise_history === 'advanced' || formData.exercise_history === 'athlete') readinessScore += 15;
-    if (formData.time_availability === 'flexible') readinessScore += 10;
-
-    let riskScore = 10;
-    riskScore += (formData.chronic_conditions?.length || 0) * 15;
-    riskScore += (formData.injuries?.length || 0) * 10;
-    riskScore += (formData.physical_limitations?.length || 0) * 8;
-    riskScore += (10 - formData.sleep_quality!) * 2;
-    riskScore += formData.stress_level! * 3;
-
-    return {
-      health_score: Math.max(0, Math.min(100, healthScore)),
-      readiness_score: Math.max(0, Math.min(100, readinessScore)),
-      risk_score: Math.max(0, Math.min(100, riskScore))
-    };
-  };
-
-  const handleArrayInput = (field: keyof HealthAssessmentInput, value: string) => {
-    const arrayValue = value.split(',').map(item => item.trim()).filter(Boolean);
-    setFormData(prev => ({ ...prev, [field]: arrayValue }));
-  };
-
-  const updateField = <K extends keyof HealthAssessmentInput>(field: K, value: HealthAssessmentInput[K]) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const validateForm = (): string[] => {
-    const errors: string[] = [];
-    
-    const requiredFields = [
-      { field: 'work_schedule', label: 'Work Schedule' },
-      { field: 'exercise_history', label: 'Exercise History' },
-      { field: 'nutrition_knowledge', label: 'Nutrition Knowledge' },
-      { field: 'cooking_skills', label: 'Cooking Skills' },
-      { field: 'time_availability', label: 'Time Availability' },
-      { field: 'timeline_expectation', label: 'Timeline Expectation' },
-    ];
-    
-    requiredFields.forEach(({ field, label }) => {
-      if (!formData[field as keyof HealthAssessmentInput] || formData[field as keyof HealthAssessmentInput] === '') {
-        errors.push(`${label} is required`);
-      }
-    });
-    
-    return errors;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const validationErrors = validateForm();
-    if (validationErrors.length > 0) {
-      toast.error(`Please complete: ${validationErrors.join(', ')}`);
-      console.log('CompactHealthAssessmentForm - Validation errors:', validationErrors);
-      return;
-    }
-    
+  const handleSubmit = async () => {
     try {
-      const scores = calculateScores();
-      const assessmentData = { ...formData, ...scores };
-      
-      console.log('CompactHealthAssessmentForm - Submitting:', assessmentData);
-      
-      await saveAssessment(assessmentData);
-      console.log('CompactHealthAssessmentForm - Assessment saved, marking step complete');
-      await markStepComplete('health_assessment');
-      
-      setHasUnsavedChanges(false);
-      toast.success('Health assessment completed successfully!');
-      
+      await updateAssessment(formData);
+      toast.success("Health assessment updated successfully!");
+      onComplete?.();
     } catch (error) {
-      console.error('CompactHealthAssessmentForm - Save failed:', error);
-      // Error is already handled by the hook
+      toast.error("Failed to update health assessment");
     }
   };
 
   return (
-    <Card className="p-3">
-      <div className="flex items-center gap-2 mb-3">
-        <Heart className="w-5 h-5 text-red-500" />
-        <h2 className="text-lg font-bold text-gray-800">Health Assessment</h2>
-        {isAssessmentComplete && (
-          <CheckCircle className="w-4 h-4 text-green-500 ml-auto" />
-        )}
+    <Card className="p-6 space-y-6">
+      <div className="text-center">
+        <Heart className="w-8 h-8 mx-auto mb-2 text-red-500" />
+        <h3 className="text-lg font-semibold">Quick Health Check</h3>
+        <p className="text-sm text-gray-600">Help us personalize your experience</p>
       </div>
 
-      {hasUnsavedChanges && (
-        <Alert className="mb-3 border-yellow-200 bg-yellow-50">
-          <AlertCircle className="h-4 w-4 text-yellow-600" />
-          <AlertDescription className="text-yellow-800 text-sm">
-            You have unsaved changes. Remember to save your assessment.
-          </AlertDescription>
-        </Alert>
-      )}
-
-      <form onSubmit={handleSubmit} className="space-y-3">
-        {/* Health Conditions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div>
-            <Label className="text-xs">Chronic Conditions</Label>
-            <Input
-              placeholder="e.g., diabetes, hypertension"
-              value={formData.chronic_conditions?.join(', ') || ''}
-              onChange={(e) => handleArrayInput('chronic_conditions', e.target.value)}
-              className="text-sm h-8"
-            />
-          </div>
-          <div>
-            <Label className="text-xs">Current Medications</Label>
-            <Input
-              placeholder="e.g., metformin, lisinopril"
-              value={formData.medications?.join(', ') || ''}
-              onChange={(e) => handleArrayInput('medications', e.target.value)}
-              className="text-sm h-8"
-            />
-          </div>
-        </div>
-
-        {/* Wellness Metrics */}
-        <div className="grid grid-cols-3 gap-3">
-          <div>
-            <Label className="text-xs">Stress: {formData.stress_level}</Label>
-            <Slider
-              value={[formData.stress_level!]}
-              onValueChange={(value) => updateField('stress_level', value[0])}
-              max={10}
-              min={1}
-              step={1}
-              className="mt-1"
-            />
-          </div>
-          <div>
-            <Label className="text-xs">Sleep: {formData.sleep_quality}</Label>
-            <Slider
-              value={[formData.sleep_quality!]}
-              onValueChange={(value) => updateField('sleep_quality', value[0])}
-              max={10}
-              min={1}
-              step={1}
-              className="mt-1"
-            />
-          </div>
-          <div>
-            <Label className="text-xs">Energy: {formData.energy_level}</Label>
-            <Slider
-              value={[formData.energy_level!]}
-              onValueChange={(value) => updateField('energy_level', value[0])}
-              max={10}
-              min={1}
-              step={1}
-              className="mt-1"
-            />
-          </div>
-        </div>
-
-        {/* Required Lifestyle Fields */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div>
-            <Label className="text-xs">Work Schedule *</Label>
-            <Select value={formData.work_schedule || ''} onValueChange={(value) => updateField('work_schedule', value)}>
-              <SelectTrigger className="h-8 text-sm">
-                <SelectValue placeholder="Select work schedule" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="regular_9_5">Regular 9-5</SelectItem>
-                <SelectItem value="shift_work">Shift Work</SelectItem>
-                <SelectItem value="flexible">Flexible Hours</SelectItem>
-                <SelectItem value="part_time">Part Time</SelectItem>
-                <SelectItem value="unemployed">Unemployed</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label className="text-xs">Exercise History *</Label>
-            <Select value={formData.exercise_history || ''} onValueChange={(value) => updateField('exercise_history', value)}>
-              <SelectTrigger className="h-8 text-sm">
-                <SelectValue placeholder="Select experience" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="beginner">Beginner (0-6 months)</SelectItem>
-                <SelectItem value="intermediate">Intermediate (6-24 months)</SelectItem>
-                <SelectItem value="advanced">Advanced (2+ years)</SelectItem>
-                <SelectItem value="athlete">Competitive Athlete</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        {/* Knowledge & Skills */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div>
-            <Label className="text-xs">Nutrition Knowledge *</Label>
-            <Select value={formData.nutrition_knowledge || ''} onValueChange={(value) => updateField('nutrition_knowledge', value)}>
-              <SelectTrigger className="h-8 text-sm">
-                <SelectValue placeholder="Select level" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="basic">Basic</SelectItem>
-                <SelectItem value="intermediate">Intermediate</SelectItem>
-                <SelectItem value="advanced">Advanced</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label className="text-xs">Cooking Skills *</Label>
-            <Select value={formData.cooking_skills || ''} onValueChange={(value) => updateField('cooking_skills', value)}>
-              <SelectTrigger className="h-8 text-sm">
-                <SelectValue placeholder="Select level" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="beginner">Beginner</SelectItem>
-                <SelectItem value="intermediate">Intermediate</SelectItem>
-                <SelectItem value="advanced">Advanced</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        {/* Goals */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div>
-            <Label className="text-xs">Time Availability *</Label>
-            <Select value={formData.time_availability || ''} onValueChange={(value) => updateField('time_availability', value)}>
-              <SelectTrigger className="h-8 text-sm">
-                <SelectValue placeholder="Select availability" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="limited">Limited (1-2 hours/week)</SelectItem>
-                <SelectItem value="moderate">Moderate (3-5 hours/week)</SelectItem>
-                <SelectItem value="flexible">Flexible (5+ hours/week)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label className="text-xs">Timeline Expectation *</Label>
-            <Select value={formData.timeline_expectation || ''} onValueChange={(value) => updateField('timeline_expectation', value)}>
-              <SelectTrigger className="h-8 text-sm">
-                <SelectValue placeholder="Select timeline" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1_month">1 Month</SelectItem>
-                <SelectItem value="3_months">3 Months</SelectItem>
-                <SelectItem value="6_months">6 Months</SelectItem>
-                <SelectItem value="1_year">1 Year</SelectItem>
-                <SelectItem value="ongoing">Ongoing Lifestyle</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        {/* Commitment Level */}
+      <div className="space-y-4">
         <div>
-          <Label className="text-xs">Commitment Level: {formData.commitment_level}/10</Label>
+          <Label className="flex items-center gap-2 mb-2">
+            <Brain className="w-4 h-4" />
+            Stress Level: {formData.stress_level}/10
+          </Label>
           <Slider
-            value={[formData.commitment_level!]}
-            onValueChange={(value) => updateField('commitment_level', value[0])}
+            value={[formData.stress_level]}
+            onValueChange={(value) => setFormData(prev => ({ ...prev, stress_level: value[0] }))}
             max={10}
             min={1}
             step={1}
-            className="mt-1"
+            className="w-full"
           />
         </div>
 
-        {/* Primary Motivation */}
         <div>
-          <Label className="text-xs">Primary Motivation</Label>
-          <Textarea
-            placeholder="Describe what motivates you to achieve your fitness goals"
-            value={formData.primary_motivation?.join(', ') || ''}
-            onChange={(e) => handleArrayInput('primary_motivation', e.target.value)}
-            className="text-sm h-16 resize-none"
+          <Label className="flex items-center gap-2 mb-2">
+            <Clock className="w-4 h-4" />
+            Sleep Quality: {formData.sleep_quality}/10
+          </Label>
+          <Slider
+            value={[formData.sleep_quality]}
+            onValueChange={(value) => setFormData(prev => ({ ...prev, sleep_quality: value[0] }))}
+            max={10}
+            min={1}
+            step={1}
+            className="w-full"
           />
         </div>
 
-        <div className="flex justify-end pt-2">
-          <Button 
-            type="submit" 
-            disabled={isSaving} 
-            className="bg-fitness-gradient hover:opacity-90 h-8 px-4 text-sm"
-          >
-            {isSaving ? (
-              <>
-                <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              'Save Assessment'
-            )}
-          </Button>
+        <div>
+          <Label className="flex items-center gap-2 mb-2">
+            <Zap className="w-4 h-4" />
+            Energy Level: {formData.energy_level}/10
+          </Label>
+          <Slider
+            value={[formData.energy_level]}
+            onValueChange={(value) => setFormData(prev => ({ ...prev, energy_level: value[0] }))}
+            max={10}
+            min={1}
+            step={1}
+            className="w-full"
+          />
         </div>
-      </form>
+
+        <div>
+          <Label className="mb-2 block">Work Schedule</Label>
+          <Select value={formData.work_schedule} onValueChange={(value) => setFormData(prev => ({ ...prev, work_schedule: value }))}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="regular">Regular (9-5)</SelectItem>
+              <SelectItem value="shift">Shift Work</SelectItem>
+              <SelectItem value="flexible">Flexible</SelectItem>
+              <SelectItem value="irregular">Irregular</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <Label className="mb-2 block">Health Notes (Optional)</Label>
+          <Textarea
+            value={formData.health_notes}
+            onChange={(e) => setFormData(prev => ({ ...prev, health_notes: e.target.value }))}
+            placeholder="Any health concerns or medications..."
+            className="min-h-[60px]"
+          />
+        </div>
+      </div>
+
+      <Button
+        onClick={handleSubmit}
+        disabled={isUpdating}
+        className="w-full"
+      >
+        {isUpdating ? "Updating..." : "Complete Assessment"}
+      </Button>
     </Card>
   );
 };

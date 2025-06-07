@@ -1,76 +1,46 @@
 
-import { useProfile } from "@/hooks/useProfile";
-import { useHealthAssessment } from "@/hooks/useHealthAssessment";
-import { useOnboardingProgress } from "@/hooks/useOnboardingProgress";
-import { useLanguage } from "@/contexts/LanguageContext";
+interface ProfileCompletionStep {
+  id: string;
+  title: string;
+  description: string;
+  completed: boolean;
+  route?: string;
+}
 
-export const useProfileCompletionSteps = (completionScore: number) => {
-  const { profile } = useProfile();
-  const { assessment, isAssessmentComplete } = useHealthAssessment();
-  const { progress } = useOnboardingProgress();
-  const { t } = useLanguage();
-
-  const isBasicInfoComplete = !!(profile?.first_name && 
-                                profile?.last_name && 
-                                profile?.age && 
-                                profile?.gender && 
-                                profile?.height && 
-                                profile?.weight && 
-                                profile?.nationality && 
-                                profile?.body_shape);
-
-  const isGoalsComplete = !!(profile?.fitness_goal && 
-                            profile?.activity_level);
-
-  const isPreferencesComplete = progress?.preferences_completed || false;
-
-  // Only 4 steps now (removed profile review)
-  const steps = [
+export const getProfileCompletionSteps = (profile: any, assessment: any): ProfileCompletionStep[] => {
+  return [
     {
-      key: 'basic_info',
-      title: t('basicInformation') || 'Basic Information',
-      description: t('personalDetailsAndMeasurements') || 'Personal details and measurements',
-      completed: isBasicInfoComplete,
+      id: 'basic_info',
+      title: 'Basic Information',
+      description: 'Complete your personal details',
+      completed: !!(profile?.first_name && profile?.last_name && profile?.age && profile?.gender),
+      route: '/profile'
     },
     {
-      key: 'health_assessment',
-      title: t('healthAssessment') || 'Health Assessment',
-      description: t('healthConditionsLifestyleData') || 'Health conditions and lifestyle data',
-      completed: isAssessmentComplete,
+      id: 'physical_info',
+      title: 'Physical Information',
+      description: 'Add your height, weight, and body metrics',
+      completed: !!(profile?.height && profile?.weight && profile?.body_shape),
+      route: '/profile'
     },
     {
-      key: 'goals_setup',
-      title: t('goalsObjectives') || 'Goals & Objectives',
-      description: t('fitnessGoalsTargetAchievements') || 'Fitness goals and target achievements',
-      completed: isGoalsComplete,
+      id: 'goals',
+      title: 'Fitness Goals',
+      description: 'Set your fitness goals and activity level',
+      completed: !!(profile?.fitness_goal && profile?.activity_level),
+      route: '/profile'
     },
     {
-      key: 'preferences',
-      title: t('preferences') || 'Preferences',
-      description: t('appSettingsNotificationPreferences') || 'App settings and notification preferences',
-      completed: isPreferencesComplete,
-    },
+      id: 'health_assessment',
+      title: 'Health Assessment',
+      description: 'Complete your health and wellness assessment',
+      completed: !!(assessment?.stress_level && assessment?.sleep_quality && assessment?.energy_level),
+      route: '/profile'
+    }
   ];
+};
 
-  const nextIncompleteStep = steps.find(step => !step.completed);
+export const calculateCompletionPercentage = (steps: ProfileCompletionStep[]): number => {
   const completedSteps = steps.filter(step => step.completed).length;
-
-  console.log('Profile completion steps analysis:', {
-    isBasicInfoComplete,
-    isHealthAssessmentComplete: isAssessmentComplete,
-    isGoalsComplete,
-    isPreferencesComplete,
-    completionScore,
-    steps: steps.map(s => ({ key: s.key, completed: s.completed })),
-    nextIncompleteStep: nextIncompleteStep?.key,
-    completedSteps,
-    assessmentExists: !!assessment,
-    assessmentComplete: isAssessmentComplete,
-  });
-
-  return {
-    steps,
-    nextIncompleteStep,
-    completedSteps,
-  };
+  return Math.round((completedSteps / steps.length) * 100);
 };
