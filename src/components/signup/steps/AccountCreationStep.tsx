@@ -42,7 +42,12 @@ const AccountCreationStep = ({
     try {
       await onNext();
     } catch (err: any) {
-      if (err.message?.includes('already registered') || err.message?.includes('already exists')) {
+      console.error('Account creation error:', err);
+      
+      // Check for existing user error and don't use toast
+      if (err.message?.includes('already registered') || 
+          err.message?.includes('already exists') || 
+          err.message?.includes('User already registered')) {
         setError('account_exists');
       } else {
         setError(err.message || 'Account creation failed');

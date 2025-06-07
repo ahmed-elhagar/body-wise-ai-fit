@@ -1,3 +1,4 @@
+
 // Valid body shape values that match database constraint
 const VALID_BODY_SHAPES = ['lean', 'athletic', 'average', 'heavy'] as const;
 export type BodyShape = typeof VALID_BODY_SHAPES[number];
@@ -117,21 +118,21 @@ export const mapBodyFatToBodyShape = (bodyFatPercentage: number, gender: string)
   let result: BodyShape;
   
   if (gender === 'male') {
-    if (bodyFatPercentage <= 15) {
+    if (bodyFatPercentage <= 12) {
       result = 'lean';
-    } else if (bodyFatPercentage <= 25) {
+    } else if (bodyFatPercentage <= 20) {
       result = 'athletic';
-    } else if (bodyFatPercentage <= 35) {
+    } else if (bodyFatPercentage <= 30) {
       result = 'average';
     } else {
       result = 'heavy';
     }
   } else {
-    if (bodyFatPercentage <= 20) {
+    if (bodyFatPercentage <= 16) {
       result = 'lean';
-    } else if (bodyFatPercentage <= 30) {
+    } else if (bodyFatPercentage <= 24) {
       result = 'athletic';
-    } else if (bodyFatPercentage <= 40) {
+    } else if (bodyFatPercentage <= 35) {
       result = 'average';
     } else {
       result = 'heavy';

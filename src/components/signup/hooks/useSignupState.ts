@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { SignupFormData } from "../types";
-import { mapBodyFatToBodyShape } from "@/utils/signupValidation";
+import { mapBodyFatToBodyShape, isValidBodyShape } from "@/utils/signupValidation";
 
 const STORAGE_KEY = "fitgenius_signup_progress";
 
@@ -114,6 +114,7 @@ export const useSignupState = () => {
       });
 
       if (result?.error) {
+        console.error('Signup error details:', result.error);
         throw new Error(result.error.message || 'Account creation failed');
       }
 
@@ -121,7 +122,7 @@ export const useSignupState = () => {
       return { success: true };
     } catch (error: any) {
       console.error('Account creation error:', error);
-      return { success: false, error: error.message };
+      throw error; // Re-throw to let the component handle it
     } finally {
       setIsLoading(false);
     }
@@ -135,7 +136,20 @@ export const useSignupState = () => {
     setIsLoading(true);
     try {
       // Ensure body shape is set based on body fat percentage and gender
-      const finalBodyShape = formData.bodyShape || mapBodyFatToBodyShape(formData.bodyFatPercentage, formData.gender);
+      const calculatedBodyShape = mapBodyFatToBodyShape(formData.bodyFatPercentage, formData.gender);
+      
+      // Validate that the body shape is correct
+      if (!isValidBodyShape(calculatedBodyShape)) {
+        console.error('Invalid body shape calculated:', calculatedBodyShape);
+        throw new Error('Invalid body shape value');
+      }
+
+      console.log('🔍 Profile completion data preparation:', {
+        bodyFatPercentage: formData.bodyFatPercentage,
+        gender: formData.gender,
+        calculatedBodyShape,
+        isValidShape: isValidBodyShape(calculatedBodyShape)
+      });
 
       const profileData = {
         first_name: formData.firstName.trim(),
@@ -148,7 +162,7 @@ export const useSignupState = () => {
         fitness_goal: formData.fitnessGoal,
         activity_level: formData.activityLevel,
         body_fat_percentage: formData.bodyFatPercentage,
-        body_shape: finalBodyShape,
+        body_shape: calculatedBodyShape, // Use the calculated and validated body shape
         health_conditions: formData.healthConditions.filter(Boolean),
         allergies: formData.allergies.filter(Boolean),
         dietary_restrictions: formData.dietaryRestrictions.filter(Boolean),
@@ -164,6 +178,7 @@ export const useSignupState = () => {
       const updateResult = await updateProfile(profileData);
       
       if (updateResult?.error) {
+        console.error('Profile update error:', updateResult.error);
         throw new Error(updateResult.error.message || 'Profile update failed');
       }
 
