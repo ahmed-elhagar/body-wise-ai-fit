@@ -47,11 +47,12 @@ const EnhancedSignupForm = () => {
 
   const handleNext = async () => {
     if (currentStep === 1 && !accountCreated) {
-      const result = await createAccount();
-      if (result.success) {
+      try {
+        await createAccount();
         nextStep();
-      } else {
-        toast.error(result.error || "Failed to create account");
+      } catch (error: any) {
+        // Error is handled in the AccountCreationStep component
+        console.error('Account creation failed:', error);
       }
     } else if (currentStep === 5) {
       const result = await completeProfile();

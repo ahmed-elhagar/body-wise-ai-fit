@@ -5,7 +5,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { SignupFormData } from "../types";
 import { mapBodyFatToBodyShape, isValidBodyShape } from "@/utils/signupValidation";
 
-const STORAGE_KEY = "fitgenius_signup_progress";
+const STORAGE_KEY = "fitfatta_signup_progress";
 
 export const useSignupState = () => {
   const { user, signUp } = useAuth();
@@ -119,7 +119,6 @@ export const useSignupState = () => {
       }
 
       setAccountCreated(true);
-      return { success: true };
     } catch (error: any) {
       console.error('Account creation error:', error);
       throw error; // Re-throw to let the component handle it
