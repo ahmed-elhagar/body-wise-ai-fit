@@ -165,17 +165,17 @@ const UnifiedSignupForm = () => {
       });
 
       // Step 1: Sign up user with comprehensive metadata
-      const signupResult = await signUp(formData.email, formData.password, signupMetadata);
-      
-      if (signupResult?.error) {
-        throw new Error(signupResult.error.message || 'Signup failed');
+      try {
+        await signUp(formData.email, formData.password, signupMetadata);
+        console.log('UnifiedSignupForm - Signup completed successfully, navigating to welcome');
+        
+        // Navigate immediately to welcome page - the profile data is already set via metadata
+        toast.success("Account created successfully! Welcome to FitGenius!");
+        navigate('/welcome', { replace: true });
+      } catch (signupError: any) {
+        console.error('UnifiedSignupForm - Signup error:', signupError);
+        throw signupError;
       }
-
-      console.log('UnifiedSignupForm - Signup completed successfully, navigating to welcome');
-      
-      // Navigate immediately to welcome page - the profile data is already set via metadata
-      toast.success("Account created successfully! Welcome to FitGenius!");
-      navigate('/welcome', { replace: true });
       
     } catch (error: any) {
       console.error('UnifiedSignupForm - Signup error:', error);
