@@ -16,7 +16,7 @@ import GoalsActivityStep from "./steps/GoalsActivityStep";
 import HealthInfoStep from "./steps/HealthInfoStep";
 import { SIGNUP_STEPS } from "./types";
 
-const SignupForm = () => {
+const NewSignupForm = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { profile } = useProfile();
@@ -163,4 +163,4 @@ const SignupForm = () => {
   );
 };
 
-export default SignupForm;
+export default NewSignupForm;
