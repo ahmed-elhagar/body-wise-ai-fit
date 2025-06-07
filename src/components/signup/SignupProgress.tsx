@@ -4,9 +4,10 @@ import { SIGNUP_STEPS } from "./types";
 
 interface SignupProgressProps {
   currentStep: number;
+  setCurrentStep?: (step: number) => void;
 }
 
-const SignupProgress = ({ currentStep }: SignupProgressProps) => {
+const SignupProgress = ({ currentStep, setCurrentStep }: SignupProgressProps) => {
   const progress = (currentStep / SIGNUP_STEPS.length) * 100;
 
   return (

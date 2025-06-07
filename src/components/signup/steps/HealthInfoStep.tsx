@@ -1,9 +1,9 @@
 
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Info } from "lucide-react";
 import { SignupFormData } from "../types";
 import HealthConditionsAutocompleteEnhanced from "@/components/onboarding/HealthConditionsAutocompleteEnhanced";
+import TagsAutocomplete from "@/components/profile/TagsAutocomplete";
 
 interface HealthInfoStepProps {
   formData: SignupFormData;
@@ -11,13 +11,43 @@ interface HealthInfoStepProps {
   updateField: (field: keyof SignupFormData, value: any) => void;
 }
 
-const HealthInfoStep = ({ formData, handleArrayInput, updateField }: HealthInfoStepProps) => {
+const PREFERRED_FOODS_SUGGESTIONS = [
+  'Chicken', 'Fish', 'Rice', 'Quinoa', 'Vegetables', 'Fruits', 'Nuts', 'Eggs',
+  'Greek Yogurt', 'Sweet Potatoes', 'Avocado', 'Salmon', 'Broccoli', 'Spinach',
+  'Oats', 'Beans', 'Lentils', 'Turkey', 'Cottage Cheese', 'Berries'
+];
+
+const DIETARY_RESTRICTIONS_SUGGESTIONS = [
+  'Vegetarian', 'Vegan', 'Gluten-free', 'Dairy-free', 'Keto', 'Paleo',
+  'Low-carb', 'Low-fat', 'Mediterranean', 'Intermittent Fasting',
+  'Pescatarian', 'Halal', 'Kosher', 'Raw Food', 'Whole30'
+];
+
+const SPECIAL_CONDITIONS_SUGGESTIONS = [
+  'Pregnancy', 'Breastfeeding', 'Recovery from injury', 'Post-surgery',
+  'Training for competition', 'Weight cutting', 'Bulking phase',
+  'Muscle building', 'Endurance training', 'Strength training'
+];
+
+const HealthInfoStep = ({ formData, updateField }: HealthInfoStepProps) => {
   const handleHealthConditionsChange = (conditions: string[]) => {
     updateField('healthConditions', conditions);
   };
 
   const handleAllergiesChange = (allergies: string[]) => {
     updateField('allergies', allergies);
+  };
+
+  const handlePreferredFoodsChange = (foods: string[]) => {
+    updateField('preferredFoods', foods);
+  };
+
+  const handleDietaryRestrictionsChange = (restrictions: string[]) => {
+    updateField('dietaryRestrictions', restrictions);
+  };
+
+  const handleSpecialConditionsChange = (conditions: string[]) => {
+    updateField('specialConditions', conditions);
   };
 
   return (
@@ -45,46 +75,31 @@ const HealthInfoStep = ({ formData, handleArrayInput, updateField }: HealthInfoS
           placeholder="Search for allergies..."
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <Label htmlFor="preferredFoods">Preferred Foods</Label>
-            <Textarea
-              id="preferredFoods"
-              value={formData.preferredFoods.join(', ')}
-              onChange={(e) => handleArrayInput('preferredFoods', e.target.value)}
-              placeholder="e.g., Chicken, Rice, Vegetables, Fish"
-              rows={3}
-              className="resize-none"
-            />
-            <p className="text-xs text-gray-500">Separate items with commas</p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="dietaryRestrictions">Dietary Restrictions</Label>
-            <Textarea
-              id="dietaryRestrictions"
-              value={formData.dietaryRestrictions.join(', ')}
-              onChange={(e) => handleArrayInput('dietaryRestrictions', e.target.value)}
-              placeholder="e.g., Vegetarian, Gluten-free, Keto"
-              rows={3}
-              className="resize-none"
-            />
-            <p className="text-xs text-gray-500">Separate items with commas</p>
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="specialConditions">Special Conditions</Label>
-          <Textarea
-            id="specialConditions"
-            value={formData.specialConditions.join(', ')}
-            onChange={(e) => handleArrayInput('specialConditions', e.target.value)}
-            placeholder="e.g., Pregnancy, Breastfeeding, Recovery from injury"
-            rows={2}
-            className="resize-none"
+        <div className="grid grid-cols-1 gap-6">
+          <TagsAutocomplete
+            label="Preferred Foods"
+            selectedTags={formData.preferredFoods || []}
+            onTagsChange={handlePreferredFoodsChange}
+            placeholder="Type to add preferred foods..."
+            suggestions={PREFERRED_FOODS_SUGGESTIONS}
           />
-          <p className="text-xs text-gray-500">Separate items with commas</p>
+
+          <TagsAutocomplete
+            label="Dietary Restrictions"
+            selectedTags={formData.dietaryRestrictions || []}
+            onTagsChange={handleDietaryRestrictionsChange}
+            placeholder="Type to add dietary restrictions..."
+            suggestions={DIETARY_RESTRICTIONS_SUGGESTIONS}
+          />
         </div>
+
+        <TagsAutocomplete
+          label="Special Conditions"
+          selectedTags={formData.specialConditions || []}
+          onTagsChange={handleSpecialConditionsChange}
+          placeholder="Type to add special conditions..."
+          suggestions={SPECIAL_CONDITIONS_SUGGESTIONS}
+        />
       </div>
     </div>
   );

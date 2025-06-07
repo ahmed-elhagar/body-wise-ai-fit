@@ -118,7 +118,6 @@ export const useSignupState = () => {
       }
 
       setAccountCreated(true);
-      setCurrentStep(2);
       return { success: true };
     } catch (error: any) {
       console.error('Account creation error:', error);
@@ -135,6 +134,9 @@ export const useSignupState = () => {
 
     setIsLoading(true);
     try {
+      // Ensure body shape is set based on body fat percentage and gender
+      const finalBodyShape = formData.bodyShape || mapBodyFatToBodyShape(formData.bodyFatPercentage, formData.gender);
+
       const profileData = {
         first_name: formData.firstName.trim(),
         last_name: formData.lastName.trim(),
@@ -146,7 +148,7 @@ export const useSignupState = () => {
         fitness_goal: formData.fitnessGoal,
         activity_level: formData.activityLevel,
         body_fat_percentage: formData.bodyFatPercentage,
-        body_shape: mapBodyFatToBodyShape(formData.bodyFatPercentage, formData.gender),
+        body_shape: finalBodyShape,
         health_conditions: formData.healthConditions.filter(Boolean),
         allergies: formData.allergies.filter(Boolean),
         dietary_restrictions: formData.dietaryRestrictions.filter(Boolean),
@@ -156,6 +158,8 @@ export const useSignupState = () => {
         onboarding_completed: true,
         updated_at: new Date().toISOString()
       };
+
+      console.log('Updating profile with data:', profileData);
 
       const updateResult = await updateProfile(profileData);
       

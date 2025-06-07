@@ -11,7 +11,7 @@ import { SignupFormData } from "../types";
 interface AccountCreationStepProps {
   formData: SignupFormData;
   updateField: (field: keyof SignupFormData, value: any) => void;
-  onNext: () => Promise<{ success: boolean; error?: string }>;
+  onNext: () => Promise<void>;
   isLoading: boolean;
   accountCreated: boolean;
 }
@@ -39,13 +39,13 @@ const AccountCreationStep = ({
     if (!isValid) return;
     
     setError(null);
-    const result = await onNext();
-    
-    if (!result.success) {
-      if (result.error?.includes('already registered') || result.error?.includes('already exists')) {
+    try {
+      await onNext();
+    } catch (err: any) {
+      if (err.message?.includes('already registered') || err.message?.includes('already exists')) {
         setError('account_exists');
       } else {
-        setError(result.error || 'Account creation failed');
+        setError(err.message || 'Account creation failed');
       }
     }
   };
@@ -61,20 +61,36 @@ const AccountCreationStep = ({
       </div>
 
       {error === 'account_exists' && (
-        <Alert variant="destructive" className="mb-6">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription className="space-y-3">
-            <p className="font-medium">
-              An account with <strong>{formData.email}</strong> already exists.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-2">
+        <Alert className="mb-6 border-amber-200 bg-amber-50">
+          <AlertCircle className="h-4 w-4 text-amber-600" />
+          <AlertDescription className="space-y-3 text-amber-800">
+            <div>
+              <p className="font-medium text-base mb-2">
+                Account Already Exists
+              </p>
+              <p className="text-sm">
+                An account with <strong>{formData.email}</strong> is already registered.
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2 mt-3">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => navigate('/auth')}
-                className="text-sm"
+                className="text-sm border-amber-300 text-amber-700 hover:bg-amber-100"
               >
                 Sign In Instead
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  updateField('email', '');
+                  setError(null);
+                }}
+                className="text-sm border-amber-300 text-amber-700 hover:bg-amber-100"
+              >
+                Try Different Email
               </Button>
             </div>
           </AlertDescription>
@@ -164,14 +180,6 @@ const AccountCreationStep = ({
           <p className="text-green-600 text-sm">Continue to complete your profile</p>
         </div>
       )}
-
-      <Button
-        onClick={handleSubmit}
-        disabled={!isValid || isLoading || accountCreated}
-        className="w-full h-12 bg-gradient-to-r from-blue-500 to-indigo-600"
-      >
-        {isLoading ? "Creating Account..." : accountCreated ? "Account Created" : "Create Account"}
-      </Button>
     </div>
   );
 };

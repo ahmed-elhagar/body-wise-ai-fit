@@ -35,7 +35,7 @@ const EnhancedSignupForm = () => {
       case 2:
         return !!(formData.age && formData.gender && formData.height && formData.weight);
       case 3:
-        return !!(formData.bodyFatPercentage && formData.bodyShape);
+        return !!(formData.bodyFatPercentage);
       case 4:
         return !!(formData.fitnessGoal && formData.activityLevel);
       case 5:
@@ -68,7 +68,6 @@ const EnhancedSignupForm = () => {
 
   const handleSkip = () => {
     if (currentStep === 5) {
-      // Skip health info and complete profile
       completeProfile().then((result) => {
         if (result.success) {
           toast.success("Profile completed successfully!");
@@ -87,7 +86,9 @@ const EnhancedSignupForm = () => {
           <AccountCreationStep
             formData={formData}
             updateField={updateField}
+            onNext={handleNext}
             isLoading={isLoading}
+            accountCreated={accountCreated}
           />
         );
       case 2:
@@ -137,8 +138,7 @@ const EnhancedSignupForm = () => {
         </div>
 
         <SignupProgress 
-          currentStep={currentStep} 
-          steps={SIGNUP_STEPS}
+          currentStep={currentStep}
           setCurrentStep={setCurrentStep}
         />
 
@@ -146,17 +146,19 @@ const EnhancedSignupForm = () => {
           <CardContent className="p-8">
             {renderCurrentStep()}
 
-            <SignupNavigation
-              currentStep={currentStep}
-              totalSteps={SIGNUP_STEPS.length}
-              isStepValid={validateCurrentStep()}
-              isLoading={isLoading}
-              onBack={prevStep}
-              onNext={handleNext}
-              onComplete={handleNext}
-              canSkip={currentStep === 5}
-              onSkip={handleSkip}
-            />
+            {currentStep > 1 && (
+              <SignupNavigation
+                currentStep={currentStep}
+                totalSteps={SIGNUP_STEPS.length}
+                isStepValid={validateCurrentStep()}
+                isLoading={isLoading}
+                onBack={prevStep}
+                onNext={handleNext}
+                onComplete={handleNext}
+                canSkip={currentStep === 5}
+                onSkip={handleSkip}
+              />
+            )}
           </CardContent>
         </Card>
 

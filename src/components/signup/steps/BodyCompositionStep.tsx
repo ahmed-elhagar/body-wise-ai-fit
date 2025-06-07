@@ -2,8 +2,8 @@
 import { Target } from "lucide-react";
 import BodyShapeSelector from "@/components/auth/BodyShapeSelector";
 import { SignupFormData } from "../types";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
+import { mapBodyFatToBodyShape } from "@/utils/signupValidation";
+import { useEffect } from "react";
 
 interface BodyCompositionStepProps {
   formData: SignupFormData;
@@ -17,11 +17,19 @@ const BodyCompositionStep = ({ formData, updateField }: BodyCompositionStepProps
   const handleBodyFatChange = (value: number) => {
     console.log('Body fat percentage changed to:', value);
     updateField("bodyFatPercentage", value);
+    
+    // Auto-update body shape based on fat percentage
+    const autoBodyShape = mapBodyFatToBodyShape(value, formData.gender || 'male');
+    updateField("bodyShape", autoBodyShape);
   };
 
-  const handleBodyShapeChange = (value: string) => {
-    updateField("bodyShape", value);
-  };
+  // Auto-set body shape when component mounts or gender changes
+  useEffect(() => {
+    if (formData.bodyFatPercentage && formData.gender) {
+      const autoBodyShape = mapBodyFatToBodyShape(formData.bodyFatPercentage, formData.gender);
+      updateField("bodyShape", autoBodyShape);
+    }
+  }, [formData.gender, updateField]);
 
   return (
     <div className="space-y-6">
@@ -30,24 +38,10 @@ const BodyCompositionStep = ({ formData, updateField }: BodyCompositionStepProps
           <Target className="w-8 h-8 text-white" />
         </div>
         <h2 className="text-2xl font-bold text-gray-800 mb-2">Body Composition</h2>
-        <p className="text-gray-600">Select your current body type to help us create your personalized plan</p>
+        <p className="text-gray-600">Select your current body fat percentage to help us create your personalized plan</p>
       </div>
 
       <div className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="bodyShape">Body Shape</Label>
-          <Select value={formData.bodyShape || ''} onValueChange={handleBodyShapeChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select your body shape" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ectomorph">Ectomorph (Lean/Thin)</SelectItem>
-              <SelectItem value="mesomorph">Mesomorph (Athletic/Muscular)</SelectItem>
-              <SelectItem value="endomorph">Endomorph (Rounded/Soft)</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
         <BodyShapeSelector
           value={currentBodyFat}
           onChange={handleBodyFatChange}
