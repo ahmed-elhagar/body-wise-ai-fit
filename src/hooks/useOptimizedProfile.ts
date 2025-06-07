@@ -30,7 +30,7 @@ export const useOptimizedProfile = () => {
       hasBasicInfo: !!(profile.first_name && profile.last_name && profile.age),
       hasPhysicalInfo: !!(profile.height && profile.weight),
       hasGoals: !!(profile.fitness_goal && profile.activity_level),
-      isOnboardingComplete: profile.onboarding_completed || false
+      isProfileComplete: (profile.profile_completion_score || 0) >= 80
     };
   }, [profile]);
 

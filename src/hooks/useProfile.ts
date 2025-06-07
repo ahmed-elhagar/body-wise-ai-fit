@@ -23,7 +23,6 @@ export interface Profile {
   timezone?: string;
   bio?: string;
   profile_visibility?: string;
-  onboarding_completed?: boolean;
   role?: 'normal' | 'pro' | 'coach' | 'admin';
   created_at?: string;
   updated_at?: string;
@@ -108,7 +107,7 @@ export const useProfile = () => {
           console.log('useProfile: Profile fetched successfully', {
             hasProfile: !!data,
             profileId: data?.id?.substring(0, 8) + '...',
-            onboardingCompleted: data?.onboarding_completed
+            hasBasicInfo: data?.first_name && data?.last_name
           });
           setProfile(data);
           lastUserIdRef.current = user.id;
