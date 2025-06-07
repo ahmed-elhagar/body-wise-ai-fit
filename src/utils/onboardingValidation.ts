@@ -1,5 +1,6 @@
 
 import { OnboardingFormData } from "@/hooks/useOnboardingForm";
+import { VALID_ACTIVITY_LEVELS } from "@/hooks/profile/types";
 
 export const validateOnboardingStep = (step: number, formData: OnboardingFormData): boolean => {
   switch (step) {
@@ -31,15 +32,14 @@ export const validateOnboardingStep = (step: number, formData: OnboardingFormDat
     
     case 3:
       // Goals and activity - fitness goal and activity level required
-      // Validate that activity_level matches database constraint values
-      const validActivityLevels = ['sedentary', 'lightly_active', 'moderately_active', 'very_active', 'extremely_active'];
+      // Use the exact VALID_ACTIVITY_LEVELS from types
       const validFitnessGoals = ['weight_loss', 'muscle_gain', 'endurance', 'strength', 'general_fitness'];
       
       return !!(
         formData.fitness_goal && 
         validFitnessGoals.includes(formData.fitness_goal) &&
         formData.activity_level && 
-        validActivityLevels.includes(formData.activity_level)
+        VALID_ACTIVITY_LEVELS.includes(formData.activity_level as any)
       );
     
     case 4:

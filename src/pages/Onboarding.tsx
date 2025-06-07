@@ -67,6 +67,7 @@ const Onboarding = () => {
       setIsCompleting(true);
       try {
         console.log('Onboarding - Final step, saving profile data');
+        console.log('Onboarding - Form data before processing:', formData);
         
         // Convert body fat percentage to body shape using valid database enum values
         const bodyFatPercentage = parseFloat(formData.body_fat_percentage) || 0;
@@ -85,6 +86,8 @@ const Onboarding = () => {
         }
         
         console.log('Onboarding - Body shape mapping:', { bodyFatPercentage, gender, bodyShape });
+        console.log('Onboarding - Activity level value:', formData.activity_level);
+        console.log('Onboarding - Fitness goal value:', formData.fitness_goal);
         
         const profileData = {
           first_name: formData.first_name,
