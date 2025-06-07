@@ -111,7 +111,14 @@ const UnifiedSignupForm = () => {
 
     setLoading(true);
     try {
-      console.log('UnifiedSignupForm - Starting signup process');
+      console.log('UnifiedSignupForm - Starting signup process with data:', {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        age: formData.age,
+        bodyFatPercentage: formData.bodyFatPercentage,
+        fitnessGoal: formData.fitnessGoal,
+        activityLevel: formData.activityLevel
+      });
       
       // Sign up user
       await signUp(formData.email, formData.password, {
@@ -126,8 +133,8 @@ const UnifiedSignupForm = () => {
         throw new Error("Invalid body shape calculation");
       }
 
-      // Create complete profile
-      await updateProfile({
+      // Create complete profile with all signup data
+      const profileData = {
         first_name: formData.firstName,
         last_name: formData.lastName,
         age: parseInt(formData.age),
@@ -143,8 +150,12 @@ const UnifiedSignupForm = () => {
         allergies: formData.allergies,
         dietary_restrictions: formData.dietaryRestrictions,
         ai_generations_remaining: 5,
-        profile_completion_score: 90
-      });
+        profile_completion_score: 95 // Higher score since all data is filled
+      };
+
+      console.log('UnifiedSignupForm - Creating profile with data:', profileData);
+      
+      await updateProfile(profileData);
 
       console.log('UnifiedSignupForm - Signup and profile creation successful, redirecting to welcome');
       toast.success("Account created successfully!");

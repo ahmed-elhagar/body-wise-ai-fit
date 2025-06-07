@@ -29,9 +29,18 @@ export const useProfileFormData = () => {
 
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
 
-  // Sync with profile data
+  // Sync with profile data - ensure all signup data is properly mapped
   useEffect(() => {
     if (profile) {
+      console.log('useProfileFormData - Syncing profile data:', {
+        hasProfile: !!profile,
+        firstName: profile.first_name,
+        lastName: profile.last_name,
+        age: profile.age,
+        bodyFatPercentage: profile.body_fat_percentage,
+        bodyShape: profile.body_shape
+      });
+
       setFormData(prev => ({
         ...prev,
         first_name: profile.first_name || '',
@@ -44,16 +53,17 @@ export const useProfileFormData = () => {
         body_shape: profile.body_shape || '',
         fitness_goal: profile.fitness_goal || '',
         activity_level: profile.activity_level || '',
-        health_conditions: profile.health_conditions || [],
-        allergies: profile.allergies || [],
-        preferred_foods: profile.preferred_foods || [],
-        dietary_restrictions: profile.dietary_restrictions || [],
+        health_conditions: Array.isArray(profile.health_conditions) ? profile.health_conditions : [],
+        allergies: Array.isArray(profile.allergies) ? profile.allergies : [],
+        preferred_foods: Array.isArray(profile.preferred_foods) ? profile.preferred_foods : [],
+        dietary_restrictions: Array.isArray(profile.dietary_restrictions) ? profile.dietary_restrictions : [],
         special_conditions: Array.isArray(profile.special_conditions) ? profile.special_conditions : [],
       }));
     }
   }, [profile]);
 
   const updateFormData = (field: string, value: string | number | string[]) => {
+    console.log('useProfileFormData - Updating field:', field, 'with value:', value);
     setFormData(prev => ({ ...prev, [field]: value }));
     // Clear validation error when user starts typing
     if (validationErrors[field]) {

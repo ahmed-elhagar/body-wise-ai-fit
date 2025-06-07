@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -10,7 +9,7 @@ import { useProfile } from "@/hooks/useProfile";
 const Welcome = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { profile } = useProfile();
+  const { profile, refetch } = useProfile();
 
   // Redirect logic
   useEffect(() => {
@@ -29,6 +28,14 @@ const Welcome = () => {
 
     console.log('Welcome - User authenticated with complete profile, staying on welcome');
   }, [user, profile, navigate]);
+
+  // Refetch profile when component mounts to ensure we have latest data
+  useEffect(() => {
+    if (user && !profile) {
+      console.log('Welcome - Refetching profile data');
+      refetch();
+    }
+  }, [user, profile, refetch]);
 
   const features = [
     {
@@ -95,10 +102,10 @@ const Welcome = () => {
           ))}
         </div>
 
-        {/* Quick Stats */}
+        {/* Enhanced Profile Summary */}
         <Card className="p-8 bg-white/90 backdrop-blur-sm border-0 shadow-xl">
           <h2 className="text-2xl font-bold text-gray-800 mb-6">Your Profile Summary</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="text-center">
               <div className="text-3xl font-bold text-blue-600 mb-2">
                 {profile?.fitness_goal?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Not Set'}
@@ -113,9 +120,15 @@ const Welcome = () => {
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-purple-600 mb-2">
+                {profile?.body_shape?.replace(/\b\w/g, l => l.toUpperCase()) || 'Not Set'}
+              </div>
+              <div className="text-gray-600 text-sm">Body Type</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-orange-600 mb-2">
                 {profile?.ai_generations_remaining || 5}
               </div>
-              <div className="text-gray-600 text-sm">AI Credits Remaining</div>
+              <div className="text-gray-600 text-sm">AI Credits</div>
             </div>
           </div>
         </Card>
