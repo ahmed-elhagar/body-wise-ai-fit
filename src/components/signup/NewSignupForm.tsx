@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useSignupState } from "./hooks/useSignupState";
-import { validateSignupStep } from "@/utils/signupValidation";
+import { validateSignupStep, validateProfileCompletion } from "@/utils/signupValidation";
 import SignupProgress from "./SignupProgress";
 import SignupNavigation from "./SignupNavigation";
 import AccountCreationStep from "./steps/AccountCreationStep";
@@ -43,7 +43,7 @@ const NewSignupForm = () => {
     }
   }, [user, profile, navigate]);
 
-  // For step 1 (account creation), validation should be more lenient for UI purposes
+  // Validation logic - step 1 is always considered valid for UI purposes
   const isStepValid = currentStep === 1 ? true : validateSignupStep(currentStep, formData);
   const currentStepData = SIGNUP_STEPS[currentStep - 1];
 
@@ -62,19 +62,33 @@ const NewSignupForm = () => {
       } else {
         toast.error(result.error || "Failed to create account");
       }
-    } else if (validateSignupStep(currentStep, formData) || currentStepData?.isOptional) {
-      nextStep();
     } else {
-      toast.error("Please fill in all required fields");
+      // For other steps, validate current step or allow if optional
+      const stepValid = validateSignupStep(currentStep, formData);
+      if (stepValid || currentStepData?.isOptional) {
+        nextStep();
+      } else {
+        toast.error("Please fill in all required fields");
+      }
     }
   };
 
   const handleComplete = async () => {
+    console.log('Attempting to complete profile with data:', formData);
+    
+    // Validate all required data before completion
+    const isValid = validateProfileCompletion(formData);
+    if (!isValid) {
+      toast.error("Please complete all required fields before finishing");
+      return;
+    }
+    
     const result = await completeProfile();
     if (result.success) {
       toast.success("Profile completed successfully! Welcome to FitGenius!");
       navigate('/welcome', { replace: true });
     } else {
+      console.error('Profile completion failed:', result.error);
       toast.error(result.error || "Failed to complete profile setup");
     }
   };
@@ -123,6 +137,7 @@ const NewSignupForm = () => {
           <HealthInfoStep
             formData={formData}
             handleArrayInput={handleArrayInput}
+            updateField={updateField}
           />
         );
       default:

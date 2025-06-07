@@ -76,11 +76,40 @@ export const validateSignupStep = (step: number, formData: any): boolean => {
     
     case 5:
       // Health info is optional, always valid
+      console.log('Step 5 validation: always valid (optional)');
       return true;
     
     default:
+      console.log(`Unknown step ${step}, returning false`);
       return false;
   }
+};
+
+// Validation for profile completion
+export const validateProfileCompletion = (formData: any): boolean => {
+  console.log('Validating complete profile data:', formData);
+  
+  // Check all required fields are present
+  const requiredFieldsValid = !!(
+    formData.firstName?.trim() &&
+    formData.lastName?.trim() &&
+    formData.age &&
+    parseFloat(formData.age) >= 13 &&
+    parseFloat(formData.age) <= 100 &&
+    formData.gender &&
+    formData.height &&
+    parseFloat(formData.height) >= 100 &&
+    parseFloat(formData.height) <= 250 &&
+    formData.weight &&
+    parseFloat(formData.weight) >= 30 &&
+    parseFloat(formData.weight) <= 300 &&
+    formData.bodyFatPercentage &&
+    formData.fitnessGoal &&
+    formData.activityLevel
+  );
+  
+  console.log('Profile completion validation result:', requiredFieldsValid);
+  return requiredFieldsValid;
 };
 
 // Helper function to map body fat percentage to valid body shape

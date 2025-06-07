@@ -2,10 +2,9 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Heart, Edit, Save, X } from "lucide-react";
+import HealthConditionsAutocompleteEnhanced from "@/components/onboarding/HealthConditionsAutocompleteEnhanced";
 
 interface ProfileHealthCardProps {
   formData: any;
@@ -31,6 +30,14 @@ const ProfileHealthCard = ({
     if (success) {
       setIsEditing(false);
     }
+  };
+
+  const handleHealthConditionsChange = (conditions: string[]) => {
+    updateFormData('health_conditions', conditions);
+  };
+
+  const handleAllergiesChange = (allergies: string[]) => {
+    updateFormData('allergies', allergies);
   };
 
   return (
@@ -79,28 +86,20 @@ const ProfileHealthCard = ({
       </CardHeader>
       <CardContent className="space-y-6">
         {isEditing ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label htmlFor="health_conditions">Health Conditions</Label>
-              <Textarea
-                id="health_conditions"
-                value={formData.health_conditions?.join(', ') || ''}
-                onChange={(e) => handleArrayInput('health_conditions', e.target.value)}
-                placeholder="e.g., Diabetes, Hypertension"
-                rows={4}
-              />
-            </div>
+          <div className="space-y-6">
+            <HealthConditionsAutocompleteEnhanced
+              selectedConditions={formData.health_conditions || []}
+              onConditionsChange={handleHealthConditionsChange}
+              label="Health Conditions"
+              placeholder="Search for health conditions..."
+            />
 
-            <div className="space-y-2">
-              <Label htmlFor="allergies">Allergies & Intolerances</Label>
-              <Textarea
-                id="allergies"
-                value={formData.allergies?.join(', ') || ''}
-                onChange={(e) => handleArrayInput('allergies', e.target.value)}
-                placeholder="e.g., Nuts, Dairy, Gluten"
-                rows={4}
-              />
-            </div>
+            <HealthConditionsAutocompleteEnhanced
+              selectedConditions={formData.allergies || []}
+              onConditionsChange={handleAllergiesChange}
+              label="Allergies & Food Intolerances"
+              placeholder="Search for allergies..."
+            />
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -1,18 +1,19 @@
 
 import { useProfile } from './useProfile';
-import { useProfileForm } from './useProfileForm';
+import { useProfileFormState } from './useProfileFormState';
 import { useMemo } from 'react';
+import { toast } from 'sonner';
 
 export const useEnhancedProfile = () => {
-  const { profile, isLoading, updateProfile, refetch } = useProfile();
+  const { profile, isLoading, refetch } = useProfile();
   const { 
     formData, 
     updateFormData, 
     handleArrayInput, 
-    handleSave, 
+    saveProfile,
     isUpdating, 
     validationErrors 
-  } = useProfileForm();
+  } = useProfileFormState();
 
   const completionPercentage = useMemo(() => {
     if (!profile) return 0;
@@ -35,11 +36,25 @@ export const useEnhancedProfile = () => {
   }, [profile]);
 
   const saveBasicInfo = async () => {
-    return await handleSave();
+    const success = await saveProfile();
+    if (success) {
+      toast.success('Basic information saved successfully!');
+      refetch();
+    } else {
+      toast.error('Failed to save basic information');
+    }
+    return success;
   };
 
   const saveGoalsAndActivity = async () => {
-    return await handleSave();
+    const success = await saveProfile();
+    if (success) {
+      toast.success('Goals and health information saved successfully!');
+      refetch();
+    } else {
+      toast.error('Failed to save goals and health information');
+    }
+    return success;
   };
 
   return {
@@ -53,7 +68,6 @@ export const useEnhancedProfile = () => {
     isUpdating,
     validationErrors,
     completionPercentage,
-    updateProfile,
     refetch,
   };
 };

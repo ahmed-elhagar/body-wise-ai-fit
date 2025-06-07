@@ -1,10 +1,9 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { Heart, AlertCircle } from "lucide-react";
 import GenderSelector from "@/components/onboarding/GenderSelector";
-import NationalitySelector from "@/components/onboarding/NationalitySelector";
+import EnhancedNationalitySelector from "@/components/onboarding/EnhancedNationalitySelector";
 import { SignupFormData } from "../types";
 
 interface PhysicalInfoStepProps {
@@ -13,9 +12,13 @@ interface PhysicalInfoStepProps {
 }
 
 const PhysicalInfoStep = ({ formData, updateField }: PhysicalInfoStepProps) => {
-  const ageValid = formData.age && parseInt(formData.age) >= 13 && parseInt(formData.age) <= 100;
-  const heightValid = formData.height && parseFloat(formData.height) >= 100 && parseFloat(formData.height) <= 250;
-  const weightValid = formData.weight && parseFloat(formData.weight) >= 30 && parseFloat(formData.weight) <= 300;
+  const ageValue = parseFloat(formData.age);
+  const heightValue = parseFloat(formData.height);
+  const weightValue = parseFloat(formData.weight);
+
+  const ageValid = formData.age && ageValue >= 13 && ageValue <= 100;
+  const heightValid = formData.height && heightValue >= 100 && heightValue <= 250;
+  const weightValid = formData.weight && weightValue >= 30 && weightValue <= 300;
   
   const isValid = !!(
     ageValid && 
@@ -57,12 +60,11 @@ const PhysicalInfoStep = ({ formData, updateField }: PhysicalInfoStepProps) => {
           )}
         </div>
         <div>
-          <Label htmlFor="nationality" className="text-sm font-medium text-gray-700 mb-2 block">
-            Nationality
-          </Label>
-          <NationalitySelector
+          <EnhancedNationalitySelector
             value={formData.nationality}
             onChange={(value) => updateField("nationality", value)}
+            label="Nationality (Optional)"
+            placeholder="Select nationality..."
           />
         </div>
       </div>
