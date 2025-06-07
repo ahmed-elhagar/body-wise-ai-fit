@@ -3,10 +3,9 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { PageHeader } from "@/components/ui/page-header";
 import { User } from "lucide-react";
-import { useEnhancedProfile } from "@/hooks/useEnhancedProfile";
-import { Progress } from "@/components/ui/progress";
+import { useProfileData } from "@/hooks/useProfileData";
 import { Badge } from "@/components/ui/badge";
-import RefactoredProfileView from "@/components/profile/RefactoredProfileView";
+import ProfileView from "@/components/profile/ProfileView";
 
 const Profile = () => {
   const {
@@ -18,7 +17,7 @@ const Profile = () => {
     isUpdating,
     validationErrors,
     completionPercentage,
-  } = useEnhancedProfile();
+  } = useProfileData();
 
   const getCompletionColor = () => {
     if (completionPercentage >= 80) return "text-green-600";
@@ -97,7 +96,7 @@ const Profile = () => {
           {/* Main Content */}
           <div className="px-6 pb-8">
             <div className="w-full max-w-7xl mx-auto">
-              <RefactoredProfileView
+              <ProfileView
                 formData={formData}
                 updateFormData={updateFormData}
                 handleArrayInput={handleArrayInput}
