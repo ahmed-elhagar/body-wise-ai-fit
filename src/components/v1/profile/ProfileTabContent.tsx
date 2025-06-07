@@ -1,11 +1,10 @@
-
 import { TabsContent } from "@/components/ui/tabs";
 import ProfileOverviewTab from "./tabs/ProfileOverviewTab";
 import ProfileBasicTab from "./tabs/ProfileBasicTab";
 import ProfileHealthTab from "./tabs/ProfileHealthTab";
 import ProfileGoalsTab from "./tabs/ProfileGoalsTab";
 import ProfileSettingsTab from "./tabs/ProfileSettingsTab";
-import { LifePhaseForm } from "./LifePhaseForm";
+import { LifePhaseForm } from "@/components/LifePhaseForm";
 import { useLifePhaseProfile } from "@/hooks/useLifePhaseProfile";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 
