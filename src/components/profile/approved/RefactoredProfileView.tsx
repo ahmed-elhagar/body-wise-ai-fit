@@ -1,6 +1,6 @@
 
-import ProfileBasicInfoCard from "./approved/enhanced/ProfileBasicInfoCard";
-import ProfileGoalsCard from "./approved/enhanced/ProfileGoalsCard";
+import ProfileBasicInfoCard from "./enhanced/ProfileBasicInfoCard";
+import ProfileGoalsCard from "./enhanced/ProfileGoalsCard";
 import ProfileHealthCard from "./enhanced/ProfileHealthCard";
 
 interface RefactoredProfileViewProps {
