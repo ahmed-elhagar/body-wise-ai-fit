@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useProfile } from '@/hooks/useProfile';
 import { useRole } from '@/hooks/useRole';
-import EnhancedPageLoading from '@/components/ui/enhanced-page-loading';
+import SimpleLoadingIndicator from '@/components/ui/simple-loading-indicator';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -42,12 +42,10 @@ const ProtectedRoute = React.memo<ProtectedRouteProps>(({
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <EnhancedPageLoading
-          isLoading={true}
-          type="general"
-          title="Loading"
+        <SimpleLoadingIndicator
+          message="Loading"
           description="Please wait while we verify your access..."
-          timeout={5000}
+          size="lg"
         />
       </div>
     );

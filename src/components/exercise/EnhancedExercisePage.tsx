@@ -8,7 +8,7 @@ import { ExercisePageLayout } from "./ExercisePageLayout";
 import { ExercisePageContent } from "./ExercisePageContent";
 import { ExerciseErrorState } from "./ExerciseErrorState";
 import { useEnhancedAIExercise } from "@/hooks/useEnhancedAIExercise";
-import EnhancedPageLoading from "@/components/ui/enhanced-page-loading";
+import SimpleLoadingIndicator from "@/components/ui/simple-loading-indicator";
 import { EnhancedExerciseHeaderWithAnalytics } from "./EnhancedExerciseHeaderWithAnalytics";
 import { ExerciseAnalyticsContainer } from "./ExerciseAnalyticsContainer";
 import { useState } from "react";
@@ -66,12 +66,10 @@ const EnhancedExercisePage = () => {
   if (showFullPageLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
-        <EnhancedPageLoading
-          isLoading={true}
-          type="exercise"
-          title={isGenerating ? "Generating Your Exercise Program" : "Loading Your Exercise Program"}
+        <SimpleLoadingIndicator
+          message={isGenerating ? "Generating Your Exercise Program" : "Loading Your Exercise Program"}
           description={isGenerating ? "Creating your personalized workout plan with AI..." : "Preparing your personalized workout plan with progress tracking and exercise details"}
-          timeout={isGenerating ? 30000 : 12000}
+          size="lg"
         />
       </div>
     );

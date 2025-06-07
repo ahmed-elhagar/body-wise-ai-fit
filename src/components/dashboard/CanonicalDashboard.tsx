@@ -9,7 +9,7 @@ import WeightTrackingWidget from "@/components/dashboard/WeightTrackingWidget";
 import GoalProgressWidget from "@/components/dashboard/GoalProgressWidget";
 import CoachChatWidget from "@/components/dashboard/CoachChatWidget";
 import HeaderDropdowns from "@/components/dashboard/HeaderDropdowns";
-import EnhancedPageLoading from "@/components/ui/enhanced-page-loading";
+import SimpleLoadingIndicator from "@/components/ui/simple-loading-indicator";
 import ProfileCompletionBanner from "@/components/profile/ProfileCompletionBanner";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
@@ -64,18 +64,16 @@ const CanonicalDashboard = () => {
     navigate('/exercise');
   };
 
-  // Show enhanced loading only if actually loading
+  // Show simple loading only if actually loading
   if (isLoading) {
     return (
       <ProtectedRoute>
         <Layout>
           <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-            <EnhancedPageLoading
-              isLoading={true}
-              type="dashboard"
-              title="Loading Your Dashboard"
-              description="Setting up your personalized fitness dashboard with the latest data and insights"
-              timeout={5000}
+            <SimpleLoadingIndicator
+              message="Loading Dashboard"
+              description="Setting up your personalized fitness dashboard..."
+              size="lg"
             />
           </div>
         </Layout>
