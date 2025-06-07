@@ -4,7 +4,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useProfile } from '@/hooks/useProfile';
 import { useRole } from '@/hooks/useRole';
-import EnhancedPageLoading from '@/components/ui/enhanced-page-loading';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -13,6 +12,13 @@ interface ProtectedRouteProps {
   requireRole?: string | string[];
   redirectTo?: string;
 }
+
+// Simple loading component
+const SimpleLoader = () => (
+  <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+  </div>
+);
 
 const ProtectedRoute = React.memo<ProtectedRouteProps>(({ 
   children, 
@@ -40,17 +46,7 @@ const ProtectedRoute = React.memo<ProtectedRouteProps>(({
 
   // Early return for loading state
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <EnhancedPageLoading
-          isLoading={true}
-          type="general"
-          title="Loading"
-          description="Please wait while we verify your access..."
-          timeout={5000}
-        />
-      </div>
-    );
+    return <SimpleLoader />;
   }
 
   // Enhanced error handling for auth errors

@@ -1,72 +1,60 @@
 
-import React, { useMemo } from "react";
-import { useLanguage } from "@/contexts/LanguageContext";
-import AILoadingDialog from "@/components/ui/ai-loading-dialog";
-import EnhancedPageLoading from "@/components/ui/enhanced-page-loading";
-import { useLoadingProgress } from "./loading/useLoadingProgress";
-import { getGenerationSteps, getShuffleSteps } from "./loading/loadingStepsData";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Card } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
 
 interface MealPlanLoadingStatesProps {
-  isGenerating: boolean;
-  isLoading: boolean;
-  isShuffling?: boolean;
+  type?: 'skeleton' | 'spinner' | 'backdrop';
+  title?: string;
+  description?: string;
 }
 
-export const MealPlanLoadingStates = ({ 
-  isGenerating, 
-  isLoading,
-  isShuffling = false
+const MealPlanLoadingStates = ({ 
+  type = 'skeleton',
+  title = "Loading Meal Plan",
+  description = "Please wait while we load your meals..."
 }: MealPlanLoadingStatesProps) => {
-  const { t, isRTL } = useLanguage();
   
-  // Memoize steps to prevent constant recreation
-  const steps = useMemo(() => {
-    return isShuffling ? getShuffleSteps(t) : getGenerationSteps(t);
-  }, [isShuffling, t]);
-  
-  const { currentStep, progress } = useLoadingProgress(steps, isGenerating || isShuffling);
-
-  if (isGenerating || isShuffling) {
-    const mainTitle = isShuffling ? 'Shuffling Meals' : 'Generating Meal Plan';
-    const mainDescription = isShuffling ? 'Creating new meal combinations...' : 'Creating your personalized meal plan...';
-
-    // Convert steps to AI dialog format
-    const dialogSteps = steps.map((step, index) => ({
-      id: step.id,
-      label: step.text,
-      status: index < currentStep ? 'completed' as const : 
-              index === currentStep ? 'active' as const : 'pending' as const
-    }));
-
+  if (type === 'spinner') {
     return (
-      <AILoadingDialog
-        open={true}
-        status="loading"
-        title={mainTitle}
-        message={steps[currentStep]?.text || mainTitle}
-        description={mainDescription}
-        steps={dialogSteps}
-        progress={progress}
-        allowClose={false}
-      />
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className={`min-h-screen flex items-center justify-center ${isRTL ? 'rtl' : 'ltr'}`}>
-        <EnhancedPageLoading
-          isLoading={true}
-          type="meal-plan"
-          title="Loading Meal Plan"
-          description="Please wait while we fetch your meal plan..."
-          timeout={5000}
-        />
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+        <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
+        <div className="text-center">
+          <h3 className="text-lg font-semibold mb-2">{title}</h3>
+          <p className="text-gray-600">{description}</p>
+        </div>
       </div>
     );
   }
 
-  return null;
+  if (type === 'backdrop') {
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <Card className="p-8 max-w-md w-full mx-4">
+          <div className="text-center space-y-4">
+            <Loader2 className="h-12 w-12 animate-spin mx-auto text-blue-600" />
+            <h3 className="text-lg font-semibold">{title}</h3>
+            <p className="text-gray-600">{description}</p>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  // Default skeleton loading
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {[...Array(6)].map((_, index) => (
+          <Card key={index} className="p-4">
+            <Skeleton className="h-32 w-full mb-4" />
+            <Skeleton className="h-4 w-3/4 mb-2" />
+            <Skeleton className="h-4 w-1/2" />
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
 };
 
 export default MealPlanLoadingStates;

@@ -1,44 +1,31 @@
 
-import React from "react";
-import EnhancedPageLoading from "@/components/ui/enhanced-page-loading";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Loader2 } from "lucide-react";
 
 interface MealPlanLoadingBackdropProps {
   isLoading: boolean;
-  message?: string;
-  type?: 'meal-plan' | 'general';
-  // Add context to prevent showing during admin actions
-  allowedContexts?: string[];
+  title?: string;
+  description?: string;
 }
 
-const MealPlanLoadingBackdrop = React.memo<MealPlanLoadingBackdropProps>(({ 
+const MealPlanLoadingBackdrop = ({ 
   isLoading, 
-  message = "Processing your meal plan...",
-  type = 'meal-plan',
-  allowedContexts = ['meal-plan', 'ai-generation']
-}) => {
+  title = "Generating Your Meal Plan",
+  description = "Please wait while we create your personalized meals..."
+}: MealPlanLoadingBackdropProps) => {
   if (!isLoading) return null;
 
-  // Check if we're in an admin context and should not show this loader
-  const currentPath = window.location.pathname;
-  if (currentPath.includes('/admin')) {
-    return null;
-  }
-
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center">
-      <div className="bg-white/95 backdrop-blur-sm border-0 shadow-2xl rounded-xl p-8 max-w-md mx-4">
-        <EnhancedPageLoading
-          isLoading={isLoading}
-          type={type}
-          title="Creating Your Meal Plan"
-          description={message}
-          timeout={10000}
-        />
-      </div>
-    </div>
+    <Dialog open={isLoading}>
+      <DialogContent className="sm:max-w-md">
+        <div className="text-center py-6">
+          <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-blue-600" />
+          <h3 className="text-lg font-semibold mb-2">{title}</h3>
+          <p className="text-gray-600">{description}</p>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
-});
-
-MealPlanLoadingBackdrop.displayName = 'MealPlanLoadingBackdrop';
+};
 
 export default MealPlanLoadingBackdrop;

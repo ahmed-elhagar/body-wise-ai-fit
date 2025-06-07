@@ -2,14 +2,19 @@
 import { format, addDays } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useOptimizedExerciseProgramPage } from "@/hooks/useOptimizedExerciseProgramPage";
-import { createMockExercise } from "@/types/exercise";
 import ExerciseHeader from "./ExerciseHeader";
 import DayTabs from "../meal-plan/DayTabs";
 import ProgressRing from "./ProgressRing";
 import ExerciseList from "./ExerciseList";
 import { EmptyExerciseState } from "./EmptyExerciseState";
 import { AIExerciseDialog } from "./AIExerciseDialog";
-import EnhancedPageLoading from "@/components/ui/enhanced-page-loading";
+
+// Simple loading component
+const ExerciseLoader = () => (
+  <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+  </div>
+);
 
 const ExercisePageRefactored = () => {
   const { t } = useLanguage();
@@ -46,22 +51,12 @@ const ExercisePageRefactored = () => {
   const currentSelectedDate = addDays(weekStartDate, selectedDayNumber - 1);
   const isToday = format(currentSelectedDate, 'yyyy-MM-dd') === format(currentDate, 'yyyy-MM-dd');
 
-  // Enhanced loading state with progress steps and timeout protection
+  // Loading state
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-        <EnhancedPageLoading
-          isLoading={true}
-          type="exercise"
-          title="Loading Your Exercise Program"
-          description="Preparing your personalized workout plan with progress tracking and exercise details"
-          timeout={12000} // 12 second timeout for exercise data
-        />
-      </div>
-    );
+    return <ExerciseLoader />;
   }
 
-  // Enhanced error state with better recovery options
+  // Error state
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
@@ -72,33 +67,21 @@ const ExercisePageRefactored = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
               </svg>
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              {t('exercise.errorTitle') || 'Exercise Loading Error'}
-            </h3>
-            <p className="text-gray-600 mb-6">
-              {t('exercise.errorMessage') || 'Unable to load your exercise program. Please try again or check your connection.'}
-            </p>
-            <div className="space-y-3">
-              <button
-                onClick={() => refetch()}
-                className="w-full bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-fitness-primary-600 hover:to-fitness-primary-700 transition-all duration-300"
-              >
-                {t('exercise.retry') || 'Try Again'}
-              </button>
-              <button
-                onClick={() => window.location.reload()}
-                className="w-full border border-gray-300 text-gray-700 px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300"
-              >
-                Refresh Page
-              </button>
-            </div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Exercise Loading Error</h3>
+            <p className="text-gray-600 mb-6">Unable to load your exercise program. Please try again.</p>
+            <button
+              onClick={() => refetch()}
+              className="w-full bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700"
+            >
+              Try Again
+            </button>
           </div>
         </div>
       </div>
     );
   }
 
-  // Enhanced empty state with better design
+  // Empty state
   if (!currentProgram) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -121,7 +104,7 @@ const ExercisePageRefactored = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
-        {/* Enhanced Header with better spacing and visual hierarchy */}
+        {/* Header */}
         <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
           <ExerciseHeader
             currentProgram={currentProgram}
@@ -136,9 +119,9 @@ const ExercisePageRefactored = () => {
           />
         </div>
 
-        {/* Enhanced Layout with better grid and spacing */}
+        {/* Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          {/* Enhanced Progress Sidebar with better visual design */}
+          {/* Progress Sidebar */}
           <div className="lg:col-span-1">
             <div className="sticky top-6 space-y-4">
               <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
@@ -151,18 +134,18 @@ const ExercisePageRefactored = () => {
                 />
               </div>
               
-              {/* Enhanced Motivation Card */}
-              <div className="bg-gradient-to-br from-fitness-primary-50 to-fitness-secondary-50 rounded-2xl border border-fitness-primary-200 p-6">
+              {/* Motivation Card */}
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-200 p-6">
                 <div className="text-center space-y-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-fitness-primary-500 to-fitness-secondary-500 rounded-xl flex items-center justify-center mx-auto">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center mx-auto">
                     <span className="text-2xl">💪</span>
                   </div>
-                  <h3 className="font-semibold text-fitness-primary-800">
+                  <h3 className="font-semibold text-blue-800">
                     {progressPercentage === 100 ? 'Completed!' : 
                      progressPercentage > 50 ? 'Almost There!' : 
                      progressPercentage > 0 ? 'Keep Going!' : 'Start Strong!'}
                   </h3>
-                  <p className="text-sm text-fitness-primary-600">
+                  <p className="text-sm text-blue-600">
                     {progressPercentage === 100 ? 'Great job finishing today\'s workout!' : 
                      'Every rep counts towards your goals'}
                   </p>
@@ -171,9 +154,9 @@ const ExercisePageRefactored = () => {
             </div>
           </div>
 
-          {/* Enhanced Main Content with better spacing */}
+          {/* Main Content */}
           <div className="lg:col-span-4 space-y-6">
-            {/* Enhanced Day Tabs with better active states */}
+            {/* Day Tabs */}
             <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
               <DayTabs
                 weekStartDate={weekStartDate}
@@ -182,7 +165,7 @@ const ExercisePageRefactored = () => {
               />
             </div>
 
-            {/* Enhanced Exercise List Container */}
+            {/* Exercise List */}
             <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
               <ExerciseList
                 exercises={todaysExercises}
@@ -194,7 +177,7 @@ const ExercisePageRefactored = () => {
           </div>
         </div>
 
-        {/* Enhanced AI Dialog */}
+        {/* AI Dialog */}
         <AIExerciseDialog
           open={showAIDialog}
           onOpenChange={setShowAIDialog}
