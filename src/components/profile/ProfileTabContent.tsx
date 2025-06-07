@@ -51,6 +51,7 @@ const ProfileTabContent = (props: ProfileTabContentProps) => {
       <TabsContent value="health" className="space-y-6">
         <ProfileHealthTab />
         
+        {/* Life Phase Form - Only show if feature flag is enabled */}
         {flags.life_phase_nutrition && (
           <div className="mt-6">
             <LifePhaseForm
