@@ -20,20 +20,33 @@ export const validateSignupStep = (step: number, formData: any): boolean => {
       return step1Valid;
     
     case 2:
-      // Physical info - age, gender, height, weight required
+      // Physical info - age, gender, height, weight required with proper ranges
+      const ageValue = parseFloat(formData.age);
+      const heightValue = parseFloat(formData.height);
+      const weightValue = parseFloat(formData.weight);
+      
       const step2Valid = !!(
         formData.age &&
-        parseFloat(formData.age) >= 13 &&
-        parseFloat(formData.age) <= 100 &&
+        ageValue >= 13 &&
+        ageValue <= 100 &&
         formData.gender &&
         formData.height &&
-        parseFloat(formData.height) >= 100 &&
-        parseFloat(formData.height) <= 250 &&
+        heightValue >= 100 &&
+        heightValue <= 250 &&
         formData.weight &&
-        parseFloat(formData.weight) >= 30 &&
-        parseFloat(formData.weight) <= 300
+        weightValue >= 30 &&
+        weightValue <= 300
       );
-      console.log(`Step 2 validation result: ${step2Valid}`);
+      
+      console.log(`Step 2 validation result: ${step2Valid}`, {
+        age: ageValue,
+        ageValid: ageValue >= 13 && ageValue <= 100,
+        gender: formData.gender,
+        height: heightValue,
+        heightValid: heightValue >= 100 && heightValue <= 250,
+        weight: weightValue,
+        weightValid: weightValue >= 30 && weightValue <= 300
+      });
       return step2Valid;
     
     case 3:

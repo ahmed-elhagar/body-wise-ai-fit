@@ -2,7 +2,7 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Heart } from "lucide-react";
+import { Heart, AlertCircle } from "lucide-react";
 import GenderSelector from "@/components/onboarding/GenderSelector";
 import NationalitySelector from "@/components/onboarding/NationalitySelector";
 import { SignupFormData } from "../types";
@@ -13,17 +13,15 @@ interface PhysicalInfoStepProps {
 }
 
 const PhysicalInfoStep = ({ formData, updateField }: PhysicalInfoStepProps) => {
+  const ageValid = formData.age && parseInt(formData.age) >= 13 && parseInt(formData.age) <= 100;
+  const heightValid = formData.height && parseFloat(formData.height) >= 100 && parseFloat(formData.height) <= 250;
+  const weightValid = formData.weight && parseFloat(formData.weight) >= 30 && parseFloat(formData.weight) <= 300;
+  
   const isValid = !!(
-    formData.age && 
+    ageValid && 
     formData.gender && 
-    formData.height && 
-    formData.weight &&
-    parseInt(formData.age) >= 13 &&
-    parseInt(formData.age) <= 100 &&
-    parseFloat(formData.height) >= 100 &&
-    parseFloat(formData.height) <= 250 &&
-    parseFloat(formData.weight) >= 30 &&
-    parseFloat(formData.weight) <= 300
+    heightValid && 
+    weightValid
   );
 
   return (
@@ -47,10 +45,16 @@ const PhysicalInfoStep = ({ formData, updateField }: PhysicalInfoStepProps) => {
             value={formData.age}
             onChange={(e) => updateField("age", e.target.value)}
             placeholder="Enter your age"
-            className="h-12"
+            className={`h-12 ${formData.age && !ageValid ? 'border-red-500' : ''}`}
             min="13"
             max="100"
           />
+          {formData.age && !ageValid && (
+            <div className="flex items-center mt-1 text-red-500 text-xs">
+              <AlertCircle className="w-3 h-3 mr-1" />
+              Age must be between 13-100 years
+            </div>
+          )}
         </div>
         <div>
           <Label htmlFor="nationality" className="text-sm font-medium text-gray-700 mb-2 block">
@@ -78,11 +82,17 @@ const PhysicalInfoStep = ({ formData, updateField }: PhysicalInfoStepProps) => {
             type="number"
             value={formData.height}
             onChange={(e) => updateField("height", e.target.value)}
-            placeholder="Enter your height"
-            className="h-12"
+            placeholder="e.g., 170"
+            className={`h-12 ${formData.height && !heightValid ? 'border-red-500' : ''}`}
             min="100"
             max="250"
           />
+          {formData.height && !heightValid && (
+            <div className="flex items-center mt-1 text-red-500 text-xs">
+              <AlertCircle className="w-3 h-3 mr-1" />
+              Height must be between 100-250 cm
+            </div>
+          )}
         </div>
         <div>
           <Label htmlFor="weight" className="text-sm font-medium text-gray-700 mb-2 block">
@@ -93,17 +103,34 @@ const PhysicalInfoStep = ({ formData, updateField }: PhysicalInfoStepProps) => {
             type="number"
             value={formData.weight}
             onChange={(e) => updateField("weight", e.target.value)}
-            placeholder="Enter your weight"
-            className="h-12"
+            placeholder="e.g., 70"
+            className={`h-12 ${formData.weight && !weightValid ? 'border-red-500' : ''}`}
             min="30"
             max="300"
           />
+          {formData.weight && !weightValid && (
+            <div className="flex items-center mt-1 text-red-500 text-xs">
+              <AlertCircle className="w-3 h-3 mr-1" />
+              Weight must be between 30-300 kg
+            </div>
+          )}
         </div>
       </div>
 
-      {!isValid && (
-        <div className="text-sm text-gray-500 bg-gray-50 p-3 rounded-lg">
-          Please fill in all required fields with valid values
+      {!isValid && (Object.keys(formData).some(key => formData[key as keyof SignupFormData])) && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+          <div className="flex items-start">
+            <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 mr-2 flex-shrink-0" />
+            <div className="text-sm text-amber-800">
+              <p className="font-medium mb-1">Please complete all required fields:</p>
+              <ul className="list-disc list-inside space-y-1 text-xs">
+                {!ageValid && <li>Age must be between 13-100 years</li>}
+                {!formData.gender && <li>Gender selection is required</li>}
+                {!heightValid && <li>Height must be between 100-250 cm</li>}
+                {!weightValid && <li>Weight must be between 30-300 kg</li>}
+              </ul>
+            </div>
+          </div>
         </div>
       )}
     </div>
