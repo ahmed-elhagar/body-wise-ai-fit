@@ -1,50 +1,39 @@
 
-import { useProfile } from "../useProfile";
-import { useHealthAssessment } from "../useHealthAssessment";
-import type { ProfileFormData } from "./types";
+import { useMemo } from 'react';
+import type { ProfileFormData } from './types';
 
 export const useProfileCompletion = (formData: ProfileFormData) => {
-  const { profile } = useProfile();
-  const { assessment } = useHealthAssessment();
+  const completionPercentage = useMemo(() => {
+    let score = 0;
+    const totalFields = 15;
 
-  const getCompletionPercentage = () => {
-    let completed = 0;
-    let total = 0;
+    // Basic info (40% of total)
+    if (formData.first_name?.trim()) score += 4;
+    if (formData.last_name?.trim()) score += 4;
+    if (formData.age && parseInt(formData.age) > 0) score += 3;
+    if (formData.gender) score += 3;
+    if (formData.height && parseFloat(formData.height) > 0) score += 3;
+    if (formData.weight && parseFloat(formData.weight) > 0) score += 3;
 
-    // Basic info fields (8 required)
-    const basicFields = ['first_name', 'last_name', 'age', 'gender', 'height', 'weight', 'nationality', 'body_shape'];
-    basicFields.forEach(field => {
-      total++;
-      if (formData[field as keyof ProfileFormData] && formData[field as keyof ProfileFormData] !== '') {
-        completed++;
-      }
-    });
+    // Body composition (20% of total)
+    if (formData.body_fat_percentage && parseFloat(formData.body_fat_percentage) > 0) score += 10;
+    if (formData.body_shape) score += 10;
 
-    // Goals fields (2 required)
-    const goalFields = ['fitness_goal', 'activity_level'];
-    goalFields.forEach(field => {
-      total++;
-      if (formData[field as keyof ProfileFormData] && formData[field as keyof ProfileFormData] !== '') {
-        completed++;
-      }
-    });
+    // Goals and activity (30% of total)
+    if (formData.fitness_goal) score += 15;
+    if (formData.activity_level) score += 15;
 
-    // Health assessment
-    if (assessment) {
-      total += 4; // Key assessment fields
-      if (assessment.stress_level !== null) completed++;
-      if (assessment.sleep_quality !== null) completed++;
-      if (assessment.energy_level !== null) completed++;
-      if (assessment.work_schedule) completed++;
-    } else {
-      total += 4;
-    }
+    // Optional fields (10% of total)
+    if (formData.nationality?.trim()) score += 2;
+    if (formData.health_conditions?.length > 0) score += 2;
+    if (formData.allergies?.length > 0) score += 2;
+    if (formData.dietary_restrictions?.length > 0) score += 2;
+    if (formData.preferred_foods?.length > 0) score += 2;
 
-    return Math.round((completed / total) * 100);
-  };
+    return Math.min(score, 100);
+  }, [formData]);
 
   return {
-    completionPercentage: getCompletionPercentage(),
-    assessment,
+    completionPercentage,
   };
 };
