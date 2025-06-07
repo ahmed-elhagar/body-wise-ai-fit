@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Heart, Edit, Save, X } from "lucide-react";
 import HealthConditionsAutocompleteEnhanced from "@/components/onboarding/HealthConditionsAutocompleteEnhanced";
-import TagsAutocomplete from "../TagsAutocomplete";
 
 interface ProfileHealthCardProps {
   formData: any;
@@ -15,20 +14,6 @@ interface ProfileHealthCardProps {
   isUpdating: boolean;
   validationErrors: Record<string, string>;
 }
-
-const FOOD_SUGGESTIONS = [
-  "Chicken", "Fish", "Beef", "Turkey", "Salmon", "Tuna", "Eggs", 
-  "Rice", "Quinoa", "Oats", "Sweet Potato", "Brown Rice", "Pasta",
-  "Broccoli", "Spinach", "Kale", "Carrots", "Bell Peppers", "Tomatoes",
-  "Almonds", "Walnuts", "Peanut Butter", "Avocado", "Olive Oil",
-  "Greek Yogurt", "Cottage Cheese", "Milk", "Cheese", "Beans"
-];
-
-const DIETARY_RESTRICTIONS = [
-  "Vegetarian", "Vegan", "Pescatarian", "Gluten-free", "Dairy-free",
-  "Nut-free", "Soy-free", "Egg-free", "Shellfish-free", "Keto",
-  "Paleo", "Low-carb", "Low-fat", "Mediterranean", "Halal", "Kosher"
-];
 
 const ProfileHealthCard = ({
   formData,
@@ -55,14 +40,6 @@ const ProfileHealthCard = ({
     updateFormData('allergies', allergies);
   };
 
-  const handlePreferredFoodsChange = (foods: string[]) => {
-    updateFormData('preferred_foods', foods);
-  };
-
-  const handleDietaryRestrictionsChange = (restrictions: string[]) => {
-    updateFormData('dietary_restrictions', restrictions);
-  };
-
   return (
     <Card className="bg-gradient-to-br from-white via-red-50/20 to-pink-50/20 border-0 shadow-xl">
       <CardHeader className="pb-4">
@@ -71,7 +48,7 @@ const ProfileHealthCard = ({
             <div className="p-2 bg-red-100 rounded-lg">
               <Heart className="w-6 h-6 text-red-600" />
             </div>
-            Health & Dietary Information
+            Health & Medical Information
           </CardTitle>
           {isEditing ? (
             <div className="flex gap-2">
@@ -123,22 +100,6 @@ const ProfileHealthCard = ({
               label="Allergies & Food Intolerances"
               placeholder="Search for allergies..."
             />
-
-            <TagsAutocomplete
-              label="Preferred Foods"
-              selectedTags={formData.preferred_foods || []}
-              onTagsChange={handlePreferredFoodsChange}
-              placeholder="Type foods you enjoy..."
-              suggestions={FOOD_SUGGESTIONS}
-            />
-
-            <TagsAutocomplete
-              label="Dietary Restrictions"
-              selectedTags={formData.dietary_restrictions || []}
-              onTagsChange={handleDietaryRestrictionsChange}
-              placeholder="Type dietary restrictions..."
-              suggestions={DIETARY_RESTRICTIONS}
-            />
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -173,40 +134,6 @@ const ProfileHealthCard = ({
             ) : (
               <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 text-center">
                 <p className="text-sm text-gray-500">No allergies reported</p>
-              </div>
-            )}
-
-            {formData.preferred_foods?.length > 0 ? (
-              <div className="p-4 bg-white/70 rounded-xl border border-gray-100">
-                <p className="text-sm text-gray-500 mb-2 font-medium">Preferred Foods</p>
-                <div className="flex flex-wrap gap-1">
-                  {formData.preferred_foods.map((food: string, index: number) => (
-                    <Badge key={index} variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
-                      {food}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 text-center">
-                <p className="text-sm text-gray-500">No preferred foods specified</p>
-              </div>
-            )}
-
-            {formData.dietary_restrictions?.length > 0 ? (
-              <div className="p-4 bg-white/70 rounded-xl border border-gray-100">
-                <p className="text-sm text-gray-500 mb-2 font-medium">Dietary Restrictions</p>
-                <div className="flex flex-wrap gap-1">
-                  {formData.dietary_restrictions.map((restriction: string, index: number) => (
-                    <Badge key={index} variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
-                      {restriction}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 text-center">
-                <p className="text-sm text-gray-500">No dietary restrictions specified</p>
               </div>
             )}
           </div>

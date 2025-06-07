@@ -2,6 +2,8 @@
 import { Target } from "lucide-react";
 import BodyShapeSelector from "@/components/auth/BodyShapeSelector";
 import { SignupFormData } from "../types";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 interface BodyCompositionStepProps {
   formData: SignupFormData;
@@ -17,6 +19,10 @@ const BodyCompositionStep = ({ formData, updateField }: BodyCompositionStepProps
     updateField("bodyFatPercentage", value);
   };
 
+  const handleBodyShapeChange = (value: string) => {
+    updateField("bodyShape", value);
+  };
+
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
@@ -27,11 +33,27 @@ const BodyCompositionStep = ({ formData, updateField }: BodyCompositionStepProps
         <p className="text-gray-600">Select your current body type to help us create your personalized plan</p>
       </div>
 
-      <BodyShapeSelector
-        value={currentBodyFat}
-        onChange={handleBodyFatChange}
-        gender={formData.gender || 'male'}
-      />
+      <div className="space-y-6">
+        <div className="space-y-2">
+          <Label htmlFor="bodyShape">Body Shape</Label>
+          <Select value={formData.bodyShape || ''} onValueChange={handleBodyShapeChange}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select your body shape" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ectomorph">Ectomorph (Lean/Thin)</SelectItem>
+              <SelectItem value="mesomorph">Mesomorph (Athletic/Muscular)</SelectItem>
+              <SelectItem value="endomorph">Endomorph (Rounded/Soft)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <BodyShapeSelector
+          value={currentBodyFat}
+          onChange={handleBodyFatChange}
+          gender={formData.gender || 'male'}
+        />
+      </div>
       
       <div className="text-center">
         <p className="text-sm text-gray-500">
