@@ -52,11 +52,11 @@ const UnifiedSignupForm = () => {
   
   // Only redirect authenticated users with complete profiles to dashboard
   useEffect(() => {
-    if (user && profile?.onboarding_completed) {
+    if (user && profile && profile.onboarding_completed === true) {
       console.log('UnifiedSignupForm - User has completed onboarding, redirecting to dashboard');
       navigate('/dashboard', { replace: true });
     }
-  }, [user, profile?.onboarding_completed, navigate]);
+  }, [user, profile, navigate]);
   
   const [formData, setFormData] = useState<SignupFormData>({
     firstName: "",
