@@ -34,8 +34,8 @@ export const useProfileFormData = () => {
     if (profile) {
       console.log('useProfileFormData - Syncing profile data:', {
         profileId: profile.id?.substring(0, 8) + '...',
-        allFields: Object.keys(profile),
-        criticalFields: {
+        hasBasicInfo: !!(profile.first_name && profile.last_name),
+        profileData: {
           firstName: profile.first_name,
           lastName: profile.last_name,
           age: profile.age,
@@ -46,13 +46,6 @@ export const useProfileFormData = () => {
           bodyShape: profile.body_shape,
           fitnessGoal: profile.fitness_goal,
           activityLevel: profile.activity_level
-        },
-        arrayFields: {
-          healthConditions: profile.health_conditions,
-          allergies: profile.allergies,
-          preferredFoods: profile.preferred_foods,
-          dietaryRestrictions: profile.dietary_restrictions,
-          specialConditions: profile.special_conditions
         }
       });
 
@@ -101,14 +94,15 @@ export const useProfileFormData = () => {
         basicInfoSuccess: !!(mappedData.first_name && mappedData.last_name),
         physicalInfoSuccess: !!(mappedData.age && mappedData.gender && mappedData.height && mappedData.weight),
         goalsSuccess: !!(mappedData.fitness_goal && mappedData.activity_level),
-        arrayFieldsSizes: {
-          healthConditions: mappedData.health_conditions.length,
-          allergies: mappedData.allergies.length,
-          preferredFoods: mappedData.preferred_foods.length,
-          dietaryRestrictions: mappedData.dietary_restrictions.length,
-          specialConditions: mappedData.special_conditions.length
-        },
-        finalMappedData: mappedData
+        finalMappedData: {
+          ...mappedData,
+          // Log arrays length only for brevity
+          health_conditions: `${mappedData.health_conditions.length} items`,
+          allergies: `${mappedData.allergies.length} items`,
+          preferred_foods: `${mappedData.preferred_foods.length} items`,
+          dietary_restrictions: `${mappedData.dietary_restrictions.length} items`,
+          special_conditions: `${mappedData.special_conditions.length} items`
+        }
       });
 
       setFormData(mappedData);
@@ -148,8 +142,7 @@ export const useProfileFormData = () => {
       field,
       inputValue: value,
       parsedArray: arrayValue,
-      arrayLength: arrayValue.length,
-      uniqueItems: arrayValue.length
+      arrayLength: arrayValue.length
     });
     
     setFormData(prev => ({ ...prev, [field]: arrayValue }));

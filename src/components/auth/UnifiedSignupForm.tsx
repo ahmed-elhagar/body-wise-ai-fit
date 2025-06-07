@@ -75,7 +75,7 @@ const UnifiedSignupForm = () => {
     specialConditions: []
   });
 
-  const totalSteps = 5; // Added one more step for diet preferences
+  const totalSteps = 5;
 
   const updateField = (field: keyof SignupFormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -120,61 +120,78 @@ const UnifiedSignupForm = () => {
   };
 
   const handleSubmit = async () => {
-    if (!validateStep(4)) { // Step 5 is optional
+    if (!validateStep(4)) {
       toast.error("Please complete all required fields");
       return;
     }
 
     setLoading(true);
     try {
-      console.log('UnifiedSignupForm - Starting signup process with complete data:', formData);
-      
-      // Sign up user first - signUp returns void, so we handle it differently
-      await signUp(formData.email, formData.password, {
-        first_name: formData.firstName,
-        last_name: formData.lastName
+      console.log('UnifiedSignupForm - Starting signup process with data:', {
+        email: formData.email,
+        hasRequiredFields: !!(formData.firstName && formData.lastName && formData.age && formData.gender)
       });
-
-      console.log('UnifiedSignupForm - User signup completed, waiting for auth state change...');
-
-      // Wait for auth state to update and retry checking for user
-      let retries = 0;
-      const maxRetries = 10;
-      let currentUser = user;
-
-      while (!currentUser?.id && retries < maxRetries) {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        retries++;
-        console.log(`Retry ${retries}: Checking for user...`);
-        // Re-get user from auth context
-        currentUser = user;
-      }
-
-      if (!currentUser?.id) {
-        throw new Error("User creation failed - no user ID available after retries");
-      }
-
-      console.log('UnifiedSignupForm - User created successfully, now updating profile...');
-
-      // Map body fat to body shape
-      const bodyShape = mapBodyFatToBodyShape(formData.bodyFatPercentage, formData.gender);
       
-      if (!isValidBodyShape(bodyShape)) {
-        throw new Error("Invalid body shape calculation");
-      }
-
-      // Create complete profile with ALL signup data - ensure exact field mapping
-      const profileData = {
-        // Basic Info - exact field mapping to database columns
+      // Step 1: Sign up user with metadata
+      const signupMetadata = {
         first_name: formData.firstName.trim(),
         last_name: formData.lastName.trim(),
         age: parseInt(formData.age),
         gender: formData.gender,
         height: parseFloat(formData.height),
         weight: parseFloat(formData.weight),
-        nationality: formData.nationality.trim() || null,
+        nationality: formData.nationality.trim(),
+        fitness_goal: formData.fitnessGoal,
+        activity_level: formData.activityLevel,
+        body_fat_percentage: formData.bodyFatPercentage
+      };
+
+      await signUp(formData.email, formData.password, signupMetadata);
+      console.log('UnifiedSignupForm - Signup completed successfully');
+
+      // Step 2: Wait for auth state to update and get user
+      let attempts = 0;
+      const maxAttempts = 15; // Increased attempts
+      let currentUser = null;
+
+      while (!currentUser && attempts < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        attempts++;
         
-        // Body composition - critical missing fields
+        // Check if user context has updated
+        if (user?.id) {
+          currentUser = user;
+          console.log(`Attempt ${attempts}: Found user in context:`, user.id.substring(0, 8) + '...');
+          break;
+        }
+        
+        console.log(`Attempt ${attempts}: Waiting for user context to update...`);
+      }
+
+      if (!currentUser?.id) {
+        throw new Error(`User creation failed - no user available after ${maxAttempts} attempts`);
+      }
+
+      console.log('UnifiedSignupForm - User found, creating complete profile...');
+
+      // Step 3: Create comprehensive profile
+      const bodyShape = mapBodyFatToBodyShape(formData.bodyFatPercentage, formData.gender);
+      
+      if (!isValidBodyShape(bodyShape)) {
+        throw new Error("Invalid body shape calculation");
+      }
+
+      const profileData = {
+        // Basic Info - ensure all fields are properly set
+        first_name: formData.firstName.trim(),
+        last_name: formData.lastName.trim(),
+        age: parseInt(formData.age),
+        gender: formData.gender,
+        height: parseFloat(formData.height),
+        weight: parseFloat(formData.weight),
+        nationality: formData.nationality.trim(),
+        
+        // Body composition
         body_fat_percentage: formData.bodyFatPercentage,
         body_shape: bodyShape,
         
@@ -192,10 +209,20 @@ const UnifiedSignupForm = () => {
         // System fields
         ai_generations_remaining: 5,
         profile_completion_score: 95,
+        onboarding_completed: true,
         updated_at: new Date().toISOString()
       };
 
-      console.log('UnifiedSignupForm - Updating profile with comprehensive data:', profileData);
+      console.log('UnifiedSignupForm - Updating profile with data:', {
+        userId: currentUser.id.substring(0, 8) + '...',
+        profileFields: Object.keys(profileData),
+        basicInfo: {
+          firstName: profileData.first_name,
+          lastName: profileData.last_name,
+          age: profileData.age,
+          gender: profileData.gender
+        }
+      });
       
       const result = await updateProfile(profileData);
       
@@ -207,6 +234,7 @@ const UnifiedSignupForm = () => {
       console.log('UnifiedSignupForm - Profile created successfully');
       toast.success("Account created successfully!");
       navigate('/welcome', { replace: true });
+      
     } catch (error: any) {
       console.error('UnifiedSignupForm - Signup error:', error);
       toast.error(error.message || "Failed to create account");
@@ -609,7 +637,7 @@ const UnifiedSignupForm = () => {
             ) : (
               <Button
                 onClick={handleSubmit}
-                disabled={!validateStep(4) || loading} // Only require validation through step 4
+                disabled={!validateStep(4) || loading}
                 className="px-8 bg-gradient-to-r from-green-500 to-emerald-600"
               >
                 {loading ? "Creating Account..." : "Create Account"}
