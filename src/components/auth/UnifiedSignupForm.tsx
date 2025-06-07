@@ -4,7 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Eye, EyeOff, User, Target, Heart, CheckCircle, Info } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Eye, EyeOff, User, Target, Heart, CheckCircle, Info, AlertCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
@@ -44,6 +45,7 @@ const UnifiedSignupForm = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [accountCreated, setAccountCreated] = useState(false);
+  const [userAlreadyExistsError, setUserAlreadyExistsError] = useState(false);
   const { signUp, user } = useAuth();
   const { updateProfile } = useProfile();
   const navigate = useNavigate();
@@ -80,6 +82,10 @@ const UnifiedSignupForm = () => {
 
   const updateField = (field: keyof SignupFormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing in email field
+    if (field === 'email' && userAlreadyExistsError) {
+      setUserAlreadyExistsError(false);
+    }
   };
 
   const handleArrayInput = (field: keyof SignupFormData, value: string) => {
@@ -114,7 +120,10 @@ const UnifiedSignupForm = () => {
       return;
     }
 
+    // Clear any existing error
+    setUserAlreadyExistsError(false);
     setLoading(true);
+    
     try {
       console.log('Creating account with basic info:', {
         email: formData.email,
@@ -131,9 +140,10 @@ const UnifiedSignupForm = () => {
       if (result?.error) {
         // Handle specific error cases
         if (result.error.message?.includes('User already registered') || 
-            result.error.message?.includes('already registered')) {
-          toast.error("An account with this email already exists. Please sign in instead.");
-          navigate('/auth');
+            result.error.message?.includes('already registered') ||
+            result.error.message?.includes('already exists')) {
+          console.log('User already exists, showing enhanced error message');
+          setUserAlreadyExistsError(true);
           return;
         }
         throw new Error(result.error.message || 'Account creation failed');
@@ -147,9 +157,9 @@ const UnifiedSignupForm = () => {
     } catch (error: any) {
       console.error('Account creation error:', error);
       if (error.message?.includes('User already registered') || 
-          error.message?.includes('already registered')) {
-        toast.error("An account with this email already exists. Please sign in instead.");
-        navigate('/auth');
+          error.message?.includes('already registered') ||
+          error.message?.includes('already exists')) {
+        setUserAlreadyExistsError(true);
       } else {
         toast.error(error.message || "Failed to create account. Please try again.");
       }
@@ -265,6 +275,38 @@ const UnifiedSignupForm = () => {
         <p className="text-gray-600">Let's start with your basic information</p>
       </div>
 
+      {userAlreadyExistsError && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription className="space-y-3">
+            <p className="font-medium">
+              An account with <strong>{formData.email}</strong> already exists.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/auth')}
+                className="text-sm"
+              >
+                Sign In Instead
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  // TODO: Implement forgot password functionality
+                  toast.info("Password reset feature coming soon!");
+                }}
+                className="text-sm"
+              >
+                Reset Password
+              </Button>
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
+
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Label htmlFor="firstName" className="text-sm font-medium text-gray-700 mb-2 block">
@@ -277,6 +319,7 @@ const UnifiedSignupForm = () => {
             placeholder="Enter your first name"
             className="h-12"
             required
+            disabled={accountCreated}
           />
         </div>
         <div>
@@ -290,6 +333,7 @@ const UnifiedSignupForm = () => {
             placeholder="Enter your last name"
             className="h-12"
             required
+            disabled={accountCreated}
           />
         </div>
       </div>
@@ -304,7 +348,7 @@ const UnifiedSignupForm = () => {
           value={formData.email}
           onChange={(e) => updateField("email", e.target.value)}
           placeholder="Enter your email"
-          className="h-12"
+          className={`h-12 ${userAlreadyExistsError ? 'border-red-500 focus:border-red-500' : ''}`}
           required
           disabled={accountCreated}
         />
@@ -625,7 +669,7 @@ const UnifiedSignupForm = () => {
           <div className="flex justify-between items-center mt-8 pt-6 border-t">
             <Button
               variant="outline"
-              onClick={handleBack}
+              onClick={() => setCurrentStep(prev => Math.max(prev - 1, 1))}
               disabled={currentStep === 1 || loading}
               className="px-6"
             >
@@ -634,7 +678,7 @@ const UnifiedSignupForm = () => {
 
             {currentStep < totalSteps ? (
               <Button
-                onClick={handleNext}
+                onClick={currentStep === 1 ? handleFirstStep : () => setCurrentStep(prev => Math.min(prev + 1, totalSteps))}
                 disabled={loading || (currentStep === 1 ? !validateStep(1) : false)}
                 className="px-8 bg-gradient-to-r from-blue-500 to-indigo-600"
               >
