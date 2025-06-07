@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useProfile } from '@/hooks/useProfile';
 import { useRole } from '@/hooks/useRole';
-import SimpleLoadingIndicator from '@/components/ui/simple-loading-indicator';
+import EnhancedPageLoading from '@/components/EnhancedPageLoading';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -33,19 +33,22 @@ const ProtectedRoute = React.memo<ProtectedRouteProps>(({
     pathname: location.pathname,
     hasUser: !!user,
     hasProfile: !!profile,
+    userRole: role,
     authLoading,
     profileLoading,
+    roleLoading,
+    requireRole,
     userId: user?.id?.substring(0, 8) + '...' || 'none'
   });
 
-  // Early return for loading state
+  // Early return for loading state with enhanced loading component
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <SimpleLoadingIndicator
-          message="Loading"
-          description="Please wait while we verify your access..."
-          size="lg"
+        <EnhancedPageLoading
+          title="Verifying Access"
+          description="Please wait while we verify your permissions..."
+          estimatedTime={3}
         />
       </div>
     );
@@ -55,6 +58,12 @@ const ProtectedRoute = React.memo<ProtectedRouteProps>(({
   if (authError && requireAuth) {
     console.error("ProtectedRoute - Auth error:", authError);
     return <Navigate to={redirectTo} state={{ from: location.pathname, error: 'Authentication failed' }} replace />;
+  }
+
+  // Role error handling
+  if (roleError && requireRole) {
+    console.error("ProtectedRoute - Role error:", roleError);
+    return <Navigate to="/dashboard" state={{ error: 'Role verification failed' }} replace />;
   }
 
   // If authentication is required but user is not authenticated
@@ -82,8 +91,10 @@ const ProtectedRoute = React.memo<ProtectedRouteProps>(({
       // Standard role check for non-admin users
       else if (Array.isArray(requireRole)) {
         hasRequiredRole = hasAnyRole(requireRole);
+        console.log(`Role check for multiple roles [${requireRole.join(', ')}]:`, hasRequiredRole);
       } else {
         hasRequiredRole = hasRole(requireRole);
+        console.log(`Role check for '${requireRole}':`, hasRequiredRole);
       }
       
       if (!hasRequiredRole) {
@@ -94,6 +105,12 @@ const ProtectedRoute = React.memo<ProtectedRouteProps>(({
       console.error('ProtectedRoute - Role check error:', error);
       return <Navigate to="/dashboard" state={{ error: 'Role verification failed' }} replace />;
     }
+  }
+
+  // Profile completion check for authenticated users
+  if (requireProfile && user && (!profile || !profile.onboarding_completed)) {
+    console.log("ProtectedRoute - Redirecting to complete profile");
+    return <Navigate to="/signup" state={{ from: location.pathname }} replace />;
   }
 
   // All conditions passed, render the children

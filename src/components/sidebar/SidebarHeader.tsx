@@ -36,7 +36,7 @@ export const SidebarHeader = () => {
       {state === "expanded" && !isCollapsing && (
         <div className={cn("flex flex-col relative", isRTL && "text-right")}>
           <h1 className="text-xl font-bold tracking-tight text-white drop-shadow-md">
-            FitGenius
+            FitFatta
           </h1>
           <p className="text-xs text-white/90 font-medium flex items-center gap-1">
             <Sparkles className="w-3 h-3" />

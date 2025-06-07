@@ -2,6 +2,7 @@
 import { ReactNode } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/AppSidebar";
+import DebugPanel from "@/components/DebugPanel";
 import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/hooks/useI18n";
 import { cn } from "@/lib/utils";
@@ -18,6 +19,8 @@ const Layout = ({ children }: LayoutProps) => {
     return (
       <div className={cn("min-h-screen w-full", isRTL && "text-right")} dir={isRTL ? "rtl" : "ltr"}>
         {children}
+        {/* Show debug panel even for non-authenticated users */}
+        {import.meta.env.DEV && <DebugPanel />}
       </div>
     );
   }
@@ -34,6 +37,9 @@ const Layout = ({ children }: LayoutProps) => {
           </main>
         </div>
       </SidebarProvider>
+      
+      {/* Debug Panel available throughout the app */}
+      {import.meta.env.DEV && <DebugPanel />}
     </div>
   );
 };

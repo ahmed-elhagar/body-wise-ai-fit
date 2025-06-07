@@ -13,7 +13,7 @@ const SignupProgress = ({ currentStep, setCurrentStep }: SignupProgressProps) =>
   return (
     <div className="mb-8">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-xl font-bold text-gray-800">Join FitGenius</h1>
+        <h1 className="text-xl font-bold text-gray-800">Join FitFatta</h1>
         <span className="text-sm text-gray-600">
           Step {currentStep} of {SIGNUP_STEPS.length}
         </span>

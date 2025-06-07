@@ -35,7 +35,7 @@ const AccountCreationStep = ({
     formData.password.length >= 6
   );
 
-  const handleSubmit = async () => {
+  const handleCreateAccount = async () => {
     if (!isValid) return;
     
     setError(null);
@@ -69,7 +69,8 @@ const AccountCreationStep = ({
                 Account Already Exists
               </p>
               <p className="text-sm">
-                An account with <strong>{formData.email}</strong> is already registered.
+                An account with <strong>{formData.email}</strong> is already registered. 
+                Please use a different email address or sign in to your existing account.
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 mt-3">
@@ -172,6 +173,16 @@ const AccountCreationStep = ({
           </button>
         </div>
       </div>
+
+      {!accountCreated && (
+        <Button
+          onClick={handleCreateAccount}
+          disabled={!isValid || isLoading}
+          className="w-full h-12 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
+        >
+          {isLoading ? "Creating Account..." : "Create Account & Continue"}
+        </Button>
+      )}
 
       {accountCreated && (
         <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
