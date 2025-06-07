@@ -31,6 +31,7 @@ export interface Profile {
   profile_completion_score?: number;
   nationality?: string;
   body_shape?: string;
+  body_fat_percentage?: number;
   pregnancy_trimester?: number;
   breastfeeding_level?: string;
   fasting_type?: string;

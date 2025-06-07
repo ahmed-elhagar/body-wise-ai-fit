@@ -50,12 +50,10 @@ export const useOnboardingForm = () => {
     if (user && profile) {
       console.log('useOnboardingForm - Updating form data from profile:', profile);
       
-      // Safely extract body_fat_percentage
+      // Safely extract body_fat_percentage with proper type checking
       let bodyFatPercentage = '';
-      if (profile.body_fat_percentage !== undefined && profile.body_fat_percentage !== null) {
+      if (typeof profile.body_fat_percentage === 'number') {
         bodyFatPercentage = profile.body_fat_percentage.toString();
-      } else if ((profile as any).body_fat_percentage !== undefined) {
-        bodyFatPercentage = (profile as any).body_fat_percentage.toString();
       }
       
       setFormData(prev => ({
