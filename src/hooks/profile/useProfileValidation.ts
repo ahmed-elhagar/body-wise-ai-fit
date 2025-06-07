@@ -58,6 +58,16 @@ export const useProfileValidation = () => {
       errors.weight = 'Weight cannot exceed 300 kg';
     }
 
+    // Body fat percentage validation
+    if (formData.body_fat_percentage) {
+      const bodyFat = parseFloat(formData.body_fat_percentage);
+      if (isNaN(bodyFat) || bodyFat < 3) {
+        errors.body_fat_percentage = 'Body fat percentage must be at least 3%';
+      } else if (bodyFat > 50) {
+        errors.body_fat_percentage = 'Body fat percentage cannot exceed 50%';
+      }
+    }
+
     // Nationality validation
     if (!formData.nationality?.trim()) {
       errors.nationality = 'Nationality is required';

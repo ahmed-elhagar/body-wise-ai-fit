@@ -175,6 +175,23 @@ const ProfileBasicInfoCard = ({
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="body_fat_percentage">Body Fat Percentage (%)</Label>
+              <Input
+                id="body_fat_percentage"
+                type="number"
+                min="3"
+                max="50"
+                step="0.1"
+                value={formData.body_fat_percentage || ''}
+                onChange={(e) => updateFormData('body_fat_percentage', e.target.value)}
+                className={validationErrors.body_fat_percentage ? 'border-red-500' : ''}
+              />
+              {validationErrors.body_fat_percentage && (
+                <p className="text-sm text-red-500">{validationErrors.body_fat_percentage}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="nationality">Nationality</Label>
               <Input
                 id="nationality"
@@ -242,7 +259,7 @@ const ProfileBasicInfoCard = ({
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <div className="bg-white/70 p-4 rounded-xl border border-gray-100 text-center">
                 <div className="text-2xl font-bold text-blue-600">
                   {formData.height ? `${formData.height}` : '—'}
@@ -262,7 +279,13 @@ const ProfileBasicInfoCard = ({
                 <div className="text-xs text-gray-500 mt-1">BMI</div>
               </div>
               <div className="bg-white/70 p-4 rounded-xl border border-gray-100 text-center">
-                <div className="text-2xl font-bold text-orange-600 capitalize">
+                <div className="text-2xl font-bold text-orange-600">
+                  {formData.body_fat_percentage ? `${formData.body_fat_percentage}%` : '—'}
+                </div>
+                <div className="text-xs text-gray-500 mt-1">Body Fat</div>
+              </div>
+              <div className="bg-white/70 p-4 rounded-xl border border-gray-100 text-center">
+                <div className="text-2xl font-bold text-pink-600 capitalize">
                   {formData.body_shape === 'ectomorph' ? 'Ecto' : 
                    formData.body_shape === 'mesomorph' ? 'Meso' : 
                    formData.body_shape === 'endomorph' ? 'Endo' : '—'}
