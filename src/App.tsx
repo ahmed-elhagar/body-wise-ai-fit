@@ -42,7 +42,7 @@ function App() {
                     <Route path="/" element={<LazyPages.Index />} />
                     <Route path="/landing" element={<LazyPages.Landing />} />
                     <Route path="/auth" element={<LazyPages.Auth />} />
-                    <Route path="/signup" element={<LazyPages.UnifiedSignup />} />
+                    <Route path="/signup" element={<LazyPages.Signup />} />
                     
                     {/* Protected Routes */}
                     <Route path="/welcome" element={
