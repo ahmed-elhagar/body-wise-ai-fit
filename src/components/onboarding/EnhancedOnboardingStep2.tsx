@@ -21,8 +21,10 @@ const EnhancedOnboardingStep2 = ({ formData, updateFormData }: EnhancedOnboardin
 
   // Update form data whenever body fat percentage changes
   useEffect(() => {
-    console.log('EnhancedOnboardingStep2 - Body fat percentage changed:', bodyFatPercentage);
-    updateFormData("body_fat_percentage", bodyFatPercentage.toString());
+    console.log('🔄 EnhancedOnboardingStep2 - Body fat percentage changed:', bodyFatPercentage);
+    const stringValue = bodyFatPercentage.toString();
+    console.log('📤 Updating form data with body_fat_percentage:', stringValue);
+    updateFormData("body_fat_percentage", stringValue);
   }, [bodyFatPercentage, updateFormData]);
 
   // Sync with form data changes from outside
@@ -30,13 +32,15 @@ const EnhancedOnboardingStep2 = ({ formData, updateFormData }: EnhancedOnboardin
     if (formData.body_fat_percentage && formData.body_fat_percentage !== '') {
       const parsed = parseFloat(formData.body_fat_percentage);
       if (!isNaN(parsed) && parsed !== bodyFatPercentage) {
+        console.log('🔄 Syncing body fat from form data:', parsed);
         setBodyFatPercentage(parsed);
       }
     }
   }, [formData.body_fat_percentage]);
 
   const handleBodyFatChange = (value: number) => {
-    console.log('EnhancedOnboardingStep2 - Body fat change handler called with:', value);
+    console.log('🎯 EnhancedOnboardingStep2 - Body fat change handler called with:', value);
+    console.log('🔍 Value type:', typeof value, 'Is number:', !isNaN(value));
     setBodyFatPercentage(value);
   };
 
@@ -58,11 +62,12 @@ const EnhancedOnboardingStep2 = ({ formData, updateFormData }: EnhancedOnboardin
       
       {/* Debug info in development */}
       {process.env.NODE_ENV === 'development' && (
-        <div className="mt-4 p-4 bg-gray-100 rounded text-sm">
-          <strong>Debug Info:</strong><br />
-          Current Value: {bodyFatPercentage}<br />
-          Form Data Value: {formData.body_fat_percentage}<br />
-          Gender: {formData.gender}
+        <div className="mt-4 p-4 bg-gray-100 rounded text-sm space-y-1">
+          <strong>🐛 Debug Info:</strong><br />
+          <div>Current Value: {bodyFatPercentage} (type: {typeof bodyFatPercentage})</div>
+          <div>Form Data Value: "{formData.body_fat_percentage}" (type: {typeof formData.body_fat_percentage})</div>
+          <div>Gender: {formData.gender}</div>
+          <div>Is Valid Number: {!isNaN(bodyFatPercentage)}</div>
         </div>
       )}
     </div>

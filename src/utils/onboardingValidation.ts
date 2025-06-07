@@ -3,7 +3,7 @@ import { OnboardingFormData } from "@/hooks/useOnboardingForm";
 import { VALID_ACTIVITY_LEVELS } from "@/hooks/profile/types";
 
 // Valid body shape values that match database constraint
-// Based on the database constraint, only these values are allowed
+// Based on database analysis, these are the ONLY allowed values
 const VALID_BODY_SHAPES = ['lean', 'athletic', 'average', 'heavy'] as const;
 export type BodyShape = typeof VALID_BODY_SHAPES[number];
 
@@ -70,39 +70,49 @@ export const validateOnboardingStep = (step: number, formData: OnboardingFormDat
 };
 
 // Helper function to map body fat percentage to valid body shape
-// Updated to use database-safe values
+// CRITICAL: This must return only database-safe values
 export const mapBodyFatToBodyShape = (bodyFatPercentage: number, gender: string): BodyShape => {
-  console.log(`Mapping body fat: ${bodyFatPercentage}% for ${gender}`);
+  console.log(`🔍 Mapping body fat: ${bodyFatPercentage}% for ${gender}`);
+  
+  let result: BodyShape;
   
   if (gender === 'male') {
     if (bodyFatPercentage <= 15) {
-      console.log('Mapped to: lean');
-      return 'lean';
+      result = 'lean';
+    } else if (bodyFatPercentage <= 25) {
+      result = 'athletic';
+    } else if (bodyFatPercentage <= 35) {
+      result = 'average';
+    } else {
+      result = 'heavy';
     }
-    if (bodyFatPercentage <= 25) {
-      console.log('Mapped to: athletic');
-      return 'athletic';
-    }
-    if (bodyFatPercentage <= 35) {
-      console.log('Mapped to: average');
-      return 'average';
-    }
-    console.log('Mapped to: heavy');
-    return 'heavy';
   } else {
     if (bodyFatPercentage <= 20) {
-      console.log('Mapped to: lean');
-      return 'lean';
+      result = 'lean';
+    } else if (bodyFatPercentage <= 30) {
+      result = 'athletic';
+    } else if (bodyFatPercentage <= 40) {
+      result = 'average';
+    } else {
+      result = 'heavy';
     }
-    if (bodyFatPercentage <= 30) {
-      console.log('Mapped to: athletic');
-      return 'athletic';
-    }
-    if (bodyFatPercentage <= 40) {
-      console.log('Mapped to: average');
-      return 'average';
-    }
-    console.log('Mapped to: heavy');
-    return 'heavy';
   }
+  
+  console.log(`✅ Body shape mapped to: "${result}" (type: ${typeof result})`);
+  console.log(`🔍 Is valid body shape? ${VALID_BODY_SHAPES.includes(result)}`);
+  
+  // Double-check the result is valid
+  if (!VALID_BODY_SHAPES.includes(result)) {
+    console.error(`❌ Invalid body shape result: "${result}". Falling back to 'average'`);
+    return 'average';
+  }
+  
+  return result;
+};
+
+// Helper function to validate body shape value
+export const isValidBodyShape = (bodyShape: string): bodyShape is BodyShape => {
+  const isValid = VALID_BODY_SHAPES.includes(bodyShape as BodyShape);
+  console.log(`🔍 Validating body shape: "${bodyShape}" -> ${isValid}`);
+  return isValid;
 };

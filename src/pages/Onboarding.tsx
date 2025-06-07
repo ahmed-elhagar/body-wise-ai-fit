@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useEmailConfirmation } from "@/hooks/useEmailConfirmation";
 import { toast } from "sonner";
 import { useOnboardingForm } from "@/hooks/useOnboardingForm";
-import { validateOnboardingStep, mapBodyFatToBodyShape } from "@/utils/onboardingValidation";
+import { validateOnboardingStep, mapBodyFatToBodyShape, isValidBodyShape } from "@/utils/onboardingValidation";
 import ModernOnboardingHeader from "@/components/onboarding/ModernOnboardingHeader";
 import ModernOnboardingNavigation from "@/components/onboarding/ModernOnboardingNavigation";
 import EnhancedOnboardingStep1 from "@/components/onboarding/EnhancedOnboardingStep1";
@@ -53,11 +53,13 @@ const Onboarding = () => {
   };
 
   const handleNext = async () => {
-    console.log('Onboarding - handleNext called, step:', step, 'isStepValid:', isStepValid());
-    console.log('Onboarding - Current form data:', formData);
+    console.log('🚀 Onboarding - handleNext called');
+    console.log(`📋 Current step: ${step}`);
+    console.log(`✅ Step valid: ${isStepValid()}`);
+    console.log('📊 Current form data:', JSON.stringify(formData, null, 2));
     
     if (!isStepValid()) {
-      console.log('Onboarding - Validation failed for step:', step);
+      console.log('❌ Validation failed for step:', step);
       
       // Provide specific error messages based on step
       switch (step) {
@@ -77,14 +79,14 @@ const Onboarding = () => {
     }
 
     if (step < totalSteps) {
-      console.log('Onboarding - Moving to next step:', step + 1);
+      console.log('➡️ Moving to next step:', step + 1);
       setStep(step + 1);
     } else {
       // Final step - save and complete
       setIsCompleting(true);
       try {
-        console.log('Onboarding - Final step, saving profile data');
-        console.log('Onboarding - Form data before processing:', formData);
+        console.log('💾 Final step - saving profile data');
+        console.log('📊 Form data before processing:', JSON.stringify(formData, null, 2));
         
         // Validate required fields before processing
         const requiredFields = {
@@ -99,12 +101,14 @@ const Onboarding = () => {
           body_fat_percentage: formData.body_fat_percentage
         };
 
+        console.log('🔍 Required fields check:', requiredFields);
+
         const missingFields = Object.entries(requiredFields)
           .filter(([key, value]) => !value || value === '')
           .map(([key]) => key);
 
         if (missingFields.length > 0) {
-          console.error('Onboarding - Missing required fields:', missingFields);
+          console.error('❌ Missing required fields:', missingFields);
           toast.error(`Please complete these required fields: ${missingFields.join(', ')}`);
           setIsCompleting(false);
           return;
@@ -116,8 +120,10 @@ const Onboarding = () => {
         const height = parseFloat(formData.height);
         const weight = parseFloat(formData.weight);
 
+        console.log('🔢 Parsed numeric values:', { bodyFatPercentage, age, height, weight });
+
         if (isNaN(bodyFatPercentage) || isNaN(age) || isNaN(height) || isNaN(weight)) {
-          console.error('Onboarding - Invalid numeric values');
+          console.error('❌ Invalid numeric values');
           toast.error('Please ensure all numeric fields contain valid numbers');
           setIsCompleting(false);
           return;
@@ -126,13 +132,23 @@ const Onboarding = () => {
         // Use the mapping function to ensure valid body shape
         const bodyShape = mapBodyFatToBodyShape(bodyFatPercentage, formData.gender);
         
-        console.log('Onboarding - Body shape mapping:', { 
+        console.log('🎯 Body shape mapping result:', { 
           bodyFatPercentage, 
           gender: formData.gender, 
-          bodyShape 
+          bodyShape,
+          bodyShapeType: typeof bodyShape,
+          isValidBodyShape: isValidBodyShape(bodyShape)
         });
+
+        // Validate the body shape before proceeding
+        if (!isValidBodyShape(bodyShape)) {
+          console.error('❌ Invalid body shape generated:', bodyShape);
+          toast.error('There was an issue calculating your body type. Please try again.');
+          setIsCompleting(false);
+          return;
+        }
         
-        // Prepare profile data with exact database constraint values
+        // Prepare profile data with explicit type checking
         const profileData = {
           first_name: requiredFields.first_name,
           last_name: requiredFields.last_name,
@@ -141,7 +157,7 @@ const Onboarding = () => {
           height,
           weight,
           nationality: formData.nationality === "prefer_not_to_say" ? null : formData.nationality,
-          body_shape: bodyShape, // This should now match database constraint exactly
+          body_shape: bodyShape, // This is now validated to be one of: 'lean', 'athletic', 'average', 'heavy'
           body_fat_percentage: bodyFatPercentage,
           health_conditions: formData.health_conditions || [],
           fitness_goal: formData.fitness_goal,
@@ -153,19 +169,27 @@ const Onboarding = () => {
           ai_generations_remaining: 5
         };
 
-        console.log("Onboarding - Saving complete profile data:", profileData);
+        console.log("💾 Final profile data being saved:", JSON.stringify(profileData, null, 2));
+        console.log(`🔍 Body shape value: "${profileData.body_shape}" (length: ${profileData.body_shape.length})`);
         
         const result = await updateProfile(profileData);
         
         if (result.error) {
-          console.error('Onboarding - Profile update failed:', result.error);
+          console.error('❌ Profile update failed:', result.error);
+          console.error('❌ Error details:', {
+            message: result.error.message,
+            code: result.error.code,
+            details: result.error.details,
+            hint: result.error.hint
+          });
           
           // Enhanced error handling for database constraints
           if (result.error.code === '23514') {
-            console.error('Database constraint violation - checking body_shape value:', bodyShape);
+            console.error('🚫 Database constraint violation');
+            console.error('🔍 Constraint details:', result.error.message);
             toast.error('There was an issue with your profile data. Please try again or contact support if the problem persists.');
           } else if (result.error.message?.includes('body_shape_check')) {
-            console.error('Body shape constraint violation:', bodyShape);
+            console.error('🚫 Body shape constraint violation:', bodyShape);
             toast.error('Invalid body type selection. Please refresh the page and try again.');
           } else {
             toast.error(`Failed to save profile: ${result.error.message || 'Unknown error'}`);
@@ -174,7 +198,7 @@ const Onboarding = () => {
           return;
         }
         
-        console.log('Onboarding - Profile saved successfully, redirecting to dashboard');
+        console.log('✅ Profile saved successfully, redirecting to dashboard');
         toast.success('Profile completed successfully!');
         
         // Navigate directly to dashboard after successful completion
@@ -183,7 +207,7 @@ const Onboarding = () => {
         }, 1000);
 
       } catch (error) {
-        console.error('Onboarding - Unexpected error:', error);
+        console.error('💥 Unexpected error:', error);
         toast.error('Something went wrong. Please try again.');
         setIsCompleting(false);
       }
