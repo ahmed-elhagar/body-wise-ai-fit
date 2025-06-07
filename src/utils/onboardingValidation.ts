@@ -9,14 +9,25 @@ export const validateOnboardingStep = (step: number, formData: OnboardingFormDat
         formData.first_name?.trim() &&
         formData.last_name?.trim() &&
         formData.age &&
+        parseFloat(formData.age) >= 13 &&
+        parseFloat(formData.age) <= 100 &&
         formData.gender &&
         formData.height &&
-        formData.weight
+        parseFloat(formData.height) >= 100 &&
+        parseFloat(formData.height) <= 250 &&
+        formData.weight &&
+        parseFloat(formData.weight) >= 30 &&
+        parseFloat(formData.weight) <= 300
       );
     
     case 2:
-      // Body composition - body fat percentage required
-      return !!(formData.body_fat_percentage && parseFloat(formData.body_fat_percentage) > 0);
+      // Body composition - body fat percentage required and valid
+      const bodyFatValue = parseFloat(formData.body_fat_percentage);
+      const isValidRange = formData.gender === 'male' 
+        ? (bodyFatValue >= 8 && bodyFatValue <= 35)
+        : (bodyFatValue >= 15 && bodyFatValue <= 45);
+      
+      return !!(formData.body_fat_percentage && bodyFatValue > 0 && isValidRange);
     
     case 3:
       // Goals and activity - fitness goal and activity level required

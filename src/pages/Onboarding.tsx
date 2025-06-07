@@ -54,7 +54,7 @@ const Onboarding = () => {
     console.log('Onboarding - handleNext called, step:', step, 'isStepValid:', isStepValid());
     
     if (!isStepValid()) {
-      toast.error('Please fill in all required fields');
+      toast.error('Please fill in all required fields correctly');
       return;
     }
 
@@ -72,6 +72,7 @@ const Onboarding = () => {
         const gender = formData.gender;
         let bodyShape = '';
         
+        // Ensure we map to exactly the database enum values
         if (gender === 'male') {
           if (bodyFatPercentage < 15) bodyShape = 'lean';
           else if (bodyFatPercentage < 25) bodyShape = 'athletic';
@@ -92,12 +93,12 @@ const Onboarding = () => {
           nationality: formData.nationality === "prefer_not_to_say" ? null : formData.nationality,
           body_shape: bodyShape as any,
           body_fat_percentage: bodyFatPercentage || undefined,
-          health_conditions: formData.health_conditions,
+          health_conditions: formData.health_conditions || [],
           fitness_goal: formData.fitness_goal as any,
           activity_level: formData.activity_level as any,
-          allergies: formData.allergies,
-          preferred_foods: formData.preferred_foods,
-          dietary_restrictions: formData.dietary_restrictions,
+          allergies: formData.allergies || [],
+          preferred_foods: formData.preferred_foods || [],
+          dietary_restrictions: formData.dietary_restrictions || [],
           onboarding_completed: true,
           ai_generations_remaining: 5
         };
@@ -108,12 +109,13 @@ const Onboarding = () => {
         
         if (result.error) {
           console.error('Onboarding - Profile update failed:', result.error);
-          toast.error('Failed to save profile. Please try again.');
+          toast.error(`Failed to save profile: ${result.error.message || 'Unknown error'}`);
           setIsCompleting(false);
           return;
         }
         
         console.log('Onboarding - Profile saved successfully, redirecting to dashboard');
+        toast.success('Profile completed successfully!');
         
         // Navigate directly to dashboard after successful completion
         setTimeout(() => {
@@ -227,16 +229,16 @@ const Onboarding = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-8">
-      <div className="container mx-auto px-4 max-w-2xl">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-4 md:py-8">
+      <div className="container mx-auto px-4 max-w-4xl">
         <ModernOnboardingHeader 
           step={step} 
           totalSteps={totalSteps} 
           progress={progress} 
         />
 
-        <Card className="p-8 bg-white/90 backdrop-blur-sm border-0 shadow-xl">
-          <div className="min-h-[500px]">
+        <div className="bg-white/90 backdrop-blur-sm border-0 shadow-xl rounded-2xl p-4 md:p-8 mt-6">
+          <div className="min-h-[500px] md:min-h-[600px]">
             {renderStepContent()}
           </div>
 
@@ -248,9 +250,9 @@ const Onboarding = () => {
             onBack={handleBack}
             onNext={handleNext}
             onSkip={handleSkip}
-            canSkip={step === 2}
+            canSkip={false}
           />
-        </Card>
+        </div>
       </div>
     </div>
   );
