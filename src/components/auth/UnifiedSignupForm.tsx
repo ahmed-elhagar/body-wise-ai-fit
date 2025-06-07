@@ -1,9 +1,11 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Eye, EyeOff, User, Target, Heart, CheckCircle } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Eye, EyeOff, User, Target, Heart, CheckCircle, Info } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
@@ -24,16 +26,18 @@ interface SignupFormData {
   height: string;
   weight: string;
   bodyFatPercentage: number;
+  nationality: string;
   
   // Goals & Activity
   fitnessGoal: string;
   activityLevel: string;
   
-  // Optional
-  nationality: string;
+  // Health & Diet Info
   healthConditions: string[];
   allergies: string[];
   dietaryRestrictions: string[];
+  preferredFoods: string[];
+  specialConditions: string[];
 }
 
 const UnifiedSignupForm = () => {
@@ -62,18 +66,29 @@ const UnifiedSignupForm = () => {
     height: "",
     weight: "",
     bodyFatPercentage: 20,
+    nationality: "",
     fitnessGoal: "",
     activityLevel: "",
-    nationality: "",
     healthConditions: [],
     allergies: [],
-    dietaryRestrictions: []
+    dietaryRestrictions: [],
+    preferredFoods: [],
+    specialConditions: []
   });
 
-  const totalSteps = 4;
+  const totalSteps = 5; // Added one more step for diet preferences
 
   const updateField = (field: keyof SignupFormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleArrayInput = (field: keyof SignupFormData, value: string) => {
+    const arrayValue = value
+      .split(/[,\n]/)
+      .map(item => item.trim())
+      .filter(Boolean);
+    
+    setFormData(prev => ({ ...prev, [field]: arrayValue }));
   };
 
   const validateStep = (step: number): boolean => {
@@ -81,11 +96,13 @@ const UnifiedSignupForm = () => {
       case 1:
         return !!(formData.firstName && formData.lastName && formData.email && formData.password);
       case 2:
-        return !!(formData.age && formData.gender && formData.height && formData.weight);
+        return !!(formData.age && formData.gender && formData.height && formData.weight && formData.nationality);
       case 3:
         return !!(formData.bodyFatPercentage > 0);
       case 4:
         return !!(formData.fitnessGoal && formData.activityLevel);
+      case 5:
+        return true; // Optional step
       default:
         return false;
     }
@@ -104,7 +121,7 @@ const UnifiedSignupForm = () => {
   };
 
   const handleSubmit = async () => {
-    if (!validateStep(4)) {
+    if (!validateStep(4)) { // Step 5 is optional
       toast.error("Please complete all required fields");
       return;
     }
@@ -138,9 +155,9 @@ const UnifiedSignupForm = () => {
         throw new Error("Invalid body shape calculation");
       }
 
-      // Create complete profile with ALL signup data - ensure correct field mapping
+      // Create complete profile with ALL signup data - ensure exact field mapping
       const profileData = {
-        // Basic Info - ensure exact field mapping to database columns
+        // Basic Info - exact field mapping to database columns
         first_name: formData.firstName.trim(),
         last_name: formData.lastName.trim(),
         age: parseInt(formData.age),
@@ -149,7 +166,7 @@ const UnifiedSignupForm = () => {
         weight: parseFloat(formData.weight),
         nationality: formData.nationality.trim() || null,
         
-        // Body composition
+        // Body composition - critical missing fields
         body_fat_percentage: formData.bodyFatPercentage,
         body_shape: bodyShape,
         
@@ -157,20 +174,45 @@ const UnifiedSignupForm = () => {
         fitness_goal: formData.fitnessGoal,
         activity_level: formData.activityLevel,
         
-        // Health & Preferences arrays - ensure they are proper arrays
-        health_conditions: Array.isArray(formData.healthConditions) ? formData.healthConditions.filter(Boolean) : [],
-        allergies: Array.isArray(formData.allergies) ? formData.allergies.filter(Boolean) : [],
-        dietary_restrictions: Array.isArray(formData.dietaryRestrictions) ? formData.dietaryRestrictions.filter(Boolean) : [],
-        preferred_foods: [], // Initialize as empty array
-        special_conditions: [], // Initialize as empty array
+        // Health & Diet arrays - ensure proper array handling
+        health_conditions: formData.healthConditions.filter(Boolean),
+        allergies: formData.allergies.filter(Boolean),
+        dietary_restrictions: formData.dietaryRestrictions.filter(Boolean),
+        preferred_foods: formData.preferredFoods.filter(Boolean),
+        special_conditions: formData.specialConditions.filter(Boolean),
         
         // System fields
         ai_generations_remaining: 5,
-        profile_completion_score: 95, // Higher score since all data is filled
+        profile_completion_score: 95,
         updated_at: new Date().toISOString()
       };
 
-      console.log('UnifiedSignupForm - Updating profile with data:', profileData);
+      console.log('UnifiedSignupForm - Updating profile with comprehensive data:', {
+        basicInfo: {
+          firstName: profileData.first_name,
+          lastName: profileData.last_name,
+          age: profileData.age,
+          gender: profileData.gender,
+          height: profileData.height,
+          weight: profileData.weight,
+          nationality: profileData.nationality
+        },
+        bodyComposition: {
+          bodyFatPercentage: profileData.body_fat_percentage,
+          bodyShape: profileData.body_shape
+        },
+        goalsActivity: {
+          fitnessGoal: profileData.fitness_goal,
+          activityLevel: profileData.activity_level
+        },
+        arrays: {
+          healthConditions: profileData.health_conditions,
+          allergies: profileData.allergies,
+          dietaryRestrictions: profileData.dietary_restrictions,
+          preferredFoods: profileData.preferred_foods,
+          specialConditions: profileData.special_conditions
+        }
+      });
       
       const result = await updateProfile(profileData);
       
@@ -200,6 +242,8 @@ const UnifiedSignupForm = () => {
         return renderBodyShape();
       case 4:
         return renderGoalsAndActivity();
+      case 5:
+        return renderDietaryPreferences();
       default:
         return null;
     }
@@ -364,6 +408,20 @@ const UnifiedSignupForm = () => {
           />
         </div>
       </div>
+
+      <div>
+        <Label htmlFor="nationality" className="text-sm font-medium text-gray-700 mb-2 block">
+          Nationality *
+        </Label>
+        <Input
+          id="nationality"
+          value={formData.nationality}
+          onChange={(e) => updateField("nationality", e.target.value)}
+          placeholder="Enter your nationality"
+          className="h-12"
+          required
+        />
+      </div>
     </div>
   );
 
@@ -444,6 +502,85 @@ const UnifiedSignupForm = () => {
     </div>
   );
 
+  const renderDietaryPreferences = () => (
+    <div className="space-y-6">
+      <div className="text-center mb-8">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-2xl mb-4 shadow-lg">
+          <Info className="w-8 h-8 text-white" />
+        </div>
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">Health & Diet Information</h2>
+        <p className="text-gray-600">Help us personalize your experience (Optional)</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-2">
+          <Label htmlFor="preferredFoods">Preferred Foods</Label>
+          <Textarea
+            id="preferredFoods"
+            value={formData.preferredFoods.join(', ')}
+            onChange={(e) => handleArrayInput('preferredFoods', e.target.value)}
+            placeholder="e.g., Chicken, Rice, Vegetables, Fish"
+            rows={3}
+            className="resize-none"
+          />
+          <p className="text-xs text-gray-500">Separate items with commas</p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="dietaryRestrictions">Dietary Restrictions</Label>
+          <Textarea
+            id="dietaryRestrictions"
+            value={formData.dietaryRestrictions.join(', ')}
+            onChange={(e) => handleArrayInput('dietaryRestrictions', e.target.value)}
+            placeholder="e.g., Vegetarian, Gluten-free, Keto"
+            rows={3}
+            className="resize-none"
+          />
+          <p className="text-xs text-gray-500">Separate items with commas</p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="allergies">Allergies & Intolerances</Label>
+          <Textarea
+            id="allergies"
+            value={formData.allergies.join(', ')}
+            onChange={(e) => handleArrayInput('allergies', e.target.value)}
+            placeholder="e.g., Nuts, Dairy, Shellfish"
+            rows={3}
+            className="resize-none"
+          />
+          <p className="text-xs text-gray-500">Separate items with commas</p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="healthConditions">Health Conditions</Label>
+          <Textarea
+            id="healthConditions"
+            value={formData.healthConditions.join(', ')}
+            onChange={(e) => handleArrayInput('healthConditions', e.target.value)}
+            placeholder="e.g., Diabetes, Hypertension"
+            rows={3}
+            className="resize-none"
+          />
+          <p className="text-xs text-gray-500">Separate items with commas</p>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="specialConditions">Special Conditions</Label>
+        <Textarea
+          id="specialConditions"
+          value={formData.specialConditions.join(', ')}
+          onChange={(e) => handleArrayInput('specialConditions', e.target.value)}
+          placeholder="e.g., Pregnancy, Breastfeeding, Recovery from injury"
+          rows={2}
+          className="resize-none"
+        />
+        <p className="text-xs text-gray-500">Separate items with commas</p>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-8">
       <div className="container mx-auto px-4 max-w-2xl">
@@ -489,7 +626,7 @@ const UnifiedSignupForm = () => {
             ) : (
               <Button
                 onClick={handleSubmit}
-                disabled={!validateStep(currentStep) || loading}
+                disabled={!validateStep(4) || loading} // Only require validation through step 4
                 className="px-8 bg-gradient-to-r from-green-500 to-emerald-600"
               >
                 {loading ? "Creating Account..." : "Create Account"}

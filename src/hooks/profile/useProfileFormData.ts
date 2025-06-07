@@ -29,99 +29,119 @@ export const useProfileFormData = () => {
 
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
 
-  // Enhanced sync with profile data - ensure ALL signup data is properly mapped
+  // Enhanced sync with profile data - comprehensive field mapping
   useEffect(() => {
     if (profile) {
-      console.log('useProfileFormData - Starting profile sync:', {
+      console.log('useProfileFormData - Syncing profile data:', {
         profileId: profile.id?.substring(0, 8) + '...',
-        profileFields: Object.keys(profile),
-        profileData: {
+        allFields: Object.keys(profile),
+        criticalFields: {
           firstName: profile.first_name,
           lastName: profile.last_name,
           age: profile.age,
           gender: profile.gender,
           height: profile.height,
           weight: profile.weight,
-          fitnessGoal: profile.fitness_goal,
-          activityLevel: profile.activity_level,
           nationality: profile.nationality,
           bodyShape: profile.body_shape,
+          bodyFatPercentage: profile.body_fat_percentage,
+          fitnessGoal: profile.fitness_goal,
+          activityLevel: profile.activity_level
+        },
+        arrayFields: {
           healthConditions: profile.health_conditions,
           allergies: profile.allergies,
           preferredFoods: profile.preferred_foods,
-          dietaryRestrictions: profile.dietary_restrictions
+          dietaryRestrictions: profile.dietary_restrictions,
+          specialConditions: profile.special_conditions
         }
       });
 
-      // Create a comprehensive mapping of all profile fields with proper type conversion
+      // Comprehensive mapping with proper type conversion and null safety
       const mappedData: ProfileFormData = {
-        // Basic Info - ensure proper type conversion and fallbacks
-        first_name: profile.first_name || '',
-        last_name: profile.last_name || '',
+        // Basic Info - handle all data types properly
+        first_name: profile.first_name?.toString() || '',
+        last_name: profile.last_name?.toString() || '',
         age: profile.age ? String(profile.age) : '',
-        gender: profile.gender || '',
+        gender: profile.gender?.toString() || '',
         height: profile.height ? String(profile.height) : '',
         weight: profile.weight ? String(profile.weight) : '',
-        nationality: profile.nationality || '',
-        body_shape: profile.body_shape || '',
+        nationality: profile.nationality?.toString() || '',
+        body_shape: profile.body_shape?.toString() || '',
         
-        // Goals & Activity - ensure these match exactly what was set during signup
-        fitness_goal: profile.fitness_goal || '',
-        activity_level: profile.activity_level || '',
+        // Goals & Activity - ensure exact matching
+        fitness_goal: profile.fitness_goal?.toString() || '',
+        activity_level: profile.activity_level?.toString() || '',
         
-        // Arrays - ensure they are properly handled as arrays, not strings
-        health_conditions: Array.isArray(profile.health_conditions) 
-          ? profile.health_conditions 
-          : profile.health_conditions 
-            ? [profile.health_conditions].flat() 
-            : [],
-        allergies: Array.isArray(profile.allergies) 
-          ? profile.allergies 
-          : profile.allergies 
-            ? [profile.allergies].flat() 
-            : [],
-        preferred_foods: Array.isArray(profile.preferred_foods) 
-          ? profile.preferred_foods 
-          : profile.preferred_foods 
-            ? [profile.preferred_foods].flat() 
-            : [],
-        dietary_restrictions: Array.isArray(profile.dietary_restrictions) 
-          ? profile.dietary_restrictions 
-          : profile.dietary_restrictions 
-            ? [profile.dietary_restrictions].flat() 
-            : [],
-        special_conditions: Array.isArray(profile.special_conditions) 
-          ? profile.special_conditions 
-          : profile.special_conditions 
-            ? [profile.special_conditions].flat() 
-            : [],
+        // Arrays - robust array handling with multiple fallbacks
+        health_conditions: (() => {
+          if (Array.isArray(profile.health_conditions)) {
+            return profile.health_conditions.filter(Boolean);
+          }
+          if (profile.health_conditions) {
+            return [profile.health_conditions.toString()];
+          }
+          return [];
+        })(),
+        
+        allergies: (() => {
+          if (Array.isArray(profile.allergies)) {
+            return profile.allergies.filter(Boolean);
+          }
+          if (profile.allergies) {
+            return [profile.allergies.toString()];
+          }
+          return [];
+        })(),
+        
+        preferred_foods: (() => {
+          if (Array.isArray(profile.preferred_foods)) {
+            return profile.preferred_foods.filter(Boolean);
+          }
+          if (profile.preferred_foods) {
+            return [profile.preferred_foods.toString()];
+          }
+          return [];
+        })(),
+        
+        dietary_restrictions: (() => {
+          if (Array.isArray(profile.dietary_restrictions)) {
+            return profile.dietary_restrictions.filter(Boolean);
+          }
+          if (profile.dietary_restrictions) {
+            return [profile.dietary_restrictions.toString()];
+          }
+          return [];
+        })(),
+        
+        special_conditions: (() => {
+          if (Array.isArray(profile.special_conditions)) {
+            return profile.special_conditions.filter(Boolean);
+          }
+          if (profile.special_conditions) {
+            return [profile.special_conditions.toString()];
+          }
+          return [];
+        })(),
       };
 
-      console.log('useProfileFormData - Final mapped form data:', {
-        basicInfo: {
-          firstName: mappedData.first_name,
-          lastName: mappedData.last_name,
-          age: mappedData.age,
-          gender: mappedData.gender,
-          height: mappedData.height,
-          weight: mappedData.weight,
-          nationality: mappedData.nationality,
-          bodyShape: mappedData.body_shape
-        },
-        goals: {
-          fitnessGoal: mappedData.fitness_goal,
-          activityLevel: mappedData.activity_level
-        },
-        arrays: {
+      console.log('useProfileFormData - Mapped form data result:', {
+        basicInfoSuccess: !!(mappedData.first_name && mappedData.last_name),
+        physicalInfoSuccess: !!(mappedData.age && mappedData.gender && mappedData.height && mappedData.weight),
+        goalsSuccess: !!(mappedData.fitness_goal && mappedData.activity_level),
+        arrayFieldsSizes: {
           healthConditions: mappedData.health_conditions.length,
           allergies: mappedData.allergies.length,
           preferredFoods: mappedData.preferred_foods.length,
           dietaryRestrictions: mappedData.dietary_restrictions.length,
           specialConditions: mappedData.special_conditions.length
-        }
+        },
+        finalMappedData: mappedData
       });
 
       setFormData(mappedData);
+    } else {
+      console.log('useProfileFormData - No profile data available yet');
     }
   }, [profile]);
 
@@ -133,7 +153,7 @@ export const useProfileFormData = () => {
       console.log('useProfileFormData - Form data after update:', {
         field,
         newValue: value,
-        updatedFieldValue: updated[field]
+        updatedFieldValue: updated[field as keyof ProfileFormData]
       });
       return updated;
     });
@@ -145,17 +165,19 @@ export const useProfileFormData = () => {
   };
 
   const handleArrayInput = (field: string, value: string) => {
-    // Enhanced array handling - support both comma and newline separation
+    // Enhanced array handling - support multiple separators and clean data
     const arrayValue = value
-      .split(/[,\n]/)
+      .split(/[,\n;]/) // Support comma, newline, and semicolon separators
       .map(item => item.trim())
-      .filter(Boolean);
+      .filter(Boolean) // Remove empty strings
+      .filter((item, index, arr) => arr.indexOf(item) === index); // Remove duplicates
     
     console.log('useProfileFormData - Converting array input:', {
       field,
       inputValue: value,
       parsedArray: arrayValue,
-      arrayLength: arrayValue.length
+      arrayLength: arrayValue.length,
+      uniqueItems: arrayValue.length
     });
     
     setFormData(prev => ({ ...prev, [field]: arrayValue }));

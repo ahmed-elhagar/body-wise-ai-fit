@@ -10,88 +10,153 @@ export const useProfileActions = () => {
   const saveProfile = async (formData: any) => {
     setIsUpdating(true);
     try {
-      console.log('useProfileActions - Starting profile save with data:', {
+      console.log('useProfileActions - Starting comprehensive profile save:', {
         fieldsCount: Object.keys(formData).length,
-        hasBasicInfo: !!(formData.first_name && formData.last_name),
-        hasPhysicalInfo: !!(formData.height && formData.weight),
-        hasGoals: !!(formData.fitness_goal && formData.activity_level),
-        formDataDetails: {
+        basicInfo: {
           firstName: formData.first_name,
           lastName: formData.last_name,
           age: formData.age,
           gender: formData.gender,
           height: formData.height,
           weight: formData.weight,
-          fitnessGoal: formData.fitness_goal,
-          activityLevel: formData.activity_level,
           nationality: formData.nationality,
           bodyShape: formData.body_shape
         },
-        arrayFields: {
-          healthConditions: formData.health_conditions?.length || 0,
-          allergies: formData.allergies?.length || 0,
-          preferredFoods: formData.preferred_foods?.length || 0,
-          dietaryRestrictions: formData.dietary_restrictions?.length || 0
+        goalsActivity: {
+          fitnessGoal: formData.fitness_goal,
+          activityLevel: formData.activity_level
+        },
+        arrayFieldsStatus: {
+          healthConditions: Array.isArray(formData.health_conditions) ? formData.health_conditions.length : 'not array',
+          allergies: Array.isArray(formData.allergies) ? formData.allergies.length : 'not array',
+          preferredFoods: Array.isArray(formData.preferred_foods) ? formData.preferred_foods.length : 'not array',
+          dietaryRestrictions: Array.isArray(formData.dietary_restrictions) ? formData.dietary_restrictions.length : 'not array',
+          specialConditions: Array.isArray(formData.special_conditions) ? formData.special_conditions.length : 'not array'
         }
       });
       
-      // Enhanced data conversion with proper type handling and validation
+      // Comprehensive data conversion with enhanced validation and type safety
       const profileUpdateData = {
-        // Basic Info - ensure proper type conversion and non-empty values
-        first_name: formData.first_name?.trim() || null,
-        last_name: formData.last_name?.trim() || null,
-        age: formData.age ? parseInt(String(formData.age)) : null,
-        gender: formData.gender || null,
-        height: formData.height ? parseFloat(String(formData.height)) : null,
-        weight: formData.weight ? parseFloat(String(formData.weight)) : null,
-        nationality: formData.nationality?.trim() || null,
-        body_shape: formData.body_shape || null,
+        // Basic Info - robust type conversion with validation
+        first_name: formData.first_name?.toString().trim() || null,
+        last_name: formData.last_name?.toString().trim() || null,
+        age: (() => {
+          const ageValue = formData.age;
+          if (!ageValue) return null;
+          const parsed = parseInt(String(ageValue));
+          return !isNaN(parsed) && parsed > 0 && parsed < 150 ? parsed : null;
+        })(),
+        gender: formData.gender?.toString().trim() || null,
+        height: (() => {
+          const heightValue = formData.height;
+          if (!heightValue) return null;
+          const parsed = parseFloat(String(heightValue));
+          return !isNaN(parsed) && parsed > 0 && parsed < 300 ? parsed : null;
+        })(),
+        weight: (() => {
+          const weightValue = formData.weight;
+          if (!weightValue) return null;
+          const parsed = parseFloat(String(weightValue));
+          return !isNaN(parsed) && parsed > 0 && parsed < 500 ? parsed : null;
+        })(),
+        nationality: formData.nationality?.toString().trim() || null,
+        body_shape: formData.body_shape?.toString().trim() || null,
         
-        // Goals & Activity - ensure these are properly set
-        fitness_goal: formData.fitness_goal || null,
-        activity_level: formData.activity_level || null,
+        // Goals & Activity - ensure proper string values
+        fitness_goal: formData.fitness_goal?.toString().trim() || null,
+        activity_level: formData.activity_level?.toString().trim() || null,
         
-        // Arrays - ensure they are properly handled as arrays with proper filtering
-        health_conditions: Array.isArray(formData.health_conditions) 
-          ? formData.health_conditions.filter(item => item && item.trim()) 
-          : [],
-        allergies: Array.isArray(formData.allergies) 
-          ? formData.allergies.filter(item => item && item.trim()) 
-          : [],
-        preferred_foods: Array.isArray(formData.preferred_foods) 
-          ? formData.preferred_foods.filter(item => item && item.trim()) 
-          : [],
-        dietary_restrictions: Array.isArray(formData.dietary_restrictions) 
-          ? formData.dietary_restrictions.filter(item => item && item.trim()) 
-          : [],
-        special_conditions: Array.isArray(formData.special_conditions) 
-          ? formData.special_conditions.filter(item => item && item.trim()) 
-          : [],
+        // Arrays - comprehensive array handling with validation
+        health_conditions: (() => {
+          if (Array.isArray(formData.health_conditions)) {
+            return formData.health_conditions
+              .map(item => item?.toString().trim())
+              .filter(Boolean)
+              .filter((item, index, arr) => arr.indexOf(item) === index); // Remove duplicates
+          }
+          return [];
+        })(),
         
-        // Update timestamp
+        allergies: (() => {
+          if (Array.isArray(formData.allergies)) {
+            return formData.allergies
+              .map(item => item?.toString().trim())
+              .filter(Boolean)
+              .filter((item, index, arr) => arr.indexOf(item) === index);
+          }
+          return [];
+        })(),
+        
+        preferred_foods: (() => {
+          if (Array.isArray(formData.preferred_foods)) {
+            return formData.preferred_foods
+              .map(item => item?.toString().trim())
+              .filter(Boolean)
+              .filter((item, index, arr) => arr.indexOf(item) === index);
+          }
+          return [];
+        })(),
+        
+        dietary_restrictions: (() => {
+          if (Array.isArray(formData.dietary_restrictions)) {
+            return formData.dietary_restrictions
+              .map(item => item?.toString().trim())
+              .filter(Boolean)
+              .filter((item, index, arr) => arr.indexOf(item) === index);
+          }
+          return [];
+        })(),
+        
+        special_conditions: (() => {
+          if (Array.isArray(formData.special_conditions)) {
+            return formData.special_conditions
+              .map(item => item?.toString().trim())
+              .filter(Boolean)
+              .filter((item, index, arr) => arr.indexOf(item) === index);
+          }
+          return [];
+        })(),
+        
+        // System fields
         updated_at: new Date().toISOString(),
       };
 
-      console.log('useProfileActions - Processed data for database update:', {
-        basicInfo: {
+      console.log('useProfileActions - Final processed data for database:', {
+        basicInfoProcessed: {
           firstName: profileUpdateData.first_name,
           lastName: profileUpdateData.last_name,
           age: profileUpdateData.age,
+          ageType: typeof profileUpdateData.age,
           gender: profileUpdateData.gender,
           height: profileUpdateData.height,
+          heightType: typeof profileUpdateData.height,
           weight: profileUpdateData.weight,
+          weightType: typeof profileUpdateData.weight,
           nationality: profileUpdateData.nationality,
           bodyShape: profileUpdateData.body_shape
         },
-        goals: {
+        goalsProcessed: {
           fitnessGoal: profileUpdateData.fitness_goal,
           activityLevel: profileUpdateData.activity_level
         },
-        arrays: {
-          healthConditions: profileUpdateData.health_conditions.length,
-          allergies: profileUpdateData.allergies.length,
-          preferredFoods: profileUpdateData.preferred_foods.length,
-          dietaryRestrictions: profileUpdateData.dietary_restrictions.length
+        arraysProcessed: {
+          healthConditions: profileUpdateData.health_conditions,
+          allergies: profileUpdateData.allergies,
+          preferredFoods: profileUpdateData.preferred_foods,
+          dietaryRestrictions: profileUpdateData.dietary_restrictions,
+          specialConditions: profileUpdateData.special_conditions
+        },
+        dataTypes: {
+          ageIsNumber: typeof profileUpdateData.age === 'number',
+          heightIsNumber: typeof profileUpdateData.height === 'number',
+          weightIsNumber: typeof profileUpdateData.weight === 'number',
+          arraysAreArrays: {
+            healthConditions: Array.isArray(profileUpdateData.health_conditions),
+            allergies: Array.isArray(profileUpdateData.allergies),
+            preferredFoods: Array.isArray(profileUpdateData.preferred_foods),
+            dietaryRestrictions: Array.isArray(profileUpdateData.dietary_restrictions),
+            specialConditions: Array.isArray(profileUpdateData.special_conditions)
+          }
         }
       });
       
@@ -113,7 +178,7 @@ export const useProfileActions = () => {
       console.error('useProfileActions - Profile update error:', {
         message: error.message,
         stack: error.stack,
-        originalData: formData
+        originalFormData: formData
       });
       toast.error(error.message || 'Failed to update profile');
       return { success: false, error };
