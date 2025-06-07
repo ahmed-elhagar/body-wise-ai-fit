@@ -5,7 +5,7 @@ import { lazy } from 'react';
 export const Index = lazy(() => import('@/pages/Index'));
 export const Landing = lazy(() => import('@/pages/Landing'));
 export const Auth = lazy(() => import('@/pages/Auth'));
-export const UnifiedSignup = lazy(() => import('@/components/auth/UnifiedSignupForm'));
+export const UnifiedSignup = lazy(() => import('@/pages/Signup'));
 export const Welcome = lazy(() => import('@/pages/Welcome'));
 
 // Protected pages
