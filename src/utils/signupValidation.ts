@@ -62,7 +62,7 @@ export const validateSignupStep = (step: number, formData: any): boolean => {
     
     case 4:
       // Goals and activity - fitness goal and activity level required
-      const validFitnessGoals = ['lose_weight', 'gain_muscle', 'maintain', 'endurance', 'weight_loss', 'muscle_gain', 'general_fitness', 'strength'];
+      const validFitnessGoals = ['weight_loss', 'muscle_gain', 'maintenance', 'endurance'];
       const validActivityLevels = ['sedentary', 'lightly_active', 'moderately_active', 'very_active', 'extremely_active'];
       
       const step4Valid = !!(
