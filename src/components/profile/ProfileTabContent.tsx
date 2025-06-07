@@ -1,5 +1,4 @@
 
-import { TabsContent } from "@/components/ui/tabs";
 import ProfileOverviewTab from "./tabs/ProfileOverviewTab";
 import ProfileBasicTab from "./tabs/ProfileBasicTab";
 import ProfileHealthTab from "./tabs/ProfileHealthTab";
@@ -58,7 +57,6 @@ const ProfileTabContent = ({ tabId }: ProfileTabContentProps) => {
           <div className="space-y-6">
             <ProfileHealthTab />
             
-            {/* Life Phase Form - Only show if feature flag is enabled */}
             {flags.life_phase_nutrition && (
               <div className="mt-6">
                 <LifePhaseForm
