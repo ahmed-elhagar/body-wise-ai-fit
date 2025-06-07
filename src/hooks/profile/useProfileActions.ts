@@ -1,44 +1,50 @@
 
 import { useState } from 'react';
 import { useProfile } from '../useProfile';
-import { ProfileFormData } from './types';
+import { toast } from 'sonner';
 
 export const useProfileActions = () => {
-  const [isUpdating, setIsUpdating] = useState(false);
   const { updateProfile } = useProfile();
+  const [isUpdating, setIsUpdating] = useState(false);
 
-  const saveProfile = async (formData: ProfileFormData) => {
+  const saveProfile = async (formData: any) => {
     setIsUpdating(true);
     try {
-      const profileData = {
-        first_name: formData.first_name.trim(),
-        last_name: formData.last_name.trim(),
-        age: parseInt(formData.age),
-        gender: formData.gender,
-        height: parseFloat(formData.height),
-        weight: parseFloat(formData.weight),
-        nationality: formData.nationality.trim(),
-        body_shape: formData.body_shape,
-        fitness_goal: formData.fitness_goal,
-        activity_level: formData.activity_level,
-        dietary_restrictions: formData.dietary_restrictions.filter(Boolean),
-        allergies: formData.allergies.filter(Boolean),
-        health_conditions: formData.health_conditions.filter(Boolean),
-        preferred_foods: formData.preferred_foods.filter(Boolean),
-        special_conditions: formData.special_conditions.filter(Boolean),
-        updated_at: new Date().toISOString()
+      console.log('useProfileActions - Saving profile with data:', formData);
+      
+      // Convert string values to appropriate types for database
+      const profileUpdateData = {
+        first_name: formData.first_name || null,
+        last_name: formData.last_name || null,
+        age: formData.age ? parseInt(formData.age) : null,
+        gender: formData.gender || null,
+        height: formData.height ? parseFloat(formData.height) : null,
+        weight: formData.weight ? parseFloat(formData.weight) : null,
+        nationality: formData.nationality || null,
+        body_shape: formData.body_shape || null,
+        fitness_goal: formData.fitness_goal || null,
+        activity_level: formData.activity_level || null,
+        health_conditions: Array.isArray(formData.health_conditions) ? formData.health_conditions : [],
+        allergies: Array.isArray(formData.allergies) ? formData.allergies : [],
+        preferred_foods: Array.isArray(formData.preferred_foods) ? formData.preferred_foods : [],
+        dietary_restrictions: Array.isArray(formData.dietary_restrictions) ? formData.dietary_restrictions : [],
+        special_conditions: Array.isArray(formData.special_conditions) ? formData.special_conditions : [],
       };
 
-      const result = await updateProfile(profileData);
+      console.log('useProfileActions - Converted data for database:', profileUpdateData);
       
-      if (result?.error) {
-        throw new Error(result.error.message || 'Profile update failed');
+      const result = await updateProfile(profileUpdateData);
+      if (result.error) {
+        throw new Error(result.error.message);
       }
-
+      
+      console.log('useProfileActions - Profile save successful');
+      toast.success('Profile updated successfully!');
       return { success: true };
     } catch (error: any) {
-      console.error('Profile save error:', error);
-      return { success: false, error: error.message };
+      console.error('useProfileActions - Profile update error:', error);
+      toast.error(error.message || 'Failed to update profile');
+      return { success: false, error };
     } finally {
       setIsUpdating(false);
     }

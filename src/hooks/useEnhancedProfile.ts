@@ -1,16 +1,42 @@
 
-import { useProfile } from './useProfile';
-import { useAuth } from './useAuth';
+import { useProfileFormData } from "./profile/useProfileFormData";
+import { useProfileActions } from "./profile/useProfileActions";
+import { useProfileCompletion } from "./profile/useProfileCompletion";
+import { useHealthAssessment } from "./useHealthAssessment";
 
 export const useEnhancedProfile = () => {
-  const { user } = useAuth();
-  const { profile, isLoading, updateProfile, refetch } = useProfile();
+  const { 
+    formData, 
+    updateFormData, 
+    handleArrayInput, 
+    validationErrors, 
+    setValidationErrors 
+  } = useProfileFormData();
+  
+  const { saveProfile, isUpdating } = useProfileActions();
+  const { completionPercentage, assessment } = useProfileCompletion(formData);
+  const { isSaving: isSavingAssessment } = useHealthAssessment();
+
+  // Create save functions that match expected signatures
+  const saveBasicInfo = async () => {
+    const result = await saveProfile(formData);
+    return result.success;
+  };
+
+  const saveGoalsAndActivity = async () => {
+    const result = await saveProfile(formData);
+    return result.success;
+  };
 
   return {
-    user,
-    profile,
-    isLoading,
-    updateProfile,
-    refetch
+    formData,
+    updateFormData,
+    handleArrayInput,
+    saveBasicInfo,
+    saveGoalsAndActivity,
+    isUpdating: isUpdating || isSavingAssessment,
+    validationErrors,
+    completionPercentage,
+    assessment,
   };
 };

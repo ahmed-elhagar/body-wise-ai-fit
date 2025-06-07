@@ -38,7 +38,6 @@ export interface Profile {
   special_conditions?: any;
   preferred_language?: string;
   last_health_assessment_date?: string;
-  onboarding_completed?: boolean;
 }
 
 export const useProfile = () => {

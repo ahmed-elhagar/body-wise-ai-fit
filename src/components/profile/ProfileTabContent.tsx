@@ -1,4 +1,5 @@
 
+import { TabsContent } from "@/components/ui/tabs";
 import ProfileOverviewTab from "./tabs/ProfileOverviewTab";
 import ProfileBasicTab from "./tabs/ProfileBasicTab";
 import ProfileHealthTab from "./tabs/ProfileHealthTab";
@@ -9,10 +10,16 @@ import { useLifePhaseProfile } from "@/hooks/useLifePhaseProfile";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 
 interface ProfileTabContentProps {
-  tabId: string;
+  formData: any;
+  updateFormData: (field: string, value: any) => void;
+  handleArrayInput: (field: string, value: string) => void;
+  saveBasicInfo: () => Promise<boolean>;
+  saveGoalsAndActivity: () => Promise<boolean>;
+  isUpdating: boolean;
+  validationErrors: Record<string, string>;
 }
 
-const ProfileTabContent = ({ tabId }: ProfileTabContentProps) => {
+const ProfileTabContent = (props: ProfileTabContentProps) => {
   const { flags } = useFeatureFlags();
   const {
     lifePhase,
@@ -25,19 +32,26 @@ const ProfileTabContent = ({ tabId }: ProfileTabContentProps) => {
     await updateLifePhaseProfile({ [field]: value });
   };
 
-  if (tabId === "overview") {
-    return <ProfileOverviewTab />;
-  }
+  return (
+    <>
+      <TabsContent value="overview" className="space-y-6">
+        <ProfileOverviewTab />
+      </TabsContent>
 
-  if (tabId === "basic") {
-    return <ProfileBasicTab />;
-  }
+      <TabsContent value="basic" className="space-y-6">
+        <ProfileBasicTab
+          formData={props.formData}
+          updateFormData={props.updateFormData}
+          saveBasicInfo={props.saveBasicInfo}
+          isUpdating={props.isUpdating}
+          validationErrors={props.validationErrors}
+        />
+      </TabsContent>
 
-  if (tabId === "health") {
-    return (
-      <div className="space-y-6">
+      <TabsContent value="health" className="space-y-6">
         <ProfileHealthTab />
         
+        {/* Life Phase Form - Only show if feature flag is enabled */}
         {flags.life_phase_nutrition && (
           <div className="mt-6">
             <LifePhaseForm
@@ -52,19 +66,24 @@ const ProfileTabContent = ({ tabId }: ProfileTabContentProps) => {
             />
           </div>
         )}
-      </div>
-    );
-  }
+      </TabsContent>
 
-  if (tabId === "goals") {
-    return <ProfileGoalsTab />;
-  }
+      <TabsContent value="goals" className="space-y-6">
+        <ProfileGoalsTab
+          formData={props.formData}
+          updateFormData={props.updateFormData}
+          handleArrayInput={props.handleArrayInput}
+          saveGoalsAndActivity={props.saveGoalsAndActivity}
+          isUpdating={props.isUpdating}
+          validationErrors={props.validationErrors}
+        />
+      </TabsContent>
 
-  if (tabId === "settings") {
-    return <ProfileSettingsTab />;
-  }
-
-  return null;
+      <TabsContent value="settings" className="space-y-6">
+        <ProfileSettingsTab />
+      </TabsContent>
+    </>
+  );
 };
 
 export default ProfileTabContent;

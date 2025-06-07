@@ -31,8 +31,8 @@ interface AuthContextType {
   isLoading: boolean;
   isAdmin: boolean;
   error: any;
-  signIn: (email: string, password: string) => Promise<any>;
-  signUp: (email: string, password: string, metadata?: any) => Promise<any>;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, metadata?: any) => Promise<void>;
   signOut: (forceCleanup?: boolean) => Promise<void>;
   clearError: () => void;
   retryAuth: () => Promise<void>;
@@ -52,8 +52,8 @@ export const useAuth = () => {
       isLoading: false,
       isAdmin: false,
       error: null,
-      signIn: async () => ({ error: null }),
-      signUp: async () => ({ error: null }),
+      signIn: async () => {},
+      signUp: async () => {},
       signOut: async () => {},
       clearError: () => {},
       retryAuth: async () => {},
@@ -303,12 +303,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (data) {
         console.log('Sign in successful for:', email);
       }
-      
-      return data;
     } catch (error: any) {
       console.error('Sign in error:', error);
       setError(error);
-      return { error };
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -325,12 +323,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (data) {
         console.log('Sign up successful for:', email);
       }
-      
-      return data;
     } catch (error: any) {
       console.error('Sign up error:', error);
       setError(error);
-      return { error };
+      throw error;
     } finally {
       setIsLoading(false);
     }

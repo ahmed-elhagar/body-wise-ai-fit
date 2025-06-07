@@ -8,7 +8,7 @@ export const validateSignupStep = (step: number, formData: any): boolean => {
   
   switch (step) {
     case 1:
-      // Account Creation - all fields required
+      // Basic Information - all fields required
       const step1Valid = !!(
         formData.firstName?.trim() &&
         formData.lastName?.trim() &&
@@ -49,8 +49,8 @@ export const validateSignupStep = (step: number, formData: any): boolean => {
     
     case 4:
       // Goals and activity - fitness goal and activity level required
-      const validFitnessGoals = ['lose_weight', 'gain_muscle', 'maintain', 'endurance', 'weight_loss', 'muscle_gain', 'general_fitness', 'strength'];
-      const validActivityLevels = ['sedentary', 'lightly_active', 'moderately_active', 'very_active', 'extremely_active'];
+      const validFitnessGoals = ['weight_loss', 'muscle_gain', 'endurance', 'strength', 'general_fitness'];
+      const validActivityLevels = ['sedentary', 'lightly_active', 'moderately_active', 'very_active'];
       
       const step4Valid = !!(
         formData.fitnessGoal && 
@@ -60,10 +60,6 @@ export const validateSignupStep = (step: number, formData: any): boolean => {
       );
       console.log(`Step 4 validation result: ${step4Valid}`);
       return step4Valid;
-    
-    case 5:
-      // Health info is optional, always valid
-      return true;
     
     default:
       return false;
