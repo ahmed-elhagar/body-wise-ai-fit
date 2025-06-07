@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -12,13 +11,23 @@ const Welcome = () => {
   const { user } = useAuth();
   const { profile } = useProfile();
 
-  // Redirect if not authenticated or profile not completed
+  // Redirect logic - but don't redirect completed users back to signup
   useEffect(() => {
     if (!user) {
+      console.log('Welcome - No user, redirecting to auth');
       navigate('/auth', { replace: true });
-    } else if (profile && !profile.onboarding_completed) {
-      navigate('/signup', { replace: true });
+      return;
     }
+
+    // Only redirect to signup if profile is truly incomplete (missing basic info)
+    // Don't redirect users who have completed the unified signup flow
+    if (profile && (!profile.first_name || !profile.last_name || !profile.age)) {
+      console.log('Welcome - Profile missing basic info, redirecting to signup');
+      navigate('/signup', { replace: true });
+      return;
+    }
+
+    console.log('Welcome - User authenticated with complete profile, staying on welcome');
   }, [user, profile, navigate]);
 
   const features = [
