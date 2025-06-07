@@ -32,28 +32,28 @@ const BodyShapeSelector = ({ value, onChange, gender }: BodyShapeSelectorProps) 
 
   const bodyShapes = [
     {
-      id: 'lean',
-      name: 'Lean/Athletic',
-      description: 'Low body fat, defined muscles',
+      id: 'ectomorph',
+      name: 'Ectomorph',
+      description: 'Naturally thin, fast metabolism',
       maleImage: '/lovable-uploads/08f61d04-b775-4704-9437-05a994afa09a.png',
       femaleImage: '/lovable-uploads/18f030f2-25e9-489f-870f-7d210f07c56c.png',
-      characteristics: ['Visible muscle definition', 'Low body fat', 'Athletic appearance']
+      characteristics: ['Lean build', 'Fast metabolism', 'Difficulty gaining weight']
     },
     {
-      id: 'average',
-      name: 'Average/Normal', 
-      description: 'Balanced body composition',
+      id: 'mesomorph',
+      name: 'Mesomorph', 
+      description: 'Athletic build, gains muscle easily',
       maleImage: '/lovable-uploads/3b2668b9-5ab6-4bb4-80a0-f994b13e9e92.png',
       femaleImage: '/lovable-uploads/977077ac-e5b9-46f0-94ff-dc5ec3e8afb6.png',
-      characteristics: ['Moderate body fat', 'Normal proportions', 'Healthy appearance']
+      characteristics: ['Muscular build', 'Gains muscle easily', 'Moderate metabolism']
     },
     {
-      id: 'heavy',
-      name: 'Curvy/Fuller',
-      description: 'Higher body fat percentage',
+      id: 'endomorph',
+      name: 'Endomorph',
+      description: 'Larger frame, slower metabolism',
       maleImage: '/lovable-uploads/2a1df9fc-703a-4f55-a427-e5dc54d63b2a.png',
       femaleImage: '/lovable-uploads/274c1566-79f5-45bb-9ef9-0dd9bb44f476.png',
-      characteristics: ['Higher body fat', 'Fuller figure', 'Softer appearance']
+      characteristics: ['Larger frame', 'Slower metabolism', 'Gains weight easily']
     }
   ];
 

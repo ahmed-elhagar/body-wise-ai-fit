@@ -1,6 +1,6 @@
 
 // Valid body shape values that match database constraint
-const VALID_BODY_SHAPES = ['lean', 'athletic', 'average', 'heavy'] as const;
+const VALID_BODY_SHAPES = ['ectomorph', 'mesomorph', 'endomorph'] as const;
 export type BodyShape = typeof VALID_BODY_SHAPES[number];
 
 export const validateSignupStep = (step: number, formData: any): boolean => {
@@ -120,31 +120,27 @@ export const mapBodyFatToBodyShape = (bodyFatPercentage: number, gender: string)
   
   if (gender === 'male') {
     if (bodyFatPercentage <= 15) {
-      result = 'lean';
+      result = 'ectomorph';
     } else if (bodyFatPercentage <= 25) {
-      result = 'athletic';
-    } else if (bodyFatPercentage <= 35) {
-      result = 'average';
+      result = 'mesomorph';
     } else {
-      result = 'heavy';
+      result = 'endomorph';
     }
   } else {
     if (bodyFatPercentage <= 20) {
-      result = 'lean';
+      result = 'ectomorph';
     } else if (bodyFatPercentage <= 30) {
-      result = 'athletic';
-    } else if (bodyFatPercentage <= 40) {
-      result = 'average';
+      result = 'mesomorph';
     } else {
-      result = 'heavy';
+      result = 'endomorph';
     }
   }
   
   console.log(`✅ Body shape mapped to: "${result}"`);
   
   if (!VALID_BODY_SHAPES.includes(result)) {
-    console.error(`❌ Invalid body shape result: "${result}". Falling back to 'average'`);
-    return 'average';
+    console.error(`❌ Invalid body shape result: "${result}". Falling back to 'mesomorph'`);
+    return 'mesomorph';
   }
   
   return result;
