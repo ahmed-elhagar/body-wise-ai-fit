@@ -47,16 +47,16 @@ const UnifiedSignupForm = () => {
   const [accountCreated, setAccountCreated] = useState(false);
   const [userAlreadyExistsError, setUserAlreadyExistsError] = useState(false);
   const { signUp, user } = useAuth();
-  const { updateProfile } = useProfile();
+  const { updateProfile, profile } = useProfile();
   const navigate = useNavigate();
   
-  // Redirect authenticated users to dashboard
+  // Only redirect authenticated users with complete profiles to dashboard
   useEffect(() => {
-    if (user) {
-      console.log('UnifiedSignupForm - User already authenticated, redirecting to dashboard');
+    if (user && profile?.onboarding_completed) {
+      console.log('UnifiedSignupForm - User has completed onboarding, redirecting to dashboard');
       navigate('/dashboard', { replace: true });
     }
-  }, [user, navigate]);
+  }, [user, profile?.onboarding_completed, navigate]);
   
   const [formData, setFormData] = useState<SignupFormData>({
     firstName: "",
