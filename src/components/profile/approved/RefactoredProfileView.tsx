@@ -1,7 +1,7 @@
 
 import ProfileBasicInfoCard from "./enhanced/ProfileBasicInfoCard";
 import ProfileGoalsCard from "./enhanced/ProfileGoalsCard";
-import ProfileHealthCard from "./enhanced/ProfileHealthCard";
+import ProfileHealthCard from "../enhanced/ProfileHealthCard";
 
 interface RefactoredProfileViewProps {
   formData: any;
