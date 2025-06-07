@@ -2,69 +2,92 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import { Card } from "@/components/ui/card";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import MotivationalContent from "@/components/loading/MotivationalContent";
 import EnhancedPageLoading from "@/components/ui/enhanced-page-loading";
 
 const Index = () => {
   const navigate = useNavigate();
-  const { user, loading, error, retryAuth, forceLogout } = useAuth();
+  const { user, loading: authLoading, error, retryAuth, forceLogout } = useAuth();
+  const { profile, isLoading: profileLoading } = useProfile();
   const [hasNavigated, setHasNavigated] = useState(false);
 
   // Debug logging
   useEffect(() => {
     console.log('Index - State:', { 
-      loading, 
+      authLoading, 
+      profileLoading,
       hasUser: !!user, 
       hasNavigated,
       userId: user?.id?.substring(0, 8) + '...' || 'none',
-      error: error?.message || null
+      error: error?.message || null,
+      hasProfile: !!profile,
+      hasBasicInfo: profile?.first_name && profile?.last_name
     });
-  }, [loading, user, hasNavigated, error]);
+  }, [authLoading, profileLoading, user, hasNavigated, error, profile]);
 
-  // Navigation logic - simplified
+  // Navigation logic
   useEffect(() => {
-    if (loading || hasNavigated || error) {
+    // Don't navigate if still loading, already navigated, or there's an error
+    if (authLoading || hasNavigated || error) {
+      return;
+    }
+
+    // If user exists, wait for profile to load before deciding where to go
+    if (user && profileLoading) {
+      console.log('Index - User exists, waiting for profile to load');
       return;
     }
 
     console.log('Index - Ready to navigate:', { 
       isAuthenticated: !!user,
-      userId: user?.id?.substring(0, 8) + '...' || 'none'
+      userId: user?.id?.substring(0, 8) + '...' || 'none',
+      hasProfile: !!profile,
+      hasBasicInfo: profile?.first_name && profile?.last_name
     });
     
     const timer = setTimeout(() => {
       if (user?.id) {
-        console.log('Index - Redirecting to dashboard');
-        navigate("/dashboard", { replace: true });
+        // Check if user has completed basic profile info
+        if (!profile || !profile.first_name || !profile.last_name) {
+          console.log('Index - User authenticated but missing profile, redirecting to signup');
+          navigate("/signup", { replace: true });
+        } else {
+          console.log('Index - User authenticated with complete profile, redirecting to dashboard');
+          navigate("/dashboard", { replace: true });
+        }
       } else {
-        console.log('Index - Redirecting to landing');
+        console.log('Index - No user, redirecting to landing');
         navigate("/landing", { replace: true });
       }
       setHasNavigated(true);
     }, 100);
 
     return () => clearTimeout(timer);
-  }, [loading, hasNavigated, user?.id, navigate, error]);
+  }, [authLoading, profileLoading, hasNavigated, user?.id, profile, navigate, error]);
 
-  // Force navigation after 3 seconds to prevent hanging
+  // Force navigation after 5 seconds to prevent hanging
   useEffect(() => {
     const forceTimer = setTimeout(() => {
       if (!hasNavigated && !error) {
-        console.log('Index - Force navigation timeout');
+        console.log('Index - Force navigation timeout triggered');
         if (user?.id) {
-          navigate("/dashboard", { replace: true });
+          if (!profile || !profile.first_name || !profile.last_name) {
+            navigate("/signup", { replace: true });
+          } else {
+            navigate("/dashboard", { replace: true });
+          }
         } else {
           navigate("/landing", { replace: true });
         }
         setHasNavigated(true);
       }
-    }, 3000);
+    }, 5000);
 
     return () => clearTimeout(forceTimer);
-  }, [hasNavigated, user?.id, navigate, error]);
+  }, [hasNavigated, user?.id, profile, navigate, error]);
 
   // Error state
   if (error) {
@@ -99,7 +122,7 @@ const Index = () => {
     );
   }
 
-  // Enhanced loading state with enhanced loading component
+  // Loading state with enhanced loading component
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-800 flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background decoration */}
@@ -113,16 +136,20 @@ const Index = () => {
         <EnhancedPageLoading
           isLoading={true}
           type="general"
-          title="FitFatta"
+          title="FitGenius"
           description="Your Fitness Journey Starts Here"
-          timeout={3000}
+          timeout={5000}
         />
         
-        {/* Emergency fallback after 5 seconds */}
+        {/* Emergency fallback after 6 seconds */}
         {!hasNavigated && (
           <div className="mt-8">
             <Button 
-              onClick={() => navigate('/auth')}
+              onClick={() => {
+                console.log('Emergency fallback button clicked');
+                navigate('/landing');
+                setHasNavigated(true);
+              }}
               variant="outline"
               className="text-white border-white/30 hover:bg-white/10 hover:border-white/50 backdrop-blur-sm"
             >
