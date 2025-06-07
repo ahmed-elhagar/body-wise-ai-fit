@@ -31,7 +31,13 @@ export const validateOnboardingStep = (step: number, formData: OnboardingFormDat
     
     case 3:
       // Goals and activity - fitness goal and activity level required
-      return !!(formData.fitness_goal && formData.activity_level);
+      // Validate that activity_level matches database constraint values
+      const validActivityLevels = ['sedentary', 'lightly_active', 'moderately_active', 'very_active', 'extremely_active'];
+      return !!(
+        formData.fitness_goal && 
+        formData.activity_level && 
+        validActivityLevels.includes(formData.activity_level)
+      );
     
     case 4:
       // Summary - always valid as it's a review step

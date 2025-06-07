@@ -18,14 +18,14 @@ const ActivityLevelSelector = ({ value, onChange }: ActivityLevelSelectorProps) 
       description: 'Little to no exercise, desk job'
     },
     { 
-      id: 'light', 
+      id: 'lightly_active', 
       label: 'Lightly Active', 
       icon: User, 
       color: 'text-blue-500',
       description: 'Light exercise 1-3 days/week'
     },
     { 
-      id: 'moderate', 
+      id: 'moderately_active', 
       label: 'Moderately Active', 
       icon: Bike, 
       color: 'text-green-500',
@@ -56,8 +56,8 @@ const ActivityLevelSelector = ({ value, onChange }: ActivityLevelSelectorProps) 
               key={level.id}
               type="button"
               variant={isSelected ? "default" : "outline"}
-              className={`h-auto p-4 flex flex-col items-start gap-3 text-left ${
-                isSelected ? 'ring-2 ring-blue-500' : ''
+              className={`h-auto p-4 flex flex-col items-start gap-3 text-left transition-all duration-200 ${
+                isSelected ? 'ring-2 ring-blue-500 bg-blue-50 border-blue-500' : 'hover:border-blue-300'
               }`}
               onClick={() => onChange(level.id)}
             >
