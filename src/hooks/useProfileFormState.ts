@@ -1,11 +1,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useProfile } from './useProfile';
-import type { Profile } from './useProfile';
 
 export const useProfileFormState = () => {
   const { profile, updateProfile, isUpdating } = useProfile();
-  const [formData, setFormData] = useState<any>({});
+  const [formData, setFormData] = useState<Record<string, any>>({});
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   // Initialize form data when profile loads
@@ -38,14 +37,12 @@ export const useProfileFormState = () => {
       [field]: value
     }));
     // Clear validation error for this field
-    if (validationErrors[field]) {
-      setValidationErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors[field];
-        return newErrors;
-      });
-    }
-  }, [validationErrors]);
+    setValidationErrors(prev => {
+      const newErrors = { ...prev };
+      delete newErrors[field];
+      return newErrors;
+    });
+  }, []);
 
   const handleArrayInput = useCallback((field: string, value: string) => {
     const arrayValue = value.split(',').map(item => item.trim()).filter(Boolean);
@@ -54,6 +51,16 @@ export const useProfileFormState = () => {
 
   const saveProfile = useCallback(async () => {
     try {
+      // Validate required fields
+      if (!formData.first_name?.trim() || !formData.last_name?.trim()) {
+        console.error('Missing required fields');
+        setValidationErrors({
+          first_name: !formData.first_name?.trim() ? 'First name is required' : '',
+          last_name: !formData.last_name?.trim() ? 'Last name is required' : ''
+        });
+        return false;
+      }
+
       const updates = {
         first_name: formData.first_name,
         last_name: formData.last_name,
@@ -66,18 +73,21 @@ export const useProfileFormState = () => {
         body_fat_percentage: formData.body_fat_percentage ? parseFloat(formData.body_fat_percentage) : null,
         fitness_goal: formData.fitness_goal,
         activity_level: formData.activity_level,
-        health_conditions: formData.health_conditions,
-        allergies: formData.allergies,
-        dietary_restrictions: formData.dietary_restrictions,
-        preferred_foods: formData.preferred_foods,
+        health_conditions: Array.isArray(formData.health_conditions) ? formData.health_conditions : [],
+        allergies: Array.isArray(formData.allergies) ? formData.allergies : [],
+        dietary_restrictions: Array.isArray(formData.dietary_restrictions) ? formData.dietary_restrictions : [],
+        preferred_foods: Array.isArray(formData.preferred_foods) ? formData.preferred_foods : [],
       };
 
+      console.log('Attempting to save profile with updates:', updates);
       const result = await updateProfile(updates);
+      
       if (result.error) {
         console.error('Profile update error:', result.error);
         return false;
       }
       
+      console.log('Profile saved successfully');
       return true;
     } catch (error) {
       console.error('Error saving profile:', error);

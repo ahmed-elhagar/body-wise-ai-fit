@@ -6,7 +6,6 @@ import { useProfile } from "@/hooks/useProfile";
 import { Card } from "@/components/ui/card";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import EnhancedPageLoading from "@/components/ui/enhanced-page-loading";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -36,20 +35,29 @@ const Index = () => {
       return;
     }
 
-    // No user - go to landing
+    // No user - go to landing immediately
     if (!user) {
       console.log('Index - No user, redirecting to landing');
-      const timer = setTimeout(() => {
-        navigate("/landing", { replace: true });
-        setHasNavigated(true);
-      }, 100);
-      return () => clearTimeout(timer);
+      navigate("/landing", { replace: true });
+      setHasNavigated(true);
+      return;
     }
 
-    // User exists but profile is still loading - wait
+    // User exists but profile is still loading - wait briefly
     if (profileLoading) {
       console.log('Index - User exists, waiting for profile to load');
-      return;
+      const timer = setTimeout(() => {
+        if (!hasNavigated) {
+          console.log('Index - Profile loading timeout, proceeding anyway');
+          if (!profile || !profile.first_name || !profile.last_name) {
+            navigate("/signup", { replace: true });
+          } else {
+            navigate("/dashboard", { replace: true });
+          }
+          setHasNavigated(true);
+        }
+      }, 1000); // Wait max 1 second for profile
+      return () => clearTimeout(timer);
     }
 
     // User exists and profile loaded - decide where to go
@@ -60,41 +68,16 @@ const Index = () => {
       hasBasicInfo: profile?.first_name && profile?.last_name
     });
     
-    const timer = setTimeout(() => {
-      // Check if user has completed basic profile info
-      if (!profile || !profile.first_name || !profile.last_name) {
-        console.log('Index - User authenticated but missing profile, redirecting to signup');
-        navigate("/signup", { replace: true });
-      } else {
-        console.log('Index - User authenticated with complete profile, redirecting to dashboard');
-        navigate("/dashboard", { replace: true });
-      }
-      setHasNavigated(true);
-    }, 100);
-
-    return () => clearTimeout(timer);
+    // Check if user has completed basic profile info
+    if (!profile || !profile.first_name || !profile.last_name) {
+      console.log('Index - User authenticated but missing profile, redirecting to signup');
+      navigate("/signup", { replace: true });
+    } else {
+      console.log('Index - User authenticated with complete profile, redirecting to dashboard');
+      navigate("/dashboard", { replace: true });
+    }
+    setHasNavigated(true);
   }, [authLoading, profileLoading, hasNavigated, user, profile, navigate, error]);
-
-  // Force navigation after 5 seconds to prevent hanging
-  useEffect(() => {
-    const forceTimer = setTimeout(() => {
-      if (!hasNavigated && !error) {
-        console.log('Index - Force navigation timeout triggered');
-        if (user) {
-          if (!profile || !profile.first_name || !profile.last_name) {
-            navigate("/signup", { replace: true });
-          } else {
-            navigate("/dashboard", { replace: true });
-          }
-        } else {
-          navigate("/landing", { replace: true });
-        }
-        setHasNavigated(true);
-      }
-    }, 5000);
-
-    return () => clearTimeout(forceTimer);
-  }, [hasNavigated, user, profile, navigate, error]);
 
   // Error state
   if (error) {
@@ -129,44 +112,8 @@ const Index = () => {
     );
   }
 
-  // Loading state with enhanced loading component
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-800 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 opacity-20">
-        <div className="w-full h-full" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-        }}></div>
-      </div>
-      
-      <div className="text-center relative z-10 max-w-lg mx-auto">
-        <EnhancedPageLoading
-          isLoading={true}
-          type="general"
-          title="FitGenius"
-          description="Your Fitness Journey Starts Here"
-          timeout={5000}
-        />
-        
-        {/* Emergency fallback after 6 seconds */}
-        {!hasNavigated && (
-          <div className="mt-8">
-            <Button 
-              onClick={() => {
-                console.log('Index - Emergency fallback button clicked');
-                navigate('/landing');
-                setHasNavigated(true);
-              }}
-              variant="outline"
-              className="text-white border-white/30 hover:bg-white/10 hover:border-white/50 backdrop-blur-sm"
-            >
-              Continue to App
-            </Button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+  // Simple loading without extra text - just redirect immediately
+  return null;
 };
 
 export default Index;
