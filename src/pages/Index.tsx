@@ -32,48 +32,55 @@ const Index = () => {
   useEffect(() => {
     // Don't navigate if still loading, already navigated, or there's an error
     if (authLoading || hasNavigated || error) {
+      console.log('Index - Not ready to navigate:', { authLoading, hasNavigated, hasError: !!error });
       return;
     }
 
-    // If user exists, wait for profile to load before deciding where to go
-    if (user && profileLoading) {
+    // No user - go to landing
+    if (!user) {
+      console.log('Index - No user, redirecting to landing');
+      const timer = setTimeout(() => {
+        navigate("/landing", { replace: true });
+        setHasNavigated(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+
+    // User exists but profile is still loading - wait
+    if (profileLoading) {
       console.log('Index - User exists, waiting for profile to load');
       return;
     }
 
-    console.log('Index - Ready to navigate:', { 
+    // User exists and profile loaded - decide where to go
+    console.log('Index - Ready to navigate authenticated user:', { 
       isAuthenticated: !!user,
-      userId: user?.id?.substring(0, 8) + '...' || 'none',
+      userId: user?.id?.substring(0, 8) + '...',
       hasProfile: !!profile,
       hasBasicInfo: profile?.first_name && profile?.last_name
     });
     
     const timer = setTimeout(() => {
-      if (user?.id) {
-        // Check if user has completed basic profile info
-        if (!profile || !profile.first_name || !profile.last_name) {
-          console.log('Index - User authenticated but missing profile, redirecting to signup');
-          navigate("/signup", { replace: true });
-        } else {
-          console.log('Index - User authenticated with complete profile, redirecting to dashboard');
-          navigate("/dashboard", { replace: true });
-        }
+      // Check if user has completed basic profile info
+      if (!profile || !profile.first_name || !profile.last_name) {
+        console.log('Index - User authenticated but missing profile, redirecting to signup');
+        navigate("/signup", { replace: true });
       } else {
-        console.log('Index - No user, redirecting to landing');
-        navigate("/landing", { replace: true });
+        console.log('Index - User authenticated with complete profile, redirecting to dashboard');
+        navigate("/dashboard", { replace: true });
       }
       setHasNavigated(true);
     }, 100);
 
     return () => clearTimeout(timer);
-  }, [authLoading, profileLoading, hasNavigated, user?.id, profile, navigate, error]);
+  }, [authLoading, profileLoading, hasNavigated, user, profile, navigate, error]);
 
   // Force navigation after 5 seconds to prevent hanging
   useEffect(() => {
     const forceTimer = setTimeout(() => {
       if (!hasNavigated && !error) {
         console.log('Index - Force navigation timeout triggered');
-        if (user?.id) {
+        if (user) {
           if (!profile || !profile.first_name || !profile.last_name) {
             navigate("/signup", { replace: true });
           } else {
@@ -87,7 +94,7 @@ const Index = () => {
     }, 5000);
 
     return () => clearTimeout(forceTimer);
-  }, [hasNavigated, user?.id, profile, navigate, error]);
+  }, [hasNavigated, user, profile, navigate, error]);
 
   // Error state
   if (error) {
@@ -146,7 +153,7 @@ const Index = () => {
           <div className="mt-8">
             <Button 
               onClick={() => {
-                console.log('Emergency fallback button clicked');
+                console.log('Index - Emergency fallback button clicked');
                 navigate('/landing');
                 setHasNavigated(true);
               }}

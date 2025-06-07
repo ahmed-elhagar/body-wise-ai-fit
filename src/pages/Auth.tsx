@@ -18,15 +18,20 @@ const Auth = () => {
 
   // Redirect logic for authenticated users
   useEffect(() => {
-    if (authLoading || !user) return;
+    // Only proceed if auth is not loading and we have a user
+    if (authLoading || !user) {
+      console.log('Auth - Auth still loading or no user, waiting...', { authLoading, hasUser: !!user });
+      return;
+    }
 
     console.log('Auth - User authenticated, checking redirect:', {
-      userId: user.id,
+      userId: user.id?.substring(0, 8) + '...',
       hasProfile: !!profile,
       profileLoading,
       hasBasicInfo: profile?.first_name && profile?.last_name
     });
     
+    // If profile is still loading, wait
     if (profileLoading) {
       console.log('Auth - Profile still loading, waiting...');
       return;
@@ -61,12 +66,13 @@ const Auth = () => {
     
     setLoading(true);
     try {
+      console.log('Auth - Starting sign in process for:', data.email);
       await signIn(data.email, data.password);
-      console.log('Sign in successful');
+      console.log('Auth - Sign in successful');
       toast.success('Welcome back!');
       // Let useEffect handle redirection based on auth state
     } catch (error: any) {
-      console.error('Auth error:', error);
+      console.error('Auth - Sign in error:', error);
       toast.error(error.message || 'Failed to sign in');
     } finally {
       setLoading(false);

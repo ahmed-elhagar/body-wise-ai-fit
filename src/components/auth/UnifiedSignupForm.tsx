@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,9 +40,17 @@ const UnifiedSignupForm = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const { signUp } = useAuth();
+  const { signUp, user } = useAuth();
   const { updateProfile } = useProfile();
   const navigate = useNavigate();
+  
+  // Redirect authenticated users to dashboard
+  useEffect(() => {
+    if (user) {
+      console.log('UnifiedSignupForm - User already authenticated, redirecting to dashboard');
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, navigate]);
   
   const [formData, setFormData] = useState<SignupFormData>({
     firstName: "",
@@ -103,6 +111,8 @@ const UnifiedSignupForm = () => {
 
     setLoading(true);
     try {
+      console.log('UnifiedSignupForm - Starting signup process');
+      
       // Sign up user
       await signUp(formData.email, formData.password, {
         first_name: formData.firstName,
@@ -132,12 +142,15 @@ const UnifiedSignupForm = () => {
         health_conditions: formData.healthConditions,
         allergies: formData.allergies,
         dietary_restrictions: formData.dietaryRestrictions,
-        ai_generations_remaining: 5
+        ai_generations_remaining: 5,
+        profile_completion_score: 90
       });
 
+      console.log('UnifiedSignupForm - Signup and profile creation successful, redirecting to welcome');
       toast.success("Account created successfully!");
-      navigate('/welcome');
+      navigate('/welcome', { replace: true });
     } catch (error: any) {
+      console.error('UnifiedSignupForm - Signup error:', error);
       toast.error(error.message || "Failed to create account");
     } finally {
       setLoading(false);
