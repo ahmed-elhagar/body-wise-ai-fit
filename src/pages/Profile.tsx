@@ -2,11 +2,11 @@
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { PageHeader } from "@/components/ui/page-header";
-import { User, Edit } from "lucide-react";
+import { User } from "lucide-react";
 import { useEnhancedProfile } from "@/hooks/useEnhancedProfile";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import ProfileSummaryView from "@/components/profile/ProfileSummaryView";
+import RefactoredProfileView from "@/components/profile/RefactoredProfileView";
 
 const Profile = () => {
   const {
@@ -97,7 +97,7 @@ const Profile = () => {
           {/* Main Content */}
           <div className="px-6 pb-8">
             <div className="w-full max-w-7xl mx-auto">
-              <ProfileSummaryView
+              <RefactoredProfileView
                 formData={formData}
                 updateFormData={updateFormData}
                 handleArrayInput={handleArrayInput}
