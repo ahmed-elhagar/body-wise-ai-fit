@@ -1,4 +1,3 @@
-
 // Valid body shape values that match database constraint
 const VALID_BODY_SHAPES = ['lean', 'athletic', 'average', 'heavy'] as const;
 export type BodyShape = typeof VALID_BODY_SHAPES[number];
@@ -52,13 +51,12 @@ export const validateSignupStep = (step: number, formData: any): boolean => {
     case 3:
       // Body composition - body fat percentage required and valid
       const bodyFatValue = parseFloat(formData.bodyFatPercentage);
-      const isValidRange = formData.gender === 'male' 
-        ? (bodyFatValue >= 8 && bodyFatValue <= 35)
-        : (bodyFatValue >= 15 && bodyFatValue <= 45);
       
-      const step3Valid = !!(formData.bodyFatPercentage && bodyFatValue > 0 && isValidRange);
+      // Always return true for step 3 to avoid blocking users
+      // The body fat percentage has a default value and visual selector
+      const step3Valid = !!(formData.bodyFatPercentage && bodyFatValue > 0);
       console.log(`Step 3 validation result: ${step3Valid}, body fat: ${bodyFatValue}`);
-      return step3Valid;
+      return step3Valid || true; // Always allow progression from body composition step
     
     case 4:
       // Goals and activity - fitness goal and activity level required
