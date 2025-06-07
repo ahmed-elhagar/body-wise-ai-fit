@@ -15,18 +15,19 @@ interface CompactHealthAssessmentFormProps {
 }
 
 const CompactHealthAssessmentForm = ({ onComplete }: CompactHealthAssessmentFormProps) => {
-  const { assessment, updateAssessment, isUpdating } = useHealthAssessment();
+  const { assessment, saveAssessment, isSaving } = useHealthAssessment();
   const [formData, setFormData] = useState({
     stress_level: assessment?.stress_level || 5,
     sleep_quality: assessment?.sleep_quality || 7,
     energy_level: assessment?.energy_level || 6,
     work_schedule: assessment?.work_schedule || "regular",
-    health_notes: assessment?.health_notes || ""
+    // Note: health_notes is not in the HealthAssessment interface, so we'll use a generic notes field
+    notes: assessment?.chronic_conditions?.join(', ') || ""
   });
 
   const handleSubmit = async () => {
     try {
-      await updateAssessment(formData);
+      await saveAssessment(formData);
       toast.success("Health assessment updated successfully!");
       onComplete?.();
     } catch (error) {
@@ -106,8 +107,8 @@ const CompactHealthAssessmentForm = ({ onComplete }: CompactHealthAssessmentForm
         <div>
           <Label className="mb-2 block">Health Notes (Optional)</Label>
           <Textarea
-            value={formData.health_notes}
-            onChange={(e) => setFormData(prev => ({ ...prev, health_notes: e.target.value }))}
+            value={formData.notes}
+            onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
             placeholder="Any health concerns or medications..."
             className="min-h-[60px]"
           />
@@ -116,10 +117,10 @@ const CompactHealthAssessmentForm = ({ onComplete }: CompactHealthAssessmentForm
 
       <Button
         onClick={handleSubmit}
-        disabled={isUpdating}
+        disabled={isSaving}
         className="w-full"
       >
-        {isUpdating ? "Updating..." : "Complete Assessment"}
+        {isSaving ? "Updating..." : "Complete Assessment"}
       </Button>
     </Card>
   );

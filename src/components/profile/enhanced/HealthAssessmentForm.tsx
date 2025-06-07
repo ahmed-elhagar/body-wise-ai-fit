@@ -10,19 +10,19 @@ import { useHealthAssessment } from "@/hooks/useHealthAssessment";
 import { toast } from "sonner";
 
 const HealthAssessmentForm = () => {
-  const { assessment, updateAssessment, isUpdating } = useHealthAssessment();
+  const { assessment, saveAssessment, isSaving } = useHealthAssessment();
   
   const [formData, setFormData] = useState({
     stress_level: assessment?.stress_level || 5,
     sleep_quality: assessment?.sleep_quality || 7,
     energy_level: assessment?.energy_level || 6,
     work_schedule: assessment?.work_schedule || "regular",
-    health_notes: assessment?.health_notes || ""
+    notes: assessment?.chronic_conditions?.join(', ') || ""
   });
 
   const handleSubmit = async () => {
     try {
-      await updateAssessment(formData);
+      await saveAssessment(formData);
       toast.success("Health assessment updated successfully!");
     } catch (error) {
       toast.error("Failed to update health assessment");
@@ -88,8 +88,8 @@ const HealthAssessmentForm = () => {
         <div>
           <Label className="mb-2 block">Health Notes</Label>
           <Textarea
-            value={formData.health_notes}
-            onChange={(e) => setFormData(prev => ({ ...prev, health_notes: e.target.value }))}
+            value={formData.notes}
+            onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
             placeholder="Any health concerns, medications, or additional notes..."
             className="min-h-[100px]"
           />
@@ -97,10 +97,10 @@ const HealthAssessmentForm = () => {
 
         <Button
           onClick={handleSubmit}
-          disabled={isUpdating}
+          disabled={isSaving}
           className="w-full"
         >
-          {isUpdating ? "Updating..." : "Update Health Assessment"}
+          {isSaving ? "Updating..." : "Update Health Assessment"}
         </Button>
       </div>
     </Card>

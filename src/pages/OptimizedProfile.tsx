@@ -5,12 +5,12 @@ import Layout from "@/components/Layout";
 import { PageHeader } from "@/components/ui/page-header";
 import { User } from "lucide-react";
 import { useOptimizedProfile } from "@/hooks/useOptimizedProfile";
-import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import OptimizedProfileSummary from "@/components/profile/OptimizedProfileSummary";
 
 const OptimizedProfile = React.memo(() => {
-  const { completionPercentage } = useOptimizedProfile();
+  const { profileMetrics } = useOptimizedProfile();
+  const completionPercentage = profileMetrics?.completionScore || 0;
 
   const getCompletionColor = () => {
     if (completionPercentage >= 80) return "text-green-600";

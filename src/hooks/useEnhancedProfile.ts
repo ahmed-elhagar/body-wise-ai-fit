@@ -13,21 +13,19 @@ export const useEnhancedProfile = () => {
     setValidationErrors 
   } = useProfileFormData();
   
-  const { 
-    saveBasicInfo: saveBasicInfoAction, 
-    saveGoalsAndActivity: saveGoalsAndActivityAction, 
-    isUpdating 
-  } = useProfileActions();
-  
-  const { completionPercentage, progress, assessment } = useProfileCompletion(formData);
+  const { saveProfile, isUpdating } = useProfileActions();
+  const { completionPercentage, assessment } = useProfileCompletion(formData);
   const { isSaving: isSavingAssessment } = useHealthAssessment();
 
+  // Create save functions that match expected signatures
   const saveBasicInfo = async () => {
-    return await saveBasicInfoAction(formData, setValidationErrors);
+    const result = await saveProfile(formData);
+    return result.success;
   };
 
   const saveGoalsAndActivity = async () => {
-    return await saveGoalsAndActivityAction(formData, setValidationErrors);
+    const result = await saveProfile(formData);
+    return result.success;
   };
 
   return {
@@ -39,7 +37,6 @@ export const useEnhancedProfile = () => {
     isUpdating: isUpdating || isSavingAssessment,
     validationErrors,
     completionPercentage,
-    progress,
     assessment,
   };
 };

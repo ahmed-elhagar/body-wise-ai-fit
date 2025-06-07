@@ -2,10 +2,25 @@
 import { useMemo } from 'react';
 import { useProfile } from './useProfile';
 import { useAuth } from './useAuth';
+import { useProfileFormData } from './profile/useProfileFormData';
+import { useProfileActions } from './profile/useProfileActions';
+import { useProfileCompletion } from './profile/useProfileCompletion';
 
 export const useOptimizedProfile = () => {
   const { user } = useAuth();
   const { profile, isLoading, updateProfile, refetch } = useProfile();
+  
+  // Add the missing form data and actions
+  const { 
+    formData, 
+    updateFormData, 
+    handleArrayInput, 
+    validationErrors, 
+    setValidationErrors 
+  } = useProfileFormData();
+  
+  const { saveProfile, isUpdating } = useProfileActions();
+  const { completionPercentage } = useProfileCompletion(formData);
 
   const profileMetrics = useMemo(() => {
     if (!profile) return null;
@@ -23,6 +38,17 @@ export const useOptimizedProfile = () => {
     return profileMetrics?.completionScore >= 80;
   }, [profileMetrics]);
 
+  // Create save functions that match expected signatures
+  const saveBasicInfo = async () => {
+    const result = await saveProfile(formData);
+    return result.success;
+  };
+
+  const saveGoalsAndActivity = async () => {
+    const result = await saveProfile(formData);
+    return result.success;
+  };
+
   return {
     user,
     profile,
@@ -30,6 +56,15 @@ export const useOptimizedProfile = () => {
     isProfileComplete,
     isLoading,
     updateProfile,
-    refetch
+    refetch,
+    // Form data and actions
+    formData,
+    updateFormData,
+    handleArrayInput,
+    saveBasicInfo,
+    saveGoalsAndActivity,
+    isUpdating,
+    validationErrors,
+    completionPercentage,
   };
 };
