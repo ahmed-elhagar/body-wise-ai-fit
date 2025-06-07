@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -138,12 +137,21 @@ const UnifiedSignupForm = () => {
 
       console.log('UnifiedSignupForm - User signup completed, waiting for auth state change...');
 
-      // Wait a bit for the user to be properly created and auth state to update
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Wait for auth state to update and retry checking for user
+      let retries = 0;
+      const maxRetries = 10;
+      let currentUser = user;
 
-      // Check if we have a user after signup
-      if (!user?.id) {
-        throw new Error("User creation failed - no user ID available");
+      while (!currentUser?.id && retries < maxRetries) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        retries++;
+        console.log(`Retry ${retries}: Checking for user...`);
+        // Re-get user from auth context
+        currentUser = user;
+      }
+
+      if (!currentUser?.id) {
+        throw new Error("User creation failed - no user ID available after retries");
       }
 
       console.log('UnifiedSignupForm - User created successfully, now updating profile...');
@@ -187,32 +195,7 @@ const UnifiedSignupForm = () => {
         updated_at: new Date().toISOString()
       };
 
-      console.log('UnifiedSignupForm - Updating profile with comprehensive data:', {
-        basicInfo: {
-          firstName: profileData.first_name,
-          lastName: profileData.last_name,
-          age: profileData.age,
-          gender: profileData.gender,
-          height: profileData.height,
-          weight: profileData.weight,
-          nationality: profileData.nationality
-        },
-        bodyComposition: {
-          bodyFatPercentage: profileData.body_fat_percentage,
-          bodyShape: profileData.body_shape
-        },
-        goalsActivity: {
-          fitnessGoal: profileData.fitness_goal,
-          activityLevel: profileData.activity_level
-        },
-        arrays: {
-          healthConditions: profileData.health_conditions,
-          allergies: profileData.allergies,
-          dietaryRestrictions: profileData.dietary_restrictions,
-          preferredFoods: profileData.preferred_foods,
-          specialConditions: profileData.special_conditions
-        }
-      });
+      console.log('UnifiedSignupForm - Updating profile with comprehensive data:', profileData);
       
       const result = await updateProfile(profileData);
       

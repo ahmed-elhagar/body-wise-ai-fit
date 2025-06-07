@@ -29,7 +29,7 @@ export const useProfileFormData = () => {
 
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
 
-  // Enhanced sync with profile data - comprehensive field mapping
+  // Enhanced sync with profile data - comprehensive field mapping with proper type handling
   useEffect(() => {
     if (profile) {
       console.log('useProfileFormData - Syncing profile data:', {
@@ -44,7 +44,6 @@ export const useProfileFormData = () => {
           weight: profile.weight,
           nationality: profile.nationality,
           bodyShape: profile.body_shape,
-          bodyFatPercentage: profile.body_fat_percentage,
           fitnessGoal: profile.fitness_goal,
           activityLevel: profile.activity_level
         },
@@ -57,72 +56,45 @@ export const useProfileFormData = () => {
         }
       });
 
+      // Safe string conversion function
+      const safeStringConvert = (value: any): string => {
+        if (value === null || value === undefined) return '';
+        return String(value);
+      };
+
+      // Safe array conversion function
+      const safeArrayConvert = (value: any): string[] => {
+        if (Array.isArray(value)) {
+          return value.filter(Boolean).map(item => String(item));
+        }
+        if (value && typeof value === 'string') {
+          return [value];
+        }
+        return [];
+      };
+
       // Comprehensive mapping with proper type conversion and null safety
       const mappedData: ProfileFormData = {
-        // Basic Info - handle all data types properly
-        first_name: profile.first_name?.toString() || '',
-        last_name: profile.last_name?.toString() || '',
+        // Basic Info - handle all data types properly with safe conversion
+        first_name: safeStringConvert(profile.first_name),
+        last_name: safeStringConvert(profile.last_name),
         age: profile.age ? String(profile.age) : '',
-        gender: profile.gender?.toString() || '',
+        gender: safeStringConvert(profile.gender),
         height: profile.height ? String(profile.height) : '',
         weight: profile.weight ? String(profile.weight) : '',
-        nationality: profile.nationality?.toString() || '',
-        body_shape: profile.body_shape?.toString() || '',
+        nationality: safeStringConvert(profile.nationality),
+        body_shape: safeStringConvert(profile.body_shape),
         
-        // Goals & Activity - ensure exact matching
-        fitness_goal: profile.fitness_goal?.toString() || '',
-        activity_level: profile.activity_level?.toString() || '',
+        // Goals & Activity - ensure exact matching with safe conversion
+        fitness_goal: safeStringConvert(profile.fitness_goal),
+        activity_level: safeStringConvert(profile.activity_level),
         
-        // Arrays - robust array handling with multiple fallbacks
-        health_conditions: (() => {
-          if (Array.isArray(profile.health_conditions)) {
-            return profile.health_conditions.filter(Boolean);
-          }
-          if (profile.health_conditions) {
-            return [profile.health_conditions.toString()];
-          }
-          return [];
-        })(),
-        
-        allergies: (() => {
-          if (Array.isArray(profile.allergies)) {
-            return profile.allergies.filter(Boolean);
-          }
-          if (profile.allergies) {
-            return [profile.allergies.toString()];
-          }
-          return [];
-        })(),
-        
-        preferred_foods: (() => {
-          if (Array.isArray(profile.preferred_foods)) {
-            return profile.preferred_foods.filter(Boolean);
-          }
-          if (profile.preferred_foods) {
-            return [profile.preferred_foods.toString()];
-          }
-          return [];
-        })(),
-        
-        dietary_restrictions: (() => {
-          if (Array.isArray(profile.dietary_restrictions)) {
-            return profile.dietary_restrictions.filter(Boolean);
-          }
-          if (profile.dietary_restrictions) {
-            return [profile.dietary_restrictions.toString()];
-          }
-          return [];
-        })(),
-        
-        special_conditions: (() => {
-          if (Array.isArray(profile.special_conditions)) {
-            return profile.special_conditions.filter(Boolean);
-          }
-          if (profile.special_conditions) {
-            return [profile.special_conditions.toString()];
-          }
-          return [];
-        })(),
+        // Arrays - robust array handling with safe conversion
+        health_conditions: safeArrayConvert(profile.health_conditions),
+        allergies: safeArrayConvert(profile.allergies),
+        preferred_foods: safeArrayConvert(profile.preferred_foods),
+        dietary_restrictions: safeArrayConvert(profile.dietary_restrictions),
+        special_conditions: safeArrayConvert(profile.special_conditions),
       };
 
       console.log('useProfileFormData - Mapped form data result:', {
