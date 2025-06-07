@@ -49,6 +49,15 @@ export const useOnboardingForm = () => {
     
     if (user && profile) {
       console.log('useOnboardingForm - Updating form data from profile:', profile);
+      
+      // Safely extract body_fat_percentage
+      let bodyFatPercentage = '';
+      if (profile.body_fat_percentage !== undefined && profile.body_fat_percentage !== null) {
+        bodyFatPercentage = profile.body_fat_percentage.toString();
+      } else if ((profile as any).body_fat_percentage !== undefined) {
+        bodyFatPercentage = (profile as any).body_fat_percentage.toString();
+      }
+      
       setFormData(prev => ({
         ...prev,
         first_name: profile.first_name || user.user_metadata?.first_name || '',
@@ -59,8 +68,7 @@ export const useOnboardingForm = () => {
         weight: profile.weight?.toString() || '',
         nationality: profile.nationality || '',
         body_shape: profile.body_shape || '',
-        // Handle body_fat_percentage safely - it might not exist on Profile type
-        body_fat_percentage: (profile as any).body_fat_percentage?.toString() || '',
+        body_fat_percentage: bodyFatPercentage,
         fitness_goal: profile.fitness_goal || '',
         activity_level: profile.activity_level || '',
         health_conditions: profile.health_conditions || [],

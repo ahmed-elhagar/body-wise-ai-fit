@@ -11,18 +11,32 @@ interface EnhancedOnboardingStep2Props {
 
 const EnhancedOnboardingStep2 = ({ formData, updateFormData }: EnhancedOnboardingStep2Props) => {
   const [bodyFatPercentage, setBodyFatPercentage] = useState(() => {
-    if (formData.body_fat_percentage) {
-      return parseFloat(formData.body_fat_percentage);
+    // Initialize with form data value or gender-based default
+    if (formData.body_fat_percentage && formData.body_fat_percentage !== '') {
+      const parsed = parseFloat(formData.body_fat_percentage);
+      if (!isNaN(parsed)) return parsed;
     }
     return formData.gender === 'male' ? 20 : 25;
   });
 
   // Update form data whenever body fat percentage changes
   useEffect(() => {
+    console.log('EnhancedOnboardingStep2 - Body fat percentage changed:', bodyFatPercentage);
     updateFormData("body_fat_percentage", bodyFatPercentage.toString());
   }, [bodyFatPercentage, updateFormData]);
 
+  // Sync with form data changes from outside
+  useEffect(() => {
+    if (formData.body_fat_percentage && formData.body_fat_percentage !== '') {
+      const parsed = parseFloat(formData.body_fat_percentage);
+      if (!isNaN(parsed) && parsed !== bodyFatPercentage) {
+        setBodyFatPercentage(parsed);
+      }
+    }
+  }, [formData.body_fat_percentage]);
+
   const handleBodyFatChange = (value: number) => {
+    console.log('EnhancedOnboardingStep2 - Body fat change handler called with:', value);
     setBodyFatPercentage(value);
   };
 
@@ -41,6 +55,16 @@ const EnhancedOnboardingStep2 = ({ formData, updateFormData }: EnhancedOnboardin
         onChange={handleBodyFatChange}
         gender={formData.gender}
       />
+      
+      {/* Debug info in development */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="mt-4 p-4 bg-gray-100 rounded text-sm">
+          <strong>Debug Info:</strong><br />
+          Current Value: {bodyFatPercentage}<br />
+          Form Data Value: {formData.body_fat_percentage}<br />
+          Gender: {formData.gender}
+        </div>
+      )}
     </div>
   );
 };

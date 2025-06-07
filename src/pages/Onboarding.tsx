@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -7,7 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useEmailConfirmation } from "@/hooks/useEmailConfirmation";
 import { toast } from "sonner";
 import { useOnboardingForm } from "@/hooks/useOnboardingForm";
-import { validateOnboardingStep } from "@/utils/onboardingValidation";
+import { validateOnboardingStep, mapBodyFatToBodyShape } from "@/utils/onboardingValidation";
 import ModernOnboardingHeader from "@/components/onboarding/ModernOnboardingHeader";
 import ModernOnboardingNavigation from "@/components/onboarding/ModernOnboardingNavigation";
 import EnhancedOnboardingStep1 from "@/components/onboarding/EnhancedOnboardingStep1";
@@ -87,53 +86,62 @@ const Onboarding = () => {
         console.log('Onboarding - Final step, saving profile data');
         console.log('Onboarding - Form data before processing:', formData);
         
-        // Validate all data one more time before saving
-        if (!formData.age || !formData.gender || !formData.height || !formData.weight || 
-            !formData.fitness_goal || !formData.activity_level || !formData.body_fat_percentage) {
-          console.error('Onboarding - Missing required fields:', {
-            age: !!formData.age,
-            gender: !!formData.gender,
-            height: !!formData.height,
-            weight: !!formData.weight,
-            fitness_goal: !!formData.fitness_goal,
-            activity_level: !!formData.activity_level,
-            body_fat_percentage: !!formData.body_fat_percentage
-          });
-          toast.error('Please complete all required fields before finishing');
+        // Validate required fields before processing
+        const requiredFields = {
+          first_name: formData.first_name?.trim(),
+          last_name: formData.last_name?.trim(),
+          age: formData.age,
+          gender: formData.gender,
+          height: formData.height,
+          weight: formData.weight,
+          fitness_goal: formData.fitness_goal,
+          activity_level: formData.activity_level,
+          body_fat_percentage: formData.body_fat_percentage
+        };
+
+        const missingFields = Object.entries(requiredFields)
+          .filter(([key, value]) => !value || value === '')
+          .map(([key]) => key);
+
+        if (missingFields.length > 0) {
+          console.error('Onboarding - Missing required fields:', missingFields);
+          toast.error(`Please complete these required fields: ${missingFields.join(', ')}`);
           setIsCompleting(false);
           return;
         }
         
-        // Convert body fat percentage to body shape using valid database enum values
-        const bodyFatPercentage = parseFloat(formData.body_fat_percentage) || 0;
-        const gender = formData.gender;
-        let bodyShape = '';
-        
-        // Map to EXACT database enum values (lean, athletic, curvy, bulky)
-        if (gender === 'male') {
-          if (bodyFatPercentage < 15) bodyShape = 'lean';
-          else if (bodyFatPercentage < 25) bodyShape = 'athletic';
-          else bodyShape = 'bulky';
-        } else {
-          if (bodyFatPercentage < 20) bodyShape = 'lean';
-          else if (bodyFatPercentage < 30) bodyShape = 'athletic';
-          else bodyShape = 'curvy';
+        // Parse and validate numeric values
+        const bodyFatPercentage = parseFloat(formData.body_fat_percentage);
+        const age = parseInt(formData.age);
+        const height = parseFloat(formData.height);
+        const weight = parseFloat(formData.weight);
+
+        if (isNaN(bodyFatPercentage) || isNaN(age) || isNaN(height) || isNaN(weight)) {
+          console.error('Onboarding - Invalid numeric values');
+          toast.error('Please ensure all numeric fields contain valid numbers');
+          setIsCompleting(false);
+          return;
         }
         
-        console.log('Onboarding - Body shape mapping:', { bodyFatPercentage, gender, bodyShape });
-        console.log('Onboarding - Activity level value:', formData.activity_level);
-        console.log('Onboarding - Fitness goal value:', formData.fitness_goal);
+        // Use the mapping function to ensure valid body shape
+        const bodyShape = mapBodyFatToBodyShape(bodyFatPercentage, formData.gender);
+        
+        console.log('Onboarding - Body shape mapping:', { 
+          bodyFatPercentage, 
+          gender: formData.gender, 
+          bodyShape 
+        });
         
         const profileData = {
-          first_name: formData.first_name?.trim(),
-          last_name: formData.last_name?.trim(),
-          age: formData.age ? parseInt(formData.age) : undefined,
+          first_name: requiredFields.first_name,
+          last_name: requiredFields.last_name,
+          age,
           gender: formData.gender,
-          height: formData.height ? parseFloat(formData.height) : undefined,
-          weight: formData.weight ? parseFloat(formData.weight) : undefined,
+          height,
+          weight,
           nationality: formData.nationality === "prefer_not_to_say" ? null : formData.nationality,
           body_shape: bodyShape,
-          body_fat_percentage: bodyFatPercentage || undefined,
+          body_fat_percentage: bodyFatPercentage,
           health_conditions: formData.health_conditions || [],
           fitness_goal: formData.fitness_goal,
           activity_level: formData.activity_level,
@@ -150,7 +158,13 @@ const Onboarding = () => {
         
         if (result.error) {
           console.error('Onboarding - Profile update failed:', result.error);
-          toast.error(`Failed to save profile: ${result.error.message || 'Unknown error'}`);
+          
+          // More specific error handling
+          if (result.error.code === '23514') {
+            toast.error('Invalid profile data. Please check your selections and try again.');
+          } else {
+            toast.error(`Failed to save profile: ${result.error.message || 'Unknown error'}`);
+          }
           setIsCompleting(false);
           return;
         }

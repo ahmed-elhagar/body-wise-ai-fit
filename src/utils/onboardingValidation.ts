@@ -2,6 +2,10 @@
 import { OnboardingFormData } from "@/hooks/useOnboardingForm";
 import { VALID_ACTIVITY_LEVELS } from "@/hooks/profile/types";
 
+// Valid body shape values that match database constraint
+const VALID_BODY_SHAPES = ['lean', 'athletic', 'curvy', 'bulky'] as const;
+export type BodyShape = typeof VALID_BODY_SHAPES[number];
+
 export const validateOnboardingStep = (step: number, formData: OnboardingFormData): boolean => {
   console.log(`Validating step ${step} with form data:`, formData);
   
@@ -61,5 +65,18 @@ export const validateOnboardingStep = (step: number, formData: OnboardingFormDat
     
     default:
       return false;
+  }
+};
+
+// Helper function to map body fat percentage to valid body shape
+export const mapBodyFatToBodyShape = (bodyFatPercentage: number, gender: string): BodyShape => {
+  if (gender === 'male') {
+    if (bodyFatPercentage < 15) return 'lean';
+    if (bodyFatPercentage < 25) return 'athletic';
+    return 'bulky';
+  } else {
+    if (bodyFatPercentage < 20) return 'lean';
+    if (bodyFatPercentage < 30) return 'athletic';
+    return 'curvy';
   }
 };
