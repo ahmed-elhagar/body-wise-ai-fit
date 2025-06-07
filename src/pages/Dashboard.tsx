@@ -1,7 +1,7 @@
 
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
-import { DashboardContent } from "@/components/dashboard/DashboardContent";
+import DashboardContent from "@/components/dashboard/DashboardContent";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useLanguage } from "@/contexts/LanguageContext";

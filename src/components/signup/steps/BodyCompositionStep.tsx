@@ -9,6 +9,10 @@ interface BodyCompositionStepProps {
 }
 
 const BodyCompositionStep = ({ formData, updateField }: BodyCompositionStepProps) => {
+  const handleBodyFatChange = (value: string) => {
+    updateField("bodyFatPercentage", value);
+  };
+
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
@@ -21,7 +25,7 @@ const BodyCompositionStep = ({ formData, updateField }: BodyCompositionStepProps
 
       <BodyShapeSelector
         value={formData.bodyFatPercentage}
-        onChange={(value) => updateField("bodyFatPercentage", value)}
+        onChange={handleBodyFatChange}
         gender={formData.gender}
       />
     </div>
