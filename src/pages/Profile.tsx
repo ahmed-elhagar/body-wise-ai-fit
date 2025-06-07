@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { User, Settings, Heart, Target, Bell } from "lucide-react";
 import { useEnhancedProfile } from "@/hooks/useEnhancedProfile";
-import ProfileTabContent from "@/components/profile/ProfileTabContent";
+import { ProfileTabContent } from "@/components/profile/ProfileTabContent";
 import EnhancedPageLoading from "@/components/ui/enhanced-page-loading";
 
 const Profile = () => {
