@@ -132,7 +132,6 @@ const UnifiedSignupForm = () => {
         health_conditions: formData.healthConditions,
         allergies: formData.allergies,
         dietary_restrictions: formData.dietaryRestrictions,
-        onboarding_completed: true,
         ai_generations_remaining: 5
       });
 

@@ -21,7 +21,7 @@ const Welcome = () => {
     }
 
     // Only redirect to signup if profile is missing basic info
-    if (profile && (!profile.first_name || !profile.last_name || !profile.age)) {
+    if (profile && (!profile.first_name || !profile.last_name)) {
       console.log('Welcome - Profile missing basic info, redirecting to signup');
       navigate('/signup', { replace: true });
       return;
