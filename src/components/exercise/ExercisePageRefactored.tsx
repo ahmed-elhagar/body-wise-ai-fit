@@ -1,4 +1,3 @@
-
 import { format, addDays } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useOptimizedExerciseProgramPage } from "@/hooks/useOptimizedExerciseProgramPage";
@@ -9,7 +8,7 @@ import ProgressRing from "./ProgressRing";
 import ExerciseList from "./ExerciseList";
 import { EmptyExerciseState } from "./EmptyExerciseState";
 import { AIExerciseDialog } from "./AIExerciseDialog";
-import EnhancedPageLoading from "@/components/ui/enhanced-page-loading";
+import SimpleLoadingIndicator from "@/components/ui/simple-loading-indicator";
 
 const ExercisePageRefactored = () => {
   const { t } = useLanguage();
@@ -50,12 +49,10 @@ const ExercisePageRefactored = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-        <EnhancedPageLoading
-          isLoading={true}
-          type="exercise"
-          title="Loading Your Exercise Program"
+        <SimpleLoadingIndicator
+          message="Loading Your Exercise Program"
           description="Preparing your personalized workout plan with progress tracking and exercise details"
-          timeout={12000} // 12 second timeout for exercise data
+          size="lg"
         />
       </div>
     );
