@@ -43,18 +43,26 @@ const NewSignupForm = () => {
     }
   }, [user, profile, navigate]);
 
-  const isStepValid = validateSignupStep(currentStep, formData);
+  // For step 1 (account creation), validation should be more lenient for UI purposes
+  const isStepValid = currentStep === 1 ? true : validateSignupStep(currentStep, formData);
   const currentStepData = SIGNUP_STEPS[currentStep - 1];
 
   const handleNext = async () => {
     if (currentStep === 1 && !accountCreated) {
+      // For step 1, validate before creating account
+      const step1Valid = validateSignupStep(currentStep, formData);
+      if (!step1Valid) {
+        toast.error("Please fill in all required fields");
+        return;
+      }
+      
       const result = await createAccount();
       if (result.success) {
         toast.success("Account created! Please complete your profile.");
       } else {
         toast.error(result.error || "Failed to create account");
       }
-    } else if (isStepValid || currentStepData?.isOptional) {
+    } else if (validateSignupStep(currentStep, formData) || currentStepData?.isOptional) {
       nextStep();
     } else {
       toast.error("Please fill in all required fields");
