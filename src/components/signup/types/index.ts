@@ -15,6 +15,7 @@ export interface SignupFormData {
   
   // Step 3: Body Composition
   bodyFatPercentage: number;
+  bodyShape: string;
   
   // Step 4: Goals & Activity
   fitnessGoal: string;
