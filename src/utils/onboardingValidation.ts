@@ -38,7 +38,7 @@ export const validateOnboardingStep = (step: number, formData: OnboardingFormDat
     
     case 3:
       // Goals and activity - fitness goal and activity level required
-      const validFitnessGoals = ['weight_loss', 'muscle_gain', 'endurance', 'strength', 'general_fitness'];
+      const validFitnessGoals = ['weight_loss', 'muscle_gain', 'endurance', 'strength', 'general_fitness', 'lose_weight', 'gain_muscle', 'maintain'];
       
       const step3Valid = !!(
         formData.fitness_goal && 
@@ -46,7 +46,9 @@ export const validateOnboardingStep = (step: number, formData: OnboardingFormDat
         formData.activity_level && 
         VALID_ACTIVITY_LEVELS.includes(formData.activity_level as any)
       );
-      console.log(`Step 3 validation result: ${step3Valid}, fitness goal: ${formData.fitness_goal}, activity level: ${formData.activity_level}`);
+      console.log(`Step 3 validation result: ${step3Valid}`);
+      console.log(`- fitness goal: ${formData.fitness_goal} (valid: ${validFitnessGoals.includes(formData.fitness_goal)})`);
+      console.log(`- activity level: ${formData.activity_level} (valid: ${VALID_ACTIVITY_LEVELS.includes(formData.activity_level as any)})`);
       return step3Valid;
     
     case 4:

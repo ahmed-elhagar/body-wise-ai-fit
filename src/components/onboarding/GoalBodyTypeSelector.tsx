@@ -56,8 +56,8 @@ const GoalBodyTypeSelector = ({ value, onChange }: GoalBodyTypeSelectorProps) =>
               key={goal.id}
               type="button"
               variant={isSelected ? "default" : "outline"}
-              className={`h-auto p-4 flex flex-col items-start gap-3 text-left ${
-                isSelected ? 'ring-2 ring-blue-500' : ''
+              className={`h-auto p-4 flex flex-col items-start gap-3 text-left transition-all duration-200 ${
+                isSelected ? 'ring-2 ring-blue-500 bg-blue-50 border-blue-500' : 'hover:border-blue-300'
               }`}
               onClick={() => onChange(goal.id)}
             >

@@ -59,7 +59,8 @@ export const useOnboardingForm = () => {
         weight: profile.weight?.toString() || '',
         nationality: profile.nationality || '',
         body_shape: profile.body_shape || '',
-        body_fat_percentage: profile.body_fat_percentage?.toString() || '',
+        // Handle body_fat_percentage safely - it might not exist on Profile type
+        body_fat_percentage: (profile as any).body_fat_percentage?.toString() || '',
         fitness_goal: profile.fitness_goal || '',
         activity_level: profile.activity_level || '',
         health_conditions: profile.health_conditions || [],

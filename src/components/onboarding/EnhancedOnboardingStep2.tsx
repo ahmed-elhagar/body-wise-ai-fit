@@ -1,7 +1,7 @@
 
 import { Target } from "lucide-react";
 import { OnboardingFormData } from "@/hooks/useOnboardingForm";
-import ImprovedBodyFatSelector from "./ImprovedBodyFatSelector";
+import UnifiedBodyFatSelector from "./UnifiedBodyFatSelector";
 import { useState, useEffect } from "react";
 
 interface EnhancedOnboardingStep2Props {
@@ -36,7 +36,7 @@ const EnhancedOnboardingStep2 = ({ formData, updateFormData }: EnhancedOnboardin
         <p className="text-gray-600">Help us understand your current physique</p>
       </div>
 
-      <ImprovedBodyFatSelector
+      <UnifiedBodyFatSelector
         value={bodyFatPercentage}
         onChange={handleBodyFatChange}
         gender={formData.gender}
