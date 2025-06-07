@@ -132,7 +132,7 @@ const UnifiedSignupForm = () => {
         hasRequiredFields: !!(formData.firstName && formData.lastName && formData.age && formData.gender)
       });
       
-      // Step 1: Sign up user with metadata
+      // Prepare comprehensive signup metadata
       const signupMetadata = {
         first_name: formData.firstName.trim(),
         last_name: formData.lastName.trim(),
@@ -143,96 +143,38 @@ const UnifiedSignupForm = () => {
         nationality: formData.nationality.trim(),
         fitness_goal: formData.fitnessGoal,
         activity_level: formData.activityLevel,
-        body_fat_percentage: formData.bodyFatPercentage
-      };
-
-      await signUp(formData.email, formData.password, signupMetadata);
-      console.log('UnifiedSignupForm - Signup completed successfully');
-
-      // Step 2: Wait for auth state to update and get user
-      let attempts = 0;
-      const maxAttempts = 15; // Increased attempts
-      let currentUser = null;
-
-      while (!currentUser && attempts < maxAttempts) {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        attempts++;
-        
-        // Check if user context has updated
-        if (user?.id) {
-          currentUser = user;
-          console.log(`Attempt ${attempts}: Found user in context:`, user.id.substring(0, 8) + '...');
-          break;
-        }
-        
-        console.log(`Attempt ${attempts}: Waiting for user context to update...`);
-      }
-
-      if (!currentUser?.id) {
-        throw new Error(`User creation failed - no user available after ${maxAttempts} attempts`);
-      }
-
-      console.log('UnifiedSignupForm - User found, creating complete profile...');
-
-      // Step 3: Create comprehensive profile
-      const bodyShape = mapBodyFatToBodyShape(formData.bodyFatPercentage, formData.gender);
-      
-      if (!isValidBodyShape(bodyShape)) {
-        throw new Error("Invalid body shape calculation");
-      }
-
-      const profileData = {
-        // Basic Info - ensure all fields are properly set
-        first_name: formData.firstName.trim(),
-        last_name: formData.lastName.trim(),
-        age: parseInt(formData.age),
-        gender: formData.gender,
-        height: parseFloat(formData.height),
-        weight: parseFloat(formData.weight),
-        nationality: formData.nationality.trim(),
-        
-        // Body composition
         body_fat_percentage: formData.bodyFatPercentage,
-        body_shape: bodyShape,
-        
-        // Goals & Activity
-        fitness_goal: formData.fitnessGoal,
-        activity_level: formData.activityLevel,
-        
-        // Health & Diet arrays - ensure proper array handling
+        body_shape: mapBodyFatToBodyShape(formData.bodyFatPercentage, formData.gender),
         health_conditions: formData.healthConditions.filter(Boolean),
         allergies: formData.allergies.filter(Boolean),
         dietary_restrictions: formData.dietaryRestrictions.filter(Boolean),
         preferred_foods: formData.preferredFoods.filter(Boolean),
         special_conditions: formData.specialConditions.filter(Boolean),
-        
-        // System fields
-        ai_generations_remaining: 5,
         profile_completion_score: 95,
-        onboarding_completed: true,
-        updated_at: new Date().toISOString()
+        onboarding_completed: true
       };
 
-      console.log('UnifiedSignupForm - Updating profile with data:', {
-        userId: currentUser.id.substring(0, 8) + '...',
-        profileFields: Object.keys(profileData),
+      console.log('UnifiedSignupForm - Signup metadata prepared:', {
+        metadataFields: Object.keys(signupMetadata),
         basicInfo: {
-          firstName: profileData.first_name,
-          lastName: profileData.last_name,
-          age: profileData.age,
-          gender: profileData.gender
+          firstName: signupMetadata.first_name,
+          lastName: signupMetadata.last_name,
+          age: signupMetadata.age,
+          gender: signupMetadata.gender
         }
       });
+
+      // Step 1: Sign up user with comprehensive metadata
+      const signupResult = await signUp(formData.email, formData.password, signupMetadata);
       
-      const result = await updateProfile(profileData);
-      
-      if (result.error) {
-        console.error('UnifiedSignupForm - Profile update error:', result.error);
-        throw new Error(result.error.message || 'Failed to create profile');
+      if (signupResult?.error) {
+        throw new Error(signupResult.error.message || 'Signup failed');
       }
 
-      console.log('UnifiedSignupForm - Profile created successfully');
-      toast.success("Account created successfully!");
+      console.log('UnifiedSignupForm - Signup completed successfully, navigating to welcome');
+      
+      // Navigate immediately to welcome page - the profile data is already set via metadata
+      toast.success("Account created successfully! Welcome to FitGenius!");
       navigate('/welcome', { replace: true });
       
     } catch (error: any) {
