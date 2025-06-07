@@ -43,6 +43,7 @@ const UnifiedSignupForm = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [accountCreated, setAccountCreated] = useState(false);
   const { signUp, user } = useAuth();
   const { updateProfile } = useProfile();
   const navigate = useNavigate();
@@ -107,8 +108,60 @@ const UnifiedSignupForm = () => {
     }
   };
 
+  const handleFirstStep = async () => {
+    if (!validateStep(1)) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      console.log('Creating account with basic info:', {
+        email: formData.email,
+        firstName: formData.firstName,
+        lastName: formData.lastName
+      });
+
+      // Create account with basic metadata only
+      const result = await signUp(formData.email, formData.password, {
+        first_name: formData.firstName.trim(),
+        last_name: formData.lastName.trim()
+      });
+
+      if (result?.error) {
+        // Handle specific error cases
+        if (result.error.message?.includes('User already registered') || 
+            result.error.message?.includes('already registered')) {
+          toast.error("An account with this email already exists. Please sign in instead.");
+          navigate('/auth');
+          return;
+        }
+        throw new Error(result.error.message || 'Account creation failed');
+      }
+
+      console.log('Account created successfully, proceeding to next step');
+      setAccountCreated(true);
+      toast.success("Account created! Please complete your profile.");
+      setCurrentStep(2);
+      
+    } catch (error: any) {
+      console.error('Account creation error:', error);
+      if (error.message?.includes('User already registered') || 
+          error.message?.includes('already registered')) {
+        toast.error("An account with this email already exists. Please sign in instead.");
+        navigate('/auth');
+      } else {
+        toast.error(error.message || "Failed to create account. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleNext = () => {
-    if (validateStep(currentStep)) {
+    if (currentStep === 1) {
+      handleFirstStep();
+    } else if (validateStep(currentStep)) {
       setCurrentStep(prev => Math.min(prev + 1, totalSteps));
     } else {
       toast.error("Please fill in all required fields");
@@ -125,15 +178,17 @@ const UnifiedSignupForm = () => {
       return;
     }
 
+    if (!accountCreated) {
+      toast.error("Account not created yet. Please go back to step 1.");
+      return;
+    }
+
     setLoading(true);
     try {
-      console.log('UnifiedSignupForm - Starting signup process with data:', {
-        email: formData.email,
-        hasRequiredFields: !!(formData.firstName && formData.lastName && formData.age && formData.gender)
-      });
+      console.log('Updating profile with complete data');
       
-      // Prepare comprehensive signup metadata
-      const signupMetadata = {
+      // Prepare comprehensive profile data
+      const profileData = {
         first_name: formData.firstName.trim(),
         last_name: formData.lastName.trim(),
         age: parseInt(formData.age),
@@ -151,35 +206,33 @@ const UnifiedSignupForm = () => {
         preferred_foods: formData.preferredFoods.filter(Boolean),
         special_conditions: formData.specialConditions.filter(Boolean),
         profile_completion_score: 95,
-        onboarding_completed: true
+        onboarding_completed: true,
+        updated_at: new Date().toISOString()
       };
 
-      console.log('UnifiedSignupForm - Signup metadata prepared:', {
-        metadataFields: Object.keys(signupMetadata),
-        basicInfo: {
-          firstName: signupMetadata.first_name,
-          lastName: signupMetadata.last_name,
-          age: signupMetadata.age,
-          gender: signupMetadata.gender
-        }
+      console.log('Profile data to update:', {
+        ...profileData,
+        health_conditions: `${profileData.health_conditions.length} items`,
+        allergies: `${profileData.allergies.length} items`,
+        dietary_restrictions: `${profileData.dietary_restrictions.length} items`,
+        preferred_foods: `${profileData.preferred_foods.length} items`,
+        special_conditions: `${profileData.special_conditions.length} items`
       });
 
-      // Step 1: Sign up user with comprehensive metadata
-      try {
-        await signUp(formData.email, formData.password, signupMetadata);
-        console.log('UnifiedSignupForm - Signup completed successfully, navigating to welcome');
-        
-        // Navigate immediately to welcome page - the profile data is already set via metadata
-        toast.success("Account created successfully! Welcome to FitGenius!");
-        navigate('/welcome', { replace: true });
-      } catch (signupError: any) {
-        console.error('UnifiedSignupForm - Signup error:', signupError);
-        throw signupError;
+      // Update profile with complete data
+      const updateResult = await updateProfile(profileData);
+      
+      if (updateResult?.error) {
+        throw new Error(updateResult.error.message || 'Profile update failed');
       }
+
+      console.log('Profile updated successfully, redirecting to welcome');
+      toast.success("Profile completed successfully! Welcome to FitGenius!");
+      navigate('/welcome', { replace: true });
       
     } catch (error: any) {
-      console.error('UnifiedSignupForm - Signup error:', error);
-      toast.error(error.message || "Failed to create account");
+      console.error('Profile update error:', error);
+      toast.error(error.message || "Failed to complete profile setup");
     } finally {
       setLoading(false);
     }
@@ -253,6 +306,7 @@ const UnifiedSignupForm = () => {
           placeholder="Enter your email"
           className="h-12"
           required
+          disabled={accountCreated}
         />
       </div>
 
@@ -269,16 +323,26 @@ const UnifiedSignupForm = () => {
             placeholder="Create a password"
             className="h-12 pr-10"
             required
+            disabled={accountCreated}
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+            disabled={accountCreated}
           >
             {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
           </button>
         </div>
       </div>
+
+      {accountCreated && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+          <CheckCircle className="w-6 h-6 text-green-600 mx-auto mb-2" />
+          <p className="text-green-800 font-medium">Account Created Successfully!</p>
+          <p className="text-green-600 text-sm">Continue to complete your profile</p>
+        </div>
+      )}
     </div>
   );
 
@@ -562,7 +626,7 @@ const UnifiedSignupForm = () => {
             <Button
               variant="outline"
               onClick={handleBack}
-              disabled={currentStep === 1}
+              disabled={currentStep === 1 || loading}
               className="px-6"
             >
               Back
@@ -571,18 +635,22 @@ const UnifiedSignupForm = () => {
             {currentStep < totalSteps ? (
               <Button
                 onClick={handleNext}
-                disabled={!validateStep(currentStep)}
+                disabled={loading || (currentStep === 1 ? !validateStep(1) : false)}
                 className="px-8 bg-gradient-to-r from-blue-500 to-indigo-600"
               >
-                Next
+                {loading ? (
+                  currentStep === 1 ? "Creating Account..." : "Processing..."
+                ) : (
+                  currentStep === 1 ? "Create Account" : "Next"
+                )}
               </Button>
             ) : (
               <Button
                 onClick={handleSubmit}
-                disabled={!validateStep(4) || loading}
+                disabled={!validateStep(4) || loading || !accountCreated}
                 className="px-8 bg-gradient-to-r from-green-500 to-emerald-600"
               >
-                {loading ? "Creating Account..." : "Create Account"}
+                {loading ? "Completing Profile..." : "Complete Profile"}
               </Button>
             )}
           </div>
