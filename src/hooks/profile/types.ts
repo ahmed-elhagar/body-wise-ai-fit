@@ -17,20 +17,9 @@ export interface ProfileFormData {
   allergies: string[];
   preferred_foods: string[];
   dietary_restrictions: string[];
-  special_conditions: any[];
+  special_conditions: string[];
 }
 
 export interface ValidationErrors {
   [key: string]: string;
 }
-
-// Valid activity levels that match database constraint
-export const VALID_ACTIVITY_LEVELS = [
-  'sedentary',
-  'lightly_active', 
-  'moderately_active',
-  'very_active',
-  'extremely_active'
-] as const;
-
-export type ActivityLevel = typeof VALID_ACTIVITY_LEVELS[number];

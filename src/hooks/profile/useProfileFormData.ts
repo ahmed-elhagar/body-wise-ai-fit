@@ -32,12 +32,28 @@ export const useProfileFormData = () => {
   // Enhanced sync with profile data - ensure ALL signup data is properly mapped
   useEffect(() => {
     if (profile) {
-      console.log('useProfileFormData - Full profile sync starting:', {
+      console.log('useProfileFormData - Starting profile sync:', {
         profileId: profile.id?.substring(0, 8) + '...',
-        allFields: Object.keys(profile).length
+        profileFields: Object.keys(profile),
+        profileData: {
+          firstName: profile.first_name,
+          lastName: profile.last_name,
+          age: profile.age,
+          gender: profile.gender,
+          height: profile.height,
+          weight: profile.weight,
+          fitnessGoal: profile.fitness_goal,
+          activityLevel: profile.activity_level,
+          nationality: profile.nationality,
+          bodyShape: profile.body_shape,
+          healthConditions: profile.health_conditions,
+          allergies: profile.allergies,
+          preferredFoods: profile.preferred_foods,
+          dietaryRestrictions: profile.dietary_restrictions
+        }
       });
 
-      // Create a comprehensive mapping of all profile fields
+      // Create a comprehensive mapping of all profile fields with proper type conversion
       const mappedData: ProfileFormData = {
         // Basic Info - ensure proper type conversion and fallbacks
         first_name: profile.first_name || '',
@@ -81,7 +97,7 @@ export const useProfileFormData = () => {
             : [],
       };
 
-      console.log('useProfileFormData - Mapped form data:', {
+      console.log('useProfileFormData - Final mapped form data:', {
         basicInfo: {
           firstName: mappedData.first_name,
           lastName: mappedData.last_name,

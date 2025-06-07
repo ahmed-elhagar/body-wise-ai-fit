@@ -111,28 +111,22 @@ const UnifiedSignupForm = () => {
 
     setLoading(true);
     try {
-      console.log('UnifiedSignupForm - Starting signup process with complete data:', {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        age: formData.age,
-        gender: formData.gender,
-        height: formData.height,
-        weight: formData.weight,
-        bodyFatPercentage: formData.bodyFatPercentage,
-        fitnessGoal: formData.fitnessGoal,
-        activityLevel: formData.activityLevel,
-        nationality: formData.nationality,
-        healthConditions: formData.healthConditions,
-        allergies: formData.allergies,
-        dietaryRestrictions: formData.dietaryRestrictions
-      });
+      console.log('UnifiedSignupForm - Starting signup process with complete data:', formData);
       
-      // Sign up user
-      await signUp(formData.email, formData.password, {
+      // Sign up user first
+      const signUpResult = await signUp(formData.email, formData.password, {
         first_name: formData.firstName,
         last_name: formData.lastName
       });
+
+      if (!signUpResult || !signUpResult.user) {
+        throw new Error("Failed to create user account");
+      }
+
+      console.log('UnifiedSignupForm - User created successfully, now updating profile...');
+
+      // Wait a bit for the user to be properly created
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       // Map body fat to body shape
       const bodyShape = mapBodyFatToBodyShape(formData.bodyFatPercentage, formData.gender);
@@ -141,16 +135,16 @@ const UnifiedSignupForm = () => {
         throw new Error("Invalid body shape calculation");
       }
 
-      // Create complete profile with ALL signup data and correct field mapping
+      // Create complete profile with ALL signup data - ensure correct field mapping
       const profileData = {
-        // Basic Info - ensure exact field mapping
-        first_name: formData.firstName,
-        last_name: formData.lastName,
+        // Basic Info - ensure exact field mapping to database columns
+        first_name: formData.firstName.trim(),
+        last_name: formData.lastName.trim(),
         age: parseInt(formData.age),
         gender: formData.gender,
         height: parseFloat(formData.height),
         weight: parseFloat(formData.weight),
-        nationality: formData.nationality || null,
+        nationality: formData.nationality.trim() || null,
         
         // Body composition
         body_fat_percentage: formData.bodyFatPercentage,
@@ -160,27 +154,29 @@ const UnifiedSignupForm = () => {
         fitness_goal: formData.fitnessGoal,
         activity_level: formData.activityLevel,
         
-        // Health & Preferences arrays
-        health_conditions: formData.healthConditions || [],
-        allergies: formData.allergies || [],
-        dietary_restrictions: formData.dietaryRestrictions || [],
+        // Health & Preferences arrays - ensure they are proper arrays
+        health_conditions: Array.isArray(formData.healthConditions) ? formData.healthConditions.filter(Boolean) : [],
+        allergies: Array.isArray(formData.allergies) ? formData.allergies.filter(Boolean) : [],
+        dietary_restrictions: Array.isArray(formData.dietaryRestrictions) ? formData.dietaryRestrictions.filter(Boolean) : [],
         preferred_foods: [], // Initialize as empty array
         special_conditions: [], // Initialize as empty array
         
         // System fields
         ai_generations_remaining: 5,
-        profile_completion_score: 95 // Higher score since all data is filled
+        profile_completion_score: 95, // Higher score since all data is filled
+        updated_at: new Date().toISOString()
       };
 
-      console.log('UnifiedSignupForm - Creating profile with complete mapped data:', profileData);
+      console.log('UnifiedSignupForm - Updating profile with data:', profileData);
       
       const result = await updateProfile(profileData);
       
       if (result.error) {
+        console.error('UnifiedSignupForm - Profile update error:', result.error);
         throw new Error(result.error.message || 'Failed to create profile');
       }
 
-      console.log('UnifiedSignupForm - Profile created successfully, redirecting to welcome');
+      console.log('UnifiedSignupForm - Profile created successfully');
       toast.success("Account created successfully!");
       navigate('/welcome', { replace: true });
     } catch (error: any) {

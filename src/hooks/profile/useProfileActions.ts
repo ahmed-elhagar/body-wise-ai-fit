@@ -15,6 +15,18 @@ export const useProfileActions = () => {
         hasBasicInfo: !!(formData.first_name && formData.last_name),
         hasPhysicalInfo: !!(formData.height && formData.weight),
         hasGoals: !!(formData.fitness_goal && formData.activity_level),
+        formDataDetails: {
+          firstName: formData.first_name,
+          lastName: formData.last_name,
+          age: formData.age,
+          gender: formData.gender,
+          height: formData.height,
+          weight: formData.weight,
+          fitnessGoal: formData.fitness_goal,
+          activityLevel: formData.activity_level,
+          nationality: formData.nationality,
+          bodyShape: formData.body_shape
+        },
         arrayFields: {
           healthConditions: formData.health_conditions?.length || 0,
           allergies: formData.allergies?.length || 0,
@@ -23,9 +35,9 @@ export const useProfileActions = () => {
         }
       });
       
-      // Enhanced data conversion with proper type handling
+      // Enhanced data conversion with proper type handling and validation
       const profileUpdateData = {
-        // Basic Info - ensure proper type conversion
+        // Basic Info - ensure proper type conversion and non-empty values
         first_name: formData.first_name?.trim() || null,
         last_name: formData.last_name?.trim() || null,
         age: formData.age ? parseInt(String(formData.age)) : null,
@@ -35,39 +47,41 @@ export const useProfileActions = () => {
         nationality: formData.nationality?.trim() || null,
         body_shape: formData.body_shape || null,
         
-        // Goals & Activity
+        // Goals & Activity - ensure these are properly set
         fitness_goal: formData.fitness_goal || null,
         activity_level: formData.activity_level || null,
         
-        // Arrays - ensure they are properly handled as arrays
+        // Arrays - ensure they are properly handled as arrays with proper filtering
         health_conditions: Array.isArray(formData.health_conditions) 
-          ? formData.health_conditions.filter(Boolean) 
+          ? formData.health_conditions.filter(item => item && item.trim()) 
           : [],
         allergies: Array.isArray(formData.allergies) 
-          ? formData.allergies.filter(Boolean) 
+          ? formData.allergies.filter(item => item && item.trim()) 
           : [],
         preferred_foods: Array.isArray(formData.preferred_foods) 
-          ? formData.preferred_foods.filter(Boolean) 
+          ? formData.preferred_foods.filter(item => item && item.trim()) 
           : [],
         dietary_restrictions: Array.isArray(formData.dietary_restrictions) 
-          ? formData.dietary_restrictions.filter(Boolean) 
+          ? formData.dietary_restrictions.filter(item => item && item.trim()) 
           : [],
         special_conditions: Array.isArray(formData.special_conditions) 
-          ? formData.special_conditions.filter(Boolean) 
+          ? formData.special_conditions.filter(item => item && item.trim()) 
           : [],
         
         // Update timestamp
         updated_at: new Date().toISOString(),
       };
 
-      console.log('useProfileActions - Processed data for database:', {
+      console.log('useProfileActions - Processed data for database update:', {
         basicInfo: {
           firstName: profileUpdateData.first_name,
           lastName: profileUpdateData.last_name,
           age: profileUpdateData.age,
           gender: profileUpdateData.gender,
           height: profileUpdateData.height,
-          weight: profileUpdateData.weight
+          weight: profileUpdateData.weight,
+          nationality: profileUpdateData.nationality,
+          bodyShape: profileUpdateData.body_shape
         },
         goals: {
           fitnessGoal: profileUpdateData.fitness_goal,
