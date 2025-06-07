@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -67,12 +68,12 @@ const Onboarding = () => {
       try {
         console.log('Onboarding - Final step, saving profile data');
         
-        // Convert body fat percentage to body shape using valid database values
+        // Convert body fat percentage to body shape using valid database enum values
         const bodyFatPercentage = parseFloat(formData.body_fat_percentage) || 0;
         const gender = formData.gender;
         let bodyShape = '';
         
-        // Ensure we map to exactly the database enum values
+        // Map to EXACT database enum values (lean, athletic, curvy, bulky)
         if (gender === 'male') {
           if (bodyFatPercentage < 15) bodyShape = 'lean';
           else if (bodyFatPercentage < 25) bodyShape = 'athletic';
@@ -82,6 +83,8 @@ const Onboarding = () => {
           else if (bodyFatPercentage < 30) bodyShape = 'athletic';
           else bodyShape = 'curvy';
         }
+        
+        console.log('Onboarding - Body shape mapping:', { bodyFatPercentage, gender, bodyShape });
         
         const profileData = {
           first_name: formData.first_name,
