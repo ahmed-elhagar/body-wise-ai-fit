@@ -132,6 +132,7 @@ const Onboarding = () => {
           bodyShape 
         });
         
+        // Prepare profile data with exact database constraint values
         const profileData = {
           first_name: requiredFields.first_name,
           last_name: requiredFields.last_name,
@@ -140,7 +141,7 @@ const Onboarding = () => {
           height,
           weight,
           nationality: formData.nationality === "prefer_not_to_say" ? null : formData.nationality,
-          body_shape: bodyShape,
+          body_shape: bodyShape, // This should now match database constraint exactly
           body_fat_percentage: bodyFatPercentage,
           health_conditions: formData.health_conditions || [],
           fitness_goal: formData.fitness_goal,
@@ -159,9 +160,13 @@ const Onboarding = () => {
         if (result.error) {
           console.error('Onboarding - Profile update failed:', result.error);
           
-          // More specific error handling
+          // Enhanced error handling for database constraints
           if (result.error.code === '23514') {
-            toast.error('Invalid profile data. Please check your selections and try again.');
+            console.error('Database constraint violation - checking body_shape value:', bodyShape);
+            toast.error('There was an issue with your profile data. Please try again or contact support if the problem persists.');
+          } else if (result.error.message?.includes('body_shape_check')) {
+            console.error('Body shape constraint violation:', bodyShape);
+            toast.error('Invalid body type selection. Please refresh the page and try again.');
           } else {
             toast.error(`Failed to save profile: ${result.error.message || 'Unknown error'}`);
           }

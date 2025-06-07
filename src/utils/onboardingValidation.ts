@@ -3,6 +3,7 @@ import { OnboardingFormData } from "@/hooks/useOnboardingForm";
 import { VALID_ACTIVITY_LEVELS } from "@/hooks/profile/types";
 
 // Valid body shape values that match database constraint
+// These must match exactly what's defined in the database
 const VALID_BODY_SHAPES = ['lean', 'athletic', 'curvy', 'bulky'] as const;
 export type BodyShape = typeof VALID_BODY_SHAPES[number];
 
@@ -69,14 +70,31 @@ export const validateOnboardingStep = (step: number, formData: OnboardingFormDat
 };
 
 // Helper function to map body fat percentage to valid body shape
+// Updated to use exact database constraint values
 export const mapBodyFatToBodyShape = (bodyFatPercentage: number, gender: string): BodyShape => {
+  console.log(`Mapping body fat: ${bodyFatPercentage}% for ${gender}`);
+  
   if (gender === 'male') {
-    if (bodyFatPercentage < 15) return 'lean';
-    if (bodyFatPercentage < 25) return 'athletic';
+    if (bodyFatPercentage <= 15) {
+      console.log('Mapped to: lean');
+      return 'lean';
+    }
+    if (bodyFatPercentage <= 25) {
+      console.log('Mapped to: athletic');
+      return 'athletic';
+    }
+    console.log('Mapped to: bulky');
     return 'bulky';
   } else {
-    if (bodyFatPercentage < 20) return 'lean';
-    if (bodyFatPercentage < 30) return 'athletic';
+    if (bodyFatPercentage <= 20) {
+      console.log('Mapped to: lean');
+      return 'lean';
+    }
+    if (bodyFatPercentage <= 30) {
+      console.log('Mapped to: athletic');
+      return 'athletic';
+    }
+    console.log('Mapped to: curvy');
     return 'curvy';
   }
 };
