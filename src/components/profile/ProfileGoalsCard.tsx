@@ -9,6 +9,7 @@ import { Target, Save, Edit, Utensils, Activity, Brain, Sparkles } from "lucide-
 
 interface ProfileGoalsCardProps {
   formData: any;
+  updateFormData: (field: string, value: any) => void;
   handleArrayInput: (field: string, value: string) => void;
   saveGoalsAndActivity: () => Promise<boolean>;
   isUpdating: boolean;
@@ -17,6 +18,7 @@ interface ProfileGoalsCardProps {
 
 const ProfileGoalsCard = ({ 
   formData, 
+  updateFormData,
   handleArrayInput,
   saveGoalsAndActivity, 
   isUpdating, 
@@ -64,7 +66,7 @@ const ProfileGoalsCard = ({
           <div className="space-y-4">
             <div>
               <Label htmlFor="fitness_goal" className="text-sm font-medium">Fitness Goal</Label>
-              <Select value={formData.fitness_goal || undefined} onValueChange={(value) => formData.fitness_goal = value}>
+              <Select value={formData.fitness_goal || undefined} onValueChange={(value) => updateFormData("fitness_goal", value)}>
                 <SelectTrigger className="mt-1">
                   <SelectValue placeholder="Select your goal" />
                 </SelectTrigger>
@@ -82,7 +84,7 @@ const ProfileGoalsCard = ({
             </div>
             <div>
               <Label htmlFor="activity_level" className="text-sm font-medium">Activity Level</Label>
-              <Select value={formData.activity_level || undefined} onValueChange={(value) => formData.activity_level = value}>
+              <Select value={formData.activity_level || undefined} onValueChange={(value) => updateFormData("activity_level", value)}>
                 <SelectTrigger className="mt-1">
                   <SelectValue placeholder="Select activity level" />
                 </SelectTrigger>
