@@ -7,15 +7,13 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { AuthHeader } from "@/components/auth/AuthHeader";
 import { AuthForm } from "@/components/auth/AuthForm";
-import { AuthToggle } from "@/components/auth/AuthToggle";
 import EnhancedPageLoading from "@/components/ui/enhanced-page-loading";
 
 const Auth = () => {
-  const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
   
-  const { signIn, signUp, user, loading: authLoading } = useAuth();
-  const { profile, isLoading: profileLoading, updateProfile } = useProfile();
+  const { signIn, user, loading: authLoading } = useAuth();
+  const { profile, isLoading: profileLoading } = useProfile();
   const navigate = useNavigate();
 
   // Redirect logic for authenticated users
@@ -36,15 +34,15 @@ const Auth = () => {
 
     // Check if user has completed onboarding
     if (!profile || !profile.onboarding_completed || !profile.first_name || !profile.last_name) {
-      console.log('Auth - Redirecting to onboarding (incomplete profile)');
-      navigate('/onboarding', { replace: true });
+      console.log('Auth - Redirecting to signup (incomplete profile)');
+      navigate('/signup', { replace: true });
     } else {
       console.log('Auth - Redirecting to dashboard (complete profile)');
       navigate('/dashboard', { replace: true });
     }
   }, [user, profile, profileLoading, authLoading, navigate]);
 
-  const validateForm = (data: { email: string; password: string; firstName?: string; lastName?: string }) => {
+  const validateForm = (data: { email: string; password: string }) => {
     if (!data.email || !data.password) {
       toast.error('Email and password are required');
       return false;
@@ -55,58 +53,24 @@ const Auth = () => {
       return false;
     }
     
-    if (isSignUp && (!data.firstName || !data.lastName)) {
-      toast.error('First name and last name are required');
-      return false;
-    }
-    
     return true;
   };
 
-  const handleAuth = async (data: { email: string; password: string; firstName?: string; lastName?: string }) => {
+  const handleSignIn = async (data: { email: string; password: string }) => {
     if (!validateForm(data)) return;
     
     setLoading(true);
     try {
-      if (isSignUp) {
-        await signUp(data.email, data.password, { 
-          first_name: data.firstName, 
-          last_name: data.lastName 
-        });
-        console.log('Sign up successful, user will be redirected after profile creation');
-        toast.success('Account created successfully!');
-        
-        // Create initial profile with signup data
-        if (data.firstName && data.lastName) {
-          try {
-            await updateProfile({
-              first_name: data.firstName,
-              last_name: data.lastName,
-              onboarding_completed: false
-            });
-            console.log('Initial profile created with signup data');
-          } catch (error) {
-            console.error('Failed to create initial profile:', error);
-          }
-        }
-        
-        // Let useEffect handle redirection based on auth state
-      } else {
-        await signIn(data.email, data.password);
-        console.log('Sign in successful');
-        toast.success('Welcome back!');
-        // For signin, let the useEffect handle redirection based on auth state
-      }
+      await signIn(data.email, data.password);
+      console.log('Sign in successful');
+      toast.success('Welcome back!');
+      // Let useEffect handle redirection based on auth state
     } catch (error: any) {
       console.error('Auth error:', error);
-      toast.error(error.message || `Failed to ${isSignUp ? 'sign up' : 'sign in'}`);
+      toast.error(error.message || 'Failed to sign in');
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleToggle = () => {
-    setIsSignUp(!isSignUp);
   };
 
   // Show loading if user exists and we're determining where to redirect
@@ -127,17 +91,23 @@ const Auth = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4">
       <Card className="w-full max-w-md p-8 bg-white/90 backdrop-blur-sm border-0 shadow-2xl">
-        <AuthHeader isSignUp={isSignUp} />
+        <AuthHeader isSignUp={false} />
+        
         <AuthForm 
-          isSignUp={isSignUp} 
-          onSubmit={handleAuth} 
+          isSignUp={false}
+          onSubmit={handleSignIn} 
           loading={loading || authLoading} 
         />
-        <AuthToggle 
-          isSignUp={isSignUp} 
-          onToggle={handleToggle} 
-          loading={loading || authLoading} 
-        />
+        
+        <div className="text-center mt-6">
+          <button
+            onClick={() => navigate('/signup')}
+            className="text-sm text-blue-600 hover:text-blue-700 font-medium hover:underline"
+            disabled={loading || authLoading}
+          >
+            Don't have an account? Join FitGenius
+          </button>
+        </div>
       </Card>
     </div>
   );

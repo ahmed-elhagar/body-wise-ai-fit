@@ -5,8 +5,8 @@ import { lazy } from 'react';
 export const Index = lazy(() => import('@/pages/Index'));
 export const Landing = lazy(() => import('@/pages/Landing'));
 export const Auth = lazy(() => import('@/pages/Auth'));
-export const Onboarding = lazy(() => import('@/pages/Onboarding'));
-export const OnboardingSuccess = lazy(() => import('@/pages/OnboardingSuccess'));
+export const UnifiedSignup = lazy(() => import('@/components/auth/UnifiedSignupForm'));
+export const Welcome = lazy(() => import('@/pages/Welcome'));
 
 // Protected pages
 export const Dashboard = lazy(() => import('@/pages/Dashboard'));
@@ -34,8 +34,8 @@ export const LazyPages = {
   Index,
   Landing,
   Auth,
-  Onboarding,
-  OnboardingSuccess,
+  UnifiedSignup,
+  Welcome,
   Dashboard,
   Profile,
   MealPlan,
