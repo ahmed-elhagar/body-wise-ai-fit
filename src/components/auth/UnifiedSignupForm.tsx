@@ -113,20 +113,23 @@ const UnifiedSignupForm = () => {
     try {
       console.log('UnifiedSignupForm - Starting signup process with complete data:', formData);
       
-      // Sign up user first
-      const signUpResult = await signUp(formData.email, formData.password, {
+      // Sign up user first - signUp returns void, so we handle it differently
+      await signUp(formData.email, formData.password, {
         first_name: formData.firstName,
         last_name: formData.lastName
       });
 
-      if (!signUpResult || !signUpResult.user) {
-        throw new Error("Failed to create user account");
+      console.log('UnifiedSignupForm - User signup completed, waiting for auth state change...');
+
+      // Wait a bit for the user to be properly created and auth state to update
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Check if we have a user after signup
+      if (!user?.id) {
+        throw new Error("User creation failed - no user ID available");
       }
 
       console.log('UnifiedSignupForm - User created successfully, now updating profile...');
-
-      // Wait a bit for the user to be properly created
-      await new Promise(resolve => setTimeout(resolve, 1000));
 
       // Map body fat to body shape
       const bodyShape = mapBodyFatToBodyShape(formData.bodyFatPercentage, formData.gender);
