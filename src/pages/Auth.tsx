@@ -7,13 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { AuthHeader } from "@/components/auth/AuthHeader";
 import { AuthForm } from "@/components/auth/AuthForm";
-
-// Simple loading component
-const SimpleLoader = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-  </div>
-);
+import EnhancedPageLoading from "@/components/ui/enhanced-page-loading";
 
 const Auth = () => {
   const [loading, setLoading] = useState(false);
@@ -87,7 +81,17 @@ const Auth = () => {
 
   // Show loading if user exists and we're determining where to redirect
   if (user && (authLoading || profileLoading)) {
-    return <SimpleLoader />;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+        <EnhancedPageLoading
+          isLoading={true}
+          type="general"
+          title="Setting Up Your Account"
+          description="Please wait while we prepare your dashboard..."
+          timeout={5000}
+        />
+      </div>
+    );
   }
 
   return (

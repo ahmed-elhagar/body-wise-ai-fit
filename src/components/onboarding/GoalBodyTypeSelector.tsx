@@ -11,21 +11,21 @@ interface GoalBodyTypeSelectorProps {
 const GoalBodyTypeSelector = ({ value, onChange }: GoalBodyTypeSelectorProps) => {
   const goals = [
     { 
-      id: 'weight_loss', 
+      id: 'lose_weight', 
       label: 'Lose Weight', 
       icon: TrendingDown, 
       color: 'text-red-500',
       description: 'Reduce body fat and get leaner'
     },
     { 
-      id: 'muscle_gain', 
+      id: 'gain_muscle', 
       label: 'Build Muscle', 
       icon: TrendingUp, 
       color: 'text-blue-500',
       description: 'Increase muscle mass and strength'
     },
     { 
-      id: 'maintenance', 
+      id: 'maintain', 
       label: 'Stay Healthy', 
       icon: Heart, 
       color: 'text-green-500',

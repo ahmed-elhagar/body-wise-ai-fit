@@ -1,6 +1,6 @@
 
 // Valid body shape values that match database constraint
-const VALID_BODY_SHAPES = ['ectomorph', 'mesomorph', 'endomorph'] as const;
+const VALID_BODY_SHAPES = ['lean', 'athletic', 'average', 'heavy'] as const;
 export type BodyShape = typeof VALID_BODY_SHAPES[number];
 
 export const validateSignupStep = (step: number, formData: any): boolean => {
@@ -62,7 +62,7 @@ export const validateSignupStep = (step: number, formData: any): boolean => {
     
     case 4:
       // Goals and activity - fitness goal and activity level required
-      const validFitnessGoals = ['weight_loss', 'muscle_gain', 'maintenance', 'endurance'];
+      const validFitnessGoals = ['lose_weight', 'gain_muscle', 'maintain', 'endurance', 'weight_loss', 'muscle_gain', 'general_fitness', 'strength'];
       const validActivityLevels = ['sedentary', 'lightly_active', 'moderately_active', 'very_active', 'extremely_active'];
       
       const step4Valid = !!(
@@ -120,27 +120,31 @@ export const mapBodyFatToBodyShape = (bodyFatPercentage: number, gender: string)
   
   if (gender === 'male') {
     if (bodyFatPercentage <= 15) {
-      result = 'ectomorph';
+      result = 'lean';
     } else if (bodyFatPercentage <= 25) {
-      result = 'mesomorph';
+      result = 'athletic';
+    } else if (bodyFatPercentage <= 35) {
+      result = 'average';
     } else {
-      result = 'endomorph';
+      result = 'heavy';
     }
   } else {
     if (bodyFatPercentage <= 20) {
-      result = 'ectomorph';
+      result = 'lean';
     } else if (bodyFatPercentage <= 30) {
-      result = 'mesomorph';
+      result = 'athletic';
+    } else if (bodyFatPercentage <= 40) {
+      result = 'average';
     } else {
-      result = 'endomorph';
+      result = 'heavy';
     }
   }
   
   console.log(`✅ Body shape mapped to: "${result}"`);
   
   if (!VALID_BODY_SHAPES.includes(result)) {
-    console.error(`❌ Invalid body shape result: "${result}". Falling back to 'mesomorph'`);
-    return 'mesomorph';
+    console.error(`❌ Invalid body shape result: "${result}". Falling back to 'average'`);
+    return 'average';
   }
   
   return result;
