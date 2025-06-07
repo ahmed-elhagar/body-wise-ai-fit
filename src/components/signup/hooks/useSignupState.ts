@@ -26,6 +26,7 @@ export const useSignupState = () => {
     weight: "",
     nationality: "",
     bodyFatPercentage: 20,
+    bodyShape: "",
     fitnessGoal: "",
     activityLevel: "",
     healthConditions: [],
