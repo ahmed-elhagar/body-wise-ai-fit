@@ -55,7 +55,7 @@ export const MealPlanContainer = () => {
     }
   };
 
-  // Enhanced week change handler that manages loading states
+  // Enhanced week change handler that manages loading states properly
   const handleWeekChange = async (offset: number) => {
     console.log('📅 Week change initiated, setting transition state');
     setIsWeekTransition(true);
@@ -79,6 +79,7 @@ export const MealPlanContainer = () => {
   return (
     <>
       <div className="space-y-6">
+        {/* Header - Always visible */}
         <MealPlanHeader 
           onGenerateAI={() => mealPlanState.openAIDialog()}
           onShuffle={handleShuffle}
@@ -89,6 +90,7 @@ export const MealPlanContainer = () => {
           hasWeeklyPlan={!!displayData?.weeklyPlan}
         />
         
+        {/* Navigation Card - Always visible */}
         <Card className="p-4 bg-white/90 backdrop-blur-sm border border-gray-200/50 shadow-sm">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-4">
             <div className="flex items-center gap-4 w-full md:w-auto">
@@ -125,7 +127,7 @@ export const MealPlanContainer = () => {
             />
           </div>
           
-          {/* Days Navigation */}
+          {/* Days Navigation - Always visible */}
           <div className="grid grid-cols-7 gap-1">
             {[1, 2, 3, 4, 5, 6, 7].map((dayNumber) => {
               const isSelected = mealPlanState.selectedDayNumber === dayNumber;
@@ -156,14 +158,15 @@ export const MealPlanContainer = () => {
           </div>
         </Card>
         
-        {/* Content Area with Smart Loading Overlay */}
+        {/* Content Area with Focused Loading Overlay - Only meals loading */}
         <div className="relative">
-          {/* Loading Overlay - Shows during week transitions */}
+          {/* Focused Loading Overlay - Only covers meal content */}
           {showLoadingOverlay && (
-            <div className="absolute inset-0 bg-white/90 backdrop-blur-sm z-20 flex items-center justify-center rounded-lg min-h-[500px]">
-              <div className="flex flex-col items-center gap-3 bg-white rounded-lg shadow-lg p-6">
+            <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg min-h-[400px]">
+              <div className="flex flex-col items-center gap-3 bg-white rounded-lg shadow-lg p-6 border">
                 <Loader2 className="w-8 h-8 animate-spin text-violet-600" />
-                <p className="text-sm text-gray-700 font-medium">Loading week data...</p>
+                <p className="text-sm text-gray-700 font-medium">Loading meals...</p>
+                <p className="text-xs text-gray-500">Please wait while we fetch your meal plan</p>
               </div>
             </div>
           )}
@@ -196,7 +199,7 @@ export const MealPlanContainer = () => {
       <MealPlanAILoadingDialog 
         isGenerating={mealPlanState.isGenerating}
         onClose={() => mealPlanState.refetch()}
-        position="top-right" // Now using top-right for less intrusive loading
+        position="top-right"
       />
 
       {/* Modern Shopping List Drawer - Complete revamped experience */}

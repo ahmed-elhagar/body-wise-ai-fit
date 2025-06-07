@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,13 +43,16 @@ const AccountCreationStep = ({
     } catch (err: any) {
       console.error('Account creation error:', err);
       
-      // Check for existing user error and don't use toast
-      if (err.message?.includes('already registered') || 
-          err.message?.includes('already exists') || 
-          err.message?.includes('User already registered')) {
+      // Better error message detection and display
+      const errorMessage = err.message || err.toString() || 'Account creation failed';
+      
+      if (errorMessage.includes('already registered') || 
+          errorMessage.includes('already exists') || 
+          errorMessage.includes('User already registered') ||
+          errorMessage.includes('email_address_not_authorized')) {
         setError('account_exists');
       } else {
-        setError(err.message || 'Account creation failed');
+        setError(errorMessage);
       }
     }
   };
