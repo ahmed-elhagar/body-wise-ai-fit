@@ -45,7 +45,10 @@ export const useOnboardingForm = () => {
 
   // Populate form with existing user data
   useEffect(() => {
+    console.log('useOnboardingForm - User or profile changed:', { user: !!user, profile: !!profile });
+    
     if (user && profile) {
+      console.log('useOnboardingForm - Updating form data from profile:', profile);
       setFormData(prev => ({
         ...prev,
         first_name: profile.first_name || user.user_metadata?.first_name || '',
@@ -56,6 +59,7 @@ export const useOnboardingForm = () => {
         weight: profile.weight?.toString() || '',
         nationality: profile.nationality || '',
         body_shape: profile.body_shape || '',
+        body_fat_percentage: profile.body_fat_percentage?.toString() || '',
         fitness_goal: profile.fitness_goal || '',
         activity_level: profile.activity_level || '',
         health_conditions: profile.health_conditions || [],
@@ -64,7 +68,7 @@ export const useOnboardingForm = () => {
         dietary_restrictions: profile.dietary_restrictions || [],
       }));
     } else if (user?.user_metadata) {
-      // If no profile but user metadata exists, use that
+      console.log('useOnboardingForm - Updating form data from user metadata:', user.user_metadata);
       setFormData(prev => ({
         ...prev,
         first_name: user.user_metadata.first_name || '',
@@ -74,11 +78,17 @@ export const useOnboardingForm = () => {
   }, [user, profile]);
 
   const updateFormData = (field: string, value: string | string[]) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    console.log(`useOnboardingForm - Updating field ${field} with value:`, value);
+    setFormData(prev => {
+      const newData = { ...prev, [field]: value };
+      console.log('useOnboardingForm - New form data:', newData);
+      return newData;
+    });
   };
 
   const handleArrayInput = (field: string, value: string) => {
     const arrayValue = value.split(',').map(item => item.trim()).filter(Boolean);
+    console.log(`useOnboardingForm - Updating array field ${field} with value:`, arrayValue);
     setFormData(prev => ({ ...prev, [field]: arrayValue }));
   };
 

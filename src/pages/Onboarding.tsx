@@ -48,14 +48,32 @@ const Onboarding = () => {
   }, [user, authLoading, isEmailConfirmationEnabled]);
 
   const isStepValid = (): boolean => {
-    return validateOnboardingStep(step, formData);
+    const valid = validateOnboardingStep(step, formData);
+    console.log(`Step ${step} validation result:`, valid);
+    return valid;
   };
 
   const handleNext = async () => {
     console.log('Onboarding - handleNext called, step:', step, 'isStepValid:', isStepValid());
+    console.log('Onboarding - Current form data:', formData);
     
     if (!isStepValid()) {
-      toast.error('Please fill in all required fields correctly');
+      console.log('Onboarding - Validation failed for step:', step);
+      
+      // Provide specific error messages based on step
+      switch (step) {
+        case 1:
+          toast.error('Please fill in all basic information fields correctly');
+          break;
+        case 2:
+          toast.error('Please select your body fat percentage');
+          break;
+        case 3:
+          toast.error('Please select your fitness goal and activity level');
+          break;
+        default:
+          toast.error('Please complete all required fields');
+      }
       return;
     }
 
@@ -68,6 +86,23 @@ const Onboarding = () => {
       try {
         console.log('Onboarding - Final step, saving profile data');
         console.log('Onboarding - Form data before processing:', formData);
+        
+        // Validate all data one more time before saving
+        if (!formData.age || !formData.gender || !formData.height || !formData.weight || 
+            !formData.fitness_goal || !formData.activity_level || !formData.body_fat_percentage) {
+          console.error('Onboarding - Missing required fields:', {
+            age: !!formData.age,
+            gender: !!formData.gender,
+            height: !!formData.height,
+            weight: !!formData.weight,
+            fitness_goal: !!formData.fitness_goal,
+            activity_level: !!formData.activity_level,
+            body_fat_percentage: !!formData.body_fat_percentage
+          });
+          toast.error('Please complete all required fields before finishing');
+          setIsCompleting(false);
+          return;
+        }
         
         // Convert body fat percentage to body shape using valid database enum values
         const bodyFatPercentage = parseFloat(formData.body_fat_percentage) || 0;
@@ -90,18 +125,18 @@ const Onboarding = () => {
         console.log('Onboarding - Fitness goal value:', formData.fitness_goal);
         
         const profileData = {
-          first_name: formData.first_name,
-          last_name: formData.last_name,
+          first_name: formData.first_name?.trim(),
+          last_name: formData.last_name?.trim(),
           age: formData.age ? parseInt(formData.age) : undefined,
-          gender: formData.gender as any,
+          gender: formData.gender,
           height: formData.height ? parseFloat(formData.height) : undefined,
           weight: formData.weight ? parseFloat(formData.weight) : undefined,
           nationality: formData.nationality === "prefer_not_to_say" ? null : formData.nationality,
-          body_shape: bodyShape as any,
+          body_shape: bodyShape,
           body_fat_percentage: bodyFatPercentage || undefined,
           health_conditions: formData.health_conditions || [],
-          fitness_goal: formData.fitness_goal as any,
-          activity_level: formData.activity_level as any,
+          fitness_goal: formData.fitness_goal,
+          activity_level: formData.activity_level,
           allergies: formData.allergies || [],
           preferred_foods: formData.preferred_foods || [],
           dietary_restrictions: formData.dietary_restrictions || [],
