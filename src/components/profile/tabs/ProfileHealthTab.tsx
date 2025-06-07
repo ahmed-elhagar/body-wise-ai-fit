@@ -5,11 +5,11 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Heart, Save, Activity, AlertTriangle, Sparkles } from "lucide-react";
-import { useProfileForm } from "@/hooks/useProfileForm";
+import { useEnhancedProfile } from "@/hooks/useEnhancedProfile";
 import { Badge } from "@/components/ui/badge";
 
 const ProfileHealthTab = () => {
-  const { formData, updateFormData, handleArrayInput, handleSave, isUpdating } = useProfileForm();
+  const { formData, updateFormData, handleArrayInput, saveBasicInfo, isUpdating } = useEnhancedProfile();
 
   const getBMI = () => {
     if (formData.height && formData.weight) {
@@ -78,7 +78,6 @@ const ProfileHealthTab = () => {
               </div>
             </div>
 
-            {/* BMI Display */}
             {bmi && bmiInfo && (
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-gray-700">BMI Score</Label>
@@ -152,7 +151,6 @@ const ProfileHealthTab = () => {
             </div>
           </div>
 
-          {/* Health Summary */}
           {(formData.health_conditions?.length > 0 || formData.allergies?.length > 0) && (
             <div className="p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl border border-green-200">
               <div className="flex items-center gap-2 mb-3">
@@ -180,7 +178,7 @@ const ProfileHealthTab = () => {
           )}
 
           <Button 
-            onClick={handleSave} 
+            onClick={saveBasicInfo} 
             disabled={isUpdating}
             className="w-full bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-medium py-3 rounded-xl shadow-lg"
           >

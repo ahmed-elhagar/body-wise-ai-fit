@@ -1,7 +1,8 @@
 
-import ProfileBasicInfoCard from "./enhanced/ProfileBasicInfoCard";
-import ProfileGoalsCard from "./enhanced/ProfileGoalsCard";
-import ProfileHealthCard from "./enhanced/ProfileHealthCard";
+import { Tabs } from "@/components/ui/tabs";
+import ProfileTabNavigation from "./ProfileTabNavigation";
+import ProfileTabContent from "./ProfileTabContent";
+import { useState } from "react";
 
 interface RefactoredProfileViewProps {
   formData: any;
@@ -13,43 +14,14 @@ interface RefactoredProfileViewProps {
   validationErrors: Record<string, string>;
 }
 
-const RefactoredProfileView = ({
-  formData,
-  updateFormData,
-  handleArrayInput,
-  saveBasicInfo,
-  saveGoalsAndActivity,
-  isUpdating,
-  validationErrors,
-}: RefactoredProfileViewProps) => {
+const RefactoredProfileView = (props: RefactoredProfileViewProps) => {
+  const [activeTab, setActiveTab] = useState("overview");
+
   return (
-    <div className="space-y-6">
-      <ProfileBasicInfoCard
-        formData={formData}
-        updateFormData={updateFormData}
-        saveBasicInfo={saveBasicInfo}
-        isUpdating={isUpdating}
-        validationErrors={validationErrors}
-      />
-
-      <ProfileGoalsCard
-        formData={formData}
-        updateFormData={updateFormData}
-        handleArrayInput={handleArrayInput}
-        saveGoalsAndActivity={saveGoalsAndActivity}
-        isUpdating={isUpdating}
-        validationErrors={validationErrors}
-      />
-
-      <ProfileHealthCard
-        formData={formData}
-        updateFormData={updateFormData}
-        handleArrayInput={handleArrayInput}
-        saveGoalsAndActivity={saveGoalsAndActivity}
-        isUpdating={isUpdating}
-        validationErrors={validationErrors}
-      />
-    </div>
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <ProfileTabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+      <ProfileTabContent {...props} />
+    </Tabs>
   );
 };
 

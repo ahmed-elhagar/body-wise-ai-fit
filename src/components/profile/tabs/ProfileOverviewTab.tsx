@@ -1,13 +1,12 @@
 
 import ProfileOverviewCard from "../ProfileOverviewCard";
 import ProfileGoalsCard from "../ProfileGoalsCard";
-import { useProfileForm } from "@/hooks/useProfileForm";
+import { useEnhancedProfile } from "@/hooks/useEnhancedProfile";
 
 const ProfileOverviewTab = () => {
-  const { formData } = useProfileForm();
+  const { formData } = useEnhancedProfile();
 
   const handleEdit = () => {
-    // This could navigate to edit mode or trigger edit state
     console.log('Edit profile clicked');
   };
 
