@@ -17,7 +17,7 @@ export interface ProfileFormData {
   special_conditions: string[];
 }
 
-export interface ValidationErrors extends Record<string, string> {
+export interface ValidationErrors {
   first_name?: string;
   last_name?: string;
   age?: string;
