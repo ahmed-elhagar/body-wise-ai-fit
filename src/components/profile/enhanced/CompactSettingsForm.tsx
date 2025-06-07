@@ -6,6 +6,7 @@ import {
   AccountSecuritySection, 
   SettingsFormActions 
 } from "./settings";
+import { toast } from "sonner";
 
 const CompactSettingsForm = () => {
   const [preferences, setPreferences] = useState({
@@ -14,11 +15,20 @@ const CompactSettingsForm = () => {
     measurementUnits: 'metric',
   });
 
-  const [loading, setLoading] = useState({ 
-    email: false, 
-    password: false, 
-    prefs: false 
-  });
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const handleSave = async () => {
+    setIsUpdating(true);
+    try {
+      // Simulate save operation
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      toast.success('Settings saved successfully!');
+    } catch (error) {
+      toast.error('Failed to save settings');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   return (
     <div className="space-y-3">
@@ -32,14 +42,12 @@ const CompactSettingsForm = () => {
         setPreferences={setPreferences}
       />
 
-      <AccountSecuritySection 
-        loading={loading}
-        setLoading={setLoading}
-      />
+      <AccountSecuritySection />
 
       <SettingsFormActions 
-        loading={loading}
-        setLoading={setLoading}
+        isUpdating={isUpdating}
+        completionPercentage={85}
+        onSave={handleSave}
       />
     </div>
   );

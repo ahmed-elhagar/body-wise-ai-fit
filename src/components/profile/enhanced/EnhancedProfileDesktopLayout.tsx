@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
-import ProfileCompletionCard from "./ProfileCompletionCard";
 
 interface EnhancedProfileLayoutProps {
   children: ReactNode;
@@ -43,7 +42,11 @@ const EnhancedProfileDesktopLayout = ({
                 </p>
               </div>
               
-              <ProfileCompletionCard onStepClick={onStepClick} />
+              {/* Placeholder for profile completion content */}
+              <div className="bg-white/80 rounded-lg p-4">
+                <h3 className="font-semibold mb-2">Profile Progress</h3>
+                <p className="text-sm text-gray-600">Complete your profile to get personalized recommendations.</p>
+              </div>
             </div>
           </div>
         </div>
