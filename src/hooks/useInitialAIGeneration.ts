@@ -66,8 +66,8 @@ export const useInitialAIGeneration = () => {
     const triggerInitialGeneration = async () => {
       if (!user?.id || !profile || generationAttempted.current) return;
       
-      // Only trigger if onboarding is completed and we have essential profile data
-      if (!profile.onboarding_completed || !profile.first_name || !profile.last_name) {
+      // Only trigger if user has essential profile data
+      if (!profile.first_name || !profile.last_name) {
         return;
       }
 
@@ -160,7 +160,7 @@ export const useInitialAIGeneration = () => {
       const timeoutId = setTimeout(triggerInitialGeneration, 1000);
       return () => clearTimeout(timeoutId);
     }
-  }, [user?.id, profile?.onboarding_completed, profile?.first_name, hasExistingContent, generateMealPlan, generateExerciseProgram]);
+  }, [user?.id, profile?.first_name, hasExistingContent, generateMealPlan, generateExerciseProgram]);
 
   return { 
     hasTriggeredGeneration, 

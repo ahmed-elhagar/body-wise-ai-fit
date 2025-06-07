@@ -24,7 +24,7 @@ const Auth = () => {
       userId: user.id,
       hasProfile: !!profile,
       profileLoading,
-      onboardingCompleted: profile?.onboarding_completed
+      hasBasicInfo: profile?.first_name && profile?.last_name
     });
     
     if (profileLoading) {
@@ -32,8 +32,8 @@ const Auth = () => {
       return;
     }
 
-    // Check if user has completed onboarding
-    if (!profile || !profile.onboarding_completed || !profile.first_name || !profile.last_name) {
+    // Check if user has basic profile info
+    if (!profile || !profile.first_name || !profile.last_name) {
       console.log('Auth - Redirecting to signup (incomplete profile)');
       navigate('/signup', { replace: true });
     } else {

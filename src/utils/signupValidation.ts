@@ -1,6 +1,5 @@
 
 // Valid body shape values that match database constraint
-// Based on database analysis, these are the ONLY allowed values
 const VALID_BODY_SHAPES = ['lean', 'athletic', 'average', 'heavy'] as const;
 export type BodyShape = typeof VALID_BODY_SHAPES[number];
 
@@ -68,7 +67,6 @@ export const validateSignupStep = (step: number, formData: any): boolean => {
 };
 
 // Helper function to map body fat percentage to valid body shape
-// CRITICAL: This must return only database-safe values
 export const mapBodyFatToBodyShape = (bodyFatPercentage: number, gender: string): BodyShape => {
   console.log(`🔍 Mapping body fat: ${bodyFatPercentage}% for ${gender}`);
   
@@ -96,10 +94,8 @@ export const mapBodyFatToBodyShape = (bodyFatPercentage: number, gender: string)
     }
   }
   
-  console.log(`✅ Body shape mapped to: "${result}" (type: ${typeof result})`);
-  console.log(`🔍 Is valid body shape? ${VALID_BODY_SHAPES.includes(result)}`);
+  console.log(`✅ Body shape mapped to: "${result}"`);
   
-  // Double-check the result is valid
   if (!VALID_BODY_SHAPES.includes(result)) {
     console.error(`❌ Invalid body shape result: "${result}". Falling back to 'average'`);
     return 'average';

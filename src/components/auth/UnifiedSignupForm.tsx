@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +9,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import BodyShapeSelector from "./BodyShapeSelector";
-import { mapBodyFatToBodyShape, isValidBodyShape } from "@/utils/onboardingValidation";
+import { mapBodyFatToBodyShape, isValidBodyShape } from "@/utils/signupValidation";
 
 interface SignupFormData {
   // Basic Info

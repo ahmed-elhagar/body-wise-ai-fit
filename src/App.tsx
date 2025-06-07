@@ -128,7 +128,7 @@ function App() {
                       </ProtectedRoute>
                     } />
                     
-                    {/* 404 Route */}
+                    {/* 404 Route - catch all including /onboarding */}
                     <Route path="*" element={<LazyPages.NotFound />} />
                   </Routes>
                 </Suspense>
