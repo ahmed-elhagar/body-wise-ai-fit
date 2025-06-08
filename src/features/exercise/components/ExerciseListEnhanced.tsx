@@ -96,10 +96,13 @@ export const ExerciseListEnhanced = ({
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
+      <div className="flex items-center justify-center py-16">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-2" />
-          <p className="text-gray-600">Loading exercises...</p>
+          <div className="w-16 h-16 bg-gradient-to-br from-fitness-primary-500 to-fitness-secondary-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <Loader2 className="w-8 h-8 animate-spin text-white" />
+          </div>
+          <h3 className="text-lg font-semibold text-fitness-primary-800 mb-2">Loading Exercises</h3>
+          <p className="text-fitness-primary-600">Preparing your workout...</p>
         </div>
       </div>
     );

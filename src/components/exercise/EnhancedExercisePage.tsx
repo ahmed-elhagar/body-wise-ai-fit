@@ -64,7 +64,7 @@ const EnhancedExercisePage = () => {
 
   if (showFullPageLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
+      <div className="min-h-screen bg-gradient-to-br from-fitness-primary-50 via-fitness-accent-50/30 to-fitness-secondary-50/20">
         <SimpleLoadingIndicator
           message={isGenerating ? "Generating Your Exercise Program" : "Loading Your Exercise Program"}
           description={isGenerating ? "Creating your personalized workout plan with AI..." : "Preparing your personalized workout plan with progress tracking and exercise details"}
@@ -108,62 +108,75 @@ const EnhancedExercisePage = () => {
   };
 
   return (
-    <ExercisePageLayout>
-      <div className="px-3 py-3">
-        <EnhancedExerciseHeaderWithAnalytics
-          currentProgram={currentProgram}
-          onShowAnalytics={() => setShowAnalytics(true)}
-          onShowAIDialog={() => setShowAIDialog(true)}
-          onRegenerateProgram={handleRegenerateProgram}
+    <div className="min-h-screen bg-gradient-to-br from-fitness-primary-50 via-fitness-accent-50/30 to-fitness-secondary-50/20">
+      <div className="max-w-7xl mx-auto">
+        {/* Enhanced Header Section */}
+        <div className="bg-white/80 backdrop-blur-sm border-b border-fitness-neutral-200/50 sticky top-0 z-40">
+          <div className="px-4 py-4">
+            <EnhancedExerciseHeaderWithAnalytics
+              currentProgram={currentProgram}
+              onShowAnalytics={() => setShowAnalytics(true)}
+              onShowAIDialog={() => setShowAIDialog(true)}
+              onRegenerateProgram={handleRegenerateProgram}
+              isGenerating={isGenerating}
+              workoutType={workoutType}
+            />
+          </div>
+        </div>
+
+        {/* Enhanced Navigation Section */}
+        <div className="px-4 py-4 bg-white/60 backdrop-blur-sm border-b border-fitness-neutral-200/30">
+          <div className="bg-white/80 rounded-2xl p-4 shadow-lg border border-fitness-neutral-200/50">
+            <EnhancedDayNavigation
+              weekStartDate={weekStartDate}
+              selectedDayNumber={selectedDayNumber}
+              onDayChange={setSelectedDayNumber}
+              currentProgram={currentProgram}
+              workoutType={workoutType}
+              currentWeekOffset={currentWeekOffset}
+              onWeekChange={setCurrentWeekOffset}
+              onWorkoutTypeChange={setWorkoutType}
+            />
+          </div>
+        </div>
+
+        {/* Enhanced Content Section */}
+        <div className="px-4 py-6">
+          <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-fitness-neutral-200/50 overflow-hidden">
+            <ExercisePageContent
+              isLoading={isLoading && !!currentProgram && !isGenerating}
+              currentProgram={currentProgram}
+              todaysExercises={todaysExercises}
+              completedExercises={completedExercises}
+              totalExercises={totalExercises}
+              progressPercentage={progressPercentage}
+              isRestDay={isRestDay}
+              isToday={isToday}
+              selectedDayNumber={selectedDayNumber}
+              workoutType={workoutType}
+              setWorkoutType={setWorkoutType}
+              showAIDialog={showAIDialog}
+              setShowAIDialog={setShowAIDialog}
+              aiPreferences={aiPreferences}
+              setAiPreferences={setAiPreferences}
+              isGenerating={isGenerating}
+              onExerciseComplete={handleExerciseComplete}
+              onExerciseProgressUpdate={handleExerciseProgressUpdate}
+              onGenerateAIProgram={handleGenerateAIProgram}
+            />
+          </div>
+        </div>
+
+        <AIExerciseDialog
+          open={showAIDialog}
+          onOpenChange={setShowAIDialog}
+          preferences={{ ...aiPreferences, workoutType }}
+          setPreferences={setAiPreferences}
+          onGenerate={handleGenerateAIProgram}
           isGenerating={isGenerating}
-          workoutType={workoutType}
         />
       </div>
-
-      <div className="px-3 mb-3">
-        <EnhancedDayNavigation
-          weekStartDate={weekStartDate}
-          selectedDayNumber={selectedDayNumber}
-          onDayChange={setSelectedDayNumber}
-          currentProgram={currentProgram}
-          workoutType={workoutType}
-          currentWeekOffset={currentWeekOffset}
-          onWeekChange={setCurrentWeekOffset}
-          onWorkoutTypeChange={setWorkoutType}
-        />
-      </div>
-
-      <ExercisePageContent
-        isLoading={isLoading && !!currentProgram && !isGenerating}
-        currentProgram={currentProgram}
-        todaysExercises={todaysExercises}
-        completedExercises={completedExercises}
-        totalExercises={totalExercises}
-        progressPercentage={progressPercentage}
-        isRestDay={isRestDay}
-        isToday={isToday}
-        selectedDayNumber={selectedDayNumber}
-        workoutType={workoutType}
-        setWorkoutType={setWorkoutType}
-        showAIDialog={showAIDialog}
-        setShowAIDialog={setShowAIDialog}
-        aiPreferences={aiPreferences}
-        setAiPreferences={setAiPreferences}
-        isGenerating={isGenerating}
-        onExerciseComplete={handleExerciseComplete}
-        onExerciseProgressUpdate={handleExerciseProgressUpdate}
-        onGenerateAIProgram={handleGenerateAIProgram}
-      />
-
-      <AIExerciseDialog
-        open={showAIDialog}
-        onOpenChange={setShowAIDialog}
-        preferences={{ ...aiPreferences, workoutType }}
-        setPreferences={setAiPreferences}
-        onGenerate={handleGenerateAIProgram}
-        isGenerating={isGenerating}
-      />
-    </ExercisePageLayout>
+    </div>
   );
 };
 
