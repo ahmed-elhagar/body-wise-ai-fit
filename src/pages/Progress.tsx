@@ -35,8 +35,8 @@ const ProgressPage = () => {
   };
 
   const getMealPlanProgress = () => {
-    if (!currentWeekPlan?.daily_meals) return 0;
-    const totalMeals = currentWeekPlan.daily_meals.length;
+    if (!currentWeekPlan?.dailyMeals) return 0;
+    const totalMeals = currentWeekPlan.dailyMeals.length;
     return totalMeals > 0 ? 100 : 0;
   };
 
