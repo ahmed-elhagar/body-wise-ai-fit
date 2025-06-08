@@ -8,10 +8,22 @@ import { useI18n } from '@/hooks/useI18n';
 import DashboardQuickActions from './DashboardQuickActions';
 
 interface CollapsibleQuickActionsProps {
-  onAction: (action: string) => void;
+  onViewMealPlan: () => void;
+  onViewExercise: () => void;
+  onViewWeight: () => void;
+  onViewProgress: () => void;
+  onViewGoals: () => void;
+  onViewProfile: () => void;
 }
 
-const CollapsibleQuickActions = ({ onAction }: CollapsibleQuickActionsProps) => {
+const CollapsibleQuickActions = ({
+  onViewMealPlan,
+  onViewExercise,
+  onViewWeight,
+  onViewProgress,
+  onViewGoals,
+  onViewProfile
+}: CollapsibleQuickActionsProps) => {
   const { t } = useI18n();
   const [isOpen, setIsOpen] = useState(true);
 
@@ -36,7 +48,14 @@ const CollapsibleQuickActions = ({ onAction }: CollapsibleQuickActionsProps) => 
         
         <CollapsibleContent>
           <CardContent>
-            <DashboardQuickActions onAction={onAction} />
+            <DashboardQuickActions 
+              onViewMealPlan={onViewMealPlan}
+              onViewExercise={onViewExercise}
+              onViewWeight={onViewWeight}
+              onViewProgress={onViewProgress}
+              onViewGoals={onViewGoals}
+              onViewProfile={onViewProfile}
+            />
           </CardContent>
         </CollapsibleContent>
       </Collapsible>

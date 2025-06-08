@@ -25,6 +25,20 @@ export const EnhancedExerciseListContainer = ({
 }: EnhancedExerciseListContainerProps) => {
   const { isRTL } = useI18n();
 
+  const handleExerciseStart = (exerciseId: string) => {
+    const index = exercises.findIndex(ex => ex.id === exerciseId);
+    if (index !== -1) {
+      onExerciseStart(index);
+    }
+  };
+
+  const handleExerciseComplete = (exerciseId: string) => {
+    const index = exercises.findIndex(ex => ex.id === exerciseId);
+    if (index !== -1) {
+      onExerciseComplete(index);
+    }
+  };
+
   return (
     <div className={`space-y-6 ${isRTL ? 'rtl' : 'ltr'}`}>
       {isWorkoutActive && (
@@ -38,8 +52,8 @@ export const EnhancedExerciseListContainer = ({
         exercises={exercises}
         currentExerciseIndex={currentExerciseIndex}
         workoutType={workoutType}
-        onExerciseStart={onExerciseStart}
-        onExerciseComplete={onExerciseComplete}
+        onExerciseStart={handleExerciseStart}
+        onExerciseComplete={handleExerciseComplete}
       />
     </div>
   );

@@ -6,10 +6,22 @@ import { useI18n } from '@/hooks/useI18n';
 import DashboardQuickActions from './DashboardQuickActions';
 
 interface QuickActionsGridProps {
-  onAction: (action: string) => void;
+  onViewMealPlan: () => void;
+  onViewExercise: () => void;
+  onViewWeight: () => void;
+  onViewProgress: () => void;
+  onViewGoals: () => void;
+  onViewProfile: () => void;
 }
 
-const QuickActionsGrid = ({ onAction }: QuickActionsGridProps) => {
+const QuickActionsGrid = ({
+  onViewMealPlan,
+  onViewExercise,
+  onViewWeight,
+  onViewProgress,
+  onViewGoals,
+  onViewProfile
+}: QuickActionsGridProps) => {
   const { t } = useI18n();
 
   return (
@@ -21,7 +33,14 @@ const QuickActionsGrid = ({ onAction }: QuickActionsGridProps) => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <DashboardQuickActions onAction={onAction} />
+        <DashboardQuickActions 
+          onViewMealPlan={onViewMealPlan}
+          onViewExercise={onViewExercise}
+          onViewWeight={onViewWeight}
+          onViewProgress={onViewProgress}
+          onViewGoals={onViewGoals}
+          onViewProfile={onViewProfile}
+        />
       </CardContent>
     </Card>
   );

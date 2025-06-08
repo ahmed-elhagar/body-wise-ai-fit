@@ -5,26 +5,16 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Reply, Edit, Trash2, MoreHorizontal } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-
-interface Message {
-  id: string;
-  message: string;
-  sender_type: 'coach' | 'trainee';
-  sender_id: string;
-  created_at: string;
-  updated_at?: string;
-  is_read?: boolean;
-  sender_name?: string;
-}
+import type { CoachChatMessage } from '../types/chatTypes';
 
 interface MessagesListProps {
-  messages: Message[];
+  messages: CoachChatMessage[];
   currentUserId?: string;
   coachName: string;
   typingUsers: string[];
-  replyingTo: Message | null;
-  onReply: (message: Message) => void;
-  onEdit: (message: Message) => void;
+  replyingTo: CoachChatMessage | null;
+  onReply: (message: CoachChatMessage) => void;
+  onEdit: (message: CoachChatMessage) => void;
   onDelete: (messageId: string) => void;
   messagesEndRef: React.RefObject<HTMLDivElement>;
 }
@@ -50,7 +40,7 @@ const MessagesList = ({
           return (
             <div
               key={msg.id}
-              className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
+              className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'} group`}
             >
               <div className={`max-w-[70%] ${isCurrentUser ? 'order-2' : 'order-1'}`}>
                 <Card className={`p-3 ${

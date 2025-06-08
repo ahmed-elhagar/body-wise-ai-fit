@@ -6,8 +6,7 @@ import { useI18n } from '@/hooks/useI18n';
 
 interface SearchTabProps {
   onAddFood: (food: any) => void;
-  onFoodAdded?: () => void;
-  onClose?: () => void;
+  onClose: () => void;
 }
 
 const SAMPLE_FOODS = [
@@ -18,7 +17,7 @@ const SAMPLE_FOODS = [
   { name: 'Broccoli (1 cup)', calories: 25, protein: 3, carbs: 5, fat: 0.3 }
 ];
 
-export const SearchTab = ({ onAddFood, onFoodAdded, onClose }: SearchTabProps) => {
+export const SearchTab = ({ onAddFood, onClose }: SearchTabProps) => {
   const { t, isRTL } = useI18n();
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -40,8 +39,7 @@ export const SearchTab = ({ onAddFood, onFoodAdded, onClose }: SearchTabProps) =
 
   const handleAddFood = (food: any) => {
     onAddFood(food);
-    onFoodAdded?.();
-    onClose?.();
+    onClose();
   };
 
   return (
