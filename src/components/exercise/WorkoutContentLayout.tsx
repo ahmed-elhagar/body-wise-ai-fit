@@ -1,5 +1,5 @@
 
-import { ExerciseListEnhanced } from "./ExerciseListEnhanced";
+import { ExerciseListEnhanced } from "@/features/exercise";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useWorkoutSession } from "@/hooks/useWorkoutSession";
 

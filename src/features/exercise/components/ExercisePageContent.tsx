@@ -1,5 +1,6 @@
 
-import { WorkoutContentLayout } from "./WorkoutContentLayout";
+import { ExerciseListEnhanced } from "./ExerciseListEnhanced";
+import { WorkoutContentLayout } from "@/components/exercise/WorkoutContentLayout";
 
 interface ExercisePageContentProps {
   isLoading: boolean;
