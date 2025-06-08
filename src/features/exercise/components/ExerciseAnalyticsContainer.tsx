@@ -21,11 +21,11 @@ export const ExerciseAnalyticsContainer = ({
   const completedExercises = exercises.filter(ex => ex.completed).length;
   const completionRate = totalExercises > 0 ? Math.round((completedExercises / totalExercises) * 100) : 0;
   
-  const totalSets = exercises.reduce((acc, ex) => acc + (ex.sets || 0), 0);
-  const totalDuration = exercises.reduce((acc, ex) => acc + (ex.estimated_duration || 0), 0);
+  const totalSets = exercises.reduce((acc, ex) => acc + (Number(ex.sets) || 0), 0);
+  const totalDuration = exercises.reduce((acc, ex) => acc + (Number(ex.estimated_duration) || 0), 0);
   
   const muscleGroups = exercises.reduce((acc, ex) => {
-    if (ex.muscle_groups) {
+    if (ex.muscle_groups && Array.isArray(ex.muscle_groups)) {
       ex.muscle_groups.forEach((muscle: string) => {
         acc[muscle] = (acc[muscle] || 0) + 1;
       });
@@ -124,7 +124,7 @@ export const ExerciseAnalyticsContainer = ({
                     <div className="w-20 h-2 bg-gray-200 rounded-full overflow-hidden">
                       <div 
                         className="h-full bg-blue-500 transition-all duration-300"
-                        style={{ width: `${(count / totalExercises) * 100}%` }}
+                        style={{ width: `${Math.round((count / totalExercises) * 100)}%` }}
                       />
                     </div>
                     <Badge variant="secondary" className="text-xs">
