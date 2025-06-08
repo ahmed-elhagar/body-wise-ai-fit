@@ -117,7 +117,12 @@ export const useSignupState = () => {
 
       if (result?.error) {
         console.error('Signup error details:', result.error);
-        // Throw the error so the component can catch it
+        // Create a more specific error message for user already exists
+        if (result.error.message?.toLowerCase().includes('already') || 
+            result.error.message?.toLowerCase().includes('exists') ||
+            result.error.message?.toLowerCase().includes('registered')) {
+          throw new Error(`User with email ${formData.email} already exists`);
+        }
         throw new Error(result.error.message || 'Account creation failed');
       }
 

@@ -16,42 +16,18 @@ const Auth = () => {
   const { profile, isLoading: profileLoading } = useProfile();
   const navigate = useNavigate();
 
-  // Redirect logic for authenticated users
+  // Redirect authenticated users to dashboard
   useEffect(() => {
-    // Only proceed if auth is not loading and we have a user
-    if (authLoading || !user) {
-      console.log('Auth - Auth still loading or no user, waiting...', { authLoading, hasUser: !!user });
+    if (authLoading) {
+      console.log('Auth - Auth still loading, waiting...');
       return;
     }
 
-    console.log('Auth - User authenticated, checking redirect:', {
-      userId: user.id?.substring(0, 8) + '...',
-      hasProfile: !!profile,
-      profileLoading,
-      hasBasicInfo: profile?.first_name && profile?.last_name,
-      onboardingCompleted: profile?.onboarding_completed
-    });
-    
-    // If profile is still loading, wait
-    if (profileLoading) {
-      console.log('Auth - Profile still loading, waiting...');
-      return;
-    }
-
-    // Check if user has completed onboarding OR has basic profile info
-    const hasCompleteProfile = profile?.onboarding_completed || 
-                              (profile?.first_name && profile?.last_name && 
-                               profile?.age && profile?.gender && 
-                               profile?.height && profile?.weight);
-
-    if (!hasCompleteProfile) {
-      console.log('Auth - Redirecting to signup (incomplete profile)');
-      navigate('/signup', { replace: true });
-    } else {
-      console.log('Auth - Redirecting to dashboard (complete profile)');
+    if (user) {
+      console.log('Auth - User authenticated, redirecting to dashboard');
       navigate('/dashboard', { replace: true });
     }
-  }, [user, profile, profileLoading, authLoading, navigate]);
+  }, [user, authLoading, navigate]);
 
   const validateForm = (data: { email: string; password: string }) => {
     if (!data.email || !data.password) {
@@ -76,7 +52,7 @@ const Auth = () => {
       await signIn(data.email, data.password);
       console.log('Auth - Sign in successful');
       toast.success('Welcome back!');
-      // Let useEffect handle redirection based on auth state
+      // Let useEffect handle redirection
     } catch (error: any) {
       console.error('Auth - Sign in error:', error);
       toast.error(error.message || 'Failed to sign in');

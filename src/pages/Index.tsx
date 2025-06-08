@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { useProfile } from "@/hooks/useProfile";
 import { Card } from "@/components/ui/card";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,23 +9,18 @@ import { Button } from "@/components/ui/button";
 const Index = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading, error, retryAuth, forceLogout } = useAuth();
-  const { profile, isLoading: profileLoading } = useProfile();
   const [hasNavigated, setHasNavigated] = useState(false);
 
   // Debug logging
   useEffect(() => {
     console.log('Index - State:', { 
       authLoading, 
-      profileLoading,
       hasUser: !!user, 
       hasNavigated,
       userId: user?.id?.substring(0, 8) + '...' || 'none',
-      error: error?.message || null,
-      hasProfile: !!profile,
-      hasBasicInfo: profile?.first_name && profile?.last_name,
-      onboardingCompleted: profile?.onboarding_completed
+      error: error?.message || null
     });
-  }, [authLoading, profileLoading, user, hasNavigated, error, profile]);
+  }, [authLoading, user, hasNavigated, error]);
 
   // Navigation logic
   useEffect(() => {
@@ -44,53 +38,11 @@ const Index = () => {
       return;
     }
 
-    // User exists but profile is still loading - wait briefly
-    if (profileLoading) {
-      console.log('Index - User exists, waiting for profile to load');
-      const timer = setTimeout(() => {
-        if (!hasNavigated) {
-          console.log('Index - Profile loading timeout, proceeding anyway');
-          // Check if user has completed onboarding OR has basic profile info
-          const hasCompleteProfile = profile?.onboarding_completed || 
-                                    (profile?.first_name && profile?.last_name && 
-                                     profile?.age && profile?.gender && 
-                                     profile?.height && profile?.weight);
-          
-          if (!hasCompleteProfile) {
-            navigate("/signup", { replace: true });
-          } else {
-            navigate("/dashboard", { replace: true });
-          }
-          setHasNavigated(true);
-        }
-      }, 1000); // Wait max 1 second for profile
-      return () => clearTimeout(timer);
-    }
-
-    // User exists and profile loaded - decide where to go
-    console.log('Index - Ready to navigate authenticated user:', { 
-      isAuthenticated: !!user,
-      userId: user?.id?.substring(0, 8) + '...',
-      hasProfile: !!profile,
-      hasBasicInfo: profile?.first_name && profile?.last_name,
-      onboardingCompleted: profile?.onboarding_completed
-    });
-    
-    // Check if user has completed onboarding OR has basic profile info
-    const hasCompleteProfile = profile?.onboarding_completed || 
-                              (profile?.first_name && profile?.last_name && 
-                               profile?.age && profile?.gender && 
-                               profile?.height && profile?.weight);
-    
-    if (!hasCompleteProfile) {
-      console.log('Index - User authenticated but missing profile, redirecting to signup');
-      navigate("/signup", { replace: true });
-    } else {
-      console.log('Index - User authenticated with complete profile, redirecting to dashboard');
-      navigate("/dashboard", { replace: true });
-    }
+    // User exists - go to dashboard (removed profile completion check)
+    console.log('Index - User authenticated, redirecting to dashboard');
+    navigate("/dashboard", { replace: true });
     setHasNavigated(true);
-  }, [authLoading, profileLoading, hasNavigated, user, profile, navigate, error]);
+  }, [authLoading, hasNavigated, user, navigate, error]);
 
   // Error state
   if (error) {
