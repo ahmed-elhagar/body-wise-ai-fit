@@ -291,10 +291,8 @@ const OptimizedExerciseContainer: React.FC = () => {
                     {currentExercise && (
                       <InteractiveExerciseCard
                         exercise={currentExercise}
-                        onComplete={() => handleExerciseComplete(currentExercise.id)}
-                        onProgressUpdate={(sets, reps, notes) => 
-                          handleExerciseProgressUpdate(currentExercise.id, sets, reps, notes)
-                        }
+                        onExerciseComplete={handleExerciseComplete}
+                        onExerciseProgressUpdate={handleExerciseProgressUpdate}
                         isActive={true}
                       />
                     )}
@@ -308,10 +306,8 @@ const OptimizedExerciseContainer: React.FC = () => {
                       <InteractiveExerciseCard
                         key={exercise.id}
                         exercise={exercise}
-                        onComplete={() => handleExerciseComplete(exercise.id)}
-                        onProgressUpdate={(sets, reps, notes) => 
-                          handleExerciseProgressUpdate(exercise.id, sets, reps, notes)
-                        }
+                        onExerciseComplete={handleExerciseComplete}
+                        onExerciseProgressUpdate={handleExerciseProgressUpdate}
                         isActive={false}
                       />
                     ))}

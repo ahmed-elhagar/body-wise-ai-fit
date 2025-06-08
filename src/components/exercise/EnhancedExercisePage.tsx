@@ -9,13 +9,10 @@ import { ExercisePageContent } from "@/features/exercise";
 import { ExerciseErrorState } from "./ExerciseErrorState";
 import { useEnhancedAIExercise } from "@/hooks/useEnhancedAIExercise";
 import SimpleLoadingIndicator from "@/components/ui/simple-loading-indicator";
-import { EnhancedExerciseHeaderWithAnalytics } from "./EnhancedExerciseHeaderWithAnalytics";
-import { ExerciseAnalyticsContainer } from "./ExerciseAnalyticsContainer";
 import { useState } from "react";
 
 const EnhancedExercisePage = () => {
   const { t } = useLanguage();
-  const [showAnalytics, setShowAnalytics] = useState(false);
   
   const {
     selectedDayNumber,
@@ -48,15 +45,6 @@ const EnhancedExercisePage = () => {
 
   const currentSelectedDate = addDays(weekStartDate, selectedDayNumber - 1);
   const isToday = format(currentSelectedDate, 'yyyy-MM-dd') === format(currentDate, 'yyyy-MM-dd');
-
-  if (showAnalytics) {
-    return (
-      <ExerciseAnalyticsContainer
-        exercises={todaysExercises}
-        onClose={() => setShowAnalytics(false)}
-      />
-    );
-  }
 
   const showFullPageLoading = (isLoading && !currentProgram && currentWeekOffset === 0) || isGenerating;
 
@@ -107,17 +95,6 @@ const EnhancedExercisePage = () => {
 
   return (
     <ExercisePageLayout>
-      <div className="px-3 py-3">
-        <EnhancedExerciseHeaderWithAnalytics
-          currentProgram={currentProgram}
-          onShowAnalytics={() => setShowAnalytics(true)}
-          onShowAIDialog={() => setShowAIDialog(true)}
-          onRegenerateProgram={handleRegenerateProgram}
-          isGenerating={isGenerating}
-          workoutType={workoutType}
-        />
-      </div>
-
       <div className="px-3 mb-3">
         <EnhancedDayNavigation
           weekStartDate={weekStartDate}
