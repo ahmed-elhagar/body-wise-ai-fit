@@ -13,7 +13,8 @@ export {
   RestDayCard,
   ExerciseEmptyState,
   InteractiveExerciseCard,
-  AnimatedProgressRing
+  AnimatedProgressRing,
+  CompactProgressSidebar
 } from './components';
 
 // Export types

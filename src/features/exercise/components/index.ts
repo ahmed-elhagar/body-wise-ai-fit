@@ -10,4 +10,5 @@ export { RestDayCard } from './RestDayCard';
 export { ExerciseEmptyState } from './ExerciseEmptyState';
 export { InteractiveExerciseCard } from './InteractiveExerciseCard';
 export { AnimatedProgressRing } from './AnimatedProgressRing';
+export { CompactProgressSidebar } from './CompactProgressSidebar';
 export { default as OptimizedExerciseContainer } from './OptimizedExerciseContainer';
