@@ -2,9 +2,9 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, MessageCircle, BarChart3, Calendar } from "lucide-react";
 import { useI18n } from "@/hooks/useI18n";
-import TraineesTab from "./TraineesTab";
-import CoachMessagesTab from "./CoachMessagesTab";
-import CoachAnalyticsTab from "./CoachAnalyticsTab";
+import { TraineesTab } from "./TraineesTab";
+import { CoachMessagesTab } from "./CoachMessagesTab";
+import { CoachAnalyticsTab } from "./CoachAnalyticsTab";
 import CoachTasksTab from "./CoachTasksTab";
 
 interface CoachTabsProps {

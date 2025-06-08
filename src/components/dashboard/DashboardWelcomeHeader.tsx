@@ -10,7 +10,7 @@ interface DashboardWelcomeHeaderProps {
   isPro: boolean;
 }
 
-const DashboardWelcomeHeader = ({ userName, currentStreak, isPro }: DashboardWelcomeHeaderProps) => {
+export const DashboardWelcomeHeader = ({ userName, currentStreak, isPro }: DashboardWelcomeHeaderProps) => {
   const { t } = useI18n();
 
   return (

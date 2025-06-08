@@ -1,174 +1,56 @@
 
-import { format, addDays } from "date-fns";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { useOptimizedExerciseProgramPage } from "@/hooks/useOptimizedExerciseProgramPage";
-import { EnhancedDayNavigation } from "./EnhancedDayNavigation";
-import { AIExerciseDialog } from "./AIExerciseDialog";
-import { ExercisePageLayout } from "./ExercisePageLayout";
-import { ExercisePageContent } from "./ExercisePageContent";
-import { ExerciseErrorState } from "./ExerciseErrorState";
-import { useEnhancedAIExercise } from "@/hooks/useEnhancedAIExercise";
-import SimpleLoadingIndicator from "@/components/ui/simple-loading-indicator";
-import { EnhancedExerciseHeaderWithAnalytics } from "./EnhancedExerciseHeaderWithAnalytics";
-import { ExerciseAnalyticsContainer } from "./ExerciseAnalyticsContainer";
-import { useState } from "react";
+import React, { useState } from "react";
+import { useI18n } from "@/hooks/useI18n";
+import { Exercise } from "@/types/exercise";
+import EnhancedDayNavigation from "./EnhancedDayNavigation";
+import { EnhancedExerciseListContainer } from "./EnhancedExerciseListContainer";
 
-const EnhancedExercisePage = () => {
-  const { t } = useLanguage();
-  const [showAnalytics, setShowAnalytics] = useState(false);
-  
-  const {
-    selectedDayNumber,
-    setSelectedDayNumber,
-    currentWeekOffset,
-    setCurrentWeekOffset,
-    workoutType,
-    setWorkoutType,
-    showAIDialog,
-    setShowAIDialog,
-    aiPreferences,
-    setAiPreferences,
-    currentProgram,
-    isLoading,
-    todaysWorkouts,
-    todaysExercises,
-    completedExercises,
-    totalExercises,
-    progressPercentage,
-    isRestDay,
-    error,
-    currentDate,
-    weekStartDate,
-    handleExerciseComplete,
-    handleExerciseProgressUpdate,
-    refetch
-  } = useOptimizedExerciseProgramPage();
+interface EnhancedExercisePageProps {
+  exercises: Exercise[];
+  currentDay: number;
+  onDayChange: (day: number) => void;
+  workoutType: "home" | "gym";
+}
 
-  const { isGenerating, generateExerciseProgram, regenerateProgram } = useEnhancedAIExercise();
+export const EnhancedExercisePage = ({
+  exercises,
+  currentDay,
+  onDayChange,
+  workoutType
+}: EnhancedExercisePageProps) => {
+  const { isRTL } = useI18n();
+  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
+  const [isWorkoutActive, setIsWorkoutActive] = useState(false);
 
-  const currentSelectedDate = addDays(weekStartDate, selectedDayNumber - 1);
-  const isToday = format(currentSelectedDate, 'yyyy-MM-dd') === format(currentDate, 'yyyy-MM-dd');
-
-  // Show analytics view if enabled
-  if (showAnalytics) {
-    return (
-      <ExerciseAnalyticsContainer
-        exercises={todaysExercises}
-        onClose={() => setShowAnalytics(false)}
-      />
-    );
-  }
-
-  // Show full page loading ONLY on initial load when there's no program data AND we're loading
-  // OR during AI generation
-  const showFullPageLoading = (isLoading && !currentProgram && currentWeekOffset === 0) || isGenerating;
-
-  if (showFullPageLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
-        <SimpleLoadingIndicator
-          message={isGenerating ? "Generating Your Exercise Program" : "Loading Your Exercise Program"}
-          description={isGenerating ? "Creating your personalized workout plan with AI..." : "Preparing your personalized workout plan with progress tracking and exercise details"}
-          size="lg"
-        />
-      </div>
-    );
-  }
-
-  if (error) {
-    return <ExerciseErrorState onRetry={() => refetch()} />;
-  }
-
-  const handleGenerateAIProgram = async (preferences: any) => {
-    try {
-      const enhancedPreferences = {
-        ...preferences,
-        workoutType,
-        weekStartDate: format(weekStartDate, 'yyyy-MM-dd'),
-        weekOffset: currentWeekOffset
-      };
-      
-      console.log('🎯 Starting AI program generation:', enhancedPreferences);
-      await generateExerciseProgram(enhancedPreferences);
-      setShowAIDialog(false);
-      refetch();
-    } catch (error) {
-      console.error('❌ Error generating exercise program:', error);
-    }
+  const handleExerciseStart = (index: number) => {
+    setCurrentExerciseIndex(index);
+    setIsWorkoutActive(true);
   };
 
-  const handleRegenerateProgram = async () => {
-    try {
-      const weekStartDateString = format(weekStartDate, 'yyyy-MM-dd');
-      console.log('🔄 Starting program regeneration for week:', weekStartDateString);
-      await regenerateProgram(weekStartDateString);
-      refetch();
-    } catch (error) {
-      console.error('❌ Error regenerating exercise program:', error);
+  const handleExerciseComplete = (index: number) => {
+    if (index < exercises.length - 1) {
+      setCurrentExerciseIndex(index + 1);
+    } else {
+      setIsWorkoutActive(false);
     }
   };
 
   return (
-    <ExercisePageLayout>
-      {/* Enhanced Header with Analytics - Always show and never block */}
-      <div className="px-3 py-3">
-        <EnhancedExerciseHeaderWithAnalytics
-          currentProgram={currentProgram}
-          onShowAnalytics={() => setShowAnalytics(true)}
-          onShowAIDialog={() => setShowAIDialog(true)}
-          onRegenerateProgram={handleRegenerateProgram}
-          isGenerating={isGenerating}
-          workoutType={workoutType}
-        />
-      </div>
-
-      {/* Enhanced Day Navigation - Always show and never block */}
-      <div className="px-3 mb-3">
-        <EnhancedDayNavigation
-          weekStartDate={weekStartDate}
-          selectedDayNumber={selectedDayNumber}
-          onDayChange={setSelectedDayNumber}
-          currentProgram={currentProgram}
-          workoutType={workoutType}
-          currentWeekOffset={currentWeekOffset}
-          onWeekChange={setCurrentWeekOffset}
-          onWorkoutTypeChange={setWorkoutType}
-        />
-      </div>
-
-      {/* Main Content - Show targeted loading only for content area */}
-      <ExercisePageContent
-        isLoading={isLoading && !!currentProgram && !isGenerating}
-        currentProgram={currentProgram}
-        todaysExercises={todaysExercises}
-        completedExercises={completedExercises}
-        totalExercises={totalExercises}
-        progressPercentage={progressPercentage}
-        isRestDay={isRestDay}
-        isToday={isToday}
-        selectedDayNumber={selectedDayNumber}
+    <div className={`space-y-6 ${isRTL ? 'rtl' : 'ltr'}`}>
+      <EnhancedDayNavigation
+        currentDay={currentDay}
+        onDayChange={onDayChange}
         workoutType={workoutType}
-        setWorkoutType={setWorkoutType}
-        showAIDialog={showAIDialog}
-        setShowAIDialog={setShowAIDialog}
-        aiPreferences={aiPreferences}
-        setAiPreferences={setAiPreferences}
-        isGenerating={isGenerating}
+      />
+      
+      <EnhancedExerciseListContainer
+        exercises={exercises}
+        currentExerciseIndex={currentExerciseIndex}
         onExerciseComplete={handleExerciseComplete}
-        onExerciseProgressUpdate={handleExerciseProgressUpdate}
+        onExerciseStart={handleExerciseStart}
+        workoutType={workoutType}
+        isWorkoutActive={isWorkoutActive}
       />
-
-      {/* Enhanced AI Dialog */}
-      <AIExerciseDialog
-        open={showAIDialog}
-        onOpenChange={setShowAIDialog}
-        preferences={{ ...aiPreferences, workoutType }}
-        setPreferences={setAiPreferences}
-        onGenerate={handleGenerateAIProgram}
-        isGenerating={isGenerating}
-      />
-    </ExercisePageLayout>
+    </div>
   );
 };
-
-export default EnhancedExercisePage;

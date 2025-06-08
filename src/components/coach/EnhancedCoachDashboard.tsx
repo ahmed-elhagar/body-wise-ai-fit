@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useI18n } from '@/hooks/useI18n';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import CoachTraineeChat from './CoachTraineeChat';
+import { CoachTraineeChat } from './CoachTraineeChat';
 import CoachTabs from './CoachTabs';
 
 interface CoachTraineeRelationship {
@@ -12,6 +12,8 @@ interface CoachTraineeRelationship {
   coach_id: string;
   status: string;
   created_at: string;
+  assigned_at: string;
+  notes: string;
   trainee_profile: {
     first_name: string;
     last_name: string;
@@ -47,7 +49,17 @@ const EnhancedCoachDashboard = () => {
         .eq('coach_id', user?.id);
 
       if (error) throw error;
-      setTrainees(data || []);
+      
+      // Transform data to match interface
+      const transformedData = (data || []).map(item => ({
+        ...item,
+        status: item.status || 'active',
+        created_at: item.created_at || item.assigned_at,
+        assigned_at: item.assigned_at || item.created_at,
+        notes: item.notes || ''
+      }));
+      
+      setTrainees(transformedData);
     } catch (error) {
       console.error('Error fetching trainees:', error);
     } finally {
