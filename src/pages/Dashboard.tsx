@@ -1,5 +1,5 @@
 
-import CanonicalDashboard from "@/components/dashboard/CanonicalDashboard";
+import { CanonicalDashboard } from "@/features/dashboard/components";
 
 const Dashboard = () => {
   return <CanonicalDashboard />;

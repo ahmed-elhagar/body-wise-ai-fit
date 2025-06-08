@@ -1,12 +1,13 @@
+
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "@/hooks/useProfile";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { Layout } from "@/components/Layout";
-import { QuickActionsGrid } from "@/features/dashboard/components";
-import { RecentActivityCard } from "@/features/dashboard/components";
-import { DashboardHeader } from "@/features/dashboard/components";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import Layout from "@/components/Layout";
+import { QuickActionsGrid } from "./QuickActionsGrid";
+import { RecentActivityCard } from "./RecentActivityCard";
+import { DashboardHeader } from "./DashboardHeader";
 import { Zap, Activity } from "lucide-react";
-import { EnhancedPageLoading } from "@/components/EnhancedPageLoading";
+import EnhancedPageLoading from "@/components/EnhancedPageLoading";
 
 const CanonicalDashboard = () => {
   const { profile } = useProfile();
@@ -24,7 +25,7 @@ const CanonicalDashboard = () => {
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
           <div className="p-4 md:p-6 lg:p-8">
             <div className="max-w-7xl mx-auto space-y-6 md:space-y-8">
-              {/* Simplified Header */}
+              {/* Dashboard Header */}
               <DashboardHeader userName={userName} />
               
               {/* Quick Actions Grid */}
