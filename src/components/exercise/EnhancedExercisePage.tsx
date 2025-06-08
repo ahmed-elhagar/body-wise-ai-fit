@@ -1,11 +1,10 @@
-
 import { format, addDays } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useOptimizedExerciseProgramPage } from "@/features/exercise/hooks/useOptimizedExerciseProgramPage";
 import { EnhancedDayNavigation } from "./EnhancedDayNavigation";
 import { AIExerciseDialog } from "./AIExerciseDialog";
 import { ExercisePageLayout } from "./ExercisePageLayout";
-import { ExercisePageContent } from "./ExercisePageContent";
+import { ExercisePageContent } from "@/features/exercise/components/ExercisePageContent";
 import { ExerciseErrorState } from "./ExerciseErrorState";
 import { useEnhancedAIExercise } from "@/hooks/useEnhancedAIExercise";
 import SimpleLoadingIndicator from "@/components/ui/simple-loading-indicator";
@@ -150,6 +149,7 @@ const EnhancedExercisePage = () => {
         isGenerating={isGenerating}
         onExerciseComplete={handleExerciseComplete}
         onExerciseProgressUpdate={handleExerciseProgressUpdate}
+        onGenerateAIProgram={handleGenerateAIProgram}
       />
 
       <AIExerciseDialog

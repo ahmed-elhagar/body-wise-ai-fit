@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useMealPlanState } from './useMealPlanState';
 import { useOptimizedExerciseProgramPage } from '@/features/exercise/hooks/useOptimizedExerciseProgramPage';
@@ -19,6 +18,7 @@ interface Achievement {
 export const useAchievements = () => {
   const { currentWeekPlan } = useMealPlanState();
   const { currentProgram } = useOptimizedExerciseProgramPage();
+  
   const [achievements, setAchievements] = useState<Achievement[]>([
     {
       id: 'first-meal-plan',

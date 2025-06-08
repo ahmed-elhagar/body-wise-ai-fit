@@ -1,4 +1,5 @@
 
+// Exercise feature type definitions
 export interface ExerciseProgram {
   id: string;
   program_name: string;
@@ -57,3 +58,14 @@ export interface ExercisePreferences {
   workoutDays: string;
   difficulty: string;
 }
+
+// Helper function to create mock exercises with required properties
+export const createMockExercise = (overrides: Partial<Exercise> = {}): Exercise => ({
+  id: Math.random().toString(),
+  daily_workout_id: 'mock-workout-id',
+  name: 'Mock Exercise',
+  sets: 3,
+  reps: '10',
+  completed: false,
+  ...overrides
+});
