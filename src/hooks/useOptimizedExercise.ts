@@ -21,36 +21,11 @@ export const useOptimizedExercise = () => {
   const { completeExercise, updateExerciseProgress } = useExerciseActions();
   const [selectedDay, setSelectedDay] = useState(1);
 
-  const getExerciseStats = () => {
-    return {
-      total: totalExercises,
-      completed: completedExercises,
-      remaining: totalExercises - completedExercises,
-      completionRate: progressPercentage,
-    };
-  };
-
-  const getWeeklyStats = () => {
-    if (!currentProgram?.daily_workouts) {
-      return { totalWeeklyExercises: 0, completedWeeklyExercises: 0 };
-    }
-
-    const totalWeeklyExercises = currentProgram.daily_workouts.reduce(
-      (sum: number, workout: any) => sum + (workout.exercises?.length || 0), 0
-    );
-    
-    const completedWeeklyExercises = currentProgram.daily_workouts.reduce(
-      (sum: number, workout: any) => sum + (workout.exercises?.filter((ex: any) => ex.completed).length || 0), 0
-    );
-
-    return { totalWeeklyExercises, completedWeeklyExercises };
-  };
-
-  // Create week structure for the container component with proper WeekDay interface
+  // Create week structure for the container component
   const weekStructure = useMemo(() => {
     if (!currentProgram?.daily_workouts) return [];
     
-    const today = new Date().getDay() || 7; // Convert Sunday (0) to 7
+    const today = new Date().getDay() || 7;
     const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     
     return currentProgram.daily_workouts.map((workout: any) => ({
@@ -72,7 +47,7 @@ export const useOptimizedExercise = () => {
   // Get exercises for current day
   const currentDayExercises = useMemo(() => {
     if (!currentWorkout?.exercises) return [];
-    return currentWorkout.exercises.map((ex: any, index: number) => ({
+    return currentWorkout.exercises.map((ex: any) => ({
       ...ex,
       progressPercentage: ex.completed ? 100 : 0,
     }));
@@ -80,12 +55,20 @@ export const useOptimizedExercise = () => {
 
   // Progress metrics
   const progressMetrics = useMemo(() => {
-    const stats = getWeeklyStats();
+    const completedWorkouts = currentProgram?.daily_workouts?.filter((w: any) => w.completed).length || 0;
+    const totalWorkouts = currentProgram?.daily_workouts?.length || 0;
+    const totalWeeklyExercises = currentProgram?.daily_workouts?.reduce(
+      (sum: number, workout: any) => sum + (workout.exercises?.length || 0), 0
+    ) || 0;
+    const completedWeeklyExercises = currentProgram?.daily_workouts?.reduce(
+      (sum: number, workout: any) => sum + (workout.exercises?.filter((ex: any) => ex.completed).length || 0), 0
+    ) || 0;
+
     return {
-      completedWorkouts: currentProgram?.daily_workouts?.filter((w: any) => w.completed).length || 0,
-      totalWorkouts: currentProgram?.daily_workouts?.length || 0,
-      progressPercentage: stats.totalWeeklyExercises > 0 ? 
-        Math.round((stats.completedWeeklyExercises / stats.totalWeeklyExercises) * 100) : 0,
+      completedWorkouts,
+      totalWorkouts,
+      progressPercentage: totalWeeklyExercises > 0 ? 
+        Math.round((completedWeeklyExercises / totalWeeklyExercises) * 100) : 0,
     };
   }, [currentProgram]);
 
@@ -95,37 +78,35 @@ export const useOptimizedExercise = () => {
     isUpdating: false,
   };
 
-  // Optimized actions
-  const optimizedActions = {
-    startWorkout: () => {
-      console.log('Starting workout...');
-    },
-    completeWorkout: () => {
-      console.log('Completing workout...');
-    },
-  };
-
   return {
-    // Original properties
+    // Core data
     currentProgram,
-    todaysExercises,
-    getExerciseStats,
-    getWeeklyStats,
-    handleExerciseComplete,
-    handleExerciseProgressUpdate,
-    completeExercise,
-    updateExerciseProgress,
-    
-    // New properties for OptimizedExerciseContainer
     weeklyProgram: currentProgram,
     weekStructure,
     currentWorkout,
     currentDayExercises,
+    
+    // State
     selectedDay,
     setSelectedDay,
     progressMetrics,
     loadingStates,
     programError: error,
-    optimizedActions,
+    
+    // Legacy support
+    todaysExercises,
+    completedExercises,
+    totalExercises,
+    progressPercentage,
+    handleExerciseComplete,
+    handleExerciseProgressUpdate,
+    completeExercise,
+    updateExerciseProgress,
+    
+    // Actions
+    optimizedActions: {
+      startWorkout: () => console.log('Starting workout...'),
+      completeWorkout: () => console.log('Completing workout...'),
+    },
   };
 };
