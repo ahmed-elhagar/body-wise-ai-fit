@@ -1,26 +1,43 @@
 
 import { useTranslation } from 'react-i18next';
-
-export type Language = 'en' | 'ar';
+import { useEffect } from 'react';
 
 export const useI18n = () => {
   const { t, i18n } = useTranslation();
-
-  const changeLanguage = async (lng: Language) => {
-    await i18n.changeLanguage(lng);
-    document.documentElement.dir = lng === 'ar' ? 'rtl' : 'ltr';
-    document.documentElement.lang = lng;
+  
+  const isRTL = i18n.language === 'ar';
+  
+  useEffect(() => {
+    document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
+    document.documentElement.lang = i18n.language;
+  }, [isRTL, i18n.language]);
+  
+  const changeLanguage = async (lng: string) => {
+    try {
+      await i18n.changeLanguage(lng);
+      localStorage.setItem('preferred-language', lng);
+    } catch (error) {
+      console.error('Failed to change language:', error);
+    }
   };
-
-  const tFrom = (namespace: string) => (key: string, options?: any) => {
-    return t(`${namespace}:${key}`, options);
+  
+  const tFrom = (namespace: string) => {
+    return (key: string, options?: any) => {
+      try {
+        const result = t(`${namespace}:${key}`, options);
+        return result !== `${namespace}:${key}` ? result : key;
+      } catch (error) {
+        console.warn(`Translation error for ${namespace}:${key}`, error);
+        return key;
+      }
+    };
   };
-
+  
   return {
     t,
     tFrom,
-    language: i18n.language as Language,
-    isRTL: i18n.language === 'ar',
+    language: i18n.language,
+    isRTL,
     changeLanguage,
   };
 };

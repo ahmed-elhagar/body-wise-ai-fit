@@ -4,12 +4,12 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useCreditSystem } from './useCreditSystem';
-import { useI18n } from '@/hooks/useI18n';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export const useMealRecipe = () => {
   const [isGeneratingRecipe, setIsGeneratingRecipe] = useState(false);
   const { user } = useAuth();
-  const { language } = useI18n();
+  const { language } = useLanguage();
   const { checkAndUseCreditAsync, completeGenerationAsync } = useCreditSystem();
 
   const generateRecipe = async (mealId: string) => {

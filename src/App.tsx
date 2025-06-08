@@ -1,8 +1,9 @@
 
-import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { LanguageProvider } from '@/contexts/LanguageContext';
 import { Toaster } from '@/components/ui/sonner';
 import { LazyPages } from '@/components/LazyPages';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -31,45 +32,47 @@ function App() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <Router>
-            <div className="App">
-              <Suspense fallback={<SuspenseFallback />}>
-                <Routes>
-                  {/* Public routes */}
-                  <Route path="/" element={<LazyPages.Index />} />
-                  <Route path="/landing" element={<LazyPages.Landing />} />
-                  <Route path="/auth" element={<LazyPages.Auth />} />
-                  <Route path="/signup" element={<LazyPages.UnifiedSignup />} />
-                  <Route path="/welcome" element={<LazyPages.Welcome />} />
+        <LanguageProvider>
+          <AuthProvider>
+            <Router>
+              <div className="App">
+                <Suspense fallback={<SuspenseFallback />}>
+                  <Routes>
+                    {/* Public routes */}
+                    <Route path="/" element={<LazyPages.Index />} />
+                    <Route path="/landing" element={<LazyPages.Landing />} />
+                    <Route path="/auth" element={<LazyPages.Auth />} />
+                    <Route path="/signup" element={<LazyPages.UnifiedSignup />} />
+                    <Route path="/welcome" element={<LazyPages.Welcome />} />
 
-                  {/* Protected routes */}
-                  <Route path="/dashboard" element={<LazyPages.Dashboard />} />
-                  <Route path="/profile" element={<LazyPages.Profile />} />
-                  <Route path="/meal-plan" element={<LazyPages.MealPlan />} />
-                  <Route path="/exercise" element={<LazyPages.Exercise />} />
-                  <Route path="/food-tracker" element={<LazyPages.FoodTracker />} />
-                  <Route path="/calorie-checker" element={<LazyPages.CalorieChecker />} />
-                  <Route path="/weight-tracking" element={<LazyPages.WeightTracking />} />
-                  <Route path="/goals" element={<LazyPages.Goals />} />
-                  <Route path="/progress/:tab?" element={<LazyPages.Progress />} />
-                  <Route path="/settings" element={<LazyPages.Settings />} />
-                  <Route path="/notifications" element={<LazyPages.Notifications />} />
-                  <Route path="/chat" element={<LazyPages.Chat />} />
-                  <Route path="/pro" element={<LazyPages.Pro />} />
+                    {/* Protected routes */}
+                    <Route path="/dashboard" element={<LazyPages.Dashboard />} />
+                    <Route path="/profile" element={<LazyPages.Profile />} />
+                    <Route path="/meal-plan" element={<LazyPages.MealPlan />} />
+                    <Route path="/exercise" element={<LazyPages.Exercise />} />
+                    <Route path="/food-tracker" element={<LazyPages.FoodTracker />} />
+                    <Route path="/calorie-checker" element={<LazyPages.CalorieChecker />} />
+                    <Route path="/weight-tracking" element={<LazyPages.WeightTracking />} />
+                    <Route path="/goals" element={<LazyPages.Goals />} />
+                    <Route path="/progress/:tab?" element={<LazyPages.Progress />} />
+                    <Route path="/settings" element={<LazyPages.Settings />} />
+                    <Route path="/notifications" element={<LazyPages.Notifications />} />
+                    <Route path="/chat" element={<LazyPages.Chat />} />
+                    <Route path="/pro" element={<LazyPages.Pro />} />
 
-                  {/* Admin & Coach routes */}
-                  <Route path="/admin" element={<LazyPages.Admin />} />
-                  <Route path="/coach" element={<LazyPages.Coach />} />
+                    {/* Admin & Coach routes */}
+                    <Route path="/admin" element={<LazyPages.Admin />} />
+                    <Route path="/coach" element={<LazyPages.Coach />} />
 
-                  {/* 404 route */}
-                  <Route path="*" element={<LazyPages.NotFound />} />
-                </Routes>
-              </Suspense>
-              <Toaster />
-            </div>
-          </Router>
-        </AuthProvider>
+                    {/* 404 route */}
+                    <Route path="*" element={<LazyPages.NotFound />} />
+                  </Routes>
+                </Suspense>
+                <Toaster />
+              </div>
+            </Router>
+          </AuthProvider>
+        </LanguageProvider>
       </QueryClientProvider>
     </ErrorBoundary>
   );

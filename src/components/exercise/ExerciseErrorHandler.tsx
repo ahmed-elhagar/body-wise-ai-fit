@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, RefreshCw } from 'lucide-react';
-import { useI18n } from '@/hooks/useI18n';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ExerciseErrorHandlerProps {
   error: Error | null;
@@ -16,7 +16,7 @@ export const ExerciseErrorHandler = ({
   onRetry,
   context = 'exercise'
 }: ExerciseErrorHandlerProps) => {
-  const { language } = useI18n();
+  const { language } = useLanguage();
   const [isRetrying, setIsRetrying] = useState(false);
 
   useEffect(() => {

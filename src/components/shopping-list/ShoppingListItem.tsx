@@ -4,7 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Info } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ShoppingItem {
   id: string;
@@ -28,7 +28,7 @@ interface ShoppingListItemProps {
 }
 
 export const ShoppingListItem = ({ item, isChecked, onToggle }: ShoppingListItemProps) => {
-  const { isRTL } = useI18n();
+  const { isRTL } = useLanguage();
 
   return (
     <Card 

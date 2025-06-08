@@ -26,7 +26,7 @@ import { cn } from "@/lib/utils";
 interface NavigationItem {
   href: string;
   icon: React.ComponentType<any>;
-  labelKey: string;
+  label: string;
 }
 
 export const SidebarMainNavigation = () => {
@@ -36,13 +36,13 @@ export const SidebarMainNavigation = () => {
   const isCollapsed = state === "collapsed" && !isMobile;
 
   const mainItems: NavigationItem[] = [
-    { href: "/dashboard", icon: Home, labelKey: "navigation:dashboard" },
-    { href: "/meal-plan", icon: Utensils, labelKey: "navigation:mealPlan" },
-    { href: "/exercise", icon: Dumbbell, labelKey: "navigation:exercise" },
-    { href: "/progress", icon: BarChart3, labelKey: "navigation:progress" },
-    { href: "/goals", icon: Target, labelKey: "navigation:goals" },
-    { href: "/food-tracker", icon: Calendar, labelKey: "navigation:foodTracker" },
-    { href: "/chat", icon: MessageSquare, labelKey: "navigation:aiChat" },
+    { href: "/", icon: Home, label: "Dashboard" },
+    { href: "/meal-plan", icon: Utensils, label: "Meal Plan" },
+    { href: "/exercise", icon: Dumbbell, label: "Exercise" },
+    { href: "/progress", icon: BarChart3, label: "Progress" },
+    { href: "/goals", icon: Target, label: "Goals" },
+    { href: "/food-tracker", icon: Calendar, label: "Food Tracker" },
+    { href: "/chat", icon: MessageSquare, label: "AI Chat" },
   ];
 
   return (
@@ -52,7 +52,7 @@ export const SidebarMainNavigation = () => {
           "text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-3",
           isRTL && "text-right font-arabic"
         )}>
-          {t("navigation:menu")}
+          Menu
         </SidebarGroupLabel>
       )}
       
@@ -60,14 +60,12 @@ export const SidebarMainNavigation = () => {
         <SidebarMenu className={cn("space-y-1", isCollapsed ? "px-1" : "px-2")}>
           {mainItems.map((item) => {
             const isActive = location.pathname === item.href;
-            const label = t(item.labelKey);
-            
             return (
               <SidebarMenuItem key={item.href}>
                 <SidebarMenuButton
                   asChild
                   isActive={isActive}
-                  tooltip={isCollapsed ? label : undefined}
+                  tooltip={isCollapsed ? item.label : undefined}
                   className={cn(
                     "w-full text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-colors rounded-lg",
                     isActive && "bg-blue-50 text-blue-700 shadow-sm",
@@ -87,7 +85,7 @@ export const SidebarMainNavigation = () => {
                     <item.icon className="h-5 w-5 flex-shrink-0" />
                     {!isCollapsed && (
                       <span className={cn("font-medium truncate", isRTL && "font-arabic")}>
-                        {label}
+                        {item.label}
                       </span>
                     )}
                   </Link>

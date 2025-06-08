@@ -19,19 +19,15 @@ const AppSidebar = () => {
 
   return (
     <Sidebar 
-      side={isRTL ? "right" : "left"}
       className={cn(
-        "bg-white transition-all duration-300 ease-in-out",
-        isRTL ? 'border-l border-gray-200' : 'border-r border-gray-200',
+        "border-r border-gray-200 bg-white transition-all duration-300 ease-in-out",
+        isRTL ? 'border-l border-r-0' : '',
         isCollapsed && !isMobile ? 'w-16' : 'w-64',
         isMobile && 'w-80 shadow-lg z-50'
       )}
       collapsible="icon"
     >
-      <SidebarHeader className={cn(
-        "p-0 border-gray-200",
-        isRTL ? 'border-b' : 'border-b'
-      )}>
+      <SidebarHeader className="p-0 border-b border-gray-200">
         <CustomSidebarHeader />
       </SidebarHeader>
       
@@ -43,8 +39,7 @@ const AppSidebar = () => {
       </SidebarContent>
 
       <SidebarFooter className={cn(
-        "border-gray-200 bg-white p-0",
-        isRTL ? 'border-t' : 'border-t',
+        "border-t border-gray-200 bg-white p-0",
         isCollapsed && !isMobile ? "p-1" : ""
       )}>
         <CustomSidebarFooter />

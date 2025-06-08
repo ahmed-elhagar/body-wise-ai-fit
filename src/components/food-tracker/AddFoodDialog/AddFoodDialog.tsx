@@ -2,7 +2,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Edit3 } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useEffect, useState } from "react";
 import SearchTab from "./SearchTab";
 import ManualTab from "./ManualTab";
@@ -15,7 +15,7 @@ interface AddFoodDialogProps {
 }
 
 const AddFoodDialog = ({ isOpen, onClose, onFoodAdded, preSelectedFood }: AddFoodDialogProps) => {
-  const { t } = useI18n();
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState("search");
 
   useEffect(() => {
@@ -28,12 +28,6 @@ const AddFoodDialog = ({ isOpen, onClose, onFoodAdded, preSelectedFood }: AddFoo
     }
   }, [preSelectedFood, isOpen]);
 
-  const handleAddFood = (food: any) => {
-    console.log('Adding food:', food);
-    onFoodAdded();
-    onClose();
-  };
-
   // If we have pre-selected food, show only the manual tab content
   if (preSelectedFood) {
     return (
@@ -41,13 +35,13 @@ const AddFoodDialog = ({ isOpen, onClose, onFoodAdded, preSelectedFood }: AddFoo
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-gray-900">
-              {t('foodTracker:addAnalyzedFood') || 'Add Analyzed Food'}
+              {t('Add Analyzed Food')}
             </DialogTitle>
           </DialogHeader>
 
           <div className="mt-4 max-h-[70vh] overflow-y-auto">
             <ManualTab 
-              onAddFood={handleAddFood} 
+              onFoodAdded={onFoodAdded} 
               onClose={onClose} 
               preSelectedFood={preSelectedFood}
             />
@@ -62,7 +56,7 @@ const AddFoodDialog = ({ isOpen, onClose, onFoodAdded, preSelectedFood }: AddFoo
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-gray-900">
-            {t('foodTracker:addFood') || 'Add Food'}
+            {t('Add Food')}
           </DialogTitle>
         </DialogHeader>
 
@@ -73,25 +67,25 @@ const AddFoodDialog = ({ isOpen, onClose, onFoodAdded, preSelectedFood }: AddFoo
               className="data-[state=active]:bg-white data-[state=active]:text-gray-900 flex items-center gap-2"
             >
               <Search className="w-4 h-4" />
-              {t('common:search') || 'Search'}
+              {t('Search')}
             </TabsTrigger>
             <TabsTrigger 
               value="manual" 
               className="data-[state=active]:bg-white data-[state=active]:text-gray-900 flex items-center gap-2"
             >
               <Edit3 className="w-4 h-4" />
-              {t('common:manual') || 'Manual'}
+              {t('Manual')}
             </TabsTrigger>
           </TabsList>
 
           <div className="mt-4 max-h-[70vh] overflow-y-auto">
             <TabsContent value="search">
-              <SearchTab onAddFood={handleAddFood} onClose={onClose} />
+              <SearchTab onFoodAdded={onFoodAdded} onClose={onClose} />
             </TabsContent>
 
             <TabsContent value="manual">
               <ManualTab 
-                onAddFood={handleAddFood} 
+                onFoodAdded={onFoodAdded} 
                 onClose={onClose} 
                 preSelectedFood={preSelectedFood}
               />

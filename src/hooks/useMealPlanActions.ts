@@ -1,7 +1,7 @@
 
 import { useCallback } from "react";
 import { toast } from "sonner";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useEnhancedMealPlan } from "@/hooks/useEnhancedMealPlan";
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from './useAuth';
@@ -12,7 +12,7 @@ export const useMealPlanActions = (
   aiPreferences: any,
   refetchMealPlan: any
 ) => {
-  const { language } = useI18n();
+  const { language } = useLanguage();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const { generateMealPlan, isGenerating, nutritionContext } = useEnhancedMealPlan();

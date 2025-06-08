@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Sparkles, X } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface AddSnackDialogHeaderProps {
   selectedDay: number;
@@ -14,10 +14,10 @@ export const AddSnackDialogHeader = ({
   isGenerating, 
   onClose 
 }: AddSnackDialogHeaderProps) => {
-  const { t, isRTL } = useI18n();
+  const { t, isRTL } = useLanguage();
 
   const getDayName = (dayNumber: number) => {
-    return t(`common:day${dayNumber}`) || `Day ${dayNumber}`;
+    return t(`mealPlan.dayNames.${dayNumber}`) || `Day ${dayNumber}`;
   };
 
   return (
@@ -28,10 +28,10 @@ export const AddSnackDialogHeader = ({
         </div>
         <div className={isRTL ? 'text-right' : 'text-left'}>
           <h2 className="text-xl font-bold text-fitness-primary-800">
-            {t('mealPlan:addSnack') || 'Add Snack'}
+            {t('mealPlan.addSnack') || 'Add Snack'}
           </h2>
           <p className="text-fitness-primary-600 text-sm">
-            {getDayName(selectedDay)} - {t('mealPlan:smartSnackSuggestions') || 'Smart snack suggestions'}
+            {getDayName(selectedDay)} - {t('mealPlan.smartSnackSuggestions') || 'Smart snack suggestions'}
           </p>
         </div>
       </div>

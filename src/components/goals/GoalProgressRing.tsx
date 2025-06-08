@@ -1,5 +1,5 @@
 
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface GoalProgressRingProps {
   progress: number;
@@ -16,7 +16,7 @@ const GoalProgressRing = ({
   children,
   color = "#3b82f6"
 }: GoalProgressRingProps) => {
-  const { t } = useI18n();
+  const { t } = useLanguage();
   
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
@@ -82,7 +82,7 @@ const GoalProgressRing = ({
             </div>
             {isGoldRing && (
               <div className="text-xs text-yellow-600 font-medium">
-                {t('common:excellent') || 'Excellent!'}
+                {t('Excellent!')}
               </div>
             )}
           </div>

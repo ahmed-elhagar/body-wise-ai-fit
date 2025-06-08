@@ -1,7 +1,7 @@
 
 import { useState, useMemo } from "react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { getCategoryForIngredient } from "@/utils/mealPlanUtils";
 import type { WeeklyMealPlan, DailyMeal } from "@/hooks/useMealPlanData";
 import DrawerHeader from "./DrawerHeader";
@@ -35,7 +35,7 @@ const EnhancedShoppingListDrawer = ({
   weekId,
   onShoppingListUpdate 
 }: ShoppingListDrawerProps) => {
-  const { isRTL } = useI18n();
+  const { isRTL } = useLanguage();
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
 
   // Compute shopping list from meal plan data with proper aggregation

@@ -1,84 +1,118 @@
 
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { TrendingUp, Calendar, Target, Activity } from 'lucide-react';
-import { useI18n } from '@/hooks/useI18n';
+import { useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { 
+  BarChart3, 
+  Trophy, 
+  Brain, 
+  Award,
+  ArrowLeft
+} from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { PersonalRecordsTracker } from './PersonalRecordsTracker';
+import { ExerciseAnalyticsDashboard } from './ExerciseAnalyticsDashboard';
+import { PerformanceInsights } from './PerformanceInsights';
+import { ExerciseAchievements } from './ExerciseAchievements';
+import { Exercise } from '@/types/exercise';
 
 interface ExerciseAnalyticsContainerProps {
-  weeklyProgress: number;
-  monthlyGoal: number;
-  completedWorkouts: number;
-  totalWorkouts: number;
+  exercises: Exercise[];
+  onClose: () => void;
 }
 
-const ExerciseAnalyticsContainer = ({
-  weeklyProgress,
-  monthlyGoal,
-  completedWorkouts,
-  totalWorkouts
-}: ExerciseAnalyticsContainerProps) => {
-  const { t, isRTL } = useI18n();
+export const ExerciseAnalyticsContainer = ({ exercises, onClose }: ExerciseAnalyticsContainerProps) => {
+  const { t } = useLanguage();
+  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | '1y'>('30d');
+
+  const handleViewRecordDetails = (recordId: string) => {
+    console.log('View record details:', recordId);
+    // TODO: Implement record details view
+  };
+
+  const handleApplyRecommendation = (insightId: string) => {
+    console.log('Apply recommendation:', insightId);
+    // TODO: Implement recommendation application
+  };
+
+  const handleViewAchievement = (achievementId: string) => {
+    console.log('View achievement:', achievementId);
+    // TODO: Implement achievement details view
+  };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className={`text-sm flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <TrendingUp className="w-4 h-4" />
-            {t('exercise:weeklyProgress') || 'Weekly Progress'}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <div className="text-2xl font-bold">{weeklyProgress}%</div>
-            <Progress value={weeklyProgress} className="h-2" />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
+      <div className="max-w-7xl mx-auto p-6">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onClose}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              {t('Back to Exercises')}
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">{t('Exercise Analytics')}</h1>
+              <p className="text-gray-600">{t('Track your progress, records, and insights')}</p>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className={`text-sm flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <Target className="w-4 h-4" />
-            {t('exercise:monthlyGoal') || 'Monthly Goal'}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <div className="text-2xl font-bold">{monthlyGoal}%</div>
-            <Progress value={monthlyGoal} className="h-2" />
-          </div>
-        </CardContent>
-      </Card>
+        {/* Analytics Tabs */}
+        <Card className="p-6">
+          <Tabs defaultValue="analytics" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="analytics" className="flex items-center gap-2">
+                <BarChart3 className="w-4 h-4" />
+                {t('Analytics')}
+              </TabsTrigger>
+              <TabsTrigger value="records" className="flex items-center gap-2">
+                <Trophy className="w-4 h-4" />
+                {t('Records')}
+              </TabsTrigger>
+              <TabsTrigger value="insights" className="flex items-center gap-2">
+                <Brain className="w-4 h-4" />
+                {t('Insights')}
+              </TabsTrigger>
+              <TabsTrigger value="achievements" className="flex items-center gap-2">
+                <Award className="w-4 h-4" />
+                {t('Achievements')}
+              </TabsTrigger>
+            </TabsList>
 
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className={`text-sm flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <Activity className="w-4 h-4" />
-            {t('exercise:completed') || 'Completed'}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">
-            {completedWorkouts}/{totalWorkouts}
-          </div>
-        </CardContent>
-      </Card>
+            <TabsContent value="analytics">
+              <ExerciseAnalyticsDashboard
+                timeRange={timeRange}
+                onTimeRangeChange={setTimeRange}
+              />
+            </TabsContent>
 
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className={`text-sm flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <Calendar className="w-4 h-4" />
-            {t('exercise:thisWeek') || 'This Week'}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">5/7</div>
-        </CardContent>
-      </Card>
+            <TabsContent value="records">
+              <PersonalRecordsTracker
+                exercises={exercises}
+                onViewDetails={handleViewRecordDetails}
+              />
+            </TabsContent>
+
+            <TabsContent value="insights">
+              <PerformanceInsights
+                onApplyRecommendation={handleApplyRecommendation}
+              />
+            </TabsContent>
+
+            <TabsContent value="achievements">
+              <ExerciseAchievements
+                onViewAchievement={handleViewAchievement}
+              />
+            </TabsContent>
+          </Tabs>
+        </Card>
+      </div>
     </div>
   );
 };
-
-export default ExerciseAnalyticsContainer;

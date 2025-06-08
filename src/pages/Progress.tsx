@@ -1,132 +1,123 @@
 
-import React from 'react';
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
-import { TrendingUp, Target, Activity, Calendar } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TrendingUp, Scale, Trophy, Brain } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
+import { useParams, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import WeightStatsCards from "@/components/weight/WeightStatsCards";
+import WeightProgressChart from "@/components/weight/WeightProgressChart";
+import WeightEntryForm from "@/components/weight/WeightEntryForm";
+import ProgressBadges from "@/components/goals/ProgressBadges";
+import { ProgressAnalytics } from "@/components/progress/ProgressAnalytics";
+import AchievementBadges from "@/components/progress/AchievementBadges";
+import { TrendAnalysis } from "@/components/progress/TrendAnalysis";
+import { useWeightTracking } from "@/hooks/useWeightTracking";
+import { useGoals } from "@/hooks/useGoals";
+import { useProfile } from "@/hooks/useProfile";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Progress = () => {
-  const macroData = [
-    { name: 'Protein', value: 30, color: '#10b981' },
-    { name: 'Carbs', value: 45, color: '#3b82f6' },
-    { name: 'Fat', value: 25, color: '#f59e0b' }
-  ];
+  const { tab } = useParams();
+  const navigate = useNavigate();
+  const { t } = useLanguage();
+  const { weightEntries, isLoading: weightLoading } = useWeightTracking();
+  const { getMacroGoals } = useGoals();
+  const { profile } = useProfile();
 
-  const weeklyData = [
-    { day: 'Mon', calories: 2100, protein: 150 },
-    { day: 'Tue', calories: 1950, protein: 140 },
-    { day: 'Wed', calories: 2200, protein: 160 },
-    { day: 'Thu', calories: 2050, protein: 145 },
-    { day: 'Fri', calories: 2150, protein: 155 },
-    { day: 'Sat', calories: 2000, protein: 142 },
-    { day: 'Sun', calories: 2100, protein: 148 }
-  ];
+  const activeTab = tab || 'analytics';
+
+  useEffect(() => {
+    if (!tab) {
+      navigate('/progress/analytics', { replace: true });
+    }
+  }, [tab, navigate]);
+
+  const macroGoals = getMacroGoals();
+  const latestWeight = weightEntries[0];
+
+  // Calculate BMI
+  const bmi = latestWeight && profile?.height 
+    ? latestWeight.weight / Math.pow(profile.height / 100, 2)
+    : null;
+
+  if (weightLoading) {
+    return (
+      <ProtectedRoute>
+        <Layout>
+          <div className="space-y-6">
+            <div className="animate-pulse space-y-4">
+              <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+              <div className="h-12 bg-gray-200 rounded w-1/2"></div>
+              <div className="h-96 bg-gray-200 rounded"></div>
+            </div>
+          </div>
+        </Layout>
+      </ProtectedRoute>
+    );
+  }
 
   return (
     <ProtectedRoute>
       <Layout>
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 p-6">
-          <div className="max-w-7xl mx-auto space-y-6">
-            {/* Header */}
-            <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Progress Tracking</h1>
-              <p className="text-gray-600">Monitor your fitness journey and achievements</p>
+        <PageHeader
+          title={t('Progress & Analytics')}
+          description={t('Track your fitness journey with AI-powered insights and comprehensive analytics')}
+          icon={<TrendingUp className="h-6 w-6 text-blue-600" />}
+        >
+          <ProgressBadges />
+        </PageHeader>
+
+        <Tabs value={activeTab} onValueChange={(value) => navigate(`/progress/${value}`)} className="w-full">
+          <TabsList className="grid w-full grid-cols-4 max-w-2xl bg-white/80 backdrop-blur-sm">
+            <TabsTrigger value="analytics" className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('Analytics')}</span>
+            </TabsTrigger>
+            <TabsTrigger value="weight" className="flex items-center gap-2">
+              <Scale className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('Weight')}</span>
+            </TabsTrigger>
+            <TabsTrigger value="achievements" className="flex items-center gap-2">
+              <Trophy className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('Badges')}</span>
+            </TabsTrigger>
+            <TabsTrigger value="trends" className="flex items-center gap-2">
+              <Brain className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('AI Trends')}</span>
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="analytics" className="space-y-6 mt-6">
+            <ProgressAnalytics />
+          </TabsContent>
+
+          <TabsContent value="weight" className="space-y-6 mt-6">
+            <WeightStatsCards weightEntries={weightEntries} />
+
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+              <div className="xl:col-span-2">
+                <WeightProgressChart weightEntries={weightEntries} />
+              </div>
+              <div className="xl:col-span-1">
+                <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg h-fit">
+                  <h3 className="text-lg font-semibold mb-4">{t('Add Weight Entry')}</h3>
+                  <WeightEntryForm />
+                </Card>
+              </div>
             </div>
+          </TabsContent>
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-              <Card className="hover:shadow-lg transition-shadow">
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mx-auto mb-3">
-                    <TrendingUp className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Weight Lost</h3>
-                  <p className="text-2xl font-bold text-green-600">5.2 kg</p>
-                </CardContent>
-              </Card>
+          <TabsContent value="achievements" className="space-y-6 mt-6">
+            <AchievementBadges />
+          </TabsContent>
 
-              <Card className="hover:shadow-lg transition-shadow">
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center mx-auto mb-3">
-                    <Target className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Goal Progress</h3>
-                  <p className="text-2xl font-bold text-blue-600">78%</p>
-                </CardContent>
-              </Card>
-
-              <Card className="hover:shadow-lg transition-shadow">
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-violet-600 rounded-xl flex items-center justify-center mx-auto mb-3">
-                    <Activity className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Workouts</h3>
-                  <p className="text-2xl font-bold text-purple-600">24</p>
-                </CardContent>
-              </Card>
-
-              <Card className="hover:shadow-lg transition-shadow">
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center mx-auto mb-3">
-                    <Calendar className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Streak</h3>
-                  <p className="text-2xl font-bold text-orange-600">12 days</p>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Charts Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Macro Distribution */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Macro Distribution</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                      <Pie
-                        data={macroData}
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={80}
-                        dataKey="value"
-                        label={({ name, value }) => `${name}: ${value}%`}
-                      >
-                        {macroData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-
-              {/* Weekly Progress */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Weekly Calories & Protein</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={weeklyData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="day" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="calories" fill="#3b82f6" />
-                      <Bar dataKey="protein" fill="#10b981" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </div>
+          <TabsContent value="trends" className="space-y-6 mt-6">
+            <TrendAnalysis />
+          </TabsContent>
+        </Tabs>
       </Layout>
     </ProtectedRoute>
   );

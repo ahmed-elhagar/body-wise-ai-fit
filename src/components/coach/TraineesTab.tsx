@@ -1,142 +1,193 @@
 
-import { useState } from 'react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { 
-  Search, 
-  MessageCircle, 
-  User, 
-  Calendar,
-  TrendingUp,
-  Filter
-} from 'lucide-react';
-import { useI18n } from '@/hooks/useI18n';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Users, MessageCircle, Target, UserPlus, ArrowLeft, AlertCircle } from "lucide-react";
+import { useI18n } from "@/hooks/useI18n";
+import { useState } from "react";
+import { AssignTraineeDialog } from "./AssignTraineeDialog";
+import { CoachTraineeChat } from "./CoachTraineeChat";
+import { TraineeProgressView } from "./TraineeProgressView";
+import { useUnreadMessagesByTrainee } from "@/hooks/useUnreadMessages";
+import { toast } from "sonner";
 
 interface TraineesTabProps {
   trainees: any[];
-  setSelectedClient: (clientId: string) => void;
+  onChatClick: (traineeId: string) => void;
 }
 
-export const TraineesTab = ({ trainees, setSelectedClient }: TraineesTabProps) => {
-  const { t, isRTL } = useI18n();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
+type ViewMode = 'list' | 'chat' | 'progress';
 
-  const filteredTrainees = trainees.filter(trainee => {
-    const matchesSearch = trainee.trainee_profile?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
-    const matchesFilter = filterStatus === 'all' || trainee.status === filterStatus;
-    return matchesSearch && matchesFilter;
-  });
+export const TraineesTab = ({ trainees, onChatClick }: TraineesTabProps) => {
+  const { t } = useI18n();
+  const [showAssignDialog, setShowAssignDialog] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [selectedTrainee, setSelectedTrainee] = useState<any>(null);
+  const { data: unreadCounts = {} } = useUnreadMessagesByTrainee();
 
+  console.log('TraineesTab render - trainees:', trainees?.length || 0, 'viewMode:', viewMode, 'Raw trainees data:', trainees);
+
+  const handleChatClick = (trainee: any) => {
+    console.log('Chat clicked for trainee:', trainee.trainee_id, 'Full trainee object:', trainee);
+    
+    // Validate trainee data before proceeding
+    if (!trainee.trainee_id && !trainee.id) {
+      console.error('Missing trainee ID:', trainee);
+      toast.error('Error: Missing trainee ID. Please refresh and try again.');
+      return;
+    }
+
+    // Use trainee_id or fallback to id
+    const traineeId = trainee.trainee_id || trainee.id;
+    setSelectedTrainee({ ...trainee, trainee_id: traineeId });
+    setViewMode('chat');
+    onChatClick(traineeId);
+  };
+
+  const handleProgressClick = (trainee: any) => {
+    console.log('Progress clicked for trainee:', trainee.trainee_id);
+    
+    // Validate trainee data before proceeding
+    if (!trainee.trainee_id && !trainee.id) {
+      console.error('Missing trainee ID:', trainee);
+      toast.error('Error: Missing trainee ID. Please refresh and try again.');
+      return;
+    }
+
+    // Use trainee_id or fallback to id
+    const traineeId = trainee.trainee_id || trainee.id;
+    setSelectedTrainee({ ...trainee, trainee_id: traineeId });
+    setViewMode('progress');
+  };
+
+  const handleBackToList = () => {
+    console.log('Back to list clicked');
+    setViewMode('list');
+    setSelectedTrainee(null);
+  };
+
+  // Show chat view
+  if (viewMode === 'chat' && selectedTrainee) {
+    return (
+      <CoachTraineeChat
+        traineeId={selectedTrainee.trainee_id}
+        traineeName={`${selectedTrainee.trainee_profile?.first_name || 'Unknown'} ${selectedTrainee.trainee_profile?.last_name || 'User'}`}
+        onBack={handleBackToList}
+      />
+    );
+  }
+
+  // Show progress view
+  if (viewMode === 'progress' && selectedTrainee) {
+    return (
+      <TraineeProgressView
+        traineeId={selectedTrainee.trainee_id}
+        traineeName={`${selectedTrainee.trainee_profile?.first_name || 'Unknown'} ${selectedTrainee.trainee_profile?.last_name || 'User'}`}
+        traineeProfile={selectedTrainee.trainee_profile}
+        onBack={handleBackToList}
+      />
+    );
+  }
+
+  // Show main trainees list
   return (
-    <div className="space-y-6">
-      {/* Search and Filter */}
-      <div className={`flex flex-col sm:flex-row gap-4 ${isRTL ? 'sm:flex-row-reverse' : ''}`}>
-        <div className={`relative flex-1 ${isRTL ? 'text-right' : 'text-left'}`}>
-          <Search className={`absolute top-3 w-4 h-4 text-gray-400 ${isRTL ? 'right-3' : 'left-3'}`} />
-          <Input
-            placeholder={t('coach:searchTrainees') || 'Search trainees...'}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className={`${isRTL ? 'pr-10 text-right' : 'pl-10'}`}
-          />
-        </div>
-        
-        <div className={`flex gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-          <Button
-            variant={filterStatus === 'all' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setFilterStatus('all')}
-          >
-            {t('coach:all') || 'All'}
-          </Button>
-          <Button
-            variant={filterStatus === 'active' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setFilterStatus('active')}
-          >
-            {t('coach:active') || 'Active'}
-          </Button>
-          <Button
-            variant={filterStatus === 'inactive' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setFilterStatus('inactive')}
-          >
-            {t('coach:inactive') || 'Inactive'}
-          </Button>
-        </div>
-      </div>
+    <>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              {t("Trainees")} {t("Management")}
+            </CardTitle>
+            <Button onClick={() => setShowAssignDialog(true)}>
+              <UserPlus className="h-4 w-4 mr-2" />
+              Add Trainee
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {trainees && trainees.length > 0 ? (
+            <div className="space-y-4">
+              {trainees.map((trainee: any) => {
+                console.log('Rendering trainee:', trainee.id, 'trainee_id:', trainee.trainee_id, 'profile:', trainee.trainee_profile);
+                
+                // More robust ID handling
+                const traineeId = trainee.trainee_id || trainee.id;
+                const hasValidId = Boolean(traineeId);
+                const profile = trainee.trainee_profile || {};
+                const unreadCount = unreadCounts[traineeId] || 0;
+                
+                if (!hasValidId) {
+                  console.warn('Skipping trainee with no valid ID:', trainee);
+                  return (
+                    <div key={trainee.id || Math.random()} className="flex items-center justify-between p-4 border rounded-lg bg-red-50 border-red-200">
+                      <div className="flex items-center gap-2">
+                        <AlertCircle className="h-4 w-4 text-red-500" />
+                        <span className="text-red-700">Invalid trainee data - missing ID</span>
+                      </div>
+                    </div>
+                  );
+                }
 
-      {/* Trainees Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredTrainees.map((trainee) => (
-          <Card key={trainee.id} className="p-6 hover:shadow-lg transition-shadow">
-            <div className={`flex items-center gap-4 mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                <User className="w-6 h-6 text-white" />
-              </div>
-              <div className={`flex-1 ${isRTL ? 'text-right' : 'text-left'}`}>
-                <h3 className="font-semibold text-gray-900">
-                  {trainee.trainee_profile?.full_name || 'Unknown User'}
-                </h3>
-                <Badge 
-                  variant={trainee.status === 'active' ? 'default' : 'secondary'}
-                  className="mt-1"
-                >
-                  {trainee.status}
-                </Badge>
-              </div>
+                return (
+                  <div key={trainee.id || traineeId} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                    <div>
+                      <h3 className="font-semibold">
+                        {profile.first_name || 'Unknown'} {profile.last_name || 'User'}
+                      </h3>
+                      <p className="text-sm text-gray-600">{profile.email || 'No email available'}</p>
+                      <Badge variant="outline" className="mt-1">
+                        {profile.fitness_goal || t("General Fitness")}
+                      </Badge>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleChatClick(trainee)}
+                        className="relative"
+                      >
+                        <MessageCircle className="h-4 w-4 mr-1" />
+                        {t("Chat")}
+                        {unreadCount > 0 && (
+                          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                            {unreadCount > 9 ? '9+' : unreadCount}
+                          </span>
+                        )}
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleProgressClick(trainee)}
+                      >
+                        <Target className="h-4 w-4 mr-1" />
+                        {t("Progress")}
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-
-            <div className="space-y-3 mb-4">
-              <div className={`flex items-center gap-2 text-sm text-gray-600 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                <Calendar className="w-4 h-4" />
-                <span>{t('coach:joined') || 'Joined'}: {new Date(trainee.created_at).toLocaleDateString()}</span>
-              </div>
-              <div className={`flex items-center gap-2 text-sm text-gray-600 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                <TrendingUp className="w-4 h-4" />
-                <span>{t('coach:progress') || 'Progress'}: 75%</span>
-              </div>
-            </div>
-
-            <div className={`flex gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex-1"
-                onClick={() => setSelectedClient(trainee.trainee_id)}
-              >
-                <MessageCircle className={`w-4 h-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
-                {t('coach:chat') || 'Chat'}
+          ) : (
+            <div className="text-center py-12">
+              <Users className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">No clients yet</h3>
+              <p className="text-gray-600 mb-6">
+                Start building your client base by adding your first trainee.
+              </p>
+              <Button onClick={() => setShowAssignDialog(true)}>
+                <UserPlus className="h-4 w-4 mr-2" />
+                Add Your First Trainee
               </Button>
-              <Button
-                variant="default"
-                size="sm"
-                className="flex-1"
-              >
-                {t('coach:viewProfile') || 'View Profile'}
-              </Button>
             </div>
-          </Card>
-        ))}
-      </div>
+          )}
+        </CardContent>
+      </Card>
 
-      {filteredTrainees.length === 0 && (
-        <div className="text-center py-12">
-          <User className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            {t('coach:noTraineesFound') || 'No trainees found'}
-          </h3>
-          <p className="text-gray-600">
-            {searchTerm ? 
-              (t('coach:noMatchingTrainees') || 'No trainees match your search criteria') :
-              (t('coach:noTraineesYet') || 'You haven\'t been assigned any trainees yet')
-            }
-          </p>
-        </div>
-      )}
-    </div>
+      <AssignTraineeDialog 
+        open={showAssignDialog}
+        onOpenChange={setShowAssignDialog}
+      />
+    </>
   );
 };

@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface QuantitySelectorProps {
   quantity: number;
@@ -22,13 +22,13 @@ const QuantitySelector = ({
   notes,
   onNotesChange
 }: QuantitySelectorProps) => {
-  const { t, isRTL } = useI18n();
+  const { t, isRTL } = useLanguage();
 
   const mealTypes = [
-    { value: 'breakfast', label: t('mealPlan:breakfast') },
-    { value: 'lunch', label: t('mealPlan:lunch') },
-    { value: 'dinner', label: t('mealPlan:dinner') },
-    { value: 'snack', label: t('mealPlan:snack') }
+    { value: 'breakfast', label: t('Breakfast') },
+    { value: 'lunch', label: t('Lunch') },
+    { value: 'dinner', label: t('Dinner') },
+    { value: 'snack', label: t('Snack') }
   ];
 
   return (
@@ -36,7 +36,7 @@ const QuantitySelector = ({
       {/* Quantity */}
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="quantity">{t('common:quantity')} ({t('common:grams')})</Label>
+          <Label htmlFor="quantity">{t('Quantity')} ({t('grams')})</Label>
           <Input
             id="quantity"
             type="number"
@@ -49,7 +49,7 @@ const QuantitySelector = ({
 
         {/* Meal Type */}
         <div className="space-y-2">
-          <Label htmlFor="mealType">{t('mealPlan:mealType')}</Label>
+          <Label htmlFor="mealType">{t('Meal Type')}</Label>
           <Select value={mealType} onValueChange={onMealTypeChange}>
             <SelectTrigger>
               <SelectValue />
@@ -67,12 +67,12 @@ const QuantitySelector = ({
 
       {/* Notes */}
       <div className="space-y-2">
-        <Label htmlFor="notes">{t('common:notes')} ({t('common:optional')})</Label>
+        <Label htmlFor="notes">{t('Notes')} ({t('optional')})</Label>
         <Textarea
           id="notes"
           value={notes}
           onChange={(e) => onNotesChange(e.target.value)}
-          placeholder={t('mealPlan:addNotesAboutFood')}
+          placeholder={t('Add any notes about this food...')}
           rows={2}
         />
       </div>

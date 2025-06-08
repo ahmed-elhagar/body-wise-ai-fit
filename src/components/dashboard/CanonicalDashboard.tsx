@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
-import DashboardWelcomeHeader from "@/components/dashboard/DashboardWelcomeHeader";
+import { DashboardWelcomeHeader } from "@/components/dashboard/DashboardWelcomeHeader";
 import EnhancedStatsGrid from "@/components/dashboard/EnhancedStatsGrid";
 import InteractiveProgressChart from "@/components/dashboard/InteractiveProgressChart";
 import WeightTrackingWidget from "@/components/dashboard/WeightTrackingWidget";
@@ -11,7 +11,6 @@ import CoachChatWidget from "@/components/dashboard/CoachChatWidget";
 import HeaderDropdowns from "@/components/dashboard/HeaderDropdowns";
 import SimpleLoadingIndicator from "@/components/ui/simple-loading-indicator";
 import ProfileCompletionBanner from "@/components/profile/ProfileCompletionBanner";
-import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -131,96 +130,100 @@ const CanonicalDashboard = () => {
             {/* Profile completion banner */}
             <ProfileCompletionBanner />
             
-            {/* Enhanced Header with gradient background */}
-            <DashboardHeader />
+            {/* Enhanced Header with integrated notifications and activity */}
+            <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-700 border-0 shadow-xl rounded-2xl">
+              {/* Background Pattern */}
+              <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
+              <div className="absolute -top-20 -right-20 w-40 h-40 bg-white/5 rounded-full" />
+              <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/5 rounded-full" />
+              
+              <div className="relative p-6 md:p-8">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <DashboardWelcomeHeader 
+                    userName={userName}
+                    onViewMealPlan={handleViewMealPlan}
+                    onViewExercise={handleViewExercise}
+                  />
+                  <HeaderDropdowns />
+                </div>
+              </div>
+            </div>
             
             {/* Enhanced Stats Grid */}
             <EnhancedStatsGrid />
 
             {/* Quick Action Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group bg-gradient-to-br from-green-50 to-emerald-50 border-green-200" onClick={() => navigate('/meal-plan')}>
+              <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group" onClick={() => navigate('/meal-plan')}>
                 <CardContent className="p-4 text-center">
                   <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
                     <Calendar className="w-6 h-6 text-white" />
                   </div>
-                  <h3 className="font-semibold text-green-800 mb-1">Meal Plan</h3>
-                  <p className="text-xs text-green-600">View today's meals</p>
+                  <h3 className="font-semibold text-gray-900 mb-1">Meal Plan</h3>
+                  <p className="text-xs text-gray-600">View today's meals</p>
                 </CardContent>
               </Card>
 
-              <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-200" onClick={() => navigate('/exercise')}>
+              <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group" onClick={() => navigate('/exercise')}>
                 <CardContent className="p-4 text-center">
                   <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
                     <Activity className="w-6 h-6 text-white" />
                   </div>
-                  <h3 className="font-semibold text-blue-800 mb-1">Workouts</h3>
-                  <p className="text-xs text-blue-600">Start exercising</p>
+                  <h3 className="font-semibold text-gray-900 mb-1">Workouts</h3>
+                  <p className="text-xs text-gray-600">Start exercising</p>
                 </CardContent>
               </Card>
 
-              <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group bg-gradient-to-br from-purple-50 to-violet-50 border-purple-200" onClick={() => navigate('/goals')}>
+              <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group" onClick={() => navigate('/goals')}>
                 <CardContent className="p-4 text-center">
                   <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-violet-600 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
                     <Target className="w-6 h-6 text-white" />
                   </div>
-                  <h3 className="font-semibold text-purple-800 mb-1">Goals</h3>
-                  <p className="text-xs text-purple-600">Track progress</p>
+                  <h3 className="font-semibold text-gray-900 mb-1">Goals</h3>
+                  <p className="text-xs text-gray-600">Track progress</p>
                 </CardContent>
               </Card>
 
-              <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group bg-gradient-to-br from-orange-50 to-red-50 border-orange-200" onClick={() => navigate('/progress')}>
+              <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group" onClick={() => navigate('/progress')}>
                 <CardContent className="p-4 text-center">
                   <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
                     <TrendingUp className="w-6 h-6 text-white" />
                   </div>
-                  <h3 className="font-semibold text-orange-800 mb-1">Progress</h3>
-                  <p className="text-xs text-orange-600">View analytics</p>
+                  <h3 className="font-semibold text-gray-900 mb-1">Progress</h3>
+                  <p className="text-xs text-gray-600">View analytics</p>
                 </CardContent>
               </Card>
             </div>
             
             {/* Progress Chart Section */}
-            <InteractiveProgressChart 
-              title="Weekly Progress"
-              dataKey="value"
-            />
+            <InteractiveProgressChart />
             
             {/* 50-50 Layout for remaining content */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
               {/* Left Column */}
               <div className="space-y-4 md:space-y-6">
-                <GoalProgressWidget 
-                  goals={[
-                    { id: '1', title: 'Lose 5kg', progress: 60, target: 100, current: 60, unit: 'kg' },
-                    { id: '2', title: 'Workout 5x/week', progress: 80, target: 100, current: 4, unit: 'workouts' }
-                  ]}
-                />
+                <GoalProgressWidget />
                 <WeightTrackingWidget />
               </div>
               
               {/* Right Column */}
               <div className="space-y-4 md:space-y-6">
-                <CoachChatWidget 
-                  coaches={[]}
-                  onStartChat={() => navigate('/coach')}
-                  onScheduleCall={() => navigate('/schedule')}
-                />
+                <CoachChatWidget />
                 
                 {/* Recent Activity Card */}
-                <Card className="shadow-lg bg-gradient-to-br from-white to-gray-50/50">
+                <Card className="shadow-lg">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
-                      <Badge variant="secondary" className="text-xs bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+                      <Badge variant="secondary" className="text-xs">
                         <Clock className="w-3 h-3 mr-1" />
                         Today
                       </Badge>
                     </div>
                     
                     <div className="space-y-3">
-                      <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
-                        <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
+                      <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                        <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
                           <Zap className="w-4 h-4 text-white" />
                         </div>
                         <div className="flex-1">
@@ -229,8 +232,8 @@ const CanonicalDashboard = () => {
                         </div>
                       </div>
                       
-                      <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border border-blue-200">
-                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-full flex items-center justify-center">
+                      <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+                        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
                           <Calendar className="w-4 h-4 text-white" />
                         </div>
                         <div className="flex-1">
@@ -239,8 +242,8 @@ const CanonicalDashboard = () => {
                         </div>
                       </div>
                       
-                      <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-purple-50 to-violet-50 rounded-lg border border-purple-200">
-                        <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-violet-600 rounded-full flex items-center justify-center">
+                      <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg">
+                        <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
                           <Award className="w-4 h-4 text-white" />
                         </div>
                         <div className="flex-1">
@@ -250,7 +253,7 @@ const CanonicalDashboard = () => {
                       </div>
                     </div>
                     
-                    <Button variant="ghost" className="w-full mt-4 text-sm hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50" onClick={() => navigate('/progress')}>
+                    <Button variant="ghost" className="w-full mt-4 text-sm" onClick={() => navigate('/progress')}>
                       View All Activity
                       <ChevronRight className="w-4 h-4 ml-1" />
                     </Button>

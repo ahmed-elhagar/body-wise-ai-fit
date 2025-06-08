@@ -1,131 +1,325 @@
 
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, useEffect } from 'react';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { Timer, Play, Pause, CheckCircle, SkipForward } from 'lucide-react';
-import { useI18n } from '@/hooks/useI18n';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { 
+  Plus, 
+  Minus, 
+  CheckCircle,
+  Timer,
+  Target
+} from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Exercise } from '@/types/exercise';
+
+interface SetProgress {
+  completed: boolean;
+  reps: number;
+}
 
 interface ActiveExerciseTrackerProps {
   exercise: Exercise;
-  onComplete: () => void;
-  onNext?: () => void;
-  onPrevious?: () => void;
+  onComplete: (exerciseId: string) => Promise<void>;
+  onProgressUpdate: (exerciseId: string, sets: number, reps: string, notes?: string, weight?: number) => Promise<void>;
+  onDeactivate: () => void;
 }
 
-const ActiveExerciseTracker = ({ 
-  exercise, 
-  onComplete, 
-  onNext, 
-  onPrevious 
+export const ActiveExerciseTracker = ({
+  exercise,
+  onComplete,
+  onProgressUpdate,
+  onDeactivate
 }: ActiveExerciseTrackerProps) => {
-  const { t, isRTL } = useI18n();
-  const [isTimerRunning, setIsTimerRunning] = useState(false);
-  const [timeElapsed, setTimeElapsed] = useState(0);
-  const [currentSet, setCurrentSet] = useState(1);
+  const { t } = useLanguage();
+  const [sets, setSets] = useState<SetProgress[]>([]);
+  const [notes, setNotes] = useState(exercise.notes || '');
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [restTimer, setRestTimer] = useState(0);
+  const [isResting, setIsResting] = useState(false);
 
+  const totalSets = exercise.sets || 3;
+  const defaultReps = parseInt(exercise.reps || '12');
+  const restSeconds = exercise.rest_seconds || 60;
+
+  // Initialize sets from existing data or create new
+  useEffect(() => {
+    const initialSets: SetProgress[] = [];
+    const existingActualSets = exercise.actual_sets || 0;
+    const existingReps = exercise.actual_reps?.split('-').map(r => parseInt(r)) || [];
+
+    for (let i = 0; i < totalSets; i++) {
+      initialSets.push({
+        completed: i < existingActualSets,
+        reps: existingReps[i] || defaultReps
+      });
+    }
+    setSets(initialSets);
+  }, [totalSets, defaultReps, exercise.actual_sets, exercise.actual_reps]);
+
+  // Rest timer effect
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    if (isTimerRunning) {
+    if (isResting && restTimer > 0) {
       interval = setInterval(() => {
-        setTimeElapsed(prev => prev + 1);
+        setRestTimer(prev => {
+          if (prev <= 1) {
+            setIsResting(false);
+            return 0;
+          }
+          return prev - 1;
+        });
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [isTimerRunning]);
+  }, [isResting, restTimer]);
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
+  const handleSetComplete = async (setIndex: number) => {
+    if (isUpdating) return;
 
-  const handleStartTimer = () => {
-    setIsTimerRunning(!isTimerRunning);
-  };
+    const newSets = [...sets];
+    const wasCompleted = newSets[setIndex].completed;
+    newSets[setIndex].completed = !wasCompleted;
+    setSets(newSets);
 
-  const handleNextSet = () => {
-    if (currentSet < (exercise.sets || 1)) {
-      setCurrentSet(prev => prev + 1);
-      setTimeElapsed(0);
-      setIsTimerRunning(false);
+    // Start rest timer if set completed and not the last set
+    if (!wasCompleted && setIndex < totalSets - 1) {
+      setRestTimer(restSeconds);
+      setIsResting(true);
+    }
+
+    // Update progress immediately
+    const completedCount = newSets.filter(set => set.completed).length;
+    const repsString = newSets.map(set => set.reps).join('-');
+
+    console.log('🔄 Updating set progress:', { 
+      setIndex: setIndex + 1, 
+      completedCount, 
+      repsString,
+      exerciseName: exercise.name 
+    });
+
+    try {
+      setIsUpdating(true);
+      await onProgressUpdate(exercise.id, completedCount, repsString, notes);
+      console.log('✅ Set progress updated:', { completedCount, repsString });
+    } catch (error) {
+      console.error('❌ Failed to update set progress:', error);
+      // Revert on error
+      newSets[setIndex].completed = wasCompleted;
+      setSets(newSets);
+    } finally {
+      setIsUpdating(false);
     }
   };
 
-  const totalSets = exercise.sets || 1;
-  const progress = (currentSet / totalSets) * 100;
+  const updateSetReps = async (setIndex: number, change: number) => {
+    const newSets = [...sets];
+    const oldReps = newSets[setIndex].reps;
+    newSets[setIndex].reps = Math.max(1, newSets[setIndex].reps + change);
+    setSets(newSets);
+
+    // Update reps string immediately
+    const completedCount = newSets.filter(set => set.completed).length;
+    const repsString = newSets.map(set => set.reps).join('-');
+
+    console.log('🔢 Updating reps:', { 
+      setIndex: setIndex + 1, 
+      oldReps, 
+      newReps: newSets[setIndex].reps,
+      repsString 
+    });
+
+    try {
+      await onProgressUpdate(exercise.id, completedCount, repsString, notes);
+    } catch (error) {
+      console.error('❌ Failed to update reps:', error);
+      // Revert on error
+      newSets[setIndex].reps = oldReps;
+      setSets(newSets);
+    }
+  };
+
+  const handleCompleteExercise = async () => {
+    if (isUpdating) return;
+    
+    try {
+      setIsUpdating(true);
+      
+      console.log('🏁 Completing entire exercise:', exercise.name);
+      
+      // First ensure all sets are marked complete
+      const allSetsCompleted = sets.map(set => ({ ...set, completed: true }));
+      const repsString = allSetsCompleted.map(set => set.reps).join('-');
+      
+      await onProgressUpdate(exercise.id, totalSets, repsString, notes);
+      await onComplete(exercise.id);
+      
+      console.log('✅ Exercise fully completed:', exercise.name);
+    } catch (error) {
+      console.error('❌ Error completing exercise:', error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const completedSets = sets.filter(set => set.completed).length;
+  const progressPercentage = (completedSets / totalSets) * 100;
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   return (
-    <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-      <CardHeader>
-        <CardTitle className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-          <Timer className="w-5 h-5 text-blue-600" />
-          {t('exercise:activeExercise') || 'Active Exercise'}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="text-center">
-          <h3 className="text-xl font-bold text-gray-900 mb-2">{exercise.name}</h3>
-          <p className="text-gray-600">
-            {t('exercise:set')} {currentSet} {t('common:of')} {totalSets}
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          <div className={`flex justify-between text-sm ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <span>{t('exercise:progress')}</span>
-            <span>{currentSet}/{totalSets}</span>
+    <Card className="p-4 ring-2 ring-blue-500 bg-blue-50">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h3 className="font-semibold text-gray-900">{exercise.name}</h3>
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <Target className="w-4 h-4" />
+            <span>{totalSets} {t('sets')} × {exercise.reps} {t('reps')}</span>
+            <Badge variant="outline">{completedSets}/{totalSets}</Badge>
           </div>
-          <Progress value={progress} className="h-3" />
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onDeactivate}
+          disabled={isUpdating}
+        >
+          {t('Minimize')}
+        </Button>
+      </div>
 
-        <div className="text-center">
-          <div className="text-3xl font-bold text-blue-600 mb-2">
-            {formatTime(timeElapsed)}
+      {/* Progress */}
+      <div className="mb-4">
+        <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+          <div 
+            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+            style={{ width: `${progressPercentage}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Rest Timer */}
+      {isResting && (
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Timer className="w-4 h-4 text-orange-600" />
+              <span className="text-sm font-medium text-orange-800">{t('Rest Time')}</span>
+            </div>
+            <div className="text-lg font-bold text-orange-800">
+              {formatTime(restTimer)}
+            </div>
           </div>
-          <p className="text-sm text-gray-600">
-            {exercise.reps} {t('exercise:reps')} • {exercise.rest_seconds || 60}s {t('exercise:rest')}
-          </p>
-        </div>
-
-        <div className={`flex gap-3 justify-center ${isRTL ? 'flex-row-reverse' : ''}`}>
           <Button
-            variant="outline"
-            onClick={handleStartTimer}
-            className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setIsResting(false);
+              setRestTimer(0);
+            }}
+            className="w-full mt-2 text-orange-600 hover:bg-orange-100"
           >
-            {isTimerRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-            {isTimerRunning ? t('exercise:pause') : t('exercise:start')}
+            {t('Skip Rest')}
           </Button>
-
-          {currentSet < totalSets ? (
-            <Button
-              onClick={handleNextSet}
-              className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}
-            >
-              <SkipForward className="w-4 h-4" />
-              {t('exercise:nextSet')}
-            </Button>
-          ) : (
-            <Button
-              onClick={onComplete}
-              className={`bg-green-600 hover:bg-green-700 flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}
-            >
-              <CheckCircle className="w-4 h-4" />
-              {t('exercise:complete')}
-            </Button>
-          )}
         </div>
+      )}
 
-        {exercise.instructions && (
-          <div className="p-3 bg-white rounded-lg border">
-            <p className="text-sm text-gray-700">{exercise.instructions}</p>
+      {/* Sets Grid */}
+      <div className="space-y-2 mb-4">
+        {sets.map((set, index) => (
+          <div 
+            key={index}
+            className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${
+              set.completed 
+                ? 'bg-green-50 border-green-200' 
+                : 'bg-white border-gray-200'
+            }`}
+          >
+            <Button
+              variant={set.completed ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleSetComplete(index)}
+              disabled={isUpdating}
+              className={`w-10 h-10 p-0 ${
+                set.completed ? 'bg-green-600 hover:bg-green-700' : ''
+              }`}
+            >
+              {set.completed ? (
+                <CheckCircle className="w-4 h-4" />
+              ) : (
+                <span className="text-sm font-medium">{index + 1}</span>
+              )}
+            </Button>
+            
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-7 h-7 p-0"
+                onClick={() => updateSetReps(index, -1)}
+                disabled={isUpdating}
+              >
+                <Minus className="w-3 h-3" />
+              </Button>
+              <span className="w-8 text-center text-sm font-medium">
+                {set.reps}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-7 h-7 p-0"
+                onClick={() => updateSetReps(index, 1)}
+                disabled={isUpdating}
+              >
+                <Plus className="w-3 h-3" />
+              </Button>
+              <span className="text-xs text-gray-500 ml-1">{t('reps')}</span>
+            </div>
+
+            {set.completed && (
+              <Badge className="ml-auto bg-green-600 text-xs">
+                ✓ {t('Done')}
+              </Badge>
+            )}
           </div>
+        ))}
+      </div>
+
+      {/* Notes */}
+      <div className="mb-4">
+        <Input
+          placeholder={t('Add notes about this exercise...')}
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          className="text-sm"
+          disabled={isUpdating}
+        />
+      </div>
+
+      {/* Complete Exercise Button */}
+      <Button
+        onClick={handleCompleteExercise}
+        disabled={isUpdating}
+        className="w-full bg-green-600 hover:bg-green-700 text-white"
+      >
+        {isUpdating ? (
+          <>
+            <Timer className="w-4 h-4 mr-2 animate-spin" />
+            {t('Updating...')}
+          </>
+        ) : (
+          <>
+            <CheckCircle className="w-4 h-4 mr-2" />
+            {t('Complete Exercise')}
+          </>
         )}
-      </CardContent>
+      </Button>
     </Card>
   );
 };
-
-export default ActiveExerciseTracker;

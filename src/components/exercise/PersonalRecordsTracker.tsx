@@ -1,200 +1,210 @@
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, useEffect } from 'react';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { 
   Trophy, 
   TrendingUp, 
-  Calendar,
-  Dumbbell,
-  Timer,
+  Calendar, 
   Target,
-  Plus,
-  Star
+  Award,
+  Zap,
+  ChevronRight
 } from 'lucide-react';
-import { useI18n } from '@/hooks/useI18n';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { Exercise } from '@/types/exercise';
 
 interface PersonalRecord {
   id: string;
+  exerciseId: string;
   exerciseName: string;
-  recordType: 'weight' | 'reps' | 'time' | 'distance';
+  recordType: 'max_weight' | 'max_reps' | 'best_time' | 'total_volume';
   value: number;
   unit: string;
-  achievedDate: Date;
+  achievedAt: Date;
   previousRecord?: number;
   improvement?: number;
 }
 
 interface PersonalRecordsTrackerProps {
-  records: PersonalRecord[];
-  onAddRecord: () => void;
+  exercises: Exercise[];
+  onViewDetails: (recordId: string) => void;
 }
 
-const PersonalRecordsTracker = ({ 
-  records, 
-  onAddRecord 
-}: PersonalRecordsTrackerProps) => {
-  const { t, isRTL } = useI18n();
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+export const PersonalRecordsTracker = ({ exercises, onViewDetails }: PersonalRecordsTrackerProps) => {
+  const { t } = useLanguage();
+  const [personalRecords, setPersonalRecords] = useState<PersonalRecord[]>([]);
+  const [recentAchievements, setRecentAchievements] = useState<PersonalRecord[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const categories = [
-    { id: 'all', name: t('exercise:all') || 'All', icon: Star },
-    { id: 'weight', name: t('exercise:weight') || 'Weight', icon: Dumbbell },
-    { id: 'reps', name: t('exercise:reps') || 'Reps', icon: Target },
-    { id: 'time', name: t('exercise:time') || 'Time', icon: Timer },
-    { id: 'distance', name: t('exercise:distance') || 'Distance', icon: TrendingUp }
-  ];
+  useEffect(() => {
+    // Mock data - in real app, fetch from Supabase
+    const mockRecords: PersonalRecord[] = [
+      {
+        id: '1',
+        exerciseId: 'ex1',
+        exerciseName: 'Push-ups',
+        recordType: 'max_reps',
+        value: 25,
+        unit: 'reps',
+        achievedAt: new Date('2024-01-15'),
+        previousRecord: 20,
+        improvement: 25
+      },
+      {
+        id: '2',
+        exerciseId: 'ex2',
+        exerciseName: 'Squats',
+        recordType: 'max_weight',
+        value: 80,
+        unit: 'kg',
+        achievedAt: new Date('2024-01-10'),
+        previousRecord: 75,
+        improvement: 6.7
+      },
+      {
+        id: '3',
+        exerciseId: 'ex3',
+        exerciseName: 'Plank',
+        recordType: 'best_time',
+        value: 120,
+        unit: 'seconds',
+        achievedAt: new Date('2024-01-12'),
+        previousRecord: 90,
+        improvement: 33.3
+      }
+    ];
 
-  const filteredRecords = selectedCategory === 'all' 
-    ? records 
-    : records.filter(record => record.recordType === selectedCategory);
+    setPersonalRecords(mockRecords);
+    setRecentAchievements(mockRecords.slice(0, 2));
+    setIsLoading(false);
+  }, [exercises]);
 
-  const getRecordIcon = (type: string) => {
-    switch (type) {
-      case 'weight': return Dumbbell;
-      case 'reps': return Target;
-      case 'time': return Timer;
-      case 'distance': return TrendingUp;
-      default: return Trophy;
+  const getRecordIcon = (recordType: string) => {
+    switch (recordType) {
+      case 'max_weight': return <Trophy className="w-4 h-4 text-yellow-600" />;
+      case 'max_reps': return <Target className="w-4 h-4 text-blue-600" />;
+      case 'best_time': return <Zap className="w-4 h-4 text-green-600" />;
+      case 'total_volume': return <TrendingUp className="w-4 h-4 text-purple-600" />;
+      default: return <Award className="w-4 h-4 text-gray-600" />;
     }
   };
 
-  const recentRecords = records
-    .sort((a, b) => b.achievedDate.getTime() - a.achievedDate.getTime())
-    .slice(0, 3);
+  const formatRecordValue = (record: PersonalRecord) => {
+    if (record.recordType === 'best_time') {
+      const minutes = Math.floor(record.value / 60);
+      const seconds = record.value % 60;
+      return minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+    }
+    return `${record.value} ${record.unit}`;
+  };
+
+  if (isLoading) {
+    return (
+      <Card className="p-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-6 bg-gray-200 rounded w-1/3"></div>
+          <div className="space-y-2">
+            <div className="h-4 bg-gray-200 rounded"></div>
+            <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+          </div>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <Card>
-        <CardHeader>
-          <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <CardTitle className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <Trophy className="w-5 h-5 text-yellow-500" />
-              {t('exercise:personalRecords') || 'Personal Records'}
-            </CardTitle>
-            <Button onClick={onAddRecord} size="sm">
-              <Plus className="w-4 h-4 mr-2" />
-              {t('exercise:addRecord') || 'Add Record'}
-            </Button>
+      {/* Recent Achievements */}
+      {recentAchievements.length > 0 && (
+        <Card className="p-6 bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-200">
+          <div className="flex items-center gap-2 mb-4">
+            <Trophy className="w-5 h-5 text-yellow-600" />
+            <h3 className="text-lg font-bold text-gray-900">{t('Recent Achievements')}</h3>
           </div>
-        </CardHeader>
-        <CardContent>
-          <div className={`flex flex-wrap gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            {categories.map((category) => {
-              const Icon = category.icon;
-              return (
-                <Button
-                  key={category.id}
-                  variant={selectedCategory === category.id ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedCategory(category.id)}
-                  className="h-8"
-                >
-                  <Icon className="w-3 h-3 mr-1" />
-                  {category.name}
-                </Button>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Recent Records Highlight */}
-      {recentRecords.length > 0 && (
-        <Card className="bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-200">
-          <CardHeader>
-            <CardTitle className={`flex items-center gap-2 text-lg ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <Star className="w-5 h-5 text-yellow-500" />
-              {t('exercise:recentAchievements') || 'Recent Achievements'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {recentRecords.map((record) => {
-                const Icon = getRecordIcon(record.recordType);
-                return (
-                  <div key={record.id} className="bg-white p-4 rounded-lg shadow-sm">
-                    <div className={`flex items-center gap-2 mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                      <Icon className="w-4 h-4 text-yellow-600" />
-                      <span className="font-medium text-sm">{record.exerciseName}</span>
+          <div className="space-y-3">
+            {recentAchievements.map((record) => (
+              <div key={record.id} className="flex items-center justify-between p-3 bg-white rounded-lg border">
+                <div className="flex items-center gap-3">
+                  {getRecordIcon(record.recordType)}
+                  <div>
+                    <div className="font-medium text-gray-900">{record.exerciseName}</div>
+                    <div className="text-sm text-gray-600">
+                      {t('New')} {t(record.recordType.replace('_', ' '))}: {formatRecordValue(record)}
                     </div>
-                    <div className="text-xl font-bold text-gray-900">
-                      {record.value} {record.unit}
-                    </div>
-                    {record.improvement && (
-                      <div className={`flex items-center gap-1 text-xs text-green-600 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                        <TrendingUp className="w-3 h-3" />
-                        +{record.improvement}%
-                      </div>
-                    )}
                   </div>
-                );
-              })}
-            </div>
-          </CardContent>
+                </div>
+                <div className="text-right">
+                  <Badge variant="default" className="bg-green-600">
+                    +{record.improvement?.toFixed(1)}%
+                  </Badge>
+                  <div className="text-xs text-gray-500 mt-1">
+                    {record.achievedAt.toLocaleDateString()}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </Card>
       )}
 
-      {/* All Records */}
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            {t('exercise:allRecords') || 'All Records'} ({filteredRecords.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {filteredRecords.length === 0 ? (
-            <div className="text-center py-8">
-              <Trophy className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500 mb-4">
-                {t('exercise:noRecordsYet') || 'No personal records yet'}
-              </p>
-              <Button onClick={onAddRecord} variant="outline">
-                <Plus className="w-4 h-4 mr-2" />
-                {t('exercise:addFirstRecord') || 'Add Your First Record'}
-              </Button>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {filteredRecords.map((record) => {
-                const Icon = getRecordIcon(record.recordType);
-                return (
-                  <div key={record.id} className="p-4 border border-gray-200 rounded-lg">
-                    <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-                      <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                        <Icon className="w-5 h-5 text-gray-600" />
-                        <div>
-                          <h4 className="font-medium">{record.exerciseName}</h4>
-                          <div className={`flex items-center gap-2 text-sm text-gray-500 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                            <Calendar className="w-3 h-3" />
-                            <span>{record.achievedDate.toLocaleDateString()}</span>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className={`text-right ${isRTL ? 'text-left' : ''}`}>
-                        <div className="text-lg font-bold">
-                          {record.value} {record.unit}
-                        </div>
-                        {record.improvement && (
-                          <Badge variant="outline" className="bg-green-50 text-green-700">
-                            <TrendingUp className="w-3 h-3 mr-1" />
-                            +{record.improvement}%
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
+      {/* All Personal Records */}
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2">
+            <Award className="w-5 h-5 text-blue-600" />
+            <h3 className="text-lg font-bold text-gray-900">{t('Personal Records')}</h3>
+          </div>
+          <Badge variant="outline">
+            {personalRecords.length} {t('records')}
+          </Badge>
+        </div>
+
+        <div className="space-y-3">
+          {personalRecords.map((record) => (
+            <div 
+              key={record.id}
+              className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+              onClick={() => onViewDetails(record.id)}
+            >
+              <div className="flex items-center gap-3">
+                {getRecordIcon(record.recordType)}
+                <div>
+                  <div className="font-medium text-gray-900">{record.exerciseName}</div>
+                  <div className="text-sm text-gray-600">
+                    {t(record.recordType.replace('_', ' '))}
                   </div>
-                );
-              })}
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <div className="text-right">
+                  <div className="font-bold text-lg text-gray-900">
+                    {formatRecordValue(record)}
+                  </div>
+                  <div className="text-xs text-gray-500 flex items-center gap-1">
+                    <Calendar className="w-3 h-3" />
+                    {record.achievedAt.toLocaleDateString()}
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-gray-400" />
+              </div>
             </div>
-          )}
-        </CardContent>
+          ))}
+        </div>
+
+        {personalRecords.length === 0 && (
+          <div className="text-center py-8">
+            <Trophy className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+            <h4 className="font-medium text-gray-900 mb-2">{t('No Personal Records Yet')}</h4>
+            <p className="text-gray-600 text-sm">
+              {t('Complete exercises to start tracking your personal bests!')}
+            </p>
+          </div>
+        )}
       </Card>
     </div>
   );
 };
-
-export default PersonalRecordsTracker;

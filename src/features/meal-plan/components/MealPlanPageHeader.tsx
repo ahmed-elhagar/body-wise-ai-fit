@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Sparkles, Shuffle, UtensilsCrossed, ShoppingCart, Zap } from 'lucide-react';
-import { useI18n } from '@/hooks/useI18n';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useCentralizedCredits } from '@/hooks/useCentralizedCredits';
 
 interface MealPlanPageHeaderProps {
@@ -24,7 +24,7 @@ export const MealPlanPageHeader = ({
   isShuffling,
   hasWeeklyPlan
 }: MealPlanPageHeaderProps) => {
-  const { t, isRTL } = useI18n();
+  const { t, isRTL } = useLanguage();
   const { remaining: userCredits, isPro, hasCredits } = useCentralizedCredits();
 
   const displayCredits = isPro ? 'Unlimited' : `${userCredits} credits`;

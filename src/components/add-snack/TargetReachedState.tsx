@@ -1,7 +1,7 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Trophy, Target } from "lucide-react";
 
 interface TargetReachedStateProps {
@@ -9,7 +9,7 @@ interface TargetReachedStateProps {
 }
 
 const TargetReachedState = ({ onClose }: TargetReachedStateProps) => {
-  const { t, isRTL } = useI18n();
+  const { t, isRTL } = useLanguage();
 
   return (
     <Card className="p-6 bg-gradient-to-br from-yellow-50 to-orange-100 border-yellow-200 text-center">
@@ -19,15 +19,15 @@ const TargetReachedState = ({ onClose }: TargetReachedStateProps) => {
       
       <div className="space-y-3">
         <h3 className="text-lg font-bold text-yellow-800">
-          {t('mealPlan:addSnack.targetReached')}
+          {t('mealPlan.addSnack.targetReached')}
         </h3>
         <p className="text-sm text-yellow-700">
-          {t('mealPlan:addSnack.targetReachedDesc')}
+          {t('mealPlan.addSnack.targetReachedDesc')}
         </p>
         
         <div className={`flex items-center justify-center gap-2 text-sm text-yellow-600 ${isRTL ? 'flex-row-reverse' : ''}`}>
           <Target className="w-4 h-4" />
-          <span>{t('mealPlan:addSnack.notEnoughCalories')}</span>
+          <span>{t('mealPlan.addSnack.notEnoughCalories')}</span>
         </div>
       </div>
 
@@ -35,7 +35,7 @@ const TargetReachedState = ({ onClose }: TargetReachedStateProps) => {
         onClick={onClose}
         className="mt-4 bg-yellow-600 hover:bg-yellow-700 text-white"
       >
-        {t('common:cancel')}
+        {t('mealPlan.addSnack.cancel')}
       </Button>
     </Card>
   );

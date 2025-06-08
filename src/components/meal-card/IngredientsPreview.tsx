@@ -1,13 +1,13 @@
 
 import { Badge } from "@/components/ui/badge";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface IngredientsPreviewProps {
   ingredients: any[];
 }
 
 const IngredientsPreview = ({ ingredients }: IngredientsPreviewProps) => {
-  const { t, isRTL } = useI18n();
+  const { t, isRTL } = useLanguage();
 
   if (!ingredients || ingredients.length === 0) {
     return null;
@@ -22,7 +22,7 @@ const IngredientsPreview = ({ ingredients }: IngredientsPreviewProps) => {
       ))}
       {ingredients.length > 2 && (
         <Badge variant="outline" className="text-xs bg-fitness-primary/10 text-fitness-primary">
-          +{ingredients.length - 2} {t('common:more') || 'more'}
+          +{ingredients.length - 2} {t('more')}
         </Badge>
       )}
     </div>

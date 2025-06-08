@@ -1,7 +1,7 @@
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { User, Target, Settings, Eye, Heart } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ProfileTabNavigationProps {
   activeTab: string;
@@ -9,7 +9,7 @@ interface ProfileTabNavigationProps {
 }
 
 const ProfileTabNavigation = ({ activeTab, onTabChange }: ProfileTabNavigationProps) => {
-  const { t, isRTL } = useI18n();
+  const { t, isRTL } = useLanguage();
   
   const tabs = [
     { value: "overview", icon: Eye, label: t('profile.overview') },

@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, RotateCcw, Home, Building2, Coins } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useCentralizedCredits } from "@/hooks/useCentralizedCredits";
 
 interface EnhancedExerciseHeaderProps {
@@ -21,7 +21,7 @@ export const EnhancedExerciseHeader = ({
   isGenerating,
   workoutType
 }: EnhancedExerciseHeaderProps) => {
-  const { t } = useI18n();
+  const { t } = useLanguage();
   const { remaining: userCredits, isPro, hasCredits } = useCentralizedCredits();
 
   const displayCredits = isPro ? 'Unlimited' : `${userCredits} credits`;

@@ -1,207 +1,356 @@
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Plus, X } from 'lucide-react';
-import { useI18n } from '@/hooks/useI18n';
+import { Card } from '@/components/ui/card';
+import { 
+  Plus, 
+  X, 
+  Dumbbell,
+  Clock,
+  Target,
+  Activity
+} from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface CustomExerciseDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  workoutType: 'home' | 'gym';
-  onExerciseAdded: (exercise: any) => void;
+  dailyWorkoutId?: string;
+  onExerciseCreated?: () => void;
 }
 
-const CustomExerciseDialog = ({ 
+interface CustomExerciseForm {
+  name: string;
+  sets: number;
+  reps: string;
+  rest_seconds: number;
+  instructions: string;
+  equipment: string;
+  difficulty: string;
+  muscle_groups: string[];
+  youtube_search_term: string;
+}
+
+const MUSCLE_GROUPS = [
+  'chest', 'back', 'shoulders', 'biceps', 'triceps', 'forearms',
+  'abs', 'obliques', 'lower_back', 'quadriceps', 'hamstrings', 
+  'glutes', 'calves', 'full_body', 'cardio'
+];
+
+const EQUIPMENT_OPTIONS = [
+  'bodyweight', 'dumbbells', 'barbells', 'resistance_bands', 
+  'pull_up_bar', 'bench', 'kettlebells', 'machines', 'cables',
+  'yoga_mat', 'stability_ball', 'medicine_ball'
+];
+
+export const CustomExerciseDialog = ({ 
   open, 
   onOpenChange, 
-  workoutType, 
-  onExerciseAdded 
+  dailyWorkoutId,
+  onExerciseCreated 
 }: CustomExerciseDialogProps) => {
-  const { t, isRTL } = useI18n();
-  const [formData, setFormData] = useState({
+  const { t } = useLanguage();
+  const { user } = useAuth();
+  const [isCreating, setIsCreating] = useState(false);
+  const [form, setForm] = useState<CustomExerciseForm>({
     name: '',
     sets: 3,
     reps: '12',
+    rest_seconds: 60,
     instructions: '',
-    muscle_groups: [] as string[],
-    equipment: '',
-    rest_seconds: 60
+    equipment: 'bodyweight',
+    difficulty: 'medium',
+    muscle_groups: [],
+    youtube_search_term: ''
   });
-  const [newMuscleGroup, setNewMuscleGroup] = useState('');
 
-  const handleAddMuscleGroup = () => {
-    if (newMuscleGroup.trim() && !formData.muscle_groups.includes(newMuscleGroup.trim())) {
-      setFormData(prev => ({
+  const handleAddMuscleGroup = (muscleGroup: string) => {
+    if (!form.muscle_groups.includes(muscleGroup)) {
+      setForm(prev => ({
         ...prev,
-        muscle_groups: [...prev.muscle_groups, newMuscleGroup.trim()]
+        muscle_groups: [...prev.muscle_groups, muscleGroup]
       }));
-      setNewMuscleGroup('');
     }
   };
 
-  const handleRemoveMuscleGroup = (group: string) => {
-    setFormData(prev => ({
+  const handleRemoveMuscleGroup = (muscleGroup: string) => {
+    setForm(prev => ({
       ...prev,
-      muscle_groups: prev.muscle_groups.filter(g => g !== group)
+      muscle_groups: prev.muscle_groups.filter(mg => mg !== muscleGroup)
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.name.trim()) {
-      const customExercise = {
-        id: `custom-${Date.now()}`,
-        ...formData,
-        custom: true,
-        completed: false
-      };
-      onExerciseAdded(customExercise);
-      setFormData({
+    
+    if (!user?.id || !dailyWorkoutId) {
+      toast.error('Missing required information');
+      return;
+    }
+
+    if (!form.name.trim()) {
+      toast.error('Exercise name is required');
+      return;
+    }
+
+    setIsCreating(true);
+    
+    try {
+      // Get the current exercises count to set order_number
+      const { data: existingExercises } = await supabase
+        .from('exercises')
+        .select('order_number')
+        .eq('daily_workout_id', dailyWorkoutId)
+        .order('order_number', { ascending: false })
+        .limit(1);
+
+      const nextOrderNumber = existingExercises && existingExercises.length > 0 
+        ? (existingExercises[0].order_number || 0) + 1 
+        : 1;
+
+      const { error } = await supabase
+        .from('exercises')
+        .insert({
+          daily_workout_id: dailyWorkoutId,
+          name: form.name.trim(),
+          sets: form.sets,
+          reps: form.reps,
+          rest_seconds: form.rest_seconds,
+          instructions: form.instructions.trim() || null,
+          equipment: form.equipment,
+          difficulty: form.difficulty,
+          muscle_groups: form.muscle_groups,
+          youtube_search_term: form.youtube_search_term.trim() || form.name.trim(),
+          order_number: nextOrderNumber,
+          completed: false
+        });
+
+      if (error) {
+        console.error('Error creating custom exercise:', error);
+        throw error;
+      }
+
+      toast.success('Custom exercise created successfully!');
+      
+      // Reset form
+      setForm({
         name: '',
         sets: 3,
         reps: '12',
+        rest_seconds: 60,
         instructions: '',
+        equipment: 'bodyweight',
+        difficulty: 'medium',
         muscle_groups: [],
-        equipment: '',
-        rest_seconds: 60
+        youtube_search_term: ''
       });
+
+      onOpenChange(false);
+      
+      if (onExerciseCreated) {
+        onExerciseCreated();
+      }
+    } catch (error) {
+      console.error('Error creating custom exercise:', error);
+      toast.error('Failed to create custom exercise');
+    } finally {
+      setIsCreating(false);
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            {t('exercise:addCustomExercise') || 'Add Custom Exercise'}
+          <DialogTitle className="flex items-center gap-2">
+            <Plus className="w-5 h-5 text-blue-600" />
+            {t('Create Custom Exercise')}
           </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Basic Information */}
+          <Card className="p-4">
+            <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <Dumbbell className="w-4 h-4 text-blue-600" />
+              {t('Basic Information')}
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="exercise-name">{t('Exercise Name')} *</Label>
+                <Input
+                  id="exercise-name"
+                  value={form.name}
+                  onChange={(e) => setForm(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder={t('Enter exercise name')}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="youtube-search">{t('YouTube Search Term')}</Label>
+                <Input
+                  id="youtube-search"
+                  value={form.youtube_search_term}
+                  onChange={(e) => setForm(prev => ({ ...prev, youtube_search_term: e.target.value }))}
+                  placeholder={t('Optional: custom search term')}
+                />
+              </div>
+            </div>
+          </Card>
+
+          {/* Exercise Parameters */}
+          <Card className="p-4">
+            <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <Target className="w-4 h-4 text-green-600" />
+              {t('Exercise Parameters')}
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="sets">{t('Sets')}</Label>
+                <Input
+                  id="sets"
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={form.sets}
+                  onChange={(e) => setForm(prev => ({ ...prev, sets: parseInt(e.target.value) || 1 }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="reps">{t('Reps')}</Label>
+                <Input
+                  id="reps"
+                  value={form.reps}
+                  onChange={(e) => setForm(prev => ({ ...prev, reps: e.target.value }))}
+                  placeholder="e.g., 12, 8-12, 30s"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="rest">{t('Rest (seconds)')}</Label>
+                <Input
+                  id="rest"
+                  type="number"
+                  min="0"
+                  max="300"
+                  value={form.rest_seconds}
+                  onChange={(e) => setForm(prev => ({ ...prev, rest_seconds: parseInt(e.target.value) || 0 }))}
+                />
+              </div>
+            </div>
+          </Card>
+
+          {/* Configuration */}
+          <Card className="p-4">
+            <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <Activity className="w-4 h-4 text-purple-600" />
+              {t('Configuration')}
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div className="space-y-2">
+                <Label>{t('Equipment')}</Label>
+                <Select 
+                  value={form.equipment} 
+                  onValueChange={(value) => setForm(prev => ({ ...prev, equipment: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {EQUIPMENT_OPTIONS.map(equipment => (
+                      <SelectItem key={equipment} value={equipment}>
+                        {equipment.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>{t('Difficulty')}</Label>
+                <Select 
+                  value={form.difficulty} 
+                  onValueChange={(value) => setForm(prev => ({ ...prev, difficulty: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="beginner">{t('Beginner')}</SelectItem>
+                    <SelectItem value="intermediate">{t('Intermediate')}</SelectItem>
+                    <SelectItem value="advanced">{t('Advanced')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Muscle Groups */}
             <div className="space-y-2">
-              <Label htmlFor="exercise-name">
-                {t('exercise:exerciseName') || 'Exercise Name'}
-              </Label>
-              <Input
-                id="exercise-name"
-                value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                placeholder={t('exercise:enterExerciseName') || 'Enter exercise name'}
-                required
-              />
+              <Label>{t('Target Muscle Groups')}</Label>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {form.muscle_groups.map(mg => (
+                  <Badge key={mg} variant="default" className="flex items-center gap-1">
+                    {mg.replace('_', ' ')}
+                    <X 
+                      className="w-3 h-3 cursor-pointer" 
+                      onClick={() => handleRemoveMuscleGroup(mg)}
+                    />
+                  </Badge>
+                ))}
+              </div>
+              <Select onValueChange={handleAddMuscleGroup}>
+                <SelectTrigger>
+                  <SelectValue placeholder={t('Add muscle group')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {MUSCLE_GROUPS.filter(mg => !form.muscle_groups.includes(mg)).map(mg => (
+                    <SelectItem key={mg} value={mg}>
+                      {mg.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+          </Card>
 
-            <div className="space-y-2">
-              <Label htmlFor="equipment">
-                {t('exercise:equipment') || 'Equipment'}
-              </Label>
-              <Input
-                id="equipment"
-                value={formData.equipment}
-                onChange={(e) => setFormData(prev => ({ ...prev, equipment: e.target.value }))}
-                placeholder={t('exercise:equipmentRequired') || 'Equipment required'}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="sets">
-                {t('exercise:sets') || 'Sets'}
-              </Label>
-              <Input
-                id="sets"
-                type="number"
-                min="1"
-                value={formData.sets}
-                onChange={(e) => setFormData(prev => ({ ...prev, sets: parseInt(e.target.value) || 1 }))}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="reps">
-                {t('exercise:reps') || 'Reps'}
-              </Label>
-              <Input
-                id="reps"
-                value={formData.reps}
-                onChange={(e) => setFormData(prev => ({ ...prev, reps: e.target.value }))}
-                placeholder="e.g., 12 or 8-12"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="rest-time">
-                {t('exercise:restTime') || 'Rest Time (seconds)'}
-              </Label>
-              <Input
-                id="rest-time"
-                type="number"
-                min="0"
-                value={formData.rest_seconds}
-                onChange={(e) => setFormData(prev => ({ ...prev, rest_seconds: parseInt(e.target.value) || 0 }))}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label>{t('exercise:muscleGroups') || 'Muscle Groups'}</Label>
-            <div className={`flex gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <Input
-                value={newMuscleGroup}
-                onChange={(e) => setNewMuscleGroup(e.target.value)}
-                placeholder={t('exercise:addMuscleGroup') || 'Add muscle group'}
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddMuscleGroup())}
-              />
-              <Button type="button" onClick={handleAddMuscleGroup}>
-                <Plus className="w-4 h-4" />
-              </Button>
-            </div>
-            <div className={`flex flex-wrap gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              {formData.muscle_groups.map((group, index) => (
-                <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                  {group}
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveMuscleGroup(group)}
-                    className="ml-1 hover:text-red-600"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </Badge>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="instructions">
-              {t('exercise:instructions') || 'Instructions'}
-            </Label>
+          {/* Instructions */}
+          <Card className="p-4">
+            <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <Clock className="w-4 h-4 text-orange-600" />
+              {t('Instructions')}
+            </h4>
             <Textarea
-              id="instructions"
-              value={formData.instructions}
-              onChange={(e) => setFormData(prev => ({ ...prev, instructions: e.target.value }))}
-              placeholder={t('exercise:exerciseInstructions') || 'Enter exercise instructions...'}
+              value={form.instructions}
+              onChange={(e) => setForm(prev => ({ ...prev, instructions: e.target.value }))}
+              placeholder={t('Enter detailed exercise instructions (optional)')}
               rows={3}
             />
-          </div>
+          </Card>
 
-          <div className={`flex gap-3 justify-end ${isRTL ? 'flex-row-reverse' : ''}`}>
+          {/* Action Buttons */}
+          <div className="flex items-center justify-end gap-3 pt-4 border-t">
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
+              disabled={isCreating}
             >
-              {t('common:cancel') || 'Cancel'}
+              {t('Cancel')}
             </Button>
-            <Button type="submit" disabled={!formData.name.trim()}>
-              {t('exercise:addExercise') || 'Add Exercise'}
+            <Button
+              type="submit"
+              loading={isCreating}
+              className="flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              {isCreating ? t('Creating...') : t('Create Exercise')}
             </Button>
           </div>
         </form>
@@ -209,5 +358,3 @@ const CustomExerciseDialog = ({
     </Dialog>
   );
 };
-
-export default CustomExerciseDialog;

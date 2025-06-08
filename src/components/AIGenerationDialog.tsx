@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Sparkles, Heart, Baby, Moon } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 import { useLifePhaseProfile } from "@/hooks/useLifePhaseProfile";
 import { Badge } from "@/components/ui/badge";
@@ -28,7 +28,7 @@ const AIGenerationDialog = ({
   onGenerate,
   isGenerating
 }: AIGenerationDialogProps) => {
-  const { t, isRTL, language } = useI18n();
+  const { t, isRTL, language } = useLanguage();
   const { flags } = useFeatureFlags();
   const { getNutritionContext } = useLifePhaseProfile();
   
@@ -47,16 +47,16 @@ const AIGenerationDialog = ({
 
   const getLifePhaseLabel = () => {
     if (nutritionContext.pregnancyTrimester) {
-      return `${t('profile:pregnancyTitle')} - ${t('profile:trimester' + nutritionContext.pregnancyTrimester)}`;
+      return `${t('profile.lifePhase.pregnancy.title')} - ${t('profile.lifePhase.pregnancy.trimester' + nutritionContext.pregnancyTrimester)}`;
     }
     if (nutritionContext.breastfeedingLevel) {
-      return `${t('profile:breastfeedingTitle')} - ${t('profile:' + nutritionContext.breastfeedingLevel)}`;
+      return `${t('profile.lifePhase.breastfeeding.title')} - ${t('profile.lifePhase.breastfeeding.' + nutritionContext.breastfeedingLevel)}`;
     }
     if (nutritionContext.isMuslimFasting) {
       return language === 'ar' ? 'الصيام الإسلامي' : 'Muslim Fasting';
     }
     if (nutritionContext.fastingType) {
-      return `${t('profile:fastingTitle')} - ${t('profile:' + nutritionContext.fastingType)}`;
+      return `${t('profile.lifePhase.fasting.title')} - ${t('profile.lifePhase.fasting.' + nutritionContext.fastingType)}`;
     }
     return null;
   };
@@ -67,7 +67,7 @@ const AIGenerationDialog = ({
         <DialogHeader>
           <DialogTitle className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
             <Sparkles className="w-5 h-5 text-blue-600" />
-            {t('mealPlan:generateAIMealPlan')}
+            {t('mealPlan.generateAIMealPlan')}
           </DialogTitle>
         </DialogHeader>
 
@@ -100,28 +100,28 @@ const AIGenerationDialog = ({
 
           <div className="space-y-4">
             <div>
-              <Label htmlFor="cuisine">{t('mealPlan:cuisine')}</Label>
+              <Label htmlFor="cuisine">{t('mealPlan.mealPlanSettings.cuisine')}</Label>
               <Select
                 value={preferences.cuisine || 'mixed'}
                 onValueChange={(value) => handlePreferenceChange('cuisine', value)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder={t('mealPlan:leaveEmptyNationality')} />
+                  <SelectValue placeholder={t('mealPlan.leaveEmptyNationality')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="mixed">{t('mealPlan:mixed')}</SelectItem>
-                  <SelectItem value="mediterranean">{t('mealPlan:mediterranean')}</SelectItem>
-                  <SelectItem value="asian">{t('mealPlan:asian')}</SelectItem>
-                  <SelectItem value="mexican">{t('mealPlan:mexican')}</SelectItem>
-                  <SelectItem value="italian">{t('mealPlan:italian')}</SelectItem>
-                  <SelectItem value="indian">{t('mealPlan:indian')}</SelectItem>
-                  <SelectItem value="middleEastern">{t('mealPlan:middleEastern')}</SelectItem>
+                  <SelectItem value="mixed">{t('mixed')}</SelectItem>
+                  <SelectItem value="mediterranean">{t('mealPlan.cuisine.mediterranean')}</SelectItem>
+                  <SelectItem value="asian">{t('mealPlan.cuisine.asian')}</SelectItem>
+                  <SelectItem value="mexican">{t('mealPlan.cuisine.mexican')}</SelectItem>
+                  <SelectItem value="italian">{t('mealPlan.cuisine.italian')}</SelectItem>
+                  <SelectItem value="indian">{t('mealPlan.cuisine.indian')}</SelectItem>
+                  <SelectItem value="middleEastern">{t('mealPlan.cuisine.middleEastern')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <Label htmlFor="maxPrepTime">{t('mealPlan:maxPrepTime')}</Label>
+              <Label htmlFor="maxPrepTime">{t('mealPlan.maxPrepTime')}</Label>
               <Select
                 value={preferences.maxPrepTime || '30'}
                 onValueChange={(value) => handlePreferenceChange('maxPrepTime', value)}
@@ -130,15 +130,15 @@ const AIGenerationDialog = ({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="30">30 {t('common:minutes')}</SelectItem>
-                  <SelectItem value="45">45 {t('common:minutes')}</SelectItem>
-                  <SelectItem value="60">60 {t('common:minutes')}</SelectItem>
+                  <SelectItem value="30">30 {t('minutes')}</SelectItem>
+                  <SelectItem value="45">45 {t('minutes')}</SelectItem>
+                  <SelectItem value="60">60 {t('minutes')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <Label htmlFor="includeSnacks">{t('mealPlan:includeSnacks')}</Label>
+              <Label htmlFor="includeSnacks">{t('mealPlan.mealPlanSettings.includeSnacks')}</Label>
               <Switch
                 id="includeSnacks"
                 checked={preferences.includeSnacks !== false}
@@ -149,7 +149,7 @@ const AIGenerationDialog = ({
 
           <div className={`flex gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
             <Button variant="outline" onClick={onClose} className="flex-1">
-              {t('common:cancel')}
+              {t('cancel')}
             </Button>
             <Button 
               onClick={onGenerate} 
@@ -159,14 +159,14 @@ const AIGenerationDialog = ({
               {isGenerating ? (
                 <>
                   <Sparkles className="w-4 h-4 mr-2 animate-spin" />
-                  {t('common:generating')}
+                  {t('generating')}
                 </>
               ) : (
                 <>
                   <Sparkles className="w-4 h-4 mr-2" />
                   {nutritionContext.isMuslimFasting 
                     ? (language === 'ar' ? 'إنشاء خطة صيام' : 'Generate Fasting Plan')
-                    : t('mealPlan:generateSevenDayPlan')
+                    : t('mealPlan.generateSevenDayPlan')
                   }
                 </>
               )}

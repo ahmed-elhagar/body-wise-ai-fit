@@ -10,7 +10,7 @@ import {
   Users,
   Clock
 } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface QuickActionsProps {
   pendingTasks: number;
@@ -27,14 +27,14 @@ export const QuickActions = ({
   onViewTasks, 
   onViewMessages 
 }: QuickActionsProps) => {
-  const { t } = useI18n();
+  const { t } = useLanguage();
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Clock className="w-5 h-5" />
-          {t('dashboard:quickActions.title')}
+          {t('Quick Actions')}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -44,7 +44,7 @@ export const QuickActions = ({
           variant="outline"
         >
           <Plus className="w-4 h-4 mr-2" />
-          {t('coach:addNewTrainee')}
+          {t('Add New Trainee')}
         </Button>
 
         <Button 
@@ -54,7 +54,7 @@ export const QuickActions = ({
         >
           <div className="flex items-center">
             <Calendar className="w-4 h-4 mr-2" />
-            {t('coach:viewTasks')}
+            {t('View Tasks')}
           </div>
           {pendingTasks > 0 && (
             <Badge variant="secondary">{pendingTasks}</Badge>
@@ -68,7 +68,7 @@ export const QuickActions = ({
         >
           <div className="flex items-center">
             <MessageCircle className="w-4 h-4 mr-2" />
-            {t('coach:messages')}
+            {t('Messages')}
           </div>
           {unreadMessages > 0 && (
             <Badge variant="destructive">{unreadMessages}</Badge>
@@ -77,7 +77,7 @@ export const QuickActions = ({
 
         <div className="pt-2 border-t">
           <p className="text-xs text-gray-500 text-center">
-            {t('coach:needHelp')}
+            {t('Need help? Check our coaching guides')}
           </p>
         </div>
       </CardContent>

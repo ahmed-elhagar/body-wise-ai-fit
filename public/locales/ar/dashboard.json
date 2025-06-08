@@ -1,48 +1,63 @@
 
 {
-  "welcome": "مرحباً بعودتك",
+  "welcome": "مرحباً",
   "goodMorning": "صباح الخير",
   "goodAfternoon": "مساء الخير",
   "goodEvening": "مساء الخير",
-  "dashboard": "لوحة التحكم",
-  "overview": "نظرة عامة",
-  "todaysProgress": "تقدم اليوم",
-  "weeklyProgress": "التقدم الأسبوعي",
-  "monthlyProgress": "التقدم الشهري",
-  "progressSummary": "ملخص التقدم",
-  "yourProgress": "تقدمك",
-  "weeklyOverview": "نظرة أسبوعية",
-  "dailyGoals": "الأهداف اليومية",
-  "achievements": "الإنجازات",
+  "trackProgress": "تتبع رحلة لياقتك واصل إلى أهدافك",
+  "aiGenerationsRemaining": "أجيال ذكية متبقية",
+  "currentWeight": "الوزن الحالي",
+  "fromProfile": "من الملف الشخصي",
+  "fromTracking": "من التتبع",
+  "bmiIndex": "مؤشر كتلة الجسم",
+  "fitnessGoal": "هدف اللياقة",
+  "activityLevel": "مستوى النشاط",
+  "setYourGoal": "حدد هدفك",
+  "notSet": "غير محدد",
+  "completeProfile": "أكمل الملف الشخصي",
+  "goalProgress": "تقدم الهدف",
+  "workoutsWeek": "تمارين هذا الأسبوع",
+  "todayCalories": "سعرات اليوم",
   "quickActions": {
     "title": "إجراءات سريعة",
-    "generateMealPlan": "توليد خطة وجبات",
-    "startWorkout": "بدء التمرين",
-    "analyzeMeal": "تحليل الوجبة",
-    "addProgress": "إضافة تقدم",
-    "trackWeight": "تتبع الوزن",
-    "updateGoals": "تحديث الأهداف"
+    "logWeight": "تسجيل الوزن",
+    "trackProgress": "تتبع تقدمك",
+    "logFood": "تسجيل الطعام",
+    "checkCalories": "فحص السعرات",
+    "mealPlan": "خطة الوجبات",
+    "viewWeeklyMeals": "عرض الوجبات الأسبوعية",
+    "workout": "تمرين",
+    "startExercising": "بدء التمرين",
+    "updateGoals": "تحديث الأهداف",
+    "modifyTargets": "تعديل الأهداف",
+    "schedule": "جدولة",
+    "planWeek": "خطط أسبوعك"
   },
   "recentActivity": {
     "title": "النشاط الأخير",
-    "noActivity": "لا يوجد نشاط حديث",
-    "viewAll": "عرض الكل"
-  },
-  "stats": {
-    "totalCalories": "إجمالي السعرات",
-    "workoutsCompleted": "التمارين المكتملة",
-    "weightProgress": "تقدم الوزن",
-    "streakDays": "أيام الإنجاز المتتالية",
-    "caloriesConsumed": "السعرات المستهلكة",
-    "proteinIntake": "تناول البروتين",
-    "exerciseMinutes": "دقائق التمرين"
+    "noActivity": "لم يتم العثور على نشاط حديث. ابدأ رحلة لياقتك!",
+    "loggedWeight": "تم تسجيل الوزن",
+    "createdMealPlan": "تم إنشاء خطة وجبات لـ",
+    "createdProgram": "تم إنشاء",
+    "program": "برنامج"
   },
   "goals": {
-    "dailyCalories": "السعرات اليومية",
-    "weeklyWorkouts": "التمارين الأسبوعية",
-    "weightTarget": "هدف الوزن",
-    "completed": "مكتمل",
-    "inProgress": "قيد التنفيذ",
-    "pending": "قيد الانتظار"
+    "weightLoss": "فقدان الوزن",
+    "weightGain": "زيادة الوزن",
+    "muscleGain": "بناء العضلات",
+    "endurance": "التحمل"
+  },
+  "bmi": {
+    "underweight": "نقص في الوزن",
+    "normal": "طبيعي",
+    "overweight": "زيادة في الوزن",
+    "obese": "سمنة"
+  },
+  "activity": {
+    "sedentary": "خامل",
+    "lightlyActive": "نشط قليلاً",
+    "moderatelyActive": "نشط معتدل",
+    "veryActive": "نشط جداً",
+    "extremelyActive": "نشط للغاية"
   }
 }

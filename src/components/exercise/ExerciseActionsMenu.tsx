@@ -6,7 +6,7 @@ import {
   BookOpen,
   Share
 } from 'lucide-react';
-import { useI18n } from '@/hooks/useI18n';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Exercise } from '@/types/exercise';
 
 interface ExerciseActionsMenuProps {
@@ -22,7 +22,7 @@ export const ExerciseActionsMenu = ({
   onShowExchange,
   onShowInstructions 
 }: ExerciseActionsMenuProps) => {
-  const { t } = useI18n();
+  const { t } = useLanguage();
 
   const handleShare = async () => {
     const shareText = `💪 ${exercise.name} - ${exercise.sets} sets × ${exercise.reps} reps`;
@@ -49,7 +49,7 @@ export const ExerciseActionsMenu = ({
         size="sm"
         onClick={onShowVideo}
         className="h-8 px-2"
-        title={t('exercise:watchVideo') || 'Watch Video'}
+        title={t('Watch Video')}
       >
         <Youtube className="w-4 h-4 text-red-600" />
       </Button>
@@ -61,7 +61,7 @@ export const ExerciseActionsMenu = ({
           size="sm"
           onClick={onShowExchange}
           className="h-8 px-2"
-          title={t('exercise:exchangeExercise') || 'Exchange Exercise'}
+          title={t('Exchange Exercise')}
         >
           <RefreshCw className="w-4 h-4 text-orange-600" />
         </Button>
@@ -74,7 +74,7 @@ export const ExerciseActionsMenu = ({
           size="sm"
           onClick={onShowInstructions}
           className="h-8 px-2"
-          title={t('exercise:viewInstructions') || 'View Instructions'}
+          title={t('View Instructions')}
         >
           <BookOpen className="w-4 h-4 text-blue-600" />
         </Button>
@@ -86,7 +86,7 @@ export const ExerciseActionsMenu = ({
         size="sm"
         onClick={handleShare}
         className="h-8 px-2"
-        title={t('exercise:shareExercise') || 'Share Exercise'}
+        title={t('Share Exercise')}
       >
         <Share className="w-4 h-4 text-gray-600" />
       </Button>

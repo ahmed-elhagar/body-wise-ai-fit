@@ -1,6 +1,6 @@
 
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Sparkles } from "lucide-react";
 
 interface AddSnackHeaderProps {
@@ -8,11 +8,11 @@ interface AddSnackHeaderProps {
 }
 
 const AddSnackHeader = ({ selectedDay }: AddSnackHeaderProps) => {
-  const { t, isRTL } = useI18n();
+  const { t, isRTL } = useLanguage();
 
   const getDayName = (dayNumber: number) => {
     const days = ['saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
-    return t(`common:${days[dayNumber - 1]}`);
+    return t(days[dayNumber - 1]);
   };
 
   return (
@@ -23,10 +23,10 @@ const AddSnackHeader = ({ selectedDay }: AddSnackHeaderProps) => {
         </div>
         <div>
           <DialogTitle className="text-xl font-bold text-gray-800">
-            {t('mealPlan:addSnackDialog.title')}
+            {t('mealPlan.addSnack.title')}
           </DialogTitle>
           <p className="text-sm text-gray-600 mt-1">
-            {getDayName(selectedDay)} - {t('mealPlan:addSnackDialog.subtitle')}
+            {getDayName(selectedDay)} - {t('mealPlan.addSnack.description')}
           </p>
         </div>
       </div>

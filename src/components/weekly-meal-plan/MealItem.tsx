@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ChefHat } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import type { Meal } from "@/types/meal";
 
 interface MealItemProps {
@@ -14,7 +14,7 @@ interface MealItemProps {
 }
 
 const MealItem = ({ meal, mealIndex, dayNumber, onShowRecipe, onExchangeMeal }: MealItemProps) => {
-  const { t, isRTL } = useI18n();
+  const { t, isRTL } = useLanguage();
 
   const getMealTypeIcon = (mealType: string, mealName: string) => {
     if (mealName.includes('🍎')) return '🍎';

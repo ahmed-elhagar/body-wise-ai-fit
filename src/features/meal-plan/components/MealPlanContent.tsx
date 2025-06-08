@@ -54,7 +54,7 @@ export const MealPlanContent = ({
   if (viewMode === 'daily') {
     return (
       <DayOverview
-        dayNumber={selectedDayNumber}
+        selectedDayNumber={selectedDayNumber}
         dailyMeals={dailyMeals || []}
         totalCalories={totalCalories || 0}
         totalProtein={totalProtein || 0}

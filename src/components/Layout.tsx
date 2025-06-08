@@ -11,11 +11,11 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   
   return (
     <SidebarProvider>
-      <div className={`min-h-screen flex w-full ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
+      <div className={`min-h-screen flex w-full ${isRTL ? 'rtl' : 'ltr'}`}>
         <AppSidebar />
         <div className="flex-1 flex flex-col">
-          {/* Language Toggle in appropriate corner */}
-          <div className={`flex p-4 ${isRTL ? 'justify-start' : 'justify-end'}`}>
+          {/* Language Toggle in top-right corner */}
+          <div className={`flex justify-end p-4 ${isRTL ? 'justify-start' : 'justify-end'}`}>
             <div className="w-48">
               <LanguageToggle />
             </div>

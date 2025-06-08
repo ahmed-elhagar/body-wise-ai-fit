@@ -1,6 +1,6 @@
 
 import { useProfile } from "@/hooks/useProfile";
-import DashboardWelcomeHeader from "./DashboardWelcomeHeader";
+import { DashboardWelcomeHeader } from "./DashboardWelcomeHeader";
 import DashboardQuickActions from "./DashboardQuickActions";
 import DashboardStats from "../DashboardStats";
 import ProfileCompletionBanner from "../profile/ProfileCompletionBanner";
@@ -29,12 +29,12 @@ const DashboardContent = () => {
       />
       
       <DashboardQuickActions 
-        onViewMealPlan={handleViewMealPlan}
-        onViewExercise={handleViewExercise}
-        onViewWeight={handleViewWeight}
-        onViewProgress={handleViewProgress}
-        onViewGoals={handleViewGoals}
-        onViewProfile={handleViewProfile}
+        handleViewMealPlan={handleViewMealPlan}
+        handleViewExercise={handleViewExercise}
+        handleViewWeight={handleViewWeight}
+        handleViewProgress={handleViewProgress}
+        handleViewGoals={handleViewGoals}
+        handleViewProfile={handleViewProfile}
       />
       
       <DashboardStats />

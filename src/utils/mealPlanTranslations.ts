@@ -1,8 +1,8 @@
 
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export const useMealPlanTranslations = () => {
-  const { t, language } = useI18n();
+  const { t, language } = useLanguage();
 
   // Helper function to safely get translations with fallbacks
   const safeTranslate = (key: string, fallback: string) => {

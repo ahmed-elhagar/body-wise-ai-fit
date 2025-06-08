@@ -1,12 +1,12 @@
 
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ExerciseErrorStateProps {
   onRetry: () => void;
 }
 
 export const ExerciseErrorState = ({ onRetry }: ExerciseErrorStateProps) => {
-  const { t } = useI18n();
+  const { t } = useLanguage();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 flex items-center justify-center p-6">
@@ -18,17 +18,17 @@ export const ExerciseErrorState = ({ onRetry }: ExerciseErrorStateProps) => {
             </svg>
           </div>
           <h3 className="text-2xl font-bold text-gray-900 mb-3">
-            {t('exercise:errorTitle') || 'Exercise Loading Error'}
+            {t('exercise.errorTitle') || 'Exercise Loading Error'}
           </h3>
           <p className="text-gray-600 mb-8 leading-relaxed">
-            {t('exercise:errorMessage') || 'Unable to load your exercise program. Please try again or check your connection.'}
+            {t('exercise.errorMessage') || 'Unable to load your exercise program. Please try again or check your connection.'}
           </p>
           <div className="space-y-4">
             <button
               onClick={onRetry}
               className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-2xl font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 shadow-lg hover:shadow-xl"
             >
-              {t('exercise:retry') || 'Try Again'}
+              {t('exercise.retry') || 'Try Again'}
             </button>
             <button
               onClick={() => window.location.reload()}

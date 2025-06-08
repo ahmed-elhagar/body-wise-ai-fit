@@ -3,7 +3,7 @@ import { SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingCart, Mail, Download } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface DrawerHeaderProps {
   totalItems: number;
@@ -20,7 +20,7 @@ const DrawerHeader = ({
   onShoppingListUpdate,
   onSendEmail 
 }: DrawerHeaderProps) => {
-  const { t, isRTL } = useI18n();
+  const { t, isRTL } = useLanguage();
 
   const categoryCount = Object.keys(groupedItems).length;
 
@@ -35,14 +35,14 @@ const DrawerHeader = ({
       <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
         <SheetTitle className="text-fitness-primary-700 flex items-center gap-2">
           <ShoppingCart className="w-5 h-5 text-fitness-accent-600" />
-          {t('mealPlan:shoppingList.title')}
+          {t('shoppingList.title')}
         </SheetTitle>
         <div className="flex items-center gap-2">
           <Badge className="bg-fitness-accent-500 text-white">
-            {totalItems} {t('mealPlan:shoppingList.items')}
+            {totalItems} {t('shoppingList.items')}
           </Badge>
           <Badge className="bg-fitness-primary-500 text-white">
-            {categoryCount} {t('mealPlan:shoppingList.categories')}
+            {categoryCount} {t('shoppingList.categories')}
           </Badge>
         </div>
       </div>
@@ -56,7 +56,7 @@ const DrawerHeader = ({
           className="flex-1 border-fitness-primary-300 text-fitness-primary-600 hover:bg-fitness-primary-50"
         >
           <Mail className="w-4 h-4 mr-2" />
-          {t('mealPlan:shoppingList.sendEmail')}
+          {t('shoppingList.sendEmail')}
         </Button>
         
         <Button

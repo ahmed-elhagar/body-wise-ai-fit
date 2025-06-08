@@ -1,6 +1,6 @@
 
 import React from "react";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import SimpleLoadingIndicator from "@/components/ui/simple-loading-indicator";
 
 interface ExerciseProgramLoadingStatesProps {
@@ -12,7 +12,7 @@ export const ExerciseProgramLoadingStates = ({
   isGenerating, 
   isLoading
 }: ExerciseProgramLoadingStatesProps) => {
-  const { isRTL } = useI18n();
+  const { isRTL } = useLanguage();
 
   if (isGenerating) {
     return (

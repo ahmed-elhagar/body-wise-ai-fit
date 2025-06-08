@@ -1,10 +1,10 @@
 
 import React from "react";
 import SimpleLoadingIndicator from "@/components/ui/simple-loading-indicator";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const LoadingState = React.memo(() => {
-  const { isRTL } = useI18n();
+  const { isRTL } = useLanguage();
 
   return (
     <div className="bg-white rounded-lg border-fitness-primary-200 shadow-lg p-6">

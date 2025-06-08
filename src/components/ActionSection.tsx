@@ -2,7 +2,7 @@
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Target, Flame, TrendingUp } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ActionSectionProps {
   viewMode: 'daily' | 'weekly';
@@ -19,7 +19,7 @@ const ActionSection = ({
   totalCalories,
   totalProtein,
 }: ActionSectionProps) => {
-  const { t, isRTL } = useI18n();
+  const { t, isRTL } = useLanguage();
   
   // Target values (these could come from user profile)
   const targetCalories = 2000;
@@ -39,7 +39,7 @@ const ActionSection = ({
         <div className="w-5 h-5 bg-fitness-gradient rounded-full flex items-center justify-center">
           <Target className="w-3 h-3 text-white" />
         </div>
-        <h3 className="text-sm font-semibold text-gray-800">{t('dashboard:weeklyOverview')}</h3>
+        <h3 className="text-sm font-semibold text-gray-800">{t('weeklyOverview')}</h3>
       </div>
       
       <div className="grid grid-cols-2 gap-3">
@@ -48,7 +48,7 @@ const ActionSection = ({
           <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
             <div className={`flex items-center gap-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <Flame className="w-3 h-3 text-red-500" />
-              <span className="text-xs font-medium text-gray-700">{t('common:calories')}</span>
+              <span className="text-xs font-medium text-gray-700">{t('calories')}</span>
             </div>
             <span className="text-xs text-gray-600">
               {totalCalories} / {targetCalories}
@@ -62,7 +62,7 @@ const ActionSection = ({
           <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
             <div className={`flex items-center gap-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <TrendingUp className="w-3 h-3 text-green-500" />
-              <span className="text-xs font-medium text-gray-700">{t('common:protein')}</span>
+              <span className="text-xs font-medium text-gray-700">{t('protein')}</span>
             </div>
             <span className="text-xs text-gray-600">
               {totalProtein}g / {targetProtein}g

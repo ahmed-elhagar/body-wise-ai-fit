@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Target, Plus, RotateCcw, TrendingUp, Award, Calendar } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface StatsSidebarProps {
   todaysMeals: any[];
@@ -21,7 +21,7 @@ const StatsSidebar = ({
   onAddSnack,
   onRegeneratePlan
 }: StatsSidebarProps) => {
-  const { t, isRTL } = useI18n();
+  const { t, isRTL } = useLanguage();
 
   const proteinGoal = 150; // This could be dynamic based on user profile
   const proteinProgress = Math.min(100, (totalProtein / proteinGoal) * 100);

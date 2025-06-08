@@ -1,97 +1,177 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { 
-  Calendar, 
   Clock, 
-  CheckCircle, 
-  AlertCircle,
+  AlertTriangle, 
   Plus,
-  MoreHorizontal
-} from 'lucide-react';
-import { useI18n } from '@/hooks/useI18n';
-
-interface Task {
-  id: string;
-  title: string;
-  trainee: string;
-  dueDate: string;
-  priority: 'high' | 'medium' | 'low';
-  status: 'pending' | 'completed' | 'overdue';
-}
+  ArrowRight,
+  CheckCircle
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useCoachTasks } from "@/hooks/useCoachTasks";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface CompactTasksPanelProps {
-  tasks: Task[];
-  onAddTask: () => void;
-  onViewAll: () => void;
+  onViewAllTasks: () => void;
+  onCreateTask: () => void;
 }
 
-const CompactTasksPanel = ({ tasks, onAddTask, onViewAll }: CompactTasksPanelProps) => {
-  const { t } = useI18n();
+export const CompactTasksPanel = ({ onViewAllTasks, onCreateTask }: CompactTasksPanelProps) => {
+  const { t } = useLanguage();
+  const { tasks, toggleTask, isToggling } = useCoachTasks();
 
-  const pendingTasks = tasks.filter(task => task.status === 'pending');
-  const overdueTasks = tasks.filter(task => task.status === 'overdue');
+  const pendingTasks = tasks.filter(t => !t.completed);
+  const overdueTasks = pendingTasks.filter(t => 
+    t.dueDate && t.dueDate < new Date()
+  );
+  const upcomingTasks = pendingTasks.filter(t => 
+    !t.dueDate || t.dueDate >= new Date()
+  ).slice(0, 3);
+
+  const handleToggleTask = (taskId: string, completed: boolean) => {
+    toggleTask({ taskId, completed: !completed });
+  };
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium flex items-center gap-2">
-          <Calendar className="w-4 h-4" />
-          {t('coach:tasks') || 'Tasks'}
-        </CardTitle>
-        <Button variant="ghost" size="sm" onClick={onAddTask}>
-          <Plus className="w-4 h-4" />
-        </Button>
-      </CardHeader>
-      
-      <CardContent className="space-y-3">
-        {/* Quick Stats */}
-        <div className="flex gap-2">
-          <Badge variant="outline" className="flex items-center gap-1">
-            <Clock className="w-3 h-3" />
-            {pendingTasks.length} {t('coach:pending') || 'pending'}
-          </Badge>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="w-5 h-5" />
+            {t('Tasks & Reminders')}
+          </CardTitle>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" onClick={onCreateTask}>
+              <Plus className="w-4 h-4" />
+            </Button>
+            <Button size="sm" variant="ghost" onClick={onViewAllTasks}>
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+        
+        {/* Task Summary */}
+        <div className="flex gap-4 text-sm">
+          <div className="flex items-center gap-1">
+            <Badge variant="secondary">{pendingTasks.length}</Badge>
+            <span className="text-gray-600">{t('pending')}</span>
+          </div>
           {overdueTasks.length > 0 && (
-            <Badge variant="destructive" className="flex items-center gap-1">
-              <AlertCircle className="w-3 h-3" />
-              {overdueTasks.length} {t('coach:overdue') || 'overdue'}
-            </Badge>
+            <div className="flex items-center gap-1">
+              <Badge variant="destructive">{overdueTasks.length}</Badge>
+              <span className="text-gray-600">{t('overdue')}</span>
+            </div>
           )}
         </div>
+      </CardHeader>
 
-        {/* Recent Tasks */}
-        <div className="space-y-2">
-          {tasks.slice(0, 3).map((task) => (
-            <div key={task.id} className="flex items-center justify-between p-2 rounded-lg bg-gray-50">
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{task.title}</p>
-                <p className="text-xs text-gray-500">{task.trainee}</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge 
-                  variant={task.status === 'completed' ? 'default' : 'secondary'}
-                  className="text-xs"
+      <CardContent>
+        {pendingTasks.length === 0 ? (
+          <div className="text-center py-6">
+            <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
+            <p className="text-gray-600 mb-3">{t('All caught up!')}</p>
+            <Button size="sm" onClick={onCreateTask}>
+              <Plus className="w-4 h-4 mr-1" />
+              {t('Add Task')}
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {/* Overdue Tasks First */}
+            {overdueTasks.slice(0, 2).map(task => {
+              const isOverdue = task.dueDate && task.dueDate < new Date();
+              
+              return (
+                <div
+                  key={task.id}
+                  className={cn(
+                    "flex items-start gap-3 p-3 rounded-lg border transition-colors",
+                    isOverdue ? "border-red-200 bg-red-50" : "bg-white hover:bg-gray-50"
+                  )}
                 >
-                  {t(`coach:taskStatus.${task.status}`) || task.status}
-                </Badge>
-                {task.status === 'completed' && (
-                  <CheckCircle className="w-4 h-4 text-green-500" />
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+                  <Checkbox
+                    checked={task.completed}
+                    onCheckedChange={() => handleToggleTask(task.id, task.completed)}
+                    disabled={isToggling}
+                    className="mt-1"
+                  />
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <h4 className="font-medium text-sm leading-tight">
+                        {task.title}
+                      </h4>
+                      {isOverdue && (
+                        <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                      )}
+                    </div>
+                    
+                    {task.traineeName && (
+                      <p className="text-xs text-blue-600 mt-1">
+                        {task.traineeName}
+                      </p>
+                    )}
+                    
+                    {task.dueDate && (
+                      <p className={cn(
+                        "text-xs mt-1",
+                        isOverdue ? "text-red-600 font-medium" : "text-gray-500"
+                      )}>
+                        Due: {task.dueDate.toLocaleDateString()}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
 
-        {tasks.length > 3 && (
-          <Button variant="outline" size="sm" onClick={onViewAll} className="w-full">
-            <MoreHorizontal className="w-4 h-4 mr-2" />
-            {t('coach:viewAllTasks') || 'View All Tasks'}
-          </Button>
+            {/* Upcoming Tasks */}
+            {upcomingTasks.map(task => (
+              <div
+                key={task.id}
+                className="flex items-start gap-3 p-3 rounded-lg border bg-white hover:bg-gray-50 transition-colors"
+              >
+                <Checkbox
+                  checked={task.completed}
+                  onCheckedChange={() => handleToggleTask(task.id, task.completed)}
+                  disabled={isToggling}
+                  className="mt-1"
+                />
+                
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-medium text-sm leading-tight">
+                    {task.title}
+                  </h4>
+                  
+                  {task.traineeName && (
+                    <p className="text-xs text-blue-600 mt-1">
+                      {task.traineeName}
+                    </p>
+                  )}
+                  
+                  {task.dueDate && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Due: {task.dueDate.toLocaleDateString()}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+
+            {pendingTasks.length > 5 && (
+              <div className="text-center pt-2">
+                <Button size="sm" variant="ghost" onClick={onViewAllTasks}>
+                  {t('View')} {pendingTasks.length - 5} {t('more tasks')}
+                  <ArrowRight className="w-4 h-4 ml-1" />
+                </Button>
+              </div>
+            )}
+          </div>
         )}
       </CardContent>
     </Card>
   );
 };
-
-export default CompactTasksPanel;

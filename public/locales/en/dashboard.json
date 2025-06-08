@@ -1,48 +1,63 @@
 
 {
-  "welcome": "Welcome back",
-  "goodMorning": "Good morning",
-  "goodAfternoon": "Good afternoon", 
-  "goodEvening": "Good evening",
-  "dashboard": "Dashboard",
-  "overview": "Overview",
-  "todaysProgress": "Today's Progress",
-  "weeklyProgress": "Weekly Progress",
-  "monthlyProgress": "Monthly Progress",
-  "progressSummary": "Progress Summary",
-  "yourProgress": "Your Progress",
-  "weeklyOverview": "Weekly Overview",
-  "dailyGoals": "Daily Goals",
-  "achievements": "Achievements",
+  "welcome": "Welcome",
+  "goodMorning": "Good Morning",
+  "goodAfternoon": "Good Afternoon", 
+  "goodEvening": "Good Evening",
+  "trackProgress": "Track your fitness journey and reach your goals",
+  "aiGenerationsRemaining": "AI generations remaining",
+  "currentWeight": "Current Weight",
+  "fromProfile": "From Profile",
+  "fromTracking": "From Tracking",
+  "bmiIndex": "BMI Index",
+  "fitnessGoal": "Fitness Goal",
+  "activityLevel": "Activity Level",
+  "setYourGoal": "Set Your Goal",
+  "notSet": "Not Set",
+  "completeProfile": "Complete Profile",
+  "goalProgress": "Goal Progress",
+  "workoutsWeek": "Workouts This Week",
+  "todayCalories": "Today's Calories",
   "quickActions": {
     "title": "Quick Actions",
-    "generateMealPlan": "Generate Meal Plan",
-    "startWorkout": "Start Workout", 
-    "analyzeMeal": "Analyze Meal",
-    "addProgress": "Add Progress",
-    "trackWeight": "Track Weight",
-    "updateGoals": "Update Goals"
+    "logWeight": "Log Weight",
+    "trackProgress": "Track your progress",
+    "logFood": "Log Food",
+    "checkCalories": "Check calories",
+    "mealPlan": "Meal Plan",
+    "viewWeeklyMeals": "View weekly meals",
+    "workout": "Workout",
+    "startExercising": "Start exercising",
+    "updateGoals": "Update Goals",
+    "modifyTargets": "Modify targets",
+    "schedule": "Schedule",
+    "planWeek": "Plan your week"
   },
   "recentActivity": {
     "title": "Recent Activity",
-    "noActivity": "No recent activity",
-    "viewAll": "View All"
-  },
-  "stats": {
-    "totalCalories": "Total Calories",
-    "workoutsCompleted": "Workouts Completed",
-    "weightProgress": "Weight Progress",
-    "streakDays": "Streak Days",
-    "caloriesConsumed": "Calories Consumed",
-    "proteinIntake": "Protein Intake",
-    "exerciseMinutes": "Exercise Minutes"
+    "noActivity": "No recent activity found. Start your fitness journey!",
+    "loggedWeight": "Logged weight",
+    "createdMealPlan": "Created meal plan for",
+    "createdProgram": "Created",
+    "program": "program"
   },
   "goals": {
-    "dailyCalories": "Daily Calories",
-    "weeklyWorkouts": "Weekly Workouts",
-    "weightTarget": "Weight Target",
-    "completed": "Completed",
-    "inProgress": "In Progress",
-    "pending": "Pending"
+    "weightLoss": "Weight Loss",
+    "weightGain": "Weight Gain",
+    "muscleGain": "Muscle Gain",
+    "endurance": "Endurance"
+  },
+  "bmi": {
+    "underweight": "Underweight",
+    "normal": "Normal",
+    "overweight": "Overweight",
+    "obese": "Obese"
+  },
+  "activity": {
+    "sedentary": "Sedentary",
+    "lightlyActive": "Lightly Active",
+    "moderatelyActive": "Moderately Active",
+    "veryActive": "Very Active",
+    "extremelyActive": "Extremely Active"
   }
 }

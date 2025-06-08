@@ -4,12 +4,12 @@ import Layout from "@/components/Layout";
 import { PageHeader } from "@/components/ui/page-header";
 import { Camera } from "lucide-react";
 import FoodPhotoAnalyzer from "@/components/calorie/FoodPhotoAnalyzer";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 const CalorieChecker = () => {
-  const { t } = useI18n();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   
   const handleFoodAnalyzed = (food: any) => {

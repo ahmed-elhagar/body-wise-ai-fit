@@ -1,18 +1,49 @@
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { ShoppingCart, X, Mail, Plus, Minus, CheckCircle2, Circle, Package } from "lucide-react";
-import { toast } from "sonner";
-import { useI18n } from "@/hooks/useI18n";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { 
+  ShoppingCart, 
+  Search, 
+  Mail, 
+  Download, 
+  Check, 
+  Filter,
+  Package,
+  X,
+  Plus,
+  Minus
+} from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { getCategoryForIngredient } from "@/utils/mealPlanUtils";
+import { toast } from "sonner";
 import type { WeeklyMealPlan, DailyMeal } from "@/hooks/useMealPlanData";
+import { CategoryShoppingCard } from "./CategoryShoppingCard";
+import { ShoppingListHeader } from "./ShoppingListHeader";
+import { ShoppingListProgress } from "./ShoppingListProgress";
+import { EmptyShoppingState } from "./EmptyShoppingState";
 
-interface ShoppingListDrawerProps {
+interface ShoppingItem {
+  id: string;
+  name: string;
+  quantity: number;
+  unit: string;
+  category: string;
+  mealSource?: string;
+  isChecked: boolean;
+  originalQuantities?: Array<{
+    quantity: number;
+    unit: string;
+    meal: string;
+  }>;
+}
+
+interface ModernShoppingListDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   weeklyPlan?: {
@@ -23,27 +54,21 @@ interface ShoppingListDrawerProps {
   onShoppingListUpdate?: () => void;
 }
 
-interface ShoppingItem {
-  name: string;
-  quantity: number;
-  unit: string;
-  category: string;
-}
-
 const ModernShoppingListDrawer = ({ 
   isOpen, 
   onClose, 
   weeklyPlan, 
   weekId,
   onShoppingListUpdate 
-}: ShoppingListDrawerProps) => {
-  const { t, isRTL } = useI18n();
+}: ModernShoppingListDrawerProps) => {
+  const { isRTL } = useLanguage();
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
-  const [isEmailSending, setIsEmailSending] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
 
-  // Compute shopping list from meal plan data with proper aggregation
+  // Smart ingredient aggregation with quantity merging
   const shoppingItems = useMemo(() => {
-    console.log('🛒 Computing modern shopping list from meal plan data...');
+    console.log('🛒 Computing smart shopping list from meal plan data...');
     
     if (!weeklyPlan?.dailyMeals) {
       return [];
@@ -62,12 +87,25 @@ const ModernShoppingListDrawer = ({
           if (itemsMap.has(key)) {
             const existing = itemsMap.get(key)!;
             existing.quantity += quantity;
+            existing.originalQuantities?.push({
+              quantity,
+              unit,
+              meal: meal.name
+            });
           } else {
             itemsMap.set(key, {
+              id: key,
               name: ingredientName,
               quantity: quantity,
               unit: unit,
-              category: getCategoryForIngredient(ingredientName)
+              category: getCategoryForIngredient(ingredientName),
+              mealSource: meal.name,
+              isChecked: checkedItems.has(key),
+              originalQuantities: [{
+                quantity,
+                unit,
+                meal: meal.name
+              }]
             });
           }
         });
@@ -75,13 +113,32 @@ const ModernShoppingListDrawer = ({
     });
 
     const items = Array.from(itemsMap.values());
-    console.log('🛒 Generated modern shopping items:', items.length);
+    console.log('🛒 Generated smart shopping items:', items.length);
     return items;
-  }, [weeklyPlan?.dailyMeals]);
+  }, [weeklyPlan?.dailyMeals, checkedItems]);
 
-  // Group items by category
+  // Filter items based on search and category filters
+  const filteredItems = useMemo(() => {
+    let filtered = shoppingItems;
+
+    if (searchTerm) {
+      filtered = filtered.filter(item =>
+        item.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (selectedCategories.size > 0) {
+      filtered = filtered.filter(item =>
+        selectedCategories.has(item.category)
+      );
+    }
+
+    return filtered;
+  }, [shoppingItems, searchTerm, selectedCategories]);
+
+  // Group filtered items by category
   const groupedItems = useMemo(() => {
-    return shoppingItems.reduce((acc, item) => {
+    return filteredItems.reduce((acc, item) => {
       const category = item.category;
       if (!acc[category]) {
         acc[category] = [];
@@ -89,109 +146,106 @@ const ModernShoppingListDrawer = ({
       acc[category].push(item);
       return acc;
     }, {} as Record<string, ShoppingItem[]>);
-  }, [shoppingItems]);
+  }, [filteredItems]);
 
-  const toggleItem = useCallback((itemKey: string) => {
-    setCheckedItems(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(itemKey)) {
-        newSet.delete(itemKey);
-      } else {
-        newSet.add(itemKey);
-      }
-      return newSet;
-    });
-    onShoppingListUpdate?.();
-  }, [onShoppingListUpdate]);
-
-  const toggleCategory = useCallback((category: string) => {
-    const categoryItems = groupedItems[category]?.map(item => `${item.name}-${item.category}`) || [];
-    const allChecked = categoryItems.every(item => checkedItems.has(item));
+  // Progress calculations
+  const progressStats = useMemo(() => {
+    const totalItems = shoppingItems.length;
+    const checkedCount = shoppingItems.filter(item => item.isChecked).length;
+    const progressPercentage = totalItems > 0 ? (checkedCount / totalItems) * 100 : 0;
     
-    setCheckedItems(prev => {
-      const newSet = new Set(prev);
-      if (allChecked) {
-        categoryItems.forEach(item => newSet.delete(item));
-      } else {
-        categoryItems.forEach(item => newSet.add(item));
+    return {
+      totalItems,
+      checkedCount,
+      progressPercentage,
+      remainingItems: totalItems - checkedCount
+    };
+  }, [shoppingItems, checkedItems]);
+
+  // Load checked items from localStorage on mount
+  useEffect(() => {
+    if (weekId) {
+      const saved = localStorage.getItem(`shopping-list-${weekId}`);
+      if (saved) {
+        try {
+          const savedChecked = JSON.parse(saved);
+          setCheckedItems(new Set(savedChecked));
+        } catch (error) {
+          console.error('Failed to load saved shopping list state:', error);
+        }
       }
-      return newSet;
-    });
-    onShoppingListUpdate?.();
-  }, [groupedItems, checkedItems, onShoppingListUpdate]);
-
-  const sendEmail = useCallback(async () => {
-    setIsEmailSending(true);
-    try {
-      // Simulate email sending
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      toast.success(t('Shopping list sent to email successfully!'));
-      onShoppingListUpdate?.();
-    } catch (error) {
-      toast.error(t('Failed to send email'));
-    } finally {
-      setIsEmailSending(false);
     }
-  }, [t, onShoppingListUpdate]);
+  }, [weekId]);
 
-  const isLoading = !weeklyPlan;
-  const isEmpty = shoppingItems.length === 0 && !!weeklyPlan;
-  const completedCount = checkedItems.size;
-  const progressPercentage = shoppingItems.length > 0 ? (completedCount / shoppingItems.length) * 100 : 0;
+  // Save checked items to localStorage
+  useEffect(() => {
+    if (weekId && checkedItems.size > 0) {
+      localStorage.setItem(`shopping-list-${weekId}`, JSON.stringify(Array.from(checkedItems)));
+    }
+  }, [checkedItems, weekId]);
 
-  const categories = Object.keys(groupedItems).sort();
-
-  const categoryIcons: Record<string, string> = {
-    'Proteins': '🥩',
-    'البروتينات': '🥩',
-    'Dairy': '🥛',
-    'منتجات الألبان': '🥛',
-    'Vegetables': '🥕',
-    'الخضراوات': '🥕',
-    'Fruits': '🍎',
-    'الفواكه': '🍎',
-    'Grains & Carbs': '🌾',
-    'الحبوب والكربوهيدرات': '🌾',
-    'Spices & Seasonings': '🧂',
-    'التوابل والبهارات': '🧂',
-    'Oils & Fats': '🫒',
-    'الزيوت والدهون': '🫒',
-    'Other': '📦',
-    'أخرى': '📦'
+  const handleItemToggle = (itemId: string) => {
+    const newChecked = new Set(checkedItems);
+    if (newChecked.has(itemId)) {
+      newChecked.delete(itemId);
+    } else {
+      newChecked.add(itemId);
+    }
+    setCheckedItems(newChecked);
+    onShoppingListUpdate?.();
   };
 
-  if (isLoading) {
-    return (
-      <Sheet open={isOpen} onOpenChange={onClose}>
-        <SheetContent 
-          side={isRTL ? "left" : "right"} 
-          className="w-full sm:max-w-lg bg-gradient-to-br from-fitness-primary-50 to-fitness-accent-50 border-fitness-primary-200 overflow-y-auto z-[100]"
-        >
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <Package className="w-12 h-12 text-fitness-primary-400 mx-auto mb-4 animate-pulse" />
-              <p className="text-fitness-primary-600">{t('Loading shopping list...')}</p>
-            </div>
-          </div>
-        </SheetContent>
-      </Sheet>
-    );
-  }
+  const handleCategoryToggle = (category: string) => {
+    const categoryItems = groupedItems[category] || [];
+    const allChecked = categoryItems.every(item => checkedItems.has(item.id));
+    
+    const newChecked = new Set(checkedItems);
+    categoryItems.forEach(item => {
+      if (allChecked) {
+        newChecked.delete(item.id);
+      } else {
+        newChecked.add(item.id);
+      }
+    });
+    setCheckedItems(newChecked);
+    onShoppingListUpdate?.();
+  };
 
-  if (isEmpty) {
+  const handleCategoryFilter = (category: string) => {
+    const newSelected = new Set(selectedCategories);
+    if (newSelected.has(category)) {
+      newSelected.delete(category);
+    } else {
+      newSelected.add(category);
+    }
+    setSelectedCategories(newSelected);
+  };
+
+  const handleSendEmail = async () => {
+    console.log('📧 Sending shopping list email...');
+    toast.success('Shopping list sent to your email!');
+  };
+
+  const handleExport = () => {
+    console.log('📥 Exporting shopping list...');
+    toast.success('Shopping list exported successfully!');
+  };
+
+  const clearAllChecked = () => {
+    setCheckedItems(new Set());
+    if (weekId) {
+      localStorage.removeItem(`shopping-list-${weekId}`);
+    }
+  };
+
+  if (!weeklyPlan || shoppingItems.length === 0) {
     return (
       <Sheet open={isOpen} onOpenChange={onClose}>
         <SheetContent 
           side={isRTL ? "left" : "right"} 
-          className="w-full sm:max-w-lg bg-gradient-to-br from-fitness-primary-50 to-fitness-accent-50 border-fitness-primary-200 overflow-y-auto z-[100]"
+          className="w-full sm:max-w-lg bg-gray-50 border-0 p-0"
         >
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <ShoppingCart className="w-16 h-16 text-fitness-primary-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-fitness-primary-700 mb-2">{t('No Shopping List')}</h3>
-              <p className="text-fitness-primary-600">{t('Generate a meal plan first to create your shopping list.')}</p>
-            </div>
-          </div>
+          <EmptyShoppingState onClose={onClose} />
         </SheetContent>
       </Sheet>
     );
@@ -201,125 +255,80 @@ const ModernShoppingListDrawer = ({
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent 
         side={isRTL ? "left" : "right"} 
-        className="w-full sm:max-w-lg bg-gradient-to-br from-fitness-primary-50 to-fitness-accent-50 border-fitness-primary-200 overflow-y-auto z-[100]"
+        className="w-full sm:max-w-lg bg-gray-50 border-0 p-0 flex flex-col"
       >
-        <div className="space-y-6 h-full">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-fitness-primary-500 to-fitness-primary-600 rounded-xl flex items-center justify-center">
-                <ShoppingCart className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-fitness-primary-800">{t('Shopping List')}</h2>
-                <p className="text-sm text-fitness-primary-600">
-                  {shoppingItems.length} {t('items')} • {categories.length} {t('categories')}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                onClick={sendEmail}
-                disabled={isEmailSending}
-                size="sm"
-                variant="outline"
-                className="border-fitness-primary-300 text-fitness-primary-600 hover:bg-fitness-primary-50"
-              >
-                <Mail className="w-4 h-4" />
-              </Button>
-              <Button onClick={onClose} size="sm" variant="ghost">
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
+        {/* Header */}
+        <ShoppingListHeader
+          totalItems={progressStats.totalItems}
+          checkedCount={progressStats.checkedCount}
+          onSendEmail={handleSendEmail}
+          onExport={handleExport}
+          onClose={onClose}
+        />
+
+        {/* Progress Bar */}
+        <ShoppingListProgress
+          progress={progressStats.progressPercentage}
+          checkedCount={progressStats.checkedCount}
+          totalItems={progressStats.totalItems}
+          remainingItems={progressStats.remainingItems}
+        />
+
+        {/* Search and Filters */}
+        <div className="p-4 bg-white border-b space-y-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Input
+              placeholder="Search ingredients..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9 bg-gray-50 border-gray-200"
+            />
           </div>
 
-          {/* Progress */}
-          <Card className="bg-white/80 backdrop-blur-sm border-fitness-primary-200">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-fitness-primary-700">{t('Progress')}</span>
-                <span className="text-sm text-fitness-primary-600">{completedCount}/{shoppingItems.length}</span>
-              </div>
-              <div className="w-full bg-fitness-primary-100 rounded-full h-2">
-                <div 
-                  className="bg-gradient-to-r from-fitness-primary-500 to-fitness-accent-500 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${progressPercentage}%` }}
-                ></div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Categories */}
-          <div className="flex-1 overflow-y-auto">
-            <Accordion type="multiple" className="space-y-3">
-              {categories.map((category) => {
-                const categoryItems = groupedItems[category];
-                const categoryCheckedCount = categoryItems.filter(item => 
-                  checkedItems.has(`${item.name}-${item.category}`)
-                ).length;
-                const allChecked = categoryCheckedCount === categoryItems.length;
-
-                return (
-                  <AccordionItem key={category} value={category} className="bg-white/80 backdrop-blur-sm rounded-lg border-fitness-primary-200 shadow-md">
-                    <AccordionTrigger className="text-fitness-primary-700 hover:text-fitness-accent-600 transition-colors px-4 py-3 font-medium">
-                      <div className="flex items-center gap-3 flex-1">
-                        <Checkbox
-                          checked={allChecked}
-                          onCheckedChange={() => toggleCategory(category)}
-                          onClick={(e) => e.stopPropagation()}
-                          className="border-fitness-primary-300 data-[state=checked]:bg-fitness-primary-500 data-[state=checked]:border-fitness-primary-500"
-                        />
-                        <span className="text-xl">{categoryIcons[category] || '📦'}</span>
-                        <span className="flex-1 text-left font-semibold">{category}</span>
-                        <Badge className="bg-fitness-primary-100 text-fitness-primary-700 border-fitness-primary-200">
-                          {categoryCheckedCount}/{categoryItems.length}
-                        </Badge>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="px-4 pb-4">
-                      <div className="space-y-2 pt-2">
-                        {categoryItems.map((item, index) => {
-                          const itemKey = `${item.name}-${item.category}`;
-                          const isChecked = checkedItems.has(itemKey);
-                          
-                          return (
-                            <div
-                              key={`${category}-${index}`}
-                              className={`flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer hover:shadow-sm ${
-                                isChecked 
-                                  ? 'bg-fitness-primary-50 border-fitness-primary-200 opacity-60' 
-                                  : 'bg-white border-fitness-primary-100 hover:border-fitness-primary-200'
-                              }`}
-                              onClick={() => toggleItem(itemKey)}
-                            >
-                              <Checkbox
-                                checked={isChecked}
-                                className="border-fitness-primary-300 data-[state=checked]:bg-fitness-primary-500 data-[state=checked]:border-fitness-primary-500"
-                              />
-                              <div className="flex-1">
-                                <span className={`font-medium ${isChecked ? 'line-through text-fitness-primary-500' : 'text-fitness-primary-800'}`}>
-                                  {item.name}
-                                </span>
-                                <div className="text-sm text-fitness-primary-600">
-                                  {item.quantity} {item.unit}
-                                </div>
-                              </div>
-                              {isChecked ? (
-                                <CheckCircle2 className="w-5 h-5 text-fitness-primary-500" />
-                              ) : (
-                                <Circle className="w-5 h-5 text-fitness-primary-300" />
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                );
-              })}
-            </Accordion>
+          {/* Quick Actions */}
+          <div className="flex gap-2 flex-wrap">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={clearAllChecked}
+              disabled={checkedItems.size === 0}
+              className="text-xs"
+            >
+              <X className="w-3 h-3 mr-1" />
+              Clear All
+            </Button>
+            
+            {Object.keys(groupedItems).map(category => (
+              <Button
+                key={category}
+                variant={selectedCategories.has(category) ? "default" : "outline"}
+                size="sm"
+                onClick={() => handleCategoryFilter(category)}
+                className="text-xs"
+              >
+                <Filter className="w-3 h-3 mr-1" />
+                {category}
+              </Button>
+            ))}
           </div>
         </div>
+
+        {/* Shopping List Content */}
+        <ScrollArea className="flex-1">
+          <div className="p-4 space-y-4">
+            {Object.entries(groupedItems).map(([category, items]) => (
+              <CategoryShoppingCard
+                key={category}
+                category={category}
+                items={items}
+                checkedItems={checkedItems}
+                onItemToggle={handleItemToggle}
+                onCategoryToggle={handleCategoryToggle}
+              />
+            ))}
+          </div>
+        </ScrollArea>
       </SheetContent>
     </Sheet>
   );

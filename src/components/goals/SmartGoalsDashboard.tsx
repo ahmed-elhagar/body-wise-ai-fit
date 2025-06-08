@@ -1,136 +1,222 @@
 
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
-import { Target, Trophy, Calendar, TrendingUp } from 'lucide-react';
-import { useI18n } from '@/hooks/useI18n';
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { Target, Plus, TrendingUp, Calendar, Sparkles, Trophy, AlertTriangle } from "lucide-react";
+import { useGoals } from "@/hooks/useGoals";
+import EnhancedGoalCard from "./EnhancedGoalCard";
+import GoalProgressRing from "./GoalProgressRing";
+import SmartGoalCreationWizard from "./SmartGoalCreationWizard";
 
-interface Goal {
-  id: string;
-  title: string;
-  progress: number;
-  target: number;
-  goalType: 'weight' | 'exercise' | 'nutrition' | 'habit';
-  deadline?: string;
-  description?: string;
-}
+const SmartGoalsDashboard = () => {
+  const { t } = useLanguage();
+  const { goals, isLoading } = useGoals();
+  const [showWizard, setShowWizard] = useState(false);
 
-interface SmartGoalsDashboardProps {
-  goals: Goal[];
-  onUpdateGoal?: (goalId: string, progress: number) => void;
-}
+  const activeGoals = goals.filter(goal => goal.status === 'active');
+  const completedGoals = goals.filter(goal => goal.status === 'completed');
+  const overallProgress = goals.length > 0 
+    ? goals.reduce((acc, goal) => acc + Math.min(100, (goal.current_value / (goal.target_value || 1)) * 100), 0) / goals.length
+    : 0;
 
-const SmartGoalsDashboard = ({ goals = [], onUpdateGoal }: SmartGoalsDashboardProps) => {
-  const { t, isRTL } = useI18n();
+  const urgentGoals = activeGoals.filter(goal => {
+    if (!goal.target_date) return false;
+    const daysRemaining = Math.ceil((new Date(goal.target_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+    return daysRemaining <= 7 && daysRemaining >= 0;
+  });
 
-  const getGoalIcon = (goalType: string) => {
-    switch (goalType) {
-      case 'weight':
-        return Target;
-      case 'exercise':
-        return Trophy;
-      case 'nutrition':
-        return Calendar;
-      case 'habit':
-        return TrendingUp;
-      default:
-        return Target;
-    }
-  };
-
-  const getGoalColor = (goalType: string) => {
-    switch (goalType) {
-      case 'weight':
-        return 'bg-blue-500';
-      case 'exercise':
-        return 'bg-green-500';
-      case 'nutrition':
-        return 'bg-orange-500';
-      case 'habit':
-        return 'bg-purple-500';
-      default:
-        return 'bg-gray-500';
-    }
-  };
-
-  const getProgressColor = (progress: number) => {
-    if (progress >= 100) return 'text-green-600';
-    if (progress >= 75) return 'text-blue-600';
-    if (progress >= 50) return 'text-yellow-600';
-    return 'text-red-600';
-  };
-
-  if (!goals || goals.length === 0) {
+  if (isLoading) {
     return (
-      <Card>
-        <CardContent className="p-8 text-center">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Target className="w-8 h-8 text-gray-400" />
+      <div className="space-y-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-48 bg-gray-200 rounded"></div>
+            ))}
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            {t('goals:noGoals') || 'No Goals Set'}
-          </h3>
-          <p className="text-gray-600">
-            {t('goals:createFirstGoal') || 'Create your first goal to start tracking your progress'}
-          </p>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   return (
-    <div className={`space-y-6 ${isRTL ? 'rtl' : 'ltr'}`}>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {goals.map((goal) => {
-          const Icon = getGoalIcon(goal.goalType);
-          const progressPercentage = Math.min((goal.progress / goal.target) * 100, 100);
-          
-          return (
-            <Card key={goal.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader className="pb-4">
-                <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-                  <div className={`w-12 h-12 ${getGoalColor(goal.goalType)} rounded-xl flex items-center justify-center`}>
-                    <Icon className="w-6 h-6 text-white" />
-                  </div>
-                  <Badge variant="outline" className="text-xs">
-                    {goal.goalType}
-                  </Badge>
-                </div>
-                <CardTitle className="text-lg font-semibold text-gray-900 mt-3">
-                  {goal.title}
-                </CardTitle>
-                {goal.description && (
-                  <p className="text-sm text-gray-600">{goal.description}</p>
-                )}
-              </CardHeader>
-              
-              <CardContent className="space-y-4">
-                <div>
-                  <div className={`flex justify-between items-center mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                    <span className="text-sm font-medium text-gray-700">Progress</span>
-                    <span className={`text-lg font-bold ${getProgressColor(progressPercentage)}`}>
-                      {Math.round(progressPercentage)}%
-                    </span>
-                  </div>
-                  <Progress value={progressPercentage} className="h-3" />
-                  <div className={`flex justify-between items-center mt-2 text-sm text-gray-600 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                    <span>{goal.progress}</span>
-                    <span>{goal.target}</span>
-                  </div>
-                </div>
-                
-                {goal.deadline && (
-                  <div className={`flex items-center gap-2 text-sm text-gray-600 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                    <Calendar className="w-4 h-4" />
-                    <span>{t('goals:deadline')}: {new Date(goal.deadline).toLocaleDateString()}</span>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          );
-        })}
+    <div className="space-y-6">
+      {/* Header & Stats */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <Target className="h-6 w-6 text-blue-600" />
+            {t('Smart Goals Dashboard')}
+          </h2>
+          <p className="text-gray-600 mt-1">
+            {t('Track your progress and achieve your fitness objectives')}
+          </p>
+        </div>
+        
+        <Button
+          onClick={() => setShowWizard(true)}
+          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          {t('Create Goal')}
+        </Button>
       </div>
+
+      {/* Quick Stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+          <CardContent className="p-4 text-center">
+            <div className="text-2xl font-bold text-blue-800">{activeGoals.length}</div>
+            <div className="text-sm text-blue-600">{t('Active Goals')}</div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+          <CardContent className="p-4 text-center">
+            <div className="text-2xl font-bold text-green-800">{completedGoals.length}</div>
+            <div className="text-sm text-green-600">{t('Completed')}</div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+          <CardContent className="p-4 text-center">
+            <div className="text-2xl font-bold text-purple-800">{Math.round(overallProgress)}%</div>
+            <div className="text-sm text-purple-600">{t('Overall Progress')}</div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+          <CardContent className="p-4 text-center">
+            <div className="text-2xl font-bold text-orange-800">{urgentGoals.length}</div>
+            <div className="text-sm text-orange-600">{t('Due This Week')}</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Progress Overview */}
+      <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-blue-600" />
+            {t('Progress Overview')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center">
+            <GoalProgressRing progress={overallProgress} size={160}>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-gray-800">{Math.round(overallProgress)}%</div>
+                <div className="text-sm text-gray-600">{t('Overall')}</div>
+              </div>
+            </GoalProgressRing>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Urgent Goals Alert */}
+      {urgentGoals.length > 0 && (
+        <Card className="bg-gradient-to-br from-orange-50 to-red-50 border border-orange-200 shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-orange-800">
+              <AlertTriangle className="w-5 h-5" />
+              {t('Goals Due This Week')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {urgentGoals.map(goal => (
+                <EnhancedGoalCard
+                  key={goal.id}
+                  goal={goal}
+                  showActions={false}
+                />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Active Goals */}
+      {activeGoals.length > 0 ? (
+        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Target className="w-5 h-5 text-blue-600" />
+              {t('Active Goals')} ({activeGoals.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {activeGoals.map(goal => (
+                <EnhancedGoalCard
+                  key={goal.id}
+                  goal={goal}
+                />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg text-center p-12">
+          <div className="space-y-4">
+            <Target className="w-16 h-16 text-gray-300 mx-auto" />
+            <h3 className="text-xl font-semibold text-gray-600">{t('No Active Goals')}</h3>
+            <p className="text-gray-500 max-w-md mx-auto">
+              {t('Start your fitness journey by creating your first goal. Our AI will help you set realistic and achievable targets.')}
+            </p>
+            <Button
+              onClick={() => setShowWizard(true)}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              {t('Create Your First Goal')}
+            </Button>
+          </div>
+        </Card>
+      )}
+
+      {/* Completed Goals */}
+      {completedGoals.length > 0 && (
+        <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-green-800">
+              <Trophy className="w-5 h-5" />
+              {t('Completed Goals')} ({completedGoals.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {completedGoals.slice(0, 4).map(goal => (
+                <EnhancedGoalCard
+                  key={goal.id}
+                  goal={goal}
+                  showActions={false}
+                />
+              ))}
+            </div>
+            {completedGoals.length > 4 && (
+              <div className="text-center mt-4">
+                <Badge className="bg-green-100 text-green-800 border-green-300">
+                  {t('and')} {completedGoals.length - 4} {t('more completed goals')}
+                </Badge>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Goal Creation Wizard */}
+      {showWizard && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <SmartGoalCreationWizard
+            onClose={() => setShowWizard(false)}
+            onGoalCreated={() => setShowWizard(false)}
+          />
+        </div>
+      )}
     </div>
   );
 };

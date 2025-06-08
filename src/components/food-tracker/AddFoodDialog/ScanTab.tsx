@@ -1,99 +1,138 @@
 
-import React, { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Camera, Upload, AlertCircle } from 'lucide-react';
-import { useI18n } from '@/hooks/useI18n';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Zap, Plus } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useCreditSystem } from "@/hooks/useCreditSystem";
+import { useFoodPhotoIntegration } from "@/hooks/useFoodPhotoIntegration";
+import FoodPhotoAnalysisCard from "@/components/food-photo-analysis/FoodPhotoAnalysisCard";
+import QuantitySelector from "./components/QuantitySelector";
+import { toast } from "sonner";
 
 interface ScanTabProps {
-  onFoodSelected: (food: any) => void;
+  onFoodAdded: () => void;
   onClose: () => void;
 }
 
-const ScanTab = ({ onFoodSelected, onClose }: ScanTabProps) => {
-  const { t, isRTL } = useI18n();
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
+const ScanTab = ({ onFoodAdded, onClose }: ScanTabProps) => {
+  const { t } = useLanguage();
+  const [selectedFood, setSelectedFood] = useState<any>(null);
+  const [quantity, setQuantity] = useState(100);
+  const [mealType, setMealType] = useState("snack");
+  const [notes, setNotes] = useState("");
+  
+  const { userCredits } = useCreditSystem();
+  const { 
+    logAnalyzedFood, 
+    isLoggingFood,
+    convertToFoodItem 
+  } = useFoodPhotoIntegration();
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    setIsAnalyzing(true);
-    
-    // Simulate AI analysis
-    setTimeout(() => {
-      const mockFood = {
-        name: 'Analyzed Food Item',
-        calories: 150,
-        protein: 8,
-        carbs: 20,
-        fat: 5,
-        quantity: 100,
-        unit: 'g'
-      };
-      
-      setIsAnalyzing(false);
-      onFoodSelected(mockFood);
-    }, 2000);
+  const handleSelectFood = (food: any) => {
+    console.log('🎯 Food selected from scan:', food);
+    const standardizedFood = convertToFoodItem(food);
+    setSelectedFood(standardizedFood);
   };
 
+  const handleAddFood = async () => {
+    if (!selectedFood) return;
+
+    try {
+      await logAnalyzedFood(
+        selectedFood,
+        quantity,
+        mealType,
+        notes || `AI detected: ${selectedFood.quantity || 'estimated portion'}`
+      );
+      
+      onFoodAdded();
+      onClose();
+    } catch (error) {
+      console.error('Error logging scanned food:', error);
+      toast.error(t('Failed to log food'));
+    }
+  };
+
+  const canScan = userCredits === -1 || userCredits > 0;
+
   return (
-    <div className={`space-y-6 ${isRTL ? 'rtl' : 'ltr'}`}>
-      <Card className="border-2 border-dashed border-gray-300 hover:border-blue-400 transition-colors">
-        <CardContent className="p-8 text-center">
-          <div className="space-y-4">
-            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
-              <Camera className="w-8 h-8 text-blue-600" />
-            </div>
+    <div className="space-y-6">
+      {/* Credits Display */}
+      <div className="flex items-center justify-between bg-blue-50 p-3 rounded-lg">
+        <div className="flex items-center gap-2">
+          <Zap className="w-5 h-5 text-blue-600" />
+          <span className="text-sm font-medium text-blue-800">
+            {t('AI Credits')}
+          </span>
+        </div>
+        <Badge variant={canScan ? "default" : "destructive"}>
+          {userCredits === -1 ? t('Unlimited') : userCredits}
+        </Badge>
+      </div>
+
+      {/* Photo Analysis */}
+      <FoodPhotoAnalysisCard 
+        onFoodSelected={handleSelectFood}
+        className="w-full"
+      />
+
+      {/* Selected Food Details */}
+      {selectedFood && (
+        <div className="space-y-4 border-t pt-4">
+          <h3 className="font-medium text-gray-900">{t('Add to Log')}</h3>
+          
+          <div className="bg-green-50 p-4 rounded-lg">
+            <h4 className="font-medium text-green-800">{selectedFood.name}</h4>
+            <p className="text-sm text-green-600">{selectedFood.quantity}</p>
             
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                {t('foodTracker:scanFood') || 'Scan Your Food'}
-              </h3>
-              <p className="text-gray-600 text-sm mb-4">
-                {t('foodTracker:scanDescription') || 'Take a photo or upload an image to analyze your food'}
-              </p>
-            </div>
-
-            <div className="space-y-3">
-              <Button 
-                className="w-full"
-                disabled={isAnalyzing}
-                onClick={() => document.getElementById('photo-upload')?.click()}
-              >
-                <Upload className="w-4 h-4 mr-2" />
-                {isAnalyzing ? t('foodTracker:analyzing') || 'Analyzing...' : t('foodTracker:uploadPhoto') || 'Upload Photo'}
-              </Button>
-              
-              <input
-                id="photo-upload"
-                type="file"
-                accept="image/*"
-                onChange={handleFileUpload}
-                className="hidden"
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="bg-amber-50 border-amber-200">
-        <CardContent className="p-4">
-          <div className={`flex items-start gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-            <div className="text-sm text-amber-800">
-              <p className="font-medium mb-1">
-                {t('foodTracker:scanTips') || 'Tips for better scanning:'}
-              </p>
-              <ul className="space-y-1 text-xs">
-                <li>• {t('foodTracker:tip1') || 'Use good lighting'}</li>
-                <li>• {t('foodTracker:tip2') || 'Place food on a plain background'}</li>
-                <li>• {t('foodTracker:tip3') || 'Include a reference object for scale'}</li>
-              </ul>
+            <div className="grid grid-cols-4 gap-2 mt-3 text-sm">
+              <div className="text-center">
+                <div className="font-semibold text-green-800">
+                  {Math.round((selectedFood.calories || 0) * (quantity / 100))}
+                </div>
+                <div className="text-green-600">cal</div>
+              </div>
+              <div className="text-center">
+                <div className="font-semibold text-green-800">
+                  {Math.round((selectedFood.protein || 0) * (quantity / 100))}g
+                </div>
+                <div className="text-green-600">protein</div>
+              </div>
+              <div className="text-center">
+                <div className="font-semibold text-green-800">
+                  {Math.round((selectedFood.carbs || 0) * (quantity / 100))}g
+                </div>
+                <div className="text-green-600">carbs</div>
+              </div>
+              <div className="text-center">
+                <div className="font-semibold text-green-800">
+                  {Math.round((selectedFood.fat || 0) * (quantity / 100))}g
+                </div>
+                <div className="text-green-600">fat</div>
+              </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
+
+          <QuantitySelector
+            quantity={quantity}
+            onQuantityChange={setQuantity}
+            mealType={mealType}
+            onMealTypeChange={setMealType}
+            notes={notes}
+            onNotesChange={setNotes}
+          />
+
+          <Button
+            onClick={handleAddFood}
+            disabled={isLoggingFood}
+            className="w-full bg-green-600 hover:bg-green-700 text-white"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            {isLoggingFood ? t('Adding...') : t('Add to Log')}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,92 +1,125 @@
 
-import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Utensils, Dumbbell, Scale, TrendingUp, Target, User } from 'lucide-react';
-import { useI18n } from '@/hooks/useI18n';
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { 
+  Apple, 
+  Dumbbell, 
+  Scale, 
+  BarChart3, 
+  User,
+  Target,
+  Utensils,
+  Bell
+} from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useNavigate } from "react-router-dom";
 
 interface DashboardQuickActionsProps {
-  onViewMealPlan: () => void;
-  onViewExercise: () => void;
-  onViewWeight: () => void;
-  onViewProgress: () => void;
-  onViewGoals: () => void;
-  onViewProfile: () => void;
+  handleViewMealPlan: () => void;
+  handleViewExercise: () => void;
+  handleViewWeight: () => void;
+  handleViewProgress: () => void;
+  handleViewProfile: () => void;
+  handleViewGoals: () => void;
 }
 
 const DashboardQuickActions = ({
-  onViewMealPlan,
-  onViewExercise,
-  onViewWeight,
-  onViewProgress,
-  onViewGoals,
-  onViewProfile
+  handleViewMealPlan,
+  handleViewExercise,
+  handleViewWeight,
+  handleViewProgress,
+  handleViewProfile,
+  handleViewGoals,
 }: DashboardQuickActionsProps) => {
-  const { t, isRTL } = useI18n();
+  const { t } = useLanguage();
+  const navigate = useNavigate();
 
-  const actions = [
+  const quickActions = [
     {
-      title: t('navigation:mealPlan') || 'Meal Plan',
-      description: t('dashboard:viewTodaysMeals') || "View today's meals",
-      icon: Utensils,
-      onClick: onViewMealPlan,
-      color: 'bg-green-500'
+      title: t('Meal Plan'),
+      description: t('View today\'s meals'),
+      icon: Apple,
+      action: handleViewMealPlan,
+      color: 'bg-green-500 hover:bg-green-600',
     },
     {
-      title: t('navigation:exercise') || 'Exercise',
-      description: t('dashboard:startWorkout') || 'Start your workout',
+      title: t('Workout'),
+      description: t('Start exercising'),
       icon: Dumbbell,
-      onClick: onViewExercise,
-      color: 'bg-blue-500'
+      action: handleViewExercise,
+      color: 'bg-blue-500 hover:bg-blue-600',
     },
     {
-      title: t('navigation:weight') || 'Weight',
-      description: t('dashboard:trackWeight') || 'Track your weight',
+      title: t('Food Tracker'),
+      description: t('Log your meals'),
+      icon: Utensils,
+      action: () => navigate('/food-tracker'),
+      color: 'bg-orange-500 hover:bg-orange-600',
+    },
+    {
+      title: t('Weight'),
+      description: t('Track progress'),
       icon: Scale,
-      onClick: onViewWeight,
-      color: 'bg-purple-500'
+      action: handleViewWeight,
+      color: 'bg-purple-500 hover:bg-purple-600',
     },
     {
-      title: t('navigation:progress') || 'Progress',
-      description: t('dashboard:viewProgress') || 'View your progress',
-      icon: TrendingUp,
-      onClick: onViewProgress,
-      color: 'bg-indigo-500'
-    },
-    {
-      title: t('navigation:goals') || 'Goals',
-      description: t('dashboard:manageGoals') || 'Manage your goals',
+      title: t('Goals'),
+      description: t('Manage objectives'),
       icon: Target,
-      onClick: onViewGoals,
-      color: 'bg-orange-500'
+      action: handleViewGoals,
+      color: 'bg-red-500 hover:bg-red-600',
     },
     {
-      title: t('navigation:profile') || 'Profile',
-      description: t('dashboard:updateProfile') || 'Update your profile',
+      title: t('Progress'),
+      description: t('View analytics'),
+      icon: BarChart3,
+      action: handleViewProgress,
+      color: 'bg-indigo-500 hover:bg-indigo-600',
+    },
+    {
+      title: t('Notifications'),
+      description: t('Check updates'),
+      icon: Bell,
+      action: () => navigate('/notifications'),
+      color: 'bg-yellow-500 hover:bg-yellow-600',
+    },
+    {
+      title: t('Profile'),
+      description: t('Edit settings'),
       icon: User,
-      onClick: onViewProfile,
-      color: 'bg-pink-500'
-    }
+      action: handleViewProfile,
+      color: 'bg-gray-500 hover:bg-gray-600',
+    },
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-      {actions.map((action, index) => (
-        <Card key={index} className="hover:shadow-lg transition-all duration-300 cursor-pointer group" onClick={action.onClick}>
-          <CardContent className="p-4 text-center">
-            <div className={`w-12 h-12 ${action.color} rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform`}>
-              <action.icon className="w-6 h-6 text-white" />
-            </div>
-            <h3 className="font-semibold text-gray-900 mb-1 text-sm">
-              {action.title}
-            </h3>
-            <p className="text-xs text-gray-600 line-clamp-2">
-              {action.description}
-            </p>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
+    <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+      <CardContent className="p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          {t('Quick Actions')}
+        </h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {quickActions.map((action, index) => {
+            const IconComponent = action.icon;
+            return (
+              <Button
+                key={index}
+                variant="outline"
+                onClick={action.action}
+                className={`h-auto p-4 flex flex-col items-center space-y-2 text-white border-0 ${action.color} transition-all hover:scale-105`}
+              >
+                <IconComponent className="w-6 h-6" />
+                <div className="text-center">
+                  <div className="font-medium text-sm">{action.title}</div>
+                  <div className="text-xs opacity-90">{action.description}</div>
+                </div>
+              </Button>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

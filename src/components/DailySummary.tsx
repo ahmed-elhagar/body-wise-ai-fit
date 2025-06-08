@@ -2,7 +2,7 @@
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Target, TrendingUp, Flame, Clock, Users } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useProfile } from "@/hooks/useProfile";
 
 interface DailySummaryProps {
@@ -12,7 +12,7 @@ interface DailySummaryProps {
 }
 
 const DailySummary = ({ totalCalories, totalProtein, onShowShoppingList }: DailySummaryProps) => {
-  const { t, isRTL } = useI18n();
+  const { t, isRTL } = useLanguage();
   const { profile } = useProfile();
   
   // Calculate target values from user profile or use intelligent defaults
@@ -100,7 +100,7 @@ const DailySummary = ({ totalCalories, totalProtein, onShowShoppingList }: Daily
           <div className="w-8 h-8 bg-fitness-gradient rounded-full flex items-center justify-center">
             <Target className="w-4 h-4 text-white" />
           </div>
-          <h3 className="text-base font-semibold text-gray-800">{t('mealPlan:todaysSummary')}</h3>
+          <h3 className="text-base font-semibold text-gray-800">{t('mealPlan.todaysSummary')}</h3>
         </div>
         
         <div className="space-y-4">
@@ -109,7 +109,7 @@ const DailySummary = ({ totalCalories, totalProtein, onShowShoppingList }: Daily
             <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
               <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
                 <Flame className="w-4 h-4 text-red-500" />
-                <span className="text-sm font-medium text-gray-700">{t('common:calories')}</span>
+                <span className="text-sm font-medium text-gray-700">{t('mealPlan.calories')}</span>
               </div>
               <span className="text-sm text-gray-600">
                 {totalCalories} / {targetCalories}
@@ -118,7 +118,7 @@ const DailySummary = ({ totalCalories, totalProtein, onShowShoppingList }: Daily
             <Progress value={calorieProgress} className="h-2" />
             <div className="text-center">
               <span className="text-xl font-bold text-red-600">{totalCalories}</span>
-              <span className="text-xs text-gray-500 ml-1">{t('mealPlan:calToday')}</span>
+              <span className="text-xs text-gray-500 ml-1">{t('mealPlan.calToday')}</span>
             </div>
           </div>
 
@@ -127,7 +127,7 @@ const DailySummary = ({ totalCalories, totalProtein, onShowShoppingList }: Daily
             <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
               <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
                 <TrendingUp className="w-4 h-4 text-green-500" />
-                <span className="text-sm font-medium text-gray-700">{t('common:protein')}</span>
+                <span className="text-sm font-medium text-gray-700">{t('mealPlan.protein')}</span>
               </div>
               <span className="text-sm text-gray-600">
                 {totalProtein}g / {targetProtein}g
@@ -136,7 +136,7 @@ const DailySummary = ({ totalCalories, totalProtein, onShowShoppingList }: Daily
             <Progress value={proteinProgress} className="h-2" />
             <div className="text-center">
               <span className="text-xl font-bold text-green-600">{totalProtein}g</span>
-              <span className="text-xs text-gray-500 ml-1">{t('mealPlan:proteinToday')}</span>
+              <span className="text-xs text-gray-500 ml-1">{t('mealPlan.proteinToday')}</span>
             </div>
           </div>
         </div>
@@ -149,7 +149,7 @@ const DailySummary = ({ totalCalories, totalProtein, onShowShoppingList }: Daily
             <Clock className="w-4 h-4 text-blue-600" />
             <div>
               <div className="text-sm font-bold text-blue-800">{Math.round(totalCalories / mealsCount)}</div>
-              <div className="text-xs text-blue-600">{t('mealPlan:avgPerMeal')}</div>
+              <div className="text-xs text-blue-600">{t('mealPlan.avgPerMeal')}</div>
             </div>
           </div>
         </Card>
@@ -159,7 +159,7 @@ const DailySummary = ({ totalCalories, totalProtein, onShowShoppingList }: Daily
             <Users className="w-4 h-4 text-purple-600" />
             <div>
               <div className="text-sm font-bold text-purple-800">{Math.round(totalProtein / mealsCount)}g</div>
-              <div className="text-xs text-purple-600">{t('mealPlan:proteinPerMeal')}</div>
+              <div className="text-xs text-purple-600">{t('mealPlan.proteinPerMeal')}</div>
             </div>
           </div>
         </Card>

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { UtensilsCrossed, Sparkles, Shuffle, ShoppingCart, MoreVertical, RefreshCcw, Zap } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useCentralizedCredits } from "@/hooks/useCentralizedCredits";
 import { Badge } from "@/components/ui/badge";
 
@@ -24,7 +24,7 @@ const EnhancedMealPlanHeader = ({
   isGenerating,
   hasWeeklyPlan
 }: EnhancedMealPlanHeaderProps) => {
-  const { t } = useI18n();
+  const { t } = useLanguage();
   const { remaining: userCredits, isPro, hasCredits } = useCentralizedCredits();
 
   const displayCredits = isPro ? 'Unlimited' : `${userCredits} credits`;

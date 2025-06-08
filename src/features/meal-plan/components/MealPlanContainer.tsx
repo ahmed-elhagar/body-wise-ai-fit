@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { useMealPlanState } from '@/hooks/useMealPlanState';
 import MealPlanHeader from '@/components/meal-plan/MealPlanHeader';
@@ -8,7 +7,7 @@ import ErrorState from '@/components/meal-plan/components/ErrorState';
 import LoadingState from '@/components/meal-plan/components/LoadingState';
 import MealPlanAILoadingDialog from '@/components/meal-plan/MealPlanAILoadingDialog';
 import { useEnhancedMealShuffle } from '@/hooks/useEnhancedMealShuffle';
-import ShoppingListDrawer from '@/components/ShoppingListDrawer';
+import ModernShoppingListDrawer from '@/components/shopping-list/ModernShoppingListDrawer';
 import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { MealPlanViewToggle } from '../components/MealPlanViewToggle';
 import { Card } from '@/components/ui/card';
@@ -17,9 +16,9 @@ import { formatWeekRange, getDayName } from '@/utils/mealPlanUtils';
 
 // Import the correct meal exchange dialog
 import { MealExchangeDialog } from '@/components/meal-plan/MealExchangeDialog';
-import AIGenerationDialog from './dialogs/AIGenerationDialog';
+import { AIGenerationDialog } from './dialogs/AIGenerationDialog';
 import EnhancedAddSnackDialog from '@/components/meal-plan/EnhancedAddSnackDialog';
-import EnhancedRecipeDialog from '@/components/meal-plan/EnhancedRecipeDialog';
+import { EnhancedRecipeDialog } from '@/components/meal-plan/EnhancedRecipeDialog';
 
 export const MealPlanContainer = () => {
   const mealPlanState = useMealPlanState();
@@ -195,18 +194,16 @@ export const MealPlanContainer = () => {
         position="top-right"
       />
 
-      {/* Shopping List Drawer - Using ShoppingListDrawer */}
-      <ShoppingListDrawer
+      {/* Modern Shopping List Drawer - Complete revamped experience */}
+      <ModernShoppingListDrawer
         isOpen={mealPlanState.showShoppingListDialog}
         onClose={() => mealPlanState.closeShoppingListDialog()}
-        items={mealPlanState.currentWeekPlan?.dailyMeals?.flatMap(meal => 
-          meal.ingredients?.map(ing => ({
-            name: ing.name || ing,
-            quantity: ing.quantity,
-            unit: ing.unit,
-            category: 'Other'
-          })) || []
-        ) || []}
+        weeklyPlan={mealPlanState.currentWeekPlan}
+        weekId={mealPlanState.currentWeekPlan?.weeklyPlan?.id}
+        onShoppingListUpdate={() => {
+          console.log('🛒 Shopping list updated');
+          mealPlanState.refetch();
+        }}
       />
 
       {/* AI Generation Dialog */}

@@ -1,117 +1,111 @@
 
-import React from 'react';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Calendar, Users, Clock, Target } from 'lucide-react';
-import { useI18n } from '@/hooks/useI18n';
-import OptimizedExerciseList from './OptimizedExerciseList';
-import { DailyWorkout, Exercise } from '@/types/exercise';
+import React from "react";
+import { Card } from "@/components/ui/card";
+import { useOptimizedExercise } from "@/hooks/useOptimizedExercise";
+import OptimizedExerciseHeader from "./OptimizedExerciseHeader";
+import OptimizedExerciseWeekView from "./OptimizedExerciseWeekView";
+import OptimizedExerciseDayView from "./OptimizedExerciseDayView";
+import OptimizedExerciseProgress from "./OptimizedExerciseProgress";
+import ExerciseAILoadingDialog from "./ExerciseAILoadingDialog";
 
-interface OptimizedExerciseContainerProps {
-  dailyWorkout: DailyWorkout | null;
-  selectedDay: number;
-  onExerciseStart: (exerciseId: string) => void;
-  onExerciseComplete: (exerciseId: string) => void;
-  workoutType: 'home' | 'gym';
-}
+const OptimizedExerciseContainer = React.memo(() => {
+  const {
+    weeklyProgram,
+    weekStructure,
+    currentWorkout,
+    currentDayExercises,
+    selectedDay,
+    setSelectedDay,
+    progressMetrics,
+    loadingStates,
+    programError,
+    optimizedActions,
+  } = useOptimizedExercise();
 
-const OptimizedExerciseContainer = ({
-  dailyWorkout,
-  selectedDay,
-  onExerciseStart,
-  onExerciseComplete,
-  workoutType
-}: OptimizedExerciseContainerProps) => {
-  const { t, isRTL } = useI18n();
-
-  // Handle rest day
-  if (!dailyWorkout || dailyWorkout.is_rest_day) {
+  if (loadingStates.isProgramLoading) {
     return (
-      <Card className="p-8 text-center bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
-        <div className="space-y-4">
-          <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto">
-            <Calendar className="w-10 h-10 text-white" />
+      <>
+        <Card className="p-8">
+          <div className="text-center">
+            <h3 className="text-lg font-semibold mb-2">Loading Exercise Program</h3>
+            <p className="text-sm text-gray-600">Preparing your personalized workouts...</p>
           </div>
-          <div>
-            <h3 className="text-xl font-bold text-green-800 mb-2">
-              {t('exercise:restDay') || 'Rest Day'}
-            </h3>
-            <p className="text-green-700 mb-4">
-              {t('exercise:restDayDescription') || 'Take this day to recover and let your muscles rebuild stronger.'}
-            </p>
-            <div className="flex justify-center gap-4 text-sm text-green-600">
-              <div className="flex items-center gap-1">
-                <Target className="w-4 h-4" />
-                <span>{t('exercise:recovery') || 'Recovery'}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Clock className="w-4 h-4" />
-                <span>{t('exercise:lightActivity') || 'Light activity only'}</span>
-              </div>
-            </div>
-          </div>
+        </Card>
+        <ExerciseAILoadingDialog 
+          isGenerating={loadingStates.isProgramLoading}
+          type="program"
+        />
+      </>
+    );
+  }
+
+  if (programError) {
+    return (
+      <Card className="p-8 text-center">
+        <div className="text-red-600 mb-4">
+          <h3 className="text-lg font-semibold mb-2">Error Loading Exercise Program</h3>
+          <p className="text-sm">{programError.message}</p>
         </div>
       </Card>
     );
   }
 
-  // Create a mock daily workout if data is incomplete
-  const workoutData = dailyWorkout.exercises && dailyWorkout.exercises.length > 0
-    ? dailyWorkout
-    : {
-        ...dailyWorkout,
-        id: `mock-${selectedDay}`,
-        weekly_program_id: '',
-        day_number: selectedDay,
-        completed: false,
-        exercises: [] as Exercise[]
-      };
-
-  return (
-    <div className="space-y-6">
-      {/* Workout Header */}
-      <Card className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
-        <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-          <div className={`flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
-              <Target className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-gray-900">
-                {workoutData.workout_name || `Day ${selectedDay} Workout`}
-              </h2>
-              <p className="text-gray-600">
-                {workoutType === 'home' ? t('exercise:homeWorkout') : t('exercise:gymWorkout')} • 
-                {workoutData.estimated_duration || 45} {t('exercise:minutes')}
-              </p>
-            </div>
-          </div>
-          
-          <div className={`flex flex-col gap-2 ${isRTL ? 'items-start' : 'items-end'}`}>
-            <Badge variant="secondary" className="flex items-center gap-1">
-              <Clock className="w-3 h-3" />
-              {workoutData.estimated_duration || 45} min
-            </Badge>
-            {workoutData.muscle_groups && workoutData.muscle_groups.length > 0 && (
-              <Badge variant="outline" className="flex items-center gap-1">
-                <Users className="w-3 h-3" />
-                {workoutData.muscle_groups.join(', ')}
-              </Badge>
-            )}
-          </div>
+  if (!weeklyProgram) {
+    return (
+      <Card className="p-8 text-center">
+        <div className="text-gray-600 mb-4">
+          <h3 className="text-lg font-semibold mb-2">No Exercise Program Found</h3>
+          <p className="text-sm">Create your first exercise program to get started</p>
         </div>
       </Card>
+    );
+  }
 
-      {/* Exercise List */}
-      <OptimizedExerciseList
-        exercises={workoutData.exercises || []}
-        currentExerciseIndex={0}
-        workoutType={workoutType}
-        onExerciseStart={onExerciseStart}
-        onExerciseComplete={onExerciseComplete}
+  return (
+    <>
+      <div className="space-y-6">
+        <OptimizedExerciseHeader 
+          program={weeklyProgram}
+          progressMetrics={progressMetrics}
+          onGenerateNew={optimizedActions.startWorkout}
+        />
+        
+        <OptimizedExerciseProgress 
+          progressMetrics={progressMetrics}
+          weekStructure={weekStructure}
+        />
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-1">
+            <OptimizedExerciseWeekView
+              weekStructure={weekStructure}
+              selectedDay={selectedDay}
+              onDaySelect={setSelectedDay}
+            />
+          </div>
+          
+          <div className="lg:col-span-2">
+            <OptimizedExerciseDayView
+              currentWorkout={currentWorkout}
+              exercises={currentDayExercises}
+              selectedDay={selectedDay}
+              onStartWorkout={optimizedActions.startWorkout}
+              onCompleteWorkout={optimizedActions.completeWorkout}
+              isLoading={loadingStates.isUpdating}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* AI Loading Dialog for exercise exchanges */}
+      <ExerciseAILoadingDialog 
+        isGenerating={loadingStates.isUpdating}
+        type="exchange"
       />
-    </div>
+    </>
   );
-};
+});
+
+OptimizedExerciseContainer.displayName = 'OptimizedExerciseContainer';
 
 export default OptimizedExerciseContainer;

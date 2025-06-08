@@ -1,37 +1,13 @@
-import React, { useState } from 'react';
+
+import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Heart, Calendar, Utensils, Settings as SettingsIcon } from "lucide-react";
 import { HealthConditionsSettings } from './HealthConditionsSettings';
 import { SpecialConditionsSettings } from './SpecialConditionsSettings';
 import { FoodPreferencesSettings } from './FoodPreferencesSettings';
 import EnhancedSettingsForm from '../profile/enhanced/EnhancedSettingsForm';
-import type { Language } from '@/hooks/useI18n';
 
 export const EnhancedSettingsPage = () => {
-  const [userSettings, setUserSettings] = useState({
-    measurementUnits: 'metric',
-    language: 'en' as Language,
-    notifications: {
-      email: true,
-      push: true,
-      meals: true,
-      workouts: true
-    },
-    theme: 'light',
-    displayName: '',
-    bio: '',
-    privacy: {
-      profileVisible: true,
-      showProgress: true,
-      allowMessages: true
-    }
-  });
-
-  const handleSave = (newSettings: any) => {
-    setUserSettings(newSettings);
-    console.log('Settings saved:', newSettings);
-  };
-
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       <div className="text-center mb-8">
@@ -84,10 +60,7 @@ export const EnhancedSettingsPage = () => {
         </TabsContent>
 
         <TabsContent value="general" className="mt-6">
-          <EnhancedSettingsForm 
-            userSettings={userSettings}
-            onSave={handleSave}
-          />
+          <EnhancedSettingsForm />
         </TabsContent>
       </Tabs>
     </div>

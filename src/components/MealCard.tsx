@@ -1,6 +1,6 @@
 
 import { Card } from "@/components/ui/card";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useState, useEffect } from "react";
 import MealCardImage from "@/components/meal-card/MealCardImage";
 import NutritionGrid from "@/components/meal-card/NutritionGrid";
@@ -40,7 +40,7 @@ interface MealCardProps {
 }
 
 const MealCard = ({ meal, onShowRecipe, onExchangeMeal }: MealCardProps) => {
-  const { isRTL } = useI18n();
+  const { isRTL } = useLanguage();
   
   // Enhanced image state management with proper meal ID tracking
   const [mealImage, setMealImage] = useState<string | null>(
