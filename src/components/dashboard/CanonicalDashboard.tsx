@@ -158,10 +158,10 @@ const CanonicalDashboard = () => {
             {/* Enhanced Stats Grid */}
             <EnhancedStatsGrid 
               stats={[
-                { key: 'calories', value: 1850, target: 2200, label: 'Calories', percentage: 84 },
-                { key: 'protein', value: 120, target: 150, label: 'Protein', percentage: 80 },
-                { key: 'workouts', value: 4, target: 5, label: 'Workouts', percentage: 80 },
-                { key: 'weight', value: 75, target: 70, label: 'Weight', change: -2 }
+                { key: 'calories', value: '1850', target: '2200', label: 'Calories', percentage: 84 },
+                { key: 'protein', value: '120', target: '150', label: 'Protein', percentage: 80 },
+                { key: 'workouts', value: '4', target: '5', label: 'Workouts', percentage: 80 },
+                { key: 'weight', value: '75', target: '70', label: 'Weight', change: '-2' }
               ]}
             />
 
@@ -211,13 +211,13 @@ const CanonicalDashboard = () => {
             {/* Progress Chart Section */}
             <InteractiveProgressChart 
               data={[
-                { day: 'Mon', value: 2100 },
-                { day: 'Tue', value: 1950 },
-                { day: 'Wed', value: 2200 },
-                { day: 'Thu', value: 2050 },
-                { day: 'Fri', value: 1900 },
-                { day: 'Sat', value: 2300 },
-                { day: 'Sun', value: 2000 }
+                { name: 'Mon', value: 2100 },
+                { name: 'Tue', value: 1950 },
+                { name: 'Wed', value: 2200 },
+                { name: 'Thu', value: 2050 },
+                { name: 'Fri', value: 1900 },
+                { name: 'Sat', value: 2300 },
+                { name: 'Sun', value: 2000 }
               ]}
               title="Weekly Progress"
               dataKey="value"
@@ -229,8 +229,8 @@ const CanonicalDashboard = () => {
               <div className="space-y-4 md:space-y-6">
                 <GoalProgressWidget 
                   goals={[
-                    { id: '1', title: 'Lose 5kg', progress: 60, target: 100 },
-                    { id: '2', title: 'Workout 5x/week', progress: 80, target: 100 }
+                    { id: '1', title: 'Lose 5kg', progress: 60, target: 100, current: 60, unit: 'kg' },
+                    { id: '2', title: 'Workout 5x/week', progress: 80, target: 100, current: 4, unit: 'workouts' }
                   ]}
                 />
                 <WeightTrackingWidget />
