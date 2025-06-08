@@ -15,7 +15,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         <AppSidebar />
         <div className="flex-1 flex flex-col">
           {/* Language Toggle in top-right corner */}
-          <div className={`flex justify-end p-4 ${isRTL ? 'justify-start' : 'justify-end'}`}>
+          <div className={`flex p-4 ${isRTL ? 'justify-start' : 'justify-end'}`}>
             <div className="w-48">
               <LanguageToggle />
             </div>
