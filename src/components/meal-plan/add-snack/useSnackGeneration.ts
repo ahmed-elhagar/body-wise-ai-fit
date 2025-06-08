@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 interface UseSnackGenerationProps {
   weeklyPlanId: string | null;
@@ -21,7 +21,7 @@ export const useSnackGeneration = ({
   onSnackAdded,
   onClose
 }: UseSnackGenerationProps) => {
-  const { t, language } = useLanguage();
+  const { t, language } = useI18n();
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationStep, setGenerationStep] = useState('');
 
@@ -45,19 +45,19 @@ export const useSnackGeneration = ({
     // Enhanced validation with proper error messages
     if (!weeklyPlanId) {
       console.error('❌ No weekly plan ID provided');
-      toast.error(t('mealPlan.addSnackDialog.error') || 'Error: No meal plan found');
+      toast.error(t('mealPlan:addSnackDialog.error') || 'Error: No meal plan found');
       return;
     }
 
     if (!profile) {
       console.error('❌ No user profile available');
-      toast.error(t('mealPlan.addSnackDialog.error') || 'Error: User profile not found');
+      toast.error(t('mealPlan:addSnackDialog.error') || 'Error: User profile not found');
       return;
     }
 
     if (remainingCalories < 50) {
       console.warn('⚠️ Not enough calories remaining for snack');
-      toast.error(t('mealPlan.addSnackDialog.notEnoughCalories') || 'Not enough calories remaining for a snack');
+      toast.error(t('mealPlan:addSnackDialog.notEnoughCalories') || 'Not enough calories remaining for a snack');
       return;
     }
 
@@ -109,7 +109,7 @@ export const useSnackGeneration = ({
 
       if (error) {
         console.error('❌ Error from enhanced generate-ai-snack function:', error);
-        toast.error(t('mealPlan.addSnackDialog.failed') || 'Failed to generate snack');
+        toast.error(t('mealPlan:addSnackDialog.failed') || 'Failed to generate snack');
         return;
       }
 
@@ -120,7 +120,7 @@ export const useSnackGeneration = ({
 
       if (data?.success) {
         console.log('✅ Enhanced AI snack generated successfully:', data);
-        const successMessage = data.message || t('mealPlan.snackAddedSuccess') || 'Snack added successfully!';
+        const successMessage = data.message || t('mealPlan:snackAddedSuccess') || 'Snack added successfully!';
         toast.success(successMessage);
         
         // Close dialog and refresh data
@@ -128,13 +128,13 @@ export const useSnackGeneration = ({
         onSnackAdded();
       } else {
         console.error('❌ Enhanced generation failed:', data);
-        const errorMessage = data?.error || t('mealPlan.addSnackDialog.failed') || 'Failed to generate snack';
+        const errorMessage = data?.error || t('mealPlan:addSnackDialog.failed') || 'Failed to generate snack';
         toast.error(errorMessage);
       }
       
     } catch (error) {
       console.error('❌ Exception during enhanced AI snack generation:', error);
-      toast.error(t('mealPlan.addSnackDialog.failed') || 'Failed to generate snack');
+      toast.error(t('mealPlan:addSnackDialog.failed') || 'Failed to generate snack');
     } finally {
       setIsGenerating(false);
       setGenerationStep('');

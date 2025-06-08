@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { UtensilsCrossed, Sparkles, Zap } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import { useCentralizedCredits } from "@/hooks/useCentralizedCredits";
 
 interface MealPlanHeaderProps {
@@ -15,16 +15,16 @@ const MealPlanHeader = ({
   onShowAIDialog, 
   isGenerating 
 }: MealPlanHeaderProps) => {
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL } = useI18n();
   const { remaining: remainingCredits, isPro, hasCredits } = useCentralizedCredits();
 
   console.log('🌐 MealPlanHeader translation check:', {
     language: isRTL ? 'ar' : 'en',
     isRTL,
-    titleTranslation: t('mealPlan.smartMealPlanning'),
-    subtitleTranslation: t('mealPlan.personalizedNutrition'),
-    creditsTranslation: t('mealPlan.aiCredits'),
-    generateButtonTranslation: t('mealPlan.generateAIMealPlan')
+    titleTranslation: t('mealPlan:smartMealPlanning'),
+    subtitleTranslation: t('mealPlan:personalizedNutrition'),
+    creditsTranslation: t('mealPlan:aiCredits'),
+    generateButtonTranslation: t('mealPlan:generateAIMealPlan')
   });
 
   const displayCredits = isPro ? 'Unlimited' : `${remainingCredits} credits`;
@@ -45,10 +45,10 @@ const MealPlanHeader = ({
               </div>
               <div>
                 <h1 className="text-4xl font-bold bg-gradient-to-r from-fitness-primary-700 to-fitness-accent-600 bg-clip-text text-transparent mb-1">
-                  {t('mealPlan.smartMealPlanning') || 'Smart Meal Planning'}
+                  {t('mealPlan:smartMealPlanning') || 'Smart Meal Planning'}
                 </h1>
                 <p className="text-lg text-fitness-primary-600 font-medium">
-                  {t('mealPlan.personalizedNutrition') || 'Personalized nutrition plans powered by AI'}
+                  {t('mealPlan:personalizedNutrition') || 'Personalized nutrition plans powered by AI'}
                 </p>
               </div>
             </div>
@@ -60,7 +60,7 @@ const MealPlanHeader = ({
                 {displayCredits}
               </Badge>
               <span className="text-sm text-fitness-primary-500 font-medium">
-                {t('mealPlan.unlimitedGeneration') || 'Generate unlimited meal plans'}
+                {t('mealPlan:unlimitedGeneration') || 'Generate unlimited meal plans'}
               </span>
             </div>
           </div>
@@ -75,14 +75,14 @@ const MealPlanHeader = ({
             >
               <Sparkles className={`w-5 h-5 ${isRTL ? 'ml-3' : 'mr-3'}`} />
               {isGenerating ? 
-                (t('mealPlan.generating') || 'Generating Plan...') : 
-                (t('mealPlan.generateAIMealPlan') || 'Generate AI Meal Plan')
+                (t('mealPlan:generating') || 'Generating Plan...') : 
+                (t('mealPlan:generateAIMealPlan') || 'Generate AI Meal Plan')
               }
             </Button>
             
             {!hasCredits && (
               <p className="text-sm text-red-600 mt-3 text-center font-medium">
-                {t('mealPlan.noCreditsRemaining') || 'No AI credits remaining. Upgrade to continue.'}
+                {t('mealPlan:noCreditsRemaining') || 'No AI credits remaining. Upgrade to continue.'}
               </p>
             )}
           </div>

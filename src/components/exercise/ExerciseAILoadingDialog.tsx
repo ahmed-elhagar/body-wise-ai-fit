@@ -1,6 +1,6 @@
 
 import React, { useMemo } from "react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import { UnifiedAILoadingDialog } from "@/components/ai/UnifiedAILoadingDialog";
 import { useAILoadingSteps } from "@/hooks/useAILoadingSteps";
 import type { AIStep } from "@/components/ai/AILoadingSteps";
@@ -16,7 +16,7 @@ const ExerciseAILoadingDialog = ({
   type = 'program',
   onClose 
 }: ExerciseAILoadingDialogProps) => {
-  const { t, language } = useLanguage();
+  const { t, language } = useI18n();
 
   const programSteps = useMemo((): AIStep[] => [
     {
@@ -107,11 +107,9 @@ const ExerciseAILoadingDialog = ({
     return language === 'ar' ? 'إنشاء برنامج رياضي مخصص لأهدافك ومستوى لياقتك' : 'Creating a personalized exercise program for your goals and fitness level';
   };
 
-  if (!isGenerating) return null;
-
   return (
     <UnifiedAILoadingDialog
-      isOpen={true}
+      isOpen={isGenerating}
       title={getTitle()}
       description={getDescription()}
       steps={steps}

@@ -1,259 +1,185 @@
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { useState, useEffect } from 'react';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Users, 
-  MessageSquare, 
-  Target, 
-  TrendingUp, 
-  Clock,
-  CheckCircle2,
-  AlertCircle,
+  MessageCircle, 
+  BarChart3, 
+  Plus,
   Calendar,
-  Activity
-} from "lucide-react";
-import { useCoachSystem } from "@/hooks/useCoachSystem";
-import { useCoachTasks } from "@/hooks/useCoachTasks";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { TraineesTab } from "./TraineesTab";
-import CoachTasksPanel from "./CoachTasksPanel";
-import { CoachMessagesTab } from "./CoachMessagesTab";
-import { CoachAnalyticsTab } from "./CoachAnalyticsTab";
-import { TraineeProgressOverview } from "./overview/TraineeProgressOverview";
-import { QuickActions } from "./overview/QuickActions";
-import { CompactTasksPanel } from "./overview/CompactTasksPanel";
-import { AssignTraineeDialog } from "./AssignTraineeDialog";
-import { CreateTaskDialog } from "./CreateTaskDialog";
+  Award,
+  TrendingUp,
+  Clock
+} from 'lucide-react';
+import { useI18n } from '@/hooks/useI18n';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { TraineesTab } from './TraineesTab';
+import { CoachMessagesTab } from './CoachMessagesTab';
+import { CoachAnalyticsTab } from './CoachAnalyticsTab';
+import { AssignTraineeDialog } from './AssignTraineeDialog';
+import { CoachTraineeChat } from './CoachTraineeChat';
+
+interface CoachTraineeRelationship {
+  id: string;
+  trainee_id: string;
+  coach_id: string;
+  status: string;
+  created_at: string;
+  trainee_profile: any;
+}
 
 const EnhancedCoachDashboard = () => {
-  const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState("overview");
+  const { t, isRTL } = useI18n();
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState('trainees');
+  const [trainees, setTrainees] = useState<CoachTraineeRelationship[]>([]);
   const [showAssignDialog, setShowAssignDialog] = useState(false);
-  const [showCreateTaskDialog, setShowCreateTaskDialog] = useState(false);
-  
-  const { 
-    trainees, 
-    isLoadingTrainees, 
-    totalUnreadMessages,
-    isCoach 
-  } = useCoachSystem();
-  
-  const { 
-    tasks, 
-    isLoading: isLoadingTasks 
-  } = useCoachTasks();
+  const [selectedTrainee, setSelectedTrainee] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Calculate quick stats
-  const totalTrainees = trainees?.length || 0;
-  const activeTrainees = trainees?.filter(t => 
-    (t.trainee_profile?.ai_generations_remaining || 0) > 0
-  ).length || 0;
-  
-  const pendingTasks = tasks?.filter(task => !task.completed).length || 0;
-  const overdueTasks = tasks?.filter(task => 
-    !task.completed && task.dueDate && task.dueDate < new Date()
-  ).length || 0;
+  useEffect(() => {
+    const fetchTrainees = async () => {
+      const { data, error } = await supabase
+        .from('coach_trainee_relationships')
+        .select('*')
+        .eq('coach_id', user?.id || '')
+        .order('created_at', { ascending: false });
 
-  const completedProfiles = trainees?.filter(t => 
-    (t.trainee_profile?.profile_completion_score || 0) >= 80
-  ).length || 0;
+      if (data) {
+        setTrainees(data);
+      } else if (error) {
+        console.error('Error fetching trainees:', error);
+      }
+    };
 
-  if (!isCoach) {
+    fetchTrainees();
+  }, [user]);
+
+  const handleAssignTrainee = (traineeId: string) => {
+    // Handle assignment logic
+    setShowAssignDialog(false);
+  };
+
+  if (selectedTrainee) {
     return (
-      <Card className="text-center">
-        <CardContent className="p-8">
-          <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            {t('Access Denied')}
-          </h2>
-          <p className="text-gray-600">
-            {t('This page is only available to certified coaches.')}
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (isLoadingTrainees || isLoadingTasks) {
-    return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i} className="animate-pulse">
-              <CardContent className="p-6">
-                <div className="h-16 bg-gray-200 rounded mb-4"></div>
-                <div className="h-4 bg-gray-200 rounded"></div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
+      <CoachTraineeChat 
+        traineeId={selectedTrainee}
+        onBack={() => setSelectedTrainee(null)}
+      />
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Quick Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Users className="w-6 h-6 text-blue-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm text-gray-600">{t('Total Trainees')}</p>
-                <p className="text-2xl font-bold text-gray-900">{totalTrainees}</p>
-              </div>
+    <div className={`space-y-6 ${isRTL ? 'rtl' : 'ltr'}`}>
+      {/* Header */}
+      <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${isRTL ? 'sm:flex-row-reverse' : ''}`}>
+        <div className={isRTL ? 'text-right' : 'text-left'}>
+          <h1 className="text-3xl font-bold text-gray-900">
+            {t('coach:dashboard') || 'Coach Dashboard'}
+          </h1>
+          <p className="text-gray-600 mt-1">
+            {t('coach:manageTrainees') || 'Manage your trainees and track their progress'}
+          </p>
+        </div>
+        
+        <Button 
+          onClick={() => setShowAssignDialog(true)}
+          className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
+        >
+          <Plus className={`w-4 h-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+          {t('coach:assignTrainee') || 'Assign Trainee'}
+        </Button>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+          <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <div className={isRTL ? 'text-right' : 'text-left'}>
+              <p className="text-blue-600 text-sm font-medium">{t('coach:totalTrainees') || 'Total Trainees'}</p>
+              <p className="text-2xl font-bold text-blue-900">{trainees.length}</p>
             </div>
-          </CardContent>
+            <Users className="w-8 h-8 text-blue-600" />
+          </div>
         </Card>
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <Activity className="w-6 h-6 text-green-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm text-gray-600">{t('Active Trainees')}</p>
-                <p className="text-2xl font-bold text-gray-900">{activeTrainees}</p>
-              </div>
+        <Card className="p-6 bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+          <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <div className={isRTL ? 'text-right' : 'text-left'}>
+              <p className="text-green-600 text-sm font-medium">{t('coach:activeTrainees') || 'Active Today'}</p>
+              <p className="text-2xl font-bold text-green-900">
+                {trainees.filter(t => t.status === 'active').length}
+              </p>
             </div>
-          </CardContent>
+            <TrendingUp className="w-8 h-8 text-green-600" />
+          </div>
         </Card>
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-orange-100 rounded-lg">
-                <Clock className="w-6 h-6 text-orange-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm text-gray-600">{t('Pending Tasks')}</p>
-                <div className="flex items-center gap-2">
-                  <p className="text-2xl font-bold text-gray-900">{pendingTasks}</p>
-                  {overdueTasks > 0 && (
-                    <Badge variant="destructive" className="text-xs">
-                      {overdueTasks} overdue
-                    </Badge>
-                  )}
-                </div>
-              </div>
+        <Card className="p-6 bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+          <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <div className={isRTL ? 'text-right' : 'text-left'}>
+              <p className="text-purple-600 text-sm font-medium">{t('coach:messages') || 'Messages'}</p>
+              <p className="text-2xl font-bold text-purple-900">12</p>
             </div>
-          </CardContent>
+            <MessageCircle className="w-8 h-8 text-purple-600" />
+          </div>
         </Card>
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <MessageSquare className="w-6 h-6 text-purple-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm text-gray-600">{t('Unread Messages')}</p>
-                <p className="text-2xl font-bold text-gray-900">{totalUnreadMessages}</p>
-              </div>
+        <Card className="p-6 bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+          <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <div className={isRTL ? 'text-right' : 'text-left'}>
+              <p className="text-orange-600 text-sm font-medium">{t('coach:achievements') || 'Achievements'}</p>
+              <p className="text-2xl font-bold text-orange-900">8</p>
             </div>
-          </CardContent>
+            <Award className="w-8 h-8 text-orange-600" />
+          </div>
         </Card>
       </div>
 
-      {/* Main Dashboard Tabs */}
+      {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4 lg:w-fit lg:grid-cols-4">
-          <TabsTrigger value="overview" className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4" />
-            <span className="hidden sm:inline">{t('Overview')}</span>
-          </TabsTrigger>
-          <TabsTrigger value="trainees" className="flex items-center gap-2">
+        <TabsList className="grid w-full grid-cols-3 bg-gray-100">
+          <TabsTrigger value="trainees" className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
             <Users className="w-4 h-4" />
-            <span className="hidden sm:inline">{t('Trainees')}</span>
-            {totalTrainees > 0 && (
-              <Badge variant="secondary" className="ml-1">
-                {totalTrainees}
-              </Badge>
-            )}
+            {t('coach:trainees') || 'Trainees'}
           </TabsTrigger>
-          <TabsTrigger value="tasks" className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4" />
-            <span className="hidden sm:inline">{t('Tasks')}</span>
-            {pendingTasks > 0 && (
-              <Badge variant="secondary" className="ml-1">
-                {pendingTasks}
-              </Badge>
-            )}
+          <TabsTrigger value="messages" className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <MessageCircle className="w-4 h-4" />
+            {t('coach:messages') || 'Messages'}
           </TabsTrigger>
-          <TabsTrigger value="messages" className="flex items-center gap-2">
-            <MessageSquare className="w-4 h-4" />
-            <span className="hidden sm:inline">{t('Messages')}</span>
-            {totalUnreadMessages > 0 && (
-              <Badge variant="destructive" className="ml-1">
-                {totalUnreadMessages}
-              </Badge>
-            )}
+          <TabsTrigger value="analytics" className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <BarChart3 className="w-4 h-4" />
+            {t('coach:analytics') || 'Analytics'}
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="mt-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Main Content - Trainee Progress */}
-            <div className="lg:col-span-2">
-              <TraineeProgressOverview 
-                trainees={trainees || []}
-                onViewAllTrainees={() => setActiveTab('trainees')}
-              />
-            </div>
-
-            {/* Sidebar - Quick Actions & Tasks */}
-            <div className="space-y-6">
-              <QuickActions 
-                pendingTasks={pendingTasks}
-                unreadMessages={totalUnreadMessages}
-                onAddTrainee={() => setShowAssignDialog(true)}
-                onViewTasks={() => setActiveTab('tasks')}
-                onViewMessages={() => setActiveTab('messages')}
-              />
-              
-              <CompactTasksPanel 
-                onViewAllTasks={() => setActiveTab('tasks')}
-                onCreateTask={() => setShowCreateTaskDialog(true)}
-              />
-            </div>
-          </div>
-        </TabsContent>
-
         <TabsContent value="trainees" className="mt-6">
           <TraineesTab 
-            trainees={trainees || []} 
-            onChatClick={(traineeId) => {
-              console.log('Opening chat for trainee:', traineeId);
-              // This will be handled by TraineesTab internally
-            }}
+            trainees={trainees}
+            setSelectedClient={(traineeId: string) => setSelectedTrainee(traineeId)}
           />
         </TabsContent>
 
-        <TabsContent value="tasks" className="mt-6">
-          <CoachTasksPanel trainees={trainees || []} />
+        <TabsContent value="messages" className="mt-6">
+          <CoachMessagesTab />
         </TabsContent>
 
-        <TabsContent value="messages" className="mt-6">
-          <CoachMessagesTab trainees={trainees || []} />
+        <TabsContent value="analytics" className="mt-6">
+          <CoachAnalyticsTab />
         </TabsContent>
       </Tabs>
 
-      {/* Dialogs */}
+      {/* Assign Trainee Dialog */}
       <AssignTraineeDialog 
         open={showAssignDialog}
         onOpenChange={setShowAssignDialog}
-      />
-      
-      <CreateTaskDialog 
-        open={showCreateTaskDialog}
-        onOpenChange={setShowCreateTaskDialog}
-        trainees={trainees || []}
+        onAssign={(traineeId: string) => {
+          // Handle assignment logic
+          setShowAssignDialog(false);
+        }}
       />
     </div>
   );

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Zap, Plus } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import { useCreditSystem } from "@/hooks/useCreditSystem";
 import { useFoodPhotoIntegration } from "@/hooks/useFoodPhotoIntegration";
 import FoodPhotoAnalysisCard from "@/components/food-photo-analysis/FoodPhotoAnalysisCard";
@@ -16,7 +16,7 @@ interface ScanTabProps {
 }
 
 const ScanTab = ({ onFoodAdded, onClose }: ScanTabProps) => {
-  const { t } = useLanguage();
+  const { t } = useI18n();
   const [selectedFood, setSelectedFood] = useState<any>(null);
   const [quantity, setQuantity] = useState(100);
   const [mealType, setMealType] = useState("snack");
@@ -50,7 +50,7 @@ const ScanTab = ({ onFoodAdded, onClose }: ScanTabProps) => {
       onClose();
     } catch (error) {
       console.error('Error logging scanned food:', error);
-      toast.error(t('Failed to log food'));
+      toast.error(t('foodTracker:failedToLogFood') || 'Failed to log food');
     }
   };
 
@@ -63,11 +63,11 @@ const ScanTab = ({ onFoodAdded, onClose }: ScanTabProps) => {
         <div className="flex items-center gap-2">
           <Zap className="w-5 h-5 text-blue-600" />
           <span className="text-sm font-medium text-blue-800">
-            {t('AI Credits')}
+            {t('foodTracker:aiCredits') || 'AI Credits'}
           </span>
         </div>
         <Badge variant={canScan ? "default" : "destructive"}>
-          {userCredits === -1 ? t('Unlimited') : userCredits}
+          {userCredits === -1 ? (t('common:unlimited') || 'Unlimited') : userCredits}
         </Badge>
       </div>
 
@@ -80,7 +80,7 @@ const ScanTab = ({ onFoodAdded, onClose }: ScanTabProps) => {
       {/* Selected Food Details */}
       {selectedFood && (
         <div className="space-y-4 border-t pt-4">
-          <h3 className="font-medium text-gray-900">{t('Add to Log')}</h3>
+          <h3 className="font-medium text-gray-900">{t('foodTracker:addToLog') || 'Add to Log'}</h3>
           
           <div className="bg-green-50 p-4 rounded-lg">
             <h4 className="font-medium text-green-800">{selectedFood.name}</h4>
@@ -129,7 +129,7 @@ const ScanTab = ({ onFoodAdded, onClose }: ScanTabProps) => {
             className="w-full bg-green-600 hover:bg-green-700 text-white"
           >
             <Plus className="w-4 h-4 mr-2" />
-            {isLoggingFood ? t('Adding...') : t('Add to Log')}
+            {isLoggingFood ? (t('common:adding') || 'Adding...') : (t('foodTracker:addToLog') || 'Add to Log')}
           </Button>
         </div>
       )}

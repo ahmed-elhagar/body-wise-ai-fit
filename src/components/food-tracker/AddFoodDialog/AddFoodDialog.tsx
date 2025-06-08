@@ -2,7 +2,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Edit3 } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import { useEffect, useState } from "react";
 import SearchTab from "./SearchTab";
 import ManualTab from "./ManualTab";
@@ -15,7 +15,7 @@ interface AddFoodDialogProps {
 }
 
 const AddFoodDialog = ({ isOpen, onClose, onFoodAdded, preSelectedFood }: AddFoodDialogProps) => {
-  const { t } = useLanguage();
+  const { t } = useI18n();
   const [activeTab, setActiveTab] = useState("search");
 
   useEffect(() => {
@@ -35,7 +35,7 @@ const AddFoodDialog = ({ isOpen, onClose, onFoodAdded, preSelectedFood }: AddFoo
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-gray-900">
-              {t('Add Analyzed Food')}
+              {t('foodTracker:addAnalyzedFood') || 'Add Analyzed Food'}
             </DialogTitle>
           </DialogHeader>
 
@@ -56,7 +56,7 @@ const AddFoodDialog = ({ isOpen, onClose, onFoodAdded, preSelectedFood }: AddFoo
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-gray-900">
-            {t('Add Food')}
+            {t('foodTracker:addFood') || 'Add Food'}
           </DialogTitle>
         </DialogHeader>
 
@@ -67,14 +67,14 @@ const AddFoodDialog = ({ isOpen, onClose, onFoodAdded, preSelectedFood }: AddFoo
               className="data-[state=active]:bg-white data-[state=active]:text-gray-900 flex items-center gap-2"
             >
               <Search className="w-4 h-4" />
-              {t('Search')}
+              {t('common:search') || 'Search'}
             </TabsTrigger>
             <TabsTrigger 
               value="manual" 
               className="data-[state=active]:bg-white data-[state=active]:text-gray-900 flex items-center gap-2"
             >
               <Edit3 className="w-4 h-4" />
-              {t('Manual')}
+              {t('common:manual') || 'Manual'}
             </TabsTrigger>
           </TabsList>
 
