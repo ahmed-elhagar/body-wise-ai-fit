@@ -16,9 +16,9 @@ import { formatWeekRange, getDayName } from '@/utils/mealPlanUtils';
 
 // Import the correct meal exchange dialog
 import { MealExchangeDialog } from '@/components/meal-plan/MealExchangeDialog';
-import { AIGenerationDialog } from './dialogs/AIGenerationDialog';
+import AIGenerationDialog from './dialogs/AIGenerationDialog';
 import EnhancedAddSnackDialog from '@/components/meal-plan/EnhancedAddSnackDialog';
-import { EnhancedRecipeDialog } from '@/components/meal-plan/EnhancedRecipeDialog';
+import EnhancedRecipeDialog from '@/components/meal-plan/EnhancedRecipeDialog';
 
 export const MealPlanContainer = () => {
   const mealPlanState = useMealPlanState();

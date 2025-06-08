@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Heart, Calendar, Utensils, Settings as SettingsIcon } from "lucide-react";
 import { HealthConditionsSettings } from './HealthConditionsSettings';
@@ -8,6 +8,18 @@ import { FoodPreferencesSettings } from './FoodPreferencesSettings';
 import EnhancedSettingsForm from '../profile/enhanced/EnhancedSettingsForm';
 
 export const EnhancedSettingsPage = () => {
+  const [userSettings, setUserSettings] = useState({
+    measurementUnits: 'metric',
+    language: 'en',
+    notifications: true,
+    theme: 'light'
+  });
+
+  const handleSave = (newSettings: any) => {
+    setUserSettings(newSettings);
+    console.log('Settings saved:', newSettings);
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       <div className="text-center mb-8">
@@ -60,7 +72,10 @@ export const EnhancedSettingsPage = () => {
         </TabsContent>
 
         <TabsContent value="general" className="mt-6">
-          <EnhancedSettingsForm />
+          <EnhancedSettingsForm 
+            userSettings={userSettings}
+            onSave={handleSave}
+          />
         </TabsContent>
       </Tabs>
     </div>
