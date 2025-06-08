@@ -1,8 +1,8 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface QuantitySelectorProps {
@@ -22,52 +22,58 @@ const QuantitySelector = ({
   notes,
   onNotesChange
 }: QuantitySelectorProps) => {
-  const { t } = useLanguage();
+  const { t, isRTL } = useLanguage();
+
+  const mealTypes = [
+    { value: 'breakfast', label: t('Breakfast') },
+    { value: 'lunch', label: t('Lunch') },
+    { value: 'dinner', label: t('Dinner') },
+    { value: 'snack', label: t('Snack') }
+  ];
 
   return (
     <div className="space-y-4">
-      <div>
-        <Label htmlFor="quantity" className="text-sm font-medium text-gray-700">
-          {t('Quantity (grams)')}
-        </Label>
-        <Input
-          id="quantity"
-          type="number"
-          value={quantity}
-          onChange={(e) => onQuantityChange(Number(e.target.value))}
-          className="mt-1"
-          min="1"
-        />
+      {/* Quantity */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="quantity">{t('Quantity')} ({t('grams')})</Label>
+          <Input
+            id="quantity"
+            type="number"
+            value={quantity}
+            onChange={(e) => onQuantityChange(parseInt(e.target.value) || 100)}
+            min="1"
+            max="10000"
+          />
+        </div>
+
+        {/* Meal Type */}
+        <div className="space-y-2">
+          <Label htmlFor="mealType">{t('Meal Type')}</Label>
+          <Select value={mealType} onValueChange={onMealTypeChange}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {mealTypes.map(meal => (
+                <SelectItem key={meal.value} value={meal.value}>
+                  {meal.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
-      <div>
-        <Label htmlFor="mealType" className="text-sm font-medium text-gray-700">
-          {t('Meal Type')}
-        </Label>
-        <Select value={mealType} onValueChange={onMealTypeChange}>
-          <SelectTrigger className="mt-1">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="breakfast">{t('Breakfast')}</SelectItem>
-            <SelectItem value="lunch">{t('Lunch')}</SelectItem>
-            <SelectItem value="dinner">{t('Dinner')}</SelectItem>
-            <SelectItem value="snack">{t('Snack')}</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div>
-        <Label htmlFor="notes" className="text-sm font-medium text-gray-700">
-          {t('Notes')} ({t('Optional')})
-        </Label>
+      {/* Notes */}
+      <div className="space-y-2">
+        <Label htmlFor="notes">{t('Notes')} ({t('optional')})</Label>
         <Textarea
           id="notes"
           value={notes}
           onChange={(e) => onNotesChange(e.target.value)}
           placeholder={t('Add any notes about this food...')}
-          className="mt-1"
-          rows={3}
+          rows={2}
         />
       </div>
     </div>

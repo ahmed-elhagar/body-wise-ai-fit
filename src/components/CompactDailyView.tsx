@@ -1,116 +1,165 @@
-
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Calendar, Target } from "lucide-react";
-import DailyNutritionSummary from "./daily-view/DailyNutritionSummary";
-import MealTypeSection from "./daily-view/MealTypeSection";
-import { format } from "date-fns";
+import { Badge } from "@/components/ui/badge";
+import { Plus, ShoppingCart, ChefHat, Clock, Flame, Zap, Sparkles } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import CompactMealCard from "@/components/daily-view/CompactMealCard";
+import DailyNutritionSummary from "@/components/daily-view/DailyNutritionSummary";
+import type { Meal } from "@/types/meal";
 
 interface CompactDailyViewProps {
-  selectedDate: Date;
-  meals: any[];
+  todaysMeals: Meal[];
   totalCalories: number;
   totalProtein: number;
-  totalCarbs: number;
-  totalFat: number;
-  targetCalories?: number;
-  targetProtein?: number;
-  targetCarbs?: number;
-  targetFat?: number;
-  onMealClick: (meal: any) => void;
+  onShowRecipe: (meal: Meal) => void;
+  onExchangeMeal: (meal: Meal, index: number) => void;
   onAddSnack: () => void;
+  onShowShoppingList: () => void;
+  onGenerate: () => void;
 }
 
 const CompactDailyView = ({
-  selectedDate,
-  meals,
+  todaysMeals,
   totalCalories,
   totalProtein,
-  totalCarbs,
-  totalFat,
-  targetCalories = 2000,
-  targetProtein = 150,
-  targetCarbs = 250,
-  targetFat = 67,
-  onMealClick,
-  onAddSnack
+  onShowRecipe,
+  onExchangeMeal,
+  onAddSnack,
+  onShowShoppingList,
+  onGenerate
 }: CompactDailyViewProps) => {
-  const mealsByType = meals.reduce((acc, meal) => {
-    const type = meal.meal_type || 'snack';
-    if (!acc[type]) acc[type] = [];
-    acc[type].push(meal);
-    return acc;
-  }, {} as Record<string, any[]>);
+  const { t, isRTL } = useLanguage();
 
-  const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack', 'snack1', 'snack2'];
+  // Group meals by type
+  const mealsByType = todaysMeals.reduce((acc, meal, index) => {
+    const type = (meal.meal_type || meal.type) || 'meal';
+    if (!acc[type]) acc[type] = [];
+    acc[type].push({ ...meal, originalIndex: index });
+    return acc;
+  }, {} as Record<string, (Meal & { originalIndex: number })[]>);
+
+  const mealTypeOrder = ['breakfast', 'lunch', 'dinner', 'snack'];
+
+  if (todaysMeals.length === 0) {
+    return (
+      <Card className="p-8 text-center bg-gradient-to-br from-white via-blue-50/30 to-green-50/50 border-0 shadow-xl backdrop-blur-sm">
+        <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-blue-500 to-green-500 rounded-3xl flex items-center justify-center shadow-lg transform rotate-3 hover:rotate-0 transition-transform duration-300">
+          <ChefHat className="w-10 h-10 text-white" />
+        </div>
+        
+        <h3 className="text-2xl font-bold text-gray-800 mb-3 bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
+          {t('mealPlan.noMealsToday')}
+        </h3>
+        
+        <p className="text-gray-600 mb-6 max-w-md mx-auto leading-relaxed">
+          {t('mealPlan.generateFirstPlan')}
+        </p>
+        
+        <Button 
+          onClick={onGenerate} 
+          className="bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 px-8 py-4 text-lg font-semibold rounded-2xl"
+        >
+          <Sparkles className="w-5 h-5 mr-3" />
+          {t('mealPlan.generateMealPlan')}
+        </Button>
+      </Card>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      {/* Date Header */}
-      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-blue-900">
-            <Calendar className="w-5 h-5" />
-            {format(selectedDate, 'EEEE, MMMM d, yyyy')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">{meals.length}</div>
-                <div className="text-sm text-gray-600">Meals</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-orange-600">{totalCalories}</div>
-                <div className="text-sm text-gray-600">Calories</div>
-              </div>
-            </div>
-            <Button onClick={onAddSnack} className="bg-blue-600 hover:bg-blue-700">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Snack
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Nutrition Summary */}
+    <div className="space-y-4">
+      {/* Enhanced Nutrition Summary */}
       <DailyNutritionSummary
         totalCalories={totalCalories}
         totalProtein={totalProtein}
-        totalCarbs={totalCarbs}
-        totalFat={totalFat}
-        targetCalories={targetCalories}
-        targetProtein={targetProtein}
-        targetCarbs={targetCarbs}
-        targetFat={targetFat}
+        onShowShoppingList={onShowShoppingList}
+        onAddSnack={onAddSnack}
       />
 
-      {/* Meal Type Sections */}
-      <div className="space-y-4">
-        {mealTypes.map(mealType => (
-          <MealTypeSection
-            key={mealType}
-            mealType={mealType}
-            meals={mealsByType[mealType] || []}
-            onMealClick={onMealClick}
-          />
-        ))}
+      {/* Quick Action Buttons */}
+      <div className={`flex gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+        <Button 
+          variant="outline" 
+          className="flex-1 bg-white hover:bg-blue-50 border-blue-200 text-blue-700 shadow-sm"
+          onClick={onShowShoppingList}
+        >
+          <ShoppingCart className={`w-4 h-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+          {t('mealPlan.shoppingList')}
+        </Button>
+        
+        <Button 
+          variant="outline" 
+          className="flex-1 bg-white hover:bg-green-50 border-green-200 text-green-700 shadow-sm"
+          onClick={onAddSnack}
+        >
+          <Plus className={`w-4 h-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+          {t('mealPlan.addSnack')}
+        </Button>
       </div>
 
-      {meals.length === 0 && (
-        <Card className="border-dashed border-2 border-gray-300">
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <Target className="w-12 h-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-semibold text-gray-600 mb-2">No meals logged today</h3>
-            <p className="text-gray-500 text-center mb-6">Start tracking your nutrition by adding your first meal or snack.</p>
-            <Button onClick={onAddSnack} className="bg-blue-600 hover:bg-blue-700">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Your First Meal
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+      {/* Meals by Type */}
+      {mealTypeOrder.map(mealType => {
+        const meals = mealsByType[mealType] || [];
+        if (meals.length === 0) return null;
+
+        return (
+          <Card key={mealType} className="p-4 bg-white border border-gray-200 shadow-lg rounded-xl">
+            <div className={`flex items-center justify-between mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-green-500 rounded-lg flex items-center justify-center">
+                  <ChefHat className="w-4 h-4 text-white" />
+                </div>
+                <h3 className="font-bold text-gray-800 text-lg capitalize">
+                  {t(`common.${mealType}`)}
+                </h3>
+              </div>
+              <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200">
+                {meals.length} {meals.length === 1 ? t('mealPlan.meal') : t('mealPlan.meals')}
+              </Badge>
+            </div>
+            
+            <div className="space-y-3">
+              {meals.map((meal, mealIndex) => (
+                <CompactMealCard
+                  key={`${meal.id}-${meal.originalIndex}`}
+                  meal={meal}
+                  index={mealIndex}
+                  mealType={mealType}
+                  onShowRecipe={() => onShowRecipe(meal)}
+                  onExchangeMeal={() => onExchangeMeal(meal, meal.originalIndex)}
+                />
+              ))}
+            </div>
+          </Card>
+        );
+      })}
+
+      {/* Enhanced Daily Stats */}
+      <Card className="p-4 bg-gradient-to-r from-gray-50 to-blue-50 border-0 shadow-lg">
+        <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+          <div className={`flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <div className="flex items-center gap-2">
+              <Flame className="w-5 h-5 text-red-500" />
+              <div className={`text-center ${isRTL ? 'text-right' : 'text-left'}`}>
+                <div className="text-xl font-bold text-gray-800">{totalCalories}</div>
+                <div className="text-xs text-gray-600">{t('common.calories')}</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Zap className="w-5 h-5 text-green-500" />
+              <div className={`text-center ${isRTL ? 'text-right' : 'text-left'}`}>
+                <div className="text-xl font-bold text-gray-800">{totalProtein}g</div>
+                <div className="text-xs text-gray-600">{t('common.protein')}</div>
+              </div>
+            </div>
+          </div>
+          
+          <div className={`flex items-center gap-2 text-sm text-gray-600 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <Clock className="w-4 h-4" />
+            <span>{todaysMeals.length} {t('mealPlan.mealsPlanned')}</span>
+          </div>
+        </div>
+      </Card>
     </div>
   );
 };

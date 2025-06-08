@@ -1,96 +1,67 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { TrendingUp, Target, Award } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Flame, Zap, ShoppingCart, Plus } from "lucide-react";
+import { useI18n } from "@/hooks/useI18n";
 
 interface DailyNutritionSummaryProps {
   totalCalories: number;
   totalProtein: number;
-  totalCarbs: number;
-  totalFat: number;
-  targetCalories: number;
-  targetProtein: number;
-  targetCarbs: number;
-  targetFat: number;
+  onShowShoppingList: () => void;
+  onAddSnack: () => void;
 }
 
 const DailyNutritionSummary = ({
   totalCalories,
   totalProtein,
-  totalCarbs,
-  totalFat,
-  targetCalories,
-  targetProtein,
-  targetCarbs,
-  targetFat
+  onShowShoppingList,
+  onAddSnack
 }: DailyNutritionSummaryProps) => {
-  const calorieProgress = Math.min(100, (totalCalories / targetCalories) * 100);
-  const proteinProgress = Math.min(100, (totalProtein / targetProtein) * 100);
-  const carbsProgress = Math.min(100, (totalCarbs / targetCarbs) * 100);
-  const fatProgress = Math.min(100, (totalFat / targetFat) * 100);
+  const { tFrom, isRTL } = useI18n();
+  const tMealPlan = tFrom('mealPlan');
 
   return (
-    <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-blue-900">
-          <Target className="w-5 h-5" />
-          Daily Nutrition Summary
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-orange-600">{totalCalories}</div>
-            <div className="text-sm text-gray-600 mb-2">Calories</div>
-            <Progress value={calorieProgress} className="h-2" />
-            <div className="text-xs text-gray-500 mt-1">
-              {targetCalories - totalCalories > 0 ? `${targetCalories - totalCalories} left` : 'Target reached'}
+    <Card className="p-3 bg-gradient-to-r from-blue-50 to-blue-100 border-0 shadow-lg rounded-lg">
+      <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+        <div>
+          <h2 className="font-bold text-gray-800 text-base mb-1">{String(tMealPlan('todaysSummary'))}</h2>
+          <div className={`flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <div className="flex items-center gap-1 text-sm text-gray-700">
+              <Flame className="w-4 h-4 text-red-500" />
+              <span className="font-semibold">{totalCalories}</span>
+              <span className="text-xs">{String(tMealPlan('calories'))}</span>
             </div>
-          </div>
-          
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">{totalProtein}g</div>
-            <div className="text-sm text-gray-600 mb-2">Protein</div>
-            <Progress value={proteinProgress} className="h-2" />
-            <div className="text-xs text-gray-500 mt-1">
-              Target: {targetProtein}g
-            </div>
-          </div>
-          
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">{totalCarbs}g</div>
-            <div className="text-sm text-gray-600 mb-2">Carbs</div>
-            <Progress value={carbsProgress} className="h-2" />
-            <div className="text-xs text-gray-500 mt-1">
-              Target: {targetCarbs}g
-            </div>
-          </div>
-          
-          <div className="text-center">
-            <div className="text-2xl font-bold text-yellow-600">{totalFat}g</div>
-            <div className="text-sm text-gray-600 mb-2">Fat</div>
-            <Progress value={fatProgress} className="h-2" />
-            <div className="text-xs text-gray-500 mt-1">
-              Target: {targetFat}g
+            <div className="flex items-center gap-1 text-sm text-gray-700">
+              <Zap className="w-4 h-4 text-green-500" />
+              <span className="font-semibold">{totalProtein}g</span>
+              <span className="text-xs">{String(tMealPlan('protein'))}</span>
             </div>
           </div>
         </div>
-
-        <div className="flex items-center justify-center gap-4 pt-4 border-t border-blue-200">
-          <div className="flex items-center gap-2 text-sm">
-            <TrendingUp className="w-4 h-4 text-green-500" />
-            <span className="text-gray-600">
-              {calorieProgress >= 80 ? 'On Track' : 'Need More Calories'}
-            </span>
-          </div>
-          {calorieProgress >= 100 && (
-            <div className="flex items-center gap-2 text-sm">
-              <Award className="w-4 h-4 text-gold-500" />
-              <span className="text-green-600 font-medium">Goal Achieved!</span>
-            </div>
-          )}
+        
+        <div className={`flex gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+          <Button 
+            size="sm" 
+            variant="outline" 
+            className="h-8 px-3 text-xs bg-white hover:bg-blue-50 border-blue-200 text-blue-700 shadow-sm rounded-lg"
+            onClick={onShowShoppingList}
+            aria-label={String(tMealPlan('shoppingList'))}
+          >
+            <ShoppingCart className={`w-3 h-3 ${isRTL ? 'ml-1' : 'mr-1'}`} />
+            <span className="hidden sm:inline">{String(tMealPlan('shoppingList'))}</span>
+          </Button>
+          <Button 
+            size="sm" 
+            variant="outline" 
+            className="h-8 px-3 text-xs bg-white hover:bg-green-50 border-green-200 text-green-700 shadow-sm rounded-lg"
+            onClick={onAddSnack}
+            aria-label={String(tMealPlan('addSnack'))}
+          >
+            <Plus className={`w-3 h-3 ${isRTL ? 'ml-1' : 'mr-1'}`} />
+            <span className="hidden sm:inline">{String(tMealPlan('addSnack'))}</span>
+          </Button>
         </div>
-      </CardContent>
+      </div>
     </Card>
   );
 };

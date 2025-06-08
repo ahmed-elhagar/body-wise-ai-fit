@@ -46,15 +46,15 @@ const RecipeDialog = ({ isOpen, onClose, meal, onRecipeGenerated }: RecipeDialog
       protein: currentMeal.protein,
       carbs: currentMeal.carbs,
       fat: currentMeal.fat,
-      prep_time: currentMeal.prep_time || currentMeal.prepTime,
-      cook_time: currentMeal.cook_time || currentMeal.cookTime,
+      prep_time: currentMeal.prepTime,
+      cook_time: currentMeal.cookTime,
       servings: currentMeal.servings,
-      ingredients: currentMeal.ingredients?.map(ing => ({
-        name: typeof ing === 'string' ? ing : ing.name,
-        quantity: typeof ing === 'string' ? '' : ing.quantity || '',
-        unit: typeof ing === 'string' ? '' : ing.unit || ''
-      })) || [],
-      instructions: currentMeal.instructions || [],
+      ingredients: currentMeal.ingredients.map(ing => ({
+        name: ing.name,
+        quantity: ing.quantity,
+        unit: ing.unit
+      })),
+      instructions: currentMeal.instructions,
       alternatives: [],
       youtube_search_term: currentMeal.youtube_search_term,
       image_url: currentMeal.image_url,
@@ -122,7 +122,7 @@ const RecipeDialog = ({ isOpen, onClose, meal, onRecipeGenerated }: RecipeDialog
             <div className="flex flex-wrap gap-3">
               <Badge>
                 <Clock className="w-3 h-3 mr-1" />
-                {(currentMeal.prep_time || currentMeal.prepTime || 0) + (currentMeal.cook_time || currentMeal.cookTime || 0)} min
+                {(currentMeal.prepTime || 0) + (currentMeal.cookTime || 0)} min
               </Badge>
               <Badge>
                 <Users className="w-3 h-3 mr-1" />
@@ -191,10 +191,8 @@ const RecipeDialog = ({ isOpen, onClose, meal, onRecipeGenerated }: RecipeDialog
                   <ul className="space-y-2">
                     {currentMeal.ingredients.map((ingredient, index) => (
                       <li key={index} className="flex justify-between">
-                        <span>{typeof ingredient === 'string' ? ingredient : ingredient.name}</span>
-                        {typeof ingredient !== 'string' && (
-                          <span className="text-gray-500">{ingredient.quantity} {ingredient.unit}</span>
-                        )}
+                        <span>{ingredient.name}</span>
+                        <span className="text-gray-500">{ingredient.quantity} {ingredient.unit}</span>
                       </li>
                     ))}
                   </ul>

@@ -4,7 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Clock, Book, ArrowLeftRight } from "lucide-react";
 import { format, addDays } from "date-fns";
-import type { DailyMeal } from "@/features/meal-plan/types";
+import type { DailyMeal } from "@/hooks/useMealPlanData";
+import { useMealPlanTranslation } from "@/utils/translationHelpers";
 
 interface WeeklyMealGridProps {
   currentWeekPlan: {
@@ -22,6 +23,8 @@ const WeeklyMealGrid = ({
   onExchangeMeal,
   weekStartDate
 }: WeeklyMealGridProps) => {
+  const { mealPlanT } = useMealPlanTranslation();
+
   const getDayName = (dayNumber: number) => {
     const days = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     return days[dayNumber] || 'Day';
@@ -75,63 +78,57 @@ const WeeklyMealGrid = ({
 
               {dayMeals.length > 0 ? (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {dayMeals.map((meal, index) => {
-                    const prepTime = meal.prep_time || 0;
-                    const cookTime = meal.cook_time || 0;
-                    const totalTime = prepTime + cookTime;
-
-                    return (
-                      <Card key={meal.id} className="border border-gray-200 hover:shadow-md transition-shadow">
-                        <div className="p-4">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Badge variant="outline" className="text-xs capitalize">
-                              {meal.meal_type}
-                            </Badge>
-                            <span className="text-xs text-gray-500 flex items-center gap-1">
-                              <Clock className="h-3 w-3" />
-                              {totalTime}min
-                            </span>
+                  {dayMeals.map((meal, index) => (
+                    <Card key={meal.id} className="border border-gray-200 hover:shadow-md transition-shadow">
+                      <div className="p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge variant="outline" className="text-xs capitalize">
+                            {meal.meal_type}
+                          </Badge>
+                          <span className="text-xs text-gray-500 flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {meal.prep_time + meal.cook_time}min
+                          </span>
+                        </div>
+                        
+                        <h4 className="font-semibold text-sm mb-2 text-gray-800 line-clamp-2">
+                          {meal.name}
+                        </h4>
+                        
+                        <div className="grid grid-cols-2 gap-2 text-xs mb-3">
+                          <div className="text-center bg-red-50 rounded p-1">
+                            <div className="font-bold text-red-600">{meal.calories}</div>
+                            <div className="text-red-500">cal</div>
                           </div>
-                          
-                          <h4 className="font-semibold text-sm mb-2 text-gray-800 line-clamp-2">
-                            {meal.name}
-                          </h4>
-                          
-                          <div className="grid grid-cols-2 gap-2 text-xs mb-3">
-                            <div className="text-center bg-red-50 rounded p-1">
-                              <div className="font-bold text-red-600">{meal.calories}</div>
-                              <div className="text-red-500">cal</div>
-                            </div>
-                            <div className="text-center bg-blue-50 rounded p-1">
-                              <div className="font-bold text-blue-600">{meal.protein}g</div>
-                              <div className="text-blue-500">protein</div>
-                            </div>
-                          </div>
-                          
-                          <div className="flex gap-1">
-                            <Button
-                              onClick={() => onViewMeal(meal)}
-                              variant="outline"
-                              size="sm"
-                              className="text-xs px-2 py-1 h-6 flex-1"
-                            >
-                              <Book className="w-3 h-3 mr-1" />
-                              Recipe
-                            </Button>
-                            <Button
-                              onClick={() => onExchangeMeal(meal, index)}
-                              variant="outline"
-                              size="sm"
-                              className="text-xs px-2 py-1 h-6 flex-1"
-                            >
-                              <ArrowLeftRight className="w-3 h-3 mr-1" />
-                              Exchange
-                            </Button>
+                          <div className="text-center bg-blue-50 rounded p-1">
+                            <div className="font-bold text-blue-600">{meal.protein}g</div>
+                            <div className="text-blue-500">protein</div>
                           </div>
                         </div>
-                      </Card>
-                    );
-                  })}
+                        
+                        <div className="flex gap-1">
+                          <Button
+                            onClick={() => onViewMeal(meal)}
+                            variant="outline"
+                            size="sm"
+                            className="text-xs px-2 py-1 h-6 flex-1"
+                          >
+                            <Book className="w-3 h-3 mr-1" />
+                            Recipe
+                          </Button>
+                          <Button
+                            onClick={() => onExchangeMeal(meal, index)}
+                            variant="outline"
+                            size="sm"
+                            className="text-xs px-2 py-1 h-6 flex-1"
+                          >
+                            <ArrowLeftRight className="w-3 h-3 mr-1" />
+                            Exchange
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
                 </div>
               ) : (
                 <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">

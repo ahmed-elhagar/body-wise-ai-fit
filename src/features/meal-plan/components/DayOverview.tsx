@@ -42,18 +42,6 @@ export const DayOverview = ({
 }: DayOverviewProps) => {
   const { t, isRTL } = useLanguage();
 
-  // Debug logging
-  React.useEffect(() => {
-    console.log('📅 DayOverview Debug:', {
-      selectedDayNumber,
-      dailyMealsCount: dailyMeals?.length || 0,
-      totalCalories,
-      totalProtein,
-      targetDayCalories,
-      meals: dailyMeals?.map(m => ({ id: m.id, name: m.name, type: m.meal_type, day: m.day_number }))
-    });
-  }, [selectedDayNumber, dailyMeals, totalCalories, totalProtein]);
-
   const getDayName = (dayNumber: number) => {
     const dayNames = [
       t('saturday') || 'Saturday',
@@ -74,7 +62,7 @@ export const DayOverview = ({
   };
 
   const mealTypeOrder = ['breakfast', 'snack1', 'lunch', 'snack2', 'dinner', 'snack'];
-  const groupedMeals = (dailyMeals || []).reduce((acc, meal) => {
+  const groupedMeals = dailyMeals.reduce((acc, meal) => {
     const type = meal.meal_type || 'snack';
     if (!acc[type]) acc[type] = [];
     acc[type].push(meal);
@@ -198,7 +186,7 @@ export const DayOverview = ({
         })}
 
         {/* No Meals State */}
-        {(!dailyMeals || dailyMeals.length === 0) && (
+        {dailyMeals.length === 0 && (
           <Card className="border-dashed border-2 border-gray-300">
             <CardContent className="p-6 text-center">
               <Utensils className="w-12 h-12 text-gray-400 mx-auto mb-3" />

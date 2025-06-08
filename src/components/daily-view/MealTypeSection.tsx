@@ -7,13 +7,15 @@ import type { Meal } from "@/types/meal";
 interface MealTypeSectionProps {
   mealType: string;
   meals: Meal[];
-  onMealClick: (meal: Meal) => void;
+  onShowRecipe: (meal: Meal) => void;
+  onExchangeMeal: (meal: Meal, index: number) => void;
 }
 
 const MealTypeSection = ({
   mealType,
   meals,
-  onMealClick
+  onShowRecipe,
+  onExchangeMeal
 }: MealTypeSectionProps) => {
   const { tFrom, isRTL } = useI18n();
   const tMealPlan = tFrom('mealPlan');
@@ -82,8 +84,8 @@ const MealTypeSection = ({
             meal={meal}
             index={index}
             mealType={mealType}
-            onShowRecipe={onMealClick}
-            onExchangeMeal={(meal, index) => onMealClick(meal)}
+            onShowRecipe={onShowRecipe}
+            onExchangeMeal={onExchangeMeal}
           />
         ))}
       </div>

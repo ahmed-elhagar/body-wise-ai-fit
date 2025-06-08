@@ -1,4 +1,3 @@
-
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ChefHat, Clock, Users, Apple } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -32,7 +31,7 @@ const RecipeHeader = ({ meal }: RecipeHeaderProps) => {
       <div className="flex flex-wrap items-center gap-3">
         <Badge className={`${isSnack ? 'bg-fitness-accent-100 text-fitness-accent-700 border-fitness-accent-200' : 'bg-fitness-primary-100 text-fitness-primary-700 border-fitness-primary-200'} font-medium`}>
           <Clock className="w-3 h-3 mr-1" />
-          {(meal.prep_time || meal.prepTime || 0) + (meal.cook_time || meal.cookTime || 0) || (isSnack ? 5 : 20)} min
+          {(meal.prepTime || 0) + (meal.cookTime || 0) || (isSnack ? 5 : 20)} min
         </Badge>
         <Badge className="bg-fitness-orange-100 text-fitness-orange-700 border-fitness-orange-200 font-medium">
           <Users className="w-3 h-3 mr-1" />

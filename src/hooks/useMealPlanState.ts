@@ -27,27 +27,6 @@ export const useMealPlanState = () => {
     refetch: originalRefetch,
   } = useMealPlanData(currentWeekOffset);
 
-  // Debug the data flow
-  React.useEffect(() => {
-    console.log('🔄 useMealPlanState data update:', {
-      weekOffset: currentWeekOffset,
-      isLoading,
-      hasData: !!currentWeekPlan,
-      dataStructure: currentWeekPlan ? {
-        hasWeeklyPlan: !!currentWeekPlan.weeklyPlan,
-        weeklyPlanId: currentWeekPlan.weeklyPlan?.id,
-        mealsCount: currentWeekPlan.dailyMeals?.length || 0,
-        meals: currentWeekPlan.dailyMeals?.slice(0, 3).map(m => ({
-          id: m.id,
-          name: m.name,
-          day: m.day_number,
-          type: m.meal_type
-        }))
-      } : null,
-      error: error?.message
-    });
-  }, [currentWeekPlan, isLoading, error, currentWeekOffset]);
-
   // Enhanced refetch that properly invalidates and refreshes data
   const refetch = useCallback(async () => {
     console.log('🔄 Enhanced refetch - invalidating all meal plan queries for week offset:', currentWeekOffset);
@@ -85,49 +64,36 @@ export const useMealPlanState = () => {
 
   // Enhanced calculations - inline to avoid external dependencies
   const { dailyMeals, todaysMeals, totalCalories, totalProtein, targetDayCalories } = useMemo(() => {
-    console.log('🧮 Calculating meal stats:', {
-      selectedDayNumber,
-      currentWeekPlan: !!currentWeekPlan,
-      dailyMealsArray: currentWeekPlan?.dailyMeals?.length || 0
-    });
-
     // Calculate daily meals for selected day
     const dailyMeals = currentWeekPlan?.dailyMeals?.filter(
       meal => meal.day_number === selectedDayNumber
-    ) || [];
-
-    console.log('📊 Daily meals for day', selectedDayNumber, ':', {
-      count: dailyMeals.length,
-      meals: dailyMeals.map(m => ({ name: m.name, type: m.meal_type, calories: m.calories }))
-    });
+    ) || null;
 
     // Calculate today's meals
     const today = new Date();
     const todayDayNumber = today.getDay() === 6 ? 1 : today.getDay() + 2;
     const todaysMeals = currentWeekPlan?.dailyMeals?.filter(
       meal => meal.day_number === todayDayNumber
-    ) || [];
+    ) || null;
 
     // Calculate total calories for selected day
-    const totalCalories = dailyMeals.reduce((total, meal) => total + (meal.calories || 0), 0);
+    const totalCalories = dailyMeals ? 
+      dailyMeals.reduce((total, meal) => total + (meal.calories || 0), 0) : null;
 
     // Calculate total protein for selected day
-    const totalProtein = dailyMeals.reduce((total, meal) => total + (meal.protein || 0), 0);
+    const totalProtein = dailyMeals ? 
+      dailyMeals.reduce((total, meal) => total + (meal.protein || 0), 0) : null;
 
     // Target calories
     const targetDayCalories = 2000;
 
-    const result = {
+    return {
       dailyMeals,
       todaysMeals,
       totalCalories,
       totalProtein,
       targetDayCalories
     };
-
-    console.log('✅ Calculated stats:', result);
-
-    return result;
   }, [currentWeekPlan?.dailyMeals, selectedDayNumber]);
 
   // Dialog states
