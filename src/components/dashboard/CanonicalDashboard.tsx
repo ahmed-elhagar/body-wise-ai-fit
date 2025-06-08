@@ -155,15 +155,8 @@ const CanonicalDashboard = () => {
               </div>
             </div>
             
-            {/* Enhanced Stats Grid */}
-            <EnhancedStatsGrid 
-              stats={[
-                { key: 'calories', value: '1850', target: '2200', label: 'Calories', percentage: 84 },
-                { key: 'protein', value: '120', target: '150', label: 'Protein', percentage: 80 },
-                { key: 'workouts', value: '4', target: '5', label: 'Workouts', percentage: 80 },
-                { key: 'weight', value: '75', target: '70', label: 'Weight', change: '-2' }
-              ]}
-            />
+            {/* Enhanced Stats Grid - using default stats */}
+            <EnhancedStatsGrid />
 
             {/* Quick Action Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -208,17 +201,8 @@ const CanonicalDashboard = () => {
               </Card>
             </div>
             
-            {/* Progress Chart Section */}
+            {/* Progress Chart Section - using default data */}
             <InteractiveProgressChart 
-              data={[
-                { name: 'Mon', value: 2100 },
-                { name: 'Tue', value: 1950 },
-                { name: 'Wed', value: 2200 },
-                { name: 'Thu', value: 2050 },
-                { name: 'Fri', value: 1900 },
-                { name: 'Sat', value: 2300 },
-                { name: 'Sun', value: 2000 }
-              ]}
               title="Weekly Progress"
               dataKey="value"
             />
