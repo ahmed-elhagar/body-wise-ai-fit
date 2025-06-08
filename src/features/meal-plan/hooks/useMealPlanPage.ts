@@ -4,7 +4,6 @@ import { useMealPlanState } from "./useMealPlanState";
 export const useMealPlanPage = () => {
   const mealPlanState = useMealPlanState();
 
-  // Enhanced current date formatting
   const currentDate = new Date().toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
@@ -13,13 +12,11 @@ export const useMealPlanPage = () => {
 
   const currentDay = new Date().toLocaleDateString('en-US', { weekday: 'long' });
 
-  // Handle recipe generation callback to refresh UI
   const handleRecipeGenerated = () => {
     console.log('🔄 Recipe generated, refreshing meal plan data...');
     mealPlanState.refetch();
   };
 
-  // Enhanced debugging output for week-specific data
   console.log('🚀 MEAL PLAN PAGE - UNIFIED DEBUG:', {
     currentWeekOffset: mealPlanState.currentWeekOffset,
     weekStartDate: mealPlanState.weekStartDate.toDateString(),
