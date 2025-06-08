@@ -1,20 +1,21 @@
 
-import { useState, useMemo } from 'react';
-import { getWeekStartDate, getCurrentSaturdayDay } from '@/utils/mealPlanUtils';
+import { useState } from 'react';
+import { addDays, startOfWeek, format } from 'date-fns';
 
 export const useMealPlanNavigation = () => {
   const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
-  const [selectedDayNumber, setSelectedDayNumber] = useState(getCurrentSaturdayDay());
-
-  const weekStartDate = useMemo(() => {
-    return getWeekStartDate(currentWeekOffset);
-  }, [currentWeekOffset]);
+  const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
+  
+  const currentDate = new Date();
+  const weekStartDate = addDays(startOfWeek(currentDate), currentWeekOffset * 7);
+  const weekStartDateString = format(weekStartDate, 'yyyy-MM-dd');
 
   return {
     currentWeekOffset,
     setCurrentWeekOffset,
-    selectedDayNumber,
-    setSelectedDayNumber,
-    weekStartDate
+    viewMode,
+    setViewMode,
+    weekStartDate,
+    weekStartDateString,
   };
 };
