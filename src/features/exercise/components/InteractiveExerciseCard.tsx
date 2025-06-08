@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,10 +12,12 @@ import {
   Dumbbell,
   Timer,
   Zap,
-  Award
+  Award,
+  SkipForward
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ExerciseActionsDropdown } from "./ExerciseActionsDropdown";
+import { toast } from "@/hooks/use-toast";
 
 interface InteractiveExerciseCardProps {
   exercise: any;
@@ -35,34 +37,89 @@ export const InteractiveExerciseCard = ({
   const [currentSet, setCurrentSet] = useState(1);
   const [restTimer, setRestTimer] = useState(0);
   const [isResting, setIsResting] = useState(false);
+  const [restInterval, setRestInterval] = useState<NodeJS.Timeout | null>(null);
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (restInterval) {
+        clearInterval(restInterval);
+      }
+    };
+  }, [restInterval]);
+
+  const startRestTimer = () => {
+    setIsResting(true);
+    setRestTimer(exercise.rest_seconds || 60);
+    
+    const interval = setInterval(() => {
+      setRestTimer(prev => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          setIsResting(false);
+          setRestInterval(null);
+          toast({
+            title: "Rest Complete! 💪",
+            description: "Time for your next set!",
+          });
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    
+    setRestInterval(interval);
+  };
+
+  const skipRest = () => {
+    if (restInterval) {
+      clearInterval(restInterval);
+      setRestInterval(null);
+    }
+    setIsResting(false);
+    setRestTimer(0);
+    toast({
+      title: "Rest Skipped ⚡",
+      description: "Let's continue with the next set!",
+    });
+  };
 
   const handleSetComplete = () => {
-    if (currentSet < (exercise.sets || 3)) {
+    const totalSets = exercise.sets || 3;
+    
+    // Update progress
+    onExerciseProgressUpdate(exercise.id, currentSet, exercise.reps || '10');
+    
+    if (currentSet < totalSets) {
       setCurrentSet(prev => prev + 1);
-      setIsResting(true);
-      setRestTimer(exercise.rest_seconds || 60);
+      if (exercise.rest_seconds > 0) {
+        startRestTimer();
+      }
       
-      // Start rest countdown
-      const interval = setInterval(() => {
-        setRestTimer(prev => {
-          if (prev <= 1) {
-            clearInterval(interval);
-            setIsResting(false);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
+      toast({
+        title: `Set ${currentSet} Complete! 🎯`,
+        description: `${totalSets - currentSet} sets remaining`,
+      });
     } else {
       // Exercise complete
       onExerciseComplete(exercise.id);
       setIsActive(false);
+      setCurrentSet(1);
+      
+      toast({
+        title: "Exercise Complete! 🏆",
+        description: `Great job completing ${exercise.name}!`,
+      });
     }
   };
 
   const handleStartExercise = () => {
     setIsActive(true);
     setCurrentSet(1);
+    toast({
+      title: "Exercise Started! 💪",
+      description: `Let's crush ${exercise.name}!`,
+    });
   };
 
   const progressPercentage = exercise.completed ? 100 : 
@@ -172,8 +229,19 @@ export const InteractiveExerciseCard = ({
                     Set {currentSet}/{exercise.sets || 3}
                   </span>
                   {isResting && (
-                    <div className="text-orange-600 font-mono text-lg font-bold mt-1">
-                      Rest: {formatTime(restTimer)}
+                    <div className="flex items-center gap-2 mt-1">
+                      <div className="text-orange-600 font-mono text-lg font-bold">
+                        Rest: {formatTime(restTimer)}
+                      </div>
+                      <Button
+                        onClick={skipRest}
+                        size="sm"
+                        variant="outline"
+                        className="h-6 px-2 text-xs border-orange-300 text-orange-600 hover:bg-orange-50"
+                      >
+                        <SkipForward className="w-3 h-3 mr-1" />
+                        Skip
+                      </Button>
                     </div>
                   )}
                 </div>

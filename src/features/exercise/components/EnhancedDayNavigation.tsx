@@ -70,28 +70,26 @@ export const EnhancedDayNavigation = ({
   };
 
   return (
-    <Card className="p-4 bg-white/95 backdrop-blur-sm border border-gray-200/50 shadow-lg rounded-2xl">
-      <div className="space-y-4">
-        {/* Enhanced Header with Better Layout */}
+    <Card className="p-3 bg-white/95 backdrop-blur-sm border border-gray-200/50 shadow-lg rounded-xl">
+      <div className="space-y-3">
+        {/* Compact Header */}
         <div className="flex items-center justify-between">
-          {/* Week Navigation - Improved Design */}
-          <div className="flex items-center gap-3">
+          {/* Week Navigation */}
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => onWeekChange(currentWeekOffset - 1)}
-              className="h-8 w-8 p-0 rounded-full hover:bg-gray-100 border border-gray-200 shadow-sm"
+              className="h-7 w-7 p-0 rounded-full hover:bg-gray-100"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-3 h-3" />
             </Button>
 
-            <div className="text-center min-w-[140px]">
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl px-4 py-2 shadow-sm">
-                <div className="text-sm font-bold text-gray-900 flex items-center justify-center gap-2">
-                  <span className="text-blue-600">Week {currentWeekOffset + 1}</span>
-                  <span className="text-gray-400">•</span>
-                  <span className="text-gray-600 text-xs">{formatWeekRange(weekStartDate)}</span>
-                </div>
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg px-3 py-1.5">
+              <div className="text-xs font-bold text-gray-900 flex items-center gap-1">
+                <span className="text-blue-600">Week {currentWeekOffset + 1}</span>
+                <span className="text-gray-400">•</span>
+                <span className="text-gray-600">{formatWeekRange(weekStartDate)}</span>
               </div>
             </div>
 
@@ -99,45 +97,45 @@ export const EnhancedDayNavigation = ({
               variant="ghost"
               size="sm"
               onClick={() => onWeekChange(currentWeekOffset + 1)}
-              className="h-8 w-8 p-0 rounded-full hover:bg-gray-100 border border-gray-200 shadow-sm"
+              className="h-7 w-7 p-0 rounded-full hover:bg-gray-100"
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-3 h-3" />
             </Button>
           </div>
 
-          {/* Enhanced Workout Type Toggle */}
-          <div className="flex items-center bg-gray-50 rounded-xl p-1 shadow-sm border border-gray-200">
+          {/* Compact Workout Type Toggle */}
+          <div className="flex items-center bg-gray-50 rounded-lg p-0.5">
             <Button
               variant={workoutType === 'home' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => onWorkoutTypeChange('home')}
-              className={`rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
+              className={`rounded-md px-2 py-1 text-xs font-medium h-7 ${
                 workoutType === 'home' 
-                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md transform scale-105' 
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/70'
+                  ? 'bg-blue-600 text-white shadow-sm' 
+                  : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              <Home className="w-4 h-4 mr-2" />
+              <Home className="w-3 h-3 mr-1" />
               Home
             </Button>
             <Button
               variant={workoutType === 'gym' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => onWorkoutTypeChange('gym')}
-              className={`rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
+              className={`rounded-md px-2 py-1 text-xs font-medium h-7 ${
                 workoutType === 'gym' 
-                  ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md transform scale-105' 
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/70'
+                  ? 'bg-purple-600 text-white shadow-sm' 
+                  : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              <Building2 className="w-4 h-4 mr-2" />
+              <Building2 className="w-3 h-3 mr-1" />
               Gym
             </Button>
           </div>
         </div>
 
-        {/* Enhanced Day Grid with Better Visual Design */}
-        <div className="grid grid-cols-7 gap-2">
+        {/* Compact Day Grid */}
+        <div className="grid grid-cols-7 gap-1.5">
           {dayNames.map((day, index) => {
             const dayNumber = index + 1;
             const isSelected = selectedDayNumber === dayNumber;
@@ -152,17 +150,17 @@ export const EnhancedDayNavigation = ({
                 onClick={() => onDayChange(dayNumber)}
                 variant={isSelected ? "default" : "ghost"}
                 className={`
-                  relative h-auto p-3 flex flex-col items-center gap-2 transition-all duration-300 text-xs
+                  relative h-16 p-2 flex flex-col items-center gap-1 transition-all duration-200 text-xs
                   ${isSelected 
-                    ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg scale-105 transform' 
-                    : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 hover:border-gray-300 shadow-sm hover:shadow-md'
+                    ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-md scale-105' 
+                    : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 hover:border-gray-300'
                   }
-                  ${isToday ? 'ring-2 ring-blue-400 ring-opacity-50' : ''}
-                  rounded-xl
+                  ${isToday ? 'ring-1 ring-blue-400' : ''}
+                  rounded-lg
                 `}
               >
                 {/* Day Label */}
-                <div className="text-xs font-bold uppercase tracking-wider">
+                <div className="text-xs font-semibold">
                   {day}
                 </div>
                 
@@ -171,11 +169,11 @@ export const EnhancedDayNavigation = ({
                   {format(dayDate, 'd')}
                 </div>
 
-                {/* Enhanced Progress Indicator */}
+                {/* Compact Progress Indicator */}
                 {status !== 'rest' && status !== 'empty' && (
-                  <div className="w-full h-1.5 bg-gray-200/50 rounded-full overflow-hidden">
+                  <div className="w-full h-1 bg-gray-200/50 rounded-full overflow-hidden">
                     <div 
-                      className={`h-full transition-all duration-500 rounded-full ${
+                      className={`h-full transition-all duration-300 rounded-full ${
                         isSelected ? 'bg-white/90' : 'bg-blue-500'
                       }`}
                       style={{ width: `${progress}%` }}
@@ -183,72 +181,24 @@ export const EnhancedDayNavigation = ({
                   </div>
                 )}
 
-                {/* Enhanced Status Badge */}
-                <div className="flex items-center gap-1">
+                {/* Compact Status Badge */}
+                <div className="flex items-center">
                   {status === 'rest' ? (
-                    <>
-                      <Coffee className={`w-3 h-3 ${isSelected ? 'text-orange-200' : 'text-orange-500'}`} />
-                      <Badge 
-                        variant="outline" 
-                        className={`border-0 text-xs px-2 py-0.5 transition-colors duration-200 ${
-                          isSelected 
-                            ? 'bg-orange-500/20 text-orange-200' 
-                            : 'bg-orange-100 text-orange-600 hover:bg-orange-200 hover:text-orange-700'
-                        }`}
-                      >
-                        Rest
-                      </Badge>
-                    </>
+                    <Coffee className={`w-2.5 h-2.5 ${isSelected ? 'text-orange-200' : 'text-orange-500'}`} />
                   ) : status === 'completed' ? (
-                    <>
-                      <CheckCircle className={`w-3 h-3 ${isSelected ? 'text-green-200' : 'text-green-500'}`} />
-                      <Badge 
-                        variant="outline" 
-                        className={`border-0 text-xs px-2 py-0.5 transition-colors duration-200 ${
-                          isSelected 
-                            ? 'bg-green-500/20 text-green-200' 
-                            : 'bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700'
-                        }`}
-                      >
-                        Done
-                      </Badge>
-                    </>
+                    <CheckCircle className={`w-2.5 h-2.5 ${isSelected ? 'text-green-200' : 'text-green-500'}`} />
                   ) : status === 'in-progress' ? (
-                    <>
-                      <Target className={`w-3 h-3 ${isSelected ? 'text-yellow-200' : 'text-yellow-500'}`} />
-                      <Badge 
-                        variant="outline" 
-                        className={`border-0 text-xs px-2 py-0.5 transition-colors duration-200 ${
-                          isSelected 
-                            ? 'bg-yellow-500/20 text-yellow-200' 
-                            : 'bg-yellow-100 text-yellow-600 hover:bg-yellow-200 hover:text-yellow-700'
-                        }`}
-                      >
-                        {progress}%
-                      </Badge>
-                    </>
+                    <Target className={`w-2.5 h-2.5 ${isSelected ? 'text-yellow-200' : 'text-yellow-500'}`} />
                   ) : status === 'scheduled' ? (
-                    <>
-                      <Target className={`w-3 h-3 ${isSelected ? 'text-blue-200' : 'text-blue-500'}`} />
-                      <Badge 
-                        variant="outline" 
-                        className={`border-0 text-xs px-2 py-0.5 transition-colors duration-200 ${
-                          isSelected 
-                            ? 'bg-blue-500/20 text-blue-200' 
-                            : 'bg-blue-100 text-blue-600 hover:bg-blue-200 hover:text-blue-700'
-                        }`}
-                      >
-                        Ready
-                      </Badge>
-                    </>
+                    <Target className={`w-2.5 h-2.5 ${isSelected ? 'text-blue-200' : 'text-blue-500'}`} />
                   ) : (
-                    <div className="h-5" />
+                    <div className="w-2.5 h-2.5" />
                   )}
                 </div>
 
-                {/* Enhanced Today Indicator */}
+                {/* Today indicator */}
                 {isToday && (
-                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full border-2 border-white shadow-lg animate-pulse" />
+                  <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
                 )}
               </Button>
             );

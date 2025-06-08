@@ -1,4 +1,3 @@
-
 // Exercise feature components exports
 export { ExerciseListEnhanced } from './ExerciseListEnhanced';
 export { ExercisePageContent } from './ExercisePageContent';
@@ -27,3 +26,4 @@ export { EnhancedExerciseHeaderWithAnalytics } from './EnhancedExerciseHeaderWit
 export { ExerciseAnalyticsContainer } from './ExerciseAnalyticsContainer';
 export { AIExerciseDialog } from './AIExerciseDialog';
 export { ExerciseActionsDropdown } from './ExerciseActionsDropdown';
+export { ExerciseInstructionsDialog } from './ExerciseInstructionsDialog';
