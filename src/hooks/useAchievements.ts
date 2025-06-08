@@ -1,92 +1,71 @@
-
 import { useState, useEffect } from 'react';
-import { useOptimizedExerciseProgramPage } from './useOptimizedExerciseProgramPage';
+import { useMealPlanState } from './useMealPlanState';
+import { useOptimizedExerciseProgramPage } from '@/features/exercise/hooks/useOptimizedExerciseProgramPage';
 
 interface Achievement {
   id: string;
   title: string;
   description: string;
-  icon: string;
-  category: string;
-  rarity: string;
-  unlocked: boolean;
-  progress: number;
-  maxProgress: number;
-  requirement_value?: number;
-  earned_at?: string;
+  achieved: boolean;
 }
 
 export const useAchievements = () => {
+  const { mealPlan } = useMealPlanState();
   const { currentProgram } = useOptimizedExerciseProgramPage();
-  const [achievements, setAchievements] = useState<Achievement[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [achievements, setAchievements] = useState<Achievement[]>([
+    {
+      id: 'first-meal-plan',
+      title: 'Generated First Meal Plan',
+      description: 'Generate your first personalized meal plan.',
+      achieved: false,
+    },
+    {
+      id: 'first-workout-plan',
+      title: 'Generated First Workout Plan',
+      description: 'Generate your first personalized workout plan.',
+      achieved: false,
+    },
+    {
+      id: 'consistent-meal-planning',
+      title: 'Consistent Meal Planning',
+      description: 'Generate meal plans for 7 consecutive days.',
+      achieved: false,
+    },
+    {
+      id: 'consistent-workouts',
+      title: 'Consistent Workouts',
+      description: 'Complete workouts for 7 consecutive days.',
+      achieved: false,
+    },
+  ]);
 
   useEffect(() => {
-    if (!currentProgram) return;
+    // Check if the user has generated a meal plan
+    if (mealPlan) {
+      setAchievements((prevAchievements) =>
+        prevAchievements.map((achievement) =>
+          achievement.id === 'first-meal-plan'
+            ? { ...achievement, achieved: true }
+            : achievement
+        )
+      );
+    }
 
-    const totalExercises = currentProgram.daily_workouts?.reduce((sum: number, workout: any) => 
-      sum + (workout.exercises?.length || 0), 0) || 0;
-    
-    const completedExercises = currentProgram.daily_workouts?.reduce((sum: number, workout: any) => 
-      sum + (workout.exercises?.filter((ex: any) => ex.completed).length || 0), 0) || 0;
+    // Check if the user has generated a workout plan
+    if (currentProgram) {
+      setAchievements((prevAchievements) =>
+        prevAchievements.map((achievement) =>
+          achievement.id === 'first-workout-plan'
+            ? { ...achievement, achieved: true }
+            : achievement
+        )
+      );
+    }
 
-    const newAchievements: Achievement[] = [
-      {
-        id: 'first-workout',
-        title: 'First Steps',
-        description: 'Complete your first exercise',
-        icon: 'trophy',
-        category: 'fitness',
-        rarity: 'common',
-        unlocked: completedExercises > 0,
-        progress: Math.min(completedExercises, 1),
-        maxProgress: 1,
-        requirement_value: 1,
-        earned_at: completedExercises > 0 ? new Date().toISOString() : undefined,
-      },
-      {
-        id: 'week-warrior',
-        title: 'Week Warrior',
-        description: 'Complete all exercises in a week',
-        icon: 'trophy',
-        category: 'fitness',
-        rarity: 'rare',
-        unlocked: completedExercises >= totalExercises && totalExercises > 0,
-        progress: completedExercises,
-        maxProgress: totalExercises,
-        requirement_value: totalExercises,
-        earned_at: (completedExercises >= totalExercises && totalExercises > 0) ? new Date().toISOString() : undefined,
-      },
-      {
-        id: 'consistency',
-        title: 'Consistency King',
-        description: 'Work out 5 days in a row',
-        icon: 'flame',
-        category: 'consistency',
-        rarity: 'epic',
-        unlocked: false,
-        progress: 0,
-        maxProgress: 5,
-        requirement_value: 5,
-      },
-    ];
+    // TODO: Implement logic to check for consistent meal planning and workouts
+    // This will require tracking daily activity over time
 
-    setAchievements(newAchievements);
-  }, [currentProgram]);
+  }, [mealPlan, currentProgram]);
 
-  const earnedAchievements = achievements.filter(a => a.unlocked);
-  const availableAchievements = achievements.filter(a => !a.unlocked);
-
-  const checkAchievements = () => {
-    // Function to manually check achievements - can be expanded later
-    console.log('Checking achievements...');
-  };
-
-  return { 
-    achievements,
-    earnedAchievements,
-    availableAchievements,
-    isLoading,
-    checkAchievements
-  };
+  return { achievements };
 };

@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Card } from "@/components/ui/card";
-import { useOptimizedExercise } from "@/hooks/useOptimizedExercise";
+import { useOptimizedExercise } from "@/features/exercise/hooks/useOptimizedExercise";
 import OptimizedExerciseHeader from "./OptimizedExerciseHeader";
 import OptimizedExerciseWeekView from "./OptimizedExerciseWeekView";
 import OptimizedExerciseDayView from "./OptimizedExerciseDayView";

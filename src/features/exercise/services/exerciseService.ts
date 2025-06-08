@@ -66,6 +66,15 @@ export class ExerciseService {
       .maybeSingle();
 
     if (error) throw error;
+    
+    // Add the missing daily_workouts_count property
+    if (data) {
+      return {
+        ...data,
+        daily_workouts_count: data.daily_workouts?.length || 0
+      };
+    }
+    
     return data;
   }
 }

@@ -1,33 +1,43 @@
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { useOptimizedExerciseProgramPage } from "@/features/exercise/hooks/useOptimizedExerciseProgramPage";
+import { TrendingUp, Target, Calendar } from "lucide-react";
 
-import { Card } from '@/components/ui/card';
-import { useOptimizedExerciseProgramPage } from '@/hooks/useOptimizedExerciseProgramPage';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-
-export const TrendAnalysis = () => {
+const TrendAnalysis = () => {
   const { currentProgram } = useOptimizedExerciseProgramPage();
-  
-  const data = currentProgram?.daily_workouts?.map((workout: any, index: number) => ({
-    day: `Day ${workout.day_number || index + 1}`,
-    exercises: workout.exercises?.length || 0,
-    completed: workout.exercises?.filter((ex: any) => ex.completed).length || 0,
-  })) || [];
+
+  if (!currentProgram) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Trend Analysis</CardTitle>
+        </CardHeader>
+        <CardContent>No data available.</CardContent>
+      </Card>
+    );
+  }
+
+  const totalWorkouts = currentProgram.daily_workouts?.length || 0;
+  const completedWorkouts = currentProgram.daily_workouts?.filter(workout => workout.completed).length || 0;
+  const completionRate = totalWorkouts > 0 ? (completedWorkouts / totalWorkouts) * 100 : 0;
 
   return (
-    <Card className="p-6">
-      <h3 className="text-lg font-semibold mb-4">Weekly Progress Trend</h3>
-      <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="day" />
-          <YAxis />
-          <Tooltip />
-          <Bar dataKey="completed" fill="#10b981" name="Completed" />
-          <Bar dataKey="exercises" fill="#e5e7eb" name="Total" />
-        </BarChart>
-      </ResponsiveContainer>
+    <Card>
+      <CardHeader>
+        <CardTitle>Trend Analysis</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex items-center space-x-2">
+          <TrendingUp className="h-4 w-4 text-gray-500" />
+          <span>Workout Completion Rate</span>
+        </div>
+        <Progress value={completionRate} />
+        <div className="text-sm text-gray-500">
+          {completedWorkouts} of {totalWorkouts} workouts completed
+        </div>
+      </CardContent>
     </Card>
   );
 };
 
-// Export as default for backward compatibility
 export default TrendAnalysis;

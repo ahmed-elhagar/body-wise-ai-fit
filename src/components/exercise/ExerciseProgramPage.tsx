@@ -1,7 +1,7 @@
 
 import { format, addDays } from "date-fns";
 import { useI18n } from '@/hooks/useI18n';
-import { useOptimizedExerciseProgramPage } from "@/hooks/useOptimizedExerciseProgramPage";
+import { useOptimizedExerciseProgramPage } from "@/features/exercise/hooks/useOptimizedExerciseProgramPage";
 import { EmptyExerciseState } from "./EmptyExerciseState";
 import { AIExerciseDialog } from "./AIExerciseDialog";
 import { ExercisePageHeader } from "./ExercisePageHeader";

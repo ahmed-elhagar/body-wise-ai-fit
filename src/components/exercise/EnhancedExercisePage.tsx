@@ -1,7 +1,7 @@
 
 import { format, addDays } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useOptimizedExerciseProgramPage } from "@/hooks/useOptimizedExerciseProgramPage";
+import { useOptimizedExerciseProgramPage } from "@/features/exercise/hooks/useOptimizedExerciseProgramPage";
 import { EnhancedDayNavigation } from "./EnhancedDayNavigation";
 import { AIExerciseDialog } from "./AIExerciseDialog";
 import { ExercisePageLayout } from "./ExercisePageLayout";

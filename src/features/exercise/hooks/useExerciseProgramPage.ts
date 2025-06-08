@@ -1,3 +1,4 @@
+
 import { useState, useMemo, useCallback } from 'react';
 import { useExerciseProgramData } from './useExerciseProgramData';
 import { useRateLimitedAI } from '@/hooks/useRateLimitedAI';
@@ -16,7 +17,7 @@ export interface ExercisePreferences {
   difficulty: string;
 }
 
-export const useOptimizedExerciseProgramPage = () => {
+export const useExerciseProgramPage = () => {
   const [selectedDayNumber, setSelectedDayNumber] = useState(new Date().getDay() || 7);
   const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
   const [workoutType, setWorkoutType] = useState<"home" | "gym">("home");

@@ -1,5 +1,5 @@
-
-import { useOptimizedExerciseProgramPage } from '@/hooks/useOptimizedExerciseProgramPage';
+import { subDays, format } from 'date-fns';
+import { useOptimizedExerciseProgramPage } from '@/features/exercise/hooks/useOptimizedExerciseProgramPage';
 
 // Mock data for different chart types
 const generateWeightData = () => {

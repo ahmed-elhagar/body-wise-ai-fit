@@ -1,10 +1,9 @@
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Home, Building2 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { WorkoutContentLayout } from "./WorkoutContentLayout";
 import { ExerciseProgramSelector } from "./ExerciseProgramSelector";
-import { ExerciseProgram, ExercisePreferences } from "@/hooks/useExerciseProgramPage";
+import { ExerciseProgram, ExercisePreferences } from "@/features/exercise/hooks/useExerciseProgramPage";
 
 interface WorkoutTypeTabsProps {
   workoutType: "home" | "gym";
