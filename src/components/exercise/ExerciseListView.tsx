@@ -10,8 +10,7 @@ interface ExerciseListViewProps {
 }
 
 export const ExerciseListView = ({ exercises, onExerciseComplete }: ExerciseListViewProps) => {
-  const { tFrom } = useI18n();
-  const t = tFrom('exercise');
+  const { t } = useI18n();
 
   return (
     <div className="space-y-3">
@@ -27,7 +26,7 @@ export const ExerciseListView = ({ exercises, onExerciseComplete }: ExerciseList
               <div>
                 <h3 className="font-medium text-gray-900">{exercise.name}</h3>
                 <div className="text-sm text-gray-600">
-                  {exercise.sets} {t('sets')} × {exercise.reps} {t('reps')}
+                  {exercise.sets} sets × {exercise.reps} reps
                   {exercise.equipment && (
                     <span className="ml-2 text-blue-600">• {exercise.equipment}</span>
                   )}
@@ -40,7 +39,7 @@ export const ExerciseListView = ({ exercises, onExerciseComplete }: ExerciseList
               onClick={() => onExerciseComplete(exercise.id)}
               className={exercise.completed ? "bg-green-600 hover:bg-green-700" : ""}
             >
-              {exercise.completed ? t('Completed') : t('Mark Complete')}
+              {exercise.completed ? 'Completed' : 'Mark Complete'}
             </Button>
           </div>
         </Card>

@@ -34,8 +34,7 @@ export const ExerciseListEnhanced = ({
   error,
   onRetry
 }: ExerciseListEnhancedProps) => {
-  const { tFrom } = useI18n();
-  const t = tFrom('exercise');
+  const { t } = useI18n();
   const [viewMode, setViewMode] = useState<'session' | 'list'>('session');
   const [showCustomExerciseDialog, setShowCustomExerciseDialog] = useState(false);
   const [activeExerciseId, setActiveExerciseId] = useState<string | null>(null);
@@ -100,7 +99,7 @@ export const ExerciseListEnhanced = ({
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-2" />
-          <p className="text-gray-600">{t('Loading exercises...')}</p>
+          <p className="text-gray-600">Loading exercises...</p>
         </div>
       </div>
     );

@@ -13,8 +13,7 @@ export const ExerciseEmptyState = ({
   dailyWorkoutId, 
   onAddCustomExercise 
 }: ExerciseEmptyStateProps) => {
-  const { tFrom } = useI18n();
-  const t = tFrom('exercise');
+  const { t } = useI18n();
 
   return (
     <Card className="p-8 text-center">
@@ -23,10 +22,10 @@ export const ExerciseEmptyState = ({
           <Timer className="w-8 h-8 text-gray-400" />
         </div>
         <h3 className="text-lg font-medium text-gray-900 mb-2">
-          {t('No exercises for today')}
+          No exercises for today
         </h3>
         <p className="text-gray-600 mb-4">
-          {t('Add some exercises to get started with your workout')}
+          Add some exercises to get started with your workout
         </p>
         
         {dailyWorkoutId && (
@@ -35,7 +34,7 @@ export const ExerciseEmptyState = ({
             className="flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
-            {t('Add Custom Exercise')}
+            Add Custom Exercise
           </Button>
         )}
       </div>

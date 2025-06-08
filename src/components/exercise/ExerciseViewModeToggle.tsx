@@ -16,8 +16,7 @@ export const ExerciseViewModeToggle = ({
   dailyWorkoutId,
   onAddCustomExercise
 }: ExerciseViewModeToggleProps) => {
-  const { tFrom } = useI18n();
-  const t = tFrom('exercise');
+  const { t } = useI18n();
 
   return (
     <div className="flex items-center gap-2">
@@ -29,7 +28,7 @@ export const ExerciseViewModeToggle = ({
           className="flex items-center gap-2"
         >
           <Plus className="w-4 h-4" />
-          {t('Add Exercise')}
+          Add Exercise
         </Button>
       )}
       
@@ -41,7 +40,7 @@ export const ExerciseViewModeToggle = ({
           className="text-xs h-8"
         >
           <Timer className="w-3 h-3 mr-1" />
-          {t('Session')}
+          Session
         </Button>
         <Button
           variant={viewMode === 'list' ? 'default' : 'ghost'}
@@ -50,7 +49,7 @@ export const ExerciseViewModeToggle = ({
           className="text-xs h-8"
         >
           <List className="w-3 h-3 mr-1" />
-          {t('List')}
+          List
         </Button>
       </div>
     </div>

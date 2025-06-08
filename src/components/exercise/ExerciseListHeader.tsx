@@ -19,15 +19,14 @@ export const ExerciseListHeader = ({
   dailyWorkoutId,
   onAddCustomExercise
 }: ExerciseListHeaderProps) => {
-  const { tFrom } = useI18n();
-  const t = tFrom('exercise');
+  const { t } = useI18n();
 
   return (
     <div className="flex items-center justify-between">
       <div>
-        <h2 className="text-xl font-bold text-gray-900">{t('Today\'s Workout')}</h2>
+        <h2 className="text-xl font-bold text-gray-900">Today's Workout</h2>
         <p className="text-sm text-gray-600">
-          {completedCount}/{totalCount} {t('exercises completed')}
+          {completedCount}/{totalCount} exercises completed
         </p>
       </div>
       
