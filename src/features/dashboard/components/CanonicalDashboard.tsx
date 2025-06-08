@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { useProfile } from "@/hooks/useProfile";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
-import { QuickActionsGrid } from "./QuickActionsGrid";
-import { RecentActivityCard } from "./RecentActivityCard";
-import { DashboardHeader } from "./DashboardHeader";
+import QuickActionsGrid from "./QuickActionsGrid";
+import RecentActivityCard from "./RecentActivityCard";
+import DashboardHeader from "./DashboardHeader";
 import { Zap, Activity } from "lucide-react";
 import EnhancedPageLoading from "@/components/EnhancedPageLoading";
 
