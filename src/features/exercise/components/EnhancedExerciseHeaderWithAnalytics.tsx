@@ -1,6 +1,19 @@
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Sparkles, RefreshCw, Home, Building2, BarChart2 } from "lucide-react";
+
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
+import { 
+  BarChart3, 
+  Brain, 
+  Trophy, 
+  Award,
+  TrendingUp,
+  Target,
+  Zap,
+  Calendar
+} from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface EnhancedExerciseHeaderWithAnalyticsProps {
   currentProgram: any;
@@ -19,49 +32,104 @@ export const EnhancedExerciseHeaderWithAnalytics = ({
   isGenerating,
   workoutType
 }: EnhancedExerciseHeaderWithAnalyticsProps) => {
+  const { t } = useLanguage();
+
+  // Mock analytics summary data
+  const analyticsData = {
+    totalWorkouts: 28,
+    personalRecords: 5,
+    weekStreak: 3,
+    thisWeekProgress: 75
+  };
+
   return (
-    <Card className="p-4 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          {workoutType === "home" ? (
-            <Home className="w-5 h-5 text-fitness-primary" />
-          ) : (
-            <Building2 className="w-5 h-5 text-fitness-primary" />
-          )}
-          <h3 className="text-lg font-semibold text-gray-800">
-            {currentProgram?.program_name || (workoutType === "home" ? "Home" : "Gym") + " Workout Program"}
-          </h3>
+    <div className="space-y-4">
+      {/* Program Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {currentProgram?.program_name || t('Exercise Program')}
+          </h1>
+          <div className="flex items-center gap-3 mt-1">
+            <Badge variant="outline" className="flex items-center gap-1">
+              <Target className="w-3 h-3" />
+              {workoutType === 'home' ? t('Home Workout') : t('Gym Workout')}
+            </Badge>
+            {currentProgram?.difficulty_level && (
+              <Badge variant="secondary">
+                {currentProgram.difficulty_level}
+              </Badge>
+            )}
+          </div>
         </div>
-        
-        <div className="flex space-x-3">
+
+        <div className="flex items-center gap-2">
           <Button
-            onClick={onShowAnalytics}
             variant="outline"
-            className="bg-white/80"
+            onClick={onShowAnalytics}
+            className="flex items-center gap-2"
           >
-            <BarChart2 className="w-4 h-4 mr-2" />
-            View Analytics
+            <BarChart3 className="w-4 h-4" />
+            {t('Analytics')}
           </Button>
           <Button
-            onClick={onShowAIDialog}
-            disabled={isGenerating}
-            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white"
-          >
-            <Sparkles className="w-4 h-4 mr-2" />
-            Customize Program
-          </Button>
-          
-          <Button
+            variant="outline"
             onClick={onRegenerateProgram}
             disabled={isGenerating}
-            variant="outline"
-            className="bg-white/80"
+            className="flex items-center gap-2"
           >
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Generate New
+            <Brain className="w-4 h-4" />
+            {isGenerating ? t('Generating...') : t('AI Regenerate')}
+          </Button>
+          <Button onClick={onShowAIDialog} className="flex items-center gap-2">
+            <Zap className="w-4 h-4" />
+            {t('New Program')}
           </Button>
         </div>
       </div>
-    </Card>
+
+      {/* Quick Analytics Summary */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <Card className="p-3 bg-blue-50 border-blue-200">
+          <div className="flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-blue-600" />
+            <div>
+              <div className="text-lg font-bold text-blue-900">{analyticsData.totalWorkouts}</div>
+              <div className="text-xs text-blue-700">{t('Total Workouts')}</div>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-3 bg-yellow-50 border-yellow-200">
+          <div className="flex items-center gap-2">
+            <Trophy className="w-4 h-4 text-yellow-600" />
+            <div>
+              <div className="text-lg font-bold text-yellow-900">{analyticsData.personalRecords}</div>
+              <div className="text-xs text-yellow-700">{t('Personal Records')}</div>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-3 bg-green-50 border-green-200">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-green-600" />
+            <div>
+              <div className="text-lg font-bold text-green-900">{analyticsData.weekStreak}</div>
+              <div className="text-xs text-green-700">{t('Week Streak')}</div>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-3 bg-purple-50 border-purple-200">
+          <div className="flex items-center gap-2">
+            <Award className="w-4 h-4 text-purple-600" />
+            <div>
+              <div className="text-lg font-bold text-purple-900">{analyticsData.thisWeekProgress}%</div>
+              <div className="text-xs text-purple-700">{t('This Week')}</div>
+            </div>
+          </div>
+        </Card>
+      </div>
+    </div>
   );
 };
