@@ -3,17 +3,20 @@ import { Crown, LogOut, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { useI18n } from '@/hooks/useI18n';
 
 const AdminHeader = () => {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { tFrom } = useI18n();
+  const tAdmin = tFrom('admin');
 
   const handleForceLogout = async () => {
     setIsLoggingOut(true);
     try {
       // Add force logout logic here if needed
-      toast.success('Force logout action initiated');
+      toast.success(String(tAdmin('messages.success.userSuspended')));
     } catch (error) {
-      toast.error('Failed to force logout users');
+      toast.error(String(tAdmin('messages.error.updateFailed')));
     } finally {
       setIsLoggingOut(false);
     }
@@ -33,10 +36,10 @@ const AdminHeader = () => {
             </div>
             <div>
               <h1 className="text-xl md:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-                Admin Panel
+                {String(tAdmin('title'))}
               </h1>
               <p className="text-sm md:text-base text-gray-600 font-medium">
-                Manage users, subscriptions, and system settings
+                {String(tAdmin('subtitle'))}
               </p>
             </div>
           </div>
@@ -52,8 +55,8 @@ const AdminHeader = () => {
             ) : (
               <LogOut className="w-4 h-4" />
             )}
-            <span className="hidden md:inline">Force Logout All</span>
-            <span className="md:hidden">Logout</span>
+            <span className="hidden md:inline">{String(tAdmin('system.actions.forceLogoutAll'))}</span>
+            <span className="md:hidden">{String(tAdmin('actions.logout'))}</span>
           </Button>
         </div>
       </div>

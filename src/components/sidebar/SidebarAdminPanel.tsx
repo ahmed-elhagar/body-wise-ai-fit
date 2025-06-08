@@ -22,7 +22,7 @@ interface NavigationItem {
 
 const SidebarAdminPanel = () => {
   const { tFrom, isRTL } = useI18n();
-  const tNav = tFrom('navigation');
+  const tAdmin = tFrom('admin');
   const location = useLocation();
   const { isAdmin } = useAdmin();
 
@@ -30,26 +30,26 @@ const SidebarAdminPanel = () => {
     { 
       href: "/admin/dashboard", 
       icon: ShieldCheck, 
-      label: String(tNav("adminDashboard")),
-      description: "System overview & controls"
+      label: String(tAdmin("tabs.dashboard")),
+      description: String(tAdmin("description"))
     },
     { 
       href: "/admin/users", 
       icon: Users, 
-      label: "User Management",
-      description: "Manage all users"
+      label: String(tAdmin("tabs.users")),
+      description: String(tAdmin("users.subtitle"))
     },
     { 
       href: "/admin/analytics", 
       icon: BarChart, 
-      label: "Analytics",
-      description: "Platform insights"
+      label: String(tAdmin("tabs.analytics")),
+      description: String(tAdmin("analytics.subtitle"))
     },
     { 
       href: "/admin/settings", 
       icon: Settings, 
-      label: "System Settings",
-      description: "Configure platform"
+      label: String(tAdmin("tabs.system")),
+      description: String(tAdmin("system.subtitle"))
     },
   ];
 
@@ -64,11 +64,11 @@ const SidebarAdminPanel = () => {
         isRTL && "flex-row-reverse text-right"
       )} data-sidebar="group-label">
         <Crown className="w-4 h-4 text-purple-600" />
-        {String(tNav("admin"))}
+        {String(tAdmin("title"))}
       </SidebarGroupLabel>
       
       <div className="text-xs text-purple-600 mb-3 px-2 font-medium">
-        {String(tNav("systemAdmin"))}
+        {String(tAdmin("description"))}
       </div>
 
       <SidebarMenu className="space-y-1">
