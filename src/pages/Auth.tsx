@@ -91,7 +91,7 @@ const Auth = () => {
             className="text-sm text-blue-600 hover:text-blue-700 font-medium hover:underline"
             disabled={loading || authLoading}
           >
-            Don't have an account? Join FitGenius
+            Don't have an account? Join FitFatta
           </button>
         </div>
       </Card>

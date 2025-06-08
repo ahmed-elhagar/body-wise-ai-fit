@@ -45,10 +45,21 @@ export const useSubscription = () => {
       return data as Subscription | null;
     },
     enabled: !!user?.id,
-    staleTime: 1000 * 60 * 5, // 5 minutes - much longer stale time
-    refetchInterval: false, // Disable automatic polling
-    refetchOnWindowFocus: false, // Disable refetch on window focus
+    staleTime: 1000 * 60 * 2, // 2 minutes
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
   });
+
+  // Enhanced subscription status check
+  const isProMember = () => {
+    if (!subscription) return false;
+    
+    const isActive = subscription.status === 'active';
+    const notExpired = new Date(subscription.current_period_end) > new Date();
+    const notCancelled = !subscription.cancel_at_period_end;
+    
+    return isActive && notExpired && notCancelled;
+  };
 
   const createCheckoutSession = useMutation({
     mutationFn: async ({ planType }: { planType: 'monthly' | 'yearly' }) => {
@@ -81,21 +92,21 @@ export const useSubscription = () => {
     onSuccess: (data) => {
       if (data.url) {
         console.log('useSubscription - Opening checkout URL:', data.url);
-        // Open Stripe checkout in a new tab
         window.open(data.url, '_blank');
         
-        // Much less aggressive polling - only check every 10 seconds for 2 minutes
+        // Enhanced polling for subscription updates
         const pollInterval = setInterval(() => {
-          console.log('useSubscription - Polling for updates');
+          console.log('useSubscription - Polling for subscription updates');
           refetch();
           queryClient.invalidateQueries({ queryKey: ['user-role'] });
-        }, 10000); // Poll every 10 seconds instead of 1 second
+          queryClient.invalidateQueries({ queryKey: ['subscription'] });
+        }, 5000); // Poll every 5 seconds
         
-        // Stop polling after 2 minutes instead of 5
+        // Stop polling after 2 minutes
         setTimeout(() => {
           console.log('useSubscription - Stopping polling');
           clearInterval(pollInterval);
-        }, 120000); // 2 minutes
+        }, 120000);
       }
     },
     onError: (error) => {
@@ -157,6 +168,7 @@ export const useSubscription = () => {
     subscription,
     isLoading,
     refetch,
+    isProMember: isProMember(),
     createCheckoutSession: createCheckoutSession.mutate,
     cancelSubscription: cancelSubscription.mutate,
     adminCancelSubscription: adminCancelSubscription.mutate,

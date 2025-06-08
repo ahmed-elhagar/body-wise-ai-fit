@@ -1,8 +1,8 @@
 
-import EnhancedUsersTable from './EnhancedUsersTable';
+import PaginatedUsersTable from './PaginatedUsersTable';
 
 const UsersTable = () => {
-  return <EnhancedUsersTable />;
+  return <PaginatedUsersTable />;
 };
 
 export default UsersTable;
