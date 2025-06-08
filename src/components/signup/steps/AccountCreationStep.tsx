@@ -43,15 +43,21 @@ const AccountCreationStep = ({
     } catch (err: any) {
       console.error('Account creation error:', err);
       
-      // Better error message detection and display
-      const errorMessage = err.message || err.toString() || 'Account creation failed';
+      // Enhanced error message detection
+      const errorMessage = err?.message || err?.toString() || 'Account creation failed';
+      console.log('Error message received:', errorMessage);
       
-      if (errorMessage.includes('already registered') || 
-          errorMessage.includes('already exists') || 
-          errorMessage.includes('User already registered') ||
-          errorMessage.includes('email_address_not_authorized')) {
+      // Check for various forms of "user already exists" errors
+      if (errorMessage.toLowerCase().includes('already registered') || 
+          errorMessage.toLowerCase().includes('already exists') || 
+          errorMessage.toLowerCase().includes('user already registered') ||
+          errorMessage.toLowerCase().includes('email_address_not_authorized') ||
+          errorMessage.toLowerCase().includes('signup_disabled') ||
+          errorMessage.toLowerCase().includes('user_already_exists')) {
+        console.log('Setting account_exists error');
         setError('account_exists');
       } else {
+        console.log('Setting generic error:', errorMessage);
         setError(errorMessage);
       }
     }

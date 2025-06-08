@@ -1,12 +1,12 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ChefHat, Clock, Users, Utensils, Youtube, ExternalLink, Sparkles, ImageIcon } from "lucide-react";
+import { ChefHat, Clock, Users, Utensils, Youtube, ExternalLink, Sparkles, ImageIcon, Loader2 } from "lucide-react";
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useEnhancedMealRecipe } from '@/hooks/useEnhancedMealRecipe';
+import { useMealRecipe } from '@/hooks/useMealRecipe';
 import { toast } from 'sonner';
-import SimpleLoadingIndicator from '@/components/ui/simple-loading-indicator';
 import type { DailyMeal } from '@/features/meal-plan/types';
 
 interface EnhancedRecipeDialogProps {
@@ -18,9 +18,8 @@ interface EnhancedRecipeDialogProps {
 
 export const EnhancedRecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }: EnhancedRecipeDialogProps) => {
   const { t, isRTL } = useLanguage();
-  const { generateEnhancedRecipe, isGeneratingRecipe } = useEnhancedMealRecipe();
+  const { generateRecipe, isGeneratingRecipe } = useMealRecipe();
   const [currentMeal, setCurrentMeal] = useState<DailyMeal | null>(meal);
-  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
 
   useEffect(() => {
     setCurrentMeal(meal);
@@ -30,14 +29,14 @@ export const EnhancedRecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }:
     if (!currentMeal?.id) return;
 
     try {
-      console.log('🍳 Generating full recipe for meal:', currentMeal.id);
-      const updatedMeal = await generateEnhancedRecipe(currentMeal.id, currentMeal);
+      console.log('🍳 Generating full recipe with image for meal:', currentMeal.id);
+      
+      const updatedMeal = await generateRecipe(currentMeal.id);
       
       if (updatedMeal) {
-        // Properly convert the database response to our DailyMeal type
+        // Convert the updated meal data to our DailyMeal type
         const convertedMeal: DailyMeal = {
           ...currentMeal,
-          meal_type: (updatedMeal.meal_type as 'breakfast' | 'lunch' | 'dinner' | 'snack1' | 'snack2') || currentMeal.meal_type,
           ingredients: Array.isArray(updatedMeal.ingredients) 
             ? updatedMeal.ingredients 
             : typeof updatedMeal.ingredients === 'string'
@@ -60,47 +59,11 @@ export const EnhancedRecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }:
         
         setCurrentMeal(convertedMeal);
         onRecipeUpdated?.();
-        toast.success('Recipe generated successfully!');
+        toast.success('Recipe with image generated successfully!');
       }
     } catch (error) {
       console.error('Error generating recipe:', error);
-      toast.error('Failed to generate recipe');
-    }
-  };
-
-  const handleGenerateImage = async () => {
-    if (!currentMeal?.id) return;
-
-    setIsGeneratingImage(true);
-    try {
-      console.log('🖼️ Generating image for meal:', currentMeal.id);
-      
-      const response = await fetch('/api/generate-meal-image', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          mealId: currentMeal.id,
-          mealName: currentMeal.name,
-          description: currentMeal.instructions?.[0] || `Delicious ${currentMeal.name}`
-        })
-      });
-
-      const { data, error } = await response.json();
-
-      if (error) throw new Error(error);
-
-      if (data?.imageUrl) {
-        setCurrentMeal(prev => prev ? { ...prev, image_url: data.imageUrl } : null);
-        onRecipeUpdated?.();
-        toast.success('Image generated successfully!');
-      }
-    } catch (error) {
-      console.error('Error generating image:', error);
-      toast.error('Failed to generate image');
-    } finally {
-      setIsGeneratingImage(false);
+      // Don't show additional error toast since useMealRecipe already handles it
     }
   };
 
@@ -150,23 +113,6 @@ export const EnhancedRecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }:
                 </div>
               </div>
             )}
-            
-            {/* Generate Image Button */}
-            <Button
-              onClick={handleGenerateImage}
-              disabled={isGeneratingImage}
-              size="sm"
-              className="absolute top-2 right-2 bg-blue-600 hover:bg-blue-700"
-            >
-              {isGeneratingImage ? (
-                <SimpleLoadingIndicator message="Generating..." size="sm" />
-              ) : (
-                <>
-                  <Sparkles className="w-3 h-3 mr-1" />
-                  Generate Image
-                </>
-              )}
-            </Button>
           </div>
 
           {/* Basic Info */}
@@ -208,9 +154,9 @@ export const EnhancedRecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }:
           {/* Generate Full Recipe Button */}
           {!hasFullRecipe && (
             <div className="text-center py-4 bg-purple-50 rounded-lg border border-purple-200">
-              <h3 className="font-semibold mb-2 text-purple-800">Generate Full Recipe</h3>
+              <h3 className="font-semibold mb-2 text-purple-800">Generate Complete Recipe</h3>
               <p className="text-sm text-purple-600 mb-4">
-                Get detailed ingredients and step-by-step instructions with AI
+                Get detailed ingredients, step-by-step instructions, and food image with AI
               </p>
               <Button
                 onClick={handleGenerateFullRecipe}
@@ -218,11 +164,14 @@ export const EnhancedRecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }:
                 className="bg-purple-600 hover:bg-purple-700"
               >
                 {isGeneratingRecipe ? (
-                  <SimpleLoadingIndicator message="Generating..." size="sm" />
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Generating Recipe & Image...</span>
+                  </div>
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4 mr-2" />
-                    Generate Full Recipe
+                    Generate Complete Recipe
                   </>
                 )}
               </Button>
@@ -260,6 +209,20 @@ export const EnhancedRecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }:
                   </li>
                 ))}
               </ol>
+            </div>
+          )}
+
+          {/* Alternatives */}
+          {hasFullRecipe && currentMeal.alternatives && currentMeal.alternatives.length > 0 && (
+            <div>
+              <h3 className="font-semibold mb-3">Alternative Ingredients</h3>
+              <div className="space-y-2">
+                {currentMeal.alternatives.map((alternative, index) => (
+                  <div key={index} className="p-2 bg-blue-50 rounded border-l-4 border-blue-200">
+                    <span className="text-blue-800">{alternative}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
           

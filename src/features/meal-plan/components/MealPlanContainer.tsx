@@ -27,14 +27,10 @@ export const MealPlanContainer = () => {
   
   // Keep track of the last successfully loaded data to show during transitions
   const lastLoadedDataRef = useRef(mealPlanState.currentWeekPlan);
-  const [isWeekTransition, setIsWeekTransition] = useState(false);
 
   // Update the ref when we have new data and not loading
   if (mealPlanState.currentWeekPlan && !mealPlanState.isLoading) {
     lastLoadedDataRef.current = mealPlanState.currentWeekPlan;
-    if (isWeekTransition) {
-      setIsWeekTransition(false);
-    }
   }
 
   // Enhanced shuffle handler
@@ -57,14 +53,12 @@ export const MealPlanContainer = () => {
 
   // Enhanced week change handler that manages loading states properly
   const handleWeekChange = async (offset: number) => {
-    console.log('📅 Week change initiated, setting transition state');
-    setIsWeekTransition(true);
+    console.log('📅 Week change initiated');
     await mealPlanState.setCurrentWeekOffset(offset);
   };
 
   // Determine what data to display
   const displayData = mealPlanState.currentWeekPlan || lastLoadedDataRef.current;
-  const showLoadingOverlay = mealPlanState.isLoading && displayData;
 
   // Only show full error state if there's an error and no existing data
   if (mealPlanState.error && !displayData) {
@@ -158,10 +152,30 @@ export const MealPlanContainer = () => {
           </div>
         </Card>
         
-        {/* Content Area with Focused Loading Overlay - Only meals loading */}
+        {/* Content Area with Loading Overlay - Only over meal content */}
         <div className="relative">
-          {/* Focused Loading Overlay - Only covers meal content */}
-          {showLoadingOverlay && (
+          {/* Main Content - Always rendered with last known data */}
+          <MealPlanContent
+            viewMode={viewMode}
+            currentWeekPlan={displayData}
+            selectedDayNumber={mealPlanState.selectedDayNumber}
+            dailyMeals={mealPlanState.dailyMeals}
+            totalCalories={mealPlanState.totalCalories}
+            totalProtein={mealPlanState.totalProtein}
+            targetDayCalories={mealPlanState.targetDayCalories}
+            weekStartDate={mealPlanState.weekStartDate}
+            currentWeekOffset={mealPlanState.currentWeekOffset}
+            isGenerating={mealPlanState.isGenerating}
+            onViewMeal={(meal) => mealPlanState.openRecipeDialog(meal)}
+            onExchangeMeal={(meal) => mealPlanState.openExchangeDialog(meal)}
+            onAddSnack={() => mealPlanState.openAddSnackDialog()}
+            onGenerateAI={() => mealPlanState.openAIDialog()}
+            setCurrentWeekOffset={handleWeekChange}
+            setSelectedDayNumber={mealPlanState.setSelectedDayNumber}
+          />
+          
+          {/* Loading Overlay - Only shows when loading and we have existing data */}
+          {mealPlanState.isLoading && displayData && (
             <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg min-h-[400px]">
               <div className="flex flex-col items-center gap-3 bg-white rounded-lg shadow-lg p-6 border">
                 <Loader2 className="w-8 h-8 animate-spin text-violet-600" />
@@ -170,28 +184,6 @@ export const MealPlanContainer = () => {
               </div>
             </div>
           )}
-          
-          {/* Main Content - Always rendered with last known data */}
-          <div className={`transition-opacity duration-200 ${showLoadingOverlay ? 'opacity-30' : 'opacity-100'}`}>
-            <MealPlanContent
-              viewMode={viewMode}
-              currentWeekPlan={displayData}
-              selectedDayNumber={mealPlanState.selectedDayNumber}
-              dailyMeals={mealPlanState.dailyMeals}
-              totalCalories={mealPlanState.totalCalories}
-              totalProtein={mealPlanState.totalProtein}
-              targetDayCalories={mealPlanState.targetDayCalories}
-              weekStartDate={mealPlanState.weekStartDate}
-              currentWeekOffset={mealPlanState.currentWeekOffset}
-              isGenerating={mealPlanState.isGenerating}
-              onViewMeal={(meal) => mealPlanState.openRecipeDialog(meal)}
-              onExchangeMeal={(meal) => mealPlanState.openExchangeDialog(meal)}
-              onAddSnack={() => mealPlanState.openAddSnackDialog()}
-              onGenerateAI={() => mealPlanState.openAIDialog()}
-              setCurrentWeekOffset={handleWeekChange}
-              setSelectedDayNumber={mealPlanState.setSelectedDayNumber}
-            />
-          </div>
         </div>
       </div>
 
