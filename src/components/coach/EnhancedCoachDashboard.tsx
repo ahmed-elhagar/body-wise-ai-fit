@@ -10,8 +10,6 @@ interface CoachTraineeRelationship {
   id: string;
   trainee_id: string;
   coach_id: string;
-  status: string;
-  created_at: string;
   assigned_at: string;
   notes: string;
   trainee_profile: {
@@ -39,12 +37,11 @@ const EnhancedCoachDashboard = () => {
       const { data, error } = await supabase
         .from('coach_trainees')
         .select(`
-          *,
-          trainee_profile:profiles!coach_trainees_trainee_id_fkey(
-            first_name,
-            last_name,
-            email
-          )
+          id,
+          trainee_id,
+          coach_id,
+          assigned_at,
+          notes
         `)
         .eq('coach_id', user?.id);
 
@@ -53,10 +50,11 @@ const EnhancedCoachDashboard = () => {
       // Transform data to match interface
       const transformedData = (data || []).map(item => ({
         ...item,
-        status: item.status || 'active',
-        created_at: item.created_at || item.assigned_at,
-        assigned_at: item.assigned_at || item.created_at,
-        notes: item.notes || ''
+        trainee_profile: {
+          first_name: 'User',
+          last_name: '',
+          email: 'user@example.com'
+        }
       }));
       
       setTrainees(transformedData);
