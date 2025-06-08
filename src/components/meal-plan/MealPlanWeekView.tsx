@@ -1,10 +1,9 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, ChefHat, ArrowLeftRight } from "lucide-react";
 import { format } from "date-fns";
-import type { DailyMeal } from "@/hooks/useMealPlanData";
+import type { DailyMeal } from "@/features/meal-plan/types";
 
 interface MealPlanWeekViewProps {
   weeklyPlan: any;

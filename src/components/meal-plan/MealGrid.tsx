@@ -1,9 +1,8 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Shuffle } from "lucide-react";
-import MealCard from "./MealCard";
-import type { DailyMeal } from "@/hooks/useMealPlanData";
+import { MealCard } from "@/features/meal-plan/components";
+import type { DailyMeal } from "@/features/meal-plan/types";
 
 interface MealGridProps {
   meals: DailyMeal[];

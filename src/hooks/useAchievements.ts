@@ -1,104 +1,44 @@
-import { useState, useEffect } from 'react';
-import { useMealPlanState } from './useMealPlanState';
-import { useOptimizedExerciseProgramPage } from '@/features/exercise/hooks/useOptimizedExerciseProgramPage';
-
-interface Achievement {
-  id: string;
-  title: string;
-  description: string;
-  achieved: boolean;
-  rarity: string;
-  category: string;
-  icon: string;
-  earned_at?: string;
-  progress?: number;
-  requirement_value?: number;
-}
+import { useMemo } from 'react';
+import { useMealPlanState } from '@/features/meal-plan/hooks';
+import { useAuth } from './useAuth';
 
 export const useAchievements = () => {
+  const { user } = useAuth();
   const { currentWeekPlan } = useMealPlanState();
-  const { currentProgram } = useOptimizedExerciseProgramPage();
-  
-  const [achievements, setAchievements] = useState<Achievement[]>([
-    {
-      id: 'first-meal-plan',
-      title: 'Generated First Meal Plan',
-      description: 'Generate your first personalized meal plan.',
-      achieved: false,
-      rarity: 'common',
-      category: 'nutrition',
-      icon: 'target'
-    },
-    {
-      id: 'first-workout-plan',
-      title: 'Generated First Workout Plan',
-      description: 'Generate your first personalized workout plan.',
-      achieved: false,
-      rarity: 'common',
-      category: 'fitness',
-      icon: 'trophy'
-    },
-    {
-      id: 'consistent-meal-planning',
-      title: 'Consistent Meal Planning',
-      description: 'Generate meal plans for 7 consecutive days.',
-      achieved: false,
-      rarity: 'rare',
-      category: 'consistency',
-      icon: 'star'
-    },
-    {
-      id: 'consistent-workouts',
-      title: 'Consistent Workouts',
-      description: 'Complete workouts for 7 consecutive days.',
-      achieved: false,
-      rarity: 'rare',
-      category: 'consistency',
-      icon: 'flame'
-    },
-  ]);
-  const [isLoading, setIsLoading] = useState(false);
 
-  const earnedAchievements = achievements.filter(a => a.achieved);
-  const availableAchievements = achievements.filter(a => !a.achieved);
+  const achievements = useMemo(() => {
+    const dailyMealsCount = currentWeekPlan?.dailyMeals?.length || 0;
+    const hasWeeklyPlan = !!currentWeekPlan?.weeklyPlan;
 
-  const checkAchievements = () => {
-    setIsLoading(true);
-    
-    // Check if the user has generated a meal plan
-    if (currentWeekPlan) {
-      setAchievements((prevAchievements) =>
-        prevAchievements.map((achievement) =>
-          achievement.id === 'first-meal-plan'
-            ? { ...achievement, achieved: true, earned_at: new Date().toISOString() }
-            : achievement
-        )
-      );
-    }
+    return [
+      {
+        id: 'weekly-plan',
+        title: 'Weekly Meal Plan',
+        description: 'Create a meal plan for the entire week.',
+        completed: hasWeeklyPlan,
+      },
+      {
+        id: 'daily-meals',
+        title: 'Plan 3 Meals a Day',
+        description: 'Plan at least 3 meals for a day.',
+        completed: dailyMealsCount >= 3,
+      },
+      {
+        id: 'consistent-planning',
+        title: 'Consistent Meal Planning',
+        description: 'Plan meals for at least 5 days in a week.',
+        completed: (currentWeekPlan?.dailyMeals?.length || 0) >= 15,
+      },
+    ];
+  }, [currentWeekPlan]);
 
-    // Check if the user has generated a workout plan
-    if (currentProgram) {
-      setAchievements((prevAchievements) =>
-        prevAchievements.map((achievement) =>
-          achievement.id === 'first-workout-plan'
-            ? { ...achievement, achieved: true, earned_at: new Date().toISOString() }
-            : achievement
-        )
-      );
-    }
+  const completedAchievementsCount = useMemo(
+    () => achievements.filter((achievement) => achievement.completed).length,
+    [achievements]
+  );
 
-    setIsLoading(false);
-  };
-
-  useEffect(() => {
-    checkAchievements();
-  }, [currentWeekPlan, currentProgram]);
-
-  return { 
+  return {
     achievements,
-    earnedAchievements,
-    availableAchievements,
-    isLoading,
-    checkAchievements
+    completedAchievementsCount,
   };
 };

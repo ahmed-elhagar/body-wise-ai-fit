@@ -1,10 +1,9 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { format, addDays } from "date-fns";
 import { ChefHat, ArrowLeftRight, Plus, Calendar, Utensils } from "lucide-react";
-import type { DailyMeal } from "@/hooks/useMealPlanData";
+import type { DailyMeal } from "@/features/meal-plan/types";
 
 interface WeeklyViewContainerProps {
   weekStartDate: Date;

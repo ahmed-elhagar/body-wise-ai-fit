@@ -1,11 +1,11 @@
-
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { supabase } from '@/integrations/supabase/client';
 import { getCategoryForIngredient } from '@/utils/mealPlanUtils';
-import type { WeeklyMealPlan, DailyMeal } from '@/hooks/useMealPlanData';
+import { useCentralizedCredits } from './useCentralizedCredits';
+import type { WeeklyMealPlan, DailyMeal } from '@/features/meal-plan/types';
 
 export const useEnhancedShoppingList = (weeklyPlan?: {
   weeklyPlan: WeeklyMealPlan;
@@ -98,7 +98,7 @@ export const useEnhancedShoppingList = (weeklyPlan?: {
   }, [weeklyPlan?.dailyMeals]);
 
   // Optimized email sending with better error handling
-  const sendShoppingListEmail = async () => {
+  const sendShoppingListEmail = useCallback(async () => {
     if (!user || !weeklyPlan) {
       console.error('❌ Missing data for email sending:', { hasUser: !!user, hasWeeklyPlan: !!weeklyPlan });
       toast.error('Unable to send email - missing data');
@@ -164,7 +164,7 @@ export const useEnhancedShoppingList = (weeklyPlan?: {
       toast.error(error.message || 'Failed to send shopping list email');
       return false;
     }
-  };
+  }, [user, weeklyPlan, enhancedShoppingItems]);
 
   return {
     enhancedShoppingItems,

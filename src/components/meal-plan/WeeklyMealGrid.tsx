@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Clock, Book, ArrowLeftRight } from "lucide-react";
 import { format, addDays } from "date-fns";
-import type { DailyMeal } from "@/hooks/useMealPlanData";
+import type { DailyMeal } from "@/features/meal-plan/types";
 import { useMealPlanTranslation } from "@/utils/translationHelpers";
 
 interface WeeklyMealGridProps {

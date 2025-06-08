@@ -22,7 +22,7 @@ import {
 import { useLanguage } from "@/contexts/LanguageContext";
 import { getCategoryForIngredient } from "@/utils/mealPlanUtils";
 import { toast } from "sonner";
-import type { WeeklyMealPlan, DailyMeal } from "@/hooks/useMealPlanData";
+import type { WeeklyMealPlan, DailyMeal } from "@/features/meal-plan/types";
 import { CategoryShoppingCard } from "./CategoryShoppingCard";
 import { ShoppingListHeader } from "./ShoppingListHeader";
 import { ShoppingListProgress } from "./ShoppingListProgress";

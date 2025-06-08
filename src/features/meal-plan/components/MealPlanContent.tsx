@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { DayOverview } from './DayOverview';
+import DayOverview from './DayOverview';
 import { WeeklyMealPlanView } from './WeeklyMealPlanView';
 import { EmptyWeekState } from './EmptyWeekState';
 import type { DailyMeal, MealPlanFetchResult } from '../types';
