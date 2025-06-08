@@ -5,11 +5,13 @@ import { useEffect } from 'react';
 export const useI18n = () => {
   const { t, i18n } = useTranslation();
   
-  const isRTL = i18n.language === 'ar';
+  // Ensure we always have a valid language value
+  const language = i18n.language || 'en';
+  const isRTL = language === 'ar';
   
   useEffect(() => {
     document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
-    document.documentElement.lang = i18n.language;
+    document.documentElement.lang = language;
     
     // Apply Arabic font class to body when Arabic is selected
     if (isRTL) {
@@ -17,17 +19,21 @@ export const useI18n = () => {
     } else {
       document.body.classList.remove('font-arabic');
     }
-  }, [isRTL, i18n.language]);
+  }, [isRTL, language]);
   
   const changeLanguage = async (lng: string) => {
     try {
+      console.log(`Changing language to: ${lng}`);
       await i18n.changeLanguage(lng);
       localStorage.setItem('preferred-language', lng);
       
       // Force reload to ensure all components pick up the new language
-      window.location.reload();
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
     } catch (error) {
       console.error('Failed to change language:', error);
+      throw error;
     }
   };
   
@@ -46,7 +52,7 @@ export const useI18n = () => {
   return {
     t,
     tFrom,
-    language: i18n.language,
+    language,
     isRTL,
     changeLanguage,
   };

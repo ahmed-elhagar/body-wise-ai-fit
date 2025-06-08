@@ -8,17 +8,22 @@ const LanguageToggle = () => {
   const { language, changeLanguage, isRTL } = useI18n();
   const [isChanging, setIsChanging] = useState(false);
 
+  // Add safety checks for undefined language
+  const currentLanguage = language || 'en';
+  const safeIsRTL = isRTL || false;
+
   const toggleLanguage = async () => {
     if (isChanging) return;
     
     setIsChanging(true);
-    const newLanguage = language === 'en' ? 'ar' : 'en';
-    console.log(`Switching language from ${language} to ${newLanguage}`);
+    const newLanguage = currentLanguage === 'en' ? 'ar' : 'en';
+    console.log(`Switching language from ${currentLanguage} to ${newLanguage}`);
     
     try {
       await changeLanguage(newLanguage);
     } catch (error) {
       console.error('Failed to change language:', error);
+    } finally {
       setIsChanging(false);
     }
   };
@@ -29,14 +34,14 @@ const LanguageToggle = () => {
       size="sm"
       onClick={toggleLanguage}
       disabled={isChanging}
-      className={`flex items-center gap-2 text-sm hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 w-full justify-start py-2.5 px-3 rounded-lg border-blue-200 bg-white shadow-sm ${isRTL ? 'flex-row-reverse' : ''}`}
+      className={`flex items-center gap-2 text-sm hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 w-full justify-start py-2.5 px-3 rounded-lg border-blue-200 bg-white shadow-sm ${safeIsRTL ? 'flex-row-reverse' : ''}`}
     >
       <Globe className="w-4 h-4 text-blue-500" />
-      <span className={`font-medium text-slate-700 ${isRTL ? 'font-arabic' : ''}`}>
-        {language === 'en' ? 'عربي' : 'English'}
+      <span className={`font-medium text-slate-700 ${safeIsRTL ? 'font-arabic' : ''}`}>
+        {currentLanguage === 'en' ? 'عربي' : 'English'}
       </span>
-      <div className={`${isRTL ? 'mr-auto' : 'ml-auto'} text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded transition-all duration-200`}>
-        {isChanging ? '...' : language.toUpperCase()}
+      <div className={`${safeIsRTL ? 'mr-auto' : 'ml-auto'} text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded transition-all duration-200`}>
+        {isChanging ? '...' : currentLanguage.toUpperCase()}
       </div>
     </Button>
   );
