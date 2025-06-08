@@ -1,7 +1,7 @@
 
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
-import EnhancedExercisePage from "@/components/exercise/EnhancedExercisePage";
+import { EnhancedExercisePage } from "@/features/exercise";
 import { ExerciseErrorBoundary } from "@/components/exercise/ExerciseErrorBoundary";
 
 const Exercise = () => {
