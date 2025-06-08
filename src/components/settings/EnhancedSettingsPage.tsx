@@ -12,7 +12,12 @@ export const EnhancedSettingsPage = () => {
   const [userSettings, setUserSettings] = useState({
     measurementUnits: 'metric',
     language: 'en' as Language,
-    notifications: true,
+    notifications: {
+      email: true,
+      push: true,
+      meals: true,
+      workouts: true
+    },
     theme: 'light',
     displayName: '',
     bio: '',
