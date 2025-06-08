@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -50,34 +51,6 @@ export const useSignupState = () => {
     }
   }, []);
 
-  // Check if user has incomplete profile and redirect to appropriate step
-  useEffect(() => {
-    if (user && profile) {
-      console.log("Checking user profile completion:", {
-        hasBasicInfo: !!(profile.first_name && profile.last_name),
-        hasPhysicalInfo: !!(profile.age && profile.gender && profile.height && profile.weight),
-        hasGoals: !!(profile.fitness_goal && profile.activity_level),
-        onboardingCompleted: profile.onboarding_completed
-      });
-
-      if (!profile.onboarding_completed) {
-        // User exists but profile incomplete - determine which step to start from
-        if (!profile.first_name || !profile.last_name) {
-          setCurrentStep(2); // Skip account creation, go to physical info
-        } else if (!profile.age || !profile.gender || !profile.height || !profile.weight) {
-          setCurrentStep(2);
-        } else if (!profile.body_fat_percentage) {
-          setCurrentStep(3);
-        } else if (!profile.fitness_goal || !profile.activity_level) {
-          setCurrentStep(4);
-        } else {
-          setCurrentStep(5);
-        }
-        setAccountCreated(true);
-      }
-    }
-  }, [user, profile]);
-
   // Save progress whenever form data or step changes
   useEffect(() => {
     if (currentStep > 1 || accountCreated) {
@@ -115,19 +88,33 @@ export const useSignupState = () => {
 
       console.log('SignUp result:', result);
 
+      // Check for errors more thoroughly
       if (result?.error) {
         console.error('Signup error details:', result.error);
-        // Create a more specific error message for user already exists
-        if (result.error.message?.toLowerCase().includes('already') || 
-            result.error.message?.toLowerCase().includes('exists') ||
-            result.error.message?.toLowerCase().includes('registered')) {
-          throw new Error(`User with email ${formData.email} already exists`);
+        
+        // Handle specific error cases
+        const errorMessage = result.error.message || '';
+        const lowerErrorMessage = errorMessage.toLowerCase();
+        
+        // Check for various "user exists" error patterns
+        if (lowerErrorMessage.includes('user already registered') || 
+            lowerErrorMessage.includes('already registered') || 
+            lowerErrorMessage.includes('user already exists') ||
+            lowerErrorMessage.includes('already exists') ||
+            lowerErrorMessage.includes('email already in use') ||
+            lowerErrorMessage.includes('duplicate') ||
+            result.error.status === 422) {
+          throw new Error('USER_ALREADY_EXISTS');
         }
-        throw new Error(result.error.message || 'Account creation failed');
+        
+        // Throw the original error message for other cases
+        throw new Error(errorMessage || 'Account creation failed');
       }
 
+      // If we get here, account creation was successful
       console.log('Account created successfully');
       setAccountCreated(true);
+      return { success: true };
     } catch (error: any) {
       console.error('Account creation error in hook:', error);
       // Re-throw the error so the component can handle it
@@ -171,7 +158,7 @@ export const useSignupState = () => {
         fitness_goal: formData.fitnessGoal,
         activity_level: formData.activityLevel,
         body_fat_percentage: formData.bodyFatPercentage,
-        body_shape: calculatedBodyShape, // Use the calculated and validated body shape
+        body_shape: calculatedBodyShape,
         health_conditions: formData.healthConditions.filter(Boolean),
         allergies: formData.allergies.filter(Boolean),
         dietary_restrictions: formData.dietaryRestrictions.filter(Boolean),

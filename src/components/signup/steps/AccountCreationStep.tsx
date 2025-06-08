@@ -44,7 +44,13 @@ const AccountCreationStep = ({
     } catch (err: any) {
       console.error('Account creation error caught in component:', err);
       
-      // Extract error message
+      // Handle the specific USER_ALREADY_EXISTS error
+      if (err?.message === 'USER_ALREADY_EXISTS') {
+        setError('account_exists');
+        return;
+      }
+      
+      // Handle other errors
       let errorMessage = '';
       if (err?.message) {
         errorMessage = err.message;
@@ -54,34 +60,7 @@ const AccountCreationStep = ({
         errorMessage = 'Account creation failed';
       }
       
-      console.log('Processing error message:', errorMessage);
-      
-      // Check for "user already exists" errors with multiple possible patterns
-      const lowerErrorMessage = errorMessage.toLowerCase();
-      const userExistsPatterns = [
-        'user already registered',
-        'already registered', 
-        'user already exists',
-        'already exists',
-        'email_address_not_authorized',
-        'signup_disabled',
-        'user_already_exists',
-        'user with this email already exists',
-        'email already in use',
-        'duplicate'
-      ];
-      
-      const isUserExistsError = userExistsPatterns.some(pattern => 
-        lowerErrorMessage.includes(pattern)
-      );
-      
-      if (isUserExistsError) {
-        console.log('Setting account_exists error state');
-        setError('account_exists');
-      } else {
-        console.log('Setting generic error:', errorMessage);
-        setError(errorMessage);
-      }
+      setError(errorMessage);
     }
   };
 
