@@ -50,7 +50,7 @@ export const SidebarMainNavigation = () => {
       {!isCollapsed && (
         <SidebarGroupLabel className={cn(
           "text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-3",
-          isRTL && "text-right"
+          isRTL && "text-right font-arabic"
         )}>
           Menu
         </SidebarGroupLabel>
@@ -68,9 +68,9 @@ export const SidebarMainNavigation = () => {
                   tooltip={isCollapsed ? item.label : undefined}
                   className={cn(
                     "w-full text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-colors rounded-lg",
-                    isActive && "bg-blue-50 text-blue-700 border-r-2 border-blue-600 shadow-sm",
-                    isRTL && "text-right",
-                    isRTL && isActive && "border-r-0 border-l-2 border-blue-600",
+                    isActive && "bg-blue-50 text-blue-700 shadow-sm",
+                    isActive && !isRTL && "border-r-2 border-blue-600",
+                    isActive && isRTL && "border-l-2 border-blue-600",
                     isCollapsed && "justify-center p-2"
                   )}
                 >
@@ -79,12 +79,14 @@ export const SidebarMainNavigation = () => {
                     className={cn(
                       "flex items-center w-full",
                       isCollapsed ? "justify-center" : "gap-3 px-3 py-2",
-                      isRTL && !isCollapsed && "flex-row-reverse"
+                      isRTL && !isCollapsed && "flex-row-reverse text-right"
                     )}
                   >
                     <item.icon className="h-5 w-5 flex-shrink-0" />
                     {!isCollapsed && (
-                      <span className="font-medium truncate">{item.label}</span>
+                      <span className={cn("font-medium truncate", isRTL && "font-arabic")}>
+                        {item.label}
+                      </span>
                     )}
                   </Link>
                 </SidebarMenuButton>

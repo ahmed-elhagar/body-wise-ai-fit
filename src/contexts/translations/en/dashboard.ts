@@ -1,37 +1,127 @@
 
 export const dashboard = {
-  // Welcome messages
-  goodMorning: "Good Morning",
-  goodAfternoon: "Good Afternoon", 
-  goodEvening: "Good Evening",
-  user: "User",
-  fitnessJourney: "Fitness Journey",
-  trackProgress: "Ready to achieve your fitness goals today? Let's track your progress and stay motivated!",
-  aiGenerationsRemaining: "AI Credits Remaining",
+  // Page title and headers
+  title: "Dashboard",
+  welcome: "Welcome back",
+  overview: "Overview",
   
-  // Quick stats
-  dayStreak: "Day Streak",
-  goalsMet: "Goals Met", 
-  calories: "Calories",
-  
-  // Recent Activity
-  recentActivity: {
-    title: "Recent Activity",
-    noActivity: "No recent activity yet. Start your fitness journey!",
-    loggedWeight: "Logged weight",
-    createdMealPlan: "Created meal plan for",
-    createdProgram: "Created exercise program",
-    weeklyMealPlan: "Weekly meal plan",
-    program: "program",
-    badges: {
-      weight: "Weight",
-      nutrition: "Nutrition", 
-      exercise: "Exercise"
-    }
+  // Stats and metrics
+  stats: {
+    totalCalories: "Total Calories",
+    caloriesConsumed: "Calories Consumed",
+    caloriesRemaining: "Calories Remaining",
+    calorieGoal: "Calorie Goal",
+    proteinIntake: "Protein Intake",
+    carbIntake: "Carb Intake",
+    fatIntake: "Fat Intake",
+    waterIntake: "Water Intake",
+    workoutsCompleted: "Workouts Completed",
+    currentWeight: "Current Weight",
+    weightGoal: "Weight Goal",
+    bmi: "BMI",
+    bodyFatPercentage: "Body Fat %",
+    muscleGain: "Muscle Gain",
+    weightLoss: "Weight Loss",
+    weeklyProgress: "Weekly Progress",
+    monthlyProgress: "Monthly Progress"
   },
   
-  // Common
-  common: {
-    kg: "kg"
+  // Quick actions
+  quickActions: {
+    title: "Quick Actions",
+    logMeal: "Log Meal",
+    addSnack: "Add Snack", 
+    startWorkout: "Start Workout",
+    logWeight: "Log Weight",
+    viewMealPlan: "View Meal Plan",
+    trackWater: "Track Water",
+    setGoal: "Set Goal",
+    viewProgress: "View Progress"
+  },
+  
+  // Recent activity
+  recentActivity: {
+    title: "Recent Activity",
+    noActivity: "No recent activity",
+    viewAll: "View All",
+    today: "Today",
+    yesterday: "Yesterday",
+    thisWeek: "This Week"
+  },
+  
+  // Charts and analytics
+  analytics: {
+    calorieChart: "Calorie Trends",
+    weightChart: "Weight Progress",
+    workoutChart: "Workout Frequency",
+    nutritionBreakdown: "Nutrition Breakdown",
+    weeklyOverview: "Weekly Overview",
+    monthlyTrends: "Monthly Trends"
+  },
+  
+  // Goals and achievements
+  goals: {
+    currentGoals: "Current Goals",
+    achievements: "Achievements",
+    streaks: "Streaks",
+    milestones: "Milestones",
+    weeklyGoal: "Weekly Goal",
+    monthlyGoal: "Monthly Goal",
+    inProgress: "In Progress",
+    completed: "Completed",
+    daysStreak: "day streak",
+    workoutStreak: "Workout Streak",
+    logginstreak: "Logging Streak"
+  },
+  
+  // Meal plan preview
+  mealPlan: {
+    todaysMeals: "Today's Meals",
+    upcomingMeals: "Upcoming Meals",
+    breakfast: "Breakfast",
+    lunch: "Lunch", 
+    dinner: "Dinner",
+    snacks: "Snacks",
+    viewFullPlan: "View Full Plan",
+    generateNewPlan: "Generate New Plan"
+  },
+  
+  // Exercise preview
+  exercise: {
+    todaysWorkout: "Today's Workout",
+    nextWorkout: "Next Workout",
+    restDay: "Rest Day",
+    workoutCompleted: "Workout Completed",
+    exercisesRemaining: "exercises remaining",
+    startWorkout: "Start Workout",
+    viewExercises: "View Exercises"
+  },
+  
+  // Progress indicators
+  progress: {
+    dailyProgress: "Daily Progress",
+    weeklyProgress: "Weekly Progress", 
+    caloriesProgress: "Calories Progress",
+    macrosProgress: "Macros Progress",
+    workoutProgress: "Workout Progress",
+    onTrack: "On Track",
+    behindGoal: "Behind Goal",
+    exceedingGoal: "Exceeding Goal"
+  },
+  
+  // Loading states
+  loading: {
+    dashboard: "Loading dashboard...",
+    stats: "Loading stats...",
+    activities: "Loading activities...",
+    charts: "Loading charts..."
+  },
+  
+  // Empty states
+  empty: {
+    noMealPlan: "No meal plan generated yet",
+    noWorkouts: "No workouts scheduled",
+    noProgress: "No progress data available",
+    noGoals: "No goals set"
   }
 } as const;

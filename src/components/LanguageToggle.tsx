@@ -1,18 +1,43 @@
 
 import { Button } from "@/components/ui/button";
 import { Globe } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { useTranslation } from 'react-i18next';
+import { useEffect, useState } from 'react';
 
 const LanguageToggle = () => {
-  const { language, changeLanguage, isRTL } = useI18n();
+  const { i18n } = useTranslation();
+  const [currentLanguage, setCurrentLanguage] = useState(i18n.language || 'en');
+  const [isRTL, setIsRTL] = useState(false);
 
-  // Provide fallback values if language is undefined
-  const currentLanguage = language || 'en';
+  useEffect(() => {
+    setCurrentLanguage(i18n.language || 'en');
+    setIsRTL(i18n.language === 'ar');
+    
+    // Update document direction and language
+    document.documentElement.dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.lang = i18n.language || 'en';
+  }, [i18n.language]);
 
-  const toggleLanguage = () => {
+  const toggleLanguage = async () => {
     const newLanguage = currentLanguage === 'en' ? 'ar' : 'en';
     console.log(`Switching language from ${currentLanguage} to ${newLanguage}`);
-    changeLanguage(newLanguage);
+    
+    try {
+      await i18n.changeLanguage(newLanguage);
+      setCurrentLanguage(newLanguage);
+      setIsRTL(newLanguage === 'ar');
+      
+      // Store in localStorage
+      localStorage.setItem('preferred-language', newLanguage);
+      
+      // Update document direction and language immediately
+      document.documentElement.dir = newLanguage === 'ar' ? 'rtl' : 'ltr';
+      document.documentElement.lang = newLanguage;
+      
+      console.log(`Language changed to ${newLanguage}, RTL: ${newLanguage === 'ar'}`);
+    } catch (error) {
+      console.error('Failed to change language:', error);
+    }
   };
 
   return (

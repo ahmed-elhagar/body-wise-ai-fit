@@ -12,12 +12,25 @@ export const useI18n = () => {
     document.documentElement.lang = i18n.language;
   }, [isRTL, i18n.language]);
   
-  const changeLanguage = (lng: string) => {
-    i18n.changeLanguage(lng);
+  const changeLanguage = async (lng: string) => {
+    try {
+      await i18n.changeLanguage(lng);
+      localStorage.setItem('preferred-language', lng);
+    } catch (error) {
+      console.error('Failed to change language:', error);
+    }
   };
   
   const tFrom = (namespace: string) => {
-    return (key: string, options?: any) => t(`${namespace}:${key}`, options);
+    return (key: string, options?: any) => {
+      try {
+        const result = t(`${namespace}:${key}`, options);
+        return result !== `${namespace}:${key}` ? result : key;
+      } catch (error) {
+        console.warn(`Translation error for ${namespace}:${key}`, error);
+        return key;
+      }
+    };
   };
   
   return {

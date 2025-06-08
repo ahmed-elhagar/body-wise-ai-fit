@@ -1,16 +1,41 @@
 
 export const navigationTranslations = {
-  // Navigation specific
-  'nav.dashboard': 'Dashboard',
-  'nav.mealPlan': 'Meal Plan',
-  'nav.exercise': 'Exercise',
-  'nav.weightTracking': 'Weight Tracking',
-  'nav.calorieChecker': 'Calorie Checker',
-  'nav.aiChat': 'AI Chat',
-  'nav.profile': 'Profile',
-  'nav.adminPanel': 'Admin Panel',
-  'nav.signOut': 'Sign Out',
-  'nav.welcomeBack': 'Welcome back',
-  'nav.aiCallsLeft': 'AI calls left',
-  'nav.aiPoweredFitness': 'AI-Powered Fitness',
-};
+  // Main navigation items
+  dashboard: "Dashboard",
+  mealPlan: "Meal Plan",
+  exercise: "Exercise", 
+  progress: "Progress",
+  goals: "Goals",
+  foodTracker: "Food Tracker",
+  aiChat: "AI Chat",
+  profile: "Profile",
+  settings: "Settings",
+  
+  // Secondary navigation
+  menu: "Menu",
+  account: "Account",
+  help: "Help",
+  support: "Support",
+  feedback: "Feedback",
+  
+  // Breadcrumbs
+  home: "Home",
+  back: "Back",
+  previous: "Previous",
+  next: "Next",
+  
+  // Quick actions
+  quickActions: "Quick Actions",
+  shortcuts: "Shortcuts",
+  
+  // User menu
+  signOut: "Sign Out",
+  editProfile: "Edit Profile",
+  accountSettings: "Account Settings",
+  preferences: "Preferences",
+  
+  // Mobile navigation
+  openMenu: "Open Menu",
+  closeMenu: "Close Menu",
+  toggleSidebar: "Toggle Sidebar"
+} as const;
