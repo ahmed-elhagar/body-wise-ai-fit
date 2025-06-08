@@ -1,7 +1,9 @@
 
 // Main exports for exercise feature
 export { default as OptimizedExerciseContainer } from '../../components/exercise/OptimizedExerciseContainer';
-export { default as ExercisePageRefactored } from '../../components/exercise/ExercisePageRefactored';
+
+// Feature components
+export { ExerciseList, WorkoutTypeToggle } from './components';
 
 // Export types
 export type * from './types';
