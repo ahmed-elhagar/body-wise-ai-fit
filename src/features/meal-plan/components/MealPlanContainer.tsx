@@ -1,10 +1,11 @@
+
 import React, { useState, useRef } from 'react';
 import { useMealPlanState } from '@/hooks/useMealPlanState';
-import MealPlanHeader from '@/components/meal-plan/MealPlanHeader';
+import MealPlanHeader from './MealPlanHeader';
 import { MealPlanNavigation } from './MealPlanNavigation';
 import { MealPlanContent } from './MealPlanContent';
-import ErrorState from '@/components/meal-plan/components/ErrorState';
-import LoadingState from '@/components/meal-plan/components/LoadingState';
+import ErrorState from './ErrorState';
+import LoadingState from './LoadingState';
 import MealPlanAILoadingDialog from '@/components/meal-plan/MealPlanAILoadingDialog';
 import { useEnhancedMealShuffle } from '@/hooks/useEnhancedMealShuffle';
 import ModernShoppingListDrawer from '@/components/shopping-list/ModernShoppingListDrawer';
