@@ -2,7 +2,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Home, Building2, Zap } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 interface EnhancedWorkoutTypeToggleProps {
   workoutType: "home" | "gym";
@@ -13,14 +13,14 @@ export const EnhancedWorkoutTypeToggle = ({
   workoutType, 
   onWorkoutTypeChange 
 }: EnhancedWorkoutTypeToggleProps) => {
-  const { t } = useLanguage();
+  const { t } = useI18n();
 
   return (
     <Card className="p-4 bg-white/90 backdrop-blur-sm border border-gray-200/50 shadow-lg rounded-xl">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Zap className="w-5 h-5 text-blue-600" />
-          <h3 className="text-lg font-semibold text-gray-800">Workout Environment</h3>
+          <h3 className="text-lg font-semibold text-gray-800">{t('exercise:workoutEnvironment') || 'Workout Environment'}</h3>
         </div>
       </div>
       
@@ -35,7 +35,7 @@ export const EnhancedWorkoutTypeToggle = ({
           }`}
         >
           <Home className="w-6 h-6" />
-          <span className="font-medium">{t('exercise.home') || 'Home'}</span>
+          <span className="font-medium">{t('exercise:home') || 'Home'}</span>
         </Button>
         
         <Button
@@ -48,7 +48,7 @@ export const EnhancedWorkoutTypeToggle = ({
           }`}
         >
           <Building2 className="w-6 h-6" />
-          <span className="font-medium">{t('exercise.gym') || 'Gym'}</span>
+          <span className="font-medium">{t('exercise:gym') || 'Gym'}</span>
         </Button>
       </div>
     </Card>

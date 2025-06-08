@@ -1,20 +1,18 @@
 
-import { useState, useEffect, useRef } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { AlertCircle, Loader2 } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
-import { useUserOnlineStatus } from "@/hooks/useUserOnlineStatus";
-import { useRealtimeChat } from "@/hooks/useRealtimeChat";
-import { useTypingIndicator } from "@/hooks/useTypingIndicator";
-import { useMessageActions } from "@/hooks/useMessageActions";
-import { toast } from "sonner";
-import ChatHeader from "./chat/ChatHeader";
-import MessagesList from "./chat/MessagesList";
-import ChatInput from "./chat/ChatInput";
-import type { CoachChatMessage } from "./types/chatTypes";
+import { useState, useRef, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Send, ArrowLeft } from "lucide-react";
+import { useI18n } from "@/hooks/useI18n";
+
+interface Message {
+  id: string;
+  content: string;
+  sender: 'coach' | 'trainee';
+  timestamp: Date;
+}
 
 interface CoachTraineeChatProps {
   traineeId: string;
@@ -23,262 +21,101 @@ interface CoachTraineeChatProps {
 }
 
 export const CoachTraineeChat = ({ traineeId, traineeName, onBack }: CoachTraineeChatProps) => {
-  const { t } = useLanguage();
-  const { user } = useAuth();
+  const { t, isRTL } = useI18n();
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: '1',
+      content: t('coach:welcomeMessage') || 'Hello! How can I help you with your fitness journey today?',
+      sender: 'coach',
+      timestamp: new Date(Date.now() - 60000)
+    }
+  ]);
   const [newMessage, setNewMessage] = useState("");
-  const [replyingTo, setReplyingTo] = useState<CoachChatMessage | null>(null);
-  const [editingMessage, setEditingMessage] = useState<CoachChatMessage | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
-  const queryClient = useQueryClient();
-  
-  const coachId = user?.id || '';
 
-  // Real-time features
-  const { isConnected } = useRealtimeChat(coachId, traineeId);
-  const { isUserOnline, getUserLastSeen } = useUserOnlineStatus([traineeId]);
-  const { 
-    typingUsers, 
-    sendTypingIndicator, 
-    stopTypingIndicator 
-  } = useTypingIndicator(coachId, traineeId);
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
-  // Fetch messages
-  const { data: messages = [], isLoading, error } = useQuery({
-    queryKey: ['coach-trainee-messages', coachId, traineeId],
-    queryFn: async () => {
-      if (!coachId || !traineeId) return [];
-
-      const { data, error } = await supabase
-        .from('coach_trainee_messages')
-        .select('*')
-        .eq('coach_id', coachId)
-        .eq('trainee_id', traineeId)
-        .order('created_at', { ascending: true });
-
-      if (error) {
-        console.error('Error fetching messages:', error);
-        throw error;
-      }
-
-      return data as CoachChatMessage[];
-    },
-    enabled: !!coachId && !!traineeId,
-  });
-
-  // Send message mutation
-  const sendMessageMutation = useMutation({
-    mutationFn: async (messageText: string) => {
-      if (!coachId || !traineeId) throw new Error('Missing required data');
-
-      const { data, error } = await supabase
-        .from('coach_trainee_messages')
-        .insert({
-          coach_id: coachId,
-          trainee_id: traineeId,
-          sender_id: coachId,
-          sender_type: 'coach',
-          message: messageText,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['coach-trainee-messages'] });
-      queryClient.invalidateQueries({ queryKey: ['last-messages'] });
-      queryClient.invalidateQueries({ queryKey: ['unread-messages'] });
-      setNewMessage("");
-      setReplyingTo(null);
-      stopTypingIndicator();
-      toast.success('Message sent successfully');
-    },
-    onError: (error) => {
-      console.error('Error sending message:', error);
-      toast.error('Failed to send message');
-    },
-  });
-
-  // Edit message mutation
-  const editMessageMutation = useMutation({
-    mutationFn: async ({ messageId, newContent }: { messageId: string; newContent: string }) => {
-      const { data, error } = await supabase
-        .from('coach_trainee_messages')
-        .update({ message: newContent, updated_at: new Date().toISOString() })
-        .eq('id', messageId)
-        .eq('sender_id', coachId)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['coach-trainee-messages'] });
-      setEditingMessage(null);
-      setNewMessage('');
-      toast.success('Message updated');
-    },
-    onError: (error) => {
-      console.error('Error editing message:', error);
-      toast.error('Failed to edit message');
-    },
-  });
-
-  // Delete message mutation
-  const deleteMessageMutation = useMutation({
-    mutationFn: async (messageId: string) => {
-      const { error } = await supabase
-        .from('coach_trainee_messages')
-        .delete()
-        .eq('id', messageId)
-        .eq('sender_id', coachId);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['coach-trainee-messages'] });
-      toast.success('Message deleted');
-    },
-    onError: (error) => {
-      console.error('Error deleting message:', error);
-      toast.error('Failed to delete message');
-    },
-  });
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const handleSendMessage = () => {
-    if (!newMessage.trim() || sendMessageMutation.isPending) return;
-    sendMessageMutation.mutate(newMessage.trim());
+    if (newMessage.trim()) {
+      const message: Message = {
+        id: Date.now().toString(),
+        content: newMessage,
+        sender: 'coach',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, message]);
+      setNewMessage("");
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      if (editingMessage) {
-        handleSaveEdit();
-      } else {
-        handleSendMessage();
-      }
+      handleSendMessage();
     }
   };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const value = e.target.value;
-    setNewMessage(value);
-    
-    if (value.trim()) {
-      sendTypingIndicator();
-    } else {
-      stopTypingIndicator();
-    }
-  };
-
-  const handleEditMessage = (msg: CoachChatMessage) => {
-    setEditingMessage(msg);
-    setNewMessage(msg.message);
-    inputRef.current?.focus();
-  };
-
-  const handleCancelEdit = () => {
-    setEditingMessage(null);
-    setNewMessage('');
-  };
-
-  const handleSaveEdit = async () => {
-    if (!editingMessage || !newMessage.trim()) return;
-    
-    editMessageMutation.mutate({
-      messageId: editingMessage.id,
-      newContent: newMessage.trim()
-    });
-  };
-
-  const handleDeleteMessage = (messageId: string) => {
-    deleteMessageMutation.mutate(messageId);
-  };
-
-  // Mark messages as read
-  useEffect(() => {
-    if (messages.length > 0 && coachId) {
-      const unreadMessages = messages.filter(
-        msg => !msg.is_read && msg.sender_type === 'trainee' && msg.sender_id === traineeId
-      );
-
-      if (unreadMessages.length > 0) {
-        supabase
-          .from('coach_trainee_messages')
-          .update({ is_read: true })
-          .in('id', unreadMessages.map(msg => msg.id))
-          .then(() => {
-            queryClient.invalidateQueries({ queryKey: ['coach-trainee-messages'] });
-            queryClient.invalidateQueries({ queryKey: ['unread-messages'] });
-          });
-      }
-    }
-  }, [messages, coachId, traineeId, queryClient]);
-
-  if (isLoading) {
-    return (
-      <div className="h-[600px] flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-3 text-blue-600" />
-          <p className="text-gray-600 text-sm">{t('Loading conversation...')}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="h-[600px] flex items-center justify-center">
-        <div className="text-center">
-          <AlertCircle className="h-8 w-8 mx-auto mb-3 text-red-600" />
-          <p className="text-red-600 text-sm">{t('Error loading conversation')}</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <Card className="h-[600px] flex flex-col bg-white shadow-lg rounded-xl">
-      <ChatHeader
-        coachName={traineeName}
-        isCoachOnline={isUserOnline(traineeId)}
-        coachLastSeen={getUserLastSeen(traineeId)}
-        isConnected={isConnected}
-        onBack={onBack}
-      />
+    <Card className="h-[600px] flex flex-col">
+      <CardHeader className="flex-shrink-0">
+        <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+          <Button variant="ghost" size="sm" onClick={onBack}>
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+          <CardTitle>{t('coach:chatWith') || 'Chat with'} {traineeName}</CardTitle>
+        </div>
+      </CardHeader>
       
       <CardContent className="flex-1 flex flex-col p-0">
-        <MessagesList
-          messages={messages}
-          currentUserId={coachId}
-          coachName={traineeName}
-          typingUsers={typingUsers}
-          replyingTo={replyingTo}
-          onReply={setReplyingTo}
-          onEdit={handleEditMessage}
-          onDelete={handleDeleteMessage}
-          messagesEndRef={messagesEndRef}
-        />
+        <ScrollArea className="flex-1 p-4">
+          <div className="space-y-4">
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={`flex ${
+                  message.sender === 'coach' 
+                    ? isRTL ? 'justify-start' : 'justify-end'
+                    : isRTL ? 'justify-end' : 'justify-start'
+                }`}
+              >
+                <div
+                  className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                    message.sender === 'coach'
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-gray-200 text-gray-900'
+                  }`}
+                >
+                  <p className="text-sm">{message.content}</p>
+                  <p className="text-xs opacity-75 mt-1">
+                    {message.timestamp.toLocaleTimeString()}
+                  </p>
+                </div>
+              </div>
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
+        </ScrollArea>
         
-        <ChatInput
-          message={newMessage}
-          setMessage={setNewMessage}
-          isSending={sendMessageMutation.isPending}
-          isEditing={editMessageMutation.isPending}
-          editingMessage={editingMessage}
-          replyingTo={replyingTo}
-          onSend={handleSendMessage}
-          onSaveEdit={handleSaveEdit}
-          onCancelEdit={handleCancelEdit}
-          onCancelReply={() => setReplyingTo(null)}
-          onKeyPress={handleKeyPress}
-          onChange={handleInputChange}
-          inputRef={inputRef}
-        />
+        <div className="p-4 border-t">
+          <div className={`flex gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <Input
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder={t('coach:typeMessage') || 'Type your message...'}
+              className="flex-1"
+            />
+            <Button onClick={handleSendMessage} disabled={!newMessage.trim()}>
+              <Send className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

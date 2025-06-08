@@ -1,103 +1,97 @@
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { UserPlus } from "lucide-react";
-import { useCoachSystem } from "@/hooks/useCoachSystem";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { UserSearchDropdown } from "./UserSearchDropdown";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useI18n } from "@/hooks/useI18n";
 
 interface AssignTraineeDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onAssign: (traineeData: any) => void;
 }
 
-export const AssignTraineeDialog = ({ open, onOpenChange }: AssignTraineeDialogProps) => {
-  const { assignTrainee, isAssigning } = useCoachSystem();
-  const { language } = useLanguage();
-  const [selectedTraineeId, setSelectedTraineeId] = useState("");
-  const [notes, setNotes] = useState("");
+export const AssignTraineeDialog = ({ open, onOpenChange, onAssign }: AssignTraineeDialogProps) => {
+  const { t, isRTL } = useI18n();
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    goal: "",
+    notes: "",
+    activityLevel: ""
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedTraineeId) return;
-
-    assignTrainee(
-      { traineeId: selectedTraineeId, notes: notes.trim() || undefined },
-      {
-        onSuccess: () => {
-          setSelectedTraineeId("");
-          setNotes("");
-          onOpenChange(false);
-        },
-      }
-    );
+    onAssign(formData);
+    setFormData({ name: "", email: "", goal: "", notes: "", activityLevel: "" });
+    onOpenChange(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center">
-            <UserPlus className="h-5 w-5 mr-2" />
-            {language === 'ar' ? 'إضافة متدرب جديد' : 'Add New Trainee'}
-          </DialogTitle>
+          <DialogTitle>{t('coach:addNewTrainee') || 'Add New Trainee'}</DialogTitle>
         </DialogHeader>
-
+        
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="trainee-select">
-              {language === 'ar' ? 'اختر المتدرب' : 'Select Trainee'}
-            </Label>
-            <UserSearchDropdown
-              value={selectedTraineeId}
-              onValueChange={setSelectedTraineeId}
-              placeholder={language === 'ar' ? 
-                'ابحث واختر متدرب...' : 
-                'Search and select a trainee...'
-              }
-              excludeRoles={['admin', 'coach']}
+            <Label htmlFor="name">{t('common:name') || 'Name'}</Label>
+            <Input
+              id="name"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              required
             />
-            <p className="text-xs text-gray-500">
-              {language === 'ar' ? 
-                'يجب أن يكون للمتدرب حساب مُسجل في التطبيق.' :
-                'The trainee must have a registered account in the app.'
-              }
-            </p>
           </div>
-
+          
           <div className="space-y-2">
-            <Label htmlFor="notes">
-              {language === 'ar' ? 'ملاحظات (اختياري)' : 'Notes (Optional)'}
-            </Label>
+            <Label htmlFor="email">{t('common:email') || 'Email'}</Label>
+            <Input
+              id="email"
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              required
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="goal">{t('common:goal') || 'Goal'}</Label>
+            <Select value={formData.goal} onValueChange={(value) => setFormData({ ...formData, goal: value })}>
+              <SelectTrigger>
+                <SelectValue placeholder={t('common:selectGoal') || 'Select goal'} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="weight-loss">{t('goals:weightLoss') || 'Weight Loss'}</SelectItem>
+                <SelectItem value="muscle-gain">{t('goals:muscleGain') || 'Muscle Gain'}</SelectItem>
+                <SelectItem value="maintenance">{t('goals:maintenance') || 'Maintenance'}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="notes">{t('common:notes') || 'Notes'}</Label>
             <Textarea
               id="notes"
-              placeholder={language === 'ar' ? 
-                'أضف أي ملاحظات حول المتدرب...' : 
-                'Add any notes about the trainee...'
-              }
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={3}
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              placeholder={t('coach:notesPlaceholder') || 'Special considerations, preferences, etc.'}
             />
           </div>
-
-          <div className="flex justify-end space-x-2">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => onOpenChange(false)}
-              disabled={isAssigning}
-            >
-              {language === 'ar' ? 'إلغاء' : 'Cancel'}
+          
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              {t('common:cancel') || 'Cancel'}
             </Button>
-            <Button type="submit" disabled={isAssigning || !selectedTraineeId}>
-              {isAssigning ? (language === 'ar' ? 'جارٍ الإضافة...' : 'Adding...') : 
-                            (language === 'ar' ? 'إضافة متدرب' : 'Add Trainee')}
+            <Button type="submit">
+              {t('coach:assignTrainee') || 'Assign Trainee'}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

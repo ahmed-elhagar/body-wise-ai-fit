@@ -3,7 +3,7 @@ import React, { memo, useMemo } from 'react';
 import { Exercise } from '@/types/exercise';
 import { ExerciseCardEnhanced } from './ExerciseCardEnhanced';
 import { RestDayCard } from './RestDayCard';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useI18n } from '@/hooks/useI18n';
 
 interface OptimizedExerciseListProps {
   exercises: Exercise[];
@@ -20,7 +20,7 @@ export const OptimizedExerciseList = memo(({
   onExerciseProgressUpdate,
   isRestDay
 }: OptimizedExerciseListProps) => {
-  const { t } = useLanguage();
+  const { t } = useI18n();
 
   const sortedExercises = useMemo(() => {
     return [...exercises].sort((a, b) => (a.order_number || 0) - (b.order_number || 0));
@@ -49,7 +49,7 @@ export const OptimizedExerciseList = memo(({
   if (sortedExercises.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">{t('exercise.noExercisesFound')}</p>
+        <p className="text-gray-500">{t('exercise:noExercisesFound') || 'No exercises found for this day'}</p>
       </div>
     );
   }
@@ -59,7 +59,7 @@ export const OptimizedExerciseList = memo(({
       {exerciseStats.total > 0 && (
         <div className="bg-blue-50 p-4 rounded-lg">
           <p className="text-sm text-blue-700">
-            {t('exercise.progress')}: {exerciseStats.completed}/{exerciseStats.total} ({exerciseStats.percentage}%)
+            {t('exercise:progress') || 'Progress'}: {exerciseStats.completed}/{exerciseStats.total} ({exerciseStats.percentage}%)
           </p>
         </div>
       )}
