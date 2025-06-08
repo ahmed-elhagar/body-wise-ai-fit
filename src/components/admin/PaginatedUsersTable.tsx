@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -141,19 +140,31 @@ const PaginatedUsersTable = () => {
       // Apply subscription filter after merging data
       if (filters.subscription && filters.subscription !== 'all') {
         if (filters.subscription === 'active') {
-          usersWithSubscriptions = usersWithSubscriptions.filter(user => 
-            user.subscription && user.subscription.status === 'active'
-          );
+          usersWithSubscriptions = usersWithSubscriptions.filter(user => {
+            if (!user.subscription) return false;
+            const isActive = user.subscription.status === 'active';
+            const notExpired = new Date(user.subscription.current_period_end) > new Date();
+            return isActive && notExpired;
+          });
         } else if (filters.subscription === 'inactive') {
-          usersWithSubscriptions = usersWithSubscriptions.filter(user => 
-            !user.subscription || user.subscription.status !== 'active'
-          );
+          usersWithSubscriptions = usersWithSubscriptions.filter(user => {
+            if (!user.subscription) return true;
+            const isActive = user.subscription.status === 'active';
+            const notExpired = new Date(user.subscription.current_period_end) > new Date();
+            return !(isActive && notExpired);
+          });
         }
       }
 
+      // Update count based on filtered results for subscription filter
+      let adjustedCount = count || 0;
+      if (filters.subscription && filters.subscription !== 'all') {
+        adjustedCount = usersWithSubscriptions.length;
+      }
+
       setUsers(usersWithSubscriptions);
-      setTotalUsers(count || 0);
-      console.log(`Fetched ${usersWithSubscriptions.length} users, Total: ${count}`);
+      setTotalUsers(adjustedCount);
+      console.log(`Fetched ${usersWithSubscriptions.length} users, Total: ${adjustedCount}`);
     } catch (error) {
       console.error('Error in fetchUsers:', error);
       toast.error('Failed to fetch users');
@@ -414,11 +425,11 @@ const PaginatedUsersTable = () => {
             )}
           </div>
           
-          {/* Enhanced Search and Filters */}
+          {/* Enhanced Search and Filters with better styling */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <div className="lg:col-span-2">
               <div className="flex items-center gap-2">
-                <Search className="h-4 w-4" />
+                <Search className="h-4 w-4 text-gray-500" />
                 <Input
                   placeholder="Search users by name or email..."
                   value={searchTerm}
@@ -426,7 +437,7 @@ const PaginatedUsersTable = () => {
                   onKeyPress={handleSearchKeyPress}
                   className="flex-1"
                 />
-                <Button onClick={handleSearch} variant="outline">
+                <Button onClick={handleSearch} variant="outline" size="sm">
                   Search
                 </Button>
               </div>
@@ -434,40 +445,84 @@ const PaginatedUsersTable = () => {
             
             <div>
               <Select value={roleFilter} onValueChange={setRoleFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Filter by role" />
+                <SelectTrigger className="w-full">
+                  <div className="flex items-center gap-2">
+                    <Shield className="h-4 w-4 text-gray-500" />
+                    <SelectValue placeholder="Filter by role" />
+                  </div>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Roles</SelectItem>
-                  <SelectItem value="normal">Normal</SelectItem>
-                  <SelectItem value="coach">Coach</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="normal">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                      Normal
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="coach">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-purple-500 rounded-full" />
+                      Coach
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="admin">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-red-500 rounded-full" />
+                      Admin
+                    </div>
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
             
             <div>
               <Select value={subscriptionFilter} onValueChange={setSubscriptionFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Filter by subscription" />
+                <SelectTrigger className="w-full">
+                  <div className="flex items-center gap-2">
+                    <Crown className="h-4 w-4 text-gray-500" />
+                    <SelectValue placeholder="Filter by subscription" />
+                  </div>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Subscriptions</SelectItem>
-                  <SelectItem value="active">Pro Members</SelectItem>
-                  <SelectItem value="inactive">Free Users</SelectItem>
+                  <SelectItem value="active">
+                    <div className="flex items-center gap-2">
+                      <Crown className="h-3 w-3 text-yellow-500" />
+                      Pro Members
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="inactive">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full" />
+                      Free Users
+                    </div>
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
             
             <div>
               <Select value={onlineFilter} onValueChange={setOnlineFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Filter by status" />
+                <SelectTrigger className="w-full">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${onlineFilter === 'online' ? 'bg-green-500' : onlineFilter === 'offline' ? 'bg-gray-400' : 'bg-blue-500'}`} />
+                    <SelectValue placeholder="Filter by status" />
+                  </div>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="online">Online</SelectItem>
-                  <SelectItem value="offline">Offline</SelectItem>
+                  <SelectItem value="online">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full" />
+                      Online Now
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="offline">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full" />
+                      Offline
+                    </div>
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>

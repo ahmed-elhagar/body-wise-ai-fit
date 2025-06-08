@@ -12,6 +12,7 @@ interface ProtectedRouteProps {
   requireProfile?: boolean;
   requireRole?: string | string[];
   redirectTo?: string;
+  preventAuthenticatedAccess?: boolean; // New prop for auth/signup pages
 }
 
 const ProtectedRoute = React.memo<ProtectedRouteProps>(({ 
@@ -19,7 +20,8 @@ const ProtectedRoute = React.memo<ProtectedRouteProps>(({
   requireAuth = true,
   requireProfile = false,
   requireRole,
-  redirectTo = '/auth' 
+  redirectTo = '/auth',
+  preventAuthenticatedAccess = false // Default false
 }) => {
   const { user, loading: authLoading, error: authError } = useAuth();
   const { profile, isLoading: profileLoading } = useProfile();
@@ -38,6 +40,7 @@ const ProtectedRoute = React.memo<ProtectedRouteProps>(({
     profileLoading,
     roleLoading,
     requireRole,
+    preventAuthenticatedAccess,
     userId: user?.id?.substring(0, 8) + '...' || 'none'
   });
 
@@ -66,16 +69,16 @@ const ProtectedRoute = React.memo<ProtectedRouteProps>(({
     return <Navigate to="/dashboard" state={{ error: 'Role verification failed' }} replace />;
   }
 
+  // NEW: Prevent authenticated users from accessing auth pages
+  if (preventAuthenticatedAccess && user) {
+    console.log("ProtectedRoute - Redirecting authenticated user away from auth page");
+    return <Navigate to="/dashboard" replace />;
+  }
+
   // If authentication is required but user is not authenticated
   if (requireAuth && !user) {
     console.log("ProtectedRoute - Redirecting unauthenticated user to:", redirectTo);
     return <Navigate to={redirectTo} state={{ from: location.pathname }} replace />;
-  }
-
-  // If user is authenticated but trying to access auth pages, redirect to dashboard
-  if (!requireAuth && user) {
-    console.log("ProtectedRoute - Redirecting authenticated user to dashboard");
-    return <Navigate to="/dashboard" replace />;
   }
 
   // Enhanced role-based access control with better error handling

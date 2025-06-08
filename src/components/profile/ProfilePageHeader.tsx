@@ -1,11 +1,13 @@
 
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CheckCircle, Target, AlertCircle, Sparkles, Shield, LogOut } from "lucide-react";
+import { CheckCircle, Target, AlertCircle, Sparkles, Shield, LogOut, Crown, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useSubscription } from "@/hooks/useSubscription";
 import { useI18n } from "@/hooks/useI18n";
 import { toast } from "sonner";
+import ProMemberBadge from "@/components/ui/pro-member-badge";
 
 interface ProfilePageHeaderProps {
   hasUnsavedChanges: boolean;
@@ -22,6 +24,7 @@ const ProfilePageHeader = ({
 }: ProfilePageHeaderProps) => {
   const navigate = useNavigate();
   const { isAdmin, signOut } = useAuth();
+  const { isProMember } = useSubscription();
   const { tFrom, isRTL } = useI18n();
   const tProfile = tFrom('profile');
 
@@ -49,12 +52,37 @@ const ProfilePageHeader = ({
 
   return (
     <div className={`mb-4 ${isRTL ? 'rtl' : 'ltr'}`}>
+      {/* Pro Subscription Promotion */}
+      {!isProMember && (
+        <Alert className="mb-4 border-gradient-to-r from-yellow-200 to-orange-200 bg-gradient-to-r from-yellow-50 to-orange-50">
+          <Crown className="h-4 w-4 text-yellow-600" />
+          <AlertDescription className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className={`text-yellow-800 font-medium ${isRTL ? 'font-arabic' : ''}`}>
+                Upgrade to FitFatta Pro for unlimited AI generations and premium features
+              </span>
+            </div>
+            <Button
+              onClick={() => navigate('/pro')}
+              size="sm"
+              className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white"
+            >
+              <Star className="w-3 h-3 mr-1" />
+              Upgrade Now
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
       <div className={`flex items-center justify-between mb-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
         <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
           <h1 className={`text-xl lg:text-2xl font-bold text-gray-800 ${isRTL ? 'font-arabic' : ''}`}>
             {String(tProfile('title'))}
           </h1>
           {getCompletionIcon()}
+          {isProMember && (
+            <ProMemberBadge variant="default" />
+          )}
         </div>
         
         <div className={`flex gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>

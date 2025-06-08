@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { AuthHeader } from "@/components/auth/AuthHeader";
 import { AuthForm } from "@/components/auth/AuthForm";
 import SimpleLoadingIndicator from "@/components/ui/simple-loading-indicator";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 const Auth = () => {
   const [loading, setLoading] = useState(false);
@@ -15,19 +16,6 @@ const Auth = () => {
   const { signIn, user, loading: authLoading } = useAuth();
   const { profile, isLoading: profileLoading } = useProfile();
   const navigate = useNavigate();
-
-  // Redirect authenticated users to dashboard
-  useEffect(() => {
-    if (authLoading) {
-      console.log('Auth - Auth still loading, waiting...');
-      return;
-    }
-
-    if (user) {
-      console.log('Auth - User authenticated, redirecting to dashboard');
-      navigate('/dashboard', { replace: true });
-    }
-  }, [user, authLoading, navigate]);
 
   const validateForm = (data: { email: string; password: string }) => {
     if (!data.email || !data.password) {
@@ -52,7 +40,7 @@ const Auth = () => {
       await signIn(data.email, data.password);
       console.log('Auth - Sign in successful');
       toast.success('Welcome back!');
-      // Let useEffect handle redirection
+      // Navigation is handled by ProtectedRoute
     } catch (error: any) {
       console.error('Auth - Sign in error:', error);
       toast.error(error.message || 'Failed to sign in');
@@ -61,41 +49,30 @@ const Auth = () => {
     }
   };
 
-  // Show loading if user exists and we're determining where to redirect
-  if (user && (authLoading || profileLoading)) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-        <SimpleLoadingIndicator
-          message="Setting Up Your Account"
-          description="Please wait while we prepare your dashboard..."
-          size="lg"
-        />
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4">
-      <Card className="w-full max-w-md p-8 bg-white/90 backdrop-blur-sm border-0 shadow-2xl">
-        <AuthHeader isSignUp={false} />
-        
-        <AuthForm 
-          isSignUp={false}
-          onSubmit={handleSignIn} 
-          loading={loading || authLoading} 
-        />
-        
-        <div className="text-center mt-6">
-          <button
-            onClick={() => navigate('/signup')}
-            className="text-sm text-blue-600 hover:text-blue-700 font-medium hover:underline"
-            disabled={loading || authLoading}
-          >
-            Don't have an account? Join FitFatta
-          </button>
-        </div>
-      </Card>
-    </div>
+    <ProtectedRoute requireAuth={false} preventAuthenticatedAccess={true}>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4">
+        <Card className="w-full max-w-md p-8 bg-white/90 backdrop-blur-sm border-0 shadow-2xl">
+          <AuthHeader isSignUp={false} />
+          
+          <AuthForm 
+            isSignUp={false}
+            onSubmit={handleSignIn} 
+            loading={loading || authLoading} 
+          />
+          
+          <div className="text-center mt-6">
+            <button
+              onClick={() => navigate('/signup')}
+              className="text-sm text-blue-600 hover:text-blue-700 font-medium hover:underline"
+              disabled={loading || authLoading}
+            >
+              Don't have an account? Join FitFatta
+            </button>
+          </div>
+        </Card>
+      </div>
+    </ProtectedRoute>
   );
 };
 
