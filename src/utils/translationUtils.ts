@@ -1,9 +1,9 @@
 
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useI18n } from '@/hooks/useI18n';
 
 // Comprehensive translation utility with fallback support
 export const useTranslationWithFallback = () => {
-  const { t, language } = useLanguage();
+  const { t, language } = useI18n();
 
   // Enhanced translation function with debugging and fallback
   const safeTranslate = (key: string, fallback?: string): string => {

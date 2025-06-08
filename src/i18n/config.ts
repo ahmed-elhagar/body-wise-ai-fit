@@ -10,7 +10,7 @@ i18n
   .use(initReactI18next)
   .init({
     fallbackLng: 'en',
-    debug: false,
+    debug: true, // Enable for debugging
     
     ns: ['common', 'navigation', 'dashboard', 'mealPlan', 'exercise', 'profile'],
     defaultNS: 'common',
@@ -67,27 +67,6 @@ i18n
           week: 'Week',
           month: 'Month',
           year: 'Year'
-        },
-        mealPlan: {
-          title: 'Meal Plan',
-          smartMealPlanning: 'Smart Meal Planning',
-          personalizedNutrition: 'Personalized nutrition plans powered by AI',
-          generateAIMealPlan: 'Generate AI Meal Plan',
-          generating: 'Generating Plan...',
-          addSnack: 'Add Snack',
-          cal: 'cal',
-          recipe: 'Recipe',
-          exchange: 'Exchange',
-          currentWeek: 'Current Week',
-          selectDay: 'Select Day',
-          today: 'Today',
-          mealTypes: {
-            breakfast: 'Breakfast',
-            lunch: 'Lunch',
-            dinner: 'Dinner',
-            snack1: 'Snack',
-            snack2: 'Snack'
-          }
         }
       },
       ar: {
@@ -120,27 +99,6 @@ i18n
           week: 'أسبوع',
           month: 'شهر',
           year: 'سنة'
-        },
-        mealPlan: {
-          title: 'خطة الوجبات',
-          smartMealPlanning: 'تخطيط ذكي للوجبات',
-          personalizedNutrition: 'خطط تغذية شخصية مدعومة بالذكاء الاصطناعي',
-          generateAIMealPlan: 'توليد خطة وجبات ذكية',
-          generating: 'جاري التوليد...',
-          addSnack: 'إضافة وجبة خفيفة',
-          cal: 'سعرة',
-          recipe: 'الوصفة',
-          exchange: 'استبدال',
-          currentWeek: 'الأسبوع الحالي',
-          selectDay: 'اختر اليوم',
-          today: 'اليوم',
-          mealTypes: {
-            breakfast: 'الإفطار',
-            lunch: 'الغداء',
-            dinner: 'العشاء',
-            snack1: 'وجبة خفيفة',
-            snack2: 'وجبة خفيفة'
-          }
         }
       }
     }
