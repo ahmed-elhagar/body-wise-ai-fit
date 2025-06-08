@@ -32,7 +32,7 @@
   "required": "Required",
   "optional": "Optional",
   "welcome": "Welcome",
-  "appName": "FitFatta",
+  "fitFatta": "FitFatta",
   "aiPoweredFitness": "AI-Powered Fitness",
   "minutes": "minutes",
   "kg": "kg",
@@ -47,5 +47,7 @@
   "tomorrow": "Tomorrow",
   "thisWeek": "This Week",
   "lastWeek": "Last Week",
-  "nextWeek": "Next Week"
+  "nextWeek": "Next Week",
+  "user": "User",
+  "profile": "Profile"
 }

@@ -32,7 +32,7 @@
   "required": "مطلوب",
   "optional": "اختياري",
   "welcome": "مرحباً",
-  "appName": "فت فاتا",
+  "fitFatta": "فت فاتا",
   "aiPoweredFitness": "لياقة مدعومة بالذكاء الاصطناعي",
   "minutes": "دقائق",
   "kg": "كجم",
@@ -47,5 +47,7 @@
   "tomorrow": "غداً",
   "thisWeek": "هذا الأسبوع",
   "lastWeek": "الأسبوع الماضي",
-  "nextWeek": "الأسبوع القادم"
+  "nextWeek": "الأسبوع القادم",
+  "user": "مستخدم",
+  "profile": "الملف الشخصي"
 }
