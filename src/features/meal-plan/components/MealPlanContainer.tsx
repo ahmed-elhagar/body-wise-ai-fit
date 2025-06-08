@@ -42,7 +42,8 @@ const MealPlanContainer = () => {
       dailyMealsCount: mealPlanState.currentWeekPlan?.dailyMeals?.length || 0,
       selectedDay: mealPlanState.selectedDayNumber,
       weekOffset: mealPlanState.currentWeekOffset,
-      error: mealPlanState.error?.message
+      error: mealPlanState.error?.message,
+      rawData: mealPlanState.currentWeekPlan
     });
   }, [mealPlanState]);
 
@@ -66,12 +67,22 @@ const MealPlanContainer = () => {
 
   // Enhanced week change handler that manages loading states properly
   const handleWeekChange = async (offset: number) => {
-    console.log('📅 Week change initiated');
+    console.log('📅 Week change initiated to offset:', offset);
     await mealPlanState.setCurrentWeekOffset(offset);
   };
 
   // Determine what data to display
   const displayData = mealPlanState.currentWeekPlan || lastLoadedDataRef.current;
+
+  console.log('🎯 Display data decision:', {
+    currentWeekPlan: !!mealPlanState.currentWeekPlan,
+    lastLoadedData: !!lastLoadedDataRef.current,
+    usingDisplayData: !!displayData,
+    displayDataStructure: displayData ? {
+      hasWeeklyPlan: !!displayData.weeklyPlan,
+      mealsCount: displayData.dailyMeals?.length || 0
+    } : null
+  });
 
   // Only show full error state if there's an error and no existing data
   if (mealPlanState.error && !displayData) {
@@ -176,6 +187,8 @@ const MealPlanContainer = () => {
               <div>Selected Day: {mealPlanState.selectedDayNumber}</div>
               <div>Week Offset: {mealPlanState.currentWeekOffset}</div>
               <div>Error: {mealPlanState.error?.message || 'None'}</div>
+              <div>Has Display Data: {!!displayData ? 'Yes' : 'No'}</div>
+              <div>Current Week Plan: {!!mealPlanState.currentWeekPlan ? 'Yes' : 'No'}</div>
             </div>
           </Card>
         )}

@@ -26,19 +26,52 @@ export const useMealPlanData = (weekOffset: number = 0) => {
         weekOffset
       });
 
-      // Calculate the week start date
+      // Calculate the week start date - Saturday is day 1
       const today = new Date();
+      const currentDayOfWeek = today.getDay(); // 0 = Sunday, 6 = Saturday
+      
+      // Calculate days since last Saturday
+      const daysSinceSaturday = currentDayOfWeek === 6 ? 0 : currentDayOfWeek + 1;
+      
       const currentSaturday = new Date(today);
-      currentSaturday.setDate(today.getDate() - ((today.getDay() + 1) % 7));
+      currentSaturday.setDate(today.getDate() - daysSinceSaturday);
+      currentSaturday.setHours(0, 0, 0, 0);
       
       const targetWeek = new Date(currentSaturday);
       targetWeek.setDate(currentSaturday.getDate() + (weekOffset * 7));
       
       const weekStartDate = targetWeek.toISOString().split('T')[0];
 
-      console.log('📅 Calculated week start date:', weekStartDate);
+      console.log('📅 Week calculation:', {
+        today: today.toISOString().split('T')[0],
+        currentDayOfWeek,
+        daysSinceSaturday,
+        currentSaturday: currentSaturday.toISOString().split('T')[0],
+        weekOffset,
+        calculatedWeekStart: weekStartDate
+      });
 
-      // Fetch weekly plan
+      // First check if ANY meal plans exist for this user
+      const { data: allPlans, error: allPlansError } = await supabase
+        .from('weekly_meal_plans')
+        .select('id, week_start_date, created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (allPlansError) {
+        console.error('❌ Error checking all plans:', allPlansError);
+      } else {
+        console.log('📊 All meal plans for user:', {
+          count: allPlans?.length || 0,
+          plans: allPlans?.map(p => ({ 
+            id: p.id, 
+            weekStart: p.week_start_date, 
+            created: p.created_at 
+          }))
+        });
+      }
+
+      // Fetch weekly plan for the specific week
       const { data: weeklyPlan, error: weeklyError } = await supabase
         .from('weekly_meal_plans')
         .select('*')
@@ -54,21 +87,37 @@ export const useMealPlanData = (weekOffset: number = 0) => {
       console.log('📋 Weekly plan result:', {
         found: !!weeklyPlan,
         weekStartDate,
-        planId: weeklyPlan?.id
+        planId: weeklyPlan?.id,
+        planData: weeklyPlan
       });
 
       if (!weeklyPlan) {
         console.log('📋 No weekly meal plan found for date:', weekStartDate);
         
-        // Also try fetching any plans for this user to debug
-        const { data: allPlans } = await supabase
-          .from('weekly_meal_plans')
-          .select('id, week_start_date')
-          .eq('user_id', user.id)
-          .order('week_start_date', { ascending: false })
-          .limit(5);
-        
-        console.log('🔍 Available plans for user:', allPlans);
+        // Try to find the closest plan
+        if (allPlans && allPlans.length > 0) {
+          console.log('🔍 Trying to find closest plan...');
+          const closestPlan = allPlans[0]; // Most recent plan
+          
+          // Fetch meals for the closest plan to show something
+          const { data: fallbackMeals } = await supabase
+            .from('daily_meals')
+            .select('*')
+            .eq('weekly_plan_id', closestPlan.id)
+            .order('day_number', { ascending: true })
+            .order('meal_type', { ascending: true });
+          
+          console.log('📋 Using fallback plan:', {
+            planId: closestPlan.id,
+            weekStart: closestPlan.week_start_date,
+            mealsCount: fallbackMeals?.length || 0
+          });
+          
+          return {
+            weeklyPlan: closestPlan,
+            dailyMeals: fallbackMeals || []
+          };
+        }
         
         return { weeklyPlan: null, dailyMeals: [] };
       }
@@ -91,13 +140,27 @@ export const useMealPlanData = (weekOffset: number = 0) => {
       console.log('✅ Daily meals fetched:', {
         count: dailyMeals?.length || 0,
         weeklyPlanId: weeklyPlan.id,
-        meals: dailyMeals?.map(m => ({ id: m.id, name: m.name, day: m.day_number, type: m.meal_type }))
+        meals: dailyMeals?.map(m => ({ 
+          id: m.id, 
+          name: m.name, 
+          day: m.day_number, 
+          type: m.meal_type,
+          calories: m.calories 
+        }))
       });
 
-      return {
+      const result = {
         weeklyPlan,
         dailyMeals: dailyMeals || []
       };
+
+      console.log('🎯 Final result:', {
+        hasWeeklyPlan: !!result.weeklyPlan,
+        mealsCount: result.dailyMeals.length,
+        structure: result
+      });
+
+      return result;
     },
     enabled: !!user?.id,
     staleTime: 5 * 60 * 1000, // 5 minutes
