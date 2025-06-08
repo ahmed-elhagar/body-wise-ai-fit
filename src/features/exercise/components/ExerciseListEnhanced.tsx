@@ -112,8 +112,9 @@ export const ExerciseListEnhanced = ({
   if (!exercises || exercises.length === 0) {
     return (
       <ExerciseEmptyState
-        dailyWorkoutId={dailyWorkoutId}
-        onAddCustomExercise={() => setShowCustomExerciseDialog(true)}
+        onGenerateProgram={() => console.log('Generate program')}
+        onCreateCustom={() => setShowCustomExerciseDialog(true)}
+        workoutType={currentProgram?.workout_type || "home"}
       />
     );
   }
