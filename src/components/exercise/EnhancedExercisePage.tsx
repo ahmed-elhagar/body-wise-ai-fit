@@ -49,7 +49,6 @@ const EnhancedExercisePage = () => {
   const currentSelectedDate = addDays(weekStartDate, selectedDayNumber - 1);
   const isToday = format(currentSelectedDate, 'yyyy-MM-dd') === format(currentDate, 'yyyy-MM-dd');
 
-  // Show analytics view if enabled
   if (showAnalytics) {
     return (
       <ExerciseAnalyticsContainer
@@ -59,8 +58,6 @@ const EnhancedExercisePage = () => {
     );
   }
 
-  // Show full page loading ONLY on initial load when there's no program data AND we're loading
-  // OR during AI generation
   const showFullPageLoading = (isLoading && !currentProgram && currentWeekOffset === 0) || isGenerating;
 
   if (showFullPageLoading) {
@@ -110,7 +107,6 @@ const EnhancedExercisePage = () => {
 
   return (
     <ExercisePageLayout>
-      {/* Enhanced Header with Analytics - Always show and never block */}
       <div className="px-3 py-3">
         <EnhancedExerciseHeaderWithAnalytics
           currentProgram={currentProgram}
@@ -122,7 +118,6 @@ const EnhancedExercisePage = () => {
         />
       </div>
 
-      {/* Enhanced Day Navigation - Always show and never block */}
       <div className="px-3 mb-3">
         <EnhancedDayNavigation
           weekStartDate={weekStartDate}
@@ -136,7 +131,6 @@ const EnhancedExercisePage = () => {
         />
       </div>
 
-      {/* Main Content - Show targeted loading only for content area */}
       <ExercisePageContent
         isLoading={isLoading && !!currentProgram && !isGenerating}
         currentProgram={currentProgram}
@@ -158,7 +152,6 @@ const EnhancedExercisePage = () => {
         onExerciseProgressUpdate={handleExerciseProgressUpdate}
       />
 
-      {/* Enhanced AI Dialog */}
       <AIExerciseDialog
         open={showAIDialog}
         onOpenChange={setShowAIDialog}

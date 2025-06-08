@@ -71,7 +71,8 @@ export class ExerciseService {
       return {
         ...data,
         workout_type: data.workout_type as "home" | "gym",
-        daily_workouts_count: data.daily_workouts?.length || 0
+        daily_workouts_count: data.daily_workouts?.length || 0,
+        daily_workouts: data.daily_workouts || []
       } as ExerciseProgram;
     }
     

@@ -1,8 +1,9 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dumbbell, Home, Building2, Sparkles } from "lucide-react";
+import { Dumbbell, Sparkles } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { ExercisePreferences } from "@/features/exercise/hooks/useExerciseProgramPage";
+import { ExercisePreferences } from "../types";
 
 interface ExerciseProgramSelectorProps {
   onGenerateProgram: (preferences: ExercisePreferences) => void;
@@ -10,7 +11,11 @@ interface ExerciseProgramSelectorProps {
   workoutType: "home" | "gym";
 }
 
-export const ExerciseProgramSelector = ({ onGenerateProgram, isGenerating, workoutType }: ExerciseProgramSelectorProps) => {
+export const ExerciseProgramSelector = ({ 
+  onGenerateProgram, 
+  isGenerating, 
+  workoutType 
+}: ExerciseProgramSelectorProps) => {
   const { t } = useLanguage();
 
   const handleGenerate = () => {
@@ -21,7 +26,9 @@ export const ExerciseProgramSelector = ({ onGenerateProgram, isGenerating, worko
       availableTime: "45",
       preferredWorkouts: ["bodyweight", "cardio"],
       targetMuscleGroups: ["full_body"],
-      equipment: workoutType === "gym" ? ["barbells", "dumbbells", "machines", "cables"] : ["bodyweight", "resistance_bands", "light_dumbbells"],
+      equipment: workoutType === "gym" 
+        ? ["barbells", "dumbbells", "machines", "cables"] 
+        : ["bodyweight", "resistance_bands", "light_dumbbells"],
       duration: "4",
       workoutDays: "4-5 days per week",
       difficulty: "beginner"

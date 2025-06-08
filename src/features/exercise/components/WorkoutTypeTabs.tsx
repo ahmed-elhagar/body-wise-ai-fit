@@ -2,43 +2,23 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Home, Building2 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { WorkoutContentLayout } from "./WorkoutContentLayout";
 import { ExerciseProgramSelector } from "./ExerciseProgramSelector";
-import { ExerciseProgram } from "@/features/exercise/types";
-import { ExercisePreferences } from "@/features/exercise/hooks/useExerciseProgramPage";
+import { ExerciseProgram, ExercisePreferences } from "../types";
 
 interface WorkoutTypeTabsProps {
   workoutType: "home" | "gym";
   setWorkoutType: (type: "home" | "gym") => void;
   currentProgram: ExerciseProgram | null;
-  todaysExercises: any[];
-  completedExercises: number;
-  totalExercises: number;
-  progressPercentage: number;
-  selectedDayNumber: number;
-  currentWeekOffset: number;
-  onExerciseComplete: (exerciseId: string) => Promise<void>;
-  onExerciseProgressUpdate: (exerciseId: string, sets: number, reps: string, notes?: string, weight?: number) => Promise<void>;
   onGenerateAIProgram: (preferences: ExercisePreferences) => void;
   isGenerating: boolean;
-  isRestDay?: boolean;
 }
 
 export const WorkoutTypeTabs = ({
   workoutType,
   setWorkoutType,
   currentProgram,
-  todaysExercises,
-  completedExercises,
-  totalExercises,
-  progressPercentage,
-  selectedDayNumber,
-  currentWeekOffset,
-  onExerciseComplete,
-  onExerciseProgressUpdate,
   onGenerateAIProgram,
-  isGenerating,
-  isRestDay
+  isGenerating
 }: WorkoutTypeTabsProps) => {
   const { t } = useLanguage();
 
@@ -48,7 +28,6 @@ export const WorkoutTypeTabs = ({
     if (hasValidProgram) {
       return (
         <div className="space-y-6">
-          {/* Program content placeholder - will be implemented properly */}
           <div className="text-center p-8">
             <h3 className="text-lg font-semibold mb-2">Exercise Program Loaded</h3>
             <p className="text-sm text-gray-600">Exercise content will be displayed here</p>
