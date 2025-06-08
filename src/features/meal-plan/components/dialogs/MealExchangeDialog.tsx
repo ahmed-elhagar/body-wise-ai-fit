@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -7,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ArrowLeftRight, Sparkles, Clock, Users, ChefHat, X, Zap, Star } from 'lucide-react';
-import { useMealExchange } from '@/hooks/useMealExchange';
+import { useMealExchange } from '../../hooks';
 import type { DailyMeal } from '@/features/meal-plan/types';
 
 interface MealExchangeDialogProps {

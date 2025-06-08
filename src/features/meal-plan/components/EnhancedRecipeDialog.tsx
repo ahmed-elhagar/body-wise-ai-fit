@@ -1,11 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ChefHat, Clock, Users, Utensils, Youtube, ExternalLink, Sparkles, ImageIcon, Loader2 } from "lucide-react";
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useMealRecipe } from '@/hooks/useMealRecipe';
+import { useMealRecipe } from '../hooks';
 import { toast } from 'sonner';
 import type { DailyMeal } from '@/features/meal-plan/types';
 

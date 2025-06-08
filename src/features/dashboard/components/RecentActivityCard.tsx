@@ -14,7 +14,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useI18n } from "@/hooks/useI18n";
 import { useWeightTracking } from "@/hooks/useWeightTracking";
-import { useMealPlans } from "@/hooks/useMealPlans";
+import { useMealPlans } from "@/features/meal-plan/hooks";
 import { useExercisePrograms } from "@/hooks/useExercisePrograms";
 import { formatDistanceToNow } from "date-fns";
 

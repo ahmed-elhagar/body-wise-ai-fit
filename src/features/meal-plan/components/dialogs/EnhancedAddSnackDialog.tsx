@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
-import { useCalorieCalculations } from "@/components/meal-plan/add-snack/useCalorieCalculations";
+import { useCalorieCalculations } from "../../hooks";
 import SimpleLoadingIndicator from "@/components/ui/simple-loading-indicator";
 
 interface EnhancedAddSnackDialogProps {

@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { useMealExchange } from './useMealExchange';
+import { useMealExchange } from '@/features/meal-plan/hooks';
 import type { DailyMeal } from '@/features/meal-plan/types';
 
 // Legacy compatibility wrapper for useEnhancedMealExchange
