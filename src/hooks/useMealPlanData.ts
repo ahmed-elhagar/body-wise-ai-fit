@@ -51,8 +51,25 @@ export const useMealPlanData = (weekOffset: number = 0) => {
         throw weeklyError;
       }
 
+      console.log('📋 Weekly plan result:', {
+        found: !!weeklyPlan,
+        weekStartDate,
+        planId: weeklyPlan?.id
+      });
+
       if (!weeklyPlan) {
         console.log('📋 No weekly meal plan found for date:', weekStartDate);
+        
+        // Also try fetching any plans for this user to debug
+        const { data: allPlans } = await supabase
+          .from('weekly_meal_plans')
+          .select('id, week_start_date')
+          .eq('user_id', user.id)
+          .order('week_start_date', { ascending: false })
+          .limit(5);
+        
+        console.log('🔍 Available plans for user:', allPlans);
+        
         return { weeklyPlan: null, dailyMeals: [] };
       }
 
@@ -73,7 +90,8 @@ export const useMealPlanData = (weekOffset: number = 0) => {
 
       console.log('✅ Daily meals fetched:', {
         count: dailyMeals?.length || 0,
-        weeklyPlanId: weeklyPlan.id
+        weeklyPlanId: weeklyPlan.id,
+        meals: dailyMeals?.map(m => ({ id: m.id, name: m.name, day: m.day_number, type: m.meal_type }))
       });
 
       return {

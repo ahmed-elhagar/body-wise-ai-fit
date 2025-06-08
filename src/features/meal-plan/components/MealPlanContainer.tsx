@@ -33,6 +33,19 @@ const MealPlanContainer = () => {
     lastLoadedDataRef.current = mealPlanState.currentWeekPlan;
   }
 
+  // Debug logging
+  React.useEffect(() => {
+    console.log('🏠 MealPlanContainer state:', {
+      isLoading: mealPlanState.isLoading,
+      hasCurrentWeekPlan: !!mealPlanState.currentWeekPlan,
+      weeklyPlan: mealPlanState.currentWeekPlan?.weeklyPlan?.id,
+      dailyMealsCount: mealPlanState.currentWeekPlan?.dailyMeals?.length || 0,
+      selectedDay: mealPlanState.selectedDayNumber,
+      weekOffset: mealPlanState.currentWeekOffset,
+      error: mealPlanState.error?.message
+    });
+  }, [mealPlanState]);
+
   // Enhanced shuffle handler
   const handleShuffle = async () => {
     if (!mealPlanState.currentWeekPlan?.weeklyPlan?.id) {
@@ -151,6 +164,21 @@ const MealPlanContainer = () => {
             })}
           </div>
         </Card>
+        
+        {/* Debug Information Card */}
+        {process.env.NODE_ENV === 'development' && (
+          <Card className="p-4 bg-yellow-50 border border-yellow-200">
+            <h4 className="font-semibold text-yellow-800 mb-2">Debug Info</h4>
+            <div className="text-sm text-yellow-700 space-y-1">
+              <div>Loading: {mealPlanState.isLoading ? 'Yes' : 'No'}</div>
+              <div>Weekly Plan: {displayData?.weeklyPlan?.id || 'None'}</div>
+              <div>Daily Meals: {displayData?.dailyMeals?.length || 0}</div>
+              <div>Selected Day: {mealPlanState.selectedDayNumber}</div>
+              <div>Week Offset: {mealPlanState.currentWeekOffset}</div>
+              <div>Error: {mealPlanState.error?.message || 'None'}</div>
+            </div>
+          </Card>
+        )}
         
         {/* Content Area with Loading Overlay - Only over meal content */}
         <div className="relative">
