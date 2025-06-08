@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Heart, Calendar, Utensils, Settings as SettingsIcon } from "lucide-react";
@@ -21,7 +20,11 @@ export const EnhancedSettingsPage = () => {
     theme: 'light',
     displayName: '',
     bio: '',
-    privacy: 'public'
+    privacy: {
+      profileVisible: true,
+      showProgress: true,
+      allowMessages: true
+    }
   });
 
   const handleSave = (newSettings: any) => {

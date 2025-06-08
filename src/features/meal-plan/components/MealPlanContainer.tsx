@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { useMealPlanState } from '@/hooks/useMealPlanState';
 import MealPlanHeader from '@/components/meal-plan/MealPlanHeader';
@@ -7,7 +8,7 @@ import ErrorState from '@/components/meal-plan/components/ErrorState';
 import LoadingState from '@/components/meal-plan/components/LoadingState';
 import MealPlanAILoadingDialog from '@/components/meal-plan/MealPlanAILoadingDialog';
 import { useEnhancedMealShuffle } from '@/hooks/useEnhancedMealShuffle';
-import ModernShoppingListDrawer from '@/components/shopping-list/ModernShoppingListDrawer';
+import ShoppingListDrawer from '@/components/ShoppingListDrawer';
 import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { MealPlanViewToggle } from '../components/MealPlanViewToggle';
 import { Card } from '@/components/ui/card';
@@ -194,16 +195,18 @@ export const MealPlanContainer = () => {
         position="top-right"
       />
 
-      {/* Modern Shopping List Drawer - Complete revamped experience */}
-      <ModernShoppingListDrawer
+      {/* Shopping List Drawer - Using ShoppingListDrawer */}
+      <ShoppingListDrawer
         isOpen={mealPlanState.showShoppingListDialog}
         onClose={() => mealPlanState.closeShoppingListDialog()}
-        weeklyPlan={mealPlanState.currentWeekPlan}
-        weekId={mealPlanState.currentWeekPlan?.weeklyPlan?.id}
-        onShoppingListUpdate={() => {
-          console.log('🛒 Shopping list updated');
-          mealPlanState.refetch();
-        }}
+        items={mealPlanState.currentWeekPlan?.dailyMeals?.flatMap(meal => 
+          meal.ingredients?.map(ing => ({
+            name: ing.name || ing,
+            quantity: ing.quantity,
+            unit: ing.unit,
+            category: 'Other'
+          })) || []
+        ) || []}
       />
 
       {/* AI Generation Dialog */}
