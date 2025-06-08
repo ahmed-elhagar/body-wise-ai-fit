@@ -1,12 +1,11 @@
 
 import { useState, useCallback, useMemo } from 'react';
-import { useMealPlanData } from '@/hooks/meal-plan/useMealPlanData';
-import { useMealPlanNavigation } from '@/hooks/meal-plan/useMealPlanNavigation';
-import { useMealPlanCalculations } from '@/features/meal-plan/hooks/useMealPlanCalculations';
+import { useMealPlanData } from '@/hooks/useMealPlanData';
 import { useMealPlanActions } from '@/hooks/useMealPlanActions';
 import { useCentralizedCredits } from '@/hooks/useCentralizedCredits';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from './useAuth';
+import { getWeekStartDate, getCurrentSaturdayDay } from '@/utils/mealPlanUtils';
 import type { DailyMeal, MealPlanFetchResult } from '@/features/meal-plan/types';
 
 export const useMealPlanState = () => {
@@ -15,13 +14,10 @@ export const useMealPlanState = () => {
   const { remaining: userCredits, isPro, hasCredits } = useCentralizedCredits();
   
   // Navigation state
-  const {
-    currentWeekOffset,
-    setCurrentWeekOffset,
-    selectedDayNumber,
-    setSelectedDayNumber,
-    weekStartDate,
-  } = useMealPlanNavigation();
+  const [currentWeekOffset, setCurrentWeekOffsetInternal] = useState(0);
+  const [selectedDayNumber, setSelectedDayNumber] = useState(() => getCurrentSaturdayDay());
+  
+  const weekStartDate = useMemo(() => getWeekStartDate(currentWeekOffset), [currentWeekOffset]);
 
   // Core meal plan data
   const {
@@ -34,7 +30,6 @@ export const useMealPlanState = () => {
   // Enhanced refetch that properly invalidates and refreshes data
   const refetch = useCallback(async () => {
     console.log('🔄 Enhanced refetch - invalidating all meal plan queries for week offset:', currentWeekOffset);
-    console.log('🗓️ Expected week start date from navigation:', weekStartDate?.toISOString().split('T')[0]);
     
     // Clear all meal plan related caches
     await queryClient.invalidateQueries({
@@ -65,16 +60,41 @@ export const useMealPlanState = () => {
     }
     
     return result;
-  }, [queryClient, currentWeekOffset, originalRefetch, weekStartDate]);
+  }, [queryClient, currentWeekOffset, originalRefetch]);
 
-  // Calculations
-  const {
-    dailyMeals,
-    todaysMeals,
-    totalCalories,
-    totalProtein,
-    targetDayCalories,
-  } = useMealPlanCalculations(currentWeekPlan, selectedDayNumber);
+  // Enhanced calculations - inline to avoid external dependencies
+  const { dailyMeals, todaysMeals, totalCalories, totalProtein, targetDayCalories } = useMemo(() => {
+    // Calculate daily meals for selected day
+    const dailyMeals = currentWeekPlan?.dailyMeals?.filter(
+      meal => meal.day_number === selectedDayNumber
+    ) || null;
+
+    // Calculate today's meals
+    const today = new Date();
+    const todayDayNumber = today.getDay() === 6 ? 1 : today.getDay() + 2;
+    const todaysMeals = currentWeekPlan?.dailyMeals?.filter(
+      meal => meal.day_number === todayDayNumber
+    ) || null;
+
+    // Calculate total calories for selected day
+    const totalCalories = dailyMeals ? 
+      dailyMeals.reduce((total, meal) => total + (meal.calories || 0), 0) : null;
+
+    // Calculate total protein for selected day
+    const totalProtein = dailyMeals ? 
+      dailyMeals.reduce((total, meal) => total + (meal.protein || 0), 0) : null;
+
+    // Target calories
+    const targetDayCalories = 2000;
+
+    return {
+      dailyMeals,
+      todaysMeals,
+      totalCalories,
+      totalProtein,
+      targetDayCalories
+    };
+  }, [currentWeekPlan?.dailyMeals, selectedDayNumber]);
 
   // Dialog states
   const [showAIDialog, setShowAIDialog] = useState(false);
@@ -105,10 +125,10 @@ export const useMealPlanState = () => {
   );
 
   // Enhanced week change handler
-  const handleWeekChange = useCallback(async (newOffset: number) => {
+  const setCurrentWeekOffset = useCallback(async (newOffset: number) => {
     console.log('📅 Changing week from', currentWeekOffset, 'to', newOffset);
-    setCurrentWeekOffset(newOffset);
-  }, [currentWeekOffset, setCurrentWeekOffset]);
+    setCurrentWeekOffsetInternal(newOffset);
+  }, [currentWeekOffset]);
 
   // Dialog handlers
   const openAIDialog = useCallback(() => setShowAIDialog(true), []);
@@ -142,40 +162,6 @@ export const useMealPlanState = () => {
     setAiPreferences(prev => ({ ...prev, ...newPrefs }));
   }, []);
 
-  // Enhanced generation handler with better data refresh
-  const handleGenerateAIPlanEnhanced = useCallback(async () => {
-    console.log('🚀 Starting enhanced AI generation for week offset:', currentWeekOffset);
-    
-    const enhancedPreferences = {
-      ...aiPreferences,
-      weekOffset: currentWeekOffset,
-    };
-    
-    updateAIPreferences({ weekOffset: currentWeekOffset });
-    
-    const result = await handleGenerateAIPlan();
-    
-    if (result) {
-      console.log('✅ Generation successful, starting enhanced refresh for week:', currentWeekOffset);
-      
-      // Wait longer for database to fully commit
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      // Enhanced refresh sequence
-      await refetch();
-      
-      // Double check - if still no data, try one more time with proper typing
-      const currentData = queryClient.getQueryData(['weekly-meal-plan', user?.id, currentWeekOffset]) as MealPlanFetchResult | undefined;
-      if (!currentData?.weeklyPlan) {
-        console.log('⚠️ Still no data, final retry...');
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        await refetch();
-      }
-    }
-    
-    return result;
-  }, [aiPreferences, currentWeekOffset, handleGenerateAIPlan, updateAIPreferences, queryClient, user?.id, refetch]);
-
   return {
     // Data
     currentWeekPlan,
@@ -187,7 +173,7 @@ export const useMealPlanState = () => {
     
     // Navigation
     currentWeekOffset,
-    setCurrentWeekOffset: handleWeekChange,
+    setCurrentWeekOffset,
     selectedDayNumber,
     setSelectedDayNumber,
     weekStartDate,
@@ -219,7 +205,7 @@ export const useMealPlanState = () => {
     
     // Actions
     refetch,
-    handleGenerateAIPlan: handleGenerateAIPlanEnhanced,
+    handleGenerateAIPlan,
     
     // Dialog handlers
     openAIDialog,

@@ -1,8 +1,6 @@
-
 import React, { useState, useRef } from 'react';
 import { useMealPlanState } from '@/hooks/useMealPlanState';
 import MealPlanHeader from './MealPlanHeader';
-import { MealPlanNavigation } from './MealPlanNavigation';
 import { MealPlanContent } from './MealPlanContent';
 import ErrorState from './ErrorState';
 import LoadingState from './LoadingState';
