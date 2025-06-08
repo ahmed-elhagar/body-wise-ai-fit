@@ -1,9 +1,8 @@
-
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useExerciseActions } from './useExerciseActions';
-import { useEnhancedErrorSystem } from './useEnhancedErrorSystem';
+import { useEnhancedErrorSystem } from '@/hooks/useEnhancedErrorSystem';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 

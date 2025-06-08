@@ -1,7 +1,6 @@
-
 import { useState, useMemo, useCallback } from 'react';
 import { useExerciseProgramData } from './useExerciseProgramData';
-import { useRateLimitedAI } from './useRateLimitedAI';
+import { useRateLimitedAI } from '@/hooks/useRateLimitedAI';
 import { addDays, format, startOfWeek } from 'date-fns';
 
 export interface ExercisePreferences {

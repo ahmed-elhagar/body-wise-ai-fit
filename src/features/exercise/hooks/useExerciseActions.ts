@@ -1,7 +1,6 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { useEnhancedErrorSystem } from './useEnhancedErrorSystem';
+import { useEnhancedErrorSystem } from '@/hooks/useEnhancedErrorSystem';
 
 export const useExerciseActions = () => {
   const { user } = useAuth();

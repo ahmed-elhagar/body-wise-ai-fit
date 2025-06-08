@@ -1,7 +1,6 @@
-
-import { useState, useMemo } from 'react';
-import { useExerciseProgramData, type ExerciseProgram } from './useExerciseProgramData';
-import { useAIExercise } from './useAIExercise';
+import { useState, useMemo, useCallback } from 'react';
+import { useExerciseProgramData } from './useExerciseProgramData';
+import { useRateLimitedAI } from '@/hooks/useRateLimitedAI';
 import { addDays, format, startOfWeek } from 'date-fns';
 
 export interface ExercisePreferences {
@@ -17,13 +16,12 @@ export interface ExercisePreferences {
   difficulty: string;
 }
 
-export type { ExerciseProgram } from './useExerciseProgramData';
-
-export const useExerciseProgramPage = () => {
+export const useOptimizedExerciseProgramPage = () => {
   const [selectedDayNumber, setSelectedDayNumber] = useState(new Date().getDay() || 7);
   const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
   const [workoutType, setWorkoutType] = useState<"home" | "gym">("home");
   const [showAIDialog, setShowAIDialog] = useState(false);
+  const [isWeekChanging, setIsWeekChanging] = useState(false);
   const [aiPreferences, setAiPreferences] = useState<ExercisePreferences>({
     workoutType: "home",
     goalType: "general_fitness",
@@ -37,36 +35,37 @@ export const useExerciseProgramPage = () => {
     difficulty: "beginner"
   });
 
-  const currentDate = new Date();
-  const weekStartDate = addDays(startOfWeek(currentDate), currentWeekOffset * 7);
+  const currentDate = useMemo(() => new Date(), []);
+  const weekStartDate = useMemo(() => 
+    addDays(startOfWeek(currentDate), currentWeekOffset * 7), 
+    [currentDate, currentWeekOffset]
+  );
   const weekStartDateString = format(weekStartDate, 'yyyy-MM-dd');
 
-  const { currentProgram, isLoading, error, refetch, handleExerciseComplete, handleExerciseProgressUpdate } = 
+  const { currentProgram, isLoading: dataLoading, error, refetch, handleExerciseComplete, handleExerciseProgressUpdate } = 
     useExerciseProgramData(weekStartDateString, workoutType);
-  const { generateExerciseProgram, isGenerating } = useAIExercise();
+  
+  const { executeAIAction, isLoading: isGenerating } = useRateLimitedAI();
 
-  // Get today's workouts based on selected day
+  // Combined loading state for better UX
+  const isLoading = dataLoading || isWeekChanging;
+
   const todaysWorkouts = useMemo(() => {
     if (!currentProgram?.daily_workouts) return [];
-    const dayWorkouts = currentProgram.daily_workouts.filter(
+    return currentProgram.daily_workouts.filter(
       workout => workout.day_number === selectedDayNumber
     );
-    console.log('🎯 Today\'s workouts for day', selectedDayNumber, ':', dayWorkouts);
-    return dayWorkouts;
   }, [currentProgram, selectedDayNumber]);
 
-  // Get today's exercises
   const todaysExercises = useMemo(() => {
     if (!todaysWorkouts.length) return [];
     return todaysWorkouts.flatMap(workout => workout.exercises || []);
   }, [todaysWorkouts]);
 
-  // Check if today is a rest day
   const isRestDay = useMemo(() => {
     return todaysWorkouts.length > 0 && todaysWorkouts[0]?.is_rest_day;
   }, [todaysWorkouts]);
 
-  // Calculate progress
   const { completedExercises, totalExercises, progressPercentage } = useMemo(() => {
     const completed = todaysExercises.filter(ex => ex.completed).length;
     const total = todaysExercises.length;
@@ -79,24 +78,21 @@ export const useExerciseProgramPage = () => {
     };
   }, [todaysExercises]);
 
-  const handleGenerateAIProgram = (preferences: ExercisePreferences) => {
-    console.log('🤖 Generating AI exercise program with preferences:', {
-      ...preferences,
-      weekOffset: currentWeekOffset,
-      weekStartDate: weekStartDateString
-    });
-    
+  const handleGenerateAIProgram = useCallback(async (preferences: ExercisePreferences) => {
     const enhancedPreferences = {
       ...preferences,
       weekStartDate: weekStartDateString,
       weekOffset: currentWeekOffset
     };
     
-    generateExerciseProgram(enhancedPreferences);
+    console.log('🎯 Generating AI program with preferences:', enhancedPreferences);
+    
+    await executeAIAction('generate-exercise-program', enhancedPreferences);
     setShowAIDialog(false);
-  };
+    refetch();
+  }, [weekStartDateString, currentWeekOffset, executeAIAction, refetch]);
 
-  const handleRegenerateProgram = () => {
+  const handleRegenerateProgram = useCallback(async () => {
     const preferences = {
       ...aiPreferences,
       workoutType: workoutType,
@@ -104,17 +100,13 @@ export const useExerciseProgramPage = () => {
       weekOffset: currentWeekOffset
     };
     
-    console.log('🔄 Regenerating program for:', {
-      workoutType,
-      weekStartDate: weekStartDateString,
-      weekOffset: currentWeekOffset
-    });
+    console.log('🔄 Regenerating program with preferences:', preferences);
     
-    handleGenerateAIProgram(preferences);
-  };
+    await handleGenerateAIProgram(preferences);
+  }, [weekStartDateString, aiPreferences, workoutType, currentWeekOffset, handleGenerateAIProgram]);
 
-  const handleWorkoutTypeChange = (type: "home" | "gym") => {
-    console.log('🔄 Changing workout type to:', type);
+  const handleWorkoutTypeChange = useCallback((type: "home" | "gym") => {
+    console.log('🏋️ Changing workout type to:', type);
     setWorkoutType(type);
     setAiPreferences(prev => ({
       ...prev,
@@ -123,22 +115,29 @@ export const useExerciseProgramPage = () => {
         ? ["barbells", "dumbbells", "machines", "cables"]
         : ["bodyweight", "resistance_bands", "light_dumbbells"]
     }));
-  };
+  }, []);
+
+  const handleWeekChange = useCallback(async (newOffset: number) => {
+    console.log('📅 Changing week offset from', currentWeekOffset, 'to', newOffset);
+    setIsWeekChanging(true);
+    setCurrentWeekOffset(newOffset);
+    
+    setTimeout(() => {
+      setIsWeekChanging(false);
+    }, 500);
+  }, [currentWeekOffset]);
 
   return {
-    // State
     selectedDayNumber,
     setSelectedDayNumber,
     currentWeekOffset,
-    setCurrentWeekOffset,
+    setCurrentWeekOffset: handleWeekChange,
     workoutType,
     setWorkoutType: handleWorkoutTypeChange,
     showAIDialog,
     setShowAIDialog,
     aiPreferences,
     setAiPreferences,
-    
-    // Data
     currentProgram,
     isLoading,
     isGenerating,
@@ -149,15 +148,10 @@ export const useExerciseProgramPage = () => {
     progressPercentage,
     isRestDay,
     error,
-    
-    // Computed
     currentDate,
     weekStartDate,
-    
-    // Handlers
     handleGenerateAIProgram,
     handleRegenerateProgram,
-    handleWorkoutTypeChange,
     handleExerciseComplete,
     handleExerciseProgressUpdate,
     refetch

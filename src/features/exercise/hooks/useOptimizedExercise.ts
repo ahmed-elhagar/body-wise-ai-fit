@@ -1,4 +1,3 @@
-
 import { useOptimizedExerciseProgramPage } from './useOptimizedExerciseProgramPage';
 import { useExerciseActions } from './useExerciseActions';
 import { useMemo, useState } from 'react';
