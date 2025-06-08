@@ -1,46 +1,31 @@
 
-import { ReactNode } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import AppSidebar from "@/components/AppSidebar";
-import DebugPanel from "@/components/DebugPanel";
-import { useAuth } from "@/hooks/useAuth";
+import { AppSidebar } from "@/components/AppSidebar";
+import { useProfile } from "@/hooks/useProfile";
 import { useI18n } from "@/hooks/useI18n";
-import { cn } from "@/lib/utils";
+import LanguageToggle from "@/components/LanguageToggle";
 
-interface LayoutProps {
-  children: ReactNode;
-}
-
-const Layout = ({ children }: LayoutProps) => {
-  const { user } = useAuth();
+const Layout = ({ children }: { children: React.ReactNode }) => {
+  const { profile } = useProfile();
   const { isRTL } = useI18n();
-
-  if (!user) {
-    return (
-      <div className={cn("min-h-screen w-full", isRTL && "text-right")} dir={isRTL ? "rtl" : "ltr"}>
-        {children}
-        {/* Show debug panel even for non-authenticated users */}
-        {import.meta.env.DEV && <DebugPanel />}
-      </div>
-    );
-  }
-
+  
   return (
-    <div className={cn("min-h-screen w-full", isRTL && "text-right")} dir={isRTL ? "rtl" : "ltr"}>
-      <SidebarProvider>
-        <div className="min-h-screen flex w-full">
-          <AppSidebar />
-          <main className="flex-1 overflow-auto bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/30">
-            <div className="p-4 max-w-7xl mx-auto">
-              {children}
+    <SidebarProvider>
+      <div className={`min-h-screen flex w-full ${isRTL ? 'rtl' : 'ltr'}`}>
+        <AppSidebar />
+        <div className="flex-1 flex flex-col">
+          {/* Language Toggle in top-right corner */}
+          <div className={`flex justify-end p-4 ${isRTL ? 'justify-start' : 'justify-end'}`}>
+            <div className="w-48">
+              <LanguageToggle />
             </div>
+          </div>
+          <main className="flex-1 p-6">
+            {children}
           </main>
         </div>
-      </SidebarProvider>
-      
-      {/* Debug Panel available throughout the app */}
-      {import.meta.env.DEV && <DebugPanel />}
-    </div>
+      </div>
+    </SidebarProvider>
   );
 };
 

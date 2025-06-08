@@ -71,6 +71,20 @@ const PaginatedUsersTable = () => {
       
       const offset = (page - 1) * USERS_PER_PAGE;
       
+      // First, get all active subscriptions to identify Pro users
+      const { data: activeSubscriptions, error: subsError } = await supabase
+        .from('subscriptions')
+        .select('user_id, id, status, plan_type, current_period_end')
+        .eq('status', 'active')
+        .gt('current_period_end', new Date().toISOString());
+
+      if (subsError) {
+        console.error('Error fetching subscriptions:', subsError);
+      }
+
+      const activeProUserIds = new Set(activeSubscriptions?.map(sub => sub.user_id) || []);
+      console.log('Active Pro users found:', activeProUserIds.size);
+
       // Build query for profiles
       let query = supabase
         .from('profiles')
@@ -86,7 +100,7 @@ const PaginatedUsersTable = () => {
           last_seen
         `, { count: 'exact' });
 
-      // Apply search filter if provided
+      // Apply search filter
       if (search.trim()) {
         query = query.or(`email.ilike.%${search}%,first_name.ilike.%${search}%,last_name.ilike.%${search}%`);
       }
@@ -105,6 +119,28 @@ const PaginatedUsersTable = () => {
         }
       }
 
+      // For subscription filter, we need to handle it differently
+      if (filters.subscription && filters.subscription !== 'all') {
+        if (filters.subscription === 'pro') {
+          // Only get users who have active subscriptions
+          if (activeProUserIds.size > 0) {
+            query = query.in('id', Array.from(activeProUserIds));
+          } else {
+            // No pro users, return empty result
+            setUsers([]);
+            setTotalUsers(0);
+            setLoading(false);
+            return;
+          }
+        } else if (filters.subscription === 'free') {
+          // Only get users who don't have active subscriptions
+          if (activeProUserIds.size > 0) {
+            query = query.not('id', 'in', `(${Array.from(activeProUserIds).map(id => `'${id}'`).join(',')})`);
+          }
+          // If no pro users, all users are free, so no additional filter needed
+        }
+      }
+
       // Apply pagination and ordering
       const { data: profiles, error: profilesError, count } = await query
         .order('created_at', { ascending: false })
@@ -115,125 +151,24 @@ const PaginatedUsersTable = () => {
         throw profilesError;
       }
 
-      // Fetch all subscriptions to properly identify Pro members
-      const { data: allSubscriptions, error: subsError } = await supabase
-        .from('subscriptions')
-        .select('user_id, id, status, plan_type, current_period_end');
-
-      if (subsError) {
-        console.error('Error fetching subscriptions:', subsError);
-      }
-
-      // Create a map of active subscriptions
-      const activeSubscriptions = new Map();
-      if (allSubscriptions) {
-        allSubscriptions.forEach(sub => {
-          const isActive = sub.status === 'active' && new Date(sub.current_period_end) > new Date();
-          if (isActive) {
-            activeSubscriptions.set(sub.user_id, sub);
-          }
-        });
-      }
-
       // Merge subscription data with user data
-      let usersWithSubscriptions = (profiles || []).map(user => ({
-        ...user,
-        role: user.role as 'normal' | 'coach' | 'admin',
-        subscription: activeSubscriptions.get(user.id) || null
-      }));
-
-      // Apply subscription filter AFTER merging data
-      if (filters.subscription && filters.subscription !== 'all') {
-        if (filters.subscription === 'pro') {
-          usersWithSubscriptions = usersWithSubscriptions.filter(user => 
-            activeSubscriptions.has(user.id)
-          );
-        } else if (filters.subscription === 'free') {
-          usersWithSubscriptions = usersWithSubscriptions.filter(user => 
-            !activeSubscriptions.has(user.id)
-          );
-        }
-      }
-
-      // For subscription filtering, we need to adjust the count
-      let finalCount = count || 0;
-      if (filters.subscription && filters.subscription !== 'all') {
-        // When filtering by subscription, we need to count manually since we filter after the query
-        if (filters.subscription === 'pro') {
-          // Count all users with active subscriptions
-          const proCount = await countUsersBySubscriptionStatus(search, filters, true);
-          finalCount = proCount;
-        } else if (filters.subscription === 'free') {
-          // Count all users without active subscriptions
-          const freeCount = await countUsersBySubscriptionStatus(search, filters, false);
-          finalCount = freeCount;
-        }
-        
-        // Apply pagination to filtered results
-        const startIndex = (page - 1) * USERS_PER_PAGE;
-        const endIndex = startIndex + USERS_PER_PAGE;
-        usersWithSubscriptions = usersWithSubscriptions.slice(startIndex, endIndex);
-      }
+      const usersWithSubscriptions = (profiles || []).map(user => {
+        const userSubscription = activeSubscriptions?.find(sub => sub.user_id === user.id);
+        return {
+          ...user,
+          role: user.role as 'normal' | 'coach' | 'admin',
+          subscription: userSubscription || null
+        };
+      });
 
       setUsers(usersWithSubscriptions);
-      setTotalUsers(finalCount);
-      console.log(`Fetched ${usersWithSubscriptions.length} users, Total: ${finalCount}`);
+      setTotalUsers(count || 0);
+      console.log(`Fetched ${usersWithSubscriptions.length} users, Total: ${count}`);
     } catch (error) {
       console.error('Error in fetchUsers:', error);
       toast.error('Failed to fetch users');
     } finally {
       setLoading(false);
-    }
-  };
-
-  // Helper function to count users by subscription status
-  const countUsersBySubscriptionStatus = async (search: string, filters: any, hasActiveSubscription: boolean) => {
-    try {
-      // Get all user IDs that match the search and role filters
-      let userQuery = supabase.from('profiles').select('id', { count: 'exact' });
-      
-      if (search.trim()) {
-        userQuery = userQuery.or(`email.ilike.%${search}%,first_name.ilike.%${search}%,last_name.ilike.%${search}%`);
-      }
-      
-      if (filters.role && filters.role !== 'all') {
-        userQuery = userQuery.eq('role', filters.role);
-      }
-      
-      if (filters.online && filters.online !== 'all') {
-        if (filters.online === 'online') {
-          userQuery = userQuery.eq('is_online', true);
-        } else if (filters.online === 'offline') {
-          userQuery = userQuery.eq('is_online', false);
-        }
-      }
-      
-      const { data: userIds, count: totalMatchingUsers } = await userQuery;
-      
-      if (!userIds || totalMatchingUsers === 0) return 0;
-      
-      // Get active subscriptions
-      const { data: activeSubscriptions } = await supabase
-        .from('subscriptions')
-        .select('user_id')
-        .eq('status', 'active')
-        .gt('current_period_end', new Date().toISOString());
-      
-      const activeUserIds = new Set(activeSubscriptions?.map(sub => sub.user_id) || []);
-      
-      // Count based on subscription status
-      let count = 0;
-      userIds.forEach(user => {
-        const hasActiveSub = activeUserIds.has(user.id);
-        if ((hasActiveSubscription && hasActiveSub) || (!hasActiveSubscription && !hasActiveSub)) {
-          count++;
-        }
-      });
-      
-      return count;
-    } catch (error) {
-      console.error('Error counting users by subscription:', error);
-      return 0;
     }
   };
 
@@ -447,31 +382,41 @@ const PaginatedUsersTable = () => {
   const totalPages = Math.ceil(totalUsers / USERS_PER_PAGE);
   const hasActiveFilters = searchTerm || roleFilter !== 'all' || subscriptionFilter !== 'all' || onlineFilter !== 'all';
 
-  // Enhanced pagination with page numbers
+  // Enhanced pagination with better page numbers display
   const getVisiblePages = () => {
-    const delta = 2; // Number of pages to show on each side of current page
+    const delta = 2;
     const range = [];
     const rangeWithDots = [];
 
+    // Always show first page
+    if (totalPages > 0) {
+      rangeWithDots.push(1);
+    }
+
+    // Calculate range around current page
     for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
       range.push(i);
     }
 
+    // Add dots and range
     if (currentPage - delta > 2) {
-      rangeWithDots.push(1, '...');
-    } else {
-      rangeWithDots.push(1);
+      rangeWithDots.push('...');
     }
 
     rangeWithDots.push(...range);
 
+    // Add dots and last page
     if (currentPage + delta < totalPages - 1) {
-      rangeWithDots.push('...', totalPages);
-    } else if (totalPages > 1) {
+      rangeWithDots.push('...');
+    }
+
+    if (totalPages > 1) {
       rangeWithDots.push(totalPages);
     }
 
-    return rangeWithDots;
+    return rangeWithDots.filter((page, index, arr) => 
+      page !== arr[index - 1] // Remove duplicates
+    );
   };
 
   return (
@@ -499,9 +444,9 @@ const PaginatedUsersTable = () => {
       <Alert>
         <Shield className="h-4 w-4" />
         <AlertDescription>
-          <strong>User Management:</strong> Update roles, manage subscriptions, and control AI generation limits directly from the table.
+          <strong>User Management:</strong> Update roles, manage subscriptions, and control AI generation limits.
           <br />
-          <strong>Enhanced Search & Filters:</strong> Use the search bar and filters to find specific users quickly.
+          <strong>Enhanced Filters:</strong> Search by name/email and filter by role, subscription type, and online status.
         </AlertDescription>
       </Alert>
 
@@ -520,7 +465,6 @@ const PaginatedUsersTable = () => {
             )}
           </div>
           
-          {/* Enhanced Search and Filters */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <div className="lg:col-span-2">
               <div className="flex items-center gap-2">
@@ -579,7 +523,12 @@ const PaginatedUsersTable = () => {
                   </div>
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Users</SelectItem>
+                  <SelectItem value="all">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                      All Users
+                    </div>
+                  </SelectItem>
                   <SelectItem value="pro">
                     <div className="flex items-center gap-2">
                       <Crown className="h-3 w-3 text-yellow-500" />
@@ -777,13 +726,13 @@ const PaginatedUsersTable = () => {
                 </Table>
               </div>
 
-              {/* Enhanced Pagination */}
-              <div className="flex items-center justify-between mt-6">
-                <div className="text-sm text-gray-500">
-                  Showing {((currentPage - 1) * USERS_PER_PAGE) + 1} to {Math.min(currentPage * USERS_PER_PAGE, totalUsers)} of {totalUsers} users
-                </div>
-                
-                {totalPages > 1 && (
+              {/* Enhanced Pagination with better page numbers */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between mt-6">
+                  <div className="text-sm text-gray-500">
+                    Showing {((currentPage - 1) * USERS_PER_PAGE) + 1} to {Math.min(currentPage * USERS_PER_PAGE, totalUsers)} of {totalUsers} users
+                  </div>
+                  
                   <div className="flex items-center gap-1">
                     {/* First Page */}
                     <Button
@@ -792,6 +741,7 @@ const PaginatedUsersTable = () => {
                       onClick={() => setCurrentPage(1)}
                       disabled={currentPage === 1 || loading}
                       className="h-8 w-8 p-0"
+                      title="First page"
                     >
                       <ChevronsLeft className="h-4 w-4" />
                     </Button>
@@ -803,28 +753,31 @@ const PaginatedUsersTable = () => {
                       onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                       disabled={currentPage === 1 || loading}
                       className="h-8 w-8 p-0"
+                      title="Previous page"
                     >
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
 
                     {/* Page Numbers */}
-                    {getVisiblePages().map((page, index) => (
-                      <div key={index}>
-                        {page === '...' ? (
-                          <span className="px-2 text-gray-400">...</span>
-                        ) : (
-                          <Button
-                            variant={currentPage === page ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setCurrentPage(page as number)}
-                            disabled={loading}
-                            className="h-8 w-8 p-0"
-                          >
-                            {page}
-                          </Button>
-                        )}
-                      </div>
-                    ))}
+                    <div className="flex items-center gap-1 mx-2">
+                      {getVisiblePages().map((page, index) => (
+                        <div key={index}>
+                          {page === '...' ? (
+                            <span className="px-2 text-gray-400 text-sm">...</span>
+                          ) : (
+                            <Button
+                              variant={currentPage === page ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => setCurrentPage(page as number)}
+                              disabled={loading}
+                              className="h-8 w-8 p-0 text-sm"
+                            >
+                              {page}
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
 
                     {/* Next Page */}
                     <Button
@@ -833,6 +786,7 @@ const PaginatedUsersTable = () => {
                       onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                       disabled={currentPage === totalPages || loading}
                       className="h-8 w-8 p-0"
+                      title="Next page"
                     >
                       <ChevronRight className="h-4 w-4" />
                     </Button>
@@ -844,12 +798,13 @@ const PaginatedUsersTable = () => {
                       onClick={() => setCurrentPage(totalPages)}
                       disabled={currentPage === totalPages || loading}
                       className="h-8 w-8 p-0"
+                      title="Last page"
                     >
                       <ChevronsRight className="h-4 w-4" />
                     </Button>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </>
           )}
         </CardContent>

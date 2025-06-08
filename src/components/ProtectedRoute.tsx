@@ -12,7 +12,7 @@ interface ProtectedRouteProps {
   requireProfile?: boolean;
   requireRole?: string | string[];
   redirectTo?: string;
-  preventAuthenticatedAccess?: boolean; // New prop for auth/signup pages
+  preventAuthenticatedAccess?: boolean;
 }
 
 const ProtectedRoute = React.memo<ProtectedRouteProps>(({ 
@@ -21,14 +21,13 @@ const ProtectedRoute = React.memo<ProtectedRouteProps>(({
   requireProfile = false,
   requireRole,
   redirectTo = '/auth',
-  preventAuthenticatedAccess = false // Default false
+  preventAuthenticatedAccess = false
 }) => {
   const { user, loading: authLoading, error: authError } = useAuth();
   const { profile, isLoading: profileLoading } = useProfile();
   const { role, isLoading: roleLoading, error: roleError, hasRole, hasAnyRole } = useRole();
   const location = useLocation();
 
-  // Enhanced loading state handling with better performance
   const isLoading = authLoading || (requireProfile && profileLoading) || (requireRole && roleLoading);
 
   console.log('ProtectedRoute - Current state:', {
@@ -41,10 +40,10 @@ const ProtectedRoute = React.memo<ProtectedRouteProps>(({
     roleLoading,
     requireRole,
     preventAuthenticatedAccess,
+    profileCompleted: profile?.onboarding_completed,
     userId: user?.id?.substring(0, 8) + '...' || 'none'
   });
 
-  // Early return for loading state with enhanced loading component
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
@@ -57,19 +56,17 @@ const ProtectedRoute = React.memo<ProtectedRouteProps>(({
     );
   }
 
-  // Enhanced error handling for auth errors
   if (authError && requireAuth) {
     console.error("ProtectedRoute - Auth error:", authError);
     return <Navigate to={redirectTo} state={{ from: location.pathname, error: 'Authentication failed' }} replace />;
   }
 
-  // Role error handling
   if (roleError && requireRole) {
     console.error("ProtectedRoute - Role error:", roleError);
     return <Navigate to="/dashboard" state={{ error: 'Role verification failed' }} replace />;
   }
 
-  // NEW: Prevent authenticated users from accessing auth pages
+  // Prevent authenticated users from accessing auth pages
   if (preventAuthenticatedAccess && user) {
     console.log("ProtectedRoute - Redirecting authenticated user away from auth page");
     return <Navigate to="/dashboard" replace />;
@@ -81,17 +78,15 @@ const ProtectedRoute = React.memo<ProtectedRouteProps>(({
     return <Navigate to={redirectTo} state={{ from: location.pathname }} replace />;
   }
 
-  // Enhanced role-based access control with better error handling
+  // Enhanced role-based access control
   if (requireRole && user) {
     let hasRequiredRole = false;
     
     try {
-      // Special case: Admin users can access all role-protected routes
       if (role === 'admin') {
         console.log('Admin user granted access to role-protected route');
         hasRequiredRole = true;
       }
-      // Standard role check for non-admin users
       else if (Array.isArray(requireRole)) {
         hasRequiredRole = hasAnyRole(requireRole);
         console.log(`Role check for multiple roles [${requireRole.join(', ')}]:`, hasRequiredRole);
@@ -110,13 +105,29 @@ const ProtectedRoute = React.memo<ProtectedRouteProps>(({
     }
   }
 
-  // Profile completion check for authenticated users
-  if (requireProfile && user && (!profile || !profile.onboarding_completed)) {
-    console.log("ProtectedRoute - Redirecting to complete profile");
-    return <Navigate to="/signup" state={{ from: location.pathname }} replace />;
+  // Enhanced profile completion check - only redirect if profile is truly incomplete
+  if (requireProfile && user) {
+    // If we don't have profile data yet but are not loading, wait
+    if (!profile && !profileLoading) {
+      console.log("ProtectedRoute - No profile data but not loading, waiting...");
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+          <EnhancedPageLoading
+            title="Loading Profile"
+            description="Please wait while we load your profile..."
+            estimatedTime={2}
+          />
+        </div>
+      );
+    }
+    
+    // Only redirect if we have profile data and it's genuinely incomplete
+    if (profile && (!profile.onboarding_completed && !profile.first_name && !profile.last_name)) {
+      console.log("ProtectedRoute - Profile incomplete, redirecting to signup");
+      return <Navigate to="/signup" state={{ from: location.pathname }} replace />;
+    }
   }
 
-  // All conditions passed, render the children
   console.log("ProtectedRoute - All conditions passed, rendering children");
   return <>{children}</>;
 });
