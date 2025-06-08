@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Exercise, DailyWorkout, ExerciseProgram } from '@/types/exercise';
+import { Exercise, DailyWorkout, ExerciseProgram } from '../types';
 
 export class ExerciseService {
   static async completeExercise(exerciseId: string, userId: string): Promise<Exercise> {
@@ -49,7 +49,7 @@ export class ExerciseService {
   static async getExerciseProgram(
     userId: string,
     weekStartDate: string,
-    workoutType: string
+    workoutType: "home" | "gym"
   ): Promise<ExerciseProgram | null> {
     const { data, error } = await supabase
       .from('weekly_exercise_programs')
@@ -67,12 +67,12 @@ export class ExerciseService {
 
     if (error) throw error;
     
-    // Add the missing daily_workouts_count property
     if (data) {
       return {
         ...data,
+        workout_type: data.workout_type as "home" | "gym",
         daily_workouts_count: data.daily_workouts?.length || 0
-      };
+      } as ExerciseProgram;
     }
     
     return data;

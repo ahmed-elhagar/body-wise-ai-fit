@@ -3,124 +3,155 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TrendingUp, Scale, Trophy, Brain } from "lucide-react";
-import { PageHeader } from "@/components/ui/page-header";
-import { useParams, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
-import WeightStatsCards from "@/components/weight/WeightStatsCards";
-import WeightProgressChart from "@/components/weight/WeightProgressChart";
-import WeightEntryForm from "@/components/weight/WeightEntryForm";
-import ProgressBadges from "@/components/goals/ProgressBadges";
-import { ProgressAnalytics } from "@/components/progress/ProgressAnalytics";
-import AchievementBadges from "@/components/progress/AchievementBadges";
-import { TrendAnalysis } from "@/components/progress/TrendAnalysis";
-import { useWeightTracking } from "@/hooks/useWeightTracking";
-import { useGoals } from "@/hooks/useGoals";
+import { Activity, Trophy, Target, TrendingUp } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
+import { useMealPlanState } from "@/hooks/useMealPlanState";
+import { useOptimizedExerciseProgramPage } from "@/features/exercise/hooks/useOptimizedExerciseProgramPage";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { ProgressAnalytics } from "@/components/progress/ProgressAnalytics";
+import TrendAnalysis from "@/components/progress/TrendAnalysis";
+import AchievementBadges from "@/components/progress/AchievementBadges";
 
-const Progress = () => {
-  const { tab } = useParams();
-  const navigate = useNavigate();
+const ProgressPage = () => {
   const { t } = useLanguage();
-  const { weightEntries, isLoading: weightLoading } = useWeightTracking();
-  const { getMacroGoals } = useGoals();
   const { profile } = useProfile();
+  const { currentWeekPlan } = useMealPlanState();
+  const { currentProgram, todaysExercises } = useOptimizedExerciseProgramPage();
 
-  const activeTab = tab || 'analytics';
+  const getProfileCompletion = () => {
+    if (!profile) return 0;
+    const fields = [
+      profile.first_name,
+      profile.age,
+      profile.weight,
+      profile.height,
+      profile.fitness_goal,
+      profile.activity_level,
+    ];
+    const completed = fields.filter(Boolean).length;
+    return Math.round((completed / fields.length) * 100);
+  };
 
-  useEffect(() => {
-    if (!tab) {
-      navigate('/progress/analytics', { replace: true });
-    }
-  }, [tab, navigate]);
+  const getMealPlanProgress = () => {
+    if (!currentWeekPlan.data?.daily_meals) return 0;
+    const totalMeals = currentWeekPlan.data.daily_meals.length;
+    return totalMeals > 0 ? 100 : 0;
+  };
 
-  const macroGoals = getMacroGoals();
-  const latestWeight = weightEntries[0];
-
-  // Calculate BMI
-  const bmi = latestWeight && profile?.height 
-    ? latestWeight.weight / Math.pow(profile.height / 100, 2)
-    : null;
-
-  if (weightLoading) {
-    return (
-      <ProtectedRoute>
-        <Layout>
-          <div className="space-y-6">
-            <div className="animate-pulse space-y-4">
-              <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-              <div className="h-12 bg-gray-200 rounded w-1/2"></div>
-              <div className="h-96 bg-gray-200 rounded"></div>
-            </div>
-          </div>
-        </Layout>
-      </ProtectedRoute>
-    );
-  }
+  const getExerciseProgress = () => {
+    if (!currentProgram?.daily_workouts) return 0;
+    const totalWorkouts = currentProgram.daily_workouts.length;
+    const completedWorkouts = currentProgram.daily_workouts.filter(w => w.completed).length;
+    return totalWorkouts > 0 ? Math.round((completedWorkouts / totalWorkouts) * 100) : 0;
+  };
 
   return (
     <ProtectedRoute>
       <Layout>
-        <PageHeader
-          title={t('Progress & Analytics')}
-          description={t('Track your fitness journey with AI-powered insights and comprehensive analytics')}
-          icon={<TrendingUp className="h-6 w-6 text-blue-600" />}
-        >
-          <ProgressBadges />
-        </PageHeader>
+        <div className="container mx-auto p-6 space-y-6">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">{t('Progress Overview')}</h1>
+              <p className="text-gray-600">{t('Track your fitness journey and achievements')}</p>
+            </div>
+          </div>
 
-        <Tabs value={activeTab} onValueChange={(value) => navigate(`/progress/${value}`)} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 max-w-2xl bg-white/80 backdrop-blur-sm">
-            <TabsTrigger value="analytics" className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4" />
-              <span className="hidden sm:inline">{t('Analytics')}</span>
-            </TabsTrigger>
-            <TabsTrigger value="weight" className="flex items-center gap-2">
-              <Scale className="h-4 w-4" />
-              <span className="hidden sm:inline">{t('Weight')}</span>
-            </TabsTrigger>
-            <TabsTrigger value="achievements" className="flex items-center gap-2">
-              <Trophy className="h-4 w-4" />
-              <span className="hidden sm:inline">{t('Badges')}</span>
-            </TabsTrigger>
-            <TabsTrigger value="trends" className="flex items-center gap-2">
-              <Brain className="h-4 w-4" />
-              <span className="hidden sm:inline">{t('AI Trends')}</span>
-            </TabsTrigger>
-          </TabsList>
+          <Tabs defaultValue="overview" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="overview" className="flex items-center gap-2">
+                <Activity className="w-4 h-4" />
+                {t('Overview')}
+              </TabsTrigger>
+              <TabsTrigger value="analytics" className="flex items-center gap-2">
+                <TrendingUp className="w-4 h-4" />
+                {t('Analytics')}
+              </TabsTrigger>
+              <TabsTrigger value="achievements" className="flex items-center gap-2">
+                <Trophy className="w-4 h-4" />
+                {t('Achievements')}
+              </TabsTrigger>
+              <TabsTrigger value="trends" className="flex items-center gap-2">
+                <Target className="w-4 h-4" />
+                {t('Trends')}
+              </TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="analytics" className="space-y-6 mt-6">
-            <ProgressAnalytics />
-          </TabsContent>
+            <TabsContent value="overview" className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Activity className="w-5 h-5 text-blue-500" />
+                      {t('Profile Completion')}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <Progress value={getProfileCompletion()} />
+                      <p className="text-sm text-gray-600">
+                        {getProfileCompletion()}% {t('complete')}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
 
-          <TabsContent value="weight" className="space-y-6 mt-6">
-            <WeightStatsCards weightEntries={weightEntries} />
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Target className="w-5 h-5 text-green-500" />
+                      {t('Meal Planning')}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <Progress value={getMealPlanProgress()} />
+                      <Badge variant={currentWeekPlan.data ? "default" : "secondary"}>
+                        {currentWeekPlan.data ? t('Active Plan') : t('No Plan')}
+                      </Badge>
+                    </div>
+                  </CardContent>
+                </Card>
 
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-              <div className="xl:col-span-2">
-                <WeightProgressChart weightEntries={weightEntries} />
-              </div>
-              <div className="xl:col-span-1">
-                <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg h-fit">
-                  <h3 className="text-lg font-semibold mb-4">{t('Add Weight Entry')}</h3>
-                  <WeightEntryForm />
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Trophy className="w-5 h-5 text-purple-500" />
+                      {t('Exercise Progress')}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <Progress value={getExerciseProgress()} />
+                      <p className="text-sm text-gray-600">
+                        {getExerciseProgress()}% {t('completed')}
+                      </p>
+                    </div>
+                  </CardContent>
                 </Card>
               </div>
-            </div>
-          </TabsContent>
+            </TabsContent>
 
-          <TabsContent value="achievements" className="space-y-6 mt-6">
-            <AchievementBadges />
-          </TabsContent>
+            <TabsContent value="analytics">
+              <ProgressAnalytics exercises={todaysExercises || []} />
+            </TabsContent>
 
-          <TabsContent value="trends" className="space-y-6 mt-6">
-            <TrendAnalysis />
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="achievements">
+              <AchievementBadges />
+            </TabsContent>
+
+            <TabsContent value="trends">
+              <TrendAnalysis />
+            </TabsContent>
+          </Tabs>
+        </div>
       </Layout>
     </ProtectedRoute>
   );
 };
 
-export default Progress;
+export default ProgressPage;

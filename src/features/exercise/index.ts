@@ -7,6 +7,7 @@ export { ExerciseList, WorkoutTypeToggle } from './components';
 
 // Export types
 export type * from './types';
+export type { ExerciseProgram, ExercisePreferences } from './types';
 
 // Export utilities
 export * from './utils';

@@ -1,46 +1,48 @@
 
-// Centralized types for exercise feature
 export interface ExerciseProgram {
   id: string;
   program_name: string;
-  workout_type: 'home' | 'gym';
   difficulty_level: string;
+  workout_type: "home" | "gym";
   current_week: number;
-  daily_workouts: DailyWorkout[];
+  week_start_date: string;
+  created_at: string;
   daily_workouts_count: number;
+  total_estimated_calories?: number;
+  generation_prompt?: any;
+  daily_workouts?: DailyWorkout[];
 }
 
 export interface DailyWorkout {
   id: string;
+  weekly_program_id: string;
   day_number: number;
   workout_name: string;
-  is_rest_day: boolean;
+  estimated_duration?: number;
+  estimated_calories?: number;
+  muscle_groups?: string[];
   completed: boolean;
-  estimated_duration: number;
-  estimated_calories: number;
-  muscle_groups: string[];
-  exercises: Exercise[];
+  exercises?: Exercise[];
+  is_rest_day?: boolean;
 }
 
 export interface Exercise {
   id: string;
-  exercise_name: string;
-  sets: number;
-  reps: string;
-  weight?: number;
-  duration?: number;
+  daily_workout_id: string;
+  name: string;
+  sets?: number;
+  reps?: string;
+  rest_seconds?: number;
+  muscle_groups?: string[];
+  instructions?: string;
+  youtube_search_term?: string;
+  equipment?: string;
+  difficulty?: string;
+  order_number?: number;
   completed: boolean;
   notes?: string;
-  progressPercentage: number;
-}
-
-export interface WeekDay {
-  dayNumber: number;
-  dayName: string;
-  workout: DailyWorkout;
-  isRestDay: boolean;
-  isCompleted: boolean;
-  isToday: boolean;
+  actual_sets?: number;
+  actual_reps?: string;
 }
 
 export interface ExercisePreferences {
