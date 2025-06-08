@@ -8,7 +8,7 @@ import LoadingState from '@/components/meal-plan/components/LoadingState';
 import MealPlanAILoadingDialog from '@/components/meal-plan/MealPlanAILoadingDialog';
 import { useEnhancedMealShuffle } from '@/hooks/useEnhancedMealShuffle';
 import ModernShoppingListDrawer from '@/components/shopping-list/ModernShoppingListDrawer';
-import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { MealPlanViewToggle } from '../components/MealPlanViewToggle';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -94,6 +94,7 @@ export const MealPlanContainer = () => {
                 onClick={() => handleWeekChange(mealPlanState.currentWeekOffset - 1)}
                 className="h-10 w-10 p-0 border-gray-300"
                 aria-label="Previous week"
+                disabled={mealPlanState.isLoading}
               >
                 <ChevronLeft className="w-4 h-4" />
               </Button>
@@ -102,6 +103,9 @@ export const MealPlanContainer = () => {
                 <h3 className="text-base font-semibold text-gray-900">
                   {formatWeekRange(mealPlanState.weekStartDate)}
                 </h3>
+                {mealPlanState.isLoading && (
+                  <p className="text-xs text-gray-500">Loading...</p>
+                )}
               </div>
               
               <Button
@@ -110,6 +114,7 @@ export const MealPlanContainer = () => {
                 onClick={() => handleWeekChange(mealPlanState.currentWeekOffset + 1)}
                 className="h-10 w-10 p-0 border-gray-300"
                 aria-label="Next week"
+                disabled={mealPlanState.isLoading}
               >
                 <ChevronRight className="w-4 h-4" />
               </Button>
@@ -137,6 +142,7 @@ export const MealPlanContainer = () => {
                       : 'bg-gray-50/80 hover:bg-gray-100/80 text-gray-700 hover:text-gray-900 border border-gray-200/50'
                   }`}
                   onClick={() => mealPlanState.setSelectedDayNumber(dayNumber)}
+                  disabled={mealPlanState.isLoading}
                 >
                   <div className="flex flex-col items-center justify-center gap-0.5">
                     <span className={`text-xs font-medium ${isSelected ? 'text-white/90' : 'text-gray-500'}`}>
@@ -152,39 +158,26 @@ export const MealPlanContainer = () => {
           </div>
         </Card>
         
-        {/* Content Area with Loading Overlay - Only over meal content */}
-        <div className="relative">
-          {/* Main Content - Always rendered with last known data */}
-          <MealPlanContent
-            viewMode={viewMode}
-            currentWeekPlan={displayData}
-            selectedDayNumber={mealPlanState.selectedDayNumber}
-            dailyMeals={mealPlanState.dailyMeals}
-            totalCalories={mealPlanState.totalCalories}
-            totalProtein={mealPlanState.totalProtein}
-            targetDayCalories={mealPlanState.targetDayCalories}
-            weekStartDate={mealPlanState.weekStartDate}
-            currentWeekOffset={mealPlanState.currentWeekOffset}
-            isGenerating={mealPlanState.isGenerating}
-            onViewMeal={(meal) => mealPlanState.openRecipeDialog(meal)}
-            onExchangeMeal={(meal) => mealPlanState.openExchangeDialog(meal)}
-            onAddSnack={() => mealPlanState.openAddSnackDialog()}
-            onGenerateAI={() => mealPlanState.openAIDialog()}
-            setCurrentWeekOffset={handleWeekChange}
-            setSelectedDayNumber={mealPlanState.setSelectedDayNumber}
-          />
-          
-          {/* Loading Overlay - Only shows when loading and we have existing data */}
-          {mealPlanState.isLoading && displayData && (
-            <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg min-h-[400px]">
-              <div className="flex flex-col items-center gap-3 bg-white rounded-lg shadow-lg p-6 border">
-                <Loader2 className="w-8 h-8 animate-spin text-violet-600" />
-                <p className="text-sm text-gray-700 font-medium">Loading meals...</p>
-                <p className="text-xs text-gray-500">Please wait while we fetch your meal plan</p>
-              </div>
-            </div>
-          )}
-        </div>
+        {/* Content Area - Always rendered with last known data */}
+        <MealPlanContent
+          viewMode={viewMode}
+          currentWeekPlan={displayData}
+          selectedDayNumber={mealPlanState.selectedDayNumber}
+          dailyMeals={mealPlanState.dailyMeals}
+          totalCalories={mealPlanState.totalCalories}
+          totalProtein={mealPlanState.totalProtein}
+          targetDayCalories={mealPlanState.targetDayCalories}
+          weekStartDate={mealPlanState.weekStartDate}
+          currentWeekOffset={mealPlanState.currentWeekOffset}
+          isGenerating={mealPlanState.isGenerating}
+          onViewMeal={(meal) => mealPlanState.openRecipeDialog(meal)}
+          onExchangeMeal={(meal) => mealPlanState.openExchangeDialog(meal)}
+          onAddSnack={() => mealPlanState.openAddSnackDialog()}
+          onGenerateAI={() => mealPlanState.openAIDialog()}
+          setCurrentWeekOffset={handleWeekChange}
+          setSelectedDayNumber={mealPlanState.setSelectedDayNumber}
+          isLoading={mealPlanState.isLoading}
+        />
       </div>
 
       {/* AI Loading Dialog - Step-by-step loading experience - Now using top-right position */}
