@@ -1,6 +1,5 @@
 
 import { ExerciseListEnhanced } from "@/features/exercise";
-import { ExerciseProgressTracker } from "./ExerciseProgressTracker";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useWorkoutSession } from "@/hooks/useWorkoutSession";
 
@@ -43,18 +42,7 @@ export const WorkoutContentLayout = ({
 
   return (
     <div className="space-y-6">
-      {/* Progress Tracker - Enhanced visual hierarchy */}
-      <div className="bg-white rounded-2xl border border-health-border shadow-sm overflow-hidden">
-        <ExerciseProgressTracker
-          currentProgram={currentProgram}
-          selectedDay={selectedDayNumber}
-          currentWeekOffset={currentWeekOffset}
-          completedExercises={completedExercises}
-          totalExercises={totalExercises}
-        />
-      </div>
-
-      {/* Main Exercise List - Full width layout as originally designed */}
+      {/* Main Exercise List - Full width layout */}
       <div className="w-full">
         <ExerciseListEnhanced 
           exercises={todaysExercises}
