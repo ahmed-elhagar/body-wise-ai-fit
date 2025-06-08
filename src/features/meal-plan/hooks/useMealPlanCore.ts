@@ -1,67 +1,41 @@
 
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { useMealPlanData } from '@/hooks/meal-plan/useMealPlanData';
-import { useMealPlanNavigation } from './useMealPlanNavigation';
-import { useMealPlanCalculations } from './useMealPlanCalculations';
+import { getWeekStartDate } from '@/utils/mealPlanUtils';
+import { format } from 'date-fns';
+import { fetchMealPlanData } from '../services/mealPlanService';
 
-export const useMealPlanCore = () => {
+export const useMealPlanCore = (weekOffset: number = 0) => {
   const { user } = useAuth();
-  const { language } = useLanguage();
-  const [isLoading, setIsLoading] = useState(false);
-  
-  // Navigation state
-  const {
-    currentWeekOffset,
-    setCurrentWeekOffset,
-    selectedDayNumber,
-    setSelectedDayNumber,
-    weekStartDate
-  } = useMealPlanNavigation();
 
-  // Core meal plan data
-  const {
-    data: currentWeekPlan,
-    isLoading: isMealPlanLoading,
-    error: mealPlanError,
-    refetch: refetchMealPlan,
-  } = useMealPlanData(currentWeekOffset);
-
-  // Calculations
-  const {
-    dailyMeals,
-    todaysMeals,
-    totalCalories,
-    totalProtein,
-    targetDayCalories,
-  } = useMealPlanCalculations(currentWeekPlan, selectedDayNumber);
-
-  return {
-    // Core state
-    user,
-    language,
-    isLoading: isLoading || isMealPlanLoading,
-    
-    // Data
-    currentWeekPlan,
-    dailyMeals,
-    todaysMeals,
-    
-    // Navigation
-    currentWeekOffset,
-    setCurrentWeekOffset,
-    selectedDayNumber,
-    setSelectedDayNumber,
-    weekStartDate,
-    
-    // Calculations
-    totalCalories,
-    totalProtein,
-    targetDayCalories,
-    
-    // Actions
-    refetchMealPlan,
-    mealPlanError,
-  };
+  return useQuery({
+    queryKey: ['weekly-meal-plan', user?.id, weekOffset],
+    queryFn: async () => {
+      if (!user?.id) {
+        console.log('❌ useMealPlanCore - No user ID for meal plan fetch');
+        return null;
+      }
+      
+      try {
+        const weekStartDate = getWeekStartDate(weekOffset);
+        const weekStartDateStr = format(weekStartDate, 'yyyy-MM-dd');
+        
+        const result = await fetchMealPlanData(user.id, weekStartDateStr);
+        return result;
+      } catch (error) {
+        console.error('❌ Error fetching meal plan:', error);
+        throw error;
+      }
+    },
+    enabled: !!user?.id,
+    staleTime: 30000, // 30 seconds
+    gcTime: 120000, // 2 minutes
+    retry: (failureCount, error) => {
+      if (error?.message?.includes('JWT') || error?.message?.includes('auth')) return false;
+      return failureCount < 2;
+    },
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
+    refetchOnReconnect: true
+  });
 };

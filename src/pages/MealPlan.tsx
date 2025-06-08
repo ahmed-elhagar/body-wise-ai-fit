@@ -1,15 +1,19 @@
 
-import ProtectedRoute from "@/components/ProtectedRoute";
-import Layout from "@/components/Layout";
-import { MealPlanContainer } from "@/features/meal-plan";
+import React from 'react';
+import { SidebarProvider } from "@/components/ui/sidebar";
+import AppSidebar from "@/components/AppSidebar";
+import { MealPlanContainer } from "@/features/meal-plan/components/MealPlanContainer";
 
 const MealPlan = () => {
   return (
-    <ProtectedRoute>
-      <Layout>
-        <MealPlanContainer />
-      </Layout>
-    </ProtectedRoute>
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full">
+        <AppSidebar />
+        <div className="flex-1 p-6">
+          <MealPlanContainer />
+        </div>
+      </div>
+    </SidebarProvider>
   );
 };
 

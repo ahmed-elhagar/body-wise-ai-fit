@@ -4,4 +4,3 @@ export { useMealPlanCore } from './useMealPlanCore';
 export { useMealPlanNavigation } from './useMealPlanNavigation';
 export { useMealPlanCalculations } from './useMealPlanCalculations';
 export { useMealPlanDialogs } from './useMealPlanDialogs';
-export { useMealPlanState } from './useMealPlanState';

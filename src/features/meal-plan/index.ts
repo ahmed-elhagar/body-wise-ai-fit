@@ -1,18 +1,16 @@
 
-// Main exports
+// Main exports for meal plan feature
 export { MealPlanContainer } from './components/MealPlanContainer';
-export { MealPlanPage } from './components/MealPlanPage';
+export { default as MealPlanPage } from './components/MealPlanPage';
 
-// Export all components
-export * from './components';
+// Export types
+export type * from './types';
 
 // Export hooks
 export { useMealPlanCore } from './hooks/useMealPlanCore';
 export { useMealPlanNavigation } from './hooks/useMealPlanNavigation';
 export { useMealPlanCalculations } from './hooks/useMealPlanCalculations';
-
-// Export types
-export type * from './types';
+export { useMealPlanDialogs } from './hooks/useMealPlanDialogs';
 
 // Export utilities
 export * from './utils';
