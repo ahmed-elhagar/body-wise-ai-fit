@@ -1,24 +1,23 @@
-
 import React, { useState, useRef } from 'react';
 import { useMealPlanState } from '../hooks/useMealPlanState';
 import MealPlanHeader from './MealPlanHeader';
 import { MealPlanContent } from './MealPlanContent';
 import ErrorState from './ErrorState';
 import LoadingState from './LoadingState';
-import MealPlanAILoadingDialog from '@/components/meal-plan/MealPlanAILoadingDialog';
 import { useEnhancedMealShuffle } from '@/hooks/useEnhancedMealShuffle';
-import ModernShoppingListDrawer from '@/components/shopping-list/ModernShoppingListDrawer';
 import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
-import { MealPlanViewToggle } from '../components/MealPlanViewToggle';
+import { MealPlanViewToggle } from './MealPlanViewToggle';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { formatWeekRange, getDayName } from '@/utils/mealPlanUtils';
 
-// Import the correct meal exchange dialog
-import { MealExchangeDialog } from '@/components/meal-plan/MealExchangeDialog';
+// Feature-based imports only
+import { MealExchangeDialog } from './dialogs/MealExchangeDialog';
 import { AIGenerationDialog } from './dialogs/AIGenerationDialog';
-import EnhancedAddSnackDialog from '@/components/meal-plan/EnhancedAddSnackDialog';
 import { EnhancedRecipeDialog } from './EnhancedRecipeDialog';
+import { EnhancedAddSnackDialog } from './dialogs/EnhancedAddSnackDialog';
+import { ModernShoppingListDrawer } from './dialogs/ModernShoppingListDrawer';
+import { MealPlanAILoadingDialog } from './dialogs/MealPlanAILoadingDialog';
 
 const MealPlanContainer = () => {
   const mealPlanState = useMealPlanState();
