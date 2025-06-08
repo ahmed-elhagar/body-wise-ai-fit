@@ -4,12 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Clock, Users, ChefHat, ArrowLeftRight } from "lucide-react";
-import type { StrictDailyMeal } from "@/features/meal-plan/types/enhanced";
+import type { DailyMeal } from "@/features/meal-plan/types";
 
 interface CleanMealCardProps {
-  readonly meal: StrictDailyMeal;
-  readonly onShowRecipe: (meal: StrictDailyMeal) => void;
-  readonly onExchangeMeal: (meal: StrictDailyMeal) => void;
+  readonly meal: DailyMeal;
+  readonly onShowRecipe: (meal: DailyMeal) => void;
+  readonly onExchangeMeal: (meal: DailyMeal) => void;
   readonly isCompact?: boolean;
 }
 
