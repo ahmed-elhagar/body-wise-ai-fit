@@ -6,8 +6,11 @@ import { useI18n } from "@/hooks/useI18n";
 const LanguageToggle = () => {
   const { language, changeLanguage, isRTL } = useI18n();
 
+  // Provide fallback values if language is undefined
+  const currentLanguage = language || 'en';
+
   const toggleLanguage = () => {
-    changeLanguage(language === 'en' ? 'ar' : 'en');
+    changeLanguage(currentLanguage === 'en' ? 'ar' : 'en');
   };
 
   return (
@@ -19,10 +22,10 @@ const LanguageToggle = () => {
     >
       <Globe className="w-4 h-4 text-blue-500" />
       <span className={`font-medium text-slate-700 ${isRTL ? 'font-arabic' : ''}`}>
-        {language === 'en' ? 'عربي' : 'English'}
+        {currentLanguage === 'en' ? 'عربي' : 'English'}
       </span>
       <div className={`${isRTL ? 'mr-auto' : 'ml-auto'} text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded transition-all duration-200`}>
-        {language.toUpperCase()}
+        {currentLanguage.toUpperCase()}
       </div>
     </Button>
   );
