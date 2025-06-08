@@ -1,7 +1,7 @@
 
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
-import SmartGoalsDashboard from "@/components/goals/SmartGoalsDashboard";
+import { GoalsDashboard } from "@/features/goals";
 
 const Goals = () => {
   return (
@@ -9,7 +9,7 @@ const Goals = () => {
       <Layout>
         <div className="p-4 md:p-6 min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
           <div className="max-w-7xl mx-auto">
-            <SmartGoalsDashboard />
+            <GoalsDashboard />
           </div>
         </div>
       </Layout>
