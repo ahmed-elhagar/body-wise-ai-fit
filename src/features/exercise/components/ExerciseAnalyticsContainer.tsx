@@ -11,10 +11,10 @@ import {
   ArrowLeft
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { PersonalRecordsTracker } from './PersonalRecordsTracker';
-import { ExerciseAnalyticsDashboard } from './ExerciseAnalyticsDashboard';
-import { PerformanceInsights } from './PerformanceInsights';
-import { ExerciseAchievements } from './ExerciseAchievements';
+import { ExerciseAnalyticsDashboard } from '@/components/exercise/ExerciseAnalyticsDashboard';
+import { PersonalRecordsTracker } from '@/components/exercise/PersonalRecordsTracker';
+import { PerformanceInsights } from '@/components/exercise/PerformanceInsights';
+import { ExerciseAchievements } from '@/components/exercise/ExerciseAchievements';
 import { Exercise } from '@/types/exercise';
 
 interface ExerciseAnalyticsContainerProps {

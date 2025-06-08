@@ -19,3 +19,7 @@ export { ExerciseCompactNavigation } from './ExerciseCompactNavigation';
 export { WeeklyExerciseNavigation } from './WeeklyExerciseNavigation';
 export { ExerciseProgramDaySelector } from './ExerciseProgramDaySelector';
 export { default as OptimizedExerciseContainer } from './OptimizedExerciseContainer';
+export { ExerciseErrorState } from './ExerciseErrorState';
+export { EnhancedExerciseHeaderWithAnalytics } from './EnhancedExerciseHeaderWithAnalytics';
+export { ExerciseAnalyticsContainer } from './ExerciseAnalyticsContainer';
+export { AIExerciseDialog } from './AIExerciseDialog';

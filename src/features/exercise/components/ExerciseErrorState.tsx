@@ -40,5 +40,3 @@ export const ExerciseErrorState = ({ onRetry, error }: ExerciseErrorStateProps) 
     </div>
   );
 };
-
-export default ExerciseErrorState;

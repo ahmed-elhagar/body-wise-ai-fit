@@ -2,14 +2,17 @@
 import { format, addDays } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useOptimizedExerciseProgramPage } from "@/features/exercise/hooks/useOptimizedExerciseProgramPage";
-import { EnhancedDayNavigation } from "@/features/exercise";
-import { AIExerciseDialog } from "./AIExerciseDialog";
-import { ExercisePageContent, ExercisePageLayout } from "@/features/exercise";
-import { ExerciseErrorState } from "./ExerciseErrorState";
+import { 
+  EnhancedDayNavigation,
+  ExercisePageContent, 
+  ExercisePageLayout,
+  ExerciseErrorState,
+  EnhancedExerciseHeaderWithAnalytics,
+  ExerciseAnalyticsContainer,
+  AIExerciseDialog
+} from "@/features/exercise";
 import { useEnhancedAIExercise } from "@/hooks/useEnhancedAIExercise";
 import SimpleLoadingIndicator from "@/components/ui/simple-loading-indicator";
-import { EnhancedExerciseHeaderWithAnalytics } from "./EnhancedExerciseHeaderWithAnalytics";
-import { ExerciseAnalyticsContainer } from "./ExerciseAnalyticsContainer";
 import { useState } from "react";
 
 const EnhancedExercisePage = () => {
