@@ -142,6 +142,23 @@ export const MealPlanContent = ({
     );
   }
 
+  // Create adapter functions to convert between DailyMeal and Meal types
+  const handleShowRecipe = (meal: any) => {
+    // Convert Meal to DailyMeal by finding the corresponding daily meal
+    const dailyMeal = activeWeekPlan.dailyMeals?.find(dm => dm.id === meal.id || dm.name === meal.name);
+    if (dailyMeal) {
+      onViewMeal(dailyMeal);
+    }
+  };
+
+  const handleExchangeMeal = (meal: any, dayNumber?: number, mealIndex?: number) => {
+    // Convert Meal to DailyMeal by finding the corresponding daily meal
+    const dailyMeal = activeWeekPlan.dailyMeals?.find(dm => dm.id === meal.id || dm.name === meal.name);
+    if (dailyMeal) {
+      onExchangeMeal(dailyMeal);
+    }
+  };
+
   if (viewMode === 'weekly') {
     return (
       <Card className="p-6 bg-white/90 backdrop-blur-sm border border-gray-200/50 shadow-sm">
@@ -164,8 +181,8 @@ export const MealPlanContent = ({
 
         <WeeklyMealPlanView
           weeklyPlan={activeWeekPlan}
-          onShowRecipe={onViewMeal}
-          onExchangeMeal={(meal, dayNumber, mealIndex) => onExchangeMeal(meal)}
+          onShowRecipe={handleShowRecipe}
+          onExchangeMeal={handleExchangeMeal}
         />
       </Card>
     );
