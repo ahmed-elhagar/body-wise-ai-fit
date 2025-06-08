@@ -1,69 +1,77 @@
 
+import React from "react";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dumbbell, Sparkles } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { ExercisePreferences } from "../types";
+import { Badge } from "@/components/ui/badge";
+import { Calendar, Dumbbell, Clock } from "lucide-react";
 
 interface ExerciseProgramSelectorProps {
-  onGenerateProgram: (preferences: ExercisePreferences) => void;
-  isGenerating: boolean;
-  workoutType: "home" | "gym";
+  programs: any[];
+  selectedProgram: any;
+  onSelect: (program: any) => void;
+  onCreateNew: () => void;
 }
 
-export const ExerciseProgramSelector = ({ 
-  onGenerateProgram, 
-  isGenerating, 
-  workoutType 
+export const ExerciseProgramSelector = ({
+  programs,
+  selectedProgram,
+  onSelect,
+  onCreateNew
 }: ExerciseProgramSelectorProps) => {
-  const { t } = useLanguage();
-
-  const handleGenerate = () => {
-    const defaultPreferences: ExercisePreferences = {
-      workoutType: workoutType,
-      goalType: "general_fitness",
-      fitnessLevel: "beginner",
-      availableTime: "45",
-      preferredWorkouts: ["bodyweight", "cardio"],
-      targetMuscleGroups: ["full_body"],
-      equipment: workoutType === "gym" 
-        ? ["barbells", "dumbbells", "machines", "cables"] 
-        : ["bodyweight", "resistance_bands", "light_dumbbells"],
-      duration: "4",
-      workoutDays: "4-5 days per week",
-      difficulty: "beginner"
-    };
-    onGenerateProgram(defaultPreferences);
-  };
-
   return (
-    <div className="flex items-center justify-center min-h-[400px]">
-      <Card className="max-w-md w-full">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Dumbbell className="w-5 h-5 mr-2 text-gray-500" />
-            {t('exercise.noProgram')}
-          </CardTitle>
-          <CardDescription>
-            {t('exercise.generateProgram')}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="text-center p-8">
-          <div className="space-y-4">
-            <div className="text-gray-700">
-              {t('exercise.customize')}
+    <Card className="p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold">Exercise Programs</h3>
+        <Button onClick={onCreateNew} size="sm">
+          Create New Program
+        </Button>
+      </div>
+      
+      <div className="space-y-3">
+        {programs.map((program) => (
+          <div
+            key={program.id}
+            className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+              selectedProgram?.id === program.id
+                ? 'border-blue-500 bg-blue-50'
+                : 'border-gray-200 hover:border-gray-300'
+            }`}
+            onClick={() => onSelect(program)}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Dumbbell className="w-5 h-5 text-blue-600" />
+                <div>
+                  <h4 className="font-medium">{program.program_name}</h4>
+                  <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-4 h-4" />
+                      <span>Week {program.current_week}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Clock className="w-4 h-4" />
+                      <span>{program.workout_type}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <Badge variant={program.difficulty_level === 'beginner' ? 'secondary' : 'default'}>
+                {program.difficulty_level}
+              </Badge>
             </div>
-            <Button 
-              onClick={handleGenerate}
-              disabled={isGenerating}
-              className="bg-fitness-primary-500 hover:bg-fitness-primary-700 text-white font-semibold py-3 px-6 rounded-xl shadow-md transition-colors duration-300"
-            >
-              <Sparkles className="w-4 h-4 mr-2" />
-              {isGenerating ? t('Generating...') : t('exercise.generate')}
+          </div>
+        ))}
+        
+        {programs.length === 0 && (
+          <div className="text-center py-8 text-gray-500">
+            <p>No exercise programs found</p>
+            <Button onClick={onCreateNew} className="mt-2">
+              Create Your First Program
             </Button>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+        )}
+      </div>
+    </Card>
   );
 };

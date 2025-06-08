@@ -8,7 +8,8 @@ export {
   WorkoutTypeToggle,
   ExerciseProgramSelector,
   WorkoutTypeTabs,
-  ExercisePageContent
+  ExercisePageContent,
+  ExerciseListEnhanced
 } from './components';
 
 // Export types

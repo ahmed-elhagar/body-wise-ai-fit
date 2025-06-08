@@ -2,11 +2,11 @@
 import React from "react";
 import { Card } from "@/components/ui/card";
 import { useOptimizedExercise } from "../hooks/useOptimizedExercise";
-import { OptimizedExerciseHeader } from "@/components/exercise/OptimizedExerciseHeader";
-import { OptimizedExerciseWeekView } from "@/components/exercise/OptimizedExerciseWeekView";
-import { OptimizedExerciseDayView } from "@/components/exercise/OptimizedExerciseDayView";
-import { OptimizedExerciseProgress } from "@/components/exercise/OptimizedExerciseProgress";
-import { ExerciseAILoadingDialog } from "@/components/exercise/ExerciseAILoadingDialog";
+import OptimizedExerciseHeader from "@/components/exercise/OptimizedExerciseHeader";
+import OptimizedExerciseWeekView from "@/components/exercise/OptimizedExerciseWeekView";
+import OptimizedExerciseDayView from "@/components/exercise/OptimizedExerciseDayView";
+import OptimizedExerciseProgress from "@/components/exercise/OptimizedExerciseProgress";
+import ExerciseAILoadingDialog from "@/components/exercise/ExerciseAILoadingDialog";
 
 const OptimizedExerciseContainer = React.memo(() => {
   const {
@@ -97,7 +97,6 @@ const OptimizedExerciseContainer = React.memo(() => {
         </div>
       </div>
 
-      {/* AI Loading Dialog for exercise exchanges */}
       <ExerciseAILoadingDialog 
         isGenerating={loadingStates.isUpdating}
         type="exchange"
