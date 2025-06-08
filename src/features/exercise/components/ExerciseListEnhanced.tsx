@@ -2,13 +2,13 @@
 import { Loader2 } from "lucide-react";
 import { useI18n } from "@/hooks/useI18n";
 import { Exercise } from "../types";
-import { RestDayCard } from "@/components/exercise/RestDayCard";
-import { ExerciseErrorHandler } from "@/components/exercise/ExerciseErrorHandler";
+import { RestDayCard } from "./RestDayCard";
+import { ExerciseErrorHandler } from "./ExerciseErrorHandler";
+import { ExerciseEmptyState } from "./ExerciseEmptyState";
 import { CustomExerciseDialog } from "@/components/exercise/CustomExerciseDialog";
 import { ExerciseListHeader } from "@/components/exercise/ExerciseListHeader";
 import { ExerciseSessionView } from "@/components/exercise/ExerciseSessionView";
 import { ExerciseListView } from "@/components/exercise/ExerciseListView";
-import { ExerciseEmptyState } from "@/components/exercise/ExerciseEmptyState";
 import { useState, useCallback, useMemo } from "react";
 
 interface ExerciseListEnhancedProps {
