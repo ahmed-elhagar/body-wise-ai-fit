@@ -1,13 +1,17 @@
 
-import { useEffect, useState } from "react";
-import { CheckCircle, Clock, Calendar, Trophy } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Trophy, Target, Flame, Calendar } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface AnimatedProgressRingProps {
   completedExercises: number;
   totalExercises: number;
   progressPercentage: number;
   isToday: boolean;
-  isRestDay?: boolean;
+  isRestDay: boolean;
+  size?: 'sm' | 'md' | 'lg';
+  showDetails?: boolean;
 }
 
 export const AnimatedProgressRing = ({
@@ -15,96 +19,136 @@ export const AnimatedProgressRing = ({
   totalExercises,
   progressPercentage,
   isToday,
-  isRestDay = false
+  isRestDay,
+  size = 'md',
+  showDetails = true
 }: AnimatedProgressRingProps) => {
-  const [animatedProgress, setAnimatedProgress] = useState(0);
+  const { t } = useLanguage();
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setAnimatedProgress(progressPercentage);
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [progressPercentage]);
-
-  const radius = 60;
-  const strokeWidth = 8;
-  const normalizedRadius = radius - strokeWidth * 2;
-  const circumference = normalizedRadius * 2 * Math.PI;
-  const strokeDasharray = `${circumference} ${circumference}`;
-  const strokeDashoffset = circumference - (animatedProgress / 100) * circumference;
-
-  const getProgressColor = () => {
-    if (isRestDay) return "#6B7280"; // gray
-    if (progressPercentage === 100) return "#10B981"; // green
-    if (progressPercentage > 50) return "#3B82F6"; // blue
-    return "#F59E0B"; // amber
+  const sizeClasses = {
+    sm: { ring: 'w-16 h-16', text: 'text-xs', card: 'p-3' },
+    md: { ring: 'w-24 h-24', text: 'text-sm', card: 'p-4' },
+    lg: { ring: 'w-32 h-32', text: 'text-lg', card: 'p-6' }
   };
 
-  const getIcon = () => {
-    if (isRestDay) return <Calendar className="w-8 h-8 text-gray-600" />;
-    if (progressPercentage === 100) return <Trophy className="w-8 h-8 text-green-600" />;
-    if (progressPercentage > 0) return <CheckCircle className="w-8 h-8 text-blue-600" />;
-    return <Clock className="w-8 h-8 text-amber-600" />;
+  const { ring, text, card } = sizeClasses[size];
+
+  const circumference = 2 * Math.PI * 45; // radius = 45
+  const strokeDasharray = circumference;
+  const strokeDashoffset = circumference - (progressPercentage / 100) * circumference;
+
+  const getStatusColor = () => {
+    if (isRestDay) return 'text-blue-600';
+    if (progressPercentage === 100) return 'text-green-600';
+    if (progressPercentage >= 75) return 'text-purple-600';
+    if (progressPercentage >= 50) return 'text-orange-600';
+    return 'text-gray-600';
+  };
+
+  const getStatusIcon = () => {
+    if (isRestDay) return <Calendar className="w-4 h-4" />;
+    if (progressPercentage === 100) return <Trophy className="w-4 h-4" />;
+    if (progressPercentage >= 50) return <Flame className="w-4 h-4" />;
+    return <Target className="w-4 h-4" />;
+  };
+
+  const getMotivationMessage = () => {
+    if (isRestDay) return t('Rest & Recover');
+    if (progressPercentage === 100) return t('Workout Complete! 🎉');
+    if (progressPercentage >= 75) return t('Almost there! 💪');
+    if (progressPercentage >= 50) return t('Halfway done! 🔥');
+    if (progressPercentage > 0) return t('Great start! ⚡');
+    return t('Ready to begin! 🚀');
   };
 
   return (
-    <div className="relative flex items-center justify-center w-32 h-32">
-      {/* Background Circle */}
-      <svg
-        height={radius * 2}
-        width={radius * 2}
-        className="absolute transform -rotate-90"
-      >
-        <circle
-          stroke="#E5E7EB"
-          fill="transparent"
-          strokeWidth={strokeWidth}
-          r={normalizedRadius}
-          cx={radius}
-          cy={radius}
-        />
-        {/* Progress Circle */}
-        <circle
-          stroke={getProgressColor()}
-          fill="transparent"
-          strokeWidth={strokeWidth}
-          strokeDasharray={strokeDasharray}
-          strokeDashoffset={strokeDashoffset}
-          strokeLinecap="round"
-          r={normalizedRadius}
-          cx={radius}
-          cy={radius}
-          className="transition-all duration-1000 ease-out"
-        />
-      </svg>
-
-      {/* Center Content */}
-      <div className="absolute flex flex-col items-center justify-center">
-        {getIcon()}
-        <div className="text-center mt-1">
-          <div className="text-sm font-bold text-gray-900">
-            {isRestDay ? 'Rest' : `${completedExercises}/${totalExercises}`}
-          </div>
-          <div className="text-xs text-gray-600">
-            {isRestDay ? 'Day' : isToday ? 'Today' : 'Exercises'}
+    <Card className={`${card} bg-gradient-to-br from-white to-gray-50 border-gray-200 shadow-sm`}>
+      <div className="flex flex-col items-center space-y-3">
+        {/* Animated Progress Ring */}
+        <div className="relative">
+          <svg className={`${ring} transform -rotate-90`} viewBox="0 0 100 100">
+            {/* Background circle */}
+            <circle
+              cx="50"
+              cy="50"
+              r="45"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="8"
+              className="text-gray-200"
+            />
+            
+            {/* Progress circle */}
+            <circle
+              cx="50"
+              cy="50"
+              r="45"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="8"
+              strokeLinecap="round"
+              strokeDasharray={strokeDasharray}
+              strokeDashoffset={strokeDashoffset}
+              className={`transition-all duration-1000 ease-out ${
+                isRestDay 
+                  ? 'text-blue-500' 
+                  : progressPercentage === 100 
+                  ? 'text-green-500'
+                  : progressPercentage >= 75
+                  ? 'text-purple-500'
+                  : progressPercentage >= 50
+                  ? 'text-orange-500'
+                  : 'text-blue-500'
+              }`}
+            />
+          </svg>
+          
+          {/* Center content */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <span className={`font-bold ${text} ${getStatusColor()}`}>
+              {isRestDay ? '😴' : `${Math.round(progressPercentage)}%`}
+            </span>
+            {size !== 'sm' && (
+              <span className="text-xs text-gray-500 mt-1">
+                {isRestDay ? 'Rest' : `${completedExercises}/${totalExercises}`}
+              </span>
+            )}
           </div>
         </div>
+
+        {/* Details Section */}
+        {showDetails && (
+          <div className="text-center space-y-2">
+            <div className="flex items-center justify-center gap-2">
+              {getStatusIcon()}
+              <span className={`font-semibold ${getStatusColor()}`}>
+                {isToday ? t('Today') : t('Workout')}
+              </span>
+            </div>
+            
+            <p className="text-xs text-gray-600 max-w-32 leading-relaxed">
+              {getMotivationMessage()}
+            </p>
+
+            {!isRestDay && (
+              <div className="flex justify-center gap-2">
+                <Badge 
+                  variant="outline" 
+                  className={`text-xs ${
+                    progressPercentage === 100 
+                      ? 'border-green-300 text-green-700 bg-green-50' 
+                      : 'border-gray-300 text-gray-600'
+                  }`}
+                >
+                  {completedExercises} / {totalExercises} done
+                </Badge>
+              </div>
+            )}
+          </div>
+        )}
       </div>
-
-      {/* Progress Percentage */}
-      {!isRestDay && (
-        <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
-          <div className={`text-xs font-semibold px-2 py-1 rounded-full ${
-            progressPercentage === 100 
-              ? 'bg-green-100 text-green-700' 
-              : progressPercentage > 50 
-              ? 'bg-blue-100 text-blue-700'
-              : 'bg-amber-100 text-amber-700'
-          }`}>
-            {Math.round(progressPercentage)}%
-          </div>
-        </div>
-      )}
-    </div>
+    </Card>
   );
 };
+
+export default AnimatedProgressRing;
