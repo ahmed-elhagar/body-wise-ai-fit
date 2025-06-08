@@ -1,10 +1,11 @@
+
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 import { format, addDays, addWeeks, subWeeks } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { WorkoutTypeToggle } from "@/components/exercise/WorkoutTypeToggle";
 import { WeekContentLoader } from "@/components/exercise/WeekContentLoader";
+import { EnhancedWorkoutTypeToggle } from "@/components/exercise/EnhancedWorkoutTypeToggle";
 import { useState } from "react";
 
 interface EnhancedDayNavigationProps {
@@ -75,83 +76,91 @@ export const EnhancedDayNavigation = ({
   const isCurrentWeek = currentWeekOffset === 0;
 
   return (
-    <Card className="p-4 bg-white/80 backdrop-blur-sm border-0 shadow-lg relative">
-      {/* Week Navigation */}
-      <div className="flex items-center justify-between mb-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handlePreviousWeek}
-          className="h-8 px-2"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          <span className="ml-1">{t('Previous')}</span>
-        </Button>
-        
-        <div className="flex items-center">
-          <Calendar className="w-4 h-4 mr-2 text-blue-600" />
-          <span className="font-medium">
-            {isCurrentWeek ? t('Current Week') : weekLabel}
-          </span>
-        </div>
-        
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleNextWeek}
-          className="h-8 px-2"
-        >
-          <span className="mr-1">{t('Next')}</span>
-          <ChevronRight className="w-4 h-4" />
-        </Button>
-      </div>
-
-      {/* Day Selection */}
-      <div className="grid grid-cols-7 gap-1">
-        {dayNames.map((dayName, index) => {
-          const dayNumber = index + 1;
-          const isSelected = dayNumber === selectedDayNumber;
-          const isToday = dayNumber === today && isCurrentWeek;
-          const { isRestDay, isCompleted } = getWorkoutStatusForDay(dayNumber);
-          const currentDate = addDays(weekStartDate, index);
-          
-          return (
-            <Button
-              key={dayNumber}
-              variant={isSelected ? "default" : "ghost"}
-              className={`
-                flex flex-col items-center p-2 h-auto
-                ${isSelected ? 'bg-blue-600 text-white' : ''}
-                ${isToday && !isSelected ? 'border border-blue-300' : ''}
-                ${isRestDay ? 'bg-gray-100 text-gray-500' : ''}
-                ${isCompleted && !isSelected ? 'bg-green-100 text-green-700' : ''}
-              `}
-              onClick={() => handleDayClick(dayNumber)}
-            >
-              <span className="text-xs font-medium mb-1">{dayName}</span>
-              <span className={`text-lg font-bold ${isSelected ? 'text-white' : ''}`}>
-                {format(currentDate, 'd')}
-              </span>
-              {isRestDay && (
-                <span className="text-xs mt-1">
-                  {t('Rest')}
-                </span>
-              )}
-              {!isRestDay && isCompleted && (
-                <span className="text-xs mt-1">
-                  ✓
-                </span>
-              )}
-            </Button>
-          );
-        })}
-      </div>
-
-      {/* Week Content Loader Overlay */}
-      <WeekContentLoader 
-        weekNumber={currentWeekOffset + 1} 
-        isVisible={isChangingWeek} 
+    <div className="space-y-4">
+      {/* Workout Type Toggle - Add this section */}
+      <EnhancedWorkoutTypeToggle
+        workoutType={workoutType}
+        onWorkoutTypeChange={onWorkoutTypeChange}
       />
-    </Card>
+      
+      <Card className="p-4 bg-white/80 backdrop-blur-sm border-0 shadow-lg relative">
+        {/* Week Navigation */}
+        <div className="flex items-center justify-between mb-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handlePreviousWeek}
+            className="h-8 px-2"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            <span className="ml-1">{t('Previous')}</span>
+          </Button>
+          
+          <div className="flex items-center">
+            <Calendar className="w-4 h-4 mr-2 text-blue-600" />
+            <span className="font-medium">
+              {isCurrentWeek ? t('Current Week') : weekLabel}
+            </span>
+          </div>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleNextWeek}
+            className="h-8 px-2"
+          >
+            <span className="mr-1">{t('Next')}</span>
+            <ChevronRight className="w-4 h-4" />
+          </Button>
+        </div>
+
+        {/* Day Selection */}
+        <div className="grid grid-cols-7 gap-1">
+          {dayNames.map((dayName, index) => {
+            const dayNumber = index + 1;
+            const isSelected = dayNumber === selectedDayNumber;
+            const isToday = dayNumber === today && isCurrentWeek;
+            const { isRestDay, isCompleted } = getWorkoutStatusForDay(dayNumber);
+            const currentDate = addDays(weekStartDate, index);
+            
+            return (
+              <Button
+                key={dayNumber}
+                variant={isSelected ? "default" : "ghost"}
+                className={`
+                  flex flex-col items-center p-2 h-auto
+                  ${isSelected ? 'bg-blue-600 text-white' : ''}
+                  ${isToday && !isSelected ? 'border border-blue-300' : ''}
+                  ${isRestDay ? 'bg-gray-100 text-gray-500' : ''}
+                  ${isCompleted && !isSelected ? 'bg-green-100 text-green-700' : ''}
+                `}
+                onClick={() => handleDayClick(dayNumber)}
+              >
+                <span className="text-xs font-medium mb-1">{dayName}</span>
+                <span className={`text-lg font-bold ${isSelected ? 'text-white' : ''}`}>
+                  {format(currentDate, 'd')}
+                </span>
+                {isRestDay && (
+                  <span className="text-xs mt-1">
+                    {t('Rest')}
+                  </span>
+                )}
+                {!isRestDay && isCompleted && (
+                  <span className="text-xs mt-1">
+                    ✓
+                  </span>
+                )}
+              </Button>
+            );
+          })}
+        </div>
+
+        {/* Week Content Loader Overlay */}
+        <WeekContentLoader 
+          weekNumber={currentWeekOffset + 1} 
+          isVisible={isChangingWeek} 
+        />
+      </Card>
+    </div>
   );
 };
