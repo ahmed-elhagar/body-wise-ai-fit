@@ -1,12 +1,12 @@
 
 import { useState, useCallback, useMemo } from 'react';
-import { useMealPlanData } from './useMealPlanData';
-import { useMealPlanActions } from './useMealPlanActions';
+import { useMealPlanData } from '@/hooks/useMealPlanData';
+import { useMealPlanActions } from '@/hooks/useMealPlanActions';
 import { useCentralizedCredits } from '@/hooks/useCentralizedCredits';
 import { useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from './useAuth';
 import { getWeekStartDate, getCurrentSaturdayDay } from '@/utils/mealPlanUtils';
-import type { DailyMeal } from '../types';
+import type { DailyMeal, MealPlanFetchResult } from '@/features/meal-plan/types';
 
 export const useMealPlanState = () => {
   const { user } = useAuth();
@@ -31,6 +31,7 @@ export const useMealPlanState = () => {
   const refetch = useCallback(async () => {
     console.log('🔄 Enhanced refetch - invalidating all meal plan queries for week offset:', currentWeekOffset);
     
+    // Clear all meal plan related caches
     await queryClient.invalidateQueries({
       predicate: (query) => {
         const queryKey = query.queryKey;
@@ -40,8 +41,18 @@ export const useMealPlanState = () => {
       }
     });
     
+    // Clear the OptimizedMealPlanService cache
+    try {
+      const { OptimizedMealPlanService } = await import('@/features/meal-plan/services/optimizedMealPlanService');
+      OptimizedMealPlanService.clearCache();
+    } catch (e) {
+      console.log('Service cache clear skipped:', e);
+    }
+    
+    // Force refetch current data
     const result = await originalRefetch();
     
+    // Wait a bit and try again if no data
     if (!result.data?.weeklyPlan) {
       console.log('⏳ No data returned, waiting and retrying...');
       await new Promise(resolve => setTimeout(resolve, 2000));
@@ -51,24 +62,29 @@ export const useMealPlanState = () => {
     return result;
   }, [queryClient, currentWeekOffset, originalRefetch]);
 
-  // Enhanced calculations
+  // Enhanced calculations - inline to avoid external dependencies
   const { dailyMeals, todaysMeals, totalCalories, totalProtein, targetDayCalories } = useMemo(() => {
+    // Calculate daily meals for selected day
     const dailyMeals = currentWeekPlan?.dailyMeals?.filter(
       meal => meal.day_number === selectedDayNumber
     ) || null;
 
+    // Calculate today's meals
     const today = new Date();
     const todayDayNumber = today.getDay() === 6 ? 1 : today.getDay() + 2;
     const todaysMeals = currentWeekPlan?.dailyMeals?.filter(
       meal => meal.day_number === todayDayNumber
     ) || null;
 
+    // Calculate total calories for selected day
     const totalCalories = dailyMeals ? 
       dailyMeals.reduce((total, meal) => total + (meal.calories || 0), 0) : null;
 
+    // Calculate total protein for selected day
     const totalProtein = dailyMeals ? 
       dailyMeals.reduce((total, meal) => total + (meal.protein || 0), 0) : null;
 
+    // Target calories
     const targetDayCalories = 2000;
 
     return {
@@ -108,6 +124,7 @@ export const useMealPlanState = () => {
     refetch
   );
 
+  // Enhanced week change handler
   const setCurrentWeekOffset = useCallback(async (newOffset: number) => {
     console.log('📅 Changing week from', currentWeekOffset, 'to', newOffset);
     setCurrentWeekOffsetInternal(newOffset);

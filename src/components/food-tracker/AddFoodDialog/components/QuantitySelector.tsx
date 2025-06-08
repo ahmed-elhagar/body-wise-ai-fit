@@ -33,6 +33,7 @@ const QuantitySelector = ({
 
   return (
     <div className="space-y-4">
+      {/* Quantity */}
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="quantity">{t('Quantity')} ({t('grams')})</Label>
@@ -46,6 +47,7 @@ const QuantitySelector = ({
           />
         </div>
 
+        {/* Meal Type */}
         <div className="space-y-2">
           <Label htmlFor="mealType">{t('Meal Type')}</Label>
           <Select value={mealType} onValueChange={onMealTypeChange}>
@@ -63,6 +65,7 @@ const QuantitySelector = ({
         </div>
       </div>
 
+      {/* Notes */}
       <div className="space-y-2">
         <Label htmlFor="notes">{t('Notes')} ({t('optional')})</Label>
         <Textarea
