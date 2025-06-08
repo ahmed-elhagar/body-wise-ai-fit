@@ -80,9 +80,9 @@ export class ExerciseService {
         total_estimated_calories: data.total_estimated_calories,
         generation_prompt: data.generation_prompt,
         daily_workouts: data.daily_workouts || []
-      } as ExerciseProgram;
+      };
     }
     
-    return data;
+    return null;
   }
 }
