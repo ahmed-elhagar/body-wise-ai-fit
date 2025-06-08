@@ -28,7 +28,8 @@ const Auth = () => {
       userId: user.id?.substring(0, 8) + '...',
       hasProfile: !!profile,
       profileLoading,
-      hasBasicInfo: profile?.first_name && profile?.last_name
+      hasBasicInfo: profile?.first_name && profile?.last_name,
+      onboardingCompleted: profile?.onboarding_completed
     });
     
     // If profile is still loading, wait
@@ -37,8 +38,13 @@ const Auth = () => {
       return;
     }
 
-    // Check if user has basic profile info
-    if (!profile || !profile.first_name || !profile.last_name) {
+    // Check if user has completed onboarding OR has basic profile info
+    const hasCompleteProfile = profile?.onboarding_completed || 
+                              (profile?.first_name && profile?.last_name && 
+                               profile?.age && profile?.gender && 
+                               profile?.height && profile?.weight);
+
+    if (!hasCompleteProfile) {
       console.log('Auth - Redirecting to signup (incomplete profile)');
       navigate('/signup', { replace: true });
     } else {

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -108,20 +107,26 @@ export const useSignupState = () => {
   const createAccount = async () => {
     setIsLoading(true);
     try {
+      console.log('Creating account for:', formData.email);
       const result = await signUp(formData.email, formData.password, {
         first_name: formData.firstName.trim(),
         last_name: formData.lastName.trim()
       });
 
+      console.log('SignUp result:', result);
+
       if (result?.error) {
         console.error('Signup error details:', result.error);
+        // Throw the error so the component can catch it
         throw new Error(result.error.message || 'Account creation failed');
       }
 
+      console.log('Account created successfully');
       setAccountCreated(true);
     } catch (error: any) {
-      console.error('Account creation error:', error);
-      throw error; // Re-throw to let the component handle it
+      console.error('Account creation error in hook:', error);
+      // Re-throw the error so the component can handle it
+      throw error;
     } finally {
       setIsLoading(false);
     }

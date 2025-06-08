@@ -23,7 +23,8 @@ const Index = () => {
       userId: user?.id?.substring(0, 8) + '...' || 'none',
       error: error?.message || null,
       hasProfile: !!profile,
-      hasBasicInfo: profile?.first_name && profile?.last_name
+      hasBasicInfo: profile?.first_name && profile?.last_name,
+      onboardingCompleted: profile?.onboarding_completed
     });
   }, [authLoading, profileLoading, user, hasNavigated, error, profile]);
 
@@ -49,7 +50,13 @@ const Index = () => {
       const timer = setTimeout(() => {
         if (!hasNavigated) {
           console.log('Index - Profile loading timeout, proceeding anyway');
-          if (!profile || !profile.first_name || !profile.last_name) {
+          // Check if user has completed onboarding OR has basic profile info
+          const hasCompleteProfile = profile?.onboarding_completed || 
+                                    (profile?.first_name && profile?.last_name && 
+                                     profile?.age && profile?.gender && 
+                                     profile?.height && profile?.weight);
+          
+          if (!hasCompleteProfile) {
             navigate("/signup", { replace: true });
           } else {
             navigate("/dashboard", { replace: true });
@@ -65,11 +72,17 @@ const Index = () => {
       isAuthenticated: !!user,
       userId: user?.id?.substring(0, 8) + '...',
       hasProfile: !!profile,
-      hasBasicInfo: profile?.first_name && profile?.last_name
+      hasBasicInfo: profile?.first_name && profile?.last_name,
+      onboardingCompleted: profile?.onboarding_completed
     });
     
-    // Check if user has completed basic profile info
-    if (!profile || !profile.first_name || !profile.last_name) {
+    // Check if user has completed onboarding OR has basic profile info
+    const hasCompleteProfile = profile?.onboarding_completed || 
+                              (profile?.first_name && profile?.last_name && 
+                               profile?.age && profile?.gender && 
+                               profile?.height && profile?.weight);
+    
+    if (!hasCompleteProfile) {
       console.log('Index - User authenticated but missing profile, redirecting to signup');
       navigate("/signup", { replace: true });
     } else {

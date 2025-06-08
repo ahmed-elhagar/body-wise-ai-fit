@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,20 +42,30 @@ const AccountCreationStep = ({
     try {
       await onNext();
     } catch (err: any) {
-      console.error('Account creation error:', err);
+      console.error('Account creation error caught in component:', err);
       
-      // Enhanced error message detection
-      const errorMessage = err?.message || err?.toString() || 'Account creation failed';
-      console.log('Error message received:', errorMessage);
+      // Get the error message
+      let errorMessage = '';
+      if (err?.message) {
+        errorMessage = err.message;
+      } else if (typeof err === 'string') {
+        errorMessage = err;
+      } else {
+        errorMessage = 'Account creation failed';
+      }
+      
+      console.log('Processing error message:', errorMessage);
       
       // Check for various forms of "user already exists" errors
-      if (errorMessage.toLowerCase().includes('already registered') || 
-          errorMessage.toLowerCase().includes('already exists') || 
-          errorMessage.toLowerCase().includes('user already registered') ||
-          errorMessage.toLowerCase().includes('email_address_not_authorized') ||
-          errorMessage.toLowerCase().includes('signup_disabled') ||
-          errorMessage.toLowerCase().includes('user_already_exists')) {
-        console.log('Setting account_exists error');
+      const lowerErrorMessage = errorMessage.toLowerCase();
+      if (lowerErrorMessage.includes('user already registered') || 
+          lowerErrorMessage.includes('already registered') ||
+          lowerErrorMessage.includes('user already exists') ||
+          lowerErrorMessage.includes('already exists') ||
+          lowerErrorMessage.includes('email_address_not_authorized') ||
+          lowerErrorMessage.includes('signup_disabled') ||
+          lowerErrorMessage.includes('user_already_exists')) {
+        console.log('Setting account_exists error state');
         setError('account_exists');
       } else {
         console.log('Setting generic error:', errorMessage);
