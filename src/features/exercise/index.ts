@@ -21,7 +21,12 @@ export {
   EnhancedDayNavigation,
   ExerciseCompactNavigation,
   WeeklyExerciseNavigation,
-  ExerciseProgramDaySelector
+  ExerciseProgramDaySelector,
+  AIExerciseDialog,
+  ExerciseErrorState,
+  EnhancedExerciseHeaderWithAnalytics,
+  ExerciseAnalyticsContainer,
+  WorkoutContentLayout
 } from './components';
 
 // Export types
