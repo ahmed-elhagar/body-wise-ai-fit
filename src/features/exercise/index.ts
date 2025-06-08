@@ -1,16 +1,14 @@
 
 // Main exports for exercise feature
-export { ExerciseContainer } from './components';
+export { default as OptimizedExerciseContainer } from '../../components/exercise/OptimizedExerciseContainer';
+export { default as ExercisePageRefactored } from '../../components/exercise/ExercisePageRefactored';
 
 // Export types
 export type * from './types';
 
-// Export hooks
-export { useExerciseCore } from './hooks';
-
-// Re-export existing hooks for backward compatibility
-export { useOptimizedExercise } from '../../hooks/useOptimizedExercise';
-export { useOptimizedExerciseProgramPage } from '../../hooks/useOptimizedExerciseProgramPage';
-
 // Export utilities
 export * from './utils';
+
+// Export hooks (will be moved here in next phase)
+export { useOptimizedExercise } from '../../hooks/useOptimizedExercise';
+export { useOptimizedExerciseProgramPage } from '../../hooks/useOptimizedExerciseProgramPage';
