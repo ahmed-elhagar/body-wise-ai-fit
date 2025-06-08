@@ -4,6 +4,11 @@ import { addDays, startOfWeek, format } from 'date-fns';
 
 export const useMealPlanNavigation = () => {
   const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
+  const [selectedDayNumber, setSelectedDayNumber] = useState(() => {
+    const today = new Date();
+    // Convert to day number (Saturday = 1, Sunday = 2, ..., Friday = 7)
+    return today.getDay() === 6 ? 1 : today.getDay() + 2;
+  });
   const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
   
   const currentDate = new Date();
@@ -13,6 +18,8 @@ export const useMealPlanNavigation = () => {
   return {
     currentWeekOffset,
     setCurrentWeekOffset,
+    selectedDayNumber,
+    setSelectedDayNumber,
     viewMode,
     setViewMode,
     weekStartDate,
