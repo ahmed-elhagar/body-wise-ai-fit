@@ -2,7 +2,7 @@
 import React from 'react';
 import { SidebarProvider } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/AppSidebar";
-import { MealPlanContainer } from "@/features/meal-plan/components/MealPlanContainer";
+import { MealPlanContainer } from "@/features/meal-plan";
 
 const MealPlan = () => {
   return (
