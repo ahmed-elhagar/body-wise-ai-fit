@@ -1,7 +1,6 @@
-
 import ProfileBasicInfoCard from "./enhanced/ProfileBasicInfoCard";
 import ProfileGoalsCard from "./enhanced/ProfileGoalsCard";
-import ProfileHealthCard from "../enhanced/ProfileHealthCard";
+import ProfileHealthCard from "../../../features/profile/components/ProfileHealthCard";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Crown, Star } from "lucide-react";
