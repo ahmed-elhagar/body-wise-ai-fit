@@ -1,0 +1,21 @@
+
+{
+  "addNewTrainee": "إضافة متدرب جديد",
+  "viewTasks": "عرض المهام",
+  "messages": "الرسائل",
+  "needHelp": "تحتاج مساعدة؟ اطلع على أدلة التدريب",
+  "trainees": "المتدربون",
+  "activeClients": "العملاء النشطون",
+  "messagesToday": "رسائل اليوم",
+  "clientInteractions": "تفاعلات العملاء",
+  "successRate": "معدل النجاح",
+  "clientGoalAchievement": "إنجاز أهداف العملاء",
+  "thisMonth": "هذا الشهر",
+  "goalsCompleted": "الأهداف المكتملة",
+  "clients": "العملاء",
+  "analytics": "التحليلات",
+  "performanceAnalytics": "تحليلات الأداء",
+  "analyticsComingSoon": "التحليلات المتقدمة قريباً",
+  "messageCenter": "مركز الرسائل",
+  "messagesComingSoon": "مركز الرسائل قريباً"
+}

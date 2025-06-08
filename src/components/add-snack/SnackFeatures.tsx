@@ -1,19 +1,19 @@
 
 import { Zap, Utensils, Target } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 interface SnackFeaturesProps {
   remainingCalories: number;
 }
 
 const SnackFeatures = ({ remainingCalories }: SnackFeaturesProps) => {
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL } = useI18n();
 
   const features = [
     {
       icon: Zap,
-      title: t('addSnack.quickPrep'),
-      description: t('addSnack.quickPrepDesc'),
+      title: t('mealPlan:addSnack.quickPrep'),
+      description: t('mealPlan:addSnack.quickPrepDesc'),
       bgColor: 'bg-green-50',
       borderColor: 'border-green-100',
       iconColor: 'bg-green-500',
@@ -22,8 +22,8 @@ const SnackFeatures = ({ remainingCalories }: SnackFeaturesProps) => {
     },
     {
       icon: Utensils,
-      title: t('addSnack.nutritious'),
-      description: t('addSnack.nutritiousDesc'),
+      title: t('mealPlan:addSnack.nutritious'),
+      description: t('mealPlan:addSnack.nutritiousDesc'),
       bgColor: 'bg-blue-50',
       borderColor: 'border-blue-100',
       iconColor: 'bg-blue-500',
@@ -32,8 +32,8 @@ const SnackFeatures = ({ remainingCalories }: SnackFeaturesProps) => {
     },
     {
       icon: Target,
-      title: t('addSnack.perfectCalories'),
-      description: t('addSnack.perfectCaloriesDesc').replace('{calories}', remainingCalories.toString()),
+      title: t('mealPlan:addSnack.perfectCalories'),
+      description: t('mealPlan:addSnack.perfectCaloriesDesc').replace('{calories}', remainingCalories.toString()),
       bgColor: 'bg-purple-50',
       borderColor: 'border-purple-100',
       iconColor: 'bg-purple-500',

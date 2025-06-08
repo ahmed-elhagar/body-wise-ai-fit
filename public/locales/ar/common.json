@@ -71,5 +71,8 @@
   "uploadPhotoDesc": "ارفع صورة وجبتك واحصل على تحليل غذائي فوري",
   "choosePhoto": "اختر صورة",
   "imageFormats": "PNG، JPG حتى 10 ميجابايت",
-  "analyzeNutrition": "تحليل التغذية"
+  "analyzeNutrition": "تحليل التغذية",
+  "quantity": "الكمية",
+  "grams": "جرام",
+  "notes": "ملاحظات"
 }

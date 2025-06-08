@@ -71,5 +71,8 @@
   "uploadPhotoDesc": "Upload a photo of your meal and get instant nutrition analysis",
   "choosePhoto": "Choose Photo",
   "imageFormats": "PNG, JPG up to 10MB",
-  "analyzeNutrition": "Analyze Nutrition"
+  "analyzeNutrition": "Analyze Nutrition",
+  "quantity": "Quantity",
+  "grams": "grams",
+  "notes": "Notes"
 }

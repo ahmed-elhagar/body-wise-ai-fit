@@ -1,13 +1,13 @@
 
 import { Card } from "@/components/ui/card";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 interface SimpleLoadingSpinnerProps {
   message: string;
 }
 
 export const SimpleLoadingSpinner = ({ message }: SimpleLoadingSpinnerProps) => {
-  const { isRTL } = useLanguage();
+  const { isRTL } = useI18n();
 
   return (
     <div className={`min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-green-50 to-emerald-100 ${isRTL ? 'rtl' : 'ltr'}`}>

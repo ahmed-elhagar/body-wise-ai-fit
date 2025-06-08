@@ -21,61 +21,54 @@ export const CoachTabs = ({ trainees, selectedClient, setSelectedClient }: Coach
           value="clients" 
           className="data-[state=active]:bg-green-600 data-[state=active]:text-white"
         >
-          {t("Trainees")}
-        </TabsTrigger>
-        <TabsTrigger 
-          value="chats" 
-          className="data-[state=active]:bg-green-600 data-[state=active]:text-white"
-        >
-          {t("Active Chats")}
+          {t('coach:clients')}
         </TabsTrigger>
         <TabsTrigger 
           value="analytics" 
-          className="data-[state=active]:bg-green-600 data-[state=active]:text-white"
+          className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
         >
-          {t("Analytics")}
+          {t('coach:analytics')}
+        </TabsTrigger>
+        <TabsTrigger 
+          value="messages" 
+          className="data-[state=active]:bg-purple-600 data-[state=active]:text-white"
+        >
+          {t('coach:messages')}
         </TabsTrigger>
       </TabsList>
 
-      <TabsContent value="clients" className="mt-6">
+      <TabsContent value="clients" className="space-y-4">
         <TraineesTab 
-          trainees={trainees} 
-          onChatClick={setSelectedClient}
+          trainees={trainees}
+          selectedClient={selectedClient}
+          setSelectedClient={setSelectedClient}
         />
       </TabsContent>
 
-      <TabsContent value="chats" className="mt-6">
+      <TabsContent value="analytics" className="space-y-4">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <MessageCircle className="h-5 w-5" />
-              {t("Active Conversations")}
+              <TrendingUp className="w-5 h-5" />
+              {t('coach:performanceAnalytics')}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-center py-8">
-              <MessageCircle className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">{t("No active chats")}</h3>
-              <p className="text-gray-600">{t("Recent conversations with your clients will appear here.")}</p>
-            </div>
+            <p className="text-muted-foreground">{t('coach:analyticsComingSoon')}</p>
           </CardContent>
         </Card>
       </TabsContent>
 
-      <TabsContent value="analytics" className="mt-6">
+      <TabsContent value="messages" className="space-y-4">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              {t("Coaching Analytics")}
+              <MessageCircle className="w-5 h-5" />
+              {t('coach:messageCenter')}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-center py-8">
-              <TrendingUp className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">{t("Analytics Coming Soon")}</h3>
-              <p className="text-gray-600">{t("Detailed coaching analytics and client progress reports will be available here.")}</p>
-            </div>
+            <p className="text-muted-foreground">{t('coach:messagesComingSoon')}</p>
           </CardContent>
         </Card>
       </TabsContent>

@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 interface ProgressFooterProps {
   checkedCount: number;
@@ -8,7 +8,7 @@ interface ProgressFooterProps {
 }
 
 const ProgressFooter = ({ checkedCount, totalItems }: ProgressFooterProps) => {
-  const { isRTL } = useLanguage();
+  const { isRTL } = useI18n();
 
   return (
     <Card className="bg-white border-fitness-primary-200 shadow-lg">
