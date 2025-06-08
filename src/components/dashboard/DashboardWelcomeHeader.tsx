@@ -6,16 +6,22 @@ import { useI18n } from "@/hooks/useI18n";
 
 interface DashboardWelcomeHeaderProps {
   userName: string;
+  onViewMealPlan?: () => void;
+  onViewExercise?: () => void;
 }
 
-const DashboardWelcomeHeader = ({ userName }: DashboardWelcomeHeaderProps) => {
+const DashboardWelcomeHeader = ({ 
+  userName, 
+  onViewMealPlan, 
+  onViewExercise 
+}: DashboardWelcomeHeaderProps) => {
   const { t, isRTL } = useI18n();
 
   const getGreeting = () => {
     const hour = new Date().getHours();
-    if (hour < 12) return t('dashboard:goodMorning');
-    if (hour < 18) return t('dashboard:goodAfternoon');
-    return t('dashboard:goodEvening');
+    if (hour < 12) return t('dashboard:goodMorning') || 'Good Morning';
+    if (hour < 18) return t('dashboard:goodAfternoon') || 'Good Afternoon';
+    return t('dashboard:goodEvening') || 'Good Evening';
   };
 
   return (
@@ -26,19 +32,33 @@ const DashboardWelcomeHeader = ({ userName }: DashboardWelcomeHeaderProps) => {
             {getGreeting()}, {userName}! 👋
           </h1>
           <p className="text-blue-100 text-sm lg:text-base">
-            {t('dashboard:welcome')}
+            {t('dashboard:welcome') || 'Welcome to your fitness dashboard'}
           </p>
         </div>
         
         <div className={`flex gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-          <Button variant="secondary" size="sm" className="bg-white/20 hover:bg-white/30 text-white border-0">
-            <Utensils className="w-4 h-4 mr-2" />
-            {t('navigation:mealPlan')}
-          </Button>
-          <Button variant="secondary" size="sm" className="bg-white/20 hover:bg-white/30 text-white border-0">
-            <Dumbbell className="w-4 h-4 mr-2" />
-            {t('navigation:exercise')}
-          </Button>
+          {onViewMealPlan && (
+            <Button 
+              variant="secondary" 
+              size="sm" 
+              className="bg-white/20 hover:bg-white/30 text-white border-0"
+              onClick={onViewMealPlan}
+            >
+              <Utensils className="w-4 h-4 mr-2" />
+              {t('navigation:mealPlan') || 'Meal Plan'}
+            </Button>
+          )}
+          {onViewExercise && (
+            <Button 
+              variant="secondary" 
+              size="sm" 
+              className="bg-white/20 hover:bg-white/30 text-white border-0"
+              onClick={onViewExercise}
+            >
+              <Dumbbell className="w-4 h-4 mr-2" />
+              {t('navigation:exercise') || 'Exercise'}
+            </Button>
+          )}
         </div>
       </div>
     </Card>

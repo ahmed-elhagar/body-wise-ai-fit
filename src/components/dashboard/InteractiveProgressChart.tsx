@@ -10,9 +10,9 @@ interface DataPoint {
 }
 
 interface InteractiveProgressChartProps {
-  data: DataPoint[];
-  title: string;
-  dataKey: string;
+  data?: DataPoint[];
+  title?: string;
+  dataKey?: string;
   color?: string;
 }
 
@@ -24,17 +24,31 @@ const InteractiveProgressChart = ({
 }: InteractiveProgressChartProps) => {
   const { t, isRTL } = useI18n();
 
+  // Default data if none provided
+  const defaultData: DataPoint[] = [
+    { date: 'Jan', value: 75 },
+    { date: 'Feb', value: 73 },
+    { date: 'Mar', value: 71 },
+    { date: 'Apr', value: 69 },
+    { date: 'May', value: 67 },
+    { date: 'Jun', value: 65 }
+  ];
+
+  const chartData = data || defaultData;
+  const chartTitle = title || t('dashboard:progressOverTime') || 'Progress Over Time';
+  const chartDataKey = dataKey || 'value';
+
   return (
     <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
       <CardHeader>
         <CardTitle className={isRTL ? 'text-right font-arabic' : 'text-left'}>
-          {title}
+          {chartTitle}
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data}>
+            <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
               <XAxis 
                 dataKey="date" 
@@ -55,7 +69,7 @@ const InteractiveProgressChart = ({
               />
               <Line 
                 type="monotone" 
-                dataKey={dataKey} 
+                dataKey={chartDataKey} 
                 stroke={color}
                 strokeWidth={3}
                 dot={{ fill: color, strokeWidth: 2, r: 4 }}

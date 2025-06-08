@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -7,6 +6,8 @@ import { useI18n } from '@/hooks/useI18n';
 
 interface SearchTabProps {
   onAddFood: (food: any) => void;
+  onFoodAdded?: () => void;
+  onClose?: () => void;
 }
 
 const SAMPLE_FOODS = [
@@ -17,7 +18,7 @@ const SAMPLE_FOODS = [
   { name: 'Broccoli (1 cup)', calories: 25, protein: 3, carbs: 5, fat: 0.3 }
 ];
 
-export const SearchTab = ({ onAddFood }: SearchTabProps) => {
+export const SearchTab = ({ onAddFood, onFoodAdded, onClose }: SearchTabProps) => {
   const { t, isRTL } = useI18n();
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -35,6 +36,12 @@ export const SearchTab = ({ onAddFood }: SearchTabProps) => {
       setSearchResults(filtered);
       setIsSearching(false);
     }, 1000);
+  };
+
+  const handleAddFood = (food: any) => {
+    onAddFood(food);
+    onFoodAdded?.();
+    onClose?.();
   };
 
   return (
@@ -68,7 +75,7 @@ export const SearchTab = ({ onAddFood }: SearchTabProps) => {
                 <span>{food.fat}g fat</span>
               </div>
             </div>
-            <Button size="sm" onClick={() => onAddFood(food)}>
+            <Button size="sm" onClick={() => handleAddFood(food)}>
               {t('foodTracker:add') || 'Add'}
             </Button>
           </div>

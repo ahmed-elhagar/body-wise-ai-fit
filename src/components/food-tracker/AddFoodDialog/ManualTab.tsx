@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,9 +7,12 @@ import { useI18n } from '@/hooks/useI18n';
 
 interface ManualTabProps {
   onAddFood: (food: any) => void;
+  onFoodAdded?: () => void;
+  onClose?: () => void;
+  preSelectedFood?: any;
 }
 
-export const ManualTab = ({ onAddFood }: ManualTabProps) => {
+export const ManualTab = ({ onAddFood, onFoodAdded, onClose, preSelectedFood }: ManualTabProps) => {
   const { t, isRTL } = useI18n();
   const [foodData, setFoodData] = useState({
     name: '',
@@ -25,7 +27,7 @@ export const ManualTab = ({ onAddFood }: ManualTabProps) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (foodData.name && foodData.calories) {
-      onAddFood({
+      const newFood = {
         name: foodData.name,
         calories: parseInt(foodData.calories),
         protein: parseFloat(foodData.protein) || 0,
@@ -33,7 +35,10 @@ export const ManualTab = ({ onAddFood }: ManualTabProps) => {
         fat: parseFloat(foodData.fat) || 0,
         serving: parseFloat(foodData.serving) || 100,
         unit: foodData.unit
-      });
+      };
+      onAddFood(newFood);
+      onFoodAdded?.();
+      onClose?.();
       // Reset form
       setFoodData({
         name: '',

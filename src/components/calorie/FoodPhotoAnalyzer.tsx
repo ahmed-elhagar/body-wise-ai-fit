@@ -24,6 +24,11 @@ const FoodPhotoAnalyzer = ({ onSelectFood }: FoodPhotoAnalyzerProps) => {
     }
   };
 
+  const handleAddToLog = async (food: any) => {
+    // This would typically log the food to the user's tracker
+    console.log('Adding food to log:', food);
+  };
+
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
@@ -40,12 +45,12 @@ const FoodPhotoAnalyzer = ({ onSelectFood }: FoodPhotoAnalyzerProps) => {
         <FoodPhotoAnalysisCard />
       </div>
 
-      {/* Analysis Results */}
+      {/* Analysis Results - Fixed props */}
       {analysisResult && (
         <div className="w-full">
           <FoodAnalysisResults 
             results={analysisResult} 
-            onFoodSelected={handleFoodSelected}
+            onAddToLog={handleAddToLog}
           />
         </div>
       )}

@@ -118,10 +118,10 @@ const MealPhotoUpload = () => {
         </div>
       </Card>
 
-      {/* Analysis Results */}
+      {/* Analysis Results - Fixed prop name */}
       {analysisResult && (
         <FoodAnalysisResults
-          result={analysisResult}
+          results={analysisResult}
           onAddToLog={handleAddToLog}
           className="w-full"
         />
