@@ -1,13 +1,13 @@
 
 import { TabsContent } from "@/components/ui/tabs";
 import ProfileOverviewTab from "./tabs/ProfileOverviewTab";
-import ProfileBasicTab from "./tabs/ProfileBasicTab";
 import ProfileHealthTab from "./tabs/ProfileHealthTab";
-import ProfileGoalsTab from "./tabs/ProfileGoalsTab";
 import ProfileSettingsTab from "./tabs/ProfileSettingsTab";
 import { LifePhaseForm } from "./LifePhaseForm";
 import { useLifePhaseProfile } from "@/hooks/useLifePhaseProfile";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
+import { ProfileBasicInfoCard } from "@/features/profile/components";
+import { ProfileGoalsCard } from "@/features/profile/components";
 
 interface ProfileTabContentProps {
   formData: any;
@@ -39,7 +39,7 @@ const ProfileTabContent = (props: ProfileTabContentProps) => {
       </TabsContent>
 
       <TabsContent value="basic" className="space-y-6">
-        <ProfileBasicTab
+        <ProfileBasicInfoCard
           formData={props.formData}
           updateFormData={props.updateFormData}
           saveBasicInfo={props.saveBasicInfo}
@@ -69,7 +69,7 @@ const ProfileTabContent = (props: ProfileTabContentProps) => {
       </TabsContent>
 
       <TabsContent value="goals" className="space-y-6">
-        <ProfileGoalsTab
+        <ProfileGoalsCard
           formData={props.formData}
           updateFormData={props.updateFormData}
           handleArrayInput={props.handleArrayInput}
