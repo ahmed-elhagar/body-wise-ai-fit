@@ -1,6 +1,7 @@
+
 import { Loader2 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { ExerciseList } from './ExerciseList';
+import { ExerciseListEnhanced } from './ExerciseListEnhanced';
 import { EmptyExerciseState } from './EmptyExerciseState';
 import { Card } from '@/components/ui/card';
 
@@ -82,7 +83,7 @@ export const ExercisePageContent = ({
         
         {/* Show dimmed content underneath */}
         <div className="opacity-30 pointer-events-none">
-          <ExerciseList
+          <ExerciseListEnhanced
             exercises={todaysExercises}
             isLoading={false}
             onExerciseComplete={onExerciseComplete}
@@ -98,7 +99,7 @@ export const ExercisePageContent = ({
 
   return (
     <div className="px-3">
-      <ExerciseList
+      <ExerciseListEnhanced
         exercises={todaysExercises}
         isLoading={false}
         onExerciseComplete={onExerciseComplete}

@@ -1,3 +1,4 @@
+
 import React, { memo, useMemo } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { WeeklyExerciseNavigation } from "./WeeklyExerciseNavigation";

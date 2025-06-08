@@ -1,53 +1,41 @@
 
-import { useI18n } from '@/hooks/useI18n';
-import { Button } from '@/components/ui/button';
-import { Home, Dumbbell } from 'lucide-react';
+import { Card } from "@/components/ui/card";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Home, Building2 } from "lucide-react";
 
 interface WorkoutTypeToggleProps {
   workoutType: "home" | "gym";
   onWorkoutTypeChange: (type: "home" | "gym") => void;
 }
 
-export const WorkoutTypeToggle = ({
-  workoutType,
-  onWorkoutTypeChange
-}: WorkoutTypeToggleProps) => {
-  const { t } = useI18n();
-
+export const WorkoutTypeToggle = ({ workoutType, onWorkoutTypeChange }: WorkoutTypeToggleProps) => {
   return (
-    <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-gray-900">
-          {t('Workout Environment')}
-        </h2>
-        <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1">
-          <Button
-            variant={workoutType === 'home' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => onWorkoutTypeChange('home')}
-            className="flex items-center gap-2 text-sm"
+    <Card className="p-4 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold text-gray-800">Workout Environment</h3>
+        
+        <ToggleGroup 
+          type="single" 
+          value={workoutType} 
+          onValueChange={(value) => value && onWorkoutTypeChange(value as "home" | "gym")}
+          className="bg-gray-100 rounded-lg p-1"
+        >
+          <ToggleGroupItem 
+            value="home" 
+            className="data-[state=on]:bg-white data-[state=on]:shadow-sm rounded-md px-4 py-2 transition-all"
           >
-            <Home className="w-4 h-4" />
-            {t('Home')}
-          </Button>
-          <Button
-            variant={workoutType === 'gym' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => onWorkoutTypeChange('gym')}
-            className="flex items-center gap-2 text-sm"
+            <Home className="w-4 h-4 mr-2" />
+            Home Workout
+          </ToggleGroupItem>
+          <ToggleGroupItem 
+            value="gym" 
+            className="data-[state=on]:bg-white data-[state=on]:shadow-sm rounded-md px-4 py-2 transition-all"
           >
-            <Dumbbell className="w-4 h-4" />
-            {t('Gym')}
-          </Button>
-        </div>
+            <Building2 className="w-4 h-4 mr-2" />
+            Gym Workout
+          </ToggleGroupItem>
+        </ToggleGroup>
       </div>
-      
-      <p className="text-sm text-gray-600">
-        {workoutType === 'home' 
-          ? t('Home workouts focus on bodyweight exercises and minimal equipment')
-          : t('Gym workouts utilize full equipment including weights and machines')
-        }
-      </p>
-    </div>
+    </Card>
   );
 };
