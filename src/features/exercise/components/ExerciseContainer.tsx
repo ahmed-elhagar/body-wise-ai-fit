@@ -1,8 +1,8 @@
 
 import React from 'react';
 import { useOptimizedExercise } from '@/hooks/useOptimizedExercise';
-import { EnhancedPageLoading } from '@/components/ui/enhanced-page-loading';
-import { ErrorBoundary } from '@/components/ui/error-boundary';
+import EnhancedPageLoading from '@/components/EnhancedPageLoading';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 export const ExerciseContainer: React.FC = () => {
   const {
@@ -21,8 +21,8 @@ export const ExerciseContainer: React.FC = () => {
   if (loadingStates.isProgramLoading) {
     return (
       <EnhancedPageLoading 
-        message="Loading your exercise program..."
-        progress={45}
+        title="Loading your exercise program..."
+        description="Please wait while we fetch your workout data"
         estimatedTime={3}
       />
     );

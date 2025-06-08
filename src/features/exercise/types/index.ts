@@ -16,17 +16,5 @@ export interface WeekDay {
   isToday: boolean;
 }
 
-export interface ExercisePreferences {
-  workoutType: "home" | "gym";
-  goalType: string;
-  fitnessLevel: string;
-  availableTime: string;
-  preferredWorkouts: string[];
-  targetMuscleGroups: string[];
-  equipment: string[];
-  duration: string;
-  workoutDays: string;
-  difficulty: string;
-  weekStartDate?: string;
-  weekOffset?: number;
-}
+// Re-export ExercisePreferences from validation utils to avoid conflicts
+export type { ExercisePreferences } from '@/utils/exerciseValidation';

@@ -3,7 +3,6 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { format, addDays, startOfWeek } from 'date-fns';
-import type { ExerciseProgram } from '@/types/exercise';
 
 export const useExerciseCore = (weekOffset: number = 0) => {
   const { user } = useAuth();
@@ -51,7 +50,13 @@ export const useExerciseCore = (weekOffset: number = 0) => {
           workoutsCount: weeklyProgram.daily_workouts?.length || 0
         });
 
-        return weeklyProgram as ExerciseProgram;
+        // Add the daily_workouts_count field that's expected by the type
+        const programWithCount = {
+          ...weeklyProgram,
+          daily_workouts_count: weeklyProgram.daily_workouts?.length || 0
+        };
+
+        return programWithCount;
       } catch (error) {
         console.error('❌ Error in exercise core fetch:', error);
         throw error;
