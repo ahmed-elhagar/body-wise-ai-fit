@@ -82,8 +82,8 @@ const UnifiedExerciseContainer = ({
           <InteractiveExerciseCard
             key={exercise.id}
             exercise={exercise}
-            onExerciseComplete={() => onExerciseComplete(exercise.id)}
-            onExerciseStart={() => onExerciseStart(exercise.id)}
+            onStart={() => onExerciseStart(exercise.id)}
+            onComplete={() => onExerciseComplete(exercise.id)}
           />
         ))}
       </div>

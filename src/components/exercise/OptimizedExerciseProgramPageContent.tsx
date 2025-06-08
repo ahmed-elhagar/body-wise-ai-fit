@@ -79,10 +79,10 @@ const OptimizedExerciseProgramPageContent = ({
           {dailyWorkout ? (
             <OptimizedExerciseDayView
               dailyWorkout={dailyWorkout}
-              exercises={exercises}
               selectedDay={selectedDay}
               onExerciseComplete={onExerciseComplete}
               onExerciseStart={onExerciseStart}
+              workoutType={workoutType}
             />
           ) : (
             <Card className="p-8 text-center">

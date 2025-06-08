@@ -6,8 +6,45 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Plus, Calendar, TrendingUp } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
-import { MealRow } from './MealRow';
 import type { DailyMeal, MealPlanFetchResult } from '../types';
+
+// Create a simple meal card component instead of using MealRow
+const MealCard = ({ 
+  meal, 
+  mealIndex, 
+  dayNumber, 
+  onShowRecipe, 
+  onExchangeMeal 
+}: {
+  meal: DailyMeal;
+  mealIndex: number;
+  dayNumber: number;
+  onShowRecipe: (meal: DailyMeal) => void;
+  onExchangeMeal: (meal: DailyMeal) => void;
+}) => {
+  return (
+    <Card className="p-4 hover:shadow-md transition-shadow">
+      <div className="flex items-center justify-between">
+        <div className="flex-1">
+          <h4 className="font-semibold text-gray-900 mb-1">{meal.name}</h4>
+          <div className="flex items-center gap-4 text-sm text-gray-600">
+            <span>{meal.calories} cal</span>
+            <span>{meal.protein}g protein</span>
+            <span>{meal.prep_time + meal.cook_time} min</span>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" onClick={() => onShowRecipe(meal)}>
+            Recipe
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => onExchangeMeal(meal)}>
+            Exchange
+          </Button>
+        </div>
+      </div>
+    </Card>
+  );
+};
 
 interface DayOverviewProps {
   dayNumber: number;
@@ -117,7 +154,7 @@ export const DayOverview = ({
         <CardContent>
           <div className="space-y-3">
             {dailyMeals.map((meal, index) => (
-              <MealRow
+              <MealCard
                 key={meal.id}
                 meal={meal}
                 mealIndex={index}

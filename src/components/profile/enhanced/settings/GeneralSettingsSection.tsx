@@ -15,11 +15,11 @@ interface GeneralSettingsSectionProps {
 }
 
 export const GeneralSettingsSection = ({ preferences, setPreferences }: GeneralSettingsSectionProps) => {
-  const { language, setLanguage } = useI18n();
+  const { language, changeLanguage } = useI18n();
   const { profile, updateProfile } = useProfile();
 
   const handleLanguageChange = async (newLanguage: string) => {
-    setLanguage(newLanguage as any);
+    await changeLanguage(newLanguage as any);
     if (profile) {
       await updateProfile({ preferred_language: newLanguage });
       toast.success('Language preference saved!');
