@@ -35,22 +35,19 @@ const FoodPhotoAnalyzer = ({ onSelectFood }: FoodPhotoAnalyzerProps) => {
         </p>
       </div>
 
-      {/* Photo Analysis Card - Add missing prop */}
+      {/* Photo Analysis Card */}
       <div className="w-full">
-        {/* Temporary placeholder - the actual component needs to be implemented */}
-        <div className="bg-white rounded-lg p-6 border border-gray-200">
-          <p className="text-gray-600">Food Photo Analysis Card - Component needs implementation</p>
-        </div>
+        <FoodPhotoAnalysisCard />
       </div>
 
       {/* Analysis Results */}
       {analysisResult && (
         <div className="w-full">
-          {/* Temporary placeholder - the actual component needs to be implemented */}
-          <div className="bg-white rounded-lg p-6 border border-gray-200">
-            <p className="text-gray-600">Food Analysis Results - Component needs implementation</p>
-          </div>
-        )}
+          <FoodAnalysisResults 
+            results={analysisResult} 
+            onFoodSelected={handleFoodSelected}
+          />
+        </div>
       )}
     </div>
   );
