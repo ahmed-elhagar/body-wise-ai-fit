@@ -3,5 +3,5 @@
 export type * from './types';
 
 // Components
-export { TodayTab } from '../../components/food-tracker/TodayTab';
-export { HistoryTab } from '../../components/food-tracker/HistoryTab';
+export { default as TodayTab } from '../../components/food-tracker/TodayTab';
+export { default as HistoryTab } from '../../components/food-tracker/HistoryTab';

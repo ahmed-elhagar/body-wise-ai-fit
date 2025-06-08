@@ -3,5 +3,5 @@
 export type * from './types';
 
 // Components
-export { EnhancedGoalCard } from '../../components/goals/EnhancedGoalCard';
-export { SmartGoalsDashboard } from '../../components/goals/SmartGoalsDashboard';
+export { default as EnhancedGoalCard } from '../../components/goals/EnhancedGoalCard';
+export { default as SmartGoalsDashboard } from '../../components/goals/SmartGoalsDashboard';
