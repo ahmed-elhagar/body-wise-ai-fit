@@ -1,17 +1,16 @@
+
 import { format, addDays } from "date-fns";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from '@/hooks/useI18n';
 import { useOptimizedExerciseProgramPage } from "@/hooks/useOptimizedExerciseProgramPage";
-import { createMockExercise } from "@/types/exercise";
-import ExerciseHeader from "./ExerciseHeader";
-import DayTabs from "../meal-plan/DayTabs";
-import ProgressRing from "./ProgressRing";
-import ExerciseList from "./ExerciseList";
 import { EmptyExerciseState } from "./EmptyExerciseState";
 import { AIExerciseDialog } from "./AIExerciseDialog";
+import { ExercisePageHeader } from "./ExercisePageHeader";
+import { ExercisePageSidebar } from "./ExercisePageSidebar";
+import { ExercisePageMainContent } from "./ExercisePageMainContent";
 import SimpleLoadingIndicator from "@/components/ui/simple-loading-indicator";
 
 const ExercisePageRefactored = () => {
-  const { t } = useLanguage();
+  const { t } = useI18n();
   const {
     selectedDayNumber,
     setSelectedDayNumber,
@@ -26,7 +25,6 @@ const ExercisePageRefactored = () => {
     currentProgram,
     isLoading,
     isGenerating,
-    todaysWorkouts,
     todaysExercises,
     completedExercises,
     totalExercises,
@@ -45,7 +43,6 @@ const ExercisePageRefactored = () => {
   const currentSelectedDate = addDays(weekStartDate, selectedDayNumber - 1);
   const isToday = format(currentSelectedDate, 'yyyy-MM-dd') === format(currentDate, 'yyyy-MM-dd');
 
-  // Enhanced loading state with progress steps and timeout protection
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -58,7 +55,6 @@ const ExercisePageRefactored = () => {
     );
   }
 
-  // Enhanced error state with better recovery options
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
@@ -70,17 +66,17 @@ const ExercisePageRefactored = () => {
               </svg>
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              {t('exercise.errorTitle') || 'Exercise Loading Error'}
+              Exercise Loading Error
             </h3>
             <p className="text-gray-600 mb-6">
-              {t('exercise.errorMessage') || 'Unable to load your exercise program. Please try again or check your connection.'}
+              Unable to load your exercise program. Please try again or check your connection.
             </p>
             <div className="space-y-3">
               <button
                 onClick={() => refetch()}
                 className="w-full bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-fitness-primary-600 hover:to-fitness-primary-700 transition-all duration-300"
               >
-                {t('exercise.retry') || 'Try Again'}
+                Try Again
               </button>
               <button
                 onClick={() => window.location.reload()}
@@ -95,7 +91,6 @@ const ExercisePageRefactored = () => {
     );
   }
 
-  // Enhanced empty state with better design
   if (!currentProgram) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -118,80 +113,38 @@ const ExercisePageRefactored = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
-        {/* Enhanced Header with better spacing and visual hierarchy */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-          <ExerciseHeader
-            currentProgram={currentProgram}
+        <ExercisePageHeader
+          currentProgram={currentProgram}
+          weekStartDate={weekStartDate}
+          currentWeekOffset={currentWeekOffset}
+          workoutType={workoutType}
+          onWeekChange={setCurrentWeekOffset}
+          onShowAIDialog={() => setShowAIDialog(true)}
+          onRegenerateProgram={handleRegenerateProgram}
+          onWorkoutTypeChange={setWorkoutType}
+          isGenerating={isGenerating}
+        />
+
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          <ExercisePageSidebar
+            completedExercises={completedExercises}
+            totalExercises={totalExercises}
+            progressPercentage={progressPercentage}
+            isToday={isToday}
+            isRestDay={isRestDay}
+          />
+
+          <ExercisePageMainContent
             weekStartDate={weekStartDate}
-            currentWeekOffset={currentWeekOffset}
-            workoutType={workoutType}
-            onWeekChange={setCurrentWeekOffset}
-            onShowAIDialog={() => setShowAIDialog(true)}
-            onRegenerateProgram={handleRegenerateProgram}
-            onWorkoutTypeChange={setWorkoutType}
-            isGenerating={isGenerating}
+            selectedDayNumber={selectedDayNumber}
+            onDayChange={setSelectedDayNumber}
+            todaysExercises={todaysExercises}
+            onExerciseComplete={handleExerciseComplete}
+            onExerciseProgressUpdate={handleExerciseProgressUpdate}
+            isRestDay={isRestDay}
           />
         </div>
 
-        {/* Enhanced Layout with better grid and spacing */}
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          {/* Enhanced Progress Sidebar with better visual design */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-6 space-y-4">
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-                <ProgressRing
-                  completedExercises={completedExercises}
-                  totalExercises={totalExercises}
-                  progressPercentage={progressPercentage}
-                  isToday={isToday}
-                  isRestDay={isRestDay}
-                />
-              </div>
-              
-              {/* Enhanced Motivation Card */}
-              <div className="bg-gradient-to-br from-fitness-primary-50 to-fitness-secondary-50 rounded-2xl border border-fitness-primary-200 p-6">
-                <div className="text-center space-y-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-fitness-primary-500 to-fitness-secondary-500 rounded-xl flex items-center justify-center mx-auto">
-                    <span className="text-2xl">💪</span>
-                  </div>
-                  <h3 className="font-semibold text-fitness-primary-800">
-                    {progressPercentage === 100 ? 'Completed!' : 
-                     progressPercentage > 50 ? 'Almost There!' : 
-                     progressPercentage > 0 ? 'Keep Going!' : 'Start Strong!'}
-                  </h3>
-                  <p className="text-sm text-fitness-primary-600">
-                    {progressPercentage === 100 ? 'Great job finishing today\'s workout!' : 
-                     'Every rep counts towards your goals'}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Enhanced Main Content with better spacing */}
-          <div className="lg:col-span-4 space-y-6">
-            {/* Enhanced Day Tabs with better active states */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-              <DayTabs
-                weekStartDate={weekStartDate}
-                selectedDayNumber={selectedDayNumber}
-                onDayChange={setSelectedDayNumber}
-              />
-            </div>
-
-            {/* Enhanced Exercise List Container */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-              <ExerciseList
-                exercises={todaysExercises}
-                onExerciseComplete={handleExerciseComplete}
-                onExerciseProgressUpdate={handleExerciseProgressUpdate}
-                isRestDay={isRestDay}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Enhanced AI Dialog */}
         <AIExerciseDialog
           open={showAIDialog}
           onOpenChange={setShowAIDialog}
