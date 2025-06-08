@@ -6,7 +6,6 @@ import { ExerciseDaySelector } from "./ExerciseDaySelector";
 import { OptimizedExerciseList } from "./OptimizedExerciseList";
 import { EmptyExerciseState } from "./EmptyExerciseState";
 import { AIExerciseDialog } from "./AIExerciseDialog";
-import { ExercisePageHeader } from "./ExercisePageHeader";
 import { TodaysWorkoutProgressCard } from "./TodaysWorkoutProgressCard";
 import { format, addDays } from "date-fns";
 import { EnhancedWorkoutTypeToggle } from "./EnhancedWorkoutTypeToggle";
@@ -97,14 +96,6 @@ export const OptimizedExerciseProgramPageContent = memo(({
 
   return (
     <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
-      <ExercisePageHeader
-        currentProgram={currentProgram}
-        workoutType={workoutType}
-        onShowAIDialog={() => setShowAIDialog(true)}
-        onRegenerateProgram={handleRegenerateProgram}
-        isGenerating={isGenerating}
-      />
-
       {/* Combined controls section - more compact */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-1">

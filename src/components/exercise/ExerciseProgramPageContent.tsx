@@ -5,8 +5,6 @@ import { ExerciseDaySelector } from "./ExerciseDaySelector";
 import { ExerciseListEnhanced } from "./ExerciseListEnhanced";
 import { EmptyExerciseState } from "./EmptyExerciseState";
 import { AIExerciseDialog } from "./AIExerciseDialog";
-import { ExercisePageHeader } from "./ExercisePageHeader";
-import { WorkoutTypeSelector } from "./WorkoutTypeSelector";
 import { TodaysWorkoutProgressCard } from "./TodaysWorkoutProgressCard";
 import { format, addDays } from "date-fns";
 import { EnhancedWorkoutTypeToggle } from "./EnhancedWorkoutTypeToggle";
@@ -99,15 +97,6 @@ export const ExerciseProgramPageContent = ({
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      {/* Header */}
-      <ExercisePageHeader
-        currentProgram={currentProgram}
-        workoutType={workoutType}
-        onShowAIDialog={() => setShowAIDialog(true)}
-        onRegenerateProgram={handleRegenerateProgram}
-        isGenerating={isGenerating}
-      />
-
       {/* Enhanced Workout Type Toggle */}
       <EnhancedWorkoutTypeToggle
         workoutType={workoutType}

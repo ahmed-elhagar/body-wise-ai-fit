@@ -9,7 +9,7 @@ import { ExercisePageSidebar } from "./ExercisePageSidebar";
 import { ExercisePageMainContent } from "./ExercisePageMainContent";
 import SimpleLoadingIndicator from "@/components/ui/simple-loading-indicator";
 
-const ExercisePageRefactored = () => {
+const ExerciseProgramPage = () => {
   const { t } = useI18n();
   const {
     selectedDayNumber,
@@ -158,4 +158,4 @@ const ExercisePageRefactored = () => {
   );
 };
 
-export default ExercisePageRefactored;
+export default ExerciseProgramPage;
