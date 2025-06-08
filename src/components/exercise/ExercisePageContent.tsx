@@ -1,8 +1,8 @@
 
 import { Loader2 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { ExerciseListEnhanced } from '@/components/exercise/ExerciseListEnhanced';
-import { EmptyExerciseState } from '@/components/exercise/EmptyExerciseState';
+import { ExerciseListEnhanced } from './ExerciseListEnhanced';
+import { EmptyExerciseState } from './EmptyExerciseState';
 import { Card } from '@/components/ui/card';
 
 interface ExercisePageContentProps {

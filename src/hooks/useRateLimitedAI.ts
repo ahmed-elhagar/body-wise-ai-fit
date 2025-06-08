@@ -1,40 +1,53 @@
 
 import { useState } from 'react';
-import { useCentralizedCredits } from './useCentralizedCredits';
-import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { useAuth } from './useAuth';
 
 export const useRateLimitedAI = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const { checkAndDeductCredits } = useCentralizedCredits();
-  const { t } = useLanguage();
+  const { user } = useAuth();
 
-  const executeAIAction = async (actionType: string, payload: any) => {
+  const executeAIAction = async (action: string, payload: any) => {
+    if (!user?.id) {
+      throw new Error('User not authenticated');
+    }
+
+    setIsLoading(true);
+    
     try {
-      setIsLoading(true);
-      
-      // Check if user has credits
-      const hasCredits = await checkAndDeductCredits(1);
-      if (!hasCredits) {
-        toast.error(t('Insufficient credits for AI operation'));
-        return false;
+      // Check rate limits first
+      const { data: rateLimitCheck, error: rateLimitError } = await supabase.functions.invoke(
+        'check_and_use_ai_generation',
+        {
+          body: {
+            user_id: user.id,
+            action_type: action
+          }
+        }
+      );
+
+      if (rateLimitError) {
+        throw new Error(`Rate limit check failed: ${rateLimitError.message}`);
       }
 
-      console.log('🤖 Executing AI action:', actionType, payload);
-      
-      // Call the appropriate edge function based on action type
+      if (!rateLimitCheck?.allowed) {
+        throw new Error('Rate limit exceeded. Please try again later.');
+      }
+
+      // Execute the actual AI action
       let functionName = '';
-      switch (actionType) {
+      switch (action) {
         case 'generate-exercise-program':
-        case 'regenerate-exercise-program':
           functionName = 'generate-exercise-program';
           break;
         case 'generate-meal-plan':
           functionName = 'generate-meal-plan';
           break;
+        case 'exchange-exercise':
+          functionName = 'exchange-exercise';
+          break;
         default:
-          functionName = actionType;
+          throw new Error(`Unknown AI action: ${action}`);
       }
 
       const { data, error } = await supabase.functions.invoke(functionName, {
@@ -42,31 +55,20 @@ export const useRateLimitedAI = () => {
       });
 
       if (error) {
-        console.error('❌ AI action failed:', error);
-        toast.error(t('AI operation failed. Please try again.'));
-        return false;
+        throw new Error(`AI action failed: ${error.message}`);
       }
 
-      if (data?.success) {
-        console.log('✅ AI action completed:', actionType);
-        toast.success(t('AI operation completed successfully!'));
-        return true;
-      } else {
-        console.error('❌ AI action returned error:', data?.error);
-        toast.error(data?.error || t('AI operation failed. Please try again.'));
-        return false;
-      }
+      return data;
     } catch (error) {
-      console.error('❌ AI action failed:', error);
-      toast.error(t('AI operation failed. Please try again.'));
-      return false;
+      console.error('AI action error:', error);
+      throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
   return {
-    isLoading,
     executeAIAction,
+    isLoading
   };
 };

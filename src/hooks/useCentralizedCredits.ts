@@ -1,200 +1,193 @@
 
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from './useAuth';
+import { useRole } from './useRole';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-export const useCentralizedCredits = () => {
-  const [credits, setCredits] = useState<number>(0);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isPro, setIsPro] = useState(false);
-  const { user } = useAuth();
+interface CreditInfo {
+  remaining: number;
+  isPro: boolean;
+  isLoading: boolean;
+}
 
-  const fetchCredits = async () => {
-    if (!user?.id) return;
-    
+export const useCentralizedCredits = () => {
+  const { user } = useAuth();
+  const { isAdmin, isLoading: roleLoading } = useRole();
+  const [creditInfo, setCreditInfo] = useState<CreditInfo>({
+    remaining: 0,
+    isPro: false,
+    isLoading: true
+  });
+
+  // Fetch current credit status from database
+  const fetchCredits = useCallback(async () => {
+    if (!user?.id || roleLoading) {
+      setCreditInfo({ remaining: 0, isPro: false, isLoading: roleLoading });
+      return;
+    }
+
     try {
-      // Get user profile data including AI generations remaining
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('ai_generations_remaining')
-        .eq('id', user.id)
-        .single();
-      
-      if (profileError && profileError.code !== 'PGRST116') {
-        console.error('Error fetching profile:', profileError);
+      // Admin users have unlimited credits
+      if (isAdmin) {
+        setCreditInfo({
+          remaining: -1, // -1 indicates unlimited
+          isPro: true, // Treat admin as pro
+          isLoading: false
+        });
+        console.log('📊 Admin user detected - unlimited credits');
         return;
       }
-      
-      // Check if user has active subscription (Pro status)
-      const { data: subscription, error: subError } = await supabase
+
+      // Check if user is Pro
+      const { data: subscription } = await supabase
         .from('subscriptions')
         .select('status, current_period_end')
         .eq('user_id', user.id)
         .eq('status', 'active')
         .gt('current_period_end', new Date().toISOString())
-        .single();
-      
-      if (subError && subError.code !== 'PGRST116') {
-        console.error('Error fetching subscription:', subError);
-      }
-      
-      const isProUser = !!subscription;
-      const userCredits = profile?.ai_generations_remaining || 0;
-      
-      setCredits(userCredits);
-      setIsPro(isProUser);
-    } catch (error) {
-      console.error('Error fetching credits:', error);
-    }
-  };
+        .maybeSingle();
 
-  const checkAndDeductCredits = async (amount: number = 1): Promise<boolean> => {
-    if (!user?.id) {
-      toast.error('Please sign in to use AI features');
-      return false;
-    }
+      const isPro = !!subscription;
 
-    try {
-      setIsLoading(true);
-      
-      // Check current credits
-      await fetchCredits();
-      
-      // Pro users have unlimited credits
-      if (isPro) {
-        return true;
-      }
-      
-      if (credits < amount) {
-        toast.error('Insufficient credits. Please upgrade your plan.');
-        return false;
-      }
-
-      // Deduct credits from profile
-      const { error } = await supabase
+      // Get current remaining credits
+      const { data: profile, error } = await supabase
         .from('profiles')
-        .update({ ai_generations_remaining: credits - amount })
-        .eq('id', user.id);
+        .select('ai_generations_remaining')
+        .eq('id', user.id)
+        .single();
 
       if (error) {
-        console.error('Error deducting credits:', error);
-        toast.error('Failed to process credits. Please try again.');
-        return false;
+        console.error('Error fetching credits:', error);
+        setCreditInfo({ remaining: 0, isPro: false, isLoading: false });
+        return;
       }
 
-      setCredits(prev => prev - amount);
-      return true;
-    } catch (error) {
-      console.error('Error processing credits:', error);
-      toast.error('Failed to process credits. Please try again.');
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      const remaining = isPro ? -1 : (profile?.ai_generations_remaining || 0);
 
-  // Method for meal plan compatibility - simplified without RPC calls
-  const checkAndUseCredit = async (generationType: string): Promise<{ success: boolean; logId?: string }> => {
+      setCreditInfo({
+        remaining,
+        isPro,
+        isLoading: false
+      });
+
+      console.log('📊 Credits fetched:', { remaining, isPro, isAdmin, userId: user.id });
+    } catch (error) {
+      console.error('Error in fetchCredits:', error);
+      setCreditInfo({ remaining: 0, isPro: false, isLoading: false });
+    }
+  }, [user?.id, isAdmin, roleLoading]);
+
+  // Check and use credit - this will be called before any AI generation
+  const checkAndUseCredit = useCallback(async (generationType: string): Promise<{ success: boolean; logId?: string }> => {
     if (!user?.id) {
-      toast.error('Please sign in to use AI features');
+      console.error('❌ No user ID for credit check');
       return { success: false };
     }
 
-    try {
-      setIsLoading(true);
-      
-      // Check if user is Pro (unlimited credits)
-      const { data: subscription } = await supabase
-        .from('subscriptions')
-        .select('status')
-        .eq('user_id', user.id)
-        .eq('status', 'active')
-        .gt('current_period_end', new Date().toISOString())
-        .maybeSingle();
+    // Admin users always have unlimited credits
+    if (isAdmin) {
+      console.log('✅ Admin user - bypassing credit check');
+      try {
+        // Still log the generation for admin users for tracking purposes
+        const { data, error } = await supabase.functions.invoke('check_and_use_ai_generation', {
+          body: {
+            user_id: user.id,
+            generation_type: generationType,
+            prompt_data: { type: generationType },
+            is_admin: true // Flag to indicate admin user
+          }
+        });
 
-      const isProUser = !!subscription;
-
-      if (!isProUser) {
-        // Check and deduct credits for non-Pro users
-        const hasCredits = await checkAndDeductCredits(1);
-        if (!hasCredits) {
-          return { success: false };
+        if (error) {
+          console.error('❌ Admin credit logging failed:', error);
+          // Don't block admin users even if logging fails
+          return { success: true };
         }
-      }
 
-      // Create generation log
-      const { data: logEntry, error: logError } = await supabase
-        .from('ai_generation_logs')
-        .insert({
+        return { success: true, logId: data?.log_id };
+      } catch (error) {
+        console.error('❌ Admin credit logging error:', error);
+        // Don't block admin users even if logging fails
+        return { success: true };
+      }
+    }
+
+    try {
+      console.log(`🔍 Checking credits for ${generationType}...`);
+      
+      // Call the centralized edge function for credit checking and usage
+      const { data, error } = await supabase.functions.invoke('check_and_use_ai_generation', {
+        body: {
           user_id: user.id,
           generation_type: generationType,
-          prompt_data: {},
-          status: 'pending',
-          credits_used: isProUser ? 0 : 1
-        })
-        .select()
-        .single();
+          prompt_data: { type: generationType }
+        }
+      });
 
-      if (logError) {
-        console.error('Error creating log:', logError);
+      if (error) {
+        console.error('❌ Credit check failed:', error);
+        toast.error('Failed to check AI credits');
         return { success: false };
       }
 
-      return { 
-        success: true, 
-        logId: logEntry.id 
-      };
+      if (!data?.success) {
+        console.log('🚫 No credits remaining');
+        toast.error('No AI credits remaining. Please upgrade your plan or wait for credits to reset.');
+        await fetchCredits(); // Refresh credits
+        return { success: false };
+      }
+
+      console.log('✅ Credit used successfully:', data);
+      
+      // Update local credit state immediately
+      setCreditInfo(prev => ({
+        ...prev,
+        remaining: prev.isPro ? -1 : Math.max(0, prev.remaining - 1)
+      }));
+
+      return { success: true, logId: data.log_id };
     } catch (error) {
-      console.error('Error using credit:', error);
-      toast.error('Failed to process credits. Please try again.');
+      console.error('❌ Error in checkAndUseCredit:', error);
+      toast.error('Failed to process AI credit');
       return { success: false };
-    } finally {
-      setIsLoading(false);
     }
-  };
+  }, [user?.id, isAdmin, fetchCredits]);
 
-  // Method for completing generation logging
-  const completeGeneration = async (logId: string, success: boolean, responseData?: any): Promise<void> => {
+  // Complete generation - to be called after successful AI generation
+  const completeGeneration = useCallback(async (logId: string, success: boolean, responseData?: any) => {
+    if (!logId) return;
+
     try {
-      const updateData: any = {
-        status: success ? 'completed' : 'failed'
-      };
+      console.log(`✅ Completing generation: ${logId}, success: ${success}`);
+      
+      await supabase.functions.invoke('complete_ai_generation', {
+        body: {
+          log_id: logId,
+          response_data: responseData,
+          error_message: success ? null : 'Generation failed'
+        }
+      });
 
-      if (responseData) {
-        updateData.response_data = responseData;
+      // Refresh credits to ensure accuracy (but not for admin users)
+      if (!isAdmin) {
+        await fetchCredits();
       }
-
-      if (!success) {
-        updateData.error_message = 'Generation failed';
-      }
-
-      await supabase
-        .from('ai_generation_logs')
-        .update(updateData)
-        .eq('id', logId);
     } catch (error) {
-      console.error('Error completing generation log:', error);
+      console.error('❌ Error completing generation:', error);
     }
-  };
+  }, [fetchCredits, isAdmin]);
 
+  // Initialize credits on mount and user change
   useEffect(() => {
     fetchCredits();
-  }, [user?.id]);
-
-  // Computed properties for component compatibility
-  const remaining = credits;
-  const hasCredits = isPro || credits > 0;
+  }, [fetchCredits]);
 
   return {
-    credits,
-    remaining, // Alias for credits
-    isLoading,
-    isPro,
-    hasCredits,
+    ...creditInfo,
     fetchCredits,
-    checkAndDeductCredits,
-    checkAndUseCredit, // For meal plan compatibility
-    completeGeneration, // For meal plan compatibility
+    checkAndUseCredit,
+    completeGeneration,
+    hasCredits: isAdmin || creditInfo.isPro || creditInfo.remaining > 0
   };
 };

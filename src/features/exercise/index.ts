@@ -1,9 +1,7 @@
 
 // Main exports for exercise feature
-export { EnhancedExercisePage } from './components';
-
-// Export all components
-export * from './components';
+export { default as OptimizedExerciseContainer } from '../../components/exercise/OptimizedExerciseContainer';
+export { default as ExercisePageRefactored } from '../../components/exercise/ExercisePageRefactored';
 
 // Export types
 export type * from './types';
@@ -11,6 +9,6 @@ export type * from './types';
 // Export utilities
 export * from './utils';
 
-// Export hooks
+// Export hooks (will be moved here in next phase)
 export { useOptimizedExercise } from '../../hooks/useOptimizedExercise';
 export { useOptimizedExerciseProgramPage } from '../../hooks/useOptimizedExerciseProgramPage';

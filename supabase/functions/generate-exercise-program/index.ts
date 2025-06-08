@@ -1,249 +1,243 @@
 
-import { serve } from 'https://deno.land/std@0.190.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { corsHeaders } from '../_shared/cors.ts'
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createHomeWorkoutPrompt, createGymWorkoutPrompt } from './promptTemplates.ts';
+import { validateWorkoutProgram, parseAIResponse } from './workoutValidator.ts';
+import { storeWorkoutProgram } from './databaseOperations.ts';
+import { callOpenAI, createSystemMessage } from './openAIService.ts';
+import { 
+  processRequest, 
+  enhanceUserData, 
+  enhancePreferences, 
+  validateWorkoutType 
+} from './requestProcessor.ts';
+import { 
+  buildSuccessResponse, 
+  buildErrorResponse, 
+  buildLimitReachedResponse 
+} from './responseBuilder.ts';
+import { 
+  handleExerciseProgramError, 
+  createUserFriendlyError, 
+  errorCodes, 
+  ExerciseProgramError 
+} from './enhancedErrorHandling.ts';
+import { workoutCaching } from './workoutCaching.ts';
+import { enhancedValidation } from './enhancedValidation.ts';
+import { progressAnalytics } from './progressAnalytics.ts';
 
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+// Simple credit checking function
+const checkAndUseCredit = async (supabase: any, userId: string) => {
+  try {
+    // Check if user is Pro (unlimited generations)
+    const { data: subscription } = await supabase
+      .from('subscriptions')
+      .select('status, current_period_end')
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .gt('current_period_end', new Date().toISOString())
+      .maybeSingle();
+
+    const isPro = !!subscription;
+
+    if (isPro) {
+      return { allowed: true, remaining: -1 };
+    }
+
+    // Check user's remaining credits
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('ai_generations_remaining')
+      .eq('id', userId)
+      .single();
+
+    if (profileError) {
+      throw new Error('Failed to check user credits');
+    }
+
+    const remaining = profile.ai_generations_remaining || 0;
+
+    if (remaining <= 0) {
+      return { allowed: false, remaining: 0 };
+    }
+
+    // Decrement credits
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({ 
+        ai_generations_remaining: remaining - 1,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', userId);
+
+    if (updateError) {
+      throw new Error('Failed to update credits');
+    }
+
+    return { allowed: true, remaining: remaining - 1 };
+  } catch (error) {
+    console.error('Credit check failed:', error);
+    throw error;
+  }
+};
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response(null, { headers: corsHeaders });
   }
+
+  let language = 'en';
 
   try {
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
-    const { userData, preferences, userLanguage = 'en', weekOffset = 0 } = await req.json()
+    console.log('=== EXERCISE PROGRAM GENERATION START ===');
+    
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
-    console.log('🏋️ Starting exercise program generation:', {
-      userId: userData?.userId?.substring(0, 8) + '...',
-      workoutType: preferences?.workoutType,
-      weekOffset
-    })
-
-    // For now, create a mock exercise program
-    const mockProgram = {
-      program_name: `${preferences?.workoutType === 'gym' ? 'Gym' : 'Home'} Fitness Program`,
-      difficulty_level: preferences?.fitnessLevel || 'beginner',
-      workout_type: preferences?.workoutType || 'home',
-      current_week: 1,
-      week_start_date: preferences?.weekStartDate || new Date().toISOString().split('T')[0],
-      daily_workouts: [
-        {
-          day_number: 1,
-          workout_name: 'Upper Body Strength',
-          is_rest_day: false,
-          muscle_groups: ['chest', 'shoulders', 'arms'],
-          estimated_duration: parseInt(preferences?.availableTime || '45'),
-          exercises: [
-            {
-              name: preferences?.workoutType === 'gym' ? 'Bench Press' : 'Push-ups',
-              sets: 3,
-              reps: '8-12',
-              muscle_groups: ['chest', 'shoulders'],
-              equipment: preferences?.workoutType === 'gym' ? 'barbell' : 'bodyweight',
-              instructions: preferences?.workoutType === 'gym' 
-                ? 'Lie on bench, grip bar wider than shoulders, press up and control down'
-                : 'Start in plank position, lower chest to floor, push back up',
-              rest_seconds: 60
-            },
-            {
-              name: preferences?.workoutType === 'gym' ? 'Shoulder Press' : 'Pike Push-ups',
-              sets: 3,
-              reps: '8-12',
-              muscle_groups: ['shoulders'],
-              equipment: preferences?.workoutType === 'gym' ? 'dumbbells' : 'bodyweight',
-              instructions: preferences?.workoutType === 'gym'
-                ? 'Press dumbbells overhead, control the weight down'
-                : 'In downward dog position, lower head toward ground, press back up',
-              rest_seconds: 60
-            }
-          ]
-        },
-        {
-          day_number: 2,
-          workout_name: 'Lower Body Power',
-          is_rest_day: false,
-          muscle_groups: ['legs', 'glutes'],
-          estimated_duration: parseInt(preferences?.availableTime || '45'),
-          exercises: [
-            {
-              name: preferences?.workoutType === 'gym' ? 'Squats' : 'Bodyweight Squats',
-              sets: 3,
-              reps: '12-15',
-              muscle_groups: ['legs', 'glutes'],
-              equipment: preferences?.workoutType === 'gym' ? 'barbell' : 'bodyweight',
-              instructions: 'Lower into squat position, keeping chest up, drive through heels to stand',
-              rest_seconds: 90
-            }
-          ]
-        },
-        {
-          day_number: 3,
-          workout_name: 'Rest Day',
-          is_rest_day: true,
-          muscle_groups: [],
-          estimated_duration: 0,
-          exercises: []
-        },
-        {
-          day_number: 4,
-          workout_name: 'Core & Cardio',
-          is_rest_day: false,
-          muscle_groups: ['core'],
-          estimated_duration: parseInt(preferences?.availableTime || '45'),
-          exercises: [
-            {
-              name: 'Plank',
-              sets: 3,
-              reps: '30-60 seconds',
-              muscle_groups: ['core'],
-              equipment: 'bodyweight',
-              instructions: 'Hold plank position, keep body straight from head to heels',
-              rest_seconds: 60
-            }
-          ]
-        },
-        {
-          day_number: 5,
-          workout_name: 'Full Body',
-          is_rest_day: false,
-          muscle_groups: ['full_body'],
-          estimated_duration: parseInt(preferences?.availableTime || '45'),
-          exercises: [
-            {
-              name: preferences?.workoutType === 'gym' ? 'Deadlifts' : 'Burpees',
-              sets: 3,
-              reps: preferences?.workoutType === 'gym' ? '6-8' : '8-12',
-              muscle_groups: ['full_body'],
-              equipment: preferences?.workoutType === 'gym' ? 'barbell' : 'bodyweight',
-              instructions: preferences?.workoutType === 'gym'
-                ? 'Lift bar from ground, keep back straight, drive hips forward'
-                : 'Drop to plank, jump feet to hands, jump up with arms overhead',
-              rest_seconds: 120
-            }
-          ]
-        },
-        {
-          day_number: 6,
-          workout_name: 'Active Recovery',
-          is_rest_day: false,
-          muscle_groups: ['mobility'],
-          estimated_duration: 30,
-          exercises: [
-            {
-              name: 'Stretching',
-              sets: 1,
-              reps: '10-15 minutes',
-              muscle_groups: ['full_body'],
-              equipment: 'none',
-              instructions: 'Light stretching and mobility work',
-              rest_seconds: 0
-            }
-          ]
-        },
-        {
-          day_number: 7,
-          workout_name: 'Rest Day',
-          is_rest_day: true,
-          muscle_groups: [],
-          estimated_duration: 0,
-          exercises: []
-        }
-      ]
+    if (!openAIApiKey) {
+      throw new ExerciseProgramError(
+        'OpenAI API key not configured',
+        errorCodes.AI_GENERATION_FAILED,
+        500
+      );
     }
 
-    // Save to database
-    const { data: program, error: programError } = await supabase
-      .from('weekly_exercise_programs')
-      .insert({
-        user_id: userData.userId,
-        program_name: mockProgram.program_name,
-        difficulty_level: mockProgram.difficulty_level,
-        workout_type: mockProgram.workout_type,
-        current_week: mockProgram.current_week,
-        week_start_date: mockProgram.week_start_date,
-        generation_prompt: preferences
-      })
-      .select()
-      .single()
-
-    if (programError) {
-      console.error('❌ Error saving program:', programError)
-      throw programError
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new ExerciseProgramError(
+        'Supabase configuration missing',
+        errorCodes.DATABASE_ERROR,
+        500
+      );
     }
 
-    // Save daily workouts
-    for (const workout of mockProgram.daily_workouts) {
-      const { data: dailyWorkout, error: workoutError } = await supabase
-        .from('daily_workouts')
-        .insert({
-          weekly_program_id: program.id,
-          day_number: workout.day_number,
-          workout_name: workout.workout_name,
-          is_rest_day: workout.is_rest_day,
-          muscle_groups: workout.muscle_groups,
-          estimated_duration: workout.estimated_duration,
-          estimated_calories: workout.estimated_duration * 8 // rough estimate
-        })
-        .select()
-        .single()
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const { userData, preferences, finalUserLanguage } = await processRequest(req);
+    language = finalUserLanguage;
 
-      if (workoutError) {
-        console.error('❌ Error saving workout:', workoutError)
-        continue
-      }
+    console.log('🌐 Language Configuration:', { language });
 
-      // Save exercises for non-rest days
-      if (!workout.is_rest_day && workout.exercises) {
-        for (const [index, exercise] of workout.exercises.entries()) {
-          const { error: exerciseError } = await supabase
-            .from('exercises')
-            .insert({
-              daily_workout_id: dailyWorkout.id,
-              name: exercise.name,
-              sets: exercise.sets,
-              reps: exercise.reps,
-              muscle_groups: exercise.muscle_groups,
-              equipment: exercise.equipment,
-              instructions: exercise.instructions,
-              rest_seconds: exercise.rest_seconds,
-              order_number: index + 1
-            })
+    // Enhanced validation
+    enhancedValidation.validateUserProfile(userData);
+    enhancedValidation.validateExercisePreferences(preferences);
 
-          if (exerciseError) {
-            console.error('❌ Error saving exercise:', exerciseError)
-          }
-        }
-      }
+    // Check credits
+    const creditResult = await checkAndUseCredit(supabase, userData.userId);
+    
+    if (!creditResult.allowed) {
+      throw createUserFriendlyError(errorCodes.INSUFFICIENT_CREDITS, language);
     }
 
-    console.log('✅ Exercise program generated successfully')
+    console.log('✅ Credit check passed:', {
+      remaining: creditResult.remaining
+    });
 
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        program_id: program.id,
-        message: 'Exercise program generated successfully'
-      }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
-      }
-    )
+    // Check for existing similar program (intelligent caching)
+    const workoutType = preferences?.workoutType || 'home';
+    const fitnessLevel = preferences?.fitnessLevel || 'beginner';
+    const goalType = preferences?.goalType || 'general_fitness';
+    
+    const existingProgram = await workoutCaching.checkExistingProgram(
+      userData.userId,
+      workoutType,
+      fitnessLevel,
+      goalType
+    );
+
+    if (existingProgram) {
+      console.log('✅ Found suitable existing program, reusing with modifications');
+      
+      // Clone and adapt existing program for new week
+      const adaptedProgram = await storeWorkoutProgram(
+        supabase, 
+        existingProgram, 
+        userData, 
+        { ...preferences, isAdaptation: true }
+      );
+
+      return buildSuccessResponse(
+        corsHeaders,
+        adaptedProgram,
+        workoutType,
+        language,
+        creditResult.remaining,
+        true // Indicate this was cached/adapted
+      );
+    }
+
+    validateWorkoutType(workoutType);
+
+    const enhancedUserData = enhanceUserData(userData, finalUserLanguage);
+    const enhancedPreferences = enhancePreferences(preferences, workoutType, finalUserLanguage);
+    
+    // Get user's fitness progress for personalized recommendations
+    const progressData = await progressAnalytics.calculateFitnessProgress(userData.userId);
+    if (progressData) {
+      enhancedPreferences.progressContext = progressData;
+      console.log('📊 User progress context added:', {
+        averageCompletion: progressData.averageCompletionRate,
+        currentStreak: progressData.currentStreak
+      });
+    }
+    
+    const selectedPrompt = workoutType === 'gym' 
+      ? createGymWorkoutPrompt(enhancedUserData, enhancedPreferences)
+      : createHomeWorkoutPrompt(enhancedUserData, enhancedPreferences);
+    
+    const systemMessage = createSystemMessage(workoutType, finalUserLanguage);
+    
+    try {
+      console.log('🤖 Sending request to OpenAI...');
+      const aiResponse = await callOpenAI(openAIApiKey, selectedPrompt, systemMessage);
+      const generatedProgram = parseAIResponse(aiResponse);
+      
+      console.log('✅ Exercise program parsed successfully');
+      
+      // Enhanced validation
+      enhancedValidation.validateWorkoutProgram(generatedProgram);
+      enhancedValidation.validateWorkoutSafety(generatedProgram, userData);
+      
+      console.log('✅ Enhanced validation passed');
+
+      const weeklyProgram = await storeWorkoutProgram(supabase, generatedProgram, enhancedUserData, enhancedPreferences);
+
+      console.log('🎉 Exercise program generated and stored successfully:', {
+        programId: weeklyProgram.id,
+        workoutType,
+        programName: weeklyProgram.program_name,
+        weekStartDate: weeklyProgram.week_start_date,
+        workoutsCreated: weeklyProgram.workoutsCreated,
+        exercisesCreated: weeklyProgram.exercisesCreated,
+        userLanguage: finalUserLanguage,
+        generationsRemaining: creditResult.remaining,
+        hadProgressContext: !!progressData
+      });
+
+      return buildSuccessResponse(
+        corsHeaders, 
+        weeklyProgram, 
+        workoutType, 
+        finalUserLanguage, 
+        creditResult.remaining
+      );
+
+    } catch (aiError) {
+      throw aiError;
+    }
 
   } catch (error) {
-    console.error('❌ Error generating exercise program:', error)
+    console.error('=== EXERCISE PROGRAM GENERATION FAILED ===', error);
     
-    return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error.message || 'Failed to generate exercise program'
-      }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500 
-      }
-    )
+    const errorResponse = handleExerciseProgramError(error, language);
+    return new Response(JSON.stringify(errorResponse), {
+      status: errorResponse.statusCode || 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
-})
+});
