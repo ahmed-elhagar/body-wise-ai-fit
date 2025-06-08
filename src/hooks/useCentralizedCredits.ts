@@ -94,7 +94,7 @@ export const useCentralizedCredits = () => {
     }
   };
 
-  // Method for meal plan compatibility - uses the database function for proper logging
+  // Method for meal plan compatibility - simplified without RPC calls
   const checkAndUseCredit = async (generationType: string): Promise<{ success: boolean; logId?: string }> => {
     if (!user?.id) {
       toast.error('Please sign in to use AI features');
@@ -104,30 +104,46 @@ export const useCentralizedCredits = () => {
     try {
       setIsLoading(true);
       
-      // Use the database function for proper credit checking and logging
-      const { data, error } = await supabase.rpc('check_and_use_ai_generation', {
-        user_id_param: user.id,
-        generation_type_param: generationType,
-        prompt_data_param: {}
-      });
+      // Check if user is Pro (unlimited credits)
+      const { data: subscription } = await supabase
+        .from('subscriptions')
+        .select('status')
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .gt('current_period_end', new Date().toISOString())
+        .maybeSingle();
 
-      if (error) {
-        console.error('Error using credit:', error);
-        toast.error('Failed to process credits. Please try again.');
+      const isProUser = !!subscription;
+
+      if (!isProUser) {
+        // Check and deduct credits for non-Pro users
+        const hasCredits = await checkAndDeductCredits(1);
+        if (!hasCredits) {
+          return { success: false };
+        }
+      }
+
+      // Create generation log
+      const { data: logEntry, error: logError } = await supabase
+        .from('ai_generation_logs')
+        .insert({
+          user_id: user.id,
+          generation_type: generationType,
+          prompt_data: {},
+          status: 'pending',
+          credits_used: isProUser ? 0 : 1
+        })
+        .select()
+        .single();
+
+      if (logError) {
+        console.error('Error creating log:', logError);
         return { success: false };
       }
 
-      if (!data.success) {
-        toast.error(data.error || 'Insufficient credits');
-        return { success: false };
-      }
-
-      // Update local state
-      setCredits(data.remaining || 0);
-      
       return { 
         success: true, 
-        logId: data.log_id 
+        logId: logEntry.id 
       };
     } catch (error) {
       console.error('Error using credit:', error);
@@ -141,11 +157,22 @@ export const useCentralizedCredits = () => {
   // Method for completing generation logging
   const completeGeneration = async (logId: string, success: boolean, responseData?: any): Promise<void> => {
     try {
-      await supabase.rpc('complete_ai_generation', {
-        log_id_param: logId,
-        response_data_param: responseData || {},
-        error_message_param: success ? null : 'Generation failed'
-      });
+      const updateData: any = {
+        status: success ? 'completed' : 'failed'
+      };
+
+      if (responseData) {
+        updateData.response_data = responseData;
+      }
+
+      if (!success) {
+        updateData.error_message = 'Generation failed';
+      }
+
+      await supabase
+        .from('ai_generation_logs')
+        .update(updateData)
+        .eq('id', logId);
     } catch (error) {
       console.error('Error completing generation log:', error);
     }
