@@ -13,4 +13,5 @@ export { AnimatedProgressRing } from './AnimatedProgressRing';
 export { CompactProgressSidebar } from './CompactProgressSidebar';
 export { EnhancedExerciseListContainer } from './EnhancedExerciseListContainer';
 export { UnifiedExerciseContainer } from './UnifiedExerciseContainer';
+export { ExercisePageLayout } from './ExercisePageLayout';
 export { default as OptimizedExerciseContainer } from './OptimizedExerciseContainer';

@@ -1,7 +1,6 @@
 
 import { ExerciseListEnhanced } from "@/features/exercise";
 import { ExerciseProgressTracker } from "./ExerciseProgressTracker";
-import { ExerciseQuickActions } from "./ExerciseQuickActions";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useWorkoutSession } from "@/hooks/useWorkoutSession";
 
@@ -52,22 +51,6 @@ export const WorkoutContentLayout = ({
           currentWeekOffset={currentWeekOffset}
           completedExercises={completedExercises}
           totalExercises={totalExercises}
-        />
-      </div>
-
-      {/* Quick Actions - Improved spacing and styling */}
-      <div className="sticky top-4 z-10">
-        <ExerciseQuickActions
-          isWorkoutActive={workoutSession.isActive}
-          isPaused={workoutSession.isPaused}
-          totalTime={workoutSession.totalTime}
-          onStartWorkout={handleStartWorkout}
-          onPauseWorkout={workoutSession.pauseSession}
-          onResumeWorkout={workoutSession.resumeSession}
-          onRestartWorkout={workoutSession.resetSession}
-          onShareProgress={workoutSession.shareProgress}
-          canStart={totalExercises > 0}
-          isRestDay={isRestDay}
         />
       </div>
 

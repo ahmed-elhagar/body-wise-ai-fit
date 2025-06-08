@@ -16,7 +16,8 @@ export {
   AnimatedProgressRing,
   CompactProgressSidebar,
   EnhancedExerciseListContainer,
-  UnifiedExerciseContainer
+  UnifiedExerciseContainer,
+  ExercisePageLayout
 } from './components';
 
 // Export types
