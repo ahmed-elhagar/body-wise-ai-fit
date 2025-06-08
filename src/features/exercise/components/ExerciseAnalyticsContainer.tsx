@@ -34,7 +34,7 @@ export const ExerciseAnalyticsContainer = ({
   }, {} as Record<string, number>);
 
   const topMuscleGroups = Object.entries(muscleGroups)
-    .sort(([,a], [,b]) => b - a)
+    .sort(([,a], [,b]) => (b as number) - (a as number))
     .slice(0, 5);
 
   return (
@@ -124,11 +124,11 @@ export const ExerciseAnalyticsContainer = ({
                     <div className="w-20 h-2 bg-gray-200 rounded-full overflow-hidden">
                       <div 
                         className="h-full bg-blue-500 transition-all duration-300"
-                        style={{ width: `${Math.round((count / totalExercises) * 100)}%` }}
+                        style={{ width: `${Math.round(((count as number) / totalExercises) * 100)}%` }}
                       />
                     </div>
                     <Badge variant="secondary" className="text-xs">
-                      {count}
+                      {String(count)}
                     </Badge>
                   </div>
                 </div>
