@@ -14,7 +14,9 @@ export {
   ExerciseEmptyState,
   InteractiveExerciseCard,
   AnimatedProgressRing,
-  CompactProgressSidebar
+  CompactProgressSidebar,
+  EnhancedExerciseListContainer,
+  UnifiedExerciseContainer
 } from './components';
 
 // Export types

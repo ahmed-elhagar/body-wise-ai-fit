@@ -11,4 +11,6 @@ export { ExerciseEmptyState } from './ExerciseEmptyState';
 export { InteractiveExerciseCard } from './InteractiveExerciseCard';
 export { AnimatedProgressRing } from './AnimatedProgressRing';
 export { CompactProgressSidebar } from './CompactProgressSidebar';
+export { EnhancedExerciseListContainer } from './EnhancedExerciseListContainer';
+export { UnifiedExerciseContainer } from './UnifiedExerciseContainer';
 export { default as OptimizedExerciseContainer } from './OptimizedExerciseContainer';

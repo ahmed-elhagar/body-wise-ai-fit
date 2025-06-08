@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,7 +20,7 @@ import {
   Share2
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { InteractiveExerciseCard, RestDayCard, AnimatedProgressRing } from "@/features/exercise";
+import { InteractiveExerciseCard, RestDayCard, AnimatedProgressRing } from "./index";
 import { useWorkoutSession } from "@/hooks/useWorkoutSession";
 
 interface UnifiedExerciseContainerProps {
@@ -108,10 +109,9 @@ export const UnifiedExerciseContainer = ({
 
   return (
     <div className="space-y-3">
-      {/* Ultra Compact Header with Progress and Controls */}
+      {/* Compact Header with Progress and Controls */}
       <Card className="p-3 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-blue-200 shadow-lg">
         <div className="flex flex-col lg:flex-row gap-3">
-          {/* Progress Ring Section - Extra Small */}
           <div className="flex-shrink-0 flex justify-center lg:justify-start">
             <div className="scale-50 -m-6">
               <AnimatedProgressRing
@@ -124,9 +124,7 @@ export const UnifiedExerciseContainer = ({
             </div>
           </div>
 
-          {/* Timer and Controls Section - Ultra Compact */}
           <div className="flex-1 space-y-2">
-            {/* Timer Display - Extra Small */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
@@ -138,7 +136,6 @@ export const UnifiedExerciseContainer = ({
                 </div>
               </div>
 
-              {/* Quick Stats - Extra Small */}
               <div className="flex gap-2 text-xs">
                 <div className="text-center">
                   <div className="text-sm font-bold text-green-600">{completedExercises}</div>
@@ -155,7 +152,6 @@ export const UnifiedExerciseContainer = ({
               </div>
             </div>
 
-            {/* Progress Bar - Extra Small */}
             <div className="space-y-1">
               <div className="flex justify-between text-xs text-gray-600">
                 <span>Progress</span>
@@ -164,7 +160,6 @@ export const UnifiedExerciseContainer = ({
               <Progress value={progressPercentage} className="h-1.5 bg-gray-200" />
             </div>
 
-            {/* Control Buttons - Extra Small */}
             <div className="flex gap-1">
               {!isActive ? (
                 <Button
@@ -231,7 +226,7 @@ export const UnifiedExerciseContainer = ({
         </div>
       </Card>
 
-      {/* Tabbed Content - Extra Compact */}
+      {/* Tabbed Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3 h-8">
           <TabsTrigger value="workout" className="text-xs">Exercises</TabsTrigger>
@@ -280,7 +275,6 @@ export const UnifiedExerciseContainer = ({
               </div>
             </div>
 
-            {/* Motivational Message - Smaller */}
             {isActive && (
               <div className={`mt-3 text-center p-2 rounded-lg text-white text-xs ${
                 progressPercentage === 100 

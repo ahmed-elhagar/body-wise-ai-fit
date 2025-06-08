@@ -1,11 +1,11 @@
 
 import { useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Exercise } from '@/types/exercise';
-import { ExerciseCard } from './ExerciseCard';
-import { ActiveExerciseTracker } from './ActiveExerciseTracker';
-import { WorkoutSessionManager } from './WorkoutSessionManager';
-import { CustomExerciseDialog } from './CustomExerciseDialog';
+import { Exercise } from '../types';
+import { ExerciseCard } from '@/components/exercise/ExerciseCard';
+import { ActiveExerciseTracker } from '@/components/exercise/ActiveExerciseTracker';
+import { WorkoutSessionManager } from '@/components/exercise/WorkoutSessionManager';
+import { CustomExerciseDialog } from '@/components/exercise/CustomExerciseDialog';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -124,7 +124,6 @@ export const EnhancedExerciseListContainer = ({
   return (
     <>
       <div className="space-y-4">
-        {/* View Mode Toggle */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <h2 className="text-xl font-bold text-gray-900">
@@ -171,7 +170,6 @@ export const EnhancedExerciseListContainer = ({
           </div>
         </div>
 
-        {/* Session Mode */}
         {viewMode === 'session' && (
           <>
             <WorkoutSessionManager
@@ -181,7 +179,6 @@ export const EnhancedExerciseListContainer = ({
               onSessionComplete={handleSessionComplete}
             />
             
-            {/* Active Exercise Tracker */}
             {activeExerciseId && (
               <ActiveExerciseTracker
                 exercise={exercises.find(ex => ex.id === activeExerciseId)!}
@@ -208,7 +205,6 @@ export const EnhancedExerciseListContainer = ({
           </>
         )}
 
-        {/* List Mode - Simple view */}
         {viewMode === 'list' && (
           <div className="space-y-3">
             {exercises.map((exercise) => (
