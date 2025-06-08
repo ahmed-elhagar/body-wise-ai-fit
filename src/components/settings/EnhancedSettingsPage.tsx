@@ -6,11 +6,12 @@ import { HealthConditionsSettings } from './HealthConditionsSettings';
 import { SpecialConditionsSettings } from './SpecialConditionsSettings';
 import { FoodPreferencesSettings } from './FoodPreferencesSettings';
 import EnhancedSettingsForm from '../profile/enhanced/EnhancedSettingsForm';
+import type { Language } from '@/hooks/useI18n';
 
 export const EnhancedSettingsPage = () => {
   const [userSettings, setUserSettings] = useState({
     measurementUnits: 'metric',
-    language: 'en',
+    language: 'en' as Language,
     notifications: true,
     theme: 'light',
     displayName: '',
