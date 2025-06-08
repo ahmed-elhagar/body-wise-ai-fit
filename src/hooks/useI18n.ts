@@ -10,12 +10,22 @@ export const useI18n = () => {
   useEffect(() => {
     document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
     document.documentElement.lang = i18n.language;
+    
+    // Apply Arabic font class to body when Arabic is selected
+    if (isRTL) {
+      document.body.classList.add('font-arabic');
+    } else {
+      document.body.classList.remove('font-arabic');
+    }
   }, [isRTL, i18n.language]);
   
   const changeLanguage = async (lng: string) => {
     try {
       await i18n.changeLanguage(lng);
       localStorage.setItem('preferred-language', lng);
+      
+      // Force reload to ensure all components pick up the new language
+      window.location.reload();
     } catch (error) {
       console.error('Failed to change language:', error);
     }
