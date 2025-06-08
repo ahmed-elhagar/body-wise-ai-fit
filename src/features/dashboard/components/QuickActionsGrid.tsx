@@ -24,8 +24,8 @@ const QuickActionsGrid = () => {
   const { tFrom, isRTL } = useI18n();
   const tDashboard = tFrom('dashboard');
   const { profile } = useProfile();
-  const { currentWeekPlan } = useMealPlans();
-  const { currentProgram } = useExercisePrograms();
+  const { mealPlans } = useMealPlans();
+  const { programs } = useExercisePrograms();
 
   const quickActions = [
     {
@@ -35,7 +35,7 @@ const QuickActionsGrid = () => {
       color: "from-green-500 to-emerald-600",
       action: () => navigate('/food-tracker'),
       badge: "Quick Add",
-      stats: currentWeekPlan ? "Plan Active" : "No Plan"
+      stats: mealPlans && mealPlans.length > 0 ? "Plan Active" : "No Plan"
     },
     {
       title: "Start Workout", 
@@ -44,7 +44,7 @@ const QuickActionsGrid = () => {
       color: "from-blue-500 to-indigo-600",
       action: () => navigate('/exercise'),
       badge: "Get Moving",
-      stats: currentProgram ? "Program Ready" : "Create Program"
+      stats: programs && programs.length > 0 ? "Program Ready" : "Create Program"
     },
     {
       title: "Scan Food",
@@ -71,7 +71,7 @@ const QuickActionsGrid = () => {
       color: "from-teal-500 to-cyan-600",
       action: () => navigate('/meal-plan'),
       badge: "Planning",
-      stats: currentWeekPlan ? "This Week" : "Create Plan"
+      stats: mealPlans && mealPlans.length > 0 ? "This Week" : "Create Plan"
     },
     {
       title: "Progress",

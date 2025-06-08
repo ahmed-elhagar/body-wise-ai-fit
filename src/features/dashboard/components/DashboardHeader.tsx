@@ -1,13 +1,10 @@
 
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
   Calendar, 
   Activity, 
-  Target, 
   TrendingUp,
-  ChevronRight,
   Sparkles,
   Heart,
   Bell,
@@ -20,14 +17,13 @@ import { useNotifications } from "@/hooks/useNotifications";
 import { useI18n } from "@/hooks/useI18n";
 import { formatDistanceToNow } from "date-fns";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 interface DashboardHeaderProps {
   userName: string;
-  onViewMealPlan: () => void;
-  onViewExercise: () => void;
 }
 
-const DashboardHeader = ({ userName, onViewMealPlan, onViewExercise }: DashboardHeaderProps) => {
+const DashboardHeader = ({ userName }: DashboardHeaderProps) => {
   const navigate = useNavigate();
   const { profile } = useProfile();
   const { notifications, unreadCount, markAsRead } = useNotifications();
@@ -88,20 +84,17 @@ const DashboardHeader = ({ userName, onViewMealPlan, onViewExercise }: Dashboard
                   AI Credits: {profile.ai_generations_remaining}/5
                 </Badge>
               )}
-              <Badge className="bg-white/20 text-white border-white/30 px-3 py-1.5">
-                <Target className="w-4 h-4 mr-2" />
-                Goals on Track
-              </Badge>
             </div>
           </div>
 
-          {/* Action Buttons with Notifications */}
-          <div className={`flex flex-col sm:flex-row gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+          {/* Simplified Action Area with Notifications */}
+          <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
             {/* Notifications Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="outline"
+                  size="sm"
                   className="relative bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm transition-all duration-300"
                 >
                   <Bell className="w-4 h-4" />
@@ -172,23 +165,17 @@ const DashboardHeader = ({ userName, onViewMealPlan, onViewExercise }: Dashboard
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <Button
-              onClick={onViewMealPlan}
-              className="bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm transition-all duration-300"
-              variant="outline"
-            >
-              <Calendar className="w-4 h-4 mr-2" />
-              Today's Meals
-              <ChevronRight className="w-4 h-4 ml-2" />
-            </Button>
-            <Button
-              onClick={onViewExercise}
-              className="bg-white hover:bg-white/90 text-indigo-600 shadow-lg transition-all duration-300"
-            >
-              <Activity className="w-4 h-4 mr-2" />
-              Start Workout
-              <ChevronRight className="w-4 h-4 ml-2" />
-            </Button>
+            {/* Profile Avatar */}
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <div className="w-12 h-12 bg-gradient-to-br from-pink-400 via-purple-400 to-indigo-400 rounded-2xl flex items-center justify-center shadow-xl border-2 border-white/30 backdrop-blur-sm">
+                  <Activity className="w-6 h-6 text-white" />
+                </div>
+                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full border-2 border-white flex items-center justify-center">
+                  <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
