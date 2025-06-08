@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -118,8 +117,13 @@ export const useSignupState = () => {
 
       if (result?.error) {
         console.error('Signup error details:', result.error);
-        const errorMessage = result.error.message || result.error || 'Account creation failed';
-        throw new Error(errorMessage);
+        // Create a more specific error message for user already exists
+        if (result.error.message?.toLowerCase().includes('already') || 
+            result.error.message?.toLowerCase().includes('exists') ||
+            result.error.message?.toLowerCase().includes('registered')) {
+          throw new Error(`User with email ${formData.email} already exists`);
+        }
+        throw new Error(result.error.message || 'Account creation failed');
       }
 
       console.log('Account created successfully');
