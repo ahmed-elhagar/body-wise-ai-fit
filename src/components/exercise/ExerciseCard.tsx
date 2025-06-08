@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,9 +12,9 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Exercise } from '@/types/exercise';
-import { ExerciseActionsMenu } from './ExerciseActionsMenu';
-import { ExerciseVideoDialog } from './ExerciseVideoDialog';
-import { ExerciseExchangeDialog } from './ExerciseExchangeDialog';
+import { ExerciseActionsMenu } from '@/features/exercise/components/ExerciseActionsMenu';
+import { ExerciseVideoDialog } from '@/features/exercise/components/ExerciseVideoDialog';
+import { ExerciseExchangeDialog } from '@/features/exercise/components/ExerciseExchangeDialog';
 
 interface ExerciseCardProps {
   exercise: Exercise;
