@@ -8,4 +8,6 @@ export { WorkoutTypeTabs } from './WorkoutTypeTabs';
 export { ExerciseErrorHandler } from './ExerciseErrorHandler';
 export { RestDayCard } from './RestDayCard';
 export { ExerciseEmptyState } from './ExerciseEmptyState';
+export { InteractiveExerciseCard } from './InteractiveExerciseCard';
+export { AnimatedProgressRing } from './AnimatedProgressRing';
 export { default as OptimizedExerciseContainer } from './OptimizedExerciseContainer';

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,10 +19,8 @@ import {
   Share2
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { InteractiveExerciseCard } from "./InteractiveExerciseCard";
-import { RestDayCard } from "./RestDayCard";
+import { InteractiveExerciseCard, RestDayCard, AnimatedProgressRing } from "@/features/exercise";
 import { useWorkoutSession } from "@/hooks/useWorkoutSession";
-import { AnimatedProgressRing } from "./AnimatedProgressRing";
 
 interface UnifiedExerciseContainerProps {
   exercises: any[];

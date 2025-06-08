@@ -11,7 +11,9 @@ export {
   WorkoutTypeTabs,
   ExerciseErrorHandler,
   RestDayCard,
-  ExerciseEmptyState
+  ExerciseEmptyState,
+  InteractiveExerciseCard,
+  AnimatedProgressRing
 } from './components';
 
 // Export types
