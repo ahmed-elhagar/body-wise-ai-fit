@@ -2,6 +2,9 @@
 // Exercise feature components exports
 export { ExerciseListEnhanced } from './ExerciseListEnhanced';
 export { ExercisePageContent } from './ExercisePageContent';
+export { ExerciseSessionView } from './ExerciseSessionView';
+export { ExerciseListView } from './ExerciseListView';
+export { ExerciseListHeader } from './ExerciseListHeader';
 export { WorkoutTypeToggle } from './WorkoutTypeToggle';
 export { ExerciseProgramSelector } from './ExerciseProgramSelector';
 export { WorkoutTypeTabs } from './WorkoutTypeTabs';

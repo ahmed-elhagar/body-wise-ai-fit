@@ -5,10 +5,9 @@ import { Exercise } from "../types";
 import { RestDayCard } from "./RestDayCard";
 import { ExerciseErrorHandler } from "./ExerciseErrorHandler";
 import { ExerciseEmptyState } from "./ExerciseEmptyState";
-import { CustomExerciseDialog } from "@/components/exercise/CustomExerciseDialog";
-import { ExerciseListHeader } from "@/components/exercise/ExerciseListHeader";
-import { ExerciseSessionView } from "@/components/exercise/ExerciseSessionView";
-import { ExerciseListView } from "@/components/exercise/ExerciseListView";
+import { ExerciseSessionView } from "./ExerciseSessionView";
+import { ExerciseListView } from "./ExerciseListView";
+import { ExerciseListHeader } from "./ExerciseListHeader";
 import { useState, useCallback, useMemo } from "react";
 
 interface ExerciseListEnhancedProps {
@@ -36,7 +35,6 @@ export const ExerciseListEnhanced = ({
 }: ExerciseListEnhancedProps) => {
   const { t } = useI18n();
   const [viewMode, setViewMode] = useState<'session' | 'list'>('session');
-  const [showCustomExerciseDialog, setShowCustomExerciseDialog] = useState(false);
   const [activeExerciseId, setActiveExerciseId] = useState<string | null>(null);
 
   const dailyWorkoutId = currentProgram?.daily_workouts?.find(
@@ -116,8 +114,8 @@ export const ExerciseListEnhanced = ({
     return (
       <ExerciseEmptyState
         onGenerateProgram={() => console.log('Generate program')}
-        onCreateCustom={() => setShowCustomExerciseDialog(true)}
         workoutType={currentProgram?.workout_type || "home"}
+        dailyWorkoutId={dailyWorkoutId}
       />
     );
   }
@@ -130,7 +128,6 @@ export const ExerciseListEnhanced = ({
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         dailyWorkoutId={dailyWorkoutId}
-        onAddCustomExercise={() => setShowCustomExerciseDialog(true)}
       />
 
       {viewMode === 'session' ? (
@@ -149,15 +146,6 @@ export const ExerciseListEnhanced = ({
           onExerciseComplete={handleExerciseComplete}
         />
       )}
-
-      <CustomExerciseDialog
-        open={showCustomExerciseDialog}
-        onOpenChange={setShowCustomExerciseDialog}
-        dailyWorkoutId={dailyWorkoutId}
-        onExerciseCreated={() => {
-          window.location.reload();
-        }}
-      />
     </div>
   );
 };

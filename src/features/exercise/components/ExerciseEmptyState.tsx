@@ -1,83 +1,58 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dumbbell, Plus, Target, Sparkles } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { Target, Plus, Dumbbell } from "lucide-react";
+import { useState } from "react";
 
 interface ExerciseEmptyStateProps {
-  onGenerateProgram?: () => void;
-  onCreateCustom?: () => void;
-  workoutType?: "home" | "gym";
+  onGenerateProgram: () => void;
+  workoutType: "home" | "gym";
+  dailyWorkoutId?: string;
 }
 
-export const ExerciseEmptyState = ({ 
-  onGenerateProgram, 
-  onCreateCustom,
-  workoutType = "home" 
+export const ExerciseEmptyState = ({
+  onGenerateProgram,
+  workoutType,
+  dailyWorkoutId
 }: ExerciseEmptyStateProps) => {
-  const { t } = useLanguage();
+  const [showCustomExerciseDialog, setShowCustomExerciseDialog] = useState(false);
 
   return (
-    <div className="min-h-[500px] flex items-center justify-center p-4">
-      <Card className="p-8 max-w-md w-full text-center bg-white shadow-lg">
-        <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-          <Dumbbell className="w-10 h-10 text-blue-600" />
+    <Card className="p-12 text-center bg-gradient-to-br from-fitness-primary-50 to-fitness-secondary-50 border-0 shadow-xl">
+      <div className="max-w-md mx-auto">
+        <div className="w-20 h-20 bg-gradient-to-br from-fitness-primary-500 to-fitness-secondary-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+          <Target className="w-10 h-10 text-white" />
         </div>
-        
-        <h3 className="text-2xl font-bold text-gray-900 mb-4">
-          {t('exercise.noProgram') || 'No Exercise Program'}
+        <h3 className="text-2xl font-bold text-fitness-primary-800 mb-3">
+          No Exercises Today
         </h3>
-        
-        <p className="text-gray-600 mb-8 leading-relaxed">
-          {workoutType === 'gym' 
-            ? t('exercise.noProgramGym') || 'Create your first gym workout program to start building strength and achieving your fitness goals.'
-            : t('exercise.noProgramHome') || 'Create your first home workout program to start your fitness journey from the comfort of your home.'
-          }
+        <p className="text-fitness-primary-600 text-lg leading-relaxed mb-6">
+          No exercises are scheduled for today. Generate a new workout program or add custom exercises.
         </p>
         
-        <div className="space-y-3">
-          {onGenerateProgram && (
-            <Button 
-              onClick={onGenerateProgram}
-              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
-            >
-              <Sparkles className="w-4 h-4 mr-2" />
-              {t('exercise.generateWithAI') || 'Generate with AI'}
-            </Button>
-          )}
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Button 
+            onClick={onGenerateProgram}
+            size="lg" 
+            className="bg-gradient-to-r from-fitness-primary-500 to-fitness-secondary-500 hover:from-fitness-primary-600 hover:to-fitness-secondary-600 text-white font-semibold px-8 py-3 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200"
+          >
+            <Dumbbell className="w-5 h-5 mr-2" />
+            Generate Program
+          </Button>
           
-          {onCreateCustom && (
+          {dailyWorkoutId && (
             <Button 
-              onClick={onCreateCustom}
+              onClick={() => setShowCustomExerciseDialog(true)}
               variant="outline"
-              className="w-full border-gray-300 text-gray-700 hover:bg-gray-50"
+              size="lg"
+              className="border-2 border-fitness-primary-300 text-fitness-primary-700 hover:bg-fitness-primary-50 font-semibold px-8 py-3 rounded-xl"
             >
-              <Plus className="w-4 h-4 mr-2" />
-              {t('exercise.createCustom') || 'Create Custom Program'}
+              <Plus className="w-5 h-5 mr-2" />
+              Add Custom Exercise
             </Button>
           )}
         </div>
-
-        {/* Quick Facts */}
-        <div className="mt-8 pt-6 border-t border-gray-200">
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div>
-              <div className="text-2xl font-bold text-blue-600">7</div>
-              <div className="text-xs text-gray-600">{t('Days/Week')}</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-green-600">30</div>
-              <div className="text-xs text-gray-600">{t('Min/Day')}</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-purple-600">∞</div>
-              <div className="text-xs text-gray-600">{t('Possibilities')}</div>
-            </div>
-          </div>
-        </div>
-      </Card>
-    </div>
+      </div>
+    </Card>
   );
 };
-
-export default ExerciseEmptyState;

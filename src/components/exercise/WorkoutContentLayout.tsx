@@ -1,7 +1,6 @@
 
 import { ExerciseListEnhanced } from "@/features/exercise";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useWorkoutSession } from "@/hooks/useWorkoutSession";
 
 interface WorkoutContentLayoutProps {
   todaysExercises: any[];
@@ -18,40 +17,25 @@ interface WorkoutContentLayoutProps {
 
 export const WorkoutContentLayout = ({
   todaysExercises,
-  completedExercises,
-  totalExercises,
-  progressPercentage,
   currentProgram,
   selectedDayNumber,
-  currentWeekOffset,
   onExerciseComplete,
   onExerciseProgressUpdate,
   isRestDay
 }: WorkoutContentLayoutProps) => {
   const { t } = useLanguage();
-  const workoutSession = useWorkoutSession();
-
-  const handleStartWorkout = () => {
-    workoutSession.startSession();
-  };
-
-  const handleCompleteExercise = async (exerciseId: string) => {
-    workoutSession.completeExercise(exerciseId);
-    await onExerciseComplete(exerciseId);
-  };
 
   return (
-    <div className="space-y-6">
-      {/* Main Exercise List - Full width layout */}
-      <div className="w-full">
-        <ExerciseListEnhanced 
-          exercises={todaysExercises}
-          isLoading={false}
-          onExerciseComplete={handleCompleteExercise}
-          onExerciseProgressUpdate={onExerciseProgressUpdate}
-          isRestDay={isRestDay}
-        />
-      </div>
+    <div className="w-full">
+      <ExerciseListEnhanced 
+        exercises={todaysExercises}
+        isLoading={false}
+        onExerciseComplete={onExerciseComplete}
+        onExerciseProgressUpdate={onExerciseProgressUpdate}
+        isRestDay={isRestDay}
+        currentProgram={currentProgram}
+        selectedDayNumber={selectedDayNumber}
+      />
     </div>
   );
 };
