@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useMemo } from 'react';
 import { useMealPlanData } from '@/hooks/meal-plan/useMealPlanData';
 import { useMealPlanNavigation } from '@/hooks/meal-plan/useMealPlanNavigation';
@@ -6,7 +7,7 @@ import { useMealPlanActions } from '@/hooks/useMealPlanActions';
 import { useCentralizedCredits } from '@/hooks/useCentralizedCredits';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from './useAuth';
-import type { DailyMeal } from '@/features/meal-plan/types';
+import type { DailyMeal, MealPlanFetchResult } from '@/features/meal-plan/types';
 
 export const useMealPlanState = () => {
   const { user } = useAuth();
@@ -163,8 +164,8 @@ export const useMealPlanState = () => {
       // Enhanced refresh sequence
       await refetch();
       
-      // Double check - if still no data, try one more time
-      const currentData = queryClient.getQueryData(['weekly-meal-plan', user?.id, currentWeekOffset]);
+      // Double check - if still no data, try one more time with proper typing
+      const currentData = queryClient.getQueryData(['weekly-meal-plan', user?.id, currentWeekOffset]) as MealPlanFetchResult | undefined;
       if (!currentData?.weeklyPlan) {
         console.log('⚠️ Still no data, final retry...');
         await new Promise(resolve => setTimeout(resolve, 2000));
