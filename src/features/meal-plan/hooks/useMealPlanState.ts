@@ -1,10 +1,10 @@
 
 import { useState, useCallback, useMemo } from 'react';
-import { useMealPlanData } from '@/hooks/useMealPlanData';
-import { useMealPlanActions } from '@/hooks/useMealPlanActions';
+import { useMealPlanData } from './useMealPlanData';
+import { useMealPlanActions } from './useMealPlanActions';
 import { useCentralizedCredits } from '@/hooks/useCentralizedCredits';
 import { useQueryClient } from '@tanstack/react-query';
-import { useAuth } from './useAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { getWeekStartDate, getCurrentSaturdayDay } from '@/utils/mealPlanUtils';
 import type { DailyMeal, MealPlanFetchResult } from '@/features/meal-plan/types';
 

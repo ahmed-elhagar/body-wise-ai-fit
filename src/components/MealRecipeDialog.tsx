@@ -1,3 +1,3 @@
 
-// Simplified wrapper - points to the enhanced recipe dialog
-export { EnhancedRecipeDialog as default } from './meal-plan/EnhancedRecipeDialog';
+// Redirect to the feature-based component
+export { EnhancedRecipeDialog as default } from '@/features/meal-plan/components/EnhancedRecipeDialog';

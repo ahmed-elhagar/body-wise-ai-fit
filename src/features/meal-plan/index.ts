@@ -9,7 +9,10 @@ export {
   MealPlanEmptyState,
   MealPlanErrorState,
   MealPlanLoadingState,
-  MealPlanContent
+  MealPlanContent,
+  MealCard,
+  DayOverview,
+  EnhancedRecipeDialog
 } from './components';
 
 // Export types

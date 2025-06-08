@@ -1,6 +1,6 @@
 
 import React, { useState, useRef } from 'react';
-import { useMealPlanState } from '@/hooks/useMealPlanState';
+import { useMealPlanState } from '../hooks/useMealPlanState';
 import MealPlanHeader from './MealPlanHeader';
 import { MealPlanContent } from './MealPlanContent';
 import ErrorState from './ErrorState';
@@ -18,7 +18,7 @@ import { formatWeekRange, getDayName } from '@/utils/mealPlanUtils';
 import { MealExchangeDialog } from '@/components/meal-plan/MealExchangeDialog';
 import { AIGenerationDialog } from './dialogs/AIGenerationDialog';
 import EnhancedAddSnackDialog from '@/components/meal-plan/EnhancedAddSnackDialog';
-import { EnhancedRecipeDialog } from '@/components/meal-plan/EnhancedRecipeDialog';
+import { EnhancedRecipeDialog } from './EnhancedRecipeDialog';
 
 const MealPlanContainer = () => {
   const mealPlanState = useMealPlanState();

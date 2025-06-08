@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useEnhancedMealPlan } from "@/hooks/useEnhancedMealPlan";
 import { useQueryClient } from '@tanstack/react-query';
-import { useAuth } from './useAuth';
+import { useAuth } from '@/hooks/useAuth';
 
 export const useMealPlanActions = (
   currentWeekPlan: any,

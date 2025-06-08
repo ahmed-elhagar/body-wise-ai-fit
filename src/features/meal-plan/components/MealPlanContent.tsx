@@ -63,13 +63,6 @@ export const MealPlanContent = ({
         onExchangeMeal={onExchangeMeal}
         onAddSnack={onAddSnack}
         weekStartDate={weekStartDate}
-        weeklyPlan={currentWeekPlan}
-        showAddSnackButton={true}
-        currentWeekOffset={currentWeekOffset}
-        setCurrentWeekOffset={setCurrentWeekOffset}
-        setSelectedDayNumber={setSelectedDayNumber}
-        onGenerateAI={onGenerateAI}
-        isGenerating={isGenerating}
       />
     );
   }

@@ -1,10 +1,10 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { useAuth } from './useAuth';
-import { useEnhancedErrorHandling } from './useEnhancedErrorHandling';
+import { useAuth } from '@/hooks/useAuth';
+import { useEnhancedErrorHandling } from '@/hooks/useEnhancedErrorHandling';
 import { getWeekStartDate } from '@/utils/mealPlanUtils';
 import { format } from 'date-fns';
-import { fetchMealPlanData } from '../features/meal-plan/services/mealPlanService';
+import { fetchMealPlanData } from '../services/mealPlanService';
 
 // Re-export types for backward compatibility - use the main types from features
 export type { MealIngredient, DailyMeal, WeeklyMealPlan } from '@/features/meal-plan/types';
