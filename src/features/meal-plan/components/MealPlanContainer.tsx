@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { useMealPlanState } from '../hooks/useMealPlanState';
 import MealPlanHeader from './MealPlanHeader';
@@ -16,7 +15,7 @@ import { formatWeekRange, getDayName } from '@/utils/mealPlanUtils';
 import { MealExchangeDialog } from './dialogs/MealExchangeDialog';
 import { AIGenerationDialog } from './dialogs/AIGenerationDialog';
 import { EnhancedRecipeDialog } from './EnhancedRecipeDialog';
-import { EnhancedAddSnackDialog } from './dialogs/EnhancedAddSnackDialog';
+import EnhancedAddSnackDialog from './dialogs/EnhancedAddSnackDialog';
 import { ModernShoppingListDrawer } from './dialogs/ModernShoppingListDrawer';
 import { MealPlanAILoadingDialog } from './dialogs/MealPlanAILoadingDialog';
 
