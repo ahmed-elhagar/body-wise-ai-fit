@@ -26,3 +26,4 @@ export { ExerciseErrorState } from './ExerciseErrorState';
 export { EnhancedExerciseHeaderWithAnalytics } from './EnhancedExerciseHeaderWithAnalytics';
 export { ExerciseAnalyticsContainer } from './ExerciseAnalyticsContainer';
 export { AIExerciseDialog } from './AIExerciseDialog';
+export { ExerciseActionsDropdown } from './ExerciseActionsDropdown';

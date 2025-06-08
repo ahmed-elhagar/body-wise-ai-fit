@@ -6,17 +6,16 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { 
   Play, 
-  Pause, 
   CheckCircle2, 
   Clock, 
   Target, 
   Dumbbell,
-  MoreHorizontal,
   Timer,
   Zap,
   Award
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { ExerciseActionsDropdown } from "./ExerciseActionsDropdown";
 
 interface InteractiveExerciseCardProps {
   exercise: any;
@@ -76,80 +75,104 @@ export const InteractiveExerciseCard = ({
   };
 
   return (
-    <Card className={`p-3 transition-all duration-300 ${
+    <Card className={`p-4 transition-all duration-300 ${
       exercise.completed 
-        ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200' 
+        ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 shadow-sm' 
         : isActive 
-        ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 shadow-md' 
-        : 'bg-white border-gray-200 hover:border-blue-300'
+        ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-300 shadow-md ring-1 ring-blue-200' 
+        : 'bg-white border-gray-200 hover:border-blue-300 hover:shadow-lg'
     }`}>
-      <div className="flex items-center gap-3">
-        {/* Exercise Icon */}
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+      <div className="flex items-start gap-4">
+        {/* Exercise Icon & Number */}
+        <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-sm transition-colors ${
           exercise.completed 
-            ? 'bg-green-500' 
+            ? 'bg-gradient-to-br from-green-500 to-green-600' 
             : isActive 
-            ? 'bg-blue-500' 
-            : 'bg-gray-400'
+            ? 'bg-gradient-to-br from-blue-500 to-blue-600' 
+            : 'bg-gradient-to-br from-gray-400 to-gray-500'
         }`}>
           {exercise.completed ? (
-            <CheckCircle2 className="w-5 h-5 text-white" />
+            <CheckCircle2 className="w-6 h-6 text-white" />
           ) : (
-            <Dumbbell className="w-5 h-5 text-white" />
+            <span className="text-white font-bold text-lg">{index + 1}</span>
           )}
         </div>
 
         {/* Exercise Details */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between mb-1">
-            <h4 className="font-semibold text-gray-900 text-sm truncate">
-              {exercise.name}
-            </h4>
-            <Badge variant="outline" className="text-xs">
-              #{index + 1}
-            </Badge>
-          </div>
-          
-          <div className="flex items-center gap-4 text-xs text-gray-600">
-            <div className="flex items-center gap-1">
-              <Target className="w-3 h-3" />
-              <span>{exercise.sets || 3} × {exercise.reps || '10'}</span>
+          <div className="flex items-start justify-between mb-2">
+            <div className="flex-1">
+              <h4 className="font-semibold text-gray-900 text-base mb-1 line-clamp-1">
+                {exercise.name}
+              </h4>
+              
+              <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
+                <div className="flex items-center gap-1">
+                  <Target className="w-4 h-4" />
+                  <span className="font-medium">{exercise.sets || 3} × {exercise.reps || '10'}</span>
+                </div>
+                
+                {exercise.rest_seconds && (
+                  <div className="flex items-center gap-1">
+                    <Clock className="w-4 h-4" />
+                    <span>{exercise.rest_seconds}s rest</span>
+                  </div>
+                )}
+                
+                {exercise.muscle_groups?.length > 0 && (
+                  <div className="flex items-center gap-1">
+                    <Zap className="w-4 h-4" />
+                    <span className="truncate">{exercise.muscle_groups[0]}</span>
+                  </div>
+                )}
+              </div>
             </div>
-            
-            {exercise.rest_seconds && (
-              <div className="flex items-center gap-1">
-                <Clock className="w-3 h-3" />
-                <span>{exercise.rest_seconds}s rest</span>
-              </div>
-            )}
-            
-            {exercise.muscle_groups?.length > 0 && (
-              <div className="flex items-center gap-1">
-                <Zap className="w-3 h-3" />
-                <span>{exercise.muscle_groups[0]}</span>
-              </div>
-            )}
+
+            <div className="flex items-center gap-2 ml-2">
+              {!exercise.completed && !isActive && (
+                <Button
+                  onClick={handleStartExercise}
+                  size="sm"
+                  className="h-9 px-4 bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+                >
+                  <Play className="w-4 h-4 mr-1" />
+                  Start
+                </Button>
+              )}
+              
+              {exercise.completed && (
+                <Badge className="bg-green-500 text-white px-3 py-1">
+                  <CheckCircle2 className="w-3 h-3 mr-1" />
+                  Complete
+                </Badge>
+              )}
+
+              <ExerciseActionsDropdown 
+                exercise={exercise}
+                size="sm"
+              />
+            </div>
           </div>
 
           {/* Progress Bar */}
-          <div className="mt-2">
+          <div className="mb-3">
             <div className="flex justify-between items-center text-xs mb-1">
-              <span className="text-gray-500">Progress</span>
-              <span className="font-medium">{Math.round(progressPercentage)}%</span>
+              <span className="text-gray-500 font-medium">Progress</span>
+              <span className="font-semibold text-gray-700">{Math.round(progressPercentage)}%</span>
             </div>
-            <Progress value={progressPercentage} className="h-1.5" />
+            <Progress value={progressPercentage} className="h-2" />
           </div>
 
           {/* Active Exercise State */}
           {isActive && (
-            <div className="mt-2 p-2 bg-blue-50 rounded-lg">
+            <div className="p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
               <div className="flex items-center justify-between">
                 <div className="text-sm">
-                  <span className="font-medium text-blue-900">
+                  <span className="font-semibold text-blue-900">
                     Set {currentSet}/{exercise.sets || 3}
                   </span>
                   {isResting && (
-                    <div className="text-orange-600 font-mono">
+                    <div className="text-orange-600 font-mono text-lg font-bold mt-1">
                       Rest: {formatTime(restTimer)}
                     </div>
                   )}
@@ -159,12 +182,18 @@ export const InteractiveExerciseCard = ({
                   onClick={handleSetComplete}
                   disabled={isResting}
                   size="sm"
-                  className="h-7 text-xs"
+                  className={`h-8 px-3 text-xs font-medium ${
+                    isResting 
+                      ? 'bg-orange-500 hover:bg-orange-600' 
+                      : currentSet >= (exercise.sets || 3)
+                      ? 'bg-green-600 hover:bg-green-700'
+                      : 'bg-blue-600 hover:bg-blue-700'
+                  }`}
                 >
                   {isResting ? (
                     <>
                       <Timer className="w-3 h-3 mr-1" />
-                      Rest
+                      Resting...
                     </>
                   ) : currentSet >= (exercise.sets || 3) ? (
                     <>
@@ -181,34 +210,6 @@ export const InteractiveExerciseCard = ({
               </div>
             </div>
           )}
-        </div>
-
-        {/* Action Button */}
-        <div className="flex flex-col gap-1">
-          {!exercise.completed && !isActive && (
-            <Button
-              onClick={handleStartExercise}
-              size="sm"
-              className="h-8 px-3 text-xs bg-blue-600 hover:bg-blue-700"
-            >
-              <Play className="w-3 h-3 mr-1" />
-              Start
-            </Button>
-          )}
-          
-          {exercise.completed && (
-            <Badge className="bg-green-500 text-white text-xs">
-              Complete
-            </Badge>
-          )}
-
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-6 px-2"
-          >
-            <MoreHorizontal className="w-3 h-3" />
-          </Button>
         </div>
       </div>
     </Card>
