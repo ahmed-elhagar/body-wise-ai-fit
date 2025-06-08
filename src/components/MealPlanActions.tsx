@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Calendar, Grid, Plus, ShoppingCart, Sparkles } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 interface MealPlanActionsProps {
   viewMode: 'daily' | 'weekly';
@@ -20,7 +20,7 @@ const MealPlanActions = ({
   showAddSnack,
   showShoppingList
 }: MealPlanActionsProps) => {
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL } = useI18n();
 
   return (
     <div className="mb-6 space-y-6">
@@ -38,7 +38,7 @@ const MealPlanActions = ({
             size="sm"
           >
             <Calendar className="w-4 h-4 mr-2" />
-            {t('mealPlan.dailyView')}
+            {t('mealPlan:dailyView')}
           </Button>
           <Button
             variant={viewMode === 'weekly' ? 'default' : 'ghost'}
@@ -51,7 +51,7 @@ const MealPlanActions = ({
             size="sm"
           >
             <Grid className="w-4 h-4 mr-2" />
-            {t('mealPlan.weeklyView')}
+            {t('mealPlan:weeklyView')}
           </Button>
         </div>
       </div>
@@ -67,7 +67,7 @@ const MealPlanActions = ({
               onClick={onShowShoppingList}
             >
               <ShoppingCart className="w-4 h-4 mr-2" />
-              {t('mealPlan.shoppingList')}
+              {t('mealPlan:shoppingList')}
             </Button>
           )}
 
@@ -79,7 +79,7 @@ const MealPlanActions = ({
               onClick={onAddSnack}
             >
               <Plus className="w-4 h-4 mr-2" />
-              {t('mealPlan.addSnack')}
+              {t('mealPlan:addSnack')}
             </Button>
           )}
         </div>
@@ -91,8 +91,8 @@ const MealPlanActions = ({
           <p className="text-xs text-health-text-muted font-medium flex items-center">
             <Sparkles className="w-3 h-3 mr-1" />
             {viewMode === 'daily' 
-              ? t('mealPlan.dailyViewHelper') 
-              : t('mealPlan.weeklyViewHelper')
+              ? t('mealPlan:dailyViewHelper') 
+              : t('mealPlan:weeklyViewHelper')
             }
           </p>
         </div>

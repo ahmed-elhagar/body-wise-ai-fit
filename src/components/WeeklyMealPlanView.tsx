@@ -1,5 +1,5 @@
 
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import WeeklyPlanHeader from "./weekly-meal-plan/WeeklyPlanHeader";
 import DayMealCard from "./weekly-meal-plan/DayMealCard";
 import type { Meal } from "@/types/meal";
@@ -11,15 +11,15 @@ interface WeeklyMealPlanViewProps {
 }
 
 const WeeklyMealPlanView = ({ weeklyPlan, onShowRecipe, onExchangeMeal }: WeeklyMealPlanViewProps) => {
-  const { t } = useLanguage();
+  const { t } = useI18n();
   
   const dayNames = [
-    t('saturday'), t('sunday'), t('monday'), 
-    t('tuesday'), t('wednesday'), t('thursday'), t('friday')
+    t('common:saturday'), t('common:sunday'), t('common:monday'), 
+    t('common:tuesday'), t('common:wednesday'), t('common:thursday'), t('common:friday')
   ];
   
   const getDietType = () => {
-    if (!weeklyPlan?.dailyMeals?.length) return t('balanced');
+    if (!weeklyPlan?.dailyMeals?.length) return t('common:balanced');
     
     const allIngredients = weeklyPlan.dailyMeals
       .flatMap((meal: any) => meal.ingredients || [])
@@ -35,10 +35,10 @@ const WeeklyMealPlanView = ({ weeklyPlan, onShowRecipe, onExchangeMeal }: Weekly
     const hasHighProtein = weeklyPlan.dailyMeals.some((meal: any) => (meal.protein || 0) > 25);
     const hasLowCarb = weeklyPlan.dailyMeals.some((meal: any) => (meal.carbs || 0) < 10);
     
-    if (!hasAnimalProducts) return t('vegetarian');
-    if (hasLowCarb && hasHighProtein) return t('keto');
-    if (hasHighProtein) return t('highProtein');
-    return t('balanced');
+    if (!hasAnimalProducts) return t('common:vegetarian');
+    if (hasLowCarb && hasHighProtein) return t('common:keto');
+    if (hasHighProtein) return t('common:highProtein');
+    return t('common:balanced');
   };
 
   const getMealsByDay = (dayNumber: number) => {

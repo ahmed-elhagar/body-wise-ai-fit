@@ -6,12 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Camera, Upload, Loader2, Eye } from "lucide-react";
 import { useFoodPhotoIntegration } from "@/hooks/useFoodPhotoIntegration";
 import FoodAnalysisResults from "@/components/food-photo-analysis/FoodAnalysisResults";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 const MealPhotoUpload = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const { t } = useLanguage();
+  const { t } = useI18n();
   
   const { 
     analyzePhoto,
@@ -53,10 +53,10 @@ const MealPhotoUpload = () => {
         <div className="text-center">
           <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center justify-center">
             <Camera className="w-5 h-5 mr-2" />
-            {t('Analyze Your Meal')}
+            {t('common:analyzeMeal')}
           </h3>
           <p className="text-gray-600 mb-6">
-            {t('Upload a photo of your meal and get instant nutrition analysis with AI-powered food recognition')}
+            {t('common:uploadPhotoDesc')}
           </p>
 
           {!previewUrl ? (
@@ -71,11 +71,11 @@ const MealPhotoUpload = () => {
               />
               <label htmlFor="meal-photo" className="cursor-pointer">
                 <Button variant="outline" className="mb-2">
-                  {t('Choose Photo')}
+                  {t('common:choosePhoto')}
                 </Button>
               </label>
               <p className="text-sm text-gray-500">
-                {t('PNG, JPG up to 10MB')}
+                {t('common:imageFormats')}
               </p>
             </div>
           ) : (
@@ -104,12 +104,12 @@ const MealPhotoUpload = () => {
                 {isAnalyzing ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    {t('Analyzing...')}
+                    {t('common:analyzing')}
                   </>
                 ) : (
                   <>
                     <Eye className="w-4 h-4 mr-2" />
-                    {t('Analyze Nutrition')}
+                    {t('common:analyzeNutrition')}
                   </>
                 )}
               </Button>

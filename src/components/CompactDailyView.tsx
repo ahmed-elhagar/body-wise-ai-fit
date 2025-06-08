@@ -1,8 +1,9 @@
+
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, ShoppingCart, ChefHat, Clock, Flame, Zap, Sparkles } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import CompactMealCard from "@/components/daily-view/CompactMealCard";
 import DailyNutritionSummary from "@/components/daily-view/DailyNutritionSummary";
 import type { Meal } from "@/types/meal";
@@ -28,7 +29,7 @@ const CompactDailyView = ({
   onShowShoppingList,
   onGenerate
 }: CompactDailyViewProps) => {
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL } = useI18n();
 
   // Group meals by type
   const mealsByType = todaysMeals.reduce((acc, meal, index) => {
@@ -48,11 +49,11 @@ const CompactDailyView = ({
         </div>
         
         <h3 className="text-2xl font-bold text-gray-800 mb-3 bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
-          {t('mealPlan.noMealsToday')}
+          {t('mealPlan:noMealsToday')}
         </h3>
         
         <p className="text-gray-600 mb-6 max-w-md mx-auto leading-relaxed">
-          {t('mealPlan.generateFirstPlan')}
+          {t('mealPlan:generateFirstPlan')}
         </p>
         
         <Button 
@@ -60,7 +61,7 @@ const CompactDailyView = ({
           className="bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 px-8 py-4 text-lg font-semibold rounded-2xl"
         >
           <Sparkles className="w-5 h-5 mr-3" />
-          {t('mealPlan.generateMealPlan')}
+          {t('mealPlan:generateMealPlan')}
         </Button>
       </Card>
     );
@@ -84,7 +85,7 @@ const CompactDailyView = ({
           onClick={onShowShoppingList}
         >
           <ShoppingCart className={`w-4 h-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
-          {t('mealPlan.shoppingList')}
+          {t('mealPlan:shoppingList')}
         </Button>
         
         <Button 
@@ -93,7 +94,7 @@ const CompactDailyView = ({
           onClick={onAddSnack}
         >
           <Plus className={`w-4 h-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
-          {t('mealPlan.addSnack')}
+          {t('mealPlan:addSnack')}
         </Button>
       </div>
 
@@ -110,11 +111,11 @@ const CompactDailyView = ({
                   <ChefHat className="w-4 h-4 text-white" />
                 </div>
                 <h3 className="font-bold text-gray-800 text-lg capitalize">
-                  {t(`common.${mealType}`)}
+                  {t(`mealPlan:${mealType}`)}
                 </h3>
               </div>
               <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200">
-                {meals.length} {meals.length === 1 ? t('mealPlan.meal') : t('mealPlan.meals')}
+                {meals.length} {meals.length === 1 ? t('mealPlan:meal') : t('mealPlan:meals')}
               </Badge>
             </div>
             
@@ -142,21 +143,21 @@ const CompactDailyView = ({
               <Flame className="w-5 h-5 text-red-500" />
               <div className={`text-center ${isRTL ? 'text-right' : 'text-left'}`}>
                 <div className="text-xl font-bold text-gray-800">{totalCalories}</div>
-                <div className="text-xs text-gray-600">{t('common.calories')}</div>
+                <div className="text-xs text-gray-600">{t('common:calories')}</div>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <Zap className="w-5 h-5 text-green-500" />
               <div className={`text-center ${isRTL ? 'text-right' : 'text-left'}`}>
                 <div className="text-xl font-bold text-gray-800">{totalProtein}g</div>
-                <div className="text-xs text-gray-600">{t('common.protein')}</div>
+                <div className="text-xs text-gray-600">{t('common:protein')}</div>
               </div>
             </div>
           </div>
           
           <div className={`flex items-center gap-2 text-sm text-gray-600 ${isRTL ? 'flex-row-reverse' : ''}`}>
             <Clock className="w-4 h-4" />
-            <span>{todaysMeals.length} {t('mealPlan.mealsPlanned')}</span>
+            <span>{todaysMeals.length} {t('mealPlan:mealsPlanned')}</span>
           </div>
         </div>
       </Card>

@@ -10,7 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
 import { Plus, Sparkles } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 interface AddSnackDialogProps {
   isOpen: boolean;
@@ -33,7 +33,7 @@ const AddSnackDialog = ({
 }: AddSnackDialogProps) => {
   const { user } = useAuth();
   const { profile } = useProfile();
-  const { language } = useLanguage();
+  const { t, language } = useI18n();
   const [isGenerating, setIsGenerating] = useState(false);
   const [customSnack, setCustomSnack] = useState({
     name: '',
@@ -47,12 +47,12 @@ const AddSnackDialog = ({
 
   const handleGenerateAISnack = async () => {
     if (!user || !weeklyPlanId) {
-      toast.error('Missing required data');
+      toast.error(t('common:missingData'));
       return;
     }
 
     if (remainingCalories < 50) {
-      toast.error('Not enough calories remaining for a snack');
+      toast.error(t('mealPlan:addSnackDialog.notEnoughCalories'));
       return;
     }
 
@@ -71,21 +71,21 @@ const AddSnackDialog = ({
 
       if (error) {
         console.error('Error generating AI snack:', error);
-        toast.error('Failed to generate snack');
+        toast.error(t('mealPlan:addSnackDialog.failed'));
         return;
       }
 
       if (data?.success) {
-        toast.success('Snack added successfully!');
+        toast.success(t('mealPlan:addSnackDialog.success'));
         onClose();
         onSnackAdded();
       } else {
-        toast.error(data?.error || 'Failed to generate snack');
+        toast.error(data?.error || t('mealPlan:addSnackDialog.failed'));
       }
       
     } catch (error) {
       console.error('Error generating AI snack:', error);
-      toast.error('Failed to generate snack');
+      toast.error(t('mealPlan:addSnackDialog.failed'));
     } finally {
       setIsGenerating(false);
     }
@@ -93,12 +93,12 @@ const AddSnackDialog = ({
 
   const handleAddCustomSnack = async () => {
     if (!customSnack.name || !customSnack.calories) {
-      toast.error('Please fill in snack name and calories');
+      toast.error(t('common:fillRequired'));
       return;
     }
 
     if (!weeklyPlanId) {
-      toast.error('No meal plan found');
+      toast.error(t('mealPlan:noMealPlan'));
       return;
     }
 
@@ -121,13 +121,13 @@ const AddSnackDialog = ({
 
       if (error) throw error;
 
-      toast.success('Custom snack added successfully!');
+      toast.success(t('mealPlan:addSnackDialog.success'));
       setCustomSnack({ name: '', calories: '', protein: '', carbs: '', fat: '' });
       onClose();
       onSnackAdded();
     } catch (error) {
       console.error('Error adding custom snack:', error);
-      toast.error('Failed to add snack');
+      toast.error(t('mealPlan:addSnackDialog.failed'));
     }
   };
 
@@ -135,13 +135,13 @@ const AddSnackDialog = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Add Snack - Day {selectedDay}</DialogTitle>
+          <DialogTitle>{t('mealPlan:addSnackDialog.title')} - {t('common:day')} {selectedDay}</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-6">
           {/* Calorie Info */}
           <div className="text-sm text-gray-600">
-            <p>Remaining calories for today: <span className="font-semibold">{remainingCalories}</span></p>
+            <p>{t('mealPlan:addSnackDialog.caloriesAvailable')}: <span className="font-semibold">{remainingCalories}</span></p>
           </div>
 
           {/* AI Generated Snack */}
@@ -149,10 +149,10 @@ const AddSnackDialog = ({
             <CardContent className="p-4">
               <h3 className="font-semibold mb-3 flex items-center gap-2">
                 <Sparkles className="w-4 h-4" />
-                AI Generated Snack
+                {t('mealPlan:addSnackDialog.generateAISnack')}
               </h3>
               <p className="text-sm mb-4">
-                Let AI create a perfect snack based on your preferences and remaining calories.
+                {t('mealPlan:addSnackDialog.perfectFit')}
               </p>
               <Button 
                 onClick={handleGenerateAISnack}
@@ -160,7 +160,7 @@ const AddSnackDialog = ({
                 className="w-full"
               >
                 <Sparkles className="w-4 h-4 mr-2" />
-                {isGenerating ? 'Generating...' : 'Generate AI Snack'}
+                {isGenerating ? t('mealPlan:addSnackDialog.generatingAISnack') : t('mealPlan:addSnackDialog.generateAISnack')}
               </Button>
             </CardContent>
           </Card>
@@ -170,12 +170,12 @@ const AddSnackDialog = ({
             <CardContent className="p-4">
               <h3 className="font-semibold mb-3 flex items-center gap-2">
                 <Plus className="w-4 h-4" />
-                Custom Snack
+                {t('mealPlan:addSnackDialog.customSnack')}
               </h3>
               
               <div className="space-y-3">
                 <div>
-                  <Label htmlFor="snack-name">Snack Name</Label>
+                  <Label htmlFor="snack-name">{t('mealPlan:addSnackDialog.snackName')}</Label>
                   <Input
                     id="snack-name"
                     value={customSnack.name}
@@ -186,7 +186,7 @@ const AddSnackDialog = ({
                 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label htmlFor="calories">Calories</Label>
+                    <Label htmlFor="calories">{t('common:calories')}</Label>
                     <Input
                       id="calories"
                       type="number"
@@ -196,7 +196,7 @@ const AddSnackDialog = ({
                     />
                   </div>
                   <div>
-                    <Label htmlFor="protein">Protein (g)</Label>
+                    <Label htmlFor="protein">{t('common:protein')} (g)</Label>
                     <Input
                       id="protein"
                       type="number"
@@ -209,7 +209,7 @@ const AddSnackDialog = ({
                 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label htmlFor="carbs">Carbs (g)</Label>
+                    <Label htmlFor="carbs">{t('common:carbs')} (g)</Label>
                     <Input
                       id="carbs"
                       type="number"
@@ -219,7 +219,7 @@ const AddSnackDialog = ({
                     />
                   </div>
                   <div>
-                    <Label htmlFor="fat">Fat (g)</Label>
+                    <Label htmlFor="fat">{t('common:fat')} (g)</Label>
                     <Input
                       id="fat"
                       type="number"
@@ -235,7 +235,7 @@ const AddSnackDialog = ({
                   className="w-full"
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Add Custom Snack
+                  {t('mealPlan:addSnackDialog.addCustomSnack')}
                 </Button>
               </div>
             </CardContent>
