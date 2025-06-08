@@ -1,77 +1,61 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MessageCircle, TrendingUp } from "lucide-react";
-import { TraineesTab } from "./TraineesTab";
+import { Users, MessageCircle, BarChart3, Calendar } from "lucide-react";
 import { useI18n } from "@/hooks/useI18n";
+import TraineesTab from "./TraineesTab";
+import CoachMessagesTab from "./CoachMessagesTab";
+import CoachAnalyticsTab from "./CoachAnalyticsTab";
+import CoachTasksTab from "./CoachTasksTab";
 
 interface CoachTabsProps {
   trainees: any[];
-  selectedClient: string | null;
-  setSelectedClient: (clientId: string | null) => void;
+  setSelectedClient: (clientId: string) => void;
 }
 
-export const CoachTabs = ({ trainees, selectedClient, setSelectedClient }: CoachTabsProps) => {
+const CoachTabs = ({ trainees, setSelectedClient }: CoachTabsProps) => {
   const { t } = useI18n();
 
   return (
-    <Tabs defaultValue="clients" className="w-full">
-      <TabsList className="grid w-full grid-cols-3 bg-white border border-gray-200 shadow-sm">
-        <TabsTrigger 
-          value="clients" 
-          className="data-[state=active]:bg-green-600 data-[state=active]:text-white"
-        >
-          {t('coach:clients')}
+    <Tabs defaultValue="trainees" className="w-full">
+      <TabsList className="grid w-full grid-cols-4">
+        <TabsTrigger value="trainees" className="flex items-center gap-2">
+          <Users className="w-4 h-4" />
+          {t('coach:trainees') || 'Trainees'}
         </TabsTrigger>
-        <TabsTrigger 
-          value="analytics" 
-          className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
-        >
-          {t('coach:analytics')}
+        <TabsTrigger value="messages" className="flex items-center gap-2">
+          <MessageCircle className="w-4 h-4" />
+          {t('coach:messages') || 'Messages'}
         </TabsTrigger>
-        <TabsTrigger 
-          value="messages" 
-          className="data-[state=active]:bg-purple-600 data-[state=active]:text-white"
-        >
-          {t('coach:messages')}
+        <TabsTrigger value="analytics" className="flex items-center gap-2">
+          <BarChart3 className="w-4 h-4" />
+          {t('coach:analytics') || 'Analytics'}
+        </TabsTrigger>
+        <TabsTrigger value="tasks" className="flex items-center gap-2">
+          <Calendar className="w-4 h-4" />
+          {t('coach:tasks') || 'Tasks'}
         </TabsTrigger>
       </TabsList>
 
-      <TabsContent value="clients" className="space-y-4">
+      <TabsContent value="trainees">
         <TraineesTab 
-          trainees={trainees}
-          selectedClient={selectedClient}
+          trainees={trainees} 
           setSelectedClient={setSelectedClient}
         />
       </TabsContent>
 
-      <TabsContent value="analytics" className="space-y-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5" />
-              {t('coach:performanceAnalytics')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">{t('coach:analyticsComingSoon')}</p>
-          </CardContent>
-        </Card>
+      <TabsContent value="messages">
+        <CoachMessagesTab trainees={trainees} />
       </TabsContent>
 
-      <TabsContent value="messages" className="space-y-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MessageCircle className="w-5 h-5" />
-              {t('coach:messageCenter')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">{t('coach:messagesComingSoon')}</p>
-          </CardContent>
-        </Card>
+      <TabsContent value="analytics">
+        <CoachAnalyticsTab trainees={trainees} />
+      </TabsContent>
+
+      <TabsContent value="tasks">
+        <CoachTasksTab />
       </TabsContent>
     </Tabs>
   );
 };
+
+export default CoachTabs;

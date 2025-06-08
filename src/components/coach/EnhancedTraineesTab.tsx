@@ -1,176 +1,161 @@
 
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Users, Grid, List, Plus, Settings } from "lucide-react";
-import TraineeProgressCard from "./TraineeProgressCard";
-import TraineeFilterBar from "./TraineeFilterBar";
-import CoachMetricsOverview from "./CoachMetricsOverview";
-import CoachTasksPanel from "./CoachTasksPanel";
-import { AssignTraineeDialog } from "./AssignTraineeDialog";
-import { CoachTraineeChat } from "./CoachTraineeChat";
-import { TraineeProgressView } from "./TraineeProgressView";
+import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Users, Search, Plus, Filter } from 'lucide-react';
+import { useI18n } from '@/hooks/useI18n';
+import TraineeCard from './TraineeCard';
+import AssignTraineeDialog from './AssignTraineeDialog';
 
-interface EnhancedTraineesTabProps {
-  trainees: any[];
-  onChatClick: (traineeId: string) => void;
+interface Trainee {
+  id: string;
+  name: string;
+  email: string;
+  status: 'active' | 'inactive' | 'pending';
+  lastActivity: string;
+  progress: number;
+  goal: string;
 }
 
-type ViewMode = 'list' | 'chat' | 'progress';
-type ViewType = 'grid' | 'list';
+interface EnhancedTraineesTabProps {
+  trainees: Trainee[];
+  onTraineeSelect: (traineeId: string) => void;
+  onMessageTrainee: (traineeId: string) => void;
+}
 
-export const EnhancedTraineesTab = ({ trainees, onChatClick }: EnhancedTraineesTabProps) => {
+const EnhancedTraineesTab = ({ 
+  trainees, 
+  onTraineeSelect, 
+  onMessageTrainee 
+}: EnhancedTraineesTabProps) => {
+  const { t } = useI18n();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showAssignDialog, setShowAssignDialog] = useState(false);
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
-  const [viewType, setViewType] = useState<ViewType>('grid');
-  const [selectedTrainee, setSelectedTrainee] = useState<any>(null);
-  const [filteredTrainees, setFilteredTrainees] = useState(trainees);
 
-  const handleChatClick = (trainee: any) => {
-    const traineeId = trainee.trainee_id || trainee.id;
-    setSelectedTrainee({ ...trainee, trainee_id: traineeId });
-    setViewMode('chat');
-    onChatClick(traineeId);
+  const filteredTrainees = trainees.filter(trainee => {
+    const matchesSearch = trainee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         trainee.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || trainee.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
+  const statusCounts = {
+    all: trainees.length,
+    active: trainees.filter(t => t.status === 'active').length,
+    inactive: trainees.filter(t => t.status === 'inactive').length,
+    pending: trainees.filter(t => t.status === 'pending').length
   };
 
-  const handleProgressClick = (trainee: any) => {
-    const traineeId = trainee.trainee_id || trainee.id;
-    setSelectedTrainee({ ...trainee, trainee_id: traineeId });
-    setViewMode('progress');
+  const handleAssignTrainee = (traineeData: any) => {
+    // Handle assigning new trainee
+    console.log('Assigning trainee:', traineeData);
+    setShowAssignDialog(false);
   };
 
-  const handleBackToList = () => {
-    setViewMode('list');
-    setSelectedTrainee(null);
-  };
-
-  // Show chat view
-  if (viewMode === 'chat' && selectedTrainee) {
-    return (
-      <CoachTraineeChat
-        traineeId={selectedTrainee.trainee_id}
-        traineeName={`${selectedTrainee.trainee_profile?.first_name || 'Unknown'} ${selectedTrainee.trainee_profile?.last_name || 'User'}`}
-        onBack={handleBackToList}
-      />
-    );
-  }
-
-  // Show progress view
-  if (viewMode === 'progress' && selectedTrainee) {
-    return (
-      <TraineeProgressView
-        traineeId={selectedTrainee.trainee_id}
-        traineeName={`${selectedTrainee.trainee_profile?.first_name || 'Unknown'} ${selectedTrainee.trainee_profile?.last_name || 'User'}`}
-        traineeProfile={selectedTrainee.trainee_profile}
-        onBack={handleBackToList}
-      />
-    );
-  }
-
-  // Show main trainees management view
   return (
     <div className="space-y-6">
-      {/* Metrics Overview */}
-      <CoachMetricsOverview trainees={trainees} />
-      
-      {/* Tasks Panel - Full Width */}
-      <CoachTasksPanel trainees={trainees} className="w-full" />
-      
-      {/* Main Content */}
+      {/* Header */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              Trainees Management
-              <Badge variant="secondary" className="ml-2">
-                {filteredTrainees.length} of {trainees.length}
-              </Badge>
+              <Users className="w-5 h-5" />
+              {t('coach:myTrainees')}
+              <Badge variant="outline">{trainees.length}</Badge>
             </CardTitle>
-            
-            <div className="flex items-center gap-2">
-              {/* View Type Toggle */}
-              <div className="flex border rounded-lg p-1">
-                <Button
-                  variant={viewType === 'grid' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewType('grid')}
-                  className="h-8 w-8 p-0"
-                >
-                  <Grid className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant={viewType === 'list' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewType('list')}
-                  className="h-8 w-8 p-0"
-                >
-                  <List className="h-4 w-4" />
-                </Button>
-              </div>
-              
-              <Button size="sm" variant="outline">
-                <Settings className="h-4 w-4 mr-1" />
-                Manage
-              </Button>
-              
-              <Button size="sm" onClick={() => setShowAssignDialog(true)}>
-                <Plus className="h-4 w-4 mr-1" />
-                Add Trainee
-              </Button>
-            </div>
+            <Button onClick={() => setShowAssignDialog(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              {t('coach:assignTrainee')}
+            </Button>
           </div>
         </CardHeader>
         
-        <CardContent className="space-y-6">
-          {/* Filter Bar */}
-          <TraineeFilterBar
-            trainees={trainees}
-            onFilteredTraineesChange={setFilteredTrainees}
-          />
-          
-          {/* Trainees Grid/List */}
-          {filteredTrainees.length === 0 ? (
-            <div className="text-center py-12">
-              <Users className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                No trainees found
-              </h3>
-              <p className="text-gray-600 mb-6">
-                {trainees.length === 0 
-                  ? "Start building your client base by adding your first trainee."
-                  : "Try adjusting your search or filter criteria."
-                }
-              </p>
-              <Button onClick={() => setShowAssignDialog(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Trainee
+        <CardContent className="space-y-4">
+          {/* Search and Filters */}
+          <div className="flex gap-4">
+            <div className="flex-1 relative">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <Input
+                placeholder={t('coach:searchTrainees')}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Button variant="outline" size="sm">
+              <Filter className="w-4 h-4 mr-2" />
+              {t('coach:filter')}
+            </Button>
+          </div>
+
+          {/* Status Filters */}
+          <div className="flex gap-2">
+            {Object.entries(statusCounts).map(([status, count]) => (
+              <Button
+                key={status}
+                variant={statusFilter === status ? "default" : "outline"}
+                size="sm"
+                onClick={() => setStatusFilter(status)}
+                className="flex items-center gap-2"
+              >
+                {t(`coach:status.${status}`)}
+                <Badge variant="secondary" className="ml-1">
+                  {count}
+                </Badge>
               </Button>
-            </div>
-          ) : (
-            <div className={
-              viewType === 'grid' 
-                ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
-                : "space-y-4"
-            }>
-              {filteredTrainees.map((trainee: any) => (
-                <TraineeProgressCard
-                  key={trainee.id}
-                  trainee={trainee}
-                  onChatClick={() => handleChatClick(trainee)}
-                  onProgressClick={() => handleProgressClick(trainee)}
-                />
-              ))}
-            </div>
-          )}
+            ))}
+          </div>
         </CardContent>
       </Card>
 
-      <AssignTraineeDialog 
+      {/* Trainees Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredTrainees.map((trainee) => (
+          <TraineeCard
+            key={trainee.id}
+            trainee={trainee}
+            onMessage={onMessageTrainee}
+            onViewDetails={onTraineeSelect}
+          />
+        ))}
+      </div>
+
+      {/* Empty State */}
+      {filteredTrainees.length === 0 && (
+        <Card>
+          <CardContent className="text-center py-12">
+            <Users className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              {searchTerm || statusFilter !== 'all' 
+                ? t('coach:noTraineesFound') 
+                : t('coach:noTraineesYet')
+              }
+            </h3>
+            <p className="text-gray-600 mb-6">
+              {searchTerm || statusFilter !== 'all'
+                ? t('coach:adjustFilters')
+                : t('coach:startByAssigning')
+              }
+            </p>
+            <Button onClick={() => setShowAssignDialog(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              {t('coach:assignFirstTrainee')}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Assign Trainee Dialog */}
+      <AssignTraineeDialog
         open={showAssignDialog}
         onOpenChange={setShowAssignDialog}
+        onAssign={handleAssignTrainee}
       />
     </div>
   );
 };
+
+export default EnhancedTraineesTab;

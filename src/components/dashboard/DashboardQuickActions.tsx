@@ -1,125 +1,93 @@
 
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import { 
-  Apple, 
+  UtensilsCrossed, 
   Dumbbell, 
-  Scale, 
-  BarChart3, 
-  User,
+  Camera, 
+  ShoppingCart,
+  MessageCircle,
   Target,
-  Utensils,
-  Bell
-} from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { useNavigate } from "react-router-dom";
+  TrendingUp,
+  Calendar,
+  Plus,
+  BarChart3
+} from 'lucide-react';
+import { useI18n } from '@/hooks/useI18n';
 
 interface DashboardQuickActionsProps {
-  handleViewMealPlan: () => void;
-  handleViewExercise: () => void;
-  handleViewWeight: () => void;
-  handleViewProgress: () => void;
-  handleViewProfile: () => void;
-  handleViewGoals: () => void;
+  onAction: (action: string) => void;
 }
 
-const DashboardQuickActions = ({
-  handleViewMealPlan,
-  handleViewExercise,
-  handleViewWeight,
-  handleViewProgress,
-  handleViewProfile,
-  handleViewGoals,
-}: DashboardQuickActionsProps) => {
-  const { t } = useLanguage();
-  const navigate = useNavigate();
+const DashboardQuickActions = ({ onAction }: DashboardQuickActionsProps) => {
+  const { t } = useI18n();
 
-  const quickActions = [
+  const actions = [
     {
-      title: t('Meal Plan'),
-      description: t('View today\'s meals'),
-      icon: Apple,
-      action: handleViewMealPlan,
-      color: 'bg-green-500 hover:bg-green-600',
+      id: 'meal-plan',
+      icon: UtensilsCrossed,
+      label: t('dashboard:actions.generateMealPlan') || 'Generate Meal Plan',
+      color: 'bg-green-500 hover:bg-green-600'
     },
     {
-      title: t('Workout'),
-      description: t('Start exercising'),
+      id: 'exercise-program',
       icon: Dumbbell,
-      action: handleViewExercise,
-      color: 'bg-blue-500 hover:bg-blue-600',
+      label: t('dashboard:actions.startWorkout') || 'Start Workout',
+      color: 'bg-blue-500 hover:bg-blue-600'
     },
     {
-      title: t('Food Tracker'),
-      description: t('Log your meals'),
-      icon: Utensils,
-      action: () => navigate('/food-tracker'),
-      color: 'bg-orange-500 hover:bg-orange-600',
+      id: 'food-scan',
+      icon: Camera,
+      label: t('dashboard:actions.scanFood') || 'Scan Food',
+      color: 'bg-purple-500 hover:bg-purple-600'
     },
     {
-      title: t('Weight'),
-      description: t('Track progress'),
-      icon: Scale,
-      action: handleViewWeight,
-      color: 'bg-purple-500 hover:bg-purple-600',
+      id: 'shopping-list',
+      icon: ShoppingCart,
+      label: t('dashboard:actions.shoppingList') || 'Shopping List',
+      color: 'bg-orange-500 hover:bg-orange-600'
     },
     {
-      title: t('Goals'),
-      description: t('Manage objectives'),
+      id: 'chat-coach',
+      icon: MessageCircle,
+      label: t('dashboard:actions.chatCoach') || 'Chat with Coach',
+      color: 'bg-pink-500 hover:bg-pink-600'
+    },
+    {
+      id: 'set-goals',
       icon: Target,
-      action: handleViewGoals,
-      color: 'bg-red-500 hover:bg-red-600',
+      label: t('dashboard:actions.setGoals') || 'Set Goals',
+      color: 'bg-indigo-500 hover:bg-indigo-600'
     },
     {
-      title: t('Progress'),
-      description: t('View analytics'),
-      icon: BarChart3,
-      action: handleViewProgress,
-      color: 'bg-indigo-500 hover:bg-indigo-600',
+      id: 'track-progress',
+      icon: TrendingUp,
+      label: t('dashboard:actions.trackProgress') || 'Track Progress',
+      color: 'bg-emerald-500 hover:bg-emerald-600'
     },
     {
-      title: t('Notifications'),
-      description: t('Check updates'),
-      icon: Bell,
-      action: () => navigate('/notifications'),
-      color: 'bg-yellow-500 hover:bg-yellow-600',
-    },
-    {
-      title: t('Profile'),
-      description: t('Edit settings'),
-      icon: User,
-      action: handleViewProfile,
-      color: 'bg-gray-500 hover:bg-gray-600',
-    },
+      id: 'schedule',
+      icon: Calendar,
+      label: t('dashboard:actions.schedule') || 'Schedule',
+      color: 'bg-teal-500 hover:bg-teal-600'
+    }
   ];
 
   return (
-    <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-      <CardContent className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          {t('Quick Actions')}
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {quickActions.map((action, index) => {
-            const IconComponent = action.icon;
-            return (
-              <Button
-                key={index}
-                variant="outline"
-                onClick={action.action}
-                className={`h-auto p-4 flex flex-col items-center space-y-2 text-white border-0 ${action.color} transition-all hover:scale-105`}
-              >
-                <IconComponent className="w-6 h-6" />
-                <div className="text-center">
-                  <div className="font-medium text-sm">{action.title}</div>
-                  <div className="text-xs opacity-90">{action.description}</div>
-                </div>
-              </Button>
-            );
-          })}
-        </div>
-      </CardContent>
-    </Card>
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {actions.map((action) => (
+        <Button
+          key={action.id}
+          variant="outline"
+          className={`h-20 flex flex-col gap-2 border-0 text-white ${action.color} transition-all duration-200 hover:scale-105`}
+          onClick={() => onAction(action.id)}
+        >
+          <action.icon className="w-6 h-6" />
+          <span className="text-xs font-medium text-center leading-tight">
+            {action.label}
+          </span>
+        </Button>
+      ))}
+    </div>
   );
 };
 

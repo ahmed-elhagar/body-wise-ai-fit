@@ -1,99 +1,123 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Bell, ArrowRight } from "lucide-react";
-import { useNotifications } from "@/hooks/useNotifications";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Bell, X, Check, Clock, AlertCircle } from 'lucide-react';
+import { useI18n } from '@/hooks/useI18n';
 
-const NotificationWidget = () => {
-  const { t } = useLanguage();
-  const navigate = useNavigate();
-  const { notifications, unreadCount, isLoading } = useNotifications();
+interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  type: 'info' | 'success' | 'warning' | 'error';
+  timestamp: string;
+  isRead: boolean;
+}
 
-  const recentNotifications = notifications.slice(0, 3);
+interface NotificationWidgetProps {
+  notifications: Notification[];
+  onMarkAsRead: (id: string) => void;
+  onDismiss: (id: string) => void;
+  onMarkAllAsRead: () => void;
+}
 
-  if (isLoading) {
-    return (
-      <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Bell className="h-5 w-5 text-blue-600" />
-            {t('Notifications')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="animate-pulse">
-                <div className="h-12 bg-gray-200 rounded"></div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+const NotificationWidget = ({ 
+  notifications, 
+  onMarkAsRead, 
+  onDismiss, 
+  onMarkAllAsRead 
+}: NotificationWidgetProps) => {
+  const { t } = useI18n();
+
+  const getIcon = (type: string) => {
+    switch (type) {
+      case 'success': return <Check className="w-4 h-4 text-green-500" />;
+      case 'warning': return <AlertCircle className="w-4 h-4 text-yellow-500" />;
+      case 'error': return <AlertCircle className="w-4 h-4 text-red-500" />;
+      default: return <Bell className="w-4 h-4 text-blue-500" />;
+    }
+  };
+
+  const unreadCount = notifications.filter(n => !n.isRead).length;
 
   return (
-    <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-      <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Bell className="h-5 w-5 text-blue-600" />
-            {t('Notifications')}
-            {unreadCount > 0 && (
-              <Badge variant="destructive" className="text-xs">
-                {unreadCount}
-              </Badge>
-            )}
-          </CardTitle>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate('/notifications')}
-            className="bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
-          >
-            {t('View All')}
-            <ArrowRight className="w-3 h-3 ml-1" />
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+        <CardTitle className="flex items-center gap-2">
+          <Bell className="w-5 h-5" />
+          {t('dashboard:notifications') || 'Notifications'}
+          {unreadCount > 0 && (
+            <Badge variant="destructive" className="ml-2">
+              {unreadCount}
+            </Badge>
+          )}
+        </CardTitle>
+        {unreadCount > 0 && (
+          <Button variant="outline" size="sm" onClick={onMarkAllAsRead}>
+            {t('dashboard:markAllAsRead') || 'Mark all as read'}
           </Button>
-        </div>
+        )}
       </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          {recentNotifications.length === 0 ? (
-            <div className="text-center py-6 text-gray-500">
-              <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">{t('No new notifications')}</p>
-            </div>
-          ) : (
-            recentNotifications.map((notification) => (
-              <div
-                key={notification.id}
-                className={`p-3 rounded-lg border transition-all ${
-                  !notification.is_read 
-                    ? 'bg-blue-50 border-blue-200' 
-                    : 'bg-gray-50 border-gray-200'
-                }`}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h4 className="font-medium text-sm text-gray-800 truncate">
-                      {notification.title}
-                    </h4>
-                    <p className="text-xs text-gray-600 mt-1 line-clamp-2">
-                      {notification.message}
-                    </p>
+      
+      <CardContent className="space-y-3">
+        {notifications.slice(0, 5).map((notification) => (
+          <div 
+            key={notification.id}
+            className={`p-3 rounded-lg border ${
+              notification.isRead ? 'bg-gray-50' : 'bg-white border-blue-200'
+            }`}
+          >
+            <div className="flex items-start justify-between">
+              <div className="flex items-start gap-3 flex-1">
+                {getIcon(notification.type)}
+                <div className="flex-1 min-w-0">
+                  <h4 className={`font-medium text-sm ${
+                    notification.isRead ? 'text-gray-600' : 'text-gray-900'
+                  }`}>
+                    {notification.title}
+                  </h4>
+                  <p className={`text-xs mt-1 ${
+                    notification.isRead ? 'text-gray-500' : 'text-gray-700'
+                  }`}>
+                    {notification.message}
+                  </p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <Clock className="w-3 h-3 text-gray-400" />
+                    <span className="text-xs text-gray-500">
+                      {notification.timestamp}
+                    </span>
                   </div>
-                  {!notification.is_read && (
-                    <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1 ml-2"></div>
-                  )}
                 </div>
               </div>
-            ))
-          )}
-        </div>
+              
+              <div className="flex gap-1 ml-2">
+                {!notification.isRead && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => onMarkAsRead(notification.id)}
+                  >
+                    <Check className="w-3 h-3" />
+                  </Button>
+                )}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => onDismiss(notification.id)}
+                >
+                  <X className="w-3 h-3" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        ))}
+        
+        {notifications.length === 0 && (
+          <div className="text-center py-6 text-gray-500">
+            <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />
+            <p className="text-sm">{t('dashboard:noNotifications') || 'No notifications'}</p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
