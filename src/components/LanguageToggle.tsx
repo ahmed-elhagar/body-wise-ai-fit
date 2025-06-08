@@ -10,7 +10,9 @@ const LanguageToggle = () => {
   const currentLanguage = language || 'en';
 
   const toggleLanguage = () => {
-    changeLanguage(currentLanguage === 'en' ? 'ar' : 'en');
+    const newLanguage = currentLanguage === 'en' ? 'ar' : 'en';
+    console.log(`Switching language from ${currentLanguage} to ${newLanguage}`);
+    changeLanguage(newLanguage);
   };
 
   return (

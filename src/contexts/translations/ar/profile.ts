@@ -1,3 +1,4 @@
+
 export const profile = {
   // Profile page specific translations
   title: "الملف الشخصي",
@@ -5,7 +6,7 @@ export const profile = {
   profileOverview: "نظرة عامة على الملف الشخصي",
   personalInformation: "المعلومات الشخصية",
   physicalStats: "الإحصائيات الجسدية",
-  healthGoals: "الأهداف الصحية",
+  healthGoals: "الصحة والأهداف",
   accountSettings: "إعدادات الحساب",
   saveChanges: "حفظ التغييرات",
   viewPersonalInfo: "عرض معلوماتك الشخصية وتفضيلاتك",
@@ -23,33 +24,33 @@ export const profile = {
   nextStep: "الخطوة التالية",
   continue: "متابعة",
   completeNow: "أكمل الآن",
-  profileComplete: "اكتمل الملف الشخصي!",
-  allSectionsCompleted: "تم إكمال جميع الأقسام",
+  profileComplete: "الملف الشخصي مكتمل!",
+  allSectionsCompleted: "جميع الأقسام مكتملة",
   sectionsCompleted: "أقسام مكتملة",
   
   // Profile header messages
   unsavedChanges: "لديك تغييرات غير محفوظة. يرجى الحفظ قبل المغادرة.",
   unsavedChangesSignOut: "لديك تغييرات غير محفوظة. هل أنت متأكد من تسجيل الخروج؟",
   signOutFailed: "فشل في تسجيل الخروج. يرجى المحاولة مرة أخرى.",
-  admin: "المدير",
+  admin: "مدير",
   signOut: "تسجيل الخروج",
   
   // Enhanced profile
-  enhancedProfile: "الملف الشخصي المحسن",
-  completeProfileForPersonalization: "أكمل ملفك الشخصي للحصول على توصيات ذكية مخصصة",
+  enhancedProfile: "ملف شخصي محسن",
+  completeProfileForPersonalization: "أكمل ملفك الشخصي للحصول على توصيات ذكية شخصية",
   basicInformation: "المعلومات الأساسية",
   personalDetailsAndMeasurements: "التفاصيل الشخصية والقياسات الجسدية",
-  healthAssessment: "تقييم الصحة",
-  healthConditionsLifestyleData: "الحالات الصحية ونمط الحياة وبيانات العافية",
+  healthAssessment: "التقييم الصحي",
+  healthConditionsLifestyleData: "الحالات الصحية وبيانات نمط الحياة والعافية",
   goalsObjectives: "الأهداف والغايات",
-  fitnessGoalsTargetAchievements: "أهداف اللياقة والإنجازات المستهدفة",
+  fitnessGoalsTargetAchievements: "أهداف اللياقة البدنية والإنجازات المستهدفة",
   preferences: "التفضيلات",
   appSettingsNotificationPreferences: "إعدادات التطبيق وتفضيلات الإشعارات",
   profileReview: "مراجعة الملف الشخصي",
   finalReviewConfirmation: "المراجعة النهائية والتأكيد",
-  allSetForFitnessJourney: "أنت مستعد الآن لتحقيق أقصى استفادة من رحلة لياقتك.",
+  allSetForFitnessJourney: "أنت مستعد للاستفادة القصوى من رحلة اللياقة البدنية.",
   preferencesSettings: "التفضيلات والإعدادات",
-  configureAppPreferences: "قم بتكوين تفضيلات التطبيق وإعدادات الإشعارات وخيارات الخصوصية.",
+  configureAppPreferences: "تكوين تفضيلات التطبيق وإعدادات الإشعارات وخيارات الخصوصية.",
   
   // Life phase
   lifePhase: {

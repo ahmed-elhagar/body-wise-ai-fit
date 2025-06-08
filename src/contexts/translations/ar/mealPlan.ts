@@ -2,10 +2,10 @@
 export const mealPlan = {
   // Core functionality
   title: "خطة الوجبات",
-  generateAIMealPlan: "إنشاء خطة وجبات بالذكاء الاصطناعي",
-  generateMealPlan: "إنشاء خطة وجبات",
-  generateNewPlan: "إنشاء خطة جديدة",
-  regenerate: "إعادة إنتاج",
+  generateAIMealPlan: "توليد خطة وجبات ذكية",
+  generateMealPlan: "توليد خطة وجبات",
+  generateNewPlan: "توليد خطة جديدة",
+  regenerate: "إعادة التوليد",
   shuffleMeals: "خلط الوجبات",
   viewRecipe: "عرض الوصفة",
   exchangeMeal: "استبدال الوجبة",
@@ -14,7 +14,7 @@ export const mealPlan = {
   // Navigation & Time
   currentWeek: "الأسبوع الحالي",
   futureWeek: "الأسبوع القادم",
-  dailyOverview: "نظرة عامة يومية",
+  dailyOverview: "نظرة يومية",
   weeklyView: "العرض الأسبوعي",
   dailyView: "العرض اليومي",
   selectDay: "اختر اليوم",
@@ -26,7 +26,7 @@ export const mealPlan = {
   weeklyCalories: "السعرات الأسبوعية",
   weeklyProtein: "البروتين الأسبوعي",
   cal: "سعرة",
-  calories: "سعرات حرارية",
+  calories: "سعرات",
   protein: "بروتين",
   carbs: "كربوهيدرات",
   fat: "دهون",
@@ -46,21 +46,21 @@ export const mealPlan = {
   
   // States & Messages
   noMealPlan: "لم يتم العثور على خطة وجبات",
-  generateFirstPlan: "أنشئ خطة وجباتك الأسبوعية المخصصة بالذكاء الاصطناعي",
+  generateFirstPlan: "وّلد خطة الوجبات الأسبوعية الشخصية باستخدام الذكاء الاصطناعي",
   noMealsPlanned: "لا توجد وجبات مخططة",
-  personalizedPlan: "خطة مخصصة",
+  personalizedPlan: "خطة شخصية",
   aiPowered: "مدعوم بالذكاء الاصطناعي",
   aiPoweredNutrition: "تغذية مدعومة بالذكاء الاصطناعي",
-  smartMealPlanning: "تخطيط وجبات ذكي",
-  personalizedNutrition: "احصل على خطط تغذية مخصصة تناسب أهدافك",
-  loading: "جارٍ التحميل...",
-  generating: "جارٍ الإنشاء...",
+  smartMealPlanning: "تخطيط ذكي للوجبات",
+  personalizedNutrition: "احصل على خطط تغذية شخصية مصممة لأهدافك",
+  loading: "جاري التحميل...",
+  generating: "جاري التوليد...",
   
   // Success/Error Messages
   snackAddedSuccess: "تم إضافة الوجبة الخفيفة بنجاح!",
   shoppingListUpdated: "تم تحديث قائمة التسوق!",
-  planGeneratedSuccess: "تم إنشاء خطة الوجبات بنجاح!",
-  planGenerationFailed: "فشل في إنشاء خطة الوجبات",
+  planGeneratedSuccess: "تم توليد خطة الوجبات بنجاح!",
+  planGenerationFailed: "فشل في توليد خطة الوجبات",
   
   // Stats
   dailyProgress: "التقدم اليومي",
@@ -72,13 +72,13 @@ export const mealPlan = {
   // Meal Types
   breakfast: "الإفطار",
   lunch: "الغداء",
-  dinner: "العشاء", 
+  dinner: "العشاء",
   snack: "وجبة خفيفة",
   snack1: "وجبة خفيفة صباحية",
   snack2: "وجبة خفيفة مسائية",
   
   // Credits
-  aiCredits: "رصيد الذكاء الاصطناعي",
+  aiCredits: "أرصدة الذكاء الاصطناعي",
   
   // Cuisine Types
   cuisine: "المطبخ",
@@ -100,13 +100,13 @@ export const mealPlan = {
   maxPrepTime: "الحد الأقصى لوقت التحضير",
   mealTypes: "أنواع الوجبات",
   includeSnacks: "تضمين الوجبات الخفيفة",
-  generateSevenDayPlan: "إنشاء خطة 7 أيام",
+  generateSevenDayPlan: "توليد خطة 7 أيام",
   leaveEmptyNationality: "اتركه فارغاً للمطبخ المختلط",
   
   // Days of the week (lowercase for consistency)
   monday: "الإثنين",
   tuesday: "الثلاثاء",
-  wednesday: "الأربعاء", 
+  wednesday: "الأربعاء",
   thursday: "الخميس",
   friday: "الجمعة",
   saturday: "السبت",
@@ -119,22 +119,22 @@ export const mealPlan = {
   // Add Snack specific translations
   addSnackDialog: {
     title: "إضافة وجبة خفيفة صحية",
-    subtitle: "الوجبة الخفيفة المثالية للسعرات المتبقية",
-    generateSnack: "إنشاء وجبة خفيفة بالذكاء الاصطناعي",
+    subtitle: "وجبة خفيفة مثالية للسعرات المتبقية",
+    generateSnack: "توليد وجبة خفيفة ذكية",
     perfectFit: "مناسبة تماماً للسعرات المتبقية",
-    caloriesAvailable: "سعرة حرارية متاحة",
-    generatingAISnack: "جارٍ إنشاء وجبة خفيفة بالذكاء الاصطناعي",
-    generateAISnack: "إنشاء وجبة خفيفة بالذكاء الاصطناعي",
+    caloriesAvailable: "سعرة متاحة",
+    generatingAISnack: "جاري توليد وجبة خفيفة ذكية",
+    generateAISnack: "توليد وجبة خفيفة ذكية",
     cancel: "إلغاء",
     targetReached: "تم الوصول للهدف اليومي!",
-    targetReachedDesc: "لقد وصلت لهدف السعرات اليومي. عمل رائع!",
+    targetReachedDesc: "لقد وصلت لهدف السعرات لهذا اليوم. أحسنت!",
     close: "إغلاق",
-    analyzing: "جارٍ تحليل احتياجاتك الغذائية...",
-    creating: "جارٍ إنشاء الوجبة الخفيفة المثالية...",
-    saving: "جارٍ الحفظ في خطة وجباتك...",
+    analyzing: "جاري تحليل احتياجاتك الغذائية...",
+    creating: "جاري إنشاء الوجبة الخفيفة المثالية...",
+    saving: "جاري الحفظ في خطة وجباتك...",
     pleaseWait: "يرجى الانتظار بينما ننشئ الوجبة الخفيفة المثالية لك...",
-    error: "خطأ في إنشاء الوجبة الخفيفة",
-    failed: "فشل في إنشاء الوجبة الخفيفة",
+    error: "خطأ في توليد الوجبة الخفيفة",
+    failed: "فشل في توليد الوجبة الخفيفة",
     notEnoughCalories: "لا توجد سعرات كافية متبقية للوجبة الخفيفة"
   }
 } as const;
