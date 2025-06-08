@@ -4,12 +4,11 @@ export { default as OptimizedExerciseContainer } from './components/OptimizedExe
 
 // Feature components
 export { 
-  ExerciseList, 
+  ExerciseListEnhanced,
+  ExercisePageContent,
   WorkoutTypeToggle,
   ExerciseProgramSelector,
-  WorkoutTypeTabs,
-  ExercisePageContent,
-  ExerciseListEnhanced
+  WorkoutTypeTabs
 } from './components';
 
 // Export types

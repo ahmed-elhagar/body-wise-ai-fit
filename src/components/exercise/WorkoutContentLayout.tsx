@@ -1,5 +1,5 @@
 
-import { ExerciseListEnhanced } from "./ExerciseListEnhanced";
+import { ExerciseListEnhanced } from "@/features/exercise";
 import { ExerciseProgressTracker } from "./ExerciseProgressTracker";
 import { ExerciseMotivationCard } from "./ExerciseMotivationCard";
 import { ExerciseQuickActions } from "./ExerciseQuickActions";
