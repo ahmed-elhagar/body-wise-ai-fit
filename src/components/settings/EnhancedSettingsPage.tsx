@@ -12,7 +12,10 @@ export const EnhancedSettingsPage = () => {
     measurementUnits: 'metric',
     language: 'en',
     notifications: true,
-    theme: 'light'
+    theme: 'light',
+    displayName: '',
+    bio: '',
+    privacy: 'public'
   });
 
   const handleSave = (newSettings: any) => {
