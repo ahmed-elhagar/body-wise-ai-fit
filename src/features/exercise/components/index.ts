@@ -5,3 +5,4 @@ export { WorkoutTypeToggle } from './WorkoutTypeToggle';
 export { ExerciseProgramSelector } from './ExerciseProgramSelector';
 export { WorkoutTypeTabs } from './WorkoutTypeTabs';
 export { ExercisePageContent } from './ExercisePageContent';
+export { default as OptimizedExerciseContainer } from './OptimizedExerciseContainer';

@@ -1,12 +1,12 @@
 
 import React from "react";
 import { Card } from "@/components/ui/card";
-import { useOptimizedExercise } from "@/features/exercise/hooks/useOptimizedExercise";
-import OptimizedExerciseHeader from "./OptimizedExerciseHeader";
-import OptimizedExerciseWeekView from "./OptimizedExerciseWeekView";
-import OptimizedExerciseDayView from "./OptimizedExerciseDayView";
-import OptimizedExerciseProgress from "./OptimizedExerciseProgress";
-import ExerciseAILoadingDialog from "./ExerciseAILoadingDialog";
+import { useOptimizedExercise } from "../hooks/useOptimizedExercise";
+import { OptimizedExerciseHeader } from "@/components/exercise/OptimizedExerciseHeader";
+import { OptimizedExerciseWeekView } from "@/components/exercise/OptimizedExerciseWeekView";
+import { OptimizedExerciseDayView } from "@/components/exercise/OptimizedExerciseDayView";
+import { OptimizedExerciseProgress } from "@/components/exercise/OptimizedExerciseProgress";
+import { ExerciseAILoadingDialog } from "@/components/exercise/ExerciseAILoadingDialog";
 
 const OptimizedExerciseContainer = React.memo(() => {
   const {

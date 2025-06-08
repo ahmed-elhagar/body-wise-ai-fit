@@ -1,6 +1,6 @@
 
 // Main exports for exercise feature
-export { default as OptimizedExerciseContainer } from '../components/exercise/OptimizedExerciseContainer';
+export { default as OptimizedExerciseContainer } from './components/OptimizedExerciseContainer';
 
 // Feature components
 export { 
