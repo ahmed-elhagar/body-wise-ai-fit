@@ -14,4 +14,8 @@ export { CompactProgressSidebar } from './CompactProgressSidebar';
 export { EnhancedExerciseListContainer } from './EnhancedExerciseListContainer';
 export { UnifiedExerciseContainer } from './UnifiedExerciseContainer';
 export { ExercisePageLayout } from './ExercisePageLayout';
+export { EnhancedDayNavigation } from './EnhancedDayNavigation';
+export { ExerciseCompactNavigation } from './ExerciseCompactNavigation';
+export { WeeklyExerciseNavigation } from './WeeklyExerciseNavigation';
+export { ExerciseProgramDaySelector } from './ExerciseProgramDaySelector';
 export { default as OptimizedExerciseContainer } from './OptimizedExerciseContainer';

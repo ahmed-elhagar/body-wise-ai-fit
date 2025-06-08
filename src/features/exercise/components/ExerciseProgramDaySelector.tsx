@@ -9,7 +9,7 @@ interface ExerciseProgramDaySelectorProps {
   weekStartDate: Date;
 }
 
-const ExerciseProgramDaySelector = ({
+export const ExerciseProgramDaySelector = ({
   selectedDay,
   onDaySelect,
   weekStartDate
@@ -54,5 +54,3 @@ const ExerciseProgramDaySelector = ({
     </Card>
   );
 };
-
-export default ExerciseProgramDaySelector;

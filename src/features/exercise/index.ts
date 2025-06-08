@@ -17,7 +17,11 @@ export {
   CompactProgressSidebar,
   EnhancedExerciseListContainer,
   UnifiedExerciseContainer,
-  ExercisePageLayout
+  ExercisePageLayout,
+  EnhancedDayNavigation,
+  ExerciseCompactNavigation,
+  WeeklyExerciseNavigation,
+  ExerciseProgramDaySelector
 } from './components';
 
 // Export types
