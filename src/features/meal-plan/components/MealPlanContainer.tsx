@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { useMealPlanState } from '@/hooks/useMealPlanState';
 import MealPlanHeader from './MealPlanHeader';
@@ -19,7 +20,7 @@ import { AIGenerationDialog } from './dialogs/AIGenerationDialog';
 import EnhancedAddSnackDialog from '@/components/meal-plan/EnhancedAddSnackDialog';
 import { EnhancedRecipeDialog } from '@/components/meal-plan/EnhancedRecipeDialog';
 
-export const MealPlanContainer = () => {
+const MealPlanContainer = () => {
   const mealPlanState = useMealPlanState();
   const { shuffleMeals, isShuffling } = useEnhancedMealShuffle();
   const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
@@ -248,3 +249,5 @@ export const MealPlanContainer = () => {
     </>
   );
 };
+
+export default MealPlanContainer;
