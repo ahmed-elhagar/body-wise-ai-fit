@@ -1,13 +1,12 @@
-
 import { useLanguage } from "@/contexts/LanguageContext";
 import { WeeklyExerciseNavigation } from "./WeeklyExerciseNavigation";
 import { ExerciseDaySelector } from "./ExerciseDaySelector";
-import { ExerciseListEnhanced } from "./ExerciseListEnhanced";
+import { ExerciseList } from "./ExerciseList";
 import { EmptyExerciseState } from "./EmptyExerciseState";
 import { AIExerciseDialog } from "./AIExerciseDialog";
 import { TodaysWorkoutProgressCard } from "./TodaysWorkoutProgressCard";
 import { format, addDays } from "date-fns";
-import { EnhancedWorkoutTypeToggle } from "./EnhancedWorkoutTypeToggle";
+import { WorkoutTypeToggle } from "./WorkoutTypeToggle";
 
 interface ExerciseProgramPageContentProps {
   currentDate: Date;
@@ -97,8 +96,8 @@ export const ExerciseProgramPageContent = ({
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      {/* Enhanced Workout Type Toggle */}
-      <EnhancedWorkoutTypeToggle
+      {/* Workout Type Toggle */}
+      <WorkoutTypeToggle
         workoutType={workoutType}
         onWorkoutTypeChange={setWorkoutType}
       />
@@ -131,7 +130,7 @@ export const ExerciseProgramPageContent = ({
       )}
 
       {/* Exercise List */}
-      <ExerciseListEnhanced
+      <ExerciseList
         exercises={todaysExercises}
         isLoading={false}
         onExerciseComplete={handleExerciseComplete}
