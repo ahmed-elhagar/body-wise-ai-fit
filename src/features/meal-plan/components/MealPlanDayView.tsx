@@ -1,131 +1,147 @@
-import { Card, CardContent } from "@/components/ui/card";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Plus, Clock, Users, ChefHat, ArrowLeftRight } from "lucide-react";
+import { ChefHat, ArrowLeftRight, Plus, Calendar } from "lucide-react";
 import type { DailyMeal } from "@/hooks/useMealPlanData";
 
 interface MealPlanDayViewProps {
   dayNumber: number;
-  weeklyPlan: any;
+  weeklyPlan: {
+    weeklyPlan: any;
+    dailyMeals: DailyMeal[];
+  };
   onShowRecipe: (meal: DailyMeal) => void;
-  onExchangeMeal: (meal: DailyMeal, index: number) => void;
-  onAddSnack: () => void;
+  onExchangeMeal: (meal: DailyMeal) => void;
+  onAddSnack: (dayNumber: number) => void;
 }
 
-const MealPlanDayView = ({ 
-  dayNumber, 
-  weeklyPlan, 
-  onShowRecipe, 
-  onExchangeMeal, 
-  onAddSnack 
+const MealPlanDayView = ({
+  dayNumber,
+  weeklyPlan,
+  onShowRecipe,
+  onExchangeMeal,
+  onAddSnack
 }: MealPlanDayViewProps) => {
-  const dayMeals = weeklyPlan?.dailyMeals?.filter(
-    (meal: DailyMeal) => meal.day_number === dayNumber
-  ) || [];
+  
+  const getDayName = (dayNumber: number) => {
+    const days = ['', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+    return days[dayNumber] || 'Day';
+  };
 
-  const dayCalories = dayMeals.reduce((sum: number, meal: DailyMeal) => sum + (meal.calories || 0), 0);
-  const dayProtein = dayMeals.reduce((sum: number, meal: DailyMeal) => sum + (meal.protein || 0), 0);
-  const targetCalories = 2000;
+  const getMealsForDay = (dayNumber: number) => {
+    return weeklyPlan.dailyMeals.filter(meal => meal.day_number === dayNumber);
+  };
+
+  const dayMeals = getMealsForDay(dayNumber);
+  const dayCalories = dayMeals.reduce((total, meal) => total + (meal.calories || 0), 0);
+
+  const mealTypeColors = {
+    breakfast: 'bg-orange-100 border-orange-300 text-orange-700',
+    lunch: 'bg-green-100 border-green-300 text-green-700',
+    dinner: 'bg-blue-100 border-blue-300 text-blue-700',
+    snack1: 'bg-purple-100 border-purple-300 text-purple-700',
+    snack2: 'bg-pink-100 border-pink-300 text-pink-700',
+    snack: 'bg-purple-100 border-purple-300 text-purple-700'
+  };
 
   return (
-    <div className="space-y-4">
-      {/* Day Stats */}
-      <Card className="bg-white border border-gray-200">
-        <CardContent className="p-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Daily Calories</p>
-              <p className="text-2xl font-bold text-gray-900">{dayCalories}</p>
-              <Progress value={(dayCalories / targetCalories) * 100} className="mt-2" />
-              <p className="text-xs text-gray-500 mt-1">{Math.round((dayCalories / targetCalories) * 100)}% of target</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Protein</p>
-              <p className="text-2xl font-bold text-gray-900">{dayProtein.toFixed(1)}g</p>
-              <Progress value={(dayProtein / 150) * 100} className="mt-2" />
-              <p className="text-xs text-gray-500 mt-1">{Math.round((dayProtein / 150) * 100)}% of target</p>
-            </div>
+    <div className="space-y-6">
+      {/* Day Header */}
+      <Card className="bg-gradient-to-r from-fitness-primary-50 to-fitness-accent-50 border-fitness-primary-200">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="w-5 h-5" />
+            {getDayName(dayNumber)} - Day {dayNumber}
+          </CardTitle>
+          <div className="flex items-center gap-4 text-sm text-fitness-primary-600">
+            <span>{dayMeals.length} meals planned</span>
+            <span>{dayCalories} total calories</span>
           </div>
-          <Button 
-            onClick={onAddSnack}
-            className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Snack
-          </Button>
-        </CardContent>
+        </CardHeader>
       </Card>
 
-      {/* Meals */}
-      <div className="space-y-3">
-        {dayMeals.map((meal: DailyMeal, index: number) => (
-          <Card key={meal.id} className="bg-white border border-gray-200 hover:shadow-md transition-all duration-200 group">
-            <CardContent className="p-4">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Badge className="bg-blue-100 text-blue-800 border-blue-200">
-                      {meal.meal_type}
-                    </Badge>
-                    <span className="text-xs text-gray-500 flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      {(meal.prep_time || 0) + (meal.cook_time || 0)} min
-                    </span>
-                    <span className="text-xs text-gray-500 flex items-center gap-1">
-                      <Users className="w-3 h-3" />
-                      {meal.servings} serving{meal.servings !== 1 ? 's' : ''}
-                    </span>
-                  </div>
-                  
-                  <h4 className="font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-                    {meal.name}
-                  </h4>
-                  
-                  <div className="grid grid-cols-4 gap-2 text-xs">
-                    <div className="bg-gray-50 p-2 rounded text-center">
-                      <span className="font-medium text-blue-600">{meal.calories || 0}</span>
-                      <div className="text-gray-500">cal</div>
-                    </div>
-                    <div className="bg-gray-50 p-2 rounded text-center">
-                      <span className="font-medium text-green-600">{(meal.protein || 0).toFixed(1)}g</span>
-                      <div className="text-gray-500">protein</div>
-                    </div>
-                    <div className="bg-gray-50 p-2 rounded text-center">
-                      <span className="font-medium text-orange-600">{(meal.carbs || 0).toFixed(1)}g</span>
-                      <div className="text-gray-500">carbs</div>
-                    </div>
-                    <div className="bg-gray-50 p-2 rounded text-center">
-                      <span className="font-medium text-purple-600">{(meal.fat || 0).toFixed(1)}g</span>
-                      <div className="text-gray-500">fat</div>
-                    </div>
+      {/* Meals List */}
+      <div className="space-y-4">
+        {dayMeals.length > 0 ? (
+          dayMeals.map((meal) => (
+            <Card key={meal.id} className="hover:shadow-md transition-shadow">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <Badge 
+                    className={`text-sm px-3 py-1 ${mealTypeColors[meal.meal_type as keyof typeof mealTypeColors] || 'bg-gray-100 border-gray-300 text-gray-700'}`}
+                  >
+                    {meal.meal_type}
+                  </Badge>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      onClick={() => onShowRecipe(meal)}
+                      className="bg-indigo-500 hover:bg-indigo-600 text-white"
+                    >
+                      <ChefHat className="w-4 h-4 mr-1" />
+                      Recipe
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => onExchangeMeal(meal)}
+                      className="bg-emerald-500 hover:bg-emerald-600 text-white"
+                    >
+                      <ArrowLeftRight className="w-4 h-4 mr-1" />
+                      Exchange
+                    </Button>
                   </div>
                 </div>
-              </div>
-              
-              <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="flex-1 hover:bg-blue-50 hover:border-blue-300"
-                  onClick={() => onShowRecipe(meal)}
-                >
-                  <ChefHat className="w-3 h-3 mr-1" />
-                  Recipe
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="flex-1 hover:bg-orange-50 hover:border-orange-300"
-                  onClick={() => onExchangeMeal(meal, index)}
-                >
-                  <ArrowLeftRight className="w-3 h-3 mr-1" />
-                  Exchange
-                </Button>
-              </div>
+                
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                  {meal.name}
+                </h3>
+                
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                  <div>
+                    <span className="text-gray-500">Calories:</span>
+                    <div className="font-medium">{meal.calories}</div>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Protein:</span>
+                    <div className="font-medium">{meal.protein}g</div>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Carbs:</span>
+                    <div className="font-medium">{meal.carbs}g</div>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Fat:</span>
+                    <div className="font-medium">{meal.fat}g</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <Card>
+            <CardContent className="text-center p-8">
+              <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No meals planned for this day
+              </h3>
+              <p className="text-gray-600 mb-4">
+                Add some meals to get started with your nutrition plan.
+              </p>
             </CardContent>
           </Card>
-        ))}
+        )}
+      </div>
+
+      {/* Add Snack Button */}
+      <div className="text-center">
+        <Button
+          onClick={() => onAddSnack(dayNumber)}
+          className="bg-fitness-accent-500 hover:bg-fitness-accent-600 text-white"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Add Snack to This Day
+        </Button>
       </div>
     </div>
   );

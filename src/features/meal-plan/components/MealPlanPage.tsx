@@ -9,7 +9,7 @@ import UnifiedNavigation from './UnifiedNavigation';
 import MealPlanRecipeDialog from './MealPlanRecipeDialog';
 import MealPlanAIDialog from './MealPlanAIDialog';
 import ShoppingListDialog from './ShoppingListDialog';
-import { EnhancedPageLoading } from '@/components/EnhancedPageLoading';
+import EnhancedPageLoading from '@/components/EnhancedPageLoading';
 
 export const MealPlanPage: React.FC = () => {
   const {
