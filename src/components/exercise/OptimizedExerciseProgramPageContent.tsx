@@ -1,163 +1,100 @@
 
-import React, { memo, useMemo } from "react";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { WeeklyExerciseNavigation } from "./WeeklyExerciseNavigation";
-import { ExerciseDaySelector } from "./ExerciseDaySelector";
-import { OptimizedExerciseList } from "./OptimizedExerciseList";
-import { EmptyExerciseState } from "./EmptyExerciseState";
-import { AIExerciseDialog } from "./AIExerciseDialog";
-import { ExercisePageHeader } from "./ExercisePageHeader";
-import { TodaysWorkoutProgressCard } from "./TodaysWorkoutProgressCard";
-import { format, addDays } from "date-fns";
-import { EnhancedWorkoutTypeToggle } from "./EnhancedWorkoutTypeToggle";
+import React from 'react';
+import { Card } from '@/components/ui/card';
+import { useI18n } from '@/hooks/useI18n';
+import { Exercise, DailyWorkout } from '@/types/exercise';
+import ExerciseDaySelector from './ExerciseDaySelector';
+import OptimizedExerciseDayView from './OptimizedExerciseDayView';
+import ExercisePageHeader from './ExercisePageHeader';
+import ModernProgressSidebar from './ModernProgressSidebar';
 
 interface OptimizedExerciseProgramPageContentProps {
-  currentDate: Date;
-  weekStartDate: Date;
-  selectedDayNumber: number;
-  setSelectedDayNumber: (day: number) => void;
-  currentWeekOffset: number;
-  setCurrentWeekOffset: (offset: number) => void;
-  currentProgram: any;
-  workoutType: "home" | "gym";
-  setWorkoutType: (type: "home" | "gym") => void;
-  todaysWorkouts: any[];
-  todaysExercises: any[];
-  completedExercises: number;
-  totalExercises: number;
-  progressPercentage: number;
-  showAIDialog: boolean;
-  setShowAIDialog: (show: boolean) => void;
-  aiPreferences: any;
-  setAiPreferences: (prefs: any) => void;
-  handleGenerateAIProgram: (prefs: any) => void;
-  handleRegenerateProgram: () => void;
-  handleExerciseComplete: (exerciseId: string) => void;
-  handleExerciseProgressUpdate: (exerciseId: string, sets: number, reps: string, notes?: string) => void;
-  isGenerating: boolean;
-  refetch: () => void;
-  isRestDay: boolean;
+  exercises: Exercise[];
+  dailyWorkout?: DailyWorkout;
+  selectedDay: number;
+  onDaySelect: (day: number) => void;
+  workoutType: 'home' | 'gym';
+  onExerciseComplete: (exerciseId: string) => void;
+  onExerciseStart: (exerciseId: string) => void;
+  onRegenerateProgram?: () => void;
+  onCustomizeProgram?: () => void;
+  isGenerating?: boolean;
+  currentWeek?: number;
+  weeklyProgress?: number;
+  personalRecords?: number;
+  streak?: number;
 }
 
-export const OptimizedExerciseProgramPageContent = memo(({
-  currentDate,
-  weekStartDate,
-  selectedDayNumber,
-  setSelectedDayNumber,
-  currentWeekOffset,
-  setCurrentWeekOffset,
-  currentProgram,
+const OptimizedExerciseProgramPageContent = ({
+  exercises,
+  dailyWorkout,
+  selectedDay,
+  onDaySelect,
   workoutType,
-  setWorkoutType,
-  todaysWorkouts,
-  todaysExercises,
-  completedExercises,
-  totalExercises,
-  progressPercentage,
-  showAIDialog,
-  setShowAIDialog,
-  aiPreferences,
-  setAiPreferences,
-  handleGenerateAIProgram,
-  handleRegenerateProgram,
-  handleExerciseComplete,
-  handleExerciseProgressUpdate,
-  isGenerating,
-  refetch,
-  isRestDay
+  onExerciseComplete,
+  onExerciseStart,
+  onRegenerateProgram,
+  onCustomizeProgram,
+  isGenerating = false,
+  currentWeek = 1,
+  weeklyProgress = 0,
+  personalRecords = 0,
+  streak = 0
 }: OptimizedExerciseProgramPageContentProps) => {
-  const { t } = useLanguage();
+  const { t, isRTL } = useI18n();
 
-  const currentSelectedDate = useMemo(() => 
-    addDays(weekStartDate, selectedDayNumber - 1), 
-    [weekStartDate, selectedDayNumber]
-  );
-  
-  const isToday = useMemo(() => 
-    format(currentSelectedDate, 'yyyy-MM-dd') === format(currentDate, 'yyyy-MM-dd'),
-    [currentSelectedDate, currentDate]
-  );
-
-  const memoizedEmptyState = useMemo(() => (
-    <EmptyExerciseState
-      onGenerateProgram={() => setShowAIDialog(true)}
-      workoutType={workoutType}
-      setWorkoutType={setWorkoutType}
-      showAIDialog={showAIDialog}
-      setShowAIDialog={setShowAIDialog}
-      aiPreferences={aiPreferences}
-      setAiPreferences={setAiPreferences}
-      isGenerating={isGenerating}
-    />
-  ), [workoutType, showAIDialog, aiPreferences, isGenerating, setShowAIDialog, setWorkoutType, setAiPreferences]);
-
-  if (!currentProgram) {
-    return memoizedEmptyState;
-  }
+  const completedExercises = exercises.filter(ex => ex.completed).length;
 
   return (
-    <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
+    <div className={`max-w-7xl mx-auto p-4 md:p-6 space-y-6 ${isRTL ? 'rtl' : 'ltr'}`}>
       <ExercisePageHeader
-        currentProgram={currentProgram}
+        title={t('exercise:exerciseProgram') || 'Exercise Program'}
         workoutType={workoutType}
-        onShowAIDialog={() => setShowAIDialog(true)}
-        onRegenerateProgram={handleRegenerateProgram}
+        selectedDay={selectedDay}
+        onRegenerateProgram={onRegenerateProgram}
+        onCustomizeProgram={onCustomizeProgram}
         isGenerating={isGenerating}
       />
-
-      {/* Combined controls section - more compact */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-1">
-          <EnhancedWorkoutTypeToggle
-            workoutType={workoutType}
-            onWorkoutTypeChange={setWorkoutType}
-          />
-        </div>
-        <div className="lg:col-span-2">
-          <WeeklyExerciseNavigation
-            currentWeekOffset={currentWeekOffset}
-            setCurrentWeekOffset={setCurrentWeekOffset}
-            weekStartDate={weekStartDate}
-          />
-        </div>
-      </div>
 
       <ExerciseDaySelector
-        selectedDayNumber={selectedDayNumber}
-        setSelectedDayNumber={setSelectedDayNumber}
-        currentProgram={currentProgram}
-        workoutType={workoutType}
+        selectedDay={selectedDay}
+        onDaySelect={onDaySelect}
       />
 
-      {!isRestDay && totalExercises > 0 && (
-        <TodaysWorkoutProgressCard
-          todaysWorkouts={todaysWorkouts}
-          completedExercises={completedExercises}
-          totalExercises={totalExercises}
-          progressPercentage={progressPercentage}
-          currentSelectedDate={currentSelectedDate}
-          isToday={isToday}
-        />
-      )}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Sidebar */}
+        <div className="lg:col-span-1 space-y-4">
+          <ModernProgressSidebar
+            currentDay={selectedDay}
+            completedExercises={completedExercises}
+            totalExercises={exercises.length}
+            weeklyProgress={weeklyProgress}
+            personalRecords={personalRecords}
+            streak={streak}
+          />
+        </div>
 
-      <OptimizedExerciseList
-        exercises={todaysExercises}
-        isLoading={false}
-        onExerciseComplete={handleExerciseComplete}
-        onExerciseProgressUpdate={handleExerciseProgressUpdate}
-        isRestDay={isRestDay}
-      />
-
-      <AIExerciseDialog
-        open={showAIDialog}
-        onOpenChange={setShowAIDialog}
-        preferences={aiPreferences}
-        setPreferences={setAiPreferences}
-        onGenerate={handleGenerateAIProgram}
-        isGenerating={isGenerating}
-      />
+        {/* Main Content */}
+        <div className="lg:col-span-3">
+          {dailyWorkout ? (
+            <OptimizedExerciseDayView
+              dailyWorkout={dailyWorkout}
+              exercises={exercises}
+              selectedDay={selectedDay}
+              onExerciseComplete={onExerciseComplete}
+              onExerciseStart={onExerciseStart}
+            />
+          ) : (
+            <Card className="p-8 text-center">
+              <p className="text-gray-500">
+                {t('exercise:noWorkoutFound') || 'No workout found for this day'}
+              </p>
+            </Card>
+          )}
+        </div>
+      </div>
     </div>
   );
-});
+};
 
-OptimizedExerciseProgramPageContent.displayName = 'OptimizedExerciseProgramPageContent';
+export default OptimizedExerciseProgramPageContent;

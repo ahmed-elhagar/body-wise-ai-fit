@@ -1,10 +1,10 @@
 
 import { Card } from '@/components/ui/card';
 import { Timer, Heart, Apple } from 'lucide-react';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useI18n } from '@/hooks/useI18n';
 
 export const RestDayCard = () => {
-  const { t } = useLanguage();
+  const { t } = useI18n();
 
   return (
     <Card className="p-8 text-center bg-gradient-to-br from-green-50 to-blue-50 border-green-200">

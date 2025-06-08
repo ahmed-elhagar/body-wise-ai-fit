@@ -1,173 +1,109 @@
 
-import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Play, CheckCircle, Clock, Target, Coffee } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
-import SimpleLoadingIndicator from "@/components/ui/simple-loading-indicator";
-
-interface Exercise {
-  id: string;
-  name: string;
-  sets: number;
-  reps: string;
-  completed: boolean;
-  progressPercentage: number;
-  muscle_groups?: string[];
-  equipment?: string;
-  rest_seconds?: number;
-}
+import React, { memo, useMemo } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Calendar, Clock, Target } from 'lucide-react';
+import { useI18n } from '@/hooks/useI18n';
+import { Exercise, DailyWorkout } from '@/types/exercise';
+import { RestDayCard } from './RestDayCard';
+import InteractiveExerciseCard from './InteractiveExerciseCard';
 
 interface OptimizedExerciseDayViewProps {
-  currentWorkout: any;
-  exercises: any[];
+  dailyWorkout: DailyWorkout;
+  exercises: Exercise[];
   selectedDay: number;
-  onStartWorkout: () => void;
-  onCompleteWorkout: () => void;
-  isLoading: boolean;
+  onExerciseComplete: (exerciseId: string) => void;
+  onExerciseStart: (exerciseId: string) => void;
 }
 
-const OptimizedExerciseDayView = React.memo(({
-  currentWorkout,
+const OptimizedExerciseDayView = memo(({
+  dailyWorkout,
   exercises,
   selectedDay,
-  onStartWorkout,
-  onCompleteWorkout,
-  isLoading
+  onExerciseComplete,
+  onExerciseStart
 }: OptimizedExerciseDayViewProps) => {
-  const { isRTL } = useLanguage();
+  const { t, isRTL } = useI18n();
 
-  if (isLoading) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <SimpleLoadingIndicator
-            message="Loading workout..."
-            description="Preparing your exercises"
-            size="md"
-          />
-        </CardContent>
-      </Card>
-    );
-  }
+  const sortedExercises = useMemo(() => {
+    return [...exercises].sort((a, b) => (a.order_number || 0) - (b.order_number || 0));
+  }, [exercises]);
 
-  if (!currentWorkout) {
-    return (
-      <Card className="p-8 text-center">
-        <Coffee className="w-12 h-12 text-orange-500 mx-auto mb-4" />
-        <h3 className="text-lg font-semibold mb-2">Rest Day</h3>
-        <p className="text-gray-600">Take a well-deserved break and let your muscles recover.</p>
-      </Card>
-    );
+  const workoutStats = useMemo(() => {
+    const completed = exercises.filter(ex => ex.completed).length;
+    const total = exercises.length;
+    return {
+      completed,
+      total,
+      percentage: total > 0 ? Math.round((completed / total) * 100) : 0
+    };
+  }, [exercises]);
+
+  if (dailyWorkout.is_rest_day) {
+    return <RestDayCard />;
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-          <Target className="w-5 h-5" />
-          Day {selectedDay} Workout
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h3 className="text-xl font-semibold mb-2">{currentWorkout.workout_name}</h3>
-            <div className="flex items-center gap-4 text-sm text-gray-600">
-              {currentWorkout.estimated_duration && (
-                <div className="flex items-center gap-1">
-                  <Clock className="w-4 h-4" />
-                  <span>{currentWorkout.estimated_duration} min</span>
-                </div>
-              )}
-              {currentWorkout.estimated_calories && (
-                <div className="flex items-center gap-1">
-                  <Target className="w-4 h-4" />
-                  <span>{currentWorkout.estimated_calories} cal</span>
-                </div>
-              )}
-            </div>
-          </div>
-          
-          <div className="flex gap-2">
-            {!currentWorkout.completed && (
-              <Button 
-                onClick={onStartWorkout}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                <Play className="w-4 h-4 mr-2" />
-                Start Workout
-              </Button>
-            )}
-            
-            <Button 
-              onClick={onCompleteWorkout}
-              variant={currentWorkout.completed ? "secondary" : "outline"}
-              disabled={currentWorkout.completed}
-            >
-              <CheckCircle className="w-4 h-4 mr-2" />
-              {currentWorkout.completed ? 'Completed' : 'Complete All'}
-            </Button>
-          </div>
-        </div>
-        
-        <div className="space-y-4">
-          {exercises.map((exercise, index) => (
-            <Card key={exercise.id} className="p-4 border-l-4 border-l-blue-500">
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <h4 className="font-semibold text-lg">{exercise.name}</h4>
-                  <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
-                    <span>{exercise.sets} sets × {exercise.reps} reps</span>
-                    {exercise.rest_seconds && (
-                      <span>Rest: {exercise.rest_seconds}s</span>
-                    )}
-                    {exercise.equipment && (
-                      <Badge variant="outline" className="text-xs">
-                        {exercise.equipment}
-                      </Badge>
-                    )}
+    <div className="space-y-6">
+      {/* Workout Header */}
+      <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-0 shadow-lg">
+        <CardHeader>
+          <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <div>
+              <CardTitle className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                <Calendar className="w-5 h-5 text-blue-500" />
+                {dailyWorkout.workout_name}
+              </CardTitle>
+              <div className={`flex items-center gap-4 mt-2 text-sm text-gray-600 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                {dailyWorkout.estimated_duration && (
+                  <div className={`flex items-center gap-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                    <Clock className="w-4 h-4" />
+                    <span>{dailyWorkout.estimated_duration} {t('exercise:minutes')}</span>
                   </div>
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <div className="text-right">
-                    <div className="text-sm font-medium">
-                      {Math.round(exercise.progressPercentage)}%
-                    </div>
-                    <div className="w-16 h-2 bg-gray-200 rounded-full">
-                      <div 
-                        className="h-full bg-blue-500 rounded-full transition-all"
-                        style={{ width: `${exercise.progressPercentage}%` }}
-                      />
-                    </div>
+                )}
+                {dailyWorkout.muscle_groups && dailyWorkout.muscle_groups.length > 0 && (
+                  <div className={`flex items-center gap-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                    <Target className="w-4 h-4" />
+                    <span>{dailyWorkout.muscle_groups.join(', ')}</span>
                   </div>
-                  
-                  {exercise.completed ? (
-                    <CheckCircle className="w-6 h-6 text-green-500" />
-                  ) : (
-                    <Button size="sm" variant="outline">
-                      Start
-                    </Button>
-                  )}
-                </div>
+                )}
               </div>
-              
-              {exercise.muscle_groups && exercise.muscle_groups.length > 0 && (
-                <div className="flex gap-1 flex-wrap">
-                  {exercise.muscle_groups.map((muscle) => (
-                    <Badge key={muscle} variant="secondary" className="text-xs">
-                      {muscle}
-                    </Badge>
-                  ))}
-                </div>
-              )}
-            </Card>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+            </div>
+            
+            <Badge variant="outline" className="bg-white/80">
+              {workoutStats.completed}/{workoutStats.total} {t('exercise:exercises')}
+            </Badge>
+          </div>
+        </CardHeader>
+      </Card>
+
+      {/* Exercises List */}
+      <div className="space-y-4">
+        {sortedExercises.map((exercise, index) => (
+          <InteractiveExerciseCard
+            key={exercise.id}
+            exercise={exercise}
+            index={index}
+            onExerciseComplete={onExerciseComplete}
+            onExerciseStart={onExerciseStart}
+          />
+        ))}
+      </div>
+
+      {/* Progress Summary */}
+      {workoutStats.total > 0 && (
+        <Card className="bg-green-50 border-green-200">
+          <CardContent className="p-4 text-center">
+            <div className="text-2xl font-bold text-green-700 mb-1">
+              {workoutStats.percentage}%
+            </div>
+            <p className="text-sm text-green-600">
+              {t('exercise:workoutProgress')} • {workoutStats.completed}/{workoutStats.total} {t('exercise:exercisesCompleted')}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 });
 
