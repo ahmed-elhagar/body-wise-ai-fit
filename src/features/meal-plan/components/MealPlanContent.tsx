@@ -3,11 +3,78 @@ import React from 'react';
 import { Card } from "@/components/ui/card";
 import { CalendarDays, Clock, Utensils } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import DailyMealView from '@/components/daily-view/DailyMealView';
-import WeeklyMealPlanView from '@/components/WeeklyMealPlanView';
-import EmptyMealPlanState from '@/components/meal-plan/EmptyMealPlanState';
 import { format } from 'date-fns';
 import type { MealPlanFetchResult, DailyMeal } from '@/features/meal-plan/types';
+
+// Import the correct components from their actual locations
+import { EmptyWeekState } from '@/features/meal-plan/components/EmptyWeekState';
+import WeeklyMealPlanView from '@/components/WeeklyMealPlanView';
+
+// Create a simple daily meal view component within this file to avoid import issues
+const DailyMealView = ({ 
+  dailyMeals, 
+  onViewMeal, 
+  onExchangeMeal, 
+  onAddSnack, 
+  isGenerating, 
+  isLoading 
+}: {
+  dailyMeals: DailyMeal[];
+  onViewMeal: (meal: DailyMeal) => void;
+  onExchangeMeal: (meal: DailyMeal) => void;
+  onAddSnack: () => void;
+  isGenerating: boolean;
+  isLoading?: boolean;
+}) => {
+  if (dailyMeals.length === 0) {
+    return (
+      <Card className="p-8 text-center">
+        <Utensils className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+        <h3 className="text-lg font-semibold text-gray-600 mb-2">No meals for this day</h3>
+        <p className="text-gray-500">Generate a meal plan to see your daily meals</p>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {dailyMeals.map((meal, index) => (
+        <Card key={meal.id} className="p-4 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xs font-medium text-violet-600 bg-violet-100 px-2 py-1 rounded-full">
+                  {meal.meal_type.toUpperCase()}
+                </span>
+                <span className="text-xs text-gray-500">{meal.prep_time + meal.cook_time} min</span>
+              </div>
+              <h4 className="font-semibold text-gray-900 mb-1">{meal.name}</h4>
+              <div className="flex items-center gap-4 text-sm text-gray-600">
+                <span>{meal.calories} cal</span>
+                <span>{meal.protein}g protein</span>
+                <span>{meal.servings} serving{meal.servings > 1 ? 's' : ''}</span>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => onViewMeal(meal)}
+                className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors"
+              >
+                View Recipe
+              </button>
+              <button
+                onClick={() => onExchangeMeal(meal)}
+                className="px-3 py-1 text-xs bg-orange-100 text-orange-700 rounded-full hover:bg-orange-200 transition-colors"
+              >
+                Exchange
+              </button>
+            </div>
+          </div>
+        </Card>
+      ))}
+    </div>
+  );
+};
 
 interface MealPlanContentProps {
   viewMode: 'daily' | 'weekly';
@@ -68,9 +135,8 @@ export const MealPlanContent = ({
 
   if (!activeWeekPlan?.weeklyPlan) {
     return (
-      <EmptyMealPlanState
+      <EmptyWeekState
         onGenerateAI={onGenerateAI}
-        weekStartDate={weekStartDate}
         isGenerating={isGenerating}
       />
     );
