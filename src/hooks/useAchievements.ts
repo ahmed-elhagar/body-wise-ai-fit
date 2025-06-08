@@ -22,6 +22,7 @@ export const useAchievements = () => {
         rarity: 'common',
         requirement_value: 1,
         progress: hasWeeklyPlan ? 1 : 0,
+        earned_at: hasWeeklyPlan ? new Date().toISOString() : undefined,
       },
       {
         id: 'daily-meals',
@@ -33,6 +34,7 @@ export const useAchievements = () => {
         rarity: 'common',
         requirement_value: 3,
         progress: Math.min(dailyMealsCount, 3),
+        earned_at: dailyMealsCount >= 3 ? new Date().toISOString() : undefined,
       },
       {
         id: 'consistent-planning',
@@ -44,6 +46,7 @@ export const useAchievements = () => {
         rarity: 'rare',
         requirement_value: 15,
         progress: Math.min(currentWeekPlan?.dailyMeals?.length || 0, 15),
+        earned_at: (currentWeekPlan?.dailyMeals?.length || 0) >= 15 ? new Date().toISOString() : undefined,
       },
     ];
   }, [currentWeekPlan]);
