@@ -167,7 +167,7 @@ const EnhancedSignupForm = () => {
           <p className="text-sm text-gray-600">
             Already have an account?{" "}
             <button
-              onClick={() => navigate('/login')}
+              onClick={() => navigate('/auth')}
               className="text-blue-600 hover:text-blue-800 font-medium"
             >
               Sign in

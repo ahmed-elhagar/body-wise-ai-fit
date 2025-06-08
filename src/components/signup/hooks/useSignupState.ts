@@ -117,12 +117,35 @@ export const useSignupState = () => {
 
       if (result?.error) {
         console.error('Signup error details:', result.error);
-        // Create a more specific error message for user already exists
-        if (result.error.message?.toLowerCase().includes('already') || 
-            result.error.message?.toLowerCase().includes('exists') ||
-            result.error.message?.toLowerCase().includes('registered')) {
+        
+        // Enhanced error message detection
+        const errorMessage = result.error.message || '';
+        const lowerErrorMessage = errorMessage.toLowerCase();
+        
+        // Check for various patterns of user already exists errors
+        const userExistsPatterns = [
+          'user already registered',
+          'already registered', 
+          'user already exists',
+          'already exists',
+          'email_address_not_authorized',
+          'signup_disabled',
+          'user_already_exists',
+          'user with this email already exists',
+          'email already in use',
+          'duplicate',
+          'user with email',
+          'email exists'
+        ];
+        
+        const isUserExistsError = userExistsPatterns.some(pattern => 
+          lowerErrorMessage.includes(pattern)
+        );
+        
+        if (isUserExistsError) {
           throw new Error(`User with email ${formData.email} already exists`);
         }
+        
         throw new Error(result.error.message || 'Account creation failed');
       }
 

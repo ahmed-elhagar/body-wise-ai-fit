@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -68,7 +67,9 @@ const AccountCreationStep = ({
         'user_already_exists',
         'user with this email already exists',
         'email already in use',
-        'duplicate'
+        'duplicate',
+        'user with email',
+        'email exists'
       ];
       
       const isUserExistsError = userExistsPatterns.some(pattern => 
