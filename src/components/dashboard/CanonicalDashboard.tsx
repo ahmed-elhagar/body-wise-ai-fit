@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
-import { DashboardWelcomeHeader } from "@/components/dashboard/DashboardWelcomeHeader";
 import EnhancedStatsGrid from "@/components/dashboard/EnhancedStatsGrid";
 import InteractiveProgressChart from "@/components/dashboard/InteractiveProgressChart";
 import WeightTrackingWidget from "@/components/dashboard/WeightTrackingWidget";
@@ -14,22 +13,9 @@ import ProfileCompletionBanner from "@/components/profile/ProfileCompletionBanne
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { 
-  TrendingUp, 
-  Calendar, 
-  Target, 
-  Activity,
-  Clock,
-  Zap,
-  Award,
-  ChevronRight
-} from "lucide-react";
+import { DashboardHeader, QuickActionsGrid, RecentActivityCard } from "@/features/dashboard";
 
 const CanonicalDashboard = () => {
-  const [activeTimeRange, setActiveTimeRange] = useState<'week' | 'month' | 'year'>('week');
   const { profile, isLoading: profileLoading, error: profileError } = useProfile();
   const { user, loading: authLoading, error: authError } = useAuth();
   const navigate = useNavigate();
@@ -131,69 +117,17 @@ const CanonicalDashboard = () => {
             <ProfileCompletionBanner />
             
             {/* Enhanced Header with integrated notifications and activity */}
-            <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-700 border-0 shadow-xl rounded-2xl">
-              {/* Background Pattern */}
-              <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
-              <div className="absolute -top-20 -right-20 w-40 h-40 bg-white/5 rounded-full" />
-              <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/5 rounded-full" />
-              
-              <div className="relative p-6 md:p-8">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <DashboardWelcomeHeader 
-                    userName={userName}
-                    onViewMealPlan={handleViewMealPlan}
-                    onViewExercise={handleViewExercise}
-                  />
-                  <HeaderDropdowns />
-                </div>
-              </div>
-            </div>
+            <DashboardHeader 
+              userName={userName}
+              onViewMealPlan={handleViewMealPlan}
+              onViewExercise={handleViewExercise}
+            />
             
             {/* Enhanced Stats Grid */}
             <EnhancedStatsGrid />
 
             {/* Quick Action Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group" onClick={() => navigate('/meal-plan')}>
-                <CardContent className="p-4 text-center">
-                  <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-                    <Calendar className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Meal Plan</h3>
-                  <p className="text-xs text-gray-600">View today's meals</p>
-                </CardContent>
-              </Card>
-
-              <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group" onClick={() => navigate('/exercise')}>
-                <CardContent className="p-4 text-center">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-                    <Activity className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Workouts</h3>
-                  <p className="text-xs text-gray-600">Start exercising</p>
-                </CardContent>
-              </Card>
-
-              <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group" onClick={() => navigate('/goals')}>
-                <CardContent className="p-4 text-center">
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-violet-600 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-                    <Target className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Goals</h3>
-                  <p className="text-xs text-gray-600">Track progress</p>
-                </CardContent>
-              </Card>
-
-              <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group" onClick={() => navigate('/progress')}>
-                <CardContent className="p-4 text-center">
-                  <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-                    <TrendingUp className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Progress</h3>
-                  <p className="text-xs text-gray-600">View analytics</p>
-                </CardContent>
-              </Card>
-            </div>
+            <QuickActionsGrid />
             
             {/* Progress Chart Section */}
             <InteractiveProgressChart />
@@ -209,56 +143,7 @@ const CanonicalDashboard = () => {
               {/* Right Column */}
               <div className="space-y-4 md:space-y-6">
                 <CoachChatWidget />
-                
-                {/* Recent Activity Card */}
-                <Card className="shadow-lg">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
-                      <Badge variant="secondary" className="text-xs">
-                        <Clock className="w-3 h-3 mr-1" />
-                        Today
-                      </Badge>
-                    </div>
-                    
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                        <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                          <Zap className="w-4 h-4 text-white" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-gray-900">Workout Completed</p>
-                          <p className="text-xs text-gray-600">Upper body strength training</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
-                        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                          <Calendar className="w-4 h-4 text-white" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-gray-900">Meal Plan Updated</p>
-                          <p className="text-xs text-gray-600">New recipes for this week</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg">
-                        <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
-                          <Award className="w-4 h-4 text-white" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-gray-900">Goal Achievement</p>
-                          <p className="text-xs text-gray-600">Weekly target reached!</p>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <Button variant="ghost" className="w-full mt-4 text-sm" onClick={() => navigate('/progress')}>
-                      View All Activity
-                      <ChevronRight className="w-4 h-4 ml-1" />
-                    </Button>
-                  </CardContent>
-                </Card>
+                <RecentActivityCard />
               </div>
             </div>
           </div>
