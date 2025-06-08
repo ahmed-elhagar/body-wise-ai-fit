@@ -1,7 +1,7 @@
 
 import { useI18n } from '@/hooks/useI18n';
 import DayTabs from '../meal-plan/DayTabs';
-import { ExerciseList } from '@/features/exercise';
+import { ExerciseListEnhanced } from '@/features/exercise';
 
 interface ExercisePageMainContentProps {
   weekStartDate: Date;
@@ -35,7 +35,7 @@ export const ExercisePageMainContent = ({
       </div>
 
       <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-        <ExerciseList
+        <ExerciseListEnhanced
           exercises={todaysExercises}
           isLoading={false}
           onExerciseComplete={onExerciseComplete}
