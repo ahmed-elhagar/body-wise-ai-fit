@@ -69,9 +69,16 @@ export class ExerciseService {
     
     if (data) {
       return {
-        ...data,
+        id: data.id,
+        program_name: data.program_name,
+        difficulty_level: data.difficulty_level,
         workout_type: data.workout_type as "home" | "gym",
+        current_week: data.current_week,
+        week_start_date: data.week_start_date,
+        created_at: data.created_at,
         daily_workouts_count: data.daily_workouts?.length || 0,
+        total_estimated_calories: data.total_estimated_calories,
+        generation_prompt: data.generation_prompt,
         daily_workouts: data.daily_workouts || []
       } as ExerciseProgram;
     }
