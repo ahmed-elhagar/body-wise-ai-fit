@@ -1,49 +1,49 @@
 
-import { useSidebar } from "@/components/ui/sidebar";
+import React from "react";
+import { Link } from "react-router-dom";
+import { SidebarMenuButton, useSidebar } from "@/components/ui/sidebar";
 import { useI18n } from "@/hooks/useI18n";
-import { Dumbbell, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState, useEffect } from "react";
 
 export const SidebarHeader = () => {
-  const { t, isRTL } = useI18n();
-  const { state } = useSidebar();
-  const [isCollapsing, setIsCollapsing] = useState(false);
-
-  useEffect(() => {
-    if (state === "collapsed") {
-      setIsCollapsing(true);
-      const timer = setTimeout(() => setIsCollapsing(false), 300);
-      return () => clearTimeout(timer);
-    }
-  }, [state]);
+  const { isRTL, t } = useI18n();
+  const { state, isMobile } = useSidebar();
+  const isCollapsed = state === "collapsed" && !isMobile;
 
   return (
     <div className={cn(
-      "flex items-center gap-3 p-4 border-b bg-gradient-to-r from-blue-600 via-purple-600 to-green-600 text-white relative overflow-hidden",
-      isRTL && "flex-row-reverse"
+      "p-4 border-b border-gray-200",
+      isRTL && "text-right"
     )}>
-      {/* Background decoration */}
-      <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-green-600/20 animate-pulse" />
-      
-      <div className="relative w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/30 shadow-lg">
-        <div className="relative">
-          <Dumbbell className="w-5 h-5 text-white" />
-          <Sparkles className="w-3 h-3 text-yellow-300 absolute -top-1 -right-1 animate-bounce" />
-        </div>
-      </div>
-      
-      {state === "expanded" && !isCollapsing && (
-        <div className={cn("flex flex-col relative", isRTL && "text-right")}>
-          <h1 className="text-xl font-bold tracking-tight text-white drop-shadow-md">
-            FitFatta
-          </h1>
-          <p className="text-xs text-white/90 font-medium flex items-center gap-1">
-            <Sparkles className="w-3 h-3" />
-            {t("Your AI Fitness Companion")}
-          </p>
-        </div>
-      )}
+      <SidebarMenuButton asChild>
+        <Link 
+          to="/dashboard" 
+          className={cn(
+            "flex items-center gap-3 w-full",
+            isRTL && "flex-row-reverse"
+          )}
+        >
+          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+            <span className="text-white font-bold text-sm">F</span>
+          </div>
+          {!isCollapsed && (
+            <div className={cn("text-left", isRTL && "text-right")}>
+              <h1 className={cn(
+                "text-lg font-bold text-gray-900",
+                isRTL && "font-arabic"
+              )}>
+                {t("common:fitFatta")}
+              </h1>
+              <p className={cn(
+                "text-xs text-gray-500",
+                isRTL && "font-arabic"
+              )}>
+                {t("dashboard:trackProgress")}
+              </p>
+            </div>
+          )}
+        </Link>
+      </SidebarMenuButton>
     </div>
   );
 };

@@ -1,147 +1,96 @@
 
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
+import React from "react";
+import { Link } from "react-router-dom";
+import { User, Settings, LogOut } from "lucide-react";
+import { 
+  SidebarMenu, 
+  SidebarMenuItem, 
+  SidebarMenuButton,
+  useSidebar
+} from "@/components/ui/sidebar";
 import { useI18n } from "@/hooks/useI18n";
-import { useSidebar } from "@/components/ui/sidebar";
+import { useProfile } from "@/hooks/useProfile";
 import { cn } from "@/lib/utils";
-import { useState, useEffect } from "react";
-import { Settings, LogOut, Shield, Users, User } from "lucide-react";
-import { SidebarMenuButton } from "@/components/ui/sidebar";
-import { useRole } from "@/hooks/useRole";
-import { toast } from "sonner";
-import { Separator } from "@/components/ui/separator";
 
 export const SidebarFooter = () => {
-  const { user, signOut } = useAuth();
   const { t, isRTL } = useI18n();
-  const navigate = useNavigate();
-  const { state } = useSidebar();
-  const { isAdmin, isCoach } = useRole();
-  const [isCollapsing, setIsCollapsing] = useState(false);
+  const { profile } = useProfile();
+  const { state, isMobile } = useSidebar();
+  const isCollapsed = state === "collapsed" && !isMobile;
 
-  useEffect(() => {
-    if (state === "collapsed") {
-      setIsCollapsing(true);
-      const timer = setTimeout(() => setIsCollapsing(false), 300);
-      return () => clearTimeout(timer);
-    } else {
-      setIsCollapsing(false);
-    }
-  }, [state]);
+  const footerItems = [
+    { href: "/profile", icon: User, labelKey: "navigation:profile" },
+    { href: "/settings", icon: Settings, labelKey: "navigation:settings" },
+  ];
 
-  const handleSignOut = async () => {
-    try {
-      toast.info("Signing out...");
-      await signOut();
-      navigate('/auth');
-    } catch (error) {
-      console.error('Error signing out:', error);
-      navigate('/auth');
-    }
-  };
-
-  const getDisplayName = () => {
-    if (user?.user_metadata?.first_name || user?.user_metadata?.last_name) {
-      return `${user.user_metadata.first_name || ''} ${user.user_metadata.last_name || ''}`.trim();
-    }
-    return user?.email?.split('@')[0] || 'User';
-  };
-
-  if (!user) return null;
+  if (isCollapsed) {
+    return (
+      <div className="p-2">
+        <SidebarMenu>
+          {footerItems.map((item) => (
+            <SidebarMenuItem key={item.href}>
+              <SidebarMenuButton asChild tooltip={t(item.labelKey)}>
+                <Link to={item.href} className="flex justify-center p-2">
+                  <item.icon className="h-5 w-5" />
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-3 border-t bg-gradient-to-r from-gray-50 to-gray-100">
-      {/* Clickable User Info Section */}
-      {state === "expanded" && !isCollapsing && (
-        <div 
-          className="mb-4 p-3 bg-white rounded-lg shadow-sm border cursor-pointer hover:bg-gray-50 transition-colors"
-          onClick={() => navigate('/profile')}
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-              <User className="w-4 h-4 text-white" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">
-                {getDisplayName()}
-              </p>
-              <p className="text-xs text-gray-500">
-                {isAdmin ? "Admin" : isCoach ? "Coach" : "User"}
-              </p>
-            </div>
-          </div>
+    <div className="p-4 space-y-2">
+      {/* User Info */}
+      <div className={cn(
+        "flex items-center gap-3 p-3 rounded-lg bg-gray-50",
+        isRTL && "flex-row-reverse text-right"
+      )}>
+        <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+          <User className="h-4 w-4 text-white" />
         </div>
-      )}
-
-      <div className="space-y-1">
-        {/* Role-based Navigation */}
-        {(isAdmin || isCoach) && (
-          <>
-            {/* Admin Panel Access */}
-            {isAdmin && (
-              <SidebarMenuButton
-                onClick={() => navigate('/admin')}
-                className={cn(
-                  "w-full justify-start text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors",
-                  "border border-purple-200 hover:border-purple-300"
-                )}
-                aria-label="Admin"
-              >
-                <Shield className="w-4 h-4 mr-2" />
-                {state === "expanded" && !isCollapsing && (
-                  <span className="font-medium">Admin</span>
-                )}
-              </SidebarMenuButton>
-            )}
-            
-            {/* Coach Dashboard Access */}
-            <SidebarMenuButton
-              onClick={() => navigate('/coach')}
-              className={cn(
-                "w-full justify-start text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors",
-                "border border-green-200 hover:border-green-300"
-              )}
-              aria-label="Coach Dashboard"
-            >
-              <Users className="w-4 h-4 mr-2" />
-              {state === "expanded" && !isCollapsing && (
-                <span className="font-medium">Coach Dashboard</span>
-              )}
-            </SidebarMenuButton>
-
-            {state === "expanded" && !isCollapsing && (
-              <Separator className="my-2" />
-            )}
-          </>
-        )}
-        
-        {/* Settings */}
-        <SidebarMenuButton
-          onClick={() => navigate('/settings')}
-          className="w-full justify-start text-gray-600 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
-          aria-label="Settings"
-        >
-          <Settings className="w-4 h-4 mr-2" />
-          {state === "expanded" && !isCollapsing && (
-            <span>Settings</span>
-          )}
-        </SidebarMenuButton>
-
-        {/* Logout */}
-        <SidebarMenuButton
-          onClick={handleSignOut}
-          className={cn(
-            "w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors",
-            "border border-red-200 hover:border-red-300 font-medium"
-          )}
-          aria-label="Logout"
-        >
-          <LogOut className="w-4 h-4 mr-2" />
-          {state === "expanded" && !isCollapsing && (
-            <span>Logout</span>
-          )}
-        </SidebarMenuButton>
+        <div className={cn("flex-1 min-w-0", isRTL && "text-right")}>
+          <p className={cn(
+            "text-sm font-medium text-gray-900 truncate",
+            isRTL && "font-arabic"
+          )}>
+            {profile?.first_name || t("common:profile")}
+          </p>
+          <p className={cn(
+            "text-xs text-gray-500 truncate",
+            isRTL && "font-arabic"
+          )}>
+            {profile?.email || t("navigation:profile")}
+          </p>
+        </div>
       </div>
+
+      {/* Footer Menu */}
+      <SidebarMenu className="space-y-1">
+        {footerItems.map((item) => (
+          <SidebarMenuItem key={item.href}>
+            <SidebarMenuButton asChild>
+              <Link 
+                to={item.href}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors",
+                  isRTL && "flex-row-reverse text-right"
+                )}
+              >
+                <item.icon className="h-4 w-4 flex-shrink-0" />
+                <span className={cn(
+                  "text-sm font-medium truncate",
+                  isRTL && "font-arabic"
+                )}>
+                  {t(item.labelKey)}
+                </span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        ))}
+      </SidebarMenu>
     </div>
   );
 };
