@@ -1,7 +1,8 @@
+
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Target, Calendar, TrendingUp, Flame } from "lucide-react";
-import { AnimatedProgressRing } from "@/features/exercise";
+import { AnimatedProgressRing } from "./AnimatedProgressRing";
 
 interface CompactProgressSidebarProps {
   completedExercises: number;

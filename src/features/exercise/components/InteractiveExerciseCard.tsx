@@ -1,163 +1,245 @@
 
-import React, { useState } from 'react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { useState, useCallback } from "react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   Play, 
   Pause, 
   CheckCircle, 
-  Clock,
+  Clock, 
   Target,
-  Edit
-} from 'lucide-react';
-import { useLanguage } from '@/contexts/LanguageContext';
+  MoreVertical,
+  Edit3,
+  Save,
+  X,
+  Timer,
+  Dumbbell,
+  RotateCcw
+} from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-export interface InteractiveExerciseCardProps {
+interface InteractiveExerciseCardProps {
   exercise: any;
-  onExerciseComplete: (exerciseId: string) => Promise<void>;
-  onExerciseProgressUpdate: (exerciseId: string, sets: number, reps: string, notes?: string, weight?: number) => Promise<void>;
-  isActive: boolean;
+  index: number;
+  onExerciseComplete: (exerciseId: string) => void;
+  onExerciseProgressUpdate: (exerciseId: string, sets: number, reps: string, notes?: string) => void;
 }
 
-export const InteractiveExerciseCard = ({ 
-  exercise, 
-  onExerciseComplete, 
-  onExerciseProgressUpdate, 
-  isActive 
+export const InteractiveExerciseCard = ({
+  exercise,
+  index,
+  onExerciseComplete,
+  onExerciseProgressUpdate
 }: InteractiveExerciseCardProps) => {
   const { t } = useLanguage();
-  const [isExpanded, setIsExpanded] = useState(isActive);
-  const [sets, setSets] = useState(exercise.actual_sets || exercise.sets || 0);
-  const [reps, setReps] = useState(exercise.actual_reps || exercise.reps || '');
-  const [notes, setNotes] = useState(exercise.notes || '');
-  const [weight, setWeight] = useState(exercise.weight || 0);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isActive, setIsActive] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [timer, setTimer] = useState(0);
+  const [editData, setEditData] = useState({
+    sets: exercise.actual_sets || exercise.sets || 0,
+    reps: exercise.actual_reps || exercise.reps || '',
+    notes: exercise.notes || ''
+  });
 
-  const handleComplete = async () => {
-    await onExerciseComplete(exercise.id);
-  };
+  const handleSaveProgress = useCallback(() => {
+    onExerciseProgressUpdate(
+      exercise.id,
+      editData.sets,
+      editData.reps,
+      editData.notes
+    );
+    setIsEditing(false);
+  }, [exercise.id, editData, onExerciseProgressUpdate]);
 
-  const handleUpdateProgress = async () => {
-    await onExerciseProgressUpdate(exercise.id, sets, reps, notes, weight);
-  };
+  const handleComplete = useCallback(() => {
+    onExerciseComplete(exercise.id);
+  }, [exercise.id, onExerciseComplete]);
+
+  const progressPercentage = exercise.completed ? 100 : 
+    (editData.sets > 0 || editData.reps !== '' ? 50 : 0);
 
   return (
-    <Card className={`p-4 ${isActive ? 'ring-2 ring-blue-500 bg-blue-50' : ''} ${exercise.completed ? 'bg-green-50' : ''}`}>
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-            exercise.completed ? 'bg-green-500' : 'bg-gray-200'
-          }`}>
-            {exercise.completed ? (
-              <CheckCircle className="w-4 h-4 text-white" />
-            ) : (
-              <span className="text-sm font-medium text-gray-600">
-                {exercise.order_number || 1}
+    <Card className={`p-3 transition-all duration-200 ${
+      exercise.completed 
+        ? 'bg-green-50 border-green-200' 
+        : isActive 
+        ? 'bg-blue-50 border-blue-200 shadow-md' 
+        : 'hover:shadow-sm'
+    }`}>
+      <div className="space-y-3">
+        {/* Header */}
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <Badge variant="outline" className="text-xs">
+                #{index + 1}
+              </Badge>
+              {exercise.completed && (
+                <CheckCircle className="w-4 h-4 text-green-600" />
+              )}
+            </div>
+            <h4 className={`font-medium text-sm ${
+              exercise.completed ? 'text-green-800 line-through' : 'text-gray-900'
+            }`}>
+              {exercise.name}
+            </h4>
+            <div className="flex items-center gap-3 text-xs text-gray-600 mt-1">
+              <span className="flex items-center gap-1">
+                <Target className="w-3 h-3" />
+                {exercise.sets || 0} sets × {exercise.reps || 0}
               </span>
-            )}
-          </div>
-          
-          <div>
-            <h4 className="font-medium text-gray-900">{exercise.name}</h4>
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <Target className="w-3 h-3" />
-              <span>{exercise.sets}x{exercise.reps}</span>
               {exercise.rest_seconds && (
-                <>
-                  <Clock className="w-3 h-3 ml-2" />
-                  <span>{exercise.rest_seconds}s rest</span>
-                </>
+                <span className="flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  {Math.floor(exercise.rest_seconds / 60)}:{(exercise.rest_seconds % 60).toString().padStart(2, '0')} rest
+                </span>
               )}
             </div>
           </div>
+
+          <div className="flex items-center gap-1">
+            {!exercise.completed && (
+              <>
+                <Button
+                  onClick={() => setIsEditing(!isEditing)}
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0"
+                >
+                  <Edit3 className="w-3 h-3" />
+                </Button>
+                <Button
+                  onClick={handleComplete}
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0 text-green-600 hover:text-green-700"
+                >
+                  <CheckCircle className="w-3 h-3" />
+                </Button>
+              </>
+            )}
+          </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          {exercise.muscle_groups?.map((group: string, index: number) => (
-            <Badge key={index} variant="outline" className="text-xs">
-              {group}
-            </Badge>
-          ))}
-          
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsExpanded(!isExpanded)}
-          >
-            <Edit className="w-4 h-4" />
-          </Button>
+        {/* Progress Bar */}
+        <div className="space-y-1">
+          <div className="flex justify-between text-xs">
+            <span className="text-gray-600">Progress</span>
+            <span className="font-medium">{Math.round(progressPercentage)}%</span>
+          </div>
+          <Progress value={progressPercentage} className="h-1" />
         </div>
+
+        {/* Edit Mode */}
+        {isEditing && !exercise.completed && (
+          <div className="bg-gray-50 rounded-lg p-3 space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-medium text-gray-700 block mb-1">
+                  Sets Completed
+                </label>
+                <Input
+                  type="number"
+                  value={editData.sets}
+                  onChange={(e) => setEditData(prev => ({ ...prev, sets: parseInt(e.target.value) || 0 }))}
+                  className="h-8 text-sm"
+                  min="0"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-700 block mb-1">
+                  Reps/Weight
+                </label>
+                <Input
+                  value={editData.reps}
+                  onChange={(e) => setEditData(prev => ({ ...prev, reps: e.target.value }))}
+                  className="h-8 text-sm"
+                  placeholder="12 reps @ 50kg"
+                />
+              </div>
+            </div>
+            
+            <div>
+              <label className="text-xs font-medium text-gray-700 block mb-1">
+                Notes (optional)
+              </label>
+              <Textarea
+                value={editData.notes}
+                onChange={(e) => setEditData(prev => ({ ...prev, notes: e.target.value }))}
+                className="text-sm resize-none"
+                rows={2}
+                placeholder="How did it feel? Any modifications?"
+              />
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                onClick={handleSaveProgress}
+                size="sm"
+                className="flex-1 h-7 text-xs"
+              >
+                <Save className="w-3 h-3 mr-1" />
+                Save Progress
+              </Button>
+              <Button
+                onClick={() => setIsEditing(false)}
+                variant="outline"
+                size="sm"
+                className="h-7 px-2"
+              >
+                <X className="w-3 h-3" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Current Progress Display */}
+        {(editData.sets > 0 || editData.reps !== '' || editData.notes) && !isEditing && (
+          <div className="bg-blue-50 rounded-lg p-2 text-xs">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                {editData.sets > 0 && (
+                  <div className="text-blue-800">
+                    <span className="font-medium">Completed:</span> {editData.sets} sets
+                  </div>
+                )}
+                {editData.reps && (
+                  <div className="text-blue-700">
+                    <span className="font-medium">Performance:</span> {editData.reps}
+                  </div>
+                )}
+                {editData.notes && (
+                  <div className="text-blue-600 mt-1">
+                    <span className="font-medium">Notes:</span> {editData.notes}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Equipment & Muscle Groups */}
+        {(exercise.equipment || exercise.muscle_groups) && (
+          <div className="flex flex-wrap gap-1">
+            {exercise.equipment && (
+              <Badge variant="secondary" className="text-xs">
+                <Dumbbell className="w-3 h-3 mr-1" />
+                {exercise.equipment}
+              </Badge>
+            )}
+            {exercise.muscle_groups?.slice(0, 2).map((muscle: string) => (
+              <Badge key={muscle} variant="outline" className="text-xs">
+                {muscle}
+              </Badge>
+            ))}
+          </div>
+        )}
       </div>
-
-      {isExpanded && (
-        <div className="space-y-4 mt-4 pt-4 border-t">
-          {exercise.instructions && (
-            <p className="text-sm text-gray-600">{exercise.instructions}</p>
-          )}
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div>
-              <label className="text-xs font-medium text-gray-700">Sets</label>
-              <input
-                type="number"
-                value={sets}
-                onChange={(e) => setSets(Number(e.target.value))}
-                className="w-full p-2 border rounded text-sm"
-              />
-            </div>
-            
-            <div>
-              <label className="text-xs font-medium text-gray-700">Reps</label>
-              <input
-                type="text"
-                value={reps}
-                onChange={(e) => setReps(e.target.value)}
-                className="w-full p-2 border rounded text-sm"
-              />
-            </div>
-            
-            <div>
-              <label className="text-xs font-medium text-gray-700">Weight (kg)</label>
-              <input
-                type="number"
-                value={weight}
-                onChange={(e) => setWeight(Number(e.target.value))}
-                className="w-full p-2 border rounded text-sm"
-              />
-            </div>
-            
-            <div>
-              <label className="text-xs font-medium text-gray-700">Notes</label>
-              <input
-                type="text"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Optional"
-                className="w-full p-2 border rounded text-sm"
-              />
-            </div>
-          </div>
-          
-          <div className="flex justify-end gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleUpdateProgress}
-            >
-              {t('Update Progress')}
-            </Button>
-            
-            <Button
-              size="sm"
-              onClick={handleComplete}
-              disabled={exercise.completed}
-              className={exercise.completed ? 'bg-green-500' : ''}
-            >
-              {exercise.completed ? t('Completed') : t('Mark Complete')}
-            </Button>
-          </div>
-        </div>
-      )}
     </Card>
   );
 };

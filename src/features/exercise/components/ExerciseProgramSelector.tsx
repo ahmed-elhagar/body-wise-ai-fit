@@ -1,87 +1,76 @@
 
+import React from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Target, Clock, Plus } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { Calendar, Dumbbell, Clock } from "lucide-react";
 
 interface ExerciseProgramSelectorProps {
-  currentProgram: any;
-  workoutType: "home" | "gym";
-  onCreateProgram?: () => void;
+  programs: any[];
+  selectedProgram: any;
+  onSelect: (program: any) => void;
+  onCreateNew: () => void;
 }
 
-export const ExerciseProgramSelector = ({ 
-  currentProgram, 
-  workoutType,
-  onCreateProgram
+export const ExerciseProgramSelector = ({
+  programs,
+  selectedProgram,
+  onSelect,
+  onCreateNew
 }: ExerciseProgramSelectorProps) => {
-  const { t } = useLanguage();
-
-  if (!currentProgram) {
-    return (
-      <Card className="p-6 text-center">
-        <div className="space-y-4">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
-            <Target className="w-8 h-8 text-gray-400" />
-          </div>
-          
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              {t('exercise.noProgram', 'No Exercise Program')}
-            </h3>
-            <p className="text-gray-600 mb-4">
-              {t('exercise.noProgramDescription', 'Create a personalized exercise program to get started')}
-            </p>
-          </div>
-
-          {onCreateProgram && (
-            <Button onClick={onCreateProgram} className="flex items-center gap-2">
-              <Plus className="w-4 h-4" />
-              {t('exercise.createProgram', 'Create Program')}
-            </Button>
-          )}
-        </div>
-      </Card>
-    );
-  }
-
   return (
-    <Card className="p-4">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
-            <h3 className="font-semibold text-gray-900">
-              {currentProgram.program_name}
-            </h3>
-            <Badge variant="outline" className="text-xs">
-              Week {currentProgram.current_week}
-            </Badge>
+    <Card className="p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold">Exercise Programs</h3>
+        <Button onClick={onCreateNew} size="sm">
+          Create New Program
+        </Button>
+      </div>
+      
+      <div className="space-y-3">
+        {programs.map((program) => (
+          <div
+            key={program.id}
+            className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+              selectedProgram?.id === program.id
+                ? 'border-blue-500 bg-blue-50'
+                : 'border-gray-200 hover:border-gray-300'
+            }`}
+            onClick={() => onSelect(program)}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Dumbbell className="w-5 h-5 text-blue-600" />
+                <div>
+                  <h4 className="font-medium">{program.program_name}</h4>
+                  <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-4 h-4" />
+                      <span>Week {program.current_week}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Clock className="w-4 h-4" />
+                      <span>{program.workout_type}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <Badge variant={program.difficulty_level === 'beginner' ? 'secondary' : 'default'}>
+                {program.difficulty_level}
+              </Badge>
+            </div>
           </div>
-          
-          <div className="flex items-center gap-4 text-sm text-gray-600">
-            <span className="flex items-center gap-1">
-              <Calendar className="w-3 h-3" />
-              {currentProgram.difficulty_level}
-            </span>
-            
-            <span className="flex items-center gap-1">
-              <Clock className="w-3 h-3" />
-              {workoutType === "home" ? t('exercise.home', 'Home') : t('exercise.gym', 'Gym')}
-            </span>
-            
-            <span className="flex items-center gap-1">
-              <Target className="w-3 h-3" />
-              {currentProgram.daily_workouts_count || 7} days
-            </span>
+        ))}
+        
+        {programs.length === 0 && (
+          <div className="text-center py-8 text-gray-500">
+            <p>No exercise programs found</p>
+            <Button onClick={onCreateNew} className="mt-2">
+              Create Your First Program
+            </Button>
           </div>
-        </div>
-
-        <Badge 
-          className={workoutType === "gym" ? "bg-blue-500" : "bg-green-500"}
-        >
-          {workoutType === "gym" ? "🏋️ Gym" : "🏠 Home"}
-        </Badge>
+        )}
       </div>
     </Card>
   );

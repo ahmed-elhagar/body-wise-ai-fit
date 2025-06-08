@@ -9,10 +9,13 @@ import { ExercisePageContent } from "@/features/exercise";
 import { ExerciseErrorState } from "./ExerciseErrorState";
 import { useEnhancedAIExercise } from "@/hooks/useEnhancedAIExercise";
 import SimpleLoadingIndicator from "@/components/ui/simple-loading-indicator";
+import { EnhancedExerciseHeaderWithAnalytics } from "./EnhancedExerciseHeaderWithAnalytics";
+import { ExerciseAnalyticsContainer } from "./ExerciseAnalyticsContainer";
 import { useState } from "react";
 
 const EnhancedExercisePage = () => {
   const { t } = useLanguage();
+  const [showAnalytics, setShowAnalytics] = useState(false);
   
   const {
     selectedDayNumber,
@@ -45,6 +48,15 @@ const EnhancedExercisePage = () => {
 
   const currentSelectedDate = addDays(weekStartDate, selectedDayNumber - 1);
   const isToday = format(currentSelectedDate, 'yyyy-MM-dd') === format(currentDate, 'yyyy-MM-dd');
+
+  if (showAnalytics) {
+    return (
+      <ExerciseAnalyticsContainer
+        exercises={todaysExercises}
+        onClose={() => setShowAnalytics(false)}
+      />
+    );
+  }
 
   const showFullPageLoading = (isLoading && !currentProgram && currentWeekOffset === 0) || isGenerating;
 
@@ -95,6 +107,17 @@ const EnhancedExercisePage = () => {
 
   return (
     <ExercisePageLayout>
+      <div className="px-3 py-3">
+        <EnhancedExerciseHeaderWithAnalytics
+          currentProgram={currentProgram}
+          onShowAnalytics={() => setShowAnalytics(true)}
+          onShowAIDialog={() => setShowAIDialog(true)}
+          onRegenerateProgram={handleRegenerateProgram}
+          isGenerating={isGenerating}
+          workoutType={workoutType}
+        />
+      </div>
+
       <div className="px-3 mb-3">
         <EnhancedDayNavigation
           weekStartDate={weekStartDate}
@@ -109,15 +132,25 @@ const EnhancedExercisePage = () => {
       </div>
 
       <ExercisePageContent
-        exercises={todaysExercises}
         isLoading={isLoading && !!currentProgram && !isGenerating}
         currentProgram={currentProgram}
+        todaysExercises={todaysExercises}
+        completedExercises={completedExercises}
+        totalExercises={totalExercises}
+        progressPercentage={progressPercentage}
+        isRestDay={isRestDay}
+        isToday={isToday}
         selectedDayNumber={selectedDayNumber}
         workoutType={workoutType}
-        onWorkoutTypeChange={setWorkoutType}
-        isRestDay={isRestDay}
+        setWorkoutType={setWorkoutType}
+        showAIDialog={showAIDialog}
+        setShowAIDialog={setShowAIDialog}
+        aiPreferences={aiPreferences}
+        setAiPreferences={setAiPreferences}
+        isGenerating={isGenerating}
         onExerciseComplete={handleExerciseComplete}
         onExerciseProgressUpdate={handleExerciseProgressUpdate}
+        onGenerateAIProgram={handleGenerateAIProgram}
       />
 
       <AIExerciseDialog
