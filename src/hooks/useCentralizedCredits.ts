@@ -94,6 +94,63 @@ export const useCentralizedCredits = () => {
     }
   };
 
+  // Method for meal plan compatibility - uses the database function for proper logging
+  const checkAndUseCredit = async (generationType: string): Promise<{ success: boolean; logId?: string }> => {
+    if (!user?.id) {
+      toast.error('Please sign in to use AI features');
+      return { success: false };
+    }
+
+    try {
+      setIsLoading(true);
+      
+      // Use the database function for proper credit checking and logging
+      const { data, error } = await supabase.rpc('check_and_use_ai_generation', {
+        user_id_param: user.id,
+        generation_type_param: generationType,
+        prompt_data_param: {}
+      });
+
+      if (error) {
+        console.error('Error using credit:', error);
+        toast.error('Failed to process credits. Please try again.');
+        return { success: false };
+      }
+
+      if (!data.success) {
+        toast.error(data.error || 'Insufficient credits');
+        return { success: false };
+      }
+
+      // Update local state
+      setCredits(data.remaining || 0);
+      
+      return { 
+        success: true, 
+        logId: data.log_id 
+      };
+    } catch (error) {
+      console.error('Error using credit:', error);
+      toast.error('Failed to process credits. Please try again.');
+      return { success: false };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Method for completing generation logging
+  const completeGeneration = async (logId: string, success: boolean, responseData?: any): Promise<void> => {
+    try {
+      await supabase.rpc('complete_ai_generation', {
+        log_id_param: logId,
+        response_data_param: responseData || {},
+        error_message_param: success ? null : 'Generation failed'
+      });
+    } catch (error) {
+      console.error('Error completing generation log:', error);
+    }
+  };
+
   useEffect(() => {
     fetchCredits();
   }, [user?.id]);
@@ -110,5 +167,7 @@ export const useCentralizedCredits = () => {
     hasCredits,
     fetchCredits,
     checkAndDeductCredits,
+    checkAndUseCredit, // For meal plan compatibility
+    completeGeneration, // For meal plan compatibility
   };
 };
