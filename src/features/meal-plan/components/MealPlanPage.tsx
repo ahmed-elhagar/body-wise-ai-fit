@@ -9,7 +9,7 @@ import UnifiedNavigation from './UnifiedNavigation';
 import MealPlanRecipeDialog from './MealPlanRecipeDialog';
 import MealPlanAIDialog from './MealPlanAIDialog';
 import ShoppingListDialog from './ShoppingListDialog';
-import { EnhancedPageLoading } from '@/components/ui/loading';
+import { EnhancedPageLoading } from '@/components/EnhancedPageLoading';
 
 export const MealPlanPage: React.FC = () => {
   const {
@@ -38,6 +38,8 @@ export const MealPlanPage: React.FC = () => {
     closeShoppingListDialog,
     handleShowShoppingList,
     switchToDaily,
+    aiPreferences,
+    updateAIPreferences,
   } = useMealPlanState();
   
   if (isLoading) {
@@ -45,8 +47,8 @@ export const MealPlanPage: React.FC = () => {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
         <div className="container mx-auto px-4 py-6">
           <EnhancedPageLoading 
-            message="Loading your meal plan..."
-            showProgress={true}
+            title="Loading your meal plan..."
+            description="Please wait while we fetch your personalized meal plan"
             estimatedTime={3}
           />
         </div>
@@ -106,10 +108,12 @@ export const MealPlanPage: React.FC = () => {
 
         {showAIDialog && (
           <MealPlanAIDialog
-            isOpen={showAIDialog}
-            onClose={closeAIDialog}
-            isGenerating={isGenerating}
+            open={showAIDialog}
+            onOpenChange={closeAIDialog}
+            preferences={aiPreferences}
+            onPreferencesChange={updateAIPreferences}
             onGenerate={handleShuffle}
+            isGenerating={isGenerating}
           />
         )}
 
@@ -117,7 +121,13 @@ export const MealPlanPage: React.FC = () => {
           <ShoppingListDialog
             isOpen={showShoppingListDialog}
             onClose={closeShoppingListDialog}
-            weeklyPlan={currentWeekPlan}
+            shoppingItems={{
+              items: [],
+              groupedItems: {}
+            }}
+            onSendEmail={async () => false}
+            weekStartDate={weekStartDate}
+            isLoading={false}
           />
         )}
       </div>

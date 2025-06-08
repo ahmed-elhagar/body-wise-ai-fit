@@ -6,6 +6,13 @@ import { useMealPlanDialogs } from './useMealPlanDialogs';
 export const useMealPlanState = () => {
   const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('weekly');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [aiPreferences, setAiPreferences] = useState({
+    duration: "7",
+    cuisine: "mixed", 
+    maxPrepTime: "30",
+    includeSnacks: true,
+    mealTypes: "breakfast,lunch,dinner",
+  });
 
   const coreState = useMealPlanCore();
   const dialogState = useMealPlanDialogs();
@@ -33,16 +40,27 @@ export const useMealPlanState = () => {
     setViewMode('weekly');
   };
 
+  const updateAIPreferences = (newPrefs: any) => {
+    setAiPreferences(prev => ({ ...prev, ...newPrefs }));
+  };
+
+  const handleShowShoppingList = () => {
+    dialogState.handleShowShoppingList();
+  };
+
   return {
     ...coreState,
     ...dialogState,
     viewMode,
     isGenerating,
+    aiPreferences,
     setViewMode,
     handleAddSnack,
     handleGenerateAI,
     handleShuffle,
     switchToDaily,
     switchToWeekly,
+    updateAIPreferences,
+    handleShowShoppingList,
   };
 };
