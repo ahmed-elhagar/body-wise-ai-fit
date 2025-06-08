@@ -66,7 +66,7 @@ export const useAchievements = () => {
     setIsLoading(true);
     
     // Check if the user has generated a meal plan
-    if (currentWeekPlan.data) {
+    if (currentWeekPlan?.data) {
       setAchievements((prevAchievements) =>
         prevAchievements.map((achievement) =>
           achievement.id === 'first-meal-plan'
@@ -92,7 +92,7 @@ export const useAchievements = () => {
 
   useEffect(() => {
     checkAchievements();
-  }, [currentWeekPlan.data, currentProgram]);
+  }, [currentWeekPlan?.data, currentProgram]);
 
   return { 
     achievements,

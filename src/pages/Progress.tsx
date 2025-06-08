@@ -35,7 +35,7 @@ const ProgressPage = () => {
   };
 
   const getMealPlanProgress = () => {
-    if (!currentWeekPlan.data?.daily_meals) return 0;
+    if (!currentWeekPlan?.data?.daily_meals) return 0;
     const totalMeals = currentWeekPlan.data.daily_meals.length;
     return totalMeals > 0 ? 100 : 0;
   };
@@ -110,8 +110,8 @@ const ProgressPage = () => {
                   <CardContent>
                     <div className="space-y-3">
                       <Progress value={getMealPlanProgress()} />
-                      <Badge variant={currentWeekPlan.data ? "default" : "secondary"}>
-                        {currentWeekPlan.data ? t('Active Plan') : t('No Plan')}
+                      <Badge variant={currentWeekPlan?.data ? "default" : "secondary"}>
+                        {currentWeekPlan?.data ? t('Active Plan') : t('No Plan')}
                       </Badge>
                     </div>
                   </CardContent>

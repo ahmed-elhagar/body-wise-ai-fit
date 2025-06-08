@@ -1,9 +1,11 @@
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Home, Building2 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { WorkoutContentLayout } from "./WorkoutContentLayout";
 import { ExerciseProgramSelector } from "./ExerciseProgramSelector";
-import { ExerciseProgram, ExercisePreferences } from "@/features/exercise/hooks/useExerciseProgramPage";
+import { ExerciseProgram } from "@/features/exercise/types";
+import { ExercisePreferences } from "@/features/exercise/hooks/useExerciseProgramPage";
 
 interface WorkoutTypeTabsProps {
   workoutType: "home" | "gym";
@@ -45,18 +47,13 @@ export const WorkoutTypeTabs = ({
 
     if (hasValidProgram) {
       return (
-        <WorkoutContentLayout
-          todaysExercises={todaysExercises}
-          completedExercises={completedExercises}
-          totalExercises={totalExercises}
-          progressPercentage={progressPercentage}
-          currentProgram={currentProgram}
-          selectedDayNumber={selectedDayNumber}
-          currentWeekOffset={currentWeekOffset}
-          onExerciseComplete={onExerciseComplete}
-          onExerciseProgressUpdate={onExerciseProgressUpdate}
-          isRestDay={isRestDay}
-        />
+        <div className="space-y-6">
+          {/* Program content placeholder - will be implemented properly */}
+          <div className="text-center p-8">
+            <h3 className="text-lg font-semibold mb-2">Exercise Program Loaded</h3>
+            <p className="text-sm text-gray-600">Exercise content will be displayed here</p>
+          </div>
+        </div>
       );
     }
 

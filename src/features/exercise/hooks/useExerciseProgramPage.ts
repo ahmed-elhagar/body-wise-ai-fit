@@ -1,4 +1,3 @@
-
 import { useState, useMemo, useCallback } from 'react';
 import { useExerciseProgramData } from './useExerciseProgramData';
 import { useRateLimitedAI } from '@/hooks/useRateLimitedAI';
