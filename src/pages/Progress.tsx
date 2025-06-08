@@ -1,12 +1,13 @@
+
 import React from 'react';
 import { SidebarProvider } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/AppSidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { Progress as ProgressBar } from "@/components/ui/progress";
 import { Calendar, Target, TrendingUp } from "lucide-react";
 import { useMealPlanState } from '@/features/meal-plan/hooks';
 
-const Progress = () => {
+const ProgressPage = () => {
   const {
     currentWeekPlan,
     dailyMeals,
@@ -58,7 +59,7 @@ const Progress = () => {
                     <div className="text-sm text-gray-500">
                       {remainingCalories} remaining of {targetDayCalories}
                     </div>
-                    <Progress value={progressPercentage} className="mt-2" />
+                    <ProgressBar value={progressPercentage} className="mt-2" />
                   </CardContent>
                 </Card>
 
@@ -73,7 +74,7 @@ const Progress = () => {
                     <div className="text-sm text-gray-500">
                       Target: {proteinTarget}g
                     </div>
-                    <Progress value={proteinProgress} className="mt-2" />
+                    <ProgressBar value={proteinProgress} className="mt-2" />
                   </CardContent>
                 </Card>
 
@@ -113,4 +114,4 @@ const Progress = () => {
   );
 };
 
-export default Progress;
+export default ProgressPage;
