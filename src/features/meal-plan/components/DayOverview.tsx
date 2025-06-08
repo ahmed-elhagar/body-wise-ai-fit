@@ -123,7 +123,7 @@ export const DayOverview = ({
                 mealIndex={index}
                 dayNumber={dayNumber}
                 onShowRecipe={onViewMeal}
-                onExchangeMeal={(meal) => onExchangeMeal(meal)}
+                onExchangeMeal={onExchangeMeal}
               />
             ))}
             

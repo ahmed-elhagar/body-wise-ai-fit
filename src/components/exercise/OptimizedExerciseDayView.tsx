@@ -1,112 +1,95 @@
 
-import React, { memo, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, Target } from 'lucide-react';
-import { useI18n } from '@/hooks/useI18n';
-import { Exercise, DailyWorkout } from '@/types/exercise';
-import { RestDayCard } from './RestDayCard';
-import InteractiveExerciseCard from './InteractiveExerciseCard';
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Calendar, Users, Clock, Target } from "lucide-react";
+import { useI18n } from "@/hooks/useI18n";
+import InteractiveExerciseCard from "./InteractiveExerciseCard";
+import { DailyWorkout, Exercise } from "@/types/exercise";
 
 interface OptimizedExerciseDayViewProps {
-  dailyWorkout: DailyWorkout;
-  exercises: Exercise[];
+  dailyWorkout: DailyWorkout | null;
   selectedDay: number;
-  onExerciseComplete: (exerciseId: string) => void;
   onExerciseStart: (exerciseId: string) => void;
+  onExerciseComplete: (exerciseId: string) => void;
+  workoutType: "home" | "gym";
 }
 
-const OptimizedExerciseDayView = memo(({
+const OptimizedExerciseDayView = ({
   dailyWorkout,
-  exercises,
   selectedDay,
+  onExerciseStart,
   onExerciseComplete,
-  onExerciseStart
+  workoutType
 }: OptimizedExerciseDayViewProps) => {
   const { t, isRTL } = useI18n();
 
-  const sortedExercises = useMemo(() => {
-    return [...exercises].sort((a, b) => (a.order_number || 0) - (b.order_number || 0));
-  }, [exercises]);
-
-  const workoutStats = useMemo(() => {
-    const completed = exercises.filter(ex => ex.completed).length;
-    const total = exercises.length;
-    return {
-      completed,
-      total,
-      percentage: total > 0 ? Math.round((completed / total) * 100) : 0
-    };
-  }, [exercises]);
-
-  if (dailyWorkout.is_rest_day) {
-    return <RestDayCard />;
+  // Handle rest day
+  if (!dailyWorkout || dailyWorkout.is_rest_day) {
+    return (
+      <Card className="p-8 text-center bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+        <div className="space-y-4">
+          <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto">
+            <Calendar className="w-10 h-10 text-white" />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-green-800 mb-2">
+              {t('exercise:restDay') || 'Rest Day'}
+            </h3>
+            <p className="text-green-700 mb-4">
+              {t('exercise:restDayDescription') || 'Take this day to recover and let your muscles rebuild stronger.'}
+            </p>
+            <div className="flex justify-center gap-4 text-sm text-green-600">
+              <div className="flex items-center gap-1">
+                <Target className="w-4 h-4" />
+                <span>{t('exercise:recovery') || 'Recovery'}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Clock className="w-4 h-4" />
+                <span>{t('exercise:lightActivity') || 'Light activity only'}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Card>
+    );
   }
 
   return (
     <div className="space-y-6">
       {/* Workout Header */}
-      <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-0 shadow-lg">
+      <Card className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
         <CardHeader>
-          <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <div>
-              <CardTitle className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                <Calendar className="w-5 h-5 text-blue-500" />
-                {dailyWorkout.workout_name}
-              </CardTitle>
-              <div className={`flex items-center gap-4 mt-2 text-sm text-gray-600 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                {dailyWorkout.estimated_duration && (
-                  <div className={`flex items-center gap-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                    <Clock className="w-4 h-4" />
-                    <span>{dailyWorkout.estimated_duration} {t('exercise:minutes')}</span>
-                  </div>
-                )}
-                {dailyWorkout.muscle_groups && dailyWorkout.muscle_groups.length > 0 && (
-                  <div className={`flex items-center gap-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                    <Target className="w-4 h-4" />
-                    <span>{dailyWorkout.muscle_groups.join(', ')}</span>
-                  </div>
-                )}
-              </div>
+          <CardTitle className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+              <Target className="w-6 h-6 text-white" />
             </div>
-            
-            <Badge variant="outline" className="bg-white/80">
-              {workoutStats.completed}/{workoutStats.total} {t('exercise:exercises')}
-            </Badge>
-          </div>
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">
+                {dailyWorkout.workout_name || `Day ${selectedDay} Workout`}
+              </h2>
+              <p className="text-gray-600">
+                {workoutType === 'home' ? t('exercise:homeWorkout') : t('exercise:gymWorkout')} • 
+                {dailyWorkout.estimated_duration || 45} {t('exercise:minutes')}
+              </p>
+            </div>
+          </CardTitle>
         </CardHeader>
       </Card>
 
-      {/* Exercises List */}
+      {/* Exercise List */}
       <div className="space-y-4">
-        {sortedExercises.map((exercise, index) => (
+        {dailyWorkout.exercises?.map((exercise: Exercise) => (
           <InteractiveExerciseCard
             key={exercise.id}
             exercise={exercise}
-            index={index}
-            onExerciseComplete={onExerciseComplete}
-            onExerciseStart={onExerciseStart}
+            onExerciseComplete={() => onExerciseComplete(exercise.id)}
+            onExerciseStart={() => onExerciseStart(exercise.id)}
           />
         ))}
       </div>
-
-      {/* Progress Summary */}
-      {workoutStats.total > 0 && (
-        <Card className="bg-green-50 border-green-200">
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-green-700 mb-1">
-              {workoutStats.percentage}%
-            </div>
-            <p className="text-sm text-green-600">
-              {t('exercise:workoutProgress')} • {workoutStats.completed}/{workoutStats.total} {t('exercise:exercisesCompleted')}
-            </p>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
-});
-
-OptimizedExerciseDayView.displayName = 'OptimizedExerciseDayView';
+};
 
 export default OptimizedExerciseDayView;

@@ -157,12 +157,12 @@ const CanonicalDashboard = () => {
             
             {/* Enhanced Stats Grid */}
             <EnhancedStatsGrid 
-              stats={{
-                calories: { consumed: 1850, target: 2200, percentage: 84 },
-                protein: { consumed: 120, target: 150, percentage: 80 },
-                workouts: { completed: 4, target: 5, percentage: 80 },
-                weight: { current: 75, target: 70, change: -2 }
-              }}
+              stats={[
+                { key: 'calories', value: 1850, target: 2200, label: 'Calories', percentage: 84 },
+                { key: 'protein', value: 120, target: 150, label: 'Protein', percentage: 80 },
+                { key: 'workouts', value: 4, target: 5, label: 'Workouts', percentage: 80 },
+                { key: 'weight', value: 75, target: 70, label: 'Weight', change: -2 }
+              ]}
             />
 
             {/* Quick Action Cards */}
@@ -211,16 +211,16 @@ const CanonicalDashboard = () => {
             {/* Progress Chart Section */}
             <InteractiveProgressChart 
               data={[
-                { name: 'Mon', calories: 2100, weight: 75.2, workouts: 1 },
-                { name: 'Tue', calories: 1950, weight: 75.0, workouts: 0 },
-                { name: 'Wed', calories: 2200, weight: 74.8, workouts: 1 },
-                { name: 'Thu', calories: 2050, weight: 74.6, workouts: 1 },
-                { name: 'Fri', calories: 1900, weight: 74.4, workouts: 0 },
-                { name: 'Sat', calories: 2300, weight: 74.2, workouts: 1 },
-                { name: 'Sun', calories: 2000, weight: 74.0, workouts: 1 }
+                { day: 'Mon', value: 2100 },
+                { day: 'Tue', value: 1950 },
+                { day: 'Wed', value: 2200 },
+                { day: 'Thu', value: 2050 },
+                { day: 'Fri', value: 1900 },
+                { day: 'Sat', value: 2300 },
+                { day: 'Sun', value: 2000 }
               ]}
               title="Weekly Progress"
-              dataKey="calories"
+              dataKey="value"
             />
             
             {/* 50-50 Layout for remaining content */}
@@ -229,8 +229,8 @@ const CanonicalDashboard = () => {
               <div className="space-y-4 md:space-y-6">
                 <GoalProgressWidget 
                   goals={[
-                    { id: '1', title: 'Lose 5kg', progress: 60, target: 100, type: 'weight' },
-                    { id: '2', title: 'Workout 5x/week', progress: 80, target: 100, type: 'exercise' }
+                    { id: '1', title: 'Lose 5kg', progress: 60, target: 100 },
+                    { id: '2', title: 'Workout 5x/week', progress: 80, target: 100 }
                   ]}
                 />
                 <WeightTrackingWidget />

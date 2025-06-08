@@ -1,65 +1,92 @@
 
-import React, { useState } from 'react';
-import { Card } from '@/components/ui/card';
-import { useI18n } from '@/hooks/useI18n';
-import InteractiveExerciseCard from './InteractiveExerciseCard';
-import { Exercise } from '@/types/exercise';
+import React, { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Play, Pause, RotateCcw } from "lucide-react";
+import { useI18n } from "@/hooks/useI18n";
+import InteractiveExerciseCard from "./InteractiveExerciseCard";
+import { Exercise } from "@/types/exercise";
 
 interface UnifiedExerciseContainerProps {
   exercises: Exercise[];
-  selectedDay: number;
-  onExerciseComplete: (exerciseId: string) => void;
   onExerciseStart: (exerciseId: string) => void;
-  workoutType: 'home' | 'gym';
+  onExerciseComplete: (exerciseId: string) => void;
+  workoutType: "home" | "gym";
 }
 
-export const UnifiedExerciseContainer = ({
+const UnifiedExerciseContainer = ({
   exercises,
-  selectedDay,
-  onExerciseComplete,
   onExerciseStart,
+  onExerciseComplete,
   workoutType
 }: UnifiedExerciseContainerProps) => {
   const { t, isRTL } = useI18n();
+  const [isWorkoutActive, setIsWorkoutActive] = useState(false);
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
 
-  const handleExerciseStart = (exerciseId: string) => {
-    const index = exercises.findIndex(ex => ex.id === exerciseId);
-    if (index !== -1) {
-      setCurrentExerciseIndex(index);
-      onExerciseStart(exerciseId);
-    }
+  const handleStartWorkout = () => {
+    setIsWorkoutActive(true);
+    setCurrentExerciseIndex(0);
   };
 
-  const handleExerciseComplete = (exerciseId: string) => {
-    onExerciseComplete(exerciseId);
-    const index = exercises.findIndex(ex => ex.id === exerciseId);
-    if (index !== -1 && index < exercises.length - 1) {
-      setCurrentExerciseIndex(index + 1);
-    }
+  const handlePauseWorkout = () => {
+    setIsWorkoutActive(false);
   };
 
-  if (exercises.length === 0) {
-    return (
-      <Card className="p-8 text-center">
-        <p className="text-gray-500">
-          {t('exercise:noExercisesFound') || 'No exercises found for this day'}
-        </p>
-      </Card>
-    );
-  }
+  const handleResetWorkout = () => {
+    setIsWorkoutActive(false);
+    setCurrentExerciseIndex(0);
+  };
 
   return (
-    <div className={`space-y-4 ${isRTL ? 'rtl' : 'ltr'}`}>
-      {exercises.map((exercise, index) => (
-        <InteractiveExerciseCard
-          key={exercise.id}
-          exercise={exercise}
-          index={index}
-          onExerciseComplete={handleExerciseComplete}
-          onExerciseStart={handleExerciseStart}
-        />
-      ))}
+    <div className={`space-y-6 ${isRTL ? 'rtl' : 'ltr'}`}>
+      {/* Workout Controls */}
+      <Card>
+        <CardContent className="p-4">
+          <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                {workoutType === 'home' ? t('exercise:homeWorkout') : t('exercise:gymWorkout')}
+              </h3>
+              <p className="text-sm text-gray-600">
+                {exercises.length} exercises • {isWorkoutActive ? 'Active' : 'Ready to start'}
+              </p>
+            </div>
+            
+            <div className={`flex gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              {!isWorkoutActive ? (
+                <Button onClick={handleStartWorkout}>
+                  <Play className="w-4 h-4 mr-2" />
+                  {t('exercise:startWorkout') || 'Start Workout'}
+                </Button>
+              ) : (
+                <>
+                  <Button onClick={handlePauseWorkout} variant="outline">
+                    <Pause className="w-4 h-4 mr-2" />
+                    {t('exercise:pause') || 'Pause'}
+                  </Button>
+                  <Button onClick={handleResetWorkout} variant="outline">
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    {t('exercise:reset') || 'Reset'}
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Exercise List */}
+      <div className="space-y-4">
+        {exercises.map((exercise) => (
+          <InteractiveExerciseCard
+            key={exercise.id}
+            exercise={exercise}
+            onExerciseComplete={() => onExerciseComplete(exercise.id)}
+            onExerciseStart={() => onExerciseStart(exercise.id)}
+          />
+        ))}
+      </div>
     </div>
   );
 };
