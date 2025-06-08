@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useI18n } from '@/hooks/useI18n';
 import { getCategoryForIngredient } from '@/utils/mealPlanUtils';
 import type { WeeklyMealPlan, DailyMeal } from '@/hooks/useMealPlanData';
 
@@ -12,7 +12,7 @@ export const useEnhancedShoppingList = (weeklyPlan?: {
   dailyMeals: DailyMeal[];
 } | null) => {
   const { user } = useAuth();
-  const { language } = useLanguage();
+  const { language } = useI18n();
 
   // Enhanced shopping list with optimized performance and better error handling
   const enhancedShoppingItems = useMemo(() => {
@@ -64,112 +64,68 @@ export const useEnhancedShoppingList = (weeklyPlan?: {
           });
         }
       });
+
+      const items = Array.from(itemsMap.values());
+      console.log('🛒 Generated shopping items:', items.length);
+
+      // Enhanced grouping with better category management
+      const groupedItems = items.reduce((acc, item) => {
+        const category = item.category;
+        if (!acc[category]) {
+          acc[category] = [];
+        }
+        acc[category].push(item);
+        return acc;
+      }, {} as Record<string, any[]>);
+
+      const categories = Object.keys(groupedItems).sort();
+      console.log('📂 Categories found:', categories);
+
+      return {
+        items,
+        groupedItems,
+        totalItems: items.length,
+        categories
+      };
     } catch (error) {
-      console.error('❌ Error processing meals for shopping list:', error);
+      console.error('❌ Error computing enhanced shopping list:', error);
       return { items: [], groupedItems: {}, totalItems: 0, categories: [] };
     }
-
-    const items = Array.from(itemsMap.values());
-    
-    // Group by category with better error handling
-    const groupedItems = items.reduce((acc, item) => {
-      const category = item.category || 'Other';
-      if (!acc[category]) {
-        acc[category] = [];
-      }
-      acc[category].push(item);
-      return acc;
-    }, {} as Record<string, any[]>);
-
-    const categories = Object.keys(groupedItems);
-
-    console.log('🛒 Enhanced shopping items generated:', {
-      totalItems: items.length,
-      categories: categories.length,
-      itemsByCategory: Object.entries(groupedItems).map(([cat, items]) => `${cat}: ${Array.isArray(items) ? items.length : 0}`)
-    });
-    
-    return { 
-      items, 
-      groupedItems, 
-      totalItems: items.length,
-      categories
-    };
   }, [weeklyPlan?.dailyMeals]);
 
-  // Optimized email sending with better error handling
   const sendShoppingListEmail = async () => {
-    if (!user || !weeklyPlan) {
-      console.error('❌ Missing data for email sending:', { hasUser: !!user, hasWeeklyPlan: !!weeklyPlan });
-      toast.error('Unable to send email - missing data');
-      return false;
-    }
-
-    if (enhancedShoppingItems.totalItems === 0) {
-      toast.error('No items in shopping list to send');
+    if (!user?.id || !weeklyPlan) {
+      toast.error(language === 'ar' ? 'لا توجد بيانات كافية لإرسال البريد الإلكتروني' : 'No data available to send email');
       return false;
     }
 
     try {
-      console.log('📧 Preparing shopping list email...', {
-        userId: user.id,
-        weeklyPlanId: weeklyPlan.weeklyPlan.id,
-        itemsCount: enhancedShoppingItems.totalItems
-      });
-
-      const weekRange = `Week of ${weeklyPlan.weeklyPlan.week_start_date}`;
-
-      const emailData = {
-        userId: user.id,
-        userEmail: user.email,
-        weekId: weeklyPlan.weeklyPlan.id,
-        shoppingItems: enhancedShoppingItems.groupedItems,
-        weekRange: weekRange,
-        totalItems: enhancedShoppingItems.totalItems,
-        categories: enhancedShoppingItems.categories,
-        language,
-        generatedAt: new Date().toISOString()
-      };
-
-      console.log('📤 Sending shopping list email with data:', emailData);
-
-      // Show loading toast with timeout
-      const loadingToast = toast.loading('Sending shopping list email...', { duration: 10000 });
-
-      const { data, error } = await supabase.functions.invoke('send-shopping-list-email', {
-        body: emailData
-      });
-
-      toast.dismiss(loadingToast);
-
-      if (error) {
-        console.error('❌ Email sending error:', error);
-        toast.error(`Failed to send email: ${error.message || 'Unknown error'}`);
-        return false;
-      }
-
-      if (data?.success) {
-        console.log('✅ Shopping list email sent successfully!', data);
-        toast.success('Shopping list sent to your email!');
-        return true;
-      } else {
-        console.error('❌ Email sending failed:', data);
-        toast.error(data?.error || 'Failed to send shopping list email');
-        return false;
-      }
+      console.log('📧 Sending enhanced shopping list email...');
       
-    } catch (error: any) {
-      console.error('❌ Error sending shopping list email:', error);
-      toast.dismiss();
-      toast.error(error.message || 'Failed to send shopping list email');
+      const { data, error } = await supabase.functions.invoke('send-shopping-list-email', {
+        body: {
+          userId: user.id,
+          shoppingItems: enhancedShoppingItems.items,
+          groupedItems: enhancedShoppingItems.groupedItems,
+          weekId: weeklyPlan.weeklyPlan.id,
+          language: language
+        }
+      });
+
+      if (error) throw error;
+
+      toast.success(language === 'ar' ? 'تم إرسال قائمة التسوق بالبريد الإلكتروني بنجاح!' : 'Shopping list sent to email successfully!');
+      console.log('✅ Enhanced shopping list email sent successfully');
+      return true;
+    } catch (error) {
+      console.error('❌ Error sending enhanced shopping list email:', error);
+      toast.error(language === 'ar' ? 'فشل في إرسال البريد الإلكتروني' : 'Failed to send email');
       return false;
     }
   };
 
   return {
     enhancedShoppingItems,
-    sendShoppingListEmail,
-    isLoading: false, // Add loading state
-    error: null // Add error state
+    sendShoppingListEmail
   };
 };

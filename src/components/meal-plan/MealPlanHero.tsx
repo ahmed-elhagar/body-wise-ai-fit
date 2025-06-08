@@ -12,7 +12,7 @@ import {
   Beef,
   Target
 } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 interface MealPlanHeroProps {
   weekStartDate: Date;
@@ -46,7 +46,7 @@ const MealPlanHero = ({
   hasWeeklyPlan,
   onRegeneratePlan
 }: MealPlanHeroProps) => {
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL } = useI18n();
 
   return (
     <div className="bg-gradient-to-br from-fitness-primary-500 via-fitness-primary-600 to-fitness-primary-700 rounded-2xl shadow-xl overflow-hidden">

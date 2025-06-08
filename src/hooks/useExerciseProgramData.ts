@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useExerciseActions } from './useExerciseActions';
 import { useEnhancedErrorSystem } from './useEnhancedErrorSystem';
 import { toast } from 'sonner';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useI18n } from '@/hooks/useI18n';
 
 export interface ExerciseProgram {
   id: string;
@@ -23,7 +23,7 @@ export const useExerciseProgramData = (weekStartDate: string, workoutType: strin
   const { user } = useAuth();
   const { completeExercise, updateExerciseProgress } = useExerciseActions();
   const { handleError } = useEnhancedErrorSystem();
-  const { language } = useLanguage();
+  const { language } = useI18n();
   const queryClient = useQueryClient();
 
   const query = useQuery({

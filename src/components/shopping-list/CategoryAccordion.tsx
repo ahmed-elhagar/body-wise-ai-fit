@@ -2,7 +2,7 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import IngredientRow from "./IngredientRow";
 
 interface ShoppingItem {
@@ -25,7 +25,7 @@ const CategoryAccordion = ({
   setCheckedItems, 
   onShoppingListUpdate 
 }: CategoryAccordionProps) => {
-  const { isRTL } = useLanguage();
+  const { isRTL } = useI18n();
 
   const toggleCategory = (category: string) => {
     const categoryItems = groupedItems[category]?.map(item => `${item.name}-${item.category}`) || [];

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Eye, ArrowLeftRight, Utensils } from 'lucide-react';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useI18n } from '@/hooks/useI18n';
 import type { DailyMeal } from '../types';
 
 interface WeeklyMealPlanViewProps {
@@ -20,7 +20,7 @@ export const WeeklyMealPlanView = ({
   onExchangeMeal,
   weekStartDate 
 }: WeeklyMealPlanViewProps) => {
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL } = useI18n();
 
   const getDayName = (dayNumber: number) => {
     const dayNames = [

@@ -1,260 +1,269 @@
+
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent } from "@/components/ui/card";
-import { Sparkles, Plus, Target } from "lucide-react";
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
-import { useProfile } from '@/hooks/useProfile';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Plus, Apple, Cookie, Banana, Grape } from 'lucide-react';
+import { useI18n } from '@/hooks/useI18n';
 import { toast } from 'sonner';
-import { useLanguage } from '@/contexts/LanguageContext';
-import SimpleLoadingIndicator from '@/components/ui/simple-loading-indicator';
-import type { AddSnackDialogProps } from '../../types';
 
-export const AddSnackDialog = ({
-  isOpen,
-  onClose,
-  currentDayCalories,
-  targetDayCalories,
-  selectedDay,
-  weeklyPlanId,
-  onSnackAdded,
-  weekStartDate
-}: AddSnackDialogProps & { weekStartDate: Date }) => {
-  const { user } = useAuth();
-  const { profile } = useProfile();
-  const { t, language, isRTL } = useLanguage();
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [customSnack, setCustomSnack] = useState({
-    name: '',
-    calories: '',
-    protein: ''
-  });
+interface AddSnackDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onAddSnack: (snack: any) => void;
+  selectedDay: number;
+}
 
-  const remainingCalories = Math.max(0, targetDayCalories - currentDayCalories);
-  const progressPercentage = Math.min(100, (currentDayCalories / targetDayCalories) * 100);
+const AddSnackDialog = ({ isOpen, onClose, onAddSnack, selectedDay }: AddSnackDialogProps) => {
+  const { t, isRTL } = useI18n();
+  const [snackName, setSnackName] = useState('');
+  const [calories, setCalories] = useState('');
+  const [protein, setProtein] = useState('');
+  const [carbs, setCarbs] = useState('');
+  const [fats, setFats] = useState('');
+  const [selectedQuickSnack, setSelectedQuickSnack] = useState('');
 
-  // Get real date for selected day
-  const getRealDate = (dayNumber: number) => {
-    const date = new Date(weekStartDate);
-    date.setDate(date.getDate() + (dayNumber - 1));
-    return date.toLocaleDateString();
-  };
+  const quickSnacks = [
+    { id: 'apple', name: t('Apple'), calories: 95, protein: 0.5, carbs: 25, fats: 0.3, icon: Apple },
+    { id: 'almonds', name: t('Almonds (1oz)'), calories: 164, protein: 6, carbs: 6, fats: 14, icon: Cookie },
+    { id: 'banana', name: t('Banana'), calories: 105, protein: 1.3, carbs: 27, fats: 0.4, icon: Banana },
+    { id: 'greek_yogurt', name: t('Greek Yogurt'), calories: 130, protein: 20, carbs: 9, fats: 0, icon: Grape },
+  ];
 
-  const handleGenerateAISnack = async () => {
-    if (!user || !weeklyPlanId) {
-      toast.error('Missing required data');
-      return;
-    }
-
-    if (remainingCalories < 50) {
-      toast.error('Not enough calories remaining for a snack');
-      return;
-    }
-
-    setIsGenerating(true);
-    
-    try {
-      console.log('🚀 Starting AI snack generation with correct payload:', {
-        userProfile: profile,
-        day: selectedDay,
-        calories: Math.min(remainingCalories, 200),
-        weeklyPlanId,
-        language
-      });
-
-      const { data, error } = await supabase.functions.invoke('generate-ai-snack', {
-        body: {
-          userProfile: profile,
-          day: selectedDay,
-          calories: Math.min(remainingCalories, 200),
-          weeklyPlanId,
-          language
-        }
-      });
-
-      if (error) {
-        console.error('Error generating AI snack:', error);
-        toast.error('Failed to generate snack. Please try again.');
-        return;
-      }
-
-      if (data?.success) {
-        toast.success('Snack added successfully!');
-        onClose();
-        await onSnackAdded();
-      } else {
-        console.error('Generation failed:', data);
-        toast.error(data?.error || 'Failed to generate snack. Please try again.');
-      }
-      
-    } catch (error) {
-      console.error('Error generating AI snack:', error);
-      toast.error('Failed to generate snack. Please check your connection and try again.');
-    } finally {
-      setIsGenerating(false);
+  const handleQuickSnackSelect = (snackId: string) => {
+    const snack = quickSnacks.find(s => s.id === snackId);
+    if (snack) {
+      setSnackName(snack.name);
+      setCalories(snack.calories.toString());
+      setProtein(snack.protein.toString());
+      setCarbs(snack.carbs.toString());
+      setFats(snack.fats.toString());
+      setSelectedQuickSnack(snackId);
     }
   };
 
-  const handleAddCustomSnack = async () => {
-    if (!customSnack.name || !customSnack.calories) {
-      toast.error('Please fill in snack name and calories');
+  const handleCustomSnack = () => {
+    setSnackName('');
+    setCalories('');
+    setProtein('');
+    setCarbs('');
+    setFats('');
+    setSelectedQuickSnack('');
+  };
+
+  const handleSubmit = () => {
+    if (!snackName || !calories) {
+      toast.error(t('Please fill in snack name and calories'));
       return;
     }
 
-    if (!weeklyPlanId) {
-      toast.error('No meal plan found');
-      return;
-    }
+    const snack = {
+      name: `🍎 ${snackName}`,
+      meal_type: 'snack',
+      calories: parseInt(calories),
+      protein: parseFloat(protein) || 0,
+      carbs: parseFloat(carbs) || 0,
+      fats: parseFloat(fats) || 0,
+      prep_time: 2,
+      cook_time: 0,
+      day_number: selectedDay,
+      instructions: [t('Enjoy your healthy snack!')],
+      ingredients: [{ name: snackName, quantity: '1', unit: 'serving' }]
+    };
 
-    try {
-      const { error } = await supabase.from('daily_meals').insert({
-        weekly_plan_id: weeklyPlanId,
-        day_number: selectedDay,
-        meal_type: 'snack',
-        name: `🍎 ${customSnack.name}`,
-        calories: parseInt(customSnack.calories),
-        protein: parseFloat(customSnack.protein) || 0,
-        carbs: 0,
-        fat: 0,
-        ingredients: [{ name: customSnack.name, quantity: '1', unit: 'serving' }],
-        instructions: ['Enjoy as a healthy snack'],
-        prep_time: 0,
-        cook_time: 0,
-        servings: 1
-      });
-
-      if (error) throw error;
-
-      toast.success('Custom snack added successfully!');
-      setCustomSnack({ name: '', calories: '', protein: '' });
-      onClose();
-      await onSnackAdded();
-    } catch (error) {
-      console.error('Error adding custom snack:', error);
-      toast.error('Failed to add snack');
-    }
+    onAddSnack(snack);
+    onClose();
+    toast.success(t('Snack added successfully!'));
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className={`flex items-center gap-3 text-lg ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-              <Plus className="w-4 h-4 text-green-600" />
-            </div>
-            Add Snack - {getRealDate(selectedDay)}
+          <DialogTitle className={`text-xl font-bold flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <Apple className="w-5 h-5 text-green-600" />
+            {t('Add Healthy Snack')}
           </DialogTitle>
         </DialogHeader>
-        
-        <div className="space-y-4">
-          {/* Calorie Progress */}
-          <Card className="bg-blue-50 border-blue-200">
-            <CardContent className="p-3">
-              <div className={`flex items-center justify-between mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                  <Target className="w-4 h-4 text-blue-600" />
-                  <span className="text-sm font-medium text-blue-800">
-                    {remainingCalories} cal remaining
-                  </span>
-                </div>
-                <span className="text-xs text-blue-700">
-                  {Math.round(progressPercentage)}%
-                </span>
-              </div>
-              <div className="w-full bg-blue-200 rounded-full h-2">
-                <div 
-                  className="bg-blue-500 h-2 rounded-full transition-all duration-300" 
-                  style={{ width: `${progressPercentage}%` }}
-                ></div>
-              </div>
-            </CardContent>
-          </Card>
 
-          {isGenerating ? (
-            <SimpleLoadingIndicator
-              message="Generating AI Snack"
-              description="Creating the perfect snack for your remaining calories"
-              size="md"
-            />
-          ) : (
-            <Tabs defaultValue="ai" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="ai" className="text-sm">AI Generate</TabsTrigger>
-                <TabsTrigger value="custom" className="text-sm">Custom</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="ai" className="space-y-3 mt-4">
-                <div className="text-center py-4">
-                  <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Sparkles className="w-6 h-6 text-purple-600" />
-                  </div>
-                  <h3 className="text-sm font-medium mb-2">AI Generated Snack</h3>
-                  <p className="text-xs text-gray-600 mb-4">
-                    Perfect snack for your remaining {remainingCalories} calories
-                  </p>
-                  <Button 
-                    onClick={handleGenerateAISnack} 
-                    className="w-full bg-purple-600 hover:bg-purple-700 h-9"
-                    disabled={isGenerating || remainingCalories <= 0}
+        <div className="space-y-6">
+          {/* Quick Snacks */}
+          <div>
+            <Label className="text-base font-semibold mb-3 block">{t('Quick Snacks')}</Label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {quickSnacks.map((snack) => {
+                const Icon = snack.icon;
+                return (
+                  <Card 
+                    key={snack.id}
+                    className={`cursor-pointer transition-all hover:shadow-md ${
+                      selectedQuickSnack === snack.id 
+                        ? 'ring-2 ring-green-500 bg-green-50' 
+                        : 'hover:bg-gray-50'
+                    }`}
+                    onClick={() => handleQuickSnackSelect(snack.id)}
                   >
-                    <Sparkles className={`w-4 h-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
-                    Generate AI Snack
-                  </Button>
-                </div>
-              </TabsContent>
+                    <CardContent className="p-4">
+                      <div className={`flex items-center gap-3 mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                        <Icon className="w-5 h-5 text-green-600" />
+                        <span className="font-medium">{snack.name}</span>
+                      </div>
+                      <div className="grid grid-cols-4 gap-2 text-xs">
+                        <div className="text-center">
+                          <div className="font-semibold text-red-600">{snack.calories}</div>
+                          <div className="text-gray-500">{t('cal')}</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="font-semibold text-blue-600">{snack.protein}g</div>
+                          <div className="text-gray-500">{t('protein')}</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="font-semibold text-green-600">{snack.carbs}g</div>
+                          <div className="text-gray-500">{t('carbs')}</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="font-semibold text-yellow-600">{snack.fats}g</div>
+                          <div className="text-gray-500">{t('fats')}</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
 
-              <TabsContent value="custom" className="space-y-3 mt-4">
-                <div>
-                  <Label className="text-sm">Snack Name</Label>
-                  <Input
-                    value={customSnack.name}
-                    onChange={(e) => setCustomSnack({...customSnack, name: e.target.value})}
-                    placeholder="Apple with peanut butter"
-                    className="h-9 mt-1"
-                  />
+          {/* Custom Snack */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <Label className="text-base font-semibold">{t('Custom Snack')}</Label>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleCustomSnack}
+                className="text-xs"
+              >
+                {t('Create Custom')}
+              </Button>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="snackName">{t('Snack Name')}</Label>
+                <Input
+                  id="snackName"
+                  value={snackName}
+                  onChange={(e) => setSnackName(e.target.value)}
+                  placeholder={t('Enter snack name')}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="calories">{t('Calories')}</Label>
+                <Input
+                  id="calories"
+                  type="number"
+                  value={calories}
+                  onChange={(e) => setCalories(e.target.value)}
+                  placeholder="0"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="protein">{t('Protein (g)')}</Label>
+                <Input
+                  id="protein"
+                  type="number"
+                  step="0.1"
+                  value={protein}
+                  onChange={(e) => setProtein(e.target.value)}
+                  placeholder="0"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="carbs">{t('Carbs (g)')}</Label>
+                <Input
+                  id="carbs"
+                  type="number"
+                  step="0.1"
+                  value={carbs}
+                  onChange={(e) => setCarbs(e.target.value)}
+                  placeholder="0"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="fats">{t('Fats (g)')}</Label>
+                <Input
+                  id="fats"
+                  type="number"
+                  step="0.1"
+                  value={fats}
+                  onChange={(e) => setFats(e.target.value)}
+                  placeholder="0"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Preview */}
+          {snackName && calories && (
+            <Card className="bg-green-50 border-green-200">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Apple className="w-4 h-4 text-green-600" />
+                  <span className="font-medium text-green-800">{t('Snack Preview')}</span>
                 </div>
-                
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <Label className="text-sm">Calories</Label>
-                    <Input
-                      type="number"
-                      value={customSnack.calories}
-                      onChange={(e) => setCustomSnack({...customSnack, calories: e.target.value})}
-                      placeholder="150"
-                      className="h-9 mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-sm">Protein (g)</Label>
-                    <Input
-                      type="number"
-                      value={customSnack.protein}
-                      onChange={(e) => setCustomSnack({...customSnack, protein: e.target.value})}
-                      placeholder="5"
-                      className="h-9 mt-1"
-                    />
+                <div className="text-sm space-y-1">
+                  <div className="font-semibold">🍎 {snackName}</div>
+                  <div className="flex gap-4 text-xs">
+                    <Badge variant="outline" className="bg-white">
+                      {calories} {t('cal')}
+                    </Badge>
+                    {protein && (
+                      <Badge variant="outline" className="bg-white">
+                        {protein}g {t('protein')}
+                      </Badge>
+                    )}
+                    {carbs && (
+                      <Badge variant="outline" className="bg-white">
+                        {carbs}g {t('carbs')}
+                      </Badge>
+                    )}
+                    {fats && (
+                      <Badge variant="outline" className="bg-white">
+                        {fats}g {t('fats')}
+                      </Badge>
+                    )}
                   </div>
                 </div>
-                
-                <Button 
-                  onClick={handleAddCustomSnack}
-                  className="w-full h-9"
-                  variant="outline"
-                >
-                  <Plus className={`w-4 h-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
-                  Add Custom Snack
-                </Button>
-              </TabsContent>
-            </Tabs>
+              </CardContent>
+            </Card>
           )}
+
+          {/* Actions */}
+          <div className={`flex gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <Button variant="outline" onClick={onClose}>
+              {t('Cancel')}
+            </Button>
+            <Button 
+              onClick={handleSubmit}
+              disabled={!snackName || !calories}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              {t('Add Snack')}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
   );
 };
+
+export default AddSnackDialog;

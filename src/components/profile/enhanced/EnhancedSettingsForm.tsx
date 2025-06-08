@@ -1,93 +1,131 @@
 
-import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
-import { Settings, Palette, Globe, Bell, Shield, Loader2 } from "lucide-react";
-import { useLanguage, Language } from "@/contexts/LanguageContext";
-import { useProfile } from "@/hooks/useProfile";
-import { useUserPreferences } from "@/hooks/useUserPreferences";
-import { toast } from "sonner";
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { useI18n, Language } from "@/hooks/useI18n";
+import { Badge } from '@/components/ui/badge';
+import { Save, User, Bell, Shield, Globe, Palette } from 'lucide-react';
+import { toast } from 'sonner';
 
-const EnhancedSettingsForm = () => {
-  const { language, setLanguage } = useLanguage();
-  const { profile, updateProfile } = useProfile();
-  const { preferences: userPreferences, updatePreferences, isUpdating } = useUserPreferences();
-  const [isLanguageLoading, setIsLanguageLoading] = useState(false);
-  
-  const [preferences, setPreferences] = useState({
-    theme: 'light',
-    notifications: true,
-    emailUpdates: false,
-    dataSharing: false,
-    measurementUnits: 'metric',
-  });
+interface UserSettings {
+  displayName: string;
+  bio: string;
+  language: Language;
+  notifications: {
+    email: boolean;
+    push: boolean;
+    meals: boolean;
+    workouts: boolean;
+  };
+  privacy: {
+    profileVisible: boolean;
+    showProgress: boolean;
+    allowMessages: boolean;
+  };
+  theme: 'light' | 'dark' | 'auto';
+}
 
-  // Initialize preferences from user_preferences table
+interface EnhancedSettingsFormProps {
+  userSettings: UserSettings;
+  onSave: (settings: UserSettings) => void;
+  isLoading?: boolean;
+}
+
+const EnhancedSettingsForm = ({ userSettings, onSave, isLoading = false }: EnhancedSettingsFormProps) => {
+  const { t, language, changeLanguage } = useI18n();
+  const [settings, setSettings] = useState<UserSettings>(userSettings);
+  const [hasChanges, setHasChanges] = useState(false);
+
   useEffect(() => {
-    if (userPreferences) {
-      setPreferences({
-        theme: userPreferences.theme_preference || 'light',
-        notifications: userPreferences.push_notifications ?? true,
-        emailUpdates: userPreferences.email_notifications ?? false,
-        dataSharing: userPreferences.data_sharing_analytics ?? false,
-        measurementUnits: userPreferences.measurement_units || 'metric',
-      });
-    }
-  }, [userPreferences]);
+    setSettings(userSettings);
+    setHasChanges(false);
+  }, [userSettings]);
 
-  const handleLanguageChange = async (newLanguage: string) => {
-    setIsLanguageLoading(true);
-    try {
-      setLanguage(newLanguage as Language);
-      if (profile && updateProfile) {
-        await updateProfile({ preferred_language: newLanguage });
-        toast.success('Language preference saved!');
+  const handleChange = (section: keyof UserSettings, field: string, value: any) => {
+    setSettings(prev => {
+      const newSettings = { ...prev };
+      if (typeof newSettings[section] === 'object') {
+        (newSettings[section] as any)[field] = value;
+      } else {
+        (newSettings as any)[section] = value;
       }
-    } catch (error) {
-      console.error('Error updating language:', error);
-      toast.error('Failed to update language preference');
-    } finally {
-      setIsLanguageLoading(false);
-    }
+      return newSettings;
+    });
+    setHasChanges(true);
   };
 
-  const handleSavePreferences = async () => {
+  const handleLanguageChange = (newLanguage: Language) => {
+    handleChange('language', '', newLanguage);
+    changeLanguage(newLanguage);
+  };
+
+  const handleSave = async () => {
     try {
-      if (updatePreferences) {
-        await updatePreferences({
-          theme_preference: preferences.theme as 'light' | 'dark' | 'auto',
-          push_notifications: preferences.notifications,
-          email_notifications: preferences.emailUpdates,
-          data_sharing_analytics: preferences.dataSharing,
-          measurement_units: preferences.measurementUnits as 'metric' | 'imperial',
-        });
-        toast.success('Preferences saved successfully! Changes will apply to your workout and meal plans.');
-      }
+      await onSave(settings);
+      setHasChanges(false);
+      toast.success(t('Settings saved successfully'));
     } catch (error) {
-      console.error('Error saving preferences:', error);
-      toast.error('Failed to save preferences');
+      toast.error(t('Failed to save settings'));
     }
   };
 
   return (
     <div className="space-y-6">
-      {/* Language & Localization */}
-      <Card className="p-6">
-        <div className="flex items-center mb-4">
-          <Globe className="w-5 h-5 text-fitness-primary mr-2" />
-          <h3 className="text-lg font-semibold text-gray-800">Language & Region</h3>
-        </div>
-        
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="language">Display Language</Label>
-            <Select value={language} onValueChange={handleLanguageChange} disabled={isLanguageLoading}>
-              <SelectTrigger className="mt-1">
-                <SelectValue />
+      {/* Profile Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <User className="w-5 h-5" />
+            {t('Profile Settings')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="displayName">{t('Display Name')}</Label>
+            <Input
+              id="displayName"
+              value={settings.displayName}
+              onChange={(e) => handleChange('displayName', '', e.target.value)}
+              placeholder={t('Enter your display name')}
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="bio">{t('Bio')}</Label>
+            <Textarea
+              id="bio"
+              value={settings.bio}
+              onChange={(e) => handleChange('bio', '', e.target.value)}
+              placeholder={t('Tell us about yourself')}
+              rows={3}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Language & Region */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Globe className="w-5 h-5" />
+            {t('Language & Region')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>{t('Language')}</Label>
+            <Select
+              value={settings.language}
+              onValueChange={(value: Language) => handleLanguageChange(value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={t('Select language')} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="en">English</SelectItem>
@@ -96,120 +134,135 @@ const EnhancedSettingsForm = () => {
             </Select>
           </div>
           
-          <div>
-            <Label htmlFor="units">Measurement Units</Label>
-            <Select 
-              value={preferences.measurementUnits} 
-              onValueChange={(value) => setPreferences({...preferences, measurementUnits: value})}
+          <div className="space-y-2">
+            <Label>{t('Theme')}</Label>
+            <Select
+              value={settings.theme}
+              onValueChange={(value: 'light' | 'dark' | 'auto') => handleChange('theme', '', value)}
             >
-              <SelectTrigger className="mt-1">
-                <SelectValue />
+              <SelectTrigger>
+                <SelectValue placeholder={t('Select theme')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="metric">Metric (kg, cm)</SelectItem>
-                <SelectItem value="imperial">Imperial (lbs, ft)</SelectItem>
+                <SelectItem value="light">{t('Light')}</SelectItem>
+                <SelectItem value="dark">{t('Dark')}</SelectItem>
+                <SelectItem value="auto">{t('Auto')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
-        </div>
-      </Card>
-
-      {/* Appearance */}
-      <Card className="p-6">
-        <div className="flex items-center mb-4">
-          <Palette className="w-5 h-5 text-fitness-primary mr-2" />
-          <h3 className="text-lg font-semibold text-gray-800">Appearance</h3>
-        </div>
-        
-        <div>
-          <Label htmlFor="theme">Theme</Label>
-          <Select 
-            value={preferences.theme} 
-            onValueChange={(value) => setPreferences({...preferences, theme: value})}
-          >
-            <SelectTrigger className="mt-1">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="light">Light</SelectItem>
-              <SelectItem value="dark">Dark</SelectItem>
-              <SelectItem value="auto">Auto</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        </CardContent>
       </Card>
 
       {/* Notifications */}
-      <Card className="p-6">
-        <div className="flex items-center mb-4">
-          <Bell className="w-5 h-5 text-fitness-primary mr-2" />
-          <h3 className="text-lg font-semibold text-gray-800">Notifications</h3>
-        </div>
-        
-        <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Bell className="w-5 h-5" />
+            {t('Notifications')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
-            <div>
-              <Label htmlFor="notifications">Push Notifications</Label>
-              <p className="text-sm text-gray-600">Receive workout and meal reminders</p>
-            </div>
+            <Label htmlFor="email-notifications">{t('Email Notifications')}</Label>
             <Switch
-              id="notifications"
-              checked={preferences.notifications}
-              onCheckedChange={(checked) => setPreferences({...preferences, notifications: checked})}
+              id="email-notifications"
+              checked={settings.notifications.email}
+              onCheckedChange={(checked) => handleChange('notifications', 'email', checked)}
+            />
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <Label htmlFor="push-notifications">{t('Push Notifications')}</Label>
+            <Switch
+              id="push-notifications"
+              checked={settings.notifications.push}
+              onCheckedChange={(checked) => handleChange('notifications', 'push', checked)}
             />
           </div>
           
           <Separator />
           
           <div className="flex items-center justify-between">
-            <div>
-              <Label htmlFor="emailUpdates">Email Updates</Label>
-              <p className="text-sm text-gray-600">Weekly progress reports and tips</p>
-            </div>
+            <Label htmlFor="meal-reminders">{t('Meal Reminders')}</Label>
             <Switch
-              id="emailUpdates"
-              checked={preferences.emailUpdates}
-              onCheckedChange={(checked) => setPreferences({...preferences, emailUpdates: checked})}
+              id="meal-reminders"
+              checked={settings.notifications.meals}
+              onCheckedChange={(checked) => handleChange('notifications', 'meals', checked)}
             />
           </div>
-        </div>
+          
+          <div className="flex items-center justify-between">
+            <Label htmlFor="workout-reminders">{t('Workout Reminders')}</Label>
+            <Switch
+              id="workout-reminders"
+              checked={settings.notifications.workouts}
+              onCheckedChange={(checked) => handleChange('notifications', 'workouts', checked)}
+            />
+          </div>
+        </CardContent>
       </Card>
 
       {/* Privacy */}
-      <Card className="p-6">
-        <div className="flex items-center mb-4">
-          <Shield className="w-5 h-5 text-fitness-primary mr-2" />
-          <h3 className="text-lg font-semibold text-gray-800">Privacy</h3>
-        </div>
-        
-        <div className="flex items-center justify-between">
-          <div>
-            <Label htmlFor="dataSharing">Anonymous Data Sharing</Label>
-            <p className="text-sm text-gray-600">Help improve our AI recommendations</p>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="w-5 h-5" />
+            {t('Privacy Settings')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <Label htmlFor="profile-visible">{t('Profile Visible')}</Label>
+              <p className="text-sm text-gray-500">{t('Allow others to see your profile')}</p>
+            </div>
+            <Switch
+              id="profile-visible"
+              checked={settings.privacy.profileVisible}
+              onCheckedChange={(checked) => handleChange('privacy', 'profileVisible', checked)}
+            />
           </div>
-          <Switch
-            id="dataSharing"
-            checked={preferences.dataSharing}
-            onCheckedChange={(checked) => setPreferences({...preferences, dataSharing: checked})}
-          />
-        </div>
+          
+          <div className="flex items-center justify-between">
+            <div>
+              <Label htmlFor="show-progress">{t('Show Progress')}</Label>
+              <p className="text-sm text-gray-500">{t('Display your fitness progress to others')}</p>
+            </div>
+            <Switch
+              id="show-progress"
+              checked={settings.privacy.showProgress}
+              onCheckedChange={(checked) => handleChange('privacy', 'showProgress', checked)}
+            />
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div>
+              <Label htmlFor="allow-messages">{t('Allow Messages')}</Label>
+              <p className="text-sm text-gray-500">{t('Let other users send you messages')}</p>
+            </div>
+            <Switch
+              id="allow-messages"
+              checked={settings.privacy.allowMessages}
+              onCheckedChange={(checked) => handleChange('privacy', 'allowMessages', checked)}
+            />
+          </div>
+        </CardContent>
       </Card>
 
       {/* Save Button */}
-      <div className="flex justify-end">
-        <Button 
-          onClick={handleSavePreferences}
-          className="bg-fitness-gradient hover:opacity-90"
-          disabled={isUpdating}
+      <div className="flex justify-end gap-3">
+        {hasChanges && (
+          <Badge variant="outline" className="text-orange-600 border-orange-200">
+            {t('Unsaved changes')}
+          </Badge>
+        )}
+        <Button
+          onClick={handleSave}
+          disabled={!hasChanges || isLoading}
+          className="min-w-[120px]"
         >
-          {isUpdating ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            'Save Preferences'
-          )}
+          <Save className="w-4 h-4 mr-2" />
+          {isLoading ? t('Saving...') : t('Save Changes')}
         </Button>
       </div>
     </div>

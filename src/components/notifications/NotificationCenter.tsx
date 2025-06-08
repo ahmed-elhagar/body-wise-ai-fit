@@ -1,99 +1,122 @@
 
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Bell, CheckCircle, AlertTriangle, Trophy, Calendar, MessageSquare, ArrowRight, ChefHat } from "lucide-react";
-import { useNotifications } from "@/hooks/useNotifications";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { formatDistanceToNow } from "date-fns";
-import { useNavigate } from "react-router-dom";
+import { Bell, Check, CheckCheck, MoreHorizontal, Clock, MessageSquare, Users, Target } from "lucide-react";
+import { useI18n } from "@/hooks/useI18n";
+
+interface Notification {
+  id: string;
+  type: 'meal' | 'exercise' | 'social' | 'achievement' | 'reminder';
+  title: string;
+  message: string;
+  timestamp: Date;
+  read: boolean;
+  priority: 'low' | 'medium' | 'high';
+}
 
 const NotificationCenter = () => {
-  const { t } = useLanguage();
-  const navigate = useNavigate();
-  const { 
-    notifications, 
-    isLoading, 
-    unreadCount, 
-    markAsRead, 
-    markAllAsRead,
-    isMarkingAsRead,
-    isMarkingAllAsRead 
-  } = useNotifications();
+  const { t } = useI18n();
+  const [notifications, setNotifications] = useState<Notification[]>([
+    {
+      id: '1',
+      type: 'meal',
+      title: t('Meal Reminder'),
+      message: t('Time for your afternoon snack!'),
+      timestamp: new Date(Date.now() - 10 * 60 * 1000),
+      read: false,
+      priority: 'medium'
+    },
+    {
+      id: '2',
+      type: 'exercise',
+      title: t('Workout Complete'),
+      message: t('Great job on completing your morning workout!'),
+      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
+      read: true,
+      priority: 'low'
+    },
+    {
+      id: '3',
+      type: 'achievement',
+      title: t('Achievement Unlocked'),
+      message: t('You\'ve completed 7 days of consistent meal logging!'),
+      timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+      read: false,
+      priority: 'high'
+    },
+    {
+      id: '4',
+      type: 'social',
+      title: t('Coach Message'),
+      message: t('Your coach has reviewed your progress and left feedback.'),
+      timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000),
+      read: false,
+      priority: 'medium'
+    }
+  ]);
 
-  const getNotificationIcon = (type: string, message?: string) => {
-    // Special case for meal plan notifications
-    if (message?.includes('meal plan') || message?.includes('خطة الوجبات')) {
-      return ChefHat;
-    }
-    
-    switch (type) {
-      case 'achievement': return Trophy;
-      case 'warning': return AlertTriangle;
-      case 'success': return CheckCircle;
-      case 'reminder': return Calendar;
-      default: return MessageSquare;
-    }
-  };
-
-  const getNotificationColor = (type: string, message?: string) => {
-    // Special styling for meal plan notifications
-    if (message?.includes('meal plan') || message?.includes('خطة الوجبات')) {
-      return 'bg-green-100 text-green-800 border-green-300';
-    }
-    
-    switch (type) {
-      case 'achievement': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-      case 'warning': return 'bg-red-100 text-red-800 border-red-300';
-      case 'success': return 'bg-green-100 text-green-800 border-green-300';
-      case 'reminder': return 'bg-blue-100 text-blue-800 border-blue-300';
-      default: return 'bg-gray-100 text-gray-800 border-gray-300';
-    }
-  };
-
-  const handleNotificationClick = (notification: any) => {
-    // Mark as read if unread
-    if (!notification.is_read) {
-      markAsRead(notification.id);
-    }
-
-    // Navigate to action URL if available
-    if (notification.action_url) {
-      navigate(notification.action_url);
-    }
-  };
-
-  if (isLoading) {
-    return (
-      <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Bell className="w-5 h-5 text-blue-600" />
-            {t('Notifications')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="animate-pulse">
-                <div className="h-16 bg-gray-200 rounded-lg"></div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+  const markAsRead = (id: string) => {
+    setNotifications(prev =>
+      prev.map(notif =>
+        notif.id === id ? { ...notif, read: true } : notif
+      )
     );
-  }
+  };
+
+  const markAllAsRead = () => {
+    setNotifications(prev =>
+      prev.map(notif => ({ ...notif, read: true }))
+    );
+  };
+
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case 'meal': return <Clock className="w-4 h-4 text-orange-600" />;
+      case 'exercise': return <Target className="w-4 h-4 text-blue-600" />;
+      case 'social': return <MessageSquare className="w-4 h-4 text-green-600" />;
+      case 'achievement': return <Users className="w-4 h-4 text-purple-600" />;
+      default: return <Bell className="w-4 h-4 text-gray-600" />;
+    }
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'high': return 'bg-red-100 text-red-800 border-red-200';
+      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'low': return 'bg-green-100 text-green-800 border-green-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const formatTimestamp = (timestamp: Date) => {
+    const now = new Date();
+    const diff = now.getTime() - timestamp.getTime();
+    const minutes = Math.floor(diff / (1000 * 60));
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+    if (minutes < 60) {
+      return `${minutes}m ago`;
+    } else if (hours < 24) {
+      return `${hours}h ago`;
+    } else {
+      return `${days}d ago`;
+    }
+  };
+
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
     <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-      <CardHeader>
+      <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Bell className="w-5 h-5 text-blue-600" />
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Bell className="h-5 w-5 text-blue-600" />
             {t('Notifications')}
             {unreadCount > 0 && (
-              <Badge variant="destructive" className="ml-2">
+              <Badge className="bg-red-500 text-white">
                 {unreadCount}
               </Badge>
             )}
@@ -102,88 +125,68 @@ const NotificationCenter = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => markAllAsRead()}
-              disabled={isMarkingAllAsRead}
+              onClick={markAllAsRead}
+              className="text-xs"
             >
-              {t('Mark All Read')}
+              <CheckCheck className="w-3 h-3 mr-1" />
+              {t('Mark all read')}
             </Button>
           )}
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-3 max-h-96 overflow-y-auto">
-          {notifications.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <Bell className="w-12 h-12 mx-auto mb-3 opacity-50" />
-              <p>{t('No notifications yet')}</p>
-              <p className="text-sm">{t('We\'ll notify you about important updates')}</p>
-            </div>
-          ) : (
-            notifications.map((notification) => {
-              const IconComponent = getNotificationIcon(notification.type, notification.message);
-              const isUnread = !notification.is_read;
-              const isChatNotification = notification.metadata?.chat_type === 'coach_trainee';
-              const isMealPlanNotification = notification.message?.includes('meal plan') || notification.message?.includes('خطة الوجبات');
-              
-              return (
-                <div
-                  key={notification.id}
-                  className={`p-4 rounded-lg border transition-all cursor-pointer hover:shadow-md ${
-                    isUnread 
-                      ? isMealPlanNotification 
-                        ? 'bg-green-50 border-green-200 shadow-sm'
-                        : 'bg-blue-50 border-blue-200 shadow-sm'
-                      : 'bg-gray-50 border-gray-200'
-                  }`}
-                  onClick={() => handleNotificationClick(notification)}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className={`p-2 rounded-full ${getNotificationColor(notification.type, notification.message)}`}>
-                      <IconComponent className="w-4 h-4" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1">
-                        <h4 className={`font-medium truncate ${isUnread ? 'text-gray-900' : 'text-gray-600'}`}>
-                          {notification.title}
-                        </h4>
-                        <div className="flex items-center gap-2">
-                          {isUnread && (
-                            <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                              isMealPlanNotification ? 'bg-green-500' : 'bg-blue-500'
-                            }`}></div>
-                          )}
-                          {(isChatNotification || isMealPlanNotification) && (
-                            <ArrowRight className="w-3 h-3 text-gray-400" />
-                          )}
-                        </div>
-                      </div>
-                      <p className={`text-sm ${isUnread ? 'text-gray-700' : 'text-gray-500'}`}>
-                        {notification.message}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-1">
-                        {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
-                      </p>
-                      {isChatNotification && (
-                        <div className="mt-2">
-                          <Badge variant="outline" className="text-xs">
-                            Chat Message
-                          </Badge>
-                        </div>
-                      )}
-                      {isMealPlanNotification && (
-                        <div className="mt-2">
-                          <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-300">
-                            Meal Plan Ready
-                          </Badge>
-                        </div>
-                      )}
-                    </div>
+      <CardContent className="space-y-3 max-h-96 overflow-y-auto">
+        {notifications.map(notification => (
+          <div
+            key={notification.id}
+            className={`p-4 rounded-lg border transition-all cursor-pointer hover:shadow-md ${
+              notification.read 
+                ? 'bg-gray-50 border-gray-100' 
+                : 'bg-white border-blue-200 shadow-sm'
+            }`}
+            onClick={() => markAsRead(notification.id)}
+          >
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 mt-1">
+                {getNotificationIcon(notification.type)}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-1">
+                  <h4 className={`text-sm font-medium ${
+                    notification.read ? 'text-gray-600' : 'text-gray-900'
+                  }`}>
+                    {notification.title}
+                  </h4>
+                  <div className="flex items-center gap-2">
+                    <Badge 
+                      variant="outline" 
+                      className={`text-xs ${getPriorityColor(notification.priority)}`}
+                    >
+                      {notification.priority}
+                    </Badge>
+                    {!notification.read && (
+                      <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                    )}
                   </div>
                 </div>
-              );
-            })
-          )}
-        </div>
+                <p className={`text-sm ${
+                  notification.read ? 'text-gray-500' : 'text-gray-700'
+                }`}>
+                  {notification.message}
+                </p>
+                <p className="text-xs text-gray-400 mt-2">
+                  {formatTimestamp(notification.timestamp)}
+                </p>
+              </div>
+            </div>
+          </div>
+        ))}
+        
+        {notifications.length === 0 && (
+          <div className="text-center py-8">
+            <Bell className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+            <p className="text-gray-500">{t('No notifications yet')}</p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

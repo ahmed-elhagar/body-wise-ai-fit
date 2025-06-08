@@ -1,6 +1,6 @@
 
 import React, { useMemo } from "react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import { UnifiedAILoadingDialog } from "@/components/ai/UnifiedAILoadingDialog";
 import { useAILoadingSteps } from "@/hooks/useAILoadingSteps";
 import type { AIStep } from "@/components/ai/AILoadingSteps";
@@ -16,7 +16,7 @@ const MealPlanAILoadingDialog = ({
   onClose,
   position = 'center' // Default to center, but can be changed to 'top-right'
 }: MealPlanAILoadingDialogProps) => {
-  const { t, language } = useLanguage();
+  const { t, language } = useI18n();
 
   const steps = useMemo((): AIStep[] => [
     { 

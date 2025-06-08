@@ -1,7 +1,7 @@
 
 import { useState, useMemo } from "react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import { useEnhancedShoppingList } from "@/hooks/useEnhancedShoppingList";
 import type { WeeklyMealPlan, DailyMeal } from "@/hooks/useMealPlanData";
 import DrawerHeader from "./DrawerHeader";
@@ -28,7 +28,7 @@ const ShoppingListDrawer = ({
   weekId,
   onShoppingListUpdate 
 }: ShoppingListDrawerProps) => {
-  const { isRTL } = useLanguage();
+  const { isRTL } = useI18n();
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
   
   // Use enhanced shopping list functionality
