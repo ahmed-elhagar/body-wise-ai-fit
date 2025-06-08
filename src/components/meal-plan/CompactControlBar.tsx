@@ -1,78 +1,65 @@
 
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Calendar, Grid3X3, Plus, ShoppingCart } from "lucide-react";
-import { useMealPlanTranslation } from "@/utils/translationHelpers";
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { ChevronLeft, ChevronRight, Sparkles, RefreshCw } from 'lucide-react';
+import { useI18n } from '@/hooks/useI18n';
 
 interface CompactControlBarProps {
-  viewMode: 'daily' | 'weekly';
-  onViewModeChange: (mode: 'daily' | 'weekly') => void;
-  onAddSnack: () => void;
-  onShowShoppingList: () => void;
+  currentWeekOffset: number;
+  onWeekChange: (offset: number) => void;
+  onRegeneratePlan: () => void;
+  isGenerating: boolean;
 }
 
-const CompactControlBar = ({
-  viewMode,
-  onViewModeChange,
-  onAddSnack,
-  onShowShoppingList
+export const CompactControlBar = ({
+  currentWeekOffset,
+  onWeekChange,
+  onRegeneratePlan,
+  isGenerating
 }: CompactControlBarProps) => {
-  const { mealPlanT } = useMealPlanTranslation();
+  const { t, isRTL } = useI18n();
 
   return (
-    <Card className="bg-gradient-to-r from-fitness-primary-50 to-fitness-accent-50 border-fitness-primary-200 shadow-lg">
-      <div className="p-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          {/* View Mode Toggle */}
-          <div className="flex bg-white rounded-xl p-1 border border-fitness-primary-200 shadow-inner">
-            <button
-              onClick={() => onViewModeChange('daily')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all text-sm ${
-                viewMode === 'daily'
-                  ? 'bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 text-white shadow-md'
-                  : 'text-fitness-primary-600 hover:text-fitness-primary-700 hover:bg-fitness-primary-50'
-              }`}
-            >
-              <Calendar className="w-4 h-4" />
-              {mealPlanT('dailyView')}
-            </button>
-            <button
-              onClick={() => onViewModeChange('weekly')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all text-sm ${
-                viewMode === 'weekly'
-                  ? 'bg-gradient-to-r from-fitness-primary-500 to-fitness-primary-600 text-white shadow-md'
-                  : 'text-fitness-primary-600 hover:text-fitness-primary-700 hover:bg-fitness-primary-50'
-              }`}
-            >
-              <Grid3X3 className="w-4 h-4" />
-              {mealPlanT('weeklyView')}
-            </button>
-          </div>
+    <div className={`flex items-center justify-between bg-white/90 backdrop-blur-sm rounded-xl p-3 shadow-lg ${isRTL ? 'flex-row-reverse' : ''}`}>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => onWeekChange(currentWeekOffset - 1)}
+        className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}
+      >
+        {isRTL ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+        {t('common:previousWeek') || 'Previous'}
+      </Button>
 
-          {/* Action Buttons */}
-          <div className="flex gap-2">
-            <Button
-              onClick={onAddSnack}
-              size="sm"
-              className="bg-gradient-to-r from-fitness-accent-500 to-fitness-accent-600 text-white hover:from-fitness-accent-600 hover:to-fitness-accent-700 shadow-lg"
-            >
-              <Plus className="w-4 h-4 mr-1.5" />
-              {mealPlanT('addSnack')}
-            </Button>
-            
-            <Button
-              onClick={onShowShoppingList}
-              size="sm"
-              variant="outline"
-              className="border-fitness-primary-300 bg-white text-fitness-primary-600 hover:bg-fitness-primary-50 hover:text-fitness-primary-700"
-            >
-              <ShoppingCart className="w-4 h-4 mr-1.5" />
-              {mealPlanT('shoppingList')}
-            </Button>
-          </div>
-        </div>
+      <div className="flex items-center gap-2">
+        <span className="text-sm font-medium text-gray-700">
+          {t('mealPlan:week') || 'Week'} {currentWeekOffset + 1}
+        </span>
       </div>
-    </Card>
+
+      <div className={`flex gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onRegeneratePlan}
+          disabled={isGenerating}
+          className={`flex items-center gap-1 ${isRTL ? 'flex-row-reverse' : ''}`}
+        >
+          <RefreshCw className="w-3 h-3" />
+          {t('mealPlan:regenerate') || 'Regenerate'}
+        </Button>
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onWeekChange(currentWeekOffset + 1)}
+          className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}
+        >
+          {t('common:nextWeek') || 'Next'}
+          {isRTL ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+        </Button>
+      </div>
+    </div>
   );
 };
 

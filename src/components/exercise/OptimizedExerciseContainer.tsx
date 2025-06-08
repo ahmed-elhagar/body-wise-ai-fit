@@ -1,111 +1,101 @@
 
-import React from "react";
-import { Card } from "@/components/ui/card";
-import { useOptimizedExercise } from "@/hooks/useOptimizedExercise";
-import OptimizedExerciseHeader from "./OptimizedExerciseHeader";
-import OptimizedExerciseWeekView from "./OptimizedExerciseWeekView";
-import OptimizedExerciseDayView from "./OptimizedExerciseDayView";
-import OptimizedExerciseProgress from "./OptimizedExerciseProgress";
-import ExerciseAILoadingDialog from "./ExerciseAILoadingDialog";
+import React, { useState } from 'react';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Play, Pause, SkipForward } from 'lucide-react';
+import { useI18n } from '@/hooks/useI18n';
+import OptimizedExerciseDayView from './OptimizedExerciseDayView';
 
-const OptimizedExerciseContainer = React.memo(() => {
-  const {
-    weeklyProgram,
-    weekStructure,
-    currentWorkout,
-    currentDayExercises,
-    selectedDay,
-    setSelectedDay,
-    progressMetrics,
-    loadingStates,
-    programError,
-    optimizedActions,
-  } = useOptimizedExercise();
+interface OptimizedExerciseContainerProps {
+  exercises: any[];
+  selectedDay: number;
+  onStartWorkout: () => void;
+  onCompleteWorkout: () => void;
+  isLoading: boolean;
+}
 
-  if (loadingStates.isProgramLoading) {
-    return (
-      <>
-        <Card className="p-8">
-          <div className="text-center">
-            <h3 className="text-lg font-semibold mb-2">Loading Exercise Program</h3>
-            <p className="text-sm text-gray-600">Preparing your personalized workouts...</p>
-          </div>
-        </Card>
-        <ExerciseAILoadingDialog 
-          isGenerating={loadingStates.isProgramLoading}
-          type="program"
-        />
-      </>
-    );
-  }
+const OptimizedExerciseContainer = ({
+  exercises,
+  selectedDay,
+  onStartWorkout,
+  onCompleteWorkout,
+  isLoading
+}: OptimizedExerciseContainerProps) => {
+  const { t, isRTL } = useI18n();
+  const [isWorkoutActive, setIsWorkoutActive] = useState(false);
 
-  if (programError) {
-    return (
-      <Card className="p-8 text-center">
-        <div className="text-red-600 mb-4">
-          <h3 className="text-lg font-semibold mb-2">Error Loading Exercise Program</h3>
-          <p className="text-sm">{programError.message}</p>
-        </div>
-      </Card>
-    );
-  }
+  const dailyWorkout = {
+    workout_name: `Day ${selectedDay} Workout`,
+    estimated_duration: 45,
+    muscle_groups: ['Full Body'],
+    is_rest_day: exercises.length === 0
+  };
 
-  if (!weeklyProgram) {
+  const handleExerciseComplete = (exerciseId: string) => {
+    console.log('Exercise completed:', exerciseId);
+  };
+
+  const handleExerciseStart = (exerciseId: string) => {
+    console.log('Exercise started:', exerciseId);
+    setIsWorkoutActive(true);
+  };
+
+  if (isLoading) {
     return (
       <Card className="p-8 text-center">
-        <div className="text-gray-600 mb-4">
-          <h3 className="text-lg font-semibold mb-2">No Exercise Program Found</h3>
-          <p className="text-sm">Create your first exercise program to get started</p>
-        </div>
+        <div className="w-8 h-8 animate-spin border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+        <p className="text-gray-600">{t('exercise:loading') || 'Loading workout...'}</p>
       </Card>
     );
   }
 
   return (
-    <>
-      <div className="space-y-6">
-        <OptimizedExerciseHeader 
-          program={weeklyProgram}
-          progressMetrics={progressMetrics}
-          onGenerateNew={optimizedActions.startWorkout}
-        />
-        
-        <OptimizedExerciseProgress 
-          progressMetrics={progressMetrics}
-          weekStructure={weekStructure}
-        />
-        
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-1">
-            <OptimizedExerciseWeekView
-              weekStructure={weekStructure}
-              selectedDay={selectedDay}
-              onDaySelect={setSelectedDay}
-            />
+    <div className={`space-y-6 ${isRTL ? 'rtl' : 'ltr'}`}>
+      {/* Workout Controls */}
+      <Card className="p-4">
+        <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+          <div>
+            <h3 className="font-semibold text-lg">{dailyWorkout.workout_name}</h3>
+            <p className="text-sm text-gray-600">
+              {exercises.length} {t('exercise:exercises') || 'exercises'} • {dailyWorkout.estimated_duration} {t('exercise:minutes') || 'min'}
+            </p>
           </div>
           
-          <div className="lg:col-span-2">
-            <OptimizedExerciseDayView
-              currentWorkout={currentWorkout}
-              exercises={currentDayExercises}
-              selectedDay={selectedDay}
-              onStartWorkout={optimizedActions.startWorkout}
-              onCompleteWorkout={optimizedActions.completeWorkout}
-              isLoading={loadingStates.isUpdating}
-            />
+          <div className={`flex gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            {!isWorkoutActive ? (
+              <Button onClick={onStartWorkout} className="bg-green-600 hover:bg-green-700">
+                <Play className="w-4 h-4 mr-2" />
+                {t('exercise:startWorkout') || 'Start Workout'}
+              </Button>
+            ) : (
+              <>
+                <Button variant="outline">
+                  <Pause className="w-4 h-4 mr-2" />
+                  {t('exercise:pause') || 'Pause'}
+                </Button>
+                <Button variant="outline">
+                  <SkipForward className="w-4 h-4 mr-2" />
+                  {t('exercise:skip') || 'Skip'}
+                </Button>
+                <Button onClick={onCompleteWorkout} className="bg-red-600 hover:bg-red-700">
+                  {t('exercise:finish') || 'Finish'}
+                </Button>
+              </>
+            )}
           </div>
         </div>
-      </div>
+      </Card>
 
-      {/* AI Loading Dialog for exercise exchanges */}
-      <ExerciseAILoadingDialog 
-        isGenerating={loadingStates.isUpdating}
-        type="exchange"
+      {/* Exercise Day View */}
+      <OptimizedExerciseDayView
+        dailyWorkout={dailyWorkout}
+        exercises={exercises}
+        selectedDay={selectedDay}
+        onExerciseComplete={handleExerciseComplete}
+        onExerciseStart={handleExerciseStart}
       />
-    </>
+    </div>
   );
-});
-
-OptimizedExerciseContainer.displayName = 'OptimizedExerciseContainer';
+};
 
 export default OptimizedExerciseContainer;

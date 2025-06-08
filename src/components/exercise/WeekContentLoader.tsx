@@ -1,7 +1,7 @@
 
 import { Card } from '@/components/ui/card';
 import { Loader2, Calendar } from 'lucide-react';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useI18n } from '@/hooks/useI18n';
 
 interface WeekContentLoaderProps {
   weekNumber: number;
@@ -9,7 +9,7 @@ interface WeekContentLoaderProps {
 }
 
 export const WeekContentLoader = ({ weekNumber, isVisible }: WeekContentLoaderProps) => {
-  const { t } = useLanguage();
+  const { t } = useI18n();
 
   if (!isVisible) return null;
 

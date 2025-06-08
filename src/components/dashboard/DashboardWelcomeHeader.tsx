@@ -1,48 +1,46 @@
 
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Crown, Sparkles } from 'lucide-react';
-import { useI18n } from '@/hooks/useI18n';
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Sparkles, Utensils, Dumbbell } from "lucide-react";
+import { useI18n } from "@/hooks/useI18n";
 
 interface DashboardWelcomeHeaderProps {
   userName: string;
-  currentStreak: number;
-  isPro: boolean;
 }
 
-export const DashboardWelcomeHeader = ({ userName, currentStreak, isPro }: DashboardWelcomeHeaderProps) => {
-  const { t } = useI18n();
+const DashboardWelcomeHeader = ({ userName }: DashboardWelcomeHeaderProps) => {
+  const { t, isRTL } = useI18n();
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return t('dashboard:goodMorning');
+    if (hour < 18) return t('dashboard:goodAfternoon');
+    return t('dashboard:goodEvening');
+  };
 
   return (
-    <Card className="bg-gradient-to-r from-blue-500 to-purple-600 text-white border-0">
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold mb-2">
-              {t('dashboard:welcome', { name: userName }) || `Welcome back, ${userName}!`}
-            </h1>
-            <p className="text-blue-100">
-              {t('dashboard:welcomeMessage') || "Let's make today count towards your fitness goals"}
-            </p>
-          </div>
-          
-          <div className="text-right space-y-2">
-            {isPro && (
-              <Badge className="bg-yellow-500 text-yellow-900 border-yellow-400">
-                <Crown className="w-3 h-3 mr-1" />
-                {t('dashboard:proMember') || 'Pro Member'}
-              </Badge>
-            )}
-            
-            <div className="flex items-center gap-2 text-blue-100">
-              <Sparkles className="w-4 h-4" />
-              <span className="text-sm">
-                {t('dashboard:streak', { days: currentStreak }) || `${currentStreak} day streak`}
-              </span>
-            </div>
-          </div>
+    <Card className="p-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white border-0 shadow-xl">
+      <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+        <div className={isRTL ? 'text-right' : 'text-left'}>
+          <h1 className={`text-2xl lg:text-3xl font-bold mb-2 ${isRTL ? 'font-arabic' : ''}`}>
+            {getGreeting()}, {userName}! 👋
+          </h1>
+          <p className="text-blue-100 text-sm lg:text-base">
+            {t('dashboard:welcome')}
+          </p>
         </div>
-      </CardContent>
+        
+        <div className={`flex gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+          <Button variant="secondary" size="sm" className="bg-white/20 hover:bg-white/30 text-white border-0">
+            <Utensils className="w-4 h-4 mr-2" />
+            {t('navigation:mealPlan')}
+          </Button>
+          <Button variant="secondary" size="sm" className="bg-white/20 hover:bg-white/30 text-white border-0">
+            <Dumbbell className="w-4 h-4 mr-2" />
+            {t('navigation:exercise')}
+          </Button>
+        </div>
+      </div>
     </Card>
   );
 };

@@ -3,116 +3,104 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, Play, Youtube, RefreshCw } from 'lucide-react';
+import { Play, CheckCircle, RotateCcw, Clock, Target } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
-import { Exercise } from '@/types/exercise';
 import ExerciseExchangeDialog from './ExerciseExchangeDialog';
+import { Exercise } from '@/types/exercise';
 
 interface InteractiveExerciseCardProps {
   exercise: Exercise;
   index: number;
   onExerciseComplete: (exerciseId: string) => void;
   onExerciseStart: (exerciseId: string) => void;
-  isActive?: boolean;
 }
 
 const InteractiveExerciseCard = ({
   exercise,
   index,
   onExerciseComplete,
-  onExerciseStart,
-  isActive = false
+  onExerciseStart
 }: InteractiveExerciseCardProps) => {
   const { t, isRTL } = useI18n();
   const [showExchangeDialog, setShowExchangeDialog] = useState(false);
 
-  const handleWatchVideo = () => {
-    const searchQuery = exercise.youtube_search_term || exercise.name;
-    const youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(searchQuery)}`;
-    window.open(youtubeUrl, '_blank');
+  const handleExchange = (newExercise: any) => {
+    console.log('Exchanging exercise:', exercise.name, 'with:', newExercise);
+    setShowExchangeDialog(false);
   };
 
   return (
     <>
-      <Card className={`transition-all duration-200 ${isActive ? 'ring-2 ring-blue-500 shadow-lg' : ''} ${exercise.completed ? 'bg-green-50 border-green-200' : ''}`}>
-        <CardContent className="p-4">
-          <div className={`flex items-start justify-between mb-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <div className="flex-1">
-              <div className={`flex items-center gap-2 mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                <Badge variant="outline" className="text-xs">
-                  {index + 1}
-                </Badge>
-                <h4 className="font-medium text-gray-900">{exercise.name}</h4>
-                {exercise.completed && (
-                  <CheckCircle className="w-4 h-4 text-green-600" />
+      <Card className={`transition-all duration-300 hover:shadow-lg ${
+        exercise.completed ? 'bg-green-50 border-green-200' : ''
+      }`}>
+        <CardContent className="p-6">
+          <div className={`flex items-start gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
+              exercise.completed ? 'bg-green-500 text-white' : 'bg-blue-100 text-blue-600'
+            }`}>
+              {exercise.completed ? (
+                <CheckCircle className="w-6 h-6" />
+              ) : (
+                <span className="font-bold">{index + 1}</span>
+              )}
+            </div>
+
+            <div className={`flex-1 space-y-3 ${isRTL ? 'text-right' : 'text-left'}`}>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">{exercise.name}</h3>
+                {exercise.description && (
+                  <p className="text-sm text-gray-600 mt-1">{exercise.description}</p>
                 )}
               </div>
-              
-              <div className={`text-sm text-gray-600 space-y-1 ${isRTL ? 'text-right' : ''}`}>
-                {exercise.sets && (
-                  <p>{exercise.sets} {t('exercise:sets')} × {exercise.reps} {t('exercise:reps')}</p>
+
+              <div className={`flex flex-wrap gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                <Badge variant="outline" className={`flex items-center gap-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                  <Target className="w-3 h-3" />
+                  {exercise.sets} sets × {exercise.reps} reps
+                </Badge>
+                
+                {exercise.duration && (
+                  <Badge variant="outline" className={`flex items-center gap-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                    <Clock className="w-3 h-3" />
+                    {exercise.duration}s
+                  </Badge>
                 )}
-                {exercise.equipment && (
-                  <p>{t('exercise:equipment')}: {exercise.equipment}</p>
-                )}
+
                 {exercise.muscle_groups && exercise.muscle_groups.length > 0 && (
-                  <p>{t('exercise:targetMuscles')}: {exercise.muscle_groups.join(', ')}</p>
+                  <Badge variant="secondary">
+                    {exercise.muscle_groups.join(', ')}
+                  </Badge>
                 )}
+              </div>
+
+              <div className={`flex gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                {!exercise.completed ? (
+                  <Button onClick={() => onExerciseStart(exercise.id)} className="bg-blue-600 hover:bg-blue-700">
+                    <Play className="w-4 h-4 mr-2" />
+                    {t('exercise:start') || 'Start'}
+                  </Button>
+                ) : (
+                  <Button variant="outline" className="text-green-600 border-green-600">
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    {t('exercise:completed') || 'Completed'}
+                  </Button>
+                )}
+
+                <Button variant="outline" onClick={() => setShowExchangeDialog(true)}>
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  {t('exercise:exchange') || 'Exchange'}
+                </Button>
               </div>
             </div>
-          </div>
-
-          <div className={`flex gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            {!exercise.completed ? (
-              <>
-                <Button
-                  size="sm"
-                  onClick={() => onExerciseStart(exercise.id)}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  <Play className="w-4 h-4 mr-2" />
-                  {isActive ? t('exercise:continue') : t('exercise:start')}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setShowExchangeDialog(true)}
-                >
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  {t('exercise:exchange')}
-                </Button>
-              </>
-            ) : (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => onExerciseComplete(exercise.id)}
-                className="bg-green-100 text-green-700 border-green-200"
-              >
-                <CheckCircle className="w-4 h-4 mr-2" />
-                {t('exercise:completed')}
-              </Button>
-            )}
-            
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleWatchVideo}
-            >
-              <Youtube className="w-4 h-4 text-red-600" />
-            </Button>
           </div>
         </CardContent>
       </Card>
 
       <ExerciseExchangeDialog
-        exercise={exercise}
         open={showExchangeDialog}
         onOpenChange={setShowExchangeDialog}
-        onExchange={(newExercise) => {
-          console.log('Exercise exchanged:', newExercise);
-          setShowExchangeDialog(false);
-        }}
+        onExchange={handleExchange}
       />
     </>
   );
