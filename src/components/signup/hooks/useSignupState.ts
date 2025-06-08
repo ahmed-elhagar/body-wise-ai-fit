@@ -92,19 +92,24 @@ export const useSignupState = () => {
       if (result?.error) {
         console.error('Signup error details:', result.error);
         
-        // Handle specific error cases
+        // Handle specific error cases - improved detection
         const errorMessage = result.error.message || '';
-        const lowerErrorMessage = errorMessage.toLowerCase();
+        const errorCode = result.error.code || '';
+        const errorStatus = result.error.status || 0;
         
         // Check for various "user exists" error patterns
-        if (lowerErrorMessage.includes('user already registered') || 
-            lowerErrorMessage.includes('already registered') || 
-            lowerErrorMessage.includes('user already exists') ||
-            lowerErrorMessage.includes('already exists') ||
-            lowerErrorMessage.includes('email already in use') ||
-            lowerErrorMessage.includes('duplicate') ||
-            result.error.status === 422) {
-          throw new Error('USER_ALREADY_EXISTS');
+        if (errorStatus === 422 || 
+            errorCode === 'user_already_exists' ||
+            errorMessage.toLowerCase().includes('user already registered') || 
+            errorMessage.toLowerCase().includes('already registered') || 
+            errorMessage.toLowerCase().includes('user already exists') ||
+            errorMessage.toLowerCase().includes('already exists') ||
+            errorMessage.toLowerCase().includes('email already in use') ||
+            errorMessage.toLowerCase().includes('duplicate')) {
+          // Throw a specific error that the component can catch
+          const userExistsError = new Error('USER_ALREADY_EXISTS');
+          userExistsError.name = 'UserExistsError';
+          throw userExistsError;
         }
         
         // Throw the original error message for other cases

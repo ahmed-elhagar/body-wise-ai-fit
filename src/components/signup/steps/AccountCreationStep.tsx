@@ -38,14 +38,14 @@ const AccountCreationStep = ({
   const handleCreateAccount = async () => {
     if (!isValid) return;
     
-    setError(null);
+    setError(null); // Clear any previous errors
     try {
       await onNext();
     } catch (err: any) {
       console.error('Account creation error caught in component:', err);
       
       // Handle the specific USER_ALREADY_EXISTS error
-      if (err?.message === 'USER_ALREADY_EXISTS') {
+      if (err?.message === 'USER_ALREADY_EXISTS' || err?.name === 'UserExistsError') {
         setError('account_exists');
         return;
       }
