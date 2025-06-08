@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Clock, Users, ChefHat, ArrowLeftRight } from "lucide-react";
-import type { DailyMeal } from "@/hooks/useMealPlanData";
+import type { DailyMeal } from "@/features/meal-plan/types";
 
 interface MealCardProps {
   meal: DailyMeal;
@@ -21,6 +21,10 @@ const MealCard = ({ meal, onShowRecipe, onExchangeMeal }: MealCardProps) => {
     onExchangeMeal(meal);
   };
 
+  const prepTime = meal.prep_time || 0;
+  const cookTime = meal.cook_time || 0;
+  const servings = meal.servings || 1;
+
   return (
     <Card className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
       <CardContent className="p-4">
@@ -30,11 +34,11 @@ const MealCard = ({ meal, onShowRecipe, onExchangeMeal }: MealCardProps) => {
           <div className="flex flex-wrap gap-2">
             <Badge variant="secondary" className="text-xs">
               <Clock className="w-3 h-3 mr-1" />
-              {(meal.prep_time || 0) + (meal.cook_time || 0)} min
+              {prepTime + cookTime} min
             </Badge>
             <Badge variant="secondary" className="text-xs">
               <Users className="w-3 h-3 mr-1" />
-              {meal.servings} serving{meal.servings !== 1 ? 's' : ''}
+              {servings} serving{servings !== 1 ? 's' : ''}
             </Badge>
             <Badge variant="secondary" className="text-xs">
               {meal.calories} cal

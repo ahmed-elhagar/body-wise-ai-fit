@@ -3,40 +3,19 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
-export interface WeeklyMealPlan {
-  id: string;
-  user_id: string;
-  week_start_date: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface DailyMeal {
-  id: string;
-  weekly_plan_id: string;
-  day_number: number;
-  meal_type: string;
-  name: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-  ingredients?: any[];
-  instructions?: string;
-  created_at: string;
-}
-
-export interface MealPlanFetchResult {
-  weeklyPlan: WeeklyMealPlan | null;
-  dailyMeals: DailyMeal[];
-}
+// Import types from features instead of defining locally
+export type { 
+  WeeklyMealPlan, 
+  DailyMeal, 
+  MealPlanFetchResult 
+} from '@/features/meal-plan/types';
 
 export const useMealPlanData = (weekOffset: number = 0) => {
   const { user } = useAuth();
 
   return useQuery({
     queryKey: ['weekly-meal-plan', user?.id, weekOffset],
-    queryFn: async (): Promise<MealPlanFetchResult | null> => {
+    queryFn: async (): Promise<any | null> => {
       if (!user?.id) return null;
 
       // Calculate the week start date
