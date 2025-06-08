@@ -1,0 +1,263 @@
+
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "FitFatta Supabase Edge Functions API",
+    "version": "1.0.0",
+    "description": "API documentation for FitFatta Supabase Edge Functions"
+  },
+  "servers": [
+    {
+      "url": "https://xnoslfftfktqvyoefccw.supabase.co/functions/v1",
+      "description": "Supabase Edge Functions"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "MealPlanRequest": {
+        "type": "object",
+        "properties": {
+          "userData": {
+            "type": "object",
+            "properties": {
+              "id": {"type": "string", "format": "uuid"},
+              "age": {"type": "integer"},
+              "weight": {"type": "number"},
+              "height": {"type": "number"},
+              "gender": {"type": "string", "enum": ["male", "female"]},
+              "activity_level": {"type": "string"},
+              "dietary_restrictions": {"type": "array", "items": {"type": "string"}},
+              "allergies": {"type": "array", "items": {"type": "string"}},
+              "pregnancy_trimester": {"type": "integer", "minimum": 1, "maximum": 3},
+              "breastfeeding_level": {"type": "string", "enum": ["exclusive", "partial"]},
+              "fasting_type": {"type": "string", "enum": ["ramadan", "islamic"]}
+            },
+            "required": ["id", "age", "weight", "height", "gender"]
+          },
+          "preferences": {
+            "type": "object",
+            "properties": {
+              "cuisine": {"type": "string"},
+              "maxPrepTime": {"type": "string"},
+              "includeSnacks": {"type": "boolean"},
+              "language": {"type": "string", "enum": ["en", "ar"]},
+              "weekOffset": {"type": "integer"}
+            }
+          }
+        },
+        "required": ["userData"]
+      },
+      "MealPlanResponse": {
+        "type": "object",
+        "properties": {
+          "success": {"type": "boolean"},
+          "weeklyPlanId": {"type": "string", "format": "uuid"},
+          "weekStartDate": {"type": "string", "format": "date"},
+          "totalMeals": {"type": "integer"},
+          "generationsRemaining": {"type": "integer"},
+          "includeSnacks": {"type": "boolean"},
+          "mealsPerDay": {"type": "integer"},
+          "language": {"type": "string"},
+          "nutritionContext": {"type": "object"},
+          "modelUsed": {"type": "object"},
+          "fallbackUsed": {"type": "boolean"},
+          "message": {"type": "string"}
+        }
+      },
+      "ExerciseExchangeRequest": {
+        "type": "object",
+        "properties": {
+          "exerciseId": {"type": "string", "format": "uuid"},
+          "reason": {"type": "string"},
+          "preferences": {
+            "type": "object",
+            "properties": {
+              "equipment": {"type": "array", "items": {"type": "string"}}
+            }
+          },
+          "userLanguage": {"type": "string", "enum": ["en", "ar"]},
+          "userId": {"type": "string", "format": "uuid"}
+        },
+        "required": ["exerciseId", "reason"]
+      },
+      "FoodAnalysisRequest": {
+        "type": "object",
+        "properties": {
+          "image": {"type": "string", "format": "binary"},
+          "userId": {"type": "string", "format": "uuid"}
+        },
+        "required": ["image", "userId"]
+      }
+    }
+  },
+  "paths": {
+    "/generate-meal-plan": {
+      "post": {
+        "summary": "Generate AI-powered meal plan",
+        "description": "Creates a 7-day meal plan using AI with life-phase considerations",
+        "security": [{"BearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/MealPlanRequest"}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Meal plan generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/MealPlanResponse"}
+              }
+            }
+          },
+          "400": {"description": "Invalid request data"},
+          "429": {"description": "Rate limit exceeded"},
+          "500": {"description": "AI generation failed"}
+        }
+      }
+    },
+    "/exchange-exercise": {
+      "post": {
+        "summary": "Exchange exercise with AI alternative",
+        "description": "Replaces an exercise with AI-generated alternative",
+        "security": [{"BearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/ExerciseExchangeRequest"}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Exercise exchanged successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {"type": "boolean"},
+                    "message": {"type": "string"},
+                    "newExercise": {"type": "object"},
+                    "originalExercise": {"type": "string"},
+                    "reason": {"type": "string"}
+                  }
+                }
+              }
+            }
+          },
+          "404": {"description": "Exercise not found"},
+          "500": {"description": "Exchange failed"}
+        }
+      }
+    },
+    "/analyze-food-image": {
+      "post": {
+        "summary": "Analyze food image with AI",
+        "description": "Identifies food items and nutrition from uploaded image",
+        "security": [{"BearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {"$ref": "#/components/schemas/FoodAnalysisRequest"}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Food analysis completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {"type": "boolean"},
+                    "analysis": {
+                      "type": "object",
+                      "properties": {
+                        "foodItems": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "name": {"type": "string"},
+                              "category": {"type": "string"},
+                              "calories": {"type": "number"},
+                              "protein": {"type": "number"},
+                              "carbs": {"type": "number"},
+                              "fat": {"type": "number"},
+                              "quantity": {"type": "string"}
+                            }
+                          }
+                        },
+                        "overallConfidence": {"type": "number"},
+                        "cuisineType": {"type": "string"},
+                        "suggestions": {"type": "string"}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {"description": "Invalid image data"},
+          "500": {"description": "Analysis failed"}
+        }
+      }
+    },
+    "/generate-meal-alternatives": {
+      "post": {
+        "summary": "Generate meal exchange alternatives",
+        "description": "Creates multiple meal alternatives for exchange",
+        "security": [{"BearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "mealId": {"type": "string", "format": "uuid"},
+                  "reason": {"type": "string"},
+                  "preferences": {"type": "object"}
+                },
+                "required": ["mealId", "reason"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Alternatives generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {"type": "boolean"},
+                    "alternatives": {
+                      "type": "array",
+                      "items": {"type": "object"}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
