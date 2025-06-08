@@ -2,7 +2,7 @@
 // Main exports for meal plan feature
 export { MealPlanContainer } from './components/MealPlanContainer';
 
-// Export types
+// Export all types
 export type * from './types';
 
 // Export hooks

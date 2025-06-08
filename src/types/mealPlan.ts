@@ -6,7 +6,8 @@ export type {
   WeeklyMealPlan, 
   MealPlanFetchResult, 
   MealPlanPreferences,
-  AddSnackDialogProps
+  AddSnackDialogProps,
+  ViewMode
 } from '@/features/meal-plan/types';
 
 // Legacy interface for backward compatibility

@@ -1,13 +1,26 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import type { 
-  StrictMealPlanFetchResult, 
-  OptimizedQueryParams, 
-  DatabaseQueryResult,
-  StrictDailyMeal,
-  StrictWeeklyMealPlan 
-} from '../types/enhanced';
-import { validateMealType } from '../utils/mealTypeValidator';
+  MealPlanFetchResult, 
+  DailyMeal,
+  WeeklyMealPlan,
+  MealIngredient
+} from '../types';
+
+// Simplified types for optimization
+interface OptimizedQueryParams {
+  userId: string;
+  weekStartDate: string;
+  includeIngredients?: boolean;
+  includeInstructions?: boolean;
+  mealTypes?: ReadonlyArray<string>;
+}
+
+interface DatabaseQueryResult<T> {
+  data: T | null;
+  error: Error | null;
+  fromCache: boolean;
+  queryTime: number;
+}
 
 // Optimized database service with enhanced error handling and validation
 export class OptimizedMealPlanService {
@@ -16,7 +29,7 @@ export class OptimizedMealPlanService {
 
   static async fetchMealPlanData(
     params: OptimizedQueryParams
-  ): Promise<DatabaseQueryResult<StrictMealPlanFetchResult>> {
+  ): Promise<DatabaseQueryResult<MealPlanFetchResult>> {
     const startTime = Date.now();
     const cacheKey = this.generateCacheKey(params);
     
@@ -27,7 +40,7 @@ export class OptimizedMealPlanService {
     });
     
     // Check cache first
-    const cached = this.getFromCache<StrictMealPlanFetchResult>(cacheKey);
+    const cached = this.getFromCache<MealPlanFetchResult>(cacheKey);
     if (cached) {
       console.log('📦 Returning cached data for:', cacheKey);
       return {
@@ -108,7 +121,7 @@ export class OptimizedMealPlanService {
         weeklyPlanId: weeklyPlan.id
       });
 
-      const result: StrictMealPlanFetchResult = {
+      const result: MealPlanFetchResult = {
         weeklyPlan: this.processWeeklyPlan(weeklyPlan),
         dailyMeals: this.processDailyMeals(dailyMeals || [])
       };
@@ -186,7 +199,7 @@ export class OptimizedMealPlanService {
     return baseFields.join(',');
   }
 
-  private static processWeeklyPlan(plan: any): StrictWeeklyMealPlan {
+  private static processWeeklyPlan(plan: any): WeeklyMealPlan {
     return {
       id: plan.id,
       user_id: plan.user_id,
@@ -202,11 +215,11 @@ export class OptimizedMealPlanService {
     };
   }
 
-  private static processDailyMeals(meals: any[]): ReadonlyArray<StrictDailyMeal> {
+  private static processDailyMeals(meals: any[]): DailyMeal[] {
     return meals.map((meal, index) => {
       try {
-        // Validate and normalize meal type
-        const validatedMealType = validateMealType(meal.meal_type);
+        const validMealTypes = ['breakfast', 'lunch', 'dinner', 'snack', 'snack1', 'snack2'];
+        const validatedMealType = validMealTypes.includes(meal.meal_type) ? meal.meal_type : 'snack';
         
         console.log(`🍽️ Processing meal ${index + 1}: ${meal.name} (${meal.meal_type} -> ${validatedMealType})`);
         
@@ -214,14 +227,14 @@ export class OptimizedMealPlanService {
           id: meal.id,
           weekly_plan_id: meal.weekly_plan_id,
           day_number: meal.day_number,
-          meal_type: validatedMealType as StrictDailyMeal['meal_type'],
+          meal_type: validatedMealType as DailyMeal['meal_type'],
           name: meal.name,
           calories: meal.calories || 0,
           protein: meal.protein || 0,
           carbs: meal.carbs || 0,
           fat: meal.fat || 0,
-          fiber: 0, // Default since not in DB
-          sugar: 0, // Default since not in DB
+          fiber: 0,
+          sugar: 0,
           prep_time: meal.prep_time || 0,
           cook_time: meal.cook_time || 0,
           servings: meal.servings || 1,

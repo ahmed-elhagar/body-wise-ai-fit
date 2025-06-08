@@ -1,31 +1,70 @@
 
 // Centralized types for meal plan feature
+export interface MealIngredient {
+  name: string;
+  quantity: string;
+  unit: string;
+  category?: string;
+}
+
 export interface DailyMeal {
   id: string;
-  meal_type: 'breakfast' | 'lunch' | 'dinner' | 'snack';
-  meal_name: string;
+  weekly_plan_id: string;
+  day_number: number;
+  meal_type: 'breakfast' | 'lunch' | 'dinner' | 'snack' | 'snack1' | 'snack2';
+  name: string;
   calories: number;
   protein: number;
   carbs: number;
-  fats: number;
-  ingredients?: string[];
-  recipe?: string;
+  fat: number;
+  fiber?: number;
+  sugar?: number;
+  prep_time: number;
+  cook_time: number;
+  servings: number;
+  youtube_search_term?: string;
   image_url?: string;
+  recipe_fetched: boolean;
+  ingredients: MealIngredient[];
+  instructions: string[];
+  alternatives: string[];
+}
+
+export interface WeeklyMealPlan {
+  id: string;
+  user_id: string;
+  week_start_date: string;
+  total_calories: number;
+  total_protein: number;
+  total_carbs: number;
+  total_fat: number;
+  preferences: any;
+  created_at: string;
+  updated_at: string;
+  life_phase_context?: any;
 }
 
 export interface MealPlanFetchResult {
-  weeklyPlan: any;
-  dailyMeals?: DailyMeal[];
-  weekStartDate: string;
-  currentWeekOffset: number;
+  weeklyPlan: WeeklyMealPlan;
+  dailyMeals: DailyMeal[];
 }
 
 export interface MealPlanPreferences {
-  dietaryRestrictions: string[];
-  allergies: string[];
-  calorieTarget: number;
-  mealCount: number;
-  lifePhase?: 'pregnancy' | 'breastfeeding' | 'fasting' | null;
+  duration: string;
+  cuisine: string;
+  maxPrepTime: string;
+  includeSnacks: boolean;
+  mealTypes: string;
+}
+
+export interface AddSnackDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  selectedDay: number;
+  currentDayCalories?: number;
+  targetDayCalories?: number;
+  weeklyPlanId?: string;
+  onSnackAdded: () => void;
 }
 
 export type ViewMode = 'daily' | 'weekly';
