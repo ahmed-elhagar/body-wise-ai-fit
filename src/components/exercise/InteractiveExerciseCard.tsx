@@ -43,7 +43,7 @@ const InteractiveExerciseCard = ({
             <div className={`flex items-center gap-4 text-sm text-gray-600 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <div className={`flex items-center gap-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
                 <Clock className="w-4 h-4" />
-                <span>{exercise.duration || 30} {t('common:seconds') || 'sec'}</span>
+                <span>{exercise.rest_seconds || 30} {t('common:seconds') || 'sec'}</span>
               </div>
               <div className={`flex items-center gap-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
                 <Target className="w-4 h-4" />

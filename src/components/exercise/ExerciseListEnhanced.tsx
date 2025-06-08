@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useI18n } from '@/hooks/useI18n';
 import { Exercise } from '@/types/exercise';
 import ActiveExerciseTracker from './ActiveExerciseTracker';
-import { OptimizedExerciseList } from './OptimizedExerciseList';
+import OptimizedExerciseList from './OptimizedExerciseList';
 import CustomExerciseDialog from './CustomExerciseDialog';
 
 interface ExerciseListEnhancedProps {
@@ -67,10 +67,10 @@ const ExerciseListEnhanced = ({
       
       <OptimizedExerciseList
         exercises={exercises}
-        isLoading={false}
+        currentExerciseIndex={currentExerciseIndex}
+        workoutType={workoutType}
+        onExerciseStart={handleExerciseStart}
         onExerciseComplete={handleExerciseComplete}
-        onExerciseProgressUpdate={onExerciseProgressUpdate}
-        isRestDay={isRestDay}
       />
 
       <CustomExerciseDialog

@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
-import { DashboardWelcomeHeader } from "@/components/dashboard/DashboardWelcomeHeader";
+import DashboardWelcomeHeader from "@/components/dashboard/DashboardWelcomeHeader";
 import EnhancedStatsGrid from "@/components/dashboard/EnhancedStatsGrid";
 import InteractiveProgressChart from "@/components/dashboard/InteractiveProgressChart";
 import WeightTrackingWidget from "@/components/dashboard/WeightTrackingWidget";
@@ -144,13 +144,26 @@ const CanonicalDashboard = () => {
                     onViewMealPlan={handleViewMealPlan}
                     onViewExercise={handleViewExercise}
                   />
-                  <HeaderDropdowns />
+                  <HeaderDropdowns 
+                    userName={userName}
+                    unreadNotifications={0}
+                    onProfileClick={() => navigate('/profile')}
+                    onSettingsClick={() => navigate('/settings')}
+                    onNotificationsClick={() => navigate('/notifications')}
+                  />
                 </div>
               </div>
             </div>
             
             {/* Enhanced Stats Grid */}
-            <EnhancedStatsGrid />
+            <EnhancedStatsGrid 
+              stats={{
+                calories: { consumed: 1850, target: 2200, percentage: 84 },
+                protein: { consumed: 120, target: 150, percentage: 80 },
+                workouts: { completed: 4, target: 5, percentage: 80 },
+                weight: { current: 75, target: 70, change: -2 }
+              }}
+            />
 
             {/* Quick Action Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -196,19 +209,40 @@ const CanonicalDashboard = () => {
             </div>
             
             {/* Progress Chart Section */}
-            <InteractiveProgressChart />
+            <InteractiveProgressChart 
+              data={[
+                { name: 'Mon', calories: 2100, weight: 75.2, workouts: 1 },
+                { name: 'Tue', calories: 1950, weight: 75.0, workouts: 0 },
+                { name: 'Wed', calories: 2200, weight: 74.8, workouts: 1 },
+                { name: 'Thu', calories: 2050, weight: 74.6, workouts: 1 },
+                { name: 'Fri', calories: 1900, weight: 74.4, workouts: 0 },
+                { name: 'Sat', calories: 2300, weight: 74.2, workouts: 1 },
+                { name: 'Sun', calories: 2000, weight: 74.0, workouts: 1 }
+              ]}
+              title="Weekly Progress"
+              dataKey="calories"
+            />
             
             {/* 50-50 Layout for remaining content */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
               {/* Left Column */}
               <div className="space-y-4 md:space-y-6">
-                <GoalProgressWidget />
+                <GoalProgressWidget 
+                  goals={[
+                    { id: '1', title: 'Lose 5kg', progress: 60, target: 100, type: 'weight' },
+                    { id: '2', title: 'Workout 5x/week', progress: 80, target: 100, type: 'exercise' }
+                  ]}
+                />
                 <WeightTrackingWidget />
               </div>
               
               {/* Right Column */}
               <div className="space-y-4 md:space-y-6">
-                <CoachChatWidget />
+                <CoachChatWidget 
+                  coaches={[]}
+                  onStartChat={() => navigate('/coach')}
+                  onScheduleCall={() => navigate('/schedule')}
+                />
                 
                 {/* Recent Activity Card */}
                 <Card className="shadow-lg">

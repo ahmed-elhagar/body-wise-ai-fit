@@ -105,6 +105,8 @@ const OptimizedExerciseContainer = ({
       {/* Exercise List */}
       <OptimizedExerciseList
         exercises={workoutData.exercises || []}
+        currentExerciseIndex={0}
+        workoutType={workoutType}
         onExerciseStart={onExerciseStart}
         onExerciseComplete={onExerciseComplete}
       />

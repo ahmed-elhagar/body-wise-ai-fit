@@ -1,5 +1,7 @@
 
-import { useI18n, Language } from '@/hooks/useI18n';
+import { useI18n } from '@/hooks/useI18n';
+
+export type Language = 'en' | 'ar';
 
 export const translateExerciseName = (exerciseName: string, targetLanguage: Language): string => {
   // This would normally use the translation service
@@ -42,11 +44,11 @@ export const useExerciseTranslations = () => {
   const { language } = useI18n();
 
   const translateExercise = (exerciseName: string) => {
-    return translateExerciseName(exerciseName, language);
+    return translateExerciseName(exerciseName, language as Language);
   };
 
   const translateMuscle = (muscleGroup: string) => {
-    return translateMuscleGroup(muscleGroup, language);
+    return translateMuscleGroup(muscleGroup, language as Language);
   };
 
   return {

@@ -28,6 +28,12 @@ const AddFoodDialog = ({ isOpen, onClose, onFoodAdded, preSelectedFood }: AddFoo
     }
   }, [preSelectedFood, isOpen]);
 
+  const handleAddFood = (food: any) => {
+    console.log('Adding food:', food);
+    onFoodAdded();
+    onClose();
+  };
+
   // If we have pre-selected food, show only the manual tab content
   if (preSelectedFood) {
     return (
@@ -41,7 +47,7 @@ const AddFoodDialog = ({ isOpen, onClose, onFoodAdded, preSelectedFood }: AddFoo
 
           <div className="mt-4 max-h-[70vh] overflow-y-auto">
             <ManualTab 
-              onFoodAdded={onFoodAdded} 
+              onAddFood={handleAddFood} 
               onClose={onClose} 
               preSelectedFood={preSelectedFood}
             />
@@ -80,12 +86,12 @@ const AddFoodDialog = ({ isOpen, onClose, onFoodAdded, preSelectedFood }: AddFoo
 
           <div className="mt-4 max-h-[70vh] overflow-y-auto">
             <TabsContent value="search">
-              <SearchTab onFoodAdded={onFoodAdded} onClose={onClose} />
+              <SearchTab onAddFood={handleAddFood} onClose={onClose} />
             </TabsContent>
 
             <TabsContent value="manual">
               <ManualTab 
-                onFoodAdded={onFoodAdded} 
+                onAddFood={handleAddFood} 
                 onClose={onClose} 
                 preSelectedFood={preSelectedFood}
               />

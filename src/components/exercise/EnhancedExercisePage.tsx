@@ -38,8 +38,8 @@ export const EnhancedExercisePage = ({
   return (
     <div className={`space-y-6 ${isRTL ? 'rtl' : 'ltr'}`}>
       <EnhancedDayNavigation
-        currentDay={currentDay}
-        onDayChange={onDayChange}
+        selectedDay={currentDay}
+        onDaySelect={onDayChange}
         workoutType={workoutType}
       />
       
@@ -54,3 +54,5 @@ export const EnhancedExercisePage = ({
     </div>
   );
 };
+
+export default EnhancedExercisePage;
