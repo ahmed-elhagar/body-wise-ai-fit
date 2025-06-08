@@ -1,20 +1,57 @@
 
 import { useState } from 'react';
+import type { DailyMeal } from '@/hooks/useMealPlanData';
 
 export const useMealPlanDialogs = () => {
-  const [showAIDialog, setShowAIDialog] = useState(false);
+  const [selectedMeal, setSelectedMeal] = useState<DailyMeal | null>(null);
   const [showRecipeDialog, setShowRecipeDialog] = useState(false);
-  const [showExchangeDialog, setShowExchangeDialog] = useState(false);
-  const [selectedMeal, setSelectedMeal] = useState<any>(null);
+  const [showAIDialog, setShowAIDialog] = useState(false);
+  const [showShoppingListDialog, setShowShoppingListDialog] = useState(false);
+  const [exchangeMeal, setExchangeMeal] = useState<DailyMeal | null>(null);
+
+  const handleShowRecipe = (meal: DailyMeal) => {
+    setSelectedMeal(meal);
+    setShowRecipeDialog(true);
+  };
+
+  const handleExchangeMeal = (meal: DailyMeal) => {
+    setExchangeMeal(meal);
+    // You can add exchange logic here
+  };
+
+  const handleShowAI = () => {
+    setShowAIDialog(true);
+  };
+
+  const handleShowShoppingList = () => {
+    setShowShoppingListDialog(true);
+  };
+
+  const closeRecipeDialog = () => {
+    setShowRecipeDialog(false);
+    setSelectedMeal(null);
+  };
+
+  const closeAIDialog = () => {
+    setShowAIDialog(false);
+  };
+
+  const closeShoppingListDialog = () => {
+    setShowShoppingListDialog(false);
+  };
 
   return {
-    showAIDialog,
-    setShowAIDialog,
-    showRecipeDialog,
-    setShowRecipeDialog,
-    showExchangeDialog,
-    setShowExchangeDialog,
     selectedMeal,
-    setSelectedMeal,
+    showRecipeDialog,
+    showAIDialog,
+    showShoppingListDialog,
+    exchangeMeal,
+    handleShowRecipe,
+    handleExchangeMeal,
+    handleShowAI,
+    handleShowShoppingList,
+    closeRecipeDialog,
+    closeAIDialog,
+    closeShoppingListDialog,
   };
 };
