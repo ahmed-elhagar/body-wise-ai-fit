@@ -34,10 +34,10 @@ export const MealRow = ({
             <Badge variant="secondary" className="text-xs">
               {meal.calories} {t('mealPlan.cal')}
             </Badge>
-            {meal.prep_time && (
+            {meal.prepTime && (
               <div className="flex items-center gap-1">
                 <Clock className="w-3 h-3" />
-                <span>{meal.prep_time} min</span>
+                <span>{meal.prepTime} min</span>
               </div>
             )}
             {meal.servings && (

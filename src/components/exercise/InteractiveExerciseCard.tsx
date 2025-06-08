@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,12 +9,17 @@ import { Exercise } from '@/types/exercise';
 
 interface InteractiveExerciseCardProps {
   exercise: Exercise;
-  isActive: boolean;
+  isActive?: boolean;
   onStart: () => void;
   onComplete: () => void;
 }
 
-const InteractiveExerciseCard = ({ exercise, isActive, onStart, onComplete }: InteractiveExerciseCardProps) => {
+const InteractiveExerciseCard = ({ 
+  exercise, 
+  isActive = false, 
+  onStart, 
+  onComplete 
+}: InteractiveExerciseCardProps) => {
   const { t, isRTL } = useI18n();
 
   return (
@@ -37,7 +43,7 @@ const InteractiveExerciseCard = ({ exercise, isActive, onStart, onComplete }: In
             <div className={`flex items-center gap-4 text-sm text-gray-600 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <div className={`flex items-center gap-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
                 <Clock className="w-4 h-4" />
-                <span>{exercise.duration || 30} {t('common:seconds') || 'sec'}</span>
+                <span>{exercise.rep_duration || 30} {t('common:seconds') || 'sec'}</span>
               </div>
               <div className={`flex items-center gap-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
                 <Target className="w-4 h-4" />

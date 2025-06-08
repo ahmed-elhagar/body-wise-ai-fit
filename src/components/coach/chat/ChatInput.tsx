@@ -1,35 +1,45 @@
 
+import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Send, Paperclip, X, Edit3 } from 'lucide-react';
-import { useI18n } from '@/hooks/useI18n';
+import { Textarea } from '@/components/ui/textarea';
+import { Card } from '@/components/ui/card';
+import { Send, Edit, X } from 'lucide-react';
+
+interface Message {
+  id: string;
+  message: string;
+  sender_type: 'coach' | 'trainee';
+  sender_id: string;
+  created_at: string;
+  updated_at?: string;
+  is_read?: boolean;
+  sender_name?: string;
+}
 
 interface ChatInputProps {
   message: string;
   setMessage: (message: string) => void;
+  isSending: boolean;
+  isEditing: boolean;
+  editingMessage: Message | null;
+  replyingTo: Message | null;
   onSend: () => void;
-  disabled?: boolean;
-  isSending?: boolean;
-  isEditing?: boolean;
-  editingMessage?: any;
-  replyingTo?: any;
-  onSaveEdit?: () => void;
-  onCancelEdit?: () => void;
-  onCancelReply?: () => void;
-  onKeyPress?: (e: React.KeyboardEvent) => void;
-  onChange?: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  inputRef?: React.RefObject<HTMLTextAreaElement>;
+  onSaveEdit: () => void;
+  onCancelEdit: () => void;
+  onCancelReply: () => void;
+  onKeyPress: (e: React.KeyboardEvent) => void;
+  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  inputRef: React.RefObject<HTMLTextAreaElement>;
 }
 
-const ChatInput = ({ 
-  message, 
-  setMessage, 
-  onSend, 
-  disabled,
+const ChatInput = ({
+  message,
+  setMessage,
   isSending,
   isEditing,
   editingMessage,
   replyingTo,
+  onSend,
   onSaveEdit,
   onCancelEdit,
   onCancelReply,
@@ -37,68 +47,64 @@ const ChatInput = ({
   onChange,
   inputRef
 }: ChatInputProps) => {
-  const { t } = useI18n();
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (onKeyPress) {
-      onKeyPress(e);
-    } else if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      onSend();
-    }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setMessage(e.target.value);
-  };
-
   return (
     <div className="p-4 border-t bg-white">
-      {/* Reply/Edit indicators */}
       {replyingTo && (
-        <div className="flex items-center justify-between bg-blue-50 p-2 rounded mb-2">
-          <span className="text-sm text-blue-700">Replying to message</span>
-          <Button variant="ghost" size="sm" onClick={onCancelReply}>
-            <X className="w-3 h-3" />
-          </Button>
-        </div>
+        <Card className="p-3 mb-3 bg-blue-50 border-blue-200">
+          <div className="flex items-center justify-between">
+            <div className="text-sm">
+              <span className="font-medium text-blue-700">Replying to:</span>
+              <p className="text-blue-600 mt-1 truncate">{replyingTo.message}</p>
+            </div>
+            <Button variant="ghost" size="sm" onClick={onCancelReply}>
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+        </Card>
       )}
       
       {editingMessage && (
-        <div className="flex items-center justify-between bg-orange-50 p-2 rounded mb-2">
-          <span className="text-sm text-orange-700">
-            <Edit3 className="w-3 h-3 inline mr-1" />
-            Editing message
-          </span>
-          <Button variant="ghost" size="sm" onClick={onCancelEdit}>
-            <X className="w-3 h-3" />
-          </Button>
-        </div>
+        <Card className="p-3 mb-3 bg-yellow-50 border-yellow-200">
+          <div className="flex items-center justify-between">
+            <div className="text-sm">
+              <span className="font-medium text-yellow-700">Editing message:</span>
+              <p className="text-yellow-600 mt-1 truncate">{editingMessage.message}</p>
+            </div>
+            <Button variant="ghost" size="sm" onClick={onCancelEdit}>
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+        </Card>
       )}
-
-      <div className="flex gap-2">
-        <Button variant="ghost" size="sm">
-          <Paperclip className="w-4 h-4" />
-        </Button>
-        <Input
+      
+      <div className="flex gap-2 items-end">
+        <Textarea
+          ref={inputRef}
           value={message}
-          onChange={handleChange}
-          placeholder={t('coach:typeMessage') || 'Type a message...'}
-          onKeyPress={handleKeyPress}
-          disabled={disabled || isSending}
-          className="flex-1"
+          onChange={onChange}
+          onKeyPress={onKeyPress}
+          placeholder="Type your message..."
+          className="flex-1 min-h-[44px] max-h-32 resize-none"
+          disabled={isSending || isEditing}
         />
-        <Button 
-          onClick={isEditing ? onSaveEdit : onSend} 
-          disabled={!message.trim() || disabled || isSending}
-          size="sm"
-        >
-          {isEditing ? (
-            <Edit3 className="w-4 h-4" />
-          ) : (
+        
+        {editingMessage ? (
+          <Button
+            onClick={onSaveEdit}
+            disabled={!message.trim() || isEditing}
+            className="h-11"
+          >
+            <Edit className="w-4 h-4" />
+          </Button>
+        ) : (
+          <Button
+            onClick={onSend}
+            disabled={!message.trim() || isSending}
+            className="h-11"
+          >
             <Send className="w-4 h-4" />
-          )}
-        </Button>
+          </Button>
+        )}
       </div>
     </div>
   );

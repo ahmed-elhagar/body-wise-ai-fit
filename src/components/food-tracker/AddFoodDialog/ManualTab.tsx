@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 import { useI18n } from '@/hooks/useI18n';
 
 interface ManualTabProps {
@@ -12,7 +12,7 @@ interface ManualTabProps {
   preSelectedFood?: any;
 }
 
-export const ManualTab = ({ onAddFood, onFoodAdded, onClose, preSelectedFood }: ManualTabProps) => {
+const ManualTab = ({ onAddFood, onFoodAdded, onClose, preSelectedFood }: ManualTabProps) => {
   const { t, isRTL } = useI18n();
   const [foodData, setFoodData] = useState({
     name: '',
@@ -20,123 +20,126 @@ export const ManualTab = ({ onAddFood, onFoodAdded, onClose, preSelectedFood }: 
     protein: '',
     carbs: '',
     fat: '',
-    serving: '',
-    unit: 'g'
+    serving_size: '100',
+    serving_unit: 'g'
   });
+
+  useEffect(() => {
+    if (preSelectedFood) {
+      setFoodData({
+        name: preSelectedFood.name || '',
+        calories: preSelectedFood.calories?.toString() || '',
+        protein: preSelectedFood.protein?.toString() || '',
+        carbs: preSelectedFood.carbs?.toString() || '',
+        fat: preSelectedFood.fat?.toString() || '',
+        serving_size: preSelectedFood.serving_size?.toString() || '100',
+        serving_unit: preSelectedFood.serving_unit || 'g'
+      });
+    }
+  }, [preSelectedFood]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (foodData.name && foodData.calories) {
-      const newFood = {
-        name: foodData.name,
-        calories: parseInt(foodData.calories),
-        protein: parseFloat(foodData.protein) || 0,
-        carbs: parseFloat(foodData.carbs) || 0,
-        fat: parseFloat(foodData.fat) || 0,
-        serving: parseFloat(foodData.serving) || 100,
-        unit: foodData.unit
-      };
-      onAddFood(newFood);
-      onFoodAdded?.();
-      onClose?.();
-      // Reset form
-      setFoodData({
-        name: '',
-        calories: '',
-        protein: '',
-        carbs: '',
-        fat: '',
-        serving: '',
-        unit: 'g'
-      });
-    }
+    
+    const food = {
+      name: foodData.name,
+      calories: parseFloat(foodData.calories) || 0,
+      protein: parseFloat(foodData.protein) || 0,
+      carbs: parseFloat(foodData.carbs) || 0,
+      fat: parseFloat(foodData.fat) || 0,
+      serving_size: parseFloat(foodData.serving_size) || 100,
+      serving_unit: foodData.serving_unit
+    };
+
+    onAddFood(food);
+    onFoodAdded?.();
+    onClose?.();
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setFoodData(prev => ({ ...prev, [field]: value }));
   };
 
   return (
     <form onSubmit={handleSubmit} className={`space-y-4 ${isRTL ? 'rtl' : 'ltr'}`}>
-      <div className="space-y-2">
+      <div>
         <Label htmlFor="food-name">{t('foodTracker:foodName') || 'Food Name'}</Label>
         <Input
           id="food-name"
           value={foodData.name}
-          onChange={(e) => setFoodData({ ...foodData, name: e.target.value })}
+          onChange={(e) => handleInputChange('name', e.target.value)}
           placeholder={t('foodTracker:enterFoodName') || 'Enter food name'}
           required
         />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="serving">{t('foodTracker:serving') || 'Serving'}</Label>
+        <div>
+          <Label htmlFor="serving-size">{t('foodTracker:servingSize') || 'Serving Size'}</Label>
           <Input
-            id="serving"
+            id="serving-size"
             type="number"
-            value={foodData.serving}
-            onChange={(e) => setFoodData({ ...foodData, serving: e.target.value })}
+            value={foodData.serving_size}
+            onChange={(e) => handleInputChange('serving_size', e.target.value)}
             placeholder="100"
           />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="unit">{t('foodTracker:unit') || 'Unit'}</Label>
-          <Select value={foodData.unit} onValueChange={(value) => setFoodData({ ...foodData, unit: value })}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="g">g</SelectItem>
-              <SelectItem value="ml">ml</SelectItem>
-              <SelectItem value="cup">{t('foodTracker:cup') || 'cup'}</SelectItem>
-              <SelectItem value="piece">{t('foodTracker:piece') || 'piece'}</SelectItem>
-            </SelectContent>
-          </Select>
+        <div>
+          <Label htmlFor="serving-unit">{t('foodTracker:unit') || 'Unit'}</Label>
+          <Input
+            id="serving-unit"
+            value={foodData.serving_unit}
+            onChange={(e) => handleInputChange('serving_unit', e.target.value)}
+            placeholder="g"
+          />
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="calories">{t('common:calories') || 'Calories'}</Label>
+        <div>
+          <Label htmlFor="calories">{t('foodTracker:calories') || 'Calories'}</Label>
           <Input
             id="calories"
             type="number"
             value={foodData.calories}
-            onChange={(e) => setFoodData({ ...foodData, calories: e.target.value })}
+            onChange={(e) => handleInputChange('calories', e.target.value)}
             placeholder="0"
             required
           />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="protein">{t('common:protein') || 'Protein'} (g)</Label>
+        <div>
+          <Label htmlFor="protein">{t('foodTracker:protein') || 'Protein (g)'}</Label>
           <Input
             id="protein"
             type="number"
             step="0.1"
             value={foodData.protein}
-            onChange={(e) => setFoodData({ ...foodData, protein: e.target.value })}
+            onChange={(e) => handleInputChange('protein', e.target.value)}
             placeholder="0"
           />
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="carbs">{t('common:carbs') || 'Carbs'} (g)</Label>
+        <div>
+          <Label htmlFor="carbs">{t('foodTracker:carbs') || 'Carbs (g)'}</Label>
           <Input
             id="carbs"
             type="number"
             step="0.1"
             value={foodData.carbs}
-            onChange={(e) => setFoodData({ ...foodData, carbs: e.target.value })}
+            onChange={(e) => handleInputChange('carbs', e.target.value)}
             placeholder="0"
           />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="fat">{t('common:fat') || 'Fat'} (g)</Label>
+        <div>
+          <Label htmlFor="fat">{t('foodTracker:fat') || 'Fat (g)'}</Label>
           <Input
             id="fat"
             type="number"
             step="0.1"
             value={foodData.fat}
-            onChange={(e) => setFoodData({ ...foodData, fat: e.target.value })}
+            onChange={(e) => handleInputChange('fat', e.target.value)}
             placeholder="0"
           />
         </div>

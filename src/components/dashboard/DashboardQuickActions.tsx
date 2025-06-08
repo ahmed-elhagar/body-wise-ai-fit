@@ -1,93 +1,88 @@
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { 
-  Utensils, 
-  Dumbbell, 
-  Scale, 
-  TrendingUp, 
-  Target,
-  User
-} from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import React from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Utensils, Dumbbell, Scale, TrendingUp, Target, User } from 'lucide-react';
+import { useI18n } from '@/hooks/useI18n';
 
 interface DashboardQuickActionsProps {
-  onViewMealPlan?: () => void;
-  onViewExercise?: () => void;
-  onViewWeight?: () => void;
-  onViewProgress?: () => void;
-  onViewGoals?: () => void;
-  onViewProfile?: () => void;
-  onAction?: (action: string) => void;
+  onViewMealPlan: () => void;
+  onViewExercise: () => void;
+  onViewWeight: () => void;
+  onViewProgress: () => void;
+  onViewGoals: () => void;
+  onViewProfile: () => void;
 }
 
-const DashboardQuickActions = ({ 
+const DashboardQuickActions = ({
   onViewMealPlan,
   onViewExercise,
   onViewWeight,
   onViewProgress,
   onViewGoals,
-  onViewProfile,
-  onAction
+  onViewProfile
 }: DashboardQuickActionsProps) => {
   const { t, isRTL } = useI18n();
 
   const actions = [
     {
+      title: t('navigation:mealPlan') || 'Meal Plan',
+      description: t('dashboard:viewTodaysMeals') || "View today's meals",
       icon: Utensils,
-      label: t('navigation:mealPlan') || 'Meal Plan',
-      onClick: onViewMealPlan || (() => onAction?.('meal-plan')),
-      color: "from-green-500 to-emerald-600"
+      onClick: onViewMealPlan,
+      color: 'bg-green-500'
     },
     {
+      title: t('navigation:exercise') || 'Exercise',
+      description: t('dashboard:startWorkout') || 'Start your workout',
       icon: Dumbbell,
-      label: t('navigation:exercise') || 'Exercise',
-      onClick: onViewExercise || (() => onAction?.('exercise')),
-      color: "from-blue-500 to-cyan-600"
+      onClick: onViewExercise,
+      color: 'bg-blue-500'
     },
     {
+      title: t('navigation:weight') || 'Weight',
+      description: t('dashboard:trackWeight') || 'Track your weight',
       icon: Scale,
-      label: t('navigation:weight') || 'Weight',
-      onClick: onViewWeight || (() => onAction?.('weight')),
-      color: "from-purple-500 to-violet-600"
+      onClick: onViewWeight,
+      color: 'bg-purple-500'
     },
     {
+      title: t('navigation:progress') || 'Progress',
+      description: t('dashboard:viewProgress') || 'View your progress',
       icon: TrendingUp,
-      label: t('navigation:progress') || 'Progress',
-      onClick: onViewProgress || (() => onAction?.('progress')),
-      color: "from-orange-500 to-red-600"
+      onClick: onViewProgress,
+      color: 'bg-indigo-500'
     },
     {
+      title: t('navigation:goals') || 'Goals',
+      description: t('dashboard:manageGoals') || 'Manage your goals',
       icon: Target,
-      label: t('navigation:goals') || 'Goals',
-      onClick: onViewGoals || (() => onAction?.('goals')),
-      color: "from-pink-500 to-rose-600"
+      onClick: onViewGoals,
+      color: 'bg-orange-500'
     },
     {
+      title: t('navigation:profile') || 'Profile',
+      description: t('dashboard:updateProfile') || 'Update your profile',
       icon: User,
-      label: t('navigation:profile') || 'Profile',
-      onClick: onViewProfile || (() => onAction?.('profile')),
-      color: "from-indigo-500 to-purple-600"
+      onClick: onViewProfile,
+      color: 'bg-pink-500'
     }
   ];
 
   return (
-    <div className={`grid grid-cols-2 md:grid-cols-3 gap-4 ${isRTL ? 'rtl' : 'ltr'}`}>
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
       {actions.map((action, index) => (
-        <Card key={index} className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group">
-          <CardContent className="p-4">
-            <Button
-              variant="ghost"
-              onClick={action.onClick}
-              className="w-full h-full p-0 flex flex-col items-center gap-3"
-            >
-              <div className={`w-12 h-12 bg-gradient-to-br ${action.color} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                <action.icon className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900">
-                {action.label}
-              </span>
-            </Button>
+        <Card key={index} className="hover:shadow-lg transition-all duration-300 cursor-pointer group" onClick={action.onClick}>
+          <CardContent className="p-4 text-center">
+            <div className={`w-12 h-12 ${action.color} rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform`}>
+              <action.icon className="w-6 h-6 text-white" />
+            </div>
+            <h3 className="font-semibold text-gray-900 mb-1 text-sm">
+              {action.title}
+            </h3>
+            <p className="text-xs text-gray-600 line-clamp-2">
+              {action.description}
+            </p>
           </CardContent>
         </Card>
       ))}

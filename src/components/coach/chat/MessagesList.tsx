@@ -1,56 +1,99 @@
 
+import React from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { User, Bot } from 'lucide-react';
-import { useI18n } from '@/hooks/useI18n';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Reply, Edit, Trash2, MoreHorizontal } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
 
 interface Message {
   id: string;
-  content: string;
-  sender: 'coach' | 'trainee';
-  timestamp: Date;
+  message: string;
+  sender_type: 'coach' | 'trainee';
+  sender_id: string;
+  created_at: string;
+  updated_at?: string;
+  is_read?: boolean;
+  sender_name?: string;
 }
 
 interface MessagesListProps {
   messages: Message[];
-  traineeName: string;
+  currentUserId?: string;
+  coachName: string;
+  typingUsers: string[];
+  replyingTo: Message | null;
+  onReply: (message: Message) => void;
+  onEdit: (message: Message) => void;
+  onDelete: (messageId: string) => void;
+  messagesEndRef: React.RefObject<HTMLDivElement>;
 }
 
-const MessagesList = ({ messages, traineeName }: MessagesListProps) => {
-  const { t } = useI18n();
-
+const MessagesList = ({
+  messages,
+  currentUserId,
+  coachName,
+  typingUsers,
+  replyingTo,
+  onReply,
+  onEdit,
+  onDelete,
+  messagesEndRef
+}: MessagesListProps) => {
   return (
     <ScrollArea className="flex-1 p-4">
       <div className="space-y-4">
-        {messages.map((message) => (
-          <div 
-            key={message.id}
-            className={`flex gap-3 ${message.sender === 'coach' ? 'flex-row-reverse' : ''}`}
-          >
-            <Avatar className="w-8 h-8">
-              <AvatarFallback>
-                {message.sender === 'coach' ? (
-                  <Bot className="w-4 h-4" />
-                ) : (
-                  <User className="w-4 h-4" />
+        {messages.map((msg) => {
+          const isCurrentUser = msg.sender_id === currentUserId;
+          const senderName = msg.sender_name || (isCurrentUser ? 'You' : coachName);
+          
+          return (
+            <div
+              key={msg.id}
+              className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
+            >
+              <div className={`max-w-[70%] ${isCurrentUser ? 'order-2' : 'order-1'}`}>
+                <Card className={`p-3 ${
+                  isCurrentUser 
+                    ? 'bg-blue-500 text-white' 
+                    : 'bg-gray-100 text-gray-900'
+                }`}>
+                  <div className="text-sm">{msg.message}</div>
+                  <div className={`text-xs mt-2 opacity-70 flex items-center justify-between`}>
+                    <span>{senderName}</span>
+                    <span>{formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}</span>
+                  </div>
+                </Card>
+                
+                {isCurrentUser && (
+                  <div className="flex gap-1 mt-1 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button variant="ghost" size="sm" onClick={() => onReply(msg)}>
+                      <Reply className="w-3 h-3" />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => onEdit(msg)}>
+                      <Edit className="w-3 h-3" />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => onDelete(msg.id)}>
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </div>
                 )}
-              </AvatarFallback>
-            </Avatar>
-            
-            <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-              message.sender === 'coach' 
-                ? 'bg-blue-500 text-white ml-auto' 
-                : 'bg-gray-100 text-gray-900'
-            }`}>
-              <p className="text-sm">{message.content}</p>
-              <p className={`text-xs mt-1 ${
-                message.sender === 'coach' ? 'text-blue-100' : 'text-gray-500'
-              }`}>
-                {message.timestamp.toLocaleTimeString()}
-              </p>
+              </div>
             </div>
+          );
+        })}
+        
+        {typingUsers.length > 0 && (
+          <div className="flex justify-start">
+            <Card className="p-3 bg-gray-100">
+              <div className="text-sm text-gray-600">
+                {coachName} is typing...
+              </div>
+            </Card>
           </div>
-        ))}
+        )}
+        
+        <div ref={messagesEndRef} />
       </div>
     </ScrollArea>
   );

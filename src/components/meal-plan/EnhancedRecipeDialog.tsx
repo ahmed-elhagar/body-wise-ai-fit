@@ -1,103 +1,113 @@
 
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Users, ChefHat, X } from 'lucide-react';
+import { Clock, Users, ChefHat } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 
 interface EnhancedRecipeDialogProps {
   isOpen: boolean;
   onClose: () => void;
   meal: any;
+  onRecipeUpdated?: () => void;
 }
 
-const EnhancedRecipeDialog = ({ isOpen, onClose, meal }: EnhancedRecipeDialogProps) => {
-  const { t, isRTL } = useI18n();
+const EnhancedRecipeDialog = ({
+  isOpen,
+  onClose,
+  meal,
+  onRecipeUpdated
+}: EnhancedRecipeDialogProps) => {
+  const { t } = useI18n();
 
   if (!meal) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <DialogTitle className="text-2xl font-bold text-gray-900">
-              {meal.name}
-            </DialogTitle>
-            <Button variant="ghost" size="sm" onClick={onClose}>
-              <X className="w-4 h-4" />
-            </Button>
-          </div>
+          <DialogTitle className="flex items-center gap-2">
+            <ChefHat className="w-5 h-5" />
+            {meal.name}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
           {/* Meal Info */}
-          <div className={`flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <Badge variant="outline" className="bg-blue-50 text-blue-700">
-              <Clock className="w-3 h-3 mr-1" />
-              {(meal.prep_time || 0) + (meal.cook_time || 0)} {t('mealPlan.min')}
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="secondary">
+              {meal.calories} cal
             </Badge>
-            <Badge variant="outline" className="bg-green-50 text-green-700">
-              <Users className="w-3 h-3 mr-1" />
-              {meal.servings || 1} {t('mealPlan.servings')}
-            </Badge>
-            <Badge variant="outline" className="bg-orange-50 text-orange-700">
-              <ChefHat className="w-3 h-3 mr-1" />
-              {meal.calories || 0} {t('mealPlan.cal')}
-            </Badge>
+            {meal.prepTime && (
+              <Badge variant="outline" className="flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                {meal.prepTime} min
+              </Badge>
+            )}
+            {meal.servings && (
+              <Badge variant="outline" className="flex items-center gap-1">
+                <Users className="w-3 h-3" />
+                {meal.servings} servings
+              </Badge>
+            )}
           </div>
 
           {/* Nutrition Info */}
-          <div className="grid grid-cols-4 gap-4">
-            <div className="text-center p-3 bg-red-50 rounded-lg">
-              <div className="text-2xl font-bold text-red-600">{meal.calories || 0}</div>
-              <div className="text-sm text-gray-600">{t('mealPlan.calories')}</div>
-            </div>
-            <div className="text-center p-3 bg-blue-50 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">{meal.protein || 0}g</div>
-              <div className="text-sm text-gray-600">{t('mealPlan.protein')}</div>
-            </div>
-            <div className="text-center p-3 bg-green-50 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">{meal.carbs || 0}g</div>
-              <div className="text-sm text-gray-600">{t('mealPlan.carbs')}</div>
-            </div>
-            <div className="text-center p-3 bg-yellow-50 rounded-lg">
-              <div className="text-2xl font-bold text-yellow-600">{meal.fats || 0}g</div>
-              <div className="text-sm text-gray-600">{t('mealPlan.fats')}</div>
-            </div>
-          </div>
+          <Card>
+            <CardContent className="p-4">
+              <h3 className="font-semibold mb-3">Nutrition Information</h3>
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <p className="text-2xl font-bold text-blue-600">{meal.protein || 0}g</p>
+                  <p className="text-sm text-gray-600">Protein</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-green-600">{meal.carbs || 0}g</p>
+                  <p className="text-sm text-gray-600">Carbs</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-orange-600">{meal.fat || 0}g</p>
+                  <p className="text-sm text-gray-600">Fat</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Ingredients */}
           {meal.ingredients && (
-            <div>
-              <h3 className="text-lg font-semibold mb-3">{t('mealPlan.ingredients')}</h3>
-              <ul className="space-y-2">
-                {meal.ingredients.map((ingredient: any, index: number) => (
-                  <li key={index} className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                    <span>{ingredient.quantity} {ingredient.unit} {ingredient.name}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <Card>
+              <CardContent className="p-4">
+                <h3 className="font-semibold mb-3">Ingredients</h3>
+                <ul className="space-y-2">
+                  {meal.ingredients.map((ingredient: string, index: number) => (
+                    <li key={index} className="flex items-center gap-2">
+                      <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                      {ingredient}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
           )}
 
           {/* Instructions */}
           {meal.instructions && (
-            <div>
-              <h3 className="text-lg font-semibold mb-3">{t('mealPlan.instructions')}</h3>
-              <ol className="space-y-3">
-                {meal.instructions.map((instruction: string, index: number) => (
-                  <li key={index} className="flex gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-medium">
-                      {index + 1}
-                    </span>
-                    <span className="text-gray-700">{instruction}</span>
-                  </li>
-                ))}
-              </ol>
-            </div>
+            <Card>
+              <CardContent className="p-4">
+                <h3 className="font-semibold mb-3">Instructions</h3>
+                <ol className="space-y-3">
+                  {meal.instructions.map((step: string, index: number) => (
+                    <li key={index} className="flex gap-3">
+                      <span className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">
+                        {index + 1}
+                      </span>
+                      <span className="flex-1">{step}</span>
+                    </li>
+                  ))}
+                </ol>
+              </CardContent>
+            </Card>
           )}
         </div>
       </DialogContent>
