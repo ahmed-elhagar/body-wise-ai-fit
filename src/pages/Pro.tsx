@@ -22,7 +22,7 @@ const Pro = () => {
     const subscriptionStatus = searchParams.get('subscription');
     if (subscriptionStatus === 'success') {
       console.log('Pro page - Subscription success detected, refreshing data');
-      toast.success('Welcome to FitGenius Pro! Your subscription is now active.');
+      toast.success('Welcome to FitFatta Pro! Your subscription is now active.');
       
       // Force refresh both role and subscription data multiple times
       const refreshData = async () => {
@@ -105,7 +105,7 @@ const Pro = () => {
               <div className="text-center mb-8">
                 <div className="flex items-center justify-center gap-2 mb-4">
                   <Star className="w-8 h-8 text-yellow-500" />
-                  <h1 className="text-4xl font-bold text-gray-900">FitGenius Pro</h1>
+                  <h1 className="text-4xl font-bold text-gray-900">FitFatta Pro</h1>
                   <Badge className="bg-yellow-500 text-white" data-testid="user-role-badge">ACTIVE</Badge>
                 </div>
                 <p className="text-gray-600 text-lg">You're enjoying all Pro benefits!</p>
@@ -203,7 +203,7 @@ const Pro = () => {
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
               <h1 className="text-5xl font-bold text-gray-900 mb-4">
-                Upgrade to <span className="text-blue-600">FitGenius Pro</span>
+                Upgrade to <span className="text-blue-600">FitFatta Pro</span>
               </h1>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto">
                 Unlock unlimited AI-powered meal planning and exercise programs. Take your fitness journey to the next level.

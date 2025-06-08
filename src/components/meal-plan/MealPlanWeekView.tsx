@@ -9,6 +9,7 @@ import type { DailyMeal } from "@/hooks/useMealPlanData";
 interface MealPlanWeekViewProps {
   weeklyPlan: any;
   weekDays: Array<{ number: number; name: string; date: Date }>;
+  weekOffset: number;
   onShowRecipe: (meal: DailyMeal) => void;
   onExchangeMeal: (meal: DailyMeal, index: number) => void;
   onAddSnack: (dayNumber: number) => void;
@@ -17,14 +18,25 @@ interface MealPlanWeekViewProps {
 const MealPlanWeekView = ({ 
   weeklyPlan, 
   weekDays, 
+  weekOffset,
   onShowRecipe, 
   onExchangeMeal, 
   onAddSnack 
 }: MealPlanWeekViewProps) => {
+  console.log('🗓️ MealPlanWeekView - Rendering with:', {
+    weekOffset,
+    weeklyPlanId: weeklyPlan?.weeklyPlan?.id,
+    weekStartDate: weeklyPlan?.weeklyPlan?.week_start_date,
+    dailyMealsCount: weeklyPlan?.dailyMeals?.length || 0
+  });
+
   const getDayMeals = (dayNumber: number) => {
-    return weeklyPlan?.dailyMeals?.filter(
+    const meals = weeklyPlan?.dailyMeals?.filter(
       (meal: DailyMeal) => meal.day_number === dayNumber
     ) || [];
+    
+    console.log(`🍽️ Day ${dayNumber} meals:`, meals.length);
+    return meals;
   };
 
   const getDayCalories = (dayNumber: number) => {
@@ -39,7 +51,7 @@ const MealPlanWeekView = ({
         const dayCalories = getDayCalories(day.number);
         
         return (
-          <Card key={day.number} className="bg-white border border-gray-200 hover:shadow-md transition-shadow">
+          <Card key={`${weekOffset}-${day.number}`} className="bg-white border border-gray-200 hover:shadow-md transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg font-semibold text-gray-900">
@@ -58,7 +70,7 @@ const MealPlanWeekView = ({
             
             <CardContent className="space-y-3">
               {dayMeals.map((meal: DailyMeal, index: number) => (
-                <div key={meal.id} className="p-3 bg-gray-50 rounded-lg group hover:bg-gray-100 transition-colors">
+                <div key={`${meal.id}-${weekOffset}`} className="p-3 bg-gray-50 rounded-lg group hover:bg-gray-100 transition-colors">
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1">
                       <Badge 

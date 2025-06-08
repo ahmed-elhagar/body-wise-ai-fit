@@ -20,7 +20,9 @@ import {
   X,
   Settings,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Filter,
+  FilterX
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -52,16 +54,19 @@ const PaginatedUsersTable = () => {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [subscriptionFilter, setSubscriptionFilter] = useState<string>("all");
+  const [onlineFilter, setOnlineFilter] = useState<string>("all");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isGenerationDialogOpen, setIsGenerationDialogOpen] = useState(false);
   const [newGenerationLimit, setNewGenerationLimit] = useState("");
   const queryClient = useQueryClient();
 
-  const fetchUsers = async (page: number = 1, search: string = "") => {
+  const fetchUsers = async (page: number = 1, search: string = "", filters: any = {}) => {
     setLoading(true);
     try {
-      console.log(`Fetching users - Page: ${page}, Search: "${search}"`);
+      console.log(`Fetching users - Page: ${page}, Search: "${search}", Filters:`, filters);
       
       const offset = (page - 1) * USERS_PER_PAGE;
       
@@ -85,6 +90,20 @@ const PaginatedUsersTable = () => {
         query = query.or(`email.ilike.%${search}%,first_name.ilike.%${search}%,last_name.ilike.%${search}%`);
       }
 
+      // Apply role filter
+      if (filters.role && filters.role !== 'all') {
+        query = query.eq('role', filters.role);
+      }
+
+      // Apply online status filter
+      if (filters.online && filters.online !== 'all') {
+        if (filters.online === 'online') {
+          query = query.eq('is_online', true);
+        } else if (filters.online === 'offline') {
+          query = query.eq('is_online', false);
+        }
+      }
+
       // Apply pagination and ordering
       const { data: profiles, error: profilesError, count } = await query
         .order('created_at', { ascending: false })
@@ -97,22 +116,40 @@ const PaginatedUsersTable = () => {
 
       // Fetch subscriptions for all users on current page
       const userIds = profiles?.map(p => p.id) || [];
-      const { data: subscriptions, error: subsError } = await supabase
-        .from('subscriptions')
-        .select('user_id, id, status, plan_type, current_period_end')
-        .eq('status', 'active')
-        .in('user_id', userIds);
+      let subscriptions: any[] = [];
+      
+      if (userIds.length > 0) {
+        const { data: subsData, error: subsError } = await supabase
+          .from('subscriptions')
+          .select('user_id, id, status, plan_type, current_period_end')
+          .in('user_id', userIds);
 
-      if (subsError) {
-        console.error('Error fetching subscriptions:', subsError);
+        if (subsError) {
+          console.error('Error fetching subscriptions:', subsError);
+        } else {
+          subscriptions = subsData || [];
+        }
       }
 
       // Merge subscription data with user data
-      const usersWithSubscriptions = (profiles || []).map(user => ({
+      let usersWithSubscriptions = (profiles || []).map(user => ({
         ...user,
         role: user.role as 'normal' | 'coach' | 'admin',
         subscription: subscriptions?.find(sub => sub.user_id === user.id) || null
       }));
+
+      // Apply subscription filter after merging data
+      if (filters.subscription && filters.subscription !== 'all') {
+        if (filters.subscription === 'active') {
+          usersWithSubscriptions = usersWithSubscriptions.filter(user => 
+            user.subscription && user.subscription.status === 'active'
+          );
+        } else if (filters.subscription === 'inactive') {
+          usersWithSubscriptions = usersWithSubscriptions.filter(user => 
+            !user.subscription || user.subscription.status !== 'active'
+          );
+        }
+      }
 
       setUsers(usersWithSubscriptions);
       setTotalUsers(count || 0);
@@ -126,18 +163,37 @@ const PaginatedUsersTable = () => {
   };
 
   useEffect(() => {
-    fetchUsers(currentPage, searchTerm);
-  }, [currentPage]);
+    const filters = {
+      role: roleFilter,
+      subscription: subscriptionFilter,
+      online: onlineFilter
+    };
+    fetchUsers(currentPage, searchTerm, filters);
+  }, [currentPage, roleFilter, subscriptionFilter, onlineFilter]);
 
   const handleSearch = () => {
     setCurrentPage(1);
-    fetchUsers(1, searchTerm);
+    const filters = {
+      role: roleFilter,
+      subscription: subscriptionFilter,
+      online: onlineFilter
+    };
+    fetchUsers(1, searchTerm, filters);
   };
 
   const handleSearchKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleSearch();
     }
+  };
+
+  const clearFilters = () => {
+    setSearchTerm("");
+    setRoleFilter("all");
+    setSubscriptionFilter("all");
+    setOnlineFilter("all");
+    setCurrentPage(1);
+    fetchUsers(1, "", { role: "all", subscription: "all", online: "all" });
   };
 
   const updateUserRole = async (userId: string, newRole: 'normal' | 'coach' | 'admin') => {
@@ -151,7 +207,8 @@ const PaginatedUsersTable = () => {
       if (error) throw error;
 
       toast.success('User role updated successfully');
-      await fetchUsers(currentPage, searchTerm);
+      const filters = { role: roleFilter, subscription: subscriptionFilter, online: onlineFilter };
+      await fetchUsers(currentPage, searchTerm, filters);
       setIsEditDialogOpen(false);
       setSelectedUser(null);
     } catch (error) {
@@ -176,7 +233,8 @@ const PaginatedUsersTable = () => {
       if (error) throw error;
 
       toast.success(`AI generation limit updated to ${newLimit}`);
-      await fetchUsers(currentPage, searchTerm);
+      const filters = { role: roleFilter, subscription: subscriptionFilter, online: onlineFilter };
+      await fetchUsers(currentPage, searchTerm, filters);
       setIsGenerationDialogOpen(false);
       setSelectedUser(null);
       setNewGenerationLimit("");
@@ -235,7 +293,8 @@ const PaginatedUsersTable = () => {
       }
 
       toast.success('1-month subscription created successfully');
-      await fetchUsers(currentPage, searchTerm);
+      const filters = { role: roleFilter, subscription: subscriptionFilter, online: onlineFilter };
+      await fetchUsers(currentPage, searchTerm, filters);
     } catch (error) {
       console.error('Error creating subscription:', error);
       toast.error('Failed to create subscription');
@@ -259,7 +318,8 @@ const PaginatedUsersTable = () => {
       if (error) throw error;
 
       toast.success('Subscription cancelled successfully');
-      await fetchUsers(currentPage, searchTerm);
+      const filters = { role: roleFilter, subscription: subscriptionFilter, online: onlineFilter };
+      await fetchUsers(currentPage, searchTerm, filters);
     } catch (error) {
       console.error('Error cancelling subscription:', error);
       toast.error('Failed to cancel subscription');
@@ -306,6 +366,7 @@ const PaginatedUsersTable = () => {
   };
 
   const totalPages = Math.ceil(totalUsers / USERS_PER_PAGE);
+  const hasActiveFilters = searchTerm || roleFilter !== 'all' || subscriptionFilter !== 'all' || onlineFilter !== 'all';
 
   return (
     <div className="space-y-6">
@@ -320,7 +381,10 @@ const PaginatedUsersTable = () => {
           </div>
         </div>
         
-        <Button onClick={() => fetchUsers(currentPage, searchTerm)} variant="outline" disabled={loading}>
+        <Button onClick={() => {
+          const filters = { role: roleFilter, subscription: subscriptionFilter, online: onlineFilter };
+          fetchUsers(currentPage, searchTerm, filters);
+        }} variant="outline" disabled={loading}>
           <UserPlus className="h-4 w-4 mr-2" />
           Refresh
         </Button>
@@ -331,29 +395,81 @@ const PaginatedUsersTable = () => {
         <AlertDescription>
           <strong>User Management:</strong> Update roles, manage subscriptions, and control AI generation limits directly from the table.
           <br />
-          <strong>AI Generation Limits:</strong> Click the settings icon next to AI credits to modify individual user limits.
+          <strong>Enhanced Search & Filters:</strong> Use the search bar and filters to find specific users quickly.
         </AlertDescription>
       </Alert>
 
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-4">
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
               Users ({totalUsers})
             </CardTitle>
-            <div className="flex items-center gap-2">
-              <Search className="h-4 w-4" />
-              <Input
-                placeholder="Search users..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyPress={handleSearchKeyPress}
-                className="w-64"
-              />
-              <Button onClick={handleSearch} variant="outline">
-                Search
+            {hasActiveFilters && (
+              <Button onClick={clearFilters} variant="outline" size="sm">
+                <FilterX className="h-4 w-4 mr-2" />
+                Clear Filters
               </Button>
+            )}
+          </div>
+          
+          {/* Enhanced Search and Filters */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="lg:col-span-2">
+              <div className="flex items-center gap-2">
+                <Search className="h-4 w-4" />
+                <Input
+                  placeholder="Search users by name or email..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyPress={handleSearchKeyPress}
+                  className="flex-1"
+                />
+                <Button onClick={handleSearch} variant="outline">
+                  Search
+                </Button>
+              </div>
+            </div>
+            
+            <div>
+              <Select value={roleFilter} onValueChange={setRoleFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter by role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Roles</SelectItem>
+                  <SelectItem value="normal">Normal</SelectItem>
+                  <SelectItem value="coach">Coach</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <Select value={subscriptionFilter} onValueChange={setSubscriptionFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter by subscription" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Subscriptions</SelectItem>
+                  <SelectItem value="active">Pro Members</SelectItem>
+                  <SelectItem value="inactive">Free Users</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <Select value={onlineFilter} onValueChange={setOnlineFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="online">Online</SelectItem>
+                  <SelectItem value="offline">Offline</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </CardHeader>
