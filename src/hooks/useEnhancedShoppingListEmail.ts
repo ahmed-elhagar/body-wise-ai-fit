@@ -2,13 +2,13 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useI18n } from '@/hooks/useI18n';
 import { toast } from 'sonner';
 import type { MealPlanFetchResult } from '@/types/mealPlan';
 
 export const useEnhancedShoppingListEmail = () => {
   const { user } = useAuth();
-  const { language } = useLanguage();
+  const { language } = useI18n();
   const [isLoading, setIsLoading] = useState(false);
 
   const sendShoppingListEmail = async (weeklyPlan: MealPlanFetchResult | null): Promise<boolean> => {

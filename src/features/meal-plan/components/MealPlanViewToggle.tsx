@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { CalendarDays, LayoutGrid } from 'lucide-react';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useI18n } from '@/hooks/useI18n';
 
 interface MealPlanViewToggleProps {
   viewMode: 'daily' | 'weekly';
@@ -10,7 +10,7 @@ interface MealPlanViewToggleProps {
 }
 
 export const MealPlanViewToggle = ({ viewMode, onViewModeChange }: MealPlanViewToggleProps) => {
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL } = useI18n();
 
   return (
     <div className="flex gap-1">

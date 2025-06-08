@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Calendar, Grid3X3 } from 'lucide-react';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useI18n } from '@/hooks/useI18n';
 
 interface ViewModeToggleProps {
   viewMode: 'daily' | 'weekly';
@@ -10,7 +10,7 @@ interface ViewModeToggleProps {
 }
 
 export const ViewModeToggle = ({ viewMode, onViewModeChange }: ViewModeToggleProps) => {
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL } = useI18n();
 
   return (
     <div className={`flex gap-1 bg-gray-100 p-1 rounded-lg ${isRTL ? 'flex-row-reverse' : ''}`}>

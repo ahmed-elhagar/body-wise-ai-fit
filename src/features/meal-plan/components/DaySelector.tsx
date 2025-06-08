@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useI18n } from '@/hooks/useI18n';
 
 interface DaySelectorProps {
   selectedDayNumber: number;
@@ -10,7 +10,7 @@ interface DaySelectorProps {
 }
 
 export const DaySelector = ({ selectedDayNumber, onDayChange, weekStartDate }: DaySelectorProps) => {
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL } = useI18n();
 
   const getDayName = (dayNumber: number) => {
     const dayNames = [

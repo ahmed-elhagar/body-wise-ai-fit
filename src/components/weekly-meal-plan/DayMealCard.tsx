@@ -2,7 +2,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Utensils } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import MealItem from "./MealItem";
 import type { Meal } from "@/types/meal";
 
@@ -15,7 +15,7 @@ interface DayMealCardProps {
 }
 
 const DayMealCard = ({ dayName, dayNumber, dayMeals, onShowRecipe, onExchangeMeal }: DayMealCardProps) => {
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL } = useI18n();
 
   const dayCalories = dayMeals.reduce((sum: number, meal: any) => sum + (meal.calories || 0), 0);
   const dayProtein = dayMeals.reduce((sum: number, meal: any) => sum + (meal.protein || 0), 0);

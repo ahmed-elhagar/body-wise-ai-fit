@@ -2,14 +2,14 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChefHat, Sparkles, Target, TrendingUp } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 interface EmptyStateProps {
   onGeneratePlan: () => void;
 }
 
 const EmptyState = ({ onGeneratePlan }: EmptyStateProps) => {
-  const { t } = useLanguage();
+  const { t } = useI18n();
 
   return (
     <div className="min-h-[60vh] flex items-center justify-center">

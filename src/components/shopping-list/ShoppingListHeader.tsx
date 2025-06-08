@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingCart, Mail, Download, X } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 interface ShoppingListHeaderProps {
   totalItems: number;
@@ -20,7 +20,7 @@ export const ShoppingListHeader = ({
   onExport, 
   onClose 
 }: ShoppingListHeaderProps) => {
-  const { isRTL } = useLanguage();
+  const { isRTL } = useI18n();
 
   return (
     <Card className="rounded-none border-0 border-b bg-white shadow-sm">

@@ -2,14 +2,14 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useI18n } from '@/hooks/useI18n';
 import { addDays, startOfWeek, format } from 'date-fns';
 import { ExerciseProgram } from '@/types/exercise';
 import { generateWeeklyWorkouts } from '@/utils/exerciseDataUtils';
 
 export const useExerciseProgramQuery = (weekOffset: number = 0, workoutType: "home" | "gym" = "home") => {
   const { user } = useAuth();
-  const { language } = useLanguage();
+  const { language } = useI18n();
 
   // Calculate the target week start date based on offset
   const currentDate = new Date();

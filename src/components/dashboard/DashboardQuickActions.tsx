@@ -1,8 +1,9 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Plus, Utensils, Dumbbell, Camera, Scale, Target, TrendingUp } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import React from 'react';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Utensils, Dumbbell, Weight, TrendingUp, Target, User } from 'lucide-react';
+import { useI18n } from '@/hooks/useI18n';
 
 interface DashboardQuickActionsProps {
   onViewMealPlan?: () => void;
@@ -13,83 +14,76 @@ interface DashboardQuickActionsProps {
   onViewProfile?: () => void;
 }
 
-const DashboardQuickActions = ({ 
-  onViewMealPlan, 
-  onViewExercise, 
-  onViewWeight, 
-  onViewProgress, 
-  onViewGoals, 
-  onViewProfile 
+const DashboardQuickActions = ({
+  onViewMealPlan,
+  onViewExercise,
+  onViewWeight,
+  onViewProgress,
+  onViewGoals,
+  onViewProfile
 }: DashboardQuickActionsProps) => {
   const { t, isRTL } = useI18n();
 
   const actions = [
     {
       icon: Utensils,
-      label: t('dashboard:quickActions.generateMealPlan'),
-      color: 'bg-green-500',
-      hoverColor: 'hover:bg-green-600',
-      onClick: onViewMealPlan
+      label: t('navigation:mealPlan') || 'Meal Plan',
+      onClick: onViewMealPlan,
+      color: 'from-green-500 to-emerald-600'
     },
     {
       icon: Dumbbell,
-      label: t('dashboard:quickActions.startWorkout'),
-      color: 'bg-blue-500',
-      hoverColor: 'hover:bg-blue-600',
-      onClick: onViewExercise
+      label: t('navigation:exercise') || 'Exercise',
+      onClick: onViewExercise,
+      color: 'from-blue-500 to-blue-600'
     },
     {
-      icon: Camera,
-      label: t('dashboard:quickActions.analyzeMeal'),
-      color: 'bg-purple-500',
-      hoverColor: 'hover:bg-purple-600',
-      onClick: () => console.log('Analyze meal')
-    },
-    {
-      icon: Scale,
-      label: t('dashboard:quickActions.trackWeight'),
-      color: 'bg-orange-500',
-      hoverColor: 'hover:bg-orange-600',
-      onClick: onViewWeight
-    },
-    {
-      icon: Target,
-      label: t('dashboard:quickActions.updateGoals'),
-      color: 'bg-red-500',
-      hoverColor: 'hover:bg-red-600',
-      onClick: onViewGoals
+      icon: Weight,
+      label: t('navigation:weight') || 'Weight',
+      onClick: onViewWeight,
+      color: 'from-purple-500 to-purple-600'
     },
     {
       icon: TrendingUp,
-      label: t('dashboard:quickActions.addProgress'),
-      color: 'bg-teal-500',
-      hoverColor: 'hover:bg-teal-600',
-      onClick: onViewProgress
+      label: t('navigation:progress') || 'Progress',
+      onClick: onViewProgress,
+      color: 'from-orange-500 to-orange-600'
+    },
+    {
+      icon: Target,
+      label: t('navigation:goals') || 'Goals',
+      onClick: onViewGoals,
+      color: 'from-red-500 to-red-600'
+    },
+    {
+      icon: User,
+      label: t('navigation:profile') || 'Profile',
+      onClick: onViewProfile,
+      color: 'from-gray-500 to-gray-600'
     }
   ];
 
   return (
-    <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-      <CardHeader>
-        <CardTitle className={`text-lg ${isRTL ? 'text-right font-arabic' : 'text-left'}`}>
-          {t('dashboard:quickActions.title')}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-          {actions.map((action, index) => (
+    <Card className="p-6">
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        {t('dashboard:quickActions') || 'Quick Actions'}
+      </h3>
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        {actions.map((action, index) => {
+          const IconComponent = action.icon;
+          return (
             <Button
               key={index}
               variant="outline"
               onClick={action.onClick}
-              className={`${action.color} ${action.hoverColor} text-white border-0 h-auto p-4 flex flex-col items-center gap-2 hover:shadow-lg transition-all duration-300`}
+              className={`h-16 flex flex-col items-center justify-center gap-2 bg-gradient-to-br ${action.color} hover:opacity-90 text-white border-0 shadow-lg ${isRTL ? 'flex-col-reverse' : ''}`}
             >
-              <action.icon className="w-6 h-6" />
-              <span className="text-xs font-medium text-center leading-tight">{action.label}</span>
+              <IconComponent className="w-5 h-5" />
+              <span className="text-xs font-medium">{action.label}</span>
             </Button>
-          ))}
-        </div>
-      </CardContent>
+          );
+        })}
+      </div>
     </Card>
   );
 };

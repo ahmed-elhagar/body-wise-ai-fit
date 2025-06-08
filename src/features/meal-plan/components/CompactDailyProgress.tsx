@@ -3,7 +3,7 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Flame, Zap } from 'lucide-react';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useI18n } from '@/hooks/useI18n';
 
 interface CompactDailyProgressProps {
   totalCalories: number;
@@ -18,7 +18,7 @@ export const CompactDailyProgress = ({
   targetDayCalories,
   targetProtein = 150
 }: CompactDailyProgressProps) => {
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL } = useI18n();
 
   const caloriePercentage = Math.min((totalCalories / targetDayCalories) * 100, 100);
   const proteinPercentage = Math.min((totalProtein / targetProtein) * 100, 100);

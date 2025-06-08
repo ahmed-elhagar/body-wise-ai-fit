@@ -6,11 +6,11 @@ import { Users, Star } from "lucide-react";
 import { useRole } from "@/hooks/useRole";
 import { Navigate } from "react-router-dom";
 import EnhancedCoachDashboard from "@/components/coach/EnhancedCoachDashboard";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 const Coach = () => {
   const { isCoach, isAdmin, isLoading } = useRole();
-  const { t } = useLanguage();
+  const { t } = useI18n();
 
   if (isLoading) {
     return (

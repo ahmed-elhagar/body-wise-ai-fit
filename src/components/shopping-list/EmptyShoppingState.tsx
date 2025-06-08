@@ -2,14 +2,14 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, Sparkles } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 interface EmptyShoppingStateProps {
   onClose: () => void;
 }
 
 export const EmptyShoppingState = ({ onClose }: EmptyShoppingStateProps) => {
-  const { isRTL } = useLanguage();
+  const { isRTL } = useI18n();
 
   return (
     <div className="flex items-center justify-center h-full p-8">

@@ -2,17 +2,15 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { MessageCircle, Phone, Video } from 'lucide-react';
+import { MessageCircle, Calendar, Users } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 
 interface Coach {
   id: string;
   name: string;
   avatar?: string;
-  specialization: string;
   isOnline: boolean;
-  rating: number;
+  lastSeen?: string;
 }
 
 interface CoachChatWidgetProps {
@@ -27,49 +25,47 @@ const CoachChatWidget = ({ coaches, onStartChat, onScheduleCall }: CoachChatWidg
   return (
     <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
       <CardHeader>
-        <CardTitle className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse font-arabic' : ''}`}>
-          <MessageCircle className="w-5 h-5 text-green-500" />
-          {t('coach:messages') || 'Coach Support'}
+        <CardTitle className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+          <Users className="w-5 h-5 text-green-600" />
+          {t('dashboard:coachSupport') || 'Coach Support'}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {coaches.length === 0 ? (
-          <div className="text-center py-8">
-            <MessageCircle className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-            <p className="text-gray-500 text-sm">
-              {t('coach:messagesComingSoon') || 'Coach support coming soon'}
+          <div className="text-center py-6">
+            <MessageCircle className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+            <p className="text-gray-500 text-sm mb-3">
+              {t('dashboard:noCoachAssigned') || 'No coach assigned yet'}
             </p>
+            <Button size="sm" variant="outline">
+              {t('dashboard:findCoach') || 'Find a Coach'}
+            </Button>
           </div>
         ) : (
-          coaches.slice(0, 2).map((coach) => (
-            <div key={coach.id} className={`flex items-center gap-3 p-3 bg-gray-50 rounded-lg ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <div className="relative">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                  <span className="text-white font-semibold text-sm">
-                    {coach.name.charAt(0)}
-                  </span>
+          coaches.map((coach) => (
+            <div key={coach.id} className={`flex items-center justify-between p-3 bg-gray-50 rounded-lg ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                <div className="relative">
+                  <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
+                    <Users className="w-5 h-5 text-white" />
+                  </div>
+                  {coach.isOnline && (
+                    <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                  )}
                 </div>
-                {coach.isOnline && (
-                  <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
-                )}
-              </div>
-              
-              <div className={`flex-1 ${isRTL ? 'text-right' : 'text-left'}`}>
-                <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                  <h4 className="font-medium text-sm">{coach.name}</h4>
-                  <Badge variant="secondary" className="text-xs">
-                    ⭐ {coach.rating}
-                  </Badge>
+                <div>
+                  <p className="font-medium text-gray-900">{coach.name}</p>
+                  <p className="text-xs text-gray-500">
+                    {coach.isOnline ? t('dashboard:online') || 'Online' : coach.lastSeen}
+                  </p>
                 </div>
-                <p className="text-xs text-gray-600">{coach.specialization}</p>
               </div>
-              
               <div className={`flex gap-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
                 <Button size="sm" variant="ghost" onClick={() => onStartChat(coach.id)}>
-                  <MessageCircle className="w-3 h-3" />
+                  <MessageCircle className="w-4 h-4" />
                 </Button>
                 <Button size="sm" variant="ghost" onClick={() => onScheduleCall(coach.id)}>
-                  <Phone className="w-3 h-3" />
+                  <Calendar className="w-4 h-4" />
                 </Button>
               </div>
             </div>

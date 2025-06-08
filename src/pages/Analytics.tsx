@@ -4,10 +4,10 @@ import Layout from "@/components/Layout";
 import { PageHeader } from "@/components/ui/page-header";
 import { BarChart3 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 const Analytics = () => {
-  const { t } = useLanguage();
+  const { t } = useI18n();
   
   return (
     <ProtectedRoute>
