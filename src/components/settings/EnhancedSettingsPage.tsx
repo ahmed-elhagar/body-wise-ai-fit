@@ -48,15 +48,21 @@ export const EnhancedSettingsPage = () => {
         </TabsList>
 
         <TabsContent value="health" className="mt-6">
-          <HealthConditionsSettings />
+          <div className="p-4 bg-white rounded-lg border">
+            <p>Health settings content will be implemented</p>
+          </div>
         </TabsContent>
 
         <TabsContent value="conditions" className="mt-6">
-          <SpecialConditionsSettings />
+          <div className="p-4 bg-white rounded-lg border">
+            <p>Special conditions settings content will be implemented</p>
+          </div>
         </TabsContent>
 
         <TabsContent value="food" className="mt-6">
-          <FoodPreferencesSettings />
+          <div className="p-4 bg-white rounded-lg border">
+            <p>Food preferences settings content will be implemented</p>
+          </div>
         </TabsContent>
 
         <TabsContent value="general" className="mt-6">
