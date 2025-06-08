@@ -1,8 +1,10 @@
 
-import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Sparkles, Shuffle, ShoppingCart, RotateCcw } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Sparkles, Shuffle, ShoppingCart, RefreshCw, UtensilsCrossed, Zap } from "lucide-react";
+import { useMealPlanTranslations } from "@/utils/mealPlanTranslations";
+import { useCentralizedCredits } from "@/hooks/useCentralizedCredits";
 
 interface MealPlanHeaderProps {
   onGenerateAI: () => void;
@@ -10,7 +12,7 @@ interface MealPlanHeaderProps {
   onShowShoppingList: () => void;
   onRegeneratePlan: () => void;
   isGenerating: boolean;
-  isShuffling: boolean;
+  isShuffling?: boolean;
   hasWeeklyPlan: boolean;
 }
 
@@ -20,72 +22,130 @@ const MealPlanHeader = ({
   onShowShoppingList,
   onRegeneratePlan,
   isGenerating,
-  isShuffling,
+  isShuffling = false,
   hasWeeklyPlan
 }: MealPlanHeaderProps) => {
+  const { 
+    title, 
+    smartMealPlanning, 
+    personalizedNutrition, 
+    generateAIMealPlan,
+    generating,
+    isRTL 
+  } = useMealPlanTranslations();
+
+  // Use centralized credits instead of any mocked data
+  const { remaining: userCredits, isPro, hasCredits } = useCentralizedCredits();
+
+  const displayCredits = isPro ? 'Unlimited' : `${userCredits} credits`;
+
+  const handleShuffleMeals = async () => {
+    console.log('🔄 Shuffle button clicked');
+    try {
+      await onShuffle();
+      console.log('✅ Shuffle completed successfully');
+    } catch (error) {
+      console.error('❌ Shuffle failed:', error);
+    }
+  };
+
+  const handleGenerateAI = async () => {
+    console.log('✨ Generate AI button clicked');
+    try {
+      await onGenerateAI();
+      console.log('✅ AI generation completed successfully');
+    } catch (error) {
+      console.error('❌ AI generation failed:', error);
+    }
+  };
+
+  const handleShowShoppingList = () => {
+    console.log('🛒 Shopping list button clicked - using enhanced drawer');
+    onShowShoppingList();
+  };
+
   return (
-    <Card className="bg-gradient-to-r from-violet-50 to-purple-50 border-violet-200 shadow-sm">
-      <CardContent className="p-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-              Your Meal Plan
-            </h1>
-            <p className="text-gray-600">
-              AI-powered nutrition planning for your fitness goals
-            </p>
+    <Card className="bg-gradient-to-r from-fitness-primary-600 via-fitness-primary-700 to-fitness-accent-600 border-0 shadow-xl rounded-2xl overflow-hidden">
+      <div className="px-5 py-3">
+        <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+          {/* Left: Enhanced Title Section */}
+          <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/30">
+              <UtensilsCrossed className="w-5 h-5 text-white" />
+            </div>
+            <div className={isRTL ? 'text-right' : 'text-left'}>
+              <h1 className="text-xl font-bold text-white mb-0.5 tracking-tight">
+                {title || 'Smart Meal Plan'}
+              </h1>
+              <p className="text-fitness-primary-100 text-sm font-medium">
+                {personalizedNutrition || 'AI-powered personalized nutrition'}
+              </p>
+              
+              {/* AI Credits Badge - Using centralized credits */}
+              <div className="mt-1">
+                <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm font-medium text-xs hover:bg-white/30">
+                  <Zap className="w-3 h-3 mr-1" />
+                  {displayCredits}
+                </Badge>
+              </div>
+            </div>
           </div>
-          
-          <div className="flex flex-wrap gap-3">
+
+          {/* Right: Compact Action Buttons */}
+          <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
             {hasWeeklyPlan && (
-              <>
+              <div className={`flex gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
                 <Button
-                  onClick={onShuffle}
-                  disabled={isShuffling || isGenerating}
+                  onClick={handleShuffleMeals}
+                  disabled={isGenerating || isShuffling}
                   variant="outline"
                   size="sm"
-                  className="border-violet-300 text-violet-700 hover:bg-violet-50"
+                  className="bg-white/10 border-white/30 text-white hover:bg-white/20 hover:text-white backdrop-blur-sm transition-all duration-200 hover:scale-105 px-2 h-8"
                 >
-                  <Shuffle className="w-4 h-4 mr-2" />
-                  {isShuffling ? 'Shuffling...' : 'Shuffle Meals'}
+                  {isShuffling ? (
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Shuffle className="w-4 h-4" />
+                  )}
+                  <span className="hidden sm:inline ml-2 text-xs">Shuffle</span>
                 </Button>
-                
+
                 <Button
-                  onClick={onShowShoppingList}
-                  disabled={isGenerating}
+                  onClick={handleShowShoppingList}
                   variant="outline"
                   size="sm"
-                  className="border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                  className="bg-white/10 border-white/30 text-white hover:bg-white/20 hover:text-white backdrop-blur-sm transition-all duration-200 hover:scale-105 px-2 h-8"
                 >
-                  <ShoppingCart className="w-4 h-4 mr-2" />
-                  Shopping List
+                  <ShoppingCart className="w-4 h-4" />
+                  <span className="hidden sm:inline ml-2 text-xs">Shop</span>
                 </Button>
-                
-                <Button
-                  onClick={onRegeneratePlan}
-                  disabled={isGenerating}
-                  variant="outline"
-                  size="sm"
-                  className="border-orange-300 text-orange-700 hover:bg-orange-50"
-                >
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  Regenerate
-                </Button>
-              </>
+              </div>
             )}
-            
+
             <Button
-              onClick={onGenerateAI}
-              disabled={isGenerating}
-              size="sm"
-              className="bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white shadow-lg"
+              onClick={handleGenerateAI}
+              disabled={isGenerating || isShuffling || !hasCredits}
+              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold px-3 py-2 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 h-8 border-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
-              <Sparkles className="w-4 h-4 mr-2" />
-              {hasWeeklyPlan ? 'Generate New Plan' : 'Generate AI Plan'}
+              {isGenerating ? (
+                <RefreshCw className="w-4 h-4 animate-spin" />
+              ) : (
+                <Sparkles className="w-4 h-4" />
+              )}
+              <span className="hidden sm:inline ml-2 text-xs font-medium">AI Plan</span>
             </Button>
           </div>
         </div>
-      </CardContent>
+        
+        {/* No credits warning */}
+        {!hasCredits && (
+          <div className="mt-3 px-4 py-2 bg-red-500/20 border border-red-500/30 rounded-lg backdrop-blur-sm">
+            <p className="text-sm text-white font-medium text-center">
+              No AI credits remaining. Upgrade to continue generating plans.
+            </p>
+          </div>
+        )}
+      </div>
     </Card>
   );
 };
