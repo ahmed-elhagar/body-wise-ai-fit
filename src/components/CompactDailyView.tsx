@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Calendar, TrendingUp, Target } from "lucide-react";
+import { Plus, Calendar, Target } from "lucide-react";
 import DailyNutritionSummary from "./daily-view/DailyNutritionSummary";
 import MealTypeSection from "./daily-view/MealTypeSection";
 import { format } from "date-fns";

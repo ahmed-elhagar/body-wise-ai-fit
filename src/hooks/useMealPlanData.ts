@@ -16,7 +16,15 @@ export const useMealPlanData = (weekOffset: number = 0) => {
   return useQuery({
     queryKey: ['weekly-meal-plan', user?.id, weekOffset],
     queryFn: async (): Promise<any | null> => {
-      if (!user?.id) return null;
+      if (!user?.id) {
+        console.log('❌ No user ID for meal plan fetch');
+        return null;
+      }
+
+      console.log('🔍 Fetching meal plan data:', {
+        userId: user.id.substring(0, 8) + '...',
+        weekOffset
+      });
 
       // Calculate the week start date
       const today = new Date();
@@ -28,6 +36,8 @@ export const useMealPlanData = (weekOffset: number = 0) => {
       
       const weekStartDate = targetWeek.toISOString().split('T')[0];
 
+      console.log('📅 Calculated week start date:', weekStartDate);
+
       // Fetch weekly plan
       const { data: weeklyPlan, error: weeklyError } = await supabase
         .from('weekly_meal_plans')
@@ -37,13 +47,16 @@ export const useMealPlanData = (weekOffset: number = 0) => {
         .maybeSingle();
 
       if (weeklyError) {
-        console.error('Error fetching weekly plan:', weeklyError);
+        console.error('❌ Error fetching weekly plan:', weeklyError);
         throw weeklyError;
       }
 
       if (!weeklyPlan) {
+        console.log('📋 No weekly meal plan found for date:', weekStartDate);
         return { weeklyPlan: null, dailyMeals: [] };
       }
+
+      console.log('✅ Weekly plan found:', weeklyPlan.id);
 
       // Fetch daily meals
       const { data: dailyMeals, error: mealsError } = await supabase
@@ -54,9 +67,14 @@ export const useMealPlanData = (weekOffset: number = 0) => {
         .order('meal_type', { ascending: true });
 
       if (mealsError) {
-        console.error('Error fetching daily meals:', mealsError);
+        console.error('❌ Error fetching daily meals:', mealsError);
         throw mealsError;
       }
+
+      console.log('✅ Daily meals fetched:', {
+        count: dailyMeals?.length || 0,
+        weeklyPlanId: weeklyPlan.id
+      });
 
       return {
         weeklyPlan,
@@ -66,5 +84,12 @@ export const useMealPlanData = (weekOffset: number = 0) => {
     enabled: !!user?.id,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
+    retry: (failureCount, error) => {
+      if (error?.message?.includes('JWT') || error?.message?.includes('auth')) return false;
+      return failureCount < 2;
+    },
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
+    refetchOnReconnect: true
   });
 };

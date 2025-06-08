@@ -1,26 +1,22 @@
 
-export interface Ingredient {
-  name: string;
-  quantity: string;
-  unit: string;
-}
-
+// Meal interface for daily view components
 export interface Meal {
   id: string;
-  type: string;
-  meal_type?: string; // Add this for compatibility
-  time: string;
   name: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-  ingredients: Ingredient[];
-  instructions: string[];
-  prepTime: number;
-  cookTime: number;
-  servings: number;
-  youtube_search_term?: string;
+  calories?: number;
+  protein?: number;
+  carbs?: number;
+  fat?: number;
+  meal_type?: string;
+  type?: string;
+  prep_time?: number;
+  cook_time?: number;
+  servings?: number;
+  ingredients?: any[];
+  instructions?: string[];
   image_url?: string;
-  image: string;
+  youtube_search_term?: string;
 }
+
+// Legacy compatibility exports
+export type { Meal as DailyMeal };
