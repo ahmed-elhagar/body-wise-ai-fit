@@ -43,9 +43,9 @@ const CompactMealCard = ({
       <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
         {/* Meal Icon & Image */}
         <div className="w-11 h-11 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
-          {meal.image || meal.image_url ? (
+          {meal.image_url || meal.image ? (
             <img 
-              src={meal.image || meal.image_url} 
+              src={meal.image_url || meal.image} 
               alt=""
               className="w-full h-full object-cover rounded-lg"
               loading="lazy"
@@ -78,7 +78,7 @@ const CompactMealCard = ({
             </div>
             <div className="flex items-center gap-1">
               <Clock className="w-3 h-3 text-blue-500" />
-              <span>{(meal.prepTime || 0) + (meal.cookTime || 0)}m</span>
+              <span>{(meal.prep_time || meal.prepTime || 0) + (meal.cook_time || meal.cookTime || 0)}m</span>
             </div>
           </div>
         </div>
