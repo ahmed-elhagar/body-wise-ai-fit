@@ -10,8 +10,8 @@ import { ExerciseProgramSelector } from "./ExerciseProgramSelector";
 interface ExercisePageContentProps {
   exercises: any[];
   isLoading: boolean;
-  onExerciseComplete: (exerciseId: string) => void;
-  onExerciseProgressUpdate: (exerciseId: string, sets: number, reps: string, notes?: string) => void;
+  onExerciseComplete: (exerciseId: string) => Promise<void>;
+  onExerciseProgressUpdate: (exerciseId: string, sets: number, reps: string, notes?: string, weight?: number) => Promise<void>;
   isRestDay?: boolean;
   currentProgram: any;
   selectedDayNumber: number;

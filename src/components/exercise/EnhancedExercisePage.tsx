@@ -132,25 +132,15 @@ const EnhancedExercisePage = () => {
       </div>
 
       <ExercisePageContent
+        exercises={todaysExercises}
         isLoading={isLoading && !!currentProgram && !isGenerating}
         currentProgram={currentProgram}
-        todaysExercises={todaysExercises}
-        completedExercises={completedExercises}
-        totalExercises={totalExercises}
-        progressPercentage={progressPercentage}
-        isRestDay={isRestDay}
-        isToday={isToday}
         selectedDayNumber={selectedDayNumber}
         workoutType={workoutType}
-        setWorkoutType={setWorkoutType}
-        showAIDialog={showAIDialog}
-        setShowAIDialog={setShowAIDialog}
-        aiPreferences={aiPreferences}
-        setAiPreferences={setAiPreferences}
-        isGenerating={isGenerating}
+        onWorkoutTypeChange={setWorkoutType}
+        isRestDay={isRestDay}
         onExerciseComplete={handleExerciseComplete}
         onExerciseProgressUpdate={handleExerciseProgressUpdate}
-        onGenerateAIProgram={handleGenerateAIProgram}
       />
 
       <AIExerciseDialog
