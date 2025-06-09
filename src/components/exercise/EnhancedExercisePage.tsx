@@ -158,9 +158,6 @@ const EnhancedExercisePage = () => {
     }
   };
 
-  // Determine if we should show week navigation loading
-  const isWeekNavigationLoading = isLoading && currentProgram && !isGenerating;
-
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto">
@@ -192,21 +189,21 @@ const EnhancedExercisePage = () => {
           />
         </div>
 
-        {/* Content Section */}
+        {/* Content Section - Fixed Height Container */}
         <div className="px-4 pb-6">
-          <div className="bg-white rounded-lg border border-gray-200 relative">
-            {/* Week navigation loading overlay - only show when navigating between weeks */}
-            {isWeekNavigationLoading && (
-              <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex items-center justify-center z-10 rounded-lg">
+          <div className="bg-white rounded-lg border border-gray-200 relative min-h-[600px]">
+            {/* Navigation/Day loading overlay - shows when loading data */}
+            {isLoading && (
+              <div className="absolute inset-0 bg-white/95 backdrop-blur-sm flex items-center justify-center z-10 rounded-lg">
                 <SimpleLoadingIndicator
-                  message="Loading Week Data"
-                  description="Fetching your workout plan for this week..."
+                  message="Loading Exercise Data"
+                  description="Fetching your workout information..."
                 />
               </div>
             )}
             
             <ExercisePageContent
-              isLoading={false}
+              isLoading={false} // Content component handles its own empty states
               currentProgram={currentProgram}
               todaysExercises={todaysExercises}
               completedExercises={completedExercises}
