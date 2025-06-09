@@ -13,10 +13,12 @@ import {
 } from "@/features/exercise";
 import { useEnhancedAIExercise } from "@/hooks/useEnhancedAIExercise";
 import SimpleLoadingIndicator from "@/components/ui/simple-loading-indicator";
-import { useState } from "react";
+import { UnifiedAILoadingDialog } from "@/components/ai/UnifiedAILoadingDialog";
+import { useAILoadingSteps } from "@/hooks/useAILoadingSteps";
+import { useState, useMemo } from "react";
 
 const EnhancedExercisePage = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [showAnalytics, setShowAnalytics] = useState(false);
   
   const {
@@ -48,6 +50,52 @@ const EnhancedExercisePage = () => {
 
   const { isGenerating, generateExerciseProgram, regenerateProgram } = useEnhancedAIExercise();
 
+  // AI Loading Steps for Exercise Generation
+  const exerciseSteps = useMemo(() => [
+    {
+      id: 'analyzing-profile',
+      label: language === 'ar' ? 'تحليل ملفك الرياضي' : 'Analyzing your fitness profile',
+      description: language === 'ar' ? 'قراءة أهدافك ومستوى لياقتك' : 'Reading your goals and fitness level',
+      estimatedDuration: 3
+    },
+    {
+      id: 'calculating-intensity',
+      label: language === 'ar' ? 'حساب شدة التمارين' : 'Calculating exercise intensity',
+      description: language === 'ar' ? 'تحديد الشدة المناسبة لك' : 'Determining appropriate intensity for you',
+      estimatedDuration: 4
+    },
+    {
+      id: 'selecting-exercises',
+      label: language === 'ar' ? 'اختيار التمارين المناسبة' : 'Selecting suitable exercises',
+      description: language === 'ar' ? 'اختيار التمارين المناسبة لأهدافك' : 'Choosing exercises that match your goals',
+      estimatedDuration: 6
+    },
+    {
+      id: 'creating-schedule',
+      label: language === 'ar' ? 'إنشاء جدول التمارين' : 'Creating exercise schedule',
+      description: language === 'ar' ? 'تنظيم التمارين في برنامج أسبوعي' : 'Organizing exercises into a weekly program',
+      estimatedDuration: 4
+    },
+    {
+      id: 'optimizing-progression',
+      label: language === 'ar' ? 'تحسين التقدم' : 'Optimizing progression',
+      description: language === 'ar' ? 'ضمان التحسن التدريجي' : 'Ensuring gradual improvement',
+      estimatedDuration: 3
+    },
+    {
+      id: 'finalizing-program',
+      label: language === 'ar' ? 'إنهاء البرنامج' : 'Finalizing program',
+      description: language === 'ar' ? 'حفظ برنامجك الرياضي' : 'Saving your exercise program',
+      estimatedDuration: 2
+    }
+  ], [language]);
+
+  const { currentStepIndex, isComplete, progress } = useAILoadingSteps(
+    exerciseSteps, 
+    isGenerating,
+    { stepDuration: 3500 }
+  );
+
   const currentSelectedDate = addDays(weekStartDate, selectedDayNumber - 1);
   const isToday = format(currentSelectedDate, 'yyyy-MM-dd') === format(currentDate, 'yyyy-MM-dd');
 
@@ -60,15 +108,15 @@ const EnhancedExercisePage = () => {
     );
   }
 
-  // Show loading for initial load or when generating
-  const showFullPageLoading = (isLoading && !currentProgram && currentWeekOffset === 0) || isGenerating;
+  // Only show full page loading for initial data load, not during generation
+  const showFullPageLoading = isLoading && !currentProgram && currentWeekOffset === 0 && !isGenerating;
 
   if (showFullPageLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
         <SimpleLoadingIndicator
-          message={isGenerating ? "Generating Your Exercise Program" : "Loading Your Exercise Program"}
-          description={isGenerating ? "Creating your personalized workout plan with AI..." : "Preparing your personalized workout plan with progress tracking and exercise details"}
+          message="Loading Your Exercise Program"
+          description="Preparing your personalized workout plan with progress tracking and exercise details"
           size="lg"
         />
       </div>
@@ -76,7 +124,7 @@ const EnhancedExercisePage = () => {
   }
 
   // Show loading for week navigation
-  const showWeekLoading = isLoading && currentProgram;
+  const showWeekLoading = isLoading && currentProgram && !isGenerating;
 
   if (error) {
     return <ExerciseErrorState onRetry={() => refetch()} />;
@@ -178,6 +226,7 @@ const EnhancedExercisePage = () => {
           </div>
         </div>
 
+        {/* AI Exercise Dialog */}
         <AIExerciseDialog
           open={showAIDialog}
           onOpenChange={setShowAIDialog}
@@ -185,6 +234,19 @@ const EnhancedExercisePage = () => {
           setPreferences={setAiPreferences}
           onGenerate={handleGenerateAIProgram}
           isGenerating={isGenerating}
+        />
+
+        {/* Unified AI Loading Dialog - Non-blocking */}
+        <UnifiedAILoadingDialog
+          isOpen={isGenerating}
+          title={language === 'ar' ? 'إنشاء برنامج رياضي بالذكاء الاصطناعي' : 'Generating AI Exercise Program'}
+          description={language === 'ar' ? 'إنشاء برنامج رياضي مخصص لأهدافك ومستوى لياقتك' : 'Creating a personalized exercise program for your goals and fitness level'}
+          steps={exerciseSteps}
+          currentStepIndex={currentStepIndex}
+          isComplete={isComplete}
+          progress={progress}
+          estimatedTotalTime={22}
+          allowClose={false}
         />
       </div>
     </div>
