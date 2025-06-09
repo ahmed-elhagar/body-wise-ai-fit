@@ -108,7 +108,7 @@ const EnhancedExercisePage = () => {
     );
   }
 
-  // Only show full page loading for initial data load, not during generation
+  // Only show full page loading for initial data load
   const showFullPageLoading = isLoading && !currentProgram && currentWeekOffset === 0 && !isGenerating;
 
   if (showFullPageLoading) {
@@ -122,9 +122,6 @@ const EnhancedExercisePage = () => {
       </div>
     );
   }
-
-  // Show loading for week navigation
-  const showWeekLoading = isLoading && currentProgram && !isGenerating;
 
   if (error) {
     return <ExerciseErrorState onRetry={() => refetch()} />;
@@ -193,7 +190,8 @@ const EnhancedExercisePage = () => {
         {/* Content Section */}
         <div className="px-4 pb-6">
           <div className="bg-white rounded-lg border border-gray-200">
-            {showWeekLoading ? (
+            {/* Simple loading for week navigation */}
+            {isLoading && currentProgram && !isGenerating ? (
               <div className="p-6">
                 <SimpleLoadingIndicator
                   message="Loading Week Data"

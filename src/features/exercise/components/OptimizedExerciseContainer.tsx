@@ -6,7 +6,7 @@ import OptimizedExerciseHeader from "@/components/exercise/OptimizedExerciseHead
 import OptimizedExerciseWeekView from "@/components/exercise/OptimizedExerciseWeekView";
 import OptimizedExerciseDayView from "@/components/exercise/OptimizedExerciseDayView";
 import OptimizedExerciseProgress from "@/components/exercise/OptimizedExerciseProgress";
-import ExerciseAILoadingDialog from "@/components/exercise/ExerciseAILoadingDialog";
+import SimpleLoadingIndicator from "@/components/ui/simple-loading-indicator";
 
 const OptimizedExerciseContainer = React.memo(() => {
   const {
@@ -24,18 +24,13 @@ const OptimizedExerciseContainer = React.memo(() => {
 
   if (loadingStates.isProgramLoading) {
     return (
-      <>
-        <Card className="p-8">
-          <div className="text-center">
-            <h3 className="text-lg font-semibold mb-2">Loading Exercise Program</h3>
-            <p className="text-sm text-gray-600">Preparing your personalized workouts...</p>
-          </div>
-        </Card>
-        <ExerciseAILoadingDialog 
-          isGenerating={loadingStates.isProgramLoading}
-          type="program"
+      <Card className="p-8">
+        <SimpleLoadingIndicator
+          message="Loading Exercise Program"
+          description="Preparing your personalized workouts..."
+          size="lg"
         />
-      </>
+      </Card>
     );
   }
 
@@ -62,46 +57,51 @@ const OptimizedExerciseContainer = React.memo(() => {
   }
 
   return (
-    <>
-      <div className="space-y-6">
-        <OptimizedExerciseHeader 
-          program={weeklyProgram}
-          progressMetrics={progressMetrics}
-          onGenerateNew={optimizedActions.startWorkout}
-        />
+    <div className="space-y-6">
+      <OptimizedExerciseHeader 
+        program={weeklyProgram}
+        progressMetrics={progressMetrics}
+        onGenerateNew={optimizedActions.startWorkout}
+      />
+      
+      <OptimizedExerciseProgress 
+        progressMetrics={progressMetrics}
+        weekStructure={weekStructure}
+      />
+      
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-1">
+          <OptimizedExerciseWeekView
+            weekStructure={weekStructure}
+            selectedDay={selectedDay}
+            onDaySelect={setSelectedDay}
+          />
+        </div>
         
-        <OptimizedExerciseProgress 
-          progressMetrics={progressMetrics}
-          weekStructure={weekStructure}
-        />
-        
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-1">
-            <OptimizedExerciseWeekView
-              weekStructure={weekStructure}
-              selectedDay={selectedDay}
-              onDaySelect={setSelectedDay}
-            />
-          </div>
-          
-          <div className="lg:col-span-2">
-            <OptimizedExerciseDayView
-              currentWorkout={currentWorkout}
-              exercises={currentDayExercises}
-              selectedDay={selectedDay}
-              onStartWorkout={optimizedActions.startWorkout}
-              onCompleteWorkout={optimizedActions.completeWorkout}
-              isLoading={loadingStates.isUpdating}
-            />
-          </div>
+        <div className="lg:col-span-2">
+          <OptimizedExerciseDayView
+            currentWorkout={currentWorkout}
+            exercises={currentDayExercises}
+            selectedDay={selectedDay}
+            onStartWorkout={optimizedActions.startWorkout}
+            onCompleteWorkout={optimizedActions.completeWorkout}
+            isLoading={loadingStates.isUpdating}
+          />
         </div>
       </div>
 
-      <ExerciseAILoadingDialog 
-        isGenerating={loadingStates.isUpdating}
-        type="exchange"
-      />
-    </>
+      {/* Show simple loading for updates */}
+      {loadingStates.isUpdating && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6">
+            <SimpleLoadingIndicator
+              message="Updating Exercise Program"
+              description="Applying your changes..."
+            />
+          </div>
+        </div>
+      )}
+    </div>
   );
 });
 
