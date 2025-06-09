@@ -3,7 +3,6 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/AppSidebar";
 import { useProfile } from "@/hooks/useProfile";
 import { useI18n } from "@/hooks/useI18n";
-import LanguageToggle from "@/components/LanguageToggle";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const { profile } = useProfile();
@@ -14,13 +13,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       <div className={`min-h-screen flex w-full ${isRTL ? 'rtl' : 'ltr'}`}>
         <AppSidebar />
         <div className="flex-1 flex flex-col">
-          {/* Language Toggle in top-right corner */}
-          <div className={`flex justify-end p-4 ${isRTL ? 'justify-start' : 'justify-end'}`}>
-            <div className="w-48">
-              <LanguageToggle />
-            </div>
-          </div>
-          <main className="flex-1 p-6">
+          <main className="flex-1">
             {children}
           </main>
         </div>
