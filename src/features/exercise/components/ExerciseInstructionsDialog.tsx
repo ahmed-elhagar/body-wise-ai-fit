@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { BookOpen, X } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useEffect } from 'react';
 
 interface ExerciseInstructionsDialogProps {
   exercise: any;
@@ -21,18 +22,48 @@ export const ExerciseInstructionsDialog = ({
     onOpenChange(false);
   };
 
+  // Prevent body scroll when dialog is open
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [open]);
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent 
+        className="max-w-2xl max-h-[80vh] overflow-y-auto"
+        onInteractOutside={(e) => {
+          e.preventDefault();
+          handleClose();
+        }}
+        onEscapeKeyDown={handleClose}
+      >
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-lg">
-            <BookOpen className="w-5 h-5 text-blue-600" />
-            {exercise.name} - {t('Instructions')}
+          <DialogTitle className="flex items-center justify-between text-lg">
+            <div className="flex items-center gap-2">
+              <BookOpen className="w-5 h-5 text-blue-600" />
+              {exercise?.name} - {t('Instructions')}
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleClose}
+              className="h-6 w-6 p-0 hover:bg-gray-100"
+            >
+              <X className="w-4 h-4" />
+            </Button>
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-4">
-          {exercise.instructions ? (
+        <div className="space-y-4" onClick={(e) => e.stopPropagation()}>
+          {exercise?.instructions ? (
             <div className="prose prose-sm max-w-none">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <h4 className="font-semibold text-blue-900 mb-2">{t('How to perform')}:</h4>
@@ -48,7 +79,7 @@ export const ExerciseInstructionsDialog = ({
             </div>
           )}
 
-          {exercise.muscle_groups && exercise.muscle_groups.length > 0 && (
+          {exercise?.muscle_groups && exercise.muscle_groups.length > 0 && (
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
               <h4 className="font-semibold text-gray-900 mb-2">{t('Target Muscles')}:</h4>
               <div className="flex flex-wrap gap-2">
@@ -64,7 +95,7 @@ export const ExerciseInstructionsDialog = ({
             </div>
           )}
 
-          {(exercise.sets || exercise.reps || exercise.rest_seconds) && (
+          {(exercise?.sets || exercise?.reps || exercise?.rest_seconds) && (
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
               <h4 className="font-semibold text-green-900 mb-2">{t('Workout Details')}:</h4>
               <div className="grid grid-cols-3 gap-4 text-sm">
@@ -90,8 +121,8 @@ export const ExerciseInstructionsDialog = ({
             </div>
           )}
 
-          <div className="flex justify-end">
-            <Button onClick={handleClose} variant="outline">
+          <div className="flex justify-end pt-4">
+            <Button onClick={handleClose} variant="outline" size="sm">
               Close
             </Button>
           </div>

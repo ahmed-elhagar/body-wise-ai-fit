@@ -35,7 +35,8 @@ export const InteractiveExerciseCard = ({
 }: InteractiveExerciseCardProps) => {
   const { t } = useLanguage();
   const [isActive, setIsActive] = useState(false);
-  const [currentSet, setCurrentSet] = useState(1);
+  const [currentSet, setCurrentSet] = useState(0); // Start from 0, not 1
+  const [completedSets, setCompletedSets] = useState(0); // Track completed sets
   const [restTimer, setRestTimer] = useState(0);
   const [isResting, setIsResting] = useState(false);
   const [restInterval, setRestInterval] = useState<NodeJS.Timeout | null>(null);
@@ -88,19 +89,22 @@ export const InteractiveExerciseCard = ({
 
   const handleSetComplete = async () => {
     const totalSets = exercise.sets || 3;
+    const newCompletedSets = completedSets + 1;
+    
+    setCompletedSets(newCompletedSets);
     
     // Update progress
-    onExerciseProgressUpdate(exercise.id, currentSet, exercise.reps || '10');
+    onExerciseProgressUpdate(exercise.id, newCompletedSets, exercise.reps || '10');
     
-    if (currentSet < totalSets) {
-      setCurrentSet(prev => prev + 1);
+    if (newCompletedSets < totalSets) {
+      setCurrentSet(newCompletedSets);
       if (exercise.rest_seconds > 0) {
         startRestTimer();
       }
       
       toast({
-        title: `Set ${currentSet} Complete! 🎯`,
-        description: `${totalSets - currentSet} sets remaining`,
+        title: `Set ${newCompletedSets} Complete! 🎯`,
+        description: `${totalSets - newCompletedSets} sets remaining`,
       });
     } else {
       // Exercise complete - show loading state
@@ -110,7 +114,8 @@ export const InteractiveExerciseCard = ({
         await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay
         onExerciseComplete(exercise.id);
         setIsActive(false);
-        setCurrentSet(1);
+        setCurrentSet(0);
+        setCompletedSets(0);
         
         toast({
           title: "Exercise Complete! 🏆",
@@ -126,15 +131,17 @@ export const InteractiveExerciseCard = ({
 
   const handleStartExercise = () => {
     setIsActive(true);
-    setCurrentSet(1);
+    setCurrentSet(0); // Start at 0, ready for first set
+    setCompletedSets(0);
     toast({
       title: "Exercise Started! 💪",
       description: `Let's crush ${exercise.name}!`,
     });
   };
 
+  // Calculate progress based on completed sets only
   const progressPercentage = exercise.completed ? 100 : 
-    isActive ? (currentSet / (exercise.sets || 3)) * 100 : 0;
+    (completedSets / (exercise.sets || 3)) * 100;
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -148,7 +155,7 @@ export const InteractiveExerciseCard = ({
         ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 shadow-sm' 
         : isActive 
         ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-300 shadow-md ring-1 ring-blue-200' 
-        : 'bg-white border-gray-200 hover:border-blue-300 hover:shadow-lg'
+        : 'bg-white border-gray-200 hover:border-blue-300 hover:shadow-sm'
     }`}>
       <div className="flex items-start gap-4">
         {/* Exercise Icon & Number */}
@@ -239,7 +246,7 @@ export const InteractiveExerciseCard = ({
               <div className="flex items-center justify-between">
                 <div className="text-sm">
                   <span className="font-semibold text-blue-900">
-                    Set {currentSet}/{exercise.sets || 3}
+                    Set {completedSets + 1}/{exercise.sets || 3}
                   </span>
                   {isResting && (
                     <div className="flex items-center gap-2 mt-1">
@@ -266,7 +273,7 @@ export const InteractiveExerciseCard = ({
                   className={`h-8 px-3 text-xs font-medium ${
                     isResting 
                       ? 'bg-orange-500 hover:bg-orange-600' 
-                      : currentSet >= (exercise.sets || 3)
+                      : completedSets >= (exercise.sets || 3) - 1
                       ? 'bg-green-600 hover:bg-green-700'
                       : 'bg-blue-600 hover:bg-blue-700'
                   }`}
@@ -281,7 +288,7 @@ export const InteractiveExerciseCard = ({
                       <Timer className="w-3 h-3 mr-1" />
                       Resting...
                     </>
-                  ) : currentSet >= (exercise.sets || 3) ? (
+                  ) : completedSets >= (exercise.sets || 3) - 1 ? (
                     <>
                       <Award className="w-3 h-3 mr-1" />
                       Finish

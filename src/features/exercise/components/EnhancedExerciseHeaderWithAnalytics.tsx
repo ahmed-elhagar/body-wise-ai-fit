@@ -68,43 +68,43 @@ export const EnhancedExerciseHeaderWithAnalytics = ({
           </div>
         </div>
         
-        <div className="flex items-center gap-3">
-          {/* Credits Display - Fixed height */}
-          <div className="flex items-center gap-2 px-3 py-2.5 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 h-10">
-            <Coins className="w-4 h-4 text-amber-600" />
-            <span className="text-sm font-medium text-amber-700">
+        <div className="flex items-center gap-2">
+          {/* Credits Display - Smaller and consistent */}
+          <div className="flex items-center gap-2 px-2 py-1.5 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border border-amber-200 h-8">
+            <Coins className="w-3 h-3 text-amber-600" />
+            <span className="text-xs font-medium text-amber-700">
               {displayCredits}
             </span>
           </div>
 
-          {/* Analytics Button - Fixed height */}
+          {/* Analytics Button - Smaller */}
           <Button
             onClick={onShowAnalytics}
             variant="outline"
             size="sm"
-            className="border-green-200 text-green-700 hover:bg-green-50 h-10"
+            className="border-green-200 text-green-700 hover:bg-green-50 h-8 px-3 text-xs hover:shadow-none"
           >
-            <BarChart3 className="w-4 h-4 mr-2" />
+            <BarChart3 className="w-3 h-3 mr-1" />
             Analytics
           </Button>
 
-          {/* Action Buttons - Fixed height */}
+          {/* Action Buttons - Smaller */}
           {currentProgram ? (
             <Button
               onClick={onRegenerateProgram}
               disabled={isGenerating || !hasCredits}
               variant="outline"
               size="sm"
-              className="border-blue-200 text-blue-700 hover:bg-blue-50 h-10"
+              className="border-blue-200 text-blue-700 hover:bg-blue-50 h-8 px-3 text-xs hover:shadow-none"
             >
               {isGenerating ? (
                 <>
-                  <Sparkles className="w-4 h-4 mr-2 animate-spin" />
+                  <Sparkles className="w-3 h-3 mr-1 animate-spin" />
                   Generating...
                 </>
               ) : (
                 <>
-                  <RotateCcw className="w-4 h-4 mr-2" />
+                  <RotateCcw className="w-3 h-3 mr-1" />
                   Regenerate
                 </>
               )}
@@ -113,9 +113,10 @@ export const EnhancedExerciseHeaderWithAnalytics = ({
             <Button
               onClick={onShowAIDialog}
               disabled={isGenerating || !hasCredits}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg h-10"
+              size="sm"
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white h-8 px-3 text-xs hover:shadow-none"
             >
-              <Sparkles className="w-4 h-4 mr-2" />
+              <Sparkles className="w-3 h-3 mr-1" />
               Generate Program
             </Button>
           )}

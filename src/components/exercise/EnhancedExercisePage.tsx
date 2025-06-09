@@ -60,6 +60,7 @@ const EnhancedExercisePage = () => {
     );
   }
 
+  // Show loading for initial load or when generating
   const showFullPageLoading = (isLoading && !currentProgram && currentWeekOffset === 0) || isGenerating;
 
   if (showFullPageLoading) {
@@ -73,6 +74,9 @@ const EnhancedExercisePage = () => {
       </div>
     );
   }
+
+  // Show loading for week navigation
+  const showWeekLoading = isLoading && currentProgram;
 
   if (error) {
     return <ExerciseErrorState onRetry={() => refetch()} />;
@@ -124,57 +128,57 @@ const EnhancedExercisePage = () => {
           </div>
         </div>
 
-        {/* Enhanced Navigation Section with Multi-layered Design */}
-        <div className="px-4 py-6 relative">
-          <div className="relative">
-            {/* Outer glow effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-blue-500/20 rounded-3xl blur-xl"></div>
-            
-            {/* Middle shadow layer */}
-            <div className="relative bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl border border-white/50">
-              {/* Inner content with subtle border */}
-              <div className="bg-gradient-to-br from-white/95 to-gray-50/95 backdrop-blur-sm rounded-xl m-1 border border-gray-200/30 shadow-inner">
-                <div className="p-4">
-                  <EnhancedDayNavigation
-                    weekStartDate={weekStartDate}
-                    selectedDayNumber={selectedDayNumber}
-                    onDayChange={setSelectedDayNumber}
-                    currentProgram={currentProgram}
-                    workoutType={workoutType}
-                    currentWeekOffset={currentWeekOffset}
-                    onWeekChange={setCurrentWeekOffset}
-                    onWorkoutTypeChange={setWorkoutType}
-                  />
-                </div>
-              </div>
+        {/* Simplified Navigation Section */}
+        <div className="px-4 py-6">
+          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200/50">
+            <div className="p-4">
+              <EnhancedDayNavigation
+                weekStartDate={weekStartDate}
+                selectedDayNumber={selectedDayNumber}
+                onDayChange={setSelectedDayNumber}
+                currentProgram={currentProgram}
+                workoutType={workoutType}
+                currentWeekOffset={currentWeekOffset}
+                onWeekChange={setCurrentWeekOffset}
+                onWorkoutTypeChange={setWorkoutType}
+              />
             </div>
           </div>
         </div>
 
-        {/* Enhanced Content Section */}
+        {/* Content Section with Week Loading */}
         <div className="px-4 py-6">
-          <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-fitness-neutral-200/50 overflow-hidden">
-            <ExercisePageContent
-              isLoading={isLoading && !!currentProgram && !isGenerating}
-              currentProgram={currentProgram}
-              todaysExercises={todaysExercises}
-              completedExercises={completedExercises}
-              totalExercises={totalExercises}
-              progressPercentage={progressPercentage}
-              isRestDay={isRestDay}
-              isToday={isToday}
-              selectedDayNumber={selectedDayNumber}
-              workoutType={workoutType}
-              setWorkoutType={setWorkoutType}
-              showAIDialog={showAIDialog}
-              setShowAIDialog={setShowAIDialog}
-              aiPreferences={aiPreferences}
-              setAiPreferences={setAiPreferences}
-              isGenerating={isGenerating}
-              onExerciseComplete={handleExerciseComplete}
-              onExerciseProgressUpdate={handleExerciseProgressUpdate}
-              onGenerateAIProgram={handleGenerateAIProgram}
-            />
+          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-fitness-neutral-200/50 overflow-hidden">
+            {showWeekLoading ? (
+              <div className="p-6">
+                <SimpleLoadingIndicator
+                  message="Loading Week Data"
+                  description="Fetching your workout plan for this week..."
+                />
+              </div>
+            ) : (
+              <ExercisePageContent
+                isLoading={false}
+                currentProgram={currentProgram}
+                todaysExercises={todaysExercises}
+                completedExercises={completedExercises}
+                totalExercises={totalExercises}
+                progressPercentage={progressPercentage}
+                isRestDay={isRestDay}
+                isToday={isToday}
+                selectedDayNumber={selectedDayNumber}
+                workoutType={workoutType}
+                setWorkoutType={setWorkoutType}
+                showAIDialog={showAIDialog}
+                setShowAIDialog={setShowAIDialog}
+                aiPreferences={aiPreferences}
+                setAiPreferences={setAiPreferences}
+                isGenerating={isGenerating}
+                onExerciseComplete={handleExerciseComplete}
+                onExerciseProgressUpdate={handleExerciseProgressUpdate}
+                onGenerateAIProgram={handleGenerateAIProgram}
+              />
+            )}
           </div>
         </div>
 
