@@ -13,7 +13,8 @@ import {
   Timer,
   Zap,
   Award,
-  SkipForward
+  SkipForward,
+  Loader2
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ExerciseActionsDropdown } from "./ExerciseActionsDropdown";
@@ -38,6 +39,7 @@ export const InteractiveExerciseCard = ({
   const [restTimer, setRestTimer] = useState(0);
   const [isResting, setIsResting] = useState(false);
   const [restInterval, setRestInterval] = useState<NodeJS.Timeout | null>(null);
+  const [isCompleting, setIsCompleting] = useState(false);
 
   // Cleanup timer on unmount
   useEffect(() => {
@@ -84,7 +86,7 @@ export const InteractiveExerciseCard = ({
     });
   };
 
-  const handleSetComplete = () => {
+  const handleSetComplete = async () => {
     const totalSets = exercise.sets || 3;
     
     // Update progress
@@ -101,15 +103,24 @@ export const InteractiveExerciseCard = ({
         description: `${totalSets - currentSet} sets remaining`,
       });
     } else {
-      // Exercise complete
-      onExerciseComplete(exercise.id);
-      setIsActive(false);
-      setCurrentSet(1);
+      // Exercise complete - show loading state
+      setIsCompleting(true);
       
-      toast({
-        title: "Exercise Complete! 🏆",
-        description: `Great job completing ${exercise.name}!`,
-      });
+      try {
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay
+        onExerciseComplete(exercise.id);
+        setIsActive(false);
+        setCurrentSet(1);
+        
+        toast({
+          title: "Exercise Complete! 🏆",
+          description: `Great job completing ${exercise.name}!`,
+        });
+      } catch (error) {
+        console.error('Error completing exercise:', error);
+      } finally {
+        setIsCompleting(false);
+      }
     }
   };
 
@@ -141,17 +152,19 @@ export const InteractiveExerciseCard = ({
     }`}>
       <div className="flex items-start gap-4">
         {/* Exercise Icon & Number */}
-        <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-sm transition-colors ${
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-sm transition-colors ${
           exercise.completed 
             ? 'bg-gradient-to-br from-green-500 to-green-600' 
             : isActive 
             ? 'bg-gradient-to-br from-blue-500 to-blue-600' 
             : 'bg-gradient-to-br from-gray-400 to-gray-500'
         }`}>
-          {exercise.completed ? (
-            <CheckCircle2 className="w-6 h-6 text-white" />
+          {isCompleting ? (
+            <Loader2 className="w-5 h-5 text-white animate-spin" />
+          ) : exercise.completed ? (
+            <CheckCircle2 className="w-5 h-5 text-white" />
           ) : (
-            <span className="text-white font-bold text-lg">{index + 1}</span>
+            <span className="text-white font-bold text-sm">{index + 1}</span>
           )}
         </div>
 
@@ -190,9 +203,9 @@ export const InteractiveExerciseCard = ({
                 <Button
                   onClick={handleStartExercise}
                   size="sm"
-                  className="h-9 px-4 bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+                  className="h-8 px-3 bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
                 >
-                  <Play className="w-4 h-4 mr-1" />
+                  <Play className="w-3 h-3 mr-1" />
                   Start
                 </Button>
               )}
@@ -221,7 +234,7 @@ export const InteractiveExerciseCard = ({
           </div>
 
           {/* Active Exercise State */}
-          {isActive && (
+          {isActive && !exercise.completed && (
             <div className="p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
               <div className="flex items-center justify-between">
                 <div className="text-sm">
@@ -248,7 +261,7 @@ export const InteractiveExerciseCard = ({
                 
                 <Button
                   onClick={handleSetComplete}
-                  disabled={isResting}
+                  disabled={isResting || isCompleting}
                   size="sm"
                   className={`h-8 px-3 text-xs font-medium ${
                     isResting 
@@ -258,7 +271,12 @@ export const InteractiveExerciseCard = ({
                       : 'bg-blue-600 hover:bg-blue-700'
                   }`}
                 >
-                  {isResting ? (
+                  {isCompleting ? (
+                    <>
+                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                      Completing...
+                    </>
+                  ) : isResting ? (
                     <>
                       <Timer className="w-3 h-3 mr-1" />
                       Resting...

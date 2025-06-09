@@ -17,8 +17,12 @@ export const ExerciseInstructionsDialog = ({
 }: ExerciseInstructionsDialogProps) => {
   const { t } = useLanguage();
 
+  const handleClose = () => {
+    onOpenChange(false);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-lg">
@@ -85,6 +89,12 @@ export const ExerciseInstructionsDialog = ({
               </div>
             </div>
           )}
+
+          <div className="flex justify-end">
+            <Button onClick={handleClose} variant="outline">
+              Close
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

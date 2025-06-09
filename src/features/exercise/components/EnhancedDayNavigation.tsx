@@ -1,7 +1,6 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Coffee, Target, ChevronLeft, ChevronRight, Home, Building2 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { format, addDays, addWeeks } from "date-fns";
@@ -55,7 +54,7 @@ export const EnhancedDayNavigation = ({
     if (totalCount === 0) return 'empty';
     if (completedCount === totalCount) return 'completed';
     if (completedCount > 0) return 'in-progress';
-    return 'scheduled';
+    return 'ready';
   };
 
   const getDayProgress = (dayNumber: number) => {
@@ -70,9 +69,9 @@ export const EnhancedDayNavigation = ({
   };
 
   return (
-    <Card className="p-3 bg-white/95 backdrop-blur-sm border border-gray-200/50 shadow-lg rounded-xl">
+    <Card className="p-4 bg-white/95 backdrop-blur-sm border border-gray-200/50 shadow-sm rounded-xl">
       <div className="space-y-3">
-        {/* Compact Header */}
+        {/* Header */}
         <div className="flex items-center justify-between">
           {/* Week Navigation */}
           <div className="flex items-center gap-2">
@@ -80,13 +79,13 @@ export const EnhancedDayNavigation = ({
               variant="ghost"
               size="sm"
               onClick={() => onWeekChange(currentWeekOffset - 1)}
-              className="h-7 w-7 p-0 rounded-full hover:bg-gray-100"
+              className="h-8 w-8 p-0 rounded-full hover:bg-gray-100"
             >
-              <ChevronLeft className="w-3 h-3" />
+              <ChevronLeft className="w-4 h-4" />
             </Button>
 
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg px-3 py-1.5">
-              <div className="text-xs font-bold text-gray-900 flex items-center gap-1">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5">
+              <div className="text-xs font-semibold text-gray-900 flex items-center gap-1">
                 <span className="text-blue-600">Week {currentWeekOffset + 1}</span>
                 <span className="text-gray-400">•</span>
                 <span className="text-gray-600">{formatWeekRange(weekStartDate)}</span>
@@ -97,13 +96,13 @@ export const EnhancedDayNavigation = ({
               variant="ghost"
               size="sm"
               onClick={() => onWeekChange(currentWeekOffset + 1)}
-              className="h-7 w-7 p-0 rounded-full hover:bg-gray-100"
+              className="h-8 w-8 p-0 rounded-full hover:bg-gray-100"
             >
-              <ChevronRight className="w-3 h-3" />
+              <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
 
-          {/* Compact Workout Type Toggle */}
+          {/* Workout Type Toggle */}
           <div className="flex items-center bg-gray-50 rounded-lg p-0.5">
             <Button
               variant={workoutType === 'home' ? 'default' : 'ghost'}
@@ -134,71 +133,94 @@ export const EnhancedDayNavigation = ({
           </div>
         </div>
 
-        {/* Compact Day Grid */}
-        <div className="grid grid-cols-7 gap-1.5">
+        {/* Day Grid */}
+        <div className="grid grid-cols-7 gap-2">
           {dayNames.map((day, index) => {
             const dayNumber = index + 1;
             const isSelected = selectedDayNumber === dayNumber;
             const isToday = new Date().getDay() === (dayNumber === 7 ? 0 : dayNumber);
             const status = getDayStatus(dayNumber);
             const progress = getDayProgress(dayNumber);
-            const dayDate = addDays(weekStartDate, index);
+
+            // Status-based styling
+            let bgColor, textColor, borderColor, statusIcon;
+            
+            if (isSelected) {
+              bgColor = 'bg-gradient-to-br from-blue-600 to-indigo-600';
+              textColor = 'text-white';
+              borderColor = 'border-blue-300';
+            } else {
+              switch (status) {
+                case 'completed':
+                  bgColor = 'bg-green-50 hover:bg-green-100';
+                  textColor = 'text-green-800';
+                  borderColor = 'border-green-200';
+                  statusIcon = <CheckCircle className="w-3 h-3 text-green-600" />;
+                  break;
+                case 'in-progress':
+                  bgColor = 'bg-yellow-50 hover:bg-yellow-100';
+                  textColor = 'text-yellow-800';
+                  borderColor = 'border-yellow-200';
+                  statusIcon = <Target className="w-3 h-3 text-yellow-600" />;
+                  break;
+                case 'ready':
+                  bgColor = 'bg-blue-50 hover:bg-blue-100';
+                  textColor = 'text-blue-800';
+                  borderColor = 'border-blue-200';
+                  statusIcon = <Target className="w-3 h-3 text-blue-600" />;
+                  break;
+                case 'rest':
+                  bgColor = 'bg-orange-50 hover:bg-orange-100';
+                  textColor = 'text-orange-800';
+                  borderColor = 'border-orange-200';
+                  statusIcon = <Coffee className="w-3 h-3 text-orange-600" />;
+                  break;
+                default:
+                  bgColor = 'bg-gray-50 hover:bg-gray-100';
+                  textColor = 'text-gray-600';
+                  borderColor = 'border-gray-200';
+              }
+            }
 
             return (
               <Button
                 key={dayNumber}
                 onClick={() => onDayChange(dayNumber)}
-                variant={isSelected ? "default" : "ghost"}
+                variant="ghost"
                 className={`
-                  relative h-16 p-2 flex flex-col items-center gap-1 transition-all duration-200 text-xs
-                  ${isSelected 
-                    ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-md scale-105' 
-                    : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 hover:border-gray-300'
-                  }
-                  ${isToday ? 'ring-1 ring-blue-400' : ''}
+                  relative h-14 p-2 flex flex-col items-center gap-1 transition-all duration-200 text-xs
+                  ${bgColor} ${textColor} border ${borderColor}
+                  ${isToday ? 'ring-2 ring-blue-400' : ''}
                   rounded-lg
                 `}
               >
                 {/* Day Label */}
-                <div className="text-xs font-semibold">
-                  {day}
-                </div>
+                <div className="text-xs font-medium">{day}</div>
                 
-                {/* Date */}
-                <div className="text-sm font-bold">
-                  {format(dayDate, 'd')}
+                {/* Status Icon */}
+                <div className="flex items-center justify-center">
+                  {isSelected ? (
+                    <div className="w-3 h-3 bg-white rounded-full" />
+                  ) : (
+                    statusIcon || <div className="w-3 h-3" />
+                  )}
                 </div>
 
-                {/* Compact Progress Indicator */}
+                {/* Progress Bar for workouts */}
                 {status !== 'rest' && status !== 'empty' && (
                   <div className="w-full h-1 bg-gray-200/50 rounded-full overflow-hidden">
                     <div 
                       className={`h-full transition-all duration-300 rounded-full ${
-                        isSelected ? 'bg-white/90' : 'bg-blue-500'
+                        isSelected ? 'bg-white/90' : 'bg-current opacity-60'
                       }`}
                       style={{ width: `${progress}%` }}
                     />
                   </div>
                 )}
 
-                {/* Compact Status Badge */}
-                <div className="flex items-center">
-                  {status === 'rest' ? (
-                    <Coffee className={`w-2.5 h-2.5 ${isSelected ? 'text-orange-200' : 'text-orange-500'}`} />
-                  ) : status === 'completed' ? (
-                    <CheckCircle className={`w-2.5 h-2.5 ${isSelected ? 'text-green-200' : 'text-green-500'}`} />
-                  ) : status === 'in-progress' ? (
-                    <Target className={`w-2.5 h-2.5 ${isSelected ? 'text-yellow-200' : 'text-yellow-500'}`} />
-                  ) : status === 'scheduled' ? (
-                    <Target className={`w-2.5 h-2.5 ${isSelected ? 'text-blue-200' : 'text-blue-500'}`} />
-                  ) : (
-                    <div className="w-2.5 h-2.5" />
-                  )}
-                </div>
-
                 {/* Today indicator */}
                 {isToday && (
-                  <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                  <div className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
                 )}
               </Button>
             );

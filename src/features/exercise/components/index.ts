@@ -27,3 +27,4 @@ export { ExerciseAnalyticsContainer } from './ExerciseAnalyticsContainer';
 export { AIExerciseDialog } from './AIExerciseDialog';
 export { ExerciseActionsDropdown } from './ExerciseActionsDropdown';
 export { ExerciseInstructionsDialog } from './ExerciseInstructionsDialog';
+export { CompactProgressSection } from './CompactProgressSection';

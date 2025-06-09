@@ -1,19 +1,19 @@
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { 
+  Sparkles, 
+  RotateCcw, 
   BarChart3, 
-  Brain, 
-  Trophy, 
-  Award,
-  TrendingUp,
+  Dumbbell, 
+  Coins,
+  Calendar,
   Target,
-  Zap,
-  Calendar
-} from 'lucide-react';
-import { useLanguage } from '@/contexts/LanguageContext';
+  TrendingUp
+} from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useCentralizedCredits } from "@/hooks/useCentralizedCredits";
 
 interface EnhancedExerciseHeaderWithAnalyticsProps {
   currentProgram: any;
@@ -33,103 +33,139 @@ export const EnhancedExerciseHeaderWithAnalytics = ({
   workoutType
 }: EnhancedExerciseHeaderWithAnalyticsProps) => {
   const { t } = useLanguage();
+  const { remaining: userCredits, isPro, hasCredits } = useCentralizedCredits();
 
-  // Mock analytics summary data
-  const analyticsData = {
-    totalWorkouts: 28,
-    personalRecords: 5,
-    weekStreak: 3,
-    thisWeekProgress: 75
-  };
+  const displayCredits = isPro ? 'Unlimited' : `${userCredits} credits`;
 
   return (
     <div className="space-y-4">
-      {/* Program Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            {currentProgram?.program_name || t('Exercise Program')}
-          </h1>
-          <div className="flex items-center gap-3 mt-1">
-            <Badge variant="outline" className="flex items-center gap-1">
-              <Target className="w-3 h-3" />
-              {workoutType === 'home' ? t('Home Workout') : t('Gym Workout')}
-            </Badge>
-            {currentProgram?.difficulty_level && (
-              <Badge variant="secondary">
-                {currentProgram.difficulty_level}
+      {/* Main Header */}
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+            <Dumbbell className="w-6 h-6 text-white" />
+          </div>
+          
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-1">
+              Exercise Program
+            </h1>
+            <div className="flex items-center gap-3 text-sm text-gray-600">
+              <Badge variant="outline" className={`${
+                workoutType === 'gym' 
+                  ? 'border-purple-200 text-purple-700 bg-purple-50' 
+                  : 'border-blue-200 text-blue-700 bg-blue-50'
+              }`}>
+                {workoutType === 'gym' ? '🏋️ Gym Workout' : '🏠 Home Workout'}
               </Badge>
-            )}
+              {currentProgram && (
+                <div className="flex items-center gap-1">
+                  <Calendar className="w-4 h-4" />
+                  <span>Week {currentProgram.current_week || 1} of 4</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
+        
+        <div className="flex items-center gap-3">
+          {/* Credits Display */}
+          <div className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200">
+            <Coins className="w-4 h-4 text-amber-600" />
+            <span className="text-sm font-medium text-amber-700">
+              {displayCredits}
+            </span>
+          </div>
 
-        <div className="flex items-center gap-2">
+          {/* Analytics Button */}
           <Button
-            variant="outline"
             onClick={onShowAnalytics}
-            className="flex items-center gap-2"
-          >
-            <BarChart3 className="w-4 h-4" />
-            {t('Analytics')}
-          </Button>
-          <Button
             variant="outline"
-            onClick={onRegenerateProgram}
-            disabled={isGenerating}
-            className="flex items-center gap-2"
+            size="sm"
+            className="border-green-200 text-green-700 hover:bg-green-50"
           >
-            <Brain className="w-4 h-4" />
-            {isGenerating ? t('Generating...') : t('AI Regenerate')}
+            <BarChart3 className="w-4 h-4 mr-2" />
+            Analytics
           </Button>
-          <Button onClick={onShowAIDialog} className="flex items-center gap-2">
-            <Zap className="w-4 h-4" />
-            {t('New Program')}
-          </Button>
+
+          {/* Action Buttons */}
+          {currentProgram ? (
+            <Button
+              onClick={onRegenerateProgram}
+              disabled={isGenerating || !hasCredits}
+              variant="outline"
+              size="sm"
+              className="border-blue-200 text-blue-700 hover:bg-blue-50"
+            >
+              {isGenerating ? (
+                <>
+                  <Sparkles className="w-4 h-4 mr-2 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Regenerate
+                </>
+              )}
+            </Button>
+          ) : (
+            <Button
+              onClick={onShowAIDialog}
+              disabled={isGenerating || !hasCredits}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              Generate Program
+            </Button>
+          )}
         </div>
       </div>
 
-      {/* Quick Analytics Summary */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Card className="p-3 bg-blue-50 border-blue-200">
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-blue-600" />
-            <div>
-              <div className="text-lg font-bold text-blue-900">{analyticsData.totalWorkouts}</div>
-              <div className="text-xs text-blue-700">{t('Total Workouts')}</div>
+      {/* Program Info Card */}
+      {currentProgram && (
+        <Card className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-6">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-600">{currentProgram.duration_weeks || 4}</div>
+                <div className="text-xs text-blue-700 font-medium">Weeks</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600">{currentProgram.weekly_frequency || '4-5'}</div>
+                <div className="text-xs text-green-700 font-medium">Days/Week</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-purple-600">{currentProgram.session_duration || 45}</div>
+                <div className="text-xs text-purple-700 font-medium">Minutes</div>
+              </div>
             </div>
-          </div>
-        </Card>
 
-        <Card className="p-3 bg-yellow-50 border-yellow-200">
-          <div className="flex items-center gap-2">
-            <Trophy className="w-4 h-4 text-yellow-600" />
-            <div>
-              <div className="text-lg font-bold text-yellow-900">{analyticsData.personalRecords}</div>
-              <div className="text-xs text-yellow-700">{t('Personal Records')}</div>
+            <div className="text-right">
+              <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+                <Target className="w-4 h-4" />
+                <span className="font-medium capitalize">
+                  {currentProgram.goal_type?.replace('_', ' ') || 'General Fitness'}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <TrendingUp className="w-4 h-4" />
+                <span className="font-medium capitalize">
+                  {currentProgram.fitness_level || 'Beginner'} Level
+                </span>
+              </div>
             </div>
           </div>
         </Card>
+      )}
 
-        <Card className="p-3 bg-green-50 border-green-200">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-green-600" />
-            <div>
-              <div className="text-lg font-bold text-green-900">{analyticsData.weekStreak}</div>
-              <div className="text-xs text-green-700">{t('Week Streak')}</div>
-            </div>
-          </div>
+      {!hasCredits && (
+        <Card className="p-3 bg-amber-50 border border-amber-200">
+          <p className="text-sm text-amber-700 text-center">
+            You've reached your AI generation limit. Upgrade your plan for unlimited access.
+          </p>
         </Card>
-
-        <Card className="p-3 bg-purple-50 border-purple-200">
-          <div className="flex items-center gap-2">
-            <Award className="w-4 h-4 text-purple-600" />
-            <div>
-              <div className="text-lg font-bold text-purple-900">{analyticsData.thisWeekProgress}%</div>
-              <div className="text-xs text-purple-700">{t('This Week')}</div>
-            </div>
-          </div>
-        </Card>
-      </div>
+      )}
     </div>
   );
 };
