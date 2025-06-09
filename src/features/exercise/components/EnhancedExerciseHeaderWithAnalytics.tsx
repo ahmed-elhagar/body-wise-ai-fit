@@ -69,33 +69,33 @@ export const EnhancedExerciseHeaderWithAnalytics = ({
         </div>
         
         <div className="flex items-center gap-3">
-          {/* Credits Display */}
-          <div className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200">
+          {/* Credits Display - Fixed height */}
+          <div className="flex items-center gap-2 px-3 py-2.5 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 h-10">
             <Coins className="w-4 h-4 text-amber-600" />
             <span className="text-sm font-medium text-amber-700">
               {displayCredits}
             </span>
           </div>
 
-          {/* Analytics Button */}
+          {/* Analytics Button - Fixed height */}
           <Button
             onClick={onShowAnalytics}
             variant="outline"
             size="sm"
-            className="border-green-200 text-green-700 hover:bg-green-50"
+            className="border-green-200 text-green-700 hover:bg-green-50 h-10"
           >
             <BarChart3 className="w-4 h-4 mr-2" />
             Analytics
           </Button>
 
-          {/* Action Buttons */}
+          {/* Action Buttons - Fixed height */}
           {currentProgram ? (
             <Button
               onClick={onRegenerateProgram}
               disabled={isGenerating || !hasCredits}
               variant="outline"
               size="sm"
-              className="border-blue-200 text-blue-700 hover:bg-blue-50"
+              className="border-blue-200 text-blue-700 hover:bg-blue-50 h-10"
             >
               {isGenerating ? (
                 <>
@@ -113,7 +113,7 @@ export const EnhancedExerciseHeaderWithAnalytics = ({
             <Button
               onClick={onShowAIDialog}
               disabled={isGenerating || !hasCredits}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg"
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg h-10"
             >
               <Sparkles className="w-4 h-4 mr-2" />
               Generate Program

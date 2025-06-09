@@ -124,19 +124,30 @@ const EnhancedExercisePage = () => {
           </div>
         </div>
 
-        {/* Enhanced Navigation Section */}
-        <div className="px-4 py-4 bg-white/60 backdrop-blur-sm border-b border-fitness-neutral-200/30">
-          <div className="bg-white/80 rounded-2xl p-4 shadow-lg border border-fitness-neutral-200/50">
-            <EnhancedDayNavigation
-              weekStartDate={weekStartDate}
-              selectedDayNumber={selectedDayNumber}
-              onDayChange={setSelectedDayNumber}
-              currentProgram={currentProgram}
-              workoutType={workoutType}
-              currentWeekOffset={currentWeekOffset}
-              onWeekChange={setCurrentWeekOffset}
-              onWorkoutTypeChange={setWorkoutType}
-            />
+        {/* Enhanced Navigation Section with Multi-layered Design */}
+        <div className="px-4 py-6 relative">
+          <div className="relative">
+            {/* Outer glow effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-blue-500/20 rounded-3xl blur-xl"></div>
+            
+            {/* Middle shadow layer */}
+            <div className="relative bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl border border-white/50">
+              {/* Inner content with subtle border */}
+              <div className="bg-gradient-to-br from-white/95 to-gray-50/95 backdrop-blur-sm rounded-xl m-1 border border-gray-200/30 shadow-inner">
+                <div className="p-4">
+                  <EnhancedDayNavigation
+                    weekStartDate={weekStartDate}
+                    selectedDayNumber={selectedDayNumber}
+                    onDayChange={setSelectedDayNumber}
+                    currentProgram={currentProgram}
+                    workoutType={workoutType}
+                    currentWeekOffset={currentWeekOffset}
+                    onWeekChange={setCurrentWeekOffset}
+                    onWorkoutTypeChange={setWorkoutType}
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
