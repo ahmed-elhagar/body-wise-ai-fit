@@ -85,36 +85,41 @@ const QuickActionsGrid = () => {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {quickActions.map((action, index) => {
         const IconComponent = action.icon;
         
         return (
           <Card 
             key={index}
-            className="group hover:shadow-xl transition-all duration-300 border-0 bg-white/80 backdrop-blur-sm hover:bg-white hover:scale-[1.02] cursor-pointer"
+            className="group hover:shadow-2xl transition-all duration-500 border-0 bg-white/90 backdrop-blur-sm hover:bg-white hover:scale-[1.02] cursor-pointer overflow-hidden relative"
             onClick={action.action}
           >
-            <CardContent className="p-6">
+            {/* Gradient border effect */}
+            <div className={`absolute inset-0 bg-gradient-to-br ${action.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl`}>
+              <div className="absolute inset-[1px] bg-white rounded-xl" />
+            </div>
+            
+            <CardContent className="relative p-6 z-10">
               <div className={`flex items-start justify-between mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${action.color} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                  <IconComponent className="w-6 h-6 text-white" />
+                <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${action.color} flex items-center justify-center shadow-xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-500`}>
+                  <IconComponent className="w-7 h-7 text-white" />
                 </div>
-                <Badge variant="secondary" className="text-xs font-medium">
+                <Badge variant="secondary" className="text-xs font-medium bg-gray-100 group-hover:bg-gray-50 transition-colors">
                   {action.badge}
                 </Badge>
               </div>
               
               <div className={isRTL ? 'text-right' : 'text-left'}>
-                <h3 className="font-bold text-lg text-gray-900 mb-2 group-hover:text-gray-700 transition-colors">
+                <h3 className="font-bold text-xl text-gray-900 mb-3 group-hover:text-gray-700 transition-colors">
                   {action.title}
                 </h3>
-                <p className="text-gray-600 text-sm mb-3 leading-relaxed">
+                <p className="text-gray-600 text-sm mb-4 leading-relaxed">
                   {action.description}
                 </p>
                 
                 <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-                  <div className={`flex items-center gap-2 text-xs text-gray-500 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                  <div className={`flex items-center gap-2 text-xs font-medium text-gray-500 ${isRTL ? 'flex-row-reverse' : ''}`}>
                     <TrendingUp className="w-3 h-3" />
                     <span>{action.stats}</span>
                   </div>
@@ -122,9 +127,9 @@ const QuickActionsGrid = () => {
                   <Button 
                     size="sm" 
                     variant="ghost"
-                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-gray-600 hover:text-gray-900"
+                    className="opacity-0 group-hover:opacity-100 transition-all duration-500 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transform group-hover:translate-x-1"
                   >
-                    <Plus className="w-3 h-3" />
+                    <Plus className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
