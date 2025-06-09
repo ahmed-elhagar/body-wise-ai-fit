@@ -17,15 +17,15 @@ import { useGoals } from "@/hooks/useGoals";
 
 export const GoalsProgressSection = () => {
   const navigate = useNavigate();
-  const { goals, weightGoals, fitnessGoals } = useGoals();
+  const { goals } = useGoals();
 
   const totalGoals = goals?.length || 0;
-  const completedGoals = goals?.filter(g => g.is_completed)?.length || 0;
-  const activeGoals = goals?.filter(g => !g.is_completed)?.length || 0;
+  const completedGoals = goals?.filter(g => g.status === 'completed')?.length || 0;
+  const activeGoals = goals?.filter(g => g.status === 'active')?.length || 0;
   const overallProgress = totalGoals > 0 ? (completedGoals / totalGoals) * 100 : 0;
 
   const getGoalStatusColor = (goal: any) => {
-    if (goal.is_completed) return "bg-green-100 text-green-800";
+    if (goal.status === 'completed') return "bg-green-100 text-green-800";
     
     const deadline = new Date(goal.target_date);
     const now = new Date();
@@ -37,7 +37,7 @@ export const GoalsProgressSection = () => {
   };
 
   const getGoalStatusIcon = (goal: any) => {
-    if (goal.is_completed) return <CheckCircle className="w-4 h-4 text-green-600" />;
+    if (goal.status === 'completed') return <CheckCircle className="w-4 h-4 text-green-600" />;
     
     const deadline = new Date(goal.target_date);
     const now = new Date();
@@ -48,7 +48,7 @@ export const GoalsProgressSection = () => {
   };
 
   const calculateGoalProgress = (goal: any) => {
-    if (goal.is_completed) return 100;
+    if (goal.status === 'completed') return 100;
     
     // This would be calculated based on actual progress data
     // For now, we'll use a mock calculation
@@ -144,7 +144,7 @@ export const GoalsProgressSection = () => {
                       </div>
                     </div>
                     <Badge className={getGoalStatusColor(goal)}>
-                      {goal.is_completed ? 'Completed' : 'Active'}
+                      {goal.status === 'completed' ? 'Completed' : 'Active'}
                     </Badge>
                   </div>
                   
@@ -156,7 +156,7 @@ export const GoalsProgressSection = () => {
                     <Progress value={progress} className="h-2" />
                     
                     <div className="flex items-center justify-between text-xs text-gray-500">
-                      <span>Target: {goal.target_value} {goal.unit}</span>
+                      <span>Target: {goal.target_value} {goal.target_unit}</span>
                       <span>Due: {new Date(goal.target_date).toLocaleDateString()}</span>
                     </div>
                   </div>

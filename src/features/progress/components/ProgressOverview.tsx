@@ -30,8 +30,8 @@ export const ProgressOverview = () => {
   const calorieProgress = targetDayCalories > 0 ? Math.min(100, (totalCalories / targetDayCalories) * 100) : 0;
   const weightProgress = weightEntries?.length >= 2 ? 
     Math.abs(((weightEntries[0]?.weight - weightEntries[1]?.weight) / weightEntries[1]?.weight) * 100) : 0;
-  const activePrograms = programs?.filter(p => p.is_active)?.length || 0;
-  const completedGoals = goals?.filter(g => g.is_completed)?.length || 0;
+  const activePrograms = programs?.filter(p => p.status === 'active')?.length || 0;
+  const completedGoals = goals?.filter(g => g.status === 'completed')?.length || 0;
   const totalGoals = goals?.length || 0;
   const goalProgress = totalGoals > 0 ? (completedGoals / totalGoals) * 100 : 0;
 

@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -22,7 +21,7 @@ export const FitnessProgressSection = () => {
   const { programs } = useExercisePrograms();
   const { currentProgram, completedExercises, totalExercises, progressPercentage } = useOptimizedExerciseProgramPage();
 
-  const activePrograms = programs?.filter(p => p.is_active) || [];
+  const activePrograms = programs?.filter(p => p.status === 'active') || [];
   const totalWorkouts = currentProgram?.daily_workouts?.length || 0;
   const completedWorkouts = currentProgram?.daily_workouts?.filter(w => w.completed)?.length || 0;
   const weeklyProgress = totalWorkouts > 0 ? (completedWorkouts / totalWorkouts) * 100 : 0;
@@ -128,7 +127,7 @@ export const FitnessProgressSection = () => {
                 <div className="text-sm text-blue-600">Current Week</div>
                 <div className="flex items-center justify-center gap-1 mt-2">
                   <Calendar className="w-3 h-3 text-blue-500" />
-                  <span className="text-xs text-blue-500">of {currentProgram.total_weeks || 12}</span>
+                  <span className="text-xs text-blue-500">Active Program</span>
                 </div>
               </div>
               
