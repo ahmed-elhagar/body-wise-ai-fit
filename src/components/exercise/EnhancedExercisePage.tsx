@@ -108,8 +108,8 @@ const EnhancedExercisePage = () => {
     );
   }
 
-  // Only show full page loading for initial data load
-  const showFullPageLoading = isLoading && !currentProgram && currentWeekOffset === 0 && !isGenerating;
+  // Only show full page loading for initial data load (no program exists)
+  const showFullPageLoading = isLoading && !currentProgram && currentWeekOffset === 0;
 
   if (showFullPageLoading) {
     return (
@@ -189,38 +189,38 @@ const EnhancedExercisePage = () => {
 
         {/* Content Section */}
         <div className="px-4 pb-6">
-          <div className="bg-white rounded-lg border border-gray-200">
-            {/* Simple loading for week navigation */}
-            {isLoading && currentProgram && !isGenerating ? (
-              <div className="p-6">
+          <div className="bg-white rounded-lg border border-gray-200 relative">
+            {/* Week navigation loading overlay */}
+            {isLoading && currentProgram && (
+              <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-10 rounded-lg">
                 <SimpleLoadingIndicator
                   message="Loading Week Data"
                   description="Fetching your workout plan for this week..."
                 />
               </div>
-            ) : (
-              <ExercisePageContent
-                isLoading={false}
-                currentProgram={currentProgram}
-                todaysExercises={todaysExercises}
-                completedExercises={completedExercises}
-                totalExercises={totalExercises}
-                progressPercentage={progressPercentage}
-                isRestDay={isRestDay}
-                isToday={isToday}
-                selectedDayNumber={selectedDayNumber}
-                workoutType={workoutType}
-                setWorkoutType={setWorkoutType}
-                showAIDialog={showAIDialog}
-                setShowAIDialog={setShowAIDialog}
-                aiPreferences={aiPreferences}
-                setAiPreferences={setAiPreferences}
-                isGenerating={isGenerating}
-                onExerciseComplete={handleExerciseComplete}
-                onExerciseProgressUpdate={handleExerciseProgressUpdate}
-                onGenerateAIProgram={handleGenerateAIProgram}
-              />
             )}
+            
+            <ExercisePageContent
+              isLoading={false}
+              currentProgram={currentProgram}
+              todaysExercises={todaysExercises}
+              completedExercises={completedExercises}
+              totalExercises={totalExercises}
+              progressPercentage={progressPercentage}
+              isRestDay={isRestDay}
+              isToday={isToday}
+              selectedDayNumber={selectedDayNumber}
+              workoutType={workoutType}
+              setWorkoutType={setWorkoutType}
+              showAIDialog={showAIDialog}
+              setShowAIDialog={setShowAIDialog}
+              aiPreferences={aiPreferences}
+              setAiPreferences={setAiPreferences}
+              isGenerating={isGenerating}
+              onExerciseComplete={handleExerciseComplete}
+              onExerciseProgressUpdate={handleExerciseProgressUpdate}
+              onGenerateAIProgram={handleGenerateAIProgram}
+            />
           </div>
         </div>
 
@@ -234,17 +234,18 @@ const EnhancedExercisePage = () => {
           isGenerating={isGenerating}
         />
 
-        {/* Unified AI Loading Dialog - Non-blocking */}
+        {/* Small Top-Right AI Loading Dialog - Like Meal Plan */}
         <UnifiedAILoadingDialog
           isOpen={isGenerating}
-          title={language === 'ar' ? 'إنشاء برنامج رياضي بالذكاء الاصطناعي' : 'Generating AI Exercise Program'}
-          description={language === 'ar' ? 'إنشاء برنامج رياضي مخصص لأهدافك ومستوى لياقتك' : 'Creating a personalized exercise program for your goals and fitness level'}
+          title={language === 'ar' ? 'إنشاء برنامج رياضي' : 'Generating Exercise Program'}
+          description={language === 'ar' ? 'إنشاء برنامج رياضي مخصص' : 'Creating personalized exercise program'}
           steps={exerciseSteps}
           currentStepIndex={currentStepIndex}
           isComplete={isComplete}
           progress={progress}
           estimatedTotalTime={22}
           allowClose={false}
+          position="top-right"
         />
       </div>
     </div>
