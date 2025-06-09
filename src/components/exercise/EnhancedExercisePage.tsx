@@ -129,6 +129,9 @@ const EnhancedExercisePage = () => {
 
   const handleGenerateAIProgram = async (preferences: any) => {
     try {
+      // Close dialog immediately when generation starts
+      setShowAIDialog(false);
+      
       const enhancedPreferences = {
         ...preferences,
         workoutType,
@@ -138,7 +141,6 @@ const EnhancedExercisePage = () => {
       
       console.log('🎯 Starting AI program generation:', enhancedPreferences);
       await generateExerciseProgram(enhancedPreferences);
-      setShowAIDialog(false);
       refetch();
     } catch (error) {
       console.error('❌ Error generating exercise program:', error);
@@ -155,6 +157,9 @@ const EnhancedExercisePage = () => {
       console.error('❌ Error regenerating exercise program:', error);
     }
   };
+
+  // Determine if we should show week navigation loading
+  const isWeekNavigationLoading = isLoading && currentProgram && !isGenerating;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -190,9 +195,9 @@ const EnhancedExercisePage = () => {
         {/* Content Section */}
         <div className="px-4 pb-6">
           <div className="bg-white rounded-lg border border-gray-200 relative">
-            {/* Week navigation loading overlay */}
-            {isLoading && currentProgram && (
-              <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-10 rounded-lg">
+            {/* Week navigation loading overlay - only show when navigating between weeks */}
+            {isWeekNavigationLoading && (
+              <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex items-center justify-center z-10 rounded-lg">
                 <SimpleLoadingIndicator
                   message="Loading Week Data"
                   description="Fetching your workout plan for this week..."
