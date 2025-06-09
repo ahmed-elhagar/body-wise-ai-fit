@@ -31,6 +31,7 @@ interface ExercisePageContentProps {
 
 export const ExercisePageContent = ({
   isLoading,
+  currentProgram,
   todaysExercises,
   completedExercises,
   totalExercises,
@@ -46,12 +47,28 @@ export const ExercisePageContent = ({
     return (
       <div className="p-6">
         <SimpleLoadingIndicator
-          message="Loading Today's Workout"
-          description="Preparing your exercise session..."
+          message="Loading Workout Data"
+          description="Fetching your exercise plan..."
         />
       </div>
     );
   }
+
+  // Check if current program exists and if selected day is a rest day
+  const selectedDayWorkout = currentProgram?.daily_workouts?.find(
+    (workout: any) => workout.day_number === selectedDayNumber
+  );
+  
+  const isActualRestDay = selectedDayWorkout?.is_rest_day || false;
+
+  console.log('🎯 ExercisePageContent Debug:', {
+    currentProgram: !!currentProgram,
+    selectedDayNumber,
+    selectedDayWorkout,
+    isActualRestDay,
+    todaysExercisesLength: todaysExercises.length,
+    isRestDay
+  });
 
   return (
     <div className="p-6 space-y-6">
@@ -60,12 +77,12 @@ export const ExercisePageContent = ({
         completedExercises={completedExercises}
         totalExercises={totalExercises}
         progressPercentage={progressPercentage}
-        isRestDay={isRestDay}
+        isRestDay={isActualRestDay}
         selectedDayNumber={selectedDayNumber}
       />
 
       {/* Main Content */}
-      {isRestDay ? (
+      {isActualRestDay ? (
         <RestDayCard />
       ) : todaysExercises.length === 0 ? (
         <ExerciseEmptyState
@@ -79,7 +96,7 @@ export const ExercisePageContent = ({
           isLoading={false}
           onExerciseComplete={onExerciseComplete}
           onExerciseProgressUpdate={onExerciseProgressUpdate}
-          isRestDay={isRestDay}
+          isRestDay={isActualRestDay}
           selectedDayNumber={selectedDayNumber}
         />
       )}

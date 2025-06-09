@@ -65,7 +65,7 @@ const EnhancedExercisePage = () => {
 
   if (showFullPageLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-fitness-primary-50 via-fitness-accent-50/30 to-fitness-secondary-50/20">
+      <div className="min-h-screen bg-gray-50">
         <SimpleLoadingIndicator
           message={isGenerating ? "Generating Your Exercise Program" : "Loading Your Exercise Program"}
           description={isGenerating ? "Creating your personalized workout plan with AI..." : "Preparing your personalized workout plan with progress tracking and exercise details"}
@@ -112,10 +112,10 @@ const EnhancedExercisePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-fitness-primary-50 via-fitness-accent-50/30 to-fitness-secondary-50/20">
-      <div className="max-w-7xl mx-auto">
-        {/* Enhanced Header Section */}
-        <div className="bg-white/80 backdrop-blur-sm border-b border-fitness-neutral-200/50 sticky top-0 z-40">
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-6xl mx-auto">
+        {/* Header Section */}
+        <div className="bg-white border-b border-gray-200 sticky top-0 z-40">
           <div className="px-4 py-4">
             <EnhancedExerciseHeaderWithAnalytics
               currentProgram={currentProgram}
@@ -128,27 +128,23 @@ const EnhancedExercisePage = () => {
           </div>
         </div>
 
-        {/* Simplified Navigation Section */}
-        <div className="px-4 py-6">
-          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200/50">
-            <div className="p-4">
-              <EnhancedDayNavigation
-                weekStartDate={weekStartDate}
-                selectedDayNumber={selectedDayNumber}
-                onDayChange={setSelectedDayNumber}
-                currentProgram={currentProgram}
-                workoutType={workoutType}
-                currentWeekOffset={currentWeekOffset}
-                onWeekChange={setCurrentWeekOffset}
-                onWorkoutTypeChange={setWorkoutType}
-              />
-            </div>
-          </div>
+        {/* Navigation Section */}
+        <div className="px-4 py-4">
+          <EnhancedDayNavigation
+            weekStartDate={weekStartDate}
+            selectedDayNumber={selectedDayNumber}
+            onDayChange={setSelectedDayNumber}
+            currentProgram={currentProgram}
+            workoutType={workoutType}
+            currentWeekOffset={currentWeekOffset}
+            onWeekChange={setCurrentWeekOffset}
+            onWorkoutTypeChange={setWorkoutType}
+          />
         </div>
 
-        {/* Content Section with Week Loading */}
-        <div className="px-4 py-6">
-          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-fitness-neutral-200/50 overflow-hidden">
+        {/* Content Section */}
+        <div className="px-4 pb-6">
+          <div className="bg-white rounded-lg border border-gray-200">
             {showWeekLoading ? (
               <div className="p-6">
                 <SimpleLoadingIndicator

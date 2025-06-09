@@ -69,7 +69,7 @@ export const EnhancedDayNavigation = ({
   };
 
   return (
-    <Card className="p-4 bg-white/95 backdrop-blur-sm border border-gray-200/50 shadow-sm rounded-xl">
+    <Card className="p-4 bg-white border border-gray-200 rounded-lg">
       <div className="space-y-3">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -79,13 +79,13 @@ export const EnhancedDayNavigation = ({
               variant="ghost"
               size="sm"
               onClick={() => onWeekChange(currentWeekOffset - 1)}
-              className="h-8 w-8 p-0 rounded-full hover:bg-gray-100"
+              className="h-7 w-7 p-0 rounded-md hover:bg-gray-100"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-3 h-3" />
             </Button>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5">
-              <div className="text-xs font-semibold text-gray-900 flex items-center gap-1">
+            <div className="bg-blue-50 border border-blue-200 rounded-md px-2 py-1">
+              <div className="text-xs font-medium text-gray-900 flex items-center gap-1">
                 <span className="text-blue-600">Week {currentWeekOffset + 1}</span>
                 <span className="text-gray-400">•</span>
                 <span className="text-gray-600">{formatWeekRange(weekStartDate)}</span>
@@ -96,22 +96,22 @@ export const EnhancedDayNavigation = ({
               variant="ghost"
               size="sm"
               onClick={() => onWeekChange(currentWeekOffset + 1)}
-              className="h-8 w-8 p-0 rounded-full hover:bg-gray-100"
+              className="h-7 w-7 p-0 rounded-md hover:bg-gray-100"
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-3 h-3" />
             </Button>
           </div>
 
           {/* Workout Type Toggle */}
-          <div className="flex items-center bg-gray-50 rounded-lg p-0.5">
+          <div className="flex items-center bg-gray-50 rounded-md p-0.5">
             <Button
               variant={workoutType === 'home' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => onWorkoutTypeChange('home')}
-              className={`rounded-md px-2 py-1 text-xs font-medium h-7 ${
+              className={`rounded-sm px-2 py-1 text-xs font-medium h-6 ${
                 workoutType === 'home' 
-                  ? 'bg-blue-600 text-white shadow-sm' 
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-blue-600 text-white' 
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-transparent'
               }`}
             >
               <Home className="w-3 h-3 mr-1" />
@@ -121,10 +121,10 @@ export const EnhancedDayNavigation = ({
               variant={workoutType === 'gym' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => onWorkoutTypeChange('gym')}
-              className={`rounded-md px-2 py-1 text-xs font-medium h-7 ${
+              className={`rounded-sm px-2 py-1 text-xs font-medium h-6 ${
                 workoutType === 'gym' 
-                  ? 'bg-purple-600 text-white shadow-sm' 
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-purple-600 text-white' 
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-transparent'
               }`}
             >
               <Building2 className="w-3 h-3 mr-1" />
@@ -134,7 +134,7 @@ export const EnhancedDayNavigation = ({
         </div>
 
         {/* Day Grid */}
-        <div className="grid grid-cols-7 gap-2">
+        <div className="grid grid-cols-7 gap-1">
           {dayNames.map((day, index) => {
             const dayNumber = index + 1;
             const isSelected = selectedDayNumber === dayNumber;
@@ -142,43 +142,37 @@ export const EnhancedDayNavigation = ({
             const status = getDayStatus(dayNumber);
             const progress = getDayProgress(dayNumber);
 
-            // Status-based styling
-            let bgColor, textColor, borderColor, statusIcon;
+            // Simplified status-based styling
+            let bgColor, textColor, statusIcon;
             
             if (isSelected) {
-              bgColor = 'bg-gradient-to-br from-blue-600 to-indigo-600';
+              bgColor = 'bg-blue-600';
               textColor = 'text-white';
-              borderColor = 'border-blue-300';
             } else {
               switch (status) {
                 case 'completed':
                   bgColor = 'bg-green-50 hover:bg-green-100';
                   textColor = 'text-green-800';
-                  borderColor = 'border-green-200';
                   statusIcon = <CheckCircle className="w-3 h-3 text-green-600" />;
                   break;
                 case 'in-progress':
                   bgColor = 'bg-yellow-50 hover:bg-yellow-100';
                   textColor = 'text-yellow-800';
-                  borderColor = 'border-yellow-200';
                   statusIcon = <Target className="w-3 h-3 text-yellow-600" />;
                   break;
                 case 'ready':
                   bgColor = 'bg-blue-50 hover:bg-blue-100';
                   textColor = 'text-blue-800';
-                  borderColor = 'border-blue-200';
                   statusIcon = <Target className="w-3 h-3 text-blue-600" />;
                   break;
                 case 'rest':
                   bgColor = 'bg-orange-50 hover:bg-orange-100';
                   textColor = 'text-orange-800';
-                  borderColor = 'border-orange-200';
                   statusIcon = <Coffee className="w-3 h-3 text-orange-600" />;
                   break;
                 default:
                   bgColor = 'bg-gray-50 hover:bg-gray-100';
                   textColor = 'text-gray-600';
-                  borderColor = 'border-gray-200';
               }
             }
 
@@ -188,10 +182,10 @@ export const EnhancedDayNavigation = ({
                 onClick={() => onDayChange(dayNumber)}
                 variant="ghost"
                 className={`
-                  relative h-14 p-2 flex flex-col items-center gap-1 transition-all duration-200 text-xs
-                  ${bgColor} ${textColor} border ${borderColor}
-                  ${isToday ? 'ring-2 ring-blue-400' : ''}
-                  rounded-lg
+                  relative h-12 p-1 flex flex-col items-center gap-0.5 transition-colors text-xs
+                  ${bgColor} ${textColor} border-0
+                  ${isToday ? 'ring-1 ring-blue-400' : ''}
+                  rounded-md
                 `}
               >
                 {/* Day Label */}
@@ -200,19 +194,17 @@ export const EnhancedDayNavigation = ({
                 {/* Status Icon */}
                 <div className="flex items-center justify-center">
                   {isSelected ? (
-                    <div className="w-3 h-3 bg-white rounded-full" />
+                    <div className="w-2 h-2 bg-white rounded-full" />
                   ) : (
-                    statusIcon || <div className="w-3 h-3" />
+                    statusIcon || <div className="w-2 h-2" />
                   )}
                 </div>
 
                 {/* Progress Bar for workouts */}
-                {status !== 'rest' && status !== 'empty' && (
-                  <div className="w-full h-1 bg-gray-200/50 rounded-full overflow-hidden">
+                {status !== 'rest' && status !== 'empty' && !isSelected && (
+                  <div className="w-4 h-0.5 bg-gray-200 rounded-full overflow-hidden">
                     <div 
-                      className={`h-full transition-all duration-300 rounded-full ${
-                        isSelected ? 'bg-white/90' : 'bg-current opacity-60'
-                      }`}
+                      className="h-full bg-current opacity-60 rounded-full transition-all"
                       style={{ width: `${progress}%` }}
                     />
                   </div>
@@ -220,7 +212,7 @@ export const EnhancedDayNavigation = ({
 
                 {/* Today indicator */}
                 {isToday && (
-                  <div className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                  <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-blue-500 rounded-full" />
                 )}
               </Button>
             );
