@@ -1,5 +1,7 @@
-import { useState } from 'react';
+
+import { useState, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useMealPlans } from './useMealPlans';
 import { useMealExchange } from './useMealExchange';
 import { useEnhancedMealPlan } from './useEnhancedMealPlan';
