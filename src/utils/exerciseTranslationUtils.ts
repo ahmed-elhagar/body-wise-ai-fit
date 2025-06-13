@@ -59,3 +59,17 @@ export const translateEquipment = (equipment: string): string => {
   const lowerCaseEquipment = equipment.toLowerCase();
   return equipmentTranslations[lowerCaseEquipment] || equipment;
 };
+
+// New function to translate entire exercise content
+export const translateExerciseContent = (exercise: any, language: Language) => {
+  const { t } = useI18n();
+  
+  return {
+    ...exercise,
+    name: translateExerciseName(exercise.name),
+    instructions: exercise.instructions, // Keep original instructions for now
+    muscle_groups: exercise.muscle_groups?.map((muscle: string) => translateMuscleGroup(muscle)),
+    equipment: exercise.equipment ? translateEquipment(exercise.equipment) : exercise.equipment,
+    youtube_search_term: exercise.youtube_search_term || exercise.name
+  };
+};

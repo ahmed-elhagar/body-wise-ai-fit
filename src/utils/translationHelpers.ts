@@ -85,3 +85,14 @@ export const getStatusTranslation = (status: string): string => {
   
   return statusMap[status] || status;
 };
+
+// New function for meal plan translations
+export const useMealPlanTranslation = () => {
+  const { t } = useI18n();
+  
+  const mealPlanT = (key: string): string => {
+    return t(`mealPlan.${key}`);
+  };
+  
+  return { mealPlanT };
+};
