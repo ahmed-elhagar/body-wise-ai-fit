@@ -52,7 +52,7 @@ function App() {
                         loadingMessage="Loading Authentication"
                         loadingDescription="Preparing login form..."
                       >
-                        <LazyComponents.AuthForm />
+                        <LazyComponents.Auth />
                       </OptimizedLazyWrapper>
                     } 
                   />

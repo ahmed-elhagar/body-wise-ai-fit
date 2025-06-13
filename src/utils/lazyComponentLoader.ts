@@ -42,9 +42,9 @@ export const preloadCriticalComponents = () => {
 // Component-specific lazy loaders with better chunking
 export const LazyComponents = {
   // Auth components
-  AuthForm: createLazyComponent(
-    () => import('@/components/auth/AuthForm').then(module => ({ default: module.AuthForm })),
-    'auth-form'
+  Auth: createLazyComponent(
+    () => import('@/pages/Auth'),
+    'auth'
   ),
   
   // Dashboard components  
