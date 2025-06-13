@@ -14,7 +14,7 @@ export interface LoadingIndicatorProps {
   size?: 'sm' | 'md' | 'lg';
   variant?: 'default' | 'card' | 'overlay' | 'inline';
   showIcon?: boolean;
-  duration?: number; // Auto-hide success/error after duration (ms)
+  duration?: number;
   onStatusChange?: (status: LoadingStatus) => void;
 }
 
@@ -44,7 +44,6 @@ const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({
     
     const iconProps = {
       className: cn(
-        "animate-spin-slow",
         size === 'sm' && "w-4 h-4",
         size === 'md' && "w-5 h-5",
         size === 'lg' && "w-6 h-6"
@@ -53,13 +52,13 @@ const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({
 
     switch (status) {
       case 'loading':
-        return <Loader2 {...iconProps} className={cn(iconProps.className, "text-fitness-primary-500")} />;
+        return <Loader2 {...iconProps} className={cn(iconProps.className, "text-blue-500 animate-spin")} />;
       case 'success':
-        return <CheckCircle {...iconProps} className={cn(iconProps.className.replace('animate-spin-slow', ''), "text-success-500")} />;
+        return <CheckCircle {...iconProps} className={cn(iconProps.className, "text-green-500")} />;
       case 'error':
-        return <AlertCircle {...iconProps} className={cn(iconProps.className.replace('animate-spin-slow', ''), "text-error-500")} />;
+        return <AlertCircle {...iconProps} className={cn(iconProps.className, "text-red-500")} />;
       case 'idle':
-        return <Clock {...iconProps} className={cn(iconProps.className.replace('animate-spin-slow', ''), "text-fitness-neutral-400")} />;
+        return <Clock {...iconProps} className={cn(iconProps.className, "text-gray-400")} />;
       default:
         return null;
     }
@@ -69,33 +68,33 @@ const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({
     switch (status) {
       case 'loading':
         return {
-          text: "text-fitness-primary-700",
-          bg: "bg-fitness-primary-50",
-          border: "border-fitness-primary-200"
+          text: "text-blue-700",
+          bg: "bg-blue-50",
+          border: "border-blue-200"
         };
       case 'success':
         return {
-          text: "text-success-700",
-          bg: "bg-success-50",
-          border: "border-success-200"
+          text: "text-green-700",
+          bg: "bg-green-50",
+          border: "border-green-200"
         };
       case 'error':
         return {
-          text: "text-error-700",
-          bg: "bg-error-50",
-          border: "border-error-200"
+          text: "text-red-700",
+          bg: "bg-red-50",
+          border: "border-red-200"
         };
       case 'idle':
         return {
-          text: "text-fitness-neutral-600",
-          bg: "bg-fitness-neutral-50",
-          border: "border-fitness-neutral-200"
+          text: "text-gray-600",
+          bg: "bg-gray-50",
+          border: "border-gray-200"
         };
       default:
         return {
-          text: "text-fitness-neutral-600",
-          bg: "bg-fitness-neutral-50",
-          border: "border-fitness-neutral-200"
+          text: "text-gray-600",
+          bg: "bg-gray-50",
+          border: "border-gray-200"
         };
     }
   };
@@ -126,7 +125,7 @@ const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({
           </div>
         )}
         {description && (
-          <div className={cn("text-fitness-neutral-500 mt-1", size === 'sm' && "text-xs", size === 'md' && "text-sm")}>
+          <div className={cn("text-gray-500 mt-1", size === 'sm' && "text-xs", size === 'md' && "text-sm")}>
             {description}
           </div>
         )}
@@ -138,7 +137,7 @@ const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({
   switch (variant) {
     case 'card':
       return (
-        <Card className={cn("card-padding", colors.bg, colors.border, className)}>
+        <Card className={cn("p-4", colors.bg, colors.border, "border", className)}>
           {content}
         </Card>
       );
@@ -150,7 +149,7 @@ const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({
           "fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center",
           className
         )}>
-          <Card className="card-padding bg-white/95 backdrop-blur-sm border-0 shadow-2xl max-w-sm mx-4">
+          <Card className="p-6 bg-white/95 backdrop-blur-sm border-0 shadow-2xl max-w-sm mx-4">
             {content}
           </Card>
         </div>
