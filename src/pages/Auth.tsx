@@ -13,15 +13,15 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const { user, signIn, signUp, error, clearError } = useAuth();
 
-  // Redirect if already authenticated
-  if (user) {
-    return <Navigate to="/dashboard" replace />;
-  }
-
   // Clear errors when switching between modes
   useEffect(() => {
     clearError();
   }, [isSignUp, clearError]);
+
+  // Redirect if already authenticated - moved after all hooks
+  if (user) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   const handleSubmit = async (data: {
     email: string;

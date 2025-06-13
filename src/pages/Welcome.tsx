@@ -9,7 +9,7 @@ import { CheckCircle, User, Target, Dumbbell } from 'lucide-react';
 const Welcome = () => {
   const { user } = useAuth();
 
-  // Redirect if not authenticated
+  // Redirect if not authenticated - moved after all hooks
   if (!user) {
     return <Navigate to="/auth" replace />;
   }

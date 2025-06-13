@@ -7,6 +7,7 @@ import { PageLoadingState } from '@/components/ui/enhanced-loading-states';
 const Index = () => {
   const { user, loading } = useAuth();
 
+  // Show loading state while checking auth
   if (loading) {
     return <PageLoadingState variant="branded" />;
   }

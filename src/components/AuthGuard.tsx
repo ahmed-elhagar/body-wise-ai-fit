@@ -12,10 +12,12 @@ interface AuthGuardProps {
 const AuthGuard = ({ children, requireAdmin = false, requireCoach = false }: AuthGuardProps) => {
   const { user, loading } = useAuth();
 
+  // Show loading state
   if (loading) {
     return <PageLoadingState variant="branded" />;
   }
 
+  // Redirect to auth if not authenticated
   if (!user) {
     return <Navigate to="/auth" replace />;
   }
