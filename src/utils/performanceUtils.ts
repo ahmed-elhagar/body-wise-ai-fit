@@ -1,3 +1,4 @@
+import React from 'react';
 
 // Enhanced performance utilities for bundle optimization
 export const debounce = <T extends (...args: any[]) => any>(
@@ -48,10 +49,10 @@ export const createLazyImageLoader = () => {
 
 // Performance monitoring with better metrics
 export const performanceUtils = {
-  measurePerformance: (name: string, fn: () => void) => {
+  measurePerformance: async <T>(name: string, fn: () => Promise<T> | T): Promise<T> => {
     if (import.meta.env.DEV) {
       performance.mark(`${name}-start`);
-      const result = fn();
+      const result = await fn();
       performance.mark(`${name}-end`);
       performance.measure(name, `${name}-start`, `${name}-end`);
       
@@ -63,7 +64,7 @@ export const performanceUtils = {
       
       return result;
     } else {
-      return fn();
+      return await fn();
     }
   },
 
@@ -93,10 +94,10 @@ export const performanceUtils = {
   optimizeRender: <T extends React.ComponentType<any>>(
     Component: T,
     shouldUpdate?: (prevProps: any, nextProps: any) => boolean
-  ): T => {
+  ): React.MemoExoticComponent<T> => {
     const OptimizedComponent = React.memo(Component, shouldUpdate);
     OptimizedComponent.displayName = `Optimized(${Component.displayName || Component.name})`;
-    return OptimizedComponent as T;
+    return OptimizedComponent;
   }
 };
 

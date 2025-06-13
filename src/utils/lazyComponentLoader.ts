@@ -43,7 +43,7 @@ export const preloadCriticalComponents = () => {
 export const LazyComponents = {
   // Auth components
   AuthForm: createLazyComponent(
-    () => import('@/components/auth/AuthForm'),
+    () => import('@/components/auth/AuthForm').then(module => ({ default: module.AuthForm })),
     'auth-form'
   ),
   
