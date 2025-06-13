@@ -1,10 +1,11 @@
+
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Camera, Upload, Loader2, Utensils, AlertCircle, Zap } from "lucide-react";
 import { useFoodPhotoIntegration } from "@/hooks/useFoodPhotoIntegration";
-import { useCreditSystem } from "@/hooks/useCreditSystem";
+import { useCentralizedCredits } from "@/hooks/useCentralizedCredits";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -21,7 +22,7 @@ const FoodPhotoAnalysisCard = ({ onFoodSelected, className = "" }: FoodPhotoAnal
   const navigate = useNavigate();
   
   const { analyzePhotoFood, isAnalyzing, analysisResult, error, convertToFoodItem } = useFoodPhotoIntegration();
-  const { userCredits } = useCreditSystem();
+  const { remaining: userCredits } = useCentralizedCredits();
   const { t } = useLanguage();
 
   const handleImageSelect = (file: File) => {

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Zap, Plus } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useCreditSystem } from "@/hooks/useCreditSystem";
+import { useCentralizedCredits } from "@/hooks/useCentralizedCredits";
 import { useFoodPhotoIntegration } from "@/hooks/useFoodPhotoIntegration";
 import FoodPhotoAnalysisCard from "@/components/food-photo-analysis/FoodPhotoAnalysisCard";
 import QuantitySelector from "./components/QuantitySelector";
@@ -22,7 +22,7 @@ const ScanTab = ({ onFoodAdded, onClose }: ScanTabProps) => {
   const [mealType, setMealType] = useState("snack");
   const [notes, setNotes] = useState("");
   
-  const { userCredits } = useCreditSystem();
+  const { remaining: userCredits } = useCentralizedCredits();
   const { 
     logAnalyzedFood, 
     isLoggingFood,

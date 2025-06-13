@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Sparkles, Target, Clock, Calendar, Coins } from "lucide-react";
 import { useState } from "react";
-import { useCreditSystem } from "@/hooks/useCreditSystem";
+import { useCentralizedCredits } from "@/hooks/useCentralizedCredits";
 
 interface AIExerciseDialogProps {
   open: boolean;
@@ -26,7 +26,7 @@ export const AIExerciseDialog = ({
   onGenerate,
   isGenerating
 }: AIExerciseDialogProps) => {
-  const { userCredits } = useCreditSystem();
+  const { remaining: userCredits } = useCentralizedCredits();
   const [customRequirements, setCustomRequirements] = useState("");
   const [selectedDays, setSelectedDays] = useState<string[]>(["monday", "wednesday", "friday"]);
 

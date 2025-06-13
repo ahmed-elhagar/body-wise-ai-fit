@@ -1,92 +1,73 @@
 
 import { useState } from 'react';
 import { useAuth } from './useAuth';
-import { useCreditSystem } from './useCreditSystem';
+import { useCentralizedCredits } from './useCentralizedCredits';
 import { supabase } from '@/integrations/supabase/client';
-import type { DailyMeal } from '@/features/meal-plan/types';
+import { toast } from 'sonner';
 
 export const useEnhancedMealRecipe = () => {
   const { user } = useAuth();
-  const { checkAndUseCreditAsync, completeGenerationAsync } = useCreditSystem();
-  const [isGeneratingRecipe, setIsGeneratingRecipe] = useState(false);
+  const { checkAndUseCredit, completeGeneration } = useCentralizedCredits();
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  const generateEnhancedRecipe = async (mealId: string, mealData: DailyMeal) => {
+  const generateEnhancedRecipe = async (mealId: string, enhancementOptions: any = {}) => {
     if (!user?.id || !mealId) {
-      console.error('Missing required data for recipe generation');
+      console.error('Missing required data for enhanced recipe generation');
       return null;
     }
 
-    // Check and use credit before starting generation
-    const hasCredit = await checkAndUseCreditAsync();
-    if (!hasCredit) {
-      console.error('No AI credits remaining');
+    const creditResult = await checkAndUseCredit('enhanced-recipe-generation');
+    if (!creditResult.success) {
+      toast.error('No AI credits remaining');
       return null;
     }
 
-    setIsGeneratingRecipe(true);
-
+    setIsGenerating(true);
+    
     try {
-      console.log('🍳 Generating enhanced recipe for meal:', mealId);
-
-      // Call the edge function to generate enhanced recipe
-      const { data, error } = await supabase.functions.invoke('generate-meal-recipe', {
+      console.log('🍳 Generating enhanced recipe with AI');
+      
+      const { data, error } = await supabase.functions.invoke('generate-enhanced-recipe', {
         body: {
-          mealId,
-          mealData,
           userId: user.id,
-          generateImage: true,
-          enhanceInstructions: true
+          mealId: mealId,
+          enhancementOptions: enhancementOptions
         }
       });
 
       if (error) {
-        console.error('❌ Recipe generation error:', error);
+        console.error('❌ Enhanced recipe generation error:', error);
         throw error;
       }
 
-      if (data?.success && data?.meal) {
+      if (data?.success) {
         console.log('✅ Enhanced recipe generated successfully');
         
-        // Complete the generation process
-        await completeGenerationAsync();
-        
-        // Update the meal in the database
-        const { error: updateError } = await supabase
-          .from('daily_meals')
-          .update({
-            ingredients: data.meal.ingredients,
-            instructions: data.meal.instructions,
-            alternatives: data.meal.alternatives,
-            youtube_search_term: data.meal.youtube_search_term,
-            image_url: data.meal.image_url,
-            recipe_fetched: true
-          })
-          .eq('id', mealId);
-
-        if (updateError) {
-          console.error('❌ Failed to update meal:', updateError);
-          throw updateError;
+        if (creditResult.logId) {
+          await completeGeneration(creditResult.logId, true, data);
         }
-
-        return data.meal;
+        
+        toast.success('Enhanced recipe generated successfully!');
+        return data;
       } else {
-        throw new Error(data?.error || 'Recipe generation failed');
+        throw new Error(data?.error || 'Enhanced recipe generation failed');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Enhanced recipe generation failed:', error);
+      toast.error('Failed to generate enhanced recipe');
+      
+      if (creditResult.logId) {
+        await completeGeneration(creditResult.logId, false);
+      }
+      
       throw error;
     } finally {
-      setIsGeneratingRecipe(false);
+      setIsGenerating(false);
     }
-  };
-
-  const generateYouTubeSearchTerm = (mealName: string) => {
-    return `${mealName} recipe tutorial cooking`;
   };
 
   return {
     generateEnhancedRecipe,
-    generateYouTubeSearchTerm,
-    isGeneratingRecipe
+    isGenerating
   };
 };

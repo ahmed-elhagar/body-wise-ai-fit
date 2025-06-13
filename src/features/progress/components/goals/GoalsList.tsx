@@ -10,17 +10,7 @@ import {
   ArrowRight,
   AlertTriangle
 } from "lucide-react";
-
-interface Goal {
-  id: string;
-  title: string;
-  description: string;
-  status: string;
-  target_value: number;
-  target_unit: string;
-  target_date: string;
-  created_at: string;
-}
+import type { Goal } from "@/hooks/useGoals";
 
 interface GoalsListProps {
   goals: Goal[];
@@ -30,6 +20,8 @@ interface GoalsListProps {
 export const GoalsList = ({ goals, onManageGoals }: GoalsListProps) => {
   const getGoalStatusColor = (goal: Goal) => {
     if (goal.status === 'completed') return "bg-green-100 text-green-800";
+    
+    if (!goal.target_date) return "bg-blue-100 text-blue-800";
     
     const deadline = new Date(goal.target_date);
     const now = new Date();
@@ -43,6 +35,8 @@ export const GoalsList = ({ goals, onManageGoals }: GoalsListProps) => {
   const getGoalStatusIcon = (goal: Goal) => {
     if (goal.status === 'completed') return <CheckCircle className="w-4 h-4 text-green-600" />;
     
+    if (!goal.target_date) return <Clock className="w-4 h-4 text-blue-600" />;
+    
     const deadline = new Date(goal.target_date);
     const now = new Date();
     const daysUntilDeadline = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
@@ -55,7 +49,9 @@ export const GoalsList = ({ goals, onManageGoals }: GoalsListProps) => {
     if (goal.status === 'completed') return 100;
     
     const timeElapsed = new Date().getTime() - new Date(goal.created_at || new Date()).getTime();
-    const totalTime = new Date(goal.target_date).getTime() - new Date(goal.created_at || new Date()).getTime();
+    const totalTime = goal.target_date ? 
+      new Date(goal.target_date).getTime() - new Date(goal.created_at || new Date()).getTime() :
+      1000 * 60 * 60 * 24 * 30; // Default to 30 days if no target date
     
     return Math.min(Math.max((timeElapsed / totalTime) * 50, 0), 90);
   };
@@ -94,7 +90,9 @@ export const GoalsList = ({ goals, onManageGoals }: GoalsListProps) => {
                   {getGoalStatusIcon(goal)}
                   <div>
                     <h4 className="font-semibold text-gray-900">{goal.title}</h4>
-                    <p className="text-sm text-gray-600">{goal.description}</p>
+                    {goal.description && (
+                      <p className="text-sm text-gray-600">{goal.description}</p>
+                    )}
                   </div>
                 </div>
                 <Badge className={getGoalStatusColor(goal)}>
@@ -110,8 +108,8 @@ export const GoalsList = ({ goals, onManageGoals }: GoalsListProps) => {
                 <Progress value={progress} className="h-2" />
                 
                 <div className="flex items-center justify-between text-xs text-gray-500">
-                  <span>Target: {goal.target_value} {goal.target_unit}</span>
-                  <span>Due: {new Date(goal.target_date).toLocaleDateString()}</span>
+                  <span>Target: {goal.target_value} {goal.target_unit || 'units'}</span>
+                  <span>Due: {goal.target_date ? new Date(goal.target_date).toLocaleDateString() : 'No deadline'}</span>
                 </div>
               </div>
             </div>

@@ -1,13 +1,13 @@
 
 import { useState } from 'react';
 import { useAuth } from './useAuth';
-import { useCreditSystem } from './useCreditSystem';
+import { useCentralizedCredits } from './useCentralizedCredits';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export const useFoodPhotoIntegration = () => {
   const { user } = useAuth();
-  const { checkAndUseCreditAsync, completeGenerationAsync } = useCreditSystem();
+  const { checkAndUseCredit, completeGeneration } = useCentralizedCredits();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isLoggingFood, setIsLoggingFood] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
@@ -23,8 +23,8 @@ export const useFoodPhotoIntegration = () => {
       return null;
     }
 
-    const hasCredit = await checkAndUseCreditAsync();
-    if (!hasCredit) {
+    const creditResult = await checkAndUseCredit('food-photo-analysis');
+    if (!creditResult.success) {
       toast.error('No AI credits remaining');
       return null;
     }
@@ -52,7 +52,11 @@ export const useFoodPhotoIntegration = () => {
       if (data?.success) {
         console.log('✅ Food photo analysis completed successfully:', data);
         setAnalysisResult(data);
-        await completeGenerationAsync();
+        
+        if (creditResult.logId) {
+          await completeGeneration(creditResult.logId, true, data);
+        }
+        
         toast.success('Food photo analyzed successfully!');
         return data;
       } else {
@@ -62,6 +66,11 @@ export const useFoodPhotoIntegration = () => {
       console.error('❌ Food photo analysis failed:', error);
       setError(error.message);
       toast.error('Failed to analyze food photo');
+      
+      if (creditResult.logId) {
+        await completeGeneration(creditResult.logId, false);
+      }
+      
       throw error;
     } finally {
       setIsAnalyzing(false);

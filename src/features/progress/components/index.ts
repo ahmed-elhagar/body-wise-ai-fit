@@ -1,6 +1,6 @@
 
 // Main progress components
-export { ProgressDashboard } from './ProgressDashboard';
+export { default as ProgressDashboard } from './ProgressDashboard';
 export { ProgressOverview } from './ProgressOverview';
 export { FitnessProgressSection } from './FitnessProgressSection';
 export { WeightProgressSection } from './WeightProgressSection';

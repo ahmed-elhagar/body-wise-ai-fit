@@ -1,13 +1,13 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useCreditSystem } from '@/hooks/useCreditSystem';
+import { useCentralizedCredits } from '@/hooks/useCentralizedCredits';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export const useMealRecipe = () => {
   const { user } = useAuth();
-  const { checkAndUseCreditAsync, completeGenerationAsync } = useCreditSystem();
+  const { checkAndUseCredit, completeGeneration } = useCentralizedCredits();
   const [isGeneratingRecipe, setIsGeneratingRecipe] = useState(false);
 
   const generateRecipe = async (mealId: string) => {
@@ -17,8 +17,8 @@ export const useMealRecipe = () => {
     }
 
     // Check and use credit before starting generation
-    const hasCredit = await checkAndUseCreditAsync();
-    if (!hasCredit) {
+    const creditResult = await checkAndUseCredit('recipe-generation');
+    if (!creditResult.success) {
       toast.error('No AI credits remaining');
       return null;
     }
@@ -46,7 +46,9 @@ export const useMealRecipe = () => {
         console.log('✅ Recipe generated successfully');
         
         // Complete the generation process
-        await completeGenerationAsync();
+        if (creditResult.logId) {
+          await completeGeneration(creditResult.logId, true, data);
+        }
         
         return data.meal;
       } else {
@@ -55,6 +57,12 @@ export const useMealRecipe = () => {
     } catch (error) {
       console.error('❌ Recipe generation failed:', error);
       toast.error('Failed to generate recipe');
+      
+      // Complete the generation with error
+      if (creditResult.logId) {
+        await completeGeneration(creditResult.logId, false);
+      }
+      
       throw error;
     } finally {
       setIsGeneratingRecipe(false);

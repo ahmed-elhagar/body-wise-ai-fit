@@ -1,14 +1,13 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useCreditSystem } from '@/hooks/useCreditSystem';
+import { useCentralizedCredits } from '@/hooks/useCentralizedCredits';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { DailyMeal } from '@/features/meal-plan/types';
 
 export const useMealExchange = () => {
   const { user } = useAuth();
-  const { checkAndUseCreditAsync, completeGenerationAsync } = useCreditSystem();
+  const { checkAndUseCredit, completeGeneration } = useCentralizedCredits();
   const [isLoading, setIsLoading] = useState(false);
   const [alternatives, setAlternatives] = useState<any[]>([]);
 
@@ -19,8 +18,8 @@ export const useMealExchange = () => {
     }
 
     // Check and use credit before starting generation
-    const hasCredit = await checkAndUseCreditAsync();
-    if (!hasCredit) {
+    const creditResult = await checkAndUseCredit('meal-exchange');
+    if (!creditResult.success) {
       toast.error('No AI credits remaining');
       return false;
     }
@@ -49,7 +48,9 @@ export const useMealExchange = () => {
         setAlternatives(data.alternatives);
         
         // Complete the generation process
-        await completeGenerationAsync();
+        if (creditResult.logId) {
+          await completeGeneration(creditResult.logId, true, data);
+        }
         
         return true;
       } else {
@@ -58,6 +59,12 @@ export const useMealExchange = () => {
     } catch (error) {
       console.error('❌ Meal alternatives generation failed:', error);
       toast.error('Failed to generate alternatives');
+      
+      // Complete the generation with error
+      if (creditResult.logId) {
+        await completeGeneration(creditResult.logId, false);
+      }
+      
       return false;
     } finally {
       setIsLoading(false);

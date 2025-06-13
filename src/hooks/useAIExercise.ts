@@ -1,13 +1,15 @@
 
 import { useState } from 'react';
 import { useAuth } from './useAuth';
-import { useCreditSystem } from './useCreditSystem';
+import { useRole } from './useRole';
+import { useCentralizedCredits } from './useCentralizedCredits';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export const useAIExercise = () => {
   const { user } = useAuth();
-  const { checkAndUseCreditAsync, completeGenerationAsync } = useCreditSystem();
+  const { isAdmin } = useRole();
+  const { checkAndUseCredit, completeGeneration } = useCentralizedCredits();
   const [isGenerating, setIsGenerating] = useState(false);
 
   const generateExerciseProgram = async (preferences: any) => {
@@ -16,9 +18,8 @@ export const useAIExercise = () => {
       return null;
     }
 
-    // Check and use credit before starting generation
-    const hasCredit = await checkAndUseCreditAsync();
-    if (!hasCredit) {
+    const creditResult = await checkAndUseCredit('exercise-generation');
+    if (!creditResult.success) {
       toast.error('No AI credits remaining');
       return null;
     }
@@ -26,13 +27,13 @@ export const useAIExercise = () => {
     setIsGenerating(true);
     
     try {
-      console.log('🏋️ Generating exercise program with preferences:', preferences);
+      console.log('🏋️ Generating exercise program with AI');
       
       const { data, error } = await supabase.functions.invoke('generate-exercise-program', {
         body: {
           userId: user.id,
           preferences: preferences,
-          weekStartDate: new Date().toISOString().split('T')[0]
+          isAdmin: isAdmin
         }
       });
 
@@ -44,119 +45,23 @@ export const useAIExercise = () => {
       if (data?.success) {
         console.log('✅ Exercise program generated successfully');
         
-        // Complete the generation process
-        await completeGenerationAsync();
+        if (creditResult.logId) {
+          await completeGeneration(creditResult.logId, true, data);
+        }
         
         toast.success('Exercise program generated successfully!');
         return data;
       } else {
-        throw new Error(data?.error || 'Generation failed');
+        throw new Error(data?.error || 'Exercise generation failed');
       }
-    } catch (error) {
-      console.error('❌ Exercise program generation failed:', error);
+    } catch (error: any) {
+      console.error('❌ Exercise generation failed:', error);
       toast.error('Failed to generate exercise program');
-      throw error;
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  const regenerateProgram = async (weekStartDate: string) => {
-    if (!user?.id) {
-      console.error('No user ID available for exercise regeneration');
-      return null;
-    }
-
-    // Check and use credit before starting generation
-    const hasCredit = await checkAndUseCreditAsync();
-    if (!hasCredit) {
-      toast.error('No AI credits remaining');
-      return null;
-    }
-
-    setIsGenerating(true);
-    
-    try {
-      console.log('🔄 Regenerating exercise program for week:', weekStartDate);
       
-      const { data, error } = await supabase.functions.invoke('generate-exercise-program', {
-        body: {
-          userId: user.id,
-          regenerate: true,
-          weekStartDate
-        }
-      });
-
-      if (error) {
-        console.error('❌ Exercise regeneration error:', error);
-        throw error;
+      if (creditResult.logId) {
+        await completeGeneration(creditResult.logId, false);
       }
-
-      if (data?.success) {
-        console.log('✅ Exercise program regenerated successfully');
-        
-        // Complete the generation process
-        await completeGenerationAsync();
-        
-        toast.success('Exercise program regenerated successfully!');
-        return data;
-      } else {
-        throw new Error(data?.error || 'Regeneration failed');
-      }
-    } catch (error) {
-      console.error('❌ Exercise program regeneration failed:', error);
-      toast.error('Failed to regenerate exercise program');
-      throw error;
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  const exchangeExercise = async (exerciseId: string, preferences: any) => {
-    if (!user?.id) {
-      console.error('No user ID available for exercise exchange');
-      return null;
-    }
-
-    // Check and use credit before starting generation
-    const hasCredit = await checkAndUseCreditAsync();
-    if (!hasCredit) {
-      toast.error('No AI credits remaining');
-      return null;
-    }
-
-    setIsGenerating(true);
-    
-    try {
-      console.log('🔄 Exchanging exercise:', exerciseId);
       
-      const { data, error } = await supabase.functions.invoke('exchange-exercise', {
-        body: {
-          userId: user.id,
-          exerciseId,
-          preferences
-        }
-      });
-
-      if (error) {
-        console.error('❌ Exercise exchange error:', error);
-        throw error;
-      }
-
-      if (data?.success) {
-        console.log('✅ Exercise exchanged successfully');
-        
-        // Complete the generation process
-        await completeGenerationAsync();
-        
-        toast.success('Exercise exchanged successfully!');
-        return data;
-      } else {
-        throw new Error(data?.error || 'Exchange failed');
-      }
-    } catch (error) {
-      console.error('❌ Exercise exchange failed:', error);
-      toast.error('Failed to exchange exercise');
       throw error;
     } finally {
       setIsGenerating(false);
@@ -164,9 +69,7 @@ export const useAIExercise = () => {
   };
 
   return {
-    isGenerating,
     generateExerciseProgram,
-    regenerateProgram,
-    exchangeExercise
+    isGenerating
   };
 };
