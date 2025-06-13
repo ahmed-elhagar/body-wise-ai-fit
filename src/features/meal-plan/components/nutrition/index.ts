@@ -1,2 +1,0 @@
-
-export { NutritionProgressCard } from './NutritionProgressCard';

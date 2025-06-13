@@ -1,5 +1,5 @@
 
-import { Exercise } from '@/features/exercise/types';
+import { Exercise } from '@/types/exercise';
 import { WorkoutSessionManager } from './WorkoutSessionManager';
 import { ActiveExerciseTracker } from './ActiveExerciseTracker';
 import { ExerciseCard } from './ExerciseCard';

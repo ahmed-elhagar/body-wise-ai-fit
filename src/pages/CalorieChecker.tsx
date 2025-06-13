@@ -1,13 +1,11 @@
 
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
-import { FoodPhotoAnalyzer } from "@/features/food-tracker";
-import { Camera, ArrowLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Camera } from "lucide-react";
+import FoodPhotoAnalyzer from "@/components/calorie/FoodPhotoAnalyzer";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 const CalorieChecker = () => {

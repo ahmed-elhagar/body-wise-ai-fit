@@ -1,4 +1,4 @@
 
-export { default as FoodPhotoAnalyzer } from './FoodPhotoAnalyzer';
-export { TodayTab } from './TodayTab';
-export { HistoryTab } from './HistoryTab';
+// Food tracker feature components exports
+export { default as TodayTab } from './TodayTab';
+export { default as HistoryTab } from './HistoryTab';

@@ -4,16 +4,19 @@ import MealPlanHeader from './MealPlanHeader';
 import { MealPlanContent } from './MealPlanContent';
 import ErrorState from './ErrorState';
 import LoadingState from './LoadingState';
-import { useEnhancedMealShuffle } from '@/features/exercise/hooks';
-import { WeekNavigationCard } from './navigation/WeekNavigationCard';
-import { LoadingOverlay } from './LoadingOverlay';
+import { useEnhancedMealShuffle } from '@/hooks/useEnhancedMealShuffle';
+import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MealPlanViewToggle } from './MealPlanViewToggle';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { formatWeekRange, getDayName } from '@/utils/mealPlanUtils';
 
-// Dialog imports
+// Feature-based imports - using the correct paths
 import { MealExchangeDialog } from './dialogs/MealExchangeDialog';
 import { AIGenerationDialog } from './dialogs/AIGenerationDialog';
 import { EnhancedRecipeDialog } from './EnhancedRecipeDialog';
 import EnhancedAddSnackDialog from './dialogs/EnhancedAddSnackDialog';
-import ModernShoppingListDrawer from '@/components/shopping-list/ModernShoppingListDrawer';
+import { ModernShoppingListDrawer } from './dialogs/ModernShoppingListDrawer';
 import { MealPlanAILoadingDialog } from './dialogs/MealPlanAILoadingDialog';
 
 const MealPlanContainer = () => {
@@ -81,15 +84,72 @@ const MealPlanContainer = () => {
         />
         
         {/* Navigation Card - Always visible */}
-        <WeekNavigationCard
-          currentWeekOffset={mealPlanState.currentWeekOffset}
-          weekStartDate={mealPlanState.weekStartDate}
-          selectedDayNumber={mealPlanState.selectedDayNumber}
-          viewMode={viewMode}
-          onWeekChange={handleWeekChange}
-          onDaySelect={mealPlanState.setSelectedDayNumber}
-          onViewModeChange={setViewMode}
-        />
+        <Card className="p-4 bg-white/90 backdrop-blur-sm border border-gray-200/50 shadow-sm">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-4">
+            <div className="flex items-center gap-4 w-full md:w-auto">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleWeekChange(mealPlanState.currentWeekOffset - 1)}
+                className="h-10 w-10 p-0 border-gray-300"
+                aria-label="Previous week"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              
+              <div className="text-center">
+                <h3 className="text-base font-semibold text-gray-900">
+                  {formatWeekRange(mealPlanState.weekStartDate)}
+                </h3>
+              </div>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleWeekChange(mealPlanState.currentWeekOffset + 1)}
+                className="h-10 w-10 p-0 border-gray-300"
+                aria-label="Next week"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+            
+            <MealPlanViewToggle 
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+            />
+          </div>
+          
+          {/* Days Navigation - Always visible */}
+          <div className="grid grid-cols-7 gap-1">
+            {[1, 2, 3, 4, 5, 6, 7].map((dayNumber) => {
+              const isSelected = mealPlanState.selectedDayNumber === dayNumber;
+              const dayName = getDayName(dayNumber);
+              
+              return (
+                <Button
+                  key={dayNumber}
+                  variant="ghost"
+                  className={`h-14 p-2 rounded-xl transition-all duration-200 ${
+                    isSelected 
+                      ? 'bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-lg scale-105 border-0' 
+                      : 'bg-gray-50/80 hover:bg-gray-100/80 text-gray-700 hover:text-gray-900 border border-gray-200/50'
+                  }`}
+                  onClick={() => mealPlanState.setSelectedDayNumber(dayNumber)}
+                >
+                  <div className="flex flex-col items-center justify-center gap-0.5">
+                    <span className={`text-xs font-medium ${isSelected ? 'text-white/90' : 'text-gray-500'}`}>
+                      {dayName.slice(0, 3)}
+                    </span>
+                    <span className={`text-sm font-semibold ${isSelected ? 'text-white' : 'text-gray-800'}`}>
+                      {dayName}
+                    </span>
+                  </div>
+                </Button>
+              );
+            })}
+          </div>
+        </Card>
         
         {/* Content Area with Loading Overlay - Only over meal content */}
         <div className="relative">
@@ -114,18 +174,26 @@ const MealPlanContainer = () => {
           />
           
           {/* Loading Overlay - Only shows when loading and we have existing data */}
-          <LoadingOverlay isVisible={mealPlanState.isLoading && !!displayData} />
+          {mealPlanState.isLoading && displayData && (
+            <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg min-h-[400px]">
+              <div className="flex flex-col items-center gap-3 bg-white rounded-lg shadow-lg p-6 border">
+                <Loader2 className="w-8 h-8 animate-spin text-violet-600" />
+                <p className="text-sm text-gray-700 font-medium">Loading meals...</p>
+                <p className="text-xs text-gray-500">Please wait while we fetch your meal plan</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* AI Loading Dialog - Step-by-step loading experience */}
+      {/* AI Loading Dialog - Step-by-step loading experience - Now using top-right position */}
       <MealPlanAILoadingDialog 
         isGenerating={mealPlanState.isGenerating}
         onClose={() => mealPlanState.refetch()}
         position="top-right"
       />
 
-      {/* Modern Shopping List Drawer */}
+      {/* Modern Shopping List Drawer - Complete revamped experience */}
       <ModernShoppingListDrawer
         isOpen={mealPlanState.showShoppingListDialog}
         onClose={() => mealPlanState.closeShoppingListDialog()}
@@ -159,7 +227,7 @@ const MealPlanContainer = () => {
         onSnackAdded={() => mealPlanState.refetch()}
       />
 
-      {/* Enhanced Meal Exchange Dialog */}
+      {/* Enhanced Meal Exchange Dialog - Our latest implementation */}
       <MealExchangeDialog
         isOpen={mealPlanState.showExchangeDialog}
         onClose={() => mealPlanState.closeExchangeDialog()}

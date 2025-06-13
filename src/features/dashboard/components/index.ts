@@ -1,6 +1,6 @@
 
-export { default as CanonicalDashboard } from './CanonicalDashboard';
+// Dashboard feature components exports
 export { default as DashboardHeader } from './DashboardHeader';
 export { default as QuickActionsGrid } from './QuickActionsGrid';
 export { default as RecentActivityCard } from './RecentActivityCard';
-export { MealList } from './MealList';
+export { default as CanonicalDashboard } from './CanonicalDashboard';

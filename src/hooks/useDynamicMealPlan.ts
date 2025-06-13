@@ -1,16 +1,17 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from './useAuth';
 import { format } from 'date-fns';
 import { startOfWeek, addWeeks } from 'date-fns';
 
 export const useDynamicMealPlan = (weekOffset: number = 0) => {
   const { user } = useAuth();
 
+  // Calculate the target week start date
   const getTargetWeekStart = () => {
     const today = new Date();
-    const currentWeekStart = startOfWeek(today, { weekStartsOn: 6 });
+    const currentWeekStart = startOfWeek(today, { weekStartsOn: 6 }); // Saturday = 6
     const targetWeek = addWeeks(currentWeekStart, weekOffset);
     return format(targetWeek, 'yyyy-MM-dd');
   };
@@ -29,6 +30,7 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
 
       console.log('📡 Fetching meal plan for user:', user.id, 'week:', targetWeekStart);
 
+      // First, get the weekly plan
       const { data: weeklyPlan, error: weeklyError } = await supabase
         .from('weekly_meal_plans')
         .select('*')
@@ -52,6 +54,7 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
         return null;
       }
 
+      // Then get the daily meals for this week
       const { data: dailyMeals, error: mealsError } = await supabase
         .from('daily_meals')
         .select('*')
@@ -78,7 +81,7 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
       return result;
     },
     enabled: !!user?.id,
-    staleTime: 30000,
+    staleTime: 30000, // 30 seconds
     refetchOnWindowFocus: false
   });
 

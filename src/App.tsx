@@ -1,13 +1,13 @@
 
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Suspense, useEffect } from 'react';
+import { Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { Toaster } from '@/components/ui/sonner';
+import { LazyPages } from '@/components/LazyPages';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { OptimizedLazyWrapper } from '@/components/OptimizedLazyWrapper';
-import { LazyComponents, preloadCriticalComponents } from '@/utils/lazyComponentLoader';
+import SimpleLoadingIndicator from '@/components/ui/simple-loading-indicator';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -18,12 +18,17 @@ const queryClient = new QueryClient({
   },
 });
 
-function App() {
-  // Preload critical components on app startup
-  useEffect(() => {
-    preloadCriticalComponents();
-  }, []);
+const SuspenseFallback = () => (
+  <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+    <SimpleLoadingIndicator
+      message="Loading Page"
+      description="Please wait while we load the page..."
+      size="lg"
+    />
+  </div>
+);
 
+function App() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
@@ -31,111 +36,38 @@ function App() {
           <AuthProvider>
             <Router>
               <div className="App">
-                <Routes>
-                  {/* Public routes with optimized loading */}
-                  <Route 
-                    path="/" 
-                    element={
-                      <OptimizedLazyWrapper 
-                        loadingMessage="Loading Home"
-                        loadingDescription="Setting up your fitness journey..."
-                      >
-                        <LazyComponents.Dashboard />
-                      </OptimizedLazyWrapper>
-                    } 
-                  />
-                  
-                  <Route 
-                    path="/auth" 
-                    element={
-                      <OptimizedLazyWrapper 
-                        loadingMessage="Loading Authentication"
-                        loadingDescription="Preparing login form..."
-                      >
-                        <LazyComponents.Auth />
-                      </OptimizedLazyWrapper>
-                    } 
-                  />
+                <Suspense fallback={<SuspenseFallback />}>
+                  <Routes>
+                    {/* Public routes */}
+                    <Route path="/" element={<LazyPages.Index />} />
+                    <Route path="/landing" element={<LazyPages.Landing />} />
+                    <Route path="/auth" element={<LazyPages.Auth />} />
+                    <Route path="/signup" element={<LazyPages.UnifiedSignup />} />
+                    <Route path="/welcome" element={<LazyPages.Welcome />} />
 
-                  {/* Protected routes with feature-specific loading */}
-                  <Route 
-                    path="/dashboard" 
-                    element={
-                      <OptimizedLazyWrapper 
-                        loadingMessage="Loading Dashboard"
-                        loadingDescription="Preparing your fitness overview..."
-                      >
-                        <LazyComponents.Dashboard />
-                      </OptimizedLazyWrapper>
-                    } 
-                  />
-                  
-                  <Route 
-                    path="/meal-plan" 
-                    element={
-                      <OptimizedLazyWrapper 
-                        loadingMessage="Loading Meal Plan"
-                        loadingDescription="Fetching your nutrition plan..."
-                      >
-                        <LazyComponents.MealPlan />
-                      </OptimizedLazyWrapper>
-                    } 
-                  />
-                  
-                  <Route 
-                    path="/exercise" 
-                    element={
-                      <OptimizedLazyWrapper 
-                        loadingMessage="Loading Exercise Program"
-                        loadingDescription="Preparing your workout plan..."
-                      >
-                        <LazyComponents.Exercise />
-                      </OptimizedLazyWrapper>
-                    } 
-                  />
-                  
-                  <Route 
-                    path="/profile" 
-                    element={
-                      <OptimizedLazyWrapper 
-                        loadingMessage="Loading Profile"
-                        loadingDescription="Setting up your profile..."
-                      >
-                        <LazyComponents.Profile />
-                      </OptimizedLazyWrapper>
-                    } 
-                  />
+                    {/* Protected routes */}
+                    <Route path="/dashboard" element={<LazyPages.Dashboard />} />
+                    <Route path="/profile" element={<LazyPages.Profile />} />
+                    <Route path="/meal-plan" element={<LazyPages.MealPlan />} />
+                    <Route path="/exercise" element={<LazyPages.Exercise />} />
+                    <Route path="/food-tracker" element={<LazyPages.FoodTracker />} />
+                    <Route path="/calorie-checker" element={<LazyPages.CalorieChecker />} />
+                    <Route path="/weight-tracking" element={<LazyPages.WeightTracking />} />
+                    <Route path="/goals" element={<LazyPages.Goals />} />
+                    <Route path="/progress/:tab?" element={<LazyPages.Progress />} />
+                    <Route path="/settings" element={<LazyPages.Settings />} />
+                    <Route path="/notifications" element={<LazyPages.Notifications />} />
+                    <Route path="/chat" element={<LazyPages.Chat />} />
+                    <Route path="/pro" element={<LazyPages.Pro />} />
 
-                  {/* Admin routes with separate chunk */}
-                  <Route 
-                    path="/admin/*" 
-                    element={
-                      <OptimizedLazyWrapper 
-                        loadingMessage="Loading Admin Panel"
-                        loadingDescription="Accessing admin features..."
-                      >
-                        <LazyComponents.Admin />
-                      </OptimizedLazyWrapper>
-                    } 
-                  />
+                    {/* Admin & Coach routes */}
+                    <Route path="/admin" element={<LazyPages.Admin />} />
+                    <Route path="/coach" element={<LazyPages.Coach />} />
 
-                  {/* 404 route */}
-                  <Route 
-                    path="*" 
-                    element={
-                      <div className="min-h-screen flex items-center justify-center">
-                        <div className="text-center">
-                          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                            Page Not Found
-                          </h1>
-                          <p className="text-gray-600">
-                            The page you're looking for doesn't exist.
-                          </p>
-                        </div>
-                      </div>
-                    } 
-                  />
-                </Routes>
+                    {/* 404 route */}
+                    <Route path="*" element={<LazyPages.NotFound />} />
+                  </Routes>
+                </Suspense>
                 <Toaster />
               </div>
             </Router>

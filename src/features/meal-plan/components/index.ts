@@ -1,28 +1,11 @@
-export { default as MealPlanContainer } from './MealPlanContainer';
+
+// Meal Plan feature components exports
+export { default as MealPlanLoadingBackdrop } from './MealPlanLoadingBackdrop';
+export { default as MealPlanPageTitle } from './MealPlanPageTitle';
+export { default as MealPlanEmptyState } from './MealPlanEmptyState';
+export { default as MealPlanErrorState } from './MealPlanErrorState';
+export { default as MealPlanLoadingState } from './MealPlanLoadingState';
 export { MealPlanContent } from './MealPlanContent';
-export { default as MealPlanHeader } from './MealPlanHeader';
-export { MealPlanViewToggle } from './MealPlanViewToggle';
-export { WeeklyMealPlanView } from './WeeklyMealPlanView';
-export { default as DayOverview } from './DayOverview';
-export { EmptyWeekState } from './EmptyWeekState';
-export { default as ErrorState } from './ErrorState';
-export { default as LoadingState } from './LoadingState';
-export { LoadingOverlay } from './LoadingOverlay';
-export { EnhancedMealCard } from './EnhancedMealCard';
 export { default as MealCard } from './MealCard';
-export { AddMealCard } from './AddMealCard';
+export { default as DayOverview } from './DayOverview';
 export { EnhancedRecipeDialog } from './EnhancedRecipeDialog';
-
-// Weekly view components
-export { DayMealCard } from './DayMealCard';
-
-// Day overview components
-export { EmptyDayState } from './EmptyDayState';
-export { MealListCard } from './MealListCard';
-
-// Nutrition components
-export { NutritionProgressCard } from './nutrition/NutritionProgressCard';
-
-// Navigation components
-export { WeekNavigationCard } from './navigation/WeekNavigationCard';
-export { UnifiedNavigation } from './navigation/UnifiedNavigation';

@@ -1,20 +1,23 @@
 
 // Food tracker feature types
-export interface FoodItem {
+export interface FoodEntry {
   id: string;
-  name: string;
+  food_name: string;
   calories: number;
   protein: number;
   carbs: number;
-  fat: number;
+  fats: number;
   quantity: number;
   unit: string;
+  meal_type: string;
+  logged_at: string;
 }
 
-export interface FoodLog {
-  id: string;
-  user_id: string;
-  food_item: FoodItem;
-  meal_type: 'breakfast' | 'lunch' | 'dinner' | 'snack';
-  logged_at: string;
+export interface NutritionSummary {
+  totalCalories: number;
+  totalProtein: number;
+  totalCarbs: number;
+  totalFats: number;
+  targetCalories: number;
+  remainingCalories: number;
 }

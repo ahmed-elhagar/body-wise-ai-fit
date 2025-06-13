@@ -1,7 +1,7 @@
 
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Exercise } from '@/features/exercise/types';
+import { Exercise } from '@/types/exercise';
 import { useI18n } from '@/hooks/useI18n';
 
 interface ExerciseListViewProps {

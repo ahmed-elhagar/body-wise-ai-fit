@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from './useAuth';
 
 export const useEnhancedMealShuffle = () => {
   const { user } = useAuth();
@@ -29,7 +29,7 @@ export const useEnhancedMealShuffle = () => {
       const { data, error } = await supabase.functions.invoke('shuffle-weekly-meals', {
         body: { 
           weeklyPlanId,
-          userId: user.id
+          userId: user.id // Ensure user ID is properly passed
         }
       });
 

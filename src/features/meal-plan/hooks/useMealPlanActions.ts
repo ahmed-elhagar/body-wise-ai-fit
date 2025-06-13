@@ -1,13 +1,10 @@
 
-import { useState, useCallback } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { useMealPlans } from './useMealPlans';
-import { useMealExchange } from './useMealExchange';
-import { useEnhancedMealPlan } from './useEnhancedMealPlan';
-import { useMealRecipe } from './useMealRecipe';
+import { useCallback } from "react";
+import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useEnhancedMealPlan } from "@/hooks/useEnhancedMealPlan";
 import { useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
 
 export const useMealPlanActions = (
   currentWeekPlan: any,

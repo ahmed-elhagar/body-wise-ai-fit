@@ -36,13 +36,17 @@ const FoodPhotoAnalyzer = ({ onSelectFood }: FoodPhotoAnalyzerProps) => {
       </div>
 
       {/* Photo Analysis Card */}
-      <FoodPhotoAnalysisCard />
+      <FoodPhotoAnalysisCard 
+        onFoodSelected={handleFoodSelected}
+        className="w-full"
+      />
 
       {/* Analysis Results */}
       {analysisResult && (
         <FoodAnalysisResults
           result={analysisResult}
           onAddToLog={handleFoodSelected}
+          className="w-full"
         />
       )}
     </div>

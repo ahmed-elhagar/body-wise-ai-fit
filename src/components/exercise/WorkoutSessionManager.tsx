@@ -1,15 +1,21 @@
 
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Target, TrendingUp } from 'lucide-react';
+import { 
+  Play, 
+  Pause, 
+  Square, 
+  Clock, 
+  Target, 
+  TrendingUp,
+  CheckCircle,
+  Trophy
+} from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Exercise } from '@/features/exercise/types';
-import { WorkoutSessionStats } from './WorkoutSessionStats';
-import { WorkoutSessionControls } from './WorkoutSessionControls';
-import { CurrentExerciseIndicator } from './CurrentExerciseIndicator';
-import { SessionCompleteCard } from './SessionCompleteCard';
+import { Exercise } from '@/types/exercise';
 
 interface WorkoutSessionManagerProps {
   exercises: Exercise[];
@@ -45,10 +51,6 @@ export const WorkoutSessionManager = ({
   const totalExercises = exercises.length;
   const sessionProgress = (completedExercises / totalExercises) * 100;
 
-  const estimatedCalories = exercises.reduce((total, ex) => {
-    return total + (ex.sets || 3) * 5;
-  }, 0);
-
   const startSession = () => {
     setIsSessionActive(true);
     setSessionStartTime(new Date());
@@ -57,10 +59,6 @@ export const WorkoutSessionManager = ({
 
   const pauseSession = () => {
     setIsSessionActive(false);
-  };
-
-  const resumeSession = () => {
-    setIsSessionActive(true);
   };
 
   const endSession = () => {
@@ -76,8 +74,21 @@ export const WorkoutSessionManager = ({
     }
   };
 
-  const currentExercise = exercises[currentExerciseIndex] || null;
-  const canMoveNext = currentExerciseIndex < exercises.length - 1;
+  const formatDuration = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    
+    if (hours > 0) {
+      return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+    return `${minutes}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const estimatedCalories = exercises.reduce((total, ex) => {
+    // Rough estimation: 5 calories per set
+    return total + (ex.sets || 3) * 5;
+  }, 0);
 
   return (
     <Card className="p-4 mb-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
@@ -96,23 +107,66 @@ export const WorkoutSessionManager = ({
             </span>
           </div>
         </div>
-        <WorkoutSessionControls
-          isSessionActive={isSessionActive}
-          sessionStartTime={sessionStartTime}
-          onStartSession={startSession}
-          onPauseSession={pauseSession}
-          onResumeSession={resumeSession}
-          onEndSession={endSession}
-        />
+        <div className="flex items-center gap-2">
+          {!isSessionActive && !sessionStartTime && (
+            <Button onClick={startSession} className="bg-blue-600 hover:bg-blue-700">
+              <Play className="w-4 h-4 mr-2" />
+              {t('Start Workout')}
+            </Button>
+          )}
+          {isSessionActive && (
+            <>
+              <Button variant="outline" onClick={pauseSession}>
+                <Pause className="w-4 h-4 mr-2" />
+                {t('Pause')}
+              </Button>
+              <Button variant="destructive" onClick={endSession}>
+                <Square className="w-4 h-4 mr-2" />
+                {t('End')}
+              </Button>
+            </>
+          )}
+          {!isSessionActive && sessionStartTime && (
+            <Button onClick={() => setIsSessionActive(true)} className="bg-green-600 hover:bg-green-700">
+              <Play className="w-4 h-4 mr-2" />
+              {t('Resume')}
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Session Stats */}
-      <WorkoutSessionStats
-        sessionDuration={sessionDuration}
-        completedExercises={completedExercises}
-        totalExercises={totalExercises}
-        sessionProgress={sessionProgress}
-      />
+      <div className="grid grid-cols-3 gap-4 mb-4">
+        <div className="text-center p-3 bg-white rounded-lg border">
+          <div className="flex items-center justify-center mb-1">
+            <Clock className="w-4 h-4 text-blue-600" />
+          </div>
+          <div className="text-lg font-bold text-gray-900">
+            {formatDuration(sessionDuration)}
+          </div>
+          <div className="text-xs text-gray-500">{t('Duration')}</div>
+        </div>
+        
+        <div className="text-center p-3 bg-white rounded-lg border">
+          <div className="flex items-center justify-center mb-1">
+            <CheckCircle className="w-4 h-4 text-green-600" />
+          </div>
+          <div className="text-lg font-bold text-gray-900">
+            {completedExercises}/{totalExercises}
+          </div>
+          <div className="text-xs text-gray-500">{t('Completed')}</div>
+        </div>
+        
+        <div className="text-center p-3 bg-white rounded-lg border">
+          <div className="flex items-center justify-center mb-1">
+            <Trophy className="w-4 h-4 text-orange-600" />
+          </div>
+          <div className="text-lg font-bold text-gray-900">
+            {Math.round(sessionProgress)}%
+          </div>
+          <div className="text-xs text-gray-500">{t('Progress')}</div>
+        </div>
+      </div>
 
       {/* Progress Bar */}
       <div className="mb-4">
@@ -126,18 +180,39 @@ export const WorkoutSessionManager = ({
       </div>
 
       {/* Current Exercise Indicator */}
-      <CurrentExerciseIndicator
-        isSessionActive={isSessionActive}
-        currentExercise={currentExercise}
-        onMoveToNext={moveToNextExercise}
-        canMoveNext={canMoveNext}
-      />
+      {isSessionActive && exercises[currentExerciseIndex] && (
+        <div className="bg-white border-2 border-blue-300 rounded-lg p-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-sm font-medium text-blue-800">{t('Current Exercise')}</div>
+              <div className="font-bold text-gray-900">
+                {exercises[currentExerciseIndex].name}
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={moveToNextExercise}
+              disabled={currentExerciseIndex >= exercises.length - 1}
+            >
+              {t('Next Exercise')}
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Session Complete */}
-      <SessionCompleteCard
-        sessionProgress={sessionProgress}
-        sessionDuration={sessionDuration}
-      />
+      {sessionProgress === 100 && (
+        <div className="bg-green-50 border-2 border-green-300 rounded-lg p-4 text-center">
+          <Trophy className="w-8 h-8 text-green-600 mx-auto mb-2" />
+          <div className="font-bold text-green-800 mb-1">
+            {t('Workout Complete!')}
+          </div>
+          <div className="text-sm text-green-700">
+            {t('Great job! You completed all exercises in')} {formatDuration(sessionDuration)}
+          </div>
+        </div>
+      )}
     </Card>
   );
 };

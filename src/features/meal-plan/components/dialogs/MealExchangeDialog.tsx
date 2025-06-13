@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -35,7 +34,7 @@ export const MealExchangeDialog = ({ isOpen, onClose, meal, onExchangeComplete }
     isLoading,
     alternatives,
     generateAlternatives,
-    exchangeMealWithAlternative,
+    exchangeMeal,
     quickExchange,
     clearAlternatives,
     hasAlternatives,
@@ -66,7 +65,7 @@ export const MealExchangeDialog = ({ isOpen, onClose, meal, onExchangeComplete }
   };
 
   const handleSelectAlternative = async (alternative: any) => {
-    const success = await exchangeMealWithAlternative(alternative, () => {
+    await exchangeMeal(alternative, () => {
       onExchangeComplete?.();
       handleClose();
     });
