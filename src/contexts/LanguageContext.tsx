@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import i18n from '@/i18n/config';
 
 export type Language = 'en' | 'ar';
 
@@ -15,7 +16,7 @@ export interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [language, setLanguageState] = useState<Language>('en');
   const [isRTL, setIsRTL] = useState(false);
 
@@ -23,9 +24,10 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const storedLanguage = localStorage.getItem('preferred-language') as Language;
     if (storedLanguage && ['en', 'ar'].includes(storedLanguage)) {
       setLanguageState(storedLanguage);
+      // Use the imported i18n instance directly
       i18n.changeLanguage(storedLanguage);
     }
-  }, [i18n]);
+  }, []);
 
   useEffect(() => {
     const rtl = language === 'ar';
@@ -36,6 +38,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const changeLanguage = async (lng: Language) => {
     try {
+      // Use the imported i18n instance directly
       await i18n.changeLanguage(lng);
       setLanguageState(lng);
       localStorage.setItem('preferred-language', lng);
