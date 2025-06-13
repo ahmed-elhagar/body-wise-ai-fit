@@ -69,8 +69,67 @@ export const useMealRecipe = () => {
     }
   };
 
+  // Enhanced recipe generation with more options (from useEnhancedMealRecipe)
+  const generateEnhancedRecipe = async (mealId: string, enhancementOptions: any = {}) => {
+    if (!user?.id || !mealId) {
+      console.error('Missing required data for enhanced recipe generation');
+      return null;
+    }
+
+    const creditResult = await checkAndUseCredit('enhanced-recipe-generation');
+    if (!creditResult.success) {
+      toast.error('No AI credits remaining');
+      return null;
+    }
+
+    setIsGeneratingRecipe(true);
+    
+    try {
+      console.log('🍳 Generating enhanced recipe with AI');
+      
+      const { data, error } = await supabase.functions.invoke('generate-enhanced-recipe', {
+        body: {
+          userId: user.id,
+          mealId: mealId,
+          enhancementOptions: enhancementOptions
+        }
+      });
+
+      if (error) {
+        console.error('❌ Enhanced recipe generation error:', error);
+        throw error;
+      }
+
+      if (data?.success) {
+        console.log('✅ Enhanced recipe generated successfully');
+        
+        if (creditResult.logId) {
+          await completeGeneration(creditResult.logId, true, data);
+        }
+        
+        toast.success('Enhanced recipe generated successfully!');
+        return data;
+      } else {
+        throw new Error(data?.error || 'Enhanced recipe generation failed');
+      }
+    } catch (error: any) {
+      console.error('❌ Enhanced recipe generation failed:', error);
+      toast.error('Failed to generate enhanced recipe');
+      
+      if (creditResult.logId) {
+        await completeGeneration(creditResult.logId, false);
+      }
+      
+      throw error;
+    } finally {
+      setIsGeneratingRecipe(false);
+    }
+  };
+
   return {
     generateRecipe,
-    isGeneratingRecipe
+    generateEnhancedRecipe, // Enhanced functionality
+    isGeneratingRecipe,
+    isGenerating: isGeneratingRecipe // Alias for backward compatibility
   };
 };

@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCentralizedCredits } from '@/hooks/useCentralizedCredits';
@@ -10,6 +11,63 @@ export const useMealExchange = () => {
   const { checkAndUseCredit, completeGeneration } = useCentralizedCredits();
   const [isLoading, setIsLoading] = useState(false);
   const [alternatives, setAlternatives] = useState<any[]>([]);
+
+  // Consolidated method that handles both AI generation and direct exchange
+  const exchangeMeal = async (mealId: string, reason: string) => {
+    if (!user?.id || !mealId || !reason.trim()) {
+      console.error('Missing required data for meal exchange');
+      return null;
+    }
+
+    const creditResult = await checkAndUseCredit('meal-exchange');
+    if (!creditResult.success) {
+      toast.error('No AI credits remaining');
+      return null;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      console.log('🔄 Exchanging meal with AI');
+      
+      const { data, error } = await supabase.functions.invoke('exchange-meal', {
+        body: {
+          userId: user.id,
+          mealId: mealId,
+          reason: reason
+        }
+      });
+
+      if (error) {
+        console.error('❌ Meal exchange error:', error);
+        throw error;
+      }
+
+      if (data?.success) {
+        console.log('✅ Meal exchange completed successfully');
+        
+        if (creditResult.logId) {
+          await completeGeneration(creditResult.logId, true, data);
+        }
+        
+        toast.success('Meal exchanged successfully!');
+        return data;
+      } else {
+        throw new Error(data?.error || 'Meal exchange failed');
+      }
+    } catch (error: any) {
+      console.error('❌ Meal exchange failed:', error);
+      toast.error('Failed to exchange meal');
+      
+      if (creditResult.logId) {
+        await completeGeneration(creditResult.logId, false);
+      }
+      
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const generateAlternatives = async (meal: DailyMeal, reason: string) => {
     if (!user?.id || !meal?.id) {
@@ -71,7 +129,7 @@ export const useMealExchange = () => {
     }
   };
 
-  const exchangeMeal = async (alternative: any, onSuccess?: () => void) => {
+  const exchangeMealWithAlternative = async (alternative: any, onSuccess?: () => void) => {
     if (!alternative?.id) {
       console.error('No alternative selected for exchange');
       return false;
@@ -114,7 +172,7 @@ export const useMealExchange = () => {
   const quickExchange = async (meal: DailyMeal, reason: string, onSuccess?: () => void) => {
     const success = await generateAlternatives(meal, reason);
     if (success && alternatives.length > 0) {
-      return await exchangeMeal(alternatives[0], onSuccess);
+      return await exchangeMealWithAlternative(alternatives[0], onSuccess);
     }
     return false;
   };
@@ -126,10 +184,13 @@ export const useMealExchange = () => {
   const hasAlternatives = alternatives.length > 0;
 
   return {
+    // Consolidated interface that combines both hooks
+    exchangeMeal, // Direct AI exchange (from useAIMealExchange)
+    isExchanging: isLoading, // Alias for backward compatibility
     isLoading,
     alternatives,
     generateAlternatives,
-    exchangeMeal,
+    exchangeMeal: exchangeMealWithAlternative, // Alternative-based exchange
     quickExchange,
     clearAlternatives,
     hasAlternatives

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ChefHat, Clock, Users, Utensils, Youtube, ExternalLink, Sparkles, ImageIcon } from "lucide-react";
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useEnhancedMealRecipe } from '@/hooks/useEnhancedMealRecipe';
+import { useMealRecipe } from '../../hooks/useMealRecipe'; // Using consolidated hook
 import { toast } from 'sonner';
 import SimpleLoadingIndicator from '@/components/ui/simple-loading-indicator';
 import type { DailyMeal } from '../../types';
@@ -19,7 +19,7 @@ interface RecipeDialogProps {
 
 export const RecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }: RecipeDialogProps) => {
   const { t, isRTL } = useLanguage();
-  const { generateEnhancedRecipe, isGenerating } = useEnhancedMealRecipe();
+  const { generateEnhancedRecipe, isGenerating } = useMealRecipe(); // Using consolidated hook
   const [currentMeal, setCurrentMeal] = useState<DailyMeal | null>(meal);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
 
