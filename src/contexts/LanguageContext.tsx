@@ -2,11 +2,16 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
+export type Language = 'en' | 'ar';
+
 interface LanguageContextType {
   language: string;
   changeLanguage: (lang: string) => void;
   t: (key: string) => string;
   tFrom: (namespace: string) => (key: string) => string;
+  isRTL: boolean;
+  isArabic: boolean;
+  isEnglish: boolean;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -19,7 +24,10 @@ export const useLanguage = () => {
       language: 'en',
       changeLanguage: () => {},
       t: (key: string) => key,
-      tFrom: () => (key: string) => key
+      tFrom: () => (key: string) => key,
+      isRTL: false,
+      isArabic: false,
+      isEnglish: true
     };
   }
   return context;
@@ -53,11 +61,18 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return t(`${namespace}.${key}`, key);
   };
 
+  const isRTL = language === 'ar';
+  const isArabic = language === 'ar';
+  const isEnglish = language === 'en';
+
   const contextValue = {
     language,
     changeLanguage,
     t: (key: string) => t(key, key), // Fallback to key if translation missing
-    tFrom
+    tFrom,
+    isRTL,
+    isArabic,
+    isEnglish
   };
 
   return (

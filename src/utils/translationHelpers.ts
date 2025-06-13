@@ -1,93 +1,34 @@
 
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useLanguage } from '@/contexts/LanguageContext';
 
-export const useMealPlanTranslation = () => {
+export const useTranslationHelper = () => {
   const { t } = useLanguage();
   
-  const mealPlanT = (key: string, options?: any): string => {
-    const fullKey = `mealPlan.${key}`;
-    const result = t(fullKey, options);
-    
-    // If translation failed and we got the key back, try without namespace
-    if (result === fullKey || result === key) {
-      console.warn(`Missing meal plan translation: ${fullKey}`);
-      // Return a user-friendly version of the key
-      return key.split('.').pop()?.replace(/([A-Z])/g, ' $1').trim() || key;
-    }
-    
-    return result;
+  const translateMealType = (mealType: string) => {
+    return t(`mealTypes.${mealType}`);
   };
 
-  return { mealPlanT };
-};
-
-export const useGeneralTranslation = () => {
-  const { t } = useLanguage();
-  
-  const generalT = (key: string, options?: any): string => {
-    const result = t(key, options);
-    
-    if (result === key) {
-      console.warn(`Missing general translation: ${key}`);
-      return key.replace(/([A-Z])/g, ' $1').trim();
-    }
-    
-    return result;
+  const translateExerciseType = (exerciseType: string) => {
+    return t(`exerciseTypes.${exerciseType}`);
   };
 
-  return { generalT };
-};
-
-export const useAuthTranslation = () => {
-  const { t } = useLanguage();
-  
-  const authT = (key: string, options?: any): string => {
-    const fullKey = `auth.${key}`;
-    const result = t(fullKey, options);
-    
-    if (result === fullKey || result === key) {
-      console.warn(`Missing auth translation: ${fullKey}`);
-      return key.replace(/([A-Z])/g, ' $1').trim();
-    }
-    
-    return result;
+  const translateBodyPart = (bodyPart: string) => {
+    return t(`bodyParts.${bodyPart}`);
   };
 
-  return { authT };
-};
-
-export const useProfileTranslation = () => {
-  const { t } = useLanguage();
-  
-  const profileT = (key: string, options?: any): string => {
-    const fullKey = `profile.${key}`;
-    const result = t(fullKey, options);
-    
-    if (result === fullKey || result === key) {
-      console.warn(`Missing profile translation: ${fullKey}`);
-      return key.replace(/([A-Z])/g, ' $1').trim();
-    }
-    
-    return result;
+  const translateEquipment = (equipment: string) => {
+    return t(`equipment.${equipment}`);
   };
 
-  return { profileT };
-};
-
-export const useWorkoutTranslation = () => {
-  const { t } = useLanguage();
-  
-  const workoutT = (key: string, options?: any): string => {
-    const fullKey = `workout.${key}`;
-    const result = t(fullKey, options);
-    
-    if (result === fullKey || result === key) {
-      console.warn(`Missing workout translation: ${fullKey}`);
-      return key.replace(/([A-Z])/g, ' $1').trim();
-    }
-    
-    return result;
+  const translateDifficulty = (difficulty: string) => {
+    return t(`difficulty.${difficulty}`);
   };
 
-  return { workoutT };
+  return {
+    translateMealType,
+    translateExerciseType,
+    translateBodyPart,
+    translateEquipment,
+    translateDifficulty
+  };
 };
