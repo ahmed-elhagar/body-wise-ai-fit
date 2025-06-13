@@ -12,12 +12,10 @@ export const useAIMealPlan = () => {
     setError(null);
     
     try {
-      // Check user role from metadata
       const userRole = user?.user_metadata?.role || 'normal';
       
       console.log('Generating meal plan for user role:', userRole, 'with options:', options);
       
-      // Simulate meal plan generation
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       return { 

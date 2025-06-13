@@ -1,8 +1,8 @@
 
 import { useState } from 'react';
-import { useAuth } from './useAuth';
-import { useCentralizedCredits } from './useCentralizedCredits';
-import { useNotifications } from './useNotifications';
+import { useAuth } from '@/hooks/useAuth';
+import { useCentralizedCredits } from '@/hooks/useCentralizedCredits';
+import { useNotifications } from '@/hooks/useNotifications';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -29,7 +29,6 @@ export const useEnhancedMealPlan = () => {
 
     console.log('🔐 User authenticated:', user.id);
 
-    // Check credits before starting
     if (!hasCredits) {
       toast.error('No AI credits remaining. Please upgrade your plan or wait for credits to reset.');
       return false;
@@ -41,14 +40,12 @@ export const useEnhancedMealPlan = () => {
     try {
       console.log('🍽️ Starting meal plan generation with preferences:', preferences);
       
-      // Check and use credit before starting generation
       const creditResult = await checkAndUseCredit('meal_plan');
       if (!creditResult.success) {
         return false;
       }
       logId = creditResult.logId;
 
-      // Get user profile data for better personalization
       const { data: profile } = await supabase
         .from('profiles')
         .select('*')
@@ -57,7 +54,6 @@ export const useEnhancedMealPlan = () => {
 
       console.log('📊 User profile loaded:', profile ? 'success' : 'no profile found');
 
-      // Structure the request for meal plan generation
       const requestBody = {
         userData: {
           userId: user.id,
@@ -103,10 +99,8 @@ export const useEnhancedMealPlan = () => {
       if (data?.success) {
         console.log('✅ Meal plan generated successfully');
         
-        // Complete the generation process
         if (logId) await completeGeneration(logId, true, data);
         
-        // Set nutrition context if available, with safe defaults
         if (data.nutritionContext) {
           setNutritionContext({
             isPregnant: data.nutritionContext.isPregnant || false,
@@ -118,7 +112,6 @@ export const useEnhancedMealPlan = () => {
           });
         }
         
-        // Create notification for successful meal plan generation
         const language = profile?.preferred_language || 'en';
         createNotification({
           title: language === 'ar' ? 'تم إنشاء خطة الوجبات!' : 'Meal Plan Generated!',
@@ -131,7 +124,6 @@ export const useEnhancedMealPlan = () => {
         
         toast.success('Meal plan generated successfully!');
         
-        // Set isGenerating to false immediately
         setIsGenerating(false);
         return true;
       } else {

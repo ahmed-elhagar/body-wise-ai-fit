@@ -1,42 +1,9 @@
 
-// Main exports for exercise feature
-export { default as OptimizedExerciseContainer } from './components/OptimizedExerciseContainer';
-
-// Feature components
-export { 
-  ExerciseListEnhanced,
-  ExercisePageContent,
-  WorkoutTypeToggle,
-  ExerciseProgramSelector,
-  WorkoutTypeTabs,
-  ExerciseErrorHandler,
-  RestDayCard,
-  ExerciseEmptyState,
-  InteractiveExerciseCard,
-  AnimatedProgressRing,
-  CompactProgressSidebar,
-  EnhancedExerciseListContainer,
-  UnifiedExerciseContainer,
-  ExercisePageLayout,
-  EnhancedDayNavigation,
-  ExerciseCompactNavigation,
-  WeeklyExerciseNavigation,
-  ExerciseProgramDaySelector,
-  ExerciseErrorState,
-  EnhancedExerciseHeaderWithAnalytics,
-  ExerciseAnalyticsContainer,
-  AIExerciseDialog
-} from './components';
-
-// Export types
+// Exercise feature exports
 export type * from './types';
-export type { ExerciseProgram, ExercisePreferences, Exercise, DailyWorkout } from './types';
 
-// Export utilities
-export * from './utils';
+// Components
+export * from './components';
 
-// Export hooks
+// Hooks
 export * from './hooks';
-
-// Export services
-export * from './services';
