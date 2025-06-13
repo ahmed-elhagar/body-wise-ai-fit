@@ -1,4 +1,3 @@
-
 export { default as MealPlanContainer } from './MealPlanContainer';
 export { MealPlanContent } from './MealPlanContent';
 export { default as MealPlanHeader } from './MealPlanHeader';
@@ -13,6 +12,9 @@ export { EnhancedMealCard } from './EnhancedMealCard';
 export { default as MealCard } from './MealCard';
 export { AddMealCard } from './AddMealCard';
 export { EnhancedRecipeDialog } from './EnhancedRecipeDialog';
+
+// Weekly view components
+export { DayMealCard } from './DayMealCard';
 
 // Navigation components
 export { WeekNavigationCard } from './navigation/WeekNavigationCard';
