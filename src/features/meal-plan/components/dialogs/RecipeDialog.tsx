@@ -19,7 +19,7 @@ interface RecipeDialogProps {
 
 export const RecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }: RecipeDialogProps) => {
   const { t, isRTL } = useLanguage();
-  const { generateEnhancedRecipe, isGeneratingRecipe } = useEnhancedMealRecipe();
+  const { generateEnhancedRecipe, isGenerating } = useEnhancedMealRecipe();
   const [currentMeal, setCurrentMeal] = useState<DailyMeal | null>(meal);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
 
@@ -215,10 +215,10 @@ export const RecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }: RecipeD
               </p>
               <Button
                 onClick={handleGenerateFullRecipe}
-                disabled={isGeneratingRecipe}
+                disabled={isGenerating}
                 className="bg-purple-600 hover:bg-purple-700"
               >
-                {isGeneratingRecipe ? (
+                {isGenerating ? (
                   <SimpleLoadingIndicator message="Generating..." size="sm" />
                 ) : (
                   <>

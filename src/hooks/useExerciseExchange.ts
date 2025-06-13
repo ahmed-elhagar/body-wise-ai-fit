@@ -9,10 +9,22 @@ export const useExerciseExchange = () => {
   const { user } = useAuth();
   const { checkAndUseCredit, completeGeneration } = useCentralizedCredits();
   const [isExchanging, setIsExchanging] = useState(false);
+  const [weeklyExchangeCount, setWeeklyExchangeCount] = useState(0);
 
-  const exchangeExercise = async (exerciseId: string, reason: string) => {
+  // Calculate remaining exchanges and if user can exchange
+  const remainingExchanges = Math.max(0, 2 - weeklyExchangeCount);
+  const canExchange = remainingExchanges > 0;
+
+  const exchangeExercise = async (params: { exerciseId: string; reason: string; preferences?: any }) => {
+    const { exerciseId, reason, preferences } = params;
+    
     if (!user?.id || !exerciseId || !reason.trim()) {
       console.error('Missing required data for exercise exchange');
+      return null;
+    }
+
+    if (!canExchange) {
+      toast.error('Weekly exchange limit reached');
       return null;
     }
 
@@ -31,7 +43,8 @@ export const useExerciseExchange = () => {
         body: {
           userId: user.id,
           exerciseId: exerciseId,
-          reason: reason
+          reason: reason,
+          preferences: preferences
         }
       });
 
@@ -42,6 +55,9 @@ export const useExerciseExchange = () => {
 
       if (data?.success) {
         console.log('✅ Exercise exchange completed successfully');
+        
+        // Update weekly count
+        setWeeklyExchangeCount(prev => prev + 1);
         
         if (creditResult.logId) {
           await completeGeneration(creditResult.logId, true, data);
@@ -68,6 +84,9 @@ export const useExerciseExchange = () => {
 
   return {
     exchangeExercise,
-    isExchanging
+    isExchanging,
+    weeklyExchangeCount,
+    remainingExchanges,
+    canExchange
   };
 };
