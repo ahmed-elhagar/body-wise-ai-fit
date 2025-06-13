@@ -15,7 +15,7 @@ export class ExerciseService {
       .single();
 
     if (error) throw error;
-    return data;
+    return data as Exercise;
   }
 
   static async updateExerciseProgress(
@@ -43,7 +43,7 @@ export class ExerciseService {
       .single();
 
     if (error) throw error;
-    return data;
+    return data as Exercise;
   }
 
   static async getExerciseProgram(
