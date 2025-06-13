@@ -36,7 +36,7 @@ const FoodPhotoAnalyzer = ({ onSelectFood }: FoodPhotoAnalyzerProps) => {
       </div>
 
       {/* Photo Analysis Card */}
-      <FoodPhotoAnalysisCard className="w-full" />
+      <FoodPhotoAnalysisCard />
 
       {/* Analysis Results */}
       {analysisResult && (
