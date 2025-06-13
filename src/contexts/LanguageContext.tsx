@@ -1,98 +1,70 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import i18n from '../i18n/config';
 
 export type Language = 'en' | 'ar';
 
-interface LanguageContextProps {
+export interface LanguageContextType {
   language: Language;
-  setLanguage: (language: Language) => void;
-  t: (key: string, options?: any) => string;
   isRTL: boolean;
+  changeLanguage: (lng: Language) => void;
+  t: (key: string, options?: any) => string;
+  setLanguage: (lng: Language) => void;
 }
 
-const LanguageContext = createContext<LanguageContextProps | undefined>(undefined);
+const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-interface LanguageProviderProps {
-  children: React.ReactNode;
-}
-
-export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
+export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { t, i18n } = useTranslation();
   const [language, setLanguageState] = useState<Language>('en');
-  const { t: i18nT, i18n: i18nInstance } = useTranslation(['common', 'mealPlan', 'navigation', 'dashboard', 'profile']);
+  const [isRTL, setIsRTL] = useState(false);
 
-  const setLanguage = async (lang: Language) => {
-    setLanguageState(lang);
-    localStorage.setItem('preferred-language', lang);
-    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-    document.documentElement.lang = lang;
-    
-    // Change i18next language
-    if (i18nInstance && typeof i18nInstance.changeLanguage === 'function') {
-      await i18nInstance.changeLanguage(lang);
+  useEffect(() => {
+    const storedLanguage = localStorage.getItem('preferred-language') as Language;
+    if (storedLanguage && ['en', 'ar'].includes(storedLanguage)) {
+      setLanguageState(storedLanguage);
+      i18n.changeLanguage(storedLanguage);
     }
-  };
+  }, [i18n]);
 
-  const t = (key: string, options?: any): string => {
+  useEffect(() => {
+    const rtl = language === 'ar';
+    setIsRTL(rtl);
+    document.documentElement.dir = rtl ? 'rtl' : 'ltr';
+    document.documentElement.lang = language;
+  }, [language]);
+
+  const changeLanguage = async (lng: Language) => {
     try {
-      // Handle nested keys like 'mealPlan.title'
-      if (key.includes('.')) {
-        const [namespace, ...keyParts] = key.split('.');
-        const finalKey = keyParts.join('.');
-        const result = i18nT(finalKey, { ns: namespace, ...options });
-        return typeof result === 'string' && result !== finalKey ? result : finalKey;
-      }
-      
-      // Try common namespace first, then fallback to the key itself
-      const result = i18nT(key, { ns: 'common', ...options });
-      return typeof result === 'string' && result !== key ? result : key;
+      await i18n.changeLanguage(lng);
+      setLanguageState(lng);
+      localStorage.setItem('preferred-language', lng);
     } catch (error) {
-      console.warn(`Translation error for key: ${key}`, error);
-      return key;
+      console.error('Failed to change language:', error);
     }
   };
 
-  const isRTL = language === 'ar';
-
-  useEffect(() => {
-    const savedLanguage = localStorage.getItem('preferred-language');
-    if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'ar')) {
-      setLanguage(savedLanguage as Language);
-    }
-  }, []);
-
-  // Initialize i18next language on mount
-  useEffect(() => {
-    if (i18nInstance && typeof i18nInstance.changeLanguage === 'function') {
-      i18nInstance.changeLanguage(language);
-    }
-  }, [i18nInstance, language]);
-
-  const value = {
-    language,
-    setLanguage,
-    t,
-    isRTL,
+  const setLanguage = (lng: Language) => {
+    changeLanguage(lng);
   };
 
   return (
-    <LanguageContext.Provider value={value}>
+    <LanguageContext.Provider value={{
+      language,
+      isRTL,
+      changeLanguage,
+      setLanguage,
+      t
+    }}>
       {children}
     </LanguageContext.Provider>
   );
 };
 
-export const useLanguage = () => {
+export const useLanguage = (): LanguageContextType => {
   const context = useContext(LanguageContext);
-  if (context === undefined) {
-    // Provide fallback context
-    return {
-      language: 'en' as Language,
-      setLanguage: () => {},
-      t: (key: string) => key,
-      isRTL: false,
-    };
+  if (!context) {
+    throw new Error('useLanguage must be used within a LanguageProvider');
   }
   return context;
 };

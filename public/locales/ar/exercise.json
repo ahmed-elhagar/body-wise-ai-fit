@@ -1,0 +1,55 @@
+
+{
+  "title": "برنامج التمارين",
+  "generating": "جاري توليد برنامج التمارين الشخصي...",
+  "exchange": "استبدال التمرين",
+  "startWorkout": "بدء التمرين",
+  "completeWorkout": "إنهاء التمرين",
+  "rest": "راحة",
+  "sets": "مجموعات",
+  "reps": "تكرارات",
+  "duration": "المدة",
+  "difficulty": {
+    "beginner": "مبتدئ",
+    "intermediate": "متوسط",
+    "advanced": "متقدم"
+  },
+  "workoutType": {
+    "home": "تمارين منزلية",
+    "gym": "تمارين الصالة الرياضية",
+    "outdoor": "تمارين خارجية"
+  },
+  "names": {
+    "pushUps": "تمرين الضغط",
+    "pullUps": "تمرين العقلة",
+    "squats": "القرفصاء",
+    "lunges": "الطعنات",
+    "plank": "البلانك",
+    "burpees": "البيربي",
+    "jumpingJacks": "القفز المتباعد",
+    "mountainClimbers": "متسلق الجبال",
+    "bicycleCrunches": "البطن بالدراجة",
+    "deadlifts": "الرفعة الميتة",
+    "benchPress": "ضغط البنش",
+    "shoulderPress": "ضغط الكتف"
+  },
+  "muscleGroups": {
+    "chest": "الصدر",
+    "back": "الظهر",
+    "shoulders": "الأكتاف",
+    "arms": "الذراعين",
+    "legs": "الساقين",
+    "core": "الجذع",
+    "cardio": "القلب والأوعية",
+    "fullBody": "الجسم كاملاً"
+  },
+  "equipment": {
+    "bodyweight": "وزن الجسم",
+    "dumbbells": "الدمبل",
+    "barbell": "البار",
+    "resistanceBands": "أحزمة المقاومة",
+    "yogaMat": "سجادة اليوغا",
+    "pullUpBar": "عمود العقلة",
+    "kettlebell": "الكيتل بيل"
+  }
+}
