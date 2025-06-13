@@ -1,15 +1,21 @@
 
-import ProtectedRoute from "@/components/ProtectedRoute";
-import Layout from "@/components/Layout";
-import { ProgressDashboard } from "@/features/progress";
+import React from 'react';
+import { SidebarProvider } from "@/components/ui/sidebar";
+import AppSidebar from "@/components/AppSidebar";
 
 const Progress = () => {
   return (
-    <ProtectedRoute>
-      <Layout>
-        <ProgressDashboard />
-      </Layout>
-    </ProtectedRoute>
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full">
+        <AppSidebar />
+        <div className="flex-1 p-6">
+          <div className="max-w-7xl mx-auto">
+            <h1 className="text-3xl font-bold mb-6">Progress</h1>
+            <p className="text-gray-600">Progress tracking features coming soon...</p>
+          </div>
+        </div>
+      </div>
+    </SidebarProvider>
   );
 };
 

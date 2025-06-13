@@ -1,18 +1,21 @@
 
-import ProtectedRoute from "@/components/ProtectedRoute";
-import Layout from "@/components/Layout";
-import EnhancedExercisePage from "@/components/exercise/EnhancedExercisePage";
-import { ExerciseErrorBoundary } from "@/components/exercise/ExerciseErrorBoundary";
+import React from 'react';
+import { SidebarProvider } from "@/components/ui/sidebar";
+import AppSidebar from "@/components/AppSidebar";
 
 const Exercise = () => {
   return (
-    <ProtectedRoute>
-      <Layout>
-        <ExerciseErrorBoundary>
-          <EnhancedExercisePage />
-        </ExerciseErrorBoundary>
-      </Layout>
-    </ProtectedRoute>
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full">
+        <AppSidebar />
+        <div className="flex-1 p-6">
+          <div className="max-w-7xl mx-auto">
+            <h1 className="text-3xl font-bold mb-6">Exercise Program</h1>
+            <p className="text-gray-600">Exercise program features coming soon...</p>
+          </div>
+        </div>
+      </div>
+    </SidebarProvider>
   );
 };
 

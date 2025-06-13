@@ -1,28 +1,30 @@
 
-import { useAuth } from "@/hooks/useAuth";
-import { Navigate } from "react-router-dom";
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 
 const Landing = () => {
-  const { user } = useAuth();
-
-  // Redirect to dashboard if user is already logged in
-  if (user) {
-    return <Navigate to="/dashboard" replace />;
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-      <div className="max-w-md w-full space-y-8 p-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
+      <div className="container mx-auto px-4 py-16">
         <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">FitFatta</h1>
-          <p className="text-gray-600 mb-8">Your AI-powered fitness companion</p>
-          <div className="space-y-4">
-            <a
-              href="/auth"
-              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              Get Started
-            </a>
+          <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
+            FitFatta
+          </h1>
+          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+            Your AI-powered fitness companion for personalized meal plans and exercise programs
+          </p>
+          <div className="flex gap-4 justify-center">
+            <Link to="/auth">
+              <Button size="lg" className="bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600">
+                Get Started
+              </Button>
+            </Link>
+            <Link to="/dashboard">
+              <Button size="lg" variant="outline">
+                View Dashboard
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

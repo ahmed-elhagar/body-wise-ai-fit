@@ -1,13 +1,18 @@
 
-import NewSignupForm from "@/components/signup/NewSignupForm";
-import ProtectedRoute from "@/components/ProtectedRoute";
+import React from 'react';
+import { Card } from '@/components/ui/card';
 
-const Signup = () => {
+const UnifiedSignup = () => {
   return (
-    <ProtectedRoute requireAuth={false} preventAuthenticatedAccess={true}>
-      <NewSignupForm />
-    </ProtectedRoute>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="max-w-md w-full">
+        <Card className="p-6">
+          <h1 className="text-2xl font-bold mb-6 text-center">Sign Up for FitFatta</h1>
+          <p className="text-gray-600 text-center">Signup system coming soon...</p>
+        </Card>
+      </div>
+    </div>
   );
 };
 
-export default Signup;
+export default UnifiedSignup;
