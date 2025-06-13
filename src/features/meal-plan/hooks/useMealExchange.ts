@@ -184,13 +184,16 @@ export const useMealExchange = () => {
   const hasAlternatives = alternatives.length > 0;
 
   return {
-    // Consolidated interface that combines both hooks
-    exchangeMeal, // Direct AI exchange (from useAIMealExchange)
-    isExchanging: isLoading, // Alias for backward compatibility
+    // Direct AI exchange method
+    exchangeMeal,
+    // Alternative-based exchange method  
+    exchangeMealWithAlternative,
+    // Loading states
+    isExchanging: isLoading,
     isLoading,
+    // Alternatives management
     alternatives,
     generateAlternatives,
-    exchangeMeal: exchangeMealWithAlternative, // Alternative-based exchange
     quickExchange,
     clearAlternatives,
     hasAlternatives
