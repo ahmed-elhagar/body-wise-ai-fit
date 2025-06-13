@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { useMealPlanState } from '../hooks/useMealPlanState';
 import MealPlanHeader from './MealPlanHeader';
@@ -17,7 +16,7 @@ import { MealExchangeDialog } from './dialogs/MealExchangeDialog';
 import { AIGenerationDialog } from './dialogs/AIGenerationDialog';
 import { EnhancedRecipeDialog } from './EnhancedRecipeDialog';
 import EnhancedAddSnackDialog from './dialogs/EnhancedAddSnackDialog';
-import { ModernShoppingListDrawer } from '@/components/shopping-list/ModernShoppingListDrawer';
+import ModernShoppingListDrawer from '@/components/shopping-list/ModernShoppingListDrawer';
 import { MealPlanAILoadingDialog } from './dialogs/MealPlanAILoadingDialog';
 
 const MealPlanContainer = () => {
