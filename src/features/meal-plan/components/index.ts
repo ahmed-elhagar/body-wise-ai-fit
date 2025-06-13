@@ -16,6 +16,13 @@ export { EnhancedRecipeDialog } from './EnhancedRecipeDialog';
 // Weekly view components
 export { DayMealCard } from './DayMealCard';
 
+// Day overview components
+export { EmptyDayState } from './EmptyDayState';
+export { MealListCard } from './MealListCard';
+
+// Nutrition components
+export { NutritionProgressCard } from './nutrition/NutritionProgressCard';
+
 // Navigation components
 export { WeekNavigationCard } from './navigation/WeekNavigationCard';
 export { UnifiedNavigation } from './navigation/UnifiedNavigation';
