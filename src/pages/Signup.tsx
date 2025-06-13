@@ -1,10 +1,13 @@
 
-import React from 'react';
-import { Navigate } from 'react-router-dom';
+import NewSignupForm from "@/components/signup/NewSignupForm";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
-const UnifiedSignup = () => {
-  // Redirect to auth page since we handle both login and signup there
-  return <Navigate to="/auth" replace />;
+const Signup = () => {
+  return (
+    <ProtectedRoute requireAuth={false} preventAuthenticatedAccess={true}>
+      <NewSignupForm />
+    </ProtectedRoute>
+  );
 };
 
-export default UnifiedSignup;
+export default Signup;

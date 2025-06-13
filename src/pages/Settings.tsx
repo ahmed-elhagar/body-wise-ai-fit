@@ -1,21 +1,29 @@
 
-import React from 'react';
-import { SidebarProvider } from "@/components/ui/sidebar";
-import AppSidebar from "@/components/AppSidebar";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import Layout from "@/components/Layout";
+import { PageHeader } from "@/components/ui/page-header";
+import { Settings as SettingsIcon } from "lucide-react";
+import { EnhancedSettingsPage } from "@/components/settings/EnhancedSettingsPage";
 
 const Settings = () => {
   return (
-    <SidebarProvider>
-      <div className="flex min-h-screen w-full">
-        <AppSidebar />
-        <div className="flex-1 p-6">
-          <div className="max-w-7xl mx-auto">
-            <h1 className="text-3xl font-bold mb-6">Settings</h1>
-            <p className="text-gray-600">Application settings coming soon...</p>
+    <ProtectedRoute>
+      <Layout>
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
+          <PageHeader
+            title="Settings"
+            description="Customize your app preferences, notifications, and account settings"
+            icon={<SettingsIcon className="h-6 w-6 text-gray-600" />}
+          />
+          
+          <div className="px-6 pb-8">
+            <div className="w-full max-w-7xl mx-auto">
+              <EnhancedSettingsPage />
+            </div>
           </div>
         </div>
-      </div>
-    </SidebarProvider>
+      </Layout>
+    </ProtectedRoute>
   );
 };
 

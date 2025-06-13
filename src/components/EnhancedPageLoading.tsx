@@ -1,100 +1,98 @@
 
-import React, { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { Dumbbell, Sparkles } from 'lucide-react';
+import { Loader2, Sparkles, Dumbbell } from "lucide-react";
+import { useState, useEffect } from "react";
 
 interface EnhancedPageLoadingProps {
   title?: string;
   description?: string;
-  estimatedTime?: number; // in seconds
+  estimatedTime?: number;
+  className?: string;
 }
 
-const EnhancedPageLoading: React.FC<EnhancedPageLoadingProps> = ({
-  title = "Loading FitFatta",
-  description = "Preparing your fitness experience...",
-  estimatedTime = 3
-}) => {
+const EnhancedPageLoading = ({ 
+  title = "Loading...", 
+  description = "Please wait while we fetch your data",
+  estimatedTime = 3,
+  className = ""
+}: EnhancedPageLoadingProps) => {
   const [progress, setProgress] = useState(0);
-  const [currentStep, setCurrentStep] = useState(0);
+  const [loadingText, setLoadingText] = useState("Initializing");
 
-  const steps = [
-    "Initializing application...",
-    "Loading your profile...",
-    "Preparing dashboard...",
-    "Almost ready!"
+  const loadingSteps = [
+    "Initializing",
+    "Loading your data",
+    "Preparing interface",
+    "Almost ready"
   ];
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setProgress(prev => {
-        const newProgress = Math.min(prev + (100 / (estimatedTime * 10)), 100);
-        const stepIndex = Math.floor((newProgress / 100) * steps.length);
-        setCurrentStep(Math.min(stepIndex, steps.length - 1));
+      setProgress((prev) => {
+        const newProgress = Math.min(prev + (100 / (estimatedTime * 10)), 95);
+        
+        // Update loading text based on progress
+        if (newProgress < 25) setLoadingText(loadingSteps[0]);
+        else if (newProgress < 50) setLoadingText(loadingSteps[1]);
+        else if (newProgress < 75) setLoadingText(loadingSteps[2]);
+        else setLoadingText(loadingSteps[3]);
+        
         return newProgress;
       });
     }, 100);
 
     return () => clearInterval(interval);
-  }, [estimatedTime, steps.length]);
+  }, [estimatedTime]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-white/80 backdrop-blur-sm border-0 shadow-xl">
-        <div className="p-8 text-center">
-          {/* Animated Logo */}
-          <div className="relative mb-8">
-            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto shadow-2xl animate-pulse">
-              <Dumbbell className="w-10 h-10 text-white" />
-            </div>
-            <div className="absolute -top-2 -right-2">
-              <Sparkles className="w-6 h-6 text-yellow-400 animate-bounce" />
-            </div>
-          </div>
-
-          {/* Title and Description */}
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-            {title}
-          </h2>
-          <p className="text-gray-600 mb-8">
-            {description}
-          </p>
-
-          {/* Progress Bar */}
-          <div className="space-y-4">
-            <Progress 
-              value={progress} 
-              className="h-3 bg-gray-200"
-            />
-            
-            {/* Current Step */}
-            <p className="text-sm text-gray-500 animate-pulse">
-              {steps[currentStep]}
-            </p>
-            
-            {/* Progress Percentage */}
-            <p className="text-xs text-gray-400">
-              {Math.round(progress)}% complete
-            </p>
-          </div>
-
-          {/* Loading Animation */}
-          <div className="flex justify-center mt-6">
-            <div className="flex space-x-1">
-              {[0, 1, 2].map((i) => (
-                <div
-                  key={i}
-                  className="w-2 h-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full animate-bounce"
-                  style={{
-                    animationDelay: `${i * 0.2}s`,
-                    animationDuration: '1s'
-                  }}
-                />
-              ))}
-            </div>
+    <div className={`flex items-center justify-center min-h-[400px] w-full ${className}`}>
+      <div className="text-center p-8 bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-100 max-w-md mx-4">
+        {/* App Icon */}
+        <div className="relative w-16 h-16 mx-auto mb-6 bg-gradient-to-r from-blue-600 via-purple-600 to-green-600 rounded-2xl flex items-center justify-center shadow-lg">
+          <div className="relative">
+            <Dumbbell className="w-8 h-8 text-white" />
+            <Sparkles className="w-4 h-4 text-yellow-300 absolute -top-1 -right-1 animate-bounce" />
           </div>
         </div>
-      </Card>
+
+        {/* Animated Loader */}
+        <div className="relative mb-6">
+          <Loader2 className="animate-spin h-12 w-12 text-blue-600 mx-auto mb-4" />
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-full animate-pulse" />
+        </div>
+
+        {/* Title and Description */}
+        <h3 className="text-gray-800 font-bold text-xl mb-2">{title}</h3>
+        <p className="text-gray-600 text-sm mb-4">{description}</p>
+
+        {/* Progress Bar */}
+        <div className="bg-gray-200 rounded-full h-3 mb-3 overflow-hidden">
+          <div 
+            className="bg-gradient-to-r from-blue-600 to-purple-600 h-3 rounded-full transition-all duration-300 ease-out relative"
+            style={{ width: `${progress}%` }}
+          >
+            <div className="absolute inset-0 bg-white/30 animate-pulse" />
+          </div>
+        </div>
+
+        {/* Dynamic Loading Text */}
+        <p className="text-sm text-blue-600 font-medium mb-2">{loadingText}...</p>
+        
+        {/* Estimated Time */}
+        <p className="text-xs text-gray-400">
+          {progress < 95 ? `Estimated time: ${Math.max(1, Math.ceil((estimatedTime * (100 - progress)) / 100))}s` : "Almost done!"}
+        </p>
+
+        {/* Loading Dots Animation */}
+        <div className="flex justify-center space-x-1 mt-4">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="w-2 h-2 bg-blue-600 rounded-full animate-bounce"
+              style={{ animationDelay: `${i * 0.2}s` }}
+            />
+          ))}
+        </div>
+      </div>
     </div>
   );
 };

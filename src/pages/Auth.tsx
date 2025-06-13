@@ -1,93 +1,78 @@
 
-import React, { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
-import { useAuth } from '@/hooks/useAuth';
-import { Navigate } from 'react-router-dom';
-import { AuthHeader } from '@/components/auth/AuthHeader';
-import { AuthForm } from '@/components/auth/AuthForm';
-import { AuthToggle } from '@/components/auth/AuthToggle';
-import { toast } from 'sonner';
+import { useState, useEffect } from "react";
+import { Card } from "@/components/ui/card";
+import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { AuthHeader } from "@/components/auth/AuthHeader";
+import { AuthForm } from "@/components/auth/AuthForm";
+import SimpleLoadingIndicator from "@/components/ui/simple-loading-indicator";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 const Auth = () => {
-  const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { user, signIn, signUp, error, clearError } = useAuth();
+  
+  const { signIn, user, loading: authLoading } = useAuth();
+  const { profile, isLoading: profileLoading } = useProfile();
+  const navigate = useNavigate();
 
-  // Clear errors when switching between modes
-  useEffect(() => {
-    clearError();
-  }, [isSignUp, clearError]);
+  const validateForm = (data: { email: string; password: string }) => {
+    if (!data.email || !data.password) {
+      toast.error('Email and password are required');
+      return false;
+    }
+    
+    if (data.password.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return false;
+    }
+    
+    return true;
+  };
 
-  // Redirect if already authenticated - moved after all hooks
-  if (user) {
-    return <Navigate to="/dashboard" replace />;
-  }
-
-  const handleSubmit = async (data: {
-    email: string;
-    password: string;
-    firstName?: string;
-    lastName?: string;
-  }) => {
+  const handleSignIn = async (data: { email: string; password: string }) => {
+    if (!validateForm(data)) return;
+    
     setLoading(true);
-    clearError();
-
     try {
-      if (isSignUp) {
-        const metadata = data.firstName && data.lastName ? {
-          first_name: data.firstName,
-          last_name: data.lastName
-        } : undefined;
-
-        const result = await signUp(data.email, data.password, metadata);
-        
-        if (result?.error) {
-          toast.error(result.error.message || 'Failed to create account');
-        } else {
-          toast.success('Account created successfully! Please check your email to verify your account.');
-        }
-      } else {
-        const result = await signIn(data.email, data.password);
-        
-        if (result?.error) {
-          toast.error(result.error.message || 'Failed to sign in');
-        } else {
-          toast.success('Welcome back!');
-        }
-      }
-    } catch (err: any) {
-      toast.error(err.message || 'An unexpected error occurred');
+      console.log('Auth - Starting sign in process for:', data.email);
+      await signIn(data.email, data.password);
+      console.log('Auth - Sign in successful');
+      toast.success('Welcome back!');
+      // Navigation is handled by ProtectedRoute
+    } catch (error: any) {
+      console.error('Auth - Sign in error:', error);
+      toast.error(error.message || 'Failed to sign in');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-green-50 p-4">
-      <div className="max-w-md w-full">
-        <Card className="p-8 shadow-xl border-0">
-          <AuthHeader isSignUp={isSignUp} />
+    <ProtectedRoute requireAuth={false} preventAuthenticatedAccess={true}>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4">
+        <Card className="w-full max-w-md p-8 bg-white/90 backdrop-blur-sm border-0 shadow-2xl">
+          <AuthHeader isSignUp={false} />
           
-          <AuthForm
-            isSignUp={isSignUp}
-            onSubmit={handleSubmit}
-            loading={loading}
+          <AuthForm 
+            isSignUp={false}
+            onSubmit={handleSignIn} 
+            loading={loading || authLoading} 
           />
           
-          <AuthToggle
-            isSignUp={isSignUp}
-            onToggle={() => setIsSignUp(!isSignUp)}
-            loading={loading}
-          />
-          
-          {error && (
-            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
-              <p className="text-sm text-red-600">{error.message}</p>
-            </div>
-          )}
+          <div className="text-center mt-6">
+            <button
+              onClick={() => navigate('/signup')}
+              className="text-sm text-blue-600 hover:text-blue-700 font-medium hover:underline"
+              disabled={loading || authLoading}
+            >
+              Don't have an account? Join FitFatta
+            </button>
+          </div>
         </Card>
       </div>
-    </div>
+    </ProtectedRoute>
   );
 };
 

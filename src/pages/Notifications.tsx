@@ -1,21 +1,23 @@
 
-import React from 'react';
-import { SidebarProvider } from "@/components/ui/sidebar";
-import AppSidebar from "@/components/AppSidebar";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import Layout from "@/components/Layout";
+import { PageHeader } from "@/components/ui/page-header";
+import { Bell } from "lucide-react";
+import NotificationCenter from "@/components/notifications/NotificationCenter";
 
 const Notifications = () => {
   return (
-    <SidebarProvider>
-      <div className="flex min-h-screen w-full">
-        <AppSidebar />
-        <div className="flex-1 p-6">
-          <div className="max-w-7xl mx-auto">
-            <h1 className="text-3xl font-bold mb-6">Notifications</h1>
-            <p className="text-gray-600">Notification management coming soon...</p>
-          </div>
-        </div>
-      </div>
-    </SidebarProvider>
+    <ProtectedRoute>
+      <Layout>
+        <PageHeader
+          title="Notifications"
+          description="Stay updated with your fitness progress and reminders"
+          icon={<Bell className="h-6 w-6 text-orange-600" />}
+        />
+        
+        <NotificationCenter />
+      </Layout>
+    </ProtectedRoute>
   );
 };
 
