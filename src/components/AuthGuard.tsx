@@ -10,7 +10,7 @@ interface AuthGuardProps {
 }
 
 const AuthGuard = ({ children, requireAdmin = false, requireCoach = false }: AuthGuardProps) => {
-  const { user, loading, profile } = useAuth();
+  const { user, loading } = useAuth();
 
   if (loading) {
     return <PageLoadingState variant="branded" />;
@@ -21,12 +21,12 @@ const AuthGuard = ({ children, requireAdmin = false, requireCoach = false }: Aut
   }
 
   // Check admin requirement
-  if (requireAdmin && profile?.role !== 'admin') {
+  if (requireAdmin && user?.role !== 'admin') {
     return <Navigate to="/dashboard" replace />;
   }
 
   // Check coach requirement
-  if (requireCoach && !['admin', 'coach'].includes(profile?.role || '')) {
+  if (requireCoach && !['admin', 'coach'].includes(user?.role || '')) {
     return <Navigate to="/dashboard" replace />;
   }
 
