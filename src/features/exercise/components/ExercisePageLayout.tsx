@@ -164,7 +164,6 @@ export const ExercisePageLayout = ({
           currentStepIndex={currentStepIndex}
           isComplete={isComplete}
           progress={progress}
-          feature="exercise"
           onClose={() => {}}
         />
       </div>

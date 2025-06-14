@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { Toaster } from '@/components/ui/sonner';
-import { LazyPages } from '@/components/LazyPages';
+import LazyPages from '@/components/LazyPages';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import SimpleLoadingIndicator from '@/components/ui/simple-loading-indicator';
 

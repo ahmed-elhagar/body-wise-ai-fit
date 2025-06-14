@@ -22,6 +22,7 @@ interface EnhancedExerciseHeaderWithAnalyticsProps {
   onRegenerateProgram: () => void;
   isGenerating: boolean;
   workoutType: "home" | "gym";
+  onWorkoutTypeChange: (type: "home" | "gym") => void;
 }
 
 export const EnhancedExerciseHeaderWithAnalytics = ({
@@ -30,7 +31,8 @@ export const EnhancedExerciseHeaderWithAnalytics = ({
   onShowAIDialog,
   onRegenerateProgram,
   isGenerating,
-  workoutType
+  workoutType,
+  onWorkoutTypeChange
 }: EnhancedExerciseHeaderWithAnalyticsProps) => {
   const { t } = useLanguage();
   const { remaining: userCredits, isPro, hasCredits } = useCentralizedCredits();

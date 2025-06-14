@@ -8,34 +8,19 @@ import { format, addDays, addWeeks } from "date-fns";
 interface EnhancedDayNavigationProps {
   weekStartDate: Date;
   selectedDayNumber: number;
-  onDayChange: (day: number) => void;
+  setSelectedDayNumber: (day: number) => void;
   currentProgram: any;
-  workoutType: "home" | "gym";
-  currentWeekOffset: number;
-  onWeekChange: (offset: number) => void;
-  onWorkoutTypeChange: (type: "home" | "gym") => void;
 }
 
 export const EnhancedDayNavigation = ({
   weekStartDate,
   selectedDayNumber,
-  onDayChange,
-  currentProgram,
-  workoutType,
-  currentWeekOffset,
-  onWeekChange,
-  onWorkoutTypeChange
+  setSelectedDayNumber,
+  currentProgram
 }: EnhancedDayNavigationProps) => {
   const { t } = useLanguage();
   
   const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  
-  const formatWeekRange = (startDate: Date) => {
-    const endDate = addWeeks(startDate, 1);
-    const startFormat = format(startDate, 'MMM d');
-    const endFormat = format(endDate, 'MMM d');
-    return `${startFormat} - ${endFormat}`;
-  };
 
   const getDayWorkout = (dayNumber: number) => {
     if (!currentProgram?.daily_workouts) return null;
@@ -71,68 +56,6 @@ export const EnhancedDayNavigation = ({
   return (
     <Card className="p-4 bg-white border border-gray-200 rounded-lg">
       <div className="space-y-3">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          {/* Week Navigation */}
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onWeekChange(currentWeekOffset - 1)}
-              className="h-7 w-7 p-0 rounded-md hover:bg-gray-100"
-            >
-              <ChevronLeft className="w-3 h-3" />
-            </Button>
-
-            <div className="bg-blue-50 border border-blue-200 rounded-md px-2 py-1">
-              <div className="text-xs font-medium text-gray-900 flex items-center gap-1">
-                <span className="text-blue-600">Week {currentWeekOffset + 1}</span>
-                <span className="text-gray-400">•</span>
-                <span className="text-gray-600">{formatWeekRange(weekStartDate)}</span>
-              </div>
-            </div>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onWeekChange(currentWeekOffset + 1)}
-              className="h-7 w-7 p-0 rounded-md hover:bg-gray-100"
-            >
-              <ChevronRight className="w-3 h-3" />
-            </Button>
-          </div>
-
-          {/* Workout Type Toggle */}
-          <div className="flex items-center bg-gray-50 rounded-md p-0.5">
-            <Button
-              variant={workoutType === 'home' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => onWorkoutTypeChange('home')}
-              className={`rounded-sm px-2 py-1 text-xs font-medium h-6 ${
-                workoutType === 'home' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-transparent'
-              }`}
-            >
-              <Home className="w-3 h-3 mr-1" />
-              Home
-            </Button>
-            <Button
-              variant={workoutType === 'gym' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => onWorkoutTypeChange('gym')}
-              className={`rounded-sm px-2 py-1 text-xs font-medium h-6 ${
-                workoutType === 'gym' 
-                  ? 'bg-purple-600 text-white' 
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-transparent'
-              }`}
-            >
-              <Building2 className="w-3 h-3 mr-1" />
-              Gym
-            </Button>
-          </div>
-        </div>
-
         {/* Day Grid */}
         <div className="grid grid-cols-7 gap-1">
           {dayNames.map((day, index) => {
@@ -179,7 +102,7 @@ export const EnhancedDayNavigation = ({
             return (
               <Button
                 key={dayNumber}
-                onClick={() => onDayChange(dayNumber)}
+                onClick={() => setSelectedDayNumber(dayNumber)}
                 variant="ghost"
                 className={`
                   relative h-12 p-1 flex flex-col items-center gap-0.5 transition-colors text-xs
