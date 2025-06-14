@@ -10,6 +10,9 @@ export { default as DayOverview } from './DayOverview';
 export { WeeklyMealPlanView } from './WeeklyMealPlanView';
 export { EmptyWeekState } from './EmptyWeekState';
 
+// Daily view components
+export { MealTypeSection, EmptyDailyState } from './daily-view';
+
 // State components
 export { default as LoadingState } from './LoadingState';
 export { default as ErrorState } from './ErrorState';

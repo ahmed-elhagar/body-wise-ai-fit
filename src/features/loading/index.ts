@@ -1,0 +1,2 @@
+
+export { MotivationalContent } from './components';
