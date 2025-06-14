@@ -1,12 +1,23 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Camera, Search, History } from "lucide-react";
 import Layout from "@/components/Layout";
-import FoodPhotoAnalyzer from "@/components/calorie/FoodPhotoAnalyzer";
+import { FoodScanner, EnhancedSearchTab, FoodHistoryTab } from "@/features/food-tracker/components";
 
 const CalorieChecker = () => {
   const [activeTab, setActiveTab] = useState('photo');
+
+  const handleFoodAdded = () => {
+    // Refresh or navigate as needed
+    console.log('Food added successfully');
+  };
+
+  const handleClose = () => {
+    // Handle any cleanup if needed
+    console.log('Component closed');
+  };
 
   return (
     <Layout>
@@ -15,7 +26,7 @@ const CalorieChecker = () => {
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Calorie Checker</h1>
             <p className="text-muted-foreground">
-              Analyze food photos or search for nutritional information
+              Analyze food photos, search database, or view your nutrition history
             </p>
           </div>
         </div>
@@ -24,7 +35,7 @@ const CalorieChecker = () => {
           <TabsList className="grid grid-cols-3 w-full max-w-md">
             <TabsTrigger value="photo" className="flex items-center gap-2">
               <Camera className="w-4 h-4" />
-              <span>Photo Analysis</span>
+              <span>AI Analysis</span>
             </TabsTrigger>
             <TabsTrigger value="search" className="flex items-center gap-2">
               <Search className="w-4 h-4" />
@@ -37,29 +48,23 @@ const CalorieChecker = () => {
           </TabsList>
           
           <TabsContent value="photo" className="space-y-6">
-            <FoodPhotoAnalyzer />
+            <FoodScanner 
+              onFoodAdded={handleFoodAdded}
+              onClose={handleClose}
+            />
           </TabsContent>
 
           <TabsContent value="search" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Food Database Search</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>Search functionality coming soon...</p>
-              </CardContent>
-            </Card>
+            <EnhancedSearchTab
+              onFoodAdded={handleFoodAdded}
+              onClose={handleClose}
+            />
           </TabsContent>
 
           <TabsContent value="history" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Food Entries</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>History functionality coming soon...</p>
-              </CardContent>
-            </Card>
+            <FoodHistoryTab
+              onClose={handleClose}
+            />
           </TabsContent>
         </Tabs>
       </div>

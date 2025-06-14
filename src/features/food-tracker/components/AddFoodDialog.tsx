@@ -1,10 +1,12 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Edit3 } from "lucide-react";
+import { Search, Camera, Clock } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useEffect, useState } from "react";
-import SearchTab from "./SearchTab";
+import EnhancedSearchTab from "./EnhancedSearchTab";
+import FoodScanner from "./FoodScanner";
+import FoodHistoryTab from "./FoodHistoryTab";
 import ManualTab from "./ManualTab";
 
 interface AddFoodDialogProps {
@@ -32,7 +34,7 @@ const AddFoodDialog = ({ isOpen, onClose, onFoodAdded, preSelectedFood }: AddFoo
   if (preSelectedFood) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-gray-900">
               {t('Add Analyzed Food')}
@@ -53,15 +55,15 @@ const AddFoodDialog = ({ isOpen, onClose, onFoodAdded, preSelectedFood }: AddFoo
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-gray-900">
-            {t('Add Food')}
+            {t('Add Food to Log')}
           </DialogTitle>
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-gray-100">
+          <TabsList className="grid w-full grid-cols-4 bg-gray-100">
             <TabsTrigger 
               value="search" 
               className="data-[state=active]:bg-white data-[state=active]:text-gray-900 flex items-center gap-2"
@@ -70,17 +72,38 @@ const AddFoodDialog = ({ isOpen, onClose, onFoodAdded, preSelectedFood }: AddFoo
               {t('Search')}
             </TabsTrigger>
             <TabsTrigger 
+              value="scan" 
+              className="data-[state=active]:bg-white data-[state=active]:text-gray-900 flex items-center gap-2"
+            >
+              <Camera className="w-4 h-4" />
+              {t('Scan')}
+            </TabsTrigger>
+            <TabsTrigger 
+              value="history" 
+              className="data-[state=active]:bg-white data-[state=active]:text-gray-900 flex items-center gap-2"
+            >
+              <Clock className="w-4 h-4" />
+              {t('History')}
+            </TabsTrigger>
+            <TabsTrigger 
               value="manual" 
               className="data-[state=active]:bg-white data-[state=active]:text-gray-900 flex items-center gap-2"
             >
-              <Edit3 className="w-4 h-4" />
-              {t('Manual')}
+              ✏️ {t('Manual')}
             </TabsTrigger>
           </TabsList>
 
           <div className="mt-4 max-h-[70vh] overflow-y-auto">
             <TabsContent value="search">
-              <SearchTab onFoodAdded={onFoodAdded} onClose={onClose} />
+              <EnhancedSearchTab onFoodAdded={onFoodAdded} onClose={onClose} />
+            </TabsContent>
+
+            <TabsContent value="scan">
+              <FoodScanner onFoodAdded={onFoodAdded} onClose={onClose} />
+            </TabsContent>
+
+            <TabsContent value="history">
+              <FoodHistoryTab onClose={onClose} />
             </TabsContent>
 
             <TabsContent value="manual">
