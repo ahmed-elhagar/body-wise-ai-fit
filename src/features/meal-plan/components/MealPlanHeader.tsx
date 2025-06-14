@@ -1,18 +1,25 @@
 
+import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Shuffle, ShoppingCart, RefreshCw, UtensilsCrossed, Zap } from "lucide-react";
-import { useMealPlanTranslations } from "@/utils/mealPlanTranslations";
-import { useCentralizedCredits } from "@/hooks/useCentralizedCredits";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { 
+  Sparkles, 
+  Shuffle, 
+  RotateCcw, 
+  ShoppingCart,
+  Calendar,
+  ChefHat
+} from "lucide-react";
 
 interface MealPlanHeaderProps {
-  onGenerateAI: () => void;
-  onShuffle: () => void;
+  onGenerateAI: () => Promise<boolean>;
+  onShuffle: () => Promise<void>;
   onShowShoppingList: () => void;
-  onRegeneratePlan: () => void;
+  onRegeneratePlan: () => Promise<boolean>;
   isGenerating: boolean;
-  isShuffling?: boolean;
+  isShuffling: boolean;
   hasWeeklyPlan: boolean;
 }
 
@@ -22,130 +29,89 @@ const MealPlanHeader = ({
   onShowShoppingList,
   onRegeneratePlan,
   isGenerating,
-  isShuffling = false,
+  isShuffling,
   hasWeeklyPlan
 }: MealPlanHeaderProps) => {
-  const { 
-    title, 
-    smartMealPlanning, 
-    personalizedNutrition, 
-    generateAIMealPlan,
-    generating,
-    isRTL 
-  } = useMealPlanTranslations();
-
-  const { remaining: userCredits, isPro, hasCredits } = useCentralizedCredits();
-
-  const displayCredits = isPro ? 'Unlimited' : `${userCredits} credits`;
-
-  const handleShuffleMeals = async () => {
-    console.log('🔄 Shuffle button clicked');
-    try {
-      await onShuffle();
-      console.log('✅ Shuffle completed successfully');
-    } catch (error) {
-      console.error('❌ Shuffle failed:', error);
-    }
-  };
-
-  const handleGenerateAI = async () => {
-    console.log('✨ Generate AI button clicked');
-    try {
-      await onGenerateAI();
-      console.log('✅ AI generation completed successfully');
-    } catch (error) {
-      console.error('❌ AI generation failed:', error);
-    }
-  };
-
-  const handleShowShoppingList = () => {
-    console.log('🛒 Shopping list button clicked - using enhanced drawer');
-    onShowShoppingList();
-  };
+  const { t } = useLanguage();
 
   return (
-    <Card className="bg-gradient-to-r from-fitness-primary-600 via-fitness-primary-700 to-fitness-accent-600 border-0 shadow-xl rounded-2xl overflow-hidden">
-      <div className="px-5 py-3">
-        <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-          {/* Left: Enhanced Title Section */}
-          <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/30">
-              <UtensilsCrossed className="w-5 h-5 text-white" />
+    <div className="p-6 border-b border-gray-100 bg-white/80 backdrop-blur-sm">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+          {/* Header Info */}
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
+                <ChefHat className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  {t('Meal Plan')}
+                </h1>
+                <p className="text-gray-600 text-sm">
+                  {t('AI-powered personalized nutrition planning')}
+                </p>
+              </div>
             </div>
-            <div className={isRTL ? 'text-right' : 'text-left'}>
-              <h1 className="text-xl font-bold text-white mb-0.5 tracking-tight">
-                {title || 'Smart Meal Plan'}
-              </h1>
-              <p className="text-fitness-primary-100 text-sm font-medium">
-                {personalizedNutrition || 'AI-powered personalized nutrition'}
-              </p>
-              
-              {/* AI Credits Badge - Using centralized credits */}
-              <div className="mt-1">
-                <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm font-medium text-xs hover:bg-white/30">
-                  <Zap className="w-3 h-3 mr-1" />
-                  {displayCredits}
+            
+            {hasWeeklyPlan && (
+              <div className="flex items-center gap-2 mt-3">
+                <Calendar className="w-4 h-4 text-green-600" />
+                <Badge className="bg-green-100 text-green-800 border-green-200">
+                  {t('Active Plan')}
                 </Badge>
               </div>
-            </div>
+            )}
           </div>
 
-          {/* Right: Compact Action Buttons */}
-          <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            {hasWeeklyPlan && (
-              <div className={`flex gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+          {/* Action Buttons */}
+          <div className="flex items-center gap-3 flex-wrap">
+            {!hasWeeklyPlan ? (
+              <Button
+                onClick={onGenerateAI}
+                disabled={isGenerating}
+                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-6 py-2.5 rounded-xl font-medium shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                {isGenerating ? t('Generating...') : t('Generate AI Plan')}
+              </Button>
+            ) : (
+              <>
                 <Button
-                  onClick={handleShuffleMeals}
-                  disabled={isGenerating || isShuffling}
                   variant="outline"
-                  size="sm"
-                  className="bg-white/10 border-white/30 text-white hover:bg-white/20 hover:text-white backdrop-blur-sm transition-all duration-200 hover:scale-105 px-2 h-8"
+                  onClick={onShuffle}
+                  disabled={isShuffling || isGenerating}
+                  className="bg-white hover:bg-gray-50 border-gray-200 text-gray-700 px-4 py-2.5 rounded-xl"
                 >
-                  {isShuffling ? (
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Shuffle className="w-4 h-4" />
-                  )}
-                  <span className="hidden sm:inline ml-2 text-xs">Shuffle</span>
+                  <Shuffle className="w-4 h-4 mr-2" />
+                  {isShuffling ? t('Shuffling...') : t('Shuffle')}
                 </Button>
 
                 <Button
-                  onClick={handleShowShoppingList}
                   variant="outline"
-                  size="sm"
-                  className="bg-white/10 border-white/30 text-white hover:bg-white/20 hover:text-white backdrop-blur-sm transition-all duration-200 hover:scale-105 px-2 h-8"
+                  onClick={onRegeneratePlan}
+                  disabled={isGenerating}
+                  className="bg-white hover:bg-gray-50 border-gray-200 text-gray-700 px-4 py-2.5 rounded-xl"
                 >
-                  <ShoppingCart className="w-4 h-4" />
-                  <span className="hidden sm:inline ml-2 text-xs">Shop</span>
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  {isGenerating ? t('Regenerating...') : t('Regenerate')}
                 </Button>
-              </div>
+
+                <Button
+                  variant="outline"
+                  onClick={onShowShoppingList}
+                  disabled={isGenerating}
+                  className="bg-white hover:bg-blue-50 border-blue-200 text-blue-700 px-4 py-2.5 rounded-xl"
+                >
+                  <ShoppingCart className="w-4 h-4 mr-2" />
+                  {t('Shopping List')}
+                </Button>
+              </>
             )}
-
-            <Button
-              onClick={handleGenerateAI}
-              disabled={isGenerating || isShuffling || !hasCredits}
-              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold px-3 py-2 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 h-8 border-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-            >
-              {isGenerating ? (
-                <RefreshCw className="w-4 h-4 animate-spin" />
-              ) : (
-                <Sparkles className="w-4 h-4" />
-              )}
-              <span className="hidden sm:inline ml-2 text-xs font-medium">AI Plan</span>
-            </Button>
           </div>
         </div>
-        
-        {/* No credits warning */}
-        {!hasCredits && (
-          <div className="mt-3 px-4 py-2 bg-red-500/20 border border-red-500/30 rounded-lg backdrop-blur-sm">
-            <p className="text-sm text-white font-medium text-center">
-              No AI credits remaining. Upgrade to continue generating plans.
-            </p>
-          </div>
-        )}
       </div>
-    </Card>
+    </div>
   );
 };
 
