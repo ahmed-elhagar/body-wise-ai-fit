@@ -1,10 +1,9 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MessageCircle, Users, ArrowLeft, Calendar, Star, Clock, MessageSquare } from "lucide-react";
-import TraineeCoachChat from "./TraineeCoachChat";
+import { CoachTraineeChat } from "@/features/coach/components";
 import { useLanguage } from "@/contexts/LanguageContext";
 import type { CoachInfo } from "@/hooks/coach/types";
 
@@ -46,9 +45,9 @@ export const MultipleCoachesChat = ({ coaches, unreadMessagesByCoach, onBack }: 
   // If a specific coach is selected, show the chat interface
   if (selectedCoach) {
     return (
-      <TraineeCoachChat
-        coachId={selectedCoach.coach_id}
-        coachName={getCoachDisplayName(selectedCoach)}
+      <CoachTraineeChat
+        traineeId={selectedCoach.coach_id}
+        traineeName={getCoachDisplayName(selectedCoach)}
         onBack={() => setSelectedCoach(null)}
       />
     );

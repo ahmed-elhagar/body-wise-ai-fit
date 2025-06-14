@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -6,7 +5,7 @@ import { MessageCircle, ArrowRight, UserCheck, Loader2, AlertCircle, RefreshCw, 
 import { useCoachSystem } from "@/hooks/useCoachSystem";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useState } from "react";
-import TraineeCoachChat from "@/components/coach/TraineeCoachChat";
+import { CoachTraineeChat } from "@/features/coach/components";
 import { useRole } from "@/hooks/useRole";
 import { useNavigate } from "react-router-dom";
 import type { CoachInfo } from "@/hooks/coach/types";
@@ -54,9 +53,9 @@ const CoachChatWidget = () => {
   // Show selected coach chat directly
   if (selectedCoach) {
     return (
-      <TraineeCoachChat
-        coachId={selectedCoach.coach_id}
-        coachName={getCoachDisplayName(selectedCoach)}
+      <CoachTraineeChat
+        traineeId={selectedCoach.coach_id}
+        traineeName={getCoachDisplayName(selectedCoach)}
         onBack={() => setSelectedCoach(null)}
       />
     );
