@@ -1,6 +1,7 @@
 
 // Main exports for meal plan feature
 export { default as MealPlanContainer } from './components/MealPlanContainer';
+export { default as MealPlanPageContainer } from './components/MealPlanPageContainer';
 
 // Feature components
 export { 
