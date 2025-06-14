@@ -31,8 +31,8 @@ export const useGoals = () => {
         difficulty: goal.difficulty || 'medium',
         start_date: goal.start_date || goal.created_at,
         current_value: goal.current_value || 0,
-        milestones: goal.milestones || [],
-        tags: goal.tags || []
+        milestones: Array.isArray(goal.milestones) ? goal.milestones : [],
+        tags: Array.isArray(goal.tags) ? goal.tags : []
       }));
       
       setGoals(transformedGoals);
@@ -56,8 +56,8 @@ export const useGoals = () => {
           difficulty: goalData.difficulty || 'medium',
           start_date: goalData.start_date || new Date().toISOString().split('T')[0],
           current_value: goalData.current_value || 0,
-          milestones: goalData.milestones || [],
-          tags: goalData.tags || []
+          milestones: Array.isArray(goalData.milestones) ? goalData.milestones : [],
+          tags: Array.isArray(goalData.tags) ? goalData.tags : []
         })
         .select()
         .single();
@@ -69,8 +69,8 @@ export const useGoals = () => {
         difficulty: data.difficulty || 'medium',
         start_date: data.start_date || data.created_at,
         current_value: data.current_value || 0,
-        milestones: data.milestones || [],
-        tags: data.tags || []
+        milestones: Array.isArray(data.milestones) ? data.milestones : [],
+        tags: Array.isArray(data.tags) ? data.tags : []
       };
       
       setGoals(prev => [transformedGoal, ...prev]);
@@ -99,8 +99,8 @@ export const useGoals = () => {
         difficulty: data.difficulty || 'medium',
         start_date: data.start_date || data.created_at,
         current_value: data.current_value || 0,
-        milestones: data.milestones || [],
-        tags: data.tags || []
+        milestones: Array.isArray(data.milestones) ? data.milestones : [],
+        tags: Array.isArray(data.tags) ? data.tags : []
       };
       
       setGoals(prev => prev.map(goal => goal.id === goalId ? transformedGoal : goal));
