@@ -1,4 +1,5 @@
 
+
 // Main meal plan components
 export { default as MealPlanContainer } from './MealPlanContainer';
 export { default as MealPlanHeader } from './MealPlanHeader';
@@ -28,3 +29,4 @@ export { default as MealCard } from './DayOverview';
 export { default as MealPlanLoadingState } from './LoadingState';
 export { default as MealPlanErrorState } from './ErrorState';
 export { MealPlanViewToggle as ViewModeToggle };
+
