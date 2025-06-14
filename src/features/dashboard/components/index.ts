@@ -1,10 +1,11 @@
 
-export { default as CanonicalDashboard } from './CanonicalDashboard';
-export { default as DashboardHeader } from './DashboardHeader';
-export { default as QuickActionsGrid } from './QuickActionsGrid';
-
-// Newly moved components
-export { default as ActivityFeed } from './ActivityFeed';
+// Dashboard feature components exports
+export { CanonicalDashboard } from './CanonicalDashboard';
+export { DashboardHeader } from './DashboardHeader';
+export { QuickActionsGrid } from './QuickActionsGrid';
+export { RecentActivityCard } from './RecentActivityCard';
+export { ActivityFeed } from './ActivityFeed';
+export { CompactDailyView } from './CompactDailyView';
 export { DashboardAchievements } from './DashboardAchievements';
-export { default as EnhancedStatsGrid } from './EnhancedStatsGrid';
-export { default as WeightTrackingWidget } from './WeightTrackingWidget';
+export { EnhancedStatsGrid } from './EnhancedStatsGrid';
+export { WeightTrackingWidget } from './WeightTrackingWidget';
