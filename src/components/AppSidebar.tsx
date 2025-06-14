@@ -1,4 +1,3 @@
-
 import { useI18n } from "@/hooks/useI18n"
 import {
   Sidebar,
@@ -15,10 +14,11 @@ import { cn } from "@/lib/utils"
 const AppSidebar = () => {
   const { isRTL } = useI18n()
   const { state, isMobile } = useSidebar()
-  const isCollapsed = state === "collapsed"
+  const isCollapsed = state === "collapsed" && !isMobile
 
   return (
     <Sidebar 
+      variant="inset"
       className={cn(
         "border-r border-gray-200 bg-white transition-all duration-300 ease-in-out",
         isRTL ? 'border-l border-r-0' : '',
