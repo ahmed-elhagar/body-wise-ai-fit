@@ -1,32 +1,8 @@
 
-// Exercise feature components exports
-export { ExerciseListEnhanced } from './ExerciseListEnhanced';
-export { ExercisePageContent } from './ExercisePageContent';
-export { ExerciseSessionView } from './ExerciseSessionView';
-export { ExerciseListView } from './ExerciseListView';
-export { ExerciseListHeader } from './ExerciseListHeader';
-export { WorkoutTypeToggle } from './WorkoutTypeToggle';
-export { ExerciseProgramSelector } from './ExerciseProgramSelector';
-export { WorkoutTypeTabs } from './WorkoutTypeTabs';
-export { ExerciseErrorHandler } from './ExerciseErrorHandler';
-export { RestDayCard } from './RestDayCard';
-export { ExerciseEmptyState } from './ExerciseEmptyState';
-export { InteractiveExerciseCard } from './InteractiveExerciseCard';
-export { AnimatedProgressRing } from './AnimatedProgressRing';
-export { CompactProgressSidebar } from './CompactProgressSidebar';
-export { EnhancedExerciseListContainer } from './EnhancedExerciseListContainer';
-export { UnifiedExerciseContainer } from './UnifiedExerciseContainer';
-export { ExercisePageLayout } from './ExercisePageLayout';
-export { EnhancedDayNavigation } from './EnhancedDayNavigation';
-export { ExerciseCompactNavigation } from './ExerciseCompactNavigation';
-export { WeeklyExerciseNavigation } from './WeeklyExerciseNavigation';
-export { ExerciseProgramDaySelector } from './ExerciseProgramDaySelector';
-export { default as OptimizedExerciseContainer } from './OptimizedExerciseContainer';
-export { ExerciseErrorState } from './ExerciseErrorState';
-export { EnhancedExerciseHeaderWithAnalytics } from './EnhancedExerciseHeaderWithAnalytics';
-export { ExerciseAnalyticsContainer } from './ExerciseAnalyticsContainer';
-export { AIExerciseDialog } from './AIExerciseDialog';
-export { ExerciseActionsDropdown } from './ExerciseActionsDropdown';
-export { ExerciseInstructionsDialog } from './ExerciseInstructionsDialog';
-export { CompactProgressSection } from './CompactProgressSection';
 export { ExercisePageContainer } from './ExercisePageContainer';
+export { ExercisePageLayout } from './ExercisePageLayout';
+export { ExerciseListEnhanced } from './ExerciseListEnhanced';
+export { CompactProgressSection } from './CompactProgressSection';
+export { RestDayCard } from './RestDayCard';
+export { ExercisePageContent } from './ExercisePageContent';
+export { ExerciseEmptyState } from '../../../components/exercise/ExerciseEmptyState';
