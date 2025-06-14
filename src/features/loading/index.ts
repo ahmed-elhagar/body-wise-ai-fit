@@ -1,2 +1,0 @@
-
-export { MotivationalContent } from './components';

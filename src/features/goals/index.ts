@@ -1,9 +1,6 @@
 
-export {
-  ProgressBadges,
-  GoalProgressRing,
-  GoalCard,
-  GoalsOverview,
-  GoalCreationDialog,
-  GoalsDashboard
-} from './components';
+// Goals feature exports
+export type * from './types';
+
+// Components
+export * from './components';

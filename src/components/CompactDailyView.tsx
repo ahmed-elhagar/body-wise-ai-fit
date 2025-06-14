@@ -1,13 +1,11 @@
 
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, ChefHat, Sparkles, ShoppingCart, Plus, Flame, Zap, Clock } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
-import { MealTypeSection } from "@/features/meal-plan/components/daily-view";
-import { DailyNutritionSummary } from "@/features/meal-plan/components/daily-view";
-import { CompactMealCard } from "@/features/meal-plan/components/daily-view";
+import { Badge } from "@/components/ui/badge";
+import { Plus, ShoppingCart, ChefHat, Clock, Flame, Zap, Sparkles } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import CompactMealCard from "@/components/daily-view/CompactMealCard";
+import DailyNutritionSummary from "@/components/daily-view/DailyNutritionSummary";
 import type { DailyMeal } from "@/features/meal-plan/types";
 
 interface CompactDailyViewProps {
@@ -31,7 +29,7 @@ const CompactDailyView = ({
   onShowShoppingList,
   onGenerate
 }: CompactDailyViewProps) => {
-  const { t, isRTL } = useI18n();
+  const { t, isRTL } = useLanguage();
 
   // Group meals by type
   const mealsByType = todaysMeals.reduce((acc, meal, index) => {
@@ -73,8 +71,10 @@ const CompactDailyView = ({
     <div className="space-y-4">
       {/* Enhanced Nutrition Summary */}
       <DailyNutritionSummary
-        meals={todaysMeals}
-        targetCalories={2000}
+        totalCalories={totalCalories}
+        totalProtein={totalProtein}
+        onShowShoppingList={onShowShoppingList}
+        onAddSnack={onAddSnack}
       />
 
       {/* Quick Action Buttons */}

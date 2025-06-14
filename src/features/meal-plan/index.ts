@@ -9,7 +9,8 @@ export {
   useMealPlanActions,
   useEnhancedMealPlan,
   useDynamicMealPlan,
-  useMealPlanCore,
+  useMealPlanPage,
+  useOptimizedMealPlanCore,
   useEnhancedMealShuffle,
   useAIMealExchange,
   useEnhancedMealRecipe
@@ -24,8 +25,7 @@ export {
   WeeklyMealPlanView,
   EmptyWeekState,
   LoadingState,
-  ErrorState,
-  EnhancedRecipeDialog
+  ErrorState
 } from './components';
 
 // Types

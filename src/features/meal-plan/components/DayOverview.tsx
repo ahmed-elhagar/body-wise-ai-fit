@@ -1,82 +1,99 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { CalendarDays } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { format, addDays } from 'date-fns';
 import { useI18n } from "@/hooks/useI18n";
-import { MealTypeSection } from "./daily-view";
-import { DailyNutritionSummary } from "./daily-view";
-import { EmptyDailyState } from "./daily-view";
-import { format } from "date-fns";
-import type { DailyMeal } from "../types";
+import MealTypeSection from "@/components/daily-view/MealTypeSection";
+import DailyNutritionSummary from "@/components/daily-view/DailyNutritionSummary";
+import EmptyDailyState from "@/components/daily-view/EmptyDailyState";
+import type { DailyMeal } from '../types';
 
 interface DayOverviewProps {
-  date: Date;
-  meals: DailyMeal[];
-  onShowRecipe: (meal: DailyMeal) => void;
-  onExchangeMeal: (meal: DailyMeal, index: number) => void;
-  targetCalories?: number;
+  selectedDayNumber: number;
+  dailyMeals: DailyMeal[];
+  totalCalories: number;
+  totalProtein: number;
+  targetDayCalories: number;
+  onViewMeal: (meal: DailyMeal) => void;
+  onExchangeMeal: (meal: DailyMeal) => void;
+  onAddSnack: () => void;
+  weekStartDate: Date;
 }
 
 const DayOverview = ({
-  date,
-  meals,
-  onShowRecipe,
+  selectedDayNumber,
+  dailyMeals,
+  totalCalories,
+  totalProtein,
+  targetDayCalories,
+  onViewMeal,
   onExchangeMeal,
-  targetCalories
+  onAddSnack,
+  weekStartDate
 }: DayOverviewProps) => {
-  const { tFrom } = useI18n();
+  const { tFrom, isRTL } = useI18n();
   const tMealPlan = tFrom('mealPlan');
 
-  if (!meals || meals.length === 0) {
-    return <EmptyDailyState date={date} />;
+  // Calculate the actual date for the selected day
+  const selectedDate = addDays(weekStartDate, selectedDayNumber - 1);
+  const formattedDate = format(selectedDate, 'EEEE, MMM d');
+
+  // Group meals by type
+  const mealsByType = {
+    breakfast: dailyMeals.filter(meal => meal.meal_type === 'breakfast'),
+    lunch: dailyMeals.filter(meal => meal.meal_type === 'lunch'),
+    dinner: dailyMeals.filter(meal => meal.meal_type === 'dinner'),
+    snack: dailyMeals.filter(meal => 
+      meal.meal_type?.includes('snack') || meal.name?.includes('🍎')
+    ),
+  };
+
+  const handleShowShoppingList = () => {
+    // This will be handled by the parent component
+    console.log('Shopping list requested');
+  };
+
+  if (dailyMeals.length === 0) {
+    return <EmptyDailyState onGenerate={() => console.log('Generate requested')} />;
   }
 
-  const formattedDate = format(date, 'EEEE, MMMM d');
-
   return (
-    <Card className="border border-gray-200">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-base font-semibold">
-          <div className="flex items-center gap-2">
-            <CalendarDays className="w-4 h-4" />
-            <span>{formattedDate}</span>
+    <div className="space-y-4">
+      {/* Day Header */}
+      <Card className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 border-0 shadow-sm">
+        <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+          <div>
+            <h1 className="text-xl font-bold text-gray-800">{formattedDate}</h1>
+            <p className="text-sm text-gray-600">{String(tMealPlan('dayNumber'))} {selectedDayNumber}</p>
           </div>
-        </CardTitle>
-        <Badge variant="secondary">
-          {meals.length} {String(tMealPlan('meals'))}
-        </Badge>
-      </CardHeader>
-      <CardContent className="pl-2 pr-2 pt-0">
-        <div className="grid gap-4" data-testid="today-meals">
-          <DailyNutritionSummary meals={meals} targetCalories={targetCalories} />
-          <MealTypeSection
-            mealType="breakfast"
-            meals={meals}
-            onShowRecipe={onShowRecipe}
-            onExchangeMeal={onExchangeMeal}
-          />
-          <MealTypeSection
-            mealType="lunch"
-            meals={meals}
-            onShowRecipe={onShowRecipe}
-            onExchangeMeal={onExchangeMeal}
-          />
-          <MealTypeSection
-            mealType="dinner"
-            meals={meals}
-            onShowRecipe={onShowRecipe}
-            onExchangeMeal={onExchangeMeal}
-          />
-          <MealTypeSection
-            mealType="snack"
-            meals={meals}
-            onShowRecipe={onShowRecipe}
-            onExchangeMeal={onExchangeMeal}
-          />
+          <div className={`text-right ${isRTL ? 'text-left' : ''}`}>
+            <div className="text-2xl font-bold text-blue-600">{totalCalories}</div>
+            <div className="text-xs text-gray-500">{String(tMealPlan('calories'))}</div>
+          </div>
         </div>
-      </CardContent>
-    </Card>
+      </Card>
+
+      {/* Nutrition Summary */}
+      <DailyNutritionSummary
+        totalCalories={totalCalories}
+        totalProtein={totalProtein}
+        onShowShoppingList={handleShowShoppingList}
+        onAddSnack={onAddSnack}
+      />
+
+      {/* Meals by Type */}
+      <div className="space-y-3">
+        {Object.entries(mealsByType).map(([mealType, meals]) => (
+          <MealTypeSection
+            key={mealType}
+            mealType={mealType}
+            meals={meals}
+            onShowRecipe={onViewMeal}
+            onExchangeMeal={(meal, index) => onExchangeMeal(meal)}
+          />
+        ))}
+      </div>
+    </div>
   );
 };
 

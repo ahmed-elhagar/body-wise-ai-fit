@@ -6,8 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, History, TrendingUp, ChevronLeft, ChevronRight } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useFoodConsumption } from "@/hooks/useFoodConsumption";
-import VirtualizedMealHistory from "./VirtualizedMealHistory";
-import NutritionHeatMap from "./NutritionHeatMap";
+import VirtualizedMealHistory from "@/components/food-tracker/components/VirtualizedMealHistory";
+import NutritionHeatMap from "@/components/food-tracker/components/NutritionHeatMap";
 import { format, startOfMonth, endOfMonth, addMonths, subMonths } from "date-fns";
 
 const HistoryTab = () => {

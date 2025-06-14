@@ -52,17 +52,17 @@ export const MealPlanContent = ({
   }
 
   if (viewMode === 'daily') {
-    // Calculate the selected date based on weekStartDate and selectedDayNumber
-    const selectedDate = new Date(weekStartDate);
-    selectedDate.setDate(selectedDate.getDate() + (selectedDayNumber - 1));
-
     return (
       <DayOverview
-        date={selectedDate}
-        meals={dailyMeals || []}
-        onShowRecipe={onViewMeal}
+        selectedDayNumber={selectedDayNumber}
+        dailyMeals={dailyMeals || []}
+        totalCalories={totalCalories || 0}
+        totalProtein={totalProtein || 0}
+        targetDayCalories={targetDayCalories || 2000}
+        onViewMeal={onViewMeal}
         onExchangeMeal={onExchangeMeal}
-        targetCalories={targetDayCalories || 2000}
+        onAddSnack={onAddSnack}
+        weekStartDate={weekStartDate}
       />
     );
   }

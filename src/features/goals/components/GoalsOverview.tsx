@@ -1,49 +1,48 @@
-import React from 'react';
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Target, Trophy, Calendar } from "lucide-react";
-import GoalProgressRing from "./GoalProgressRing";
-import GoalCard from "./GoalCard";
-import { useI18n } from "@/hooks/useI18n";
+import { TrendingUp } from "lucide-react";
+import { useGoals } from "@/hooks/useGoals";
+import GoalProgressRing from "@/components/goals/GoalProgressRing";
 
-interface GoalsOverviewProps {
-  // Define any props here
-}
+const GoalsOverview = () => {
+  const { goals } = useGoals();
 
-const GoalsOverview: React.FC<GoalsOverviewProps> = () => {
-  const { tFrom } = useI18n();
-  const tGoals = tFrom('goals');
-
-  // Example data for goals
-  const goals = [
-    { id: 1, title: String(tGoals('calorieGoal')), target: 2000, current: 1500, unit: 'cal' },
-    { id: 2, title: String(tGoals('proteinGoal')), target: 150, current: 120, unit: 'g' },
-    { id: 3, title: String(tGoals('exerciseDays')), target: 5, current: 3, unit: 'days' },
-  ];
+  const activeGoals = goals.filter(goal => goal.status === 'active');
+  const completedGoals = goals.filter(goal => goal.status === 'completed');
+  const overallProgress = goals.length > 0 
+    ? goals.reduce((acc, goal) => acc + Math.min(100, (goal.current_value / (goal.target_value || 1)) * 100), 0) / goals.length
+    : 0;
 
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold">{String(tGoals('yourProgress'))}</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {goals.map((goal) => (
-            <GoalCard key={goal.id} goal={goal} />
-          ))}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold">{String(tGoals('weeklySummary'))}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-gray-500">{String(tGoals('noDataAvailable'))}</p>
-        </CardContent>
-      </Card>
-    </div>
+    <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <TrendingUp className="w-5 h-5 text-blue-600" />
+          Progress Overview
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-center justify-center">
+          <GoalProgressRing progress={overallProgress} size={160}>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-gray-800">{Math.round(overallProgress)}%</div>
+              <div className="text-sm text-gray-600">Overall</div>
+            </div>
+          </GoalProgressRing>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-4 mt-6">
+          <div className="text-center p-3 bg-blue-50 rounded-lg">
+            <div className="text-2xl font-bold text-blue-600">{activeGoals.length}</div>
+            <div className="text-sm text-blue-600">Active Goals</div>
+          </div>
+          <div className="text-center p-3 bg-green-50 rounded-lg">
+            <div className="text-2xl font-bold text-green-600">{completedGoals.length}</div>
+            <div className="text-sm text-green-600">Completed</div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 
