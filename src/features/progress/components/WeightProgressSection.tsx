@@ -42,7 +42,8 @@ export const WeightProgressSection = () => {
   }
 
   const currentWeight = entries?.[0]?.weight || profile?.weight || 0;
-  const goalWeight = profile?.goal_weight || 0;
+  // Note: goal_weight doesn't exist in Profile, we'll use a placeholder or skip this feature
+  const goalWeight = 0; // This would need to be added to the profile or goals system
   const startingWeight = entries?.[entries.length - 1]?.weight || currentWeight;
   
   const weightLoss = startingWeight - currentWeight;
@@ -78,11 +79,11 @@ export const WeightProgressSection = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-green-600 text-sm font-medium">Goal Weight</p>
+                <p className="text-green-600 text-sm font-medium">Starting Weight</p>
                 <p className="text-2xl font-bold text-green-900">
-                  {goalWeight > 0 ? `${goalWeight.toFixed(1)} kg` : 'Not set'}
+                  {startingWeight > 0 ? `${startingWeight.toFixed(1)} kg` : 'Not set'}
                 </p>
-                <p className="text-xs text-green-600 mt-1">Target</p>
+                <p className="text-xs text-green-600 mt-1">First entry</p>
               </div>
               <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center">
                 <Target className="w-6 h-6 text-white" />
@@ -95,11 +96,11 @@ export const WeightProgressSection = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-purple-600 text-sm font-medium">Weight Lost</p>
+                <p className="text-purple-600 text-sm font-medium">Weight Change</p>
                 <p className="text-2xl font-bold text-purple-900">
-                  {weightLoss > 0 ? `${weightLoss.toFixed(1)} kg` : '0 kg'}
+                  {weightLoss !== 0 ? `${weightLoss > 0 ? '+' : ''}${weightLoss.toFixed(1)} kg` : '0 kg'}
                 </p>
-                <p className="text-xs text-purple-600 mt-1">Total progress</p>
+                <p className="text-xs text-purple-600 mt-1">Total change</p>
               </div>
               <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center">
                 <TrendingUp className="w-6 h-6 text-white" />
@@ -126,7 +127,7 @@ export const WeightProgressSection = () => {
         </Card>
       </div>
 
-      {/* Progress Overview */}
+      {/* Progress Overview - Only show if goal weight exists */}
       {goalWeight > 0 && (
         <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
           <CardHeader>
@@ -181,7 +182,7 @@ export const WeightProgressSection = () => {
                     <div>
                       <p className="font-medium text-gray-800">{entry.weight.toFixed(1)} kg</p>
                       <p className="text-xs text-gray-600">
-                        {new Date(entry.date).toLocaleDateString()}
+                        {new Date(entry.recorded_at).toLocaleDateString()}
                       </p>
                     </div>
                   </div>
