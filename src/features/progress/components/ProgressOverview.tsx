@@ -16,7 +16,7 @@ import {
 import { useI18n } from "@/hooks/useI18n";
 import { useMealPlanState } from "@/features/meal-plan/hooks";
 import { useWeightTracking } from "@/hooks/useWeightTracking";
-import { useExercisePrograms } from "@/hooks/useExercisePrograms";
+import { useExercisePrograms } from "@/features/exercise";
 import { useGoals } from "@/hooks/useGoals";
 
 export const ProgressOverview = () => {

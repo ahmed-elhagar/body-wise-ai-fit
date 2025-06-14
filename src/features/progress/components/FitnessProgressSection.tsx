@@ -13,7 +13,7 @@ import {
   ArrowRight
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useExercisePrograms } from "@/hooks/useExercisePrograms";
+import { useExercisePrograms } from "@/features/exercise";
 import { useOptimizedExerciseProgramPage } from "@/features/exercise/hooks/useOptimizedExerciseProgramPage";
 
 export const FitnessProgressSection = () => {
