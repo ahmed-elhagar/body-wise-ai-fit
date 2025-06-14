@@ -3,12 +3,50 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { getCategoryForIngredient } from '../utils/mealPlanUtils';
-import type { WeeklyMealPlan, DailyMeal } from '../types';
+import type { WeeklyMealPlan, DailyMeal, MealIngredient } from '../types';
 
 interface MealPlanData {
   weeklyPlan: WeeklyMealPlan | null;
   dailyMeals: DailyMeal[];
 }
+
+// Helper function to safely parse JSON data
+const safeJsonParse = (data: any, fallback: any = []): any => {
+  if (Array.isArray(data)) return data;
+  if (typeof data === 'string') {
+    try {
+      return JSON.parse(data);
+    } catch {
+      return fallback;
+    }
+  }
+  return data || fallback;
+};
+
+// Helper function to convert database meal to our DailyMeal type
+const convertDatabaseMeal = (dbMeal: any): DailyMeal => {
+  return {
+    id: dbMeal.id,
+    weekly_plan_id: dbMeal.weekly_plan_id,
+    day_number: dbMeal.day_number,
+    meal_type: dbMeal.meal_type as 'breakfast' | 'lunch' | 'dinner' | 'snack' | 'snack1' | 'snack2',
+    name: dbMeal.name,
+    calories: dbMeal.calories,
+    protein: dbMeal.protein,
+    carbs: dbMeal.carbs,
+    fat: dbMeal.fat,
+    ingredients: safeJsonParse(dbMeal.ingredients, []) as MealIngredient[],
+    instructions: safeJsonParse(dbMeal.instructions, []) as string[],
+    prep_time: dbMeal.prep_time,
+    cook_time: dbMeal.cook_time,
+    servings: dbMeal.servings,
+    alternatives: safeJsonParse(dbMeal.alternatives, []) as string[],
+    image_url: dbMeal.image_url,
+    youtube_search_term: dbMeal.youtube_search_term,
+    recipe_fetched: dbMeal.recipe_fetched,
+    created_at: dbMeal.created_at
+  };
+};
 
 export const useMealPlanData = (weekStartDate: string) => {
   const { user } = useAuth();
@@ -52,8 +90,10 @@ export const useMealPlanData = (weekStartDate: string) => {
           throw new Error(dailyMealsError.message);
         }
 
-        // Sort daily meals by meal type
-        const sortedDailyMeals = dailyMealsData ? [...dailyMealsData].sort((a, b) => {
+        // Convert and sort daily meals by meal type
+        const convertedMeals = (dailyMealsData || []).map(convertDatabaseMeal);
+        
+        const sortedDailyMeals = convertedMeals.sort((a, b) => {
           const mealTypeOrder = {
             'breakfast': 1,
             'lunch': 2,
@@ -63,14 +103,11 @@ export const useMealPlanData = (weekStartDate: string) => {
             'snack2': 6,
           };
 
-          const mealTypeA = a.meal_type ? a.meal_type.toLowerCase() : '';
-          const mealTypeB = b.meal_type ? b.meal_type.toLowerCase() : '';
-
-          const orderA = mealTypeOrder[mealTypeA as keyof typeof mealTypeOrder] || 7;
-          const orderB = mealTypeOrder[mealTypeB as keyof typeof mealTypeOrder] || 7;
+          const orderA = mealTypeOrder[a.meal_type] || 7;
+          const orderB = mealTypeOrder[b.meal_type] || 7;
 
           return orderA - orderB;
-        }) : [];
+        });
 
         console.log('Fetched meal plan data:', {
           weeklyPlan: weeklyPlanData,
@@ -79,7 +116,7 @@ export const useMealPlanData = (weekStartDate: string) => {
 
         return {
           weeklyPlan: weeklyPlanData as WeeklyMealPlan,
-          dailyMeals: sortedDailyMeals as DailyMeal[],
+          dailyMeals: sortedDailyMeals,
         };
       } catch (err: any) {
         console.error('Error fetching meal plan data:', err);

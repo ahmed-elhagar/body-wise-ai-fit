@@ -14,11 +14,11 @@ export const useMealPlanDialogs = () => {
   
   // AI preferences with proper defaults and validation
   const [aiPreferences, setAiPreferences] = useState<MealPlanPreferences>({
-    duration: "7",
+    duration: 7,
     cuisine: "mixed",
     maxPrepTime: "30",
     includeSnacks: true,
-    mealTypes: "breakfast,lunch,dinner"
+    mealTypes: ["breakfast", "lunch", "dinner"]
   });
 
   // Optimized dialog action methods with useCallback

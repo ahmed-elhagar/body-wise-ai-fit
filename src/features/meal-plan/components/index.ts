@@ -2,7 +2,7 @@
 // Main components
 export { default as MealPlanContainer } from './MealPlanContainer';
 export { MealPlanContent } from './MealPlanContent';
-export { MealPlanHeader } from './MealPlanHeader';
+export { default as MealPlanHeader } from './MealPlanHeader';
 export { MealPlanViewToggle } from './MealPlanViewToggle';
 export { MealCard } from './MealCard';
 export { RecipeDialog } from './RecipeDialog';
@@ -18,12 +18,9 @@ export { WeekView } from './WeekView';
 export { WeekDayCard } from './WeekDayCard';
 
 // State components
-export { ErrorState } from './ErrorState';
-export { LoadingState } from './LoadingState';
+export { default as ErrorState } from './ErrorState';
+export { default as LoadingState } from './LoadingState';
 export { EmptyState } from './EmptyState';
 
 // Navigation
 export { UnifiedNavigation } from './navigation/UnifiedNavigation';
-
-// Enhanced components (to be renamed)
-export { EnhancedMealCard } from './EnhancedMealCard';

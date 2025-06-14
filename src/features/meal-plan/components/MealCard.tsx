@@ -1,109 +1,87 @@
 
 import React from 'react';
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Eye, ArrowLeftRight } from "lucide-react";
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { ChefHat, Eye, RefreshCw, Clock, Users } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { DailyMeal } from '../types';
 
 interface MealCardProps {
   meal: DailyMeal;
-  onViewMeal: (meal: DailyMeal) => void;
-  onExchangeMeal: (meal: DailyMeal) => void;
+  onViewRecipe: (meal: DailyMeal) => void;
+  onExchange: (meal: DailyMeal) => void;
 }
 
-export const MealCard = ({ meal, onViewMeal, onExchangeMeal }: MealCardProps) => {
+export const MealCard = ({ meal, onViewRecipe, onExchange }: MealCardProps) => {
   const { t } = useLanguage();
 
-  const getMealTypeColor = (mealType: string) => {
-    switch (mealType.toLowerCase()) {
-      case 'breakfast':
-        return 'bg-yellow-100 border-yellow-200';
-      case 'lunch':
-        return 'bg-blue-100 border-blue-200';
-      case 'dinner':
-        return 'bg-purple-100 border-purple-200';
-      case 'snack1':
-      case 'snack2':
-      case 'snack':
-        return 'bg-green-100 border-green-200';
-      default:
-        return 'bg-gray-100 border-gray-200';
-    }
-  };
-
-  const getMealTypeLabel = (mealType: string) => {
-    const mealTypeMap: Record<string, string> = {
-      breakfast: t('Breakfast'),
-      lunch: t('Lunch'),
-      dinner: t('Dinner'),
-      snack: t('Snack'),
-      snack1: t('Snack'),
-      snack2: t('Snack')
-    };
-    return mealTypeMap[mealType.toLowerCase()] || mealType;
+  const mealTypeColors = {
+    breakfast: 'bg-orange-100 text-orange-800',
+    lunch: 'bg-green-100 text-green-800',
+    dinner: 'bg-blue-100 text-blue-800',
+    snack: 'bg-purple-100 text-purple-800',
+    snack1: 'bg-purple-100 text-purple-800',
+    snack2: 'bg-purple-100 text-purple-800'
   };
 
   return (
-    <Card className={`overflow-hidden hover:shadow-md transition-all duration-200 ${getMealTypeColor(meal.meal_type)}`}>
-      <CardContent className="p-0">
-        {/* Meal Image */}
-        <div className="h-24 bg-white rounded-t-lg overflow-hidden relative">
-          {meal.image_url ? (
-            <img 
-              src={meal.image_url} 
-              alt={meal.name}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm">
-                <span className="text-lg">🍽️</span>
-              </div>
-            </div>
-          )}
-          
-          {/* Meal Type Badge */}
-          <Badge 
-            variant="secondary" 
-            className="absolute top-1 left-1 text-xs font-medium capitalize px-1 py-0"
-          >
-            {getMealTypeLabel(meal.meal_type)}
-          </Badge>
+    <Card className="hover:shadow-md transition-shadow">
+      <CardContent className="p-4">
+        <div className="flex justify-between items-start mb-3">
+          <div className="flex-1">
+            <Badge className={mealTypeColors[meal.meal_type] || 'bg-gray-100 text-gray-800'}>
+              {t(meal.meal_type)}
+            </Badge>
+            <h3 className="font-semibold text-lg mt-2 text-gray-900">
+              {meal.name}
+            </h3>
+          </div>
+          <ChefHat className="w-5 h-5 text-gray-400" />
         </div>
 
-        {/* Meal Info */}
-        <div className="p-2 space-y-2">
-          <h3 className="font-semibold text-gray-900 text-xs leading-tight line-clamp-2">
-            {meal.name}
-          </h3>
-          
-          <div className="text-xs text-gray-600">
-            {meal.calories} {t('cal')} • {meal.protein}g
+        <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
+          <div className="flex items-center text-gray-600">
+            <span className="font-medium text-orange-600">{meal.calories}</span>
+            <span className="ml-1">{t('cal')}</span>
           </div>
+          <div className="flex items-center text-gray-600">
+            <span className="font-medium text-green-600">{meal.protein}g</span>
+            <span className="ml-1">{t('protein')}</span>
+          </div>
+          {meal.prep_time && (
+            <div className="flex items-center text-gray-600">
+              <Clock className="w-3 h-3 mr-1" />
+              <span>{meal.prep_time}min</span>
+            </div>
+          )}
+          {meal.servings && (
+            <div className="flex items-center text-gray-600">
+              <Users className="w-3 h-3 mr-1" />
+              <span>{meal.servings} servings</span>
+            </div>
+          )}
+        </div>
 
-          {/* Action Buttons */}
-          <div className="flex gap-1">
-            <Button
-              size="sm"
-              variant="outline"
-              className="flex-1 text-xs h-6 border border-teal-500 text-teal-700 hover:bg-teal-500 hover:text-white transition-colors"
-              onClick={() => onExchangeMeal(meal)}
-            >
-              <ArrowLeftRight className="w-3 h-3 mr-1" />
-              {t('Exchange')}
-            </Button>
-            
-            <Button
-              size="sm"
-              variant="ghost"
-              className="text-xs h-6 text-gray-600 hover:text-gray-900 px-2"
-              onClick={() => onViewMeal(meal)}
-            >
-              <Eye className="w-3 h-3" />
-            </Button>
-          </div>
+        <div className="flex gap-2">
+          <Button
+            onClick={() => onViewRecipe(meal)}
+            variant="outline"
+            size="sm"
+            className="flex-1"
+          >
+            <Eye className="w-4 h-4 mr-2" />
+            {t('Recipe')}
+          </Button>
+          <Button
+            onClick={() => onExchange(meal)}
+            variant="outline"
+            size="sm"
+            className="flex-1"
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            {t('Exchange')}
+          </Button>
         </div>
       </CardContent>
     </Card>
