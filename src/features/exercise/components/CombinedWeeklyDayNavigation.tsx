@@ -1,8 +1,7 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, ChevronRight, Calendar, RotateCcw, Target, Coffee } from "lucide-react";
+import { ChevronLeft, ChevronRight, Home, Building2, Coffee, Target } from "lucide-react";
 import { format, addDays } from "date-fns";
 import { ExerciseProgram } from "@/features/exercise";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -15,6 +14,8 @@ interface CombinedWeeklyDayNavigationProps {
   selectedDayNumber: number;
   setSelectedDayNumber: (day: number) => void;
   currentProgram: ExerciseProgram | null;
+  workoutType: "home" | "gym";
+  onWorkoutTypeChange: (type: "home" | "gym") => void;
 }
 
 export const CombinedWeeklyDayNavigation = ({
@@ -24,24 +25,15 @@ export const CombinedWeeklyDayNavigation = ({
   selectedDayNumber,
   setSelectedDayNumber,
   currentProgram,
+  workoutType,
+  onWorkoutTypeChange,
 }: CombinedWeeklyDayNavigationProps) => {
   const isMobile = useIsMobile();
 
   const formatWeekRange = (startDate: Date) => {
     const endDate = addDays(startDate, 6);
-    const startMonth = format(startDate, 'MMM');
-    const startDay = format(startDate, 'd');
-    const endMonth = format(endDate, 'MMM');
-    const endDay = format(endDate, 'd');
-    
-    if (startMonth === endMonth) {
-      return `${startMonth} ${startDay} - ${endDay}, ${format(startDate, 'yyyy')}`;
-    } else {
-      return `${startMonth} ${startDay} - ${endMonth} ${endDay}, ${format(startDate, 'yyyy')}`;
-    }
+    return `${format(startDate, 'd MMM')} - ${format(endDate, 'd MMM')}`;
   };
-
-  const goToCurrentWeek = () => setCurrentWeekOffset(0);
 
   const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -63,113 +55,107 @@ export const CombinedWeeklyDayNavigation = ({
       <Button
         key={dayName}
         variant={isSelected ? "default" : "ghost"}
-        className={`h-16 flex-shrink-0 flex flex-col items-center justify-center space-y-1.5 rounded-xl transition-all duration-200 ${
-          isMobile ? 'w-16' : ''
-        } ${
+        className={`h-14 flex-shrink-0 flex flex-col items-center justify-center space-y-1 rounded-lg transition-all duration-200 w-14 ${
           isSelected 
-            ? restDay ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-md' : 'bg-blue-600 hover:bg-blue-700 text-white shadow-md' 
-            : restDay ? 'bg-orange-50 text-orange-600 hover:bg-orange-100' : 'text-blue-800 bg-blue-50 hover:bg-blue-100'
+            ? restDay ? 'bg-orange-500 hover:bg-orange-600 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white' 
+            : restDay ? 'bg-orange-50 text-orange-600 hover:bg-orange-100' : 'text-blue-800 bg-gray-50 hover:bg-blue-100'
         }`}
         onClick={() => setSelectedDayNumber(dayNumber)}
       >
-        <span className="text-sm font-medium">{dayName}</span>
+        <span className="text-xs font-medium">{dayName}</span>
         <div className="h-4 w-4 flex items-center justify-center">
-          {restDay ? (
-            <Coffee className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-orange-500'}`} />
-          ) : (
-            isSelected 
-              ? <div className="w-1.5 h-1.5 bg-white rounded-full" />
-              : <Target className="w-4 h-4" />
-          )}
+          {restDay ? <Coffee className="w-4 h-4" /> : <Target className="w-4 h-4" />}
         </div>
       </Button>
     );
   }
 
+  const WorkoutTypeToggle = () => (
+    <div className="flex items-center p-1 bg-gray-100 rounded-lg">
+      <Button
+        variant={workoutType === 'home' ? 'default' : 'ghost'}
+        size="sm"
+        onClick={() => onWorkoutTypeChange('home')}
+        className={`flex-1 h-8 rounded-md ${workoutType === 'home' ? 'bg-blue-600 text-white shadow' : 'text-gray-700'}`}
+      >
+        <Home className="w-4 h-4 mr-1" />
+        Home
+      </Button>
+      <Button
+        variant={workoutType === 'gym' ? 'default' : 'ghost'}
+        size="sm"
+        onClick={() => onWorkoutTypeChange('gym')}
+        className={`flex-1 h-8 rounded-md ${workoutType === 'gym' ? 'bg-purple-600 text-white shadow' : 'text-gray-700'}`}
+      >
+        <Building2 className="w-4 h-4 mr-1" />
+        Gym
+      </Button>
+    </div>
+  );
+
   return (
-    <Card className="p-4 sm:p-6 bg-white shadow-lg rounded-3xl">
-      {/* Week Navigation */}
-      <div className="flex items-center justify-between">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setCurrentWeekOffset(Math.max(0, currentWeekOffset - 1))}
-          disabled={currentWeekOffset === 0}
-          className="rounded-full h-10 w-10"
-        >
-          <ChevronLeft className="w-5 h-5" />
-        </Button>
-
-        <div className="text-center">
-          <div className="flex items-center justify-center gap-2">
-            <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
-                <Calendar className="w-5 h-5 text-indigo-600" />
-            </div>
-            <div>
-                <h3 className="text-lg font-bold text-gray-900">
-                    Week {currentWeekOffset + 1}
-                </h3>
-                <p className="text-sm text-gray-500">
-                    {formatWeekRange(weekStartDate)}
-                </p>
-            </div>
-          </div>
-        </div>
-
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setCurrentWeekOffset(currentWeekOffset + 1)}
-          disabled={currentWeekOffset >= 3}
-          className="rounded-full h-10 w-10"
-        >
-          <ChevronRight className="w-5 h-5" />
-        </Button>
-      </div>
-      
-      {/* Week Status & Actions */}
-      <div className="mt-4 pt-4 border-t border-gray-100 space-y-3 text-center">
-        {currentWeekOffset === 0 ? (
-          <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">
-            Current Week
-          </Badge>
-        ) : (
-          <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200">
-            Week {currentWeekOffset + 1} of Program
-          </Badge>
-        )}
-        
-        {currentWeekOffset > 0 && (
+    <Card className="p-2 bg-white shadow-md rounded-2xl">
+      <div className="flex items-center justify-between gap-2">
+        {/* Week Navigation */}
+        <div className="flex items-center gap-1">
           <Button
             variant="ghost"
-            size="sm"
-            onClick={goToCurrentWeek}
-            className="text-sm text-gray-600 hover:text-gray-900 mx-auto flex"
+            size="icon-sm"
+            onClick={() => setCurrentWeekOffset(Math.max(0, currentWeekOffset - 1))}
+            disabled={currentWeekOffset === 0}
+            className="rounded-md"
           >
-            <RotateCcw className="w-4 h-4 mr-2" />
-            Back to Current Week
+            <ChevronLeft className="w-5 h-5" />
           </Button>
-        )}
-      </div>
 
-      {/* Day Selector */}
-      <div className="mt-4">
-        {isMobile ? (
-          <ScrollArea className="w-full whitespace-nowrap">
-            <div className="flex w-max space-x-2 p-2 bg-gray-100 rounded-2xl">
-              {dayNames.map((day, index) => dayButton(index + 1, day))}
-            </div>
-            <ScrollBar orientation="horizontal" className="h-2 mt-2" />
-          </ScrollArea>
-        ) : (
-          <div className="p-2 bg-gray-100 rounded-2xl">
-            <div className="grid grid-cols-7 gap-1">
-              {dayNames.map((day, index) => dayButton(index + 1, day))}
-            </div>
+          <div className="text-center w-28">
+            <h3 className="text-sm font-semibold text-gray-800">
+                Week {currentWeekOffset + 1}
+            </h3>
+            <p className="text-xs text-gray-500">
+                {formatWeekRange(weekStartDate)}
+            </p>
           </div>
-        )}
-      </div>
 
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => setCurrentWeekOffset(currentWeekOffset + 1)}
+            disabled={currentWeekOffset >= 3}
+            className="rounded-md"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </Button>
+        </div>
+
+        {/* Day Selector */}
+        <div className="flex-1">
+          {isMobile ? (
+            <ScrollArea className="w-full whitespace-nowrap">
+              <div className="flex w-max space-x-1 p-1 bg-gray-100 rounded-lg">
+                {dayNames.map((day, index) => dayButton(index + 1, day))}
+              </div>
+              <ScrollBar orientation="horizontal" className="h-1.5 mt-1" />
+            </ScrollArea>
+          ) : (
+            <div className="p-1 bg-gray-100 rounded-lg">
+              <div className="grid grid-cols-7 gap-1">
+                {dayNames.map((day, index) => dayButton(index + 1, day))}
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {/* Workout Type Toggle */}
+        <div className="hidden sm:block">
+          <WorkoutTypeToggle />
+        </div>
+      </div>
+      { isMobile && (
+        <div className="mt-2 sm:hidden">
+          <WorkoutTypeToggle />
+        </div>
+      )}
     </Card>
   );
 };
