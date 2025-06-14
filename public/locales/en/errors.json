@@ -1,0 +1,11 @@
+
+{
+  "mealPlanGeneration": "Failed to generate meal plan. Please try again.",
+  "exerciseGeneration": "Failed to generate exercise program. Please try again.",
+  "foodAnalysis": "Failed to analyze food image. Please try again.",
+  "networkError": "Network error. Please check your connection.",
+  "unknownError": "An unexpected error occurred. Please try again.",
+  "authenticationRequired": "Authentication required. Please log in.",
+  "insufficientCredits": "Insufficient AI credits. Please upgrade your plan.",
+  "validationError": "Please check your input and try again."
+}

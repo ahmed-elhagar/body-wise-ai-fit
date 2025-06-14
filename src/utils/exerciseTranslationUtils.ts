@@ -1,148 +1,75 @@
-import { useLanguage, Language } from '@/contexts/LanguageContext';
 
-// Exercise name translations mapping (string to string)
-const exerciseNameTranslations: Record<string, string> = {
-  // Arabic to English exercise names
-  'السحب للأسفل بالكابل': 'Cable Lat Pulldown',
-  'التجديف بالبار المحني': 'Bent Over Barbell Row',
-  'الضغط بالدمبل': 'Dumbbell Press',
-  'تمرين العقلة': 'Pull-ups',
-  'القرفصاء': 'Squats',
-  'الضغط على البنش': 'Bench Press',
-  'الرفعة الميتة': 'Deadlift',
-  'تمرين البلانك': 'Plank',
-  'الجري في المكان': 'Running in Place',
-  'القفز بالحبل': 'Jump Rope',
-  'تمرين الضغط': 'Push-ups',
-  'تمرين الطحن': 'Crunches',
-  'تمرين الجسر': 'Bridge',
-  'تمرين المتسلق': 'Mountain Climbers',
-  'تمرين القفز': 'Jumping Jacks',
-  'تمرين البيربي': 'Burpees',
-  'تمرين اللونجز': 'Lunges',
+import { Language } from '@/contexts/LanguageContext';
+import { useI18n } from '@/hooks/useI18n';
+
+export const translateExerciseName = (exerciseName: string): string => {
+  const { t } = useI18n();
   
-  // English to Arabic (reverse mapping)
-  'Cable Lat Pulldown': 'السحب للأسفل بالكابل',
-  'Bent Over Barbell Row': 'التجديف بالبار المحني',
-  'Dumbbell Press': 'الضغط بالدمبل',
-  'Pull-ups': 'تمرين العقلة',
-  'Squats': 'القرفصاء',
-  'Bench Press': 'الضغط على البنش',
-  'Deadlift': 'الرفعة الميتة',
-  'Plank': 'تمرين البلانك',
-  'Running in Place': 'الجري في المكان',
-  'Jump Rope': 'القفز بالحبل',
-  'Push-ups': 'تمرين الضغط',
-  'Crunches': 'تمرين الطحن',
-  'Bridge': 'تمرين الجسر',
-  'Mountain Climbers': 'تمرين المتسلق',
-  'Jumping Jacks': 'تمرين القفز',
-  'Burpees': 'تمرين البيربي',
-  'Lunges': 'تمرين اللونجز'
-};
-
-// Exercise instructions translations
-const instructionTranslations: Record<string, string> = {
-  // Arabic to English instructions
-  'جلس مستقيماً، امسك البار بقبضة واسعة، اسحب البار للصدر مع تحريك الكتفين للخلف': 'Sit upright, grip the bar with a wide grip, pull the bar to your chest while moving your shoulders back',
-  'مع انحناء الجذع للأمام، امسك البار واسحبه نحو البطن مع الحفاظ على استقامة الظهر': 'With your torso bent forward, grip the bar and pull it toward your abdomen while keeping your back straight',
-  'استلق على الأرض ارفع جسمك بشكل مستقيم واستمر لفترة': 'Lie face down, raise your body in a straight line and hold the position',
-  'قف مستقيماً ثم انزل كأنك تجلس على كرسي': 'Stand straight then lower as if sitting on a chair',
+  // Common exercise translations
+  const exerciseTranslations: Record<string, string> = {
+    'push ups': t('exercise.names.pushUps'),
+    'pull ups': t('exercise.names.pullUps'),
+    'squats': t('exercise.names.squats'),
+    'lunges': t('exercise.names.lunges'),
+    'plank': t('exercise.names.plank'),
+    'burpees': t('exercise.names.burpees'),
+    'jumping jacks': t('exercise.names.jumpingJacks'),
+    'mountain climbers': t('exercise.names.mountainClimbers'),
+    'bicycle crunches': t('exercise.names.bicycleCrunches'),
+    'deadlifts': t('exercise.names.deadlifts'),
+    'bench press': t('exercise.names.benchPress'),
+    'shoulder press': t('exercise.names.shoulderPress'),
+  };
   
-  // English to Arabic (reverse mapping)
-  'Sit upright, grip the bar with a wide grip, pull the bar to your chest while moving your shoulders back': 'جلس مستقيماً، امسك البار بقبضة واسعة، اسحب البار للصدر مع تحريك الكتفين للخلف',
-  'With your torso bent forward, grip the bar and pull it toward your abdomen while keeping your back straight': 'مع انحناء الجذع للأمام، امسك البار واسحبه نحو البطن مع الحفاظ على استقامة الظهر',
-  'Lie face down, raise your body in a straight line and hold the position': 'استلق على الأرض ارفع جسمك بشكل مستقيم واستمر لفترة',
-  'Stand straight then lower as if sitting on a chair': 'قف مستقيماً ثم انزل كأنك تجلس على كرسي'
+  const lowerCaseName = exerciseName.toLowerCase();
+  return exerciseTranslations[lowerCaseName] || exerciseName;
 };
 
-export const translateExerciseContent = (exercise: any, targetLanguage: Language) => {
-  if (!exercise) return exercise;
-
-  const translatedExercise = { ...exercise };
-
-  // Translate exercise name
-  if (exercise.name) {
-    // Check for direct translation first
-    const directTranslation = exerciseNameTranslations[exercise.name];
-    if (directTranslation) {
-      translatedExercise.name = directTranslation;
-    } else {
-      // If no direct translation, check if we need to translate based on language detection
-      const isArabic = /[\u0600-\u06FF]/.test(exercise.name);
-      const needsTranslation = (targetLanguage === 'en' && isArabic) || (targetLanguage === 'ar' && !isArabic);
-      
-      if (needsTranslation) {
-        // Try to find a translation by checking all entries
-        const foundTranslation = Object.entries(exerciseNameTranslations).find(([key, value]) => {
-          return key.toLowerCase().includes(exercise.name.toLowerCase()) || 
-                 value.toLowerCase().includes(exercise.name.toLowerCase()) ||
-                 exercise.name.toLowerCase().includes(key.toLowerCase()) ||
-                 exercise.name.toLowerCase().includes(value.toLowerCase());
-        });
-        
-        if (foundTranslation) {
-          translatedExercise.name = targetLanguage === 'en' ? foundTranslation[1] : foundTranslation[0];
-        }
-      }
-    }
-  }
-
-  // Translate instructions
-  if (exercise.instructions) {
-    const directInstructionTranslation = instructionTranslations[exercise.instructions];
-    if (directInstructionTranslation) {
-      translatedExercise.instructions = directInstructionTranslation;
-    } else {
-      // Check if instructions need translation based on language detection
-      const isArabic = /[\u0600-\u06FF]/.test(exercise.instructions);
-      const needsTranslation = (targetLanguage === 'en' && isArabic) || (targetLanguage === 'ar' && !isArabic);
-      
-      if (needsTranslation) {
-        // Find partial matches for instructions
-        const foundInstructionTranslation = Object.entries(instructionTranslations).find(([key, value]) => {
-          return key.includes(exercise.instructions) || value.includes(exercise.instructions) ||
-                 exercise.instructions.includes(key) || exercise.instructions.includes(value);
-        });
-        
-        if (foundInstructionTranslation) {
-          translatedExercise.instructions = targetLanguage === 'en' ? foundInstructionTranslation[1] : foundInstructionTranslation[0];
-        }
-      }
-    }
-  }
-
-  // Translate YouTube search term to match the translated name
-  if (translatedExercise.name !== exercise.name) {
-    translatedExercise.youtube_search_term = translatedExercise.name;
-  }
-
-  console.log('🔤 Exercise Translation:', {
-    original: exercise.name,
-    translated: translatedExercise.name,
-    targetLanguage,
-    wasTranslated: exercise.name !== translatedExercise.name
-  });
-
-  return translatedExercise;
-};
-
-// Hook to get translated exercise content
-export const useTranslatedExercise = (exercise: any) => {
-  const { language } = useLanguage();
-  return translateExerciseContent(exercise, language);
-};
-
-// Utility to detect if text is Arabic
-export const isArabicText = (text: string): boolean => {
-  return /[\u0600-\u06FF]/.test(text);
-};
-
-// Utility to get exercise name in specific language
-export const getExerciseNameInLanguage = (exerciseName: string, targetLanguage: Language): string => {
-  const translation = exerciseNameTranslations[exerciseName];
-  if (translation) return translation;
+export const translateMuscleGroup = (muscleGroup: string): string => {
+  const { t } = useI18n();
   
-  // If no direct translation, return original name
-  return exerciseName;
+  const muscleGroupTranslations: Record<string, string> = {
+    'chest': t('exercise.muscleGroups.chest'),
+    'back': t('exercise.muscleGroups.back'),
+    'shoulders': t('exercise.muscleGroups.shoulders'),
+    'arms': t('exercise.muscleGroups.arms'),
+    'legs': t('exercise.muscleGroups.legs'),
+    'core': t('exercise.muscleGroups.core'),
+    'cardio': t('exercise.muscleGroups.cardio'),
+    'full body': t('exercise.muscleGroups.fullBody'),
+  };
+  
+  const lowerCaseGroup = muscleGroup.toLowerCase();
+  return muscleGroupTranslations[lowerCaseGroup] || muscleGroup;
+};
+
+export const translateEquipment = (equipment: string): string => {
+  const { t } = useI18n();
+  
+  const equipmentTranslations: Record<string, string> = {
+    'bodyweight': t('exercise.equipment.bodyweight'),
+    'dumbbells': t('exercise.equipment.dumbbells'),
+    'barbell': t('exercise.equipment.barbell'),
+    'resistance bands': t('exercise.equipment.resistanceBands'),
+    'yoga mat': t('exercise.equipment.yogaMat'),
+    'pull up bar': t('exercise.equipment.pullUpBar'),
+    'kettlebell': t('exercise.equipment.kettlebell'),
+  };
+  
+  const lowerCaseEquipment = equipment.toLowerCase();
+  return equipmentTranslations[lowerCaseEquipment] || equipment;
+};
+
+// New function to translate entire exercise content
+export const translateExerciseContent = (exercise: any, language: Language) => {
+  const { t } = useI18n();
+  
+  return {
+    ...exercise,
+    name: translateExerciseName(exercise.name),
+    instructions: exercise.instructions, // Keep original instructions for now
+    muscle_groups: exercise.muscle_groups?.map((muscle: string) => translateMuscleGroup(muscle)),
+    equipment: exercise.equipment ? translateEquipment(exercise.equipment) : exercise.equipment,
+    youtube_search_term: exercise.youtube_search_term || exercise.name
+  };
 };
