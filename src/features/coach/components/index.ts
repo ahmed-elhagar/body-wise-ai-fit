@@ -19,3 +19,7 @@ export { UserSearchDropdown } from './UserSearchDropdown';
 export { default as TraineeProgressCard } from './TraineeProgressCard';
 export { default as TraineeFilterBar } from './TraineeFilterBar';
 export { TraineeProgressView } from './TraineeProgressView';
+
+// New tab components
+export { default as CoachOverviewTab } from './CoachOverviewTab';
+export { default as CoachTasksTab } from './CoachTasksTab';

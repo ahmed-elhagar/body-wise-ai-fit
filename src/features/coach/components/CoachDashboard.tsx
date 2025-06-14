@@ -16,12 +16,13 @@ import { useCoachTasks } from "../hooks/useCoachTasks";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { 
   TraineesTab,
-  CoachTasksPanel,
   CoachAnalyticsTab,
   AssignTraineeDialog,
   CreateTaskDialog,
   CoachMessagesTab
 } from ".";
+import CoachOverviewTab from "./CoachOverviewTab";
+import CoachTasksTab from "./CoachTasksTab";
 
 export const CoachDashboard = () => {
   const { t } = useLanguage();
@@ -49,7 +50,7 @@ export const CoachDashboard = () => {
   
   const pendingTasks = tasks?.filter(task => !task.completed).length || 0;
   const overdueTasks = tasks?.filter(task => 
-    !task.completed && task.due_date && new Date(task.due_date) < new Date()
+    !task.completed && task.dueDate && new Date(task.dueDate) < new Date()
   ).length || 0;
 
   if (!isCoach) {
@@ -190,15 +191,11 @@ export const CoachDashboard = () => {
         </TabsList>
 
         <TabsContent value="overview" className="mt-6">
-          <div className="text-center py-12">
-            <TrendingUp className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              {t('Overview Dashboard')}
-            </h3>
-            <p className="text-gray-600">
-              {t('Comprehensive overview coming soon. Use the tabs above to manage your trainees, tasks, and messages.')}
-            </p>
-          </div>
+          <CoachOverviewTab 
+            trainees={trainees || []}
+            tasks={tasks || []}
+            totalUnreadMessages={totalUnreadMessages}
+          />
         </TabsContent>
 
         <TabsContent value="trainees" className="mt-6">
@@ -206,13 +203,12 @@ export const CoachDashboard = () => {
             trainees={trainees || []} 
             onChatClick={(traineeId) => {
               console.log('Opening chat for trainee:', traineeId);
-              // This will be handled by TraineesTab internally
             }}
           />
         </TabsContent>
 
         <TabsContent value="tasks" className="mt-6">
-          <CoachTasksPanel trainees={trainees || []} />
+          <CoachTasksTab trainees={trainees || []} />
         </TabsContent>
 
         <TabsContent value="messages" className="mt-6">

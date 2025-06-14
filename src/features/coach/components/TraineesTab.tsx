@@ -6,8 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Users, Grid, List, Plus, Settings } from "lucide-react";
 import TraineeProgressCard from "./TraineeProgressCard";
 import TraineeFilterBar from "./TraineeFilterBar";
-import CoachMetricsOverview from "./CoachMetricsOverview";
-import CoachTasksPanel from "./CoachTasksPanel";
 import { AssignTraineeDialog } from "./AssignTraineeDialog";
 import { CoachTraineeChat } from "./CoachTraineeChat";
 import { TraineeProgressView } from "./TraineeProgressView";
@@ -71,12 +69,6 @@ export const TraineesTab = ({ trainees, onChatClick }: TraineesTabProps) => {
   // Show main trainees management view
   return (
     <div className="space-y-6">
-      {/* Metrics Overview */}
-      <CoachMetricsOverview trainees={trainees} />
-      
-      {/* Tasks Panel - Full Width */}
-      <CoachTasksPanel trainees={trainees} className="w-full" />
-      
       {/* Main Content */}
       <Card>
         <CardHeader>
