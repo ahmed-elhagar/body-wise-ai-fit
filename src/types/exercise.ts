@@ -45,7 +45,6 @@ export interface Exercise {
   actual_reps?: string;
 }
 
-// Helper function to create mock exercises with required properties
 export const createMockExercise = (overrides: Partial<Exercise> = {}): Exercise => ({
   id: Math.random().toString(),
   daily_workout_id: 'mock-workout-id',

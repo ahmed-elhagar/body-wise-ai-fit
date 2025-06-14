@@ -1,5 +1,4 @@
 
-import { Card } from "@/components/ui/card";
 import { ExerciseListEnhanced } from "./ExerciseListEnhanced";
 import { RestDayCard } from "./RestDayCard";
 import { ExerciseEmptyState } from "./ExerciseEmptyState";
@@ -41,8 +40,6 @@ export const ExercisePageContent = ({
   onExerciseComplete,
   onExerciseProgressUpdate
 }: ExercisePageContentProps) => {
-  const { t } = useLanguage();
-
   if (isLoading) {
     return (
       <div className="p-6">
@@ -54,7 +51,6 @@ export const ExercisePageContent = ({
     );
   }
 
-  // Check if current program exists and if selected day is a rest day
   const selectedDayWorkout = currentProgram?.daily_workouts?.find(
     (workout: any) => workout.day_number === selectedDayNumber
   );

@@ -23,8 +23,8 @@ export { EmptyWeekState } from './EmptyWeekState';
 // State components
 export { default as LoadingState } from './LoadingState';
 export { default as ErrorState } from './ErrorState';
-export { MealPlanLoadingState } from './MealPlanLoadingState';
-export { MealPlanErrorState } from './MealPlanErrorState';
+export { default as MealPlanLoadingState } from './MealPlanLoadingState';
+export { default as MealPlanErrorState } from './MealPlanErrorState';
 
 // Navigation components
 export { DaySelector } from './DaySelector';

@@ -4,7 +4,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useOptimizedExerciseProgramPage } from "@/features/exercise/hooks/useOptimizedExerciseProgramPage";
 import { useEnhancedAIExercise } from "@/hooks/useEnhancedAIExercise";
 import { useAILoadingSteps } from "@/hooks/useAILoadingSteps";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { ExercisePageLayout } from "./ExercisePageLayout";
 import { ExerciseAnalyticsContainer } from "./ExerciseAnalyticsContainer";
 import { useExerciseAISteps } from "../hooks/useExerciseAISteps";
@@ -26,7 +26,6 @@ export const ExercisePageContainer = () => {
     setAiPreferences,
     currentProgram,
     isLoading,
-    todaysWorkouts,
     todaysExercises,
     completedExercises,
     totalExercises,
