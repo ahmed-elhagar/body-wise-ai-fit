@@ -1,28 +1,34 @@
 
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Loader2, Utensils } from "lucide-react";
+import React from 'react';
+import { UnifiedAILoadingDialog } from '@/components/ai/UnifiedAILoadingDialog';
 
 interface MealPlanAILoadingDialogProps {
   isGenerating: boolean;
   onClose: () => void;
-  position?: string;
+  position?: 'center' | 'top-right';
 }
 
-export const MealPlanAILoadingDialog = ({ isGenerating, onClose, position }: MealPlanAILoadingDialogProps) => {
+export const MealPlanAILoadingDialog = ({
+  isGenerating,
+  onClose,
+  position = 'center'
+}: MealPlanAILoadingDialogProps) => {
+  const steps = [
+    { label: 'Analyzing your preferences', duration: 2000 },
+    { label: 'Calculating nutritional requirements', duration: 2000 },
+    { label: 'Generating meal combinations', duration: 3000 },
+    { label: 'Optimizing for variety and balance', duration: 2000 },
+    { label: 'Finalizing your meal plan', duration: 1000 }
+  ];
+
   return (
-    <Dialog open={isGenerating} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
-        <div className="flex flex-col items-center space-y-4 py-6">
-          <div className="relative">
-            <Utensils className="w-12 h-12 text-primary" />
-            <Loader2 className="w-6 h-6 animate-spin absolute -top-1 -right-1 text-primary" />
-          </div>
-          <div className="text-center">
-            <h3 className="text-lg font-semibold">Generating Your Meal Plan</h3>
-            <p className="text-gray-600">Please wait while we create your personalized meals...</p>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+    <UnifiedAILoadingDialog
+      isOpen={isGenerating}
+      onClose={onClose}
+      title="Generating Your Meal Plan"
+      subtitle="Creating personalized meals just for you..."
+      steps={steps}
+      position={position}
+    />
   );
 };
