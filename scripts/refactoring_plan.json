@@ -1,3 +1,4 @@
+
 {
   "title": "FitFatta App Refactoring & Enhancement Plan",
   "version": "1.0",
@@ -19,16 +20,17 @@
             "Moved: useGoals",
             "Moved: useWeightTracking",
             "Moved: useWorkoutTimer",
-            "Moved: useWorkoutSession"
+            "Moved: useWorkoutSession",
+            "Moved: useDailyWorkouts to src/features/exercise/hooks/"
           ]
         },
         {
           "id": "P1T2",
           "description": "Move feature-specific components from `src/components` to `src/features/[feature]/components`.",
-          "status": "in-progress",
+          "status": "completed",
           "details": [
             "Moved: CompactWorkoutControl.tsx",
-            "Moved: ExerciseDaySelector.tsx",
+            "Moved: ExerciseDaySelector.tsx", 
             "Moved: ExerciseProgramWeekNavigation.tsx",
             "Moved: src/components/exercise/WorkoutTypeSelector.tsx",
             "Moved: src/components/exercise/ProgramTypeIndicator.tsx",
@@ -36,7 +38,8 @@
             "Moved: src/components/exercise/ExerciseProgramLoadingStates.tsx",
             "Moved: src/components/exercise/ExerciseProgramEmptyState.tsx",
             "Moved: src/components/exercise/WorkoutSummaryCard.tsx",
-            "Moved: src/components/exercise/TodaysWorkoutCard.tsx"
+            "Moved: src/components/exercise/TodaysWorkoutCard.tsx",
+            "Deleted: src/components/exercise directory (completely emptied and removed)"
           ]
         },
         {
@@ -49,7 +52,9 @@
           "description": "Move feature-specific services, types, and utils to their respective feature directories.",
           "status": "in-progress",
           "details": [
-            "Moved: exercise types"
+            "Moved: exercise types",
+            "Need to check: meal-plan services, types",
+            "Need to check: profile services, types"
           ]
         },
         {
@@ -76,7 +81,8 @@
             "Deleted: src/components/exercise/ExerciseEmptyState.tsx (re-export file)",
             "Deleted: src/components/exercise/ExerciseErrorState.tsx (re-export file)",
             "Deleted: src/components/exercise/ExerciseListEnhanced.tsx (re-export file)",
-            "Deleted: src/components/exercise directory (all components moved)"
+            "Deleted: src/components/exercise directory (completely removed)",
+            "Deleted: src/hooks/useDailyWorkouts.ts (moved to feature)"
           ]
         }
       ]
@@ -101,7 +107,7 @@
     {
       "id": 3,
       "name": "Phase 3: Performance & Scalability Boost",
-      "status": "pending",
+      "status": "pending", 
       "description": "Optimize application performance, and improve codebase scalability for future features."
     }
   ]

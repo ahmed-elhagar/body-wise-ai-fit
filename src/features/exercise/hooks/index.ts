@@ -1,4 +1,3 @@
-
 export * from './useExerciseActions';
 export * from './useExerciseFeature';
 export * from './useExerciseProgramData';
@@ -9,3 +8,4 @@ export * from './useOptimizedExerciseProgramPage';
 export * from './useCurrentWorkoutSummary';
 export * from './useWorkoutTimer';
 export * from './useWorkoutSession';
+export { useDailyWorkouts } from './useDailyWorkouts';
