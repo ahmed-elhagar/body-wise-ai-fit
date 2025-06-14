@@ -6,6 +6,7 @@ export { ExerciseSessionView } from './ExerciseSessionView';
 export { ExerciseListView } from './ExerciseListView';
 export { ExerciseListHeader } from './ExerciseListHeader';
 export { WorkoutTypeToggle } from './WorkoutTypeToggle';
+export { EnhancedWorkoutTypeToggle } from './EnhancedWorkoutTypeToggle';
 export { ExerciseProgramSelector } from './ExerciseProgramSelector';
 export { WorkoutTypeTabs } from './WorkoutTypeTabs';
 export { ExerciseErrorHandler } from './ExerciseErrorHandler';

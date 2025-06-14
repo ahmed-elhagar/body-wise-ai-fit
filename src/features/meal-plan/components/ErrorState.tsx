@@ -4,6 +4,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, RefreshCw, Home } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ErrorStateProps {
   error: Error;
@@ -12,6 +13,7 @@ interface ErrorStateProps {
 
 const ErrorState = ({ error, onRetry }: ErrorStateProps) => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const handleGoHome = () => {
     navigate('/dashboard');
@@ -23,9 +25,11 @@ const ErrorState = ({ error, onRetry }: ErrorStateProps) => {
         <AlertTriangle className="h-4 w-4 text-red-600" />
         <AlertDescription className="space-y-4">
           <div>
-            <p className="font-medium text-red-800">Unable to load meal plan</p>
+            <p className="font-medium text-red-800">
+              {t('mealPlan.unableToLoad') || 'Unable to load meal plan'}
+            </p>
             <p className="text-sm text-red-700 mt-1">
-              {error.message || 'An unexpected error occurred while loading your meal plan.'}
+              {error.message || t('mealPlan.unexpectedError') || 'An unexpected error occurred while loading your meal plan.'}
             </p>
           </div>
           
@@ -37,7 +41,7 @@ const ErrorState = ({ error, onRetry }: ErrorStateProps) => {
               className="w-full border-red-300 text-red-700 hover:bg-red-100"
             >
               <RefreshCw className="w-4 h-4 mr-2" />
-              Try Again
+              {t('common.tryAgain') || 'Try Again'}
             </Button>
             
             <Button 
@@ -47,12 +51,12 @@ const ErrorState = ({ error, onRetry }: ErrorStateProps) => {
               className="w-full text-red-600 hover:bg-red-100"
             >
               <Home className="w-4 h-4 mr-2" />
-              Go to Dashboard
+              {t('common.goToDashboard') || 'Go to Dashboard'}
             </Button>
           </div>
           
           <p className="text-xs text-red-600">
-            If this issue persists, try refreshing the page or check your internet connection.
+            {t('mealPlan.persistentIssue') || 'If this issue persists, try refreshing the page or check your internet connection.'}
           </p>
         </AlertDescription>
       </Alert>
