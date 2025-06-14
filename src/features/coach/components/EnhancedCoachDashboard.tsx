@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -28,7 +27,7 @@ import { CompactTasksPanel } from "@/components/coach/overview/CompactTasksPanel
 import { AssignTraineeDialog } from "@/components/coach/AssignTraineeDialog";
 import { CreateTaskDialog } from "@/components/coach/CreateTaskDialog";
 
-const EnhancedCoachDashboard = () => {
+export const EnhancedCoachDashboard = () => {
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState("overview");
   const [showAssignDialog, setShowAssignDialog] = useState(false);
@@ -259,5 +258,3 @@ const EnhancedCoachDashboard = () => {
     </div>
   );
 };
-
-export default EnhancedCoachDashboard;
