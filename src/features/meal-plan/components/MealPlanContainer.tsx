@@ -56,6 +56,14 @@ const MealPlanContainer = () => {
     await mealPlanState.setCurrentWeekOffset(offset);
   };
 
+  // Simple AI plan generation handler
+  const handleGenerateAI = async () => {
+    const success = await mealPlanState.handleGenerateAIPlan(mealPlanState.aiPreferences);
+    if (success) {
+      console.log('✅ AI plan generated successfully');
+    }
+  };
+
   // Determine what data to display
   const displayData = mealPlanState.currentWeekPlan || lastLoadedDataRef.current;
 
@@ -74,10 +82,10 @@ const MealPlanContainer = () => {
       <div className="space-y-6">
         {/* Header - Always visible */}
         <MealPlanHeader 
-          onGenerateAI={() => mealPlanState.openAIDialog()}
+          onGenerateAI={handleGenerateAI}
           onShuffle={handleShuffle}
           onShowShoppingList={() => mealPlanState.openShoppingListDialog()}
-          onRegeneratePlan={() => mealPlanState.openAIDialog()}
+          onRegeneratePlan={handleGenerateAI}
           isGenerating={mealPlanState.isGenerating}
           isShuffling={isShuffling}
           hasWeeklyPlan={!!displayData?.weeklyPlan}

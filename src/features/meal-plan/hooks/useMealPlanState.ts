@@ -16,7 +16,7 @@ export const useMealPlanState = () => {
     prepTime: '30',
     includeSnacks: true,
     duration: 'weekly',
-    maxPrepTime: 30,
+    maxPrepTime: '30', // Changed to string to match type
     mealTypes: ['breakfast', 'lunch', 'dinner']
   });
 
@@ -51,12 +51,7 @@ export const useMealPlanState = () => {
     setSelectedDayNumber,
   } = useMealPlanNavigation();
 
-  const {
-    dailyMeals,
-    totalCalories,
-    totalProtein,
-    targetDayCalories,
-  } = useCalorieCalculations(selectedDayNumber, currentWeekOffset);
+  const calorieCalculations = useCalorieCalculations(selectedDayNumber, currentWeekOffset);
 
   const {
     data: currentWeekPlan,
@@ -84,23 +79,25 @@ export const useMealPlanState = () => {
           credits: preferences.includeSnacks ? 15 : 10
         }
       );
+      return true;
     } catch (error) {
       console.error('Meal plan generation failed:', error);
+      return false;
     }
   }, [handleGenerateAIPlan, wrapAIOperation]);
 
   return {
     currentWeekPlan,
-    dailyMeals,
+    dailyMeals: calorieCalculations.dailyMeals,
     isLoading,
     error,
     refetch,
     isGenerating,
     handleGenerateAIPlan: handleGenerateAIPlanWithPreferences,
     selectedDayNumber,
-    totalCalories,
-    totalProtein,
-    targetDayCalories,
+    totalCalories: calorieCalculations.totalCalories,
+    totalProtein: calorieCalculations.totalProtein,
+    targetDayCalories: calorieCalculations.targetDayCalories,
     weekStartDate,
     currentWeekOffset,
     setCurrentWeekOffset,
