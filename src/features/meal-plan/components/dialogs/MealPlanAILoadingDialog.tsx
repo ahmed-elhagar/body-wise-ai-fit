@@ -1,7 +1,7 @@
 
 import { UnifiedAILoadingDialog } from "@/components/ai/UnifiedAILoadingDialog";
-import { useAILoadingSteps } from "@/features/meal-plan/hooks/useAILoadingSteps";
-import { useState, useEffect } from "react";
+import { useAILoadingSteps } from "@/hooks/useAILoadingSteps";
+import type { AIStep } from "@/components/ai/AILoadingSteps";
 
 interface MealPlanAILoadingDialogProps {
   isGenerating: boolean;
@@ -9,29 +9,30 @@ interface MealPlanAILoadingDialogProps {
   position?: string;
 }
 
-export const MealPlanAILoadingDialog = ({ isGenerating, onClose, position = "center" }: MealPlanAILoadingDialogProps) => {
-  const { steps, currentStepIndex, nextStep, resetSteps } = useAILoadingSteps();
+const mealPlanSteps: AIStep[] = [
+  { id: 'analyze', label: 'Analyzing your profile...', estimatedDuration: 3 },
+  { id: 'nutrition', label: 'Calculating nutritional needs...', estimatedDuration: 3 },
+  { id: 'generate', label: 'Creating personalized recipes...', estimatedDuration: 4 },
+  { id: 'balance', label: 'Balancing meal nutrients...', estimatedDuration: 3 },
+  { id: 'finalize', label: 'Finalizing your meal plan...', estimatedDuration: 2 },
+];
 
-  // Auto-progress through steps for demo purposes
-  useEffect(() => {
-    if (isGenerating) {
-      resetSteps();
-      const interval = setInterval(() => {
-        nextStep();
-      }, 3000);
-      return () => clearInterval(interval);
-    }
-  }, [isGenerating, nextStep, resetSteps]);
+export const MealPlanAILoadingDialog = ({ isGenerating, onClose, position = "center" }: MealPlanAILoadingDialogProps) => {
+  const { currentStepIndex, isComplete } = useAILoadingSteps(
+    mealPlanSteps,
+    isGenerating
+  );
 
   return (
     <UnifiedAILoadingDialog
       isOpen={isGenerating}
       onClose={onClose}
-      title="Generating Your Meal Plan"
-      description="Please wait while we create your personalized meals..."
-      steps={steps}
+      title={isComplete ? "Meal Plan Ready!" : "Generating Your Meal Plan"}
+      description={isComplete ? "Your plan has been successfully created." : "Please wait while we create your personalized meals..."}
+      steps={mealPlanSteps}
       currentStepIndex={currentStepIndex}
       position={position as "center" | "top-right"}
     />
   );
 };
+
