@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,7 +15,7 @@ import {
   Trophy
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Exercise } from '@/features/exercise';
+import { Exercise } from '../types';
 
 interface WorkoutSessionManagerProps {
   exercises: Exercise[];
@@ -48,7 +49,7 @@ export const WorkoutSessionManager = ({
 
   const completedExercises = exercises.filter(ex => ex.completed).length;
   const totalExercises = exercises.length;
-  const sessionProgress = (completedExercises / totalExercises) * 100;
+  const sessionProgress = totalExercises > 0 ? (completedExercises / totalExercises) * 100 : 0;
 
   const startSession = () => {
     setIsSessionActive(true);
