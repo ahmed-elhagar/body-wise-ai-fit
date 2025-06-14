@@ -1,5 +1,5 @@
 
-import { ExerciseProgram, DailyWorkout } from '@/types/exercise';
+import { ExerciseProgram, DailyWorkout } from '@/features/exercise/types';
 
 export class ExerciseDataService {
   static calculateProgress(exercises: any[]): {

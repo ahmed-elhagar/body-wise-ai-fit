@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useI18n } from '@/hooks/useI18n';
 import { addDays, startOfWeek, format } from 'date-fns';
 import { ExerciseProgram } from '@/features/exercise';
-import { generateWeeklyWorkouts } from '@/utils/exerciseDataUtils';
+import { generateWeeklyWorkouts } from '@/features/exercise/utils/exerciseDataUtils';
 
 export const useExerciseProgramQuery = (weekOffset: number = 0, workoutType: "home" | "gym" = "home") => {
   const { user } = useAuth();
