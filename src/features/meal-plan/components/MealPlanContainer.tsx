@@ -59,7 +59,7 @@ const MealPlanContainer = () => {
 
   // Use EnhancedPageLoading for a better initial loading experience
   if (mealPlanState.isLoading && !displayData) {
-    return <EnhancedPageLoading estimatedTime={3} />;
+    return <EnhancedPageLoading estimatedTime={3} pageTheme="meal-plan" />;
   }
 
   return (

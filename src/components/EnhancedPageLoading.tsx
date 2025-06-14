@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import MotivationalContent from "./loading/MotivationalContent";
 import MealPlanMotivationalContent from "@/features/meal-plan/components/loading/MealPlanMotivationalContent";
@@ -8,22 +7,15 @@ interface EnhancedPageLoadingProps {
   description?: string;
   estimatedTime?: number;
   className?: string;
+  pageTheme?: 'default' | 'meal-plan';
 }
 
 const EnhancedPageLoading = ({ 
   estimatedTime = 5,
-  className = ""
+  className = "",
+  pageTheme = 'default'
 }: EnhancedPageLoadingProps) => {
   const [progress, setProgress] = useState(0);
-  const [pageTheme, setPageTheme] = useState<'default' | 'meal-plan'>('default');
-
-  useEffect(() => {
-    if (window.location.pathname.includes('/meal-plan')) {
-      setPageTheme('meal-plan');
-    } else {
-      setPageTheme('default');
-    }
-  }, []);
 
   useEffect(() => {
     if (progress >= 100) return;
