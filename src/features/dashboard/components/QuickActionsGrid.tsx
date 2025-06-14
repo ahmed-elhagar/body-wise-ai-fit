@@ -93,12 +93,12 @@ const QuickActionsGrid = ({ profile, mealPlans, programs }: QuickActionsGridProp
         return (
           <Card 
             key={index}
-            className="group hover:shadow-2xl transition-all duration-500 border-0 bg-white/90 backdrop-blur-sm hover:bg-white hover:scale-[1.02] cursor-pointer overflow-hidden relative"
+            className="group hover:shadow-2xl transition-all duration-500 border-0 bg-white/90 backdrop-blur-sm hover:bg-white hover:scale-[1.02] cursor-pointer overflow-hidden relative rounded-2xl"
             onClick={action.action}
           >
             {/* Gradient border effect */}
-            <div className={`absolute inset-0 bg-gradient-to-br ${action.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl`}>
-              <div className="absolute inset-[1px] bg-white rounded-xl" />
+            <div className={`absolute inset-0 bg-gradient-to-br ${action.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl`}>
+              <div className="absolute inset-[1px] bg-white rounded-2xl" />
             </div>
             
             <CardContent className="relative p-6 z-10">

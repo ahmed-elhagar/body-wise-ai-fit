@@ -1,6 +1,5 @@
 
 import { Card } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useProfile } from "@/hooks/useProfile";
 import { useWeightTracking } from "@/hooks/useWeightTracking";
@@ -75,87 +74,76 @@ const EnhancedStatsGrid = () => {
     switch (color) {
       case 'orange':
         return {
-          bg: 'bg-orange-50',
-          border: 'border-orange-200',
+          text: 'text-orange-600',
           icon: 'from-orange-500 to-red-500',
-          progress: 'bg-orange-500'
+          progress: 'bg-gradient-to-r from-orange-400 to-red-500'
         };
       case 'blue':
         return {
-          bg: 'bg-blue-50',
-          border: 'border-blue-200',
+          text: 'text-blue-600',
           icon: 'from-blue-500 to-cyan-500',
-          progress: 'bg-blue-500'
+          progress: 'bg-gradient-to-r from-blue-400 to-cyan-500'
         };
       case 'purple':
         return {
-          bg: 'bg-purple-50',
-          border: 'border-purple-200',
+          text: 'text-purple-600',
           icon: 'from-purple-500 to-indigo-500',
-          progress: 'bg-purple-500'
+          progress: 'bg-gradient-to-r from-purple-400 to-indigo-500'
         };
       case 'green':
         return {
-          bg: 'bg-green-50',
-          border: 'border-green-200',
+          text: 'text-green-600',
           icon: 'from-green-500 to-emerald-500',
-          progress: 'bg-green-500'
+          progress: 'bg-gradient-to-r from-green-400 to-emerald-500'
         };
       default:
         return {
-          bg: 'bg-gray-50',
-          border: 'border-gray-200',
+          text: 'text-gray-600',
           icon: 'from-gray-500 to-gray-600',
-          progress: 'bg-gray-500'
+          progress: 'bg-gradient-to-r from-gray-400 to-gray-500'
         };
     }
   };
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       {stats.map((stat, index) => {
         const IconComponent = stat.icon;
         const colors = getColorClasses(stat.color);
 
         return (
-          <Card key={index} className={`relative overflow-hidden ${colors.bg} border ${colors.border} shadow-md hover:shadow-lg transition-all duration-200 rounded-xl p-3`}>
-            {/* Content */}
-            <div className="relative">
-              {/* Header */}
-              <div className={`flex items-center justify-between mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                <div className={`w-8 h-8 bg-gradient-to-br ${colors.icon} rounded-lg flex items-center justify-center shadow-sm`}>
-                  <IconComponent className="w-4 h-4 text-white" />
+          <Card key={index} className="relative overflow-hidden bg-white/90 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl">
+            <div className="p-5">
+              <div className={`flex items-start justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-gray-500">
+                    {stat.title}
+                  </p>
+                  <div className="flex items-baseline gap-2">
+                    <span className={`text-3xl font-bold ${colors.text}`}>
+                      {stat.value}
+                    </span>
+                    <span className="text-sm font-medium text-gray-600">
+                      {stat.unit}
+                    </span>
+                  </div>
+                </div>
+                <div className={`w-12 h-12 bg-gradient-to-br ${colors.icon} rounded-xl flex items-center justify-center shadow-lg`}>
+                  <IconComponent className="w-6 h-6 text-white" />
                 </div>
               </div>
 
-              {/* Value */}
-              <div className={`mb-2 ${isRTL ? 'text-right' : 'text-left'}`}>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-xl font-bold text-gray-800">
-                    {stat.value}
-                  </span>
-                  <span className="text-xs font-medium text-gray-600">
-                    {stat.unit}
-                  </span>
+              <div className="mt-4 space-y-2">
+                <div className="flex justify-between items-center text-xs text-gray-500">
+                   <span>{t('Goal')}: {stat.target}</span>
+                   <span>{`${Math.round(stat.progress)}%`}</span>
                 </div>
-              </div>
-
-              {/* Progress */}
-              <div className="mb-2">
-                <Progress 
-                  value={stat.progress} 
-                  className="h-1.5 bg-gray-200"
-                />
-              </div>
-
-              {/* Title & Target */}
-              <div>
-                <p className="text-xs font-semibold text-gray-700 mb-1">
-                  {stat.title}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {stat.target}
-                </p>
+                <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                  <div
+                    className={`h-2 rounded-full ${colors.progress}`}
+                    style={{ width: `${Math.min(stat.progress, 100)}%` }}
+                  ></div>
+                </div>
               </div>
             </div>
           </Card>
