@@ -6,3 +6,4 @@ export { useExerciseProgramQuery } from './useExerciseProgramQuery';
 export { useExerciseProgramData } from './useExerciseProgramData';
 export { useExerciseActions } from './useExerciseActions';
 export { useExerciseFeature } from './useExerciseFeature';
+export { useExerciseAISteps } from './useExerciseAISteps';

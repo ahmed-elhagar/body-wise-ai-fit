@@ -1,9 +1,8 @@
+
 // Export all exercise components for barrel imports
 export { ExercisePageContainer } from './components/ExercisePageContainer';
 export { ExercisePageLayout } from './components/ExercisePageLayout';
 export { useExerciseAISteps } from './hooks/useExerciseAISteps';
-
-// Export all exercise components for barrel imports
 export { EnhancedDayNavigation } from './components/EnhancedDayNavigation';
 export { ExercisePageContent } from './components/ExercisePageContent';
 export { ExerciseErrorState } from './components/ExerciseErrorState';

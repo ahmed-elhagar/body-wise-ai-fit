@@ -1,8 +1,7 @@
-
 import { useEffect, useState, useRef } from 'react';
 import { useAuth } from './useAuth';
 import { useProfile } from './useProfile';
-import { useAIMealPlan } from './useAIMealPlan';
+import { useEnhancedMealPlan } from './useEnhancedMealPlan';
 import { useAIExercise } from './useAIExercise';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,7 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 export const useInitialAIGeneration = () => {
   const { user } = useAuth();
   const { profile } = useProfile();
-  const { generateMealPlan, isGenerating: isMealPlanGenerating } = useAIMealPlan();
+  const { generateMealPlan, isGenerating: isMealPlanGenerating } = useEnhancedMealPlan();
   const { generateExerciseProgram, isGenerating: isExerciseGenerating } = useAIExercise();
   const [hasTriggeredGeneration, setHasTriggeredGeneration] = useState(false);
   const [isGeneratingContent, setIsGeneratingContent] = useState(false);
