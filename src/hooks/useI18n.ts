@@ -13,9 +13,16 @@ export const useI18n = () => {
     document.documentElement.lang = language;
     localStorage.setItem('preferred-language', language);
   };
+
+  const tFrom = (namespace: string) => {
+    return (key: string, fallback?: string) => {
+      return t(`${namespace}.${key}`, fallback || key);
+    };
+  };
   
   return {
     t,
+    tFrom,
     isRTL,
     currentLanguage,
     changeLanguage,
