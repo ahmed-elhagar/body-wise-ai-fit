@@ -41,7 +41,7 @@
 - Update imports in: `src/pages/Dashboard.tsx`
 
 ### Cleanup Targets:
-- [ ] Remove `src/components/DebugPanel.tsx`
+- [x] Remove `src/components/DebugPanel.tsx`
 - [ ] Remove `src/components/SubscriptionDebugPanel.tsx`
 - [ ] Remove `src/utils/seedBasicFoods.ts`
 - [ ] Clean up unused imports across all files
