@@ -8,5 +8,4 @@ export { default as ActivityFeed } from './ActivityFeed';
 export { DashboardAchievements } from './DashboardAchievements';
 export { default as EnhancedStatsGrid } from './EnhancedStatsGrid';
 export { default as GoalProgressWidget } from './GoalProgressWidget';
-export { default as NotificationWidget } from './NotificationWidget';
 export { default as WeightTrackingWidget } from './WeightTrackingWidget';
