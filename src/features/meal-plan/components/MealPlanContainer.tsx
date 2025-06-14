@@ -1,22 +1,16 @@
-
 import React, { useState, useRef } from 'react';
 import { useMealPlanState } from '../hooks/useMealPlanState';
 import MealPlanHeader from './MealPlanHeader';
 import { MealPlanContent } from './MealPlanContent';
 import ErrorState from './ErrorState';
-import LoadingState from './LoadingState';
 import { useEnhancedMealShuffle } from '../hooks';
 import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { MealPlanViewToggle } from './MealPlanViewToggle';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { formatWeekRange, getDayName } from '@/utils/mealPlanUtils';
-import { MealExchangeDialog } from './dialogs/MealExchangeDialog';
-import { AIGenerationDialog } from './dialogs/AIGenerationDialog';
-import { EnhancedRecipeDialog } from './EnhancedRecipeDialog';
-import EnhancedAddSnackDialog from './dialogs/EnhancedAddSnackDialog';
-import ModernShoppingListDrawer from '@/components/shopping-list/ModernShoppingListDrawer';
-import { MealPlanAILoadingDialog } from './dialogs/MealPlanAILoadingDialog';
+import MealPlanDialogManager from './MealPlanDialogManager';
+import EnhancedPageLoading from '@/components/EnhancedPageLoading';
 
 const MealPlanContainer = () => {
   const mealPlanState = useMealPlanState();
@@ -63,9 +57,9 @@ const MealPlanContainer = () => {
     return <ErrorState error={mealPlanState.error} onRetry={mealPlanState.refetch} />;
   }
 
-  // Only show full loading state on initial load (no existing data)
+  // Use EnhancedPageLoading for a better initial loading experience
   if (mealPlanState.isLoading && !displayData) {
-    return <LoadingState />;
+    return <EnhancedPageLoading estimatedTime={3} />;
   }
 
   return (
@@ -185,64 +179,9 @@ const MealPlanContainer = () => {
         </div>
       </div>
 
-      {/* AI Loading Dialog - Step-by-step loading experience - Now using top-right position */}
-      <MealPlanAILoadingDialog 
-        isGenerating={mealPlanState.isGenerating}
-        onClose={() => mealPlanState.refetch()}
-        position="top-right"
-      />
-
-      {/* Modern Shopping List Drawer - Fixed to use the correct enhanced version */}
-      <ModernShoppingListDrawer
-        isOpen={mealPlanState.showShoppingListDialog}
-        onClose={() => mealPlanState.closeShoppingListDialog()}
-        weeklyPlan={mealPlanState.currentWeekPlan}
-        weekId={mealPlanState.currentWeekPlan?.weeklyPlan?.id}
-        onShoppingListUpdate={() => {
-          console.log('🛒 Shopping list updated');
-          mealPlanState.refetch();
-        }}
-      />
-
-      {/* AI Generation Dialog */}
-      <AIGenerationDialog
-        open={mealPlanState.showAIDialog}
-        onClose={() => mealPlanState.closeAIDialog()}
-        preferences={mealPlanState.aiPreferences}
-        onPreferencesChange={mealPlanState.updateAIPreferences}
-        onGenerate={mealPlanState.handleGenerateAIPlan}
-        isGenerating={mealPlanState.isGenerating}
+      <MealPlanDialogManager
+        mealPlanState={mealPlanState}
         hasExistingPlan={!!displayData?.weeklyPlan}
-      />
-
-      {/* Enhanced Add Snack Dialog */}
-      <EnhancedAddSnackDialog
-        isOpen={mealPlanState.showAddSnackDialog}
-        onClose={() => mealPlanState.closeAddSnackDialog()}
-        selectedDay={mealPlanState.selectedDayNumber}
-        currentDayCalories={mealPlanState.totalCalories}
-        targetDayCalories={mealPlanState.targetDayCalories}
-        weeklyPlanId={mealPlanState.currentWeekPlan?.weeklyPlan?.id}
-        onSnackAdded={() => mealPlanState.refetch()}
-      />
-
-      {/* Enhanced Meal Exchange Dialog - Our latest implementation */}
-      <MealExchangeDialog
-        isOpen={mealPlanState.showExchangeDialog}
-        onClose={() => mealPlanState.closeExchangeDialog()}
-        meal={mealPlanState.selectedMeal}
-        onExchangeComplete={() => {
-          mealPlanState.refetch();
-          mealPlanState.closeExchangeDialog();
-        }}
-      />
-
-      {/* Enhanced Recipe Dialog */}
-      <EnhancedRecipeDialog
-        isOpen={mealPlanState.showRecipeDialog}
-        onClose={() => mealPlanState.closeRecipeDialog()}
-        meal={mealPlanState.selectedMeal}
-        onRecipeUpdated={() => mealPlanState.refetch()}
       />
     </>
   );

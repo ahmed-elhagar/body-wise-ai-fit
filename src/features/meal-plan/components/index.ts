@@ -7,6 +7,7 @@ export { MealPlanViewToggle } from './MealPlanViewToggle';
 export { default as MealPlanLoadingBackdrop } from './MealPlanLoadingBackdrop';
 export { default as MealPlanPageTitle } from './MealPlanPageTitle';
 export { default as MealPlanEmptyState } from './MealPlanEmptyState';
+export { default as MealPlanDialogManager } from './MealPlanDialogManager';
 
 // Core meal plan components
 export { default as DayOverview } from './DayOverview';
