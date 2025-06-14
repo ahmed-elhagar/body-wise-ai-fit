@@ -31,6 +31,10 @@ const CompactDailyView = ({
 }: CompactDailyViewProps) => {
   const { t, isRTL } = useLanguage();
 
+  // Calculate missing nutrition values
+  const totalCarbs = todaysMeals.reduce((sum, meal) => sum + (meal.carbs || 0), 0);
+  const totalFat = todaysMeals.reduce((sum, meal) => sum + (meal.fat || 0), 0);
+
   // Group meals by type
   const mealsByType = todaysMeals.reduce((acc, meal, index) => {
     const type = meal.meal_type || 'meal';
@@ -73,6 +77,8 @@ const CompactDailyView = ({
       <DailyNutritionSummary
         totalCalories={totalCalories}
         totalProtein={totalProtein}
+        totalCarbs={totalCarbs}
+        totalFat={totalFat}
         onShowShoppingList={onShowShoppingList}
         onAddSnack={onAddSnack}
       />
@@ -124,7 +130,6 @@ const CompactDailyView = ({
                 <CompactMealCard
                   key={`${meal.id}-${meal.originalIndex}`}
                   meal={meal}
-                  index={mealIndex}
                   mealType={mealType}
                   onShowRecipe={() => onShowRecipe(meal)}
                   onExchangeMeal={() => onExchangeMeal(meal, meal.originalIndex)}

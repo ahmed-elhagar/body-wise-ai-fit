@@ -8,6 +8,7 @@ export const useSubscription = () => {
   return {
     subscription,
     isLoading,
-    isPro: false
+    isPro: false,
+    isProMember: false
   };
 };
