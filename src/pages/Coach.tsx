@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Users, Star } from "lucide-react";
 import { useRole } from "@/hooks/useRole";
 import { Navigate } from "react-router-dom";
-import EnhancedCoachDashboard from "@/components/coach/EnhancedCoachDashboard";
+import { EnhancedCoachDashboard } from "@/features/coach/components/EnhancedCoachDashboard";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const Coach = () => {

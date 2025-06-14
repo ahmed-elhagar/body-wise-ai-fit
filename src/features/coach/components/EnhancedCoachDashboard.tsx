@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -18,14 +19,14 @@ import { useCoachSystem } from "@/hooks/useCoachSystem";
 import { useCoachTasks } from "@/hooks/useCoachTasks";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { TraineesTab } from "./TraineesTab";
-import CoachTasksPanel from "./CoachTasksPanel";
-import { CoachMessagesTab } from "./CoachMessagesTab";
-import { CoachAnalyticsTab } from "./CoachAnalyticsTab";
-import { TraineeProgressOverview } from "./overview/TraineeProgressOverview";
-import { QuickActions } from "./overview/QuickActions";
-import { CompactTasksPanel } from "./overview/CompactTasksPanel";
-import { AssignTraineeDialog } from "./AssignTraineeDialog";
-import { CreateTaskDialog } from "./CreateTaskDialog";
+import CoachTasksPanel from "@/components/coach/CoachTasksPanel";
+import { CoachMessagesTab } from "@/components/coach/CoachMessagesTab";
+import { CoachAnalyticsTab } from "@/components/coach/CoachAnalyticsTab";
+import { TraineeProgressOverview } from "@/components/coach/overview/TraineeProgressOverview";
+import { QuickActions } from "@/components/coach/overview/QuickActions";
+import { CompactTasksPanel } from "@/components/coach/overview/CompactTasksPanel";
+import { AssignTraineeDialog } from "@/components/coach/AssignTraineeDialog";
+import { CreateTaskDialog } from "@/components/coach/CreateTaskDialog";
 
 const EnhancedCoachDashboard = () => {
   const { t } = useLanguage();

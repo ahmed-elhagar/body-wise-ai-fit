@@ -5,9 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Users, MessageCircle, Target, UserPlus, ArrowLeft, AlertCircle } from "lucide-react";
 import { useI18n } from "@/hooks/useI18n";
 import { useState } from "react";
-import { AssignTraineeDialog } from "./AssignTraineeDialog";
-import { CoachTraineeChat } from "./CoachTraineeChat";
-import { TraineeProgressView } from "./TraineeProgressView";
+import { AssignTraineeDialog } from "@/components/coach/AssignTraineeDialog";
+import { CoachTraineeChat } from "@/components/coach/CoachTraineeChat";
+import { TraineeProgressView } from "@/components/coach/TraineeProgressView";
 import { useUnreadMessagesByTrainee } from "@/hooks/useUnreadMessages";
 import { toast } from "sonner";
 
