@@ -18,7 +18,7 @@ import {
   Clock,
   Dumbbell
 } from "lucide-react";
-import { useWorkoutSession } from "@/hooks/useWorkoutSession";
+import { useWorkoutSession } from "@/features/exercise/hooks";
 
 interface CompactWorkoutControlProps {
   exercises: any[];

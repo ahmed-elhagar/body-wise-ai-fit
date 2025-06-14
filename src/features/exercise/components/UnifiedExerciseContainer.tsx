@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { InteractiveExerciseCard, RestDayCard, AnimatedProgressRing } from "./index";
-import { useWorkoutSession } from "@/hooks/useWorkoutSession";
+import { useWorkoutSession } from "@/features/exercise/hooks";
 
 interface UnifiedExerciseContainerProps {
   exercises: any[];

@@ -18,7 +18,7 @@ import {
   Clock,
   Calendar
 } from "lucide-react";
-import { useWorkoutSession } from "@/hooks/useWorkoutSession";
+import { useWorkoutSession } from "@/features/exercise/hooks";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface AdvancedWorkoutSessionProps {
