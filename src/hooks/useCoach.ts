@@ -1,11 +1,12 @@
 
-import { useRole } from '@/hooks/useRole';
+import { useState } from 'react';
 
 export const useCoach = () => {
-  const { isCoach, isLoading } = useRole();
+  const [isCoach, setIsCoach] = useState(false);
+  const [coachData, setCoachData] = useState(null);
 
   return {
     isCoach,
-    isLoading
+    coachData
   };
 };

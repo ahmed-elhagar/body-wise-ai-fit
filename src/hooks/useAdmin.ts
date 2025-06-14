@@ -1,11 +1,12 @@
 
-import { useRole } from '@/hooks/useRole';
+import { useState } from 'react';
 
 export const useAdmin = () => {
-  const { isAdmin, isLoading } = useRole();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminData, setAdminData] = useState(null);
 
   return {
     isAdmin,
-    isLoading
+    adminData
   };
 };

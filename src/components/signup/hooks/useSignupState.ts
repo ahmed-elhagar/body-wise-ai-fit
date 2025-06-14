@@ -1,219 +1,97 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import { SignupFormData } from '../types';
 
-import { useState, useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { useProfile } from "@/hooks/useProfile";
-import { SignupFormData } from "../types";
-import { mapBodyFatToBodyShape, isValidBodyShape } from "@/utils/signupValidation";
+const totalSteps = 4;
 
-const STORAGE_KEY = "fitfatta_signup_progress";
+interface UseSignupState {
+  currentStep: number;
+  formData: SignupFormData;
+  isLoading: boolean;
+  error: string | null;
+  goToNextStep: () => void;
+  goToPrevStep: () => void;
+  updateField: (field: keyof SignupFormData, value: any) => void;
+  handleSubmit: () => Promise<void>;
+}
 
-export const useSignupState = () => {
-  const { user, signUp } = useAuth();
-  const { profile, updateProfile } = useProfile();
-  
+export const useSignupState = (): UseSignupState => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
-  const [accountCreated, setAccountCreated] = useState(false);
-  
   const [formData, setFormData] = useState<SignupFormData>({
-    firstName: "",
-    lastName: "",
-    email: "",
-    password: "",
-    age: "",
-    gender: "",
-    height: "",
-    weight: "",
-    nationality: "",
-    bodyFatPercentage: 20,
-    bodyShape: "",
-    fitnessGoal: "",
-    activityLevel: "",
-    healthConditions: [],
-    allergies: [],
-    preferredFoods: [],
-    dietaryRestrictions: [],
-    specialConditions: []
+    email: '',
+    password: '',
+    age: 0,
+    gender: '',
+    height: 0,
+    weight: 0,
+    activity_level: '',
+    health_goal: '',
+    bodyFatPercentage: 0,
+    bodyShape: '',
+    dietary_preferences: [],
+    food_allergies: [],
+    special_conditions: []
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { signUp, updateProfile } = useAuth();
+  const navigate = useNavigate();
 
-  // Load saved progress on mount
-  useEffect(() => {
-    const savedProgress = localStorage.getItem(STORAGE_KEY);
-    if (savedProgress) {
-      try {
-        const parsed = JSON.parse(savedProgress);
-        setFormData(prev => ({ ...prev, ...parsed.formData }));
-        setCurrentStep(parsed.currentStep || 1);
-        setAccountCreated(parsed.accountCreated || false);
-      } catch (error) {
-        console.error("Failed to load signup progress:", error);
-      }
-    }
-  }, []);
+  const goToNextStep = () => {
+    setCurrentStep(prevStep => Math.min(prevStep + 1, totalSteps));
+  };
 
-  // Save progress whenever form data or step changes
-  useEffect(() => {
-    if (currentStep > 1 || accountCreated) {
-      const progressData = {
-        formData,
-        currentStep,
-        accountCreated,
-        timestamp: Date.now()
-      };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(progressData));
-    }
-  }, [formData, currentStep, accountCreated]);
+  const goToPrevStep = () => {
+    setCurrentStep(prevStep => Math.max(prevStep - 1, 1));
+  };
 
   const updateField = (field: keyof SignupFormData, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prevData => ({
+      ...prevData,
+      [field]: value,
+    }));
   };
 
-  const handleArrayInput = (field: keyof SignupFormData, value: string) => {
-    const arrayValue = value
-      .split(/[,\n]/)
-      .map(item => item.trim())
-      .filter(Boolean);
-    
-    setFormData(prev => ({ ...prev, [field]: arrayValue }));
-  };
-
-  const createAccount = async () => {
-    setIsLoading(true);
+  const handleSubmit = async () => {
     try {
-      console.log('Creating account for:', formData.email);
-      const result = await signUp(formData.email, formData.password, {
-        first_name: formData.firstName.trim(),
-        last_name: formData.lastName.trim()
-      });
-
-      console.log('SignUp result:', result);
-
-      // Check for errors more thoroughly
-      if (result?.error) {
-        console.error('Signup error details:', result.error);
-        
-        // Handle specific error cases - improved detection
-        const errorMessage = result.error.message || '';
-        const errorCode = result.error.code || '';
-        const errorStatus = result.error.status || 0;
-        
-        // Check for various "user exists" error patterns
-        if (errorStatus === 422 || 
-            errorCode === 'user_already_exists' ||
-            errorMessage.toLowerCase().includes('user already registered') || 
-            errorMessage.toLowerCase().includes('already registered') || 
-            errorMessage.toLowerCase().includes('user already exists') ||
-            errorMessage.toLowerCase().includes('already exists') ||
-            errorMessage.toLowerCase().includes('email already in use') ||
-            errorMessage.toLowerCase().includes('duplicate')) {
-          // Throw a specific error that the component can catch
-          const userExistsError = new Error('USER_ALREADY_EXISTS');
-          userExistsError.name = 'UserExistsError';
-          throw userExistsError;
-        }
-        
-        // Throw the original error message for other cases
-        throw new Error(errorMessage || 'Account creation failed');
+      setIsLoading(true);
+      
+      // Create account
+      const authResult = await signUp(formData.email, formData.password);
+      
+      if (!authResult) {
+        throw new Error('Failed to create account');
       }
 
-      // If we get here, account creation was successful
-      console.log('Account created successfully');
-      setAccountCreated(true);
-      return { success: true };
+      // Update profile
+      const profileResult = await updateProfile({
+        ...formData,
+        onboarding_completed: true
+      });
+
+      if (!profileResult) {
+        throw new Error('Failed to update profile');
+      }
+
+      setCurrentStep(totalSteps);
+      
     } catch (error: any) {
-      console.error('Account creation error in hook:', error);
-      // Re-throw the error so the component can handle it
-      throw error;
+      console.error('Signup error:', error);
+      setError(error?.message || 'An error occurred during signup');
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const completeProfile = async () => {
-    if (!accountCreated && !user) {
-      return { success: false, error: "Account not created yet" };
-    }
-
-    setIsLoading(true);
-    try {
-      // Ensure body shape is set based on body fat percentage and gender
-      const calculatedBodyShape = mapBodyFatToBodyShape(formData.bodyFatPercentage, formData.gender);
-      
-      // Validate that the body shape is correct
-      if (!isValidBodyShape(calculatedBodyShape)) {
-        console.error('Invalid body shape calculated:', calculatedBodyShape);
-        throw new Error('Invalid body shape value');
-      }
-
-      console.log('🔍 Profile completion data preparation:', {
-        bodyFatPercentage: formData.bodyFatPercentage,
-        gender: formData.gender,
-        calculatedBodyShape,
-        isValidShape: isValidBodyShape(calculatedBodyShape)
-      });
-
-      const profileData = {
-        first_name: formData.firstName.trim(),
-        last_name: formData.lastName.trim(),
-        age: parseInt(formData.age),
-        gender: formData.gender,
-        height: parseFloat(formData.height),
-        weight: parseFloat(formData.weight),
-        nationality: formData.nationality.trim(),
-        fitness_goal: formData.fitnessGoal,
-        activity_level: formData.activityLevel,
-        body_fat_percentage: formData.bodyFatPercentage,
-        body_shape: calculatedBodyShape,
-        health_conditions: formData.healthConditions.filter(Boolean),
-        allergies: formData.allergies.filter(Boolean),
-        dietary_restrictions: formData.dietaryRestrictions.filter(Boolean),
-        preferred_foods: formData.preferredFoods.filter(Boolean),
-        special_conditions: formData.specialConditions.filter(Boolean),
-        profile_completion_score: 95,
-        onboarding_completed: true,
-        updated_at: new Date().toISOString()
-      };
-
-      console.log('Updating profile with data:', profileData);
-
-      const updateResult = await updateProfile(profileData);
-      
-      if (updateResult?.error) {
-        console.error('Profile update error:', updateResult.error);
-        throw new Error(updateResult.error.message || 'Profile update failed');
-      }
-
-      // Clear saved progress
-      localStorage.removeItem(STORAGE_KEY);
-      
-      return { success: true };
-    } catch (error: any) {
-      console.error('Profile completion error:', error);
-      return { success: false, error: error.message };
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const nextStep = () => {
-    setCurrentStep(prev => Math.min(prev + 1, 5));
-  };
-
-  const prevStep = () => {
-    setCurrentStep(prev => Math.max(prev - 1, 1));
   };
 
   return {
     currentStep,
     formData,
     isLoading,
-    accountCreated,
+    error,
+    goToNextStep,
+    goToPrevStep,
     updateField,
-    handleArrayInput,
-    createAccount,
-    completeProfile,
-    nextStep,
-    prevStep,
-    setCurrentStep
+    handleSubmit
   };
 };

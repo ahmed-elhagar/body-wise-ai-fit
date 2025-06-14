@@ -5,7 +5,8 @@ interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
-  timestamp: Date | number;
+  timestamp: Date;
+  isLoading?: boolean;
 }
 
 interface UseAIChatOptions {
@@ -75,3 +76,5 @@ export const useAIChat = (options?: UseAIChatOptions) => {
     cancelRequest
   };
 };
+
+export type { ChatMessage };

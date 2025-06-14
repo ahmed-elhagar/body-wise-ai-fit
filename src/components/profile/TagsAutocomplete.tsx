@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 import { X } from "lucide-react";
 
 interface TagsAutocompleteProps {
@@ -10,6 +11,7 @@ interface TagsAutocompleteProps {
   suggestions?: string[];
   placeholder?: string;
   className?: string;
+  label?: string;
 }
 
 const TagsAutocomplete = ({ 
@@ -17,7 +19,8 @@ const TagsAutocomplete = ({
   onTagsChange, 
   suggestions = [], 
   placeholder = "Add tags...",
-  className 
+  className,
+  label
 }: TagsAutocompleteProps) => {
   const [inputValue, setInputValue] = useState('');
 
@@ -37,6 +40,7 @@ const TagsAutocomplete = ({
 
   return (
     <div className={className}>
+      {label && <Label className="text-base font-medium mb-2 block">{label}</Label>}
       <Input
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}

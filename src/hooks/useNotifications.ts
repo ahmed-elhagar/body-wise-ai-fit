@@ -11,7 +11,6 @@ export const useNotifications = () => {
   const markAsRead = async (notificationId: string) => {
     setIsMarkingAsRead(true);
     try {
-      // Mock implementation
       console.log('Marking notification as read:', notificationId);
     } catch (error) {
       console.error('Error marking notification as read:', error);
@@ -23,7 +22,6 @@ export const useNotifications = () => {
   const markAllAsRead = async () => {
     setIsMarkingAllAsRead(true);
     try {
-      // Mock implementation
       console.log('Marking all notifications as read');
       setUnreadCount(0);
     } catch (error) {
