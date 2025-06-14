@@ -7,9 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Target, TrendingUp, Award, Clock } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useFoodConsumption, FoodConsumptionLog } from "@/features/food-tracker/hooks";
-import EnhancedMacroWheel from "@/components/food-tracker/components/EnhancedMacroWheel"; // Path kept for now
-import FoodLogTimeline from "./FoodLogTimeline"; // Updated path
-import MobileOptimizedHeader from "@/components/food-tracker/components/MobileOptimizedHeader"; // Path kept for now
+import EnhancedMacroWheel from "./EnhancedMacroWheel";
+import FoodLogTimeline from "./FoodLogTimeline";
+import MobileOptimizedHeader from "./MobileOptimizedHeader";
 import { format } from "date-fns";
 
 interface TodayTabProps {

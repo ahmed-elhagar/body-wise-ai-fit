@@ -1,3 +1,4 @@
+
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,7 +9,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useFoodConsumption } from "@/features/food-tracker/hooks";
 import { useLocation, useNavigate } from "react-router-dom";
 import { TodayTab, HistoryTab } from "@/features/food-tracker";
-import AddFoodDialog from "@/components/food-tracker/AddFoodDialog/AddFoodDialog";
+import AddFoodDialog from "@/features/food-tracker/components/AddFoodDialog";
 import { toast } from "sonner";
 import { useQueryClient } from '@tanstack/react-query';
 

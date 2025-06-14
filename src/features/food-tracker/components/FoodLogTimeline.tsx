@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,8 +6,8 @@ import { Trash2, Clock, Camera, MessageCircle } from "lucide-react";
 import { format } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { FoodConsumptionLog, useFoodConsumption } from "@/features/food-tracker/hooks";
-import { useMealComments } from "@/hooks/useMealComments"; // Assuming useMealComments is a global hook for now
-import MealCommentsDrawer from "./MealCommentsDrawer"; // Assuming MealCommentsDrawer will be in the same directory
+import { useMealComments } from "@/hooks/useMealComments";
+import MealCommentsDrawer from "./MealCommentsDrawer";
 
 interface FoodLogTimelineProps {
   foodLogs: FoodConsumptionLog[];

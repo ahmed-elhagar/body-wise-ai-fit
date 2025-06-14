@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,11 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, History, TrendingUp, ChevronLeft, ChevronRight } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useFoodConsumption, FoodConsumptionLog } from "@/features/food-tracker/hooks";
-// Paths for VirtualizedMealHistory and NutritionHeatMap are kept for now,
-// as their source files are not in the current modification scope.
-// They should be moved to src/features/food-tracker/components/ later.
-import VirtualizedMealHistory from "@/components/food-tracker/components/VirtualizedMealHistory";
-import NutritionHeatMap from "@/components/food-tracker/components/NutritionHeatMap";
+import VirtualizedMealHistory from "./VirtualizedMealHistory";
+import NutritionHeatMap from "./NutritionHeatMap";
 import { format, startOfMonth, endOfMonth, addMonths, subMonths } from "date-fns";
 
 const HistoryTab = () => {
