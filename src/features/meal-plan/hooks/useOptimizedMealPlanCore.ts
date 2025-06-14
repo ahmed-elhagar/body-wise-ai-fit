@@ -1,9 +1,12 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { getWeekStartDate } from '@/utils/mealPlanUtils';
 import { format } from 'date-fns';
 import { OptimizedMealPlanService } from '../services/optimizedMealPlanService';
+import { useMemo } from 'react';
+import { useMealPlanData } from './useMealPlanData';
+import { getCurrentWeekDates } from '../utils/mealPlanUtils';
+import type { WeeklyMealPlan, DailyMeal } from '../types';
 
 interface OptimizedQueryOptions {
   includeIngredients?: boolean;

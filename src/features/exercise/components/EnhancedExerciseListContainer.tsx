@@ -1,10 +1,11 @@
+
 import { useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Exercise } from '../types';
 import { ExerciseCard } from './ExerciseCard';
-import { ActiveExerciseTracker } from '@/components/exercise/ActiveExerciseTracker';
-import { WorkoutSessionManager } from '@/components/exercise/WorkoutSessionManager';
-import { CustomExerciseDialog } from '@/components/exercise/CustomExerciseDialog';
+import { ActiveExerciseTracker } from './ActiveExerciseTracker';
+import { WorkoutSessionManager } from './WorkoutSessionManager';
+import { CustomExerciseDialog } from './CustomExerciseDialog';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

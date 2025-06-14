@@ -1,222 +1,315 @@
-
 import { useState, useCallback, useMemo } from 'react';
-import { useMealPlanData } from './useMealPlanData';
-import { useMealPlanActions } from './useMealPlanActions';
-import { useCentralizedCredits } from '@/hooks/useCentralizedCredits';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { getWeekStartDate, getCurrentSaturdayDay } from '@/utils/mealPlanUtils';
-import type { DailyMeal, MealPlanFetchResult } from '@/features/meal-plan/types';
+import { toast } from 'sonner';
+import { addDays, format, startOfWeek } from 'date-fns';
+import { getCurrentWeekDates, formatDateForMealPlan } from '../utils/mealPlanUtils';
+import type { WeeklyMealPlan, DailyMeal } from '../types';
 
-export const useMealPlanState = () => {
+interface UseMealPlanStateProps {
+  initialDate?: Date;
+}
+
+export const useMealPlanState = ({ initialDate }: UseMealPlanStateProps = {}) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const { remaining: userCredits, isPro, hasCredits } = useCentralizedCredits();
-  
-  // Navigation state
-  const [currentWeekOffset, setCurrentWeekOffsetInternal] = useState(0);
-  const [selectedDayNumber, setSelectedDayNumber] = useState(() => getCurrentSaturdayDay());
-  
-  const weekStartDate = useMemo(() => getWeekStartDate(currentWeekOffset), [currentWeekOffset]);
 
-  // Core meal plan data
+  const [selectedDate, setSelectedDate] = useState(initialDate || new Date());
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isShuffling, setIsShuffling] = useState(false);
+  const [showShoppingList, setShowShoppingList] = useState(false);
+
+  const weekDates = useMemo(() => getCurrentWeekDates(), []);
+  const selectedDateFormatted = useMemo(() => formatDateForMealPlan(selectedDate), [selectedDate]);
+
+  const weekStartDate = useMemo(() => {
+    return startOfWeek(selectedDate, { weekStartsOn: 0 });
+  }, [selectedDate]);
+
+  const weekStartDateFormatted = useMemo(() => {
+    return format(weekStartDate, 'yyyy-MM-dd');
+  }, [weekStartDate]);
+
   const {
-    data: currentWeekPlan,
-    isLoading,
-    error,
-    refetch: originalRefetch,
-  } = useMealPlanData(currentWeekOffset);
-
-  // Enhanced refetch that properly invalidates and refreshes data
-  const refetch = useCallback(async () => {
-    console.log('🔄 Enhanced refetch - invalidating all meal plan queries for week offset:', currentWeekOffset);
-    
-    // Clear all meal plan related caches
-    await queryClient.invalidateQueries({
-      predicate: (query) => {
-        const queryKey = query.queryKey;
-        return queryKey[0] === 'weekly-meal-plan' || 
-               queryKey[0] === 'optimized-meal-plan' ||
-               queryKey[0] === 'meal-plan';
+    data: weeklyPlanData,
+    isLoading: isPlanLoading,
+    error: planError,
+  } = useQuery<{ weeklyPlan: WeeklyMealPlan; dailyMeals: DailyMeal[] }>(
+    ['weeklyMealPlan', user?.id, weekStartDateFormatted],
+    async () => {
+      if (!user?.id) {
+        console.warn('No user ID - skipping meal plan fetch');
+        return null;
       }
-    });
-    
-    // Clear the OptimizedMealPlanService cache
-    try {
-      const { OptimizedMealPlanService } = await import('@/features/meal-plan/services/optimizedMealPlanService');
-      OptimizedMealPlanService.clearCache();
-    } catch (e) {
-      console.log('Service cache clear skipped:', e);
+
+      console.log(`Fetching meal plan for user ${user.id} and week starting ${weekStartDateFormatted}`);
+
+      const { data: weeklyPlan, error: weeklyPlanError } = await supabase
+        .from('weekly_meal_plans')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('week_start_date', weekStartDateFormatted)
+        .single();
+
+      if (weeklyPlanError) {
+        console.error('Error fetching weekly meal plan:', weeklyPlanError);
+        throw new Error(weeklyPlanError.message);
+      }
+
+      if (!weeklyPlan) {
+        console.log('No weekly meal plan found, returning null');
+        return null;
+      }
+
+      const { data: dailyMeals, error: dailyMealsError } = await supabase
+        .from('daily_meals')
+        .select('*')
+        .eq('weekly_meal_plan_id', weeklyPlan.id);
+
+      if (dailyMealsError) {
+        console.error('Error fetching daily meals:', dailyMealsError);
+        throw new Error(dailyMealsError.message);
+      }
+
+      console.log(`Successfully fetched meal plan with ${dailyMeals?.length || 0} daily meals`);
+
+      return { weeklyPlan, dailyMeals: dailyMeals || [] };
+    },
+    {
+      enabled: !!user?.id,
+      retry: false,
     }
-    
-    // Force refetch current data
-    const result = await originalRefetch();
-    
-    // Wait a bit and try again if no data
-    if (!result.data?.weeklyPlan) {
-      console.log('⏳ No data returned, waiting and retrying...');
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      return await originalRefetch();
-    }
-    
-    return result;
-  }, [queryClient, currentWeekOffset, originalRefetch]);
-
-  // Enhanced calculations - inline to avoid external dependencies
-  const { dailyMeals, todaysMeals, totalCalories, totalProtein, targetDayCalories } = useMemo(() => {
-    // Calculate daily meals for selected day
-    const dailyMeals = currentWeekPlan?.dailyMeals?.filter(
-      meal => meal.day_number === selectedDayNumber
-    ) || null;
-
-    // Calculate today's meals
-    const today = new Date();
-    const todayDayNumber = today.getDay() === 6 ? 1 : today.getDay() + 2;
-    const todaysMeals = currentWeekPlan?.dailyMeals?.filter(
-      meal => meal.day_number === todayDayNumber
-    ) || null;
-
-    // Calculate total calories for selected day
-    const totalCalories = dailyMeals ? 
-      dailyMeals.reduce((total, meal) => total + (meal.calories || 0), 0) : null;
-
-    // Calculate total protein for selected day
-    const totalProtein = dailyMeals ? 
-      dailyMeals.reduce((total, meal) => total + (meal.protein || 0), 0) : null;
-
-    // Target calories
-    const targetDayCalories = 2000;
-
-    return {
-      dailyMeals,
-      todaysMeals,
-      totalCalories,
-      totalProtein,
-      targetDayCalories
-    };
-  }, [currentWeekPlan?.dailyMeals, selectedDayNumber]);
-
-  // Dialog states
-  const [showAIDialog, setShowAIDialog] = useState(false);
-  const [showRecipeDialog, setShowRecipeDialog] = useState(false);
-  const [showExchangeDialog, setShowExchangeDialog] = useState(false);
-  const [showAddSnackDialog, setShowAddSnackDialog] = useState(false);
-  const [showShoppingListDialog, setShowShoppingListDialog] = useState(false);
-
-  // Selected items
-  const [selectedMeal, setSelectedMeal] = useState<DailyMeal | null>(null);
-  const [selectedMealIndex, setSelectedMealIndex] = useState<number | null>(null);
-
-  // AI preferences state
-  const [aiPreferences, setAiPreferences] = useState({
-    duration: "7",
-    cuisine: "mixed",
-    maxPrepTime: "30",
-    includeSnacks: true,
-    mealTypes: "breakfast,lunch,dinner",
-  });
-
-  // Actions
-  const { handleGenerateAIPlan, isGenerating } = useMealPlanActions(
-    currentWeekPlan,
-    currentWeekOffset,
-    aiPreferences,
-    refetch
   );
 
-  // Enhanced week change handler
-  const setCurrentWeekOffset = useCallback(async (newOffset: number) => {
-    console.log('📅 Changing week from', currentWeekOffset, 'to', newOffset);
-    setCurrentWeekOffsetInternal(newOffset);
-  }, [currentWeekOffset]);
+  const { mutate: createWeeklyPlan, isLoading: isCreatingPlan } = useMutation(
+    async (meals: Omit<DailyMeal, 'id'>[]) => {
+      if (!user?.id) {
+        throw new Error('User not authenticated');
+      }
 
-  // Dialog handlers
-  const openAIDialog = useCallback(() => setShowAIDialog(true), []);
-  const closeAIDialog = useCallback(() => setShowAIDialog(false), []);
-  
-  const openRecipeDialog = useCallback((meal: DailyMeal) => {
-    setSelectedMeal(meal);
-    setShowRecipeDialog(true);
-  }, []);
-  const closeRecipeDialog = useCallback(() => {
-    setSelectedMeal(null);
-    setShowRecipeDialog(false);
-  }, []);
+      console.log(`Creating new weekly meal plan for user ${user.id} and week starting ${weekStartDateFormatted}`);
 
-  const openExchangeDialog = useCallback((meal: DailyMeal) => {
-    setSelectedMeal(meal);
-    setShowExchangeDialog(true);
-  }, []);
-  const closeExchangeDialog = useCallback(() => {
-    setSelectedMeal(null);
-    setShowExchangeDialog(false);
-  }, []);
+      const { data: newWeeklyPlan, error: weeklyPlanError } = await supabase
+        .from('weekly_meal_plans')
+        .insert([{ user_id: user.id, week_start_date: weekStartDateFormatted }])
+        .select('*')
+        .single();
 
-  const openAddSnackDialog = useCallback(() => setShowAddSnackDialog(true), []);
-  const closeAddSnackDialog = useCallback(() => setShowAddSnackDialog(false), []);
+      if (weeklyPlanError) {
+        console.error('Error creating weekly meal plan:', weeklyPlanError);
+        throw new Error(weeklyPlanError.message);
+      }
 
-  const openShoppingListDialog = useCallback(() => setShowShoppingListDialog(true), []);
-  const closeShoppingListDialog = useCallback(() => setShowShoppingListDialog(false), []);
+      if (!newWeeklyPlan) {
+        throw new Error('Failed to create weekly meal plan');
+      }
 
-  const updateAIPreferences = useCallback((newPrefs: any) => {
-    setAiPreferences(prev => ({ ...prev, ...newPrefs }));
-  }, []);
+      const mealsToInsert = meals.map(meal => ({
+        ...meal,
+        weekly_meal_plan_id: newWeeklyPlan.id,
+      }));
+
+      const { data: newDailyMeals, error: dailyMealsError } = await supabase
+        .from('daily_meals')
+        .insert(mealsToInsert)
+        .select('*');
+
+      if (dailyMealsError) {
+        console.error('Error creating daily meals:', dailyMealsError);
+        throw new Error(dailyMealsError.message);
+      }
+
+      console.log(`Successfully created new meal plan with ${newDailyMeals?.length || 0} daily meals`);
+
+      return { weeklyPlan: newWeeklyPlan, dailyMeals: newDailyMeals };
+    },
+    {
+      onSuccess: () => {
+        console.log('Successfully created meal plan, invalidating query');
+        queryClient.invalidateQueries(['weeklyMealPlan', user?.id, weekStartDateFormatted]);
+        toast.success('Meal plan generated successfully!');
+      },
+      onError: (error: any) => {
+        console.error('Error creating meal plan:', error);
+        toast.error(error.message || 'Failed to generate meal plan');
+      },
+      onSettled: () => {
+        setIsGenerating(false);
+      },
+    }
+  );
+
+  const { mutate: updateDailyMeals, isLoading: isUpdatingMeals } = useMutation(
+    async (meals: DailyMeal[]) => {
+      if (!weeklyPlanData?.weeklyPlan?.id) {
+        throw new Error('No weekly meal plan found to update');
+      }
+
+      console.log(`Updating daily meals for weekly plan ${weeklyPlanData.weeklyPlan.id}`);
+
+      const updates = meals.map(meal =>
+        supabase
+          .from('daily_meals')
+          .update(meal)
+          .eq('id', meal.id)
+      );
+
+      const results = await Promise.all(updates);
+
+      const errors = results.filter(result => result.error);
+      if (errors.length > 0) {
+        console.error('Error updating daily meals:', errors);
+        throw new Error(errors.map(error => error.error?.message).join('\n'));
+      }
+
+      console.log(`Successfully updated ${meals.length} daily meals`);
+
+      return meals;
+    },
+    {
+      onSuccess: () => {
+        console.log('Successfully updated daily meals, invalidating query');
+        queryClient.invalidateQueries(['weeklyMealPlan', user?.id, weekStartDateFormatted]);
+        toast.success('Meal plan updated successfully!');
+      },
+      onError: (error: any) => {
+        console.error('Error updating meal plan:', error);
+        toast.error(error.message || 'Failed to update meal plan');
+      },
+    }
+  );
+
+  const { mutate: shuffleMeals, isLoading: isShufflingMeals } = useMutation(
+    async (meals: DailyMeal[]) => {
+      if (!weeklyPlanData?.weeklyPlan?.id) {
+        throw new Error('No weekly meal plan found to shuffle');
+      }
+
+      console.log(`Shuffling meals for weekly plan ${weeklyPlanData.weeklyPlan.id}`);
+
+      const shuffledMeals = meals.map(meal => ({
+        ...meal,
+        name: `${meal.name} (Shuffled)`,
+      }));
+
+      const updates = shuffledMeals.map(meal =>
+        supabase
+          .from('daily_meals')
+          .update(meal)
+          .eq('id', meal.id)
+      );
+
+      const results = await Promise.all(updates);
+
+      const errors = results.filter(result => result.error);
+      if (errors.length > 0) {
+        console.error('Error shuffling meals:', errors);
+        throw new Error(errors.map(error => error.error?.message).join('\n'));
+      }
+
+      console.log(`Successfully shuffled ${meals.length} daily meals`);
+
+      return shuffledMeals;
+    },
+    {
+      onSuccess: () => {
+        console.log('Successfully shuffled meals, invalidating query');
+        queryClient.invalidateQueries(['weeklyMealPlan', user?.id, weekStartDateFormatted]);
+        toast.success('Meals shuffled successfully!');
+      },
+      onError: (error: any) => {
+        console.error('Error shuffling meals:', error);
+        toast.error(error.message || 'Failed to shuffle meals');
+      },
+      onSettled: () => {
+        setIsShuffling(false);
+      },
+    }
+  );
+
+  const handleDateSelect = (date: Date) => {
+    console.log('📅 Selected date:', date);
+    setSelectedDate(date);
+  };
+
+  const handleGenerate = useCallback(
+    async (meals: Omit<DailyMeal, 'id'>[]) => {
+      setIsGenerating(true);
+      try {
+        await createWeeklyPlan(meals);
+      } catch (error) {
+        console.error('Failed to generate meal plan:', error);
+        toast.error('Failed to generate meal plan');
+      } finally {
+        setIsGenerating(false);
+      }
+    },
+    [createWeeklyPlan]
+  );
+
+  const handleUpdate = useCallback(
+    async (meals: DailyMeal[]) => {
+      try {
+        await updateDailyMeals(meals);
+      } catch (error) {
+        console.error('Failed to update meal plan:', error);
+        toast.error('Failed to update meal plan');
+      }
+    },
+    [updateDailyMeals]
+  );
+
+  const handleShuffle = useCallback(
+    async () => {
+      setIsShuffling(true);
+      if (weeklyPlanData?.dailyMeals) {
+        try {
+          await shuffleMeals(weeklyPlanData.dailyMeals);
+        } catch (error) {
+          console.error('Failed to shuffle meals:', error);
+          toast.error('Failed to shuffle meals');
+        } finally {
+          setIsShuffling(false);
+        }
+      } else {
+        toast.error('No meals to shuffle');
+        setIsShuffling(false);
+      }
+    },
+    [shuffleMeals, weeklyPlanData?.dailyMeals]
+  );
+
+  const handleShowShoppingList = () => {
+    console.log('🛒 Showing shopping list');
+    setShowShoppingList(true);
+  };
+
+  const handleCloseShoppingList = () => {
+    console.log('❌ Closing shopping list');
+    setShowShoppingList(false);
+  };
 
   return {
-    // Data
-    currentWeekPlan,
-    dailyMeals,
-    todaysMeals,
-    totalCalories,
-    totalProtein,
-    targetDayCalories,
-    
-    // Navigation
-    currentWeekOffset,
-    setCurrentWeekOffset,
-    selectedDayNumber,
-    setSelectedDayNumber,
+    selectedDate,
+    selectedDateFormatted,
     weekStartDate,
-    
-    // Loading states
-    isLoading,
-    error,
+    weekStartDateFormatted,
+    weekDates,
+    handleDateSelect,
+    weeklyPlanData,
+    isPlanLoading,
+    planError,
     isGenerating,
-    
-    // Centralized credits
-    userCredits,
-    isPro,
-    hasCredits,
-    
-    // Dialog states
-    showAIDialog,
-    showRecipeDialog,
-    showExchangeDialog,
-    showAddSnackDialog,
-    showShoppingListDialog,
-    
-    // Selected items
-    selectedMeal,
-    selectedMealIndex,
-    
-    // AI preferences
-    aiPreferences,
-    updateAIPreferences,
-    
-    // Actions
-    refetch,
-    handleGenerateAIPlan,
-    
-    // Dialog handlers
-    openAIDialog,
-    closeAIDialog,
-    openRecipeDialog,
-    closeRecipeDialog,
-    openExchangeDialog,
-    closeExchangeDialog,
-    openAddSnackDialog,
-    closeAddSnackDialog,
-    openShoppingListDialog,
-    closeShoppingListDialog,
+    isCreatingPlan,
+    handleGenerate,
+    handleUpdate,
+    isUpdatingMeals,
+    isShuffling,
+    isShufflingMeals,
+    handleShuffle,
+    showShoppingList,
+    handleShowShoppingList,
+    handleCloseShoppingList,
   };
 };

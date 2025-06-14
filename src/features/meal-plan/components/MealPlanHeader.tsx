@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, Shuffle, ShoppingCart, RefreshCw, UtensilsCrossed, Zap } from "lucide-react";
-import { useMealPlanTranslations } from "@/utils/mealPlanTranslations";
+import { useMealPlanTranslations } from "../utils/mealPlanTranslations";
 import { useCentralizedCredits } from "@/hooks/useCentralizedCredits";
 
 interface MealPlanHeaderProps {

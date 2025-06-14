@@ -20,7 +20,7 @@ import {
   Share2
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { InteractiveExerciseCard, RestDayCard, AnimatedProgressRing } from "./index";
+import { InteractiveExerciseCard, RestDayCard, AnimatedProgressRing } from "./";
 import { useWorkoutSession } from "@/hooks/useWorkoutSession";
 
 interface UnifiedExerciseContainerProps {

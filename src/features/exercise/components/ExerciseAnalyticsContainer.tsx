@@ -12,9 +12,9 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ExerciseAnalyticsDashboard } from './ExerciseAnalyticsDashboard';
-import { PersonalRecordsTracker } from '@/components/exercise/PersonalRecordsTracker';
-import { PerformanceInsights } from '@/components/exercise/PerformanceInsights';
-import { ExerciseAchievements } from '@/components/exercise/ExerciseAchievements';
+import { PersonalRecordsTracker } from './PersonalRecordsTracker';
+import { PerformanceInsights } from './PerformanceInsights';
+import { ExerciseAchievements } from './ExerciseAchievements';
 import { Exercise } from '@/types/exercise';
 
 interface ExerciseAnalyticsContainerProps {
