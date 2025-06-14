@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,8 +7,8 @@ import { Trash2, Clock, Camera, MessageCircle } from "lucide-react";
 import { format } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { FoodConsumptionLog, useFoodConsumption } from "@/features/food-tracker/hooks";
-import { useMealComments } from "@/hooks/useMealComments";
-import MealCommentsDrawer from "../MealCommentsDrawer";
+import { useMealComments } from "@/hooks/useMealComments"; // Assuming useMealComments is a global hook for now
+import MealCommentsDrawer from "./MealCommentsDrawer"; // Assuming MealCommentsDrawer will be in the same directory
 
 interface FoodLogTimelineProps {
   foodLogs: FoodConsumptionLog[];
@@ -39,7 +40,7 @@ const FoodLogTimeline = ({ foodLogs, onRefetch }: FoodLogTimelineProps) => {
 
   const handleDelete = async (logId: string) => {
     if (confirm(t('Are you sure you want to delete this food log entry?'))) {
-      deleteConsumption(logId);
+      await deleteConsumption(logId); // Ensure deleteConsumption is awaited if it's async
       onRefetch();
     }
   };

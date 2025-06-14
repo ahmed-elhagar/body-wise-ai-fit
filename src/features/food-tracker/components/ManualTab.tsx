@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Plus } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useFoodTracking } from "@/features/food-tracker/hooks"; // Updated import
+import { useFoodTracking } from "@/features/food-tracker/hooks";
 import { toast } from "sonner";
 
 interface ManualTabProps {
@@ -43,7 +43,7 @@ const ManualTab = ({ onFoodAdded, onClose, preSelectedFood }: ManualTabProps) =>
     }
   }, [preSelectedFood]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!foodName.trim()) {
       toast.error(t('Please enter a food name'));
       return;
@@ -58,8 +58,8 @@ const ManualTab = ({ onFoodAdded, onClose, preSelectedFood }: ManualTabProps) =>
     // Calculate nutrition per actual quantity
     const multiplier = quantityNum / 100;
 
-    const foodConsumptionData = { // Renamed to avoid conflict with hook return
-      food_item_id: crypto.randomUUID(), // This should ideally be a real ID or handled server-side
+    const foodConsumptionData = { 
+      food_item_id: crypto.randomUUID(), 
       quantity_g: quantityNum,
       calories_consumed: caloriesNum * multiplier,
       protein_consumed: proteinNum * multiplier,
@@ -69,11 +69,8 @@ const ManualTab = ({ onFoodAdded, onClose, preSelectedFood }: ManualTabProps) =>
       consumed_at: new Date().toISOString(),
       notes: notes || undefined,
       source: (preSelectedFood ? 'ai_analysis' : 'manual') as 'manual' | 'ai_analysis' | 'barcode',
-      // The food_item structure below is for client-side representation if not linking to a DB food_item
-      // If you have a food_items table, you'd typically log an ID and fetch details
       food_item: { 
         name: foodName,
-        // brand: "User Entered", // Optional: Add brand if you collect it
         calories_per_100g: caloriesNum,
         protein_per_100g: proteinNum,
         carbs_per_100g: carbsNum,
@@ -81,7 +78,7 @@ const ManualTab = ({ onFoodAdded, onClose, preSelectedFood }: ManualTabProps) =>
       }
     };
 
-    addFoodConsumption(foodConsumptionData);
+    await addFoodConsumption(foodConsumptionData); // Ensure addFoodConsumption is awaited if it's async
     onFoodAdded();
     onClose();
   };
