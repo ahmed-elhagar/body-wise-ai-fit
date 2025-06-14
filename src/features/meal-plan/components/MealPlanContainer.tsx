@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { useMealPlanState } from '../hooks/useMealPlanState';
 import MealPlanHeader from './MealPlanHeader';
@@ -32,7 +31,7 @@ const MealPlanContainer = () => {
   }
 
   // Enhanced shuffle handler
-  const handleShuffle = async (): Promise<void> => {
+  const handleShuffle = async () => {
     if (!mealPlanState.currentWeekPlan?.weeklyPlan?.id) {
       console.error('❌ No weekly plan ID available for shuffle');
       return;
@@ -47,12 +46,6 @@ const MealPlanContainer = () => {
         mealPlanState.refetch();
       }, 1000);
     }
-  };
-
-  // Fixed regenerate handler to return Promise<boolean>
-  const handleRegeneratePlan = async (): Promise<boolean> => {
-    console.log('🔄 Regenerate plan requested');
-    return await mealPlanState.handleGenerateAIPlan();
   };
 
   // Enhanced week change handler that manages loading states properly
@@ -79,12 +72,10 @@ const MealPlanContainer = () => {
       <div className="space-y-6">
         {/* Header - Always visible */}
         <MealPlanHeader 
-          onGenerateAI={async () => {
-            return await mealPlanState.handleGenerateAIPlan();
-          }}
+          onGenerateAI={() => mealPlanState.openAIDialog()}
           onShuffle={handleShuffle}
           onShowShoppingList={() => mealPlanState.openShoppingListDialog()}
-          onRegeneratePlan={handleRegeneratePlan}
+          onRegeneratePlan={() => mealPlanState.openAIDialog()}
           isGenerating={mealPlanState.isGenerating}
           isShuffling={isShuffling}
           hasWeeklyPlan={!!displayData?.weeklyPlan}
@@ -175,9 +166,7 @@ const MealPlanContainer = () => {
             onViewMeal={(meal) => mealPlanState.openRecipeDialog(meal)}
             onExchangeMeal={(meal) => mealPlanState.openExchangeDialog(meal)}
             onAddSnack={() => mealPlanState.openAddSnackDialog()}
-            onGenerateAI={async () => {
-              return await mealPlanState.handleGenerateAIPlan();
-            }}
+            onGenerateAI={() => mealPlanState.openAIDialog()}
             setCurrentWeekOffset={handleWeekChange}
             setSelectedDayNumber={mealPlanState.setSelectedDayNumber}
           />

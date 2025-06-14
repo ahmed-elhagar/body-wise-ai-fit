@@ -1,36 +1,32 @@
 
-// Main containers
-export { ExercisePageContainer } from './ExercisePageContainer';
+// Exercise feature components exports
+export { ExerciseListEnhanced } from './ExerciseListEnhanced';
+export { ExercisePageContent } from './ExercisePageContent';
+export { ExerciseSessionView } from './ExerciseSessionView';
+export { ExerciseListView } from './ExerciseListView';
+export { ExerciseListHeader } from './ExerciseListHeader';
+export { WorkoutTypeToggle } from './WorkoutTypeToggle';
+export { ExerciseProgramSelector } from './ExerciseProgramSelector';
+export { WorkoutTypeTabs } from './WorkoutTypeTabs';
+export { ExerciseErrorHandler } from './ExerciseErrorHandler';
+export { RestDayCard } from './RestDayCard';
+export { ExerciseEmptyState } from './ExerciseEmptyState';
+export { InteractiveExerciseCard } from './InteractiveExerciseCard';
+export { AnimatedProgressRing } from './AnimatedProgressRing';
+export { CompactProgressSidebar } from './CompactProgressSidebar';
+export { EnhancedExerciseListContainer } from './EnhancedExerciseListContainer';
+export { UnifiedExerciseContainer } from './UnifiedExerciseContainer';
 export { ExercisePageLayout } from './ExercisePageLayout';
-
-// Navigation components
-export { WeeklyExerciseNavigation } from './WeeklyExerciseNavigation';
 export { EnhancedDayNavigation } from './EnhancedDayNavigation';
 export { ExerciseCompactNavigation } from './ExerciseCompactNavigation';
-
-// Header components
-export { EnhancedExerciseHeaderWithAnalytics } from './EnhancedExerciseHeaderWithAnalytics';
-
-// Content components
-export { ExercisePageContent } from './ExercisePageContent';
-
-// Dialog components
-export { AIExerciseDialog } from './AIExerciseDialog';
-
-// Analytics components
-export { ExerciseAnalyticsContainer } from './ExerciseAnalyticsContainer';
-
-// Error components
+export { WeeklyExerciseNavigation } from './WeeklyExerciseNavigation';
+export { ExerciseProgramDaySelector } from './ExerciseProgramDaySelector';
+export { default as OptimizedExerciseContainer } from './OptimizedExerciseContainer';
 export { ExerciseErrorState } from './ExerciseErrorState';
-
-// Exercise List components
-export { InteractiveExerciseCard } from './InteractiveExerciseCard';
-export { RestDayCard } from './RestDayCard';
-export { AnimatedProgressRing } from './AnimatedProgressRing';
-export { ExerciseListEnhanced } from './ExerciseListEnhanced';
-
-// Compact components
+export { EnhancedExerciseHeaderWithAnalytics } from './EnhancedExerciseHeaderWithAnalytics';
+export { ExerciseAnalyticsContainer } from './ExerciseAnalyticsContainer';
+export { AIExerciseDialog } from './AIExerciseDialog';
+export { ExerciseActionsDropdown } from './ExerciseActionsDropdown';
+export { ExerciseInstructionsDialog } from './ExerciseInstructionsDialog';
 export { CompactProgressSection } from './CompactProgressSection';
-
-// Empty state
-export { ExerciseEmptyState } from './ExerciseEmptyState';
+export { ExercisePageContainer } from './ExercisePageContainer';

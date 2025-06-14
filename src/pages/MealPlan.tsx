@@ -2,7 +2,7 @@
 import React from 'react';
 import { SidebarProvider } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/AppSidebar";
-import { MealPlanPageContainer } from "@/features/meal-plan";
+import { MealPlanContainer } from "@/features/meal-plan";
 
 const MealPlan = () => {
   return (
@@ -10,7 +10,7 @@ const MealPlan = () => {
       <div className="flex min-h-screen w-full">
         <AppSidebar />
         <div className="flex-1 p-6">
-          <MealPlanPageContainer />
+          <MealPlanContainer />
         </div>
       </div>
     </SidebarProvider>

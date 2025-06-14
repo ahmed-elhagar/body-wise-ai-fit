@@ -1,44 +1,36 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Calendar, Grid } from 'lucide-react';
+import { CalendarDays, LayoutGrid } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface MealPlanViewToggleProps {
   viewMode: 'daily' | 'weekly';
   onViewModeChange: (mode: 'daily' | 'weekly') => void;
 }
 
-export const MealPlanViewToggle = ({
-  viewMode,
-  onViewModeChange
-}: MealPlanViewToggleProps) => {
+export const MealPlanViewToggle = ({ viewMode, onViewModeChange }: MealPlanViewToggleProps) => {
+  const { t } = useLanguage();
+
   return (
-    <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+    <div className="flex gap-1">
       <Button
-        variant={viewMode === 'daily' ? 'default' : 'ghost'}
+        variant={viewMode === 'daily' ? "default" : "outline"}
         size="sm"
         onClick={() => onViewModeChange('daily')}
-        className={`h-8 px-3 text-xs ${
-          viewMode === 'daily' 
-            ? 'bg-white shadow-sm text-gray-900' 
-            : 'text-gray-600 hover:text-gray-900'
-        }`}
+        className="h-10 px-3"
       >
-        <Calendar className="w-3 h-3 mr-1" />
-        Daily
+        <CalendarDays className="w-4 h-4 mr-2" />
+        <span>{t('mealPlan.dailyView') || 'Daily'}</span>
       </Button>
       <Button
-        variant={viewMode === 'weekly' ? 'default' : 'ghost'}
+        variant={viewMode === 'weekly' ? "default" : "outline"}
         size="sm"
         onClick={() => onViewModeChange('weekly')}
-        className={`h-8 px-3 text-xs ${
-          viewMode === 'weekly' 
-            ? 'bg-white shadow-sm text-gray-900' 
-            : 'text-gray-600 hover:text-gray-900'
-        }`}
+        className="h-10 px-3"
       >
-        <Grid className="w-3 h-3 mr-1" />
-        Weekly
+        <LayoutGrid className="w-4 h-4 mr-2" />
+        <span>{t('mealPlan.weeklyView') || 'Weekly'}</span>
       </Button>
     </div>
   );
