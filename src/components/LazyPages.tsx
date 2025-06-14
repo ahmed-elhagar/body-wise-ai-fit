@@ -12,6 +12,18 @@ export const Settings = lazy(() => import('@/pages/Settings'));
 export const Auth = lazy(() => import('@/pages/Auth'));
 export const Signup = lazy(() => import('@/pages/Signup'));
 export const Landing = lazy(() => import('@/pages/Landing'));
+export const Index = lazy(() => import('@/pages/Index'));
+export const UnifiedSignup = lazy(() => import('@/pages/Signup'));
+export const Welcome = lazy(() => import('@/pages/Welcome'));
+export const CalorieChecker = lazy(() => import('@/pages/CalorieChecker'));
+export const WeightTracking = lazy(() => import('@/pages/WeightTracking'));
+export const Progress = lazy(() => import('@/pages/Progress'));
+export const Notifications = lazy(() => import('@/pages/Notifications'));
+export const Chat = lazy(() => import('@/pages/Chat'));
+export const Pro = lazy(() => import('@/pages/Pro'));
+export const Admin = lazy(() => import('@/pages/Admin'));
+export const Coach = lazy(() => import('@/pages/Coach'));
+export const NotFound = lazy(() => import('@/pages/NotFound'));
 
 // Export default for backward compatibility
 export default {
@@ -24,5 +36,17 @@ export default {
   Settings,
   Auth,
   Signup,
-  Landing
+  Landing,
+  Index,
+  UnifiedSignup,
+  Welcome,
+  CalorieChecker,
+  WeightTracking,
+  Progress,
+  Notifications,
+  Chat,
+  Pro,
+  Admin,
+  Coach,
+  NotFound
 };

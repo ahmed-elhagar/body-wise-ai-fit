@@ -160,6 +160,8 @@ export const ExercisePageLayout = ({
         {/* AI Loading Dialog */}
         <UnifiedAILoadingDialog
           isOpen={isGenerating}
+          title="Generating Exercise Program"
+          description="Creating your personalized workout plan..."
           steps={exerciseSteps}
           currentStepIndex={currentStepIndex}
           isComplete={isComplete}
