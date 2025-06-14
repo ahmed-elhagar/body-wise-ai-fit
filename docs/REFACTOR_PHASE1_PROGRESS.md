@@ -1,3 +1,4 @@
+
 # Refactoring Progress - Phase 1
 
 ## ✅ Completed
@@ -43,7 +44,7 @@
 - [x] Remove `src/components/DebugPanel.tsx`
 - [x] Remove `src/features/auth/components/AuthDebugPanel.tsx`
 - [x] Remove `src/components/SubscriptionDebugPanel.tsx`
-- [ ] Remove `src/utils/seedBasicFoods.ts`
+- [x] Remove `src/utils/seedBasicFoods.ts`
 - [ ] Clean up unused imports across all files
 - [ ] Consolidate duplicate components
 

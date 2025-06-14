@@ -1,4 +1,3 @@
-
 {
   "refactoring_plan": {
     "phase": "1",
@@ -61,13 +60,12 @@
         "hooks_to_move": 2
       }
     ],
-    "cleanup_ready": [
-      "src/utils/seedBasicFoods.ts"
-    ],
+    "cleanup_ready": [],
     "cleaned_files": [
       "src/components/DebugPanel.tsx",
       "src/features/auth/components/AuthDebugPanel.tsx",
-      "src/components/SubscriptionDebugPanel.tsx"
+      "src/components/SubscriptionDebugPanel.tsx",
+      "src/utils/seedBasicFoods.ts"
     ],
     "next_phase": {
       "number": 2,
