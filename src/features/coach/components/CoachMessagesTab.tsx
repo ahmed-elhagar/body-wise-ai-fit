@@ -28,7 +28,7 @@ export const CoachMessagesTab = ({ trainees }: CoachMessagesTabProps) => {
   const { isUserOnline, getUserLastSeen } = useUserOnlineStatus(traineeIds);
   
   // Get unread message counts
-  const { data: unreadCounts = {} } = useUnreadMessagesByTrainee();
+  const { unreadMessagesByTrainee } = useUnreadMessagesByTrainee();
 
   // Get last messages for each trainee
   const { data: lastMessages = {} } = useQuery({
@@ -118,7 +118,7 @@ export const CoachMessagesTab = ({ trainees }: CoachMessagesTabProps) => {
               {filteredTrainees.map((trainee) => {
                 const isOnline = isUserOnline(trainee.trainee_id);
                 const lastSeen = getUserLastSeen(trainee.trainee_id);
-                const unreadCount = unreadCounts[trainee.trainee_id] || 0;
+                const unreadCount = unreadMessagesByTrainee[trainee.trainee_id] || 0;
                 const lastMessage = lastMessages[trainee.trainee_id];
                 
                 return (

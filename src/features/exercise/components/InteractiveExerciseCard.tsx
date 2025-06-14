@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ExerciseActionsDropdown } from "./ExerciseActionsDropdown";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface InteractiveExerciseCardProps {
   exercise: any;
@@ -35,8 +35,8 @@ export const InteractiveExerciseCard = ({
 }: InteractiveExerciseCardProps) => {
   const { t } = useLanguage();
   const [isActive, setIsActive] = useState(false);
-  const [currentSet, setCurrentSet] = useState(0); // Start from 0, not 1
-  const [completedSets, setCompletedSets] = useState(0); // Track completed sets
+  const [currentSet, setCurrentSet] = useState(0);
+  const [completedSets, setCompletedSets] = useState(0);
   const [restTimer, setRestTimer] = useState(0);
   const [isResting, setIsResting] = useState(false);
   const [restInterval, setRestInterval] = useState<NodeJS.Timeout | null>(null);
@@ -61,8 +61,7 @@ export const InteractiveExerciseCard = ({
           clearInterval(interval);
           setIsResting(false);
           setRestInterval(null);
-          toast({
-            title: "Rest Complete! 💪",
+          toast.success("Rest Complete! 💪", {
             description: "Time for your next set!",
           });
           return 0;
@@ -81,8 +80,7 @@ export const InteractiveExerciseCard = ({
     }
     setIsResting(false);
     setRestTimer(0);
-    toast({
-      title: "Rest Skipped ⚡",
+    toast.success("Rest Skipped ⚡", {
       description: "Let's continue with the next set!",
     });
   };
@@ -102,8 +100,7 @@ export const InteractiveExerciseCard = ({
         startRestTimer();
       }
       
-      toast({
-        title: `Set ${newCompletedSets} Complete! 🎯`,
+      toast.success(`Set ${newCompletedSets} Complete! 🎯`, {
         description: `${totalSets - newCompletedSets} sets remaining`,
       });
     } else {
@@ -111,14 +108,13 @@ export const InteractiveExerciseCard = ({
       setIsCompleting(true);
       
       try {
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
         onExerciseComplete(exercise.id);
         setIsActive(false);
         setCurrentSet(0);
         setCompletedSets(0);
         
-        toast({
-          title: "Exercise Complete! 🏆",
+        toast.success("Exercise Complete! 🏆", {
           description: `Great job completing ${exercise.name}!`,
         });
       } catch (error) {
@@ -131,10 +127,9 @@ export const InteractiveExerciseCard = ({
 
   const handleStartExercise = () => {
     setIsActive(true);
-    setCurrentSet(0); // Start at 0, ready for first set
+    setCurrentSet(0);
     setCompletedSets(0);
-    toast({
-      title: "Exercise Started! 💪",
+    toast.success("Exercise Started! 💪", {
       description: `Let's crush ${exercise.name}!`,
     });
   };

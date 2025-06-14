@@ -24,16 +24,13 @@ export const AssignTraineeDialog = ({ open, onOpenChange }: AssignTraineeDialogP
     e.preventDefault();
     if (!selectedTraineeId) return;
 
-    assignTrainee(
-      { traineeId: selectedTraineeId, notes: notes.trim() || undefined },
-      {
-        onSuccess: () => {
-          setSelectedTraineeId("");
-          setNotes("");
-          onOpenChange(false);
-        },
-      }
-    );
+    assignTrainee(selectedTraineeId, {
+      onSuccess: () => {
+        setSelectedTraineeId("");
+        setNotes("");
+        onOpenChange(false);
+      },
+    });
   };
 
   return (

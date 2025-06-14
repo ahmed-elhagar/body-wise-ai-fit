@@ -31,13 +31,13 @@ const EnhancedSignupForm = () => {
   const validateCurrentStep = () => {
     switch (currentStep) {
       case 1:
-        return !!(formData.firstName && formData.lastName && formData.email && formData.password);
+        return !!(formData.first_name && formData.last_name && formData.email && formData.password);
       case 2:
         return !!(formData.age && formData.gender && formData.height && formData.weight);
       case 3:
         return !!(formData.bodyFatPercentage);
       case 4:
-        return !!(formData.fitnessGoal && formData.activityLevel);
+        return !!(formData.health_goal && formData.activity_level);
       case 5:
         return true; // Optional step
       default:
@@ -51,7 +51,6 @@ const EnhancedSignupForm = () => {
         await createAccount();
         nextStep();
       } catch (error: any) {
-        // Error is handled in the AccountCreationStep component
         console.error('Account creation failed:', error);
       }
     } else if (currentStep === 5) {

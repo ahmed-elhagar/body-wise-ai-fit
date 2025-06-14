@@ -22,7 +22,7 @@ export const useOptimizedExerciseProgramPage = () => {
       if (!user?.id) return null;
       
       const { data, error } = await supabase
-        .from('exercise_programs')
+        .from('weekly_exercise_programs')
         .select(`
           *,
           daily_workouts (
@@ -52,7 +52,6 @@ export const useOptimizedExerciseProgramPage = () => {
     ?.is_rest_day || false;
 
   const handleExerciseComplete = async (exerciseId: string) => {
-    // Implementation for completing exercise
     console.log('Exercise completed:', exerciseId);
     refetch();
   };
@@ -64,7 +63,6 @@ export const useOptimizedExerciseProgramPage = () => {
     notes?: string,
     weight?: number
   ) => {
-    // Implementation for updating exercise progress
     console.log('Exercise progress updated:', { exerciseId, sets, reps, notes, weight });
     refetch();
   };
