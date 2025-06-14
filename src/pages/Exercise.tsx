@@ -1,14 +1,16 @@
 
-import React from 'react';
-import ProtectedRoute from '@/components/ProtectedRoute';
-import Layout from '@/components/Layout';
-import { ExercisePageContainer } from '@/features/exercise/components';
+import ProtectedRoute from "@/components/ProtectedRoute";
+import Layout from "@/components/Layout";
+import { ExercisePageContainer } from "@/features/exercise";
+import { ExerciseErrorBoundary } from "@/components/exercise/ExerciseErrorBoundary";
 
 const Exercise = () => {
   return (
     <ProtectedRoute>
       <Layout>
-        <ExercisePageContainer />
+        <ExerciseErrorBoundary>
+          <ExercisePageContainer />
+        </ExerciseErrorBoundary>
       </Layout>
     </ProtectedRoute>
   );

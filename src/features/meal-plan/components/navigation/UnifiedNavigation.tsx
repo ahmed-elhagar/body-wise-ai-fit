@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,7 @@ import {
   Coins
 } from "lucide-react";
 import { format, addDays } from 'date-fns';
-import { useI18n } from '@/hooks/useI18n';
+import { useMealPlanTranslations } from '@/utils/mealPlanTranslations';
 import { getDayName } from '@/utils/mealPlanUtils';
 
 interface UnifiedNavigationProps {
@@ -36,7 +37,15 @@ export const UnifiedNavigation = ({
   hasWeeklyPlan,
   remainingCredits = 0
 }: UnifiedNavigationProps) => {
-  const { t, isRTL } = useI18n();
+  const {
+    currentWeek,
+    generateAIMealPlan,
+    aiCredits,
+    selectDay,
+    today,
+    language,
+    isRTL
+  } = useMealPlanTranslations();
 
   const weekEndDate = addDays(weekStartDate, 6);
   const isCurrentWeek = currentWeekOffset === 0;
@@ -65,7 +74,7 @@ export const UnifiedNavigation = ({
         </span>
         {isToday && (
           <Badge variant="secondary" className="absolute -top-1 -right-1 text-xs px-1 bg-orange-500 text-white">
-            {t('mealPlan:today')}
+            {today}
           </Badge>
         )}
       </Button>
@@ -95,7 +104,7 @@ export const UnifiedNavigation = ({
                 </div>
                 {isCurrentWeek && (
                   <Badge variant="secondary" className="text-xs mt-1 bg-fitness-primary-100 text-fitness-primary-700">
-                    {t('mealPlan:currentWeek')}
+                    {currentWeek}
                   </Badge>
                 )}
               </div>
@@ -114,7 +123,7 @@ export const UnifiedNavigation = ({
               {/* Credits Display */}
               <div className="flex items-center gap-2 text-sm bg-white/80 px-3 py-1 rounded-lg border border-fitness-primary-200">
                 <Coins className="w-4 h-4 text-yellow-500" />
-                <span className="font-medium text-fitness-primary-700">{t('mealPlan:aiCredits')}: {remainingCredits}</span>
+                <span className="font-medium text-fitness-primary-700">{aiCredits}: {remainingCredits}</span>
               </div>
 
               {/* Generate AI Button */}
@@ -125,7 +134,7 @@ export const UnifiedNavigation = ({
                 className="bg-gradient-to-r from-fitness-primary-600 to-fitness-accent-600 hover:from-fitness-primary-700 hover:to-fitness-accent-700 text-white shadow-lg"
               >
                 <Sparkles className="w-4 h-4 mr-2" />
-                {isGenerating ? t('mealPlan:generating') : t('mealPlan:generateAIMealPlan')}
+                {isGenerating ? 'Generating...' : generateAIMealPlan}
               </Button>
             </div>
           </div>
@@ -137,7 +146,7 @@ export const UnifiedNavigation = ({
         <Card className="bg-white/80 backdrop-blur-sm border-fitness-primary-200">
           <CardContent className="p-4">
             <div className="space-y-3">
-              <h3 className="font-medium text-center text-fitness-primary-900">{t('mealPlan:selectDay')}</h3>
+              <h3 className="font-medium text-center text-fitness-primary-900">{selectDay}</h3>
               <div className={`grid grid-cols-7 gap-2 ${isRTL ? 'direction-rtl' : ''}`}>
                 {dayButtons}
               </div>

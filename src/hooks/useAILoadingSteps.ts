@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import type { AIStep } from '@/components/ai/AILoadingSteps';
 
@@ -29,17 +30,9 @@ export const useAILoadingSteps = (
     }
   }, [isActive]);
 
-  // Auto progress through steps and handle completion
+  // Auto progress through steps with smarter timing
   useEffect(() => {
     if (!isActive || !autoProgress || isComplete) return;
-
-    if (currentStepIndex >= steps.length - 1) {
-      // We are on the last step, wait for completion delay
-      const timer = setTimeout(() => {
-        setIsComplete(true);
-      }, completionDelay);
-      return () => clearTimeout(timer);
-    }
 
     // Calculate dynamic step duration based on estimated time if available
     const calcStepDuration = () => {
@@ -52,7 +45,16 @@ export const useAILoadingSteps = (
     };
 
     const timer = setTimeout(() => {
-      setCurrentStepIndex(prev => prev + 1);
+      setCurrentStepIndex(prev => {
+        if (prev >= steps.length - 1) {
+          // Last step - add delay before completion
+          setTimeout(() => {
+            setIsComplete(true);
+          }, completionDelay);
+          return prev;
+        }
+        return prev + 1;
+      });
     }, calcStepDuration());
 
     return () => clearTimeout(timer);
@@ -85,7 +87,7 @@ export const useAILoadingSteps = (
     setIsComplete(false);
   }, []);
 
-  const progress = steps.length > 0 ? Math.round(((currentStepIndex + (isComplete ? 1 : 0)) / steps.length) * 100) : 0;
+  const progress = Math.round((currentStepIndex / Math.max(steps.length - 1, 1)) * 100);
 
   return {
     currentStepIndex,

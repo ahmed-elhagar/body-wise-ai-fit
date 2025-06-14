@@ -15,18 +15,17 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useI18n } from "@/hooks/useI18n";
-import { Grid } from "@/components/ui/layout";
+import { useProfile } from "@/hooks/useProfile";
+import { useMealPlans } from "@/features/meal-plan/hooks";
+import { useExercisePrograms } from "@/hooks/useExercisePrograms";
 
-interface QuickActionsGridProps {
-  profile: any;
-  mealPlans: any[] | null;
-  programs: any[] | null;
-}
-
-const QuickActionsGrid = ({ profile, mealPlans, programs }: QuickActionsGridProps) => {
+const QuickActionsGrid = () => {
   const navigate = useNavigate();
   const { tFrom, isRTL } = useI18n();
   const tDashboard = tFrom('dashboard');
+  const { profile } = useProfile();
+  const { mealPlans } = useMealPlans();
+  const { programs } = useExercisePrograms();
 
   const quickActions = [
     {
@@ -86,19 +85,19 @@ const QuickActionsGrid = ({ profile, mealPlans, programs }: QuickActionsGridProp
   ];
 
   return (
-    <Grid cols={3} gap={6}>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {quickActions.map((action, index) => {
         const IconComponent = action.icon;
         
         return (
           <Card 
             key={index}
-            className="group hover:shadow-2xl transition-all duration-500 border-0 bg-white/90 backdrop-blur-sm hover:bg-white hover:scale-[1.02] cursor-pointer overflow-hidden relative rounded-2xl"
+            className="group hover:shadow-2xl transition-all duration-500 border-0 bg-white/90 backdrop-blur-sm hover:bg-white hover:scale-[1.02] cursor-pointer overflow-hidden relative"
             onClick={action.action}
           >
             {/* Gradient border effect */}
-            <div className={`absolute inset-0 bg-gradient-to-br ${action.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl`}>
-              <div className="absolute inset-[1px] bg-white rounded-2xl" />
+            <div className={`absolute inset-0 bg-gradient-to-br ${action.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl`}>
+              <div className="absolute inset-[1px] bg-white rounded-xl" />
             </div>
             
             <CardContent className="relative p-6 z-10">
@@ -138,7 +137,7 @@ const QuickActionsGrid = ({ profile, mealPlans, programs }: QuickActionsGridProp
           </Card>
         );
       })}
-    </Grid>
+    </div>
   );
 };
 

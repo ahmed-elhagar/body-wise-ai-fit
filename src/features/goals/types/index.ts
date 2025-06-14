@@ -1,25 +1,16 @@
 
-// Goals feature types - aligned with database schema
+// Goals feature types
 export interface Goal {
   id: string;
-  user_id: string;
-  goal_type: string;
   title: string;
-  description?: string;
-  target_value?: number;
-  target_unit?: string;
+  description: string;
+  target_value: number;
   current_value: number;
-  category: string;
-  difficulty: string;
-  status: string;
-  priority: string;
-  start_date: string;
-  target_date?: string;
-  created_at: string;
-  updated_at: string;
-  milestones?: any[];
-  tags?: string[];
-  notes?: string;
+  unit: string;
+  category: 'weight' | 'exercise' | 'nutrition' | 'habit';
+  deadline: string;
+  completed: boolean;
+  progress_percentage: number;
 }
 
 export interface GoalProgress {

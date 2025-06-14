@@ -1,8 +1,9 @@
+
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, Shuffle, ShoppingCart, RefreshCw, UtensilsCrossed, Zap } from "lucide-react";
-import { useI18n } from '@/hooks/useI18n';
+import { useMealPlanTranslations } from "@/utils/mealPlanTranslations";
 import { useCentralizedCredits } from "@/hooks/useCentralizedCredits";
 
 interface MealPlanHeaderProps {
@@ -24,7 +25,14 @@ const MealPlanHeader = ({
   isShuffling = false,
   hasWeeklyPlan
 }: MealPlanHeaderProps) => {
-  const { t, isRTL } = useI18n();
+  const { 
+    title, 
+    smartMealPlanning, 
+    personalizedNutrition, 
+    generateAIMealPlan,
+    generating,
+    isRTL 
+  } = useMealPlanTranslations();
 
   const { remaining: userCredits, isPro, hasCredits } = useCentralizedCredits();
 
@@ -66,10 +74,10 @@ const MealPlanHeader = ({
             </div>
             <div className={isRTL ? 'text-right' : 'text-left'}>
               <h1 className="text-xl font-bold text-white mb-0.5 tracking-tight">
-                {t('mealPlan:title')}
+                {title || 'Smart Meal Plan'}
               </h1>
               <p className="text-fitness-primary-100 text-sm font-medium">
-                {t('mealPlan:personalizedNutrition')}
+                {personalizedNutrition || 'AI-powered personalized nutrition'}
               </p>
               
               {/* AI Credits Badge - Using centralized credits */}
@@ -98,7 +106,7 @@ const MealPlanHeader = ({
                   ) : (
                     <Shuffle className="w-4 h-4" />
                   )}
-                  <span className="hidden sm:inline ml-2 text-xs">{t('mealPlan:shuffle')}</span>
+                  <span className="hidden sm:inline ml-2 text-xs">Shuffle</span>
                 </Button>
 
                 <Button
@@ -108,7 +116,7 @@ const MealPlanHeader = ({
                   className="bg-white/10 border-white/30 text-white hover:bg-white/20 hover:text-white backdrop-blur-sm transition-all duration-200 hover:scale-105 px-2 h-8"
                 >
                   <ShoppingCart className="w-4 h-4" />
-                  <span className="hidden sm:inline ml-2 text-xs">{t('mealPlan:shop')}</span>
+                  <span className="hidden sm:inline ml-2 text-xs">Shop</span>
                 </Button>
               </div>
             )}
@@ -123,7 +131,7 @@ const MealPlanHeader = ({
               ) : (
                 <Sparkles className="w-4 h-4" />
               )}
-              <span className="hidden sm:inline ml-2 text-xs font-medium">{t('mealPlan:aiPlan')}</span>
+              <span className="hidden sm:inline ml-2 text-xs font-medium">AI Plan</span>
             </Button>
           </div>
         </div>

@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { useI18n } from '@/hooks/useI18n';
+import { useMealPlanTranslations } from '@/utils/mealPlanTranslations';
 
 interface AddMealCardProps {
   mealType?: string;
@@ -11,7 +11,7 @@ interface AddMealCardProps {
 }
 
 export const AddMealCard = ({ mealType, onAddMeal }: AddMealCardProps) => {
-  const { t } = useI18n();
+  const { addSnack } = useMealPlanTranslations();
 
   return (
     <Card className="border-2 border-dashed border-gray-300 hover:border-teal-400 transition-colors cursor-pointer">
@@ -25,7 +25,7 @@ export const AddMealCard = ({ mealType, onAddMeal }: AddMealCardProps) => {
             <Plus className="w-6 h-6" />
           </div>
           <span className="text-sm font-medium">
-            {mealType === 'snack' ? t('mealPlan:addSnack') : `${t('common:add')} ${t(`mealPlan:mealTypes.${mealType}`, { defaultValue: mealType || t('common:meal') })}`}
+            {mealType === 'snack' ? addSnack : `Add ${mealType || 'meal'}`}
           </span>
         </Button>
       </CardContent>

@@ -2,6 +2,8 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { 
+  Calendar, 
+  Activity, 
   TrendingUp,
   Sparkles,
   Heart,
@@ -10,24 +12,23 @@ import {
   ArrowRight
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useProfile } from "@/hooks/useProfile";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useI18n } from "@/hooks/useI18n";
 import { formatDistanceToNow } from "date-fns";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import type { AuthUser } from "@/hooks/useAuth";
 
 interface DashboardHeaderProps {
-  user: AuthUser | null;
-  profile: any;
+  userName: string;
 }
 
-const DashboardHeader = ({ user, profile }: DashboardHeaderProps) => {
+const DashboardHeader = ({ userName }: DashboardHeaderProps) => {
   const navigate = useNavigate();
+  const { profile } = useProfile();
   const { notifications, unreadCount, markAsRead } = useNotifications();
-  const { isRTL } = useI18n();
-
-  const userName = profile?.full_name || user?.email?.split('@')[0] || 'buddy';
+  const { tFrom, isRTL } = useI18n();
+  const tDashboard = tFrom('dashboard');
 
   const handleNotificationClick = (notification: any) => {
     if (!notification.is_read) {
@@ -47,33 +48,39 @@ const DashboardHeader = ({ user, profile }: DashboardHeaderProps) => {
   };
 
   return (
-    <Card className="p-6">
+    <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-700 border-0 shadow-xl rounded-2xl">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
+      <div className="absolute -top-20 -right-20 w-40 h-40 bg-white/5 rounded-full" />
+      <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/5 rounded-full" />
+      
+      <div className="relative p-6 md:p-8">
         <div className={`flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 ${isRTL ? 'lg:flex-row-reverse' : ''}`}>
           {/* Welcome Section */}
           <div className="flex-1">
-            <div className={`flex items-center gap-4 mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-2xl flex items-center justify-center shadow-lg">
-                <Sparkles className="w-8 h-8" />
+            <div className={`flex items-center gap-3 mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                <Sparkles className="w-8 h-8 text-white" />
               </div>
               <div className={isRTL ? 'text-right' : 'text-left'}>
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
+                <h1 className="text-3xl md:text-4xl font-bold text-white mb-1">
                   Welcome back, {userName}!
                 </h1>
-                <p className="text-gray-500 text-lg">
+                <p className="text-white/80 text-lg">
                   Ready to continue your fitness journey?
                 </p>
               </div>
             </div>
             
             {/* Real Data Stats */}
-            <div className={`flex flex-wrap gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <Badge variant="outline" className="px-3 py-1.5 text-sm border-gray-200">
-                <Heart className="w-4 h-4 mr-2 text-red-500" />
+            <div className={`flex flex-wrap gap-3 mb-6 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <Badge className="bg-white/20 text-white border-white/30 px-3 py-1.5">
+                <Heart className="w-4 h-4 mr-2" />
                 Health Tracking Active
               </Badge>
               {profile?.ai_generations_remaining !== undefined && (
-                <Badge variant="secondary" className="px-3 py-1.5 text-sm bg-gray-100 text-gray-800">
-                  <TrendingUp className="w-4 h-4 mr-2 text-green-500" />
+                <Badge className="bg-gradient-to-r from-emerald-400 to-cyan-400 text-white border-0 px-3 py-1.5">
+                  <TrendingUp className="w-4 h-4 mr-2" />
                   AI Credits: {profile.ai_generations_remaining}/5
                 </Badge>
               )}
@@ -87,14 +94,14 @@ const DashboardHeader = ({ user, profile }: DashboardHeaderProps) => {
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="outline"
-                  size="icon"
-                  className="relative rounded-full w-10 h-10"
+                  size="sm"
+                  className="relative bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm transition-all duration-300"
                 >
-                  <Bell className="w-5 h-5" />
+                  <Bell className="w-4 h-4" />
                   {unreadCount > 0 && (
                     <Badge 
                       variant="destructive" 
-                      className="absolute -top-1 -right-1 h-5 w-5 rounded-full text-xs p-0 flex items-center justify-center"
+                      className="absolute -top-2 -right-2 h-5 w-5 rounded-full text-xs p-0 flex items-center justify-center"
                     >
                       {unreadCount > 9 ? '9+' : unreadCount}
                     </Badge>
@@ -157,9 +164,22 @@ const DashboardHeader = ({ user, profile }: DashboardHeaderProps) => {
                 </div>
               </DropdownMenuContent>
             </DropdownMenu>
+
+            {/* Profile Avatar */}
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <div className="w-12 h-12 bg-gradient-to-br from-pink-400 via-purple-400 to-indigo-400 rounded-2xl flex items-center justify-center shadow-xl border-2 border-white/30 backdrop-blur-sm">
+                  <Activity className="w-6 h-6 text-white" />
+                </div>
+                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full border-2 border-white flex items-center justify-center">
+                  <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-    </Card>
+      </div>
+    </div>
   );
 };
 

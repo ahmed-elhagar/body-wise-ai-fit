@@ -1,11 +1,6 @@
 
-// Barrel file for the Food Tracker feature
+// Food tracker feature exports
+export type * from './types';
 
-// Export hooks
-export * from './hooks';
-
-// Export components
+// Components
 export * from './components';
-
-// Export types (if any, e.g. from ./types/index.ts)
-// export * from './types';

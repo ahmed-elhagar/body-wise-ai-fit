@@ -41,10 +41,9 @@
 - Update imports in: `src/pages/Dashboard.tsx`
 
 ### Cleanup Targets:
-- [x] Remove `src/components/DebugPanel.tsx`
-- [x] Remove `src/features/auth/components/AuthDebugPanel.tsx`
-- [x] Remove `src/components/SubscriptionDebugPanel.tsx`
-- [x] Remove `src/utils/seedBasicFoods.ts`
+- [ ] Remove `src/components/DebugPanel.tsx`
+- [ ] Remove `src/components/SubscriptionDebugPanel.tsx`
+- [ ] Remove `src/utils/seedBasicFoods.ts`
 - [ ] Clean up unused imports across all files
 - [ ] Consolidate duplicate components
 

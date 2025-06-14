@@ -1,15 +1,14 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useI18n } from '@/hooks/useI18n';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { addDays, startOfWeek, format } from 'date-fns';
-import { ExerciseProgram } from '@/features/exercise';
-import { generateWeeklyWorkouts } from '@/features/exercise/utils/exerciseDataUtils';
+import { ExerciseProgram } from '@/types/exercise';
+import { generateWeeklyWorkouts } from '@/utils/exerciseDataUtils';
 
 export const useExerciseProgramQuery = (weekOffset: number = 0, workoutType: "home" | "gym" = "home") => {
   const { user } = useAuth();
-  const { language } = useI18n();
+  const { language } = useLanguage();
 
   // Calculate the target week start date based on offset
   const currentDate = new Date();
@@ -62,7 +61,7 @@ export const useExerciseProgramQuery = (weekOffset: number = 0, workoutType: "ho
       // Transform data and handle rest days
       const transformedProgram = {
         ...existingProgram,
-        workout_type: workoutType,
+        workout_type: existingProgram.workout_type || workoutType,
         current_week: existingProgram.current_week || 1,
         daily_workouts_count: existingProgram.daily_workouts?.length || 0,
         daily_workouts: generateWeeklyWorkouts(existingProgram.daily_workouts || [], workoutType)

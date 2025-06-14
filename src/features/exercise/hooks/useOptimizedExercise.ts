@@ -1,5 +1,3 @@
-
-
 import { useOptimizedExerciseProgramPage } from './useOptimizedExerciseProgramPage';
 import { useExerciseActions } from './useExerciseActions';
 import { useMemo, useState } from 'react';
@@ -79,32 +77,14 @@ export const useOptimizedExercise = () => {
     }));
   }, [currentWorkout]);
 
-  // Progress metrics with all required properties
+  // Progress metrics
   const progressMetrics = useMemo(() => {
     const stats = getWeeklyStats();
-    const completedWorkouts = currentProgram?.daily_workouts?.filter((w: any) => w.completed).length || 0;
-    const totalWorkouts = currentProgram?.daily_workouts?.length || 0;
-    const weeklyProgress = stats.totalWeeklyExercises > 0 ? 
-      Math.round((stats.completedWeeklyExercises / stats.totalWeeklyExercises) * 100) : 0;
-
-    // Calculate current streak (mock for now - would need proper tracking)
-    const currentStreak = completedWorkouts > 0 ? Math.min(completedWorkouts, 7) : 0;
-    
-    // Calculate estimated calories burned (mock calculation)
-    const totalCaloriesBurned = stats.completedWeeklyExercises * 150; // 150 calories per exercise average
-    
-    // Determine average intensity based on completion rate
-    const averageIntensity = weeklyProgress >= 80 ? 'High' : 
-                           weeklyProgress >= 50 ? 'Medium' : 'Low';
-
     return {
-      weeklyProgress,
-      completedWorkouts,
-      totalWorkouts,
-      progressPercentage: weeklyProgress, // Add the missing progressPercentage property
-      currentStreak,
-      totalCaloriesBurned,
-      averageIntensity,
+      completedWorkouts: currentProgram?.daily_workouts?.filter((w: any) => w.completed).length || 0,
+      totalWorkouts: currentProgram?.daily_workouts?.length || 0,
+      progressPercentage: stats.totalWeeklyExercises > 0 ? 
+        Math.round((stats.completedWeeklyExercises / stats.totalWeeklyExercises) * 100) : 0,
     };
   }, [currentProgram]);
 
@@ -148,4 +128,3 @@ export const useOptimizedExercise = () => {
     optimizedActions,
   };
 };
-

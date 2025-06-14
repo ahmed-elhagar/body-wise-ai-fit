@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -7,7 +8,8 @@ import { Switch } from '@/components/ui/switch';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Sparkles, Zap, AlertTriangle, Info, Heart, Shield } from 'lucide-react';
-import { useI18n } from '@/hooks/useI18n';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useMealPlanTranslations } from '@/utils/mealPlanTranslations';
 import { useCentralizedCredits } from '@/hooks/useCentralizedCredits';
 import { useProfile } from '@/hooks/useProfile';
 import type { MealPlanPreferences } from '@/types/mealPlan';
@@ -31,8 +33,20 @@ export const AIGenerationDialog = ({
   isGenerating,
   hasExistingPlan
 }: AIGenerationDialogProps) => {
-  const { language, t, isRTL } = useI18n();
+  const { language } = useLanguage();
   const { profile } = useProfile();
+  const { 
+    generateAIMealPlan,
+    mealPlanSettings,
+    includeSnacks,
+    maxPrepTime,
+    cuisine,
+    aiCredits,
+    creditsRemaining,
+    generating,
+    mealsPerDay,
+    isRTL 
+  } = useMealPlanTranslations();
 
   // Use centralized credits instead of passed props
   const { remaining: userCredits, isPro, hasCredits } = useCentralizedCredits();
@@ -107,27 +121,29 @@ export const AIGenerationDialog = ({
 
   const getMealsPerDayText = () => {
     const count = preferences.includeSnacks ? 5 : 3;
-    return `${count} ${t('mealPlan:mealsPerDay')}`;
+    return language === 'ar' 
+      ? `${count} وجبات يومياً`
+      : `${count} meals per day`;
   };
 
   const getButtonText = () => {
     if (isGenerating) {
-      return t('mealPlan:generating');
+      return language === 'ar' ? 'جاري إنشاء خطتك...' : 'Creating Your Meal Plan...';
     }
     if (hasExistingPlan) {
-      return t('mealPlan:generateNewPlan', { defaultValue: 'Generate New Meal Plan' });
+      return language === 'ar' ? 'إنشاء خطة جديدة' : 'Generate New Meal Plan';
     }
-    return t('mealPlan:generateAIMealPlan');
+    return language === 'ar' ? 'إنشاء خطة الوجبات بالذكاء الاصطناعي' : 'Generate AI Meal Plan';
   };
 
   const cuisineOptions = [
-    { value: 'mixed', label: t('mealPlan:cuisine.mixed', { defaultValue: 'Mixed Cuisines' }) },
-    { value: 'mediterranean', label: t('mealPlan:cuisine.mediterranean', { defaultValue: 'Mediterranean' }) },
-    { value: 'asian', label: t('mealPlan:cuisine.asian', { defaultValue: 'Asian' }) },
-    { value: 'mexican', label: t('mealPlan:cuisine.mexican', { defaultValue: 'Mexican' }) },
-    { value: 'italian', label: t('mealPlan:cuisine.italian', { defaultValue: 'Italian' }) },
-    { value: 'middle_eastern', label: t('mealPlan:cuisine.middle_eastern', { defaultValue: 'Middle Eastern' }) },
-    { value: 'american', label: t('mealPlan:cuisine.american', { defaultValue: 'American' }) }
+    { value: 'mixed', label: language === 'ar' ? 'مختلط' : 'Mixed Cuisines' },
+    { value: 'mediterranean', label: language === 'ar' ? 'متوسطية' : 'Mediterranean' },
+    { value: 'asian', label: language === 'ar' ? 'آسيوية' : 'Asian' },
+    { value: 'mexican', label: language === 'ar' ? 'مكسيكية' : 'Mexican' },
+    { value: 'italian', label: language === 'ar' ? 'إيطالية' : 'Italian' },
+    { value: 'middle_eastern', label: language === 'ar' ? 'شرق أوسطية' : 'Middle Eastern' },
+    { value: 'american', label: language === 'ar' ? 'أمريكية' : 'American' }
   ];
 
   const displayCredits = isPro ? 'Unlimited' : `${userCredits}`;
@@ -144,10 +160,13 @@ export const AIGenerationDialog = ({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-orange-500" />
-              {t('common:confirmRegeneration', { defaultValue: 'Confirm Regeneration' })}
+              {language === 'ar' ? 'تأكيد إعادة الإنشاء' : 'Confirm Regeneration'}
             </DialogTitle>
             <DialogDescription>
-              {t('mealPlan:confirmRegenerationDescription', { defaultValue: 'This will replace your current meal plan and consume 1 AI credit.' })}
+              {language === 'ar' 
+                ? 'ستستبدل هذه العملية خطة الوجبات الحالية وستستهلك رصيد ذكاء اصطناعي واحد.'
+                : 'This will replace your current meal plan and consume 1 AI credit.'
+              }
             </DialogDescription>
           </DialogHeader>
 
@@ -155,7 +174,7 @@ export const AIGenerationDialog = ({
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">
-                  {t('mealPlan:creditsRemaining')}:
+                  {language === 'ar' ? 'الأرصدة المتبقية:' : 'Credits Remaining:'}
                 </span>
                 <Badge variant="outline" className="bg-white">
                   <Zap className="w-3 h-3 mr-1" />
@@ -171,7 +190,7 @@ export const AIGenerationDialog = ({
               onClick={() => setShowConfirmation(false)}
               className="flex-1"
             >
-              {t('common:cancel')}
+              {language === 'ar' ? 'إلغاء' : 'Cancel'}
             </Button>
             <Button 
               onClick={handleConfirmedGenerate}
@@ -179,7 +198,7 @@ export const AIGenerationDialog = ({
               className="flex-1"
             >
               <Sparkles className="w-4 h-4 mr-2" />
-              {t('common:confirmGenerate', { defaultValue: 'Confirm Generate' })}
+              {language === 'ar' ? 'تأكيد الإنشاء' : 'Confirm Generate'}
             </Button>
           </div>
         </DialogContent>
@@ -193,10 +212,13 @@ export const AIGenerationDialog = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-blue-500" />
-            {t('mealPlan:generateAIMealPlan')}
+            {generateAIMealPlan || 'Generate AI Meal Plan'}
           </DialogTitle>
           <DialogDescription>
-            {t('mealPlan:dialogDescription', { defaultValue: 'Customize your meal plan using advanced AI technology' })}
+            {language === 'ar' 
+              ? 'خصص خطة وجباتك باستخدام الذكاء الاصطناعي المتطور'
+              : 'Customize your meal plan using advanced AI technology'
+            }
           </DialogDescription>
         </DialogHeader>
 
@@ -208,7 +230,7 @@ export const AIGenerationDialog = ({
                 <div className="flex items-center gap-2">
                   <Zap className="w-4 h-4 text-yellow-500" />
                   <span className="font-medium">
-                    {t('mealPlan:aiCredits')}: {t('mealPlan:creditsRemaining')}
+                    {language === 'ar' ? 'أرصدة الذكاء الاصطناعي: الأرصدة المتبقية' : 'AI Credits: Credits Remaining'}
                   </span>
                 </div>
                 <Badge variant="secondary" className="bg-white">
@@ -225,7 +247,7 @@ export const AIGenerationDialog = ({
                 <div className="flex items-center gap-2 mb-3">
                   <Heart className="w-4 h-4 text-red-500" />
                   <span className="font-medium text-red-800">
-                    {t('mealPlan:healthConditionsDietaryRequirements', { defaultValue: 'Health Conditions & Dietary Requirements' })}
+                    {language === 'ar' ? 'الحالات الصحية والقيود الغذائية' : 'Health Conditions & Dietary Requirements'}
                   </span>
                 </div>
                 
@@ -233,7 +255,7 @@ export const AIGenerationDialog = ({
                   {healthConditions.length > 0 && (
                     <div>
                       <span className="text-xs font-medium text-red-700 mb-1 block">
-                        {t('mealPlan:healthConditions', { defaultValue: 'Health Conditions:' })}
+                        {language === 'ar' ? 'الحالات الصحية:' : 'Health Conditions:'}
                       </span>
                       <div className="flex flex-wrap gap-1">
                         {healthConditions.map((condition, index) => (
@@ -249,7 +271,7 @@ export const AIGenerationDialog = ({
                   {allergies.length > 0 && (
                     <div>
                       <span className="text-xs font-medium text-red-700 mb-1 block">
-                        {t('mealPlan:allergies', { defaultValue: 'Allergies:' })}
+                        {language === 'ar' ? 'الحساسية:' : 'Allergies:'}
                       </span>
                       <div className="flex flex-wrap gap-1">
                         {allergies.map((allergy, index) => (
@@ -265,7 +287,7 @@ export const AIGenerationDialog = ({
                   {dietaryRestrictions.length > 0 && (
                     <div>
                       <span className="text-xs font-medium text-red-700 mb-1 block">
-                        {t('mealPlan:dietaryRestrictions', { defaultValue: 'Dietary Restrictions:' })}
+                        {language === 'ar' ? 'القيود الغذائية:' : 'Dietary Restrictions:'}
                       </span>
                       <div className="flex flex-wrap gap-1">
                         {dietaryRestrictions.map((restriction, index) => (
@@ -281,12 +303,10 @@ export const AIGenerationDialog = ({
                 
                 <div className="mt-3 p-2 bg-white/60 rounded-md">
                   <p className="text-xs text-red-600">
-                    {t(
-                      'mealPlan:considerations',
-                      { 
-                        defaultValue: 'These will be considered when generating your personalized meal plan'
-                      }
-                    )}
+                    {language === 'ar' 
+                      ? 'سيتم مراعاة هذه المعلومات عند إنشاء خطة الوجبات الخاصة بك'
+                      : 'These will be considered when generating your personalized meal plan'
+                    }
                   </p>
                 </div>
               </CardContent>
@@ -297,7 +317,7 @@ export const AIGenerationDialog = ({
           <div className="space-y-4">
             <div className="space-y-2">
               <Label className="text-base font-medium">
-                {t('mealPlan:includeSnacks')}
+                {includeSnacks || 'Include Snacks'}
               </Label>
               <div className="flex items-center gap-3">
                 <Switch
@@ -311,16 +331,14 @@ export const AIGenerationDialog = ({
               <div className="flex items-center gap-2 text-xs text-blue-600 bg-blue-50 p-2 rounded-md">
                 <Info className="w-3 h-3" />
                 <span>
-                  {t(
-                    preferences.includeSnacks !== false 
-                      ? 'mealPlan:snacksIncludedDescription' 
-                      : 'mealPlan:snacksExcludedDescription',
-                    { 
-                      defaultValue: preferences.includeSnacks !== false
-                        ? 'Will generate 5 meals per day (breakfast, snack, lunch, snack, dinner)'
-                        : 'Will generate 3 meals per day (breakfast, lunch, dinner)'
-                    }
-                  )}
+                  {language === 'ar' 
+                    ? preferences.includeSnacks !== false
+                      ? 'سيتم إنشاء 5 وجبات يومياً (فطار، وجبة خفيفة، غداء، وجبة خفيفة، عشاء)'
+                      : 'سيتم إنشاء 3 وجبات يومياً (فطار، غداء، عشاء)'
+                    : preferences.includeSnacks !== false
+                      ? 'Will generate 5 meals per day (breakfast, snack, lunch, snack, dinner)'
+                      : 'Will generate 3 meals per day (breakfast, lunch, dinner)'
+                  }
                 </span>
               </div>
             </div>
@@ -328,7 +346,7 @@ export const AIGenerationDialog = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="cuisine">
-                  {t('mealPlan:cuisine')}
+                  {cuisine || 'Cuisine Type'}
                 </Label>
                 <Select
                   value={preferences.cuisine || 'mixed'}
@@ -349,7 +367,7 @@ export const AIGenerationDialog = ({
 
               <div className="space-y-2">
                 <Label htmlFor="maxPrepTime">
-                  {t('mealPlan:maxPrepTime')} ({t('common:minutes', { defaultValue: 'minutes'})})
+                  {maxPrepTime || 'Max Prep Time'} ({language === 'ar' ? 'دقيقة' : 'minutes'})
                 </Label>
                 <Select
                   value={preferences.maxPrepTime || '30'}
@@ -359,10 +377,10 @@ export const AIGenerationDialog = ({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="15">15 {t('common:minutes', { defaultValue: 'minutes'})}</SelectItem>
-                    <SelectItem value="30">30 {t('common:minutes', { defaultValue: 'minutes'})}</SelectItem>
-                    <SelectItem value="45">45 {t('common:minutes', { defaultValue: 'minutes'})}</SelectItem>
-                    <SelectItem value="60">60 {t('common:minutes', { defaultValue: 'minutes'})}</SelectItem>
+                    <SelectItem value="15">15 {language === 'ar' ? 'دقيقة' : 'minutes'}</SelectItem>
+                    <SelectItem value="30">30 {language === 'ar' ? 'دقيقة' : 'minutes'}</SelectItem>
+                    <SelectItem value="45">45 {language === 'ar' ? 'دقيقة' : 'minutes'}</SelectItem>
+                    <SelectItem value="60">60 {language === 'ar' ? 'دقيقة' : 'minutes'}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -377,7 +395,7 @@ export const AIGenerationDialog = ({
               className="flex-1"
               disabled={isGenerating}
             >
-              {t('common:cancel')}
+              {language === 'ar' ? 'إلغاء' : 'Cancel'}
             </Button>
             <Button 
               onClick={handleGenerate}
@@ -391,7 +409,10 @@ export const AIGenerationDialog = ({
 
           {!hasCredits && (
             <div className="text-center text-red-600 text-sm">
-              {t('mealPlan:noCreditsRemaining')}
+              {language === 'ar' 
+                ? 'لا توجد أرصدة ذكاء اصطناعي متبقية'
+                : 'No AI credits remaining'
+              }
             </div>
           )}
         </div>

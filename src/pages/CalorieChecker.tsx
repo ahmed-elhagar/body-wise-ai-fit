@@ -1,64 +1,68 @@
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Camera, Search } from "lucide-react";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
-import { FoodScanner, EnhancedSearchTab } from "@/features/food-tracker/components";
+import { PageHeader } from "@/components/ui/page-header";
+import { Camera } from "lucide-react";
+import FoodPhotoAnalyzer from "@/components/calorie/FoodPhotoAnalyzer";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const CalorieChecker = () => {
-  const [activeTab, setActiveTab] = useState('photo');
-
-  const handleFoodAdded = () => {
-    // Refresh or navigate as needed
-    console.log('Food added successfully');
-  };
-
-  const handleClose = () => {
-    // Handle any cleanup if needed
-    console.log('Component closed');
+  const { t } = useLanguage();
+  const navigate = useNavigate();
+  
+  const handleFoodAnalyzed = (food: any) => {
+    // Navigate to food tracker with the analyzed food data
+    toast.success(t('Food analyzed! Redirecting to Food Tracker to log it.'));
+    setTimeout(() => {
+      navigate('/food-tracker', { 
+        state: { 
+          analyzedFood: food,
+          openAddDialog: true 
+        } 
+      });
+    }, 1500);
   };
 
   return (
-    <Layout>
-      <div className="p-6 space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Calorie Checker</h1>
-            <p className="text-muted-foreground">
-              Analyze food photos or search our comprehensive food database
-            </p>
+    <ProtectedRoute>
+      <Layout>
+        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50">
+          <PageHeader
+            title={t('AI Food Scanner')}
+            description={t('Analyze food photos with AI-powered recognition and get instant nutrition information')}
+            icon={<Camera className="h-6 w-6 text-purple-600" />}
+          />
+
+          <div className="max-w-4xl mx-auto p-4 md:p-6">
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border-0 p-6">
+              <FoodPhotoAnalyzer onSelectFood={handleFoodAnalyzed} />
+            </div>
+
+            {/* Info Card */}
+            <div className="mt-6 bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl p-6 border border-purple-200">
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Camera className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                    {t('How it works')}
+                  </h3>
+                  <ul className="text-sm text-gray-600 space-y-1">
+                    <li>• {t('Take a photo of your food or upload an existing image')}</li>
+                    <li>• {t('Our AI analyzes the image and identifies food items')}</li>
+                    <li>• {t('Get instant nutrition information and calorie estimates')}</li>
+                    <li>• {t('Add analyzed foods directly to your food tracker')}</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-
-        <Tabs defaultValue="photo" value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-2 w-full max-w-md">
-            <TabsTrigger value="photo" className="flex items-center gap-2">
-              <Camera className="w-4 h-4" />
-              <span>AI Analysis</span>
-            </TabsTrigger>
-            <TabsTrigger value="search" className="flex items-center gap-2">
-              <Search className="w-4 h-4" />
-              <span>Search</span>
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="photo" className="space-y-6">
-            <FoodScanner 
-              onFoodAdded={handleFoodAdded}
-              onClose={handleClose}
-            />
-          </TabsContent>
-
-          <TabsContent value="search" className="space-y-6">
-            <EnhancedSearchTab
-              onFoodAdded={handleFoodAdded}
-              onClose={handleClose}
-            />
-          </TabsContent>
-        </Tabs>
-      </div>
-    </Layout>
+      </Layout>
+    </ProtectedRoute>
   );
 };
 

@@ -1,7 +1,8 @@
 
 // Profile feature exports
+export type * from './types';
 export * from './components';
-export * from './hooks';
+export * from './utils';
 
-// Default exports
-export { default as ProfileCompletionBanner } from './components/ProfileCompletionBanner';
+// Main entry point for profile feature
+export { default as ProfilePage } from './components/ProfilePage';

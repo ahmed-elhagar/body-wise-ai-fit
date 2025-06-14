@@ -1,20 +1,20 @@
 
-import React, { useState } from 'react';
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus } from "lucide-react";
-import { useGoals } from "@/features/dashboard/hooks/useGoals";
+import { Target } from "lucide-react";
+import { useGoals } from "@/hooks/useGoals";
 
 interface GoalCreationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export const GoalCreationDialog = ({ open, onOpenChange }: GoalCreationDialogProps) => {
+const GoalCreationDialog = ({ open, onOpenChange }: GoalCreationDialogProps) => {
   const { createGoal, isCreating } = useGoals();
   const [formData, setFormData] = useState({
     title: '',
@@ -58,7 +58,7 @@ export const GoalCreationDialog = ({ open, onOpenChange }: GoalCreationDialogPro
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Plus className="w-5 h-5 text-blue-600" />
+            <Target className="w-5 h-5 text-blue-600" />
             Create New Goal
           </DialogTitle>
         </DialogHeader>

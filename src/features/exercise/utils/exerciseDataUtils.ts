@@ -43,32 +43,3 @@ export const calculateExerciseProgress = (exercises: any[]): {
     progressPercentage: percentage
   };
 };
-
-export const getWorkoutStatistics = (dailyWorkouts: DailyWorkout[]) => {
-  if (!dailyWorkouts || dailyWorkouts.length === 0) {
-    return {
-      totalWorkouts: 0,
-      completedWorkouts: 0,
-      totalEstimatedCalories: 0,
-    };
-  }
-  const trainingDays = dailyWorkouts.filter(d => !d.is_rest_day);
-  const completedWorkouts = trainingDays.filter(d => d.completed).length;
-  const totalEstimatedCalories = trainingDays.reduce((acc, curr) => acc + (curr.estimated_calories || 0), 0);
-  
-  return {
-    totalWorkouts: trainingDays.length,
-    completedWorkouts,
-    totalEstimatedCalories,
-  };
-};
-
-export const getTrainingDays = (dailyWorkouts: DailyWorkout[]) => {
-  if (!dailyWorkouts) return [];
-  return dailyWorkouts.filter(d => !d.is_rest_day);
-};
-
-export const getRestDays = (dailyWorkouts: DailyWorkout[]) => {
-  if (!dailyWorkouts) return [];
-  return dailyWorkouts.filter(d => d.is_rest_day);
-};

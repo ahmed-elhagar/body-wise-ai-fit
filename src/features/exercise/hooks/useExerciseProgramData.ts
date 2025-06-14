@@ -1,17 +1,28 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { useExerciseActions } from './useExerciseActions';
 import { useEnhancedErrorSystem } from '@/hooks/useEnhancedErrorSystem';
 import { toast } from 'sonner';
-import { useI18n } from '@/hooks/useI18n';
-import { ExerciseProgram } from '@/features/exercise/types';
+import { useLanguage } from '@/contexts/LanguageContext';
+
+export interface ExerciseProgram {
+  id: string;
+  program_name: string;
+  difficulty_level: string;
+  workout_type: string;
+  current_week: number;
+  week_start_date: string;
+  created_at: string;
+  daily_workouts: any[];
+  daily_workouts_count?: number; // Make this optional
+}
 
 export const useExerciseProgramData = (weekStartDate: string, workoutType: string) => {
   const { user } = useAuth();
   const { completeExercise, updateExerciseProgress } = useExerciseActions();
   const { handleError } = useEnhancedErrorSystem();
-  const { language } = useI18n();
+  const { language } = useLanguage();
   const queryClient = useQueryClient();
 
   const query = useQuery({

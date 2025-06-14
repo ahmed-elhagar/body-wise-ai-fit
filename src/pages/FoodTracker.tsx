@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Plus, Utensils, Camera, History, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useFoodConsumption } from "@/features/food-tracker/hooks";
+import { useFoodConsumption } from "@/hooks/useFoodConsumption";
 import { useLocation, useNavigate } from "react-router-dom";
 import { TodayTab, HistoryTab } from "@/features/food-tracker";
-import AddFoodDialog from "@/features/food-tracker/components/AddFoodDialog";
+import AddFoodDialog from "@/components/food-tracker/AddFoodDialog/AddFoodDialog";
 import { toast } from "sonner";
 import { useQueryClient } from '@tanstack/react-query';
 

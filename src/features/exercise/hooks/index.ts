@@ -1,11 +1,9 @@
-export * from './useExerciseActions';
-export * from './useExerciseFeature';
-export * from './useExerciseProgramData';
-export * from './useExerciseProgramQuery';
-export * from './useExercisePrograms';
-export * from './useOptimizedExercise';
-export * from './useOptimizedExerciseProgramPage';
-export * from './useCurrentWorkoutSummary';
-export * from './useWorkoutTimer';
-export * from './useWorkoutSession';
-export { useDailyWorkouts } from './useDailyWorkouts';
+
+// Exercise feature hooks exports
+export { useOptimizedExercise } from './useOptimizedExercise';
+export { useOptimizedExerciseProgramPage } from './useOptimizedExerciseProgramPage';
+export { useExerciseProgramQuery } from './useExerciseProgramQuery';
+export { useExerciseProgramData } from './useExerciseProgramData';
+export { useExerciseActions } from './useExerciseActions';
+export { useExerciseFeature } from './useExerciseFeature';
+export { useExerciseAISteps } from './useExerciseAISteps';

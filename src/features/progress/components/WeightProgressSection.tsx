@@ -1,215 +1,208 @@
 
-import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Scale, TrendingUp, Calendar, Target } from "lucide-react";
-import { useWeightTracking } from "@/features/dashboard/hooks/useWeightTracking";
-import { useProfile } from "@/hooks/useProfile";
+import { 
+  Scale, 
+  TrendingUp, 
+  TrendingDown, 
+  Target,
+  Calendar,
+  ArrowRight,
+  Plus
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useWeightTracking } from "@/hooks/useWeightTracking";
+import { useGoals } from "@/hooks/useGoals";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export const WeightProgressSection = () => {
-  const { entries, isLoading, error } = useWeightTracking();
-  const { profile } = useProfile();
-
-  if (isLoading) {
-    return (
-      <Card className="animate-pulse">
-        <CardHeader>
-          <div className="h-6 bg-gray-200 rounded w-1/3"></div>
-        </CardHeader>
-        <CardContent>
-          <div className="h-40 bg-gray-200 rounded"></div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (error) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Scale className="w-5 h-5 text-red-600" />
-            Weight Progress
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8">
-            <p className="text-red-600">Error loading weight data: {error}</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const currentWeight = entries?.[0]?.weight || profile?.weight || 0;
-  // Note: goal_weight doesn't exist in Profile, we'll use a placeholder or skip this feature
-  const goalWeight = 0; // This would need to be added to the profile or goals system
-  const startingWeight = entries?.[entries.length - 1]?.weight || currentWeight;
+  const navigate = useNavigate();
+  const { weightEntries, addWeightEntry } = useWeightTracking();
+  const { getWeightGoal } = useGoals();
   
-  const weightLoss = startingWeight - currentWeight;
-  const totalWeightToLose = startingWeight - goalWeight;
-  const progressPercentage = totalWeightToLose > 0 ? Math.min((weightLoss / totalWeightToLose) * 100, 100) : 0;
+  const weightGoal = getWeightGoal();
+  const currentWeight = weightEntries?.[0]?.weight || 0;
+  const targetWeight = weightGoal?.target_value || 0;
+  const previousWeight = weightEntries?.[1]?.weight || currentWeight;
+  
+  const weightChange = currentWeight - previousWeight;
+  const progressToGoal = targetWeight > 0 ? 
+    Math.abs((currentWeight - targetWeight) / (previousWeight - targetWeight)) * 100 : 0;
 
-  const recentEntries = entries?.slice(0, 7) || [];
-  const weeklyTrend = recentEntries.length >= 2 ? 
-    recentEntries[0].weight - recentEntries[recentEntries.length - 1].weight : 0;
+  // Prepare chart data
+  const chartData = weightEntries?.slice(0, 10).reverse().map(entry => ({
+    date: new Date(entry.recorded_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    weight: entry.weight,
+    target: targetWeight
+  })) || [];
+
+  const getTrendIcon = () => {
+    if (weightChange > 0) return <TrendingUp className="w-4 h-4 text-red-500" />;
+    if (weightChange < 0) return <TrendingDown className="w-4 h-4 text-green-500" />;
+    return <Target className="w-4 h-4 text-yellow-500" />;
+  };
+
+  const getTrendColor = () => {
+    if (weightChange > 0) return "text-red-600 bg-red-50";
+    if (weightChange < 0) return "text-green-600 bg-green-50";
+    return "text-yellow-600 bg-yellow-50";
+  };
 
   return (
     <div className="space-y-6">
-      {/* Weight Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 hover:shadow-lg transition-all duration-300">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-blue-600 text-sm font-medium">Current Weight</p>
-                <p className="text-2xl font-bold text-blue-900">
-                  {currentWeight > 0 ? `${currentWeight.toFixed(1)} kg` : 'Not set'}
-                </p>
-                <p className="text-xs text-blue-600 mt-1">Latest entry</p>
-              </div>
-              <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center">
-                <Scale className="w-6 h-6 text-white" />
-              </div>
+      {/* Weight Overview Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+          <CardContent className="p-6 text-center">
+            <Scale className="w-8 h-8 text-blue-600 mx-auto mb-3" />
+            <div className="text-3xl font-bold text-blue-900 mb-1">
+              {currentWeight || '--'}kg
             </div>
+            <div className="text-sm text-blue-600">Current Weight</div>
+            {weightEntries?.length > 0 && (
+              <div className="text-xs text-blue-500 mt-2">
+                Last updated: {new Date(weightEntries[0].recorded_at).toLocaleDateString()}
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 hover:shadow-lg transition-all duration-300">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-green-600 text-sm font-medium">Starting Weight</p>
-                <p className="text-2xl font-bold text-green-900">
-                  {startingWeight > 0 ? `${startingWeight.toFixed(1)} kg` : 'Not set'}
-                </p>
-                <p className="text-xs text-green-600 mt-1">First entry</p>
-              </div>
-              <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center">
-                <Target className="w-6 h-6 text-white" />
-              </div>
+        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+          <CardContent className="p-6 text-center">
+            <Target className="w-8 h-8 text-purple-600 mx-auto mb-3" />
+            <div className="text-3xl font-bold text-purple-900 mb-1">
+              {targetWeight || '--'}kg
             </div>
+            <div className="text-sm text-purple-600">Target Weight</div>
+            {weightGoal && (
+              <div className="text-xs text-purple-500 mt-2">
+                Goal deadline: {new Date(weightGoal.target_date).toLocaleDateString()}
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 hover:shadow-lg transition-all duration-300">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-purple-600 text-sm font-medium">Weight Change</p>
-                <p className="text-2xl font-bold text-purple-900">
-                  {weightLoss !== 0 ? `${weightLoss > 0 ? '+' : ''}${weightLoss.toFixed(1)} kg` : '0 kg'}
-                </p>
-                <p className="text-xs text-purple-600 mt-1">Total change</p>
-              </div>
-              <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-white" />
-              </div>
+        <Card className={`bg-gradient-to-br border-2 ${getTrendColor()}`}>
+          <CardContent className="p-6 text-center">
+            <div className="flex justify-center mb-3">
+              {getTrendIcon()}
             </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 hover:shadow-lg transition-all duration-300">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-orange-600 text-sm font-medium">Weekly Trend</p>
-                <p className="text-2xl font-bold text-orange-900">
-                  {weeklyTrend !== 0 ? `${weeklyTrend > 0 ? '+' : ''}${weeklyTrend.toFixed(1)} kg` : '0 kg'}
-                </p>
-                <p className="text-xs text-orange-600 mt-1">Last 7 days</p>
-              </div>
-              <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center">
-                <Calendar className="w-6 h-6 text-white" />
-              </div>
+            <div className={`text-3xl font-bold mb-1 ${weightChange > 0 ? 'text-red-900' : weightChange < 0 ? 'text-green-900' : 'text-yellow-900'}`}>
+              {weightChange > 0 ? '+' : ''}{weightChange.toFixed(1)}kg
+            </div>
+            <div className={`text-sm ${weightChange > 0 ? 'text-red-600' : weightChange < 0 ? 'text-green-600' : 'text-yellow-600'}`}>
+              Change This Week
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Progress Overview - Only show if goal weight exists */}
-      {goalWeight > 0 && (
-        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+      {/* Weight Chart */}
+      {chartData.length > 1 && (
+        <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Target className="w-5 h-5 text-green-600" />
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-blue-600" />
+                Weight Progress Chart
+              </CardTitle>
+              <Badge variant="outline">
+                Last {chartData.length} entries
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Tooltip 
+                    formatter={(value: any, name: string) => [
+                      `${value}kg`,
+                      name === 'weight' ? 'Actual Weight' : 'Target Weight'
+                    ]}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="weight" 
+                    stroke="#3b82f6" 
+                    strokeWidth={3}
+                    dot={{ r: 5, fill: '#3b82f6' }}
+                    activeDot={{ r: 7 }}
+                  />
+                  {targetWeight > 0 && (
+                    <Line 
+                      type="monotone" 
+                      dataKey="target" 
+                      stroke="#ef4444" 
+                      strokeWidth={2}
+                      strokeDasharray="5 5"
+                      dot={{ r: 0 }}
+                    />
+                  )}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Goal Progress */}
+      {weightGoal && (
+        <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-green-900">
+              <Target className="w-5 h-5" />
               Weight Goal Progress
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Progress to Goal</span>
-                <span className="text-sm text-gray-500">
-                  {Math.round(progressPercentage)}% complete
-                </span>
-              </div>
-              <Progress value={progressPercentage} className="h-3" />
-              <div className="flex items-center justify-between text-xs text-gray-500">
-                <span>Starting: {startingWeight.toFixed(1)} kg</span>
-                <span>Goal: {goalWeight.toFixed(1)} kg</span>
-              </div>
-              <div className="text-center">
-                <span className="text-sm text-gray-600">
-                  {goalWeight - currentWeight > 0 
-                    ? `${(goalWeight - currentWeight).toFixed(1)} kg remaining`
-                    : 'Goal achieved! 🎉'
-                  }
-                </span>
-              </div>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-green-700 font-medium">Progress to Goal</span>
+              <Badge className="bg-green-600 text-white">
+                {Math.round(progressToGoal)}%
+              </Badge>
+            </div>
+            <Progress value={Math.min(progressToGoal, 100)} className="h-3" />
+            <div className="text-sm text-green-600">
+              {Math.abs(currentWeight - targetWeight).toFixed(1)}kg remaining to reach your goal
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Recent Entries */}
-      {recentEntries.length > 0 && (
-        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-blue-600" />
-              Recent Weight Entries ({recentEntries.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {recentEntries.map((entry, index) => (
-                <div key={entry.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                      <Scale className="w-4 h-4 text-blue-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-800">{entry.weight.toFixed(1)} kg</p>
-                      <p className="text-xs text-gray-600">
-                        {new Date(entry.recorded_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-                  {index === 0 && (
-                    <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded">
-                      Latest
-                    </span>
-                  )}
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Empty State */}
-      {recentEntries.length === 0 && (
-        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-          <CardContent className="text-center py-12">
-            <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Scale className="w-8 h-8 text-gray-400" />
-            </div>
-            <h3 className="text-xl font-bold text-gray-800 mb-2">No Weight Entries</h3>
-            <p className="text-gray-600 mb-4">Start tracking your weight to see progress insights.</p>
-          </CardContent>
-        </Card>
-      )}
+      {/* Action Buttons */}
+      <div className="flex gap-3">
+        <Button
+          onClick={() => navigate('/weight-tracker')}
+          className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Log Weight
+        </Button>
+        
+        <Button
+          variant="outline"
+          onClick={() => navigate('/goals')}
+          className="border-blue-300 text-blue-700 hover:bg-blue-50"
+        >
+          <Target className="w-4 h-4 mr-2" />
+          Set Weight Goal
+        </Button>
+        
+        <Button
+          variant="outline"
+          onClick={() => navigate('/progress/weight-history')}
+          className="border-gray-300 text-gray-700 hover:bg-gray-50"
+        >
+          View History
+          <ArrowRight className="w-3 h-3 ml-1" />
+        </Button>
+      </div>
     </div>
   );
 };

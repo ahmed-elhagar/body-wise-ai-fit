@@ -1,46 +1,59 @@
 
 import { useMemo } from 'react';
-import type { MealPlanFetchResult } from '@/features/meal-plan/types';
+import type { MealPlanFetchResult } from '../types';
 
 export const useMealPlanCalculations = (
-  currentWeekPlan: MealPlanFetchResult | null | undefined,
+  mealPlanData: MealPlanFetchResult | null,
   selectedDayNumber: number
 ) => {
-  return useMemo(() => {
-    const dailyMeals =
-      currentWeekPlan?.dailyMeals?.filter(
-        (meal) => meal.day_number === selectedDayNumber
-      ) || [];
+  // Memoize daily meals with better caching
+  const dailyMeals = useMemo(() => {
+    if (!mealPlanData?.dailyMeals) return [];
+    return mealPlanData.dailyMeals.filter(meal => meal.day_number === selectedDayNumber);
+  }, [mealPlanData?.dailyMeals, selectedDayNumber]);
 
+  // Optimize today's meals calculation
+  const todaysMeals = useMemo(() => {
+    if (!mealPlanData?.dailyMeals) return [];
     const today = new Date();
-    // Match app's day numbering: Saturday = 1, Sunday = 2, ..., Friday = 7
-    const jsDay = today.getDay();
-    const todayDayNumber = jsDay === 6 ? 1 : jsDay + 2;
+    const todayDayNumber = today.getDay() === 6 ? 1 : today.getDay() + 2;
+    return mealPlanData.dailyMeals.filter(meal => meal.day_number === todayDayNumber);
+  }, [mealPlanData?.dailyMeals]);
 
-    const todaysMeals =
-      currentWeekPlan?.dailyMeals?.filter(
-        (meal) => meal.day_number === todayDayNumber
-      ) || [];
-
-    const totalCalories = dailyMeals.reduce(
-      (total, meal) => total + (meal.calories || 0),
-      0
-    );
-
-    const totalProtein = dailyMeals.reduce(
-      (total, meal) => total + (meal.protein || 0),
-      0
-    );
-
-    // This could be fetched from user profile in the future
-    const targetDayCalories = 2000;
-
+  // Memoize nutritional calculations with better performance
+  const nutritionSummary = useMemo(() => {
+    const totalCalories = dailyMeals.reduce((sum, meal) => sum + (meal.calories || 0), 0);
+    const totalProtein = dailyMeals.reduce((sum, meal) => sum + (meal.protein || 0), 0);
+    const totalCarbs = dailyMeals.reduce((sum, meal) => sum + (meal.carbs || 0), 0);
+    const totalFat = dailyMeals.reduce((sum, meal) => sum + (meal.fat || 0), 0);
+    
     return {
-      dailyMeals,
-      todaysMeals,
       totalCalories,
       totalProtein,
-      targetDayCalories,
+      totalCarbs,
+      totalFat
     };
-  }, [currentWeekPlan?.dailyMeals, selectedDayNumber]);
+  }, [dailyMeals]);
+
+  // Optimize target calculations
+  const targetDayCalories = useMemo(() => {
+    if (mealPlanData?.weeklyPlan?.total_calories) {
+      return Math.round(mealPlanData.weeklyPlan.total_calories / 7);
+    }
+    return 2000; // Default fallback
+  }, [mealPlanData?.weeklyPlan?.total_calories]);
+
+  // Calculate completion percentage
+  const dayCompletionPercentage = useMemo(() => {
+    if (!targetDayCalories || !nutritionSummary.totalCalories) return 0;
+    return Math.min(Math.round((nutritionSummary.totalCalories / targetDayCalories) * 100), 100);
+  }, [nutritionSummary.totalCalories, targetDayCalories]);
+
+  return {
+    dailyMeals,
+    todaysMeals,
+    ...nutritionSummary,
+    targetDayCalories,
+    dayCompletionPercentage
+  };
 };

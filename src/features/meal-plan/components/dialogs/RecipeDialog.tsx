@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ChefHat, Clock, Users, Utensils, Youtube, ExternalLink, Sparkles, ImageIcon } from "lucide-react";
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useEnhancedMealRecipe } from '@/features/meal-plan/hooks';
+import { useEnhancedMealRecipe } from '@/hooks/useEnhancedMealRecipe';
 import { toast } from 'sonner';
 import SimpleLoadingIndicator from '@/components/ui/simple-loading-indicator';
 import type { DailyMeal } from '../../types';

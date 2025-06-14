@@ -1,62 +1,63 @@
 
-import React from 'react';
-import { useProfile } from '@/hooks/useProfile';
-import { useAuth } from '@/hooks/useAuth';
-import { useMealPlans } from '@/features/meal-plan/hooks';
-import { useExercisePrograms } from '@/features/exercise';
-import { 
-  DashboardHeader,
-  EnhancedStatsGrid, 
-  WeightTrackingWidget, 
-  ActivityFeed, 
-  DashboardAchievements,
-  QuickActionsGrid
-} from '@/features/dashboard/components';
-import { GoalProgressWidget } from '@/features/goals/components';
-import SimpleLoadingIndicator from '@/components/ui/simple-loading-indicator';
+import { useNavigate } from "react-router-dom";
+import { useProfile } from "@/hooks/useProfile";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import Layout from "@/components/Layout";
+import QuickActionsGrid from "./QuickActionsGrid";
+import RecentActivityCard from "./RecentActivityCard";
+import DashboardHeader from "./DashboardHeader";
+import { Zap, Activity } from "lucide-react";
+import EnhancedPageLoading from "@/components/EnhancedPageLoading";
 
 const CanonicalDashboard = () => {
-  const { profile, isLoading: profileLoading } = useProfile();
-  const { user, isLoading: authLoading } = useAuth();
-  const { mealPlans, isLoading: mealPlansLoading } = useMealPlans ? useMealPlans() : { mealPlans: [], isLoading: true };
-  const { programs, isLoading: programsLoading } = useExercisePrograms ? useExercisePrograms() : { programs: [], isLoading: true };
-
-  const isLoading = profileLoading || authLoading || mealPlansLoading || programsLoading;
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <SimpleLoadingIndicator message="Loading Dashboard..." />
-      </div>
-    );
-  }
+  const { profile } = useProfile();
+  const navigate = useNavigate();
 
   if (!profile) {
-    return <div>No profile data.</div>;
+    return <EnhancedPageLoading />;
   }
 
+  const userName = profile.first_name || 'User';
+
   return (
-    <div className="p-4 lg:p-6 space-y-6 bg-gray-50 min-h-full">
-      <DashboardHeader user={user} profile={profile} />
-      
-      <div className="space-y-6">
-        <QuickActionsGrid profile={profile} mealPlans={mealPlans} programs={programs}/>
-        
-        <EnhancedStatsGrid />
+    <ProtectedRoute>
+      <Layout>
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+          <div className="p-4 md:p-6 lg:p-8">
+            <div className="max-w-7xl mx-auto space-y-8">
+              {/* Enhanced Dashboard Header */}
+              <DashboardHeader userName={userName} />
+              
+              {/* Quick Actions Section */}
+              <div className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg">
+                    <Zap className="w-5 h-5 text-white" />
+                  </div>
+                  <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                    Quick Actions
+                  </h2>
+                </div>
+                <QuickActionsGrid />
+              </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <ActivityFeed mealPlans={mealPlans} programs={programs} />
-          </div>
-
-          <div className="lg:col-span-1 space-y-6">
-            <GoalProgressWidget />
-            <WeightTrackingWidget />
-            <DashboardAchievements />
+              {/* Recent Activity Section */}
+              <div className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center shadow-lg">
+                    <Activity className="w-5 h-5 text-white" />
+                  </div>
+                  <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                    Recent Activity
+                  </h2>
+                </div>
+                <RecentActivityCard />
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      </Layout>
+    </ProtectedRoute>
   );
 };
 

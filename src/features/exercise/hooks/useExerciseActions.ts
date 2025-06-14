@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { useEnhancedErrorSystem } from '@/hooks/useEnhancedErrorSystem';
 
 export const useExerciseActions = () => {

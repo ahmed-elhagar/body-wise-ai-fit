@@ -1,31 +1,26 @@
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Target, Trophy, Sparkles } from "lucide-react";
-import { GoalCard } from './GoalCard';
-import { GoalsOverview } from './GoalsOverview';
-import { GoalCreationDialog } from './GoalCreationDialog';
-import { useGoals } from "@/features/dashboard/hooks/useGoals";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Target, Plus, Trophy, AlertTriangle, Sparkles } from "lucide-react";
+import { useGoals } from "@/hooks/useGoals";
+import GoalCard from "./GoalCard";
+import GoalsOverview from "./GoalsOverview";
+import GoalCreationDialog from "./GoalCreationDialog";
 
 const GoalsDashboard = () => {
-  const { goals, isLoading, deleteGoal } = useGoals();
+  const { goals, isLoading } = useGoals();
   const [showCreationDialog, setShowCreationDialog] = useState(false);
 
   const activeGoals = goals.filter(goal => goal.status === 'active');
   const completedGoals = goals.filter(goal => goal.status === 'completed');
 
-  const handleDeleteGoal = async (goalId: string) => {
-    if (window.confirm('Are you sure you want to delete this goal?')) {
-      await deleteGoal(goalId);
-    }
-  };
-
-  const handleEditGoal = (goalId: string) => {
-    // TODO: Implement edit functionality
-    console.log('Edit goal:', goalId);
-  };
+  const urgentGoals = activeGoals.filter(goal => {
+    if (!goal.target_date) return false;
+    const daysRemaining = Math.ceil((new Date(goal.target_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+    return daysRemaining <= 7 && daysRemaining >= 0;
+  });
 
   if (isLoading) {
     return (
@@ -44,8 +39,13 @@ const GoalsDashboard = () => {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
+      {/* Enhanced Header */}
       <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-700 rounded-2xl border-0 shadow-xl">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
+        <div className="absolute -top-20 -right-20 w-40 h-40 bg-white/5 rounded-full" />
+        <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/5 rounded-full" />
+        
         <div className="relative p-6 md:p-8">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="flex-1">
@@ -89,6 +89,35 @@ const GoalsDashboard = () => {
       {/* Overview */}
       <GoalsOverview />
 
+      {/* Urgent Goals Alert */}
+      {urgentGoals.length > 0 && (
+        <Card className="bg-gradient-to-br from-orange-50 via-amber-50 to-red-50 border-0 shadow-xl rounded-2xl overflow-hidden">
+          <div className="bg-gradient-to-r from-orange-500 to-red-500 p-1">
+            <div className="bg-white rounded-xl">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-3 text-orange-800">
+                  <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
+                    <AlertTriangle className="w-5 h-5 text-white" />
+                  </div>
+                  Goals Due This Week
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {urgentGoals.map(goal => (
+                    <GoalCard
+                      key={goal.id}
+                      goal={goal}
+                      showActions={false}
+                    />
+                  ))}
+                </div>
+              </CardContent>
+            </div>
+          </div>
+        </Card>
+      )}
+
       {/* Active Goals */}
       {activeGoals.length > 0 ? (
         <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl rounded-2xl">
@@ -103,12 +132,7 @@ const GoalsDashboard = () => {
           <CardContent className="p-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {activeGoals.map(goal => (
-                <GoalCard 
-                  key={goal.id} 
-                  goal={goal}
-                  onDelete={handleDeleteGoal}
-                  onEdit={handleEditGoal}
-                />
+                <GoalCard key={goal.id} goal={goal} />
               ))}
             </div>
           </CardContent>
@@ -138,27 +162,37 @@ const GoalsDashboard = () => {
 
       {/* Completed Goals */}
       {completedGoals.length > 0 && (
-        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl rounded-2xl">
-          <CardHeader className="border-b border-gray-100">
-            <CardTitle className="flex items-center gap-3 text-xl">
-              <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
-                <Trophy className="w-5 h-5 text-white" />
-              </div>
-              Completed Goals ({completedGoals.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {completedGoals.map(goal => (
-                <GoalCard 
-                  key={goal.id} 
-                  goal={goal}
-                  onDelete={handleDeleteGoal}
-                  onEdit={handleEditGoal}
-                />
-              ))}
+        <Card className="bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 border-0 shadow-xl rounded-2xl overflow-hidden">
+          <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-1">
+            <div className="bg-white rounded-xl">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-3 text-green-800">
+                  <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
+                    <Trophy className="w-5 h-5 text-white" />
+                  </div>
+                  Completed Goals ({completedGoals.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {completedGoals.slice(0, 4).map(goal => (
+                    <GoalCard
+                      key={goal.id}
+                      goal={goal}
+                      showActions={false}
+                    />
+                  ))}
+                </div>
+                {completedGoals.length > 4 && (
+                  <div className="text-center mt-6">
+                    <Badge className="bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border-green-300 px-4 py-2 text-sm">
+                      and {completedGoals.length - 4} more completed goals
+                    </Badge>
+                  </div>
+                )}
+              </CardContent>
             </div>
-          </CardContent>
+          </div>
         </Card>
       )}
 
