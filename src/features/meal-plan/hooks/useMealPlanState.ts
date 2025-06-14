@@ -16,7 +16,7 @@ export const useMealPlanState = () => {
     prepTime: '30',
     includeSnacks: true,
     duration: 'weekly',
-    maxPrepTime: '30', // Changed to string to match type
+    maxPrepTime: '30',
     mealTypes: ['breakfast', 'lunch', 'dinner']
   });
 
@@ -51,8 +51,6 @@ export const useMealPlanState = () => {
     setSelectedDayNumber,
   } = useMealPlanNavigation();
 
-  const calorieCalculations = useCalorieCalculations(selectedDayNumber, currentWeekOffset);
-
   const {
     data: currentWeekPlan,
     isLoading,
@@ -66,13 +64,21 @@ export const useMealPlanState = () => {
     isGenerating,
     isShuffling,
     nutritionContext
-  } = useMealPlanActions(currentWeekOffset, refetch, closeAIDialog, (error) => handleAIError(error, { operation: 'meal plan generation' }));
+  } = useMealPlanActions(
+    currentWeekPlan,
+    currentWeekOffset,
+    aiPreferences,
+    refetch
+  );
+
+  // Get calorie calculations for the selected day
+  const calorieCalculations = useCalorieCalculations(selectedDayNumber, currentWeekOffset);
 
   // Wrapped AI plan generation with error handling
   const handleGenerateAIPlanWithPreferences = useCallback(async (preferences: any) => {
     try {
       await wrapAIOperation(
-        () => handleGenerateAIPlan(preferences),
+        () => handleGenerateAIPlan(),
         { 
           operation: 'meal plan generation',
           model: 'GPT-4',
@@ -88,16 +94,16 @@ export const useMealPlanState = () => {
 
   return {
     currentWeekPlan,
-    dailyMeals: calorieCalculations.dailyMeals,
+    dailyMeals: calorieCalculations.dailyMeals || [],
     isLoading,
     error,
     refetch,
     isGenerating,
     handleGenerateAIPlan: handleGenerateAIPlanWithPreferences,
     selectedDayNumber,
-    totalCalories: calorieCalculations.totalCalories,
-    totalProtein: calorieCalculations.totalProtein,
-    targetDayCalories: calorieCalculations.targetDayCalories,
+    totalCalories: calorieCalculations.totalCalories || 0,
+    totalProtein: calorieCalculations.totalProtein || 0,
+    targetDayCalories: calorieCalculations.targetDayCalories || 2000,
     weekStartDate,
     currentWeekOffset,
     setCurrentWeekOffset,

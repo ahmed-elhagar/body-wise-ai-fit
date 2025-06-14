@@ -1,21 +1,57 @@
 
 import { useMemo } from 'react';
+import { useMealPlanData } from './useMealPlanData';
+import type { DailyMeal } from '../types';
 
-export const useCalorieCalculations = (currentDayCalories: number, targetDayCalories: number) => {
-  const remainingCalories = useMemo(() => {
-    return Math.max(0, targetDayCalories - currentDayCalories);
-  }, [currentDayCalories, targetDayCalories]);
+export const useCalorieCalculations = (selectedDayNumber: number, currentWeekOffset: number) => {
+  const { data: currentWeekPlan } = useMealPlanData(currentWeekOffset);
 
-  const progressPercentage = useMemo(() => {
-    if (targetDayCalories === 0) return 0;
-    return Math.min(100, (currentDayCalories / targetDayCalories) * 100);
-  }, [currentDayCalories, targetDayCalories]);
+  const calculations = useMemo(() => {
+    if (!currentWeekPlan?.dailyMeals) {
+      return {
+        dailyMeals: [],
+        totalCalories: 0,
+        totalProtein: 0,
+        targetDayCalories: 2000,
+        remainingCalories: 2000,
+        progressPercentage: 0,
+        isOverTarget: false
+      };
+    }
 
-  const isOverTarget = currentDayCalories > targetDayCalories;
+    // Get meals for the selected day
+    const dailyMeals = currentWeekPlan.dailyMeals.filter(
+      (meal: DailyMeal) => meal.day_number === selectedDayNumber
+    );
 
-  return {
-    remainingCalories,
-    progressPercentage,
-    isOverTarget
-  };
+    // Calculate totals for the selected day
+    const totalCalories = dailyMeals.reduce(
+      (sum: number, meal: DailyMeal) => sum + (meal.calories || 0), 
+      0
+    );
+    
+    const totalProtein = dailyMeals.reduce(
+      (sum: number, meal: DailyMeal) => sum + (meal.protein || 0), 
+      0
+    );
+
+    // Default target calories (could be made dynamic based on user profile)
+    const targetDayCalories = 2000;
+    
+    const remainingCalories = targetDayCalories - totalCalories;
+    const progressPercentage = Math.min((totalCalories / targetDayCalories) * 100, 100);
+    const isOverTarget = totalCalories > targetDayCalories;
+
+    return {
+      dailyMeals,
+      totalCalories,
+      totalProtein,
+      targetDayCalories,
+      remainingCalories,
+      progressPercentage,
+      isOverTarget
+    };
+  }, [currentWeekPlan, selectedDayNumber]);
+
+  return calculations;
 };

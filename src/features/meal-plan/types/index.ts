@@ -54,7 +54,7 @@ export interface MealPlanPreferences {
   cuisine: string;
   maxPrepTime: string;
   includeSnacks: boolean;
-  mealTypes: string;
+  mealTypes: string[];
 }
 
 export interface AddSnackDialogProps {
