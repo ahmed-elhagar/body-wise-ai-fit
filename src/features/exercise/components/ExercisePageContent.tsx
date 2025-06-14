@@ -25,7 +25,7 @@ interface ExercisePageContentProps {
   isGenerating: boolean;
   onExerciseComplete: (exerciseId: string) => Promise<void>;
   onExerciseProgressUpdate: (exerciseId: string, sets: number, reps: string, notes?: string, weight?: number) => Promise<void>;
-  onGenerateAIProgram: (preferences: any) => Promise<void>;
+  onGenerateProgram: (preferences?: any) => Promise<void>;
 }
 
 export const ExercisePageContent = ({
@@ -38,7 +38,8 @@ export const ExercisePageContent = ({
   isRestDay,
   selectedDayNumber,
   onExerciseComplete,
-  onExerciseProgressUpdate
+  onExerciseProgressUpdate,
+  onGenerateProgram
 }: ExercisePageContentProps) => {
   if (isLoading) {
     return (
@@ -82,7 +83,7 @@ export const ExercisePageContent = ({
         <RestDayCard />
       ) : todaysExercises.length === 0 ? (
         <ExerciseEmptyState
-          onGenerateProgram={() => console.log('Generate program')}
+          onGenerateClick={onGenerateProgram}
           workoutType="home"
           dailyWorkoutId=""
         />

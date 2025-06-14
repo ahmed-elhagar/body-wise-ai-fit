@@ -51,12 +51,12 @@ export const ExercisePageContainer = () => {
   const currentSelectedDate = addDays(weekStartDate, selectedDayNumber - 1);
   const isToday = format(currentSelectedDate, 'yyyy-MM-dd') === format(currentDate, 'yyyy-MM-dd');
 
-  const handleGenerateAIProgram = async (preferences: any) => {
+  const handleGenerateProgram = async (preferences?: any) => {
     try {
       setShowAIDialog(false);
       
       const enhancedPreferences = {
-        ...preferences,
+        ...(preferences || aiPreferences),
         workoutType,
         weekStartDate: format(weekStartDate, 'yyyy-MM-dd'),
         weekOffset: currentWeekOffset
@@ -125,7 +125,7 @@ export const ExercisePageContainer = () => {
       
       // Actions
       onShowAnalytics={() => setShowAnalytics(true)}
-      onGenerateAIProgram={handleGenerateAIProgram}
+      onGenerateProgram={handleGenerateProgram}
       onRegenerateProgram={handleRegenerateProgram}
       onExerciseComplete={handleExerciseComplete}
       onExerciseProgressUpdate={handleExerciseProgressUpdate}

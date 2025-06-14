@@ -6,6 +6,7 @@ export { useExerciseAISteps } from './hooks/useExerciseAISteps';
 export { EnhancedDayNavigation } from './components/EnhancedDayNavigation';
 export { ExercisePageContent } from './components/ExercisePageContent';
 export { ExerciseErrorState } from './components/ExerciseErrorState';
+export { ExerciseErrorBoundary } from './components/ExerciseErrorBoundary';
 export { EnhancedExerciseHeaderWithAnalytics } from './components/EnhancedExerciseHeaderWithAnalytics';
 export { ExerciseAnalyticsContainer } from './components/ExerciseAnalyticsContainer';
 export { AIExerciseDialog } from './components/AIExerciseDialog';
