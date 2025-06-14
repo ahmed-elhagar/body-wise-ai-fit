@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Play } from "lucide-react";
-import { ProgramTypeIndicator } from "./ProgramTypeIndicator";
+import { ProgramTypeIndicator } from "@/features/exercise";
 
 interface WorkoutSummaryCardProps {
   currentWorkout: any;

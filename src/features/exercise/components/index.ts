@@ -29,4 +29,5 @@ export { ProgramTypeIndicator } from './ProgramTypeIndicator';
 export { ExerciseProgramErrorState } from './ExerciseProgramErrorState';
 export { ExerciseProgramLoadingStates } from './ExerciseProgramLoadingStates';
 export { default as ExerciseProgramEmptyState } from './ExerciseProgramEmptyState';
-
+export { WorkoutSummaryCard } from './WorkoutSummaryCard';
+export { TodaysWorkoutCard } from './TodaysWorkoutCard';

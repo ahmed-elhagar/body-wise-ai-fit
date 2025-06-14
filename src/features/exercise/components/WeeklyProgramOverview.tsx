@@ -2,7 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, Dumbbell } from "lucide-react";
-import { ProgramTypeIndicator } from "@/components/exercise/ProgramTypeIndicator";
+import { ProgramTypeIndicator } from "@/features/exercise";
 
 interface WeeklyProgramOverviewProps {
   currentProgram: any;

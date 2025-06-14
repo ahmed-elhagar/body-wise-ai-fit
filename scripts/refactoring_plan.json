@@ -34,7 +34,9 @@
             "Moved: src/components/exercise/ProgramTypeIndicator.tsx",
             "Moved: src/components/exercise/ExerciseProgramErrorState.tsx",
             "Moved: src/components/exercise/ExerciseProgramLoadingStates.tsx",
-            "Moved: src/components/exercise/ExerciseProgramEmptyState.tsx"
+            "Moved: src/components/exercise/ExerciseProgramEmptyState.tsx",
+            "Moved: src/components/exercise/WorkoutSummaryCard.tsx",
+            "Moved: src/components/exercise/TodaysWorkoutCard.tsx"
           ]
         },
         {
@@ -73,7 +75,8 @@
             "Deleted: src/features/exercise/components/ExerciseProgramDaySelector.tsx (replaced by CombinedWeeklyDayNavigation)",
             "Deleted: src/components/exercise/ExerciseEmptyState.tsx (re-export file)",
             "Deleted: src/components/exercise/ExerciseErrorState.tsx (re-export file)",
-            "Deleted: src/components/exercise/ExerciseListEnhanced.tsx (re-export file)"
+            "Deleted: src/components/exercise/ExerciseListEnhanced.tsx (re-export file)",
+            "Deleted: src/components/exercise directory (all components moved)"
           ]
         }
       ]
