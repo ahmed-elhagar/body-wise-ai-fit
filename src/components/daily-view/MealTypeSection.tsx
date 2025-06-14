@@ -2,13 +2,13 @@
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/hooks/useI18n";
 import CompactMealCard from "./CompactMealCard";
-import type { Meal } from "@/types/meal";
+import type { DailyMeal } from "@/features/meal-plan/types";
 
 interface MealTypeSectionProps {
   mealType: string;
-  meals: Meal[];
-  onShowRecipe: (meal: Meal) => void;
-  onExchangeMeal: (meal: Meal, index: number) => void;
+  meals: DailyMeal[];
+  onShowRecipe: (meal: DailyMeal) => void;
+  onExchangeMeal: (meal: DailyMeal, index: number) => void;
 }
 
 const MealTypeSection = ({

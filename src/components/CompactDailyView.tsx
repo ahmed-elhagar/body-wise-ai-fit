@@ -1,3 +1,4 @@
+
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -5,14 +6,14 @@ import { Plus, ShoppingCart, ChefHat, Clock, Flame, Zap, Sparkles } from "lucide
 import { useLanguage } from "@/contexts/LanguageContext";
 import CompactMealCard from "@/components/daily-view/CompactMealCard";
 import DailyNutritionSummary from "@/components/daily-view/DailyNutritionSummary";
-import type { Meal } from "@/types/meal";
+import type { DailyMeal } from "@/features/meal-plan/types";
 
 interface CompactDailyViewProps {
-  todaysMeals: Meal[];
+  todaysMeals: DailyMeal[];
   totalCalories: number;
   totalProtein: number;
-  onShowRecipe: (meal: Meal) => void;
-  onExchangeMeal: (meal: Meal, index: number) => void;
+  onShowRecipe: (meal: DailyMeal) => void;
+  onExchangeMeal: (meal: DailyMeal, index: number) => void;
   onAddSnack: () => void;
   onShowShoppingList: () => void;
   onGenerate: () => void;

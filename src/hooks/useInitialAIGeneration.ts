@@ -1,7 +1,8 @@
+
 import { useEffect, useState, useRef } from 'react';
 import { useAuth } from './useAuth';
 import { useProfile } from './useProfile';
-import { useEnhancedMealPlan } from './useEnhancedMealPlan';
+import { useEnhancedMealPlan } from '@/features/meal-plan/hooks';
 import { useAIExercise } from './useAIExercise';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';

@@ -3,14 +3,14 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChefHat, ArrowLeftRight, Clock, Flame, Zap } from "lucide-react";
 import { useI18n } from "@/hooks/useI18n";
-import type { Meal } from "@/types/meal";
+import type { DailyMeal } from "@/features/meal-plan/types";
 
 interface CompactMealCardProps {
-  meal: Meal;
+  meal: DailyMeal;
   index: number;
   mealType: string;
-  onShowRecipe: (meal: Meal) => void;
-  onExchangeMeal: (meal: Meal, index: number) => void;
+  onShowRecipe: (meal: DailyMeal) => void;
+  onExchangeMeal: (meal: DailyMeal, index: number) => void;
 }
 
 const CompactMealCard = ({
