@@ -1,8 +1,8 @@
 
 import { useState } from 'react';
-import { useAuth } from './useAuth';
-import { useCentralizedCredits } from './useCentralizedCredits';
-import { useNotifications } from './useNotifications';
+import { useAuth } from '@/hooks/useAuth';
+import { useCentralizedCredits } from '@/hooks/useCentralizedCredits';
+import { useNotifications } from '@/hooks/useNotifications';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
