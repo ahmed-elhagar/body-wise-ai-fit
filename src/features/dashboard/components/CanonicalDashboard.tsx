@@ -8,7 +8,8 @@ import {
   GoalProgressWidget, 
   WeightTrackingWidget, 
   ActivityFeed, 
-  NotificationWidget 
+  NotificationWidget,
+  QuickActionsGrid
 } from '@/features/dashboard/components';
 
 const CanonicalDashboard = () => {
@@ -30,6 +31,7 @@ const CanonicalDashboard = () => {
         
         <div className="space-y-6">
           <EnhancedStatsGrid />
+          <QuickActionsGrid />
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">

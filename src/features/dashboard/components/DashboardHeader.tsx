@@ -12,23 +12,25 @@ import {
   ArrowRight
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useProfile } from "@/hooks/useProfile";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useI18n } from "@/hooks/useI18n";
 import { formatDistanceToNow } from "date-fns";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { AuthUser } from "@supabase/supabase-js";
 
 interface DashboardHeaderProps {
-  userName: string;
+  user: AuthUser | null;
+  profile: any;
 }
 
-const DashboardHeader = ({ userName }: DashboardHeaderProps) => {
+const DashboardHeader = ({ user, profile }: DashboardHeaderProps) => {
   const navigate = useNavigate();
-  const { profile } = useProfile();
   const { notifications, unreadCount, markAsRead } = useNotifications();
   const { tFrom, isRTL } = useI18n();
   const tDashboard = tFrom('dashboard');
+
+  const userName = profile?.full_name || user?.email?.split('@')[0] || 'buddy';
 
   const handleNotificationClick = (notification: any) => {
     if (!notification.is_read) {
