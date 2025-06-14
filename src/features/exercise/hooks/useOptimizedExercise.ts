@@ -1,8 +1,6 @@
-
 import { useOptimizedExerciseProgramPage } from './useOptimizedExerciseProgramPage';
 import { useExerciseActions } from './useExerciseActions';
 import { useMemo, useState } from 'react';
-import { calculateExerciseProgress } from '../utils/exerciseDataUtils';
 
 export const useOptimizedExercise = () => {
   const {

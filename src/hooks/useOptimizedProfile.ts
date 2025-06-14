@@ -1,76 +1,82 @@
 
-import { useState } from 'react';
-import { ProfileFormData, ValidationErrors } from './profile/types';
+import { useMemo } from 'react';
+import { useProfile } from './useProfile';
+import { useAuth } from './useAuth';
+import { useProfileFormData } from './profile/useProfileFormData';
+import { useProfileActions } from './profile/useProfileActions';
+import { useProfileCompletion } from './profile/useProfileCompletion';
 
 export const useOptimizedProfile = () => {
-  const [formData, setFormData] = useState<ProfileFormData>({
-    first_name: '',
-    last_name: '',
-    age: '',
-    gender: '',
-    height: '',
-    weight: '',
-    nationality: '',
-    body_shape: '',
-    body_fat_percentage: '',
-    fitness_goal: '',
-    activity_level: '',
-    health_conditions: [],
-    allergies: [],
-    dietary_restrictions: [],
-    preferred_foods: []
-  });
+  const { user } = useAuth();
+  const { profile, isLoading, updateProfile, refetch } = useProfile();
+  
+  // Add the missing form data and actions
+  const { 
+    formData, 
+    updateFormData, 
+    handleArrayInput, 
+    validationErrors, 
+    setValidationErrors 
+  } = useProfileFormData();
+  
+  const { saveProfile, isUpdating } = useProfileActions();
+  const { completionPercentage } = useProfileCompletion(formData);
 
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
+  const profileMetrics = useMemo(() => {
+    if (!profile) return null;
 
-  const updateFormData = (field: string, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
+    // Calculate completion based on actual profile data
+    let score = 0;
+    if (profile.first_name) score += 15;
+    if (profile.last_name) score += 15;
+    if (profile.age) score += 10;
+    if (profile.gender) score += 10;
+    if (profile.height) score += 10;
+    if (profile.weight) score += 10;
+    if (profile.body_fat_percentage) score += 10;
+    if (profile.fitness_goal) score += 10;
+    if (profile.activity_level) score += 10;
 
-  const handleArrayInput = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value.split(',').map(item => item.trim()).filter(Boolean)
-    }));
-  };
+    return {
+      completionScore: Math.min(score, 100),
+      hasBasicInfo: !!(profile.first_name && profile.last_name && profile.age),
+      hasPhysicalInfo: !!(profile.height && profile.weight),
+      hasBodyComposition: !!(profile.body_fat_percentage && profile.body_shape),
+      hasGoals: !!(profile.fitness_goal && profile.activity_level),
+      isProfileComplete: score >= 80
+    };
+  }, [profile]);
 
-  const saveBasicInfo = async (): Promise<boolean> => {
-    setIsUpdating(true);
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      return true;
-    } catch (error) {
-      console.error('Error saving basic info:', error);
-      return false;
-    } finally {
-      setIsUpdating(false);
+  const isProfileComplete = useMemo(() => {
+    return (profileMetrics?.completionScore || 0) >= 80;
+  }, [profileMetrics]);
+
+  // Create save functions that match expected signatures
+  const saveBasicInfo = async () => {
+    const result = await saveProfile(formData);
+    if (result.success) {
+      await refetch(); // Refresh profile data after save
     }
+    return result.success;
   };
 
-  const saveGoalsAndActivity = async (): Promise<boolean> => {
-    setIsUpdating(true);
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      return true;
-    } catch (error) {
-      console.error('Error saving goals and activity:', error);
-      return false;
-    } finally {
-      setIsUpdating(false);
+  const saveGoalsAndActivity = async () => {
+    const result = await saveProfile(formData);
+    if (result.success) {
+      await refetch(); // Refresh profile data after save
     }
-  };
-
-  const profileMetrics = {
-    completionScore: 75
+    return result.success;
   };
 
   return {
+    user,
+    profile,
+    profileMetrics,
+    isProfileComplete,
+    isLoading,
+    updateProfile,
+    refetch,
+    // Form data and actions
     formData,
     updateFormData,
     handleArrayInput,
@@ -78,6 +84,6 @@ export const useOptimizedProfile = () => {
     saveGoalsAndActivity,
     isUpdating,
     validationErrors,
-    profileMetrics
+    completionPercentage: profileMetrics?.completionScore || 0,
   };
 };

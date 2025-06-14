@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { useAuth } from './useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
-import { getCategoryForIngredient } from '@/features/meal-plan/utils/mealPlanUtils';
+import { getCategoryForIngredient } from '@/utils/mealPlanUtils';
 import type { WeeklyMealPlan, DailyMeal } from '@/features/meal-plan/types';
 
 export const useEnhancedShoppingList = (weeklyPlan?: {

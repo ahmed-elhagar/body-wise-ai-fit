@@ -1,157 +1,222 @@
 
 import { useState, useCallback, useMemo } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useMealPlanData } from './useMealPlanData';
+import { useMealPlanActions } from './useMealPlanActions';
+import { useCentralizedCredits } from '@/hooks/useCentralizedCredits';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
-import { toast } from 'sonner';
-import { addDays, format, startOfWeek } from 'date-fns';
-import { getCurrentWeekDates, formatDateForMealPlan, convertDatabaseMeal } from '../utils/mealPlanUtils';
-import type { WeeklyMealPlan, DailyMeal, MealPlanFetchResult } from '../types';
+import { getWeekStartDate, getCurrentSaturdayDay } from '@/utils/mealPlanUtils';
+import type { DailyMeal, MealPlanFetchResult } from '@/features/meal-plan/types';
 
-interface UseMealPlanStateProps {
-  initialDate?: Date;
-}
-
-export const useMealPlanState = ({ initialDate }: UseMealPlanStateProps = {}) => {
+export const useMealPlanState = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { remaining: userCredits, isPro, hasCredits } = useCentralizedCredits();
+  
+  // Navigation state
+  const [currentWeekOffset, setCurrentWeekOffsetInternal] = useState(0);
+  const [selectedDayNumber, setSelectedDayNumber] = useState(() => getCurrentSaturdayDay());
+  
+  const weekStartDate = useMemo(() => getWeekStartDate(currentWeekOffset), [currentWeekOffset]);
 
-  const [selectedDate, setSelectedDate] = useState(initialDate || new Date());
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [isShuffling, setIsShuffling] = useState(false);
-  const [showShoppingList, setShowShoppingList] = useState(false);
-
-  const weekDates = useMemo(() => getCurrentWeekDates(), []);
-  const selectedDateFormatted = useMemo(() => formatDateForMealPlan(selectedDate), [selectedDate]);
-
-  const weekStartDate = useMemo(() => {
-    return startOfWeek(selectedDate, { weekStartsOn: 0 });
-  }, [selectedDate]);
-
-  const weekStartDateFormatted = useMemo(() => {
-    return format(weekStartDate, 'yyyy-MM-dd');
-  }, [weekStartDate]);
-
+  // Core meal plan data
   const {
-    data: weeklyPlanData,
-    isLoading: isPlanLoading,
-    error: planError,
-    refetch
-  } = useQuery({
-    queryKey: ['weeklyMealPlan', user?.id, weekStartDateFormatted],
-    queryFn: async (): Promise<MealPlanFetchResult | null> => {
-      if (!user?.id) {
-        console.warn('No user ID - skipping meal plan fetch');
-        return null;
+    data: currentWeekPlan,
+    isLoading,
+    error,
+    refetch: originalRefetch,
+  } = useMealPlanData(currentWeekOffset);
+
+  // Enhanced refetch that properly invalidates and refreshes data
+  const refetch = useCallback(async () => {
+    console.log('🔄 Enhanced refetch - invalidating all meal plan queries for week offset:', currentWeekOffset);
+    
+    // Clear all meal plan related caches
+    await queryClient.invalidateQueries({
+      predicate: (query) => {
+        const queryKey = query.queryKey;
+        return queryKey[0] === 'weekly-meal-plan' || 
+               queryKey[0] === 'optimized-meal-plan' ||
+               queryKey[0] === 'meal-plan';
       }
+    });
+    
+    // Clear the OptimizedMealPlanService cache
+    try {
+      const { OptimizedMealPlanService } = await import('@/features/meal-plan/services/optimizedMealPlanService');
+      OptimizedMealPlanService.clearCache();
+    } catch (e) {
+      console.log('Service cache clear skipped:', e);
+    }
+    
+    // Force refetch current data
+    const result = await originalRefetch();
+    
+    // Wait a bit and try again if no data
+    if (!result.data?.weeklyPlan) {
+      console.log('⏳ No data returned, waiting and retrying...');
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      return await originalRefetch();
+    }
+    
+    return result;
+  }, [queryClient, currentWeekOffset, originalRefetch]);
 
-      console.log(`Fetching meal plan for user ${user.id} and week starting ${weekStartDateFormatted}`);
+  // Enhanced calculations - inline to avoid external dependencies
+  const { dailyMeals, todaysMeals, totalCalories, totalProtein, targetDayCalories } = useMemo(() => {
+    // Calculate daily meals for selected day
+    const dailyMeals = currentWeekPlan?.dailyMeals?.filter(
+      meal => meal.day_number === selectedDayNumber
+    ) || null;
 
-      const { data: weeklyPlan, error: weeklyPlanError } = await supabase
-        .from('weekly_meal_plans')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('week_start_date', weekStartDateFormatted)
-        .single();
+    // Calculate today's meals
+    const today = new Date();
+    const todayDayNumber = today.getDay() === 6 ? 1 : today.getDay() + 2;
+    const todaysMeals = currentWeekPlan?.dailyMeals?.filter(
+      meal => meal.day_number === todayDayNumber
+    ) || null;
 
-      if (weeklyPlanError) {
-        console.error('Error fetching weekly meal plan:', weeklyPlanError);
-        if (weeklyPlanError.code === 'PGRST116') {
-          return null;
-        }
-        throw new Error(weeklyPlanError.message);
-      }
+    // Calculate total calories for selected day
+    const totalCalories = dailyMeals ? 
+      dailyMeals.reduce((total, meal) => total + (meal.calories || 0), 0) : null;
 
-      if (!weeklyPlan) {
-        console.log('No weekly meal plan found, returning null');
-        return null;
-      }
+    // Calculate total protein for selected day
+    const totalProtein = dailyMeals ? 
+      dailyMeals.reduce((total, meal) => total + (meal.protein || 0), 0) : null;
 
-      const { data: dailyMeals, error: dailyMealsError } = await supabase
-        .from('daily_meals')
-        .select('*')
-        .eq('weekly_plan_id', weeklyPlan.id);
+    // Target calories
+    const targetDayCalories = 2000;
 
-      if (dailyMealsError) {
-        console.error('Error fetching daily meals:', dailyMealsError);
-        throw new Error(dailyMealsError.message);
-      }
+    return {
+      dailyMeals,
+      todaysMeals,
+      totalCalories,
+      totalProtein,
+      targetDayCalories
+    };
+  }, [currentWeekPlan?.dailyMeals, selectedDayNumber]);
 
-      const convertedMeals = (dailyMeals || []).map(convertDatabaseMeal);
+  // Dialog states
+  const [showAIDialog, setShowAIDialog] = useState(false);
+  const [showRecipeDialog, setShowRecipeDialog] = useState(false);
+  const [showExchangeDialog, setShowExchangeDialog] = useState(false);
+  const [showAddSnackDialog, setShowAddSnackDialog] = useState(false);
+  const [showShoppingListDialog, setShowShoppingListDialog] = useState(false);
 
-      console.log(`Successfully fetched meal plan with ${convertedMeals.length} daily meals`);
+  // Selected items
+  const [selectedMeal, setSelectedMeal] = useState<DailyMeal | null>(null);
+  const [selectedMealIndex, setSelectedMealIndex] = useState<number | null>(null);
 
-      return { 
-        weeklyPlan: weeklyPlan as WeeklyMealPlan, 
-        dailyMeals: convertedMeals 
-      };
-    },
-    enabled: !!user?.id,
-    retry: false,
+  // AI preferences state
+  const [aiPreferences, setAiPreferences] = useState({
+    duration: "7",
+    cuisine: "mixed",
+    maxPrepTime: "30",
+    includeSnacks: true,
+    mealTypes: "breakfast,lunch,dinner",
   });
 
-  // Calculate derived properties
-  const currentWeekPlan = weeklyPlanData;
-  const dailyMeals = useMemo(() => {
-    if (!weeklyPlanData?.dailyMeals) return [];
-    const today = new Date();
-    const todayDayNumber = today.getDay() === 0 ? 7 : today.getDay(); // Sunday = 7, Monday = 1
-    return weeklyPlanData.dailyMeals.filter(meal => meal.day_number === todayDayNumber);
-  }, [weeklyPlanData?.dailyMeals]);
+  // Actions
+  const { handleGenerateAIPlan, isGenerating } = useMealPlanActions(
+    currentWeekPlan,
+    currentWeekOffset,
+    aiPreferences,
+    refetch
+  );
 
-  const totalCalories = useMemo(() => {
-    return dailyMeals.reduce((total, meal) => total + (meal.calories || 0), 0);
-  }, [dailyMeals]);
+  // Enhanced week change handler
+  const setCurrentWeekOffset = useCallback(async (newOffset: number) => {
+    console.log('📅 Changing week from', currentWeekOffset, 'to', newOffset);
+    setCurrentWeekOffsetInternal(newOffset);
+  }, [currentWeekOffset]);
 
-  const totalProtein = useMemo(() => {
-    return dailyMeals.reduce((total, meal) => total + (meal.protein || 0), 0);
-  }, [dailyMeals]);
+  // Dialog handlers
+  const openAIDialog = useCallback(() => setShowAIDialog(true), []);
+  const closeAIDialog = useCallback(() => setShowAIDialog(false), []);
+  
+  const openRecipeDialog = useCallback((meal: DailyMeal) => {
+    setSelectedMeal(meal);
+    setShowRecipeDialog(true);
+  }, []);
+  const closeRecipeDialog = useCallback(() => {
+    setSelectedMeal(null);
+    setShowRecipeDialog(false);
+  }, []);
 
-  const targetDayCalories = useMemo(() => {
-    if (weeklyPlanData?.weeklyPlan?.total_calories) {
-      return Math.round(weeklyPlanData.weeklyPlan.total_calories / 7);
-    }
-    return 2000; // Default fallback
-  }, [weeklyPlanData?.weeklyPlan?.total_calories]);
+  const openExchangeDialog = useCallback((meal: DailyMeal) => {
+    setSelectedMeal(meal);
+    setShowExchangeDialog(true);
+  }, []);
+  const closeExchangeDialog = useCallback(() => {
+    setSelectedMeal(null);
+    setShowExchangeDialog(false);
+  }, []);
 
-  const handleDateSelect = (date: Date) => {
-    console.log('📅 Selected date:', date);
-    setSelectedDate(date);
-  };
+  const openAddSnackDialog = useCallback(() => setShowAddSnackDialog(true), []);
+  const closeAddSnackDialog = useCallback(() => setShowAddSnackDialog(false), []);
 
-  const handleShowShoppingList = () => {
-    console.log('🛒 Showing shopping list');
-    setShowShoppingList(true);
-  };
+  const openShoppingListDialog = useCallback(() => setShowShoppingListDialog(true), []);
+  const closeShoppingListDialog = useCallback(() => setShowShoppingListDialog(false), []);
 
-  const handleCloseShoppingList = () => {
-    console.log('❌ Closing shopping list');
-    setShowShoppingList(false);
-  };
+  const updateAIPreferences = useCallback((newPrefs: any) => {
+    setAiPreferences(prev => ({ ...prev, ...newPrefs }));
+  }, []);
 
   return {
-    selectedDate,
-    selectedDateFormatted,
-    weekStartDate,
-    weekStartDateFormatted,
-    weekDates,
-    handleDateSelect,
-    weeklyPlanData,
-    isPlanLoading,
-    planError,
-    isGenerating,
-    setIsGenerating,
-    isShuffling,
-    setIsShuffling,
-    showShoppingList,
-    handleShowShoppingList,
-    handleCloseShoppingList,
-    refetch,
-    // Additional properties for compatibility
+    // Data
     currentWeekPlan,
     dailyMeals,
+    todaysMeals,
     totalCalories,
     totalProtein,
-    targetDayCalories
+    targetDayCalories,
+    
+    // Navigation
+    currentWeekOffset,
+    setCurrentWeekOffset,
+    selectedDayNumber,
+    setSelectedDayNumber,
+    weekStartDate,
+    
+    // Loading states
+    isLoading,
+    error,
+    isGenerating,
+    
+    // Centralized credits
+    userCredits,
+    isPro,
+    hasCredits,
+    
+    // Dialog states
+    showAIDialog,
+    showRecipeDialog,
+    showExchangeDialog,
+    showAddSnackDialog,
+    showShoppingListDialog,
+    
+    // Selected items
+    selectedMeal,
+    selectedMealIndex,
+    
+    // AI preferences
+    aiPreferences,
+    updateAIPreferences,
+    
+    // Actions
+    refetch,
+    handleGenerateAIPlan,
+    
+    // Dialog handlers
+    openAIDialog,
+    closeAIDialog,
+    openRecipeDialog,
+    closeRecipeDialog,
+    openExchangeDialog,
+    closeExchangeDialog,
+    openAddSnackDialog,
+    closeAddSnackDialog,
+    openShoppingListDialog,
+    closeShoppingListDialog,
   };
 };

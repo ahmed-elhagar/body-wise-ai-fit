@@ -1,9 +1,8 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Flame, Zap, ShoppingCart, Plus } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 
 interface DailyNutritionSummaryProps {
   totalCalories: number;
@@ -18,34 +17,48 @@ const DailyNutritionSummary = ({
   onShowShoppingList,
   onAddSnack
 }: DailyNutritionSummaryProps) => {
-  const { t, isRTL } = useLanguage();
+  const { tFrom, isRTL } = useI18n();
+  const tMealPlan = tFrom('mealPlan');
 
   return (
-    <Card className="p-4 bg-gradient-to-r from-blue-50 to-green-50 border-blue-200">
+    <Card className="p-3 bg-gradient-to-r from-blue-50 to-blue-100 border-0 shadow-lg rounded-lg">
       <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-        <div className={`flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
-          <div className="flex items-center gap-2">
-            <Flame className="w-5 h-5 text-red-500" />
-            <div className={`text-center ${isRTL ? 'text-right' : 'text-left'}`}>
-              <div className="text-xl font-bold text-gray-800">{totalCalories}</div>
-              <div className="text-xs text-gray-600">{t('common.calories')}</div>
+        <div>
+          <h2 className="font-bold text-gray-800 text-base mb-1">{String(tMealPlan('todaysSummary'))}</h2>
+          <div className={`flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <div className="flex items-center gap-1 text-sm text-gray-700">
+              <Flame className="w-4 h-4 text-red-500" />
+              <span className="font-semibold">{totalCalories}</span>
+              <span className="text-xs">{String(tMealPlan('calories'))}</span>
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Zap className="w-5 h-5 text-green-500" />
-            <div className={`text-center ${isRTL ? 'text-right' : 'text-left'}`}>
-              <div className="text-xl font-bold text-gray-800">{totalProtein}g</div>
-              <div className="text-xs text-gray-600">{t('common.protein')}</div>
+            <div className="flex items-center gap-1 text-sm text-gray-700">
+              <Zap className="w-4 h-4 text-green-500" />
+              <span className="font-semibold">{totalProtein}g</span>
+              <span className="text-xs">{String(tMealPlan('protein'))}</span>
             </div>
           </div>
         </div>
         
         <div className={`flex gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-          <Button variant="outline" size="sm" onClick={onShowShoppingList}>
-            <ShoppingCart className="w-4 h-4" />
+          <Button 
+            size="sm" 
+            variant="outline" 
+            className="h-8 px-3 text-xs bg-white hover:bg-blue-50 border-blue-200 text-blue-700 shadow-sm rounded-lg"
+            onClick={onShowShoppingList}
+            aria-label={String(tMealPlan('shoppingList'))}
+          >
+            <ShoppingCart className={`w-3 h-3 ${isRTL ? 'ml-1' : 'mr-1'}`} />
+            <span className="hidden sm:inline">{String(tMealPlan('shoppingList'))}</span>
           </Button>
-          <Button variant="outline" size="sm" onClick={onAddSnack}>
-            <Plus className="w-4 h-4" />
+          <Button 
+            size="sm" 
+            variant="outline" 
+            className="h-8 px-3 text-xs bg-white hover:bg-green-50 border-green-200 text-green-700 shadow-sm rounded-lg"
+            onClick={onAddSnack}
+            aria-label={String(tMealPlan('addSnack'))}
+          >
+            <Plus className={`w-3 h-3 ${isRTL ? 'ml-1' : 'mr-1'}`} />
+            <span className="hidden sm:inline">{String(tMealPlan('addSnack'))}</span>
           </Button>
         </div>
       </div>

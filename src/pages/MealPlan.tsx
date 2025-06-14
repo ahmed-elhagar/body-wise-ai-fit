@@ -1,19 +1,19 @@
 
 import React from 'react';
-import Layout from '@/components/Layout';
+import { SidebarProvider } from "@/components/ui/sidebar";
+import AppSidebar from "@/components/AppSidebar";
 import { MealPlanContainer } from "@/features/meal-plan";
 
 const MealPlan = () => {
   return (
-    <Layout>
-      <div className="flex-1 overflow-hidden">
-        <div className="h-full overflow-y-auto">
-          <div className="container mx-auto px-4 py-6 max-w-7xl">
-            <MealPlanContainer />
-          </div>
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full">
+        <AppSidebar />
+        <div className="flex-1 p-6">
+          <MealPlanContainer />
         </div>
       </div>
-    </Layout>
+    </SidebarProvider>
   );
 };
 

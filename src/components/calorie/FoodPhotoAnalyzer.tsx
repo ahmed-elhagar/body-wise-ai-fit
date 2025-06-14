@@ -1,57 +1,55 @@
 
-import { useState } from "react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Camera, Upload } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import FoodPhotoAnalysisCard from "@/components/food-photo-analysis/FoodPhotoAnalysisCard";
+import FoodAnalysisResults from "@/components/food-photo-analysis/FoodAnalysisResults";
+import { useFoodPhotoIntegration } from "@/hooks/useFoodPhotoIntegration";
 
 interface FoodPhotoAnalyzerProps {
-  onSelectFood: (food: any) => void;
+  onSelectFood?: (food: any) => void;
 }
 
 const FoodPhotoAnalyzer = ({ onSelectFood }: FoodPhotoAnalyzerProps) => {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const { t } = useLanguage();
+  const { 
+    analysisResult, 
+    convertToFoodItem 
+  } = useFoodPhotoIntegration();
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
+  const handleFoodSelected = (food: any) => {
+    if (onSelectFood) {
+      // Convert AI analysis to standardized food item format
+      const standardizedFood = convertToFoodItem(food);
+      console.log('🍕 Converting AI food analysis:', food, 'to standardized format:', standardizedFood);
+      onSelectFood(standardizedFood);
     }
   };
 
-  const handleAnalyze = () => {
-    // Mock analysis result
-    const mockFood = {
-      name: "Apple",
-      calories: 95,
-      description: "A fresh red apple"
-    };
-    onSelectFood(mockFood);
-  };
-
   return (
-    <Card className="p-6">
-      <div className="text-center space-y-4">
-        <Camera className="w-16 h-16 text-gray-400 mx-auto" />
-        <h3 className="text-xl font-semibold">Analyze Your Food</h3>
-        
-        <div className="space-y-4">
-          <Input
-            type="file"
-            accept="image/*"
-            onChange={handleFileSelect}
-            className="max-w-md mx-auto"
-          />
-          
-          {selectedFile && (
-            <Button onClick={handleAnalyze} className="w-full max-w-md">
-              <Upload className="w-4 h-4 mr-2" />
-              Analyze Photo
-            </Button>
-          )}
-        </div>
+    <div className="space-y-6">
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">
+          {t('AI Food Analysis')}
+        </h2>
+        <p className="text-gray-600">
+          {t('Upload a photo of your food and get instant nutrition analysis. Analyzed foods can be added to your food tracker.')}
+        </p>
       </div>
-    </Card>
+
+      {/* Photo Analysis Card */}
+      <FoodPhotoAnalysisCard 
+        onFoodSelected={handleFoodSelected}
+        className="w-full"
+      />
+
+      {/* Analysis Results */}
+      {analysisResult && (
+        <FoodAnalysisResults
+          result={analysisResult}
+          onAddToLog={handleFoodSelected}
+          className="w-full"
+        />
+      )}
+    </div>
   );
 };
 

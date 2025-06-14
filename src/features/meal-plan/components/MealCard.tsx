@@ -1,89 +1,85 @@
 
-import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { ChefHat, Eye, RefreshCw, Clock, Users } from 'lucide-react';
-import { useLanguage } from '@/contexts/LanguageContext';
-import type { DailyMeal } from '../types';
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Clock, Users, ChefHat, ArrowLeftRight } from "lucide-react";
+import type { DailyMeal } from "@/features/meal-plan/types";
 
 interface MealCardProps {
   meal: DailyMeal;
-  onViewRecipe: (meal: DailyMeal) => void;
-  onExchange: (meal: DailyMeal) => void;
+  onShowRecipe: (meal: DailyMeal) => void;
+  onExchangeMeal: (meal: DailyMeal) => void;
 }
 
-export const MealCard = ({ meal, onViewRecipe, onExchange }: MealCardProps) => {
-  const { t } = useLanguage();
+const MealCard = ({ meal, onShowRecipe, onExchangeMeal }: MealCardProps) => {
+  const handleViewRecipe = () => {
+    onShowRecipe(meal);
+  };
 
-  const mealTypeColors = {
-    breakfast: 'bg-orange-100 text-orange-800',
-    lunch: 'bg-green-100 text-green-800',
-    dinner: 'bg-blue-100 text-blue-800',
-    snack: 'bg-purple-100 text-purple-800',
-    snack1: 'bg-purple-100 text-purple-800',
-    snack2: 'bg-purple-100 text-purple-800'
+  const handleExchangeMeal = () => {
+    onExchangeMeal(meal);
   };
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
       <CardContent className="p-4">
-        <div className="flex justify-between items-start mb-3">
-          <div className="flex-1">
-            <Badge className={mealTypeColors[meal.meal_type] || 'bg-gray-100 text-gray-800'}>
-              {t(meal.meal_type)}
-            </Badge>
-            <h3 className="font-semibold text-lg mt-2 text-gray-900">
-              {meal.name}
-            </h3>
-          </div>
-          <ChefHat className="w-5 h-5 text-gray-400" />
-        </div>
-
-        <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
-          <div className="flex items-center text-gray-600">
-            <span className="font-medium text-orange-600">{meal.calories}</span>
-            <span className="ml-1">{t('cal')}</span>
-          </div>
-          <div className="flex items-center text-gray-600">
-            <span className="font-medium text-green-600">{meal.protein}g</span>
-            <span className="ml-1">{t('protein')}</span>
-          </div>
-          {meal.prep_time && (
-            <div className="flex items-center text-gray-600">
+        {/* Meal Header */}
+        <div className="mb-3">
+          <h3 className="font-semibold text-gray-800 mb-1">{meal.name}</h3>
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="secondary" className="text-xs">
               <Clock className="w-3 h-3 mr-1" />
-              <span>{meal.prep_time}min</span>
-            </div>
-          )}
-          {meal.servings && (
-            <div className="flex items-center text-gray-600">
+              {(meal.prep_time || 0) + (meal.cook_time || 0)} min
+            </Badge>
+            <Badge variant="secondary" className="text-xs">
               <Users className="w-3 h-3 mr-1" />
-              <span>{meal.servings} servings</span>
-            </div>
-          )}
+              {meal.servings} serving{meal.servings !== 1 ? 's' : ''}
+            </Badge>
+            <Badge variant="secondary" className="text-xs">
+              {meal.calories} cal
+            </Badge>
+          </div>
         </div>
 
+        <div className="grid grid-cols-3 gap-2 mb-4 text-center text-sm">
+          <div className="bg-green-50 p-2 rounded">
+            <div className="font-semibold text-green-600">{meal.protein}g</div>
+            <div className="text-xs text-gray-600">Protein</div>
+          </div>
+          <div className="bg-blue-50 p-2 rounded">
+            <div className="font-semibold text-blue-600">{meal.carbs}g</div>
+            <div className="text-xs text-gray-600">Carbs</div>
+          </div>
+          <div className="bg-yellow-50 p-2 rounded">
+            <div className="font-semibold text-yellow-600">{meal.fat}g</div>
+            <div className="text-xs text-gray-600">Fat</div>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
         <div className="flex gap-2">
           <Button
-            onClick={() => onViewRecipe(meal)}
-            variant="outline"
+            onClick={handleViewRecipe}
             size="sm"
-            className="flex-1"
+            className="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white"
           >
-            <Eye className="w-4 h-4 mr-2" />
-            {t('Recipe')}
+            <ChefHat className="w-4 h-4 mr-2" />
+            View Recipe
           </Button>
           <Button
-            onClick={() => onExchange(meal)}
-            variant="outline"
+            onClick={handleExchangeMeal}
             size="sm"
-            className="flex-1"
+            variant="outline"
+            className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50"
           >
-            <RefreshCw className="w-4 h-4 mr-2" />
-            {t('Exchange')}
+            <ArrowLeftRight className="w-4 h-4 mr-2" />
+            Exchange Meal
           </Button>
         </div>
       </CardContent>
     </Card>
   );
 };
+
+export default MealCard;

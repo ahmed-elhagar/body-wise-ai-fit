@@ -42,17 +42,8 @@ export const ExercisePageContainer = () => {
   const { isGenerating, generateExerciseProgram, regenerateProgram } = useEnhancedAIExercise();
   const exerciseSteps = useExerciseAISteps(language);
 
-  // Convert steps to AIStep format with title property
-  const aiSteps = exerciseSteps.map(step => ({
-    id: step.id,
-    title: step.label,
-    label: step.label,
-    description: step.description,
-    estimatedDuration: step.estimatedDuration
-  }));
-
   const { currentStepIndex, isComplete, progress } = useAILoadingSteps(
-    aiSteps, 
+    exerciseSteps, 
     isGenerating,
     { stepDuration: 3500 }
   );

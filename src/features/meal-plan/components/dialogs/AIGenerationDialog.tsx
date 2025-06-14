@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -8,9 +9,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Sparkles, Zap, AlertTriangle, Info, Heart, Shield } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useMealPlanTranslations } from '@/utils/mealPlanTranslations';
 import { useCentralizedCredits } from '@/hooks/useCentralizedCredits';
 import { useProfile } from '@/hooks/useProfile';
-import type { MealPlanPreferences } from '../../types';
+import type { MealPlanPreferences } from '@/types/mealPlan';
 
 interface AIGenerationDialogProps {
   open: boolean;
@@ -31,9 +33,21 @@ export const AIGenerationDialog = ({
   isGenerating,
   hasExistingPlan
 }: AIGenerationDialogProps) => {
-  const { t, isRTL } = useLanguage();
+  const { language } = useLanguage();
   const { profile } = useProfile();
-  
+  const { 
+    generateAIMealPlan,
+    mealPlanSettings,
+    includeSnacks,
+    maxPrepTime,
+    cuisine,
+    aiCredits,
+    creditsRemaining,
+    generating,
+    mealsPerDay,
+    isRTL 
+  } = useMealPlanTranslations();
+
   // Use centralized credits instead of passed props
   const { remaining: userCredits, isPro, hasCredits } = useCentralizedCredits();
 
@@ -107,29 +121,29 @@ export const AIGenerationDialog = ({
 
   const getMealsPerDayText = () => {
     const count = preferences.includeSnacks ? 5 : 3;
-    return isRTL 
+    return language === 'ar' 
       ? `${count} وجبات يومياً`
       : `${count} meals per day`;
   };
 
   const getButtonText = () => {
     if (isGenerating) {
-      return isRTL ? 'جاري إنشاء خطتك...' : 'Creating Your Meal Plan...';
+      return language === 'ar' ? 'جاري إنشاء خطتك...' : 'Creating Your Meal Plan...';
     }
     if (hasExistingPlan) {
-      return isRTL ? 'إنشاء خطة جديدة' : 'Generate New Meal Plan';
+      return language === 'ar' ? 'إنشاء خطة جديدة' : 'Generate New Meal Plan';
     }
-    return isRTL ? 'إنشاء خطة الوجبات بالذكاء الاصطناعي' : 'Generate AI Meal Plan';
+    return language === 'ar' ? 'إنشاء خطة الوجبات بالذكاء الاصطناعي' : 'Generate AI Meal Plan';
   };
 
   const cuisineOptions = [
-    { value: 'mixed', label: isRTL ? 'مختلط' : 'Mixed Cuisines' },
-    { value: 'mediterranean', label: isRTL ? 'متوسطية' : 'Mediterranean' },
-    { value: 'asian', label: isRTL ? 'آسيوية' : 'Asian' },
-    { value: 'mexican', label: isRTL ? 'مكسيكية' : 'Mexican' },
-    { value: 'italian', label: isRTL ? 'إيطالية' : 'Italian' },
-    { value: 'middle_eastern', label: isRTL ? 'شرق أوسطية' : 'Middle Eastern' },
-    { value: 'american', label: isRTL ? 'أمريكية' : 'American' }
+    { value: 'mixed', label: language === 'ar' ? 'مختلط' : 'Mixed Cuisines' },
+    { value: 'mediterranean', label: language === 'ar' ? 'متوسطية' : 'Mediterranean' },
+    { value: 'asian', label: language === 'ar' ? 'آسيوية' : 'Asian' },
+    { value: 'mexican', label: language === 'ar' ? 'مكسيكية' : 'Mexican' },
+    { value: 'italian', label: language === 'ar' ? 'إيطالية' : 'Italian' },
+    { value: 'middle_eastern', label: language === 'ar' ? 'شرق أوسطية' : 'Middle Eastern' },
+    { value: 'american', label: language === 'ar' ? 'أمريكية' : 'American' }
   ];
 
   const displayCredits = isPro ? 'Unlimited' : `${userCredits}`;
@@ -146,10 +160,10 @@ export const AIGenerationDialog = ({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-orange-500" />
-              {isRTL ? 'تأكيد إعادة الإنشاء' : 'Confirm Regeneration'}
+              {language === 'ar' ? 'تأكيد إعادة الإنشاء' : 'Confirm Regeneration'}
             </DialogTitle>
             <DialogDescription>
-              {isRTL 
+              {language === 'ar' 
                 ? 'ستستبدل هذه العملية خطة الوجبات الحالية وستستهلك رصيد ذكاء اصطناعي واحد.'
                 : 'This will replace your current meal plan and consume 1 AI credit.'
               }
@@ -160,7 +174,7 @@ export const AIGenerationDialog = ({
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">
-                  {isRTL ? 'الأرصدة المتبقية:' : 'Credits Remaining:'}
+                  {language === 'ar' ? 'الأرصدة المتبقية:' : 'Credits Remaining:'}
                 </span>
                 <Badge variant="outline" className="bg-white">
                   <Zap className="w-3 h-3 mr-1" />
@@ -176,7 +190,7 @@ export const AIGenerationDialog = ({
               onClick={() => setShowConfirmation(false)}
               className="flex-1"
             >
-              {isRTL ? 'إلغاء' : 'Cancel'}
+              {language === 'ar' ? 'إلغاء' : 'Cancel'}
             </Button>
             <Button 
               onClick={handleConfirmedGenerate}
@@ -184,7 +198,7 @@ export const AIGenerationDialog = ({
               className="flex-1"
             >
               <Sparkles className="w-4 h-4 mr-2" />
-              {isRTL ? 'تأكيد الإنشاء' : 'Confirm Generate'}
+              {language === 'ar' ? 'تأكيد الإنشاء' : 'Confirm Generate'}
             </Button>
           </div>
         </DialogContent>
@@ -198,10 +212,10 @@ export const AIGenerationDialog = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-blue-500" />
-            {t('Generate AI Meal Plan')}
+            {generateAIMealPlan || 'Generate AI Meal Plan'}
           </DialogTitle>
           <DialogDescription>
-            {isRTL 
+            {language === 'ar' 
               ? 'خصص خطة وجباتك باستخدام الذكاء الاصطناعي المتطور'
               : 'Customize your meal plan using advanced AI technology'
             }
@@ -216,7 +230,7 @@ export const AIGenerationDialog = ({
                 <div className="flex items-center gap-2">
                   <Zap className="w-4 h-4 text-yellow-500" />
                   <span className="font-medium">
-                    {isRTL ? 'أرصدة الذكاء الاصطناعي: الأرصدة المتبقية' : 'AI Credits: Credits Remaining'}
+                    {language === 'ar' ? 'أرصدة الذكاء الاصطناعي: الأرصدة المتبقية' : 'AI Credits: Credits Remaining'}
                   </span>
                 </div>
                 <Badge variant="secondary" className="bg-white">
@@ -233,7 +247,7 @@ export const AIGenerationDialog = ({
                 <div className="flex items-center gap-2 mb-3">
                   <Heart className="w-4 h-4 text-red-500" />
                   <span className="font-medium text-red-800">
-                    {isRTL ? 'الحالات الصحية والقيود الغذائية' : 'Health Conditions & Dietary Requirements'}
+                    {language === 'ar' ? 'الحالات الصحية والقيود الغذائية' : 'Health Conditions & Dietary Requirements'}
                   </span>
                 </div>
                 
@@ -241,7 +255,7 @@ export const AIGenerationDialog = ({
                   {healthConditions.length > 0 && (
                     <div>
                       <span className="text-xs font-medium text-red-700 mb-1 block">
-                        {isRTL ? 'الحالات الصحية:' : 'Health Conditions:'}
+                        {language === 'ar' ? 'الحالات الصحية:' : 'Health Conditions:'}
                       </span>
                       <div className="flex flex-wrap gap-1">
                         {healthConditions.map((condition, index) => (
@@ -257,7 +271,7 @@ export const AIGenerationDialog = ({
                   {allergies.length > 0 && (
                     <div>
                       <span className="text-xs font-medium text-red-700 mb-1 block">
-                        {isRTL ? 'الحساسية:' : 'Allergies:'}
+                        {language === 'ar' ? 'الحساسية:' : 'Allergies:'}
                       </span>
                       <div className="flex flex-wrap gap-1">
                         {allergies.map((allergy, index) => (
@@ -273,7 +287,7 @@ export const AIGenerationDialog = ({
                   {dietaryRestrictions.length > 0 && (
                     <div>
                       <span className="text-xs font-medium text-red-700 mb-1 block">
-                        {isRTL ? 'القيود الغذائية:' : 'Dietary Restrictions:'}
+                        {language === 'ar' ? 'القيود الغذائية:' : 'Dietary Restrictions:'}
                       </span>
                       <div className="flex flex-wrap gap-1">
                         {dietaryRestrictions.map((restriction, index) => (
@@ -289,7 +303,7 @@ export const AIGenerationDialog = ({
                 
                 <div className="mt-3 p-2 bg-white/60 rounded-md">
                   <p className="text-xs text-red-600">
-                    {isRTL 
+                    {language === 'ar' 
                       ? 'سيتم مراعاة هذه المعلومات عند إنشاء خطة الوجبات الخاصة بك'
                       : 'These will be considered when generating your personalized meal plan'
                     }
@@ -303,7 +317,7 @@ export const AIGenerationDialog = ({
           <div className="space-y-4">
             <div className="space-y-2">
               <Label className="text-base font-medium">
-                {t('Include Snacks')}
+                {includeSnacks || 'Include Snacks'}
               </Label>
               <div className="flex items-center gap-3">
                 <Switch
@@ -317,7 +331,7 @@ export const AIGenerationDialog = ({
               <div className="flex items-center gap-2 text-xs text-blue-600 bg-blue-50 p-2 rounded-md">
                 <Info className="w-3 h-3" />
                 <span>
-                  {isRTL 
+                  {language === 'ar' 
                     ? preferences.includeSnacks !== false
                       ? 'سيتم إنشاء 5 وجبات يومياً (فطار، وجبة خفيفة، غداء، وجبة خفيفة، عشاء)'
                       : 'سيتم إنشاء 3 وجبات يومياً (فطار، غداء، عشاء)'
@@ -332,7 +346,7 @@ export const AIGenerationDialog = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="cuisine">
-                  {t('Cuisine Type')}
+                  {cuisine || 'Cuisine Type'}
                 </Label>
                 <Select
                   value={preferences.cuisine || 'mixed'}
@@ -353,7 +367,7 @@ export const AIGenerationDialog = ({
 
               <div className="space-y-2">
                 <Label htmlFor="maxPrepTime">
-                  {t('Max Prep Time')} ({isRTL ? 'دقيقة' : 'minutes'})
+                  {maxPrepTime || 'Max Prep Time'} ({language === 'ar' ? 'دقيقة' : 'minutes'})
                 </Label>
                 <Select
                   value={preferences.maxPrepTime || '30'}
@@ -363,10 +377,10 @@ export const AIGenerationDialog = ({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="15">15 {isRTL ? 'دقيقة' : 'minutes'}</SelectItem>
-                    <SelectItem value="30">30 {isRTL ? 'دقيقة' : 'minutes'}</SelectItem>
-                    <SelectItem value="45">45 {isRTL ? 'دقيقة' : 'minutes'}</SelectItem>
-                    <SelectItem value="60">60 {isRTL ? 'دقيقة' : 'minutes'}</SelectItem>
+                    <SelectItem value="15">15 {language === 'ar' ? 'دقيقة' : 'minutes'}</SelectItem>
+                    <SelectItem value="30">30 {language === 'ar' ? 'دقيقة' : 'minutes'}</SelectItem>
+                    <SelectItem value="45">45 {language === 'ar' ? 'دقيقة' : 'minutes'}</SelectItem>
+                    <SelectItem value="60">60 {language === 'ar' ? 'دقيقة' : 'minutes'}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -381,7 +395,7 @@ export const AIGenerationDialog = ({
               className="flex-1"
               disabled={isGenerating}
             >
-              {isRTL ? 'إلغاء' : 'Cancel'}
+              {language === 'ar' ? 'إلغاء' : 'Cancel'}
             </Button>
             <Button 
               onClick={handleGenerate}
@@ -395,7 +409,7 @@ export const AIGenerationDialog = ({
 
           {!hasCredits && (
             <div className="text-center text-red-600 text-sm">
-              {isRTL 
+              {language === 'ar' 
                 ? 'لا توجد أرصدة ذكاء اصطناعي متبقية'
                 : 'No AI credits remaining'
               }

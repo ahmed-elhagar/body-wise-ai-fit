@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -10,8 +11,7 @@ export const useDynamicMealPlan = (weekOffset: number = 0) => {
   // Calculate the target week start date
   const getTargetWeekStart = () => {
     const today = new Date();
-    // Corrected weekStartsOn to 0 (Sunday) to align with other meal plan logic
-    const currentWeekStart = startOfWeek(today, { weekStartsOn: 0 }); 
+    const currentWeekStart = startOfWeek(today, { weekStartsOn: 6 }); // Saturday = 6
     const targetWeek = addWeeks(currentWeekStart, weekOffset);
     return format(targetWeek, 'yyyy-MM-dd');
   };

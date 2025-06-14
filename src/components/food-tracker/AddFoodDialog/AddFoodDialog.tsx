@@ -1,10 +1,11 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useState } from "react";
-import { Plus } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Search, Edit3 } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useEffect, useState } from "react";
+import SearchTab from "./SearchTab";
+import ManualTab from "./ManualTab";
 
 interface AddFoodDialogProps {
   isOpen: boolean;
@@ -14,58 +15,83 @@ interface AddFoodDialogProps {
 }
 
 const AddFoodDialog = ({ isOpen, onClose, onFoodAdded, preSelectedFood }: AddFoodDialogProps) => {
-  const [foodName, setFoodName] = useState(preSelectedFood?.name || "");
-  const [calories, setCalories] = useState(preSelectedFood?.calories || "");
+  const { t } = useLanguage();
+  const [activeTab, setActiveTab] = useState("search");
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Mock food addition
-    console.log('Adding food:', { foodName, calories });
-    onFoodAdded();
-    onClose();
-  };
+  useEffect(() => {
+    if (preSelectedFood && isOpen) {
+      // If we have pre-selected food from AI analysis, switch to manual tab
+      setActiveTab("manual");
+    } else {
+      // Reset to search tab for normal usage
+      setActiveTab("search");
+    }
+  }, [preSelectedFood, isOpen]);
+
+  // If we have pre-selected food, show only the manual tab content
+  if (preSelectedFood) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-gray-900">
+              {t('Add Analyzed Food')}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="mt-4 max-h-[70vh] overflow-y-auto">
+            <ManualTab 
+              onFoodAdded={onFoodAdded} 
+              onClose={onClose} 
+              preSelectedFood={preSelectedFood}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Plus className="w-5 h-5" />
-            Add Food
+          <DialogTitle className="text-xl font-bold text-gray-900">
+            {t('Add Food')}
           </DialogTitle>
         </DialogHeader>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="foodName">Food Name</Label>
-            <Input
-              id="foodName"
-              value={foodName}
-              onChange={(e) => setFoodName(e.target.value)}
-              required
-            />
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 bg-gray-100">
+            <TabsTrigger 
+              value="search" 
+              className="data-[state=active]:bg-white data-[state=active]:text-gray-900 flex items-center gap-2"
+            >
+              <Search className="w-4 h-4" />
+              {t('Search')}
+            </TabsTrigger>
+            <TabsTrigger 
+              value="manual" 
+              className="data-[state=active]:bg-white data-[state=active]:text-gray-900 flex items-center gap-2"
+            >
+              <Edit3 className="w-4 h-4" />
+              {t('Manual')}
+            </TabsTrigger>
+          </TabsList>
+
+          <div className="mt-4 max-h-[70vh] overflow-y-auto">
+            <TabsContent value="search">
+              <SearchTab onFoodAdded={onFoodAdded} onClose={onClose} />
+            </TabsContent>
+
+            <TabsContent value="manual">
+              <ManualTab 
+                onFoodAdded={onFoodAdded} 
+                onClose={onClose} 
+                preSelectedFood={preSelectedFood}
+              />
+            </TabsContent>
           </div>
-          
-          <div>
-            <Label htmlFor="calories">Calories</Label>
-            <Input
-              id="calories"
-              type="number"
-              value={calories}
-              onChange={(e) => setCalories(e.target.value)}
-              required
-            />
-          </div>
-          
-          <div className="flex gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={onClose} className="flex-1">
-              Cancel
-            </Button>
-            <Button type="submit" className="flex-1">
-              Add Food
-            </Button>
-          </div>
-        </form>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );

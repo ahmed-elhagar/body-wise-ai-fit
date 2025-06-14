@@ -1,6 +1,5 @@
-
 import React, { useState, useRef } from 'react';
-import { useMealPlanPage } from '../hooks/useMealPlanPage';
+import { useMealPlanState } from '../hooks/useMealPlanState';
 import MealPlanHeader from './MealPlanHeader';
 import { MealPlanContent } from './MealPlanContent';
 import ErrorState from './ErrorState';
@@ -10,17 +9,16 @@ import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { MealPlanViewToggle } from './MealPlanViewToggle';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { formatWeekRange, getDayName, convertDatabaseMeal } from '../utils/mealPlanUtils';
+import { formatWeekRange, getDayName } from '@/utils/mealPlanUtils';
 import { MealExchangeDialog } from './dialogs/MealExchangeDialog';
 import { AIGenerationDialog } from './dialogs/AIGenerationDialog';
-import { RecipeDialog } from './RecipeDialog';
+import { EnhancedRecipeDialog } from './EnhancedRecipeDialog';
 import EnhancedAddSnackDialog from './dialogs/EnhancedAddSnackDialog';
-import ModernShoppingListDrawer from './dialogs/ModernShoppingListDrawer';
+import ModernShoppingListDrawer from '@/components/shopping-list/ModernShoppingListDrawer';
 import { MealPlanAILoadingDialog } from './dialogs/MealPlanAILoadingDialog';
-import type { MealPlanFetchResult } from '../types';
 
 const MealPlanContainer = () => {
-  const mealPlanState = useMealPlanPage();
+  const mealPlanState = useMealPlanState();
   const { shuffleMeals, isShuffling } = useEnhancedMealShuffle();
   const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
   
@@ -53,14 +51,11 @@ const MealPlanContainer = () => {
   // Enhanced week change handler that manages loading states properly
   const handleWeekChange = async (offset: number) => {
     console.log('📅 Week change initiated');
-    mealPlanState.setCurrentWeekOffset(offset);
+    await mealPlanState.setCurrentWeekOffset(offset);
   };
 
-  // Determine what data to display - convert database format to proper types
-  const displayData: MealPlanFetchResult | null = mealPlanState.currentWeekPlan || lastLoadedDataRef.current ? {
-    weeklyPlan: (mealPlanState.currentWeekPlan || lastLoadedDataRef.current)!.weeklyPlan,
-    dailyMeals: ((mealPlanState.currentWeekPlan || lastLoadedDataRef.current)!.dailyMeals || []).map(convertDatabaseMeal)
-  } : null;
+  // Determine what data to display
+  const displayData = mealPlanState.currentWeekPlan || lastLoadedDataRef.current;
 
   // Only show full error state if there's an error and no existing data
   if (mealPlanState.error && !displayData) {
@@ -72,18 +67,15 @@ const MealPlanContainer = () => {
     return <LoadingState />;
   }
 
-  // Calculate daily meals for selected day from converted data
-  const selectedDayMeals = displayData?.dailyMeals?.filter(meal => meal.day_number === mealPlanState.selectedDayNumber) || [];
-
   return (
     <>
       <div className="space-y-6">
         {/* Header - Always visible */}
         <MealPlanHeader 
-          onGenerateAI={mealPlanState.handleGenerateAIPlan}
+          onGenerateAI={() => mealPlanState.openAIDialog()}
           onShuffle={handleShuffle}
-          onShowShoppingList={mealPlanState.openShoppingListDialog}
-          onRegeneratePlan={mealPlanState.handleGenerateAIPlan}
+          onShowShoppingList={() => mealPlanState.openShoppingListDialog()}
+          onRegeneratePlan={() => mealPlanState.openAIDialog()}
           isGenerating={mealPlanState.isGenerating}
           isShuffling={isShuffling}
           hasWeeklyPlan={!!displayData?.weeklyPlan}
@@ -164,17 +156,17 @@ const MealPlanContainer = () => {
             viewMode={viewMode}
             currentWeekPlan={displayData}
             selectedDayNumber={mealPlanState.selectedDayNumber}
-            dailyMeals={selectedDayMeals}
+            dailyMeals={mealPlanState.dailyMeals}
             totalCalories={mealPlanState.totalCalories}
             totalProtein={mealPlanState.totalProtein}
             targetDayCalories={mealPlanState.targetDayCalories}
             weekStartDate={mealPlanState.weekStartDate}
             currentWeekOffset={mealPlanState.currentWeekOffset}
             isGenerating={mealPlanState.isGenerating}
-            onViewMeal={mealPlanState.openRecipeDialog}
-            onExchangeMeal={mealPlanState.openExchangeDialog}
-            onAddSnack={mealPlanState.openAddSnackDialog}
-            onGenerateAI={mealPlanState.handleGenerateAIPlan}
+            onViewMeal={(meal) => mealPlanState.openRecipeDialog(meal)}
+            onExchangeMeal={(meal) => mealPlanState.openExchangeDialog(meal)}
+            onAddSnack={() => mealPlanState.openAddSnackDialog()}
+            onGenerateAI={() => mealPlanState.openAIDialog()}
             setCurrentWeekOffset={handleWeekChange}
             setSelectedDayNumber={mealPlanState.setSelectedDayNumber}
           />
@@ -192,17 +184,17 @@ const MealPlanContainer = () => {
         </div>
       </div>
 
-      {/* AI Loading Dialog */}
+      {/* AI Loading Dialog - Step-by-step loading experience - Now using top-right position */}
       <MealPlanAILoadingDialog 
         isGenerating={mealPlanState.isGenerating}
         onClose={() => mealPlanState.refetch()}
         position="top-right"
       />
 
-      {/* Shopping List Drawer */}
+      {/* Modern Shopping List Drawer - Fixed to use the correct enhanced version */}
       <ModernShoppingListDrawer
         isOpen={mealPlanState.showShoppingListDialog}
-        onClose={mealPlanState.closeShoppingListDialog}
+        onClose={() => mealPlanState.closeShoppingListDialog()}
         weeklyPlan={mealPlanState.currentWeekPlan}
         weekId={mealPlanState.currentWeekPlan?.weeklyPlan?.id}
         onShoppingListUpdate={() => {
@@ -214,7 +206,7 @@ const MealPlanContainer = () => {
       {/* AI Generation Dialog */}
       <AIGenerationDialog
         open={mealPlanState.showAIDialog}
-        onClose={mealPlanState.closeAIDialog}
+        onClose={() => mealPlanState.closeAIDialog()}
         preferences={mealPlanState.aiPreferences}
         onPreferencesChange={mealPlanState.updateAIPreferences}
         onGenerate={mealPlanState.handleGenerateAIPlan}
@@ -222,10 +214,10 @@ const MealPlanContainer = () => {
         hasExistingPlan={!!displayData?.weeklyPlan}
       />
 
-      {/* Add Snack Dialog */}
+      {/* Enhanced Add Snack Dialog */}
       <EnhancedAddSnackDialog
         isOpen={mealPlanState.showAddSnackDialog}
-        onClose={mealPlanState.closeAddSnackDialog}
+        onClose={() => mealPlanState.closeAddSnackDialog()}
         selectedDay={mealPlanState.selectedDayNumber}
         currentDayCalories={mealPlanState.totalCalories}
         targetDayCalories={mealPlanState.targetDayCalories}
@@ -233,10 +225,10 @@ const MealPlanContainer = () => {
         onSnackAdded={() => mealPlanState.refetch()}
       />
 
-      {/* Meal Exchange Dialog */}
+      {/* Enhanced Meal Exchange Dialog - Our latest implementation */}
       <MealExchangeDialog
         isOpen={mealPlanState.showExchangeDialog}
-        onClose={mealPlanState.closeExchangeDialog}
+        onClose={() => mealPlanState.closeExchangeDialog()}
         meal={mealPlanState.selectedMeal}
         onExchangeComplete={() => {
           mealPlanState.refetch();
@@ -244,10 +236,10 @@ const MealPlanContainer = () => {
         }}
       />
 
-      {/* Recipe Dialog */}
-      <RecipeDialog
+      {/* Enhanced Recipe Dialog */}
+      <EnhancedRecipeDialog
         isOpen={mealPlanState.showRecipeDialog}
-        onClose={mealPlanState.closeRecipeDialog}
+        onClose={() => mealPlanState.closeRecipeDialog()}
         meal={mealPlanState.selectedMeal}
         onRecipeUpdated={() => mealPlanState.refetch()}
       />
