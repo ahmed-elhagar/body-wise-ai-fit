@@ -12,7 +12,11 @@ export {
   MealPlanContent,
   MealCard,
   DayOverview,
-  EnhancedRecipeDialog
+  EnhancedRecipeDialog,
+  MealPlanAILoadingDialog,
+  MealExchangeDialog,
+  AIGenerationDialog,
+  EnhancedAddSnackDialog
 } from './components';
 
 // Export types

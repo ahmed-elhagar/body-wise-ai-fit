@@ -33,3 +33,7 @@ export { ViewModeToggle } from './ViewModeToggle';
 
 // Dialog components
 export { EnhancedRecipeDialog } from './EnhancedRecipeDialog';
+export { MealPlanAILoadingDialog } from './dialogs/MealPlanAILoadingDialog';
+export { MealExchangeDialog } from './dialogs/MealExchangeDialog';
+export { AIGenerationDialog } from './dialogs/AIGenerationDialog';
+export { default as EnhancedAddSnackDialog } from './dialogs/EnhancedAddSnackDialog';
