@@ -81,3 +81,6 @@ export const EmptyWeekState = ({ onGenerateAI, isGenerating }: EmptyWeekStatePro
     </Card>
   );
 };
+
+// Default export for backward compatibility
+export default EmptyWeekState;

@@ -93,9 +93,24 @@ class OptimizedMealPlanServiceClass {
         throw new Error(`Failed to fetch daily meals: ${mealsError.message}`);
       }
 
+      // Convert database types to application types
+      const convertedWeeklyPlan: WeeklyMealPlan = {
+        ...weeklyPlan,
+        preferences: weeklyPlan.generation_prompt || {},
+        updated_at: weeklyPlan.created_at // Use created_at as updated_at fallback
+      };
+
+      const convertedDailyMeals: DailyMeal[] = (dailyMeals || []).map(meal => ({
+        ...meal,
+        meal_type: meal.meal_type as DailyMeal['meal_type'],
+        ingredients: meal.ingredients || [],
+        instructions: meal.instructions || [],
+        alternatives: meal.alternatives || []
+      }));
+
       const result: OptimizedMealPlanData = {
-        weeklyPlan,
-        dailyMeals: dailyMeals || []
+        weeklyPlan: convertedWeeklyPlan,
+        dailyMeals: convertedDailyMeals
       };
 
       // Cache the result

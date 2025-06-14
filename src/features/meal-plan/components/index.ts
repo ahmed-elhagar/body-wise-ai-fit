@@ -21,17 +21,9 @@ export { MealExchangeDialog } from './dialogs/MealExchangeDialog';
 export { AIGenerationDialog } from './dialogs/AIGenerationDialog';
 export { default as EnhancedAddSnackDialog } from './dialogs/EnhancedAddSnackDialog';
 
-// Legacy exports for backward compatibility
-export { default as MealPlanLoadingBackdrop } from './MealPlanHeader'; // Deprecated
-export { default as MealPlanPageTitle } from './MealPlanHeader'; // Deprecated
-export { default as MealPlanEmptyState } from './EmptyWeekState'; // Deprecated
-export { default as MealCard } from './DayOverview'; // Deprecated
-export { EnhancedMealCard } from './DayOverview'; // Deprecated
-export { MealRow } from './DayOverview'; // Deprecated
-export { AddMealCard } from './DayOverview'; // Deprecated
-export { CompactDailyProgress } from './DayOverview'; // Deprecated
-export { default as MealPlanLoadingState } from './LoadingState'; // Deprecated
-export { default as MealPlanErrorState } from './ErrorState'; // Deprecated
-export { DaySelector } from './MealPlanViewToggle'; // Deprecated
-export { WeekNavigation } from './MealPlanViewToggle'; // Deprecated
-export { ViewModeToggle } from './MealPlanViewToggle'; // Deprecated
+// Legacy exports for backward compatibility - these are deprecated
+export { EmptyWeekState as MealPlanEmptyState };
+export { DayOverview as MealCard };
+export { LoadingState as MealPlanLoadingState };
+export { ErrorState as MealPlanErrorState };
+export { MealPlanViewToggle as ViewModeToggle };
