@@ -2,7 +2,17 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart } from "lucide-react";
 
-const WeightStatsCards = () => {
+interface WeightEntry {
+  id: string;
+  weight: number;
+  date: string;
+}
+
+interface WeightStatsCardsProps {
+  weightEntries: WeightEntry[];
+}
+
+const WeightStatsCards = ({ weightEntries }: WeightStatsCardsProps) => {
   return (
     <Card>
       <CardHeader>

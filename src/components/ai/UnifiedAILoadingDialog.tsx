@@ -1,10 +1,12 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Progress } from "@/components/ui/progress";
 import { Loader2 } from "lucide-react";
 
-interface AIStep {
+export interface AIStep {
   id: string;
   title: string;
+  label: string;
   description: string;
   estimatedDuration: number;
 }
@@ -17,60 +19,52 @@ interface UnifiedAILoadingDialogProps {
   steps: AIStep[];
   currentStepIndex: number;
   position?: "center" | "top-right";
+  isComplete?: boolean;
+  progress?: number;
 }
 
-const UnifiedAILoadingDialog = ({
+export const UnifiedAILoadingDialog = ({
   isOpen,
   onClose,
   title,
   description,
   steps,
   currentStepIndex,
-  position = "center"
+  position = "center",
+  isComplete = false,
+  progress = 0
 }: UnifiedAILoadingDialogProps) => {
+  const currentStep = steps[currentStepIndex];
+  const progressPercentage = steps.length > 0 ? ((currentStepIndex + 1) / steps.length) * 100 : progress;
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={position === "top-right" ? "fixed top-4 right-4 max-w-md" : ""}>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
             {title}
           </DialogTitle>
         </DialogHeader>
+        
         <div className="space-y-4">
-          <p className="text-gray-600">{description}</p>
+          <p className="text-sm text-gray-600">{description}</p>
+          
           <div className="space-y-2">
-            {steps.map((step, index) => (
-              <div
-                key={step.id}
-                className={`p-3 rounded-lg border ${
-                  index === currentStepIndex
-                    ? "bg-blue-50 border-blue-200"
-                    : index < currentStepIndex
-                    ? "bg-green-50 border-green-200"
-                    : "bg-gray-50 border-gray-200"
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  {index < currentStepIndex ? (
-                    <div className="w-2 h-2 bg-green-500 rounded-full" />
-                  ) : index === currentStepIndex ? (
-                    <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
-                  ) : (
-                    <div className="w-2 h-2 bg-gray-300 rounded-full" />
-                  )}
-                  <span className="font-medium">{step.title}</span>
-                </div>
-                <p className="text-sm text-gray-600 mt-1">{step.description}</p>
-              </div>
-            ))}
+            <Progress value={progressPercentage} className="h-2" />
+            <p className="text-xs text-gray-500 text-center">
+              {Math.round(progressPercentage)}% complete
+            </p>
           </div>
+          
+          {currentStep && (
+            <div className="bg-blue-50 p-3 rounded-lg">
+              <h4 className="font-medium text-blue-900">{currentStep.title || currentStep.label}</h4>
+              <p className="text-sm text-blue-700">{currentStep.description}</p>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
   );
 };
-
-export { UnifiedAILoadingDialog };
-export type { AIStep, UnifiedAILoadingDialogProps };
-export default UnifiedAILoadingDialog;

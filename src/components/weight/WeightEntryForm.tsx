@@ -2,7 +2,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Scale } from "lucide-react";
 
-const WeightEntryForm = () => {
+interface WeightEntryFormProps {
+  onSuccess: () => void;
+}
+
+const WeightEntryForm = ({ onSuccess }: WeightEntryFormProps) => {
   return (
     <Card>
       <CardHeader>

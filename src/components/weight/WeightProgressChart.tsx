@@ -2,7 +2,17 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp } from "lucide-react";
 
-const WeightProgressChart = () => {
+interface WeightEntry {
+  id: string;
+  weight: number;
+  date: string;
+}
+
+interface WeightProgressChartProps {
+  weightEntries: WeightEntry[];
+}
+
+const WeightProgressChart = ({ weightEntries }: WeightProgressChartProps) => {
   return (
     <Card>
       <CardHeader>

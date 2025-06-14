@@ -6,9 +6,18 @@ import { Loader2 } from "lucide-react";
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requireRole?: string;
+  requireAuth?: boolean;
+  preventAuthenticatedAccess?: boolean;
+  requireProfile?: boolean;
 }
 
-const ProtectedRoute = ({ children, requireRole }: ProtectedRouteProps) => {
+const ProtectedRoute = ({ 
+  children, 
+  requireRole,
+  requireAuth = true,
+  preventAuthenticatedAccess = false,
+  requireProfile = false
+}: ProtectedRouteProps) => {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
@@ -19,8 +28,19 @@ const ProtectedRoute = ({ children, requireRole }: ProtectedRouteProps) => {
     );
   }
 
-  if (!user) {
+  // Handle preventAuthenticatedAccess (for login/signup pages)
+  if (preventAuthenticatedAccess && user) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  // Handle requireAuth
+  if (requireAuth && !user) {
     return <Navigate to="/auth" replace />;
+  }
+
+  // Handle requireAuth = false (public routes)
+  if (requireAuth === false) {
+    return <>{children}</>;
   }
 
   return <>{children}</>;
