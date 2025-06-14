@@ -1,5 +1,4 @@
 
-
 // Main meal plan components
 export { default as MealPlanContainer } from './MealPlanContainer';
 export { default as MealPlanHeader } from './MealPlanHeader';
@@ -21,12 +20,3 @@ export { MealPlanAILoadingDialog } from './dialogs/MealPlanAILoadingDialog';
 export { MealExchangeDialog } from './dialogs/MealExchangeDialog';
 export { AIGenerationDialog } from './dialogs/AIGenerationDialog';
 export { default as EnhancedAddSnackDialog } from './dialogs/EnhancedAddSnackDialog';
-export { RecipeDialog } from './dialogs/RecipeDialog';
-
-// Legacy exports for backward compatibility - these are deprecated
-export { EmptyWeekState as MealPlanEmptyState } from './EmptyWeekState';
-export { default as MealCard } from './DayOverview';
-export { default as MealPlanLoadingState } from './LoadingState';
-export { default as MealPlanErrorState } from './ErrorState';
-export { MealPlanViewToggle as ViewModeToggle } from './MealPlanViewToggle';
-
