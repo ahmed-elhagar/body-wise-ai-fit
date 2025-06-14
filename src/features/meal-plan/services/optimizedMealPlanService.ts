@@ -1,14 +1,8 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import type { 
-  MealPlanFetchResult, 
-  DailyMeal,
-  WeeklyMealPlan,
-  MealIngredient
-} from '../types';
+import type { WeeklyMealPlan, DailyMeal } from '../types';
 
-// Simplified types for optimization
-interface OptimizedQueryParams {
+interface FetchParams {
   userId: string;
   weekStartDate: string;
   includeIngredients?: boolean;
@@ -16,275 +10,147 @@ interface OptimizedQueryParams {
   mealTypes?: ReadonlyArray<string>;
 }
 
-interface DatabaseQueryResult<T> {
+interface ServiceResult<T> {
   data: T | null;
   error: Error | null;
-  fromCache: boolean;
-  queryTime: number;
+  fromCache?: boolean;
+  queryTime?: number;
 }
 
-// Optimized database service with enhanced error handling and validation
-export class OptimizedMealPlanService {
-  private static readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-  private static queryCache = new Map<string, { data: unknown; timestamp: number }>();
+interface OptimizedMealPlanData {
+  weeklyPlan: WeeklyMealPlan;
+  dailyMeals: DailyMeal[];
+}
 
-  static async fetchMealPlanData(
-    params: OptimizedQueryParams
-  ): Promise<DatabaseQueryResult<MealPlanFetchResult>> {
+class OptimizedMealPlanServiceClass {
+  private cache = new Map<string, { data: OptimizedMealPlanData; timestamp: number }>();
+  private readonly CACHE_DURATION = 2 * 60 * 1000; // 2 minutes
+
+  private getCacheKey(params: FetchParams): string {
+    return `${params.userId}-${params.weekStartDate}-${params.includeIngredients}-${params.includeInstructions}`;
+  }
+
+  private isValidCacheEntry(timestamp: number): boolean {
+    return Date.now() - timestamp < this.CACHE_DURATION;
+  }
+
+  async fetchMealPlanData(params: FetchParams): Promise<ServiceResult<OptimizedMealPlanData>> {
     const startTime = Date.now();
-    const cacheKey = this.generateCacheKey(params);
-    
-    console.log('🔍 OptimizedMealPlanService.fetchMealPlanData called:', {
-      userId: params.userId.substring(0, 8) + '...',
-      weekStartDate: params.weekStartDate,
-      cacheKey
-    });
+    const cacheKey = this.getCacheKey(params);
     
     // Check cache first
-    const cached = this.getFromCache<MealPlanFetchResult>(cacheKey);
-    if (cached) {
-      console.log('📦 Returning cached data for:', cacheKey);
+    const cached = this.cache.get(cacheKey);
+    if (cached && this.isValidCacheEntry(cached.timestamp)) {
+      console.log('📋 Returning cached meal plan data');
       return {
-        data: cached,
+        data: cached.data,
         error: null,
         fromCache: true,
-        queryTime: Date.now() - startTime
+        queryTime: 0
       };
     }
 
     try {
-      // Optimized weekly plan query with enhanced error handling
-      console.log('🔍 Fetching weekly meal plan...');
-      const weeklyPlanQuery = supabase
+      console.log('🔍 Fetching meal plan from database:', params.weekStartDate);
+
+      // Fetch weekly plan
+      const { data: weeklyPlan, error: weeklyError } = await supabase
         .from('weekly_meal_plans')
         .select('*')
         .eq('user_id', params.userId)
         .eq('week_start_date', params.weekStartDate)
+        .order('created_at', { ascending: false })
+        .limit(1)
         .maybeSingle();
 
-      const { data: weeklyPlan, error: weeklyError } = await weeklyPlanQuery;
-
       if (weeklyError) {
-        console.error('❌ Error fetching weekly meal plan:', weeklyError);
-        return {
-          data: null,
-          error: weeklyError,
-          fromCache: false,
-          queryTime: Date.now() - startTime
-        };
+        console.error('❌ Error fetching weekly plan:', weeklyError);
+        throw new Error(`Failed to fetch weekly plan: ${weeklyError.message}`);
       }
 
       if (!weeklyPlan) {
-        console.log('📋 No weekly meal plan found for:', {
-          userId: params.userId.substring(0, 8) + '...',
-          weekStartDate: params.weekStartDate
-        });
-        return {
-          data: null,
-          error: null,
-          fromCache: false,
-          queryTime: Date.now() - startTime
-        };
+        console.log('ℹ️ No meal plan found for this week');
+        return { data: null, error: null, queryTime: Date.now() - startTime };
       }
 
-      console.log('✅ Weekly plan found:', weeklyPlan.id);
-
-      // Optimized daily meals query with selective fields and validation
-      const selectFields = this.buildSelectFields(params);
-      console.log('🔍 Fetching daily meals with fields:', selectFields);
-      
-      const dailyMealsQuery = supabase
+      // Fetch daily meals
+      let query = supabase
         .from('daily_meals')
-        .select(selectFields)
+        .select('*')
         .eq('weekly_plan_id', weeklyPlan.id)
-        .order('day_number', { ascending: true });
+        .order('day_number', { ascending: true })
+        .order('created_at', { ascending: true });
 
-      // Add meal type filter if specified
+      // Apply meal type filter if specified
       if (params.mealTypes && params.mealTypes.length > 0) {
-        dailyMealsQuery.in('meal_type', params.mealTypes);
-        console.log('🔍 Filtering by meal types:', params.mealTypes);
+        query = query.in('meal_type', params.mealTypes as string[]);
       }
 
-      const { data: dailyMeals, error: mealsError } = await dailyMealsQuery;
+      const { data: dailyMeals, error: mealsError } = await query;
 
       if (mealsError) {
         console.error('❌ Error fetching daily meals:', mealsError);
-        return {
-          data: null,
-          error: mealsError,
-          fromCache: false,
-          queryTime: Date.now() - startTime
-        };
+        throw new Error(`Failed to fetch daily meals: ${mealsError.message}`);
       }
 
-      console.log('✅ Daily meals fetched:', {
-        count: dailyMeals?.length || 0,
-        weeklyPlanId: weeklyPlan.id
-      });
-
-      const result: MealPlanFetchResult = {
-        weeklyPlan: this.processWeeklyPlan(weeklyPlan),
-        dailyMeals: this.processDailyMeals(dailyMeals || [])
+      const result: OptimizedMealPlanData = {
+        weeklyPlan,
+        dailyMeals: dailyMeals || []
       };
 
       // Cache the result
-      this.setCache(cacheKey, result);
+      this.cache.set(cacheKey, {
+        data: result,
+        timestamp: Date.now()
+      });
 
-      console.log('✅ Optimized meal plan data processed successfully:', {
+      const queryTime = Date.now() - startTime;
+      console.log(`✅ Meal plan fetched successfully in ${queryTime}ms:`, {
         weeklyPlanId: weeklyPlan.id,
-        dailyMealsCount: dailyMeals?.length || 0,
-        queryTime: Date.now() - startTime,
-        cached: false
+        mealsCount: dailyMeals?.length || 0
       });
 
       return {
         data: result,
         error: null,
         fromCache: false,
-        queryTime: Date.now() - startTime
+        queryTime
       };
 
     } catch (error) {
-      console.error('❌ Exception in optimized fetch:', error);
+      console.error('❌ OptimizedMealPlanService error:', error);
       return {
         data: null,
-        error: error as Error,
-        fromCache: false,
+        error: error instanceof Error ? error : new Error('Unknown error occurred'),
         queryTime: Date.now() - startTime
       };
     }
   }
 
-  private static generateCacheKey(params: OptimizedQueryParams): string {
-    const key = `meal_plan_${params.userId}_${params.weekStartDate}_${JSON.stringify(params.mealTypes || [])}`;
-    return key;
+  clearCache(): void {
+    console.log('🗑️ Clearing meal plan service cache');
+    this.cache.clear();
   }
 
-  private static getFromCache<T>(key: string): T | null {
-    try {
-      const cached = this.queryCache.get(key);
-      if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
-        return cached.data as T;
+  clearCacheForUser(userId: string): void {
+    console.log('🗑️ Clearing cache for user:', userId);
+    for (const [key] of this.cache) {
+      if (key.startsWith(userId)) {
+        this.cache.delete(key);
       }
-      this.queryCache.delete(key);
-      return null;
-    } catch (error) {
-      console.error('❌ Cache retrieval error:', error);
-      return null;
     }
   }
 
-  private static setCache<T>(key: string, data: T): void {
-    try {
-      this.queryCache.set(key, { data, timestamp: Date.now() });
-    } catch (error) {
-      console.error('❌ Cache storage error:', error);
-    }
-  }
-
-  private static buildSelectFields(params: OptimizedQueryParams): string {
-    const baseFields = [
-      'id', 'weekly_plan_id', 'day_number', 'meal_type', 'name',
-      'calories', 'protein', 'carbs', 'fat', 'prep_time', 'cook_time',
-      'servings', 'youtube_search_term', 'image_url', 'recipe_fetched'
-    ];
-
-    if (params.includeIngredients !== false) {
-      baseFields.push('ingredients');
-    }
-
-    if (params.includeInstructions !== false) {
-      baseFields.push('instructions', 'alternatives');
-    }
-
-    return baseFields.join(',');
-  }
-
-  private static processWeeklyPlan(plan: any): WeeklyMealPlan {
+  getCacheStats() {
+    const validEntries = Array.from(this.cache.values())
+      .filter(entry => this.isValidCacheEntry(entry.timestamp));
+    
     return {
-      id: plan.id,
-      user_id: plan.user_id,
-      week_start_date: plan.week_start_date,
-      total_calories: plan.total_calories || 0,
-      total_protein: plan.total_protein || 0,
-      total_carbs: plan.total_carbs || 0,
-      total_fat: plan.total_fat || 0,
-      preferences: plan.generation_prompt || {},
-      created_at: plan.created_at,
-      updated_at: plan.created_at,
-      life_phase_context: plan.life_phase_context
-    };
-  }
-
-  private static processDailyMeals(meals: any[]): DailyMeal[] {
-    return meals.map((meal, index) => {
-      try {
-        const validMealTypes = ['breakfast', 'lunch', 'dinner', 'snack', 'snack1', 'snack2'];
-        const validatedMealType = validMealTypes.includes(meal.meal_type) ? meal.meal_type : 'snack';
-        
-        console.log(`🍽️ Processing meal ${index + 1}: ${meal.name} (${meal.meal_type} -> ${validatedMealType})`);
-        
-        return {
-          id: meal.id,
-          weekly_plan_id: meal.weekly_plan_id,
-          day_number: meal.day_number,
-          meal_type: validatedMealType as DailyMeal['meal_type'],
-          name: meal.name,
-          calories: meal.calories || 0,
-          protein: meal.protein || 0,
-          carbs: meal.carbs || 0,
-          fat: meal.fat || 0,
-          fiber: 0,
-          sugar: 0,
-          prep_time: meal.prep_time || 0,
-          cook_time: meal.cook_time || 0,
-          servings: meal.servings || 1,
-          youtube_search_term: meal.youtube_search_term,
-          image_url: meal.image_url,
-          recipe_fetched: meal.recipe_fetched || false,
-          ingredients: this.safeParseArray(meal.ingredients, []).map(ing => ({
-            name: typeof ing === 'string' ? ing : ing.name || 'Unknown ingredient',
-            quantity: typeof ing === 'string' ? '1' : ing.quantity || '1',
-            unit: typeof ing === 'string' ? 'piece' : ing.unit || 'piece',
-            category: typeof ing === 'object' ? ing.category : undefined
-          })),
-          instructions: this.safeParseArray(meal.instructions, []).map(inst => 
-            typeof inst === 'string' ? inst : String(inst)
-          ),
-          alternatives: this.safeParseArray(meal.alternatives, []).map(alt => 
-            typeof alt === 'string' ? alt : String(alt)
-          )
-        };
-      } catch (error) {
-        console.error(`❌ Error processing meal ${index + 1}:`, error, meal);
-        throw error;
-      }
-    });
-  }
-
-  private static safeParseArray(value: any, fallback: any[] = []): any[] {
-    if (!value) return fallback;
-    if (Array.isArray(value)) return value;
-    if (typeof value === 'string') {
-      try {
-        const parsed = JSON.parse(value);
-        return Array.isArray(parsed) ? parsed : fallback;
-      } catch {
-        return fallback;
-      }
-    }
-    return fallback;
-  }
-
-  static clearCache(): void {
-    this.queryCache.clear();
-    console.log('🧹 Meal plan cache cleared');
-  }
-
-  static getCacheStats(): { size: number; keys: string[] } {
-    return {
-      size: this.queryCache.size,
-      keys: Array.from(this.queryCache.keys())
+      totalEntries: this.cache.size,
+      validEntries: validEntries.length,
+      cacheHitRate: validEntries.length / Math.max(this.cache.size, 1)
     };
   }
 }
+
+export const OptimizedMealPlanService = new OptimizedMealPlanServiceClass();

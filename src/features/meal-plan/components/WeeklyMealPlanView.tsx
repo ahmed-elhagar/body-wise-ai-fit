@@ -1,133 +1,137 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Eye, ArrowLeftRight, Utensils } from 'lucide-react';
-import { useLanguage } from '@/contexts/LanguageContext';
-import type { DailyMeal } from '../types';
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { format, addDays } from 'date-fns';
+import { useI18n } from "@/hooks/useI18n";
+import { Utensils, Clock, Flame } from 'lucide-react';
+import type { DailyMeal, MealPlanFetchResult } from '../types';
 
 interface WeeklyMealPlanViewProps {
-  weeklyPlan: any;
+  weeklyPlan: MealPlanFetchResult;
   onViewMeal: (meal: DailyMeal) => void;
   onExchangeMeal: (meal: DailyMeal) => void;
   weekStartDate: Date;
 }
 
-export const WeeklyMealPlanView = ({ 
-  weeklyPlan, 
-  onViewMeal, 
+export const WeeklyMealPlanView = ({
+  weeklyPlan,
+  onViewMeal,
   onExchangeMeal,
-  weekStartDate 
+  weekStartDate
 }: WeeklyMealPlanViewProps) => {
-  const { t, isRTL } = useLanguage();
+  const { tFrom, isRTL } = useI18n();
+  const tMealPlan = tFrom('mealPlan');
+
+  const days = Array.from({ length: 7 }, (_, i) => i + 1);
+
+  const getMealsForDay = (dayNumber: number) => {
+    return weeklyPlan.dailyMeals.filter(meal => meal.day_number === dayNumber);
+  };
+
+  const getDayCalories = (dayNumber: number) => {
+    const dayMeals = getMealsForDay(dayNumber);
+    return dayMeals.reduce((total, meal) => total + (meal.calories || 0), 0);
+  };
 
   const getDayName = (dayNumber: number) => {
-    const dayNames = [
-      t('saturday') || 'Saturday',
-      t('sunday') || 'Sunday', 
-      t('monday') || 'Monday',
-      t('tuesday') || 'Tuesday',
-      t('wednesday') || 'Wednesday',
-      t('thursday') || 'Thursday',
-      t('friday') || 'Friday'
-    ];
-    return dayNames[dayNumber - 1] || 'Day ' + dayNumber;
+    const date = addDays(weekStartDate, dayNumber - 1);
+    return format(date, 'EEE');
   };
 
-  const getDayDate = (dayNumber: number) => {
-    const date = new Date(weekStartDate);
-    date.setDate(date.getDate() + (dayNumber - 1));
-    return date.toLocaleDateString();
-  };
-
-  const getMealsByDay = (dayNumber: number) => {
-    return weeklyPlan?.dailyMeals?.filter((meal: any) => meal.day_number === dayNumber) || [];
-  };
-
-  const getMealTypeColor = (mealType: string) => {
-    switch (mealType.toLowerCase()) {
-      case 'breakfast': return 'bg-orange-100 text-orange-700 border-orange-200';
-      case 'lunch': return 'bg-green-100 text-green-700 border-green-200';
-      case 'dinner': return 'bg-purple-100 text-purple-700 border-purple-200';
-      default: return 'bg-blue-100 text-blue-700 border-blue-200';
+  const getMealTypeIcon = (mealType: string) => {
+    switch (mealType) {
+      case 'breakfast': return '🌅';
+      case 'lunch': return '☀️';
+      case 'dinner': return '🌙';
+      case 'snack':
+      case 'snack1':
+      case 'snack2': return '🍎';
+      default: return '🍽️';
     }
   };
 
   return (
     <div className="space-y-4">
-      {/* Days Grid - 2 columns layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {[1, 2, 3, 4, 5, 6, 7].map((dayNumber) => {
-          const dayMeals = getMealsByDay(dayNumber);
-          const totalCalories = dayMeals.reduce((sum: number, meal: any) => sum + (meal.calories || 0), 0);
-          
+      {/* Weekly Summary */}
+      <Card className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 border-0 shadow-sm">
+        <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+          <div>
+            <h2 className="text-lg font-bold text-gray-800">{String(tMealPlan('weeklyOverview'))}</h2>
+            <p className="text-sm text-gray-600">
+              {format(weekStartDate, 'MMM d')} - {format(addDays(weekStartDate, 6), 'MMM d, yyyy')}
+            </p>
+          </div>
+          <div className={`text-right ${isRTL ? 'text-left' : ''}`}>
+            <div className="text-2xl font-bold text-purple-600">
+              {weeklyPlan.weeklyPlan.total_calories}
+            </div>
+            <div className="text-xs text-gray-500">{String(tMealPlan('weeklyCalories'))}</div>
+          </div>
+        </div>
+      </Card>
+
+      {/* Days Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {days.map(dayNumber => {
+          const dayMeals = getMealsForDay(dayNumber);
+          const dayCalories = getDayCalories(dayNumber);
+          const dayName = getDayName(dayNumber);
+
           return (
-            <Card key={dayNumber} className="hover:shadow-lg transition-shadow border-l-4 border-l-blue-500">
-              <CardHeader className="pb-3">
-                <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-                  <div className={`${isRTL ? 'text-right' : 'text-left'}`}>
-                    <h3 className="font-bold text-gray-900 text-lg">
-                      {getDayName(dayNumber)}
-                    </h3>
-                    <p className="text-sm text-gray-500">
-                      {getDayDate(dayNumber)}
-                    </p>
-                  </div>
-                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 font-semibold">
-                    {totalCalories} cal
-                  </Badge>
+            <Card key={dayNumber} className="p-4 hover:shadow-md transition-shadow">
+              {/* Day Header */}
+              <div className={`flex items-center justify-between mb-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                <div>
+                  <h3 className="font-semibold text-gray-800">{dayName}</h3>
+                  <p className="text-xs text-gray-500">Day {dayNumber}</p>
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
+                <Badge variant="secondary" className="bg-orange-100 text-orange-800">
+                  <Flame className="w-3 h-3 mr-1" />
+                  {dayCalories}
+                </Badge>
+              </div>
+
+              {/* Meals */}
+              <div className="space-y-2">
                 {dayMeals.length > 0 ? (
-                  dayMeals.map((meal: any) => (
-                    <div key={meal.id} className="bg-gray-50 rounded-lg p-3 border hover:bg-gray-100 transition-colors">
-                      <div className={`flex items-center justify-between mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                        <Badge 
-                          variant="outline" 
-                          className={`text-xs font-medium ${getMealTypeColor(meal.meal_type)}`}
-                        >
-                          {meal.meal_type}
-                        </Badge>
-                        <span className="text-xs text-gray-600 font-medium">
-                          {meal.calories} cal
+                  dayMeals.map((meal, index) => (
+                    <div
+                      key={`${meal.id}-${index}`}
+                      className="p-2 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
+                      onClick={() => onViewMeal(meal)}
+                    >
+                      <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                        <span className="text-sm">
+                          {getMealTypeIcon(meal.meal_type)}
                         </span>
-                      </div>
-                      <h4 className="text-sm font-semibold text-gray-800 mb-3 line-clamp-2">
-                        {meal.name}
-                      </h4>
-                      <div className={`flex gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => onViewMeal(meal)}
-                          className="h-7 px-3 text-xs hover:bg-blue-50 hover:border-blue-300"
-                        >
-                          <Eye className="w-3 h-3 mr-1" />
-                          Recipe
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => onExchangeMeal(meal)}
-                          className="h-7 px-3 text-xs hover:bg-green-50 hover:border-green-300"
-                        >
-                          <ArrowLeftRight className="w-3 h-3 mr-1" />
-                          Exchange
-                        </Button>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-800 truncate">
+                            {meal.name}
+                          </p>
+                          <div className={`flex items-center gap-2 text-xs text-gray-500 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                            <span className="flex items-center gap-1">
+                              <Flame className="w-3 h-3" />
+                              {meal.calories}
+                            </span>
+                            {(meal.prep_time || meal.cook_time) && (
+                              <span className="flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                {(meal.prep_time || 0) + (meal.cook_time || 0)}m
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-6">
-                    <Utensils className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                    <p className="text-sm text-gray-500">
-                      {t('mealPlan.noMealsPlanned') || 'No meals planned'}
-                    </p>
+                  <div className="text-center py-4 text-gray-500">
+                    <Utensils className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                    <p className="text-xs">{String(tMealPlan('noMealsPlanned'))}</p>
                   </div>
                 )}
-              </CardContent>
+              </div>
             </Card>
           );
         })}

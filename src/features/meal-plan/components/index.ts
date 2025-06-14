@@ -4,32 +4,15 @@ export { default as MealPlanContainer } from './MealPlanContainer';
 export { default as MealPlanHeader } from './MealPlanHeader';
 export { MealPlanContent } from './MealPlanContent';
 export { MealPlanViewToggle } from './MealPlanViewToggle';
-export { default as MealPlanLoadingBackdrop } from './MealPlanLoadingBackdrop';
-export { default as MealPlanPageTitle } from './MealPlanPageTitle';
-export { default as MealPlanEmptyState } from './MealPlanEmptyState';
 
-// Core meal plan components
+// Core view components
 export { default as DayOverview } from './DayOverview';
-export { default as MealCard } from './MealCard';
-export { EnhancedMealCard } from './EnhancedMealCard';
-export { MealRow } from './MealRow';
-export { AddMealCard } from './AddMealCard';
-
-// View components
 export { WeeklyMealPlanView } from './WeeklyMealPlanView';
-export { CompactDailyProgress } from './CompactDailyProgress';
 export { EmptyWeekState } from './EmptyWeekState';
 
 // State components
 export { default as LoadingState } from './LoadingState';
 export { default as ErrorState } from './ErrorState';
-export { default as MealPlanLoadingState } from './MealPlanLoadingState';
-export { default as MealPlanErrorState } from './MealPlanErrorState';
-
-// Navigation components
-export { DaySelector } from './DaySelector';
-export { WeekNavigation } from './WeekNavigation';
-export { ViewModeToggle } from './ViewModeToggle';
 
 // Dialog components
 export { EnhancedRecipeDialog } from './EnhancedRecipeDialog';
@@ -37,3 +20,18 @@ export { MealPlanAILoadingDialog } from './dialogs/MealPlanAILoadingDialog';
 export { MealExchangeDialog } from './dialogs/MealExchangeDialog';
 export { AIGenerationDialog } from './dialogs/AIGenerationDialog';
 export { default as EnhancedAddSnackDialog } from './dialogs/EnhancedAddSnackDialog';
+
+// Legacy exports for backward compatibility
+export { default as MealPlanLoadingBackdrop } from './MealPlanHeader'; // Deprecated
+export { default as MealPlanPageTitle } from './MealPlanHeader'; // Deprecated
+export { default as MealPlanEmptyState } from './EmptyWeekState'; // Deprecated
+export { default as MealCard } from './DayOverview'; // Deprecated
+export { EnhancedMealCard } from './DayOverview'; // Deprecated
+export { MealRow } from './DayOverview'; // Deprecated
+export { AddMealCard } from './DayOverview'; // Deprecated
+export { CompactDailyProgress } from './DayOverview'; // Deprecated
+export { default as MealPlanLoadingState } from './LoadingState'; // Deprecated
+export { default as MealPlanErrorState } from './ErrorState'; // Deprecated
+export { DaySelector } from './MealPlanViewToggle'; // Deprecated
+export { WeekNavigation } from './MealPlanViewToggle'; // Deprecated
+export { ViewModeToggle } from './MealPlanViewToggle'; // Deprecated
