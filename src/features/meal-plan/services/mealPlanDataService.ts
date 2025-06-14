@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import type { WeeklyMealPlan, DailyMeal, MealIngredient } from '../types';
 
@@ -43,7 +42,7 @@ class MealPlanDataServiceClass {
         }
         return {
           name: ing.name || '',
-          amount: ing.amount || '',
+          amount: ing.amount || ing.quantity || '',
           unit: ing.unit || ''
         };
       });
@@ -55,6 +54,17 @@ class MealPlanDataServiceClass {
     if (!instructions) return [];
     if (Array.isArray(instructions)) {
       return instructions.map(inst => String(inst));
+    }
+    return [];
+  }
+
+  private convertAlternatives(alternatives: any): string[] {
+    if (!alternatives) return [];
+    if (Array.isArray(alternatives)) {
+      return alternatives.map(alt => String(alt));
+    }
+    if (typeof alternatives === 'string') {
+      return [alternatives];
     }
     return [];
   }
@@ -130,7 +140,7 @@ class MealPlanDataServiceClass {
         meal_type: meal.meal_type as DailyMeal['meal_type'],
         ingredients: this.convertIngredients(meal.ingredients),
         instructions: this.convertInstructions(meal.instructions),
-        alternatives: meal.alternatives || []
+        alternatives: this.convertAlternatives(meal.alternatives)
       }));
 
       const result: MealPlanData = {

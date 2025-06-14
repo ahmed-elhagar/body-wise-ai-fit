@@ -1,8 +1,7 @@
-
 // Centralized types for meal plan feature
 export interface MealIngredient {
   name: string;
-  quantity: string;
+  amount: string;
   unit: string;
   category?: string;
 }

@@ -41,10 +41,10 @@ export const useMealPlanState = () => {
       }
     });
     
-    // Clear the OptimizedMealPlanService cache
+    // Clear the MealPlanDataService cache
     try {
-      const { OptimizedMealPlanService } = await import('@/features/meal-plan/services/optimizedMealPlanService');
-      OptimizedMealPlanService.clearCache();
+      const { MealPlanDataService } = await import('@/features/meal-plan/services/mealPlanDataService');
+      MealPlanDataService.clearCache();
     } catch (e) {
       console.log('Service cache clear skipped:', e);
     }
