@@ -1,14 +1,11 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Bell, ArrowRight } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
-import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
 
 const NotificationWidget = () => {
-  const { t } = useLanguage();
   const navigate = useNavigate();
   const { notifications, unreadCount, isLoading } = useNotifications();
 
@@ -20,7 +17,7 @@ const NotificationWidget = () => {
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-lg">
             <Bell className="h-5 w-5 text-blue-600" />
-            {t('Notifications')}
+            Notifications
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -42,7 +39,7 @@ const NotificationWidget = () => {
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">
             <Bell className="h-5 w-5 text-blue-600" />
-            {t('Notifications')}
+            Notifications
             {unreadCount > 0 && (
               <Badge variant="destructive" className="text-xs">
                 {unreadCount}
@@ -55,7 +52,7 @@ const NotificationWidget = () => {
             onClick={() => navigate('/notifications')}
             className="bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
           >
-            {t('View All')}
+            View All
             <ArrowRight className="w-3 h-3 ml-1" />
           </Button>
         </div>
@@ -65,7 +62,7 @@ const NotificationWidget = () => {
           {recentNotifications.length === 0 ? (
             <div className="text-center py-6 text-gray-500">
               <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">{t('No new notifications')}</p>
+              <p className="text-sm">No new notifications</p>
             </div>
           ) : (
             recentNotifications.map((notification) => (

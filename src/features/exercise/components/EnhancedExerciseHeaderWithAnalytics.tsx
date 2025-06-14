@@ -12,7 +12,7 @@ import {
   Target,
   TrendingUp
 } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import { useCentralizedCredits } from "@/hooks/useCentralizedCredits";
 
 interface EnhancedExerciseHeaderWithAnalyticsProps {
@@ -34,7 +34,7 @@ export const EnhancedExerciseHeaderWithAnalytics = ({
   workoutType,
   onWorkoutTypeChange
 }: EnhancedExerciseHeaderWithAnalyticsProps) => {
-  const { t } = useLanguage();
+  const { t } = useI18n();
   const { remaining: userCredits, isPro, hasCredits } = useCentralizedCredits();
 
   const displayCredits = isPro ? 'Unlimited' : `${userCredits} credits`;

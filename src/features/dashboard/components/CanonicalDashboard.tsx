@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/hooks/useAuth';
@@ -53,8 +52,8 @@ const CanonicalDashboard = () => {
               <NotificationWidget />
               <DashboardAchievements 
                 profile={profile}
-                currentMealPlan={currentMealPlan}
-                currentExerciseProgram={currentExerciseProgram}
+                mealPlans={mealPlans}
+                programs={programs}
               />
             </div>
           </div>
