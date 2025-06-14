@@ -1,16 +1,12 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   TrendingUp, 
   Target, 
   Activity, 
   Scale, 
-  Calendar,
   Award,
-  ChevronRight,
   BarChart3,
   Zap
 } from "lucide-react";
@@ -25,19 +21,19 @@ import { AchievementsSection } from "./AchievementsSection";
 
 const ProgressDashboard = () => {
   const navigate = useNavigate();
-  const { tFrom, isRTL } = useI18n();
+  const { isRTL } = useI18n();
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       <div className="p-4 md:p-6 lg:p-8">
         <div className="max-w-7xl mx-auto space-y-8">
           {/* Enhanced Header */}
-          <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 border-0 shadow-xl rounded-2xl">
+          <Card className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 border-0 shadow-xl">
             <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
             <div className="absolute -top-20 -right-20 w-40 h-40 bg-white/5 rounded-full" />
             <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/5 rounded-full" />
             
-            <div className="relative p-6 md:p-8">
+            <CardContent className="relative p-6 md:p-8">
               <div className={`flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 ${isRTL ? 'flex-row-reverse' : ''}`}>
                 <div className="flex-1">
                   <div className={`flex items-center gap-4 mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
@@ -65,27 +61,9 @@ const ProgressDashboard = () => {
                     </div>
                   </div>
                 </div>
-                
-                <div className="flex gap-3">
-                  <Button
-                    onClick={() => navigate('/goals')}
-                    className="bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm transition-all duration-300 px-6 py-3 rounded-xl"
-                  >
-                    <Target className="w-4 h-4 mr-2" />
-                    Manage Goals
-                  </Button>
-                  
-                  <Button
-                    onClick={() => navigate('/achievements')}
-                    className="bg-white text-purple-600 hover:bg-white/90 px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-                  >
-                    <Award className="w-4 h-4 mr-2" />
-                    View Achievements
-                  </Button>
-                </div>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
           {/* Progress Overview Cards */}
           <ProgressOverview />
