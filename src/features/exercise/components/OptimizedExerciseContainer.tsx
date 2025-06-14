@@ -5,7 +5,7 @@ import { useOptimizedExercise } from "../hooks/useOptimizedExercise";
 import OptimizedExerciseHeader from "./OptimizedExerciseHeader";
 import OptimizedExerciseWeekView from "./OptimizedExerciseWeekView";
 import OptimizedExerciseDayView from "./OptimizedExerciseDayView";
-import OptimizedExerciseProgress from "@/components/exercise/OptimizedExerciseProgress";
+import OptimizedExerciseProgress from "./OptimizedExerciseProgress";
 import SimpleLoadingIndicator from "@/components/ui/simple-loading-indicator";
 
 const OptimizedExerciseContainer = React.memo(() => {

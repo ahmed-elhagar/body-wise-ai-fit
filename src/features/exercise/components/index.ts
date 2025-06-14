@@ -1,4 +1,3 @@
-
 // Exercise feature components exports
 export { ExerciseListEnhanced } from './ExerciseListEnhanced';
 export { ExercisePageContent } from './ExercisePageContent';
@@ -31,3 +30,7 @@ export { ExerciseProgramLoadingStates } from './ExerciseProgramLoadingStates';
 export { default as ExerciseProgramEmptyState } from './ExerciseProgramEmptyState';
 export { WorkoutSummaryCard } from './WorkoutSummaryCard';
 export { TodaysWorkoutCard } from './TodaysWorkoutCard';
+export { ExerciseCard } from './ExerciseCard';
+export { ActiveExerciseTracker } from './ActiveExerciseTracker';
+export { CustomExerciseDialog } from './CustomExerciseDialog';
+export { default as OptimizedExerciseProgress } from './OptimizedExerciseProgress';

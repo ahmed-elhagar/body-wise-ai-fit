@@ -1,8 +1,7 @@
-
 import { Exercise } from '../types';
 import { WorkoutSessionManager } from './WorkoutSessionManager';
-import { ActiveExerciseTracker } from '@/components/exercise/ActiveExerciseTracker';
-import { ExerciseCard } from '@/components/exercise/ExerciseCard';
+import { ActiveExerciseTracker } from './ActiveExerciseTracker';
+import { ExerciseCard } from './ExerciseCard';
 
 interface ExerciseSessionViewProps {
   exercises: Exercise[];
