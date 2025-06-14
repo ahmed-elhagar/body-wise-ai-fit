@@ -1,8 +1,9 @@
+
 import React from 'react';
 import { MealPlanContent } from './MealPlanContent';
-import { MealPlanHeader } from './MealPlanHeader';
-import { MealPlanLoadingState } from './LoadingState';
-import { MealPlanErrorState } from './ErrorState';
+import MealPlanHeader from './MealPlanHeader';
+import LoadingState from './LoadingState';
+import ErrorState from './ErrorState';
 
 interface MealPlanPageLayoutProps {
   // Data props
@@ -71,11 +72,11 @@ export const MealPlanPageLayout = (props: MealPlanPageLayoutProps) => {
   } = props;
 
   if (isLoading) {
-    return <MealPlanLoadingState />;
+    return <LoadingState />;
   }
 
   if (error) {
-    return <MealPlanErrorState error={error} />;
+    return <ErrorState error={error} onRetry={props.refetch} />;
   }
 
   return (
@@ -84,7 +85,7 @@ export const MealPlanPageLayout = (props: MealPlanPageLayoutProps) => {
         <MealPlanHeader {...props} />
         <MealPlanContent 
           {...props} 
-          onGenerateAIPlan={async () => {
+          onGenerateAI={async () => {
             const result = await handleGenerateAIPlan();
             return result;
           }}

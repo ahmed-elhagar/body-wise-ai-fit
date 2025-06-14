@@ -16,9 +16,9 @@ export { EmptyWeekState } from './EmptyWeekState';
 export { MealPlanViewToggle } from './MealPlanViewToggle';
 
 // State components
-export { default as LoadingState, MealPlanLoadingState } from './LoadingState';
-export { default as ErrorState, MealPlanErrorState } from './ErrorState';
-export { default as EmptyState, MealPlanEmptyState } from './MealPlanEmptyState';
+export { default as LoadingState } from './LoadingState';
+export { default as ErrorState } from './ErrorState';
+export { default as MealPlanEmptyState } from './MealPlanEmptyState';
 
 // Dialog components
 export { EnhancedRecipeDialog } from './EnhancedRecipeDialog';

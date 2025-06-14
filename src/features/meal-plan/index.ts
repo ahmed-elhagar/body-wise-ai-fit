@@ -5,11 +5,9 @@ export { default as MealPlanPageContainer } from './components/MealPlanPageConta
 
 // Feature components
 export { 
-  MealPlanLoadingBackdrop,
-  MealPlanPageTitle,
   MealPlanEmptyState,
-  MealPlanErrorState,
-  MealPlanLoadingState,
+  ErrorState,
+  LoadingState,
   MealPlanContent,
   MealCard,
   DayOverview,
