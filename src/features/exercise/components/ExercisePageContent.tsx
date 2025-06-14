@@ -3,7 +3,7 @@ import { ExerciseListEnhanced } from "./ExerciseListEnhanced";
 import { RestDayCard } from "./RestDayCard";
 import { ExerciseEmptyState } from "./ExerciseEmptyState";
 import { CompactProgressSection } from "./CompactProgressSection";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import SimpleLoadingIndicator from "@/components/ui/simple-loading-indicator";
 
 interface ExercisePageContentProps {
@@ -41,12 +41,14 @@ export const ExercisePageContent = ({
   onExerciseProgressUpdate,
   onGenerateProgram
 }: ExercisePageContentProps) => {
+  const { t } = useI18n();
+
   if (isLoading) {
     return (
       <div className="p-6">
         <SimpleLoadingIndicator
-          message="Loading Workout Data"
-          description="Fetching your exercise plan..."
+          message={t('exercise.loading', 'Loading Workout Data')}
+          description={t('exercise.loadingDescription', 'Fetching your exercise plan...')}
         />
       </div>
     );

@@ -1,6 +1,6 @@
 
 import { format, addDays } from "date-fns";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useI18n } from "@/hooks/useI18n";
 import { useOptimizedExerciseProgramPage } from "@/features/exercise/hooks/useOptimizedExerciseProgramPage";
 import { useEnhancedAIExercise } from "@/hooks/useEnhancedAIExercise";
 import { useAILoadingSteps } from "@/hooks/useAILoadingSteps";
@@ -10,7 +10,7 @@ import { ExerciseAnalyticsContainer } from "./ExerciseAnalyticsContainer";
 import { useExerciseAISteps } from "../hooks/useExerciseAISteps";
 
 export const ExercisePageContainer = () => {
-  const { language } = useLanguage();
+  const { language } = useI18n();
   const [showAnalytics, setShowAnalytics] = useState(false);
   
   const {
