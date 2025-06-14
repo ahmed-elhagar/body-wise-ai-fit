@@ -1,126 +1,113 @@
 
-import { useState } from "react";
+import React, { useState, useRef } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Camera, Upload, Loader2, Eye } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { Camera, Upload, Loader2 } from "lucide-react";
+import FoodAnalysisResults from "@/components/food-photo-analysis/FoodAnalysisResults";
 
-interface FoodPhotoAnalyzerProps {
-  onSelectFood: (food: any) => void;
-}
-
-const FoodPhotoAnalyzer = ({ onSelectFood }: FoodPhotoAnalyzerProps) => {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+const FoodPhotoAnalyzer = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const { t } = useLanguage();
+  const [analysisResult, setAnalysisResult] = useState(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      setSelectedFile(file);
-      const url = URL.createObjectURL(file);
-      setPreviewUrl(url);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setSelectedImage(e.target?.result as string);
+        analyzeImage(file);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
-  const handleAnalyze = async () => {
-    if (!selectedFile) return;
-    
+  const analyzeImage = async (file: File) => {
     setIsAnalyzing(true);
     
-    // Mock analysis - in real app this would call AI service
+    // Simulate API call for now
     setTimeout(() => {
       const mockResult = {
-        name: "Mixed Salad",
-        description: "Fresh green salad with vegetables",
-        calories: 150,
-        protein: 8,
+        name: "Grilled Chicken Salad",
+        description: "Mixed greens with grilled chicken breast, tomatoes, and light vinaigrette",
+        calories: 320,
+        protein: 35,
         carbs: 12,
-        fat: 6
+        fat: 18,
+        confidence: 0.85
       };
       
-      onSelectFood(mockResult);
+      setAnalysisResult(mockResult);
       setIsAnalyzing(false);
-    }, 2000);
+    }, 3000);
   };
 
-  const resetUpload = () => {
-    setSelectedFile(null);
-    setPreviewUrl(null);
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-    }
+  const handleAddToLog = (food: any) => {
+    console.log('Adding to food log:', food);
+    // TODO: Implement actual food log addition
   };
 
   return (
-    <div className="space-y-6">
-      <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-        <div className="text-center">
-          <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center justify-center">
-            <Camera className="w-5 h-5 mr-2" />
-            {t('Analyze Your Food')}
-          </h3>
-          
-          {!previewUrl ? (
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 hover:border-purple-400 transition-colors">
-              <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <Input
-                type="file"
-                accept="image/*"
-                onChange={handleFileSelect}
-                className="hidden"
-                id="food-photo"
+    <div className="max-w-2xl mx-auto space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Camera className="w-5 h-5" />
+            Food Photo Analysis
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+            {selectedImage ? (
+              <img 
+                src={selectedImage} 
+                alt="Selected food" 
+                className="max-w-full h-64 object-cover mx-auto rounded-lg"
               />
-              <label htmlFor="food-photo" className="cursor-pointer">
-                <Button variant="outline" className="mb-2">
-                  {t('Choose Photo')}
-                </Button>
-              </label>
-              <p className="text-sm text-gray-500">
-                {t('PNG, JPG up to 10MB')}
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="relative">
-                <img
-                  src={previewUrl}
-                  alt="Food preview"
-                  className="max-w-full h-64 object-cover rounded-lg mx-auto"
-                />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={resetUpload}
-                  className="absolute top-2 right-2"
-                >
-                  ✕
-                </Button>
+            ) : (
+              <div>
+                <Camera className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600 mb-2">Take a photo or upload an image of your food</p>
+                <p className="text-sm text-gray-500">We'll analyze it and estimate nutritional information</p>
               </div>
+            )}
+          </div>
 
-              <Button
-                onClick={handleAnalyze}
-                disabled={isAnalyzing}
-                className="bg-purple-600 hover:bg-purple-700 w-full"
-              >
-                {isAnalyzing ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    {t('Analyzing...')}
-                  </>
-                ) : (
-                  <>
-                    <Eye className="w-4 h-4 mr-2" />
-                    {t('Analyze Nutrition')}
-                  </>
-                )}
-              </Button>
+          <div className="flex gap-2">
+            <Button 
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isAnalyzing}
+              className="flex-1"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              Upload Photo
+            </Button>
+          </div>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileUpload}
+            className="hidden"
+          />
+
+          {isAnalyzing && (
+            <div className="flex items-center justify-center gap-2 text-blue-600">
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span>Analyzing your food...</span>
             </div>
           )}
-        </div>
+        </CardContent>
       </Card>
+
+      {analysisResult && (
+        <FoodAnalysisResults 
+          result={analysisResult}
+          onAddToLog={handleAddToLog}
+        />
+      )}
     </div>
   );
 };

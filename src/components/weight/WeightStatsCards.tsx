@@ -1,104 +1,106 @@
 
-import { Card } from "@/components/ui/card";
-import { TrendingUp, TrendingDown, Target, Calendar } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TrendingUp, TrendingDown, Minus, Scale } from "lucide-react";
+import { useWeightTracking } from "@/features/dashboard/hooks/useWeightTracking";
 
-interface WeightEntry {
-  id: string;
-  weight: number;
-  recorded_at: string;
-}
+const WeightStatsCards = () => {
+  const { entries, latestEntry, isLoading } = useWeightTracking();
 
-interface WeightStatsCardsProps {
-  weightEntries: WeightEntry[];
-}
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {[1, 2, 3, 4].map((i) => (
+          <Card key={i} className="animate-pulse">
+            <CardContent className="p-6">
+              <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+              <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
 
-const WeightStatsCards = ({ weightEntries }: WeightStatsCardsProps) => {
-  const calculateStats = () => {
-    if (weightEntries.length === 0) {
-      return {
-        totalChange: 0,
-        averageWeeklyChange: 0,
-        daysTracked: 0,
-        trend: 'stable' as const
-      };
-    }
-
-    const latest = weightEntries[0];
-    const oldest = weightEntries[weightEntries.length - 1];
-    const totalChange = latest.weight - oldest.weight;
-    
-    // Calculate weekly average
-    const daysDiff = Math.max(1, Math.abs(new Date(latest.recorded_at).getTime() - new Date(oldest.recorded_at).getTime()) / (1000 * 60 * 60 * 24));
-    const averageWeeklyChange = (totalChange / daysDiff) * 7;
-    
-    const trend = totalChange > 0.5 ? 'gaining' : totalChange < -0.5 ? 'losing' : 'stable';
-    
-    return {
-      totalChange,
-      averageWeeklyChange,
-      daysTracked: Math.floor(daysDiff),
-      trend
-    };
+  const calculateWeightChange = () => {
+    if (entries.length < 2) return null;
+    const current = entries[0].weight;
+    const previous = entries[1].weight;
+    return current - previous;
   };
 
-  const stats = calculateStats();
+  const calculateAverageWeight = () => {
+    if (entries.length === 0) return 0;
+    const sum = entries.reduce((acc, entry) => acc + entry.weight, 0);
+    return sum / entries.length;
+  };
+
+  const weightChange = calculateWeightChange();
+  const averageWeight = calculateAverageWeight();
 
   const getTrendIcon = () => {
-    switch (stats.trend) {
-      case 'gaining':
-        return <TrendingUp className="w-5 h-5 text-orange-500" />;
-      case 'losing':
-        return <TrendingDown className="w-5 h-5 text-green-500" />;
-      default:
-        return <Target className="w-5 h-5 text-blue-500" />;
-    }
+    if (!weightChange) return <Minus className="w-4 h-4 text-gray-500" />;
+    if (weightChange > 0) return <TrendingUp className="w-4 h-4 text-red-500" />;
+    return <TrendingDown className="w-4 h-4 text-green-500" />;
   };
 
   const getTrendColor = () => {
-    switch (stats.trend) {
-      case 'gaining':
-        return 'text-orange-600';
-      case 'losing':
-        return 'text-green-600';
-      default:
-        return 'text-blue-600';
-    }
+    if (!weightChange) return "text-gray-500";
+    if (weightChange > 0) return "text-red-500";
+    return "text-green-500";
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <Card className="p-4 bg-white/80 backdrop-blur-sm">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-gray-600">Total Change</p>
-            <p className={`text-xl font-bold ${getTrendColor()}`}>
-              {stats.totalChange > 0 ? '+' : ''}{stats.totalChange.toFixed(1)} kg
-            </p>
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Current Weight</CardTitle>
+          <Scale className="w-4 h-4 text-blue-600" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">
+            {latestEntry ? `${latestEntry.weight} kg` : 'No data'}
           </div>
+          <p className="text-xs text-gray-500">
+            {latestEntry ? new Date(latestEntry.recorded_at).toLocaleDateString() : ''}
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Weight Change</CardTitle>
           {getTrendIcon()}
-        </div>
+        </CardHeader>
+        <CardContent>
+          <div className={`text-2xl font-bold ${getTrendColor()}`}>
+            {weightChange ? `${weightChange > 0 ? '+' : ''}${weightChange.toFixed(1)} kg` : 'N/A'}
+          </div>
+          <p className="text-xs text-gray-500">Since last entry</p>
+        </CardContent>
       </Card>
 
-      <Card className="p-4 bg-white/80 backdrop-blur-sm">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-gray-600">Weekly Average</p>
-            <p className={`text-xl font-bold ${getTrendColor()}`}>
-              {stats.averageWeeklyChange > 0 ? '+' : ''}{stats.averageWeeklyChange.toFixed(1)} kg
-            </p>
+      <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Average Weight</CardTitle>
+          <Scale className="w-4 h-4 text-purple-600" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">
+            {averageWeight > 0 ? `${averageWeight.toFixed(1)} kg` : 'No data'}
           </div>
-          <TrendingUp className="w-5 h-5 text-blue-500" />
-        </div>
+          <p className="text-xs text-gray-500">Last 30 entries</p>
+        </CardContent>
       </Card>
 
-      <Card className="p-4 bg-white/80 backdrop-blur-sm">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-gray-600">Days Tracked</p>
-            <p className="text-xl font-bold text-gray-800">{stats.daysTracked}</p>
-          </div>
-          <Calendar className="w-5 h-5 text-gray-600" />
-        </div>
+      <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Total Entries</CardTitle>
+          <Scale className="w-4 h-4 text-green-600" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{entries.length}</div>
+          <p className="text-xs text-gray-500">Recorded weights</p>
+        </CardContent>
       </Card>
     </div>
   );
