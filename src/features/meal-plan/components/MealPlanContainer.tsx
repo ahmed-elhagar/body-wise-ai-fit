@@ -31,7 +31,7 @@ const MealPlanContainer = () => {
   }
 
   // Enhanced shuffle handler
-  const handleShuffle = async () => {
+  const handleShuffle = async (): Promise<void> => {
     if (!mealPlanState.currentWeekPlan?.weeklyPlan?.id) {
       console.error('❌ No weekly plan ID available for shuffle');
       return;
@@ -46,6 +46,12 @@ const MealPlanContainer = () => {
         mealPlanState.refetch();
       }, 1000);
     }
+  };
+
+  // Fixed regenerate handler to return Promise<boolean>
+  const handleRegeneratePlan = async (): Promise<boolean> => {
+    console.log('🔄 Regenerate plan requested');
+    return await mealPlanState.handleGenerateAIPlan();
   };
 
   // Enhanced week change handler that manages loading states properly
@@ -72,10 +78,10 @@ const MealPlanContainer = () => {
       <div className="space-y-6">
         {/* Header - Always visible */}
         <MealPlanHeader 
-          onGenerateAI={() => mealPlanState.openAIDialog()}
+          onGenerateAI={mealPlanState.handleGenerateAIPlan}
           onShuffle={handleShuffle}
           onShowShoppingList={() => mealPlanState.openShoppingListDialog()}
-          onRegeneratePlan={() => mealPlanState.openAIDialog()}
+          onRegeneratePlan={handleRegeneratePlan}
           isGenerating={mealPlanState.isGenerating}
           isShuffling={isShuffling}
           hasWeeklyPlan={!!displayData?.weeklyPlan}
