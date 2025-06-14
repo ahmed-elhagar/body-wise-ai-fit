@@ -3,18 +3,29 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Target, Trophy, Sparkles, AlertTriangle } from "lucide-react";
+import { Plus, Target, Trophy, Sparkles } from "lucide-react";
 import { GoalCard } from './GoalCard';
 import { GoalsOverview } from './GoalsOverview';
-import GoalCreationDialog from './GoalCreationDialog';
+import { GoalCreationDialog } from './GoalCreationDialog';
 import { useGoals } from "@/features/dashboard/hooks/useGoals";
 
 const GoalsDashboard = () => {
-  const { goals, isLoading } = useGoals();
+  const { goals, isLoading, deleteGoal } = useGoals();
   const [showCreationDialog, setShowCreationDialog] = useState(false);
 
   const activeGoals = goals.filter(goal => goal.status === 'active');
   const completedGoals = goals.filter(goal => goal.status === 'completed');
+
+  const handleDeleteGoal = async (goalId: string) => {
+    if (window.confirm('Are you sure you want to delete this goal?')) {
+      await deleteGoal(goalId);
+    }
+  };
+
+  const handleEditGoal = (goalId: string) => {
+    // TODO: Implement edit functionality
+    console.log('Edit goal:', goalId);
+  };
 
   if (isLoading) {
     return (
@@ -95,8 +106,8 @@ const GoalsDashboard = () => {
                 <GoalCard 
                   key={goal.id} 
                   goal={goal}
-                  onDelete={() => {}}
-                  onEdit={() => {}}
+                  onDelete={handleDeleteGoal}
+                  onEdit={handleEditGoal}
                 />
               ))}
             </div>
@@ -122,6 +133,32 @@ const GoalsDashboard = () => {
               Create Your First Goal
             </Button>
           </div>
+        </Card>
+      )}
+
+      {/* Completed Goals */}
+      {completedGoals.length > 0 && (
+        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl rounded-2xl">
+          <CardHeader className="border-b border-gray-100">
+            <CardTitle className="flex items-center gap-3 text-xl">
+              <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
+                <Trophy className="w-5 h-5 text-white" />
+              </div>
+              Completed Goals ({completedGoals.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {completedGoals.map(goal => (
+                <GoalCard 
+                  key={goal.id} 
+                  goal={goal}
+                  onDelete={handleDeleteGoal}
+                  onEdit={handleEditGoal}
+                />
+              ))}
+            </div>
+          </CardContent>
         </Card>
       )}
 

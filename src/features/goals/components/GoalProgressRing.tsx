@@ -1,4 +1,6 @@
 
+import React from 'react';
+
 interface GoalProgressRingProps {
   progress: number;
   size: number;
