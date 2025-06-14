@@ -1,29 +1,38 @@
 
-// Main exports for meal plan feature
+// Main container component
 export { default as MealPlanContainer } from './components/MealPlanContainer';
 
-// Feature components
-export { 
-  MealPlanLoadingBackdrop,
-  MealPlanPageTitle,
-  MealPlanEmptyState,
-  MealPlanErrorState,
-  MealPlanLoadingState,
+// Core hooks
+export {
+  useMealPlanState,
+  useMealPlanData,
+  useMealPlanActions,
+  useEnhancedMealPlan,
+  useDynamicMealPlan,
+  useMealPlanPage,
+  useOptimizedMealPlanCore,
+  useEnhancedMealShuffle,
+  useAIMealExchange,
+  useEnhancedMealRecipe
+} from './hooks';
+
+// Core components
+export {
+  MealPlanHeader,
   MealPlanContent,
-  MealCard,
+  MealPlanViewToggle,
   DayOverview,
-  EnhancedRecipeDialog,
-  MealPlanAILoadingDialog,
-  MealExchangeDialog,
-  AIGenerationDialog,
-  EnhancedAddSnackDialog
+  WeeklyMealPlanView,
+  EmptyWeekState,
+  LoadingState,
+  ErrorState
 } from './components';
 
-// Export types
-export type * from './types';
-
-// Export hooks
-export * from './hooks';
-
-// Export services
-export * from './services';
+// Types
+export type {
+  DailyMeal,
+  WeeklyMealPlan,
+  MealPlanFetchResult,
+  MealPlanPreferences,
+  MealIngredient
+} from './types';

@@ -8,3 +8,8 @@ export { useMealPlanData } from './useMealPlanData';
 export { useMealPlanActions } from './useMealPlanActions';
 export { useDynamicMealPlan } from './useDynamicMealPlan';
 export { useEnhancedMealPlan } from './useEnhancedMealPlan';
+export { useOptimizedMealPlanCore } from './useOptimizedMealPlanCore';
+export { useMealPlanPage } from './useMealPlanPage';
+export { useAIMealExchange } from './useAIMealExchange';
+export { useEnhancedMealRecipe } from './useEnhancedMealRecipe';
+export { useEnhancedMealShuffle } from './useEnhancedMealShuffle';

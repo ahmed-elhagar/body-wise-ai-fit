@@ -1,10 +1,11 @@
+
 import React, { useState, useRef } from 'react';
 import { useMealPlanState } from '../hooks/useMealPlanState';
 import MealPlanHeader from './MealPlanHeader';
 import { MealPlanContent } from './MealPlanContent';
 import ErrorState from './ErrorState';
 import LoadingState from './LoadingState';
-import { useEnhancedMealShuffle } from '@/hooks/useEnhancedMealShuffle';
+import { useEnhancedMealShuffle } from '../hooks/useEnhancedMealShuffle';
 import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { MealPlanViewToggle } from './MealPlanViewToggle';
 import { Card } from '@/components/ui/card';
