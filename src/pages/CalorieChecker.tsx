@@ -2,9 +2,9 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Camera, Search, History } from "lucide-react";
+import { Camera, Search } from "lucide-react";
 import Layout from "@/components/Layout";
-import { FoodScanner, EnhancedSearchTab, FoodHistoryTab } from "@/features/food-tracker/components";
+import { FoodScanner, EnhancedSearchTab } from "@/features/food-tracker/components";
 
 const CalorieChecker = () => {
   const [activeTab, setActiveTab] = useState('photo');
@@ -26,13 +26,13 @@ const CalorieChecker = () => {
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Calorie Checker</h1>
             <p className="text-muted-foreground">
-              Analyze food photos, search database, or view your nutrition history
+              Analyze food photos or search our comprehensive food database
             </p>
           </div>
         </div>
 
         <Tabs defaultValue="photo" value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-3 w-full max-w-md">
+          <TabsList className="grid grid-cols-2 w-full max-w-md">
             <TabsTrigger value="photo" className="flex items-center gap-2">
               <Camera className="w-4 h-4" />
               <span>AI Analysis</span>
@@ -40,10 +40,6 @@ const CalorieChecker = () => {
             <TabsTrigger value="search" className="flex items-center gap-2">
               <Search className="w-4 h-4" />
               <span>Search</span>
-            </TabsTrigger>
-            <TabsTrigger value="history" className="flex items-center gap-2">
-              <History className="w-4 h-4" />
-              <span>History</span>
             </TabsTrigger>
           </TabsList>
           
@@ -57,12 +53,6 @@ const CalorieChecker = () => {
           <TabsContent value="search" className="space-y-6">
             <EnhancedSearchTab
               onFoodAdded={handleFoodAdded}
-              onClose={handleClose}
-            />
-          </TabsContent>
-
-          <TabsContent value="history" className="space-y-6">
-            <FoodHistoryTab
               onClose={handleClose}
             />
           </TabsContent>

@@ -1,12 +1,11 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Camera, Clock } from "lucide-react";
+import { Search, Camera } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useEffect, useState } from "react";
 import EnhancedSearchTab from "./EnhancedSearchTab";
 import FoodScanner from "./FoodScanner";
-import FoodHistoryTab from "./FoodHistoryTab";
 import ManualTab from "./ManualTab";
 
 interface AddFoodDialogProps {
@@ -63,7 +62,7 @@ const AddFoodDialog = ({ isOpen, onClose, onFoodAdded, preSelectedFood }: AddFoo
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-gray-100">
+          <TabsList className="grid w-full grid-cols-3 bg-gray-100">
             <TabsTrigger 
               value="search" 
               className="data-[state=active]:bg-white data-[state=active]:text-gray-900 flex items-center gap-2"
@@ -76,14 +75,7 @@ const AddFoodDialog = ({ isOpen, onClose, onFoodAdded, preSelectedFood }: AddFoo
               className="data-[state=active]:bg-white data-[state=active]:text-gray-900 flex items-center gap-2"
             >
               <Camera className="w-4 h-4" />
-              {t('Scan')}
-            </TabsTrigger>
-            <TabsTrigger 
-              value="history" 
-              className="data-[state=active]:bg-white data-[state=active]:text-gray-900 flex items-center gap-2"
-            >
-              <Clock className="w-4 h-4" />
-              {t('History')}
+              {t('AI Scan')}
             </TabsTrigger>
             <TabsTrigger 
               value="manual" 
@@ -100,10 +92,6 @@ const AddFoodDialog = ({ isOpen, onClose, onFoodAdded, preSelectedFood }: AddFoo
 
             <TabsContent value="scan">
               <FoodScanner onFoodAdded={onFoodAdded} onClose={onClose} />
-            </TabsContent>
-
-            <TabsContent value="history">
-              <FoodHistoryTab onClose={onClose} />
             </TabsContent>
 
             <TabsContent value="manual">

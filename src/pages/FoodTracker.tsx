@@ -8,7 +8,7 @@ import { useState, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useFoodConsumption } from "@/features/food-tracker/hooks";
 import { useLocation, useNavigate } from "react-router-dom";
-import { TodayTab, FoodHistoryTab } from "@/features/food-tracker";
+import { TodayTab, HistoryTab } from "@/features/food-tracker";
 import AddFoodDialog from "@/features/food-tracker/components/AddFoodDialog";
 import { toast } from "sonner";
 import { useQueryClient } from '@tanstack/react-query';
@@ -162,7 +162,7 @@ const FoodTracker = () => {
                 </TabsContent>
 
                 <TabsContent value="history" className="mt-6">
-                  <FoodHistoryTab onClose={() => {}} />
+                  <HistoryTab />
                 </TabsContent>
               </Tabs>
 
