@@ -1,5 +1,9 @@
 
 export {
   ProgressBadges,
-  GoalProgressRing
+  GoalProgressRing,
+  GoalCard,
+  GoalsOverview,
+  GoalCreationDialog,
+  GoalsDashboard
 } from './components';

@@ -1,48 +1,51 @@
 
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp } from "lucide-react";
-import { useGoals } from "@/hooks/useGoals";
-import GoalProgressRing from "@/components/goals/GoalProgressRing";
+import { Button } from "@/components/ui/button";
+import { Plus, Target } from "lucide-react";
+import { GoalProgressRing } from "./GoalProgressRing";
 
 const GoalsOverview = () => {
-  const { goals } = useGoals();
-
-  const activeGoals = goals.filter(goal => goal.status === 'active');
-  const completedGoals = goals.filter(goal => goal.status === 'completed');
-  const overallProgress = goals.length > 0 
-    ? goals.reduce((acc, goal) => acc + Math.min(100, (goal.current_value / (goal.target_value || 1)) * 100), 0) / goals.length
-    : 0;
-
   return (
-    <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-blue-600" />
-          Progress Overview
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex items-center justify-center">
-          <GoalProgressRing progress={overallProgress} size={160}>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-gray-800">{Math.round(overallProgress)}%</div>
-              <div className="text-sm text-gray-600">Overall</div>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">Goals</h1>
+        <Button>
+          <Plus className="w-4 h-4 mr-2" />
+          Add Goal
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Target className="w-5 h-5" />
+              Weight Loss
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <GoalProgressRing progress={65} size={120} />
+            <div className="text-center mt-4">
+              <p className="text-sm text-gray-600">65% Complete</p>
+              <p className="text-xs text-gray-500">5kg lost of 8kg target</p>
             </div>
-          </GoalProgressRing>
-        </div>
-        
-        <div className="grid grid-cols-2 gap-4 mt-6">
-          <div className="text-center p-3 bg-blue-50 rounded-lg">
-            <div className="text-2xl font-bold text-blue-600">{activeGoals.length}</div>
-            <div className="text-sm text-blue-600">Active Goals</div>
-          </div>
-          <div className="text-center p-3 bg-green-50 rounded-lg">
-            <div className="text-2xl font-bold text-green-600">{completedGoals.length}</div>
-            <div className="text-sm text-green-600">Completed</div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="flex items-center justify-center h-48">
+            <div className="text-center text-gray-500">
+              <Target className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <p>No active goals</p>
+              <Button variant="outline" size="sm" className="mt-2">
+                Create Goal
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 };
 

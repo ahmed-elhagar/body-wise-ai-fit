@@ -4,5 +4,7 @@ export {
   GenderSelector,
   GoalBodyTypeSelector,
   ActivityLevelSelector,
-  ModernOnboardingHeader
+  ModernOnboardingHeader,
+  HealthConditionsAutocompleteEnhanced,
+  EnhancedNationalitySelector
 } from './components';

@@ -1,42 +1,60 @@
-
-import { CheckCircle } from "lucide-react";
-import GoalBodyTypeSelector from "@/components/onboarding/GoalBodyTypeSelector";
-import ActivityLevelSelector from "@/components/onboarding/ActivityLevelSelector";
-import { SignupFormData } from "../types";
+import React from 'react';
+import { Label } from "@/components/ui/label";
+import { GoalBodyTypeSelector } from "@/features/onboarding";
+import { ActivityLevelSelector } from "@/features/onboarding";
 
 interface GoalsActivityStepProps {
-  formData: SignupFormData;
-  updateField: (field: keyof SignupFormData, value: any) => void;
+  onNext: () => void;
+  onPrevious: () => void;
+  activityLevel: string;
+  setActivityLevel: (level: string) => void;
+  fitnessGoal: string;
+  setFitnessGoal: (goal: string) => void;
 }
 
-const GoalsActivityStep = ({ formData, updateField }: GoalsActivityStepProps) => {
-  const isValid = !!(formData.fitnessGoal && formData.activityLevel);
-
+const GoalsActivityStep = ({
+  onNext,
+  onPrevious,
+  activityLevel,
+  setActivityLevel,
+  fitnessGoal,
+  setFitnessGoal
+}: GoalsActivityStepProps) => {
   return (
-    <div className="space-y-8">
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl mb-4 shadow-lg">
-          <CheckCircle className="w-8 h-8 text-white" />
-        </div>
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Goals & Activity</h2>
-        <p className="text-gray-600">Tell us about your fitness goals</p>
+    <div className="space-y-6">
+      {/* Activity Level Selector */}
+      <div className="space-y-2">
+        <Label htmlFor="activity-level" className="text-sm font-medium text-gray-700">
+          What's your typical daily activity level?
+        </Label>
+        <ActivityLevelSelector value={activityLevel} onChange={setActivityLevel} />
       </div>
 
-      <GoalBodyTypeSelector
-        value={formData.fitnessGoal}
-        onChange={(value) => updateField("fitnessGoal", value)}
-      />
+      {/* Fitness Goal Selector */}
+      <div className="space-y-2">
+        <Label htmlFor="fitness-goal" className="text-sm font-medium text-gray-700">
+          What's your main fitness goal?
+        </Label>
+        <GoalBodyTypeSelector value={fitnessGoal} onChange={setFitnessGoal} />
+      </div>
 
-      <ActivityLevelSelector
-        value={formData.activityLevel}
-        onChange={(value) => updateField("activityLevel", value)}
-      />
-
-      {!isValid && (
-        <div className="text-sm text-gray-500 bg-gray-50 p-3 rounded-lg">
-          Please select both your fitness goal and activity level
-        </div>
-      )}
+      {/* Navigation Buttons */}
+      <div className="flex justify-between">
+        <button
+          type="button"
+          onClick={onPrevious}
+          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          Previous
+        </button>
+        <button
+          type="button"
+          onClick={onNext}
+          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 };
