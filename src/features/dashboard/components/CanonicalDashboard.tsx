@@ -7,12 +7,12 @@ import { useExercisePrograms } from '@/hooks/useExercisePrograms';
 import { 
   DashboardHeader,
   EnhancedStatsGrid, 
-  GoalProgressWidget, 
   WeightTrackingWidget, 
   ActivityFeed, 
   DashboardAchievements,
   QuickActionsGrid
 } from '@/features/dashboard/components';
+import { GoalProgressWidget } from '@/features/goals/components';
 import SimpleLoadingIndicator from '@/components/ui/simple-loading-indicator';
 
 const CanonicalDashboard = () => {
