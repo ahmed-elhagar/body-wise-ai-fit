@@ -27,26 +27,26 @@ const MealPlanHeader = ({
   const { t } = useLanguage();
 
   return (
-    <Card className="bg-gradient-to-r from-violet-50 to-purple-50 border-violet-200">
+    <Card className="bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-200">
       <CardContent className="p-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-violet-900 mb-2">
+            <h1 className="text-2xl font-bold text-emerald-900 mb-2">
               {t('Smart Meal Planning')}
             </h1>
-            <p className="text-violet-700">
+            <p className="text-emerald-700">
               {t('AI-powered personalized nutrition')}
             </p>
           </div>
           
           <div className="flex flex-wrap gap-2">
             <Button
-              onClick={onGenerateAI}
+              onClick={hasWeeklyPlan ? onRegeneratePlan : onGenerateAI}
               disabled={isGenerating}
-              className="bg-violet-600 hover:bg-violet-700"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white"
             >
-              <Sparkles className="w-4 h-4 mr-2" />
-              {isGenerating ? t('Generating...') : t('Generate AI Meal Plan')}
+              {hasWeeklyPlan ? <RefreshCw className="w-4 h-4 mr-2" /> : <Sparkles className="w-4 h-4 mr-2" />}
+              {isGenerating ? t('Generating...') : (hasWeeklyPlan ? t('Regenerate Plan') : t('Generate AI Meal Plan'))}
             </Button>
             
             {hasWeeklyPlan && (
@@ -55,7 +55,7 @@ const MealPlanHeader = ({
                   onClick={onShuffle}
                   variant="outline"
                   disabled={isShuffling}
-                  className="border-violet-300 text-violet-700 hover:bg-violet-50"
+                  className="border-emerald-300 text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800"
                 >
                   <Shuffle className="w-4 h-4 mr-2" />
                   {isShuffling ? t('Shuffling...') : t('Shuffle Meals')}
@@ -64,19 +64,10 @@ const MealPlanHeader = ({
                 <Button
                   onClick={onShowShoppingList}
                   variant="outline"
-                  className="border-violet-300 text-violet-700 hover:bg-violet-50"
+                  className="border-emerald-300 text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800"
                 >
                   <ShoppingCart className="w-4 h-4 mr-2" />
                   {t('Shopping List')}
-                </Button>
-                
-                <Button
-                  onClick={onRegeneratePlan}
-                  variant="outline"
-                  className="border-violet-300 text-violet-700 hover:bg-violet-50"
-                >
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  {t('Regenerate')}
                 </Button>
               </>
             )}
