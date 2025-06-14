@@ -39,18 +39,20 @@ const AIGenerationDialog = ({
   };
 
   const getLifePhaseIcon = () => {
-    if (nutritionContext.pregnancyTrimester) return <Baby className="w-4 h-4" />;
-    if (nutritionContext.breastfeedingLevel) return <Heart className="w-4 h-4" />;
+    if (nutritionContext.pregnancy_stage || nutritionContext.pregnancyTrimester) return <Baby className="w-4 h-4" />;
+    if (nutritionContext.breastfeeding_level || nutritionContext.breastfeedingLevel) return <Heart className="w-4 h-4" />;
     if (nutritionContext.fastingType || nutritionContext.isMuslimFasting) return <Moon className="w-4 h-4" />;
     return null;
   };
 
   const getLifePhaseLabel = () => {
-    if (nutritionContext.pregnancyTrimester) {
-      return `${t('profile.lifePhase.pregnancy.title')} - ${t('profile.lifePhase.pregnancy.trimester' + nutritionContext.pregnancyTrimester)}`;
+    if (nutritionContext.pregnancy_stage || nutritionContext.pregnancyTrimester) {
+      const trimester = nutritionContext.pregnancy_stage || nutritionContext.pregnancyTrimester;
+      return `${t('profile.lifePhase.pregnancy.title')} - ${t('profile.lifePhase.pregnancy.trimester' + trimester)}`;
     }
-    if (nutritionContext.breastfeedingLevel) {
-      return `${t('profile.lifePhase.breastfeeding.title')} - ${t('profile.lifePhase.breastfeeding.' + nutritionContext.breastfeedingLevel)}`;
+    if (nutritionContext.breastfeeding_level || nutritionContext.breastfeedingLevel) {
+      const level = nutritionContext.breastfeeding_level || nutritionContext.breastfeedingLevel;
+      return `${t('profile.lifePhase.breastfeeding.title')} - ${t('profile.lifePhase.breastfeeding.' + level)}`;
     }
     if (nutritionContext.isMuslimFasting) {
       return language === 'ar' ? 'الصيام الإسلامي' : 'Muslim Fasting';
@@ -73,7 +75,9 @@ const AIGenerationDialog = ({
 
         <div className="space-y-6 py-4">
           {/* Special Conditions Indicator */}
-          {(nutritionContext.pregnancyTrimester || nutritionContext.breastfeedingLevel || nutritionContext.fastingType || nutritionContext.isMuslimFasting) && (
+          {(nutritionContext.pregnancy_stage || nutritionContext.pregnancyTrimester || 
+            nutritionContext.breastfeeding_level || nutritionContext.breastfeedingLevel || 
+            nutritionContext.fastingType || nutritionContext.isMuslimFasting) && (
             <div className="bg-health-soft border border-health-border rounded-lg p-4">
               <Label className="text-sm font-medium text-health-text-primary mb-2 block">
                 {language === 'ar' ? 'الحالة الخاصة' : 'Special Condition'}

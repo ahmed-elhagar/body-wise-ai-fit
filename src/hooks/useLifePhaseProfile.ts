@@ -24,14 +24,35 @@ export const useLifePhaseProfile = () => {
   });
 
   const getNutritionContext = () => {
-    if (!lifePhaseProfile) return {};
+    if (!lifePhaseProfile) {
+      return {
+        is_pregnant: false,
+        is_breastfeeding: false,
+        pregnancy_stage: null,
+        breastfeeding_level: null,
+        activity_level: null,
+        pregnancyTrimester: null,
+        breastfeedingLevel: null,
+        fastingType: null,
+        isMuslimFasting: false,
+        extraCalories: 0
+      };
+    }
     
     return {
       is_pregnant: lifePhaseProfile.is_pregnant || false,
       is_breastfeeding: lifePhaseProfile.is_breastfeeding || false,
       pregnancy_stage: lifePhaseProfile.pregnancy_stage,
       breastfeeding_level: lifePhaseProfile.breastfeeding_level,
-      activity_level: lifePhaseProfile.activity_level
+      activity_level: lifePhaseProfile.activity_level,
+      // Add camelCase aliases for compatibility
+      pregnancyTrimester: lifePhaseProfile.pregnancy_stage,
+      breastfeedingLevel: lifePhaseProfile.breastfeeding_level,
+      fastingType: lifePhaseProfile.fasting_type || null,
+      isMuslimFasting: lifePhaseProfile.is_muslim_fasting || false,
+      extraCalories: lifePhaseProfile.extra_calories || 0,
+      fastingStartDate: lifePhaseProfile.fasting_start_date || null,
+      fastingEndDate: lifePhaseProfile.fasting_end_date || null
     };
   };
 
