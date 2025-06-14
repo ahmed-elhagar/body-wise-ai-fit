@@ -87,7 +87,6 @@ const StatsGrid = () => {
 
         return (
           <Card key={index} className={`relative overflow-hidden bg-gradient-to-br ${stat.bgGradient} border ${stat.borderColor} shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 rounded-xl p-4`}>
-            {/* Header */}
             <div className={`flex items-center justify-between mb-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <div className={`w-8 h-8 bg-gradient-to-br ${stat.gradient} rounded-xl flex items-center justify-center shadow-md`}>
                 <IconComponent className="w-4 h-4 text-white" />
@@ -99,7 +98,6 @@ const StatsGrid = () => {
               </div>
             </div>
 
-            {/* Main Value */}
             <div className={`mb-3 ${isRTL ? 'text-right' : 'text-left'}`}>
               <div className="flex items-baseline gap-1">
                 <span className="text-xl lg:text-2xl font-bold text-gray-800">
@@ -111,7 +109,6 @@ const StatsGrid = () => {
               </div>
             </div>
 
-            {/* Trend Indicator */}
             <div className={`flex items-center gap-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <Badge className={`${getTrendColor(stat.changeType)} border text-xs font-semibold rounded-lg px-2 py-0.5 hover:shadow-md transition-shadow`}>
                 <TrendIcon className="w-2.5 h-2.5 mr-1" />

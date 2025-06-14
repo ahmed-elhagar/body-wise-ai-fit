@@ -7,15 +7,70 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { TrendingUp, Calendar, Activity, ArrowRight } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { useNavigate } from "react-router-dom";
-import { useChartData } from "./interactive-chart/ChartData";
 
 type ChartType = 'weight' | 'calories' | 'workouts';
+
+// Mock data generation functions
+const generateWeightData = () => {
+  const data = [];
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - 6);
+  
+  for (let i = 0; i < 7; i++) {
+    const date = new Date(startDate);
+    date.setDate(date.getDate() + i);
+    data.push({
+      date: date.toISOString(),
+      value: 70 + Math.random() * 2 - 1,
+      target: 68
+    });
+  }
+  return data;
+};
+
+const generateCalorieData = () => {
+  const data = [];
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - 6);
+  
+  for (let i = 0; i < 7; i++) {
+    const date = new Date(startDate);
+    date.setDate(date.getDate() + i);
+    data.push({
+      date: date.toISOString(),
+      consumed: 1800 + Math.random() * 400,
+      target: 2000,
+      burned: 300 + Math.random() * 200
+    });
+  }
+  return data;
+};
+
+const generateWorkoutData = () => {
+  const data = [];
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - 6);
+  
+  for (let i = 0; i < 7; i++) {
+    const date = new Date(startDate);
+    date.setDate(date.getDate() + i);
+    data.push({
+      date: date.toISOString(),
+      duration: Math.random() > 0.3 ? 30 + Math.random() * 60 : 0,
+      calories: Math.random() > 0.3 ? 200 + Math.random() * 300 : 0
+    });
+  }
+  return data;
+};
 
 const InteractiveProgressChart = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [activeChart, setActiveChart] = useState<ChartType>('weight');
-  const { weightData, calorieData, workoutData } = useChartData();
+
+  const weightData = generateWeightData();
+  const calorieData = generateCalorieData();
+  const workoutData = generateWorkoutData();
 
   const getChartData = () => {
     switch (activeChart) {
@@ -118,20 +173,17 @@ const InteractiveProgressChart = () => {
     
     switch (activeChart) {
       case 'weight':
-        const weightData = data as Array<{ date: string; value: number; target: number; }>;
-        const weightChange = weightData[weightData.length - 1].value - weightData[0].value;
+        const weightChange = data[data.length - 1].value - data[0].value;
         return weightChange > 0 
           ? t(`+${weightChange.toFixed(1)}kg change`) 
           : t(`${weightChange.toFixed(1)}kg change`);
       
       case 'calories':
-        const calorieData = data as Array<{ date: string; consumed: number; target: number; burned: number; }>;
-        const avgConsumed = calorieData.reduce((sum, d) => sum + d.consumed, 0) / calorieData.length;
+        const avgConsumed = data.reduce((sum, d) => sum + d.consumed, 0) / data.length;
         return t(`Avg: ${Math.round(avgConsumed)} cal/day`);
       
       case 'workouts':
-        const workoutData = data as Array<{ date: string; duration: number; calories: number; }>;
-        const totalWorkouts = workoutData.filter(d => d.duration > 0).length;
+        const totalWorkouts = data.filter(d => d.duration > 0).length;
         return t(`${totalWorkouts} active days`);
       
       default:
@@ -159,7 +211,6 @@ const InteractiveProgressChart = () => {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Chart Type Selector */}
         <div className="flex gap-2">
           <Button
             variant={activeChart === 'weight' ? 'default' : 'outline'}
@@ -187,12 +238,10 @@ const InteractiveProgressChart = () => {
           </Button>
         </div>
 
-        {/* Chart */}
         <div className="h-[200px]">
           {renderChart()}
         </div>
 
-        {/* Quick Insight */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4 text-gray-500" />
@@ -203,7 +252,6 @@ const InteractiveProgressChart = () => {
           </Badge>
         </div>
 
-        {/* Quick Actions */}
         <div className="flex gap-2 pt-2 border-t border-gray-100">
           <Button
             variant="ghost"

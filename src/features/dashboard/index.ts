@@ -1,3 +1,10 @@
 
 // Dashboard feature exports
-export * from './components';
+export { 
+  CanonicalDashboard, 
+  DashboardHeader, 
+  QuickActionsGrid, 
+  RecentActivityCard,
+  InteractiveProgressChart,
+  StatsGrid
+} from './components';
