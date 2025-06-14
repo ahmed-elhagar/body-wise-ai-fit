@@ -75,8 +75,8 @@ export const GoalsList = () => {
                 </div>
                 
                 <div className="flex gap-2">
-                  <Badge className={getDifficultyColor(goal.difficulty)}>
-                    {goal.difficulty}
+                  <Badge className={getDifficultyColor(goal.difficulty || 'medium')}>
+                    {goal.difficulty || 'medium'}
                   </Badge>
                   <Badge className={getStatusColor(goal.status)}>
                     {goal.status}

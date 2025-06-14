@@ -3,22 +3,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-
-interface Goal {
-  id: string;
-  user_id: string;
-  title: string;
-  description?: string;
-  status: string;
-  goal_type: string;
-  category: string;
-  target_value?: number;
-  current_value?: number;
-  target_unit?: string;
-  target_date?: string;
-  created_at: string;
-  updated_at: string;
-}
+import type { Goal } from '@/features/goals/types';
 
 export const useGoals = () => {
   const { user } = useAuth();
@@ -39,7 +24,18 @@ export const useGoals = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setGoals(data || []);
+      
+      // Transform database records to match Goal interface
+      const transformedGoals: Goal[] = (data || []).map(goal => ({
+        ...goal,
+        difficulty: goal.difficulty || 'medium',
+        start_date: goal.start_date || goal.created_at,
+        current_value: goal.current_value || 0,
+        milestones: goal.milestones || [],
+        tags: goal.tags || []
+      }));
+      
+      setGoals(transformedGoals);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -56,14 +52,28 @@ export const useGoals = () => {
         .from('user_goals')
         .insert({
           ...goalData,
-          user_id: user.id
+          user_id: user.id,
+          difficulty: goalData.difficulty || 'medium',
+          start_date: goalData.start_date || new Date().toISOString().split('T')[0],
+          current_value: goalData.current_value || 0,
+          milestones: goalData.milestones || [],
+          tags: goalData.tags || []
         })
         .select()
         .single();
 
       if (error) throw error;
       
-      setGoals(prev => [data, ...prev]);
+      const transformedGoal: Goal = {
+        ...data,
+        difficulty: data.difficulty || 'medium',
+        start_date: data.start_date || data.created_at,
+        current_value: data.current_value || 0,
+        milestones: data.milestones || [],
+        tags: data.tags || []
+      };
+      
+      setGoals(prev => [transformedGoal, ...prev]);
       toast.success('Goal created successfully!');
     } catch (err: any) {
       setError(err.message);
@@ -84,7 +94,16 @@ export const useGoals = () => {
 
       if (error) throw error;
       
-      setGoals(prev => prev.map(goal => goal.id === goalId ? data : goal));
+      const transformedGoal: Goal = {
+        ...data,
+        difficulty: data.difficulty || 'medium',
+        start_date: data.start_date || data.created_at,
+        current_value: data.current_value || 0,
+        milestones: data.milestones || [],
+        tags: data.tags || []
+      };
+      
+      setGoals(prev => prev.map(goal => goal.id === goalId ? transformedGoal : goal));
       toast.success('Goal updated successfully!');
     } catch (err: any) {
       setError(err.message);

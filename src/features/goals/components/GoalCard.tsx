@@ -6,24 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Target, Calendar, TrendingUp, Edit, Trash2 } from "lucide-react";
 import { GoalProgressRing } from './GoalProgressRing';
-
-export interface Goal {
-  id: string;
-  user_id: string;
-  goal_type: string;
-  title: string;
-  description?: string;
-  target_value?: number;
-  target_unit?: string;
-  current_value: number;
-  category: string;
-  difficulty: string;
-  status: string;
-  start_date: string;
-  target_date?: string;
-  created_at: string;
-  updated_at: string;
-}
+import type { Goal } from '../types';
 
 export interface GoalCardProps {
   goal: Goal;
@@ -63,8 +46,8 @@ export const GoalCard = ({ goal, onDelete, onEdit }: GoalCardProps) => {
           <div>
             <CardTitle className="text-lg font-bold text-gray-800">{goal.title}</CardTitle>
             <div className="flex gap-2 mt-1">
-              <Badge className={getDifficultyColor(goal.difficulty)}>
-                {goal.difficulty}
+              <Badge className={getDifficultyColor(goal.difficulty || 'medium')}>
+                {goal.difficulty || 'medium'}
               </Badge>
               <Badge className={getStatusColor(goal.status)}>
                 {goal.status}
