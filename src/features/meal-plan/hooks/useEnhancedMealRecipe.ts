@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
-import { useAuth } from './useAuth';
-import { useCentralizedCredits } from './useCentralizedCredits';
+import { useAuth } from '@/hooks/useAuth';
+import { useCentralizedCredits } from '@/hooks/useCentralizedCredits';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 

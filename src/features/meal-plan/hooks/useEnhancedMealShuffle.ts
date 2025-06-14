@@ -1,42 +1,76 @@
 
-import { useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useState } from 'react';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 export const useEnhancedMealShuffle = () => {
+  const { user } = useAuth();
   const [isShuffling, setIsShuffling] = useState(false);
 
-  const shuffleMeals = useCallback(async (weeklyPlanId: string) => {
-    if (!weeklyPlanId) {
-      console.error('Weekly plan ID is required for shuffling.');
-      toast.error('Failed to shuffle meals: Missing plan ID.');
+  const shuffleMeals = async (weeklyPlanId: string): Promise<boolean> => {
+    if (!user?.id || !weeklyPlanId) {
+      console.error('❌ Missing required data for shuffle:', { hasUser: !!user, weeklyPlanId });
+      toast.error('Unable to shuffle meals - missing required data');
       return false;
     }
-    setIsShuffling(true);
-    console.log(`Initiating shuffle for weekly plan ID: ${weeklyPlanId}`);
-    try {
-      // This is a placeholder. In a real scenario, you would invoke a Supabase Edge Function.
-      // For example:
-      // const { data, error } = await supabase.functions.invoke('shuffle-weekly-meals', {
-      //  body: { weeklyPlanId },
-      // });
-      // if (error) throw error;
 
-      // Simulate an API call delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+    setIsShuffling(true);
+    
+    try {
+      console.log('🔄 Starting enhanced meal shuffle:', {
+        userId: user.id,
+        weeklyPlanId,
+        timestamp: new Date().toISOString()
+      });
+
+      toast.loading('Shuffling your meals across the week...', { duration: 15000 });
+
+      const { data, error } = await supabase.functions.invoke('shuffle-weekly-meals', {
+        body: { 
+          weeklyPlanId,
+          userId: user.id // Ensure user ID is properly passed
+        }
+      });
+
+      toast.dismiss();
+
+      console.log('🔄 Shuffle function response:', { data, error });
+
+      if (error) {
+        console.error('❌ Shuffle function error:', error);
+        throw new Error(error.message || 'Failed to shuffle meals');
+      }
+
+      if (data?.success) {
+        console.log('✅ Meals shuffled successfully!', {
+          message: data.message,
+          shuffledCount: data.shuffledCount || 'unknown'
+        });
+        
+        toast.success(
+          `🎲 ${data.message || 'Meals shuffled successfully!'} Your meals have been redistributed across the week!`,
+          { duration: 4000 }
+        );
+        
+        return true;
+      } else {
+        console.error('❌ Shuffle operation failed:', data);
+        throw new Error(data?.error || 'Failed to shuffle meals');
+      }
       
-      // Assuming the (simulated) shuffle was successful
-      toast.success('Meals shuffled successfully! Refetching data might be needed.');
-      console.log(`Shuffle completed for weekly plan ID: ${weeklyPlanId}`);
-      return true; // Indicate success
     } catch (error: any) {
-      console.error('Error shuffling meals:', error);
-      toast.error(`Failed to shuffle meals: ${error.message || 'Unknown error'}`);
-      return false; // Indicate failure
+      console.error('❌ Error shuffling meals:', error);
+      toast.dismiss();
+      toast.error(error.message || 'Failed to shuffle meals. Please try again.');
+      return false;
     } finally {
       setIsShuffling(false);
     }
-  }, []);
+  };
 
-  return { shuffleMeals, isShuffling };
+  return {
+    shuffleMeals,
+    isShuffling
+  };
 };
