@@ -82,6 +82,11 @@ export const ExerciseListEnhanced = ({
     }
   }, [onRetry]);
 
+  const handleAddCustomExercise = useCallback(() => {
+    console.log('➕ Add custom exercise clicked');
+    // TODO: Implement custom exercise dialog
+  }, []);
+
   if (error) {
     return (
       <ExerciseErrorHandler
@@ -113,9 +118,8 @@ export const ExerciseListEnhanced = ({
   if (!exercises || exercises.length === 0) {
     return (
       <ExerciseEmptyState
-        onGenerateProgram={() => console.log('Generate program')}
+        onGenerateClick={() => console.log('Generate program')}
         workoutType={currentProgram?.workout_type || "home"}
-        dailyWorkoutId={dailyWorkoutId}
       />
     );
   }
@@ -128,6 +132,7 @@ export const ExerciseListEnhanced = ({
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         dailyWorkoutId={dailyWorkoutId}
+        onAddCustomExercise={handleAddCustomExercise}
       />
 
       {viewMode === 'session' ? (

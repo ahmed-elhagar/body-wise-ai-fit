@@ -22,7 +22,7 @@ export { WorkoutTypeToggle } from './components/WorkoutTypeToggle';
 export { ExerciseProgramSelector } from './components/ExerciseProgramSelector';
 export { WeeklyExerciseNavigation } from './components/WeeklyExerciseNavigation';
 export { ExerciseProgramDaySelector } from './components/ExerciseProgramDaySelector';
-export { OptimizedExerciseContainer } from './components/OptimizedExerciseContainer';
+export { default as OptimizedExerciseContainer } from './components/OptimizedExerciseContainer';
 
 // Export types
 export type * from './types';
