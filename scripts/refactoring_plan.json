@@ -1,0 +1,63 @@
+
+{
+  "title": "FitFatta App Refactoring & Enhancement Plan",
+  "version": "1.0",
+  "last_updated": "2025-06-14",
+  "phases": [
+    {
+      "id": 1,
+      "name": "Phase 1: Codebase Consolidation & Cleanup",
+      "status": "in-progress",
+      "description": "Relocate all feature-specific code into the `src/features` directory, remove duplicates, and clean up unused files.",
+      "tasks": [
+        {
+          "id": "P1T1",
+          "description": "Move feature-specific hooks from `src/hooks` to `src/features/[feature]/hooks`.",
+          "status": "in-progress",
+          "details": [
+            "Moved: GoalProgressWidget (component)",
+            "In Progress: useExercisePrograms",
+            "Pending: useGoals, useWeightTracking"
+          ]
+        },
+        {
+          "id": "P1T2",
+          "description": "Move feature-specific components from `src/components` to `src/features/[feature]/components`.",
+          "status": "pending"
+        },
+        {
+          "id": "P1T3",
+          "description": "Move feature-specific contexts from `src/contexts` to `src/features/[feature]/contexts`.",
+          "status": "pending"
+        },
+        {
+          "id": "P1T4",
+          "description": "Move feature-specific services, types, and utils to their respective feature directories.",
+          "status": "pending"
+        },
+        {
+          "id": "P1T5",
+          "description": "Delete `src/__tests__` after verifying test strategy.",
+          "status": "pending"
+        },
+        {
+          "id": "P1T6",
+          "description": "Prune unused files from global folders (`components`, `hooks`, `contexts`, etc.).",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Phase 2: UI/UX Enhancement & Centralization",
+      "status": "pending",
+      "description": "Improve UI consistency, centralize shared logic, and enhance user experience across the app."
+    },
+    {
+      "id": 3,
+      "name": "Phase 3: Performance & Scalability Boost",
+      "status": "pending",
+      "description": "Optimize application performance, and improve codebase scalability for future features."
+    }
+  ]
+}

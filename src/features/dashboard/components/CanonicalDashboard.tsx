@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/hooks/useAuth';
 import { useMealPlans } from '@/features/meal-plan/hooks';
-import { useExercisePrograms } from '@/hooks/useExercisePrograms';
+import { useExercisePrograms } from '@/features/exercise';
 import { 
   DashboardHeader,
   EnhancedStatsGrid, 
