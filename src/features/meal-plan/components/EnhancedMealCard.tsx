@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Eye, ArrowLeftRight } from "lucide-react";
-import { useMealPlanTranslations } from '@/utils/mealPlanTranslations';
+import { useI18n } from '@/hooks/useI18n';
 import type { DailyMeal } from '../types';
 
 interface EnhancedMealCardProps {
@@ -14,7 +14,7 @@ interface EnhancedMealCardProps {
 }
 
 export const EnhancedMealCard = ({ meal, onViewMeal, onExchangeMeal }: EnhancedMealCardProps) => {
-  const { mealTypes, cal, recipe, exchange } = useMealPlanTranslations();
+  const { t } = useI18n();
 
   const getMealTypeColor = (mealType: string) => {
     switch (mealType.toLowerCase()) {
@@ -34,8 +34,8 @@ export const EnhancedMealCard = ({ meal, onViewMeal, onExchangeMeal }: EnhancedM
   };
 
   const getMealTypeLabel = (mealType: string) => {
-    const mealTypeKey = mealType.toLowerCase() as keyof typeof mealTypes;
-    return mealTypes[mealTypeKey] || mealType;
+    const mealTypeKey = mealType.toLowerCase();
+    return t(`mealPlan:mealTypes.${mealTypeKey}`, { defaultValue: mealType });
   };
 
   return (
@@ -73,7 +73,7 @@ export const EnhancedMealCard = ({ meal, onViewMeal, onExchangeMeal }: EnhancedM
           </h3>
           
           <div className="text-xs text-gray-600">
-            {meal.calories} {cal} • {meal.protein}g
+            {meal.calories} {t('mealPlan:cal')} • {meal.protein}g
           </div>
 
           {/* Compact Action Buttons */}
@@ -85,7 +85,7 @@ export const EnhancedMealCard = ({ meal, onViewMeal, onExchangeMeal }: EnhancedM
               onClick={() => onExchangeMeal(meal)}
             >
               <ArrowLeftRight className="w-3 h-3 mr-1" />
-              {exchange}
+              {t('mealPlan:exchange')}
             </Button>
             
             <Button

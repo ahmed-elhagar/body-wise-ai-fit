@@ -1,4 +1,3 @@
-
 {
   "title": "Meal Plan",
   "smartMealPlanning": "Smart Meal Planning",
@@ -50,8 +49,9 @@
   "nutritionGoalsReached": "Your nutrition goals have been successfully reached for today.",
   "mealTypes": {
     "breakfast": "Breakfast",
-    "lunch": "Lunch", 
+    "lunch": "Lunch",
     "dinner": "Dinner",
+    "snack": "Snack",
     "snack1": "Snack",
     "snack2": "Snack"
   },
@@ -63,5 +63,17 @@
     "5": "Wednesday",
     "6": "Thursday",
     "7": "Friday"
-  }
+  },
+  "exchange": "Exchange",
+  "shuffle": "Shuffle",
+  "shop": "Shop",
+  "aiPlan": "AI Plan",
+  "shuffleMeals": "Shuffle Meals",
+  "shoppingList": "Shopping List",
+  "mealPlanSettings": "Meal Plan Settings",
+  "includeSnacks": "Include Snacks",
+  "maxPrepTime": "Max Prep Time",
+  "cuisine": "Cuisine",
+  "creditsRemaining": "Credits Remaining",
+  "mealsPerDay": "meals per day"
 }

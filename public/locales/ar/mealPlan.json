@@ -1,4 +1,3 @@
-
 {
   "title": "خطة الوجبات",
   "smartMealPlanning": "تخطيط ذكي للوجبات",
@@ -51,7 +50,8 @@
   "mealTypes": {
     "breakfast": "الإفطار",
     "lunch": "الغداء",
-    "dinner": "العشاء", 
+    "dinner": "العشاء",
+    "snack": "وجبة خفيفة",
     "snack1": "وجبة خفيفة",
     "snack2": "وجبة خفيفة"
   },
@@ -63,5 +63,17 @@
     "5": "الأربعاء",
     "6": "الخميس",
     "7": "الجمعة"
-  }
+  },
+  "exchange": "استبدال",
+  "shuffle": "خلط",
+  "shop": "تسوق",
+  "aiPlan": "خطة ذكية",
+  "shuffleMeals": "خلط الوجبات",
+  "shoppingList": "قائمة التسوق",
+  "mealPlanSettings": "إعدادات خطة الوجبات",
+  "includeSnacks": "تضمين الوجبات الخفيفة",
+  "maxPrepTime": "الحد الأقصى لوقت التحضير",
+  "cuisine": "نوع المطبخ",
+  "creditsRemaining": "الأرصدة المتبقية",
+  "mealsPerDay": "وجبات يومياً"
 }
