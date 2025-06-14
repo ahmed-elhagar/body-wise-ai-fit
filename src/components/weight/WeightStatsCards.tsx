@@ -5,7 +5,7 @@ import { BarChart } from "lucide-react";
 interface WeightEntry {
   id: string;
   weight: number;
-  date: string;
+  recorded_at: string;
 }
 
 interface WeightStatsCardsProps {
