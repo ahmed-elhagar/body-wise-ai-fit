@@ -18,6 +18,10 @@ export interface SecurityAuditResult {
   rls_policies: RLSPolicyAudit[];
 }
 
+// Define valid table names for type safety
+type ValidTableName = 'profiles' | 'weekly_meal_plans' | 'daily_meals' | 'weekly_exercise_programs' | 
+  'food_consumption_log' | 'weight_entries' | 'user_goals' | 'coach_trainees';
+
 export class DatabaseSecurityService {
   
   static async auditRLSPolicies(): Promise<SecurityAuditResult> {
@@ -53,7 +57,7 @@ export class DatabaseSecurityService {
 
   private static async checkRLSCoverage(audit: SecurityAuditResult) {
     // Critical tables that must have RLS
-    const criticalTables = [
+    const criticalTables: ValidTableName[] = [
       'profiles', 'weekly_meal_plans', 'daily_meals', 'weekly_exercise_programs',
       'food_consumption_log', 'weight_entries', 'user_goals', 'coach_trainees'
     ];
@@ -126,7 +130,7 @@ export class DatabaseSecurityService {
 
   static async validateUserAccess(userId: string, resourceType: string, resourceId: string): Promise<boolean> {
     try {
-      // Generic access validation
+      // Generic access validation with proper typing
       switch (resourceType) {
         case 'meal_plan':
           const { data: mealPlan } = await supabase
