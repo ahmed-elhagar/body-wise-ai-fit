@@ -81,7 +81,6 @@ export const CreateTaskDialog = ({ open, onOpenChange, trainees }: CreateTaskDia
         priority: formData.priority,
         type: formData.type,
         traineeId: formData.traineeId !== 'none' ? formData.traineeId : undefined,
-        traineeName: undefined, // This will be populated by the hook
         dueDate: finalDueDate,
         completed: false,
       };
