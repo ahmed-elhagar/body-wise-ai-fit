@@ -1,74 +1,64 @@
 
-import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 export interface CoachTask {
   id: string;
   title: string;
   description: string;
-  dueDate: Date;
+  due_date: string | null;
   priority: 'low' | 'medium' | 'high';
   completed: boolean;
-  assignedTo?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  trainee_id?: string;
+  coach_id: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export const useCoachTasks = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  // Fetch tasks
+  // Fetch tasks from database
   const { data: tasks = [], isLoading, error } = useQuery({
     queryKey: ['coach-tasks', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
 
-      // For now, return mock data since we don't have a tasks table yet
-      const mockTasks: CoachTask[] = [
-        {
-          id: '1',
-          title: 'Review Sarah\'s meal plan',
-          description: 'Check nutritional balance and provide feedback',
-          dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow
-          priority: 'high',
-          completed: false,
-          assignedTo: 'sarah-123',
-          createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-          updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
-        },
-        {
-          id: '2',
-          title: 'Update exercise program for John',
-          description: 'Increase intensity based on progress',
-          dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days
-          priority: 'medium',
-          completed: false,
-          assignedTo: 'john-456',
-          createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-          updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000)
-        }
-      ];
+      const { data, error } = await supabase
+        .from('coach_tasks')
+        .select('*')
+        .eq('coach_id', user.id)
+        .order('created_at', { ascending: false });
 
-      return mockTasks;
+      if (error) {
+        console.error('Error fetching coach tasks:', error);
+        throw error;
+      }
+
+      return data as CoachTask[];
     },
     enabled: !!user?.id,
   });
 
   // Create task mutation
   const createTaskMutation = useMutation({
-    mutationFn: async (taskData: Omit<CoachTask, 'id' | 'createdAt' | 'updatedAt'>) => {
-      // Mock implementation - in real app, this would save to database
-      const newTask: CoachTask = {
-        ...taskData,
-        id: Math.random().toString(36).substr(2, 9),
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-      return newTask;
+    mutationFn: async (taskData: Omit<CoachTask, 'id' | 'created_at' | 'updated_at' | 'coach_id'>) => {
+      if (!user?.id) throw new Error('User not authenticated');
+
+      const { data, error } = await supabase
+        .from('coach_tasks')
+        .insert({
+          ...taskData,
+          coach_id: user.id
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['coach-tasks'] });
@@ -83,8 +73,12 @@ export const useCoachTasks = () => {
   // Complete task mutation
   const completeTaskMutation = useMutation({
     mutationFn: async (taskId: string) => {
-      // Mock implementation
-      console.log('Completing task:', taskId);
+      const { error } = await supabase
+        .from('coach_tasks')
+        .update({ completed: true })
+        .eq('id', taskId);
+
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['coach-tasks'] });

@@ -1,21 +1,18 @@
+
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
   Users, 
   MessageSquare, 
-  Target, 
   TrendingUp, 
   Clock,
   CheckCircle2,
-  AlertCircle,
-  Calendar,
   Activity
 } from "lucide-react";
 import { useCoachSystem } from "@/hooks/useCoachSystem";
-import { useCoachTasks } from "@/hooks/useCoachTasks";
+import { useCoachTasks } from "../hooks/useCoachTasks";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { 
   TraineesTab,
@@ -55,11 +52,7 @@ export const CoachDashboard = () => {
   
   const pendingTasks = tasks?.filter(task => !task.completed).length || 0;
   const overdueTasks = tasks?.filter(task => 
-    !task.completed && task.dueDate && task.dueDate < new Date()
-  ).length || 0;
-
-  const completedProfiles = trainees?.filter(t => 
-    (t.trainee_profile?.profile_completion_score || 0) >= 80
+    !task.completed && task.due_date && new Date(task.due_date) < new Date()
   ).length || 0;
 
   if (!isCoach) {

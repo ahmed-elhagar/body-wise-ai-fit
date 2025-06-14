@@ -9,13 +9,13 @@ export const useUserOnlineStatus = (userIds: string[]) => {
   useEffect(() => {
     if (userIds.length === 0) return;
 
-    // Fetch initial online status and last seen data
+    // Fetch initial online status and last seen data from profiles table
     const fetchUserStatus = async () => {
       try {
         const { data, error } = await supabase
-          .from('user_presence')
-          .select('user_id, last_seen, is_online')
-          .in('user_id', userIds);
+          .from('profiles')
+          .select('id, last_seen, is_online')
+          .in('id', userIds);
 
         if (error) {
           console.error('Error fetching user presence:', error);
@@ -25,11 +25,13 @@ export const useUserOnlineStatus = (userIds: string[]) => {
         const online = new Set<string>();
         const lastSeen: Record<string, string> = {};
 
-        data.forEach(presence => {
-          if (presence.is_online) {
-            online.add(presence.user_id);
+        data.forEach(profile => {
+          if (profile.is_online) {
+            online.add(profile.id);
           }
-          lastSeen[presence.user_id] = presence.last_seen;
+          if (profile.last_seen) {
+            lastSeen[profile.id] = profile.last_seen;
+          }
         });
 
         setOnlineUsers(online);
@@ -49,25 +51,25 @@ export const useUserOnlineStatus = (userIds: string[]) => {
         {
           event: '*',
           schema: 'public',
-          table: 'user_presence',
-          filter: `user_id=in.(${userIds.join(',')})`
+          table: 'profiles',
+          filter: `id=in.(${userIds.join(',')})`
         },
         (payload) => {
-          const { user_id, is_online, last_seen } = payload.new as any;
+          const { id, is_online, last_seen } = payload.new as any;
           
           setOnlineUsers(prev => {
             const updated = new Set(prev);
             if (is_online) {
-              updated.add(user_id);
+              updated.add(id);
             } else {
-              updated.delete(user_id);
+              updated.delete(id);
             }
             return updated;
           });
 
           setLastSeenData(prev => ({
             ...prev,
-            [user_id]: last_seen
+            [id]: last_seen
           }));
         }
       )
