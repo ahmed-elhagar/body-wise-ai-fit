@@ -14,13 +14,11 @@ export { EmptyWeekState } from './EmptyWeekState';
 
 // UI Components
 export { MealPlanViewToggle } from './MealPlanViewToggle';
-export { MealPlanLoadingBackdrop } from './MealPlanLoadingBackdrop';
-export { MealPlanPageTitle } from './MealPlanPageTitle';
 
 // State components
 export { default as LoadingState, MealPlanLoadingState } from './LoadingState';
 export { default as ErrorState, MealPlanErrorState } from './ErrorState';
-export { default as EmptyState, MealPlanEmptyState } from './EmptyState';
+export { default as EmptyState, MealPlanEmptyState } from './MealPlanEmptyState';
 
 // Dialog components
 export { EnhancedRecipeDialog } from './EnhancedRecipeDialog';

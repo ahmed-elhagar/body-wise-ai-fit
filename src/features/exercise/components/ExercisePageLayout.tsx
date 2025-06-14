@@ -2,8 +2,7 @@
 import { Card } from "@/components/ui/card";
 import { ExerciseErrorState } from "./ExerciseErrorState";
 import { EnhancedExerciseHeaderWithAnalytics } from "./EnhancedExerciseHeaderWithAnalytics";
-import { ExerciseProgramWeekSelector } from "./ExerciseProgramWeekSelector";
-import { EnhancedDayNavigation } from "./EnhancedDayNavigation";
+import { ExerciseCompactNavigation } from "./ExerciseCompactNavigation";
 import { ExercisePageContent } from "./ExercisePageContent";
 import { AIExerciseDialog } from "./AIExerciseDialog";
 import { UnifiedAILoadingDialog } from "@/components/ai/UnifiedAILoadingDialog";
@@ -105,25 +104,19 @@ export const ExercisePageLayout = ({
           isGenerating={isGenerating}
         />
 
-        {/* Navigation Section */}
-        <div className="px-6 pb-6 space-y-6">
-          {/* Week Selector - Restored original functionality */}
-          <ExerciseProgramWeekSelector
+        {/* Compact Navigation Section */}
+        <div className="px-6 pb-6">
+          <ExerciseCompactNavigation
             currentWeekOffset={currentWeekOffset}
             setCurrentWeekOffset={setCurrentWeekOffset}
             weekStartDate={weekStartDate}
+            selectedDayNumber={selectedDayNumber}
+            setSelectedDayNumber={setSelectedDayNumber}
+            currentProgram={currentProgram}
+            workoutType={workoutType}
+            setWorkoutType={setWorkoutType}
             isGenerating={isGenerating}
           />
-          
-          {/* Day Navigation */}
-          <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-3xl">
-            <EnhancedDayNavigation
-              selectedDayNumber={selectedDayNumber}
-              setSelectedDayNumber={setSelectedDayNumber}
-              weekStartDate={weekStartDate}
-              currentProgram={currentProgram}
-            />
-          </Card>
         </div>
 
         {/* Main Content */}

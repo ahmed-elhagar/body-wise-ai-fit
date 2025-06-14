@@ -7,7 +7,6 @@ export { ExercisePageLayout } from './ExercisePageLayout';
 export { WeeklyExerciseNavigation } from './WeeklyExerciseNavigation';
 export { EnhancedDayNavigation } from './EnhancedDayNavigation';
 export { ExerciseCompactNavigation } from './ExerciseCompactNavigation';
-export { ExerciseProgramWeekSelector } from './ExerciseProgramWeekSelector';
 
 // Header components
 export { EnhancedExerciseHeaderWithAnalytics } from './EnhancedExerciseHeaderWithAnalytics';
@@ -23,3 +22,15 @@ export { ExerciseAnalyticsContainer } from './ExerciseAnalyticsContainer';
 
 // Error components
 export { ExerciseErrorState } from './ExerciseErrorState';
+
+// Exercise List components
+export { InteractiveExerciseCard } from './InteractiveExerciseCard';
+export { RestDayCard } from './RestDayCard';
+export { AnimatedProgressRing } from './AnimatedProgressRing';
+export { ExerciseListEnhanced } from './ExerciseListEnhanced';
+
+// Compact components
+export { CompactProgressSection } from './CompactProgressSection';
+
+// Empty state
+export { ExerciseEmptyState } from './ExerciseEmptyState';
