@@ -1,90 +1,123 @@
 
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { User, Target, Activity, Heart } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { User, Target, TrendingUp, Calendar } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
-import { useI18n } from "@/hooks/useI18n";
+import { useTranslation } from 'react-i18next';
 
-const ProfileOverviewTab = () => {
-  const { profile } = useProfile();
-  const { t } = useI18n();
+export const ProfileOverviewTab = () => {
+  const { t } = useTranslation('common');
+  const { profile, isLoading } = useProfile();
+
+  if (isLoading) {
+    return <div className="p-4">{t('loading')}</div>;
+  }
 
   if (!profile) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="text-center text-gray-500">
-            {t('No profile data available')}
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return <div className="p-4">No profile data available</div>;
   }
+
+  const completionScore = Math.round(
+    (Object.values(profile).filter(value => 
+      value !== null && value !== undefined && value !== ''
+    ).length / Object.keys(profile).length) * 100
+  );
 
   return (
     <div className="space-y-6">
+      {/* Profile Completion */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <User className="h-5 w-5" />
-            {t('Profile Overview')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium text-gray-600">{t('Name')}</label>
-              <p className="text-lg">{profile.first_name} {profile.last_name}</p>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-gray-600">{t('Age')}</label>
-              <p className="text-lg">{profile.age || 'Not set'}</p>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium text-gray-600">{t('Weight')}</label>
-              <p className="text-lg">{profile.weight ? `${profile.weight} kg` : 'Not set'}</p>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-gray-600">{t('Height')}</label>
-              <p className="text-lg">{profile.height ? `${profile.height} cm` : 'Not set'}</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Target className="h-5 w-5" />
-            {t('Fitness Goals')}
+            <User className="w-5 h-5" />
+            Profile Completion
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            <Badge variant="outline">{profile.fitness_goal || 'Not set'}</Badge>
-            <p className="text-sm text-gray-600">
-              {profile.target_weight ? `Target weight: ${profile.target_weight} kg` : 'No target weight set'}
-            </p>
+            <div className="flex justify-between text-sm">
+              <span>Completion Progress</span>
+              <span>{completionScore}%</span>
+            </div>
+            <Progress value={completionScore} className="h-2" />
           </div>
         </CardContent>
       </Card>
 
+      {/* Basic Information */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Basic Information</CardTitle>
+        </CardHeader>
+        <CardContent className="grid grid-cols-2 gap-4">
+          <div>
+            <p className="text-sm text-gray-600">Age</p>
+            <p className="font-medium">{profile.age || 'Not set'} years</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-600">Gender</p>
+            <p className="font-medium capitalize">{profile.gender || 'Not set'}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-600">Height</p>
+            <p className="font-medium">{profile.height || 'Not set'} cm</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-600">Current Weight</p>
+            <p className="font-medium">{profile.weight || 'Not set'} kg</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Fitness Goals */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Activity className="h-5 w-5" />
-            {t('Activity Level')}
+            <Target className="w-5 h-5" />
+            Fitness Goals
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <Badge variant="secondary">{profile.activity_level || 'Not set'}</Badge>
+        <CardContent className="space-y-4">
+          <div>
+            <p className="text-sm text-gray-600">Primary Goal</p>
+            <Badge variant="outline" className="mt-1">
+              {profile.fitness_goal || 'Not set'}
+            </Badge>
+          </div>
+          <div>
+            <p className="text-sm text-gray-600">Activity Level</p>
+            <Badge variant="outline" className="mt-1">
+              {profile.activity_level || 'Not set'}
+            </Badge>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Account Information */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="w-5 h-5" />
+            Account Information
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <div>
+            <p className="text-sm text-gray-600">Member Since</p>
+            <p className="font-medium">
+              {profile.created_at ? new Date(profile.created_at).toLocaleDateString() : 'Unknown'}
+            </p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-600">Last Updated</p>
+            <p className="font-medium">
+              {profile.updated_at ? new Date(profile.updated_at).toLocaleDateString() : 'Never'}
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>
   );
 };
-
-export default ProfileOverviewTab;

@@ -1,481 +1,105 @@
-import { useState, useEffect } from "react";
+
+import React, { useState, useEffect } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, Plus, Clock, Utensils, RefreshCw } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { Search, Plus } from "lucide-react";
 import { useFoodDatabase } from "@/hooks/useFoodDatabase";
-import { useFoodConsumption } from "@/hooks/useFoodConsumption";
-import QuantitySelector from "./components/QuantitySelector";
-import QuickAddSection from "./components/QuickAddSection";
-import { toast } from "sonner";
-import { format } from "date-fns";
+import { useFoodTracking } from "@/hooks/useFoodTracking";
+import { useTranslation } from 'react-i18next';
 
 interface SearchTabProps {
   onFoodAdded: () => void;
-  onClose: () => void;
 }
 
-const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
-  const { t } = useLanguage();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedFood, setSelectedFood] = useState<any>(null);
-  const [quantity, setQuantity] = useState(100);
-  const [mealType, setMealType] = useState("snack");
-  const [notes, setNotes] = useState("");
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  const { searchFoodItems, logConsumption, isLoggingConsumption } = useFoodDatabase();
-  const { todayConsumption, todayMealPlan, forceRefresh, isLoading: isLoadingConsumption } = useFoodConsumption();
+export const SearchTab = ({ onFoodAdded }: SearchTabProps) => {
+  const { t } = useTranslation('common');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedQuantity, setSelectedQuantity] = useState(100);
+  const [selectedMealType, setSelectedMealType] = useState('breakfast');
   
-  // Execute search query when searchTerm changes
-  const searchQuery = searchFoodItems(searchTerm);
-  const { data: searchResults, isLoading: isSearchLoading } = searchQuery;
+  const { searchFood, searchResults, isLoading } = useFoodDatabase();
+  const { logFood } = useFoodTracking();
 
-  // Refresh today's consumption when component mounts
   useEffect(() => {
-    console.log('🔄 SearchTab mounted, refreshing today consumption...');
-    forceRefresh();
-  }, [forceRefresh]);
-
-  // Debug today's consumption data
-  useEffect(() => {
-    console.log('🍎 Today data in SearchTab:', {
-      consumptionCount: todayConsumption?.length || 0,
-      mealPlanCount: todayMealPlan?.length || 0,
-      isLoading: isLoadingConsumption,
-      consumptionData: todayConsumption?.slice(0, 2),
-      mealPlanData: todayMealPlan?.slice(0, 2)
-    });
-  }, [todayConsumption, todayMealPlan, isLoadingConsumption]);
-
-  // Get unique food items from today's consumption for quick add
-  const todaysFoodItemsFromConsumption = todayConsumption?.reduce((unique: any[], log) => {
-    if (!log.food_item) {
-      console.log('⚠️ Food log missing food_item:', log);
-      return unique;
+    if (searchQuery.length >= 2) {
+      searchFood(searchQuery);
     }
+  }, [searchQuery, searchFood]);
 
-    const existing = unique.find(item => item.id === log.food_item?.id);
-    if (!existing) {
-      // Calculate per-100g values from the consumption data
-      const per100gCalories = log.quantity_g > 0 ? (log.calories_consumed * 100) / log.quantity_g : 0;
-      const per100gProtein = log.quantity_g > 0 ? (log.protein_consumed * 100) / log.quantity_g : 0;
-      const per100gCarbs = log.quantity_g > 0 ? (log.carbs_consumed * 100) / log.quantity_g : 0;
-      const per100gFat = log.quantity_g > 0 ? (log.fat_consumed * 100) / log.quantity_g : 0;
-      
-      unique.push({
-        id: log.food_item.id,
-        name: log.food_item.name,
-        brand: log.food_item.brand,
-        category: log.food_item.category || 'general',
-        calories_per_100g: Math.round(per100gCalories),
-        protein_per_100g: Math.round(per100gProtein * 10) / 10,
-        carbs_per_100g: Math.round(per100gCarbs * 10) / 10,
-        fat_per_100g: Math.round(per100gFat * 10) / 10,
-        verified: true,
-        lastConsumed: log.consumed_at,
-        originalQuantity: log.quantity_g,
-        originalMealType: log.meal_type,
-        source: 'consumption'
-      });
-    }
-    return unique;
-  }, []) || [];
-
-  // Convert meal plan items to food items for quick add
-  const todaysFoodItemsFromMealPlan = todayMealPlan?.map(meal => ({
-    id: `meal-plan-${meal.id}`,
-    name: meal.name,
-    brand: 'Meal Plan',
-    category: 'meal_plan',
-    calories_per_100g: Math.round((meal.calories || 0) / 1), // Assuming 1 serving = 100g for simplicity
-    protein_per_100g: Math.round((meal.protein || 0) * 10) / 10,
-    carbs_per_100g: Math.round((meal.carbs || 0) * 10) / 10,
-    fat_per_100g: Math.round((meal.fat || 0) * 10) / 10,
-    verified: true,
-    lastConsumed: new Date().toISOString(),
-    originalQuantity: 100,
-    originalMealType: meal.meal_type,
-    source: 'meal_plan',
-    mealPlanData: meal
-  })) || [];
-
-  // Combine both sources
-  const todaysFoodItems = [
-    ...todaysFoodItemsFromConsumption,
-    ...todaysFoodItemsFromMealPlan
-  ];
-
-  console.log('🔍 SearchTab Debug:', {
-    searchTerm,
-    searchResultsCount: searchResults?.length || 0,
-    isSearchLoading,
-    todaysFoodItemsCount: todaysFoodItems.length,
-    consumptionItemsCount: todaysFoodItemsFromConsumption.length,
-    mealPlanItemsCount: todaysFoodItemsFromMealPlan.length,
-    isLoadingConsumption,
-  });
-
-  const handleSelectFood = (food: any) => {
-    console.log('🎯 Selected food:', food);
-    setSelectedFood(food);
-    
-    // If it's from today's foods, pre-fill with original quantity and meal type
-    if (food.originalQuantity) {
-      setQuantity(food.originalQuantity);
-      setMealType(food.originalMealType || 'snack');
-    } else {
-      // Reset to defaults for search results
-      setQuantity(100);
-      setMealType('snack');
-    }
-  };
-
-  const handleAddFood = async () => {
-    if (!selectedFood) return;
-
+  const handleAddFood = async (foodItem: any) => {
     try {
-      // Handle meal plan items differently
-      if (selectedFood.source === 'meal_plan' && selectedFood.mealPlanData) {
-        const mealData = selectedFood.mealPlanData;
-        
-        console.log('📝 Adding meal plan item to log:', {
-          mealName: mealData.name,
-          calories: mealData.calories || 0,
-          protein: mealData.protein || 0,
-          carbs: mealData.carbs || 0,
-          fat: mealData.fat || 0
-        });
-
-        await logConsumption({
-          foodItemId: selectedFood.id,
-          quantity: 100,
-          mealType,
-          notes: `From meal plan: ${mealData.name}`,
-          calories: mealData.calories || 0,
-          protein: mealData.protein || 0,
-          carbs: mealData.carbs || 0,
-          fat: mealData.fat || 0,
-          source: 'meal_plan',
-          mealPlanData: mealData
-        });
-        
-        console.log('✅ Meal plan item logged successfully');
-        
-        // Reset form and call handlers
-        setSelectedFood(null);
-        setQuantity(100);
-        setMealType("snack");
-        setNotes("");
+      const success = await logFood({
+        food_name: foodItem.name,
+        quantity: selectedQuantity,
+        meal_type: selectedMealType,
+        calories: Math.round((foodItem.calories_per_100g * selectedQuantity) / 100),
+        protein: Math.round((foodItem.protein_per_100g * selectedQuantity) / 100),
+        carbs: Math.round((foodItem.carbs_per_100g * selectedQuantity) / 100),
+        fat: Math.round((foodItem.fat_per_100g * selectedQuantity) / 100),
+        logged_at: new Date().toISOString()
+      });
+      
+      if (success) {
         onFoodAdded();
-        return;
       }
-
-      // Handle regular food items
-      const multiplier = quantity / 100;
-      const calories = (selectedFood.calories_per_100g || 0) * multiplier;
-      const protein = (selectedFood.protein_per_100g || 0) * multiplier;
-      const carbs = (selectedFood.carbs_per_100g || 0) * multiplier;
-      const fat = (selectedFood.fat_per_100g || 0) * multiplier;
-
-      console.log('📝 Adding regular food to log:', {
-        foodItemId: selectedFood.id,
-        quantity,
-        mealType,
-        calories,
-        protein,
-        carbs,
-        fat
-      });
-
-      await logConsumption({
-        foodItemId: selectedFood.id,
-        quantity,
-        mealType,
-        notes,
-        calories,
-        protein,
-        carbs,
-        fat,
-        source: selectedFood.source || 'search'
-      });
-      
-      console.log('✅ Food logged successfully, resetting form...');
-      
-      // Reset form and call handlers
-      setSelectedFood(null);
-      setQuantity(100);
-      setMealType("snack");
-      setNotes("");
-      onFoodAdded();
     } catch (error) {
-      console.error('❌ Error logging food:', error);
-      toast.error(t('Failed to log food'));
+      console.error('Error adding food:', error);
     }
   };
-
-  const handleRefreshData = async () => {
-    setIsRefreshing(true);
-    try {
-      console.log('🔄 Manual refresh triggered...');
-      await forceRefresh();
-      toast.success(t('Data refreshed'));
-    } catch (error) {
-      console.error('❌ Error refreshing data:', error);
-      toast.error(t('Failed to refresh data'));
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
-  const FoodCard = ({ food, isQuickAdd = false }: { food: any; isQuickAdd?: boolean }) => (
-    <Card 
-      key={`${isQuickAdd ? 'today' : 'search'}-${food.id}`}
-      className={`p-3 cursor-pointer transition-all hover:shadow-md border ${
-        selectedFood?.id === food.id 
-          ? 'ring-2 ring-green-600 bg-green-50 border-green-200' 
-          : 'hover:border-green-200'
-      }`}
-      onClick={() => handleSelectFood(food)}
-    >
-      <div className="flex justify-between items-start">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <h4 className="font-medium text-gray-900">{food.name}</h4>
-            {isQuickAdd && (
-              <Badge variant="outline" className={`text-xs ${
-                food.source === 'meal_plan' 
-                  ? 'bg-purple-50 text-purple-700 border-purple-200'
-                  : 'bg-blue-50 text-blue-700 border-blue-200'
-              }`}>
-                <Clock className="w-3 h-3 mr-1" />
-                {food.source === 'meal_plan' ? t('Meal Plan') : t('Recent')}
-              </Badge>
-            )}
-          </div>
-          {food.brand && food.brand !== 'Meal Plan' && (
-            <p className="text-sm text-gray-500">{food.brand}</p>
-          )}
-          {isQuickAdd && food.lastConsumed && (
-            <p className="text-xs text-gray-400 mt-1">
-              {food.source === 'meal_plan' 
-                ? t('From today\'s meal plan')
-                : `${t('Last eaten')}: ${format(new Date(food.lastConsumed), 'MMM d, HH:mm')}`
-              }
-            </p>
-          )}
-          <div className="flex items-center gap-2 mt-2">
-            <Badge variant="secondary" className="text-xs">
-              {food.category}
-            </Badge>
-            {food.verified && (
-              <Badge variant="default" className="text-xs bg-green-600">
-                {t('Verified')}
-              </Badge>
-            )}
-          </div>
-        </div>
-        <div className="text-right text-sm text-gray-600">
-          <div className="font-medium">{Math.round(food.calories_per_100g || 0)} cal</div>
-          <div className="text-xs">per 100g</div>
-        </div>
-      </div>
-    </Card>
-  );
 
   return (
     <div className="space-y-4">
-      {/* Header with refresh button */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium text-gray-900">{t('Search & Add Food')}</h3>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleRefreshData}
-          disabled={isRefreshing || isLoadingConsumption}
-          className="flex items-center gap-2"
-        >
-          <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-          {t('Refresh')}
-        </Button>
-      </div>
-
-      {/* Quick Add Section - Always visible but collapsible */}
-      <QuickAddSection
-        todaysFoodItems={todaysFoodItems}
-        isLoading={isLoadingConsumption}
-        onSelectFood={handleSelectFood}
-        selectedFood={selectedFood}
-        onRefresh={handleRefreshData}
-        isRefreshing={isRefreshing}
-      />
-
-      {/* Search Input */}
       <div className="relative">
-        <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
         <Input
-          placeholder={t('Search for food items...')}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder={t('search')}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
           className="pl-10"
         />
-        {isSearchLoading && (
-          <div className="absolute right-3 top-3">
-            <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
-          </div>
-        )}
       </div>
 
-      {/* Search Results */}
-      {searchTerm.length >= 2 && (
-        <div className="space-y-2">
-          <h3 className="font-medium text-gray-900 flex items-center gap-2">
-            {t('Search Results')}
-            {isSearchLoading && (
-              <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
-            )}
-          </h3>
-          
-          {searchResults && searchResults.length > 0 ? (
-            <div className="space-y-2 max-h-60 overflow-y-auto">
-              {searchResults.map((food: any) => (
-                <FoodCard key={`search-${food.id}`} food={food} />
-              ))}
-            </div>
-          ) : !isSearchLoading ? (
-            <div className="text-center py-8">
-              <Search className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-              <p className="text-gray-500">{t('No food items found')}</p>
-              <p className="text-sm text-gray-400 mt-1">{t('Try different keywords')}</p>
-            </div>
-          ) : null}
+      {isLoading && (
+        <div className="text-center py-4 text-gray-500">
+          {t('loading')}...
         </div>
       )}
 
-      {/* Default state when no search */}
-      {!searchTerm && (
-        <div className="text-center py-6">
-          <Search className="w-8 h-8 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500">{t('Search for food items to add to your log')}</p>
-          <p className="text-sm text-gray-400 mt-1">{t('Start typing to see results')}</p>
+      {searchResults.length > 0 && (
+        <div className="space-y-2 max-h-60 overflow-y-auto">
+          {searchResults.map((item) => (
+            <Card key={item.id} className="cursor-pointer hover:bg-gray-50">
+              <CardContent className="p-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-medium">{item.name}</h4>
+                    {item.brand && <p className="text-sm text-gray-500">{item.brand}</p>}
+                    <div className="flex gap-2 mt-1">
+                      <Badge variant="outline">{item.calories_per_100g} cal/100g</Badge>
+                      <Badge variant="outline">{item.protein_per_100g}g protein</Badge>
+                    </div>
+                  </div>
+                  <Button
+                    size="sm"
+                    onClick={() => handleAddFood(item)}
+                    className="ml-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
 
-      {/* Selected Food Details */}
-      {selectedFood && (
-        <div className="space-y-4 border-t pt-4">
-          <h3 className="font-medium text-gray-900">{t('Add to Log')}</h3>
-          
-          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-            <div className="flex items-center gap-2 mb-2">
-              <h4 className="font-medium text-green-800">{selectedFood.name}</h4>
-              {selectedFood.source === 'meal_plan' && (
-                <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
-                  {t('Meal Plan')}
-                </Badge>
-              )}
-            </div>
-            {selectedFood.brand && selectedFood.brand !== 'Meal Plan' && (
-              <p className="text-sm text-green-600">{selectedFood.brand}</p>
-            )}
-            
-            <div className="grid grid-cols-4 gap-2 mt-3 text-sm">
-              <div className="text-center">
-                <div className="font-semibold text-green-800">
-                  {selectedFood.source === 'meal_plan' && selectedFood.mealPlanData
-                    ? Math.round(selectedFood.mealPlanData.calories || 0)
-                    : Math.round((selectedFood.calories_per_100g || 0) * (quantity / 100))
-                  }
-                </div>
-                <div className="text-green-600">cal</div>
-              </div>
-              <div className="text-center">
-                <div className="font-semibold text-green-800">
-                  {selectedFood.source === 'meal_plan' && selectedFood.mealPlanData
-                    ? Math.round((selectedFood.mealPlanData.protein || 0) * 10) / 10
-                    : Math.round((selectedFood.protein_per_100g || 0) * (quantity / 100) * 10) / 10
-                  }g
-                </div>
-                <div className="text-green-600">protein</div>
-              </div>
-              <div className="text-center">
-                <div className="font-semibold text-green-800">
-                  {selectedFood.source === 'meal_plan' && selectedFood.mealPlanData
-                    ? Math.round((selectedFood.mealPlanData.carbs || 0) * 10) / 10
-                    : Math.round((selectedFood.carbs_per_100g || 0) * (quantity / 100) * 10) / 10
-                  }g
-                </div>
-                <div className="text-green-600">carbs</div>
-              </div>
-              <div className="text-center">
-                <div className="font-semibold text-green-800">
-                  {selectedFood.source === 'meal_plan' && selectedFood.mealPlanData
-                    ? Math.round((selectedFood.mealPlanData.fat || 0) * 10) / 10
-                    : Math.round((selectedFood.fat_per_100g || 0) * (quantity / 100) * 10) / 10
-                  }g
-                </div>
-                <div className="text-green-600">fat</div>
-              </div>
-            </div>
-          </div>
-
-          {selectedFood.source !== 'meal_plan' && (
-            <QuantitySelector
-              quantity={quantity}
-              onQuantityChange={setQuantity}
-              mealType={mealType}
-              onMealTypeChange={setMealType}
-              notes={notes}
-              onNotesChange={setNotes}
-            />
-          )}
-
-          {selectedFood.source === 'meal_plan' && (
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t('Meal Type')}
-                </label>
-                <select
-                  value={mealType}
-                  onChange={(e) => setMealType(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                >
-                  <option value="breakfast">{t('Breakfast')}</option>
-                  <option value="lunch">{t('Lunch')}</option>
-                  <option value="dinner">{t('Dinner')}</option>
-                  <option value="snack">{t('Snack')}</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t('Notes')} ({t('Optional')})
-                </label>
-                <textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder={t('Add any notes about this meal...')}
-                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  rows={2}
-                />
-              </div>
-            </div>
-          )}
-
-          <Button
-            onClick={handleAddFood}
-            disabled={isLoggingConsumption}
-            className="w-full bg-green-600 hover:bg-green-700 text-white"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            {isLoggingConsumption ? t('Adding...') : t('Add to Log')}
-          </Button>
+      {searchQuery.length >= 2 && !isLoading && searchResults.length === 0 && (
+        <div className="text-center py-4 text-gray-500">
+          No food items found for "{searchQuery}"
         </div>
       )}
     </div>
   );
 };
-
-export default SearchTab;

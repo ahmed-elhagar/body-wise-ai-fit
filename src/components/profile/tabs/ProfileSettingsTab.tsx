@@ -1,88 +1,65 @@
 
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Settings, Bell, Globe, Shield } from "lucide-react";
+import { Label } from "@/components/ui/label";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
-import { useI18n } from "@/hooks/useI18n";
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from "@/contexts/LanguageContext";
 
-const ProfileSettingsTab = () => {
+export const ProfileSettingsTab = () => {
+  const { t } = useTranslation('common');
+  const { changeLanguage, language } = useLanguage();
   const { preferences, updatePreferences, isLoading } = useUserPreferences();
-  const { t } = useI18n();
 
   if (isLoading) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="text-center text-gray-500">
-            {t('Loading settings...')}
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return <div className="p-4">{t('loading')}</div>;
   }
 
   return (
     <div className="space-y-6">
+      {/* Notifications */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Bell className="h-5 w-5" />
-            {t('Notifications')}
-          </CardTitle>
+          <CardTitle>{t('notifications')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
-            <label className="text-sm font-medium">{t('Email Notifications')}</label>
+            <Label htmlFor="email-notifications">Email Notifications</Label>
             <Switch
-              checked={preferences.notifications.email}
+              id="email-notifications"
+              checked={preferences.email_notifications || false}
               onCheckedChange={(checked) => 
-                updatePreferences({
-                  notifications: { ...preferences.notifications, email: checked }
-                })
+                updatePreferences({ email_notifications: checked })
               }
             />
           </div>
           
           <div className="flex items-center justify-between">
-            <label className="text-sm font-medium">{t('Workout Reminders')}</label>
+            <Label htmlFor="push-notifications">Push Notifications</Label>
             <Switch
-              checked={preferences.notifications.workout_reminders}
+              id="push-notifications"
+              checked={preferences.push_notifications || false}
               onCheckedChange={(checked) => 
-                updatePreferences({
-                  notifications: { ...preferences.notifications, workout_reminders: checked }
-                })
-              }
-            />
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <label className="text-sm font-medium">{t('Meal Reminders')}</label>
-            <Switch
-              checked={preferences.notifications.meal_reminders}
-              onCheckedChange={(checked) => 
-                updatePreferences({
-                  notifications: { ...preferences.notifications, meal_reminders: checked }
-                })
+                updatePreferences({ push_notifications: checked })
               }
             />
           </div>
         </CardContent>
       </Card>
 
+      {/* Language & Units */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Globe className="h-5 w-5" />
-            {t('Language & Units')}
-          </CardTitle>
+          <CardTitle>Language & Units</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <label className="text-sm font-medium mb-2 block">{t('Language')}</label>
+          <div className="space-y-2">
+            <Label>Language</Label>
             <Select
-              value={preferences.language}
-              onValueChange={(value: 'en' | 'ar') => updatePreferences({ language: value })}
+              value={language}
+              onValueChange={(value: 'en' | 'ar') => changeLanguage(value)}
             >
               <SelectTrigger>
                 <SelectValue />
@@ -93,64 +70,40 @@ const ProfileSettingsTab = () => {
               </SelectContent>
             </Select>
           </div>
-          
-          <div>
-            <label className="text-sm font-medium mb-2 block">{t('Weight Units')}</label>
+
+          <div className="space-y-2">
+            <Label>Measurement Units</Label>
             <Select
-              value={preferences.units.weight}
-              onValueChange={(value: 'kg' | 'lbs') => 
-                updatePreferences({ units: { ...preferences.units, weight: value } })
+              value={preferences.measurement_units || 'metric'}
+              onValueChange={(value: 'metric' | 'imperial') => 
+                updatePreferences({ measurement_units: value })
               }
             >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="kg">Kilograms (kg)</SelectItem>
-                <SelectItem value="lbs">Pounds (lbs)</SelectItem>
+                <SelectItem value="metric">Metric (kg, cm)</SelectItem>
+                <SelectItem value="imperial">Imperial (lbs, ft)</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </CardContent>
       </Card>
 
+      {/* Privacy & Data */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5" />
-            {t('Privacy')}
-          </CardTitle>
+          <CardTitle>Privacy & Data</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <label className="text-sm font-medium mb-2 block">{t('Profile Visibility')}</label>
-            <Select
-              value={preferences.privacy.profile_visibility}
-              onValueChange={(value: 'public' | 'private' | 'friends') => 
-                updatePreferences({ 
-                  privacy: { ...preferences.privacy, profile_visibility: value } 
-                })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="public">{t('Public')}</SelectItem>
-                <SelectItem value="friends">{t('Friends Only')}</SelectItem>
-                <SelectItem value="private">{t('Private')}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
           <div className="flex items-center justify-between">
-            <label className="text-sm font-medium">{t('Share Workouts')}</label>
+            <Label htmlFor="analytics">Share Analytics Data</Label>
             <Switch
-              checked={preferences.privacy.workout_sharing}
+              id="analytics"
+              checked={preferences.data_sharing_analytics || false}
               onCheckedChange={(checked) => 
-                updatePreferences({
-                  privacy: { ...preferences.privacy, workout_sharing: checked }
-                })
+                updatePreferences({ data_sharing_analytics: checked })
               }
             />
           </div>
@@ -159,5 +112,3 @@ const ProfileSettingsTab = () => {
     </div>
   );
 };
-
-export default ProfileSettingsTab;
