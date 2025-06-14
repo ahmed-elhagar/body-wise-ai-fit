@@ -11,6 +11,10 @@ export interface CoachInfo {
   email: string;
   specialization?: string;
   rating?: number;
+  coach_profile?: {
+    name: string;
+    avatar_url?: string;
+  };
 }
 
 export interface TraineeInfo {

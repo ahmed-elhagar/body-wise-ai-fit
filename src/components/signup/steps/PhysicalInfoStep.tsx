@@ -12,9 +12,9 @@ interface PhysicalInfoStepProps {
 }
 
 const PhysicalInfoStep = ({ formData, updateField }: PhysicalInfoStepProps) => {
-  const ageValue = parseFloat(formData.age);
-  const heightValue = parseFloat(formData.height);
-  const weightValue = parseFloat(formData.weight);
+  const ageValue = parseFloat(String(formData.age));
+  const heightValue = parseFloat(String(formData.height));
+  const weightValue = parseFloat(String(formData.weight));
 
   const ageValid = formData.age && ageValue >= 13 && ageValue <= 100;
   const heightValid = formData.height && heightValue >= 100 && heightValue <= 250;
@@ -45,7 +45,7 @@ const PhysicalInfoStep = ({ formData, updateField }: PhysicalInfoStepProps) => {
           <Input
             id="age"
             type="number"
-            value={formData.age}
+            value={String(formData.age)}
             onChange={(e) => updateField("age", e.target.value)}
             placeholder="Enter your age"
             className={`h-12 ${formData.age && !ageValid ? 'border-red-500' : ''}`}
@@ -61,7 +61,7 @@ const PhysicalInfoStep = ({ formData, updateField }: PhysicalInfoStepProps) => {
         </div>
         <div>
           <EnhancedNationalitySelector
-            value={formData.nationality}
+            value={formData.nationality || ''}
             onChange={(value) => updateField("nationality", value)}
             label="Nationality (Optional)"
             placeholder="Select nationality..."
@@ -82,7 +82,7 @@ const PhysicalInfoStep = ({ formData, updateField }: PhysicalInfoStepProps) => {
           <Input
             id="height"
             type="number"
-            value={formData.height}
+            value={String(formData.height)}
             onChange={(e) => updateField("height", e.target.value)}
             placeholder="e.g., 170"
             className={`h-12 ${formData.height && !heightValid ? 'border-red-500' : ''}`}
@@ -103,7 +103,7 @@ const PhysicalInfoStep = ({ formData, updateField }: PhysicalInfoStepProps) => {
           <Input
             id="weight"
             type="number"
-            value={formData.weight}
+            value={String(formData.weight)}
             onChange={(e) => updateField("weight", e.target.value)}
             placeholder="e.g., 70"
             className={`h-12 ${formData.weight && !weightValid ? 'border-red-500' : ''}`}

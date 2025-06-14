@@ -17,7 +17,9 @@ interface SpecialCondition {
 const SpecialConditionsSettings = () => {
   const { profile } = useProfile();
   const [conditions, setConditions] = useState<SpecialCondition[]>(
-    (profile?.special_conditions as SpecialCondition[]) || []
+    Array.isArray(profile?.special_conditions) 
+      ? (profile.special_conditions as unknown as SpecialCondition[])
+      : []
   );
   const [newCondition, setNewCondition] = useState({ type: '', startDate: '', endDate: '' });
 

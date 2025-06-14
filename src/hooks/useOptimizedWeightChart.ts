@@ -13,7 +13,7 @@ export const useOptimizedWeightChart = (weightEntries: WeightEntry[], timeRange:
         highestWeight: 0,
         lowestWeight: 0,
         totalEntries: 0,
-        trend: 'stable' as const,
+        trend: 'stable' as 'stable' | 'up' | 'down',
         trendPercentage: 0
       };
     }
@@ -26,7 +26,7 @@ export const useOptimizedWeightChart = (weightEntries: WeightEntry[], timeRange:
       highestWeight: Math.max(...weights).toFixed(1),
       lowestWeight: Math.min(...weights).toFixed(1),
       totalEntries: weights.length,
-      trend: 'stable' as const,
+      trend: 'stable' as 'stable' | 'up' | 'down',
       trendPercentage: 0
     };
   }, [weightEntries]);

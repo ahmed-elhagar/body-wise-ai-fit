@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { SignupFormData } from '../types';
 
-const totalSteps = 4;
+const totalSteps = 5;
 
 interface UseSignupState {
   currentStep: number;
@@ -16,9 +16,9 @@ interface UseSignupState {
   goToPrevStep: () => void;
   updateField: (field: keyof SignupFormData, value: any) => void;
   handleSubmit: () => Promise<void>;
-  handleArrayInput: (field: string, value: string[]) => void;
+  handleArrayInput: (field: keyof SignupFormData, value: string[]) => void;
   createAccount: () => Promise<void>;
-  completeProfile: () => Promise<void>;
+  completeProfile: () => Promise<{ success: boolean; error?: string }>;
   nextStep: () => void;
   prevStep: () => void;
   setCurrentStep: (step: number) => void;
@@ -29,17 +29,27 @@ export const useSignupState = (): UseSignupState => {
   const [formData, setFormData] = useState<SignupFormData>({
     email: '',
     password: '',
+    firstName: '',
+    lastName: '',
     age: '',
     gender: '',
     height: '',
     weight: '',
+    nationality: '',
     activity_level: '',
+    activityLevel: '',
     health_goal: '',
+    fitnessGoal: '',
     bodyFatPercentage: 0,
     bodyShape: '',
     dietary_preferences: [],
     food_allergies: [],
-    special_conditions: []
+    special_conditions: [],
+    healthConditions: [],
+    allergies: [],
+    preferredFoods: [],
+    dietaryRestrictions: [],
+    specialConditions: []
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -65,7 +75,7 @@ export const useSignupState = (): UseSignupState => {
     }));
   };
 
-  const handleArrayInput = (field: string, value: string[]) => {
+  const handleArrayInput = (field: keyof SignupFormData, value: string[]) => {
     setFormData(prevData => ({
       ...prevData,
       [field]: value,
@@ -92,8 +102,10 @@ export const useSignupState = (): UseSignupState => {
       console.log('Completing profile with data:', formData);
       // Mock profile completion
       setCurrentStep(totalSteps);
+      return { success: true };
     } catch (err: any) {
       setError(err?.message || 'Failed to complete profile');
+      return { success: false, error: err?.message || 'Failed to complete profile' };
     } finally {
       setIsLoading(false);
     }
