@@ -1,37 +1,58 @@
 
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dumbbell, Sparkles } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { Target, Plus, Dumbbell } from "lucide-react";
+import { useState } from "react";
 
 interface ExerciseEmptyStateProps {
-  workoutType: string;
-  onGenerateClick: () => void;
+  onGenerateProgram: () => void;
+  workoutType: "home" | "gym";
+  dailyWorkoutId?: string;
 }
 
-export const ExerciseEmptyState = ({ workoutType, onGenerateClick }: ExerciseEmptyStateProps) => {
-  const { t } = useLanguage();
+export const ExerciseEmptyState = ({
+  onGenerateProgram,
+  workoutType,
+  dailyWorkoutId
+}: ExerciseEmptyStateProps) => {
+  const [showCustomExerciseDialog, setShowCustomExerciseDialog] = useState(false);
 
   return (
-    <div className="flex items-center justify-center min-h-[400px]">
-      <Card className="max-w-md w-full">
-        <CardContent className="text-center p-8">
-          <Dumbbell className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">
-            {t('exercise.noProgram', 'No Exercise Program Yet')}
-          </h3>
-          <p className="text-gray-600 mb-6">
-            {t('exercise.generatePrompt', `Generate your personalized ${workoutType} workout program with AI to start your fitness journey.`)}
-          </p>
+    <Card className="p-12 text-center bg-gradient-to-br from-fitness-primary-50 to-fitness-secondary-50 border-0 shadow-xl">
+      <div className="max-w-md mx-auto">
+        <div className="w-20 h-20 bg-gradient-to-br from-fitness-primary-500 to-fitness-secondary-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+          <Target className="w-10 h-10 text-white" />
+        </div>
+        <h3 className="text-2xl font-bold text-fitness-primary-800 mb-3">
+          No Exercises Today
+        </h3>
+        <p className="text-fitness-primary-600 text-lg leading-relaxed mb-6">
+          No exercises are scheduled for today. Generate a new workout program or add custom exercises.
+        </p>
+        
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Button 
-            onClick={onGenerateClick}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
+            onClick={onGenerateProgram}
+            size="lg" 
+            className="bg-gradient-to-r from-fitness-primary-500 to-fitness-secondary-500 hover:from-fitness-primary-600 hover:to-fitness-secondary-600 text-white font-semibold px-8 py-3 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200"
           >
-            <Sparkles className="h-4 w-4 mr-2" />
-            <span className="text-white">{t('exercise.generateProgram', 'Generate AI Program')}</span>
+            <Dumbbell className="w-5 h-5 mr-2" />
+            Generate Program
           </Button>
-        </CardContent>
-      </Card>
-    </div>
+          
+          {dailyWorkoutId && (
+            <Button 
+              onClick={() => setShowCustomExerciseDialog(true)}
+              variant="outline"
+              size="lg"
+              className="border-2 border-fitness-primary-300 text-fitness-primary-700 hover:bg-fitness-primary-50 font-semibold px-8 py-3 rounded-xl"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Add Custom Exercise
+            </Button>
+          )}
+        </div>
+      </div>
+    </Card>
   );
 };

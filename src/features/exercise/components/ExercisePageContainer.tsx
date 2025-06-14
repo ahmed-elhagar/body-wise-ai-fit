@@ -6,7 +6,6 @@ import { useEnhancedAIExercise } from "@/hooks/useEnhancedAIExercise";
 import { useAILoadingSteps } from "@/hooks/useAILoadingSteps";
 import { useState } from "react";
 import { ExercisePageLayout } from "./ExercisePageLayout";
-import { ExercisePageContent } from "./ExercisePageContent";
 import { ExerciseAnalyticsContainer } from "./ExerciseAnalyticsContainer";
 import { useExerciseAISteps } from "../hooks/useExerciseAISteps";
 
@@ -92,35 +91,45 @@ export const ExercisePageContainer = () => {
   }
 
   return (
-    <ExercisePageLayout>
-      <ExercisePageContent
-        // Data props
-        currentProgram={currentProgram}
-        todaysExercises={todaysExercises}
-        completedExercises={completedExercises}
-        totalExercises={totalExercises}
-        progressPercentage={progressPercentage}
-        isRestDay={isRestDay}
-        isToday={isToday}
-        isLoading={isLoading}
-        
-        // Navigation props
-        selectedDayNumber={selectedDayNumber}
-        workoutType={workoutType}
-        setWorkoutType={setWorkoutType}
-        
-        // AI props
-        showAIDialog={showAIDialog}
-        setShowAIDialog={setShowAIDialog}
-        aiPreferences={aiPreferences}
-        setAiPreferences={setAiPreferences}
-        isGenerating={isGenerating}
-        
-        // Actions
-        onGenerateAIProgram={handleGenerateAIProgram}
-        onExerciseComplete={handleExerciseComplete}
-        onExerciseProgressUpdate={handleExerciseProgressUpdate}
-      />
-    </ExercisePageLayout>
+    <ExercisePageLayout
+      // Data props
+      currentProgram={currentProgram}
+      todaysExercises={todaysExercises}
+      completedExercises={completedExercises}
+      totalExercises={totalExercises}
+      progressPercentage={progressPercentage}
+      isRestDay={isRestDay}
+      isToday={isToday}
+      isLoading={isLoading}
+      error={error}
+      
+      // Navigation props
+      selectedDayNumber={selectedDayNumber}
+      setSelectedDayNumber={setSelectedDayNumber}
+      currentWeekOffset={currentWeekOffset}
+      setCurrentWeekOffset={setCurrentWeekOffset}
+      weekStartDate={weekStartDate}
+      workoutType={workoutType}
+      setWorkoutType={setWorkoutType}
+      
+      // AI props
+      showAIDialog={showAIDialog}
+      setShowAIDialog={setShowAIDialog}
+      aiPreferences={aiPreferences}
+      setAiPreferences={setAiPreferences}
+      isGenerating={isGenerating}
+      exerciseSteps={exerciseSteps}
+      currentStepIndex={currentStepIndex}
+      isComplete={isComplete}
+      progress={progress}
+      
+      // Actions
+      onShowAnalytics={() => setShowAnalytics(true)}
+      onGenerateAIProgram={handleGenerateAIProgram}
+      onRegenerateProgram={handleRegenerateProgram}
+      onExerciseComplete={handleExerciseComplete}
+      onExerciseProgressUpdate={handleExerciseProgressUpdate}
+      refetch={refetch}
+    />
   );
 };

@@ -3,41 +3,55 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { getWeekStartDate } from '@/utils/mealPlanUtils';
 import { format } from 'date-fns';
-import { OptimizedMealPlanService } from '../services/optimizedMealPlanService';
+import { MealPlanDataService } from '../services/mealPlanDataService';
 
-interface OptimizedQueryOptions {
+interface MealPlanQueryOptions {
   includeIngredients?: boolean;
   includeInstructions?: boolean;
   mealTypes?: ReadonlyArray<string>;
 }
 
-export const useOptimizedMealPlanCore = (
+export const useMealPlanCore = (
   weekOffset: number = 0,
-  options?: OptimizedQueryOptions
+  options?: MealPlanQueryOptions
 ) => {
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: ['optimized-meal-plan', user?.id, weekOffset, options],
+    queryKey: ['meal-plan-core', user?.id, weekOffset, options],
     queryFn: async () => {
       if (!user?.id) {
-        console.log('❌ useOptimizedMealPlanCore - No user ID');
+        console.log('❌ useMealPlanCore - No user ID');
         return null;
       }
       
       try {
         const weekStartDate = getWeekStartDate(weekOffset);
+        const weekStartDateStr = format(weekStartDate, 'yyyy-MM-dd');
         
-        const result = await OptimizedMealPlanService.fetchMealPlanData(user.id, weekStartDate);
+        const params = {
+          userId: user.id,
+          weekStartDate: weekStartDateStr,
+          includeIngredients: options?.includeIngredients,
+          includeInstructions: options?.includeInstructions,
+          mealTypes: options?.mealTypes
+        };
         
-        console.log('📊 Query result:', {
-          hasData: !!result,
+        const result = await MealPlanDataService.fetchMealPlanData(params);
+        
+        if (result.error) {
+          throw result.error;
+        }
+        
+        console.log('📊 Query performance:', {
+          fromCache: result.fromCache,
+          queryTime: result.queryTime,
           weekOffset
         });
         
-        return result;
+        return result.data;
       } catch (error) {
-        console.error('❌ Error in optimized meal plan fetch:', error);
+        console.error('❌ Error in meal plan core fetch:', error);
         throw error;
       }
     },

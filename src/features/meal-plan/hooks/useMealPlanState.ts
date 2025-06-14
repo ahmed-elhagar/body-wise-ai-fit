@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useMemo } from 'react';
 import { useMealPlanData } from './useMealPlanData';
 import { useMealPlanActions } from './useMealPlanActions';
@@ -39,6 +40,14 @@ export const useMealPlanState = () => {
                queryKey[0] === 'meal-plan';
       }
     });
+    
+    // Clear the MealPlanDataService cache
+    try {
+      const { MealPlanDataService } = await import('@/features/meal-plan/services/mealPlanDataService');
+      MealPlanDataService.clearCache();
+    } catch (e) {
+      console.log('Service cache clear skipped:', e);
+    }
     
     // Force refetch current data
     const result = await originalRefetch();

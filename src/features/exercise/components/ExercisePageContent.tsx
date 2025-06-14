@@ -82,8 +82,9 @@ export const ExercisePageContent = ({
         <RestDayCard />
       ) : todaysExercises.length === 0 ? (
         <ExerciseEmptyState
-          onGenerateClick={() => console.log('Generate program')}
+          onGenerateProgram={() => console.log('Generate program')}
           workoutType="home"
+          dailyWorkoutId=""
         />
       ) : (
         <ExerciseListEnhanced

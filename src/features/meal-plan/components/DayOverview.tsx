@@ -2,10 +2,10 @@
 import React from 'react';
 import { Card } from "@/components/ui/card";
 import { format, addDays } from 'date-fns';
-import { useTranslation } from 'react-i18next';
-import MealTypeSection from "./daily-view/MealTypeSection";
-import DailyNutritionSummary from "./daily-view/DailyNutritionSummary";
-import EmptyDailyState from "./daily-view/EmptyDailyState";
+import { useI18n } from "@/hooks/useI18n";
+import MealTypeSection from "@/components/daily-view/MealTypeSection";
+import DailyNutritionSummary from "@/components/daily-view/DailyNutritionSummary";
+import EmptyDailyState from "@/components/daily-view/EmptyDailyState";
 import type { DailyMeal } from '../types';
 
 interface DayOverviewProps {
@@ -31,8 +31,8 @@ const DayOverview = ({
   onAddSnack,
   weekStartDate
 }: DayOverviewProps) => {
-  const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === 'ar';
+  const { tFrom, isRTL } = useI18n();
+  const tMealPlan = tFrom('mealPlan');
 
   // Calculate the actual date for the selected day
   const selectedDate = addDays(weekStartDate, selectedDayNumber - 1);
@@ -64,11 +64,11 @@ const DayOverview = ({
         <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
           <div>
             <h1 className="text-xl font-bold text-gray-800">{formattedDate}</h1>
-            <p className="text-sm text-gray-600">{t('common.day')} {selectedDayNumber}</p>
+            <p className="text-sm text-gray-600">{String(tMealPlan('dayNumber'))} {selectedDayNumber}</p>
           </div>
           <div className={`text-right ${isRTL ? 'text-left' : ''}`}>
             <div className="text-2xl font-bold text-blue-600">{totalCalories}</div>
-            <div className="text-xs text-gray-500">{t('common.calories')}</div>
+            <div className="text-xs text-gray-500">{String(tMealPlan('calories'))}</div>
           </div>
         </div>
       </Card>

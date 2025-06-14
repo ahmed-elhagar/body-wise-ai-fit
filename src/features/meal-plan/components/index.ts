@@ -8,6 +8,7 @@ export { MealPlanViewToggle } from './MealPlanViewToggle';
 // Core view components
 export { default as DayOverview } from './DayOverview';
 export { WeeklyMealPlanView } from './WeeklyMealPlanView';
+export { EmptyWeekState } from './EmptyWeekState';
 
 // State components
 export { default as LoadingState } from './LoadingState';
@@ -19,12 +20,3 @@ export { MealPlanAILoadingDialog } from './dialogs/MealPlanAILoadingDialog';
 export { MealExchangeDialog } from './dialogs/MealExchangeDialog';
 export { AIGenerationDialog } from './dialogs/AIGenerationDialog';
 export { default as EnhancedAddSnackDialog } from './dialogs/EnhancedAddSnackDialog';
-
-// Additional components that exist
-export { default as MealPlanEmptyState } from './MealPlanEmptyState';
-export { AddMealCard } from './AddMealCard';
-export { ViewModeToggle } from './ViewModeToggle';
-export { WeekNavigation } from './WeekNavigation';
-
-// Export EmptyWeekState if it exists, otherwise create a simple one
-export { EmptyWeekState } from './EmptyWeekState';
