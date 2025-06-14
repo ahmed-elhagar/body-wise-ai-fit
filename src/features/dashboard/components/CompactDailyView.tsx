@@ -1,10 +1,10 @@
+
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, ShoppingCart, ChefHat, Clock, Flame, Zap, Sparkles } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import CompactMealCard from "@/components/daily-view/CompactMealCard";
-import DailyNutritionSummary from "@/components/daily-view/DailyNutritionSummary";
+import { CompactMealCard, DailyNutritionSummary } from "@/features/meal-plan";
 import type { Meal } from "@/types/meal";
 
 interface CompactDailyViewProps {

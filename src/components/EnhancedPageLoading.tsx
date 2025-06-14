@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from "react";
 import MotivationalContent from "./loading/MotivationalContent";
+import MealPlanMotivationalContent from "@/features/meal-plan/components/loading/MealPlanMotivationalContent";
 
 interface EnhancedPageLoadingProps {
   title?: string;
@@ -10,10 +11,19 @@ interface EnhancedPageLoadingProps {
 }
 
 const EnhancedPageLoading = ({ 
-  estimatedTime = 5, // Increased default for better visibility of motivational content
+  estimatedTime = 5,
   className = ""
 }: EnhancedPageLoadingProps) => {
   const [progress, setProgress] = useState(0);
+  const [pageTheme, setPageTheme] = useState<'default' | 'meal-plan'>('default');
+
+  useEffect(() => {
+    if (window.location.pathname.includes('/meal-plan')) {
+      setPageTheme('meal-plan');
+    } else {
+      setPageTheme('default');
+    }
+  }, []);
 
   useEffect(() => {
     if (progress >= 100) return;
@@ -30,11 +40,18 @@ const EnhancedPageLoading = ({
 
     return () => clearInterval(interval);
   }, [estimatedTime, progress]);
+  
+  const renderMotivationalContent = () => {
+    if (pageTheme === 'meal-plan') {
+      return <MealPlanMotivationalContent />;
+    }
+    return <MotivationalContent />;
+  };
 
   return (
     <div className={`fixed inset-0 z-[100] flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white p-4 ${className}`}>
       <div className="w-full max-w-md text-center">
-        <MotivationalContent />
+        {renderMotivationalContent()}
 
         <div className="mt-12 w-full space-y-4">
           <div className="bg-white/10 rounded-full h-2 w-full">
