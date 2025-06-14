@@ -12,3 +12,4 @@ export { AssignTraineeDialog } from './AssignTraineeDialog';
 export { CoachTraineeChat } from './CoachTraineeChat';
 export { CoachMessagesTab } from './CoachMessagesTab';
 export { MultipleCoachesChat } from './MultipleCoachesChat';
+export { default as CoachChatWidget } from './CoachChatWidget';
