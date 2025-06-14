@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -10,10 +11,17 @@ interface UseSignupState {
   formData: SignupFormData;
   isLoading: boolean;
   error: string | null;
+  accountCreated: boolean;
   goToNextStep: () => void;
   goToPrevStep: () => void;
   updateField: (field: keyof SignupFormData, value: any) => void;
   handleSubmit: () => Promise<void>;
+  handleArrayInput: (field: string, value: string[]) => void;
+  createAccount: () => Promise<void>;
+  completeProfile: () => Promise<void>;
+  nextStep: () => void;
+  prevStep: () => void;
+  setCurrentStep: (step: number) => void;
 }
 
 export const useSignupState = (): UseSignupState => {
@@ -21,10 +29,10 @@ export const useSignupState = (): UseSignupState => {
   const [formData, setFormData] = useState<SignupFormData>({
     email: '',
     password: '',
-    age: 0,
+    age: '',
     gender: '',
-    height: 0,
-    weight: 0,
+    height: '',
+    weight: '',
     activity_level: '',
     health_goal: '',
     bodyFatPercentage: 0,
@@ -35,7 +43,8 @@ export const useSignupState = (): UseSignupState => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { signUp, updateProfile } = useAuth();
+  const [accountCreated, setAccountCreated] = useState(false);
+  const { signUp } = useAuth();
   const navigate = useNavigate();
 
   const goToNextStep = () => {
@@ -46,11 +55,48 @@ export const useSignupState = (): UseSignupState => {
     setCurrentStep(prevStep => Math.max(prevStep - 1, 1));
   };
 
+  const nextStep = goToNextStep;
+  const prevStep = goToPrevStep;
+
   const updateField = (field: keyof SignupFormData, value: any) => {
     setFormData(prevData => ({
       ...prevData,
       [field]: value,
     }));
+  };
+
+  const handleArrayInput = (field: string, value: string[]) => {
+    setFormData(prevData => ({
+      ...prevData,
+      [field]: value,
+    }));
+  };
+
+  const createAccount = async () => {
+    try {
+      setIsLoading(true);
+      const result = await signUp(formData.email, formData.password);
+      if (result) {
+        setAccountCreated(true);
+      }
+    } catch (err: any) {
+      setError(err?.message || 'Failed to create account');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const completeProfile = async () => {
+    try {
+      setIsLoading(true);
+      console.log('Completing profile with data:', formData);
+      // Mock profile completion
+      setCurrentStep(totalSteps);
+    } catch (err: any) {
+      setError(err?.message || 'Failed to complete profile');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSubmit = async () => {
@@ -64,21 +110,11 @@ export const useSignupState = (): UseSignupState => {
         throw new Error('Failed to create account');
       }
 
-      // Update profile
-      const profileResult = await updateProfile({
-        ...formData,
-        onboarding_completed: true
-      });
-
-      if (!profileResult) {
-        throw new Error('Failed to update profile');
-      }
-
       setCurrentStep(totalSteps);
       
-    } catch (error: any) {
-      console.error('Signup error:', error);
-      setError(error?.message || 'An error occurred during signup');
+    } catch (err: any) {
+      console.error('Signup error:', err);
+      setError(err?.message || 'An error occurred during signup');
     } finally {
       setIsLoading(false);
     }
@@ -89,9 +125,16 @@ export const useSignupState = (): UseSignupState => {
     formData,
     isLoading,
     error,
+    accountCreated,
     goToNextStep,
     goToPrevStep,
     updateField,
-    handleSubmit
+    handleSubmit,
+    handleArrayInput,
+    createAccount,
+    completeProfile,
+    nextStep,
+    prevStep,
+    setCurrentStep
   };
 };

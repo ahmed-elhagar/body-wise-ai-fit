@@ -6,9 +6,14 @@ export const useGoals = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [currentGoal, setCurrentGoal] = useState(null);
 
+  const getWeightGoal = () => {
+    return currentGoal;
+  };
+
   return {
     goals,
     isLoading,
-    currentGoal
+    currentGoal,
+    getWeightGoal
   };
 };

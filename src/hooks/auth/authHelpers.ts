@@ -6,3 +6,8 @@ export const getAuthHelpers = () => {
     clearAuthData: () => {}
   };
 };
+
+export const clearLocalAuthData = () => {
+  localStorage.removeItem('auth_data');
+  console.log('Local auth data cleared');
+};
