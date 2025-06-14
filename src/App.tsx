@@ -1,80 +1,189 @@
 
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Suspense } from 'react';
+import React, { Suspense } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider } from '@/contexts/AuthContext';
+import { Toaster } from 'sonner';
+import { AuthProvider } from '@/hooks/useAuth';
 import { LanguageProvider } from '@/contexts/LanguageContext';
-import { Toaster } from '@/components/ui/sonner';
-import LazyPages from '@/components/LazyPages';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
-import SimpleLoadingIndicator from '@/components/ui/simple-loading-indicator';
+import { GlobalErrorBoundary } from '@/components/GlobalErrorBoundary';
+import { EnhancedErrorBoundary } from '@/components/ui/enhanced-error-boundary';
+import EnhancedPageLoading from '@/components/EnhancedPageLoading';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import { LazyPages } from '@/components/LazyPages';
+import { checkSecurityHeaders } from '@/components/security/InputValidator';
+import './App.css';
 
+// Create query client with enhanced error handling
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      retry: 1,
+      retry: (failureCount, error: any) => {
+        // Don't retry on auth errors
+        if (error?.message?.includes('JWT') || error?.message?.includes('auth')) {
+          return false;
+        }
+        // Retry up to 2 times for other errors
+        return failureCount < 2;
+      },
+      staleTime: 30000, // 30 seconds
+      gcTime: 300000, // 5 minutes
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: true
     },
-  },
+    mutations: {
+      retry: false, // Don't retry mutations by default
+      onError: (error: any) => {
+        console.error('Mutation error:', error);
+      }
+    }
+  }
 });
 
-const SuspenseFallback = () => (
-  <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-    <SimpleLoadingIndicator
-      message="Loading Page"
-      description="Please wait while we load the page..."
-      size="lg"
-    />
-  </div>
-);
+// Check security headers on app load
+if (typeof window !== 'undefined') {
+  checkSecurityHeaders();
+}
 
 function App() {
   return (
-    <ErrorBoundary>
+    <GlobalErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <LanguageProvider>
           <AuthProvider>
             <Router>
-              <div className="App">
-                <Suspense fallback={<SuspenseFallback />}>
-                  <Routes>
-                    {/* Public routes */}
-                    <Route path="/" element={<LazyPages.Index />} />
-                    <Route path="/landing" element={<LazyPages.Landing />} />
-                    <Route path="/auth" element={<LazyPages.Auth />} />
-                    <Route path="/signup" element={<LazyPages.UnifiedSignup />} />
-                    <Route path="/welcome" element={<LazyPages.Welcome />} />
+              <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+                <EnhancedErrorBoundary>
+                  <Suspense 
+                    fallback={
+                      <EnhancedPageLoading 
+                        title="Loading Application" 
+                        description="Please wait while we prepare your experience..."
+                        estimatedTime={3}
+                      />
+                    }
+                  >
+                    <Routes>
+                      {/* Public routes */}
+                      <Route 
+                        path="/auth" 
+                        element={
+                          <ProtectedRoute 
+                            requireAuth={false} 
+                            preventAuthenticatedAccess={true}
+                          >
+                            <LazyPages.AuthPage />
+                          </ProtectedRoute>
+                        } 
+                      />
+                      
+                      <Route 
+                        path="/signup" 
+                        element={
+                          <ProtectedRoute 
+                            requireAuth={false} 
+                            preventAuthenticatedAccess={true}
+                          >
+                            <LazyPages.SignupPage />
+                          </ProtectedRoute>
+                        } 
+                      />
 
-                    {/* Protected routes */}
-                    <Route path="/dashboard" element={<LazyPages.Dashboard />} />
-                    <Route path="/profile" element={<LazyPages.Profile />} />
-                    <Route path="/meal-plan" element={<LazyPages.MealPlan />} />
-                    <Route path="/exercise" element={<LazyPages.Exercise />} />
-                    <Route path="/food-tracker" element={<LazyPages.FoodTracker />} />
-                    <Route path="/calorie-checker" element={<LazyPages.CalorieChecker />} />
-                    <Route path="/weight-tracking" element={<LazyPages.WeightTracking />} />
-                    <Route path="/goals" element={<LazyPages.Goals />} />
-                    <Route path="/progress/:tab?" element={<LazyPages.Progress />} />
-                    <Route path="/settings" element={<LazyPages.Settings />} />
-                    <Route path="/notifications" element={<LazyPages.Notifications />} />
-                    <Route path="/chat" element={<LazyPages.Chat />} />
-                    <Route path="/pro" element={<LazyPages.Pro />} />
+                      {/* Protected routes */}
+                      <Route 
+                        path="/dashboard" 
+                        element={
+                          <ProtectedRoute requireAuth={true} requireProfile={true}>
+                            <LazyPages.DashboardPage />
+                          </ProtectedRoute>
+                        } 
+                      />
+                      
+                      <Route 
+                        path="/meal-plan" 
+                        element={
+                          <ProtectedRoute requireAuth={true} requireProfile={true}>
+                            <LazyPages.MealPlanPage />
+                          </ProtectedRoute>
+                        } 
+                      />
+                      
+                      <Route 
+                        path="/exercise" 
+                        element={
+                          <ProtectedRoute requireAuth={true} requireProfile={true}>
+                            <LazyPages.ExercisePage />
+                          </ProtectedRoute>
+                        } 
+                      />
+                      
+                      <Route 
+                        path="/food-tracker" 
+                        element={
+                          <ProtectedRoute requireAuth={true} requireProfile={true}>
+                            <LazyPages.FoodTrackerPage />
+                          </ProtectedRoute>
+                        } 
+                      />
+                      
+                      <Route 
+                        path="/profile" 
+                        element={
+                          <ProtectedRoute requireAuth={true}>
+                            <LazyPages.ProfilePage />
+                          </ProtectedRoute>
+                        } 
+                      />
 
-                    {/* Admin & Coach routes */}
-                    <Route path="/admin" element={<LazyPages.Admin />} />
-                    <Route path="/coach" element={<LazyPages.Coach />} />
+                      {/* Admin routes */}
+                      <Route 
+                        path="/admin" 
+                        element={
+                          <ProtectedRoute requireAuth={true} requireRole="admin">
+                            <LazyPages.AdminPage />
+                          </ProtectedRoute>
+                        } 
+                      />
 
-                    {/* 404 route */}
-                    <Route path="*" element={<LazyPages.NotFound />} />
-                  </Routes>
-                </Suspense>
-                <Toaster />
+                      {/* Coach routes */}
+                      <Route 
+                        path="/coach" 
+                        element={
+                          <ProtectedRoute requireAuth={true} requireRole={["admin", "coach"]}>
+                            <LazyPages.CoachPage />
+                          </ProtectedRoute>
+                        } 
+                      />
+
+                      {/* Default redirect */}
+                      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                      
+                      {/* Catch all - redirect to dashboard */}
+                      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                    </Routes>
+                  </Suspense>
+                </EnhancedErrorBoundary>
               </div>
             </Router>
+            
+            {/* Global toast notifications */}
+            <Toaster 
+              position="top-right"
+              expand={true}
+              richColors={true}
+              closeButton={true}
+              duration={4000}
+              toastOptions={{
+                style: {
+                  background: 'white',
+                  border: '1px solid #e2e8f0',
+                  color: '#1e293b'
+                }
+              }}
+            />
           </AuthProvider>
         </LanguageProvider>
       </QueryClientProvider>
-    </ErrorBoundary>
+    </GlobalErrorBoundary>
   );
 }
 
