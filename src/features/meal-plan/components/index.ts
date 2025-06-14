@@ -1,14 +1,27 @@
-// Meal plan feature components exports
-export { default as MealPlanCalendar } from './MealPlanCalendar';
-export { default as MealPlanItem } from './MealPlanItem';
-export { default as MealPlanSettings } from './MealPlanSettings';
-export { default as MealPlanGenerator } from './MealPlanGenerator';
-export { default as MealPlanTemplate } from './MealPlanTemplate';
-export { default as MealPlanShare } from './MealPlanShare';
-export { default as MealPlanExport } from './MealPlanExport';
-export { default as MealPlanImport } from './MealPlanImport';
-export { default as MealPlanFeedback } from './MealPlanFeedback';
-export { default as MealPlanNutrientSummary } from './MealPlanNutrientSummary';
 
 // Add WeeklyNavigation to exports
 export { default as WeeklyNavigation } from './WeeklyNavigation';
+
+// Export existing components
+export { default as MealPlanContainer } from './MealPlanContainer';
+export { default as MealPlanContent } from './MealPlanContent';
+export { default as MealCard } from './MealCard';
+export { default as DayOverview } from './DayOverview';
+export { default as EnhancedRecipeDialog } from './EnhancedRecipeDialog';
+export { default as CompactMealCard } from './CompactMealCard';
+export { default as DailyNutritionSummary } from './DailyNutritionSummary';
+export { default as EmptyDailyState } from './EmptyDailyState';
+export { default as MealTypeSection } from './MealTypeSection';
+
+// Loading and state components
+export { default as MealPlanLoadingBackdrop } from './MealPlanLoadingBackdrop';
+export { default as MealPlanPageTitle } from './MealPlanPageTitle';
+export { default as MealPlanEmptyState } from './MealPlanEmptyState';
+export { default as MealPlanErrorState } from './MealPlanErrorState';
+export { default as MealPlanLoadingState } from './MealPlanLoadingState';
+
+// Dialog components
+export { default as MealPlanAILoadingDialog } from './dialogs/MealPlanAILoadingDialog';
+export { default as MealExchangeDialog } from './dialogs/MealExchangeDialog';
+export { default as AIGenerationDialog } from './dialogs/AIGenerationDialog';
+export { default as EnhancedAddSnackDialog } from './dialogs/EnhancedAddSnackDialog';
