@@ -1,4 +1,3 @@
-
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -6,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, Utensils, Camera, History, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useFoodConsumption } from "@/hooks/useFoodConsumption";
+import { useFoodConsumption } from "@/features/food-tracker/hooks";
 import { useLocation, useNavigate } from "react-router-dom";
 import { TodayTab, HistoryTab } from "@/features/food-tracker";
 import AddFoodDialog from "@/components/food-tracker/AddFoodDialog/AddFoodDialog";

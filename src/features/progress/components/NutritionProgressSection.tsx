@@ -1,11 +1,10 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, Plus, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useMealPlanState } from "@/features/meal-plan/hooks";
-import { useFoodConsumption } from "@/hooks/useFoodConsumption";
+import { useFoodConsumption } from "@/features/food-tracker/hooks";
 import { NutritionStatsGrid } from "./nutrition/NutritionStatsGrid";
 import { TodayNutritionSummary } from "./nutrition/TodayNutritionSummary";
 import { WeeklyNutritionChart } from "./nutrition/WeeklyNutritionChart";
