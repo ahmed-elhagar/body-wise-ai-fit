@@ -10,7 +10,7 @@ export {
   useEnhancedMealPlan,
   useDynamicMealPlan,
   useMealPlanPage,
-  useOptimizedMealPlanCore,
+  useMealPlanCore,
   useEnhancedMealShuffle,
   useAIMealExchange,
   useEnhancedMealRecipe
