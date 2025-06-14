@@ -38,4 +38,5 @@ const LifePhaseForm = ({
   );
 };
 
+export { LifePhaseForm };
 export default LifePhaseForm;

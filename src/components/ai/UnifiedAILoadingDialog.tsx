@@ -1,45 +1,69 @@
 
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Progress } from "@/components/ui/progress";
-import { Loader2, Sparkles } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Loader2 } from "lucide-react";
+
+interface AIStep {
+  id: string;
+  title: string;
+  description: string;
+  estimatedDuration: number;
+}
 
 interface UnifiedAILoadingDialogProps {
   isOpen: boolean;
-  title?: string;
-  description?: string;
-  progress?: number;
-  currentStep?: string;
+  onClose: () => void;
+  title: string;
+  description: string;
+  steps: AIStep[];
+  currentStepIndex: number;
+  position?: "center" | "top-right";
 }
 
 const UnifiedAILoadingDialog = ({
   isOpen,
-  title = "AI Processing",
-  description = "Please wait while we process your request...",
-  progress = 0,
-  currentStep
+  onClose,
+  title,
+  description,
+  steps,
+  currentStepIndex,
+  position = "center"
 }: UnifiedAILoadingDialogProps) => {
   return (
-    <Dialog open={isOpen}>
-      <DialogContent className="sm:max-w-md">
-        <div className="flex flex-col items-center space-y-4 py-8">
-          <div className="relative">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-              <Sparkles className="w-8 h-8 text-white" />
-            </div>
-            <Loader2 className="w-6 h-6 animate-spin text-blue-600 absolute -bottom-1 -right-1" />
-          </div>
-          
-          <div className="text-center space-y-2">
-            <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-            <p className="text-sm text-gray-600">{description}</p>
-            {currentStep && (
-              <p className="text-xs text-blue-600 font-medium">{currentStep}</p>
-            )}
-          </div>
-          
-          <div className="w-full">
-            <Progress value={progress} className="h-2" />
-            <p className="text-xs text-gray-500 text-center mt-2">{progress}% complete</p>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className={position === "top-right" ? "fixed top-4 right-4 max-w-md" : ""}>
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+            {title}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <p className="text-gray-600">{description}</p>
+          <div className="space-y-2">
+            {steps.map((step, index) => (
+              <div
+                key={step.id}
+                className={`p-3 rounded-lg border ${
+                  index === currentStepIndex
+                    ? "bg-blue-50 border-blue-200"
+                    : index < currentStepIndex
+                    ? "bg-green-50 border-green-200"
+                    : "bg-gray-50 border-gray-200"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  {index < currentStepIndex ? (
+                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  ) : index === currentStepIndex ? (
+                    <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                  ) : (
+                    <div className="w-2 h-2 bg-gray-300 rounded-full" />
+                  )}
+                  <span className="font-medium">{step.title}</span>
+                </div>
+                <p className="text-sm text-gray-600 mt-1">{step.description}</p>
+              </div>
+            ))}
           </div>
         </div>
       </DialogContent>
@@ -47,4 +71,6 @@ const UnifiedAILoadingDialog = ({
   );
 };
 
+export { UnifiedAILoadingDialog };
+export type { AIStep, UnifiedAILoadingDialogProps };
 export default UnifiedAILoadingDialog;

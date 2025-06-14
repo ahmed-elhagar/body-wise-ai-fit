@@ -2,7 +2,12 @@
 import { Card } from "@/components/ui/card";
 import { TrendingUp } from "lucide-react";
 
-const NutritionHeatMap = () => {
+interface NutritionHeatMapProps {
+  data?: any[];
+  currentMonth?: Date;
+}
+
+const NutritionHeatMap = ({ data, currentMonth }: NutritionHeatMapProps) => {
   return (
     <Card className="p-6">
       <div className="flex items-center gap-2 mb-4">

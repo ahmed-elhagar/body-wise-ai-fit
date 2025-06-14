@@ -2,7 +2,25 @@
 import { Card } from "@/components/ui/card";
 import { PieChart } from "lucide-react";
 
-const EnhancedMacroWheel = () => {
+interface EnhancedMacroWheelProps {
+  calories?: number;
+  protein?: number;
+  carbs?: number;
+  fat?: number;
+  goalCalories?: number;
+  foodLogs?: any[];
+  onRefetch?: () => Promise<any>;
+}
+
+const EnhancedMacroWheel = ({ 
+  calories, 
+  protein, 
+  carbs, 
+  fat, 
+  goalCalories,
+  foodLogs,
+  onRefetch 
+}: EnhancedMacroWheelProps) => {
   return (
     <Card className="p-6">
       <div className="flex items-center gap-2 mb-4">

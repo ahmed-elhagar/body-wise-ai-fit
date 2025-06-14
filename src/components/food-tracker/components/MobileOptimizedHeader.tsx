@@ -1,31 +1,26 @@
 
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, Plus } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Smartphone } from "lucide-react";
 
 interface MobileOptimizedHeaderProps {
-  title: string;
-  onBack?: () => void;
-  onAdd?: () => void;
+  todayStats?: {
+    calories: number;
+    protein: number;
+    remainingCalories: number;
+    mealsLogged: number;
+  };
+  onAddFood: () => void;
 }
 
-const MobileOptimizedHeader = ({ title, onBack, onAdd }: MobileOptimizedHeaderProps) => {
+const MobileOptimizedHeader = ({ todayStats, onAddFood }: MobileOptimizedHeaderProps) => {
   return (
-    <div className="flex items-center justify-between p-4 border-b bg-white">
-      <div className="flex items-center gap-3">
-        {onBack && (
-          <Button variant="ghost" size="sm" onClick={onBack}>
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
-        )}
-        <h1 className="text-lg font-semibold">{title}</h1>
+    <Card className="p-4">
+      <div className="flex items-center gap-2 mb-4">
+        <Smartphone className="w-5 h-5 text-blue-600" />
+        <h3 className="text-lg font-semibold">Mobile Food Tracker</h3>
       </div>
-      
-      {onAdd && (
-        <Button size="sm" onClick={onAdd}>
-          <Plus className="w-4 h-4" />
-        </Button>
-      )}
-    </div>
+      <p className="text-gray-600">Mobile optimized header coming soon!</p>
+    </Card>
   );
 };
 

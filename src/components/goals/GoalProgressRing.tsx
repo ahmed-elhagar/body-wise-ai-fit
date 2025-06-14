@@ -2,7 +2,13 @@
 import { Card } from "@/components/ui/card";
 import { Target } from "lucide-react";
 
-const GoalProgressRing = () => {
+interface GoalProgressRingProps {
+  children?: React.ReactNode;
+  progress?: number;
+  size?: number;
+}
+
+const GoalProgressRing = ({ children, progress, size }: GoalProgressRingProps) => {
   return (
     <Card className="p-6">
       <div className="flex items-center gap-2 mb-4">
@@ -10,6 +16,7 @@ const GoalProgressRing = () => {
         <h3 className="text-lg font-semibold">Goal Progress</h3>
       </div>
       <p className="text-gray-600">Goal progress visualization coming soon!</p>
+      {children}
     </Card>
   );
 };

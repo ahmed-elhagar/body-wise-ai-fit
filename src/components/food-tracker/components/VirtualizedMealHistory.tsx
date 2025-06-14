@@ -2,7 +2,11 @@
 import { Card } from "@/components/ui/card";
 import { Calendar } from "lucide-react";
 
-const VirtualizedMealHistory = () => {
+interface VirtualizedMealHistoryProps {
+  groupedHistory?: any[];
+}
+
+const VirtualizedMealHistory = ({ groupedHistory }: VirtualizedMealHistoryProps) => {
   return (
     <Card className="p-6">
       <div className="flex items-center gap-2 mb-4">

@@ -18,4 +18,5 @@ const EnhancedSettingsPage = () => {
   );
 };
 
+export { EnhancedSettingsPage };
 export default EnhancedSettingsPage;

@@ -5,9 +5,18 @@ import { ShoppingCart } from "lucide-react";
 interface ModernShoppingListDrawerProps {
   isOpen: boolean;
   onClose: () => void;
+  weeklyPlan?: any;
+  weekId?: string;
+  onShoppingListUpdate: () => void;
 }
 
-const ModernShoppingListDrawer = ({ isOpen, onClose }: ModernShoppingListDrawerProps) => {
+const ModernShoppingListDrawer = ({ 
+  isOpen, 
+  onClose, 
+  weeklyPlan,
+  weekId,
+  onShoppingListUpdate 
+}: ModernShoppingListDrawerProps) => {
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent>
@@ -17,9 +26,8 @@ const ModernShoppingListDrawer = ({ isOpen, onClose }: ModernShoppingListDrawerP
             Shopping List
           </SheetTitle>
         </SheetHeader>
-        
-        <div className="py-6">
-          <p className="text-gray-600">Shopping list functionality coming soon!</p>
+        <div className="mt-6">
+          <p className="text-gray-600">Shopping list coming soon!</p>
         </div>
       </SheetContent>
     </Sheet>
