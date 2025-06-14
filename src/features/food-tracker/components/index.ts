@@ -1,5 +1,4 @@
 // Main food tracker components
-export { default as FoodTrackerDashboard } from './FoodTrackerDashboard';
 export { default as TodayTab } from './TodayTab';
 export { default as AddFoodDialog } from './AddFoodDialog';
 
