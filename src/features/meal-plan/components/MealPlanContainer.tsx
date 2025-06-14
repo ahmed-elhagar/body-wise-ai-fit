@@ -15,8 +15,10 @@ import { MealExchangeDialog } from './dialogs/MealExchangeDialog';
 import { AIGenerationDialog } from './dialogs/AIGenerationDialog';
 import { EnhancedRecipeDialog } from './EnhancedRecipeDialog';
 import EnhancedAddSnackDialog from './dialogs/EnhancedAddSnackDialog';
-import { ModernShoppingListDrawer } from './dialogs/ModernShoppingListDrawer';
 import { MealPlanAILoadingDialog } from './dialogs/MealPlanAILoadingDialog';
+
+// Use the correct modern shopping list component
+import ModernShoppingListDrawer from '@/components/shopping-list/ModernShoppingListDrawer';
 
 const MealPlanContainer = () => {
   const mealPlanState = useMealPlanState();
@@ -139,7 +141,7 @@ const MealPlanContainer = () => {
         position="top-right"
       />
 
-      {/* Modern Shopping List Drawer */}
+      {/* Modern Shopping List Drawer - Using the correct component */}
       <ModernShoppingListDrawer
         isOpen={mealPlanState.showShoppingListDialog}
         onClose={() => mealPlanState.closeShoppingListDialog()}
