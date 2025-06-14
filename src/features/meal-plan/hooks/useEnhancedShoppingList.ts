@@ -1,7 +1,7 @@
 
 import { useMemo, useCallback } from 'react';
 import { toast } from 'sonner';
-import { useAuth } from './useAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { getCategoryForIngredient } from '@/utils/mealPlanUtils';
