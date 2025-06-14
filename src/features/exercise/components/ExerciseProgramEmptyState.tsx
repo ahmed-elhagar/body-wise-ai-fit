@@ -4,12 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Dumbbell, Sparkles } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-interface ExerciseEmptyStateProps {
+interface ExerciseProgramEmptyStateProps {
   workoutType: string;
   onGenerateClick: () => void;
 }
 
-export const ExerciseEmptyState = ({ workoutType, onGenerateClick }: ExerciseEmptyStateProps) => {
+export const ExerciseProgramEmptyState = ({ workoutType, onGenerateClick }: ExerciseProgramEmptyStateProps) => {
   const { t } = useLanguage();
 
   return (
