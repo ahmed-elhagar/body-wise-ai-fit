@@ -56,7 +56,7 @@ const ProfileTabContent = (props: ProfileTabContentProps) => {
           <div className="mt-6">
             <LifePhaseForm
               fastingType={lifePhase.fasting_type}
-              pregnancyTrimester={lifePhase.pregnancy_trimester}
+              pregnancyTrimester={lifePhase.pregnancy_trimester?.toString() || ''}
               breastfeedingLevel={lifePhase.breastfeeding_level}
               conditionStartDate={lifePhase.condition_start_date || ''}
               onFastingTypeChange={(value) => handleLifePhaseUpdate('fasting_type', value)}
