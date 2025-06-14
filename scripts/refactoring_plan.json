@@ -1,4 +1,3 @@
-
 {
   "title": "FitFatta App Refactoring & Enhancement Plan",
   "version": "1.0",
@@ -54,7 +53,12 @@
         {
           "id": "P1T6",
           "description": "Prune unused files from global folders (`components`, `hooks`, `contexts`, etc.).",
-          "status": "pending"
+          "status": "in-progress",
+          "details": [
+            "Deleted: src/features/exercise/components/CompactWorkoutControl.tsx (replaced by WorkoutHeader)",
+            "Deleted: src/features/exercise/components/ExerciseDaySelector.tsx (replaced by CombinedWeeklyDayNavigation)",
+            "Deleted: src/features/exercise/components/ExerciseProgramWeekNavigation.tsx (replaced by CombinedWeeklyDayNavigation)"
+          ]
         }
       ]
     },
