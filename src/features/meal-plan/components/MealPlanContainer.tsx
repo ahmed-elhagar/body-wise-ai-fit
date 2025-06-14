@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { useMealPlanPage } from '../hooks/useMealPlanPage';
 import MealPlanHeader from './MealPlanHeader';
@@ -184,14 +185,14 @@ const MealPlanContainer = () => {
         </div>
       </div>
 
-      {/* AI Loading Dialog - Step-by-step loading experience - Now using top-right position */}
+      {/* AI Loading Dialog */}
       <MealPlanAILoadingDialog 
         isGenerating={mealPlanState.isGenerating}
         onClose={() => mealPlanState.refetch()}
         position="top-right"
       />
 
-      {/* Modern Shopping List Drawer - Fixed to use the correct enhanced version */}
+      {/* Shopping List Drawer */}
       <ModernShoppingListDrawer
         isOpen={mealPlanState.showShoppingListDialog}
         onClose={mealPlanState.closeShoppingListDialog}
@@ -214,7 +215,7 @@ const MealPlanContainer = () => {
         hasExistingPlan={!!displayData?.weeklyPlan}
       />
 
-      {/* Enhanced Add Snack Dialog */}
+      {/* Add Snack Dialog */}
       <EnhancedAddSnackDialog
         isOpen={mealPlanState.showAddSnackDialog}
         onClose={mealPlanState.closeAddSnackDialog}
@@ -225,7 +226,7 @@ const MealPlanContainer = () => {
         onSnackAdded={() => mealPlanState.refetch()}
       />
 
-      {/* Enhanced Meal Exchange Dialog - Our latest implementation */}
+      {/* Meal Exchange Dialog */}
       <MealExchangeDialog
         isOpen={mealPlanState.showExchangeDialog}
         onClose={mealPlanState.closeExchangeDialog}
