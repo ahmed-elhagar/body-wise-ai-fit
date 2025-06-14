@@ -19,6 +19,9 @@ export const useMealPlanPage = () => {
     mealPlanState.refetch();
   };
 
+  // Get today's meals from daily meals
+  const todaysMeals = mealPlanState.dailyMeals || [];
+
   // Enhanced debugging output for week-specific data
   console.log('🚀 MEAL PLAN PAGE - UNIFIED DEBUG:', {
     currentWeekOffset: mealPlanState.currentWeekOffset,
@@ -27,7 +30,7 @@ export const useMealPlanPage = () => {
     weeklyPlanId: mealPlanState.currentWeekPlan?.weeklyPlan?.id,
     weeklyPlanDate: mealPlanState.currentWeekPlan?.weeklyPlan?.week_start_date,
     dailyMealsCount: mealPlanState.currentWeekPlan?.dailyMeals?.length || 0,
-    todaysMealsCount: mealPlanState.todaysMeals?.length || 0,
+    todaysMealsCount: todaysMeals?.length || 0,
     selectedDay: mealPlanState.selectedDayNumber,
     totalCalories: mealPlanState.totalCalories,
     totalProtein: mealPlanState.totalProtein,
@@ -41,6 +44,7 @@ export const useMealPlanPage = () => {
     ...mealPlanState,
     currentDate,
     currentDay,
+    todaysMeals,
     handleRecipeGenerated
   };
 };

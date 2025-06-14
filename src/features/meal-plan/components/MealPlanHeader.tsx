@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Sparkles, Shuffle, ShoppingCart, RefreshCw } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Sparkles, Shuffle, ShoppingCart, RefreshCw, Coins } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface MealPlanHeaderProps {
@@ -12,6 +13,7 @@ interface MealPlanHeaderProps {
   isGenerating: boolean;
   isShuffling: boolean;
   hasWeeklyPlan: boolean;
+  remainingCredits?: number;
 }
 
 const MealPlanHeader = ({
@@ -21,7 +23,8 @@ const MealPlanHeader = ({
   onRegeneratePlan,
   isGenerating,
   isShuffling,
-  hasWeeklyPlan
+  hasWeeklyPlan,
+  remainingCredits = 0
 }: MealPlanHeaderProps) => {
   const { language } = useLanguage();
 
@@ -39,7 +42,18 @@ const MealPlanHeader = ({
         </p>
       </div>
       
-      <div className="flex items-center gap-2 w-full sm:w-auto">
+      <div className="flex items-center gap-3 w-full sm:w-auto">
+        {/* Credits Display */}
+        <div className="flex items-center gap-2 text-sm bg-white/80 px-3 py-2 rounded-lg border border-violet-200 shadow-sm">
+          <Coins className="w-4 h-4 text-yellow-500" />
+          <span className="font-medium text-violet-700">
+            {language === 'ar' ? 'الأرصدة' : 'Credits'}: 
+          </span>
+          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-200">
+            {remainingCredits === -1 ? '∞' : remainingCredits}
+          </Badge>
+        </div>
+
         {hasWeeklyPlan && (
           <>
             <Button
@@ -71,7 +85,7 @@ const MealPlanHeader = ({
         
         <Button
           onClick={hasWeeklyPlan ? onRegeneratePlan : onGenerateAI}
-          disabled={isGenerating}
+          disabled={isGenerating || remainingCredits === 0}
           className="flex items-center gap-2 bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 flex-1 sm:flex-initial"
         >
           {hasWeeklyPlan ? (

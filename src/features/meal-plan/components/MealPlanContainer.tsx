@@ -1,6 +1,8 @@
+
 import React, { useState, useRef } from 'react';
 import { useMealPlanState } from '../hooks/useMealPlanState';
 import { useEnhancedMealShuffle } from '@/hooks/useEnhancedMealShuffle';
+import { useCentralizedCredits } from '@/hooks/useCentralizedCredits';
 import MealPlanHeader from './MealPlanHeader';
 import MealPlanNavigation from './MealPlanNavigation';
 import MealPlanLoadingOverlay from './MealPlanLoadingOverlay';
@@ -19,6 +21,7 @@ import { MealPlanAILoadingDialog } from './dialogs/MealPlanAILoadingDialog';
 const MealPlanContainer = () => {
   const mealPlanState = useMealPlanState();
   const { shuffleMeals, isShuffling } = useEnhancedMealShuffle();
+  const { remaining: remainingCredits } = useCentralizedCredits();
   const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
   
   // Keep track of the last successfully loaded data to show during transitions
@@ -78,6 +81,7 @@ const MealPlanContainer = () => {
           isGenerating={mealPlanState.isGenerating}
           isShuffling={isShuffling}
           hasWeeklyPlan={!!displayData?.weeklyPlan}
+          remainingCredits={remainingCredits}
         />
         
         {/* Navigation Card - Always visible */}

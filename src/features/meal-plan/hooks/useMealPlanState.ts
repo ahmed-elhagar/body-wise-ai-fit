@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useMealPlanData } from './useMealPlanData';
 import { useCalorieCalculations } from './useCalorieCalculations';
@@ -14,6 +15,9 @@ export const useMealPlanState = () => {
     cuisine: 'any',
     prepTime: '30',
     includeSnacks: true,
+    duration: 'weekly',
+    maxPrepTime: 30,
+    mealTypes: ['breakfast', 'lunch', 'dinner']
   });
 
   const updateAIPreferences = useCallback((newPreferences: any) => {
@@ -52,31 +56,28 @@ export const useMealPlanState = () => {
     totalCalories,
     totalProtein,
     targetDayCalories,
-  } = useCalorieCalculations();
+  } = useCalorieCalculations(selectedDayNumber, currentWeekOffset);
 
   const {
-    currentWeekPlan,
+    data: currentWeekPlan,
     isLoading,
     error,
     refetch
   } = useMealPlanData(currentWeekOffset);
 
   const {
-    generateAIMealPlan,
+    handleGenerateAIPlan,
+    handleRegeneratePlan,
     isGenerating,
-    setIsGenerating
-  } = useMealPlanActions({
-    currentWeekOffset,
-    refetch,
-    closeAIDialog,
-    onError: (error) => handleAIError(error, { operation: 'meal plan generation' })
-  });
+    isShuffling,
+    nutritionContext
+  } = useMealPlanActions(currentWeekOffset, refetch, closeAIDialog, (error) => handleAIError(error, { operation: 'meal plan generation' }));
 
   // Wrapped AI plan generation with error handling
-  const handleGenerateAIPlan = useCallback(async (preferences: any) => {
+  const handleGenerateAIPlanWithPreferences = useCallback(async (preferences: any) => {
     try {
       await wrapAIOperation(
-        () => generateAIMealPlan(preferences),
+        () => handleGenerateAIPlan(preferences),
         { 
           operation: 'meal plan generation',
           model: 'GPT-4',
@@ -86,7 +87,7 @@ export const useMealPlanState = () => {
     } catch (error) {
       console.error('Meal plan generation failed:', error);
     }
-  }, [generateAIMealPlan, wrapAIOperation]);
+  }, [handleGenerateAIPlan, wrapAIOperation]);
 
   return {
     currentWeekPlan,
@@ -95,7 +96,7 @@ export const useMealPlanState = () => {
     error,
     refetch,
     isGenerating,
-    handleGenerateAIPlan,
+    handleGenerateAIPlan: handleGenerateAIPlanWithPreferences,
     selectedDayNumber,
     totalCalories,
     totalProtein,
