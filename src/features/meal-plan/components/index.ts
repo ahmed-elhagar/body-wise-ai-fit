@@ -24,9 +24,9 @@ export { default as EnhancedAddSnackDialog } from './dialogs/EnhancedAddSnackDia
 export { RecipeDialog } from './dialogs/RecipeDialog';
 
 // Legacy exports for backward compatibility - these are deprecated
-export { EmptyWeekState as MealPlanEmptyState };
+export { EmptyWeekState as MealPlanEmptyState } from './EmptyWeekState';
 export { default as MealCard } from './DayOverview';
 export { default as MealPlanLoadingState } from './LoadingState';
 export { default as MealPlanErrorState } from './ErrorState';
-export { MealPlanViewToggle as ViewModeToggle };
+export { MealPlanViewToggle as ViewModeToggle } from './MealPlanViewToggle';
 
