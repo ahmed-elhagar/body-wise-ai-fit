@@ -1,4 +1,5 @@
 
+
 import { useOptimizedExerciseProgramPage } from './useOptimizedExerciseProgramPage';
 import { useExerciseActions } from './useExerciseActions';
 import { useMemo, useState } from 'react';
@@ -100,6 +101,7 @@ export const useOptimizedExercise = () => {
       weeklyProgress,
       completedWorkouts,
       totalWorkouts,
+      progressPercentage: weeklyProgress, // Add the missing progressPercentage property
       currentStreak,
       totalCaloriesBurned,
       averageIntensity,
@@ -146,3 +148,4 @@ export const useOptimizedExercise = () => {
     optimizedActions,
   };
 };
+
