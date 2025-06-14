@@ -64,77 +64,89 @@ export const ExerciseCompactNavigation = ({
   };
 
   return (
-    <Card className="p-4 bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-xl">
-      <div className="space-y-4">
-        {/* Week Navigation with Gym/Home Toggle */}
-        <div className="flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setCurrentWeekOffset(Math.max(0, currentWeekOffset - 1))}
-            disabled={currentWeekOffset === 0 || isGenerating}
-            className="h-8 w-8 p-0 rounded-lg"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </Button>
+    <Card className="p-3 bg-white/90 backdrop-blur-sm border-0 shadow-lg rounded-xl">
+      <div className="space-y-3">
+        {/* Compact Week Navigation + Gym/Home Toggle in one line */}
+        <div className="flex items-center justify-between gap-3">
+          {/* Week Navigation */}
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setCurrentWeekOffset(Math.max(0, currentWeekOffset - 1))}
+              disabled={currentWeekOffset === 0 || isGenerating}
+              className="h-7 w-7 p-0 rounded-md"
+            >
+              <ChevronLeft className="w-3 h-3" />
+            </Button>
 
-          <div className="text-center flex-1">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <Calendar className="w-4 h-4 text-blue-600" />
-              <div className="text-sm font-semibold text-gray-800">
-                Week {currentWeekOffset + 1}
+            <div className="text-center min-w-[100px]">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <Calendar className="w-3 h-3 text-blue-600" />
+                <span className="text-xs font-semibold text-gray-800">Week {currentWeekOffset + 1}</span>
+              </div>
+              <div className="text-xs text-gray-600">
+                {formatWeekRange(weekStartDate)}
               </div>
             </div>
-            <div className="text-xs text-gray-600 mb-2">
-              {formatWeekRange(weekStartDate)}
-            </div>
-            
-            {/* Gym/Home Toggle */}
-            <div className="flex items-center justify-center gap-1">
-              <Button
-                variant={workoutType === "home" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setWorkoutType("home")}
-                disabled={isGenerating}
-                className={`h-6 px-2 text-xs ${
-                  workoutType === "home" 
-                    ? "bg-green-500 hover:bg-green-600 text-white" 
-                    : "bg-white hover:bg-green-50 border-green-200 text-green-700"
-                }`}
-              >
-                <Home className="w-3 h-3 mr-1" />
-                Home
-              </Button>
-              
-              <Button
-                variant={workoutType === "gym" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setWorkoutType("gym")}
-                disabled={isGenerating}
-                className={`h-6 px-2 text-xs ${
-                  workoutType === "gym" 
-                    ? "bg-purple-500 hover:bg-purple-600 text-white" 
-                    : "bg-white hover:bg-purple-50 border-purple-200 text-purple-700"
-                }`}
-              >
-                <Building2 className="w-3 h-3 mr-1" />
-                Gym
-              </Button>
-            </div>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setCurrentWeekOffset(Math.min(3, currentWeekOffset + 1))}
+              disabled={currentWeekOffset >= 3 || isGenerating}
+              className="h-7 w-7 p-0 rounded-md"
+            >
+              <ChevronRight className="w-3 h-3" />
+            </Button>
           </div>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setCurrentWeekOffset(Math.min(3, currentWeekOffset + 1))}
-            disabled={currentWeekOffset >= 3 || isGenerating}
-            className="h-8 w-8 p-0 rounded-lg"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </Button>
+          {/* Gym/Home Toggle - Compact */}
+          <div className="flex items-center gap-1">
+            <Button
+              variant={workoutType === "home" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setWorkoutType("home")}
+              disabled={isGenerating}
+              className={`h-7 px-2 text-xs ${
+                workoutType === "home" 
+                  ? "bg-green-500 hover:bg-green-600 text-white" 
+                  : "bg-white hover:bg-green-50 border-green-200 text-green-700"
+              }`}
+            >
+              <Home className="w-3 h-3 mr-1" />
+              Home
+            </Button>
+            
+            <Button
+              variant={workoutType === "gym" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setWorkoutType("gym")}
+              disabled={isGenerating}
+              className={`h-7 px-2 text-xs ${
+                workoutType === "gym" 
+                  ? "bg-purple-500 hover:bg-purple-600 text-white" 
+                  : "bg-white hover:bg-purple-50 border-purple-200 text-purple-700"
+              }`}
+            >
+              <Building2 className="w-3 h-3 mr-1" />
+              Gym
+            </Button>
+          </div>
+
+          {/* Status Badge */}
+          {currentWeekOffset === 0 ? (
+            <Badge variant="secondary" className="bg-green-500 text-white text-xs px-2 py-0.5">
+              Current
+            </Badge>
+          ) : (
+            <Badge variant="outline" className="bg-blue-50 border-blue-200 text-blue-700 text-xs px-2 py-0.5">
+              Week {currentWeekOffset + 1}
+            </Badge>
+          )}
         </div>
 
-        {/* Day Selector */}
+        {/* Day Selector - More Compact */}
         <div className="grid grid-cols-7 gap-1">
           {shortDayNames.map((day, index) => {
             const dayNumber = index + 1;
@@ -149,7 +161,7 @@ export const ExerciseCompactNavigation = ({
                 size="sm"
                 onClick={() => setSelectedDayNumber(dayNumber)}
                 disabled={isGenerating}
-                className={`h-12 flex flex-col gap-1 text-xs ${
+                className={`h-10 flex flex-col gap-0.5 text-xs ${
                   isSelected 
                     ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg' 
                     : isRest
@@ -159,10 +171,10 @@ export const ExerciseCompactNavigation = ({
                     : 'bg-white hover:bg-gray-50 text-gray-600 border-gray-200'
                 }`}
               >
-                <span className="font-medium">{day}</span>
+                <span className="font-medium text-xs">{day}</span>
                 <span className="text-xs opacity-75">
                   {isRest ? (
-                    <span className="text-orange-600">Rest</span>
+                    <span className="text-orange-600 text-xs">Rest</span>
                   ) : hasData ? (
                     <span className="text-green-600">●</span>
                   ) : (
@@ -172,19 +184,6 @@ export const ExerciseCompactNavigation = ({
               </Button>
             );
           })}
-        </div>
-        
-        {/* Status badges */}
-        <div className="flex items-center justify-center gap-2 text-xs">
-          {currentWeekOffset === 0 ? (
-            <Badge variant="secondary" className="bg-green-500 text-white text-xs px-2 py-1">
-              Current Week
-            </Badge>
-          ) : (
-            <Badge variant="outline" className="bg-blue-50 border-blue-200 text-blue-700 text-xs px-2 py-1">
-              Week {currentWeekOffset + 1} of 4
-            </Badge>
-          )}
         </div>
       </div>
     </Card>
