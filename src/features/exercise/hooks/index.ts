@@ -8,3 +8,4 @@ export * from './useOptimizedExercise';
 export * from './useOptimizedExerciseProgramPage';
 export * from './useCurrentWorkoutSummary';
 export * from './useWorkoutTimer';
+export * from './useWorkoutSession';
