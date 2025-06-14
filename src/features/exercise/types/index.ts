@@ -1,5 +1,4 @@
 
-// Exercise feature type definitions
 export interface ExerciseProgram {
   id: string;
   program_name: string;
@@ -12,6 +11,7 @@ export interface ExerciseProgram {
   total_estimated_calories?: number;
   generation_prompt?: any;
   daily_workouts?: DailyWorkout[];
+  status?: 'active' | 'inactive' | 'completed';
 }
 
 export interface DailyWorkout {
@@ -44,22 +44,9 @@ export interface Exercise {
   notes?: string;
   actual_sets?: number;
   actual_reps?: string;
+  actual_weight?: number;
 }
 
-export interface ExercisePreferences {
-  workoutType: "home" | "gym";
-  goalType: string;
-  fitnessLevel: string;
-  availableTime: string;
-  preferredWorkouts: string[];
-  targetMuscleGroups: string[];
-  equipment: string[];
-  duration: string;
-  workoutDays: string;
-  difficulty: string;
-}
-
-// Helper function to create mock exercises with required properties
 export const createMockExercise = (overrides: Partial<Exercise> = {}): Exercise => ({
   id: Math.random().toString(),
   daily_workout_id: 'mock-workout-id',

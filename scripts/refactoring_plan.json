@@ -34,7 +34,10 @@
         {
           "id": "P1T4",
           "description": "Move feature-specific services, types, and utils to their respective feature directories.",
-          "status": "pending"
+          "status": "in-progress",
+          "details": [
+            "Moved: exercise types"
+          ]
         },
         {
           "id": "P1T5",
@@ -51,7 +54,7 @@
     {
       "id": 2,
       "name": "Phase 2: UI/UX Enhancement & Centralization",
-      "status": "in-progress",
+      "status": "completed",
       "description": "Improve UI consistency, centralize shared logic, and enhance user experience across the app.",
       "tasks": [
         {

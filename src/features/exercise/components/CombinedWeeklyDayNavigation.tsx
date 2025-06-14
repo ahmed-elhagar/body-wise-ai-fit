@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, ChevronRight, Calendar, RotateCcw, Target } from "lucide-react";
 import { format, addDays } from "date-fns";
+import { ExerciseProgram } from "@/features/exercise";
 
 interface CombinedWeeklyDayNavigationProps {
   currentWeekOffset: number;
@@ -11,7 +12,7 @@ interface CombinedWeeklyDayNavigationProps {
   weekStartDate: Date;
   selectedDayNumber: number;
   setSelectedDayNumber: (day: number) => void;
-  currentProgram: any;
+  currentProgram: ExerciseProgram | null;
 }
 
 export const CombinedWeeklyDayNavigation = ({

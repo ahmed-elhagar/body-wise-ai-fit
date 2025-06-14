@@ -5,11 +5,12 @@ import { ExerciseEmptyState } from "./ExerciseEmptyState";
 import { CompactProgressSection } from "./CompactProgressSection";
 import { useLanguage } from "@/contexts/LanguageContext";
 import SimpleLoadingIndicator from "@/components/ui/simple-loading-indicator";
+import { Exercise, ExerciseProgram } from "@/features/exercise";
 
 interface ExercisePageContentProps {
   isLoading: boolean;
-  currentProgram: any;
-  todaysExercises: any[];
+  currentProgram: ExerciseProgram | null;
+  todaysExercises: Exercise[];
   completedExercises: number;
   totalExercises: number;
   progressPercentage: number;

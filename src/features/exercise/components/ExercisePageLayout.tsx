@@ -1,3 +1,4 @@
+
 import { Card } from "@/components/ui/card";
 import { ExerciseErrorState } from "./ExerciseErrorState";
 import { EnhancedExerciseHeaderWithAnalytics } from "./EnhancedExerciseHeaderWithAnalytics";
@@ -5,11 +6,12 @@ import { ExercisePageContent } from "./ExercisePageContent";
 import { AIExerciseDialog } from "./AIExerciseDialog";
 import { UnifiedAILoadingDialog } from "@/components/ai/UnifiedAILoadingDialog";
 import { CombinedWeeklyDayNavigation } from "./CombinedWeeklyDayNavigation";
+import { Exercise, ExerciseProgram } from "@/features/exercise";
 
 interface ExercisePageLayoutProps {
   // Data props
-  currentProgram: any;
-  todaysExercises: any[];
+  currentProgram: ExerciseProgram | null;
+  todaysExercises: Exercise[];
   completedExercises: number;
   totalExercises: number;
   progressPercentage: number;
