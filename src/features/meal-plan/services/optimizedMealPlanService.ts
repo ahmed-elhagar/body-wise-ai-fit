@@ -1,156 +1,134 @@
+import { supabase } from '@/lib/supabaseClient';
+import type { MealPlanFetchResult, WeeklyMealPlan, DailyMeal } from '../types';
 
-import { supabase } from '@/integrations/supabase/client';
-import type { WeeklyMealPlan, DailyMeal } from '../types';
-
-interface FetchParams {
-  userId: string;
-  weekStartDate: string;
-  includeIngredients?: boolean;
-  includeInstructions?: boolean;
-  mealTypes?: ReadonlyArray<string>;
-}
-
-interface ServiceResult<T> {
-  data: T | null;
-  error: Error | null;
-  fromCache?: boolean;
-  queryTime?: number;
-}
-
-interface OptimizedMealPlanData {
-  weeklyPlan: WeeklyMealPlan;
-  dailyMeals: DailyMeal[];
-}
-
-class OptimizedMealPlanServiceClass {
-  private cache = new Map<string, { data: OptimizedMealPlanData; timestamp: number }>();
-  private readonly CACHE_DURATION = 2 * 60 * 1000; // 2 minutes
-
-  private getCacheKey(params: FetchParams): string {
-    return `${params.userId}-${params.weekStartDate}-${params.includeIngredients}-${params.includeInstructions}`;
-  }
-
-  private isValidCacheEntry(timestamp: number): boolean {
-    return Date.now() - timestamp < this.CACHE_DURATION;
-  }
-
-  async fetchMealPlanData(params: FetchParams): Promise<ServiceResult<OptimizedMealPlanData>> {
-    const startTime = Date.now();
-    const cacheKey = this.getCacheKey(params);
-    
-    // Check cache first
-    const cached = this.cache.get(cacheKey);
-    if (cached && this.isValidCacheEntry(cached.timestamp)) {
-      console.log('📋 Returning cached meal plan data');
-      return {
-        data: cached.data,
-        error: null,
-        fromCache: true,
-        queryTime: 0
-      };
-    }
-
+export class OptimizedMealPlanService {
+  static async fetchMealPlanData(userId: string, weekStartDate: Date): Promise<MealPlanFetchResult | null> {
     try {
-      console.log('🔍 Fetching meal plan from database:', params.weekStartDate);
-
-      // Fetch weekly plan
-      const { data: weeklyPlan, error: weeklyError } = await supabase
+      console.log('🔍 Fetching meal plan data for week starting:', weekStartDate.toISOString());
+      
+      const { data, error } = await supabase
         .from('weekly_meal_plans')
-        .select('*')
-        .eq('user_id', params.userId)
-        .eq('week_start_date', params.weekStartDate)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .select(`
+          *,
+          daily_meals (*)
+        `)
+        .eq('user_id', userId)
+        .eq('week_start_date', weekStartDate.toISOString().split('T')[0])
+        .single();
 
-      if (weeklyError) {
-        console.error('❌ Error fetching weekly plan:', weeklyError);
-        throw new Error(`Failed to fetch weekly plan: ${weeklyError.message}`);
+      if (error) {
+        if (error.code === 'PGRST116') {
+          console.log('📝 No meal plan found for this week');
+          return null;
+        }
+        throw error;
       }
 
-      if (!weeklyPlan) {
-        console.log('ℹ️ No meal plan found for this week');
-        return { data: null, error: null, queryTime: Date.now() - startTime };
+      if (!data) {
+        console.log('📝 No meal plan data returned');
+        return null;
       }
 
-      // Fetch daily meals
-      let query = supabase
-        .from('daily_meals')
-        .select('*')
-        .eq('weekly_plan_id', weeklyPlan.id)
-        .order('day_number', { ascending: true })
-        .order('created_at', { ascending: true });
-
-      // Apply meal type filter if specified
-      if (params.mealTypes && params.mealTypes.length > 0) {
-        query = query.in('meal_type', params.mealTypes as string[]);
-      }
-
-      const { data: dailyMeals, error: mealsError } = await query;
-
-      if (mealsError) {
-        console.error('❌ Error fetching daily meals:', mealsError);
-        throw new Error(`Failed to fetch daily meals: ${mealsError.message}`);
-      }
-
-      const result: OptimizedMealPlanData = {
-        weeklyPlan,
-        dailyMeals: dailyMeals || []
+      console.log('✅ Meal plan data fetched successfully');
+      
+      // Transform the data to match our types
+      const weeklyPlan: WeeklyMealPlan = {
+        ...data,
+        preferences: data.generation_prompt || {},
+        updated_at: data.created_at // Use created_at as fallback for updated_at
       };
 
-      // Cache the result
-      this.cache.set(cacheKey, {
-        data: result,
-        timestamp: Date.now()
-      });
-
-      const queryTime = Date.now() - startTime;
-      console.log(`✅ Meal plan fetched successfully in ${queryTime}ms:`, {
-        weeklyPlanId: weeklyPlan.id,
-        mealsCount: dailyMeals?.length || 0
-      });
+      // Transform daily meals to match our DailyMeal type
+      const dailyMeals: DailyMeal[] = (data.daily_meals || []).map((meal: any) => ({
+        ...meal,
+        meal_type: meal.meal_type as "breakfast" | "lunch" | "dinner" | "snack" | "snack1" | "snack2"
+      }));
 
       return {
-        data: result,
-        error: null,
-        fromCache: false,
-        queryTime
+        weeklyPlan,
+        dailyMeals
       };
+    } catch (error) {
+      console.error('❌ Error fetching meal plan data:', error);
+      throw error;
+    }
+  }
+
+  static async updateMealPlanPreferences(
+    userId: string,
+    weekStartDate: Date,
+    preferences: any
+  ): Promise<void> {
+    try {
+      console.log('Updating meal plan preferences for week starting:', weekStartDate.toISOString());
+
+      const { data, error } = await supabase
+        .from('weekly_meal_plans')
+        .update({ generation_prompt: preferences })
+        .eq('user_id', userId)
+        .eq('week_start_date', weekStartDate.toISOString().split('T')[0])
+        .select();
+
+      if (error) {
+        throw new Error(`Failed to update meal plan preferences: ${error.message}`);
+      }
+
+      console.log('Meal plan preferences updated successfully:', data);
+    } catch (error) {
+      console.error('Error updating meal plan preferences:', error);
+      throw error;
+    }
+  }
+
+  static async shuffleDailyMeals(weeklyPlanId: string): Promise<boolean> {
+    try {
+      console.log(`🔄 Shuffling daily meals for weekly plan ID: ${weeklyPlanId}`);
+
+      // Fetch the weekly meal plan to get all daily meals
+      const { data: weeklyPlan, error: weeklyPlanError } = await supabase
+        .from('weekly_meal_plans')
+        .select('id, daily_meals')
+        .eq('id', weeklyPlanId)
+        .single();
+
+      if (weeklyPlanError) {
+        console.error('❌ Error fetching weekly meal plan:', weeklyPlanError);
+        return false;
+      }
+
+      if (!weeklyPlan || !weeklyPlan.daily_meals) {
+        console.warn('⚠️ No daily meals found for this weekly plan.');
+        return false;
+      }
+
+      // Extract the daily meals from the weekly plan
+      const dailyMeals = weeklyPlan.daily_meals as any[];
+
+      // Basic shuffle implementation (you can use a more robust shuffle algorithm)
+      for (let i = dailyMeals.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [dailyMeals[i], dailyMeals[j]] = [dailyMeals[j], dailyMeals[i]];
+      }
+
+      // Update each daily meal with its new day_number
+      for (const meal of dailyMeals) {
+        const { error: updateError } = await supabase
+          .from('daily_meals')
+          .update({ day_number: meal.day_number }) // Keep the same day_number for simplicity
+          .eq('id', meal.id);
+
+        if (updateError) {
+          console.error(`❌ Error updating daily meal ${meal.id}:`, updateError);
+          return false;
+        }
+      }
+
+      console.log('✅ Daily meals shuffled successfully.');
+      return true;
 
     } catch (error) {
-      console.error('❌ OptimizedMealPlanService error:', error);
-      return {
-        data: null,
-        error: error instanceof Error ? error : new Error('Unknown error occurred'),
-        queryTime: Date.now() - startTime
-      };
+      console.error('❌ Error shuffling daily meals:', error);
+      return false;
     }
-  }
-
-  clearCache(): void {
-    console.log('🗑️ Clearing meal plan service cache');
-    this.cache.clear();
-  }
-
-  clearCacheForUser(userId: string): void {
-    console.log('🗑️ Clearing cache for user:', userId);
-    for (const [key] of this.cache) {
-      if (key.startsWith(userId)) {
-        this.cache.delete(key);
-      }
-    }
-  }
-
-  getCacheStats() {
-    const validEntries = Array.from(this.cache.values())
-      .filter(entry => this.isValidCacheEntry(entry.timestamp));
-    
-    return {
-      totalEntries: this.cache.size,
-      validEntries: validEntries.length,
-      cacheHitRate: validEntries.length / Math.max(this.cache.size, 1)
-    };
   }
 }
-
-export const OptimizedMealPlanService = new OptimizedMealPlanServiceClass();
