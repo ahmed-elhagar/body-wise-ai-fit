@@ -3,50 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Award, Target, Trophy, Star, Calendar, TrendingUp } from "lucide-react";
-
-// Mock achievements data - in a real app this would come from your backend
-const achievements = [
-  {
-    id: 1,
-    title: "First Workout Complete",
-    description: "Completed your first workout session",
-    icon: Target,
-    category: "fitness",
-    earned: true,
-    earnedAt: "2024-01-15",
-    rarity: "common"
-  },
-  {
-    id: 2,
-    title: "Consistent Week",
-    description: "Completed all workouts for 7 days straight",
-    icon: TrendingUp,
-    category: "consistency",
-    earned: true,
-    earnedAt: "2024-01-22",
-    rarity: "uncommon"
-  },
-  {
-    id: 3,
-    title: "Goal Achiever",
-    description: "Reached your first fitness goal",
-    icon: Trophy,
-    category: "goals",
-    earned: false,
-    earnedAt: null,
-    rarity: "rare"
-  },
-  {
-    id: 4,
-    title: "Nutrition Master",
-    description: "Tracked nutrition for 30 days",
-    icon: Star,
-    category: "nutrition",
-    earned: false,
-    earnedAt: null,
-    rarity: "epic"
-  }
-];
+import { useAchievements } from "@/hooks/useAchievements";
 
 const categoryColors = {
   fitness: "bg-blue-100 text-blue-800",
@@ -64,8 +21,26 @@ const rarityColors = {
 };
 
 export const AchievementsSection = () => {
-  const earnedAchievements = achievements.filter(a => a.earned);
-  const pendingAchievements = achievements.filter(a => !a.earned);
+  const { 
+    achievements, 
+    earnedAchievements, 
+    availableAchievements, 
+    completedAchievementsCount,
+    isLoading 
+  } = useAchievements();
+
+  if (isLoading) {
+    return (
+      <Card className="animate-pulse">
+        <CardHeader>
+          <div className="h-6 bg-gray-200 rounded w-1/3"></div>
+        </CardHeader>
+        <CardContent>
+          <div className="h-40 bg-gray-200 rounded"></div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -76,9 +51,9 @@ export const AchievementsSection = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-yellow-600 text-sm font-medium">Total Achievements</p>
-                <p className="text-2xl font-bold text-yellow-900">{earnedAchievements.length}</p>
+                <p className="text-2xl font-bold text-yellow-900">{completedAchievementsCount}</p>
                 <p className="text-xs text-yellow-600 mt-1">
-                  {earnedAchievements.length} of {achievements.length} unlocked
+                  {completedAchievementsCount} of {achievements.length} unlocked
                 </p>
               </div>
               <Award className="w-8 h-8 text-yellow-600" />
@@ -96,7 +71,7 @@ export const AchievementsSection = () => {
                 </p>
                 <p className="text-xs text-purple-600 mt-1">
                   {earnedAchievements.length > 0 ? 
-                    new Date(earnedAchievements[earnedAchievements.length - 1].earnedAt!).toLocaleDateString() : 
+                    new Date(earnedAchievements[earnedAchievements.length - 1].earned_at!).toLocaleDateString() : 
                     'Complete your first goal'
                   }
                 </p>
@@ -112,10 +87,10 @@ export const AchievementsSection = () => {
               <div>
                 <p className="text-green-600 text-sm font-medium">Completion Rate</p>
                 <p className="text-2xl font-bold text-green-900">
-                  {Math.round((earnedAchievements.length / achievements.length) * 100)}%
+                  {Math.round((completedAchievementsCount / achievements.length) * 100)}%
                 </p>
                 <p className="text-xs text-green-600 mt-1">
-                  {pendingAchievements.length} more to unlock
+                  {availableAchievements.length} more to unlock
                 </p>
               </div>
               <Star className="w-8 h-8 text-green-600" />
@@ -136,7 +111,16 @@ export const AchievementsSection = () => {
           {earnedAchievements.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {earnedAchievements.map((achievement) => {
-                const IconComponent = achievement.icon;
+                const getIconComponent = () => {
+                  switch (achievement.icon) {
+                    case 'target': return Target;
+                    case 'trophy': return Trophy;
+                    case 'star': return Star;
+                    default: return Award;
+                  }
+                };
+                const IconComponent = getIconComponent();
+                
                 return (
                   <div key={achievement.id} className="p-4 border rounded-lg bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-200">
                     <div className="flex items-start gap-3">
@@ -155,10 +139,12 @@ export const AchievementsSection = () => {
                           <Badge className={categoryColors[achievement.category as keyof typeof categoryColors]}>
                             {achievement.category}
                           </Badge>
-                          <div className="flex items-center gap-1 text-xs text-gray-500">
-                            <Calendar className="w-3 h-3" />
-                            <span>Earned {new Date(achievement.earnedAt!).toLocaleDateString()}</span>
-                          </div>
+                          {achievement.earned_at && (
+                            <div className="flex items-center gap-1 text-xs text-gray-500">
+                              <Calendar className="w-3 h-3" />
+                              <span>Earned {new Date(achievement.earned_at).toLocaleDateString()}</span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -178,7 +164,7 @@ export const AchievementsSection = () => {
         </CardContent>
       </Card>
 
-      {/* Pending Achievements */}
+      {/* Available Achievements */}
       <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -188,8 +174,17 @@ export const AchievementsSection = () => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {pendingAchievements.map((achievement) => {
-              const IconComponent = achievement.icon;
+            {availableAchievements.map((achievement) => {
+              const getIconComponent = () => {
+                switch (achievement.icon) {
+                  case 'target': return Target;
+                  case 'trophy': return Trophy;
+                  case 'star': return Star;
+                  default: return Award;
+                }
+              };
+              const IconComponent = getIconComponent();
+              
               return (
                 <div key={achievement.id} className="p-4 border rounded-lg bg-gray-50 border-gray-200 opacity-75">
                   <div className="flex items-start gap-3">
@@ -204,9 +199,14 @@ export const AchievementsSection = () => {
                         </Badge>
                       </div>
                       <p className="text-sm text-gray-500 mb-2">{achievement.description}</p>
-                      <Badge className={categoryColors[achievement.category as keyof typeof categoryColors]}>
-                        {achievement.category}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge className={categoryColors[achievement.category as keyof typeof categoryColors]}>
+                          {achievement.category}
+                        </Badge>
+                        <div className="text-xs text-gray-500">
+                          Progress: {achievement.progress}/{achievement.requirement_value}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
