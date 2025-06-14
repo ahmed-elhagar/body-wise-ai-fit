@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Timer, Play, Pause, Square, RotateCcw, Share2 } from "lucide-react";
-import { AnimatedProgressRing } from "./index";
+import { AnimatedProgressRing } from "./AnimatedProgressRing";
 
 interface WorkoutHeaderProps {
   completedExercises: number;

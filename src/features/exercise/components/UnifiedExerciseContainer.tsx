@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,7 +9,8 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { InteractiveExerciseCard, RestDayCard } from "./index";
+import { InteractiveExerciseCard } from "./InteractiveExerciseCard";
+import { RestDayCard } from "./RestDayCard";
 import { useWorkoutSession } from "@/features/exercise/hooks";
 import { WorkoutHeader } from "./WorkoutHeader";
 
