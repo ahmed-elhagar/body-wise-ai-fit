@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Send, X, Edit3, Loader2 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import type { CoachChatMessage } from "../types/chatTypes";
+import type { CoachChatMessage } from "@/features/coach/types";
 
 interface ChatInputProps {
   message: string;

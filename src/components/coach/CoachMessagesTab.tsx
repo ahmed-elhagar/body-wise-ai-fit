@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { MessageSquare, Search, ArrowLeft, Send, Circle } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { CoachTraineeChat } from "./CoachTraineeChat";
+import { CoachTraineeChat } from "@/features/coach/components";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";

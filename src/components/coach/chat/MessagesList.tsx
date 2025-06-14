@@ -6,7 +6,7 @@ import { Clock, CheckCircle2, MoreVertical, Reply, Edit, Trash } from "lucide-re
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useLanguage } from "@/contexts/LanguageContext";
-import type { CoachChatMessage } from "../types/chatTypes";
+import type { CoachChatMessage } from "@/features/coach/types";
 
 interface MessagesListProps {
   messages: CoachChatMessage[];
