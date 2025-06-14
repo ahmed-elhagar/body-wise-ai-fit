@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useI18n } from "@/hooks/useI18n";
+import { Grid } from "@/components/ui/layout";
 
 interface QuickActionsGridProps {
   profile: any;
@@ -85,7 +86,7 @@ const QuickActionsGrid = ({ profile, mealPlans, programs }: QuickActionsGridProp
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <Grid cols={3} gap={6}>
       {quickActions.map((action, index) => {
         const IconComponent = action.icon;
         
@@ -137,7 +138,7 @@ const QuickActionsGrid = ({ profile, mealPlans, programs }: QuickActionsGridProp
           </Card>
         );
       })}
-    </div>
+    </Grid>
   );
 };
 
