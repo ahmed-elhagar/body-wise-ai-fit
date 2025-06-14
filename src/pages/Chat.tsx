@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,6 @@ import { CoachTraineeChat, MultipleCoachesChat } from "@/features/coach/componen
 import { useCoachSystem } from "@/hooks/useCoachSystem";
 import { useRole } from "@/hooks/useRole";
 import { useLanguage } from "@/contexts/LanguageContext";
-import type { CoachInfo } from "@/hooks/coach/types";
 
 const Chat = () => {
   const { t } = useLanguage();

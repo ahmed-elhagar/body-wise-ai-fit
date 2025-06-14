@@ -22,9 +22,6 @@ import {
   CreateTaskDialog,
   CoachMessagesTab
 } from ".";
-import { TraineeProgressOverview } from "@/components/coach/overview/TraineeProgressOverview";
-import { QuickActions } from "@/components/coach/overview/QuickActions";
-import { CompactTasksPanel } from "@/components/coach/overview/CompactTasksPanel";
 
 export const CoachDashboard = () => {
   const { t } = useLanguage();
@@ -193,30 +190,14 @@ export const CoachDashboard = () => {
         </TabsList>
 
         <TabsContent value="overview" className="mt-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Main Content - Trainee Progress */}
-            <div className="lg:col-span-2">
-              <TraineeProgressOverview 
-                trainees={trainees || []}
-                onViewAllTrainees={() => setActiveTab('trainees')}
-              />
-            </div>
-
-            {/* Sidebar - Quick Actions & Tasks */}
-            <div className="space-y-6">
-              <QuickActions 
-                pendingTasks={pendingTasks}
-                unreadMessages={totalUnreadMessages}
-                onAddTrainee={() => setShowAssignDialog(true)}
-                onViewTasks={() => setActiveTab('tasks')}
-                onViewMessages={() => setActiveTab('messages')}
-              />
-              
-              <CompactTasksPanel 
-                onViewAllTasks={() => setActiveTab('tasks')}
-                onCreateTask={() => setShowCreateTaskDialog(true)}
-              />
-            </div>
+          <div className="text-center py-12">
+            <TrendingUp className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              {t('Overview Dashboard')}
+            </h3>
+            <p className="text-gray-600">
+              {t('Comprehensive overview coming soon. Use the tabs above to manage your trainees, tasks, and messages.')}
+            </p>
           </div>
         </TabsContent>
 

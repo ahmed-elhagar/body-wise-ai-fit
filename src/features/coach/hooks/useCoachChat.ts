@@ -1,32 +1,19 @@
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import type { CoachChatMessage } from '../types';
 
-export interface ChatMessage {
-  id: string;
-  coach_id: string;
-  trainee_id: string;
-  sender_id: string;
-  sender_type: 'coach' | 'trainee';
-  message: string;
-  created_at: string;
-  updated_at?: string;
-  is_read: boolean;
-}
-
-export const useCoachChat = (coachId: string, traineeId: string) => {
+export const useCoachChat = (traineeId: string) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const [newMessage, setNewMessage] = useState('');
-  const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const coachId = user?.id || '';
 
   // Fetch messages
   const { data: messages = [], isLoading, error } = useQuery({
-    queryKey: ['coach-chat-messages', coachId, traineeId],
+    queryKey: ['coach-trainee-messages', coachId, traineeId],
     queryFn: async () => {
       if (!coachId || !traineeId) return [];
 
@@ -42,26 +29,23 @@ export const useCoachChat = (coachId: string, traineeId: string) => {
         throw error;
       }
 
-      return data as ChatMessage[];
+      return data as CoachChatMessage[];
     },
     enabled: !!coachId && !!traineeId,
-    refetchInterval: 5000, // Poll every 5 seconds for new messages
   });
 
   // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: async (messageText: string) => {
-      if (!user?.id || !coachId || !traineeId) {
-        throw new Error('Missing required data');
-      }
+      if (!coachId || !traineeId) throw new Error('Missing required data');
 
       const { data, error } = await supabase
         .from('coach_trainee_messages')
         .insert({
           coach_id: coachId,
           trainee_id: traineeId,
-          sender_id: user.id,
-          sender_type: user.id === coachId ? 'coach' : 'trainee',
+          sender_id: coachId,
+          sender_type: 'coach',
           message: messageText,
         })
         .select()
@@ -71,30 +55,31 @@ export const useCoachChat = (coachId: string, traineeId: string) => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['coach-chat-messages'] });
-      setNewMessage('');
-      setReplyingTo(null);
+      queryClient.invalidateQueries({ queryKey: ['coach-trainee-messages'] });
+      toast.success('Message sent successfully');
     },
     onError: (error) => {
       console.error('Error sending message:', error);
       toast.error('Failed to send message');
-    }
+    },
   });
 
-  // Auto-scroll to bottom when new messages arrive
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  // Mark messages as read
+  const markAsRead = async () => {
+    if (!coachId || !traineeId) return;
 
-  const handleSendMessage = () => {
-    if (!newMessage.trim()) return;
-    sendMessageMutation.mutate(newMessage.trim());
-  };
+    const unreadMessages = messages.filter(
+      msg => !msg.is_read && msg.sender_type === 'trainee'
+    );
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
+    if (unreadMessages.length > 0) {
+      await supabase
+        .from('coach_trainee_messages')
+        .update({ is_read: true })
+        .in('id', unreadMessages.map(msg => msg.id));
+
+      queryClient.invalidateQueries({ queryKey: ['coach-trainee-messages'] });
+      queryClient.invalidateQueries({ queryKey: ['unread-messages'] });
     }
   };
 
@@ -102,13 +87,8 @@ export const useCoachChat = (coachId: string, traineeId: string) => {
     messages,
     isLoading,
     error,
-    newMessage,
-    setNewMessage,
-    replyingTo,
-    setReplyingTo,
-    messagesEndRef,
-    sendMessage: handleSendMessage,
-    handleKeyPress,
-    isSending: sendMessageMutation.isPending
+    sendMessage: sendMessageMutation.mutate,
+    isSending: sendMessageMutation.isPending,
+    markAsRead,
   };
 };
