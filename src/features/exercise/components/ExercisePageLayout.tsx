@@ -1,4 +1,3 @@
-
 import { Card } from "@/components/ui/card";
 import { ExerciseErrorState } from "./ExerciseErrorState";
 import { EnhancedExerciseHeaderWithAnalytics } from "./EnhancedExerciseHeaderWithAnalytics";
@@ -114,6 +113,8 @@ export const ExercisePageLayout = ({
             selectedDayNumber={selectedDayNumber}
             setSelectedDayNumber={setSelectedDayNumber}
             currentProgram={currentProgram}
+            workoutType={workoutType}
+            onWorkoutTypeChange={setWorkoutType}
           />
         </div>
 
