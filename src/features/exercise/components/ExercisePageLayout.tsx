@@ -143,7 +143,7 @@ export const ExercisePageLayout = ({
           isGenerating={isGenerating}
           onExerciseComplete={onExerciseComplete}
           onExerciseProgressUpdate={onExerciseProgressUpdate}
-          onGenerateProgram={onGenerateAIProgram}
+          onGenerateAIProgram={onGenerateAIProgram}
         />
 
         {/* AI Dialog */}

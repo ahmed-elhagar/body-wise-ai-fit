@@ -3,7 +3,7 @@ import { ExerciseListEnhanced } from "./ExerciseListEnhanced";
 import { RestDayCard } from "./RestDayCard";
 import { ExerciseEmptyState } from "./ExerciseEmptyState";
 import { CompactProgressSection } from "./CompactProgressSection";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import SimpleLoadingIndicator from "@/components/ui/simple-loading-indicator";
 
 interface ExercisePageContentProps {
@@ -25,7 +25,7 @@ interface ExercisePageContentProps {
   isGenerating: boolean;
   onExerciseComplete: (exerciseId: string) => Promise<void>;
   onExerciseProgressUpdate: (exerciseId: string, sets: number, reps: string, notes?: string, weight?: number) => Promise<void>;
-  onGenerateProgram: (preferences?: any) => Promise<void>;
+  onGenerateAIProgram: (preferences: any) => Promise<void>;
 }
 
 export const ExercisePageContent = ({
@@ -38,17 +38,14 @@ export const ExercisePageContent = ({
   isRestDay,
   selectedDayNumber,
   onExerciseComplete,
-  onExerciseProgressUpdate,
-  onGenerateProgram
+  onExerciseProgressUpdate
 }: ExercisePageContentProps) => {
-  const { t } = useI18n();
-
   if (isLoading) {
     return (
       <div className="p-6">
         <SimpleLoadingIndicator
-          message={t('exercise.loading', 'Loading Workout Data')}
-          description={t('exercise.loadingDescription', 'Fetching your exercise plan...')}
+          message="Loading Workout Data"
+          description="Fetching your exercise plan..."
         />
       </div>
     );
@@ -85,7 +82,7 @@ export const ExercisePageContent = ({
         <RestDayCard />
       ) : todaysExercises.length === 0 ? (
         <ExerciseEmptyState
-          onGenerateProgram={onGenerateProgram}
+          onGenerateProgram={() => console.log('Generate program')}
           workoutType="home"
           dailyWorkoutId=""
         />

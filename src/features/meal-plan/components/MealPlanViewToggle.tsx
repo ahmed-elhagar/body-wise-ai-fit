@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { Button } from "@/components/ui/button";
-import { Calendar, Eye } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { Button } from '@/components/ui/button';
+import { CalendarDays, LayoutGrid } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface MealPlanViewToggleProps {
   viewMode: 'daily' | 'weekly';
@@ -10,37 +10,27 @@ interface MealPlanViewToggleProps {
 }
 
 export const MealPlanViewToggle = ({ viewMode, onViewModeChange }: MealPlanViewToggleProps) => {
-  const { tFrom, isRTL } = useI18n();
-  const tMealPlan = tFrom('mealPlan');
+  const { t } = useLanguage();
 
   return (
-    <div className={`flex items-center bg-gray-100 rounded-lg p-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
+    <div className="flex gap-1">
       <Button
-        variant={viewMode === 'daily' ? 'default' : 'ghost'}
+        variant={viewMode === 'daily' ? "default" : "outline"}
         size="sm"
         onClick={() => onViewModeChange('daily')}
-        className={`h-8 px-3 text-xs rounded-md transition-all duration-200 ${
-          viewMode === 'daily' 
-            ? 'bg-white shadow-sm text-gray-900' 
-            : 'text-gray-600 hover:text-gray-900'
-        }`}
+        className="h-10 px-3"
       >
-        <Eye className="w-3 h-3 mr-1" />
-        {String(tMealPlan('dailyView'))}
+        <CalendarDays className="w-4 h-4 mr-2" />
+        <span>{t('mealPlan.dailyView') || 'Daily'}</span>
       </Button>
-      
       <Button
-        variant={viewMode === 'weekly' ? 'default' : 'ghost'}
+        variant={viewMode === 'weekly' ? "default" : "outline"}
         size="sm"
         onClick={() => onViewModeChange('weekly')}
-        className={`h-8 px-3 text-xs rounded-md transition-all duration-200 ${
-          viewMode === 'weekly' 
-            ? 'bg-white shadow-sm text-gray-900' 
-            : 'text-gray-600 hover:text-gray-900'
-        }`}
+        className="h-10 px-3"
       >
-        <Calendar className="w-3 h-3 mr-1" />
-        {String(tMealPlan('weeklyView'))}
+        <LayoutGrid className="w-4 h-4 mr-2" />
+        <span>{t('mealPlan.weeklyView') || 'Weekly'}</span>
       </Button>
     </div>
   );

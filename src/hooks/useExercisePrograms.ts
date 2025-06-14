@@ -1,14 +1,32 @@
 
-import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from './useAuth';
 
 export const useExercisePrograms = () => {
-  const [programs, setPrograms] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [currentProgram, setCurrentProgram] = useState(null);
+  const { user } = useAuth();
+
+  const { data: programs, isLoading, error, refetch } = useQuery({
+    queryKey: ['exercise-programs', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+
+      const { data, error } = await supabase
+        .from('weekly_exercise_programs')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user?.id,
+  });
 
   return {
-    programs,
+    programs: programs || [],
     isLoading,
-    currentProgram
+    error,
+    refetch
   };
 };

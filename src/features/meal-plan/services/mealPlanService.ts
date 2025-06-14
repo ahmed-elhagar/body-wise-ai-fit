@@ -1,7 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import type { MealPlanFetchResult } from '../types';
-import { MealPlanDataService } from './mealPlanDataService';
+import { OptimizedMealPlanService } from './optimizedMealPlanService';
 
 // Enhanced service with proper error handling and data validation
 export const fetchMealPlanData = async (
@@ -11,7 +11,7 @@ export const fetchMealPlanData = async (
   console.log('🔍 Enhanced fetchMealPlanData called:', { userId, weekStartDateStr });
   
   try {
-    const result = await MealPlanDataService.fetchMealPlanData({
+    const result = await OptimizedMealPlanService.fetchMealPlanData({
       userId,
       weekStartDate: weekStartDateStr,
       includeIngredients: true,
@@ -19,7 +19,7 @@ export const fetchMealPlanData = async (
     });
 
     if (result.error) {
-      console.error('❌ MealPlanDataService error:', result.error);
+      console.error('❌ OptimizedMealPlanService error:', result.error);
       throw result.error;
     }
 

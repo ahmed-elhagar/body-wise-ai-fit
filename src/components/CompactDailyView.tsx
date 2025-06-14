@@ -1,4 +1,3 @@
-
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -6,14 +5,14 @@ import { Plus, ShoppingCart, ChefHat, Clock, Flame, Zap, Sparkles } from "lucide
 import { useLanguage } from "@/contexts/LanguageContext";
 import CompactMealCard from "@/components/daily-view/CompactMealCard";
 import DailyNutritionSummary from "@/components/daily-view/DailyNutritionSummary";
-import type { DailyMeal } from "@/features/meal-plan/types";
+import type { Meal } from "@/types/meal";
 
 interface CompactDailyViewProps {
-  todaysMeals: DailyMeal[];
+  todaysMeals: Meal[];
   totalCalories: number;
   totalProtein: number;
-  onShowRecipe: (meal: DailyMeal) => void;
-  onExchangeMeal: (meal: DailyMeal, index: number) => void;
+  onShowRecipe: (meal: Meal) => void;
+  onExchangeMeal: (meal: Meal, index: number) => void;
   onAddSnack: () => void;
   onShowShoppingList: () => void;
   onGenerate: () => void;
@@ -31,17 +30,13 @@ const CompactDailyView = ({
 }: CompactDailyViewProps) => {
   const { t, isRTL } = useLanguage();
 
-  // Calculate missing nutrition values
-  const totalCarbs = todaysMeals.reduce((sum, meal) => sum + (meal.carbs || 0), 0);
-  const totalFat = todaysMeals.reduce((sum, meal) => sum + (meal.fat || 0), 0);
-
   // Group meals by type
   const mealsByType = todaysMeals.reduce((acc, meal, index) => {
-    const type = meal.meal_type || 'meal';
+    const type = (meal.meal_type || meal.type) || 'meal';
     if (!acc[type]) acc[type] = [];
     acc[type].push({ ...meal, originalIndex: index });
     return acc;
-  }, {} as Record<string, (DailyMeal & { originalIndex: number })[]>);
+  }, {} as Record<string, (Meal & { originalIndex: number })[]>);
 
   const mealTypeOrder = ['breakfast', 'lunch', 'dinner', 'snack'];
 
@@ -77,8 +72,6 @@ const CompactDailyView = ({
       <DailyNutritionSummary
         totalCalories={totalCalories}
         totalProtein={totalProtein}
-        totalCarbs={totalCarbs}
-        totalFat={totalFat}
         onShowShoppingList={onShowShoppingList}
         onAddSnack={onAddSnack}
       />
@@ -130,6 +123,7 @@ const CompactDailyView = ({
                 <CompactMealCard
                   key={`${meal.id}-${meal.originalIndex}`}
                   meal={meal}
+                  index={mealIndex}
                   mealType={mealType}
                   onShowRecipe={() => onShowRecipe(meal)}
                   onExchangeMeal={() => onExchangeMeal(meal, meal.originalIndex)}

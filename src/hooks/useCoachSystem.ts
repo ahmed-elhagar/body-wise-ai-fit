@@ -1,40 +1,73 @@
 
-import { useState } from 'react';
+import { useRole } from './useRole';
+import { useCoachInfo } from './coach/useCoachInfo';
+import { useTrainees } from './coach/useTrainees';
+import { useCoachMutations } from './coach/useCoachMutations';
+
+export * from './coach/types';
 
 export const useCoachSystem = () => {
-  const [trainees, setTrainees] = useState([]);
-  const [coaches, setCoaches] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isLoadingTrainees, setIsLoadingTrainees] = useState(false);
-  const [isLoadingCoachInfo, setIsLoadingCoachInfo] = useState(false);
-  const [totalUnreadMessages, setTotalUnreadMessages] = useState(0);
-  const [unreadMessagesByCoach, setUnreadMessagesByCoach] = useState({});
-  const [coachInfoError, setCoachInfoError] = useState(null);
-  const [isCoach, setIsCoach] = useState(false);
-  const [isAssigning, setIsAssigning] = useState(false);
+  const { isCoach: isRoleCoach, isAdmin } = useRole();
+  
+  // Get coach info (for trainees) - now returns multiple coaches
+  const { 
+    data: multipleCoachesInfo, 
+    isLoading: isLoadingCoachInfo, 
+    error: coachInfoError, 
+    refetch: refetchCoachInfo 
+  } = useCoachInfo();
+  
+  // Get trainees (for coaches)
+  const { 
+    data: trainees = [], 
+    isLoading: isLoadingTrainees, 
+    error: traineesError, 
+    refetch: refetchTrainees 
+  } = useTrainees();
+  
+  // Get mutations
+  const {
+    assignTrainee,
+    removeTrainee,
+    updateTraineeNotes,
+    isAssigning,
+    isRemoving,
+    isUpdatingNotes,
+  } = useCoachMutations();
 
-  const assignTrainee = async (traineeId: string) => {
-    setIsAssigning(true);
-    try {
-      console.log('Assigning trainee:', traineeId);
-    } catch (error) {
-      console.error('Error assigning trainee:', error);
-    } finally {
-      setIsAssigning(false);
-    }
-  };
+  const isCoach = isRoleCoach || isAdmin || trainees.length > 0;
 
   return {
-    trainees,
-    coaches,
-    isLoading,
-    isLoadingTrainees,
+    // Multiple coaches info (for trainees)
+    multipleCoachesInfo,
+    coaches: multipleCoachesInfo?.coaches || [],
+    totalUnreadMessages: multipleCoachesInfo?.totalUnreadMessages || 0,
+    unreadMessagesByCoach: multipleCoachesInfo?.unreadMessagesByCoach || {},
     isLoadingCoachInfo,
-    totalUnreadMessages,
-    unreadMessagesByCoach,
     coachInfoError,
-    isCoach,
+    refetchCoachInfo,
+    
+    // Legacy single coach support (returns first coach for backward compatibility)
+    coachInfo: multipleCoachesInfo?.coaches?.[0] || null,
+    
+    // Trainees (for coaches)
+    trainees,
+    isLoadingTrainees,
+    traineesError,
+    refetchTrainees,
+    
+    // Mutations
     assignTrainee,
-    isAssigning
+    removeTrainee,
+    updateTraineeNotes,
+    
+    // Loading states
+    isAssigning,
+    isRemoving,
+    isUpdatingNotes,
+    
+    // Status
+    isCoach,
+    error: coachInfoError || traineesError,
   };
 };

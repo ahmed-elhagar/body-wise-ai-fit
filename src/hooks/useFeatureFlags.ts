@@ -1,53 +1,36 @@
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 
 interface FeatureFlags {
   email_confirmation: boolean;
   life_phase_nutrition: boolean;
+  enhanced_analytics: boolean;
+  social_features: boolean;
+  advanced_meal_planning: boolean;
 }
 
 export const useFeatureFlags = () => {
   const [flags, setFlags] = useState<FeatureFlags>({
-    email_confirmation: false,
-    life_phase_nutrition: false
+    email_confirmation: false, // Default to false for easier testing
+    life_phase_nutrition: true,
+    enhanced_analytics: true,
+    social_features: false,
+    advanced_meal_planning: true,
   });
-  const [isLoading, setIsLoading] = useState(true);
+
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const fetchFlags = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('feature_flags')
-          .select('*')
-          .single();
-        
-        if (error) throw error;
-        setFlags(data);
-      } catch (error) {
-        console.error('Error fetching feature flags:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchFlags();
+    // In a real app, you would fetch feature flags from your backend
+    // For now, we'll use hardcoded values
+    setIsLoading(false);
   }, []);
 
-  const toggleFlag = async (flagName: keyof FeatureFlags) => {
-    try {
-      const newValue = !flags[flagName];
-      const { error } = await supabase
-        .from('feature_flags')
-        .update({ [flagName]: newValue })
-        .eq('id', 1);
-      
-      if (error) throw error;
-      
-      setFlags(prev => ({ ...prev, [flagName]: newValue }));
-    } catch (error) {
-      console.error('Error toggling feature flag:', error);
-    }
+  const toggleFlag = (flagName: keyof FeatureFlags) => {
+    setFlags(prev => ({
+      ...prev,
+      [flagName]: !prev[flagName]
+    }));
   };
 
   return {

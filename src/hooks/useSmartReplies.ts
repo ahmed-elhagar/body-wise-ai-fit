@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 
 interface SmartReply {
   id: string;
@@ -9,52 +9,171 @@ interface SmartReply {
 }
 
 export const useSmartReplies = () => {
-  const [suggestions, setSuggestions] = useState<SmartReply[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const generateSmartReplies = async (lastMessage: string, conversationHistory: any[]) => {
+  const replyTemplates = useMemo(() => ({
+    workout: [
+      "Can you create a workout plan for me?",
+      "What exercises are best for beginners?",
+      "How often should I exercise?",
+      "I need help with my form",
+      "What's a good warm-up routine?"
+    ],
+    nutrition: [
+      "Can you suggest healthy meal ideas?",
+      "How many calories should I eat?",
+      "What are good protein sources?",
+      "I need help with meal planning",
+      "What foods should I avoid?"
+    ],
+    motivation: [
+      "I'm struggling to stay motivated",
+      "How do I build healthy habits?",
+      "I need encouragement",
+      "What keeps you going?",
+      "How do I overcome plateaus?"
+    ],
+    progress: [
+      "How do I track my progress?",
+      "I'm not seeing results",
+      "Should I change my routine?",
+      "How long until I see changes?",
+      "Am I doing this right?"
+    ],
+    general: [
+      "Thank you for the help!",
+      "That's very helpful",
+      "Can you explain more?",
+      "I have another question",
+      "This is exactly what I needed"
+    ]
+  }), []);
+
+  const analyzeContext = useCallback((lastMessage: string, conversationHistory: Array<{ role: string; content: string }>) => {
+    const content = lastMessage.toLowerCase();
+    const recentTopics = conversationHistory.slice(-5).map(m => m.content.toLowerCase()).join(' ');
+    
+    const topicScores = {
+      workout: 0,
+      nutrition: 0,
+      motivation: 0,
+      progress: 0,
+      general: 0
+    };
+
+    // Analyze current message
+    if (content.includes('workout') || content.includes('exercise') || content.includes('training')) {
+      topicScores.workout += 3;
+    }
+    if (content.includes('food') || content.includes('eat') || content.includes('diet') || content.includes('nutrition')) {
+      topicScores.nutrition += 3;
+    }
+    if (content.includes('motivat') || content.includes('struggle') || content.includes('difficult')) {
+      topicScores.motivation += 3;
+    }
+    if (content.includes('progress') || content.includes('result') || content.includes('change')) {
+      topicScores.progress += 3;
+    }
+
+    // Analyze recent conversation context
+    Object.keys(topicScores).forEach(topic => {
+      if (recentTopics.includes(topic)) {
+        topicScores[topic as keyof typeof topicScores] += 1;
+      }
+    });
+
+    // Determine primary topic
+    const primaryTopic = Object.entries(topicScores).reduce((a, b) => 
+      topicScores[a[0] as keyof typeof topicScores] > topicScores[b[0] as keyof typeof topicScores] ? a : b
+    )[0];
+
+    return primaryTopic === 'general' || topicScores[primaryTopic as keyof typeof topicScores] === 0 
+      ? 'general' 
+      : primaryTopic;
+  }, []);
+
+  const generateSmartReplies = useCallback(async (
+    lastMessage: string, 
+    conversationHistory: Array<{ role: string; content: string }> = []
+  ): Promise<SmartReply[]> => {
     setIsGenerating(true);
+    
     try {
-      // Mock smart replies
-      const mockReplies: SmartReply[] = [
-        {
-          id: '1',
-          text: "Can you tell me more about that?",
-          category: 'question',
-          relevanceScore: 0.9
-        },
-        {
-          id: '2',
-          text: "That's helpful, thank you!",
-          category: 'acknowledgment',
-          relevanceScore: 0.8
-        },
-        {
-          id: '3',
-          text: "What would you recommend for my situation?",
-          category: 'request',
-          relevanceScore: 0.85
-        }
+      // Simulate processing time
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const context = analyzeContext(lastMessage, conversationHistory);
+      const contextReplies = replyTemplates[context as keyof typeof replyTemplates] || replyTemplates.general;
+      
+      // Add some general replies
+      const generalReplies = [
+        "Thank you!",
+        "That's helpful",
+        "Can you tell me more?",
+        "I understand",
+        "What about...?"
       ];
+
+      // Combine and score replies
+      const allReplies = [...contextReplies, ...generalReplies];
       
-      setTimeout(() => {
-        setSuggestions(mockReplies);
-        setIsGenerating(false);
-      }, 1000);
-      
-      return mockReplies;
+      // Generate smart replies with relevance scoring and proper typing
+      const smartReplies: SmartReply[] = allReplies
+        .slice(0, 6) // Limit to 6 suggestions
+        .map((text, index) => {
+          // Properly type the category based on index
+          let category: 'question' | 'feedback' | 'request' | 'acknowledgment';
+          if (index < 3) {
+            category = 'question';
+          } else if (index < 5) {
+            category = 'feedback';
+          } else {
+            category = 'acknowledgment';
+          }
+
+          return {
+            id: `reply-${index}`,
+            text,
+            category,
+            relevanceScore: Math.max(0.9 - (index * 0.1), 0.3) // Higher score for earlier suggestions
+          };
+        })
+        .sort((a, b) => b.relevanceScore - a.relevanceScore);
+
+      return smartReplies;
     } catch (error) {
       console.error('Error generating smart replies:', error);
-      setIsGenerating(false);
       return [];
+    } finally {
+      setIsGenerating(false);
     }
-  };
+  }, [analyzeContext, replyTemplates]);
+
+  const generateQuickActions = useCallback((context: string) => {
+    const actions = {
+      workout: [
+        { text: "🏋️ Create workout plan", action: "create_workout" },
+        { text: "💪 Exercise library", action: "browse_exercises" },
+        { text: "⏱️ Quick workout", action: "quick_workout" }
+      ],
+      nutrition: [
+        { text: "🥗 Meal planning", action: "meal_plan" },
+        { text: "🔍 Food tracker", action: "food_tracker" },
+        { text: "📊 Nutrition info", action: "nutrition_info" }
+      ],
+      progress: [
+        { text: "📈 View progress", action: "view_progress" },
+        { text: "🎯 Set new goal", action: "set_goal" },
+        { text: "📸 Progress photo", action: "progress_photo" }
+      ]
+    };
+
+    return actions[context as keyof typeof actions] || [];
+  }, []);
 
   return {
-    suggestions,
-    isGenerating,
-    generateSmartReplies
+    generateSmartReplies,
+    generateQuickActions,
+    isGenerating
   };
 };
-
-export type { SmartReply };

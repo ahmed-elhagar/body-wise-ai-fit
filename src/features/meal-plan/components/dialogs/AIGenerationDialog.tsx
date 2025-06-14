@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -11,7 +12,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useMealPlanTranslations } from '@/utils/mealPlanTranslations';
 import { useCentralizedCredits } from '@/hooks/useCentralizedCredits';
 import { useProfile } from '@/hooks/useProfile';
-import type { MealPlanPreferences } from '@/features/meal-plan/types';
+import type { MealPlanPreferences } from '@/types/mealPlan';
 
 interface AIGenerationDialogProps {
   open: boolean;

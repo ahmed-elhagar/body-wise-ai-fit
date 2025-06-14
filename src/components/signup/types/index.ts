@@ -1,23 +1,27 @@
 
 export interface SignupFormData {
-  email: string;
-  password: string;
+  // Step 1: Account Creation
   firstName: string;
   lastName: string;
-  age: string | number;
+  email: string;
+  password: string;
+  
+  // Step 2: Physical Info
+  age: string;
   gender: string;
-  height: string | number;
-  weight: string | number;
-  nationality?: string;
-  activity_level: string;
-  activityLevel: string;
-  health_goal: string;
-  fitnessGoal: string;
+  height: string;
+  weight: string;
+  nationality: string;
+  
+  // Step 3: Body Composition
   bodyFatPercentage: number;
   bodyShape: string;
-  dietary_preferences: string[];
-  food_allergies: string[];
-  special_conditions: string[];
+  
+  // Step 4: Goals & Activity
+  fitnessGoal: string;
+  activityLevel: string;
+  
+  // Step 5: Health & Diet (Optional)
   healthConditions: string[];
   allergies: string[];
   preferredFoods: string[];
@@ -25,10 +29,17 @@ export interface SignupFormData {
   specialConditions: string[];
 }
 
-export const SIGNUP_STEPS = [
-  { title: "Create Account", description: "Let's start with your basic information" },
-  { title: "Physical Info", description: "Tell us about your body metrics" },
-  { title: "Body Composition", description: "Help us understand your current fitness level" },
-  { title: "Goals & Activity", description: "What are your fitness objectives?" },
-  { title: "Health & Diet", description: "Optional health and dietary information" }
+export interface SignupStep {
+  id: number;
+  title: string;
+  description: string;
+  isOptional?: boolean;
+}
+
+export const SIGNUP_STEPS: SignupStep[] = [
+  { id: 1, title: "Create Account", description: "Basic account information" },
+  { id: 2, title: "Physical Info", description: "Your body measurements" },
+  { id: 3, title: "Body Type", description: "Body composition details" },
+  { id: 4, title: "Goals", description: "Fitness goals and activity level" },
+  { id: 5, title: "Health Info", description: "Health and dietary preferences", isOptional: true }
 ];

@@ -1,36 +1,72 @@
 
-import React, { createContext, useContext, ReactNode } from 'react';
-import { useI18n } from '@/hooks/useI18n';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import i18n from '@/i18n/config';
 
-interface LanguageContextType {
-  t: (key: string, fallback?: string) => string;
-  language: string;
+export type Language = 'en' | 'ar';
+
+export interface LanguageContextType {
+  language: Language;
   isRTL: boolean;
-  changeLanguage: (language: string) => Promise<void>;
+  changeLanguage: (lng: Language) => void;
+  t: (key: string, options?: any) => string;
+  setLanguage: (lng: Language) => void;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  const { t, currentLanguage, isRTL, changeLanguage } = useI18n();
+export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { t } = useTranslation();
+  const [language, setLanguageState] = useState<Language>('en');
+  const [isRTL, setIsRTL] = useState(false);
 
-  const contextValue = {
-    t: (key: string, fallback?: string) => t(key, fallback || key),
-    language: currentLanguage,
-    isRTL,
-    changeLanguage
+  useEffect(() => {
+    const storedLanguage = localStorage.getItem('preferred-language') as Language;
+    if (storedLanguage && ['en', 'ar'].includes(storedLanguage)) {
+      setLanguageState(storedLanguage);
+      // Use the imported i18n instance directly
+      i18n.changeLanguage(storedLanguage);
+    }
+  }, []);
+
+  useEffect(() => {
+    const rtl = language === 'ar';
+    setIsRTL(rtl);
+    document.documentElement.dir = rtl ? 'rtl' : 'ltr';
+    document.documentElement.lang = language;
+  }, [language]);
+
+  const changeLanguage = async (lng: Language) => {
+    try {
+      // Use the imported i18n instance directly
+      await i18n.changeLanguage(lng);
+      setLanguageState(lng);
+      localStorage.setItem('preferred-language', lng);
+    } catch (error) {
+      console.error('Failed to change language:', error);
+    }
+  };
+
+  const setLanguage = (lng: Language) => {
+    changeLanguage(lng);
   };
 
   return (
-    <LanguageContext.Provider value={contextValue}>
+    <LanguageContext.Provider value={{
+      language,
+      isRTL,
+      changeLanguage,
+      setLanguage,
+      t
+    }}>
       {children}
     </LanguageContext.Provider>
   );
 };
 
-export const useLanguage = () => {
+export const useLanguage = (): LanguageContextType => {
   const context = useContext(LanguageContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useLanguage must be used within a LanguageProvider');
   }
   return context;

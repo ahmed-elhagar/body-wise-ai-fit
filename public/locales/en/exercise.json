@@ -9,12 +9,6 @@
   "sets": "Sets",
   "reps": "Reps",
   "duration": "Duration",
-  "errorTitle": "Something went wrong",
-  "errorMessage": "We encountered an error while loading your exercise program. Please try again.",
-  "tryAgain": "Try Again",
-  "howToPerform": "How to perform",
-  "targetMuscles": "Target Muscles",
-  "workoutDetails": "Workout Details",
   "difficulty": {
     "beginner": "Beginner",
     "intermediate": "Intermediate", 

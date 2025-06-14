@@ -1,68 +1,62 @@
 
 import React from 'react';
-import { Card } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, RefreshCw, ChefHat } from "lucide-react";
-import { useI18n } from "@/hooks/useI18n";
+import { AlertTriangle, RefreshCw, Home } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface ErrorStateProps {
-  error: Error | null;
+  error: Error;
   onRetry: () => void;
 }
 
 const ErrorState = ({ error, onRetry }: ErrorStateProps) => {
-  const { tFrom, isRTL } = useI18n();
-  const tMealPlan = tFrom('mealPlan');
+  const navigate = useNavigate();
+
+  const handleGoHome = () => {
+    navigate('/dashboard');
+  };
 
   return (
-    <Card className="p-8 text-center bg-white border border-red-200/50 shadow-sm">
-      <div className="max-w-md mx-auto">
-        {/* Error Icon */}
-        <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
-          <AlertTriangle className="w-8 h-8 text-white" />
-        </div>
-        
-        {/* Error Title */}
-        <h3 className="text-xl font-bold text-gray-800 mb-3">
-          {String(tMealPlan('errorLoadingMeals'))}
-        </h3>
-        
-        {/* Error Message */}
-        <p className="text-gray-600 mb-2">
-          {String(tMealPlan('errorTryAgain'))}
-        </p>
-        
-        {error && (
-          <p className="text-sm text-red-600 bg-red-50 p-3 rounded-lg mb-6 border border-red-200">
-            {error.message}
-          </p>
-        )}
-        
-        {/* Action Buttons */}
-        <div className={`flex gap-3 justify-center ${isRTL ? 'flex-row-reverse' : ''}`}>
-          <Button 
-            onClick={onRetry}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            <RefreshCw className="w-4 h-4 mr-2" />
-            {String(tMealPlan('retry'))}
-          </Button>
+    <div className="flex items-center justify-center min-h-[400px] p-4">
+      <Alert className="max-w-md border-red-200 bg-red-50">
+        <AlertTriangle className="h-4 w-4 text-red-600" />
+        <AlertDescription className="space-y-4">
+          <div>
+            <p className="font-medium text-red-800">Unable to load meal plan</p>
+            <p className="text-sm text-red-700 mt-1">
+              {error.message || 'An unexpected error occurred while loading your meal plan.'}
+            </p>
+          </div>
           
-          <Button 
-            variant="outline"
-            onClick={() => window.location.reload()}
-          >
-            <ChefHat className="w-4 h-4 mr-2" />
-            {String(tMealPlan('refreshPage'))}
-          </Button>
-        </div>
-        
-        {/* Help Text */}
-        <p className="text-xs text-gray-500 mt-6">
-          {String(tMealPlan('persistentIssues'))}
-        </p>
-      </div>
-    </Card>
+          <div className="flex flex-col gap-2">
+            <Button 
+              onClick={onRetry} 
+              variant="outline" 
+              size="sm"
+              className="w-full border-red-300 text-red-700 hover:bg-red-100"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Try Again
+            </Button>
+            
+            <Button 
+              onClick={handleGoHome} 
+              variant="ghost" 
+              size="sm"
+              className="w-full text-red-600 hover:bg-red-100"
+            >
+              <Home className="w-4 h-4 mr-2" />
+              Go to Dashboard
+            </Button>
+          </div>
+          
+          <p className="text-xs text-red-600">
+            If this issue persists, try refreshing the page or check your internet connection.
+          </p>
+        </AlertDescription>
+      </Alert>
+    </div>
   );
 };
 

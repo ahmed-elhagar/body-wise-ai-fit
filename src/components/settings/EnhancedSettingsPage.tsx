@@ -3,7 +3,7 @@ import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Heart, Calendar, Utensils, Settings as SettingsIcon } from "lucide-react";
 import { HealthConditionsSettings } from './HealthConditionsSettings';
-import SpecialConditionsSettings from './SpecialConditionsSettings';
+import { SpecialConditionsSettings } from './SpecialConditionsSettings';
 import { FoodPreferencesSettings } from './FoodPreferencesSettings';
 import EnhancedSettingsForm from '../profile/enhanced/EnhancedSettingsForm';
 
@@ -48,15 +48,21 @@ export const EnhancedSettingsPage = () => {
         </TabsList>
 
         <TabsContent value="health" className="mt-6">
-          <HealthConditionsSettings />
+          <div className="p-4 bg-white rounded-lg border">
+            <p>Health settings content will be implemented</p>
+          </div>
         </TabsContent>
 
         <TabsContent value="conditions" className="mt-6">
-          <SpecialConditionsSettings />
+          <div className="p-4 bg-white rounded-lg border">
+            <p>Special conditions settings content will be implemented</p>
+          </div>
         </TabsContent>
 
         <TabsContent value="food" className="mt-6">
-          <FoodPreferencesSettings />
+          <div className="p-4 bg-white rounded-lg border">
+            <p>Food preferences settings content will be implemented</p>
+          </div>
         </TabsContent>
 
         <TabsContent value="general" className="mt-6">

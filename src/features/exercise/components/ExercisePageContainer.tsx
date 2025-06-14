@@ -1,6 +1,6 @@
 
 import { format, addDays } from "date-fns";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useOptimizedExerciseProgramPage } from "@/features/exercise/hooks/useOptimizedExerciseProgramPage";
 import { useEnhancedAIExercise } from "@/hooks/useEnhancedAIExercise";
 import { useAILoadingSteps } from "@/hooks/useAILoadingSteps";
@@ -10,7 +10,7 @@ import { ExerciseAnalyticsContainer } from "./ExerciseAnalyticsContainer";
 import { useExerciseAISteps } from "../hooks/useExerciseAISteps";
 
 export const ExercisePageContainer = () => {
-  const { language } = useI18n();
+  const { language } = useLanguage();
   const [showAnalytics, setShowAnalytics] = useState(false);
   
   const {
@@ -51,12 +51,12 @@ export const ExercisePageContainer = () => {
   const currentSelectedDate = addDays(weekStartDate, selectedDayNumber - 1);
   const isToday = format(currentSelectedDate, 'yyyy-MM-dd') === format(currentDate, 'yyyy-MM-dd');
 
-  const handleGenerateProgram = async (preferences?: any) => {
+  const handleGenerateAIProgram = async (preferences: any) => {
     try {
       setShowAIDialog(false);
       
       const enhancedPreferences = {
-        ...(preferences || aiPreferences),
+        ...preferences,
         workoutType,
         weekStartDate: format(weekStartDate, 'yyyy-MM-dd'),
         weekOffset: currentWeekOffset
@@ -125,7 +125,7 @@ export const ExercisePageContainer = () => {
       
       // Actions
       onShowAnalytics={() => setShowAnalytics(true)}
-      onGenerateAIProgram={handleGenerateProgram}
+      onGenerateAIProgram={handleGenerateAIProgram}
       onRegenerateProgram={handleRegenerateProgram}
       onExerciseComplete={handleExerciseComplete}
       onExerciseProgressUpdate={handleExerciseProgressUpdate}

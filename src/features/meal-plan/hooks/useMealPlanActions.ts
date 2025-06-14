@@ -1,7 +1,8 @@
+
 import { useCallback } from "react";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useEnhancedMealPlan } from "./useEnhancedMealPlan";
+import { useEnhancedMealPlan } from "@/hooks/useEnhancedMealPlan";
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 

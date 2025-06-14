@@ -1,36 +1,32 @@
 
-import { useProfile } from '@/hooks/useProfile';
+import { useProfile } from './useProfile';
 
 export const useProfileCompletionScore = () => {
-  const { profile, isLoading } = useProfile();
+  const { profile } = useProfile();
 
   const calculateCompletionScore = () => {
     if (!profile) return 0;
-    
+
     const fields = [
-      'age',
-      'gender',
-      'height',
-      'weight',
-      'activity_level',
-      'health_goal',
-      'dietary_preferences'
+      profile.first_name,
+      profile.last_name,
+      profile.age,
+      profile.gender,
+      profile.height,
+      profile.weight,
+      profile.fitness_goal,
+      profile.activity_level,
+      profile.nationality,
+      profile.body_shape
     ];
-    
-    const completedFields = fields.filter(field => 
-      profile[field] && profile[field] !== null && profile[field] !== ''
-    ).length;
-    
-    return Math.round((completedFields / fields.length) * 100);
+
+    const completedFields = fields.filter(field => field !== null && field !== undefined && field !== '').length;
+    const totalFields = fields.length;
+
+    return Math.round((completedFields / totalFields) * 100);
   };
 
-  const score = calculateCompletionScore();
-  const isComplete = score >= 80;
-
   return {
-    score,
-    isComplete,
-    isLoading,
-    completionScore: score // Add this alias for backward compatibility
+    completionScore: calculateCompletionScore()
   };
 };
