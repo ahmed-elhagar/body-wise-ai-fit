@@ -66,7 +66,7 @@ const MealTypeSection = ({ mealType, meals, onShowRecipe, onExchangeMeal }) => {
             {getMealTypeIcon(mealType)}
           </span>
           <h3 className="font-semibold text-sm">
-            {t(`mealPlan.mealTypes.${mealType}`, mealType)}
+            {String(t(`mealPlan.mealTypes.${mealType}`, mealType))}
           </h3>
         </div>
         <Badge variant="secondary" className="bg-white/80 text-xs font-medium px-2 py-1">

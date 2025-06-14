@@ -11,43 +11,20 @@ export const fetchMealPlanData = async (
   console.log('🔍 Enhanced fetchMealPlanData called:', { userId, weekStartDateStr });
   
   try {
-    const result = await OptimizedMealPlanService.fetchMealPlanData({
-      userId,
-      weekStartDate: weekStartDateStr,
-      includeIngredients: true,
-      includeInstructions: true
-    });
+    const weekStartDate = new Date(weekStartDateStr);
+    const result = await OptimizedMealPlanService.fetchMealPlanData(userId, weekStartDate);
 
-    if (result.error) {
-      console.error('❌ OptimizedMealPlanService error:', result.error);
-      throw result.error;
-    }
-
-    if (!result.data) {
+    if (!result) {
       console.log('📋 No meal plan data found');
       return null;
     }
 
-    // Convert strict types back to legacy types for backward compatibility
-    const convertedResult: MealPlanFetchResult = {
-      weeklyPlan: {
-        ...result.data.weeklyPlan,
-        updated_at: result.data.weeklyPlan.updated_at
-      },
-      dailyMeals: result.data.dailyMeals.map(meal => ({
-        ...meal,
-        ingredients: meal.ingredients as any,
-        instructions: meal.instructions as any,
-        alternatives: meal.alternatives as any
-      }))
-    };
-
-    console.log('✅ Meal plan data converted successfully:', {
-      weeklyPlanId: convertedResult.weeklyPlan.id,
-      mealsCount: convertedResult.dailyMeals.length
+    console.log('✅ Meal plan data fetched successfully:', {
+      weeklyPlanId: result.weeklyPlan.id,
+      mealsCount: result.dailyMeals.length
     });
 
-    return convertedResult;
+    return result;
   } catch (error) {
     console.error('❌ Error in enhanced fetchMealPlanData:', error);
     throw error;
