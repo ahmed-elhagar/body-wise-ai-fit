@@ -1,3 +1,4 @@
+
 // Centralized types for meal plan feature
 export interface MealIngredient {
   name: string;
@@ -53,7 +54,7 @@ export interface MealPlanPreferences {
   cuisine: string;
   maxPrepTime: string;
   includeSnacks: boolean;
-  mealTypes: string; // Changed back to string to match the interface usage
+  mealTypes: string;
 }
 
 export interface AddSnackDialogProps {

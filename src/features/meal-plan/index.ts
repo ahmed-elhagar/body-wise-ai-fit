@@ -1,22 +1,25 @@
 
-// Export the main container component for external use
+// Main exports for meal plan feature
 export { default as MealPlanContainer } from './components/MealPlanContainer';
 
-// Export individual components for internal use within the feature
-export { default as MealPlanHeader } from './components/MealPlanHeader';
-export { default as MealPlanNavigation } from './components/MealPlanNavigation';
-export { default as MealPlanLoadingOverlay } from './components/MealPlanLoadingOverlay';
-
-// Export existing components
-export { MealPlanContent } from './components/MealPlanContent';
-export { MealPlanViewToggle } from './components/MealPlanViewToggle';
-export { ModernShoppingListDrawer } from './components/dialogs/ModernShoppingListDrawer';
-export { MealExchangeDialog } from './components/dialogs/MealExchangeDialog';
-export { AIGenerationDialog } from './components/dialogs/AIGenerationDialog';
-export { EnhancedRecipeDialog } from './components/EnhancedRecipeDialog';
+// Feature components
+export { 
+  MealPlanLoadingBackdrop,
+  MealPlanPageTitle,
+  MealPlanEmptyState,
+  MealPlanErrorState,
+  MealPlanLoadingState,
+  MealPlanContent,
+  MealCard,
+  DayOverview,
+  EnhancedRecipeDialog
+} from './components';
 
 // Export types
 export type * from './types';
 
 // Export hooks
-export { useMealPlanState } from './hooks/useMealPlanState';
+export * from './hooks';
+
+// Export services
+export * from './services';
