@@ -34,7 +34,6 @@ const MealPlanHeader = ({
     isRTL 
   } = useMealPlanTranslations();
 
-  // Use centralized credits instead of any mocked data
   const { remaining: userCredits, isPro, hasCredits } = useCentralizedCredits();
 
   const displayCredits = isPro ? 'Unlimited' : `${userCredits} credits`;

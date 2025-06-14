@@ -10,7 +10,7 @@ interface MealPlanViewToggleProps {
 }
 
 export const MealPlanViewToggle = ({ viewMode, onViewModeChange }: MealPlanViewToggleProps) => {
-  const { t, isRTL } = useLanguage();
+  const { t } = useLanguage();
 
   return (
     <div className="flex gap-1">

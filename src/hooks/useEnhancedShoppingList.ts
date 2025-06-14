@@ -1,10 +1,10 @@
+
 import { useMemo, useCallback } from 'react';
 import { toast } from 'sonner';
 import { useAuth } from './useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { getCategoryForIngredient } from '@/utils/mealPlanUtils';
-import { useCentralizedCredits } from './useCentralizedCredits';
 import type { WeeklyMealPlan, DailyMeal } from '@/features/meal-plan/types';
 
 export const useEnhancedShoppingList = (weeklyPlan?: {
@@ -164,12 +164,12 @@ export const useEnhancedShoppingList = (weeklyPlan?: {
       toast.error(error.message || 'Failed to send shopping list email');
       return false;
     }
-  }, [user, weeklyPlan, enhancedShoppingItems]);
+  }, [user, weeklyPlan, enhancedShoppingItems, language]);
 
   return {
     enhancedShoppingItems,
     sendShoppingListEmail,
-    isLoading: false, // Add loading state
-    error: null // Add error state
+    isLoading: false,
+    error: null
   };
 };

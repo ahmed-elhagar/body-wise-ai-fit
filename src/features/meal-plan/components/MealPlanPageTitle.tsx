@@ -1,10 +1,7 @@
 
 import { UtensilsCrossed } from "lucide-react";
-import { useMealPlanTranslation } from "@/utils/translationHelpers";
 
 const MealPlanPageTitle = () => {
-  const { mealPlanT } = useMealPlanTranslation();
-
   return (
     <div className="text-center mb-6">
       <div className="flex items-center justify-center gap-3 mb-2">
@@ -12,7 +9,7 @@ const MealPlanPageTitle = () => {
           <UtensilsCrossed className="w-6 h-6 text-white" />
         </div>
         <h1 className="text-3xl font-bold text-fitness-primary-800">
-          {mealPlanT('title')}
+          Smart Meal Plan
         </h1>
       </div>
       <p className="text-lg text-fitness-primary-600">

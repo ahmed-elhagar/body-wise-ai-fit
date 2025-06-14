@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
-import type { MealPlanFetchResult } from '@/types/mealPlan';
+import type { MealPlanFetchResult } from '@/features/meal-plan/types';
 
 export const useEnhancedShoppingListEmail = () => {
   const { user } = useAuth();
