@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Sparkles, Zap, AlertTriangle, Info, Heart, Shield } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useMealPlanTranslations } from '@/utils/mealPlanTranslations';
+import { useMealPlanTranslations } from '../utils/mealPlanTranslations';
 import { useCentralizedCredits } from '@/hooks/useCentralizedCredits';
 import { useProfile } from '@/hooks/useProfile';
 import type { MealPlanPreferences } from '@/types/mealPlan';

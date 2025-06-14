@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,8 +10,8 @@ import {
   Coins
 } from "lucide-react";
 import { format, addDays } from 'date-fns';
-import { useMealPlanTranslations } from '@/utils/mealPlanTranslations';
-import { getDayName } from '@/utils/mealPlanUtils';
+import { useMealPlanTranslations } from '../utils/mealPlanTranslations';
+import { getDayName } from '../utils/mealPlanUtils';
 
 interface UnifiedNavigationProps {
   currentWeekOffset: number;

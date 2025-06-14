@@ -1,10 +1,9 @@
 
-// Centralized types for meal plan feature
+// Re-export from meal plan types for backward compatibility
 export interface MealIngredient {
   name: string;
   quantity: string;
   unit: string;
-  category?: string;
 }
 
 export interface DailyMeal {
@@ -13,35 +12,35 @@ export interface DailyMeal {
   day_number: number;
   meal_type: 'breakfast' | 'lunch' | 'dinner' | 'snack' | 'snack1' | 'snack2';
   name: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-  fiber?: number;
-  sugar?: number;
-  prep_time: number;
-  cook_time: number;
-  servings: number;
-  youtube_search_term?: string;
+  calories?: number;
+  protein?: number;
+  carbs?: number;
+  fat?: number;
+  ingredients?: MealIngredient[];
+  instructions?: string[];
+  prep_time?: number;
+  cook_time?: number;
+  servings?: number;
+  alternatives?: string[];
   image_url?: string;
-  recipe_fetched: boolean;
-  ingredients: MealIngredient[];
-  instructions: string[];
-  alternatives: string[];
+  youtube_search_term?: string;
+  recipe_fetched?: boolean;
+  created_at?: string;
 }
 
 export interface WeeklyMealPlan {
   id: string;
   user_id: string;
   week_start_date: string;
-  total_calories: number;
-  total_protein: number;
-  total_carbs: number;
-  total_fat: number;
-  preferences: any;
-  created_at: string;
-  updated_at: string;
+  total_calories?: number;
+  total_protein?: number;
+  total_carbs?: number;
+  total_fat?: number;
+  generation_prompt?: any;
   life_phase_context?: any;
+  preferences?: MealPlanPreferences;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface MealPlanFetchResult {
@@ -50,21 +49,19 @@ export interface MealPlanFetchResult {
 }
 
 export interface MealPlanPreferences {
-  duration: string;
-  cuisine: string;
-  maxPrepTime: string;
-  includeSnacks: boolean;
-  mealTypes: string;
+  duration?: number;
+  cuisine?: string;
+  maxPrepTime?: string;
+  includeSnacks?: boolean;
+  mealTypes?: string[];
 }
 
 export interface AddSnackDialogProps {
   isOpen: boolean;
   onClose: () => void;
   selectedDay: number;
-  currentDayCalories?: number;
-  targetDayCalories?: number;
+  currentDayCalories: number;
+  targetDayCalories: number;
   weeklyPlanId?: string;
   onSnackAdded: () => void;
 }
-
-export type ViewMode = 'daily' | 'weekly';

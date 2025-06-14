@@ -1,39 +1,29 @@
 
-// Main meal plan components
+// Main components
 export { default as MealPlanContainer } from './MealPlanContainer';
-export { default as MealPlanHeader } from './MealPlanHeader';
 export { MealPlanContent } from './MealPlanContent';
+export { MealPlanHeader } from './MealPlanHeader';
 export { MealPlanViewToggle } from './MealPlanViewToggle';
-export { default as MealPlanLoadingBackdrop } from './MealPlanLoadingBackdrop';
-export { default as MealPlanPageTitle } from './MealPlanPageTitle';
-export { default as MealPlanEmptyState } from './MealPlanEmptyState';
+export { MealCard } from './MealCard';
+export { RecipeDialog } from './RecipeDialog';
 
-// Core meal plan components
-export { default as DayOverview } from './DayOverview';
-export { default as MealCard } from './MealCard';
-export { EnhancedMealCard } from './EnhancedMealCard';
-export { MealRow } from './MealRow';
+// Day view components
+export { DayView } from './DayView';
+export { DayViewHeader } from './DayViewHeader';
+export { DailySummaryCard } from './DailySummaryCard';
 export { AddMealCard } from './AddMealCard';
 
-// View components
-export { WeeklyMealPlanView } from './WeeklyMealPlanView';
-export { CompactDailyProgress } from './CompactDailyProgress';
-export { EmptyWeekState } from './EmptyWeekState';
+// Week view components
+export { WeekView } from './WeekView';
+export { WeekDayCard } from './WeekDayCard';
 
 // State components
-export { default as LoadingState } from './LoadingState';
-export { default as ErrorState } from './ErrorState';
-export { default as MealPlanLoadingState } from './MealPlanLoadingState';
-export { default as MealPlanErrorState } from './MealPlanErrorState';
+export { ErrorState } from './ErrorState';
+export { LoadingState } from './LoadingState';
+export { EmptyState } from './EmptyState';
 
-// Navigation components
-export { DaySelector } from './DaySelector';
-export { WeekNavigation } from './WeekNavigation';
-export { ViewModeToggle } from './ViewModeToggle';
+// Navigation
+export { UnifiedNavigation } from './navigation/UnifiedNavigation';
 
-// Dialog components
-export { EnhancedRecipeDialog } from './EnhancedRecipeDialog';
-export { MealPlanAILoadingDialog } from './dialogs/MealPlanAILoadingDialog';
-export { MealExchangeDialog } from './dialogs/MealExchangeDialog';
-export { AIGenerationDialog } from './dialogs/AIGenerationDialog';
-export { default as EnhancedAddSnackDialog } from './dialogs/EnhancedAddSnackDialog';
+// Enhanced components (to be renamed)
+export { EnhancedMealCard } from './EnhancedMealCard';

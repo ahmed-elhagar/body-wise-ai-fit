@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -12,9 +13,9 @@ interface MealPlanData {
 export const useMealPlanData = (weekStartDate: string) => {
   const { user } = useAuth();
 
-  const { data, error, isLoading, refetch } = useQuery<MealPlanData, Error>(
-    ['mealPlan', user?.id, weekStartDate],
-    async () => {
+  const { data, error, isLoading, refetch } = useQuery({
+    queryKey: ['mealPlan', user?.id, weekStartDate],
+    queryFn: async (): Promise<MealPlanData> => {
       if (!user?.id) {
         console.log('No user ID, returning default meal plan data');
         return { weeklyPlan: null, dailyMeals: [] };
@@ -22,8 +23,8 @@ export const useMealPlanData = (weekStartDate: string) => {
 
       try {
         // Fetch weekly meal plan
-        let { data: weeklyPlanData, error: weeklyPlanError } = await supabase
-          .from<WeeklyMealPlan>('weekly_meal_plans')
+        const { data: weeklyPlanData, error: weeklyPlanError } = await supabase
+          .from('weekly_meal_plans')
           .select('*')
           .eq('user_id', user.id)
           .eq('week_start_date', weekStartDate)
@@ -41,10 +42,10 @@ export const useMealPlanData = (weekStartDate: string) => {
         }
 
         // Fetch daily meals for the weekly plan
-        let { data: dailyMealsData, error: dailyMealsError } = await supabase
-          .from<DailyMeal>('daily_meals')
+        const { data: dailyMealsData, error: dailyMealsError } = await supabase
+          .from('daily_meals')
           .select('*')
-          .eq('weekly_meal_plan_id', weeklyPlanData.id);
+          .eq('weekly_plan_id', weeklyPlanData.id);
 
         if (dailyMealsError) {
           console.error('Error fetching daily meals:', dailyMealsError);
@@ -77,18 +78,16 @@ export const useMealPlanData = (weekStartDate: string) => {
         });
 
         return {
-          weeklyPlan: weeklyPlanData,
-          dailyMeals: sortedDailyMeals,
+          weeklyPlan: weeklyPlanData as WeeklyMealPlan,
+          dailyMeals: sortedDailyMeals as DailyMeal[],
         };
       } catch (err: any) {
         console.error('Error fetching meal plan data:', err);
         throw new Error(err.message);
       }
     },
-    {
-      enabled: !!user?.id,
-    }
-  );
+    enabled: !!user?.id,
+  });
 
   return {
     data,

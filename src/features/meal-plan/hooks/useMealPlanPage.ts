@@ -3,7 +3,7 @@ import { useState, useMemo } from 'react';
 import { useDynamicMealPlan } from '@/hooks/useDynamicMealPlan';
 import { useMealPlanActions } from './useMealPlanActions';
 import { format, startOfWeek, addWeeks } from 'date-fns';
-import type { DailyMeal } from '../types';
+import type { DailyMeal, MealPlanPreferences } from '../types';
 
 export const useMealPlanPage = () => {
   const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
@@ -18,8 +18,14 @@ export const useMealPlanPage = () => {
   const [showShoppingListDialog, setShowShoppingListDialog] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState<DailyMeal | null>(null);
   
-  // AI preferences
-  const [aiPreferences, setAiPreferences] = useState({});
+  // AI preferences with proper defaults
+  const [aiPreferences, setAiPreferences] = useState<MealPlanPreferences>({
+    duration: 7,
+    cuisine: 'mixed',
+    maxPrepTime: '30',
+    includeSnacks: true,
+    mealTypes: ['breakfast', 'lunch', 'dinner', 'snack']
+  });
 
   // Get current week data
   const { currentWeekPlan, isLoading, error, refetch } = useDynamicMealPlan(currentWeekOffset);
@@ -84,7 +90,7 @@ export const useMealPlanPage = () => {
   const openShoppingListDialog = () => setShowShoppingListDialog(true);
   const closeShoppingListDialog = () => setShowShoppingListDialog(false);
 
-  const updateAIPreferences = (newPreferences: any) => {
+  const updateAIPreferences = (newPreferences: Partial<MealPlanPreferences>) => {
     setAiPreferences(prev => ({ ...prev, ...newPreferences }));
   };
 
