@@ -60,7 +60,7 @@ const ProfileTabContent = (props: ProfileTabContentProps) => {
               breastfeedingLevel={lifePhase.breastfeeding_level}
               conditionStartDate={lifePhase.condition_start_date || ''}
               onFastingTypeChange={(value) => handleLifePhaseUpdate('fasting_type', value)}
-              onPregnancyTrimesterChange={(value) => handleLifePhaseUpdate('pregnancy_trimester', value?.toString() || '')}
+              onPregnancyTrimesterChange={(value) => handleLifePhaseUpdate('pregnancy_trimester', value)}
               onBreastfeedingLevelChange={(value) => handleLifePhaseUpdate('breastfeeding_level', value)}
               onConditionStartDateChange={(value) => handleLifePhaseUpdate('condition_start_date', value)}
             />

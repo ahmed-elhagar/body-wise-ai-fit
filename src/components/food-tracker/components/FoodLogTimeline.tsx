@@ -9,7 +9,7 @@ interface FoodConsumptionLog {
   protein_consumed: number;
   carbs_consumed: number;
   fat_consumed: number;
-  created_at: string;
+  consumed_at: string;  // Changed from created_at to consumed_at to match useFoodConsumption
 }
 
 interface FoodLogTimelineProps {
