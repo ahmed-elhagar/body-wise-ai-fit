@@ -33,3 +33,6 @@ export interface AIAnalysisContext {
   };
   analysis_type: 'nutrition' | 'ingredients' | 'full';
 }
+
+// Legacy alias for backward compatibility
+export type AIFoodAnalysisResult = FoodAnalysisResult;

@@ -1,10 +1,10 @@
-
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Camera, Upload, Loader2, Utensils, AlertCircle, Zap } from "lucide-react";
-import { useFoodPhotoIntegration } from "@/hooks/useFoodPhotoIntegration";
+import { useEnhancedFoodAnalysis } from '@/hooks/useEnhancedFoodAnalysis';
+import { useFoodPhotoIntegration } from '@/hooks/useFoodPhotoIntegration';
 import { useCentralizedCredits } from "@/hooks/useCentralizedCredits";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
@@ -16,12 +16,14 @@ interface FoodPhotoAnalysisCardProps {
 }
 
 const FoodPhotoAnalysisCard = ({ onFoodSelected, className = "" }: FoodPhotoAnalysisCardProps) => {
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [mealType, setMealType] = useState('snack');
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   
-  const { analyzePhotoFood, isAnalyzing, analysisResult, error, convertToFoodItem } = useFoodPhotoIntegration();
+  const { analyzePhotoFood, isAnalyzing, analysisResult, error, convertToFoodItem } = useEnhancedFoodAnalysis();
+  const { processAndLogFood, isProcessing } = useFoodPhotoIntegration();
   const { remaining: userCredits } = useCentralizedCredits();
   const { t } = useLanguage();
 
@@ -38,7 +40,7 @@ const FoodPhotoAnalysisCard = ({ onFoodSelected, className = "" }: FoodPhotoAnal
       return;
     }
 
-    setSelectedImage(file);
+    setSelectedFile(file);
     
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -55,9 +57,9 @@ const FoodPhotoAnalysisCard = ({ onFoodSelected, className = "" }: FoodPhotoAnal
   };
 
   const handleAnalyze = async () => {
-    if (selectedImage && canAnalyze) {
+    if (selectedFile && canAnalyze) {
       try {
-        await analyzePhotoFood(selectedImage);
+        await analyzePhotoFood(selectedFile);
       } catch (error) {
         console.error('Analysis failed:', error);
       }
@@ -90,7 +92,7 @@ const FoodPhotoAnalysisCard = ({ onFoodSelected, className = "" }: FoodPhotoAnal
   };
 
   const resetAnalysis = () => {
-    setSelectedImage(null);
+    setSelectedFile(null);
     setImagePreview(null);
     if (imagePreview) {
       URL.revokeObjectURL(imagePreview);
