@@ -9,7 +9,7 @@ import { GlobalErrorBoundary } from '@/components/GlobalErrorBoundary';
 import { EnhancedErrorBoundary } from '@/components/ui/enhanced-error-boundary';
 import EnhancedPageLoading from '@/components/EnhancedPageLoading';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import { LazyPages } from '@/components/LazyPages';
+import LazyPages from '@/components/LazyPages';
 import { checkSecurityHeaders } from '@/components/security/InputValidator';
 import './App.css';
 
@@ -71,7 +71,7 @@ function App() {
                             requireAuth={false} 
                             preventAuthenticatedAccess={true}
                           >
-                            <LazyPages.AuthPage />
+                            <LazyPages.Auth />
                           </ProtectedRoute>
                         } 
                       />
@@ -83,7 +83,7 @@ function App() {
                             requireAuth={false} 
                             preventAuthenticatedAccess={true}
                           >
-                            <LazyPages.SignupPage />
+                            <LazyPages.Signup />
                           </ProtectedRoute>
                         } 
                       />
@@ -93,7 +93,7 @@ function App() {
                         path="/dashboard" 
                         element={
                           <ProtectedRoute requireAuth={true} requireProfile={true}>
-                            <LazyPages.DashboardPage />
+                            <LazyPages.Dashboard />
                           </ProtectedRoute>
                         } 
                       />
@@ -102,7 +102,7 @@ function App() {
                         path="/meal-plan" 
                         element={
                           <ProtectedRoute requireAuth={true} requireProfile={true}>
-                            <LazyPages.MealPlanPage />
+                            <LazyPages.MealPlan />
                           </ProtectedRoute>
                         } 
                       />
@@ -111,7 +111,7 @@ function App() {
                         path="/exercise" 
                         element={
                           <ProtectedRoute requireAuth={true} requireProfile={true}>
-                            <LazyPages.ExercisePage />
+                            <LazyPages.Exercise />
                           </ProtectedRoute>
                         } 
                       />
@@ -120,7 +120,7 @@ function App() {
                         path="/food-tracker" 
                         element={
                           <ProtectedRoute requireAuth={true} requireProfile={true}>
-                            <LazyPages.FoodTrackerPage />
+                            <LazyPages.FoodTracker />
                           </ProtectedRoute>
                         } 
                       />
@@ -129,7 +129,7 @@ function App() {
                         path="/profile" 
                         element={
                           <ProtectedRoute requireAuth={true}>
-                            <LazyPages.ProfilePage />
+                            <LazyPages.Profile />
                           </ProtectedRoute>
                         } 
                       />
@@ -139,7 +139,7 @@ function App() {
                         path="/admin" 
                         element={
                           <ProtectedRoute requireAuth={true} requireRole="admin">
-                            <LazyPages.AdminPage />
+                            <LazyPages.Admin />
                           </ProtectedRoute>
                         } 
                       />
@@ -149,7 +149,7 @@ function App() {
                         path="/coach" 
                         element={
                           <ProtectedRoute requireAuth={true} requireRole={["admin", "coach"]}>
-                            <LazyPages.CoachPage />
+                            <LazyPages.Coach />
                           </ProtectedRoute>
                         } 
                       />

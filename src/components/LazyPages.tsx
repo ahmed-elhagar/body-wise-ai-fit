@@ -25,8 +25,8 @@ export const Admin = lazy(() => import('@/pages/Admin'));
 export const Coach = lazy(() => import('@/pages/Coach'));
 export const NotFound = lazy(() => import('@/pages/NotFound'));
 
-// Export default for backward compatibility
-export default {
+// Named exports for easy access
+export const LazyPages = {
   Dashboard,
   Profile,
   MealPlan,
@@ -50,3 +50,6 @@ export default {
   Coach,
   NotFound
 };
+
+// Export default for backward compatibility
+export default LazyPages;

@@ -25,12 +25,19 @@ export function useSecureForm<T extends Record<string, any>>({
 
   const validateField = useCallback((field: keyof T, value: any) => {
     try {
-      const fieldSchema = schema.shape?.[field as string];
-      if (fieldSchema) {
-        fieldSchema.parse(value);
-        setErrors(prev => ({ ...prev, [field]: undefined }));
-        return true;
+      // Handle validation for individual fields when schema has shape property
+      if ('shape' in schema && schema.shape) {
+        const fieldSchema = (schema.shape as any)[field as string];
+        if (fieldSchema) {
+          fieldSchema.parse(value);
+        }
+      } else {
+        // For schemas without shape, validate the entire object
+        const testData = { ...data, [field]: value };
+        schema.parse(testData);
       }
+      setErrors(prev => ({ ...prev, [field]: undefined }));
+      return true;
     } catch (error) {
       if (error instanceof z.ZodError) {
         setErrors(prev => ({ 
@@ -40,8 +47,7 @@ export function useSecureForm<T extends Record<string, any>>({
       }
       return false;
     }
-    return true;
-  }, [schema]);
+  }, [schema, data]);
 
   const updateField = useCallback((field: keyof T, value: any) => {
     // Sanitize input if field is in sanitizeFields array

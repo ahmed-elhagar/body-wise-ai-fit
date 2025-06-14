@@ -1,3 +1,4 @@
+
 import { toast } from 'sonner';
 
 interface PerformanceMetric {
@@ -89,8 +90,8 @@ class PerformanceMonitor {
     if ('performance' in window && 'getEntriesByType' in performance) {
       const navTiming = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
       if (navTiming) {
-        const domContentLoaded = navTiming.domContentLoadedEventEnd - navTiming.navigationStart;
-        const loadComplete = navTiming.loadEventEnd - navTiming.navigationStart;
+        const domContentLoaded = navTiming.domContentLoadedEventEnd - navTiming.domContentLoadedEventStart;
+        const loadComplete = navTiming.loadEventEnd - navTiming.loadEventStart;
         
         this.recordMetric('DOM Content Loaded', domContentLoaded, 'navigation');
         this.recordMetric('Load Complete', loadComplete, 'navigation');

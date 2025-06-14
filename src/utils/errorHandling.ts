@@ -5,10 +5,29 @@ export class AppError extends Error {
   constructor(
     message: string,
     public code: string,
-    public severity: 'low' | 'medium' | 'high' = 'medium'
+    public severity: 'low' | 'medium' | 'high' | 'critical' = 'medium',
+    public context?: Record<string, any>
   ) {
     super(message);
     this.name = 'AppError';
+  }
+}
+
+export class ValidationError extends AppError {
+  constructor(message: string, field?: string) {
+    super(message, 'VALIDATION_ERROR', 'medium', { field });
+  }
+}
+
+export class NetworkError extends AppError {
+  constructor(message: string, status?: number) {
+    super(message, 'NETWORK_ERROR', 'high', { status });
+  }
+}
+
+export class AuthError extends AppError {
+  constructor(message: string) {
+    super(message, 'AUTH_ERROR', 'high');
   }
 }
 
@@ -17,8 +36,11 @@ export const handleError = (error: unknown, context?: string) => {
   
   if (error instanceof AppError) {
     switch (error.severity) {
+      case 'critical':
+        toast.error(`Critical Error: ${error.message}`, { duration: 10000 });
+        break;
       case 'high':
-        toast.error(`Critical Error: ${error.message}`);
+        toast.error(error.message, { duration: 6000 });
         break;
       case 'medium':
         toast.error(error.message);
@@ -44,6 +66,18 @@ export const withErrorHandling = <T extends any[], R>(
     } catch (error) {
       handleError(error, context);
       return null;
+    }
+  };
+};
+
+export const createErrorBoundary = (component: string) => {
+  return (error: Error, errorInfo: any) => {
+    console.error(`Error in ${component}:`, error, errorInfo);
+    
+    // Report to monitoring service in production
+    if (process.env.NODE_ENV === 'production') {
+      // This would integrate with your error reporting service
+      console.log('Error reported to monitoring service');
     }
   };
 };
