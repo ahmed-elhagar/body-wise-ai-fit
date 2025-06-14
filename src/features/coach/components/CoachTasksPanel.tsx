@@ -16,7 +16,7 @@ import {
   Loader2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useCoachTasks, CoachTask } from "@/hooks/useCoachTasks";
+import { useCoachTasks, CoachTask } from "../hooks/useCoachTasks";
 import { CreateTaskDialog } from "./CreateTaskDialog";
 
 interface CoachTasksPanelProps {

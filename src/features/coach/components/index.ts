@@ -14,3 +14,8 @@ export { CoachMessagesTab } from './CoachMessagesTab';
 export { MultipleCoachesChat } from './MultipleCoachesChat';
 export { default as CoachChatWidget } from './CoachChatWidget';
 export { UserSearchDropdown } from './UserSearchDropdown';
+
+// New trainee-related components
+export { default as TraineeProgressCard } from './TraineeProgressCard';
+export { default as TraineeFilterBar } from './TraineeFilterBar';
+export { TraineeProgressView } from './TraineeProgressView';

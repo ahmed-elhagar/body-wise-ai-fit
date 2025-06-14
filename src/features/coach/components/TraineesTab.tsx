@@ -4,13 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Users, Grid, List, Plus, Settings } from "lucide-react";
-import TraineeProgressCard from "@/components/coach/TraineeProgressCard";
-import TraineeFilterBar from "@/components/coach/TraineeFilterBar";
+import TraineeProgressCard from "./TraineeProgressCard";
+import TraineeFilterBar from "./TraineeFilterBar";
 import CoachMetricsOverview from "./CoachMetricsOverview";
 import CoachTasksPanel from "./CoachTasksPanel";
 import { AssignTraineeDialog } from "./AssignTraineeDialog";
 import { CoachTraineeChat } from "./CoachTraineeChat";
-import { TraineeProgressView } from "@/components/coach/TraineeProgressView";
+import { TraineeProgressView } from "./TraineeProgressView";
 
 interface TraineesTabProps {
   trainees: any[];

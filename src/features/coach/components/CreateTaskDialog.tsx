@@ -23,7 +23,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon, Loader2, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { useCoachTasks, CoachTask } from "@/hooks/useCoachTasks";
+import { useCoachTasks, CoachTask } from "../hooks/useCoachTasks";
 import { toast } from "sonner";
 
 interface CreateTaskDialogProps {
