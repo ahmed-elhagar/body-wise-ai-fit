@@ -2,7 +2,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, ChevronRight, Calendar, RotateCcw, Target } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar, RotateCcw, Target, Coffee } from "lucide-react";
 import { format, addDays } from "date-fns";
 import { ExerciseProgram } from "@/features/exercise";
 
@@ -61,7 +61,7 @@ export const CombinedWeeklyDayNavigation = ({
           size="icon"
           onClick={() => setCurrentWeekOffset(Math.max(0, currentWeekOffset - 1))}
           disabled={currentWeekOffset === 0}
-          className="rounded-full"
+          className="rounded-full h-10 w-10"
         >
           <ChevronLeft className="w-5 h-5" />
         </Button>
@@ -80,11 +80,6 @@ export const CombinedWeeklyDayNavigation = ({
                 </p>
             </div>
           </div>
-          {currentWeekOffset > 0 && (
-            <Badge variant="outline" className="mt-2 text-blue-700 bg-blue-50 border-blue-200">
-              Week {currentWeekOffset + 1} of Program
-            </Badge>
-          )}
         </div>
 
         <Button
@@ -92,25 +87,31 @@ export const CombinedWeeklyDayNavigation = ({
           size="icon"
           onClick={() => setCurrentWeekOffset(currentWeekOffset + 1)}
           disabled={currentWeekOffset >= 3}
-          className="rounded-full"
+          className="rounded-full h-10 w-10"
         >
           <ChevronRight className="w-5 h-5" />
         </Button>
       </div>
       
-      {currentWeekOffset > 0 && (
-         <div className="flex justify-center mt-3">
-            <Button
-                variant="ghost"
-                size="sm"
-                onClick={goToCurrentWeek}
-                className="text-sm text-gray-600 hover:text-gray-900"
-            >
-                <RotateCcw className="w-3 h-3 mr-2" />
-                Back to Current Week
-            </Button>
-        </div>
-      )}
+      {/* Week Status & Actions */}
+      <div className="flex items-center justify-center mt-4 pt-4 border-t border-gray-100">
+        {currentWeekOffset === 0 ? (
+          <Badge className="inline-flex items-center bg-green-100 text-green-800 border-green-200 px-4 py-1.5 text-sm font-semibold">
+            <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+            Current Week
+          </Badge>
+        ) : (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={goToCurrentWeek}
+            className="text-sm text-gray-600 hover:text-gray-900"
+          >
+            <RotateCcw className="w-4 h-4 mr-2" />
+            Back to Current Week
+          </Button>
+        )}
+      </div>
 
       {/* Day Selector */}
       <div className="mt-4 p-2 bg-gray-50/70 rounded-2xl">
@@ -126,14 +127,16 @@ export const CombinedWeeklyDayNavigation = ({
                 variant={isSelected ? "default" : "ghost"}
                 className={`h-16 flex flex-col items-center justify-center space-y-1.5 rounded-xl transition-all duration-200 ${
                   isSelected 
-                    ? 'bg-blue-600 text-white shadow-md' 
-                    : 'text-gray-600 hover:bg-white'
+                    ? restDay ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-md' : 'bg-blue-600 hover:bg-blue-700 text-white shadow-md' 
+                    : restDay ? 'text-orange-600 hover:bg-orange-100' : 'text-gray-600 hover:bg-white'
                 }`}
                 onClick={() => setSelectedDayNumber(dayNumber)}
               >
                 <span className="text-sm font-medium">{day}</span>
                 <div className="h-4 w-4 flex items-center justify-center">
-                  {!restDay && (
+                  {restDay ? (
+                    <Coffee className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-orange-500'}`} />
+                  ) : (
                     isSelected 
                       ? <div className="w-1.5 h-1.5 bg-white rounded-full" />
                       : <Target className="w-4 h-4 text-blue-500" />
