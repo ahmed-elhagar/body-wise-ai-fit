@@ -1,3 +1,4 @@
+
 import { useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 
@@ -48,7 +49,7 @@ class SecurityMonitor {
     }
   }
 
-  addListener(listener: (event: SecurityEvent) => void) {
+  addListener(listener: (event: SecurityEvent) => void): () => void {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
   }
