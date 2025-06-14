@@ -1,13 +1,8 @@
 
-import NewSignupForm from "@/components/signup/NewSignupForm";
-import ProtectedRoute from "@/components/ProtectedRoute";
+import { SignupPage } from "@/features/auth";
 
 const Signup = () => {
-  return (
-    <ProtectedRoute requireAuth={false} preventAuthenticatedAccess={true}>
-      <NewSignupForm />
-    </ProtectedRoute>
-  );
+  return <SignupPage />;
 };
 
 export default Signup;
