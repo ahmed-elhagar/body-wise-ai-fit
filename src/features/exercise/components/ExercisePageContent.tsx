@@ -85,7 +85,7 @@ export const ExercisePageContent = ({
         <RestDayCard />
       ) : todaysExercises.length === 0 ? (
         <ExerciseEmptyState
-          onGenerateClick={onGenerateProgram}
+          onGenerateProgram={onGenerateProgram}
           workoutType="home"
           dailyWorkoutId=""
         />

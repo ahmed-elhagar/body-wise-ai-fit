@@ -7,12 +7,16 @@ export interface CoachChatTypes {
 
 export interface CoachInfo {
   id: string;
+  coach_id: string;
   name: string;
   email: string;
   specialization?: string;
   rating?: number;
   coach_profile?: {
     name: string;
+    first_name: string;
+    last_name: string;
+    email: string;
     avatar_url?: string;
   };
 }

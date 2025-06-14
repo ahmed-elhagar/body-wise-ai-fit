@@ -2,7 +2,7 @@
 import { useState } from 'react';
 
 export const useCentralizedCredits = () => {
-  const [credits, setCredits] = useState(100);
+  const [credits, setCredits] = useState(5);
   const [isLoading, setIsLoading] = useState(false);
 
   const consumeCredits = async (amount: number) => {
@@ -11,6 +11,9 @@ export const useCentralizedCredits = () => {
 
   return {
     credits,
+    remaining: credits,
+    isPro: false,
+    hasCredits: credits > 0,
     isLoading,
     consumeCredits
   };

@@ -125,7 +125,7 @@ export const ExercisePageContainer = () => {
       
       // Actions
       onShowAnalytics={() => setShowAnalytics(true)}
-      onGenerateProgram={handleGenerateProgram}
+      onGenerateAIProgram={handleGenerateProgram}
       onRegenerateProgram={handleRegenerateProgram}
       onExerciseComplete={handleExerciseComplete}
       onExerciseProgressUpdate={handleExerciseProgressUpdate}
