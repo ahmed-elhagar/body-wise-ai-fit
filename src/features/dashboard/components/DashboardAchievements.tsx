@@ -2,6 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Award, Target, Utensils, Dumbbell } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { useMemo } from "react";
 
 interface DashboardAchievementsProps {
   profile: any;
@@ -28,7 +29,28 @@ const AchievementItem = ({ icon, title, value, detail, progress }: { icon: React
 export const DashboardAchievements = ({ profile, mealPlans, programs }: DashboardAchievementsProps) => {
   const profileCompletion = profile?.completion_percentage || 60;
   const mealPlansCount = mealPlans?.length || 0;
-  const programsCount = programs?.length || 0;
+
+  const { totalWorkouts, completedWorkouts } = useMemo(() => {
+    if (!programs) return { totalWorkouts: 0, completedWorkouts: 0 };
+    
+    let total = 0;
+    let completed = 0;
+    
+    programs.forEach(program => {
+      if (program && program.daily_workouts) {
+        program.daily_workouts.forEach((workout: any) => {
+          if (!workout.is_rest_day && workout.exercises && workout.exercises.length > 0) {
+            total++;
+            if (workout.exercises.every((ex: any) => ex.completed)) {
+              completed++;
+            }
+          }
+        });
+      }
+    });
+    
+    return { totalWorkouts: total, completedWorkouts: completed };
+  }, [programs]);
 
   const achievements = [
     {
@@ -47,10 +69,10 @@ export const DashboardAchievements = ({ profile, mealPlans, programs }: Dashboar
     },
     {
       icon: <Dumbbell className="h-5 w-5" />,
-      title: "Workouts Created",
-      value: programsCount,
-      detail: "Personalized exercise programs",
-      progress: programsCount > 0 ? 100 : 0
+      title: "Completed Workouts",
+      value: `${completedWorkouts} / ${totalWorkouts}`,
+      detail: "Across all your programs",
+      progress: totalWorkouts > 0 ? (completedWorkouts / totalWorkouts) * 100 : 0
     },
   ];
 
