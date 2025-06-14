@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { useMealPlanState } from '../hooks/useMealPlanState';
 import MealPlanHeader from './MealPlanHeader';
@@ -78,7 +79,9 @@ const MealPlanContainer = () => {
       <div className="space-y-6">
         {/* Header - Always visible */}
         <MealPlanHeader 
-          onGenerateAI={mealPlanState.openAIDialog}
+          onGenerateAI={async () => {
+            return await mealPlanState.handleGenerateAIPlan();
+          }}
           onShuffle={handleShuffle}
           onShowShoppingList={() => mealPlanState.openShoppingListDialog()}
           onRegeneratePlan={handleRegeneratePlan}
@@ -172,7 +175,9 @@ const MealPlanContainer = () => {
             onViewMeal={(meal) => mealPlanState.openRecipeDialog(meal)}
             onExchangeMeal={(meal) => mealPlanState.openExchangeDialog(meal)}
             onAddSnack={() => mealPlanState.openAddSnackDialog()}
-            onGenerateAI={() => mealPlanState.openAIDialog()}
+            onGenerateAI={async () => {
+              return await mealPlanState.handleGenerateAIPlan();
+            }}
             setCurrentWeekOffset={handleWeekChange}
             setSelectedDayNumber={mealPlanState.setSelectedDayNumber}
           />
