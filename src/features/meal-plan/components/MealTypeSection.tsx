@@ -2,7 +2,7 @@
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/hooks/useI18n";
 import CompactMealCard from "./CompactMealCard";
-import type { Meal } from "@/types/meal";
+import type { DailyMeal as Meal } from "@/features/meal-plan/types";
 
 interface MealTypeSectionProps {
   mealType: string;
@@ -25,14 +25,14 @@ const MealTypeSection = ({
     if (mealType === 'snack') {
       // Only show meals that are explicitly snacks (have 🍎 emoji or snack in name)
       return meal.name?.includes('🍎') || 
-             (meal.meal_type || meal.type)?.includes('snack');
+             (meal.meal_type)?.includes('snack');
     } else if (mealType === 'dinner') {
       // Exclude snacks from dinner section
       return !meal.name?.includes('🍎') && 
-             !(meal.meal_type || meal.type)?.includes('snack');
+             !(meal.meal_type)?.includes('snack');
     } else {
       // For breakfast and lunch, show normally
-      return (meal.meal_type || meal.type) === mealType;
+      return meal.meal_type === mealType;
     }
   });
 

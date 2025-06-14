@@ -18,6 +18,11 @@ export {
   AIGenerationDialog,
   EnhancedAddSnackDialog
 } from './components';
+export { default as CompactMealCard } from './components/CompactMealCard';
+export { default as DailyNutritionSummary } from './components/DailyNutritionSummary';
+export { default as EmptyDailyState } from './components/EmptyDailyState';
+export { default as MealTypeSection } from './components/MealTypeSection';
+
 
 // Export types
 export type * from './types';
