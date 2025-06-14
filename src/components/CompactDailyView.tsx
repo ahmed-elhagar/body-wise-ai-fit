@@ -33,11 +33,11 @@ const CompactDailyView = ({
 
   // Group meals by type
   const mealsByType = todaysMeals.reduce((acc, meal, index) => {
-    const type = (meal.meal_type || meal.type) || 'meal';
+    const type = meal.meal_type || 'meal';
     if (!acc[type]) acc[type] = [];
     acc[type].push({ ...meal, originalIndex: index });
     return acc;
-  }, {} as Record<string, (Meal & { originalIndex: number })[]>);
+  }, {} as Record<string, (DailyMeal & { originalIndex: number })[]>);
 
   const mealTypeOrder = ['breakfast', 'lunch', 'dinner', 'snack'];
 
