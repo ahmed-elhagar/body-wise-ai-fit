@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { useI18n } from "@/hooks/useI18n";
 import { formatDistanceToNow } from "date-fns";
 
-const RecentActivity = () => {
+const LegacyRecentActivity = () => {
   const navigate = useNavigate();
   const { tFrom, isRTL } = useI18n();
 
@@ -100,4 +100,4 @@ const RecentActivity = () => {
   );
 };
 
-export default RecentActivity;
+export default LegacyRecentActivity;

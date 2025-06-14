@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useI18n } from "@/hooks/useI18n";
 import { Utensils, Dumbbell, Target, Camera, TrendingUp, Plus } from "lucide-react";
 
-const QuickActions = () => {
+const LegacyQuickActions = () => {
   const navigate = useNavigate();
   const { tFrom, isRTL } = useI18n();
 
@@ -90,4 +90,4 @@ const QuickActions = () => {
   );
 };
 
-export default QuickActions;
+export default LegacyQuickActions;
