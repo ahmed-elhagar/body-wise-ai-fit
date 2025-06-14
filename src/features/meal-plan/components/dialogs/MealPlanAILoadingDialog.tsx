@@ -26,7 +26,7 @@ export const MealPlanAILoadingDialog = ({
       isOpen={isGenerating}
       onClose={onClose}
       title="Generating Your Meal Plan"
-      subtitle="Creating personalized meals just for you..."
+      description="Creating personalized meals just for you..."
       steps={steps}
       position={position}
     />
