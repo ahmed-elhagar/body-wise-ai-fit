@@ -30,7 +30,11 @@
             "Moved: CompactWorkoutControl.tsx",
             "Moved: ExerciseDaySelector.tsx",
             "Moved: ExerciseProgramWeekNavigation.tsx",
-            "Moved: src/components/exercise/WorkoutTypeSelector.tsx"
+            "Moved: src/components/exercise/WorkoutTypeSelector.tsx",
+            "Moved: src/components/exercise/ProgramTypeIndicator.tsx",
+            "Moved: src/components/exercise/ExerciseProgramErrorState.tsx",
+            "Moved: src/components/exercise/ExerciseProgramLoadingStates.tsx",
+            "Moved: src/components/exercise/ExerciseProgramEmptyState.tsx"
           ]
         },
         {
@@ -64,9 +68,12 @@
             "Deleted: src/features/exercise/components/WorkoutTypeToggle.tsx (consolidated into new navigation)",
             "Deleted: src/features/exercise/components/WorkoutTypeTabs.tsx (consolidated into new navigation)",
             "Deleted: src/features/exercise/components/ExerciseCompactNavigation.tsx (consolidated into new navigation)",
-            "Marked for deletion: src/features/exercise/components/EnhancedDayNavigation.tsx (replaced by CombinedWeeklyDayNavigation)",
-            "Marked for deletion: src/features/exercise/components/WeeklyExerciseNavigation.tsx (replaced by CombinedWeeklyDayNavigation)",
-            "Marked for deletion: src/features/exercise/components/ExerciseProgramDaySelector.tsx (replaced by CombinedWeeklyDayNavigation)"
+            "Deleted: src/features/exercise/components/EnhancedDayNavigation.tsx (replaced by CombinedWeeklyDayNavigation)",
+            "Deleted: src/features/exercise/components/WeeklyExerciseNavigation.tsx (replaced by CombinedWeeklyDayNavigation)",
+            "Deleted: src/features/exercise/components/ExerciseProgramDaySelector.tsx (replaced by CombinedWeeklyDayNavigation)",
+            "Deleted: src/components/exercise/ExerciseEmptyState.tsx (re-export file)",
+            "Deleted: src/components/exercise/ExerciseErrorState.tsx (re-export file)",
+            "Deleted: src/components/exercise/ExerciseListEnhanced.tsx (re-export file)"
           ]
         }
       ]
