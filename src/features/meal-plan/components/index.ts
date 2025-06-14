@@ -20,6 +20,7 @@ export { MealPlanAILoadingDialog } from './dialogs/MealPlanAILoadingDialog';
 export { MealExchangeDialog } from './dialogs/MealExchangeDialog';
 export { AIGenerationDialog } from './dialogs/AIGenerationDialog';
 export { default as EnhancedAddSnackDialog } from './dialogs/EnhancedAddSnackDialog';
+export { RecipeDialog } from './dialogs/RecipeDialog';
 
 // Legacy exports for backward compatibility - these are deprecated
 export { EmptyWeekState as MealPlanEmptyState };
