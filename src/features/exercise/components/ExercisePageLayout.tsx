@@ -1,14 +1,12 @@
 
-import { 
-  EnhancedDayNavigation,
-  ExercisePageContent, 
-  ExerciseErrorState,
-  EnhancedExerciseHeaderWithAnalytics,
-  AIExerciseDialog
-} from "@/features/exercise";
+import { Card } from "@/components/ui/card";
+import { ExerciseErrorState } from "./ExerciseErrorState";
+import { EnhancedExerciseHeaderWithAnalytics } from "./EnhancedExerciseHeaderWithAnalytics";
+import { WeeklyExerciseNavigation } from "./WeeklyExerciseNavigation";
+import { EnhancedDayNavigation } from "./EnhancedDayNavigation";
+import { ExercisePageContent } from "./ExercisePageContent";
+import { AIExerciseDialog } from "./AIExerciseDialog";
 import { UnifiedAILoadingDialog } from "@/components/ai/UnifiedAILoadingDialog";
-import SimpleLoadingIndicator from "@/components/ui/simple-loading-indicator";
-import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ExercisePageLayoutProps {
   // Data props
@@ -84,117 +82,90 @@ export const ExercisePageLayout = ({
   onExerciseProgressUpdate,
   refetch
 }: ExercisePageLayoutProps) => {
-  const { language } = useLanguage();
-
-  // Only show full page loading for initial data load (no program exists)
-  const showFullPageLoading = isLoading && !currentProgram && currentWeekOffset === 0;
-
-  if (showFullPageLoading) {
+  if (error) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <SimpleLoadingIndicator
-          message="Loading Your Exercise Program"
-          description="Preparing your personalized workout plan with progress tracking and exercise details"
-          size="lg"
-        />
-      </div>
+      <ExerciseErrorState 
+        onRetry={refetch}
+        error={error}
+      />
     );
   }
 
-  if (error) {
-    return <ExerciseErrorState onRetry={() => refetch()} />;
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
+      <div className="max-w-7xl mx-auto">
         {/* Header Section */}
-        <div className="bg-white border-b border-gray-200 sticky top-0 z-40">
-          <div className="px-4 py-4">
-            <EnhancedExerciseHeaderWithAnalytics
-              currentProgram={currentProgram}
-              onShowAnalytics={onShowAnalytics}
-              onShowAIDialog={() => setShowAIDialog(true)}
-              onRegenerateProgram={onRegenerateProgram}
-              isGenerating={isGenerating}
-              workoutType={workoutType}
-            />
-          </div>
-        </div>
-
-        {/* Navigation Section */}
-        <div className="px-4 py-4">
-          <EnhancedDayNavigation
-            weekStartDate={weekStartDate}
-            selectedDayNumber={selectedDayNumber}
-            onDayChange={setSelectedDayNumber}
-            currentProgram={currentProgram}
-            workoutType={workoutType}
-            currentWeekOffset={currentWeekOffset}
-            onWeekChange={setCurrentWeekOffset}
-            onWorkoutTypeChange={setWorkoutType}
-          />
-        </div>
-
-        {/* Content Section - Fixed Height Container */}
-        <div className="px-4 pb-6">
-          <div className="bg-white rounded-lg border border-gray-200 relative min-h-[600px]">
-            {/* Navigation/Day loading overlay - shows when loading data */}
-            {isLoading && (
-              <div className="absolute inset-0 bg-white/95 backdrop-blur-sm flex items-center justify-center z-10 rounded-lg">
-                <SimpleLoadingIndicator
-                  message="Loading Exercise Data"
-                  description="Fetching your workout information..."
-                />
-              </div>
-            )}
-            
-            <ExercisePageContent
-              isLoading={false} // Content component handles its own empty states
-              currentProgram={currentProgram}
-              todaysExercises={todaysExercises}
-              completedExercises={completedExercises}
-              totalExercises={totalExercises}
-              progressPercentage={progressPercentage}
-              isRestDay={isRestDay}
-              isToday={isToday}
-              selectedDayNumber={selectedDayNumber}
-              workoutType={workoutType}
-              setWorkoutType={setWorkoutType}
-              showAIDialog={showAIDialog}
-              setShowAIDialog={setShowAIDialog}
-              aiPreferences={aiPreferences}
-              setAiPreferences={setAiPreferences}
-              isGenerating={isGenerating}
-              onExerciseComplete={onExerciseComplete}
-              onExerciseProgressUpdate={onExerciseProgressUpdate}
-              onGenerateAIProgram={onGenerateAIProgram}
-            />
-          </div>
-        </div>
-
-        {/* AI Exercise Dialog */}
-        <AIExerciseDialog
-          open={showAIDialog}
-          onOpenChange={setShowAIDialog}
-          preferences={{ ...aiPreferences, workoutType }}
-          setPreferences={setAiPreferences}
-          onGenerate={onGenerateAIProgram}
+        <EnhancedExerciseHeaderWithAnalytics
+          currentProgram={currentProgram}
+          workoutType={workoutType}
+          onWorkoutTypeChange={setWorkoutType}
+          onShowAIDialog={() => setShowAIDialog(true)}
+          onRegenerateProgram={onRegenerateProgram}
+          onShowAnalytics={onShowAnalytics}
           isGenerating={isGenerating}
         />
 
-        {/* Small Top-Right AI Loading Dialog - Like Meal Plan */}
+        {/* Navigation Section */}
+        <div className="px-6 pb-6 space-y-6">
+          <WeeklyExerciseNavigation
+            currentWeekOffset={currentWeekOffset}
+            setCurrentWeekOffset={setCurrentWeekOffset}
+            weekStartDate={weekStartDate}
+          />
+          
+          <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-3xl">
+            <EnhancedDayNavigation
+              selectedDayNumber={selectedDayNumber}
+              setSelectedDayNumber={setSelectedDayNumber}
+              weekStartDate={weekStartDate}
+              currentProgram={currentProgram}
+            />
+          </Card>
+        </div>
+
+        {/* Main Content */}
+        <ExercisePageContent
+          isLoading={isLoading}
+          currentProgram={currentProgram}
+          todaysExercises={todaysExercises}
+          completedExercises={completedExercises}
+          totalExercises={totalExercises}
+          progressPercentage={progressPercentage}
+          isRestDay={isRestDay}
+          isToday={isToday}
+          selectedDayNumber={selectedDayNumber}
+          workoutType={workoutType}
+          setWorkoutType={setWorkoutType}
+          showAIDialog={showAIDialog}
+          setShowAIDialog={setShowAIDialog}
+          aiPreferences={aiPreferences}
+          setAiPreferences={setAiPreferences}
+          isGenerating={isGenerating}
+          onExerciseComplete={onExerciseComplete}
+          onExerciseProgressUpdate={onExerciseProgressUpdate}
+          onGenerateAIProgram={onGenerateAIProgram}
+        />
+
+        {/* AI Dialog */}
+        <AIExerciseDialog
+          open={showAIDialog}
+          onOpenChange={setShowAIDialog}
+          preferences={aiPreferences}
+          onPreferencesChange={setAiPreferences}
+          onGenerate={onGenerateAIProgram}
+          isGenerating={isGenerating}
+          workoutType={workoutType}
+        />
+
+        {/* AI Loading Dialog */}
         <UnifiedAILoadingDialog
           isOpen={isGenerating}
-          title={language === 'ar' ? 'إنشاء برنامج رياضي' : 'Generating Exercise Program'}
-          description={language === 'ar' ? 'إنشاء برنامج رياضي مخصص' : 'Creating personalized exercise program'}
           steps={exerciseSteps}
           currentStepIndex={currentStepIndex}
           isComplete={isComplete}
           progress={progress}
-          estimatedTotalTime={22}
-          allowClose={false}
-          position="top-right"
+          feature="exercise"
+          onClose={() => {}}
         />
       </div>
     </div>

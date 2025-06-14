@@ -13,3 +13,9 @@ export { ExerciseListEnhanced } from './components/ExerciseListEnhanced';
 export { RestDayCard } from './components/RestDayCard';
 export { ExerciseEmptyState } from './components/ExerciseEmptyState';
 export { CompactProgressSection } from './components/CompactProgressSection';
+
+// Export types
+export type * from './types';
+
+// Export hooks
+export * from './hooks';
