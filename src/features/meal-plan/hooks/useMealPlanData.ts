@@ -6,7 +6,6 @@ import { getWeekStartDate } from '@/utils/mealPlanUtils';
 import { format } from 'date-fns';
 import { fetchMealPlanData } from '../services/mealPlanService';
 
-// Re-export types for backward compatibility - use the main types from features
 export type { MealIngredient, DailyMeal, WeeklyMealPlan } from '@/features/meal-plan/types';
 
 export const useMealPlanData = (weekOffset: number = 0) => {
@@ -25,10 +24,9 @@ export const useMealPlanData = (weekOffset: number = 0) => {
         const weekStartDate = getWeekStartDate(weekOffset);
         const weekStartDateStr = format(weekStartDate, 'yyyy-MM-dd');
         
-        // Use enhanced API timeout handling
         const result = await handleAPITimeout(async () => {
           return await fetchMealPlanData(user.id, weekStartDateStr);
-        }, 15000, 1); // 15 second timeout, 1 retry
+        }, 15000, 1);
 
         return result;
       } catch (error) {
@@ -42,8 +40,8 @@ export const useMealPlanData = (weekOffset: number = 0) => {
       }
     },
     enabled: !!user?.id,
-    staleTime: 30000, // 30 seconds
-    gcTime: 120000, // 2 minutes
+    staleTime: 30000,
+    gcTime: 120000,
     retry: (failureCount, error) => {
       if (error?.message?.includes('JWT') || error?.message?.includes('auth')) return false;
       return failureCount < 2;

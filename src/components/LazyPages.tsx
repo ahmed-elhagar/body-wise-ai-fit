@@ -2,8 +2,6 @@
 import { lazy } from 'react';
 
 // Authentication & Public pages
-export const Index = lazy(() => import('@/pages/Index'));
-export const Landing = lazy(() => import('@/pages/Landing'));
 export const Auth = lazy(() => import('@/pages/Auth'));
 export const UnifiedSignup = lazy(() => import('@/pages/Signup'));
 export const Welcome = lazy(() => import('@/pages/Welcome'));
@@ -31,8 +29,6 @@ export const Coach = lazy(() => import('@/pages/Coach'));
 export const NotFound = lazy(() => import('@/pages/NotFound'));
 
 export const LazyPages = {
-  Index,
-  Landing,
   Auth,
   UnifiedSignup,
   Welcome,
