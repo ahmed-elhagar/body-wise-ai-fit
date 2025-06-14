@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { useMealPlanState } from '../hooks/useMealPlanState';
 import MealPlanHeader from './MealPlanHeader';
@@ -16,7 +17,7 @@ import { MealExchangeDialog } from './dialogs/MealExchangeDialog';
 import { AIGenerationDialog } from './dialogs/AIGenerationDialog';
 import { EnhancedRecipeDialog } from './EnhancedRecipeDialog';
 import EnhancedAddSnackDialog from './dialogs/EnhancedAddSnackDialog';
-import { ModernShoppingListDrawer } from './dialogs/ModernShoppingListDrawer';
+import ModernShoppingListDrawer from '@/components/shopping-list/ModernShoppingListDrawer';
 import { MealPlanAILoadingDialog } from './dialogs/MealPlanAILoadingDialog';
 
 const MealPlanContainer = () => {
@@ -193,7 +194,7 @@ const MealPlanContainer = () => {
         position="top-right"
       />
 
-      {/* Modern Shopping List Drawer - Complete revamped experience */}
+      {/* Modern Shopping List Drawer - Fixed to use the correct enhanced version */}
       <ModernShoppingListDrawer
         isOpen={mealPlanState.showShoppingListDialog}
         onClose={() => mealPlanState.closeShoppingListDialog()}
