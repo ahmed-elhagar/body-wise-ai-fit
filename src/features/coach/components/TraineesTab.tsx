@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,8 +8,8 @@ import TraineeProgressCard from "@/components/coach/TraineeProgressCard";
 import TraineeFilterBar from "@/components/coach/TraineeFilterBar";
 import CoachMetricsOverview from "./CoachMetricsOverview";
 import CoachTasksPanel from "./CoachTasksPanel";
-import { AssignTraineeDialog } from "@/components/coach/AssignTraineeDialog";
-import { CoachTraineeChat } from "@/components/coach/CoachTraineeChat";
+import { AssignTraineeDialog } from "./AssignTraineeDialog";
+import { CoachTraineeChat } from "./CoachTraineeChat";
 import { TraineeProgressView } from "@/components/coach/TraineeProgressView";
 
 interface TraineesTabProps {

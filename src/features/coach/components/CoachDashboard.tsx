@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -24,7 +25,7 @@ import { CoachAnalyticsTab } from "./CoachAnalyticsTab";
 import { TraineeProgressOverview } from "@/components/coach/overview/TraineeProgressOverview";
 import { QuickActions } from "@/components/coach/overview/QuickActions";
 import { CompactTasksPanel } from "@/components/coach/overview/CompactTasksPanel";
-import { AssignTraineeDialog } from "@/components/coach/AssignTraineeDialog";
+import { AssignTraineeDialog } from "./AssignTraineeDialog";
 import { CreateTaskDialog } from "./CreateTaskDialog";
 
 export const CoachDashboard = () => {

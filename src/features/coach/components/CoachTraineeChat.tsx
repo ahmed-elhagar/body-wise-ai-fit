@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import ChatHeader from "./chat/ChatHeader";
 import MessagesList from "./chat/MessagesList";
 import ChatInput from "./chat/ChatInput";
-import type { CoachChatMessage } from "./types/chatTypes";
+import type { CoachChatMessage } from "@/features/coach/types";
 
 interface CoachTraineeChatProps {
   traineeId: string;

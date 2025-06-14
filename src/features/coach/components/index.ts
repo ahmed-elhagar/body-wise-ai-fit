@@ -8,3 +8,5 @@ export { default as CoachMetricsOverview } from './CoachMetricsOverview';
 export { default as CoachTasksPanel } from './CoachTasksPanel';
 export { CreateTaskDialog } from './CreateTaskDialog';
 export { CoachAnalyticsTab } from './CoachAnalyticsTab';
+export { AssignTraineeDialog } from './AssignTraineeDialog';
+export { CoachTraineeChat } from './CoachTraineeChat';
