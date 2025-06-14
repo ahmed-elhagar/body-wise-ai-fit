@@ -68,6 +68,11 @@ export const MealPlanPageLayout = (props: MealPlanPageLayoutProps) => {
     isLoading,
     error,
     handleGenerateAIPlan,
+    currentWeekPlan,
+    openRecipeDialog,
+    openExchangeDialog,
+    openAddSnackDialog,
+    openShoppingListDialog,
     // ... destructure other props
   } = props;
 
@@ -79,16 +84,49 @@ export const MealPlanPageLayout = (props: MealPlanPageLayoutProps) => {
     return <ErrorState error={error} onRetry={props.refetch} />;
   }
 
+  // Create handler functions for MealPlanHeader
+  const handleShuffle = async () => {
+    console.log('🔄 Shuffle meals requested');
+    // TODO: Implement shuffle functionality
+  };
+
+  const handleRegeneratePlan = async () => {
+    console.log('🔄 Regenerate plan requested');
+    return await handleGenerateAIPlan();
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
       <div className="max-w-7xl mx-auto">
-        <MealPlanHeader {...props} />
+        <MealPlanHeader 
+          onGenerateAI={handleGenerateAIPlan}
+          onShuffle={handleShuffle}
+          onShowShoppingList={openShoppingListDialog}
+          onRegeneratePlan={handleRegeneratePlan}
+          isGenerating={props.isGenerating}
+          isShuffling={false}
+          hasWeeklyPlan={!!currentWeekPlan?.weeklyPlan}
+        />
         <MealPlanContent 
-          {...props} 
+          viewMode="daily"
+          currentWeekPlan={currentWeekPlan}
+          selectedDayNumber={props.selectedDayNumber}
+          dailyMeals={props.dailyMeals}
+          totalCalories={props.totalCalories}
+          totalProtein={props.totalProtein}
+          targetDayCalories={props.targetDayCalories}
+          weekStartDate={props.weekStartDate}
+          currentWeekOffset={props.currentWeekOffset}
+          isGenerating={props.isGenerating}
+          onViewMeal={openRecipeDialog}
+          onExchangeMeal={openExchangeDialog}
+          onAddSnack={openAddSnackDialog}
           onGenerateAI={async () => {
             const result = await handleGenerateAIPlan();
             return result;
           }}
+          setCurrentWeekOffset={props.setCurrentWeekOffset}
+          setSelectedDayNumber={props.setSelectedDayNumber}
         />
       </div>
     </div>
