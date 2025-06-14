@@ -17,100 +17,75 @@ const GoalProgressWidget = () => {
     ? goals.reduce((acc, goal) => acc + calculateProgress(goal), 0) / goals.length
     : 0;
 
-  if (activeGoals.length === 0) {
-    return (
-      <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Target className="h-5 w-5 text-blue-600" />
-            {t('Goals')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="text-center space-y-4">
-          <div className="text-gray-500 text-sm">
-            {t('No active goals set')}
-          </div>
-          <Button
-            onClick={() => navigate('/goals')}
-            variant="outline"
-            size="sm"
-            className="bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
-          >
-            <Plus className="w-3 h-3 mr-1" />
-            {t('Create Goal')}
-          </Button>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
-    <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-      <CardHeader className="pb-4">
+    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-2xl">
+      <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-lg">
+          <CardTitle className="flex items-center gap-2 text-lg font-bold text-gray-800">
             <Target className="h-5 w-5 text-blue-600" />
-            {t('Goal Progress')}
+            <span>{t('Goal Progress')}</span>
           </CardTitle>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate('/goals')}
-            className="bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
-          >
-            {t('View All')}
-            <ArrowRight className="w-3 h-3 ml-1" />
-          </Button>
+          {activeGoals.length > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/goals')}
+              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+            >
+              {t('View All')}
+              <ArrowRight className="w-3 h-3 ml-1" />
+            </Button>
+          )}
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Overall Progress Ring */}
-        <div className="flex justify-center">
-          <GoalProgressRing progress={overallProgress} size={100}>
-            <div className="text-center">
-              <div className="text-lg font-bold text-gray-800">{Math.round(overallProgress)}%</div>
-              <div className="text-xs text-gray-600">{t('Overall')}</div>
+      <CardContent>
+        {activeGoals.length === 0 ? (
+          <div className="text-center py-8">
+            <Target className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500 text-sm font-medium mb-4">{t('No active goals set')}</p>
+            <Button
+              onClick={() => navigate('/goals/create')}
+              className="bg-blue-600 text-white hover:bg-blue-700"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              {t('Create Goal')}
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="flex justify-center my-4">
+              <GoalProgressRing progress={overallProgress} size={120} strokeWidth={10}>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-gray-800">{Math.round(overallProgress)}%</div>
+                  <div className="text-sm text-gray-600">{t('Overall')}</div>
+                </div>
+              </GoalProgressRing>
             </div>
-          </GoalProgressRing>
-        </div>
-
-        {/* Individual Goals */}
-        <div className="space-y-3">
-          {activeGoals.map(goal => {
-            const progress = calculateProgress(goal);
-            return (
-              <div key={goal.id} className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="font-medium text-gray-700 truncate flex-1 mr-2">
-                    {goal.title}
-                  </span>
-                  <span className="text-gray-600 text-xs">
-                    {Math.round(progress)}%
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${Math.min(progress, 100)}%` }}
-                  ></div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Quick Actions */}
-        <div className="pt-2 border-t border-gray-100">
-          <Button
-            onClick={() => navigate('/goals')}
-            variant="ghost"
-            size="sm"
-            className="w-full justify-center text-blue-600 hover:text-blue-800 hover:bg-blue-50"
-          >
-            <Target className="w-3 h-3 mr-1" />
-            {t('Manage Goals')}
-          </Button>
-        </div>
+            <div className="space-y-3">
+              {activeGoals.map(goal => {
+                const progress = calculateProgress(goal);
+                return (
+                  <div key={goal.id}>
+                    <div className="flex items-center justify-between text-sm mb-1">
+                      <span className="font-semibold text-gray-700 truncate flex-1 mr-2">
+                        {goal.title}
+                      </span>
+                      <span className="font-bold text-gray-800">
+                        {Math.round(progress)}%
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                      <div 
+                        className="bg-gradient-to-r from-blue-500 to-purple-600 h-2.5 rounded-full transition-all duration-500"
+                        style={{ width: `${Math.min(progress, 100)}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

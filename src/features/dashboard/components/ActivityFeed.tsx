@@ -1,5 +1,4 @@
-
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useWeightTracking } from "@/hooks/useWeightTracking";
 import { useI18n } from "@/hooks/useI18n";
@@ -16,21 +15,12 @@ const ActivityFeed = ({ mealPlans, programs }: ActivityFeedProps) => {
   const { tFrom, isRTL } = useI18n();
   const tDashboard = tFrom('dashboard');
 
-  const getActivityIcon = (type: string) => {
-    switch (type) {
-      case 'weight': return Scale;
-      case 'meal': return Utensils;
-      case 'exercise': return Dumbbell;
-      default: return Activity;
-    }
-  };
-
   const getActivityColor = (type: string) => {
     switch (type) {
-      case 'weight': return { icon: 'text-blue-600', bg: 'bg-blue-50' };
-      case 'meal': return { icon: 'text-green-600', bg: 'bg-green-50' };
-      case 'exercise': return { icon: 'text-purple-600', bg: 'bg-purple-50' };
-      default: return { icon: 'text-gray-600', bg: 'bg-gray-50' };
+      case 'weight': return 'bg-blue-100 text-blue-800';
+      case 'meal': return 'bg-green-100 text-green-800';
+      case 'exercise': return 'bg-purple-100 text-purple-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -56,72 +46,58 @@ const ActivityFeed = ({ mealPlans, programs }: ActivityFeedProps) => {
       badge: String(tDashboard('recentActivity.badges.exercise')),
       description: `${program.workout_type} ${String(tDashboard('recentActivity.program'))}`
     })) || [])
-  ].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 6);
-
-  if (activities.length === 0) {
-    return (
-      <Card className="p-4 bg-white border border-gray-100 shadow-sm">
-        <div className={`flex items-center gap-2 mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
-          <div className="w-6 h-6 bg-green-500 rounded-lg flex items-center justify-center">
-            <TrendingUp className="w-3 h-3 text-white" />
-          </div>
-          <h3 className="text-sm font-semibold text-gray-800">
-            {String(tDashboard('recentActivity.title'))}
-          </h3>
-        </div>
-        
-        <div className="text-center py-6">
-          <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-            <Activity className="w-6 h-6 text-gray-400" />
-          </div>
-          <p className="text-gray-500 text-sm">{String(tDashboard('recentActivity.noActivity'))}</p>
-        </div>
-      </Card>
-    );
-  }
+  ].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 5);
 
   return (
-    <Card className="p-4 bg-white border border-gray-100 shadow-sm">
-      <div className={`flex items-center gap-2 mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
-        <div className="w-6 h-6 bg-green-500 rounded-lg flex items-center justify-center">
-          <TrendingUp className="w-3 h-3 text-white" />
-        </div>
-        <h3 className="text-sm font-semibold text-gray-800">
-          {String(tDashboard('recentActivity.title'))}
-        </h3>
-      </div>
-      
-      <div className="space-y-2">
-        {activities.slice(0, 4).map((activity, index) => {
-          const IconComponent = getActivityIcon(activity.type);
-          const colors = getActivityColor(activity.type);
-          return (
-            <div key={index} className={`flex items-start gap-3 p-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-all duration-200 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <div className={`w-6 h-6 ${colors.bg} rounded-lg flex items-center justify-center flex-shrink-0`}>
-                <IconComponent className={`w-3 h-3 ${colors.icon}`} />
-              </div>
-              
-              <div className={`flex-1 min-w-0 ${isRTL ? 'text-right' : 'text-left'}`}>
-                <p className="font-medium text-gray-800 text-xs break-words mb-1">
-                  {activity.title}
-                </p>
-                {activity.description && (
-                  <p className="text-xs text-gray-500 mb-1">{activity.description}</p>
-                )}
-                <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse justify-end' : ''}`}>
-                  <Badge variant="secondary" className="text-xs px-1.5 py-0.5 bg-white">
-                    {activity.badge}
-                  </Badge>
-                  <div className={`flex items-center gap-1 text-xs text-gray-500 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                    <Clock className="w-2.5 h-2.5" />
-                    <span>{formatDistanceToNow(new Date(activity.time), { addSuffix: true })}</span>
+    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-2xl h-full">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-lg font-bold text-gray-800">
+          <TrendingUp className="w-5 h-5 text-green-500" />
+          <span>Recent Activity</span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {activities.length === 0 ? (
+          <div className="text-center py-16">
+            <Activity className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500 text-sm font-medium">{String(tDashboard('recentActivity.noActivity'))}</p>
+            <p className="text-gray-400 text-xs">Complete actions to see them here.</p>
+          </div>
+        ) : (
+          <div className="relative pl-6">
+            <div className="absolute left-[11px] top-0 h-full w-0.5 bg-gray-200" />
+            <div className="space-y-8">
+              {activities.map((activity, index) => {
+                 const dotColorClass = getActivityColor(activity.type).replace('-100', '-500').replace('text-blue-800','bg-blue-500').replace('text-green-800','bg-green-500').replace('text-purple-800','bg-purple-500').replace('text-gray-800','bg-gray-500');
+
+                return (
+                  <div key={index} className="relative flex items-start gap-4">
+                    <div className="absolute -left-[18px] top-1.5 w-6 h-6 bg-white rounded-full border-2 border-gray-200 flex items-center justify-center">
+                       <div className={`w-3 h-3 rounded-full ${dotColorClass}`} />
+                    </div>
+                    
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-800 text-sm mb-1">
+                        {activity.title}
+                      </p>
+                      <p className="text-xs text-gray-500 mb-2">{activity.description}</p>
+                      <div className="flex items-center justify-between">
+                         <Badge variant="secondary" className={`text-xs px-2 py-0.5 font-normal border-0 ${getActivityColor(activity.type)}`}>
+                           {activity.badge}
+                         </Badge>
+                         <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                           <Clock className="w-3 h-3" />
+                           <span>{formatDistanceToNow(new Date(activity.time), { addSuffix: true })}</span>
+                         </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
+                );
+              })}
             </div>
-          );
-        })}
-      </div>
+          </div>
+        )}
+      </CardContent>
     </Card>
   );
 };

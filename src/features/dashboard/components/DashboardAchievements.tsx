@@ -11,8 +11,8 @@ interface DashboardAchievementsProps {
 }
 
 const AchievementItem = ({ icon, title, value, detail, progress }: { icon: React.ReactNode, title: string, value: string | number, detail: string, progress?: number }) => (
-  <div className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-    <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-gray-600">
+  <div className="flex items-center gap-4">
+    <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-500 flex-shrink-0">
       {icon}
     </div>
     <div className="flex-1">
@@ -20,8 +20,11 @@ const AchievementItem = ({ icon, title, value, detail, progress }: { icon: React
         <p className="font-semibold text-sm text-gray-800">{title}</p>
         <p className="font-bold text-sm text-indigo-600">{value}</p>
       </div>
-      <p className="text-xs text-gray-500">{detail}</p>
-      {progress !== undefined && <Progress value={progress} className="h-1 mt-1" />}
+      {progress !== undefined ? (
+        <Progress value={progress} className="h-1.5 mt-1" />
+      ) : (
+        <p className="text-xs text-gray-500">{detail}</p>
+      )}
     </div>
   </div>
 );
@@ -62,14 +65,14 @@ export const DashboardAchievements = ({ profile, mealPlans, programs }: Dashboar
     },
     {
       icon: <Utensils className="h-5 w-5" />,
-      title: "Meal Plans Generated",
+      title: "Meal Plans Created",
       value: mealPlansCount,
       detail: "Weekly nutrition plans",
       progress: mealPlansCount > 0 ? 100 : 0
     },
     {
       icon: <Dumbbell className="h-5 w-5" />,
-      title: "Completed Workouts",
+      title: "Workouts Done",
       value: `${completedWorkouts} / ${totalWorkouts}`,
       detail: "Across all your programs",
       progress: totalWorkouts > 0 ? (completedWorkouts / totalWorkouts) * 100 : 0
@@ -77,15 +80,15 @@ export const DashboardAchievements = ({ profile, mealPlans, programs }: Dashboar
   ];
 
   return (
-    <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-      <CardHeader className="pb-4">
-        <CardTitle className="flex items-center gap-2 text-lg">
+    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-2xl">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-lg font-bold text-gray-800">
           <Award className="h-5 w-5 text-yellow-500" />
-          Achievements
+          <span>Achievements</span>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-2">
+        <div className="space-y-4">
           {achievements.map((ach, index) => (
             <AchievementItem key={index} {...ach} />
           ))}
