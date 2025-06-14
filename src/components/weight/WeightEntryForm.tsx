@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,7 +33,8 @@ const WeightEntryForm = ({ onSuccess }: WeightEntryFormProps) => {
         weight: parseFloat(weight),
         body_fat_percentage: bodyFat ? parseFloat(bodyFat) : undefined,
         muscle_mass: muscleMass ? parseFloat(muscleMass) : undefined,
-        notes: notes.trim() || undefined
+        notes: notes.trim() || undefined,
+        recorded_at: new Date().toISOString()
       });
       
       toast.success('Weight entry added successfully!');

@@ -4,10 +4,10 @@ export { default as WeeklyNavigation } from './WeeklyNavigation';
 
 // Export existing components
 export { default as MealPlanContainer } from './MealPlanContainer';
-export { default as MealPlanContent } from './MealPlanContent';
+export { MealPlanContent } from './MealPlanContent';
 export { default as MealCard } from './MealCard';
 export { default as DayOverview } from './DayOverview';
-export { default as EnhancedRecipeDialog } from './EnhancedRecipeDialog';
+export { EnhancedRecipeDialog } from './EnhancedRecipeDialog';
 export { default as CompactMealCard } from './CompactMealCard';
 export { default as DailyNutritionSummary } from './DailyNutritionSummary';
 export { default as EmptyDailyState } from './EmptyDailyState';
@@ -21,7 +21,7 @@ export { default as MealPlanErrorState } from './MealPlanErrorState';
 export { default as MealPlanLoadingState } from './MealPlanLoadingState';
 
 // Dialog components
-export { default as MealPlanAILoadingDialog } from './dialogs/MealPlanAILoadingDialog';
-export { default as MealExchangeDialog } from './dialogs/MealExchangeDialog';
-export { default as AIGenerationDialog } from './dialogs/AIGenerationDialog';
+export { MealPlanAILoadingDialog } from './dialogs/MealPlanAILoadingDialog';
+export { MealExchangeDialog } from './dialogs/MealExchangeDialog';
+export { AIGenerationDialog } from './dialogs/AIGenerationDialog';
 export { default as EnhancedAddSnackDialog } from './dialogs/EnhancedAddSnackDialog';
