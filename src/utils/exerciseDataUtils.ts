@@ -64,3 +64,24 @@ export const getTrainingDays = (dailyWorkouts: any[]) => {
 export const getRestDays = (dailyWorkouts: any[]) => {
   return dailyWorkouts.filter(w => !w.exercises || w.exercises.length === 0);
 };
+
+export const generateWeeklyWorkouts = (program: any, weekNumber: number) => {
+  // Generate workout structure for a specific week
+  const workoutsPerWeek = 7;
+  const workouts = [];
+  
+  for (let day = 1; day <= workoutsPerWeek; day++) {
+    const workout = {
+      id: `week-${weekNumber}-day-${day}`,
+      day_number: day,
+      name: `Day ${day}`,
+      exercises: program.exercises || [],
+      estimated_calories: 300,
+      estimated_duration: 45,
+      completed: false
+    };
+    workouts.push(workout);
+  }
+  
+  return workouts;
+};

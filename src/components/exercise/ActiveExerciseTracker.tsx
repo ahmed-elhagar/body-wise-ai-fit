@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -38,6 +37,9 @@ export const ActiveExerciseTracker = ({
   const [isUpdating, setIsUpdating] = useState(false);
   const [restTimer, setRestTimer] = useState(0);
   const [isResting, setIsResting] = useState(false);
+  const [currentSets, setCurrentSets] = useState(0);
+  const [currentReps, setCurrentReps] = useState('');
+  const [currentWeight, setCurrentWeight] = useState<number | undefined>(undefined);
 
   const totalSets = exercise.sets || 3;
   const defaultReps = parseInt(exercise.reps || '12');
@@ -170,6 +172,22 @@ export const ActiveExerciseTracker = ({
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleRepsChange = (value: string) => {
+    setCurrentReps(value);
+  };
+
+  const handleProgressUpdate = async () => {
+    if (currentSets > 0) {
+      await onProgressUpdate(
+        exercise.id, 
+        currentSets, 
+        String(currentReps), // Ensure reps is always a string
+        notes || undefined, 
+        currentWeight || undefined
+      );
+    }
   };
 
   return (
@@ -323,3 +341,5 @@ export const ActiveExerciseTracker = ({
     </Card>
   );
 };
+
+export default ActiveExerciseTracker;

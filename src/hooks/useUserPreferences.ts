@@ -1,110 +1,75 @@
 
 import { useState, useEffect } from 'react';
-import { useAuth } from './useAuth';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from './useAuth';
+import { toast } from 'sonner';
 
 export interface UserPreferences {
-  theme: 'light' | 'dark' | 'system';
-  language: 'en' | 'ar';
-  notifications: {
-    email: boolean;
-    push: boolean;
-    workout_reminders: boolean;
-    meal_reminders: boolean;
-  };
-  units: {
-    weight: 'kg' | 'lbs';
-    height: 'cm' | 'ft';
-    temperature: 'celsius' | 'fahrenheit';
-  };
-  privacy: {
-    profile_visibility: 'public' | 'private' | 'friends';
-    workout_sharing: boolean;
-    progress_sharing: boolean;
-  };
+  theme_preference?: 'light' | 'dark' | 'auto';
+  push_notifications?: boolean;
+  email_notifications?: boolean;
+  data_sharing_analytics?: boolean;
+  measurement_units?: 'metric' | 'imperial';
+  notifications?: boolean;
 }
-
-const defaultPreferences: UserPreferences = {
-  theme: 'system',
-  language: 'en',
-  notifications: {
-    email: true,
-    push: true,
-    workout_reminders: true,
-    meal_reminders: true,
-  },
-  units: {
-    weight: 'kg',
-    height: 'cm',
-    temperature: 'celsius',
-  },
-  privacy: {
-    profile_visibility: 'private',
-    workout_sharing: false,
-    progress_sharing: false,
-  },
-};
 
 export const useUserPreferences = () => {
   const { user } = useAuth();
-  const [preferences, setPreferences] = useState<UserPreferences>(defaultPreferences);
-  const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    if (user) {
-      loadPreferences();
-    } else {
-      setPreferences(defaultPreferences);
-      setIsLoading(false);
-    }
-  }, [user]);
+  const { data: preferences, isLoading } = useQuery({
+    queryKey: ['user-preferences', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
 
-  const loadPreferences = async () => {
-    try {
       const { data, error } = await supabase
         .from('user_preferences')
-        .select('preferences')
-        .eq('user_id', user?.id)
+        .select('*')
+        .eq('user_id', user.id)
         .single();
 
       if (error && error.code !== 'PGRST116') {
         throw error;
       }
 
-      setPreferences(data?.preferences || defaultPreferences);
-    } catch (error) {
-      console.error('Error loading preferences:', error);
-      setPreferences(defaultPreferences);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      return data as UserPreferences;
+    },
+    enabled: !!user?.id
+  });
 
-  const updatePreferences = async (newPreferences: Partial<UserPreferences>) => {
-    if (!user) return;
+  const updatePreferencesMutation = useMutation({
+    mutationFn: async (newPreferences: Partial<UserPreferences>) => {
+      if (!user?.id) throw new Error('Not authenticated');
 
-    const updatedPreferences = { ...preferences, ...newPreferences };
-    setPreferences(updatedPreferences);
-
-    try {
       const { error } = await supabase
         .from('user_preferences')
         .upsert({
           user_id: user.id,
-          preferences: updatedPreferences,
+          ...newPreferences,
+          updated_at: new Date().toISOString()
         });
 
       if (error) throw error;
-    } catch (error) {
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user-preferences', user?.id] });
+      toast.success('Preferences updated successfully');
+    },
+    onError: (error) => {
       console.error('Error updating preferences:', error);
-      // Revert on error
-      setPreferences(preferences);
+      toast.error('Failed to update preferences');
     }
+  });
+
+  const updatePreferences = async (newPreferences: Partial<UserPreferences>) => {
+    await updatePreferencesMutation.mutateAsync(newPreferences);
   };
 
   return {
-    preferences,
+    preferences: preferences || {},
     updatePreferences,
     isLoading,
+    isUpdating: updatePreferencesMutation.isPending
   };
 };

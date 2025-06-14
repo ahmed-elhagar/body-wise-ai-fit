@@ -1,45 +1,71 @@
 
-import { useLanguage } from '@/contexts/LanguageContext';
-
-export const useMealPlanTranslations = () => {
-  const { t } = useLanguage();
-
-  return {
+export const mealPlanTranslations = {
+  en: {
+    title: "Smart Meal Planning",
+    smartMealPlanning: "AI-Powered Meal Planning",
+    personalizedNutrition: "Personalized Nutrition",
     mealTypes: {
-      breakfast: t('Breakfast'),
-      lunch: t('Lunch'),
-      dinner: t('Dinner'),
-      snack: t('Snack'),
+      breakfast: "Breakfast",
+      lunch: "Lunch", 
+      dinner: "Dinner",
+      snack: "Snack"
     },
     actions: {
-      generate: t('Generate'),
-      regenerate: t('Regenerate'),
-      exchange: t('Exchange'),
-      recipe: t('Recipe'),
-      shopping: t('Shopping List'),
+      generate: "Generate",
+      regenerate: "Regenerate", 
+      exchange: "Exchange",
+      recipe: "Recipe",
+      shopping: "Shopping"
     },
     nutrition: {
-      calories: t('Calories'),
-      protein: t('Protein'),
-      carbs: t('Carbs'),
-      fat: t('Fat'),
-      fiber: t('Fiber'),
+      calories: "Calories",
+      protein: "Protein",
+      carbs: "Carbs", 
+      fat: "Fat",
+      fiber: "Fiber"
     },
     status: {
-      loading: t('Loading'),
-      error: t('Error'),
-      success: t('Success'),
-      generating: t('Generating'),
-    }
-  };
-};
-
-export const getMealTypeTranslation = (mealType: string, t: (key: string) => string): string => {
-  const translations: Record<string, string> = {
-    breakfast: t('Breakfast'),
-    lunch: t('Lunch'),
-    dinner: t('Dinner'),
-    snack: t('Snack'),
-  };
-  return translations[mealType] || mealType;
+      generating: "Generating...",
+      ready: "Ready",
+      error: "Error"
+    },
+    addSnack: "Add Snack",
+    cal: "cal",
+    recipe: "Recipe", 
+    exchange: "Exchange"
+  },
+  ar: {
+    title: "تخطيط الوجبات الذكي",
+    smartMealPlanning: "تخطيط الوجبات بالذكاء الاصطناعي",
+    personalizedNutrition: "التغذية المخصصة",
+    mealTypes: {
+      breakfast: "الإفطار",
+      lunch: "الغداء",
+      dinner: "العشاء", 
+      snack: "وجبة خفيفة"
+    },
+    actions: {
+      generate: "إنشاء",
+      regenerate: "إعادة إنشاء",
+      exchange: "استبدال",
+      recipe: "الوصفة",
+      shopping: "التسوق"
+    },
+    nutrition: {
+      calories: "السعرات",
+      protein: "البروتين", 
+      carbs: "الكربوهيدرات",
+      fat: "الدهون",
+      fiber: "الألياف"
+    },
+    status: {
+      generating: "جاري الإنشاء...",
+      ready: "جاهز",
+      error: "خطأ"
+    },
+    addSnack: "إضافة وجبة خفيفة",
+    cal: "سعرة",
+    recipe: "الوصفة",
+    exchange: "استبدال"
+  }
 };

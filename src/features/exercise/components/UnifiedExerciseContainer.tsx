@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -107,6 +106,17 @@ export const UnifiedExerciseContainer = ({
     );
   }
 
+  const handleStartSession = () => {
+    const newSession: WorkoutSession = {
+      id: crypto.randomUUID(),
+      name: `Workout - ${new Date().toLocaleDateString()}`,
+      exercises: todaysExercises,
+      started_at: new Date().toISOString(),
+    };
+    
+    setActiveSession(newSession);
+  };
+
   return (
     <div className="space-y-3">
       {/* Compact Header with Progress and Controls */}
@@ -163,7 +173,7 @@ export const UnifiedExerciseContainer = ({
             <div className="flex gap-1">
               {!isActive ? (
                 <Button
-                  onClick={startSession}
+                  onClick={handleStartSession}
                   size="sm"
                   className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white flex-1 h-8 text-xs"
                 >

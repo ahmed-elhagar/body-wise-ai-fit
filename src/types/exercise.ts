@@ -50,3 +50,23 @@ export interface WorkoutStats {
   estimatedCalories: number;
   duration?: number;
 }
+
+export interface ExerciseProgram {
+  id: string;
+  name: string;
+  description?: string;
+  duration_weeks: number;
+  daily_workouts: DailyWorkout[];
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface DailyWorkout {
+  id: string;
+  day_number: number;
+  name?: string;
+  exercises: Exercise[];
+  estimated_calories?: number;
+  estimated_duration?: number;
+  completed?: boolean;
+}

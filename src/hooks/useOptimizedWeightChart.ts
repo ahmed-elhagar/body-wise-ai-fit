@@ -1,57 +1,81 @@
 
-import { useWeightTracking } from './useWeightTracking';
-import { useMemo } from 'react';
+import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from './useAuth';
 
-export const useOptimizedWeightChart = (timeRange: string = '30d') => {
-  const { weightEntries, isLoading } = useWeightTracking();
+interface WeightEntry {
+  id: string;
+  weight: number;
+  logged_at: string;
+  body_fat_percentage?: number;
+}
 
-  const chartData = useMemo(() => {
-    if (!weightEntries || weightEntries.length === 0) return [];
+export const useOptimizedWeightChart = () => {
+  const { user } = useAuth();
 
-    const now = new Date();
-    const daysMap: Record<string, number> = {
-      '7d': 7,
-      '30d': 30,
-      '90d': 90,
-      '1y': 365,
-    };
+  const { data: weightEntries = [], isLoading } = useQuery({
+    queryKey: ['weight-entries', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
 
-    const days = daysMap[timeRange] || 30;
-    const cutoffDate = new Date(now.getTime() - (days * 24 * 60 * 60 * 1000));
+      const { data, error } = await supabase
+        .from('weight_tracking')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('logged_at', { ascending: true });
 
-    return weightEntries
-      .filter(entry => new Date(entry.recorded_at) >= cutoffDate)
-      .map(entry => ({
-        date: entry.recorded_at,
-        weight: entry.weight,
-        bmi: entry.bmi,
-        bodyFat: entry.body_fat_percentage,
-      }))
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  }, [weightEntries, timeRange]);
+      if (error) throw error;
+      return data as WeightEntry[];
+    },
+    enabled: !!user?.id
+  });
 
-  const stats = useMemo(() => {
-    if (chartData.length === 0) return null;
-
-    const weights = chartData.map(d => d.weight);
-    const latest = weights[weights.length - 1];
-    const previous = weights[weights.length - 2];
-    const change = previous ? latest - previous : 0;
-    const trend = change > 0 ? 'up' : change < 0 ? 'down' : 'stable';
+  const chartData = weightEntries.map(entry => {
+    const weight = entry.weight;
+    const height = 170; // Default height - should come from profile
+    const bmi = weight / Math.pow(height / 100, 2);
 
     return {
-      current: latest,
-      change,
-      trend,
-      min: Math.min(...weights),
-      max: Math.max(...weights),
-      average: weights.reduce((sum, w) => sum + w, 0) / weights.length,
+      date: new Date(entry.logged_at).toLocaleDateString(),
+      weight: weight,
+      bmi: Math.round(bmi * 10) / 10,
+      bodyFat: entry.body_fat_percentage || 0
     };
-  }, [chartData]);
+  });
+
+  const currentWeight = weightEntries[weightEntries.length - 1]?.weight || 0;
+  const previousWeight = weightEntries[weightEntries.length - 2]?.weight || currentWeight;
+  const change = currentWeight - previousWeight;
+  
+  const weights = weightEntries.map(e => e.weight);
+  const minWeight = Math.min(...weights);
+  const maxWeight = Math.max(...weights);
+  const averageWeight = weights.reduce((sum, w) => sum + w, 0) / weights.length || 0;
+
+  const trend = change > 0 ? 'increasing' : change < 0 ? 'decreasing' : 'stable';
+  const trendPercentage = previousWeight > 0 ? Math.abs((change / previousWeight) * 100) : 0;
+
+  const stats = {
+    current: currentWeight,
+    change: change,
+    trend: trend,
+    min: minWeight,
+    max: maxWeight,
+    average: averageWeight,
+    trendPercentage: trendPercentage,
+    averageWeight: averageWeight,
+    highestWeight: maxWeight,
+    lowestWeight: minWeight,
+    totalEntries: weightEntries.length
+  };
+
+  const hasData = weightEntries.length > 0;
 
   return {
     chartData,
     stats,
     isLoading,
+    hasData
   };
 };

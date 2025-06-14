@@ -1,46 +1,53 @@
 
-export interface ValidationError {
-  field: string;
-  message: string;
-}
+import { z } from 'zod';
 
-export const validateEmail = (email: string): ValidationError | null => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!email) return { field: 'email', message: 'Email is required' };
-  if (!emailRegex.test(email)) return { field: 'email', message: 'Invalid email format' };
-  return null;
-};
+export const personalInfoSchema = z.object({
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
+  email: z.string().email('Valid email is required'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
 
-export const validatePassword = (password: string): ValidationError | null => {
-  if (!password) return { field: 'password', message: 'Password is required' };
-  if (password.length < 6) return { field: 'password', message: 'Password must be at least 6 characters' };
-  return null;
-};
+export const bodyStatsSchema = z.object({
+  age: z.number().min(13).max(120),
+  height: z.number().min(100).max(250),
+  weight: z.number().min(30).max(300),
+  activityLevel: z.enum(['sedentary', 'lightly_active', 'moderately_active', 'very_active', 'extra_active']),
+});
 
-export const validateName = (name: string, fieldName: string): ValidationError | null => {
-  if (!name || name.trim().length === 0) {
-    return { field: fieldName, message: `${fieldName} is required` };
+export const mapBodyFatToBodyShape = (bodyFatPercentage: number, gender: 'male' | 'female'): string => {
+  if (gender === 'male') {
+    if (bodyFatPercentage < 6) return 'athletic';
+    if (bodyFatPercentage < 14) return 'fit';
+    if (bodyFatPercentage < 18) return 'average';
+    if (bodyFatPercentage < 25) return 'above_average';
+    return 'high';
+  } else {
+    if (bodyFatPercentage < 16) return 'athletic';
+    if (bodyFatPercentage < 21) return 'fit';
+    if (bodyFatPercentage < 25) return 'average';
+    if (bodyFatPercentage < 32) return 'above_average';
+    return 'high';
   }
-  if (name.trim().length < 2) {
-    return { field: fieldName, message: `${fieldName} must be at least 2 characters` };
-  }
-  return null;
 };
 
-export const validateAge = (age: number): ValidationError | null => {
-  if (!age || age < 13) return { field: 'age', message: 'Age must be at least 13' };
-  if (age > 120) return { field: 'age', message: 'Age must be less than 120' };
-  return null;
+export const isValidBodyShape = (shape: string): boolean => {
+  const validShapes = ['athletic', 'fit', 'average', 'above_average', 'high'];
+  return validShapes.includes(shape);
 };
 
-export const validateWeight = (weight: number): ValidationError | null => {
-  if (!weight || weight < 30) return { field: 'weight', message: 'Weight must be at least 30kg' };
-  if (weight > 300) return { field: 'weight', message: 'Weight must be less than 300kg' };
-  return null;
+export const calculateBMI = (weight: number, height: number): number => {
+  return weight / Math.pow(height / 100, 2);
 };
 
-export const validateHeight = (height: number): ValidationError | null => {
-  if (!height || height < 100) return { field: 'height', message: 'Height must be at least 100cm' };
-  if (height > 250) return { field: 'height', message: 'Height must be less than 250cm' };
-  return null;
+export const validatePersonalInfo = (data: any) => {
+  return personalInfoSchema.safeParse(data);
+};
+
+export const validateBodyStats = (data: any) => {
+  return bodyStatsSchema.safeParse(data);
 };

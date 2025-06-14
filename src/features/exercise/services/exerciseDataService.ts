@@ -1,35 +1,73 @@
 
-import { ExerciseProgram, DailyWorkout } from '@/types/exercise';
+import { supabase } from '@/integrations/supabase/client';
+import { 
+  ExerciseProgram, 
+  DailyWorkout,
+  Exercise 
+} from '@/types/exercise';
 
-export class ExerciseDataService {
-  static calculateProgress(exercises: any[]): {
-    completedExercises: number;
-    totalExercises: number;
-    progressPercentage: number;
-  } {
-    const completed = exercises.filter(ex => ex.completed).length;
-    const total = exercises.length;
-    const percentage = total > 0 ? (completed / total) * 100 : 0;
-    
-    return {
-      completedExercises: completed,
-      totalExercises: total,
-      progressPercentage: percentage
-    };
+export const fetchUserExerciseProgram = async (userId: string): Promise<ExerciseProgram | null> => {
+  const { data, error } = await supabase
+    .from('exercise_programs')
+    .select(`
+      *,
+      daily_workouts (
+        *,
+        exercises (*)
+      )
+    `)
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single();
+
+  if (error && error.code !== 'PGRST116') {
+    throw error;
   }
 
-  static getWorkoutsByDay(program: ExerciseProgram | null, dayNumber: number): DailyWorkout[] {
-    if (!program?.daily_workouts) return [];
-    return program.daily_workouts.filter(workout => workout.day_number === dayNumber);
-  }
+  return data;
+};
 
-  static getExercisesByDay(program: ExerciseProgram | null, dayNumber: number): any[] {
-    const workouts = this.getWorkoutsByDay(program, dayNumber);
-    return workouts.flatMap(workout => workout.exercises || []);
+export const updateExerciseProgress = async (
+  exerciseId: string,
+  progress: {
+    sets: number;
+    reps: string;
+    weight?: number;
+    notes?: string;
+    completed: boolean;
   }
+) => {
+  const { error } = await supabase
+    .from('exercises')
+    .update({
+      actual_sets: progress.sets,
+      actual_reps: progress.reps,
+      weight: progress.weight,
+      notes: progress.notes,
+      completed: progress.completed,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', exerciseId);
 
-  static isRestDay(program: ExerciseProgram | null, dayNumber: number): boolean {
-    const workouts = this.getWorkoutsByDay(program, dayNumber);
-    return workouts.length > 0 && workouts[0]?.is_rest_day;
-  }
-}
+  if (error) throw error;
+};
+
+export const createCustomExercise = async (
+  dailyWorkoutId: string,
+  exercise: Omit<Exercise, 'id' | 'created_at' | 'updated_at'>
+) => {
+  const { data, error } = await supabase
+    .from('exercises')
+    .insert({
+      ...exercise,
+      daily_workout_id: dailyWorkoutId,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
