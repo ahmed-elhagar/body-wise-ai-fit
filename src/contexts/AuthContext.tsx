@@ -10,6 +10,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   forceLogout: () => Promise<void>;
   retryAuth: () => void;
+  signUp: (email: string, password: string, metadata?: any) => Promise<any>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -51,6 +52,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     window.location.href = '/auth';
   };
 
+  const signUp = async (email: string, password: string, metadata?: any) => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: metadata
+      }
+    });
+    if (error) throw error;
+    return data;
+  };
+
   useEffect(() => {
     checkUser();
 
@@ -71,7 +84,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       error,
       signOut,
       forceLogout,
-      retryAuth
+      retryAuth,
+      signUp
     }}>
       {children}
     </AuthContext.Provider>

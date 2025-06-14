@@ -30,6 +30,7 @@ export const useProfileCompletionScore = () => {
   return {
     score,
     isComplete,
-    isLoading
+    isLoading,
+    completionScore: score // Add this alias for backward compatibility
   };
 };

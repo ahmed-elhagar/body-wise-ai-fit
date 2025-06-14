@@ -23,9 +23,22 @@ export const useLifePhaseProfile = () => {
     enabled: !!user?.id,
   });
 
+  const getNutritionContext = () => {
+    if (!lifePhaseProfile) return {};
+    
+    return {
+      is_pregnant: lifePhaseProfile.is_pregnant || false,
+      is_breastfeeding: lifePhaseProfile.is_breastfeeding || false,
+      pregnancy_stage: lifePhaseProfile.pregnancy_stage,
+      breastfeeding_level: lifePhaseProfile.breastfeeding_level,
+      activity_level: lifePhaseProfile.activity_level
+    };
+  };
+
   return {
     lifePhaseProfile,
     isLoading,
-    error
+    error,
+    getNutritionContext
   };
 };

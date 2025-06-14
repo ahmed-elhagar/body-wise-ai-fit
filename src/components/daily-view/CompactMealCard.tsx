@@ -13,9 +13,20 @@ interface CompactMealCardProps {
     meal_type: string;
   };
   onClick?: () => void;
+  index?: number;
+  mealType?: string;
+  onShowRecipe?: () => void;
+  onExchangeMeal?: () => void;
 }
 
-export const CompactMealCard = ({ meal, onClick }: CompactMealCardProps) => {
+export const CompactMealCard = ({ 
+  meal, 
+  onClick, 
+  index, 
+  mealType, 
+  onShowRecipe, 
+  onExchangeMeal 
+}: CompactMealCardProps) => {
   return (
     <Card 
       className="cursor-pointer hover:shadow-md transition-shadow bg-white border border-gray-200"

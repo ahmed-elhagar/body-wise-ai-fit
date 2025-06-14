@@ -1,7 +1,8 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Flame, Zap, Beef } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Flame, Zap, Beef, ShoppingCart, Plus } from "lucide-react";
 
 interface DailyNutritionSummaryProps {
   totalCalories: number;
@@ -9,6 +10,8 @@ interface DailyNutritionSummaryProps {
   totalCarbs: number;
   totalFat: number;
   targetCalories?: number;
+  onShowShoppingList?: () => void;
+  onAddSnack?: () => void;
 }
 
 export const DailyNutritionSummary = ({
@@ -16,7 +19,9 @@ export const DailyNutritionSummary = ({
   totalProtein,
   totalCarbs,
   totalFat,
-  targetCalories = 2000
+  targetCalories = 2000,
+  onShowShoppingList,
+  onAddSnack
 }: DailyNutritionSummaryProps) => {
   const progressPercentage = (totalCalories / targetCalories) * 100;
 
@@ -71,6 +76,33 @@ export const DailyNutritionSummary = ({
               style={{ width: `${Math.min(progressPercentage, 100)}%` }}
             ></div>
           </div>
+
+          {(onShowShoppingList || onAddSnack) && (
+            <div className="flex gap-2 pt-2">
+              {onShowShoppingList && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onShowShoppingList}
+                  className="flex-1"
+                >
+                  <ShoppingCart className="w-4 h-4 mr-1" />
+                  Shopping List
+                </Button>
+              )}
+              {onAddSnack && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onAddSnack}
+                  className="flex-1"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add Snack
+                </Button>
+              )}
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
