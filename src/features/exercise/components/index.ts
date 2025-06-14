@@ -31,3 +31,6 @@ export { ExerciseActionsDropdown } from './ExerciseActionsDropdown';
 export { ExerciseInstructionsDialog } from './ExerciseInstructionsDialog';
 export { CompactProgressSection } from './CompactProgressSection';
 export { ExercisePageContainer } from './ExercisePageContainer';
+export { ExerciseCard } from './ExerciseCard';
+export { ExerciseErrorBoundary } from './ExerciseErrorBoundary';
+export { ExerciseAnalyticsDashboard } from './ExerciseAnalyticsDashboard';

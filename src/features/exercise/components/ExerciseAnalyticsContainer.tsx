@@ -11,7 +11,7 @@ import {
   ArrowLeft
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { ExerciseAnalyticsDashboard } from '@/components/exercise/ExerciseAnalyticsDashboard';
+import { ExerciseAnalyticsDashboard } from './ExerciseAnalyticsDashboard';
 import { PersonalRecordsTracker } from '@/components/exercise/PersonalRecordsTracker';
 import { PerformanceInsights } from '@/components/exercise/PerformanceInsights';
 import { ExerciseAchievements } from '@/components/exercise/ExerciseAchievements';
