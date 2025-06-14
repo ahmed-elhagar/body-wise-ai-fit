@@ -15,6 +15,27 @@ export interface FoodAnalysisResult {
   ingredients?: string[];
   allergens?: string[];
   dietary_tags?: string[];
+  // Extended properties for compatibility
+  overallConfidence?: number;
+  mealType?: string;
+  cuisineType?: string;
+  totalNutrition?: {
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+  };
+  foodItems?: Array<{
+    name: string;
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+    category: string;
+    quantity?: string;
+  }>;
+  recommendations?: string;
+  remainingCredits?: number;
 }
 
 export interface ImageAnalysisResponse {
@@ -22,6 +43,20 @@ export interface ImageAnalysisResponse {
   results: FoodAnalysisResult[];
   error?: string;
   processing_time?: number;
+  // Extended for compatibility
+  analysis?: {
+    overallConfidence: number;
+    foodItems: Array<{
+      name: string;
+      calories: number;
+      protein: number;
+      carbs: number;
+      fat: number;
+      category: string;
+      quantity?: string;
+    }>;
+    suggestions?: string;
+  };
 }
 
 export interface AIAnalysisContext {

@@ -13,7 +13,6 @@ export const MealPlan = lazy(() => import('@/pages/MealPlan'));
 export const Exercise = lazy(() => import('@/pages/Exercise'));
 export const FoodTracker = lazy(() => import('@/pages/FoodTracker'));
 export const CalorieChecker = lazy(() => import('@/pages/CalorieChecker'));
-export const WeightTracking = lazy(() => import('@/pages/WeightTracking'));
 export const Goals = lazy(() => import('@/pages/Goals'));
 export const Progress = lazy(() => import('@/pages/Progress'));
 export const Settings = lazy(() => import('@/pages/Settings'));
@@ -38,7 +37,6 @@ export const LazyPages = {
   Exercise,
   FoodTracker,
   CalorieChecker,
-  WeightTracking,
   Goals,
   Progress,
   Settings,
