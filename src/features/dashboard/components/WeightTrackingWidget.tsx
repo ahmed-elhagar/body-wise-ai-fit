@@ -1,9 +1,8 @@
-
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Scale, TrendingUp, TrendingDown, Target, Plus, ArrowRight } from "lucide-react";
-import { useWeightTracking } from "@/hooks/useWeightTracking";
+import { useWeightTracking } from "@/features/dashboard/hooks/useWeightTracking";
 import { useProfile } from "@/hooks/useProfile";
 import { useNavigate } from "react-router-dom";
 

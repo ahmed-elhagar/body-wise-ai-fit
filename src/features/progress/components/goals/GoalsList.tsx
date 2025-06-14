@@ -1,4 +1,4 @@
-
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import {
   AlertTriangle
 } from "lucide-react";
 import type { Goal } from "@/hooks/useGoals";
+import { useGoals } from "@/features/dashboard/hooks/useGoals";
 
 interface GoalsListProps {
   goals: Goal[];

@@ -1,4 +1,4 @@
-
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -15,9 +15,10 @@ import {
 } from "lucide-react";
 import { useI18n } from "@/hooks/useI18n";
 import { useMealPlanState } from "@/features/meal-plan/hooks";
-import { useWeightTracking } from "@/hooks/useWeightTracking";
+import { useWeightTracking } from "@/features/dashboard/hooks/useWeightTracking";
+import { WeightProgressSection } from './WeightProgressSection';
 import { useExercisePrograms } from "@/features/exercise";
-import { useGoals } from "@/hooks/useGoals";
+import { useGoals } from "@/features/dashboard/hooks/useGoals";
 
 export const ProgressOverview = () => {
   const { isRTL } = useI18n();

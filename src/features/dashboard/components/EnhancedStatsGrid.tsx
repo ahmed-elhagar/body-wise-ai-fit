@@ -1,8 +1,7 @@
-
 import { Card } from "@/components/ui/card";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useProfile } from "@/hooks/useProfile";
-import { useWeightTracking } from "@/hooks/useWeightTracking";
+import { useWeightTracking } from "@/features/dashboard/hooks/useWeightTracking";
 import { 
   Scale, 
   Flame,

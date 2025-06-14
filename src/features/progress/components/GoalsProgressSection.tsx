@@ -1,70 +1,71 @@
-
-import { Button } from "@/components/ui/button";
-import { Target, Plus } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { useGoals } from "@/hooks/useGoals";
-import { GoalsOverview } from "./goals/GoalsOverview";
-import { GoalsProgressChart } from "./goals/GoalsProgressChart";
-import { GoalsList } from "./goals/GoalsList";
-import { GoalsEmptyState } from "./goals/GoalsEmptyState";
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Target, TrendingUp, Calendar } from "lucide-react";
+import { useGoals } from "@/features/dashboard/hooks/useGoals";
 
 export const GoalsProgressSection = () => {
-  const navigate = useNavigate();
-  const { goals } = useGoals();
+  const { goals, isLoading, error } = useGoals();
 
-  const totalGoals = goals?.length || 0;
-  const completedGoals = goals?.filter(g => g.status === 'completed')?.length || 0;
-  const activeGoals = goals?.filter(g => g.status === 'active')?.length || 0;
-  const overallProgress = totalGoals > 0 ? (completedGoals / totalGoals) * 100 : 0;
+  if (isLoading) {
+    return (
+      <Card className="animate-pulse">
+        <CardHeader>
+          <div className="h-6 bg-gray-200 rounded w-1/3"></div>
+        </CardHeader>
+        <CardContent>
+          <div className="h-40 bg-gray-200 rounded"></div>
+        </CardContent>
+      </Card>
+    );
+  }
 
-  const handleManageGoals = () => navigate('/goals');
-  const handleCreateGoal = () => navigate('/goals/create');
+  if (error) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Target className="w-5 h-5 text-red-600" />
+            Goals Progress
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <p className="text-red-600">Error loading goals data: {error}</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const completedGoals = goals.filter(goal => goal.status === 'completed').length;
+  const totalGoals = goals.length;
+  const progress = totalGoals > 0 ? (completedGoals / totalGoals) * 100 : 0;
 
   return (
-    <div className="space-y-6">
-      {/* Goals Overview */}
-      <GoalsOverview 
-        totalGoals={totalGoals}
-        completedGoals={completedGoals}
-        activeGoals={activeGoals}
-      />
-
-      {/* Overall Progress */}
-      <GoalsProgressChart 
-        overallProgress={overallProgress}
-        completedGoals={completedGoals}
-        totalGoals={totalGoals}
-      />
-
-      {/* Active Goals List or Empty State */}
-      {goals && goals.length > 0 ? (
-        <GoalsList 
-          goals={goals}
-          onManageGoals={handleManageGoals}
-        />
-      ) : (
-        <GoalsEmptyState onCreateGoal={handleCreateGoal} />
-      )}
-
-      {/* Action Buttons */}
-      <div className="flex gap-3">
-        <Button
-          onClick={handleManageGoals}
-          className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
-        >
-          <Target className="w-4 h-4 mr-2" />
-          Manage Goals
-        </Button>
-        
-        <Button
-          variant="outline"
-          onClick={handleCreateGoal}
-          className="border-purple-300 text-purple-700 hover:bg-purple-50"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Create New Goal
-        </Button>
-      </div>
-    </div>
+    <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Target className="w-5 h-5 text-green-600" />
+          Goals Progress
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium">Overall Progress</span>
+            <span className="text-sm text-gray-500">{completedGoals} / {totalGoals}</span>
+          </div>
+          <Progress value={progress} />
+          <div className="flex items-center justify-between text-xs text-gray-500">
+            <span>Started Tracking</span>
+            <span>
+              <Calendar className="w-3 h-3 inline-block mr-1 align-text-bottom" />
+              {totalGoals > 0 ? new Date(goals[0].created_at).toLocaleDateString() : 'No goals yet'}
+            </span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };

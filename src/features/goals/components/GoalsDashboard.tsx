@@ -1,13 +1,9 @@
-
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Target, Plus, Trophy, AlertTriangle, Sparkles } from "lucide-react";
-import { useGoals } from "@/hooks/useGoals";
-import GoalCard from "./GoalCard";
-import GoalsOverview from "./GoalsOverview";
-import GoalCreationDialog from "./GoalCreationDialog";
+import { Button } from "@/components/ui/button";
+import { Plus, Target } from "lucide-react";
+import { GoalCard } from './GoalCard';
+import { useGoals } from "@/features/dashboard/hooks/useGoals";
 
 const GoalsDashboard = () => {
   const { goals, isLoading } = useGoals();

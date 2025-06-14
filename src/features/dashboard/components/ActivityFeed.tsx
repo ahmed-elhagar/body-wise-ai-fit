@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useWeightTracking } from "@/hooks/useWeightTracking";
+import { useWeightTracking } from "@/features/dashboard/hooks/useWeightTracking";
 import { useI18n } from "@/hooks/useI18n";
 import { formatDistanceToNow } from "date-fns";
 import { Activity, Scale, Utensils, Dumbbell, Clock, TrendingUp } from "lucide-react";
@@ -11,7 +11,7 @@ interface ActivityFeedProps {
 }
 
 const ActivityFeed = ({ mealPlans, programs }: ActivityFeedProps) => {
-  const { weightEntries } = useWeightTracking();
+  const { entries: weightEntries } = useWeightTracking();
   const { tFrom, isRTL } = useI18n();
   const tDashboard = tFrom('dashboard');
 
