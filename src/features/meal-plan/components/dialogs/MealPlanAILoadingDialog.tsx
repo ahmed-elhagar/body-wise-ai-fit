@@ -14,11 +14,11 @@ export const MealPlanAILoadingDialog = ({
   position = 'center'
 }: MealPlanAILoadingDialogProps) => {
   const steps = [
-    { label: 'Analyzing your preferences', duration: 2000 },
-    { label: 'Calculating nutritional requirements', duration: 2000 },
-    { label: 'Generating meal combinations', duration: 3000 },
-    { label: 'Optimizing for variety and balance', duration: 2000 },
-    { label: 'Finalizing your meal plan', duration: 1000 }
+    { id: 'analyze-preferences', label: 'Analyzing your preferences', duration: 2000 },
+    { id: 'calculate-nutrition', label: 'Calculating nutritional requirements', duration: 2000 },
+    { id: 'generate-meals', label: 'Generating meal combinations', duration: 3000 },
+    { id: 'optimize-balance', label: 'Optimizing for variety and balance', duration: 2000 },
+    { id: 'finalize-plan', label: 'Finalizing your meal plan', duration: 1000 }
   ];
 
   return (
