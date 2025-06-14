@@ -56,9 +56,9 @@ const MealPlanContainer = () => {
     await mealPlanState.setCurrentWeekOffset(offset);
   };
 
-  // Simple AI plan generation handler
+  // Simple AI plan generation handler - no parameters
   const handleGenerateAI = async () => {
-    const success = await mealPlanState.handleGenerateAIPlan(mealPlanState.aiPreferences);
+    const success = await mealPlanState.handleGenerateAIPlan();
     if (success) {
       console.log('✅ AI plan generated successfully');
     }

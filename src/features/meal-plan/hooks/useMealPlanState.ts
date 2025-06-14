@@ -17,7 +17,7 @@ export const useMealPlanState = () => {
     includeSnacks: true,
     duration: 'weekly',
     maxPrepTime: '30',
-    mealTypes: ['breakfast', 'lunch', 'dinner']
+    mealTypes: 'breakfast,lunch,dinner' // Changed to string to match interface
   });
 
   const updateAIPreferences = useCallback((newPreferences: any) => {
@@ -74,15 +74,15 @@ export const useMealPlanState = () => {
   // Get calorie calculations for the selected day
   const calorieCalculations = useCalorieCalculations(selectedDayNumber, currentWeekOffset);
 
-  // Wrapped AI plan generation with error handling
-  const handleGenerateAIPlanWithPreferences = useCallback(async (preferences: any) => {
+  // Wrapped AI plan generation with error handling - no parameters needed
+  const handleGenerateAIPlanWithPreferences = useCallback(async () => {
     try {
       await wrapAIOperation(
         () => handleGenerateAIPlan(),
         { 
           operation: 'meal plan generation',
           model: 'GPT-4',
-          credits: preferences.includeSnacks ? 15 : 10
+          credits: aiPreferences.includeSnacks ? 15 : 10
         }
       );
       return true;
@@ -90,7 +90,7 @@ export const useMealPlanState = () => {
       console.error('Meal plan generation failed:', error);
       return false;
     }
-  }, [handleGenerateAIPlan, wrapAIOperation]);
+  }, [handleGenerateAIPlan, wrapAIOperation, aiPreferences.includeSnacks]);
 
   return {
     currentWeekPlan,
