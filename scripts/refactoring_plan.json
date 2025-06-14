@@ -1,3 +1,4 @@
+
 {
   "title": "FitFatta App Refactoring & Enhancement Plan",
   "version": "1.0",
@@ -12,11 +13,12 @@
         {
           "id": "P1T1",
           "description": "Move feature-specific hooks from `src/hooks` to `src/features/[feature]/hooks`.",
-          "status": "in-progress",
+          "status": "completed",
           "details": [
             "Moved: GoalProgressWidget (component)",
             "Moved: useExercisePrograms",
-            "Pending: useGoals, useWeightTracking"
+            "Moved: useGoals",
+            "Moved: useWeightTracking"
           ]
         },
         {
@@ -49,8 +51,19 @@
     {
       "id": 2,
       "name": "Phase 2: UI/UX Enhancement & Centralization",
-      "status": "pending",
-      "description": "Improve UI consistency, centralize shared logic, and enhance user experience across the app."
+      "status": "in-progress",
+      "description": "Improve UI consistency, centralize shared logic, and enhance user experience across the app.",
+      "tasks": [
+        {
+          "id": "P2T1",
+          "description": "Revamp Exercise page navigation to be more compact.",
+          "status": "completed",
+          "details": [
+            "Created CombinedWeeklyDayNavigation component.",
+            "Updated ExercisePageLayout to use the new navigation, saving space."
+          ]
+        }
+      ]
     },
     {
       "id": 3,

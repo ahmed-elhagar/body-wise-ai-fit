@@ -1,12 +1,10 @@
-
 import { Card } from "@/components/ui/card";
 import { ExerciseErrorState } from "./ExerciseErrorState";
 import { EnhancedExerciseHeaderWithAnalytics } from "./EnhancedExerciseHeaderWithAnalytics";
-import { WeeklyExerciseNavigation } from "./WeeklyExerciseNavigation";
-import { EnhancedDayNavigation } from "./EnhancedDayNavigation";
 import { ExercisePageContent } from "./ExercisePageContent";
 import { AIExerciseDialog } from "./AIExerciseDialog";
 import { UnifiedAILoadingDialog } from "@/components/ai/UnifiedAILoadingDialog";
+import { CombinedWeeklyDayNavigation } from "./CombinedWeeklyDayNavigation";
 
 interface ExercisePageLayoutProps {
   // Data props
@@ -106,21 +104,15 @@ export const ExercisePageLayout = ({
         />
 
         {/* Navigation Section */}
-        <div className="px-6 pb-6 space-y-6">
-          <WeeklyExerciseNavigation
+        <div className="px-6 pb-6">
+          <CombinedWeeklyDayNavigation
             currentWeekOffset={currentWeekOffset}
             setCurrentWeekOffset={setCurrentWeekOffset}
             weekStartDate={weekStartDate}
+            selectedDayNumber={selectedDayNumber}
+            setSelectedDayNumber={setSelectedDayNumber}
+            currentProgram={currentProgram}
           />
-          
-          <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-3xl">
-            <EnhancedDayNavigation
-              selectedDayNumber={selectedDayNumber}
-              setSelectedDayNumber={setSelectedDayNumber}
-              weekStartDate={weekStartDate}
-              currentProgram={currentProgram}
-            />
-          </Card>
         </div>
 
         {/* Main Content */}
