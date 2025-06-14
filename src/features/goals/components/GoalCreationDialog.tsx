@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +14,7 @@ interface GoalCreationDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const GoalCreationDialog = ({ open, onOpenChange }: GoalCreationDialogProps) => {
+export const GoalCreationDialog = ({ open, onOpenChange }: GoalCreationDialogProps) => {
   const { createGoal, isCreating } = useGoals();
   const [formData, setFormData] = useState({
     title: '',

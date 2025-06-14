@@ -46,10 +46,11 @@ export const useWeightTracking = () => {
 
       if (error) throw error;
 
-      const latestEntry = entries && entries.length > 0 ? entries[0] : null;
+      const typedEntries = (entries || []) as WeightEntry[];
+      const latestEntry = typedEntries.length > 0 ? typedEntries[0] : null;
 
       setData({
-        entries: entries || [],
+        entries: typedEntries,
         latestEntry,
         isLoading: false,
         error: null
@@ -82,14 +83,16 @@ export const useWeightTracking = () => {
 
       if (error) throw error;
 
+      const typedNewEntry = newEntry as WeightEntry;
+
       // Update local state
       setData(prev => ({
         ...prev,
-        entries: [newEntry, ...prev.entries],
-        latestEntry: newEntry
+        entries: [typedNewEntry, ...prev.entries],
+        latestEntry: typedNewEntry
       }));
 
-      return newEntry;
+      return typedNewEntry;
     } catch (error: any) {
       console.error('Error adding weight entry:', error);
       throw error;

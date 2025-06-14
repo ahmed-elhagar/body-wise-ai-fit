@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Target, Trophy, Sparkles, AlertTriangle } from "lucide-react";
 import { GoalCard } from './GoalCard';
 import { GoalsOverview } from './GoalsOverview';
-import { GoalCreationDialog } from './GoalCreationDialog';
+import GoalCreationDialog from './GoalCreationDialog';
 import { useGoals } from "@/features/dashboard/hooks/useGoals";
 
 const GoalsDashboard = () => {
