@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -18,15 +17,17 @@ import {
 import { useCoachSystem } from "@/hooks/useCoachSystem";
 import { useCoachTasks } from "@/hooks/useCoachTasks";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { TraineesTab } from "./TraineesTab";
-import CoachTasksPanel from "./CoachTasksPanel";
-import { CoachMessagesTab } from "@/components/coach/CoachMessagesTab";
-import { CoachAnalyticsTab } from "./CoachAnalyticsTab";
+import { 
+  TraineesTab,
+  CoachTasksPanel,
+  CoachAnalyticsTab,
+  AssignTraineeDialog,
+  CreateTaskDialog,
+  CoachMessagesTab
+} from ".";
 import { TraineeProgressOverview } from "@/components/coach/overview/TraineeProgressOverview";
 import { QuickActions } from "@/components/coach/overview/QuickActions";
 import { CompactTasksPanel } from "@/components/coach/overview/CompactTasksPanel";
-import { AssignTraineeDialog } from "./AssignTraineeDialog";
-import { CreateTaskDialog } from "./CreateTaskDialog";
 
 export const CoachDashboard = () => {
   const { t } = useLanguage();

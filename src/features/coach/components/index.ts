@@ -10,3 +10,4 @@ export { CreateTaskDialog } from './CreateTaskDialog';
 export { CoachAnalyticsTab } from './CoachAnalyticsTab';
 export { AssignTraineeDialog } from './AssignTraineeDialog';
 export { CoachTraineeChat } from './CoachTraineeChat';
+export { CoachMessagesTab } from './CoachMessagesTab';
