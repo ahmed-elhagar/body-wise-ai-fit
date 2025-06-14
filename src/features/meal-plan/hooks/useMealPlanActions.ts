@@ -17,6 +17,7 @@ export const useMealPlanActions = (
   const queryClient = useQueryClient();
   const { generateMealPlan, isGenerating, nutritionContext } = useEnhancedMealPlan();
 
+  // Enhanced AI generation handler with special conditions support
   const handleGenerateAIPlan = useCallback(async () => {
     try {
       console.log('🚀 Starting enhanced AI meal plan generation:', {
@@ -42,16 +43,20 @@ export const useMealPlanActions = (
           isMuslimFasting: nutritionContext?.isMuslimFasting || false
         });
         
+        // Invalidate all meal plan queries to ensure fresh data
         await queryClient.invalidateQueries({
           queryKey: ['weekly-meal-plan']
         });
         
+        // Wait a bit for the database to be fully updated
         await new Promise(resolve => setTimeout(resolve, 1500));
         
+        // Force immediate refetch with better error handling
         try {
           await refetchMealPlan?.();
           console.log('✅ Refetch completed successfully');
           
+          // Show success message with special condition info
           if (nutritionContext?.isMuslimFasting) {
             toast.success(
               language === 'ar'
@@ -70,7 +75,7 @@ export const useMealPlanActions = (
         } catch (refetchError) {
           console.error('❌ Refetch failed after generation:', refetchError);
           toast.warning('Plan generated but may need a page refresh to display properly.');
-          return true;
+          return true; // Still consider it successful since generation worked
         }
       } else {
         console.error('❌ Generation failed');
@@ -84,6 +89,7 @@ export const useMealPlanActions = (
     }
   }, [aiPreferences, language, currentWeekOffset, generateMealPlan, refetchMealPlan, queryClient, user?.id, nutritionContext]);
 
+  // Add the missing handleRegeneratePlan method
   const handleRegeneratePlan = useCallback(async () => {
     console.log('🔄 Regenerating meal plan with special conditions...');
     return await handleGenerateAIPlan();

@@ -1,102 +1,61 @@
-import React from 'react';
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Slider } from "@/components/ui/slider";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight } from "lucide-react";
-import { useSignupState } from "@/components/signup/hooks/useSignupState";
-import { mapBodyFatToBodyShape } from '@/utils/signupValidation';
+
+import { Target } from "lucide-react";
+import BodyShapeSelector from "@/components/auth/BodyShapeSelector";
+import { SignupFormData } from "../types";
+import { mapBodyFatToBodyShape } from "@/utils/signupValidation";
+import { useEffect } from "react";
 
 interface BodyCompositionStepProps {
-  onNext: () => void;
-  onBack: () => void;
+  formData: SignupFormData;
+  updateField: (field: keyof SignupFormData, value: any) => void;
 }
 
-export const BodyCompositionStep = ({ onNext, onBack }: BodyCompositionStepProps) => {
-  const { personalInfo, bodyComposition, setBodyComposition } = useSignupState();
-  const [bodyFatPercentage, setBodyFatPercentage] = React.useState(bodyComposition?.bodyFatPercentage || 20);
-  const [goalBodyFat, setGoalBodyFat] = React.useState(bodyComposition?.goalBodyFat || 15);
-
-  const handleNext = () => {
-    setBodyComposition({
-      bodyFatPercentage: bodyFatPercentage,
-      goalBodyFat: goalBodyFat,
-    });
-    onNext();
+const BodyCompositionStep = ({ formData, updateField }: BodyCompositionStepProps) => {
+  // Ensure there's always a default value
+  const currentBodyFat = formData.bodyFatPercentage || (formData.gender === 'male' ? 20 : 25);
+  
+  const handleBodyFatChange = (value: number) => {
+    console.log('Body fat percentage changed to:', value);
+    updateField("bodyFatPercentage", value);
+    
+    // Auto-update body shape based on fat percentage
+    const autoBodyShape = mapBodyFatToBodyShape(value, formData.gender || 'male');
+    updateField("bodyShape", autoBodyShape);
   };
 
-  const bodyShape = mapBodyFatToBodyShape(
-    bodyFatPercentage, 
-    personalInfo?.gender as 'male' | 'female'
-  );
-
-  const bmi = personalInfo?.weight && personalInfo?.height 
-    ? personalInfo.weight / Math.pow(personalInfo.height / 100, 2)
-    : 0;
-
-  const bodyShapeForGoal = mapBodyFatToBodyShape(
-    goalBodyFat, 
-    personalInfo?.gender as 'male' | 'female'
-  );
+  // Auto-set body shape when component mounts or gender changes
+  useEffect(() => {
+    if (formData.bodyFatPercentage && formData.gender) {
+      const autoBodyShape = mapBodyFatToBodyShape(formData.bodyFatPercentage, formData.gender);
+      updateField("bodyShape", autoBodyShape);
+    }
+  }, [formData.gender, updateField]);
 
   return (
-    <div className="flex flex-col space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Body Composition</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="body-fat">Current Body Fat (%)</Label>
-            <Input
-              type="number"
-              id="body-fat"
-              value={bodyFatPercentage}
-              onChange={(e) => setBodyFatPercentage(Number(e.target.value))}
-            />
-            <Slider
-              defaultValue={[bodyFatPercentage]}
-              max={40}
-              step={1}
-              onValueChange={(value) => setBodyFatPercentage(value[0])}
-            />
-            <p className="text-sm text-gray-500">Estimated Body Shape: {bodyShape}</p>
-          </div>
+    <div className="space-y-6">
+      <div className="text-center mb-8">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl mb-4 shadow-lg">
+          <Target className="w-8 h-8 text-white" />
+        </div>
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">Body Composition</h2>
+        <p className="text-gray-600">Select your current body fat percentage to help us create your personalized plan</p>
+      </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="goal-body-fat">Goal Body Fat (%)</Label>
-            <Input
-              type="number"
-              id="goal-body-fat"
-              value={goalBodyFat}
-              onChange={(e) => setGoalBodyFat(Number(e.target.value))}
-            />
-            <Slider
-              defaultValue={[goalBodyFat]}
-              max={40}
-              step={1}
-              onValueChange={(value) => setGoalBodyFat(value[0])}
-            />
-             <p className="text-sm text-gray-500">Estimated Body Shape for Goal: {bodyShapeForGoal}</p>
-          </div>
-
-          <div>
-            <p>Your BMI: {bmi.toFixed(2)}</p>
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="flex justify-between">
-        <Button variant="outline" onClick={onBack}>
-          <ArrowLeft className="mr-2 w-4 h-4" />
-          Back
-        </Button>
-        <Button onClick={handleNext}>
-          Next
-          <ArrowRight className="ml-2 w-4 h-4" />
-        </Button>
+      <div className="space-y-6">
+        <BodyShapeSelector
+          value={currentBodyFat}
+          onChange={handleBodyFatChange}
+          gender={formData.gender || 'male'}
+        />
+      </div>
+      
+      <div className="text-center">
+        <p className="text-sm text-gray-500">
+          Don't worry if you're not sure - you can always adjust this later in your profile settings.
+        </p>
       </div>
     </div>
   );
 };
+
+export default BodyCompositionStep;

@@ -18,7 +18,7 @@ interface ManualTabProps {
 
 const ManualTab = ({ onFoodAdded, onClose, preSelectedFood }: ManualTabProps) => {
   const { t } = useLanguage();
-  const { logFood, isLoading } = useFoodTracking();
+  const { addFoodConsumption, isAdding } = useFoodTracking();
 
   // Form state
   const [foodName, setFoodName] = useState("");
@@ -43,7 +43,7 @@ const ManualTab = ({ onFoodAdded, onClose, preSelectedFood }: ManualTabProps) =>
     }
   }, [preSelectedFood]);
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!foodName.trim()) {
       toast.error(t('Please enter a food name'));
       return;
@@ -58,7 +58,7 @@ const ManualTab = ({ onFoodAdded, onClose, preSelectedFood }: ManualTabProps) =>
     // Calculate nutrition per actual quantity
     const multiplier = quantityNum / 100;
 
-    const foodEntry = {
+    const foodConsumption = {
       food_item_id: crypto.randomUUID(),
       quantity_g: quantityNum,
       calories_consumed: caloriesNum * multiplier,
@@ -78,17 +78,24 @@ const ManualTab = ({ onFoodAdded, onClose, preSelectedFood }: ManualTabProps) =>
       }
     };
 
-    const success = await logFood(foodEntry);
-    
-    if (success) {
-      onFoodAdded();
-      onClose();
-    }
+    addFoodConsumption(foodConsumption);
+    onFoodAdded();
+    onClose();
   };
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
+    <div className="space-y-6">
+      {preSelectedFood && (
+        <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+          <h3 className="font-medium text-purple-800 mb-2">{t('AI Analyzed Food')}</h3>
+          <p className="text-sm text-purple-600">
+            {t('This food was analyzed from your photo. You can adjust the values below if needed.')}
+          </p>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 gap-4">
+        {/* Food Name */}
         <div>
           <Label htmlFor="foodName">{t('Food Name')} *</Label>
           <Input
@@ -96,112 +103,148 @@ const ManualTab = ({ onFoodAdded, onClose, preSelectedFood }: ManualTabProps) =>
             value={foodName}
             onChange={(e) => setFoodName(e.target.value)}
             placeholder={t('Enter food name')}
+            className="mt-1"
           />
         </div>
-        <div>
-          <Label htmlFor="quantity">{t('Quantity (g)')}</Label>
-          <Input
-            id="quantity"
-            type="number"
-            value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
-            placeholder="100"
-          />
-        </div>
-      </div>
 
-      <div className="grid grid-cols-2 gap-4">
+        {/* Nutrition Info */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="calories">{t('Calories')} (per 100g)</Label>
+            <Input
+              id="calories"
+              type="number"
+              value={calories}
+              onChange={(e) => setCalories(e.target.value)}
+              placeholder="0"
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <Label htmlFor="protein">{t('Protein')} (g per 100g)</Label>
+            <Input
+              id="protein"
+              type="number"
+              step="0.1"
+              value={protein}
+              onChange={(e) => setProtein(e.target.value)}
+              placeholder="0"
+              className="mt-1"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="carbs">{t('Carbs')} (g per 100g)</Label>
+            <Input
+              id="carbs"
+              type="number"
+              step="0.1"
+              value={carbs}
+              onChange={(e) => setCarbs(e.target.value)}
+              placeholder="0"
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <Label htmlFor="fat">{t('Fat')} (g per 100g)</Label>
+            <Input
+              id="fat"
+              type="number"
+              step="0.1"
+              value={fat}
+              onChange={(e) => setFat(e.target.value)}
+              placeholder="0"
+              className="mt-1"
+            />
+          </div>
+        </div>
+
+        {/* Quantity and Meal Type */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="quantity">{t('Quantity')} (g)</Label>
+            <Input
+              id="quantity"
+              type="number"
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+              placeholder="100"
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <Label htmlFor="mealType">{t('Meal Type')}</Label>
+            <Select value={mealType} onValueChange={setMealType}>
+              <SelectTrigger className="mt-1">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="breakfast">{t('Breakfast')}</SelectItem>
+                <SelectItem value="lunch">{t('Lunch')}</SelectItem>
+                <SelectItem value="dinner">{t('Dinner')}</SelectItem>
+                <SelectItem value="snack">{t('Snack')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Notes */}
         <div>
-          <Label htmlFor="calories">{t('Calories (per 100g)')}</Label>
-          <Input
-            id="calories"
-            type="number"
-            value={calories}
-            onChange={(e) => setCalories(e.target.value)}
-            placeholder="0"
+          <Label htmlFor="notes">{t('Notes')} ({t('optional')})</Label>
+          <Textarea
+            id="notes"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder={t('Add any notes about this food...')}
+            className="mt-1"
+            rows={3}
           />
         </div>
-        <div>
-          <Label htmlFor="protein">{t('Protein (g per 100g)')}</Label>
-          <Input
-            id="protein"
-            type="number"
-            step="0.1"
-            value={protein}
-            onChange={(e) => setProtein(e.target.value)}
-            placeholder="0"
-          />
-        </div>
-      </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="carbs">{t('Carbs (g per 100g)')}</Label>
-          <Input
-            id="carbs"
-            type="number"
-            step="0.1"
-            value={carbs}
-            onChange={(e) => setCarbs(e.target.value)}
-            placeholder="0"
-          />
-        </div>
-        <div>
-          <Label htmlFor="fat">{t('Fat (g per 100g)')}</Label>
-          <Input
-            id="fat"
-            type="number"
-            step="0.1"
-            value={fat}
-            onChange={(e) => setFat(e.target.value)}
-            placeholder="0"
-          />
-        </div>
-      </div>
-
-      <div>
-        <Label htmlFor="mealType">{t('Meal Type')}</Label>
-        <Select value={mealType} onValueChange={setMealType}>
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="breakfast">{t('Breakfast')}</SelectItem>
-            <SelectItem value="lunch">{t('Lunch')}</SelectItem>
-            <SelectItem value="dinner">{t('Dinner')}</SelectItem>
-            <SelectItem value="snack">{t('Snack')}</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div>
-        <Label htmlFor="notes">{t('Notes (Optional)')}</Label>
-        <Textarea
-          id="notes"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          placeholder={t('Add any notes about this food...')}
-          rows={2}
-        />
-      </div>
-
-      <Button
-        onClick={handleSubmit}
-        disabled={isLoading || !foodName.trim()}
-        className="w-full bg-green-600 hover:bg-green-700"
-      >
-        {isLoading ? (
-          <>
-            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-            {t('Adding...')}
-          </>
-        ) : (
-          <>
-            <Plus className="w-4 h-4 mr-2" />
-            {t('Add Food')}
-          </>
+        {/* Nutrition Preview */}
+        {(calories || protein || carbs || fat) && (
+          <div className="bg-green-50 p-4 rounded-lg">
+            <h4 className="font-medium text-green-800 mb-2">{t('Nutrition Summary')}</h4>
+            <div className="grid grid-cols-4 gap-2 text-sm">
+              <div className="text-center">
+                <div className="font-semibold text-green-800">
+                  {Math.round((parseFloat(calories) || 0) * (parseFloat(quantity) || 100) / 100)}
+                </div>
+                <div className="text-green-600">cal</div>
+              </div>
+              <div className="text-center">
+                <div className="font-semibold text-green-800">
+                  {Math.round((parseFloat(protein) || 0) * (parseFloat(quantity) || 100) / 100)}g
+                </div>
+                <div className="text-green-600">protein</div>
+              </div>
+              <div className="text-center">
+                <div className="font-semibold text-green-800">
+                  {Math.round((parseFloat(carbs) || 0) * (parseFloat(quantity) || 100) / 100)}g
+                </div>
+                <div className="text-green-600">carbs</div>
+              </div>
+              <div className="text-center">
+                <div className="font-semibold text-green-800">
+                  {Math.round((parseFloat(fat) || 0) * (parseFloat(quantity) || 100) / 100)}g
+                </div>
+                <div className="text-green-600">fat</div>
+              </div>
+            </div>
+          </div>
         )}
-      </Button>
+
+        <Button
+          onClick={handleSubmit}
+          disabled={isAdding || !foodName.trim()}
+          className="w-full bg-green-600 hover:bg-green-700 text-white"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          {isAdding ? t('Adding...') : t('Add to Log')}
+        </Button>
+      </div>
     </div>
   );
 };

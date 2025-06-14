@@ -38,6 +38,7 @@ const ProfilePage = () => {
     <ProtectedRoute>
       <Layout>
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
+          {/* Enhanced Header Section */}
           <div className="relative overflow-hidden mb-6">
             <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5"></div>
             <div className="relative">
@@ -48,6 +49,7 @@ const ProfilePage = () => {
                 className="mb-0"
               >
                 <div className="flex items-center gap-4">
+                  {/* Circular Progress Indicator */}
                   <div className="relative">
                     <div className="w-16 h-16 relative">
                       <svg className="w-16 h-16 transform -rotate-90" viewBox="0 0 64 64">
@@ -92,6 +94,7 @@ const ProfilePage = () => {
             </div>
           </div>
 
+          {/* Main Content */}
           <div className="px-6 pb-8">
             <div className="w-full max-w-7xl mx-auto">
               <RefactoredProfileView
@@ -107,6 +110,7 @@ const ProfilePage = () => {
           </div>
         </div>
         
+        {/* Debug Panel */}
         <DebugPanel />
       </Layout>
     </ProtectedRoute>

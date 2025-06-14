@@ -1,9 +1,10 @@
+
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Clock, Flame, Target, Calendar, Dumbbell, TrendingUp } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { getWorkoutStatistics, getTrainingDays, getRestDays } from "@/features/exercise/utils/exerciseDataUtils";
+import { getWorkoutStatistics, getTrainingDays, getRestDays } from "@/utils/exerciseDataUtils";
 
 interface CompactWorkoutSummaryProps {
   todaysWorkouts: any[];

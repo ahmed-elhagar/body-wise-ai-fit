@@ -4,8 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Camera, Upload, Loader2, Utensils, AlertCircle, Zap } from "lucide-react";
-import { useEnhancedFoodAnalysis } from '@/hooks/useEnhancedFoodAnalysis';
-import { useFoodPhotoIntegration } from '@/hooks/useFoodPhotoIntegration';
+import { useFoodPhotoIntegration } from "@/hooks/useFoodPhotoIntegration";
 import { useCentralizedCredits } from "@/hooks/useCentralizedCredits";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
@@ -17,14 +16,12 @@ interface FoodPhotoAnalysisCardProps {
 }
 
 const FoodPhotoAnalysisCard = ({ onFoodSelected, className = "" }: FoodPhotoAnalysisCardProps) => {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [mealType, setMealType] = useState('snack');
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   
-  const { analyzePhotoFood, isAnalyzing, analysisResult, error, convertToFoodItem } = useEnhancedFoodAnalysis();
-  const { processAndLogFood, isProcessing } = useFoodPhotoIntegration();
+  const { analyzePhotoFood, isAnalyzing, analysisResult, error, convertToFoodItem } = useFoodPhotoIntegration();
   const { remaining: userCredits } = useCentralizedCredits();
   const { t } = useLanguage();
 
@@ -41,7 +38,7 @@ const FoodPhotoAnalysisCard = ({ onFoodSelected, className = "" }: FoodPhotoAnal
       return;
     }
 
-    setSelectedFile(file);
+    setSelectedImage(file);
     
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -58,9 +55,9 @@ const FoodPhotoAnalysisCard = ({ onFoodSelected, className = "" }: FoodPhotoAnal
   };
 
   const handleAnalyze = async () => {
-    if (selectedFile && canAnalyze) {
+    if (selectedImage && canAnalyze) {
       try {
-        await analyzePhotoFood(selectedFile);
+        await analyzePhotoFood(selectedImage);
       } catch (error) {
         console.error('Analysis failed:', error);
       }
@@ -93,7 +90,7 @@ const FoodPhotoAnalysisCard = ({ onFoodSelected, className = "" }: FoodPhotoAnal
   };
 
   const resetAnalysis = () => {
-    setSelectedFile(null);
+    setSelectedImage(null);
     setImagePreview(null);
     if (imagePreview) {
       URL.revokeObjectURL(imagePreview);
@@ -202,58 +199,65 @@ const FoodPhotoAnalysisCard = ({ onFoodSelected, className = "" }: FoodPhotoAnal
         )}
 
         {/* Analysis Results */}
-        {analysisResult?.results && analysisResult.results.length > 0 && (
+        {analysisResult?.analysis && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h4 className="text-sm font-semibold text-gray-800">{t('Analysis Results')}</h4>
               <Badge variant="outline" className="text-xs">
-                {Math.round((analysisResult.results[0]?.confidence || 0.8) * 100)}% {t('confidence')}
+                {Math.round((analysisResult.analysis.overallConfidence || 0.8) * 100)}% {t('confidence')}
               </Badge>
             </div>
 
-            <div className="space-y-2">
-              {analysisResult.results.map((food: any, index: number) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-3 bg-purple-50 rounded-lg border border-purple-200 hover:shadow-sm transition-shadow"
-                >
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h5 className="text-sm font-medium text-gray-900">{food.food_name}</h5>
-                      <Badge variant="outline" className="text-xs capitalize">
-                        general
-                      </Badge>
-                    </div>
-                    <div className="grid grid-cols-2 gap-1 text-xs text-gray-600">
-                      <span>{food.nutrition?.calories || 0} cal</span>
-                      <span>{food.nutrition?.protein || 0}g protein</span>
-                      <span>{food.nutrition?.carbs || 0}g carbs</span>
-                      <span>{food.nutrition?.fat || 0}g fat</span>
-                    </div>
-                    {food.portion_size && (
-                      <p className="text-xs text-purple-600 mt-1">{t('Estimated')}: {food.portion_size}</p>
-                    )}
-                  </div>
-
-                  <Button
-                    size="sm"
-                    onClick={() => handleSelectFood(food)}
-                    className="ml-3 bg-purple-600 hover:bg-purple-700 text-xs px-3 py-1"
+            {analysisResult.analysis.foodItems && analysisResult.analysis.foodItems.length > 0 ? (
+              <div className="space-y-2">
+                {analysisResult.analysis.foodItems.map((food: any, index: number) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 bg-purple-50 rounded-lg border border-purple-200 hover:shadow-sm transition-shadow"
                   >
-                    {t('Select')}
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h5 className="text-sm font-medium text-gray-900">{food.name}</h5>
+                        <Badge variant="outline" className="text-xs capitalize">
+                          {food.category || 'general'}
+                        </Badge>
+                      </div>
+                      <div className="grid grid-cols-2 gap-1 text-xs text-gray-600">
+                        <span>{food.calories || 0} cal/100g</span>
+                        <span>{food.protein || 0}g protein</span>
+                        <span>{food.carbs || 0}g carbs</span>
+                        <span>{food.fat || 0}g fat</span>
+                      </div>
+                      {food.quantity && (
+                        <p className="text-xs text-purple-600 mt-1">{t('Estimated')}: {food.quantity}</p>
+                      )}
+                    </div>
 
-        {/* No Results State */}
-        {analysisResult?.success === false && (
-          <div className="text-center py-4">
-            <Utensils className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-            <p className="text-sm text-gray-600">{t('No food items detected')}</p>
-            <p className="text-xs text-gray-500">{t('Try a clearer photo with visible food')}</p>
+                    <Button
+                      size="sm"
+                      onClick={() => handleSelectFood(food)}
+                      className="ml-3 bg-purple-600 hover:bg-purple-700 text-xs px-3 py-1"
+                    >
+                      {t('Select')}
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-4">
+                <Utensils className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                <p className="text-sm text-gray-600">{t('No food items detected')}</p>
+                <p className="text-xs text-gray-500">{t('Try a clearer photo with visible food')}</p>
+              </div>
+            )}
+
+            {analysisResult.analysis.suggestions && (
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-xs text-blue-800">
+                  <strong>{t('AI Suggestion')}:</strong> {analysisResult.analysis.suggestions}
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

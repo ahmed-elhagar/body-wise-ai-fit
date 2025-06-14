@@ -20,12 +20,15 @@ const AddFoodDialog = ({ isOpen, onClose, onFoodAdded, preSelectedFood }: AddFoo
 
   useEffect(() => {
     if (preSelectedFood && isOpen) {
+      // If we have pre-selected food from AI analysis, switch to manual tab
       setActiveTab("manual");
     } else {
+      // Reset to search tab for normal usage
       setActiveTab("search");
     }
   }, [preSelectedFood, isOpen]);
 
+  // If we have pre-selected food, show only the manual tab content
   if (preSelectedFood) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>

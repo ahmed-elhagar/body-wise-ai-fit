@@ -1,91 +1,122 @@
 
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import React from "react";
+import { Card } from "@/components/ui/card";
+import { Scale, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { WeightEntry } from "@/hooks/useWeightTracking";
+import { useState } from "react";
+import { useGoals } from "@/hooks/useGoals";
+import { Badge } from "@/components/ui/badge";
 import { useOptimizedWeightChart } from "@/hooks/useOptimizedWeightChart";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import TimeRangeSelector from "./TimeRangeSelector";
+import EmptyWeightChart from "./EmptyWeightChart";
+import WeightChart from "./WeightChart";
 
-export const OptimizedWeightChart = () => {
-  const { chartData, stats, isLoading, hasData } = useOptimizedWeightChart();
+interface OptimizedWeightChartProps {
+  weightEntries: WeightEntry[];
+}
 
-  if (isLoading) {
-    return <div className="p-4">Loading weight data...</div>;
-  }
-
-  if (!hasData) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Weight Progress</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-gray-500">No weight data available. Start tracking your weight to see progress!</p>
-        </CardContent>
-      </Card>
-    );
-  }
+const OptimizedWeightChart = React.memo<OptimizedWeightChartProps>(({ weightEntries }) => {
+  const [timeRange, setTimeRange] = useState<30 | 90 | 180>(30);
+  const { getWeightGoal } = useGoals();
+  const { chartData, stats, hasData } = useOptimizedWeightChart(weightEntries, timeRange);
+  
+  const weightGoal = getWeightGoal();
+  const goalWeight = weightGoal?.target_value;
 
   const getTrendIcon = () => {
     switch (stats.trend) {
-      case 'increasing':
-        return <TrendingUp className="w-4 h-4 text-red-500" />;
-      case 'decreasing':
-        return <TrendingDown className="w-4 h-4 text-green-500" />;
+      case 'up':
+        return <TrendingUp className="w-4 h-4 text-green-600" />;
+      case 'down':
+        return <TrendingDown className="w-4 h-4 text-red-600" />;
       default:
-        return <Minus className="w-4 h-4 text-gray-500" />;
+        return <Minus className="w-4 h-4 text-gray-600" />;
+    }
+  };
+
+  const getTrendColor = () => {
+    switch (stats.trend) {
+      case 'up':
+        return "text-green-600";
+      case 'down':
+        return "text-red-600";
+      default:
+        return "text-gray-600";
     }
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          Weight Progress
-          <div className="flex items-center gap-2 text-sm">
-            {getTrendIcon()}
-            <span className={
-              stats.trend === 'increasing' ? 'text-red-500' : 
-              stats.trend === 'decreasing' ? 'text-green-500' : 'text-gray-500'
-            }>
-              {Math.abs(stats.change).toFixed(1)}kg
-            </span>
-          </div>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="h-64 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis />
-              <Tooltip />
-              <Line 
-                type="monotone" 
-                dataKey="weight" 
-                stroke="#3b82f6" 
-                strokeWidth={2}
-                dot={{ fill: '#3b82f6' }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+    <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+            <Scale className="w-5 h-5 text-blue-600" />
+            Weight Progress
+            {goalWeight && (
+              <Badge variant="outline" className="ml-2 text-xs">
+                Goal: {goalWeight}kg
+              </Badge>
+            )}
+          </h3>
+          <p className="text-sm text-gray-600">Track your weight journey over time</p>
         </div>
         
-        <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t">
-          <div className="text-center">
-            <p className="text-sm text-gray-600">Current</p>
-            <p className="font-semibold">{stats.current.toFixed(1)}kg</p>
-          </div>
-          <div className="text-center">
-            <p className="text-sm text-gray-600">Average</p>
-            <p className="font-semibold">{stats.average.toFixed(1)}kg</p>
-          </div>
-          <div className="text-center">
-            <p className="text-sm text-gray-600">Entries</p>
-            <p className="font-semibold">{stats.totalEntries}</p>
-          </div>
+        <div className="flex items-center gap-4">
+          <TimeRangeSelector 
+            timeRange={timeRange} 
+            onTimeRangeChange={setTimeRange} 
+          />
+          
+          {hasData && (
+            <div className={`flex items-center gap-1 text-sm font-medium ${getTrendColor()}`}>
+              {getTrendIcon()}
+              <span>
+                {stats.trend === 'stable' ? 'Stable' : `${stats.trendPercentage}%`}
+              </span>
+            </div>
+          )}
         </div>
-      </CardContent>
+      </div>
+
+      {hasData ? (
+        <>
+          <WeightChart />
+          
+          {/* Statistics Summary */}
+          <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center p-3 bg-blue-50 rounded-lg">
+              <div className="text-sm text-gray-600">Average</div>
+              <div className="text-lg font-semibold text-blue-600">
+                {stats.averageWeight}kg
+              </div>
+            </div>
+            <div className="text-center p-3 bg-green-50 rounded-lg">
+              <div className="text-sm text-gray-600">Highest</div>
+              <div className="text-lg font-semibold text-green-600">
+                {stats.highestWeight}kg
+              </div>
+            </div>
+            <div className="text-center p-3 bg-orange-50 rounded-lg">
+              <div className="text-sm text-gray-600">Lowest</div>
+              <div className="text-lg font-semibold text-orange-600">
+                {stats.lowestWeight}kg
+              </div>
+            </div>
+            <div className="text-center p-3 bg-purple-50 rounded-lg">
+              <div className="text-sm text-gray-600">Entries</div>
+              <div className="text-lg font-semibold text-purple-600">
+                {stats.totalEntries}
+              </div>
+            </div>
+          </div>
+        </>
+      ) : (
+        <EmptyWeightChart />
+      )}
     </Card>
   );
-};
+});
+
+OptimizedWeightChart.displayName = 'OptimizedWeightChart';
+
+export default OptimizedWeightChart;

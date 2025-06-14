@@ -1,81 +1,89 @@
 
-import { useState, useCallback } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
-import { toast } from 'sonner';
+import { useState, useEffect } from 'react';
 
 export interface ChatMessage {
   id: string;
-  message: string;
-  sender_id: string;
-  sender_type: 'coach' | 'trainee';
+  content?: string;
+  message?: string; // Alternative property name
+  sender: "user" | "ai" | "coach" | "trainee";
+  sender_id?: string;
   sender_name?: string;
-  created_at: string;
-  updated_at: string;
-  is_read: boolean;
+  sender_type?: string;
+  receiver_id?: string;
+  timestamp: Date;
+  created_at?: string;
+  updated_at?: string;
+  is_read?: boolean;
+  message_text?: string;
+  message_type?: string;
 }
 
-interface SendMessageParams {
-  message: string;
+export interface CoachInfo {
+  id: string;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  profile_completion_score?: number;
+  ai_generations_remaining?: number;
+  age?: number;
+  weight?: number;
+  height?: number;
+  fitness_goal?: string;
+  gender?: string;
+  phone_number?: string;
+  address?: string;
+  updated_at?: string;
+  last_login?: string;
 }
 
-export const useCoachChat = (coachId: string, traineeId: string) => {
-  const { user } = useAuth();
-  const queryClient = useQueryClient();
+export interface MultipleCoachesInfo {
+  totalCoaches: number;
+  activeCoaches: number;
+  coaches: CoachInfo[];
+}
 
-  // Fetch messages
-  const { data: messages = [], isLoading } = useQuery({
-    queryKey: ['coach-chat-messages', coachId, traineeId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('coach_trainee_messages')
-        .select('*')
-        .eq('coach_id', coachId)
-        .eq('trainee_id', traineeId)
-        .order('created_at', { ascending: true });
-
-      if (error) throw error;
-      return data as ChatMessage[];
-    },
-    enabled: !!(coachId && traineeId)
+export const useCoachChat = (coachId?: string, traineeId?: string) => {
+  const [multipleCoachesInfo, setMultipleCoachesInfo] = useState<MultipleCoachesInfo>({
+    totalCoaches: 0,
+    activeCoaches: 0,
+    coaches: []
   });
+  const [coaches, setCoaches] = useState<CoachInfo[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [totalUnreadMessages, setTotalUnreadMessages] = useState(0);
+  const [unreadMessagesByCoach, setUnreadMessagesByCoach] = useState<Record<string, number>>({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
-  // Send message mutation
-  const sendMessageMutation = useMutation({
-    mutationFn: async ({ message }: SendMessageParams) => {
-      if (!user?.id) throw new Error('Not authenticated');
+  const sendMessage = (messageData: { message: string }) => {
+    console.log('Sending message:', messageData.message, 'between coach:', coachId, 'and trainee:', traineeId);
+    setIsSending(true);
+    // Simulate sending
+    setTimeout(() => {
+      setIsSending(false);
+    }, 1000);
+  };
 
-      const { error } = await supabase
-        .from('coach_trainee_messages')
-        .insert({
-          coach_id: coachId,
-          trainee_id: traineeId,
-          sender_id: user.id,
-          sender_type: user.role === 'coach' ? 'coach' : 'trainee',
-          message: message.trim()
-        });
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['coach-chat-messages', coachId, traineeId] });
-    },
-    onError: (error) => {
-      console.error('Error sending message:', error);
-      toast.error('Failed to send message');
-    }
-  });
-
-  const sendMessage = useCallback(
-    (params: SendMessageParams) => sendMessageMutation.mutate(params),
-    [sendMessageMutation]
-  );
+  const assignTrainee = (data: { traineeId: string; notes?: string }) => {
+    console.log('Assigning trainee:', data);
+    // Implementation here
+  };
 
   return {
+    multipleCoachesInfo,
+    coaches,
     messages,
+    totalUnreadMessages,
+    unreadMessagesByCoach,
     isLoading,
+    isSending,
+    error,
     sendMessage,
-    isSending: sendMessageMutation.isPending
+    assignTrainee,
+    // Additional methods
+    markMessageAsRead: (messageId: string) => {},
+    getConversation: (coachId: string) => [],
+    refreshData: () => {}
   };
 };

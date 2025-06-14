@@ -39,7 +39,8 @@ function App() {
                 <Suspense fallback={<SuspenseFallback />}>
                   <Routes>
                     {/* Public routes */}
-                    <Route path="/" element={<LazyPages.Dashboard />} />
+                    <Route path="/" element={<LazyPages.Index />} />
+                    <Route path="/landing" element={<LazyPages.Landing />} />
                     <Route path="/auth" element={<LazyPages.Auth />} />
                     <Route path="/signup" element={<LazyPages.UnifiedSignup />} />
                     <Route path="/welcome" element={<LazyPages.Welcome />} />

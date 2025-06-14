@@ -1,134 +1,127 @@
 
 import { useState, useCallback } from 'react';
 import { useWorkoutTimer } from './useWorkoutTimer';
-
-export interface Exercise {
-  id: string;
-  name: string;
-  sets: number;
-  reps: number;
-  weight?: number;
-  duration?: number;
-  rest_time?: number;
-  completed?: boolean;
-}
-
-export interface WorkoutSession {
-  id: string;
-  name: string;
-  exercises: Exercise[];
-  started_at?: string;
-  completed_at?: string;
-  total_duration?: number;
-}
+import { toast } from "@/hooks/use-toast";
 
 export const useWorkoutSession = () => {
-  const [currentSession, setCurrentSession] = useState<WorkoutSession | null>(null);
-  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
-  const [isResting, setIsResting] = useState(false);
-  const { timer, start, pause, resume, stop, reset, totalSeconds } = useWorkoutTimer();
+  const [sessionStarted, setSessionStarted] = useState(false);
+  const [exerciseStartTimes, setExerciseStartTimes] = useState<Record<string, number>>({});
+  const [completedAt, setCompletedAt] = useState<Record<string, Date>>({});
+  
+  const timer = useWorkoutTimer();
 
-  // Additional computed properties for compatibility
-  const sessionStarted = !!currentSession;
-  const isActive = timer.isRunning;
-  const isPaused = timer.isPaused;
-  const totalTime = `${timer.hours.toString().padStart(2, '0')}:${timer.minutes.toString().padStart(2, '0')}:${timer.seconds.toString().padStart(2, '0')}`;
-
-  const startSession = useCallback((session?: WorkoutSession) => {
-    if (session) {
-      setCurrentSession({
-        ...session,
-        started_at: new Date().toISOString(),
-      });
-    }
-    setCurrentExerciseIndex(0);
-    setIsResting(false);
-    start();
-  }, [start]);
+  const startSession = useCallback(() => {
+    setSessionStarted(true);
+    timer.start();
+    toast({
+      title: "Workout Started! 💪",
+      description: "Good luck with your workout session!",
+    });
+  }, [timer]);
 
   const pauseSession = useCallback(() => {
-    pause();
-  }, [pause]);
+    if (timer.isActive && !timer.isPaused) {
+      timer.pause();
+      toast({
+        title: "Workout Paused ⏸️",
+        description: "Take a break and resume when ready.",
+      });
+    }
+  }, [timer]);
 
   const resumeSession = useCallback(() => {
-    resume();
-  }, [resume]);
+    if (timer.isActive && timer.isPaused) {
+      timer.resume();
+      toast({
+        title: "Workout Resumed ▶️",
+        description: "Let's continue with your workout!",
+      });
+    }
+  }, [timer]);
 
   const resetSession = useCallback(() => {
-    setCurrentSession(null);
-    setCurrentExerciseIndex(0);
-    setIsResting(false);
-    reset();
-  }, [reset]);
+    setSessionStarted(false);
+    setExerciseStartTimes({});
+    setCompletedAt({});
+    timer.reset();
+    toast({
+      title: "Workout Reset 🔄",
+      description: "Ready to start a fresh workout session.",
+    });
+  }, [timer]);
+
+  const startExercise = useCallback((exerciseId: string) => {
+    setExerciseStartTimes(prev => ({
+      ...prev,
+      [exerciseId]: timer.seconds
+    }));
+  }, [timer.seconds]);
+
+  const completeExercise = useCallback((exerciseId: string) => {
+    setCompletedAt(prev => ({
+      ...prev,
+      [exerciseId]: new Date()
+    }));
+  }, []);
+
+  const getExerciseDuration = useCallback((exerciseId: string) => {
+    const startTime = exerciseStartTimes[exerciseId];
+    if (!startTime) return 0;
+    
+    const endTime = completedAt[exerciseId] ? 
+      Math.floor((completedAt[exerciseId].getTime() - Date.now()) / 1000) + timer.seconds :
+      timer.seconds;
+    
+    return Math.max(0, endTime - startTime);
+  }, [exerciseStartTimes, completedAt, timer.seconds]);
 
   const shareProgress = useCallback(() => {
-    if (currentSession && navigator.share) {
-      navigator.share({
-        title: 'Workout Complete!',
-        text: `Just completed ${currentSession.name} workout in ${totalTime}!`,
-      }).catch(console.error);
+    const totalTime = timer.formatTime();
+    const shareText = `💪 Just completed my workout in ${totalTime}! #FitnessJourney #WorkoutComplete`;
+    
+    try {
+      if (navigator.share && navigator.canShare) {
+        navigator.share({
+          title: 'Workout Complete!',
+          text: shareText,
+        }).catch(() => {
+          navigator.clipboard.writeText(shareText).then(() => {
+            toast({
+              title: "Progress Copied! 📋",
+              description: "Workout progress copied to clipboard.",
+            });
+          });
+        });
+      } else {
+        navigator.clipboard.writeText(shareText).then(() => {
+          toast({
+            title: "Progress Copied! 📋",
+            description: "Workout progress copied to clipboard.",
+          });
+        });
+      }
+    } catch (error) {
+      console.log('Share not available, showing toast instead');
+      toast({
+        title: "Workout Complete! 🎉",
+        description: `Great job! You completed your workout in ${totalTime}`,
+      });
     }
-  }, [currentSession, totalTime]);
-
-  const completeExercise = useCallback((exerciseIndex: number) => {
-    if (!currentSession) return;
-
-    const updatedExercises = [...currentSession.exercises];
-    updatedExercises[exerciseIndex] = {
-      ...updatedExercises[exerciseIndex],
-      completed: true,
-    };
-
-    setCurrentSession({
-      ...currentSession,
-      exercises: updatedExercises,
-    });
-
-    // Move to next exercise or complete session
-    if (exerciseIndex < currentSession.exercises.length - 1) {
-      setCurrentExerciseIndex(exerciseIndex + 1);
-      setIsResting(true);
-    } else {
-      completeSession();
-    }
-  }, [currentSession]);
-
-  const completeSession = useCallback(() => {
-    if (!currentSession) return;
-
-    setCurrentSession({
-      ...currentSession,
-      completed_at: new Date().toISOString(),
-      total_duration: timer.hours * 3600 + timer.minutes * 60 + timer.seconds,
-    });
-
-    stop();
-  }, [currentSession, timer, stop]);
-
-  const endSession = useCallback(() => {
-    setCurrentSession(null);
-    setCurrentExerciseIndex(0);
-    setIsResting(false);
-    reset();
-  }, [reset]);
+  }, [timer]);
 
   return {
-    currentSession,
-    currentExerciseIndex,
-    isResting,
-    timer,
     sessionStarted,
-    isActive,
-    isPaused,
-    totalTime,
-    totalSeconds,
+    isActive: timer.isActive,
+    isPaused: timer.isPaused,
+    totalTime: timer.formatTime(),
+    totalSeconds: timer.seconds,
     startSession,
     pauseSession,
     resumeSession,
     resetSession,
-    shareProgress,
+    startExercise,
     completeExercise,
-    completeSession,
-    endSession,
+    getExerciseDuration,
+    shareProgress
   };
 };

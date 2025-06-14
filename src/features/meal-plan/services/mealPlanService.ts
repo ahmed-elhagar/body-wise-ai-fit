@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { MealPlanFetchResult } from '../types';
 import { OptimizedMealPlanService } from './optimizedMealPlanService';
 
+// Enhanced service with proper error handling and data validation
 export const fetchMealPlanData = async (
   userId: string, 
   weekStartDateStr: string
@@ -27,6 +28,7 @@ export const fetchMealPlanData = async (
       return null;
     }
 
+    // Convert strict types back to legacy types for backward compatibility
     const convertedResult: MealPlanFetchResult = {
       weeklyPlan: {
         ...result.data.weeklyPlan,

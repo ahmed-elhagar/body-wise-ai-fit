@@ -1,81 +1,99 @@
 
-import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
+import { useMemo } from "react";
+import { subDays, format } from "date-fns";
+import { WeightEntry } from "@/hooks/useWeightTracking";
 
-interface WeightEntry {
-  id: string;
+export interface ChartDataPoint {
+  date: string;
   weight: number;
-  logged_at: string;
-  body_fat_percentage?: number;
+  bodyFat: number | null;
+  muscleMass: number | null;
+  formattedDate: string;
 }
 
-export const useOptimizedWeightChart = () => {
-  const { user } = useAuth();
+export interface WeightChartStats {
+  trend: 'up' | 'down' | 'stable';
+  trendPercentage: number;
+  highestWeight: number;
+  lowestWeight: number;
+  averageWeight: number;
+  totalEntries: number;
+}
 
-  const { data: weightEntries = [], isLoading } = useQuery({
-    queryKey: ['weight-entries', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
+export const useOptimizedWeightChart = (weightEntries: WeightEntry[], timeRange: 30 | 90 | 180) => {
+  // Memoized chart data with optimized filtering and processing
+  const chartData = useMemo((): ChartDataPoint[] => {
+    if (!weightEntries || weightEntries.length === 0) return [];
+    
+    const cutoffDate = subDays(new Date(), timeRange);
+    
+    return weightEntries
+      .filter(entry => new Date(entry.recorded_at) >= cutoffDate)
+      .slice()
+      .reverse()
+      .map(entry => ({
+        date: entry.recorded_at,
+        weight: parseFloat(entry.weight.toString()),
+        bodyFat: entry.body_fat_percentage ? parseFloat(entry.body_fat_percentage.toString()) : null,
+        muscleMass: entry.muscle_mass ? parseFloat(entry.muscle_mass.toString()) : null,
+        formattedDate: format(new Date(entry.recorded_at), 'MMM dd'),
+      }));
+  }, [weightEntries, timeRange]);
 
-      const { data, error } = await supabase
-        .from('weight_tracking')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('logged_at', { ascending: true });
+  // Memoized statistics calculation
+  const stats = useMemo((): WeightChartStats => {
+    if (chartData.length === 0) {
+      return {
+        trend: 'stable',
+        trendPercentage: 0,
+        highestWeight: 0,
+        lowestWeight: 0,
+        averageWeight: 0,
+        totalEntries: 0,
+      };
+    }
 
-      if (error) throw error;
-      return data as WeightEntry[];
-    },
-    enabled: !!user?.id
-  });
-
-  const chartData = weightEntries.map(entry => {
-    const weight = entry.weight;
-    const height = 170; // Default height - should come from profile
-    const bmi = weight / Math.pow(height / 100, 2);
+    const weights = chartData.map(d => d.weight);
+    const highestWeight = Math.max(...weights);
+    const lowestWeight = Math.min(...weights);
+    const averageWeight = weights.reduce((sum, weight) => sum + weight, 0) / weights.length;
+    
+    // Calculate trend based on first and last entries
+    let trend: 'up' | 'down' | 'stable' = 'stable';
+    let trendPercentage = 0;
+    
+    if (chartData.length >= 2) {
+      const firstWeight = chartData[0].weight;
+      const lastWeight = chartData[chartData.length - 1].weight;
+      const difference = lastWeight - firstWeight;
+      trendPercentage = Math.abs((difference / firstWeight) * 100);
+      
+      if (Math.abs(difference) > 0.5) { // Only consider significant changes
+        trend = difference > 0 ? 'up' : 'down';
+      }
+    }
 
     return {
-      date: new Date(entry.logged_at).toLocaleDateString(),
-      weight: weight,
-      bmi: Math.round(bmi * 10) / 10,
-      bodyFat: entry.body_fat_percentage || 0
+      trend,
+      trendPercentage: Number(trendPercentage.toFixed(1)),
+      highestWeight: Number(highestWeight.toFixed(1)),
+      lowestWeight: Number(lowestWeight.toFixed(1)),
+      averageWeight: Number(averageWeight.toFixed(1)),
+      totalEntries: chartData.length,
     };
-  });
+  }, [chartData]);
 
-  const currentWeight = weightEntries[weightEntries.length - 1]?.weight || 0;
-  const previousWeight = weightEntries[weightEntries.length - 2]?.weight || currentWeight;
-  const change = currentWeight - previousWeight;
-  
-  const weights = weightEntries.map(e => e.weight);
-  const minWeight = Math.min(...weights);
-  const maxWeight = Math.max(...weights);
-  const averageWeight = weights.reduce((sum, w) => sum + w, 0) / weights.length || 0;
-
-  const trend = change > 0 ? 'increasing' : change < 0 ? 'decreasing' : 'stable';
-  const trendPercentage = previousWeight > 0 ? Math.abs((change / previousWeight) * 100) : 0;
-
-  const stats = {
-    current: currentWeight,
-    change: change,
-    trend: trend,
-    min: minWeight,
-    max: maxWeight,
-    average: averageWeight,
-    trendPercentage: trendPercentage,
-    averageWeight: averageWeight,
-    highestWeight: maxWeight,
-    lowestWeight: minWeight,
-    totalEntries: weightEntries.length
-  };
-
-  const hasData = weightEntries.length > 0;
+  // Memoized time range options
+  const timeRangeOptions = useMemo(() => [
+    { value: 30 as const, label: 'Last 30 days' },
+    { value: 90 as const, label: 'Last 3 months' },
+    { value: 180 as const, label: 'Last 6 months' },
+  ], []);
 
   return {
     chartData,
     stats,
-    isLoading,
-    hasData
+    timeRangeOptions,
+    hasData: chartData.length > 0,
   };
 };
