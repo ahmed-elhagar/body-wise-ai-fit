@@ -25,3 +25,6 @@ export { EmptyState } from './EmptyState';
 
 // Navigation
 export { UnifiedNavigation } from './navigation/UnifiedNavigation';
+
+// Dialogs
+export { default as ModernShoppingListDrawer } from './dialogs/ModernShoppingListDrawer';

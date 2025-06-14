@@ -15,7 +15,7 @@ import { MealExchangeDialog } from './dialogs/MealExchangeDialog';
 import { AIGenerationDialog } from './dialogs/AIGenerationDialog';
 import { RecipeDialog } from './RecipeDialog';
 import EnhancedAddSnackDialog from './dialogs/EnhancedAddSnackDialog';
-import ModernShoppingListDrawer from '@/components/shopping-list/ModernShoppingListDrawer';
+import ModernShoppingListDrawer from './dialogs/ModernShoppingListDrawer';
 import { MealPlanAILoadingDialog } from './dialogs/MealPlanAILoadingDialog';
 import type { MealPlanFetchResult } from '../types';
 
