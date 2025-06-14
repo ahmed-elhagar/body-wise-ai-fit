@@ -7,40 +7,50 @@ export class OptimizedMealPlanService {
     try {
       console.log('🔍 Fetching meal plan data for week starting:', weekStartDate.toISOString());
       
-      const { data, error } = await supabase
+      // First, fetch the weekly meal plan
+      const { data: weeklyPlanData, error: weeklyPlanError } = await supabase
         .from('weekly_meal_plans')
-        .select(`
-          *,
-          daily_meals (*)
-        `)
+        .select('*')
         .eq('user_id', userId)
         .eq('week_start_date', weekStartDate.toISOString().split('T')[0])
         .single();
 
-      if (error) {
-        if (error.code === 'PGRST116') {
+      if (weeklyPlanError) {
+        if (weeklyPlanError.code === 'PGRST116') {
           console.log('📝 No meal plan found for this week');
           return null;
         }
-        throw error;
+        throw weeklyPlanError;
       }
 
-      if (!data) {
+      if (!weeklyPlanData) {
         console.log('📝 No meal plan data returned');
         return null;
+      }
+
+      // Then fetch the daily meals for this weekly plan
+      const { data: dailyMealsData, error: dailyMealsError } = await supabase
+        .from('daily_meals')
+        .select('*')
+        .eq('weekly_plan_id', weeklyPlanData.id)
+        .order('day_number', { ascending: true });
+
+      if (dailyMealsError) {
+        console.error('❌ Error fetching daily meals:', dailyMealsError);
+        throw dailyMealsError;
       }
 
       console.log('✅ Meal plan data fetched successfully');
       
       // Transform the data to match our types
       const weeklyPlan: WeeklyMealPlan = {
-        ...data,
-        preferences: data.generation_prompt || {},
-        updated_at: data.created_at // Use created_at as fallback for updated_at
+        ...weeklyPlanData,
+        preferences: weeklyPlanData.generation_prompt || {},
+        updated_at: weeklyPlanData.created_at // Use created_at as fallback for updated_at
       };
 
       // Transform daily meals to match our DailyMeal type
-      const dailyMeals: DailyMeal[] = (data.daily_meals || []).map((meal: any) => ({
+      const dailyMeals: DailyMeal[] = (dailyMealsData || []).map((meal: any) => ({
         ...meal,
         meal_type: meal.meal_type as "breakfast" | "lunch" | "dinner" | "snack" | "snack1" | "snack2"
       }));
@@ -85,25 +95,22 @@ export class OptimizedMealPlanService {
     try {
       console.log(`🔄 Shuffling daily meals for weekly plan ID: ${weeklyPlanId}`);
 
-      // Fetch the weekly meal plan to get all daily meals
-      const { data: weeklyPlan, error: weeklyPlanError } = await supabase
-        .from('weekly_meal_plans')
-        .select('id, daily_meals')
-        .eq('id', weeklyPlanId)
-        .single();
+      // Fetch the daily meals for this weekly plan
+      const { data: dailyMeals, error: mealsError } = await supabase
+        .from('daily_meals')
+        .select('*')
+        .eq('weekly_plan_id', weeklyPlanId)
+        .order('day_number', { ascending: true });
 
-      if (weeklyPlanError) {
-        console.error('❌ Error fetching weekly meal plan:', weeklyPlanError);
+      if (mealsError) {
+        console.error('❌ Error fetching daily meals:', mealsError);
         return false;
       }
 
-      if (!weeklyPlan || !weeklyPlan.daily_meals) {
+      if (!dailyMeals || dailyMeals.length === 0) {
         console.warn('⚠️ No daily meals found for this weekly plan.');
         return false;
       }
-
-      // Extract the daily meals from the weekly plan
-      const dailyMeals = weeklyPlan.daily_meals as any[];
 
       // Basic shuffle implementation (you can use a more robust shuffle algorithm)
       for (let i = dailyMeals.length - 1; i > 0; i--) {
