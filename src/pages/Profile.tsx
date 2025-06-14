@@ -1,5 +1,5 @@
 
-import ProfilePage from "@/components/profile/approved/ProfilePage";
+import { ProfilePage } from "@/features/profile";
 
 const Profile = () => {
   return <ProfilePage />;

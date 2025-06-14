@@ -6,9 +6,9 @@ import { PageHeader } from "@/components/ui/page-header";
 import { User } from "lucide-react";
 import { useOptimizedProfile } from "@/hooks/useOptimizedProfile";
 import { Badge } from "@/components/ui/badge";
-import { OptimizedProfileSummary } from "@/features/profile/components";
+import OptimizedProfileSummary from "./OptimizedProfileSummary";
 
-const OptimizedProfile = React.memo(() => {
+const ProfilePage = React.memo(() => {
   const { profileMetrics } = useOptimizedProfile();
   const completionPercentage = profileMetrics?.completionScore || 0;
 
@@ -96,6 +96,6 @@ const OptimizedProfile = React.memo(() => {
   );
 });
 
-OptimizedProfile.displayName = 'OptimizedProfile';
+ProfilePage.displayName = 'ProfilePage';
 
-export default OptimizedProfile;
+export default ProfilePage;

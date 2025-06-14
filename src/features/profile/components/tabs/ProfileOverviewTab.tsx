@@ -1,5 +1,6 @@
 
-import { ProfileOverviewCard, ProfileGoalsCard } from "@/features/profile/components";
+import ProfileOverviewCard from "../../ProfileOverviewCard";
+import ProfileGoalsCard from "../../ProfileGoalsCard";
 import { useProfileForm } from "@/hooks/useProfileForm";
 
 const ProfileOverviewTab = () => {
@@ -13,15 +14,12 @@ const ProfileOverviewTab = () => {
   return (
     <div className="space-y-6">
       <ProfileOverviewCard 
-        profile={formData}
+        formData={formData}
+        onEdit={handleEdit}
       />
       <ProfileGoalsCard 
         formData={formData}
-        updateFormData={() => {}}
-        handleArrayInput={() => {}}
-        saveGoalsAndActivity={async () => true}
-        isUpdating={false}
-        validationErrors={{}}
+        onEdit={handleEdit}
       />
     </div>
   );

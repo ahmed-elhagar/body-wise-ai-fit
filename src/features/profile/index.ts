@@ -4,4 +4,5 @@ export type * from './types';
 export * from './components';
 export * from './utils';
 
-// No legacy re-exports needed - components use direct imports
+// Main entry point for profile feature
+export { default as ProfilePage } from './components/ProfilePage';
