@@ -6,7 +6,7 @@ interface GoalProgressRingProps {
   children?: React.ReactNode;
 }
 
-const GoalProgressRing = ({ 
+export const GoalProgressRing = ({ 
   progress, 
   size, 
   strokeWidth = 8, 

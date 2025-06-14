@@ -131,14 +131,37 @@ export const useWeightTracking = () => {
     }
   };
 
+  const getWeightStats = () => {
+    if (data.entries.length === 0) return null;
+    
+    const currentWeight = data.entries[0]?.weight || 0;
+    const firstEntry = data.entries[data.entries.length - 1];
+    const totalChange = currentWeight - (firstEntry?.weight || currentWeight);
+    
+    // Calculate weekly change (last 7 entries or less)
+    const weeklyEntries = data.entries.slice(0, 7);
+    const weeklyChange = weeklyEntries.length > 1 
+      ? weeklyEntries[0].weight - weeklyEntries[weeklyEntries.length - 1].weight 
+      : 0;
+    
+    return {
+      currentWeight,
+      totalChange,
+      weeklyChange,
+      entryCount: data.entries.length
+    };
+  };
+
   useEffect(() => {
     fetchWeightEntries();
   }, [user]);
 
   return {
     ...data,
+    weightEntries: data.entries, // Add this alias for backward compatibility
     addWeightEntry,
     deleteWeightEntry,
+    getWeightStats,
     refetch: fetchWeightEntries
   };
 };

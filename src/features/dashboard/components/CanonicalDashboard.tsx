@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/hooks/useAuth';
@@ -51,11 +52,7 @@ const CanonicalDashboard = () => {
           <div className="lg:col-span-1 space-y-6">
             <GoalProgressWidget />
             <WeightTrackingWidget />
-            <DashboardAchievements 
-              profile={profile}
-              mealPlans={mealPlans}
-              programs={programs}
-            />
+            <DashboardAchievements />
           </div>
         </div>
       </div>

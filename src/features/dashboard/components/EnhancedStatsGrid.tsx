@@ -1,3 +1,4 @@
+
 import { Card } from "@/components/ui/card";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useProfile } from "@/hooks/useProfile";
@@ -12,7 +13,7 @@ import {
 const EnhancedStatsGrid = () => {
   const { t, isRTL } = useLanguage();
   const { profile } = useProfile();
-  const { weightEntries } = useWeightTracking();
+  const { entries: weightEntries } = useWeightTracking();
 
   // Calculate current weight and progress
   const currentWeight = weightEntries?.[0]?.weight || profile?.weight || 0;

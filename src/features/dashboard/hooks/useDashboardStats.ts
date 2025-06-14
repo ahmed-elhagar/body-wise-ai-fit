@@ -1,9 +1,10 @@
+
 import { useProfile } from "@/hooks/useProfile";
 import { useWeightTracking } from "@/features/dashboard/hooks/useWeightTracking";
 
 export const useDashboardStats = () => {
   const { profile } = useProfile();
-  const { weightEntries, isLoading: weightLoading } = useWeightTracking();
+  const { entries: weightEntries, isLoading: weightLoading } = useWeightTracking();
 
   console.log('Dashboard - Profile data:', profile);
   console.log('Dashboard - Weight entries:', weightEntries);
