@@ -239,7 +239,7 @@ export const RecipeDialog = ({ isOpen, onClose, meal, onRecipeUpdated }: RecipeD
                   <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded">
                     <span>{ingredient.name}</span>
                     <span className="text-sm text-gray-600">
-                      {ingredient.quantity} {ingredient.unit}
+                      {ingredient.amount || ingredient.quantity} {ingredient.unit}
                     </span>
                   </div>
                 ))}

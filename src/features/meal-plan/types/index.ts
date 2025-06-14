@@ -1,7 +1,9 @@
+
 // Centralized types for meal plan feature
 export interface MealIngredient {
   name: string;
   amount: string;
+  quantity?: string; // Add quantity as optional for backward compatibility
   unit: string;
   category?: string;
 }
