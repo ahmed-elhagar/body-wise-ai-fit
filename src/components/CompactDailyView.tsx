@@ -1,10 +1,13 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CalendarDays } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { CalendarDays, ChefHat, Sparkles, ShoppingCart, Plus, Flame, Zap, Clock } from "lucide-react";
 import { useI18n } from "@/hooks/useI18n";
 import { MealTypeSection } from "@/features/meal-plan/components/daily-view";
 import { DailyNutritionSummary } from "@/features/meal-plan/components/daily-view";
+import { CompactMealCard } from "@/features/meal-plan/components/daily-view";
 import type { DailyMeal } from "@/features/meal-plan/types";
 
 interface CompactDailyViewProps {
@@ -70,10 +73,8 @@ const CompactDailyView = ({
     <div className="space-y-4">
       {/* Enhanced Nutrition Summary */}
       <DailyNutritionSummary
-        totalCalories={totalCalories}
-        totalProtein={totalProtein}
-        onShowShoppingList={onShowShoppingList}
-        onAddSnack={onAddSnack}
+        meals={todaysMeals}
+        targetCalories={2000}
       />
 
       {/* Quick Action Buttons */}

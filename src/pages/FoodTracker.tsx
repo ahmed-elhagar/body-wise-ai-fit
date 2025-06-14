@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { SidebarProvider } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/AppSidebar";
@@ -23,7 +24,7 @@ const FoodTracker = () => {
             <MobileOptimizedHeader onAddFood={() => setOpen(true)} />
           </div>
 
-          <Tabs defaultvalue="today" className="space-y-4">
+          <Tabs defaultValue="today" className="space-y-4">
             <TabsList>
               <TabsTrigger value="today">{String(tFoodTracker('today'))}</TabsTrigger>
               <TabsTrigger value="history">{String(tFoodTracker('history'))}</TabsTrigger>
@@ -67,7 +68,11 @@ const FoodTracker = () => {
               <DialogHeader>
                 <DialogTitle>{String(tFoodTracker('addFood'))}</DialogTitle>
               </DialogHeader>
-              <AddFoodDialog onFoodAdd={() => setOpen(false)} />
+              <AddFoodDialog 
+                isOpen={open}
+                onClose={() => setOpen(false)}
+                onFoodAdded={() => setOpen(false)} 
+              />
             </DialogContent>
           </Dialog>
         </div>

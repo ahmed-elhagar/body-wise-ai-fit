@@ -6,10 +6,11 @@ import { Search, Loader2 } from "lucide-react";
 import { useI18n } from "@/hooks/useI18n";
 
 interface SearchTabProps {
-  onFoodSelect: (food: any) => void;
+  onFoodAdded: () => void;
+  onClose: () => void;
 }
 
-const SearchTab = ({ onFoodSelect }: SearchTabProps) => {
+const SearchTab = ({ onFoodAdded, onClose }: SearchTabProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState([]);

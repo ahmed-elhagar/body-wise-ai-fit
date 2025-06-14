@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,6 +7,7 @@ import { useI18n } from "@/hooks/useI18n";
 import { MealTypeSection } from "./daily-view";
 import { DailyNutritionSummary } from "./daily-view";
 import { EmptyDailyState } from "./daily-view";
+import { format } from "date-fns";
 import type { DailyMeal } from "../types";
 
 interface DayOverviewProps {
@@ -23,18 +25,14 @@ const DayOverview = ({
   onExchangeMeal,
   targetCalories
 }: DayOverviewProps) => {
-  const { tFrom, formatDate } = useI18n();
+  const { tFrom } = useI18n();
   const tMealPlan = tFrom('mealPlan');
 
   if (!meals || meals.length === 0) {
     return <EmptyDailyState date={date} />;
   }
 
-  const formattedDate = formatDate(date, {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-  });
+  const formattedDate = format(date, 'EEEE, MMMM d');
 
   return (
     <Card className="border border-gray-200">

@@ -6,16 +6,18 @@ import { Button } from "@/components/ui/button";
 import { useI18n } from "@/hooks/useI18n";
 
 interface ManualTabProps {
-  onFoodAdd: (food: any) => void;
+  onFoodAdded: () => void;
+  onClose: () => void;
+  preSelectedFood?: any;
 }
 
-const ManualTab = ({ onFoodAdd }: ManualTabProps) => {
+const ManualTab = ({ onFoodAdded, onClose, preSelectedFood }: ManualTabProps) => {
   const [foodData, setFoodData] = useState({
-    name: '',
-    calories: '',
-    protein: '',
-    carbs: '',
-    fat: '',
+    name: preSelectedFood?.name || '',
+    calories: preSelectedFood?.calories?.toString() || '',
+    protein: preSelectedFood?.protein?.toString() || '',
+    carbs: preSelectedFood?.carbs?.toString() || '',
+    fat: preSelectedFood?.fat?.toString() || '',
     quantity: '1'
   });
   const { tFrom } = useI18n();
@@ -25,7 +27,8 @@ const ManualTab = ({ onFoodAdd }: ManualTabProps) => {
     e.preventDefault();
     if (!foodData.name || !foodData.calories) return;
 
-    onFoodAdd({
+    // Here you would add the food to the database
+    console.log('Adding food:', {
       name: foodData.name,
       calories: parseFloat(foodData.calories),
       protein: parseFloat(foodData.protein) || 0,
@@ -34,14 +37,8 @@ const ManualTab = ({ onFoodAdd }: ManualTabProps) => {
       quantity: parseFloat(foodData.quantity) || 1
     });
 
-    setFoodData({
-      name: '',
-      calories: '',
-      protein: '',
-      carbs: '',
-      fat: '',
-      quantity: '1'
-    });
+    onFoodAdded();
+    onClose();
   };
 
   return (

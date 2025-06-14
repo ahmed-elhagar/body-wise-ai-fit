@@ -1,7 +1,8 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { Flame, Zap } from "lucide-react";
 import { useI18n } from "@/hooks/useI18n";
 import type { DailyMeal } from "@/features/meal-plan/types";
 
@@ -24,36 +25,38 @@ const DailyNutritionSummary = ({ meals, targetCalories = 2000 }: DailyNutritionS
     { calories: 0, protein: 0, carbs: 0, fat: 0 }
   );
 
-  const calorieProgress = (totals.calories / targetCalories) * 100;
+  const caloriesProgress = Math.min((totals.calories / targetCalories) * 100, 100);
 
   return (
-    <Card className="border border-gray-200">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-sm font-semibold">
-          {String(tMealPlan('dailyNutrition'))}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="space-y-2">
-          <div className="flex justify-between text-xs">
-            <span>{String(tMealPlan('calories'))}</span>
-            <span>{totals.calories} / {targetCalories}</span>
+    <Card className="bg-gradient-to-r from-blue-50 to-green-50 border-blue-200">
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+            <Flame className="w-4 h-4 text-red-500" />
+            {String(tMealPlan('dailyNutrition'))}
+          </h3>
+          <div className="text-lg font-bold text-blue-700">
+            {Math.round(totals.calories)} / {targetCalories} cal
           </div>
-          <Progress value={Math.min(calorieProgress, 100)} className="h-2" />
         </div>
 
-        <div className="grid grid-cols-3 gap-2 text-xs">
+        <Progress value={caloriesProgress} className="h-3 mb-3" />
+
+        <div className="grid grid-cols-3 gap-3 text-sm">
           <div className="text-center">
-            <div className="font-medium text-gray-900">{Math.round(totals.protein)}g</div>
-            <div className="text-gray-600">{String(tMealPlan('protein'))}</div>
+            <div className="flex items-center justify-center gap-1 mb-1">
+              <Zap className="w-3 h-3 text-green-500" />
+              <span className="font-medium text-gray-600">{String(tMealPlan('protein'))}</span>
+            </div>
+            <div className="font-bold text-gray-800">{Math.round(totals.protein)}g</div>
           </div>
           <div className="text-center">
-            <div className="font-medium text-gray-900">{Math.round(totals.carbs)}g</div>
-            <div className="text-gray-600">{String(tMealPlan('carbs'))}</div>
+            <div className="font-medium text-gray-600 mb-1">{String(tMealPlan('carbs'))}</div>
+            <div className="font-bold text-gray-800">{Math.round(totals.carbs)}g</div>
           </div>
           <div className="text-center">
-            <div className="font-medium text-gray-900">{Math.round(totals.fat)}g</div>
-            <div className="text-gray-600">{String(tMealPlan('fat'))}</div>
+            <div className="font-medium text-gray-600 mb-1">{String(tMealPlan('fat'))}</div>
+            <div className="font-bold text-gray-800">{Math.round(totals.fat)}g</div>
           </div>
         </div>
       </CardContent>
