@@ -1,4 +1,3 @@
-
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import { PageHeader } from "@/components/ui/page-header";
@@ -6,7 +5,6 @@ import { User } from "lucide-react";
 import { useEnhancedProfile } from "@/hooks/useEnhancedProfile";
 import { Badge } from "@/components/ui/badge";
 import RefactoredProfileView from "./RefactoredProfileView";
-import DebugPanel from "@/components/DebugPanel";
 
 const ProfilePage = () => {
   const {
@@ -109,9 +107,6 @@ const ProfilePage = () => {
             </div>
           </div>
         </div>
-        
-        {/* Debug Panel */}
-        <DebugPanel />
       </Layout>
     </ProtectedRoute>
   );

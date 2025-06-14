@@ -42,6 +42,7 @@
 
 ### Cleanup Targets:
 - [x] Remove `src/components/DebugPanel.tsx`
+- [x] Remove `src/features/auth/components/AuthDebugPanel.tsx`
 - [ ] Remove `src/components/SubscriptionDebugPanel.tsx`
 - [ ] Remove `src/utils/seedBasicFoods.ts`
 - [ ] Clean up unused imports across all files

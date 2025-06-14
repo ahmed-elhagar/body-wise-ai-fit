@@ -6,7 +6,7 @@
     "completed_date": "2025-06-08",
     "phase_1_achievements": [
       "✅ Created feature-based folder structure",
-      "✅ Defined TypeScript types for all features", 
+      "✅ Defined TypeScript types for all features",
       "✅ Created utility functions for core features",
       "✅ Set up clean export patterns",
       "✅ Identified cleanup targets"
@@ -62,11 +62,12 @@
       }
     ],
     "cleanup_ready": [
-      "src/components/SubscriptionDebugPanel.tsx", 
+      "src/components/SubscriptionDebugPanel.tsx",
       "src/utils/seedBasicFoods.ts"
     ],
     "cleaned_files": [
-      "src/components/DebugPanel.tsx"
+      "src/components/DebugPanel.tsx",
+      "src/features/auth/components/AuthDebugPanel.tsx"
     ],
     "next_phase": {
       "number": 2,
