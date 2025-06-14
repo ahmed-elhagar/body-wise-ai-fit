@@ -63,7 +63,10 @@
             "Deleted: src/features/exercise/components/EnhancedWorkoutTypeToggle.tsx (consolidated into new navigation)",
             "Deleted: src/features/exercise/components/WorkoutTypeToggle.tsx (consolidated into new navigation)",
             "Deleted: src/features/exercise/components/WorkoutTypeTabs.tsx (consolidated into new navigation)",
-            "Deleted: src/features/exercise/components/ExerciseCompactNavigation.tsx (consolidated into new navigation)"
+            "Deleted: src/features/exercise/components/ExerciseCompactNavigation.tsx (consolidated into new navigation)",
+            "Marked for deletion: src/features/exercise/components/EnhancedDayNavigation.tsx (replaced by CombinedWeeklyDayNavigation)",
+            "Marked for deletion: src/features/exercise/components/WeeklyExerciseNavigation.tsx (replaced by CombinedWeeklyDayNavigation)",
+            "Marked for deletion: src/features/exercise/components/ExerciseProgramDaySelector.tsx (replaced by CombinedWeeklyDayNavigation)"
           ]
         }
       ]

@@ -1,4 +1,3 @@
-
 // Exercise feature components exports
 export { ExerciseListEnhanced } from './ExerciseListEnhanced';
 export { ExercisePageContent } from './ExercisePageContent';
@@ -15,10 +14,6 @@ export { CompactProgressSidebar } from './CompactProgressSidebar';
 export { EnhancedExerciseListContainer } from './EnhancedExerciseListContainer';
 export { UnifiedExerciseContainer } from './UnifiedExerciseContainer';
 export { ExercisePageLayout } from './ExercisePageLayout';
-export { EnhancedDayNavigation } from './EnhancedDayNavigation';
-export { WeeklyExerciseNavigation } from './WeeklyExerciseNavigation';
-export { ExerciseProgramDaySelector } from './ExerciseProgramDaySelector';
-export { default as OptimizedExerciseContainer } from './OptimizedExerciseContainer';
 export { ExerciseErrorState } from './ExerciseErrorState';
 export { EnhancedExerciseHeaderWithAnalytics } from './EnhancedExerciseHeaderWithAnalytics';
 export { ExerciseAnalyticsContainer } from './ExerciseAnalyticsContainer';
