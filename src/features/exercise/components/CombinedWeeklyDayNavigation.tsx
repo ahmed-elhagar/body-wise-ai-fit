@@ -1,3 +1,4 @@
+
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -67,7 +68,7 @@ export const CombinedWeeklyDayNavigation = ({
         } ${
           isSelected 
             ? restDay ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-md' : 'bg-blue-600 hover:bg-blue-700 text-white shadow-md' 
-            : restDay ? 'text-orange-600 hover:bg-orange-100' : 'text-gray-600 hover:bg-white'
+            : restDay ? 'bg-orange-50 text-orange-600 hover:bg-orange-100' : 'text-blue-800 bg-blue-50 hover:bg-blue-100'
         }`}
         onClick={() => setSelectedDayNumber(dayNumber)}
       >
@@ -78,7 +79,7 @@ export const CombinedWeeklyDayNavigation = ({
           ) : (
             isSelected 
               ? <div className="w-1.5 h-1.5 bg-white rounded-full" />
-              : <Target className="w-4 h-4 text-blue-500" />
+              : <Target className="w-4 h-4" />
           )}
         </div>
       </Button>
@@ -86,7 +87,7 @@ export const CombinedWeeklyDayNavigation = ({
   }
 
   return (
-    <Card className="p-4 sm:p-6 bg-white/95 backdrop-blur-sm border-0 shadow-lg rounded-3xl">
+    <Card className="p-4 sm:p-6 bg-white shadow-lg rounded-3xl">
       {/* Week Navigation */}
       <div className="flex items-center justify-between">
         <Button
@@ -101,7 +102,7 @@ export const CombinedWeeklyDayNavigation = ({
 
         <div className="text-center">
           <div className="flex items-center justify-center gap-2">
-            <div className="w-10 h-10 bg-gradient-to-br from-indigo-100 to-blue-100 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
                 <Calendar className="w-5 h-5 text-indigo-600" />
             </div>
             <div>
@@ -127,18 +128,23 @@ export const CombinedWeeklyDayNavigation = ({
       </div>
       
       {/* Week Status & Actions */}
-      <div className="flex items-center justify-center mt-4 pt-4 border-t border-gray-100">
+      <div className="mt-4 pt-4 border-t border-gray-100 space-y-3 text-center">
         {currentWeekOffset === 0 ? (
-          <Badge className="inline-flex items-center bg-green-100 text-green-800 border-green-200 px-4 py-1.5 text-sm font-semibold">
-            <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+          <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">
             Current Week
           </Badge>
         ) : (
+          <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200">
+            Week {currentWeekOffset + 1} of Program
+          </Badge>
+        )}
+        
+        {currentWeekOffset > 0 && (
           <Button
             variant="ghost"
             size="sm"
             onClick={goToCurrentWeek}
-            className="text-sm text-gray-600 hover:text-gray-900"
+            className="text-sm text-gray-600 hover:text-gray-900 mx-auto flex"
           >
             <RotateCcw className="w-4 h-4 mr-2" />
             Back to Current Week
@@ -150,13 +156,13 @@ export const CombinedWeeklyDayNavigation = ({
       <div className="mt-4">
         {isMobile ? (
           <ScrollArea className="w-full whitespace-nowrap">
-            <div className="flex w-max space-x-2 p-2 bg-gray-50/70 rounded-2xl">
+            <div className="flex w-max space-x-2 p-2 bg-gray-100 rounded-2xl">
               {dayNames.map((day, index) => dayButton(index + 1, day))}
             </div>
             <ScrollBar orientation="horizontal" className="h-2 mt-2" />
           </ScrollArea>
         ) : (
-          <div className="p-2 bg-gray-50/70 rounded-2xl">
+          <div className="p-2 bg-gray-100 rounded-2xl">
             <div className="grid grid-cols-7 gap-1">
               {dayNames.map((day, index) => dayButton(index + 1, day))}
             </div>

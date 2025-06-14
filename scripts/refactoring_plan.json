@@ -1,3 +1,4 @@
+
 {
   "title": "FitFatta App Refactoring & Enhancement Plan",
   "version": "1.0",
@@ -25,7 +26,12 @@
         {
           "id": "P1T2",
           "description": "Move feature-specific components from `src/components` to `src/features/[feature]/components`.",
-          "status": "pending"
+          "status": "in-progress",
+          "details": [
+            "Moved: CompactWorkoutControl.tsx",
+            "Moved: ExerciseDaySelector.tsx",
+            "Moved: ExerciseProgramWeekNavigation.tsx"
+          ]
         },
         {
           "id": "P1T3",
