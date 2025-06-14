@@ -1,2 +1,10 @@
 
+export * from './useExerciseActions';
+export * from './useExerciseFeature';
+export * from './useExerciseProgramData';
+export * from './useExerciseProgramQuery';
 export * from './useExercisePrograms';
+export * from './useOptimizedExercise';
+export * from './useOptimizedExerciseProgramPage';
+export * from './useCurrentWorkoutSummary';
+export * from './useWorkoutTimer';

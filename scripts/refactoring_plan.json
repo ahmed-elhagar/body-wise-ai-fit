@@ -13,12 +13,13 @@
         {
           "id": "P1T1",
           "description": "Move feature-specific hooks from `src/hooks` to `src/features/[feature]/hooks`.",
-          "status": "completed",
+          "status": "in-progress",
           "details": [
             "Moved: GoalProgressWidget (component)",
             "Moved: useExercisePrograms",
             "Moved: useGoals",
-            "Moved: useWeightTracking"
+            "Moved: useWeightTracking",
+            "Moved: useWorkoutTimer"
           ]
         },
         {
