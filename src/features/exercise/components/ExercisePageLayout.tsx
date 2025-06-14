@@ -2,7 +2,7 @@
 import { Card } from "@/components/ui/card";
 import { ExerciseErrorState } from "./ExerciseErrorState";
 import { EnhancedExerciseHeaderWithAnalytics } from "./EnhancedExerciseHeaderWithAnalytics";
-import { WeeklyExerciseNavigation } from "./WeeklyExerciseNavigation";
+import { ExerciseProgramWeekSelector } from "./ExerciseProgramWeekSelector";
 import { EnhancedDayNavigation } from "./EnhancedDayNavigation";
 import { ExercisePageContent } from "./ExercisePageContent";
 import { AIExerciseDialog } from "./AIExerciseDialog";
@@ -107,12 +107,15 @@ export const ExercisePageLayout = ({
 
         {/* Navigation Section */}
         <div className="px-6 pb-6 space-y-6">
-          <WeeklyExerciseNavigation
+          {/* Week Selector - Restored original functionality */}
+          <ExerciseProgramWeekSelector
             currentWeekOffset={currentWeekOffset}
             setCurrentWeekOffset={setCurrentWeekOffset}
             weekStartDate={weekStartDate}
+            isGenerating={isGenerating}
           />
           
+          {/* Day Navigation */}
           <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-3xl">
             <EnhancedDayNavigation
               selectedDayNumber={selectedDayNumber}

@@ -27,4 +27,4 @@ export { EnhancedRecipeDialog } from './EnhancedRecipeDialog';
 export { MealPlanAILoadingDialog } from './dialogs/MealPlanAILoadingDialog';
 
 // Compatibility exports (to be removed later)
-export { default as MealPlanContainer as LegacyMealPlanContainer } from './MealPlanContainer';
+export { default as LegacyMealPlanContainer } from './MealPlanContainer';
