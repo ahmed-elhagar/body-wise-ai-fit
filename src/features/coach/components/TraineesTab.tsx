@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,8 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Users, Grid, List, Plus, Settings } from "lucide-react";
 import TraineeProgressCard from "@/components/coach/TraineeProgressCard";
 import TraineeFilterBar from "@/components/coach/TraineeFilterBar";
-import CoachMetricsOverview from "@/components/coach/CoachMetricsOverview";
-import CoachTasksPanel from "@/components/coach/CoachTasksPanel";
+import CoachMetricsOverview from "./CoachMetricsOverview";
+import CoachTasksPanel from "./CoachTasksPanel";
 import { AssignTraineeDialog } from "@/components/coach/AssignTraineeDialog";
 import { CoachTraineeChat } from "@/components/coach/CoachTraineeChat";
 import { TraineeProgressView } from "@/components/coach/TraineeProgressView";
