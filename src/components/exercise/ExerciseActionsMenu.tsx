@@ -7,7 +7,7 @@ import {
   Share
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Exercise } from '@/types/exercise';
+import { Exercise } from '@/features/exercise';
 
 interface ExerciseActionsMenuProps {
   exercise: Exercise;

@@ -12,7 +12,7 @@ import {
   Target
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Exercise } from '@/types/exercise';
+import { Exercise } from '@/features/exercise';
 
 interface SetProgress {
   completed: boolean;

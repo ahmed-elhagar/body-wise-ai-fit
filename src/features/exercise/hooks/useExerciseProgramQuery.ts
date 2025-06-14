@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useI18n } from '@/hooks/useI18n';
 import { addDays, startOfWeek, format } from 'date-fns';
-import { ExerciseProgram } from '@/types/exercise';
+import { ExerciseProgram } from '@/features/exercise';
 import { generateWeeklyWorkouts } from '@/utils/exerciseDataUtils';
 
 export const useExerciseProgramQuery = (weekOffset: number = 0, workoutType: "home" | "gym" = "home") => {
@@ -62,7 +62,7 @@ export const useExerciseProgramQuery = (weekOffset: number = 0, workoutType: "ho
       // Transform data and handle rest days
       const transformedProgram = {
         ...existingProgram,
-        workout_type: existingProgram.workout_type || workoutType,
+        workout_type: workoutType,
         current_week: existingProgram.current_week || 1,
         daily_workouts_count: existingProgram.daily_workouts?.length || 0,
         daily_workouts: generateWeeklyWorkouts(existingProgram.daily_workouts || [], workoutType)

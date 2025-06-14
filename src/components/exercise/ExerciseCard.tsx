@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,7 +11,7 @@ import {
   Timer
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Exercise } from '@/types/exercise';
+import { Exercise } from '@/features/exercise';
 import { ExerciseActionsMenu } from './ExerciseActionsMenu';
 import { ExerciseVideoDialog } from './ExerciseVideoDialog';
 import { ExerciseExchangeDialog } from './ExerciseExchangeDialog';
